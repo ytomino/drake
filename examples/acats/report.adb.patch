@@ -1,0 +1,28 @@
+--- support/report.adb.orig	2010-11-07 18:04:01.000000000 +0900
++++ support/report.adb	2010-11-07 18:13:37.000000000 +0900
+@@ -61,6 +61,7 @@
+ --      RLB  3/06/07  UPDATED ACATS VERSION STRING TO "2.6".
+ --      RLB  3/22/07  UPDATED ACATS VERSION STRING TO "3.0".
+ 
++with Ada.Command_Line;
+ WITH TEXT_IO, CALENDAR;
+ USE TEXT_IO, CALENDAR;
+ PRAGMA ELABORATE (TEXT_IO, CALENDAR);
+@@ -216,14 +217,17 @@
+           WHEN DOES_NOT_APPLY =>
+                PUT_MSG ("++++ " & TEST_NAME (1..TEST_NAME_LEN) &
+                         " NOT-APPLICABLE ++++++++++++++++++++.");
++               Ada.Command_Line.Set_Exit_Status (2);
+           WHEN ACTION_REQUIRED =>
+                PUT_MSG ("!!!! " & TEST_NAME (1..TEST_NAME_LEN) &
+                         " TENTATIVELY PASSED !!!!!!!!!!!!!!!!.");
+                PUT_MSG ("!!!! " & (1..TEST_NAME_LEN => ' ') &
+                         " SEE '!' COMMENTS FOR SPECIAL NOTES!!");
++               Ada.Command_Line.Set_Exit_Status (3);
+           WHEN OTHERS =>
+                PUT_MSG ("**** " & TEST_NAME (1..TEST_NAME_LEN) &
+                         " FAILED ****************************.");
++               Ada.Command_Line.Set_Exit_Status (4);
+           END CASE;
+           TEST_STATUS := FAIL;
+           TEST_NAME_LEN := NO_NAME'LENGTH;

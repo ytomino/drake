@@ -1,0 +1,22 @@
+pragma License (Unrestricted);
+pragma Compiler_Unit;  --  used in System.Formatting
+--  implementation package required by compiler
+package System.Unsigned_Types is
+   pragma Pure;
+
+   --  required for modular types by compiler (s-unstyp.ads)
+   type Short_Short_Unsigned is mod 2 ** Short_Short_Integer'Size;
+   type Short_Unsigned is mod 2 ** Short_Integer'Size;
+   type Unsigned is mod 2 ** Integer'Size;
+   type Long_Unsigned is mod 2 ** Long_Integer'Size;
+   type Long_Long_Unsigned is mod 2 ** Long_Long_Integer'Size;
+
+   --  required for ??? by compiler (s-unstyp.ads)
+   type Packed_Byte is mod 2 ** Standard'Storage_Unit;
+   for Packed_Byte'Size use Standard'Storage_Unit;
+   type Packed_Bytes1 is array (Natural range <>) of Packed_Byte;
+   for Packed_Bytes1'Alignment use 1;
+   for Packed_Bytes1'Component_Size use Packed_Byte'Size;
+   pragma Suppress_Initialization (Packed_Bytes1);
+
+end System.Unsigned_Types;
