@@ -18,8 +18,6 @@ package body System.Compare_Array_Unsigned_32 is
             return -1;
          elsif L (I) > R (I) then
             return 1;
-         else
-            return 0;
          end if;
       end loop;
       if Left_Len < Right_Len then

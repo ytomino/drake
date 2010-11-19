@@ -49,7 +49,7 @@ package body System.Formatting is
          V := V / Longest_Unsigned (Base);
          I := I - 1;
       end loop;
-      Fill_Digits (Unsigned (Value), Item (Item'First .. I), Base, Casing);
+      Fill_Digits (Unsigned (V), Item (Item'First .. I), Base, Casing);
    end Fill_Digits;
 
    procedure Take_Digits (
@@ -57,12 +57,14 @@ package body System.Formatting is
       Last : out Natural;
       Result : out Unsigned;
       Base : Base_Type;
+      Skip_Underscore : Boolean;
       Overflow : out Boolean);
    procedure Take_Digits (
       Item : String;
       Last : out Natural;
       Result : out Unsigned;
       Base : Base_Type;
+      Skip_Underscore : Boolean;
       Overflow : out Boolean) is
    begin
       Last := Item'First - 1;
@@ -72,16 +74,23 @@ package body System.Formatting is
          declare
             X : Digit;
             Is_Invalid : Boolean;
+            Next : Positive := Last + 1;
          begin
-            Value (Item (Last + 1), X, Is_Invalid);
+            if Item (Next) = '_' then
+               exit when not Skip_Underscore
+                  or else Next = Item'First
+                  or else Next >= Item'Last;
+               Next := Next + 1;
+            end if;
+            Value (Item (Next), X, Is_Invalid);
             exit when Is_Invalid or else X >= Base;
             if Result > (Unsigned'Last - X) / Base then
                Overflow := True;
                exit;
             end if;
             Result := Result * Base + X;
+            Last := Next;
          end;
-         Last := Last + 1;
       end loop;
    end Take_Digits;
 
@@ -90,23 +99,36 @@ package body System.Formatting is
       Last : out Natural;
       Result : out Longest_Unsigned;
       Base : Base_Type;
+      Skip_Underscore : Boolean;
       Overflow : out Boolean);
    procedure Take_Digits (
       Item : String;
       Last : out Natural;
       Result : out Longest_Unsigned;
       Base : Base_Type;
+      Skip_Underscore : Boolean;
       Overflow : out Boolean) is
    begin
-      Take_Digits (Item, Last, Unsigned (Result), Base, Overflow);
+      Take_Digits (
+         Item,
+         Last,
+         Unsigned (Result),
+         Base,
+         Skip_Underscore,
+         Overflow);
       if Overflow then
          Overflow := False;
          while Last < Item'Last loop
             declare
                X : Digit;
                Is_Invalid : Boolean;
+               Next : Positive := Last + 1;
             begin
-               Value (Item (Last + 1), X, Is_Invalid);
+               if Item (Next) = '_' then
+                  exit when not Skip_Underscore or else Next >= Item'Last;
+                  Next := Next + 1;
+               end if;
+               Value (Item (Next), X, Is_Invalid);
                exit when Is_Invalid or else X >= Base;
                if Result >
                   (Longest_Unsigned'Last - Longest_Unsigned (X)) /
@@ -117,8 +139,8 @@ package body System.Formatting is
                end if;
                Result := Result * Longest_Unsigned (Base) +
                   Longest_Unsigned (X);
+               Last := Next;
             end;
-            Last := Last + 1;
          end loop;
       end if;
    end Take_Digits;
@@ -250,11 +272,12 @@ package body System.Formatting is
       Last : out Natural;
       Result : out Unsigned;
       Base : Base_Type := 10;
+      Skip_Underscore : Boolean := False;
       Error : out Boolean)
    is
       Overflow : Boolean;
    begin
-      Take_Digits (Item, Last, Result, Base, Overflow);
+      Take_Digits (Item, Last, Result, Base, Skip_Underscore, Overflow);
       if Overflow then
          Result := 0;
          Last := Item'First - 1;
@@ -269,11 +292,12 @@ package body System.Formatting is
       Last : out Natural;
       Result : out Longest_Unsigned;
       Base : Base_Type := 10;
+      Skip_Underscore : Boolean := False;
       Error : out Boolean)
    is
       Overflow : Boolean;
    begin
-      Take_Digits (Item, Last, Result, Base, Overflow);
+      Take_Digits (Item, Last, Result, Base, Skip_Underscore, Overflow);
       if Overflow then
          Result := 0;
          Last := Item'First - 1;

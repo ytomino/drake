@@ -52,6 +52,7 @@ package System.Formatting is
       Last : out Natural;
       Result : out Unsigned;
       Base : Base_Type := 10;
+      Skip_Underscore : Boolean := False;
       Error : out Boolean);
 
    procedure Value (
@@ -59,6 +60,7 @@ package System.Formatting is
       Last : out Natural;
       Result : out Longest_Unsigned;
       Base : Base_Type := 10;
+      Skip_Underscore : Boolean := False;
       Error : out Boolean);
 
 end System.Formatting;

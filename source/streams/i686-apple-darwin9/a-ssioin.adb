@@ -604,13 +604,18 @@ package body Ada.Streams.Stream_IO.Inside is
       Check_File_Open (File);
       case File.Kind is
          when Normal =>
-            Close (File, Raise_On_Error => True);
-            Open_File (
-               Method => Reset,
-               File => File,
-               Mode => Mode,
-               Name => File.Name,
-               Form => File.Form);
+            declare
+               Name : constant String := File.Name;
+               Form : constant String := File.Form;
+            begin
+               Close (File, Raise_On_Error => True);
+               Open_File (
+                  Method => Reset,
+                  File => File,
+                  Mode => Mode,
+                  Name => Name,
+                  Form => Form);
+            end;
          when Temporary =>
             File.Mode := Mode;
             Set_Index (File, 1);

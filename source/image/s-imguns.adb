@@ -9,19 +9,14 @@ package body System.Img_Uns is
    is
       Error : Boolean;
    begin
-      if S'Last < S'First then
-         Error := True;
-      else
-         S (S'First) := ' ';
-         Formatting.Image (
-            V,
-            S (S'First + 1 .. S'Last),
-            P,
-            Error => Error);
-      end if;
-      if Error then
-         raise Constraint_Error;
-      end if;
+      pragma Assert (S'Length >= 1);
+      S (S'First) := ' ';
+      Formatting.Image (
+         V,
+         S (S'First + 1 .. S'Last),
+         P,
+         Error => Error);
+      pragma Assert (not Error);
    end Image_Unsigned;
 
 end System.Img_Uns;

@@ -22,9 +22,8 @@ begin
 	pragma Assert (Character'Value (Character'Image (Character'Last)) = Character'Last);
 	pragma Assert (Wide_Character'Value (Wide_Character'Image (Wide_Character'First)) = Wide_Character'First);
 	pragma Assert (Wide_Character'Value (Wide_Character'Image (Wide_Character'Last)) = Wide_Character'Last);
-	-- when using Wide_Wide_Character'Image, gcc-4.4.*/4.5.* are very slow...???
---	pragma Assert (Wide_Wide_Character'Value (Wide_Wide_Character'Image (Wide_Wide_Character'First)) = Wide_Wide_Character'First);
---	pragma Assert (Wide_Wide_Character'Value (Wide_Wide_Character'Image (Wide_Wide_Character'Last)) = Wide_Wide_Character'Last);
+	pragma Assert (Wide_Wide_Character'Value ("Hex_00000000") = Wide_Wide_Character'First);
+	pragma Assert (Wide_Wide_Character'Value ("Hex_7fffffff") = Wide_Wide_Character'Last);
 	pragma Assert (Integer'Value (Integer'Image (Integer'First)) = Integer'First);
 	pragma Assert (Integer'Value (Integer'Image (Integer'Last)) = Integer'Last);
 	pragma Assert (Long_Long_Integer'Value (Long_Long_Integer'Image (Long_Long_Integer'First)) = Long_Long_Integer'First);

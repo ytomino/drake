@@ -10,25 +10,20 @@ package body System.Img_Int is
       X : Formatting.Unsigned;
       Error : Boolean;
    begin
-      if S'Last < S'First then
-         Error := True;
+      pragma Assert (S'Length >= 1);
+      if V < 0 then
+         S (S'First) := '-';
+         X := Formatting.Unsigned'Mod (-V);
       else
-         if V < 0 then
-            S (S'First) := '-';
-            X := Formatting.Unsigned'Mod (-V);
-         else
-            S (S'First) := ' ';
-            X := Formatting.Unsigned (V);
-         end if;
-         Formatting.Image (
-            X,
-            S (S'First + 1 .. S'Last),
-            P,
-            Error => Error);
+         S (S'First) := ' ';
+         X := Formatting.Unsigned (V);
       end if;
-      if Error then
-         raise Constraint_Error;
-      end if;
+      Formatting.Image (
+         X,
+         S (S'First + 1 .. S'Last),
+         P,
+         Error => Error);
+      pragma Assert (not Error);
    end Image_Integer;
 
 end System.Img_Int;

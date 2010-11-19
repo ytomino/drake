@@ -69,7 +69,6 @@ package body Ada.Characters.Inside is
       I : Natural := Source'First;
       J : Natural := Item'First;
    begin
-      Last := J - 1;
       while I <= Source'Last loop
          declare
             Code : System.UTF_Conversions.UCS_4;
@@ -96,6 +95,7 @@ package body Ada.Characters.Inside is
             J := J_Next + 1;
          end;
       end loop;
+      Last := J - 1;
    end Translate;
 
    function Translate (

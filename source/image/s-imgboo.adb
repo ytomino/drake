@@ -6,13 +6,12 @@ package body System.Img_Bool is
       S : in out String;
       P : out Natural) is
    begin
-      if S'Length < 5 then
-         raise Constraint_Error;
-      end if;
       if V then
+         pragma Assert (S'Length >= 4);
          P := S'First + 3;
          S (S'First .. P) := "TRUE";
       else
+         pragma Assert (S'Length >= 5);
          P := S'First + 4;
          S (S'First .. P) := "FALSE";
       end if;

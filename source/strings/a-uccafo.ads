@@ -3,44 +3,11 @@ pragma License (Unrestricted);
 package Ada.UCD.Case_Folding is
    pragma Pure;
 
-   type Table_Element_2x1 is record
-      Code : UCS_2;
-      Mapping : UCS_2;
-   end record;
-   pragma Suppress_Initialization (Table_Element_2x1);
-   pragma Pack (Table_Element_2x1); --  16 + 16
-   pragma Compile_Time_Error (Table_Element_2x1'Size /= 32, "packed?");
-   type Table_Type_2x1 is array (Positive range <>) of Table_Element_2x1;
-   pragma Pack (Table_Type_2x1);
-   pragma Suppress_Initialization (Table_Type_2x1);
-
-   type Table_Element_4x1 is record
-      Code : UCS_4;
-      Mapping : UCS_4;
-   end record;
-   pragma Pack (Table_Element_4x1); --  32 + 32
-   pragma Suppress_Initialization (Table_Element_4x1);
-   pragma Compile_Time_Error (Table_Element_4x1'Size /= 64, "packed?");
-   type Table_Type_4x1 is array (Positive range <>) of Table_Element_4x1;
-   pragma Pack (Table_Type_4x1);
-   pragma Suppress_Initialization (Table_Type_4x1);
-
-   type Table_Element_2x3 is record
-      Code : UCS_2;
-      Mapping : UCS_2_Array (1 .. 3);
-   end record;
-   pragma Pack (Table_Element_2x3); --  16 + 16 * 3
-   pragma Suppress_Initialization (Table_Element_2x3);
-   pragma Compile_Time_Error (Table_Element_2x3'Size /= 64, "packed?");
-   type Table_Type_2x3 is array (Positive range <>) of Table_Element_2x3;
-   pragma Pack (Table_Type_2x3);
-   pragma Suppress_Initialization (Table_Type_2x3);
-
-   subtype C_Table_Type_2 is Table_Type_2x1;
-   subtype C_Table_Type_4 is Table_Type_4x1;
-   subtype S_Table_Type is Table_Type_2x1;
-   subtype F_Table_Type is Table_Type_2x3;
-   subtype T_Table_Type is Table_Type_2x1;
+   subtype C_Table_Type_2 is Map_Type_2x1;
+   subtype C_Table_Type_4 is Map_Type_4x1;
+   subtype S_Table_Type is Map_Type_2x1;
+   subtype F_Table_Type is Map_Type_2x3;
+   subtype T_Table_Type is Map_Type_2x1;
 
    C_Table_2 : constant C_Table_Type_2 := (
       (16#0041#, 16#0061#),

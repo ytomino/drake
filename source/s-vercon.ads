@@ -6,7 +6,7 @@ package System.Version_Control is
 
    subtype Version_String is String (1 .. 8);
 
-   --  required for PACKAGE'Version by compiler
+   --  required for PACKAGE'Version by compiler (s-vercon.ads)
    function Get_Version_String (V : Unsigned_Types.Unsigned)
       return Version_String;
 

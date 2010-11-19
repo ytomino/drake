@@ -1,6 +1,6 @@
 --  ***************************************************************************
 --
---  This version package violates some ACATS, intentionally.
+--  This implementation violates some ACATS intentionally.
 --
 --  Violated ACATS Tests: CE3106A, CE3106B, CE3406C
 --

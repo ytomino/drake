@@ -6,7 +6,7 @@ with System.Unsigned_Types;
 package System.Stream_Attributes is
    pragma Preelaborate;
 
-   --  required for 'Read/'Write attributes by compiler
+   --  required for 'Read/'Write attributes by compiler (s-stratt.ads)
 
    type Thin_Pointer is record
       P1 : Address;
@@ -199,7 +199,7 @@ package System.Stream_Attributes is
       Item : Wide_Wide_Character);
    pragma Inline (W_WWC);
 
-   --  required for default 'Read/'Write attributes by compiler
+   --  required for default 'Read/'Write attributes by compiler (s-stratt.ads)
    --  in original libgnat, Block_IO_OK is a function, but constant is ok (?)
    Block_IO_OK : constant Boolean := True;
 

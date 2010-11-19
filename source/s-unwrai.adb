@@ -309,6 +309,16 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_02;
 
+   procedure rcheck_03 (File : not null access Character; Line : Integer) is
+      Message : constant String := "divide by zero";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Constraint_Error'Access,
+         File,
+         Line,
+         Message);
+   end rcheck_03;
+
    procedure rcheck_04 (File : not null access Character; Line : Integer) is
       Message : constant String := "explicit raise";
    begin

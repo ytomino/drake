@@ -509,6 +509,30 @@ procedure run_acats is
 		"<" => Ada.Strings.Less_Case_Insensitive,
 		"=" => Ada.Strings.Equal_Case_Insensitive);
 	
+	package Test_Sets renames String_CI_Sets;
+	
+	function Read_Test_Set (Name : String) return Test_Sets.Set is
+	begin
+		return Result : Test_Sets.Set do
+			declare
+				File : Ada.Text_IO.File_Type;
+			begin
+				Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Name);
+				while not Ada.Text_IO.End_Of_File (File) loop
+					declare
+						Line : constant String := Ada.Text_IO.Get_Line (File);
+					begin
+						Test_Sets.Include (Result, Line);
+					end;
+				end loop;
+				Ada.Text_IO.Close (File);
+			end;
+		end return;
+	end Read_Test_Set;
+	
+	Tasking_Tests : constant Test_Sets.Set := Read_Test_Set ("x_tasking.txt");
+	Unicode_Tests : constant Test_Sets.Set := Read_Test_Set ("x_unicode.txt");
+	
 	type Test_Style is (Legacy, Modern);
 	
 	type Test_Record is record
@@ -752,14 +776,24 @@ procedure run_acats is
 		exception
 			when E : Compile_Failure | Test_Failure | Should_Be_Failure =>
 				Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
-				Expected := False;
+				if Runtime = Drake then
+					if Tasking_Tests.Contains (Name) then
+						Ada.Text_IO.Put_Line ("tasking test failure.");
+						Expected := True;
+					elsif Unicode_Tests.Contains (Name) then
+						Ada.Text_IO.Put_Line ("unicode test failure.");
+						Expected := True;
+					else
+						Expected := False;
+					end if;
+				else
+					Expected := False;
+				end if;
 		end;
 		Test_Records.Include (Records, Name, Test_Record'(Result => Result, Expected => Expected));
 		Ada.Directories.Set_Directory (Start_Dir);
 		Ada.Text_IO.New_Line;
 	end Test;
-	
-	package Test_Sets renames String_CI_Sets;
 	
 	Executed_Tests : Test_Sets.Set;
 	

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  with Ada.Characters.Conversions;
+with Ada.Characters.Conversions;
 package Ada.Characters.Handling is
 --  pragma Pure;
    pragma Preelaborate; --  use mapping
@@ -44,11 +44,28 @@ package Ada.Characters.Handling is
 
    --  The functions Is_Character, Is_String, To_Character, To_String,
    --  To_Wide_Character, and To_Wide_String are obsolescent; see J.14.
-   --  Paragraphs 14 through 18 were deleted.
 
-   --  extended
-   package ASCII is
-      function To_Upper (Item : Character) return Character;
-   end ASCII;
+   function Is_Character (Item : Wide_Character) return Boolean
+      renames Conversions.Is_Character;
+   function Is_String (Item : Wide_String) return Boolean
+      renames Conversions.Is_String;
+
+   function To_Character (
+      Item : Wide_Character;
+      Substitute : Character := ' ')
+      return Character
+      renames Conversions.To_Character;
+
+   function To_String (
+      Item : Wide_String;
+      Substitute : Character := ' ')
+      return String
+      renames Conversions.To_String;
+
+   function To_Wide_Character (Item : Character) return Wide_Character
+      renames Conversions.To_Wide_Character;
+
+   function To_Wide_String (Item : String) return Wide_String
+      renames Conversions.To_Wide_String;
 
 end Ada.Characters.Handling;

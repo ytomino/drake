@@ -2,13 +2,13 @@ with Ada.Containers.Vectors;
 with Ada.Containers.Indefinite_Vectors;
 with Ada.Containers.Limited_Vectors;
 with Ada.Containers.Inside.Array_Sorting;
-with Ada.Characters.Handling;
+with Ada.Characters.ASCII.Handling;
 with Ada.Text_IO;
 procedure cntnr_Vector is
 	function Custom_Eq (Left, Right : Character) return Boolean is
 	begin
-		return Ada.Characters.Handling.ASCII.To_Upper (Left) =
-			Ada.Characters.Handling.ASCII.To_Upper (Right);
+		return Ada.Characters.ASCII.Handling.To_Upper (Left) =
+			Ada.Characters.ASCII.Handling.To_Upper (Right);
 	end Custom_Eq;
 	package Vectors is new Ada.Containers.Vectors (Positive, Character,
 		"=" => Custom_Eq);

@@ -1,12 +1,12 @@
-with Ada.UCD.Case_Folding;
+with Ada.UCD.Simple_Case_Mapping;
 package body Ada.Characters.Inside.Lower_Case_Maps is
    use type UCD.UCS_4;
 
    Mapping : aliased Character_Mapping := (
       Length =>
-         UCD.Case_Folding.C_Table_2'Length +
-         UCD.Case_Folding.C_Table_4'Length +
-         UCD.Case_Folding.S_Table'Length,
+         UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length +
+         UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length +
+         UCD.Simple_Case_Mapping.Difference_Lower_Table_2'Length,
       Reference_Count => -1, --  constant
       From => <>,
       To => <>);
@@ -18,40 +18,45 @@ package body Ada.Characters.Inside.Lower_Case_Maps is
       if not Initialized then
          declare
             I : Positive := Mapping.From'First;
-            J : Positive := UCD.Case_Folding.C_Table_2'First;
-            K : Positive := UCD.Case_Folding.S_Table'First;
+            J : Positive := UCD.Simple_Case_Mapping.Shared_Lower_Table_2'First;
+            K : Positive :=
+               UCD.Simple_Case_Mapping.Difference_Lower_Table_2'First;
          begin
-            while K <= UCD.Case_Folding.S_Table'Last loop
-               if UCD.Case_Folding.C_Table_2 (J).Code <
-                  UCD.Case_Folding.S_Table (K).Code
+            while K <=
+               UCD.Simple_Case_Mapping.Difference_Lower_Table_2'Last
+            loop
+               if UCD.Simple_Case_Mapping.Shared_Lower_Table_2 (J).Code <
+                  UCD.Simple_Case_Mapping.Difference_Lower_Table_2 (K).Code
                then
                   Mapping.From (I) := Character_Type'Val (
-                     UCD.Case_Folding.C_Table_2 (J).Code);
+                     UCD.Simple_Case_Mapping.Shared_Lower_Table_2 (J).Code);
                   Mapping.To (I) := Character_Type'Val (
-                     UCD.Case_Folding.C_Table_2 (J).Mapping);
+                     UCD.Simple_Case_Mapping.Shared_Lower_Table_2 (J).Mapping);
                   J := J + 1;
                else
                   Mapping.From (I) := Character_Type'Val (
-                     UCD.Case_Folding.C_Table_2 (K).Code);
+                     UCD.Simple_Case_Mapping.Difference_Lower_Table_2 (
+                        K).Code);
                   Mapping.To (I) := Character_Type'Val (
-                     UCD.Case_Folding.C_Table_2 (K).Mapping);
+                     UCD.Simple_Case_Mapping.Difference_Lower_Table_2 (
+                        K).Mapping);
                   K := K + 1;
                end if;
                I := I + 1;
             end loop;
-            while J <= UCD.Case_Folding.C_Table_2'Last loop
+            while J <= UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Last loop
                Mapping.From (I) := Character_Type'Val (
-                  UCD.Case_Folding.C_Table_2 (J).Code);
+                  UCD.Simple_Case_Mapping.Shared_Lower_Table_2 (J).Code);
                Mapping.To (I) := Character_Type'Val (
-                  UCD.Case_Folding.C_Table_2 (J).Mapping);
+                  UCD.Simple_Case_Mapping.Shared_Lower_Table_2 (J).Mapping);
                J := J + 1;
                I := I + 1;
             end loop;
-            for L in UCD.Case_Folding.C_Table_4'Range loop
+            for L in UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Range loop
                Mapping.From (I) := Character_Type'Val (
-                  UCD.Case_Folding.C_Table_4 (L).Code);
+                  UCD.Simple_Case_Mapping.Shared_Lower_Table_4 (L).Code);
                Mapping.To (I) := Character_Type'Val (
-                  UCD.Case_Folding.C_Table_4 (L).Mapping);
+                  UCD.Simple_Case_Mapping.Shared_Lower_Table_4 (L).Mapping);
                I := I + 1;
             end loop;
             pragma Assert (I = Mapping.From'Last + 1);

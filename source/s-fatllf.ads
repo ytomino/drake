@@ -5,7 +5,7 @@ package System.Fat_LLF is
 
    package Attr_Long_Long_Float is
 
-      --  required for Long_Long_Float'Floor by compiler
+      --  required for Long_Long_Float'Floor by compiler (s-fatgen.ads)
       function Floor (X : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, Floor, "__builtin_floorl");
 

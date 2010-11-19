@@ -23,9 +23,9 @@ procedure intf is
 	E2 : not null Ps.Pointer := AO (7)'Access;
 begin
 	sscanf ("100", "%lld", N'Access);
-	printf ("%lld" & Ascii.LF & Ascii.NUL, N * 2);
+	printf ("%lld" & ASCII.LF & ASCII.NUL, N * 2);
 	sscanf ("100", "%llu", U'Access);
-	printf ("%llu" & Ascii.LF & Ascii.NUL, U * 2);
-	printf ("%d" & Ascii.LF & Ascii.NUL, Interfaces.sync_sub_and_fetch (I'Access, 1));
-	printf ("%d" & Ascii.LF & Ascii.NUL, Ps."-" (E2, E1));
+	printf ("%llu" & ASCII.LF & ASCII.NUL, U * 2);
+	printf ("%d" & ASCII.LF & ASCII.NUL, Interfaces.sync_sub_and_fetch (I'Access, 1));
+	printf ("%d" & ASCII.LF & ASCII.NUL, Ps."-" (E2, E1));
 end intf;

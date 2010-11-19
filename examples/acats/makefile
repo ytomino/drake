@@ -11,6 +11,8 @@ BUILDDIR_NAME=build-$(TARGET)
 endif
 BUILDDIR_REL=../$(BUILDDIR_NAME)
 
+SOURCES=$(wildcard ../../source/*.ad?) $(wildcard ../../source/*/*.ad?) $(wildcard ../../source/*/*/*.ad?)
+
 # if RTSDIR is empty, test with GNAT runtime
 export RTSDIR=$(abspath $(BUILDDIR_REL))
 
@@ -114,8 +116,8 @@ endif
 test: $(BUILDDIR_REL)/adalib/libgnat.a $(ACATSDIR) $(SUPPORTDIR) $(SUPPORT_SOURCES) $(MACROSUB) $(RUN_ACATS)
 	$(RUN_ACATS) $(OPTION)
 
-$(BUILDDIR_REL)/adalib/libgnat.a:
-	make -C .. $(BUILDDIR_NAME)/adalib/libgnat.a HOST=$(HOST) TARGET=$(TARGET)
+$(BUILDDIR_REL)/adalib/libgnat.a: $(SOURCES)
+	make -C .. $(BUILDDIR_NAME)/adalib/libgnat.a HOST=$(HOST) TARGET=$(TARGET) WITHA=1
 
 $(MACROSUB): $(SUPPORTDIR)/macrosub.adb
 	gnatmake -o $@ -D $(SUPPORTDIR) -I$(SUPPORTDIR) $(MARGS) $(CARGS) $< $(BARGS)

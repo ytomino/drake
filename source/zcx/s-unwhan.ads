@@ -43,7 +43,7 @@ package System.Unwind.Handling is
    procedure Begin_Handler (GCC_Exception : GNAT_GCC_Exception_Access);
    pragma Export (C, Begin_Handler, "__gnat_begin_handler");
 
-   --  hook for entering an exception handler (a-exexpr-gcc.adb)
+   --  hook for leaving an exception handler (a-exexpr-gcc.adb)
    procedure End_Handler (GCC_Exception : GNAT_GCC_Exception_Access);
    pragma Export (C, End_Handler, "__gnat_end_handler");
 

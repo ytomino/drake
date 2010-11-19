@@ -11,6 +11,11 @@ package System.Unsigned_Types is
    type Long_Unsigned is mod 2 ** Long_Integer'Size;
    type Long_Long_Unsigned is mod 2 ** Long_Long_Integer'Size;
 
+   function Shift_Left (Left : Unsigned; Right : Natural) return Unsigned;
+   function Shift_Left (Left : Long_Long_Unsigned; Right : Natural)
+      return Long_Long_Unsigned;
+   pragma Import (Intrinsic, Shift_Left);
+
    --  required for ??? by compiler (s-unstyp.ads)
    type Packed_Byte is mod 2 ** Standard'Storage_Unit;
    for Packed_Byte'Size use Standard'Storage_Unit;
