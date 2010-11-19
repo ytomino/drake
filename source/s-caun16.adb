@@ -1,4 +1,5 @@
 package body System.Compare_Array_Unsigned_16 is
+   pragma Suppress (All_Checks);
 
    function Compare_Array_U16 (
       Left : Address;

@@ -1,4 +1,5 @@
 package body System.Img_Bool is
+   pragma Suppress (All_Checks);
 
    procedure Image_Boolean (
       V : Boolean;

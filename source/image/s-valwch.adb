@@ -1,4 +1,5 @@
 package body System.Val_WChar is
+   pragma Suppress (All_Checks);
 
    function Value_Wide_Character (Str : String; EM : WC_Encoding_Method)
       return Wide_Character is

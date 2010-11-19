@@ -1,4 +1,5 @@
 package body System.Arrays is
+   pragma Suppress (All_Checks);
 
    package body Generic_Slicing is
 

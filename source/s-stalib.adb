@@ -1,4 +1,5 @@
 package body System.Standard_Library is
+   pragma Suppress (All_Checks);
 
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
    procedure Install_Exception_Handler (SEH : Address);

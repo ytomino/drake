@@ -2,6 +2,7 @@ with System.To_String;
 with C.pwd;
 with C.grp;
 package body Ada.Permissions.Inside is
+   pragma Suppress (All_Checks);
 
    function User_Name (Id : C.sys.types.uid_t) return String is
       Info : C.pwd.struct_passwd_ptr;

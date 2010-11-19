@@ -1,5 +1,6 @@
 with System.Formatting;
 package body System.Version_Control is
+   pragma Suppress (All_Checks);
 
    function Get_Version_String (V : Unsigned_Types.Unsigned)
       return Version_String

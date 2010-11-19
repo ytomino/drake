@@ -1,4 +1,5 @@
 package body System.Img_Char is
+   pragma Suppress (All_Checks);
 
    procedure Image_Character (
       V : Character;

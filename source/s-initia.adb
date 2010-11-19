@@ -3,6 +3,7 @@ with Ada.Unchecked_Deallocation;
 with System.Aux_Dec;
 with System.Storage_Pools.Overlay;
 package body System.Initialization is
+   pragma Suppress (All_Checks);
    use Aux_Dec;
 
    type Object_Access is access all Object;

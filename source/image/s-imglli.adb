@@ -1,4 +1,5 @@
 package body System.Img_LLI is
+   pragma Suppress (All_Checks);
 
    procedure Image_Long_Long_Integer (
       V : Long_Long_Integer;

@@ -1,4 +1,5 @@
 package body Ada.Numerics.Generic_Complex_Elementary_Functions is
+   pragma Suppress (All_Checks);
 
    function Arccos (X : Complex) return Complex is
       function cacosf (A1 : Complex) return Complex;

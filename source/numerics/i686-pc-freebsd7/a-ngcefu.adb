@@ -1,5 +1,6 @@
 with Ada.Numerics.Generic_Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Elementary_Functions is
+   pragma Suppress (All_Checks);
 
    package Real_Functions is new Generic_Elementary_Functions (Real'Base);
 

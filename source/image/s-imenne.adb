@@ -1,4 +1,5 @@
 package body System.Img_Enum_New is
+   pragma Suppress (All_Checks);
 
    procedure Image_Enumeration_8 (
       Pos : Natural;

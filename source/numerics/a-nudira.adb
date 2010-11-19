@@ -1,4 +1,5 @@
 package body Ada.Numerics.Discrete_Random is
+   pragma Suppress (All_Checks);
 
    function Random (Gen : Generator) return Result_Subtype is
       subtype Real is Long_Long_Float;

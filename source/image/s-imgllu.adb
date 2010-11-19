@@ -1,4 +1,5 @@
 package body System.Img_LLU is
+   pragma Suppress (All_Checks);
 
    procedure Image_Long_Long_Unsigned (
       V : Unsigned_Types.Long_Long_Unsigned;

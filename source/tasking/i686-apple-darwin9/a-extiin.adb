@@ -2,6 +2,7 @@ with Ada.Calendar.Inside;
 with Ada.Unchecked_Conversion;
 with C.sys.resource;
 package body Ada.Execution_Time.Inside is
+   pragma Suppress (All_Checks);
    use type C.signed_int;
 
    function Clock return CPU_Time is

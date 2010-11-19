@@ -1,4 +1,5 @@
 package body System.Val_Enum is
+   pragma Suppress (All_Checks);
 
    function Value_Enumeration_8 (
       Names : String;

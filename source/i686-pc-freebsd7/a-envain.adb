@@ -1,4 +1,5 @@
 package body Ada.Environment_Variables.Inside is
+   pragma Suppress (All_Checks);
 
    environ : C.char_ptr_ptr;
    pragma Import (C, environ);

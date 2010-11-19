@@ -1,4 +1,5 @@
 package body System.Storage_Pools.Overlay is
+   pragma Suppress (All_Checks);
 
    overriding procedure Allocate (
       Pool : in out Overlay_Storage_Pool;

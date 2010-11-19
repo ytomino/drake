@@ -1,4 +1,5 @@
 package body Ada.Numerics.Generic_Complex_Types is
+   pragma Suppress (All_Checks);
 
    function "**" (Left : Real'Base; Right : Integer) return Real'Base;
    pragma Inline ("**");

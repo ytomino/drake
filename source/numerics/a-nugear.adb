@@ -1,5 +1,6 @@
 --  reference: Netgen's Eigensystem routine.
 package body Ada.Numerics.Generic_Arrays is
+   pragma Suppress (All_Checks);
 
    function Operator_Vector (Right : Vector) return Result_Vector is
    begin

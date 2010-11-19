@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 package body Ada.Tags.Inside is
+   pragma Suppress (All_Checks);
 
    function CW_Membership (This : System.Address; T : Tag) return Boolean is
       function Cast is new Unchecked_Conversion (System.Address, Tag_Ptr);

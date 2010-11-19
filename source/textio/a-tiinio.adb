@@ -1,4 +1,5 @@
 package body Ada.Text_IO.Integer_IO is
+   pragma Suppress (All_Checks);
 
    procedure Put (
       Item : Num;

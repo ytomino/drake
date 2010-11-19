@@ -1,4 +1,5 @@
 package body System.Val_LLU is
+   pragma Suppress (All_Checks);
 
    function Value_Long_Long_Unsigned (Str : String)
       return Unsigned_Types.Long_Long_Unsigned is

@@ -1,4 +1,5 @@
 package body System.Img_WChar is
+   pragma Suppress (All_Checks);
 
    procedure Image_Wide_Character (
       V : Wide_Character;

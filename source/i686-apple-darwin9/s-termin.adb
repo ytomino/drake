@@ -8,6 +8,7 @@ with C.unistd;
 with C.sys.signal;
 with C.sys.types;
 package body System.Termination is
+   pragma Suppress (All_Checks);
    use type C.signed_int;
 
    procedure Error_Put (S : String) is

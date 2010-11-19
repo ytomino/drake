@@ -1,4 +1,5 @@
 package body System.Val_Bool is
+   pragma Suppress (All_Checks);
 
    function Value_Boolean (Str : String) return Boolean is
    begin

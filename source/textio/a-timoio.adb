@@ -1,4 +1,5 @@
 package body Ada.Text_IO.Modular_IO is
+   pragma Suppress (All_Checks);
 
    procedure Get (
       File : File_Type;

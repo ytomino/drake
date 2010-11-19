@@ -1,4 +1,5 @@
 package body System.Val_Char is
+   pragma Suppress (All_Checks);
 
    function Value_Character (Str : String) return Character is
    begin

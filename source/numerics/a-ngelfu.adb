@@ -1,4 +1,5 @@
 package body Ada.Numerics.Generic_Elementary_Functions is
+   pragma Suppress (All_Checks);
 
    function Arccos (X : Float_Type'Base) return Float_Type'Base is
       function acosf (A1 : Float) return Float;
