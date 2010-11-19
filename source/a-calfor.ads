@@ -1,3 +1,4 @@
+pragma License (Unrestricted);
 with Ada.Calendar.Time_Zones;
 package Ada.Calendar.Formatting is
 

@@ -1,3 +1,4 @@
+pragma License (Unrestricted);
 --  extended package
 with Ada.IO_Exceptions;
 with System.Storage_Elements;

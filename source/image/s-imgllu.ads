@@ -1,3 +1,4 @@
+pragma License (Unrestricted);
 with System.Unsigned_Types;
 --  implementation package required by compiler
 package System.Img_LLU is
