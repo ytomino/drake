@@ -1,5 +1,5 @@
 with Ada.Environment_Variables.Inside;
-with System.To_String;
+with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.string;
 package body Ada.Environment_Variables is
@@ -28,7 +28,7 @@ package body Ada.Environment_Variables is
       if Result = null then
          raise Constraint_Error;
       else
-         return System.To_String (Result.all'Address);
+         return System.Zero_Terminated_Strings.Value (Result.all'Address);
       end if;
    end Value;
 

@@ -1,7 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
-with System.To_String;
 with System.UTF_Conversions;
+with System.Zero_Terminated_Strings;
 package body Ada.Tags is
    pragma Suppress (All_Checks);
    use type System.Address;
@@ -178,7 +178,8 @@ package body Ada.Tags is
                Type_Specific_Data_Ptr);
             TSD : constant Type_Specific_Data_Ptr := Cast (DT (T).TSD);
          begin
-            return System.To_String (TSD.Expanded_Name.all'Address);
+            return System.Zero_Terminated_Strings.Value (
+               TSD.Expanded_Name.all'Address);
          end;
       end if;
    end Expanded_Name;
@@ -194,7 +195,8 @@ package body Ada.Tags is
                Type_Specific_Data_Ptr);
             TSD : constant Type_Specific_Data_Ptr := Cast (DT (T).TSD);
          begin
-            return System.To_String (TSD.External_Tag.all'Address);
+            return System.Zero_Terminated_Strings.Value (
+               TSD.External_Tag.all'Address);
          end;
       end if;
    end External_Tag;

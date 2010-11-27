@@ -1,4 +1,4 @@
-with System.To_String;
+with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.unistd;
 package body Ada.Directories.Temporary is
@@ -16,7 +16,7 @@ package body Ada.Directories.Temporary is
       if Temp_Dir = null then
          return Current_Directory;
       else
-         return System.To_String (Temp_Dir.all'Address);
+         return System.Zero_Terminated_Strings.Value (Temp_Dir.all'Address);
       end if;
    end Temporary_Directory;
 

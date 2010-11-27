@@ -1,5 +1,5 @@
 with System.Standard_Library;
-with System.To_String;
+with System.Zero_Terminated_Strings;
 package body Ada.Command_Line is
    pragma Suppress (All_Checks);
 
@@ -9,7 +9,7 @@ package body Ada.Command_Line is
       argv : String_Array;
       for argv'Address use System.Standard_Library.gnat_argv;
    begin
-      return System.To_String (argv (Index));
+      return System.Zero_Terminated_Strings.Value (argv (Index));
    end Argv;
 
    function Argument (Number : Positive) return String is
