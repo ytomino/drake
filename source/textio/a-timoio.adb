@@ -34,7 +34,7 @@ package body Ada.Text_IO.Modular_IO is
    end Put;
 
    procedure Get (
-      From :  String;
+      From : String;
       Item : out Num;
       Last : out Positive) is
    begin
