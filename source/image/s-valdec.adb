@@ -1,4 +1,5 @@
 package body System.Val_Dec is
+   pragma Suppress (All_Checks);
 
    function Value_Decimal (Str : String; Scale : Integer) return Integer is
    begin

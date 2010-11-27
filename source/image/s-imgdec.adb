@@ -1,4 +1,5 @@
 package body System.Img_Dec is
+   pragma Suppress (All_Checks);
 
    procedure Image_Decimal (
       V : Integer;

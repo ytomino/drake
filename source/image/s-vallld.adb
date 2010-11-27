@@ -1,4 +1,5 @@
 package body System.Val_LLD is
+   pragma Suppress (All_Checks);
 
    function Value_Long_Long_Decimal (Str : String; Scale : Integer)
       return Long_Long_Integer is

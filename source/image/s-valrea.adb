@@ -1,4 +1,5 @@
 package body System.Val_Real is
+   pragma Suppress (All_Checks);
 
    function Value_Real (Str : String) return Long_Long_Float is
    begin
