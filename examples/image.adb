@@ -1,5 +1,6 @@
 with Ada;
 procedure image is
+	type Ordinal_Fixed is delta 0.1 range -99.9 .. 99.9;
 	type Short_Fixed is delta 0.1 digits 2;
 	type Long_Fixed is delta 0.1 digits 10;
 	type Enum8 is (AAA, BBB, CCC);
@@ -43,6 +44,8 @@ begin
 	Ada.Debug.Put (Long_Float'Image (Long_Float'Last));
 	Ada.Debug.Put (Long_Long_Float'Image (Long_Long_Float'First));
 	Ada.Debug.Put (Long_Long_Float'Image (Long_Long_Float'Last));
+	Ada.Debug.Put (Ordinal_Fixed'Image (Ordinal_Fixed'First));
+	Ada.Debug.Put (Ordinal_Fixed'Image (Ordinal_Fixed'Last));
 	Ada.Debug.Put (Short_Fixed'Image (Short_Fixed'First));
 	Ada.Debug.Put (Short_Fixed'Image (Short_Fixed'Last));
 	Ada.Debug.Put (Long_Fixed'Image (Long_Fixed'First));

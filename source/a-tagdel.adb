@@ -36,9 +36,9 @@ package body Ada.Tags.Delegating is
             Right => null,
             Interface_Tag => Interface_Tag,
             Get => Get);
-      elsif Cast (Node.Interface_Tag) < Cast (Interface_Tag) then
-         I_Insert (Node.Left, Interface_Tag, Get);
       elsif Cast (Node.Interface_Tag) > Cast (Interface_Tag) then
+         I_Insert (Node.Left, Interface_Tag, Get);
+      elsif Cast (Node.Interface_Tag) < Cast (Interface_Tag) then
          I_Insert (Node.Right, Interface_Tag, Get);
       else
          null; --  already added
@@ -54,9 +54,9 @@ package body Ada.Tags.Delegating is
    begin
       if Node = null then
          return null;
-      elsif Cast (Node.Interface_Tag) < Cast (Interface_Tag) then
-         return I_Find (Node.Left, Interface_Tag);
       elsif Cast (Node.Interface_Tag) > Cast (Interface_Tag) then
+         return I_Find (Node.Left, Interface_Tag);
+      elsif Cast (Node.Interface_Tag) < Cast (Interface_Tag) then
          return I_Find (Node.Right, Interface_Tag);
       else
          return Node;
@@ -90,9 +90,9 @@ package body Ada.Tags.Delegating is
             Object_Tag => T,
             Map => null);
          Result := Node;
-      elsif Cast (Node.Object_Tag) < Cast (T) then
-         D_Insert (Node.Left, T, Result);
       elsif Cast (Node.Object_Tag) > Cast (T) then
+         D_Insert (Node.Left, T, Result);
+      elsif Cast (Node.Object_Tag) < Cast (T) then
          D_Insert (Node.Right, T, Result);
       else
          Result := Node;
@@ -105,9 +105,9 @@ package body Ada.Tags.Delegating is
    begin
       if Node = null then
          return null;
-      elsif Cast (Node.Object_Tag) < Cast (T) then
-         return D_Find (Node.Left, T);
       elsif Cast (Node.Object_Tag) > Cast (T) then
+         return D_Find (Node.Left, T);
+      elsif Cast (Node.Object_Tag) < Cast (T) then
          return D_Find (Node.Right, T);
       else
          return Node;

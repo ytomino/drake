@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation package for System.Initialization
 package System.Storage_Pools.Overlay is
+   pragma Preelaborate;
 
    type Overlay_Storage_Pool is new Storage_Pools.Root_Storage_Pool with record
       Overlay_Address : Address;

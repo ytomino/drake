@@ -20,6 +20,11 @@ package Ada.Characters.Inside is
       Element : Character_Type)
       return Character_Type;
 
+   function Value (
+      Map : not null access constant Character_Mapping;
+      Element : Character)
+      return Character;
+
    use type Interfaces.Integer_32;
 
    function To_Mapping (
@@ -43,6 +48,13 @@ package Ada.Characters.Inside is
       Right : String;
       Mapping : not null access constant Character_Mapping)
       return Integer;
+
+   --  alternative conversions functions raising exception
+   --  instead of using substitute.
+   function To_Character (Item : Wide_Wide_Character)
+      return Character;
+   function To_Wide_Wide_Character (Item : Character)
+      return Wide_Wide_Character;
 
 private
 

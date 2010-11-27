@@ -21,8 +21,8 @@ package Ada.Characters.Handling is
 
    --  Conversion functions for Character and String
 
---  function To_Lower (Item : Character) return Character;
---  function To_Upper (Item : Character) return Character;
+   function To_Lower (Item : Character) return Character;
+   function To_Upper (Item : Character) return Character;
 --  function To_Basic (Item : Character) return Character;
 
    function To_Lower (Item : String) return String;

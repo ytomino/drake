@@ -12,9 +12,9 @@ package Ada.Tags is
    function Wide_Expanded_Name (T : Tag) return Wide_String;
    function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String;
    function External_Tag (T : Tag) return String;
---  function Internal_Tag (External : String) return Tag;
+   function Internal_Tag (External : String) return Tag;
 
---  function Descendant_Tag (External : String; Ancestor : Tag) return Tag;
+   function Descendant_Tag (External : String; Ancestor : Tag) return Tag;
    function Is_Descendant_At_Same_Level (Descendant, Ancestor : Tag)
       return Boolean;
 

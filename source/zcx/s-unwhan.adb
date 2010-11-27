@@ -291,6 +291,11 @@ package body System.Unwind.Handling is
                            function Cast is new Ada.Unchecked_Conversion (
                               Standard_Library.Exception_Data_Ptr,
                               C.unwind.Unwind_Ptr);
+                           type Unwind_Ptr_Ptr is
+                              access constant C.unwind.Unwind_Ptr;
+                           function Cast is new Ada.Unchecked_Conversion (
+                              Unwind_Ptr_Ptr,
+                              C.unwind.Unwind_Ptr);
                            filter : constant C.ptrdiff_t :=
                               C.ptrdiff_t (ar_filter) *
                               C.ptrdiff_t (C.unwind_pe.size_of_encoded_value (
@@ -304,8 +309,8 @@ package body System.Unwind.Handling is
                               ttype_table + (-filter),
                               choice'Access);
                            is_handled := choice = Cast (GCC_Exception.Id)
-                              or else choice = Others_Value
-                              or else (choice = All_Others_Value
+                              or else choice = Cast (Others_Value'Access)
+                              or else (choice = Cast (All_Others_Value'Access)
                                  and then
                                     GCC_Exception.Id.Not_Handled_By_Others);
                            if is_handled then

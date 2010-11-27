@@ -17,11 +17,11 @@ begin
       Random_File_Name (0)'Access,
       C.sys.fcntl.O_RDONLY);
    if F = -1 then
-      raise Program_Error;
+      raise Use_Error;
    end if;
    Read_Size := C.unistd.read (F, C.void_ptr (Item'Address), Size);
    Closed := C.unistd.close (F);
    if Read_Size /= C.sys.types.ssize_t (Size) or else Closed = -1 then
-      raise Program_Error;
+      raise Use_Error;
    end if;
 end Ada.Numerics.MT19937.Initiator;

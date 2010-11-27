@@ -13,9 +13,9 @@ package System.Formatting is
    type Casing_Type is (Upper, Lower);
    pragma Discard_Names (Casing_Type);
 
-   function Width (Value : Unsigned; Base : Base_Type := 10) return Natural;
+   function Width (Value : Unsigned; Base : Base_Type := 10) return Positive;
    function Width (Value : Longest_Unsigned; Base : Base_Type := 10)
-      return Natural;
+      return Positive;
 
    procedure Image (
       Value : Digit;

@@ -94,7 +94,7 @@ SUPPORT_SOURCES=\
 
 CONTINUE=
 ONCE=
-OPTION:=
+OPTION:=--trial
 ifneq ($(CONTINUE),)
 OPTION:=$(CONTINUE) ..
 endif

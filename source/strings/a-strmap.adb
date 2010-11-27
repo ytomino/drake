@@ -1,33 +1,6 @@
+with Ada.Characters.Inside;
 with System.UTF_Conversions;
 package body Ada.Strings.Maps is
-
-   --  functions in Ada.Characters.Conversions uses substitute
-   --  instead of raising exception,
-   --  functions in this package do not have substitute parameter.
-
-   function To_Character (Item : Wide_Wide_Character)
-      return Character;
-   function To_Character (Item : Wide_Wide_Character)
-      return Character is
-   begin
-      if Wide_Wide_Character'Pos (Item) >= 16#80# then
-         raise Constraint_Error;
-      else
-         return Character'Val (Wide_Wide_Character'Pos (Item));
-      end if;
-   end To_Character;
-
-   function To_Wide_Wide_Character (Item : Character)
-      return Wide_Wide_Character;
-   function To_Wide_Wide_Character (Item : Character)
-      return Wide_Wide_Character is
-   begin
-      if Character'Pos (Item) >= 16#80# then
-         raise Constraint_Error;
-      else
-         return Wide_Wide_Character'Val (Character'Pos (Item));
-      end if;
-   end To_Wide_Wide_Character;
 
    function Identity return Character_Mapping is
    begin
@@ -38,7 +11,7 @@ package body Ada.Strings.Maps is
       return Boolean is
    begin
       return Wide_Wide_Maps.Is_In (
-         To_Wide_Wide_Character (Element),
+         Characters.Inside.To_Wide_Wide_Character (Element),
          Wide_Wide_Maps.Wide_Wide_Character_Set (Set));
    end Is_In;
 
@@ -99,8 +72,10 @@ package body Ada.Strings.Maps is
       WR : Wide_Wide_Maps.Wide_Wide_Character_Ranges (Ranges'Range);
    begin
       for I in Ranges'Range loop
-         WR (I).Low := To_Wide_Wide_Character (Ranges (I).Low);
-         WR (I).High := To_Wide_Wide_Character (Ranges (I).High);
+         WR (I).Low := Characters.Inside.To_Wide_Wide_Character (
+            Ranges (I).Low);
+         WR (I).High := Characters.Inside.To_Wide_Wide_Character (
+            Ranges (I).High);
       end loop;
       return Character_Set (Wide_Wide_Maps.To_Set (WR));
    end To_Set;
@@ -109,8 +84,8 @@ package body Ada.Strings.Maps is
    begin
       return Character_Set (Wide_Wide_Maps.To_Set (
          Wide_Wide_Maps.Wide_Wide_Character_Range'(
-            Low => To_Wide_Wide_Character (Span.Low),
-            High => To_Wide_Wide_Character (Span.High))));
+            Low => Characters.Inside.To_Wide_Wide_Character (Span.Low),
+            High => Characters.Inside.To_Wide_Wide_Character (Span.High))));
    end To_Set;
 
    function To_Set (Sequence : Character_Sequence) return Character_Set is
@@ -126,7 +101,7 @@ package body Ada.Strings.Maps is
    function To_Set (Singleton : Character) return Character_Set is
    begin
       return Character_Set (Wide_Wide_Maps.To_Set (
-         To_Wide_Wide_Character (Singleton)));
+         Characters.Inside.To_Wide_Wide_Character (Singleton)));
    end To_Set;
 
    function To_Range (Map : Character_Mapping)
@@ -145,9 +120,10 @@ package body Ada.Strings.Maps is
    function Value (Map : Character_Mapping; Element : Character)
       return Character is
    begin
-      return To_Character (Wide_Wide_Maps.Value (
+      --  it should use Ada.Characters.Inside.Value
+      return Characters.Inside.To_Character (Wide_Wide_Maps.Value (
          Wide_Wide_Maps.Wide_Wide_Character_Mapping (Map),
-         To_Wide_Wide_Character (Element)));
+         Characters.Inside.To_Wide_Wide_Character (Element)));
    end Value;
 
    function "=" (Left, Right : Character_Set) return Boolean is

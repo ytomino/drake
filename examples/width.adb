@@ -1,5 +1,6 @@
 with Ada;
 procedure width is
+	type Ordinal_Fixed is delta 0.1 range -99.9 .. 99.9;
 	type Short_Fixed is delta 0.1 digits 2;
 	type Long_Fixed is delta 0.1 digits 10;
 	type Enum8 is (AAA, BBB, CCC);
@@ -89,6 +90,16 @@ begin
 	end;
 	declare
 		subtype T is Long_Long_Float range Long_Long_Float'First .. Long_Long_Float'Value (Long_Long_Float'Image (Long_Long_Float'Last));
+	begin
+		Ada.Debug.Put (Integer'Image (T'Width));
+		Ada.Debug.Put (Integer'Image (T'Wide_Width));
+		Ada.Debug.Put (Integer'Image (T'Wide_Wide_Width));
+	end;
+	declare
+		subtype T is Ordinal_Fixed range Ordinal_Fixed'First ..
+			Ordinal_Fixed'Min (
+				Ordinal_Fixed'Last,
+				Ordinal_Fixed'Base'Value (Ordinal_Fixed'Image (Ordinal_Fixed'Last)));
 	begin
 		Ada.Debug.Put (Integer'Image (T'Width));
 		Ada.Debug.Put (Integer'Image (T'Wide_Width));

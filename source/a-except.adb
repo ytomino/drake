@@ -11,29 +11,36 @@ package body Ada.Exceptions is
    end Exception_Identity;
 
    function Exception_Information (X : Exception_Occurrence) return String is
-      Max_Length : constant := 256 +
-         System.Unwind.Exception_Msg_Max_Length +
-         System.Unwind.Max_Tracebacks * (3 + Standard'Address_Size / 4);
-      Result : String (1 .. Max_Length);
-      Last : Natural := 0;
-      procedure Put (S : String);
-      procedure Put (S : String) is
-         First : constant Positive := Last + 1;
-      begin
-         Last := Last + S'Length;
-         Result (First .. Last) := S;
-      end Put;
-      procedure New_Line;
-      procedure New_Line is
-      begin
-         Last := Last + 1;
-         Result (Last) := Character'Val (10);
-      end New_Line;
-      procedure Fill is
-         new System.Unwind.Exception_Information (Put, New_Line);
    begin
-      Fill (System.Unwind.Exception_Occurrence (X));
-      return Result (1 .. Last);
+      if X.Id = null then
+         raise Constraint_Error;
+      else
+         declare
+            Max_Length : constant := 256 +
+               System.Unwind.Exception_Msg_Max_Length +
+               System.Unwind.Max_Tracebacks * (3 + Standard'Address_Size / 4);
+            Result : String (1 .. Max_Length);
+            Last : Natural := 0;
+            procedure Put (S : String);
+            procedure Put (S : String) is
+               First : constant Positive := Last + 1;
+            begin
+               Last := Last + S'Length;
+               Result (First .. Last) := S;
+            end Put;
+            procedure New_Line;
+            procedure New_Line is
+            begin
+               Last := Last + 1;
+               Result (Last) := Character'Val (10);
+            end New_Line;
+            procedure Fill is
+         new System.Unwind.Exception_Information (Put, New_Line);
+         begin
+            Fill (System.Unwind.Exception_Occurrence (X));
+            return Result (1 .. Last);
+         end;
+      end if;
    end Exception_Information;
 
    function Exception_Message (X : Exception_Occurrence) return String is

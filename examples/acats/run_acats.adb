@@ -296,7 +296,7 @@ procedure run_acats is
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "cb1010d");
 	end Stack_Check;
 	
-	function Overflow_Check (Name : String) return Boolean is
+	function Overflow_Check (Name : String; Runtime : Runtime_Type) return Boolean is
 	begin
 		return Ada.Strings.Equal_Case_Insensitive (Name, "c43206a")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45304a")
@@ -313,7 +313,8 @@ procedure run_acats is
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45632c")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "c460008")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "c460011")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c46014a");
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c46014a")
+			or else (Runtime = Drake and then  Ada.Strings.Equal_Case_Insensitive (Name, "c96005d"));
 	end Overflow_Check;
 	
 	function Dynamic_Elaboration (Name : String) return Boolean is
@@ -399,8 +400,6 @@ procedure run_acats is
 	function Skip_Execute (Name : String; Runtime : Runtime_Type) return Boolean is
 	begin
 		return Ada.Strings.Equal_Case_Insensitive (Name, "c41306a") -- rendezvous before return
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ca11023") -- bug of ACATS...
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ca14028") -- GNAT can not handle non-generic body and generic spec
 			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name (Name'First .. Name'First + 2), "cxc")) -- Annex C is not supported
 			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd1003")) -- GNAT failed
 			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd1004")) -- GNAT failed
@@ -530,8 +529,11 @@ procedure run_acats is
 		end return;
 	end Read_Test_Set;
 	
+	Calendar_Tests : constant Test_Sets.Set := Read_Test_Set ("x_calendar.txt");
 	Tasking_Tests : constant Test_Sets.Set := Read_Test_Set ("x_tasking.txt");
 	Unicode_Tests : constant Test_Sets.Set := Read_Test_Set ("x_unicode.txt");
+	Bug_Of_ACATS_Tests : constant Test_Sets.Set := Read_Test_Set ("x_bugofacats.txt");
+	GNAT_Tests : constant Test_Sets.Set := Read_Test_Set ("x_gnat.txt"); -- failure since spec of gnat
 	
 	type Test_Style is (Legacy, Modern);
 	
@@ -628,7 +630,9 @@ procedure run_acats is
 						Symbolic_Link (
 							Source => "../" & Ada.Directories.Compose (Directory, Simple_Name),
 							Destination => Simple_Name);
-						if not Skip_Compile (Name, Runtime) then
+						if not Skip_Compile (Name, Runtime)
+						   and then not Ada.Strings.Equal_Case_Insensitive (Simple_Name, "cd300051.c") -- use .o in support dir
+						then
 							Compile_Only (Simple_Name);
 							if Link_With /= "" then
 								Ada.Strings.Unbounded.Append (Link_With, " ");
@@ -757,7 +761,7 @@ procedure run_acats is
 						+Main,
 						Spec => Spec,
 						Stack_Check => Stack_Check (Name),
-						Overflow_Check => Overflow_Check (Name),
+						Overflow_Check => Overflow_Check (Name, Runtime),
 						Dynamic_Elaboration => Dynamic_Elaboration (Name),
 						Link_With => +Link_With,
 						RTS => RTS_Dir,
@@ -777,11 +781,20 @@ procedure run_acats is
 			when E : Compile_Failure | Test_Failure | Should_Be_Failure =>
 				Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
 				if Runtime = Drake then
-					if Tasking_Tests.Contains (Name) then
-						Ada.Text_IO.Put_Line ("tasking test failure.");
+					if Calendar_Tests.Contains (Name) then
+						Ada.Text_IO.Put_Line ("known failure of calendar test.");
+						Expected := True;
+					elsif Tasking_Tests.Contains (Name) then
+						Ada.Text_IO.Put_Line ("known failure of tasking test.");
 						Expected := True;
 					elsif Unicode_Tests.Contains (Name) then
-						Ada.Text_IO.Put_Line ("unicode test failure.");
+						Ada.Text_IO.Put_Line ("known failure of unicode test.");
+						Expected := True;
+					elsif Bug_Of_ACATS_Tests.Contains (Name) then
+						Ada.Text_IO.Put_Line ("known failure since bug of acats.");
+						Expected := True;
+					elsif GNAT_Tests.Contains (Name) then
+						Ada.Text_IO.Put_Line ("known failure since spec of gnat.");
 						Expected := True;
 					else
 						Expected := False;
@@ -797,7 +810,7 @@ procedure run_acats is
 	
 	Executed_Tests : Test_Sets.Set;
 	
-	type State_Type is (Skip, Run, Stop);
+	type State_Type is (Skip, Run, Stop, Trial);
 	State : State_Type;
 	
 	Continue_From : Ada.Strings.Unbounded.Unbounded_String;
@@ -828,7 +841,11 @@ procedure run_acats is
 				end if;
 				if not Executed_Tests.Contains (Test_Name) then
 					Test_Sets.Insert (Executed_Tests, Test_Name);
-					if State = Run then
+					if State = Run
+						or else (State = Trial and then (
+							not Records.Contains (Test_Name)
+							or else not Records.Element (Test_Name).Expected))
+					then
 						if Ada.Strings.Equal_Case_Insensitive (Extension, "ada")
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "dep") -- implementation depending
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "tst") -- macro
@@ -844,6 +861,9 @@ procedure run_acats is
 							Test (Directory, Test_Name, Modern);
 						else
 							raise Unknown with "unknown extension """ & Extension & """ of " & Simple_Name;
+						end if;
+						if State = Trial and then not Records.Element (Test_Name).Expected then
+							State := Stop;
 						end if;
 					else
 						if not Records.Contains (Test_Name) then
@@ -898,6 +918,8 @@ procedure run_acats is
 begin
 	if Ada.Command_Line.Argument_Count < 1 then
 		State := Run;
+	elsif Ada.Command_Line.Argument (1) = "--trial" then
+		State := Trial;
 	else
 		State := Skip;
 		Continue_From := Ada.Strings.Unbounded.To_Unbounded_String (Ada.Command_Line.Argument (1));
@@ -953,7 +975,10 @@ begin
 		Filter => (Ada.Directories.Directory => True, others => False),
 		Process => Process_Dir'Access);
 	Ada.Text_IO.Close (Report_File);
-	if State = Run then
-		Ada.Text_IO.Put_Line ("**** complete ****");
-	end if;
+	case State is
+		when Run | Trial =>
+			Ada.Text_IO.Put_Line ("**** complete ****");
+		when others =>
+			null;
+	end case;
 end run_acats;

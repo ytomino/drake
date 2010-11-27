@@ -9,10 +9,10 @@ package System.Unwind.Handling is
    --  (a-exexpr-gcc.adb)
    GNAT_Exception_Class : constant := 16#474e552d41646100#;
 
-   Others_Value : constant C.unwind.Unwind_Ptr := 16#7FFF#;
+   Others_Value : aliased constant C.unwind.Unwind_Ptr := 16#7FFF#;
    pragma Export (C, Others_Value, "__gnat_others_value");
 
-   All_Others_Value : constant C.unwind.Unwind_Ptr := 16#7FFF#;
+   All_Others_Value : aliased constant C.unwind.Unwind_Ptr := 16#7FFF#;
    pragma Export (C, All_Others_Value, "__gnat_all_others_value");
 
    --  body of struct Unwind_Exception (a-exexpr-gcc.adb)

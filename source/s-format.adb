@@ -145,7 +145,7 @@ package body System.Formatting is
       end if;
    end Take_Digits;
 
-   function Width (Value : Unsigned; Base : Base_Type := 10) return Natural is
+   function Width (Value : Unsigned; Base : Base_Type := 10) return Positive is
       V : Unsigned := Value;
       Result : Positive := 1;
    begin
@@ -157,7 +157,7 @@ package body System.Formatting is
    end Width;
 
    function Width (Value : Longest_Unsigned; Base : Base_Type := 10)
-      return Natural
+      return Positive
    is
       V : Longest_Unsigned := Value;
       Offset : Natural := 0;

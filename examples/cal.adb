@@ -59,4 +59,25 @@ begin
 		Ada.Debug.Put (Ada.Calendar.Formatting.Image (RX, Include_Time_Fraction => True));
 		pragma Assert (RX = X);
 	end;
+	declare
+		EF : Ada.Calendar.Time;
+		EL : Ada.Calendar.Time;
+	begin
+		EF := Ada.Calendar.Time_Of (1901, 1, 1);
+		Ada.Calendar.Formatting.Split (EF, Year, Month, Day, H, M, S, SS, LS);
+		printf ("EF %d-%d-%d %d:%d:%d %lld" & ASCII.LF & ASCII.NUL, Year, Month, Day, H, M, S, SS);
+		EL := Ada.Calendar.Time_Of (2099, 12, 31);
+		Ada.Calendar.Formatting.Split (EL, Year, Month, Day, H, M, S, SS, LS);
+		printf ("EL %d-%d-%d %d:%d:%d %lld" & ASCII.LF & ASCII.NUL, Year, Month, Day, H, M, S, SS);
+	exception
+		when Ada.Calendar.Time_Error => Ada.Debug.Put ("Time_Error");
+	end;
+	declare
+		D : Ada.Calendar.Time;
+	begin
+		D := Now - Duration'First + Duration'Last; --  out of range
+		Ada.Debug.Put ("plase compile with -gnato");
+	exception
+		when Ada.Calendar.Time_Error => Ada.Debug.Put ("OK");
+	end;
 end cal;

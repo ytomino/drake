@@ -309,7 +309,7 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_02;
 
-   procedure rcheck_03 (File : not null access Character; Line : Integer) is
+   procedure rcheck_03 (File : access Character; Line : Integer) is
       Message : constant String := "divide by zero";
    begin
       Raise_Exception (
@@ -359,6 +359,16 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_07;
 
+   procedure rcheck_09 (File : not null access Character; Line : Integer) is
+      Message : constant String := "null-exclusion check failed";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Constraint_Error'Access,
+         File,
+         Line,
+         Message);
+   end rcheck_09;
+
    procedure rcheck_10 (File : access constant Character; Line : Integer) is
       Message : constant String := "overflow check failed";
    begin
@@ -388,6 +398,16 @@ package body System.Unwind.Raising is
          Line,
          Message);
    end rcheck_13;
+
+   procedure rcheck_14 (File : not null access Character; Line : Integer) is
+      Message : constant String := "access before elaboration";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Program_Error'Access,
+         File,
+         Line,
+         Message);
+   end rcheck_14;
 
    procedure rcheck_15 (File : not null access Character; Line : Integer) is
       Message : constant String := "accessibility check failed";
@@ -428,6 +448,16 @@ package body System.Unwind.Raising is
          Line,
          Message);
    end rcheck_23;
+
+   procedure rcheck_24 (File : not null access Character; Line : Integer) is
+      Message : constant String := "missing return";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Program_Error'Access,
+         File,
+         Line,
+         Message);
+   end rcheck_24;
 
    procedure rcheck_31 (File : not null access Character; Line : Integer) is
       Message : constant String := "explicit raise";

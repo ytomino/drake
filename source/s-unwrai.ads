@@ -41,9 +41,14 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_02);
    pragma Export (C, rcheck_02, "__gnat_rcheck_02");
 
-   procedure rcheck_03 (File : not null access Character; Line : Integer);
+   procedure rcheck_03 (File : access Character; Line : Integer);
    pragma No_Return (rcheck_03);
    pragma Export (C, rcheck_03, "__gnat_rcheck_03");
+
+   procedure Zero_Division (
+      File : access constant Character := null;
+      Line : Integer := 0)
+      renames rcheck_03;
 
    procedure rcheck_04 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_04);
@@ -60,6 +65,10 @@ package System.Unwind.Raising is
    procedure rcheck_07 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_07);
    pragma Export (C, rcheck_07, "__gnat_rcheck_07");
+
+   procedure rcheck_09 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_09);
+   pragma Export (C, rcheck_09, "__gnat_rcheck_09");
 
    procedure rcheck_10 (File : access constant Character; Line : Integer);
    pragma No_Return (rcheck_10);
@@ -78,6 +87,10 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_13);
    pragma Export (C, rcheck_13, "__gnat_rcheck_13");
 
+   procedure rcheck_14 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_14);
+   pragma Export (C, rcheck_14, "__gnat_rcheck_14");
+
    procedure rcheck_15 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_15);
    pragma Export (C, rcheck_15, "__gnat_rcheck_15");
@@ -93,6 +106,10 @@ package System.Unwind.Raising is
    procedure rcheck_23 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_23);
    pragma Export (C, rcheck_23, "__gnat_rcheck_23");
+
+   procedure rcheck_24 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_24);
+   pragma Export (C, rcheck_24, "__gnat_rcheck_24");
 
    procedure rcheck_31 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_31);

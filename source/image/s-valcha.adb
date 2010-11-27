@@ -1,8 +1,6 @@
 with System.Formatting;
 with System.Img_Char;
 with System.Val_Enum;
-pragma Warnings (Off);
-with System.Debug;
 package body System.Val_Char is
    pragma Suppress (All_Checks);
 

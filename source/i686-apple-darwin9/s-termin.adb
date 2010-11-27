@@ -1,3 +1,4 @@
+with Ada.Unchecked_Conversion;
 with System.Standard_Library;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
@@ -72,8 +73,22 @@ package body System.Termination is
          Message => Message (1 .. Integer (C.string.strlen (C_Message))));
    end sigaction_Handler;
 
+   Signal_Stack : aliased
+      array (1 .. C.sys.signal.MINSIGSTKSZ) of aliased C.char :=
+      (others => <>); --  uninitialized
+   for Signal_Stack'Size use C.sys.signal.MINSIGSTKSZ * Standard'Storage_Unit;
+
    procedure Install_Exception_Handler (SEH : Address) is
       pragma Unreferenced (SEH);
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); --  OSX
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); --  FreeBSD
+      pragma Warnings (Off, Cast);
+      stack : aliased C.sys.signal.stack_t := (
+         ss_sp => Cast (Signal_Stack (Signal_Stack'First)'Access),
+         ss_size => C.sys.signal.MINSIGSTKSZ,
+         ss_flags => 0);
       act : aliased C.sys.signal.struct_sigaction :=
          (others => <>); --  uninitialized
       Dummy : C.signed_int;
@@ -89,6 +104,8 @@ package body System.Termination is
       --  floating-point exception
       Dummy := C.signal.sigaction (C.sys.signal.SIGFPE, act'Access, null);
       --  bus error
+      Dummy := C.signal.sigaltstack (stack'Access, null);
+      act.sa_flags := act.sa_flags + C.sys.signal.SA_ONSTACK;
       Dummy := C.signal.sigaction (C.sys.signal.SIGBUS, act'Access, null);
       --  segmentation violation
       Dummy := C.signal.sigaction (C.sys.signal.SIGSEGV, act'Access, null);

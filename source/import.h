@@ -33,6 +33,7 @@
 
 #if defined(__APPLE__)
 #pragma for Ada "errno.h" include "sys/errno.h"
+#pragma for Ada "sys/signal.h" include "sys/_structs.h" /* stack_t */
 #pragma for Ada "sys/time.h" include "sys/_structs.h"
 #pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
 #pragma for Ada "termios.h" include "sys/termios.h"

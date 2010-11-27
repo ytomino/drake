@@ -221,7 +221,7 @@ package body Ada.Strings.Generic_Unbounded is
       elsif Left.Length = 0 then
          return True;
       else
-         return Left.Data.Items (1 .. Left.Length) /=
+         return Left.Data.Items (1 .. Left.Length) =
             Right.Data.Items (1 .. Right.Length);
       end if;
    end "=";

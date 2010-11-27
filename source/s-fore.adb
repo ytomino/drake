@@ -13,15 +13,20 @@ package body System.Fore is
       else --  Lo < 0 and then Hi > 0
          Max_Abs := Long_Long_Float'Max (-Lo, Hi);
       end if;
-      declare
-         Result : Natural := 2;
-      begin
-         while Max_Abs >= 10.0 loop
-            Max_Abs := Max_Abs / 10.0;
-            Result := Result + 1;
-         end loop;
-         return Result;
-      end;
+      return Fore_Width (Max_Abs) + 1;
    end Fore;
+
+   function Fore_Width (Value : Long_Long_Float; Base : Base_Type := 10)
+      return Positive
+   is
+      V : Long_Long_Float := Value;
+      Result : Positive := 1;
+   begin
+      while V >= Long_Long_Float (Base) loop
+         V := V / Long_Long_Float (Base);
+         Result := Result + 1;
+      end loop;
+      return Result;
+   end Fore_Width;
 
 end System.Fore;

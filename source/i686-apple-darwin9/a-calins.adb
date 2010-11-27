@@ -101,9 +101,14 @@ package body Ada.Calendar.Inside is
          tm_isdst => 0,
          tm_gmtoff => 0,
          tm_zone => null);
+      Result : constant C.sys.types.time_t := C.time.timegm (tm'Access);
    begin
+      --  UNIX time starts until 1970, Year_Number stats unitl 1901...
+      if Result = -1 then
+         raise Time_Error;
+      end if;
       return To_Time (
-         C.time.timegm (tm'Access) - C.sys.types.time_t (Time_Zone) * 60) +
+         Result - C.sys.types.time_t (Time_Zone) * 60) +
          Seconds;
    end Time_Of;
 

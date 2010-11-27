@@ -103,9 +103,7 @@ package body System.Val_Uns is
          Index := Index + 1;
       end if;
       Get_Exponent (S, Index, Exponent, Positive_Only => True);
-      if Exponent < 0 then
-         raise Constraint_Error;
-      elsif Exponent > 0 then
+      if Exponent /= 0 then
          Result := Result * Base ** Exponent;
       end if;
    end Get_Unsigned_Literal_Without_Sign;
