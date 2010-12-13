@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  CaseFolding-5.2.0.txt
+--  CaseFolding.txt
 package Ada.UCD.Case_Folding is
    pragma Pure;
 

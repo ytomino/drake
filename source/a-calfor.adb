@@ -370,7 +370,6 @@ package body Ada.Calendar.Formatting is
          Result,
          Last,
          Width => 4,
-         Padding => '0',
          Error => Error);
       pragma Assert (not Error);
       Last := Last + 1;
@@ -380,7 +379,6 @@ package body Ada.Calendar.Formatting is
          Result (Last + 1 .. Result'Last),
          Last,
          Width => 2,
-         Padding => '0',
          Error => Error);
       pragma Assert (not Error);
       Last := Last + 1;
@@ -390,7 +388,6 @@ package body Ada.Calendar.Formatting is
          Result (Last + 1 .. Result'Last),
          Last,
          Width => 2,
-         Padding => '0',
          Error => Error);
       pragma Assert (not Error);
       Last := Last + 1;
@@ -455,6 +452,7 @@ package body Ada.Calendar.Formatting is
          Time_Zone => Time_Zone);
    end Value;
 
+   --  local
    procedure Image (
       Hour : Natural;
       Minute : Minute_Number;
@@ -471,7 +469,6 @@ package body Ada.Calendar.Formatting is
          Item,
          Last,
          Width => 2,
-         Padding => '0',
          Error => Error);
       pragma Assert (not Error);
       Last := Last + 1;
@@ -481,7 +478,6 @@ package body Ada.Calendar.Formatting is
          Item (Last + 1 .. Item'Last),
          Last,
          Width => 2,
-         Padding => '0',
          Error => Error);
       pragma Assert (not Error);
       Last := Last + 1;
@@ -491,7 +487,6 @@ package body Ada.Calendar.Formatting is
          Item (Last + 1 .. Item'Last),
          Last,
          Width => 2,
-         Padding => '0',
          Error => Error);
       pragma Assert (not Error);
       if Include_Time_Fraction then
@@ -502,7 +497,6 @@ package body Ada.Calendar.Formatting is
             Item (Last + 1 .. Item'Last),
             Last,
             Width => 2,
-            Padding => '0',
             Error => Error);
             pragma Assert (not Error);
       end if;

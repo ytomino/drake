@@ -15,7 +15,6 @@ begin
             Last,
             Base => 16,
             Width => Storage_Elements.Address_Image'Length,
-            Padding => '0',
             Error => Error);
       else
          Formatting.Image (
@@ -24,7 +23,6 @@ begin
             Last,
             Base => 16,
             Width => Storage_Elements.Address_Image'Length,
-            Padding => '0',
             Error => Error);
       end if;
       pragma Assert (not Error and then Last = Result'Last);

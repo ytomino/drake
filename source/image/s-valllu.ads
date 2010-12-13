@@ -12,12 +12,16 @@ package System.Val_LLU is
    --  helper
    procedure Get_Longest_Unsigned (
       S : String;
-      Index : in out Positive;
+      Last : in out Natural;
       Result : out Formatting.Longest_Unsigned;
-      Base : Formatting.Base_Type);
+      Base : Formatting.Number_Base);
    procedure Get_Longest_Unsigned_Literal_Without_Sign (
       S : String;
-      Index : in out Positive;
+      Last : in out Natural;
+      Result : out Formatting.Longest_Unsigned);
+   procedure Get_Longest_Unsigned_Literal (
+      S : String;
+      Last : out Natural;
       Result : out Formatting.Longest_Unsigned);
 
 end System.Val_LLU;

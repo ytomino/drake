@@ -57,6 +57,28 @@ package Ada.UCD is
    pragma Pack (Map_Type_4x1);
    pragma Suppress_Initialization (Map_Type_4x1);
 
+   type Map_Element_2x2 is record
+      Code : UCS_2;
+      Mapping : UCS_2_Array (1 .. 2);
+   end record;
+   pragma Pack (Map_Element_2x2); --  16 + 16 * 2
+   pragma Suppress_Initialization (Map_Element_2x2);
+   pragma Compile_Time_Error (Map_Element_2x2'Size /= 48, "packed?");
+   type Map_Type_2x2 is array (Positive range <>) of Map_Element_2x2;
+   pragma Pack (Map_Type_2x2);
+   pragma Suppress_Initialization (Map_Type_2x2);
+
+   type Map_Element_4x2 is record
+      Code : UCS_4;
+      Mapping : UCS_4_Array (1 .. 2);
+   end record;
+   pragma Pack (Map_Element_4x2); --  16 + 16 * 2
+   pragma Suppress_Initialization (Map_Element_4x2);
+   pragma Compile_Time_Error (Map_Element_4x2'Size /= 96, "packed?");
+   type Map_Type_4x2 is array (Positive range <>) of Map_Element_4x2;
+   pragma Pack (Map_Type_4x2);
+   pragma Suppress_Initialization (Map_Type_4x2);
+
    type Map_Element_2x3 is record
       Code : UCS_2;
       Mapping : UCS_2_Array (1 .. 3);

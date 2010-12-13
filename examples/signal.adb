@@ -1,4 +1,4 @@
---  stack trace must be shown with gnatbind -E
+-- stack trace must be shown with gnatbind -E
 with Unchecked_Conversion; -- renamed ver
 with System.Machine_Code;
 with Interfaces;
@@ -20,7 +20,7 @@ procedure signal is
 		pragma Suppress (All_Checks);
 	begin
 		-- A.all := 0; -- may cause SIGSEGV (segmentation fault)
-		X := X / Y; --  may cause SIGFPE (floating point exception)
+		X := X / Y; -- may cause SIGFPE (floating point exception)
 
 		-- Z := sqrt (-1.0); -- OSX success ???
 		-- printf ("%lf" & ASCII.LF & ASCII.NUL, Z);

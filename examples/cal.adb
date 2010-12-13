@@ -32,7 +32,7 @@ begin
 	Remaked := Ada.Calendar.Time_Of (Year, Month, Day, Seconds);
 	pragma Assert (Remaked = Now);
 	printf ("TZ = %d" & ASCII.LF & ASCII.NUL, Ada.Calendar.Time_Zones.UTC_Time_Offset);
-	--  Time_Offset = 540 in Japan
+	-- Time_Offset = 540 in Japan
 	Ada.Calendar.Formatting.Split (Now, Year, Month, Day, H, M, S, SS, LS,
 		Time_Zone => Ada.Calendar.Time_Zones.UTC_Time_Offset);
 	printf ("LT %d-%d-%d %d:%d:%d %lld" & ASCII.LF & ASCII.NUL, Year, Month, Day, H, M, S, SS);
@@ -75,7 +75,7 @@ begin
 	declare
 		D : Ada.Calendar.Time;
 	begin
-		D := Now - Duration'First + Duration'Last; --  out of range
+		D := Now - Duration'First + Duration'Last; -- out of range
 		Ada.Debug.Put ("plase compile with -gnato");
 	exception
 		when Ada.Calendar.Time_Error => Ada.Debug.Put ("OK");

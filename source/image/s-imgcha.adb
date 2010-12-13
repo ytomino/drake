@@ -41,7 +41,6 @@ package body System.Img_Char is
                   P,
                   Base => 16,
                   Width => 2,
-                  Padding => '0',
                   Error => Error);
                pragma Assert (not Error);
             end;

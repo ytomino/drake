@@ -128,7 +128,6 @@ package body Ada.Numerics.MT19937 is
             Last,
             Base => 16,
             Width => Cardinal'Size / 4,
-            Padding => '0',
             Error => Error);
          Debug.Put (Result'First'Img & Result'Last'Img & Last'Img);
          pragma Assert (not Error and then Last = Result'Last);

@@ -9,21 +9,25 @@ package System.Val_Uns is
    function Value_Unsigned (Str : String) return Unsigned_Types.Unsigned;
 
    --  helper
-   procedure Skip_Spaces (S : String; Index : in out Positive);
-   procedure Check_Last (S : String; Index : Positive);
+   procedure Skip_Spaces (S : String; Last : in out Natural);
+   procedure Check_Last (S : String; Last : Natural);
    procedure Get_Unsigned (
       S : String;
-      Index : in out Positive;
+      Last : in out Natural;
       Result : out Formatting.Unsigned;
-      Base : Formatting.Base_Type);
+      Base : Formatting.Number_Base);
    procedure Get_Exponent (
       S : String;
-      Index : in out Positive;
+      Last : in out Natural;
       Result : out Integer;
       Positive_Only : Boolean);
    procedure Get_Unsigned_Literal_Without_Sign (
       S : String;
-      Index : in out Positive;
+      Last : in out Natural;
+      Result : out Formatting.Unsigned);
+   procedure Get_Unsigned_Literal (
+      S : String;
+      Last : out Natural;
       Result : out Formatting.Unsigned);
 
 end System.Val_Uns;

@@ -39,7 +39,6 @@ package body System.Unwind is
                      Base => 16,
                      Casing => Formatting.Lower,
                      Width => Width,
-                     Padding => '0',
                      Error => Error);
                else
                   Formatting.Image (
@@ -49,7 +48,6 @@ package body System.Unwind is
                      Base => 16,
                      Casing => Formatting.Lower,
                      Width => Width,
-                     Padding => '0',
                      Error => Error);
                end if;
                Put (S (1 .. Last));

@@ -228,7 +228,7 @@ procedure cntnr_d_Linked_List is
 		Lists.Append (X, 'a');
 		X_F := X.First;
 		Y := X; -- shared
-		Y_F := Y.First; --  read operation for Y
+		Y_F := Y.First; -- read operation for Y
 		pragma Assert (X.First = X_F, "should keep X");
 		pragma Assert (Y.First = Y_F, "should keep Y");
 		pragma Assert (X_F /= Y_F, "should be copied");

@@ -3,7 +3,7 @@ with Ada.Numerics.Elementary_Functions;
 with Ada.Numerics.Complex_Types;
 with Ada.Numerics.Complex_Elementary_Functions;
 with Ada.Numerics.Real_Arrays;
---  with Ada.Text_IO;
+-- with Ada.Text_IO;
 procedure numerics is
 --	procedure Dump (A : Ada.Numerics.Real_Arrays.Real_Matrix) is
 --	begin

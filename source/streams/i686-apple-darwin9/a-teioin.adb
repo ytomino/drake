@@ -703,11 +703,10 @@ package body Ada.Text_IO.Inside is
          end if;
          if File.Col > To then
             New_Line (File);
-         else
-            while File.Col < To loop
-               Put (File, ' ');
-            end loop;
          end if;
+         while File.Col < To loop
+            Put (File, ' ');
+         end loop;
       end if;
    end Set_Col;
 

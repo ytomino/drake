@@ -1,5 +1,4 @@
-with System.Formatting;
-with System.Img_LLI;
+with System.Formatting.Decimal_Image;
 package body System.Img_LLD is
    pragma Suppress (All_Checks);
 
@@ -9,41 +8,12 @@ package body System.Img_LLD is
       P : out Natural;
       Scale : Integer) is
    begin
-      if Scale > 0 then
-         declare
-            Sp : constant Long_Long_Integer := 10 ** Scale;
-            Int_Part : constant Long_Long_Integer := V / Sp;
-            Dec_Part : constant Long_Long_Integer := abs V rem Sp;
-            Error : Boolean;
-         begin
-            Img_LLI.Image_Long_Long_Integer (Int_Part, S, P);
-            pragma Assert (P + 1 <= S'Last);
-            P := P + 1;
-            S (P) := '.';
-            Formatting.Image (
-               Formatting.Longest_Unsigned (Dec_Part),
-               S (P + 1 .. S'Last),
-               P,
-               Width => Scale,
-               Padding => '0',
-               Error => Error);
-            pragma Assert (not Error);
-         end;
-      else
-         Img_LLI.Image_Long_Long_Integer (V, S, P);
-         if V /= 0 then
-            for I in Scale .. -1 loop
-               pragma Assert (P + 1 <= S'Last);
-               P := P + 1;
-               S (P) := '0';
-            end loop;
-         end if;
-         pragma Assert (P + 2 <= S'Last);
-         P := P + 1;
-         S (P) := '.';
-         P := P + 1;
-         S (P) := '0';
-      end if;
+      System.Formatting.Decimal_Image (
+         S,
+         P,
+         V,
+         Scale,
+         Aft_Width => Integer'Max (1, Scale));
    end Image_Long_Long_Decimal;
 
 end System.Img_LLD;

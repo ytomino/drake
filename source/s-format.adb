@@ -14,12 +14,12 @@ package body System.Formatting is
    procedure Fill_Digits (
       Value : Unsigned;
       Item : out String;
-      Base : Base_Type;
+      Base : Number_Base;
       Casing : Casing_Type);
    procedure Fill_Digits (
       Value : Unsigned;
       Item : out String;
-      Base : Base_Type;
+      Base : Number_Base;
       Casing : Casing_Type)
    is
       V : Unsigned := Value;
@@ -33,12 +33,12 @@ package body System.Formatting is
    procedure Fill_Digits (
       Value : Longest_Unsigned;
       Item : out String;
-      Base : Base_Type;
+      Base : Number_Base;
       Casing : Casing_Type);
    procedure Fill_Digits (
       Value : Longest_Unsigned;
       Item : out String;
-      Base : Base_Type;
+      Base : Number_Base;
       Casing : Casing_Type)
    is
       V : Longest_Unsigned := Value;
@@ -56,14 +56,14 @@ package body System.Formatting is
       Item : String;
       Last : out Natural;
       Result : out Unsigned;
-      Base : Base_Type;
+      Base : Number_Base;
       Skip_Underscore : Boolean;
       Overflow : out Boolean);
    procedure Take_Digits (
       Item : String;
       Last : out Natural;
       Result : out Unsigned;
-      Base : Base_Type;
+      Base : Number_Base;
       Skip_Underscore : Boolean;
       Overflow : out Boolean) is
    begin
@@ -83,12 +83,12 @@ package body System.Formatting is
                Next := Next + 1;
             end if;
             Value (Item (Next), X, Is_Invalid);
-            exit when Is_Invalid or else X >= Base;
-            if Result > (Unsigned'Last - X) / Base then
+            exit when Is_Invalid or else X >= Unsigned (Base);
+            if Result > (Unsigned'Last - X) / Unsigned (Base) then
                Overflow := True;
                exit;
             end if;
-            Result := Result * Base + X;
+            Result := Result * Unsigned (Base) + X;
             Last := Next;
          end;
       end loop;
@@ -98,14 +98,14 @@ package body System.Formatting is
       Item : String;
       Last : out Natural;
       Result : out Longest_Unsigned;
-      Base : Base_Type;
+      Base : Number_Base;
       Skip_Underscore : Boolean;
       Overflow : out Boolean);
    procedure Take_Digits (
       Item : String;
       Last : out Natural;
       Result : out Longest_Unsigned;
-      Base : Base_Type;
+      Base : Number_Base;
       Skip_Underscore : Boolean;
       Overflow : out Boolean) is
    begin
@@ -129,7 +129,7 @@ package body System.Formatting is
                   Next := Next + 1;
                end if;
                Value (Item (Next), X, Is_Invalid);
-               exit when Is_Invalid or else X >= Base;
+               exit when Is_Invalid or else X >= Unsigned (Base);
                if Result >
                   (Longest_Unsigned'Last - Longest_Unsigned (X)) /
                   Longest_Unsigned (Base)
@@ -145,18 +145,20 @@ package body System.Formatting is
       end if;
    end Take_Digits;
 
-   function Width (Value : Unsigned; Base : Base_Type := 10) return Positive is
+   function Width (Value : Unsigned; Base : Number_Base := 10)
+      return Positive
+   is
       V : Unsigned := Value;
       Result : Positive := 1;
    begin
-      while V >= Base loop
-         V := V / Base;
+      while V >= Unsigned (Base) loop
+         V := V / Unsigned (Base);
          Result := Result + 1;
       end loop;
       return Result;
    end Width;
 
-   function Width (Value : Longest_Unsigned; Base : Base_Type := 10)
+   function Width (Value : Longest_Unsigned; Base : Number_Base := 10)
       return Positive
    is
       V : Longest_Unsigned := Value;
@@ -191,10 +193,10 @@ package body System.Formatting is
       Value : Unsigned;
       Item : out String;
       Last : out Natural;
-      Base : Base_Type := 10;
+      Base : Number_Base := 10;
       Casing : Casing_Type := Upper;
       Width : Positive := 1;
-      Padding : Character := ' ';
+      Padding : Character := '0';
       Error : out Boolean)
    is
       W : constant Positive := Formatting.Width (Value, Base);
@@ -221,10 +223,10 @@ package body System.Formatting is
       Value : Longest_Unsigned;
       Item : out String;
       Last : out Natural;
-      Base : Base_Type := 10;
+      Base : Number_Base := 10;
       Casing : Casing_Type := Upper;
       Width : Positive := 1;
-      Padding : Character := ' ';
+      Padding : Character := '0';
       Error : out Boolean)
    is
       W : constant Positive := Formatting.Width (Value, Base);
@@ -271,7 +273,7 @@ package body System.Formatting is
       Item : String;
       Last : out Natural;
       Result : out Unsigned;
-      Base : Base_Type := 10;
+      Base : Number_Base := 10;
       Skip_Underscore : Boolean := False;
       Error : out Boolean)
    is
@@ -291,7 +293,7 @@ package body System.Formatting is
       Item : String;
       Last : out Natural;
       Result : out Longest_Unsigned;
-      Base : Base_Type := 10;
+      Base : Number_Base := 10;
       Skip_Underscore : Boolean := False;
       Error : out Boolean)
    is

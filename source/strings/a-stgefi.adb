@@ -33,8 +33,11 @@ package body Ada.Strings.Generic_Fixed is
             Last : constant Integer := Source'Last - Pattern'Length + 1;
          begin
             while Current <= Last loop
-               Current := Index (Source, Pattern (Pattern'First), Current);
-               exit when Current = 0 or else Current > Last;
+               Current := Index (
+                  Source (Source'First .. Last),
+                  Pattern (Pattern'First),
+                  Current);
+               exit when Current = 0;
                if Source (Current .. Current + Pattern'Length - 1) =
                   Pattern
                then
@@ -92,7 +95,8 @@ package body Ada.Strings.Generic_Fixed is
       if Character_Type'Size = Character'Size then
          declare
             Offset : constant System.Storage_Elements.Storage_Offset :=
-               System.Storage_Elements.Storage_Offset (From) - 1;
+               System.Storage_Elements.Storage_Offset (From) -
+               System.Storage_Elements.Storage_Offset (Source'First);
             Result : constant System.Address := memchr (
                Source'Address + Offset,
                Character_Type'Pos (Pattern),

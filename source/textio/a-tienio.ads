@@ -12,6 +12,10 @@ package Ada.Text_IO.Enumeration_IO is
       Item : out Enum);
    procedure Get (
       Item : out Enum);
+   --  extended
+   procedure Get (
+      File : not null File_Access;
+      Item : out Enum);
 
    procedure Put (
       File : File_Type;
@@ -19,6 +23,12 @@ package Ada.Text_IO.Enumeration_IO is
       Width : Field := Default_Width;
       Set : Type_Set := Default_Setting);
    procedure Put (
+      Item : Enum;
+      Width : Field := Default_Width;
+      Set : Type_Set := Default_Setting);
+   --  extended
+   procedure Put (
+      File : not null File_Access;
       Item : Enum;
       Width : Field := Default_Width;
       Set : Type_Set := Default_Setting);

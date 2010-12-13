@@ -404,7 +404,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Table : constant array (File_Mode) of C.unsigned_int := (
                      In_File => O_RDONLY,
                      Out_File => O_WRONLY or O_TRUNC,
-                     Append_File => O_RDWR or O_APPEND);
+                     Append_File => O_RDWR); -- O_APPEND ignores lseek
                begin
                   Flags := Table (Mode);
                end;
@@ -414,7 +414,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Table : constant array (File_Mode) of C.unsigned_int := (
                      In_File => O_RDONLY,
                      Out_File => O_WRONLY,
-                     Append_File => O_RDWR or O_APPEND);
+                     Append_File => O_RDWR); -- O_APPEND ignores lseek
                begin
                   Flags := Table (Mode);
                end;
@@ -506,6 +506,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset) is
    begin
+      Check_File_Open (File);
       Read_Impl (File.all, Item, Last);
    end Read;
 

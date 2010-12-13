@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  implementation package required by compiler
-with System.Formatting;
 package System.Val_Real is
    pragma Pure;
 
@@ -8,10 +7,9 @@ package System.Val_Real is
    function Value_Real (Str : String) return Long_Long_Float;
 
    --  helper
-   procedure Get_Unsigned_Real (
+   procedure Get_Float_Literal (
       S : String;
-      Index : in out Positive;
-      Result : out Long_Long_Float;
-      Base : Formatting.Base_Type);
+      Last : out Natural;
+      Result : out Long_Long_Float);
 
 end System.Val_Real;

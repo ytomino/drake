@@ -29,7 +29,6 @@ package body System.Img_WChar is
                P,
                Base => 16,
                Width => 4,
-               Padding => '0',
                Error => Error);
             pragma Assert (not Error);
          end;
@@ -59,7 +58,6 @@ package body System.Img_WChar is
                P,
                Base => 16,
                Width => 8,
-               Padding => '0',
                Error => Error);
             pragma Assert (not Error);
          end;

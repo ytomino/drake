@@ -324,64 +324,6 @@ procedure run_acats is
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "ca5006a");
 	end Dynamic_Elaboration;
 	
-	function Expected_Result (Name : String; Runtime : Runtime_Type) return Test_Result is
-	begin
-		if Ada.Strings.Equal_Case_Insensitive (Name, "eb4011a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "eb4012a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "eb4014a")
-		then
-			return Any_Exception; -- TENTATIVELY?
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c45322a") -- Float'Machine_Overflows
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45523a") -- Float'Machine_Overflows
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c4a012b") -- Float'Machine_Overflows
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c96005b") -- Duration'Base equals Duration
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cb10002") -- enough memory
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102d"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102e"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102f"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102i"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102j"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102n"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102o"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102p"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102q"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102r"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102s"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102t"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102u"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102v"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2102w"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2203a"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce2403a"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3102e"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3102f"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3102g"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3102i"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3102j"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3102k"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3115a"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3304a"))
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3413b"))
-		then
-			return Not_Applicative;
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "cz1101a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cz1103a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28002b")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28005d")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3203a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3204a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3402b")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3409f")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3412c")
-		then
-			return Tentatively;
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "cz00004") then
-			return Failed;
-		else
-			return Passed;
-		end if;
-	end Expected_Result;
-	
 	function Skip_Compile (Name : String; Runtime : Runtime_Type) return Boolean is
 	begin
 		return Ada.Strings.Equal_Case_Insensitive (Name, "cxb3006") -- ACATS is older than Ada spec
@@ -399,7 +341,8 @@ procedure run_acats is
 	
 	function Skip_Execute (Name : String; Runtime : Runtime_Type) return Boolean is
 	begin
-		return Ada.Strings.Equal_Case_Insensitive (Name, "c41306a") -- rendezvous before return
+		return (Runtime = Drake and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3115a")) -- wait for releasing of lock
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c41306a") -- rendezvous before return
 			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name (Name'First .. Name'First + 2), "cxc")) -- Annex C is not supported
 			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd1003")) -- GNAT failed
 			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd1004")) -- GNAT failed
@@ -532,8 +475,45 @@ procedure run_acats is
 	Calendar_Tests : constant Test_Sets.Set := Read_Test_Set ("x_calendar.txt");
 	Tasking_Tests : constant Test_Sets.Set := Read_Test_Set ("x_tasking.txt");
 	Unicode_Tests : constant Test_Sets.Set := Read_Test_Set ("x_unicode.txt");
+	IO_Tests : constant Test_Sets.Set := Read_Test_Set ("x_io.txt");
 	Bug_Of_ACATS_Tests : constant Test_Sets.Set := Read_Test_Set ("x_bugofacats.txt");
 	GNAT_Tests : constant Test_Sets.Set := Read_Test_Set ("x_gnat.txt"); -- failure since spec of gnat
+	
+	Not_Applicative_Tests : constant Test_Sets.Set := Read_Test_Set ("x_notapplicative.txt");
+	
+	function Expected_Result (Name : String; Runtime : Runtime_Type) return Test_Result is
+	begin
+		if Ada.Strings.Equal_Case_Insensitive (Name, "eb4011a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "eb4012a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "eb4014a")
+		then
+			return Any_Exception; -- TENTATIVELY?
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c45322a") -- Float'Machine_Overflows
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45523a") -- Float'Machine_Overflows
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c4a012b") -- Float'Machine_Overflows
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c96005b") -- Duration'Base equals Duration
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "cb10002") -- enough memory
+			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3115a"))
+			or else (Runtime = Drake and then Not_Applicative_Tests.Contains (Name))
+		then
+			return Not_Applicative;
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "cz1101a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "cz1103a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28002b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28005d")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3203a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3204a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3402b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3409f")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3412c")
+		then
+			return Tentatively;
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "cz00004") then
+			return Failed;
+		else
+			return Passed;
+		end if;
+	end Expected_Result;
 	
 	type Test_Style is (Legacy, Modern);
 	
@@ -768,6 +748,7 @@ procedure run_acats is
 						UTF_8 => UTF_8);
 					if Skip_Execute (Name, Runtime) then
 						Ada.Text_IO.Put_Line ("skip executing...");
+						raise Test_Failure;
 					else
 						Invoke (
 							Ada.Directories.Base_Name (+Main),
@@ -789,6 +770,9 @@ procedure run_acats is
 						Expected := True;
 					elsif Unicode_Tests.Contains (Name) then
 						Ada.Text_IO.Put_Line ("known failure of unicode test.");
+						Expected := True;
+					elsif IO_Tests.Contains (Name) then
+						Ada.Text_IO.Put_Line ("known failure of *_IO test.");
 						Expected := True;
 					elsif Bug_Of_ACATS_Tests.Contains (Name) then
 						Ada.Text_IO.Put_Line ("known failure since bug of acats.");

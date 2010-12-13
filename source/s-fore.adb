@@ -16,7 +16,7 @@ package body System.Fore is
       return Fore_Width (Max_Abs) + 1;
    end Fore;
 
-   function Fore_Width (Value : Long_Long_Float; Base : Base_Type := 10)
+   function Fore_Width (Value : Long_Long_Float; Base : Number_Base := 10)
       return Positive
    is
       V : Long_Long_Float := Value;

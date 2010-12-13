@@ -3,45 +3,40 @@ package body System.Val_Uns is
    use type Unsigned_Types.Unsigned;
 
    function Value_Unsigned (Str : String) return Unsigned_Types.Unsigned is
-      Index : Positive := Str'First;
+      Last : Natural;
       Result : Unsigned_Types.Unsigned;
    begin
-      Skip_Spaces (Str, Index);
-      if Index < Str'Last and then Str (Index) = '+' then
-         Index := Index + 1;
-      end if;
-      Get_Unsigned_Literal_Without_Sign (Str, Index, Result);
-      Check_Last (Str, Index);
+      Get_Unsigned_Literal (Str, Last, Result);
+      Check_Last (Str, Last);
       return Result;
    end Value_Unsigned;
 
-   procedure Skip_Spaces (S : String; Index : in out Positive) is
+   procedure Skip_Spaces (S : String; Last : in out Natural) is
    begin
-      while Index <= S'Last and then S (Index) = ' ' loop
-         Index := Index + 1;
+      while Last < S'Last and then S (Last + 1) = ' ' loop
+         Last := Last + 1;
       end loop;
    end Skip_Spaces;
 
-   procedure Check_Last (S : String; Index : Positive) is
-      I : Positive := Index;
+   procedure Check_Last (S : String; Last : Natural) is
+      I : Natural := Last;
    begin
       Skip_Spaces (S, I);
-      if I <= S'Last then
+      if I /= S'Last then
          raise Constraint_Error;
       end if;
    end Check_Last;
 
    procedure Get_Unsigned (
       S : String;
-      Index : in out Positive;
+      Last : in out Natural;
       Result : out Formatting.Unsigned;
-      Base : Formatting.Base_Type)
+      Base : Formatting.Number_Base)
    is
-      Last : Natural;
       Error : Boolean;
    begin
       Formatting.Value (
-         S (Index .. S'Last),
+         S (Last + 1 .. S'Last),
          Last,
          Result,
          Base => Base,
@@ -50,31 +45,30 @@ package body System.Val_Uns is
       if Error then
          raise Constraint_Error;
       end if;
-      Index := Last + 1;
    end Get_Unsigned;
 
    procedure Get_Exponent (
       S : String;
-      Index : in out Positive;
+      Last : in out Natural;
       Result : out Integer;
       Positive_Only : Boolean) is
    begin
-      if Index <= S'Last
-         and then (S (Index) = 'E' or else S (Index) = 'e')
+      if Last < S'Last
+         and then (S (Last + 1) = 'E' or else S (Last + 1) = 'e')
       then
-         Index := Index + 1;
-         if Index <= S'Last and then S (Index) = '-' then
+         Last := Last + 1;
+         if Last < S'Last and then S (Last + 1) = '-' then
             if Positive_Only then
                raise Constraint_Error;
             end if;
-            Index := Index + 1;
-            Get_Unsigned (S, Index, Formatting.Unsigned (Result), Base => 10);
+            Last := Last + 1;
+            Get_Unsigned (S, Last, Formatting.Unsigned (Result), Base => 10);
             Result := -Result;
          else
-            if Index <= S'Last and then S (Index) = '+' then
-               Index := Index + 1;
+            if Last < S'Last and then S (Last + 1) = '+' then
+               Last := Last + 1;
             end if;
-            Get_Unsigned (S, Index, Formatting.Unsigned (Result), Base => 10);
+            Get_Unsigned (S, Last, Formatting.Unsigned (Result), Base => 10);
          end if;
       else
          Result := 0;
@@ -83,29 +77,48 @@ package body System.Val_Uns is
 
    procedure Get_Unsigned_Literal_Without_Sign (
       S : String;
-      Index : in out Positive;
+      Last : in out Natural;
       Result : out Formatting.Unsigned)
    is
-      Base : Formatting.Base_Type := 10;
+      Base : Formatting.Number_Base := 10;
+      Mark : Character;
       Exponent : Integer;
    begin
-      Get_Unsigned (S, Index, Result, Base => Base);
-      if Index <= S'Last and then S (Index) = '#' then
-         Index := Index + 1;
-         if Result not in Formatting.Base_Type then
+      Get_Unsigned (S, Last, Result, Base => Base);
+      if Last < S'Last
+         and then (S (Last + 1) = '#' or else S (Last + 1) = ':')
+      then
+         Mark := S (Last + 1);
+         Last := Last + 1;
+         if Result < Formatting.Unsigned (Formatting.Number_Base'First)
+            or else Result > Formatting.Unsigned (Formatting.Number_Base'Last)
+         then
             raise Constraint_Error;
          end if;
-         Base := Result;
-         Get_Unsigned (S, Index, Result, Base => Base);
-         if Index > S'Last or else S (Index) /= '#' then
+         Base := Formatting.Number_Base (Result);
+         Get_Unsigned (S, Last, Result, Base => Base);
+         if Last >= S'Last or else S (Last + 1) /= Mark then
             raise Constraint_Error;
          end if;
-         Index := Index + 1;
+         Last := Last + 1;
       end if;
-      Get_Exponent (S, Index, Exponent, Positive_Only => True);
+      Get_Exponent (S, Last, Exponent, Positive_Only => True);
       if Exponent /= 0 then
-         Result := Result * Base ** Exponent;
+         Result := Result * Formatting.Unsigned (Base) ** Exponent;
       end if;
    end Get_Unsigned_Literal_Without_Sign;
+
+   procedure Get_Unsigned_Literal (
+      S : String;
+      Last : out Natural;
+      Result : out Formatting.Unsigned) is
+   begin
+      Last := S'First - 1;
+      Skip_Spaces (S, Last);
+      if Last < S'Last and then S (Last + 1) = '+' then
+         Last := Last + 1;
+      end if;
+      Get_Unsigned_Literal_Without_Sign (S, Last, Result);
+   end Get_Unsigned_Literal;
 
 end System.Val_Uns;

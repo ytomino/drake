@@ -73,6 +73,11 @@ package body Ada.Text_IO is
       return Col (Current_Output_Access.all);
    end Col;
 
+   function Col (File : not null File_Access) return Positive_Count is
+   begin
+      return Col (File.all);
+   end Col;
+
    procedure Create (
       File : in out File_Type;
       Mode : File_Mode := Out_File;
@@ -116,6 +121,11 @@ package body Ada.Text_IO is
       return End_Of_File (Current_Input_Access.all);
    end End_Of_File;
 
+   function End_Of_File (File : not null File_Access) return Boolean is
+   begin
+      return End_Of_File (File.all);
+   end End_Of_File;
+
    function End_Of_Line (File : File_Type) return Boolean is
    begin
       return Inside.End_Of_Line (Inside.Non_Controlled_File_Type (File.Text));
@@ -134,6 +144,11 @@ package body Ada.Text_IO is
    function End_Of_Page return Boolean is
    begin
       return End_Of_Page (Current_Input_Access.all);
+   end End_Of_Page;
+
+   function End_Of_Page (File : not null File_Access) return Boolean is
+   begin
+      return End_Of_Page (File.all);
    end End_Of_Page;
 
    overriding procedure Finalize (Object : in out File_Type) is
@@ -170,6 +185,11 @@ package body Ada.Text_IO is
       Get (Current_Input_Access.all, Item);
    end Get;
 
+   procedure Get (File : not null File_Access; Item : out Character) is
+   begin
+      Get (File.all, Item);
+   end Get;
+
    procedure Get (File : File_Type; Item : out String) is
    begin
       for I in Item'Range loop
@@ -180,6 +200,11 @@ package body Ada.Text_IO is
    procedure Get (Item : out String) is
    begin
       Get (Current_Input_Access.all, Item);
+   end Get;
+
+   procedure Get (File : not null File_Access; Item : out String) is
+   begin
+      Get (File.all, Item);
    end Get;
 
    procedure Get_Immediate (File : File_Type; Item : out Character) is
@@ -289,6 +314,11 @@ package body Ada.Text_IO is
       return Inside.Is_Open (Inside.Non_Controlled_File_Type (File.Text));
    end Is_Open;
 
+   function Is_Open (File : not null File_Access) return Boolean is
+   begin
+      return Is_Open (File.all);
+   end Is_Open;
+
    function Line (File : File_Type) return Positive_Count is
    begin
       return Inside.Line (Inside.Non_Controlled_File_Type (File.Text));
@@ -337,6 +367,11 @@ package body Ada.Text_IO is
       return Inside.Name (Inside.Non_Controlled_File_Type (File.Text));
    end Name;
 
+   function Name (File : not null File_Access) return String is
+   begin
+      return Name (File.all);
+   end Name;
+
    procedure New_Line (File : File_Type; Spacing : Positive_Count := 1) is
    begin
       Inside.New_Line (Inside.Non_Controlled_File_Type (File.Text), Spacing);
@@ -347,6 +382,13 @@ package body Ada.Text_IO is
       New_Line (Current_Output_Access.all, Spacing);
    end New_Line;
 
+   procedure New_Line (
+      File : not null File_Access;
+      Spacing : Positive_Count := 1) is
+   begin
+      New_Line (File.all, Spacing);
+   end New_Line;
+
    procedure New_Page (File : File_Type) is
    begin
       Inside.New_Page (Inside.Non_Controlled_File_Type (File.Text));
@@ -355,6 +397,11 @@ package body Ada.Text_IO is
    procedure New_Page is
    begin
       New_Page (Current_Output_Access.all);
+   end New_Page;
+
+   procedure New_Page (File : not null File_Access) is
+   begin
+      New_Page (File.all);
    end New_Page;
 
    procedure Open (
@@ -380,6 +427,11 @@ package body Ada.Text_IO is
       return Page (Current_Output_Access.all);
    end Page;
 
+   function Page (File : not null File_Access) return Positive_Count is
+   begin
+      return Page (File.all);
+   end Page;
+
    function Page_Length (File : File_Type) return Count is
    begin
       return Inside.Page_Length (Inside.Non_Controlled_File_Type (File.Text));
@@ -400,6 +452,11 @@ package body Ada.Text_IO is
       Put (Current_Output_Access.all, Item);
    end Put;
 
+   procedure Put (File : not null File_Access; Item : Character) is
+   begin
+      Put (File.all, Item);
+   end Put;
+
    procedure Put (File : File_Type; Item : String) is
    begin
       for I in Item'Range loop
@@ -410,6 +467,11 @@ package body Ada.Text_IO is
    procedure Put (Item : String) is
    begin
       Put (Current_Output_Access.all, Item);
+   end Put;
+
+   procedure Put (File : not null File_Access; Item : String) is
+   begin
+      Put (File.all, Item);
    end Put;
 
    procedure Put_Line (File : File_Type; Item : String) is
@@ -463,14 +525,24 @@ package body Ada.Text_IO is
 
    procedure Set_Error (File : File_Type) is
    begin
-      Check_File_Mode (File, Out_File);
-      Current_Error_Access := File'Unrestricted_Access;
+      Set_Error (File'Unrestricted_Access);
+   end Set_Error;
+
+   procedure Set_Error (File : not null File_Access) is
+   begin
+      Check_File_Mode (File.all, Out_File);
+      Current_Error_Access := File;
    end Set_Error;
 
    procedure Set_Input (File : File_Type) is
    begin
-      Check_File_Mode (File, In_File);
-      Current_Input_Access := File'Unrestricted_Access;
+      Set_Input (File'Unrestricted_Access);
+   end Set_Input;
+
+   procedure Set_Input (File : not null File_Access) is
+   begin
+      Check_File_Mode (File.all, In_File);
+      Current_Input_Access := File;
    end Set_Input;
 
    procedure Set_Line (File : File_Type; To : Positive_Count) is
@@ -505,8 +577,13 @@ package body Ada.Text_IO is
 
    procedure Set_Output (File : File_Type) is
    begin
-      Check_File_Mode (File, Out_File);
-      Current_Output_Access := File'Unrestricted_Access;
+      Set_Output (File'Unrestricted_Access);
+   end Set_Output;
+
+   procedure Set_Output (File : not null File_Access) is
+   begin
+      Check_File_Mode (File.all, Out_File);
+      Current_Output_Access := File;
    end Set_Output;
 
    procedure Set_Page_Length (File : File_Type; To : Count) is
@@ -534,6 +611,13 @@ package body Ada.Text_IO is
       Skip_Line (Current_Input_Access.all, Spacing);
    end Skip_Line;
 
+   procedure Skip_Line (
+      File : not null File_Access;
+      Spacing : Positive_Count := 1) is
+   begin
+      Skip_Line (File.all, Spacing);
+   end Skip_Line;
+
    procedure Skip_Page (File : File_Type) is
    begin
       Inside.Skip_Page (Inside.Non_Controlled_File_Type (File.Text));
@@ -542,6 +626,11 @@ package body Ada.Text_IO is
    procedure Skip_Page is
    begin
       Skip_Page (Current_Input_Access.all);
+   end Skip_Page;
+
+   procedure Skip_Page (File : not null File_Access) is
+   begin
+      Skip_Page (File.all);
    end Skip_Page;
 
    function Standard_Error return File_Access is
