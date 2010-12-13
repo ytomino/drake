@@ -1,11 +1,11 @@
-with Ada.Characters.Inside.Lower_Case_Maps;
+with Ada.Characters.Inside.Maps.Lower_Case;
 function Ada.Strings.Equal_Case_Insensitive (Left, Right : String)
    return Boolean is
 begin
    return Left'Length = Right'Length
       and then
-         Characters.Inside.Compare (
+         Characters.Inside.Maps.Compare (
             Left,
             Right,
-            Characters.Inside.Lower_Case_Maps.Lower_Case_Map) = 0;
+            Characters.Inside.Maps.Lower_Case.Lower_Case_Map) = 0;
 end Ada.Strings.Equal_Case_Insensitive;

@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  implementation package
-package Ada.Characters.Inside.Lower_Case_Maps is
+package Ada.Characters.Inside.Maps.Lower_Case is
    pragma Preelaborate;
 
    function Lower_Case_Map return not null access Character_Mapping;
 
-end Ada.Characters.Inside.Lower_Case_Maps;
+end Ada.Characters.Inside.Maps.Lower_Case;

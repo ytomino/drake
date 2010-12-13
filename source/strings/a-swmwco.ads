@@ -19,6 +19,8 @@ package Ada.Strings.Wide_Maps.Wide_Constants is
    pragma Inline (Lower_Case_Map);
    --  Maps to lower case for letters, else identity
 --  Upper_Case_Map : constant Wide_Character_Mapping;
+   function Upper_Case_Map return Wide_Character_Mapping;
+   pragma Inline (Upper_Case_Map);
    --  Maps to upper case for letters, else identity
 --  Basic_Map : constant Wide_Character_Mapping;
    --  Maps to basic letter for letters, else identity

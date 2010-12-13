@@ -1,5 +1,5 @@
 with Ada.UCD.Simple_Case_Mapping;
-package body Ada.Characters.Inside.Upper_Case_Maps is
+package body Ada.Characters.Inside.Maps.Upper_Case is
 
    Mapping : aliased Character_Mapping := (
       Length =>
@@ -50,4 +50,4 @@ package body Ada.Characters.Inside.Upper_Case_Maps is
       return Mapping'Access;
    end Upper_Case_Map;
 
-end Ada.Characters.Inside.Upper_Case_Maps;
+end Ada.Characters.Inside.Maps.Upper_Case;

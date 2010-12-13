@@ -20,6 +20,8 @@ package Ada.Strings.Maps.Constants is
    pragma Inline (Lower_Case_Map);
    --  Maps to lower case for letters, else identity
 --  Upper_Case_Map : constant Character_Mapping;
+   function Upper_Case_Map return Character_Mapping;
+   pragma Inline (Upper_Case_Map);
    --  Maps to upper case for letters, else identity
 --  Basic_Map : constant Character_Mapping;
    --  Maps to basic letter for letters, else identity

@@ -8,4 +8,10 @@ package body Ada.Strings.Maps.Constants is
          Wide_Wide_Maps.Wide_Wide_Constants.Lower_Case_Map);
    end Lower_Case_Map;
 
+   function Upper_Case_Map return Character_Mapping is
+   begin
+      return Character_Mapping (
+         Wide_Wide_Maps.Wide_Wide_Constants.Upper_Case_Map);
+   end Upper_Case_Map;
+
 end Ada.Strings.Maps.Constants;

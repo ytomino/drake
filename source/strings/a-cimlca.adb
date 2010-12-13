@@ -1,5 +1,5 @@
 with Ada.UCD.Simple_Case_Mapping;
-package body Ada.Characters.Inside.Lower_Case_Maps is
+package body Ada.Characters.Inside.Maps.Lower_Case is
    use type UCD.UCS_4;
 
    Mapping : aliased Character_Mapping := (
@@ -66,4 +66,4 @@ package body Ada.Characters.Inside.Lower_Case_Maps is
       return Mapping'Access;
    end Lower_Case_Map;
 
-end Ada.Characters.Inside.Lower_Case_Maps;
+end Ada.Characters.Inside.Maps.Lower_Case;

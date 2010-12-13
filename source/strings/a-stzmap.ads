@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
-private with Ada.Characters.Inside;
+private with Ada.Characters.Inside.Maps;
+private with Ada.Characters.Inside.Sets;
 private with Ada.Finalization;
-private with Interfaces;
 package Ada.Strings.Wide_Wide_Maps is
    pragma Preelaborate;
 
@@ -92,17 +92,15 @@ package Ada.Strings.Wide_Wide_Maps is
    function To_Range (Map : Wide_Wide_Character_Mapping)
       return Wide_Wide_Character_Sequence;
 
+   --  extended
+   function "=" (Left, Right : Wide_Wide_Character_Mapping) return Boolean;
+
    type Wide_Wide_Character_Mapping_Function is
       access function (From : Wide_Wide_Character) return Wide_Wide_Character;
 
 private
 
-   type Set_Data (Length : Natural) is record
-      Reference_Count : aliased Interfaces.Integer_32; --  -1 as constant
-      Items : Wide_Wide_Character_Ranges (1 .. Length);
-   end record;
-   pragma Suppress_Initialization (Set_Data);
-
+   subtype Set_Data is Characters.Inside.Sets.Character_Set;
    type Set_Data_Access is access all Set_Data;
 
    type Wide_Wide_Character_Set is
@@ -114,7 +112,7 @@ private
    overriding procedure Adjust (Object : in out Wide_Wide_Character_Set);
    overriding procedure Finalize (Object : in out Wide_Wide_Character_Set);
 
-   subtype Map_Data is Characters.Inside.Character_Mapping;
+   subtype Map_Data is Characters.Inside.Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
 
    type Wide_Wide_Character_Mapping is
