@@ -17,11 +17,21 @@ package System.Unsigned_Types is
    pragma Import (Intrinsic, Shift_Left);
 
    --  required for ??? by compiler (s-unstyp.ads)
+
    type Packed_Byte is mod 2 ** Standard'Storage_Unit;
    for Packed_Byte'Size use Standard'Storage_Unit;
+
    type Packed_Bytes1 is array (Natural range <>) of Packed_Byte;
    for Packed_Bytes1'Alignment use 1;
    for Packed_Bytes1'Component_Size use Packed_Byte'Size;
    pragma Suppress_Initialization (Packed_Bytes1);
+
+   type Packed_Bytes2 is new Packed_Bytes1;
+   for Packed_Bytes2'Alignment use Integer'Min (2, Standard'Maximum_Alignment);
+   pragma Suppress_Initialization (Packed_Bytes2);
+
+   type Packed_Bytes4 is new Packed_Bytes1;
+   for Packed_Bytes4'Alignment use Integer'Min (4, Standard'Maximum_Alignment);
+   pragma Suppress_Initialization (Packed_Bytes4);
 
 end System.Unsigned_Types;

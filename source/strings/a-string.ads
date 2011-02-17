@@ -14,7 +14,4 @@ package Ada.Strings is
    type Direction is (Forward, Backward);
    type Trim_End is (Left, Right, Both);
 
-   --  extended
-   subtype Backward_Direction is Direction range Backward .. Backward;
-
 end Ada.Strings;

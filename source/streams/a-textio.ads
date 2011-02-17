@@ -216,6 +216,11 @@ package Ada.Text_IO is
    procedure Get_Line (
       Item : out String;
       Last : out Natural);
+   --  extended
+   procedure Get_Line (
+      File : not null File_Access;
+      Item : out String;
+      Last : out Natural);
 
    function Get_Line (File : File_Type) return String;
    function Get_Line return String;

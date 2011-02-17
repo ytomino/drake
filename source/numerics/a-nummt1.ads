@@ -53,7 +53,7 @@ package Ada.Numerics.MT19937 is
 
    type Generator is limited private;
 
-   function Random (Gen : not null access Generator) return Cardinal;
+   function Random_32 (Gen : not null access Generator) return Cardinal;
 
    procedure Reset (Gen : in out Generator);
    procedure Reset (Gen : in out Generator; Initiator : Cardinal);
@@ -103,7 +103,7 @@ private
    end record;
 
    type Generator is limited record
-      State : MT19937.State;
+      State : MT19937.State := (Vector => (others => 0), Condition => 0);
    end record;
 
 --  Max_Image_Width : constant Positive := (N + 1) * Image_Column;

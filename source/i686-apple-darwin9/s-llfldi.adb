@@ -8,6 +8,8 @@ begin
    Quotient := Long_Long_Float'Truncation (Left / Right);
    Remainder := remainderl (Left, Right);
    if Remainder < 0.0 and then Left > 0.0 then
-      Remainder := Remainder + Right;
+      Remainder := Remainder + abs Right;
+   elsif Remainder > 0.0 and then Left < 0.0 then
+      Remainder := Remainder - abs Right;
    end if;
 end System.Long_Long_Float_Divide;

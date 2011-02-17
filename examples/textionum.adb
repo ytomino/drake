@@ -1,4 +1,5 @@
 with Ada.Text_IO;
+with Ada.Float_Text_IO;
 procedure textionum is
 	type I is range -100 .. 100;
 	package IIO is new Ada.Text_IO.Integer_IO (I);
@@ -17,4 +18,7 @@ begin
 	D1IO.Put (-12.3, Aft => 3); Ada.Text_IO.New_Line;
 	D2IO.Put (10.0); Ada.Text_IO.New_Line;
 	D2IO.Put (-1230.0); Ada.Text_IO.New_Line;
+	pragma Assert (Integer (Float'(5490.0)) = 5490);
+	Ada.Float_Text_IO.Put (5490.0); Ada.Text_IO.New_Line;
+	pragma Debug (Ada.Debug.Put ("OK"));
 end textionum;

@@ -24,7 +24,7 @@ package body System.Formatting.Float is
                   end;
                   Exponent := Exponent + 1;
                end loop;
-               Aft := X / B;
+               Aft := Longest_Unsigned_Float'Succ (X / B); -- ceiling
             end;
          else
             Aft := X;

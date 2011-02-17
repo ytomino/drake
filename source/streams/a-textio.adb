@@ -264,6 +264,14 @@ package body Ada.Text_IO is
       Get_Line (Current_Input_Access.all, Item, Last);
    end Get_Line;
 
+   procedure Get_Line (
+      File : not null File_Access;
+      Item : out String;
+      Last : out Natural) is
+   begin
+      Get_Line (File.all, Item, Last);
+   end Get_Line;
+
    function Get_Line (File : File_Type) return String is
    begin
       --  if File is really constant, it may raise exception.

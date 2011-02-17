@@ -1,5 +1,6 @@
 with Ada.Exceptions;
 with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded_Strings;
 with System;
 procedure exception5 is
 	
@@ -10,7 +11,7 @@ procedure exception5 is
 		Ada.Strings.Unbounded.Append (S, "12345678");
 		Ada.Strings.Unbounded.Append (S, "1234567812345678");
 		Ada.Strings.Unbounded.Append (S, "9");
-		Ada.Debug.Put (Ada.Strings.Unbounded.Instance.Reference (S'Access).Element.all);
+		Ada.Debug.Put (Ada.Strings.Unbounded_Strings.Reference (S'Access).Element.all);
 	end Magic;
 	
 	procedure Test is

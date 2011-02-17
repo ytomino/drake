@@ -17,7 +17,7 @@ package body System.Termination is
       pragma Unreferenced (Dummy);
    begin
       Dummy := C.unistd.write (
-         C.unistd.STDOUT_FILENO,
+         C.unistd.STDERR_FILENO,
          C.void_const_ptr (S'Address),
          S'Length);
    end Error_Put;

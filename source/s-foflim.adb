@@ -66,12 +66,12 @@ begin
       end;
    else
       declare
-         Fore : System.Formatting.Unsigned;
+         Fore : Unsigned;
          Aft : Long_Long_Float;
          Exponent : Integer;
          Error : Boolean;
       begin
-         System.Formatting.Float.Split (
+         Float.Split (
             abs Item,
             Fore,
             Aft,
@@ -79,8 +79,8 @@ begin
             Base => Base);
          --  opening '#'
          if Base_Form then
-            System.Formatting.Image (
-               System.Formatting.Unsigned (Base),
+            Image (
+               Unsigned (Base),
                To (Last + 1 .. To'Last),
                Last,
                Error => Error);
@@ -97,13 +97,13 @@ begin
          end loop;
          Last := Last + 1;
          pragma Assert (Last <= To'Last);
-         System.Formatting.Image (
+         Image (
             Fore,
             To (Last),
             Casing => Casing);
          --  '.' and decimal part
          pragma Assert (Last + 1 + Aft_Width <= To'Last);
-         System.Formatting.Float.Aft_Image (
+         Float.Aft_Image (
             Aft,
             To (Last + 1 .. To'Last),
             Last,
@@ -138,8 +138,8 @@ begin
                To (Last) := Exponent_Zero_Sign;
             end if;
          end if;
-         System.Formatting.Image (
-            System.Formatting.Unsigned (abs Exponent),
+         Image (
+            Unsigned (abs Exponent),
             To (Last + 1 .. To'Last),
             Last,
             Width => Exponent_Width,

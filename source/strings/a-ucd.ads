@@ -90,4 +90,32 @@ package Ada.UCD is
    pragma Pack (Map_Type_2x3);
    pragma Suppress_Initialization (Map_Type_2x3);
 
+   --  class
+
+   type Shortest_Unsigned is mod 2 ** Standard'Storage_Unit;
+
+   type Class_Element_2 is record
+      Low : UCS_2;
+      High : UCS_2;
+      Class : Shortest_Unsigned;
+   end record;
+   pragma Suppress_Initialization (Class_Element_2);
+   pragma Pack (Class_Element_2); --  32 + 8
+   pragma Compile_Time_Error (Class_Element_2'Size /= 40, "packed?");
+   type Class_Type_2 is array (Positive range <>) of Class_Element_2;
+   pragma Pack (Class_Type_2);
+   pragma Suppress_Initialization (Class_Type_2);
+
+   type Class_Element_4 is record
+      Low : UCS_4;
+      High : UCS_4;
+      Class : Shortest_Unsigned;
+   end record;
+   pragma Suppress_Initialization (Class_Element_4);
+   pragma Pack (Class_Element_4); --  64 + 8
+   pragma Compile_Time_Error (Class_Element_4'Size /= 72, "packed?");
+   type Class_Type_4 is array (Positive range <>) of Class_Element_4;
+   pragma Pack (Class_Type_4);
+   pragma Suppress_Initialization (Class_Type_4);
+
 end Ada.UCD;

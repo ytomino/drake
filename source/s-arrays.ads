@@ -10,6 +10,16 @@ package System.Arrays is
       type Array_Type is array (Index_Type range <>) of Element_Type;
    package Generic_Slicing is
 
+      type Constant_Reference_Type (
+         Element : not null access constant Array_Type) is
+         limited private;
+
+      function Constant_Slice (
+         Item : not null access constant Array_Type;
+         First : Index_Type;
+         Last : Index_Type'Base)
+         return Constant_Reference_Type;
+
       type Reference_Type (Element : not null access Array_Type) is
          limited private;
 
@@ -20,6 +30,14 @@ package System.Arrays is
          return Reference_Type;
 
    private
+
+      type Constant_Reference_Type (
+         Element : not null access constant Array_Type) is limited
+      record
+         First : Index_Type;
+         Last : Index_Type'Base;
+      end record;
+      pragma Suppress_Initialization (Constant_Reference_Type);
 
       type Reference_Type (Element : not null access Array_Type) is
          limited

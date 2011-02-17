@@ -6,7 +6,7 @@ procedure random is
 	Gen : R.Generator;
 	State : R.State;
 begin
-	R.Reset (Gen, 0);
+	R.Reset (Gen, Integer'(0));
 	R.Save (Gen, State);
 	declare
 		Image : constant String := R.Image (State);

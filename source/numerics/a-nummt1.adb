@@ -8,7 +8,7 @@ package body Ada.Numerics.MT19937 is
    UPPER_MASK : constant Cardinal := 2 ** (Cardinal'Size - 1);
    LOWER_MASK : constant Cardinal := not UPPER_MASK;
 
-   function Random (Gen : not null access Generator) return Cardinal is
+   function Random_32 (Gen : not null access Generator) return Cardinal is
       mag01 : constant array (Cardinal range 0 .. 1) of Cardinal :=
          (0, MATRIX_A);
       y : Cardinal;
@@ -40,7 +40,7 @@ package body Ada.Numerics.MT19937 is
       y := y xor (Interfaces.Shift_Left (y, 15) and 16#efc60000#);
       y := y xor Interfaces.Shift_Right (y, 18);
       return y;
-   end Random;
+   end Random_32;
 
    procedure Reset (Gen : in out Generator) is
       Init : Cardinal_Vector (N_Range);
@@ -188,29 +188,29 @@ package body Ada.Numerics.MT19937 is
    function Random_0_To_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return Uniformly_Distributed'Base (Random (Gen)) *
+      return Uniformly_Distributed'Base (Random_32 (Gen)) *
          (1.0 / 4294967295.0);
    end Random_0_To_1;
 
    function Random_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return Uniformly_Distributed'Base (Random (Gen)) *
+      return Uniformly_Distributed'Base (Random_32 (Gen)) *
          (1.0 / 4294967296.0);
    end Random_0_To_Less_1;
 
    function Random_Greater_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return (Uniformly_Distributed'Base (Random (Gen)) + 0.5) *
+      return (Uniformly_Distributed'Base (Random_32 (Gen)) + 0.5) *
          (1.0 / 4294967296.0);
    end Random_Greater_0_To_Less_1;
 
    function Random_53_0_To_1 (Gen : not null access Generator)
       return Uniformly_Distributed
    is
-      A : constant Cardinal := Interfaces.Shift_Right (Random (Gen), 5);
-      B : constant Cardinal := Interfaces.Shift_Right (Random (Gen), 6);
+      A : constant Cardinal := Interfaces.Shift_Right (Random_32 (Gen), 5);
+      B : constant Cardinal := Interfaces.Shift_Right (Random_32 (Gen), 6);
    begin
       return (Uniformly_Distributed'Base (A) * 67108864.0 +
          Uniformly_Distributed'Base (B)) *
@@ -226,12 +226,9 @@ package body Ada.Numerics.MT19937 is
          subtype Real is Long_Long_Float;
          Random : constant Real :=
             MT19937.Random_0_To_Less_1 (Gen);
-         Width : constant Integer :=
-            Result_Subtype'Pos (Result_Subtype'Last) -
-            Result_Subtype'Pos (Result_Subtype'First) + 1;
          Position : constant Integer :=
             Result_Subtype'Pos (Result_Subtype'First) +
-            Integer (Real'Floor (Random * Real (Width)));
+            Integer (Real'Floor (Random * Real (Result_Subtype'Range_Length)));
       begin
          return Result_Subtype'Val (Position);
       end Random;

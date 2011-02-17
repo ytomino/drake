@@ -50,4 +50,3 @@ $(BUILDDIR)/%: %.adb $(BUILDDIR)/adalib/libgnat.a
 
 clean:
 	-rm -rf build*
-	-rm b~*

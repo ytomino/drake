@@ -21,6 +21,7 @@ package Ada.Exceptions is
 
    procedure Raise_Exception (E : Exception_Id; Message : String := "");
    pragma No_Return (Raise_Exception);
+   pragma Inline (Raise_Exception);
    function Exception_Message (X : Exception_Occurrence) return String;
    procedure Reraise_Occurrence (X : Exception_Occurrence);
 

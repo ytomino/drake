@@ -1,351 +1,514 @@
 pragma License (Unrestricted);
-with Ada.Strings.Generic_Unbounded;
---  with Ada.Strings.Wide_Maps;
+with Ada.Strings.Unbounded_Wide_Strings;
+with Ada.Strings.Unbounded_Wide_Strings.Functions;
+with Ada.Strings.Unbounded_Wide_Strings.Functions.Maps;
+with Ada.Strings.Wide_Maps;
 package Ada.Strings.Wide_Unbounded is
    pragma Preelaborate;
 
-   --  Generic_Unbounded is not able to use directly since some names differ.
-   package Instance is new Generic_Unbounded (Wide_Character, Wide_String);
-
 --  type Unbounded_Wide_String is private;
 --  pragma Preelaborable_Initialization (Unbounded_Wide_String);
-   subtype Unbounded_Wide_String is Instance.Unbounded_String;
+   subtype Unbounded_Wide_String is Unbounded_Wide_Strings.Unbounded_String;
 
 --  Null_Unbounded_Wide_String : constant Unbounded_Wide_String;
    function Null_Unbounded_Wide_String return Unbounded_Wide_String
-      renames Instance.Null_Unbounded_String;
+      renames Unbounded_Wide_Strings.Null_Unbounded_String;
 
    function Length (Source : Unbounded_Wide_String) return Natural
-      renames Instance.Length;
+      renames Unbounded_Wide_Strings.Length;
 
 --  type Wide_String_Access is access all Wide_String;
-   subtype Wide_String_Access is Instance.String_Access;
+   subtype Wide_String_Access is Unbounded_Wide_Strings.String_Access;
    procedure Free (X : in out Wide_String_Access)
-      renames Instance.Free;
+      renames Unbounded_Wide_Strings.Free;
 
    --  Conversion, Concatenation, and Selection functions
 
    function To_Unbounded_Wide_String (Source : Wide_String)
       return Unbounded_Wide_String
-      renames Instance.To_Unbounded_String;
+      renames Unbounded_Wide_Strings.To_Unbounded_String;
 
---  function To_Unbounded_String (Length : Natural)
---    return Unbounded_String;
+   function To_Unbounded_Wide_String (Length : Natural)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.To_Unbounded_String;
 
    function To_Wide_String (Source : Unbounded_Wide_String) return Wide_String
-      renames Instance.To_String;
+      renames Unbounded_Wide_Strings.To_String;
 
---  procedure Set_Unbounded_String (
---    Target : out Unbounded_String;
---    Source : String);
+   procedure Set_Unbounded_Wide_String (
+      Target : out Unbounded_Wide_String;
+      Source : Wide_String)
+      renames Unbounded_Wide_Strings.Set_Unbounded_String;
 
    procedure Append (
       Source : in out Unbounded_Wide_String;
       New_Item : Unbounded_Wide_String)
-      renames Instance.Append;
+      renames Unbounded_Wide_Strings.Append;
 
    procedure Append (
       Source : in out Unbounded_Wide_String;
       New_Item : Wide_String)
-      renames Instance.Append;
+      renames Unbounded_Wide_Strings.Append;
 
    procedure Append (
       Source : in out Unbounded_Wide_String;
       New_Item : Wide_Character)
-      renames Instance.Append;
+      renames Unbounded_Wide_Strings.Append;
 
    function "&" (Left, Right : Unbounded_Wide_String)
       return Unbounded_Wide_String
-      renames Instance."&";
+      renames Unbounded_Wide_Strings."&";
 
    function "&" (Left : Unbounded_Wide_String; Right : Wide_String)
       return Unbounded_Wide_String
-      renames Instance."&";
+      renames Unbounded_Wide_Strings."&";
 
    function "&" (Left : Wide_String; Right : Unbounded_Wide_String)
       return Unbounded_Wide_String
-      renames Instance."&";
+      renames Unbounded_Wide_Strings."&";
 
    function "&" (Left : Unbounded_Wide_String; Right : Wide_Character)
       return Unbounded_Wide_String
-      renames Instance."&";
+      renames Unbounded_Wide_Strings."&";
 
    function "&" (Left : Wide_Character; Right : Unbounded_Wide_String)
       return Unbounded_Wide_String
-      renames Instance."&";
+      renames Unbounded_Wide_Strings."&";
 
---  function Element (Source : Unbounded_String; Index : Positive)
---    return Character;
+   function Element (Source : Unbounded_Wide_String; Index : Positive)
+      return Wide_Character
+      renames Unbounded_Wide_Strings.Element;
 
---  procedure Replace_Element (
---    Source : in out Unbounded_String;
---    Index : Positive;
---    By : Character);
+   procedure Replace_Element (
+      Source : in out Unbounded_Wide_String;
+      Index : Positive;
+      By : Wide_Character)
+      renames Unbounded_Wide_Strings.Replace_Element;
 
    function Slice (
       Source : Unbounded_Wide_String;
       Low : Positive;
       High : Natural)
       return Wide_String
-      renames Instance.Slice;
+      renames Unbounded_Wide_Strings.Slice;
 
---  function Unbounded_Slice (
---    Source : Unbounded_String;
---    Low : Positive;
---    High : Natural)
---    return Unbounded_String;
+   function Unbounded_Slice (
+      Source : Unbounded_Wide_String;
+      Low : Positive;
+      High : Natural)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Unbounded_Slice;
 
---  procedure Unbounded_Slice (
---    Source : Unbounded_String;
---    Target : out Unbounded_String;
---    Low : Positive;
---    High : Natural);
+   procedure Unbounded_Slice (
+      Source : Unbounded_Wide_String;
+      Target : out Unbounded_Wide_String;
+      Low : Positive;
+      High : Natural)
+      renames Unbounded_Wide_Strings.Unbounded_Slice;
 
    function "=" (Left, Right : Unbounded_Wide_String) return Boolean
-      renames Instance."=";
+      renames Unbounded_Wide_Strings."=";
 
    function "=" (Left : Unbounded_Wide_String; Right : Wide_String)
       return Boolean
-      renames Instance."=";
+      renames Unbounded_Wide_Strings."=";
 
    function "=" (Left : Wide_String; Right : Unbounded_Wide_String)
       return Boolean
-      renames Instance."=";
+      renames Unbounded_Wide_Strings."=";
 
    function "<" (Left, Right : Unbounded_Wide_String) return Boolean
-      renames Instance."<";
+      renames Unbounded_Wide_Strings."<";
 
---  function "<" (Left : Unbounded_String; Right : String) return Boolean;
+   function "<" (Left : Unbounded_Wide_String; Right : Wide_String)
+      return Boolean
+      renames Unbounded_Wide_Strings."<";
 
---  function "<" (Left : String; Right : Unbounded_String) return Boolean;
+   function "<" (Left : Wide_String; Right : Unbounded_Wide_String)
+      return Boolean
+      renames Unbounded_Wide_Strings."<";
 
---  function "<=" (Left, Right : Unbounded_String) return Boolean;
+   function "<=" (Left, Right : Unbounded_Wide_String) return Boolean
+      renames Unbounded_Wide_Strings."<=";
 
---  function "<=" (Left : Unbounded_String; Right : String) return Boolean;
+   function "<=" (Left : Unbounded_Wide_String; Right : Wide_String)
+      return Boolean
+      renames Unbounded_Wide_Strings."<=";
 
---  function "<=" (Left : String; Right : Unbounded_String) return Boolean;
+   function "<=" (Left : Wide_String; Right : Unbounded_Wide_String)
+      return Boolean
+      renames Unbounded_Wide_Strings."<=";
 
    function ">" (Left, Right : Unbounded_Wide_String) return Boolean
-      renames Instance.">";
+      renames Unbounded_Wide_Strings.">";
 
---  function ">" (Left : Unbounded_String; Right : String) return Boolean;
+   function ">" (Left : Unbounded_Wide_String; Right : Wide_String)
+      return Boolean
+      renames Unbounded_Wide_Strings.">";
 
---  function ">" (Left : String; Right : Unbounded_String) return Boolean;
+   function ">" (Left : Wide_String; Right : Unbounded_Wide_String)
+      return Boolean
+      renames Unbounded_Wide_Strings.">";
 
---  function ">=" (Left, Right : Unbounded_String) return Boolean;
+   function ">=" (Left, Right : Unbounded_Wide_String) return Boolean
+      renames Unbounded_Wide_Strings.">=";
 
---  function ">=" (Left : Unbounded_String; Right : String) return Boolean;
+   function ">=" (Left : Unbounded_Wide_String; Right : Wide_String)
+      return Boolean
+      renames Unbounded_Wide_Strings.">=";
 
---  function ">=" (Left : String; Right : Unbounded_String) return Boolean;
+   function ">=" (Left : Wide_String; Right : Unbounded_Wide_String)
+      return Boolean
+      renames Unbounded_Wide_Strings.">=";
 
    --  Search subprograms
 
 --  function Index (
---    Source : Unbounded_String;
---    Pattern : String;
+--    Source : Unbounded_Wide_String;
+--    Pattern : Wide_String;
 --    From : Positive;
 --    Going : Direction := Forward;
---    Mapping : Maps.Character_Mapping := Maps.Identity)
+--    Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
 --    return Natural;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      From : Positive;
+      Going : Direction := Forward)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Index;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      From : Positive;
+      Going : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Index;
 
 --  function Index (
 --    Source : Unbounded_String;
 --    Pattern : String;
 --    From : Positive;
+--    Going : Direction := Forward;
+--    Mapping : Wide_Maps.Wide_Character_Mapping_Function)
+--    return Natural;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      From : Positive;
+      Going : Direction := Forward;
+      Mapping : not null access function (From : Wide_Character)
+         return Wide_Character)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Index_Per_Element;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      From : Positive;
+      Going : Direction := Forward;
+      Mapping : not null access function (From : Wide_Wide_Character)
+         return Wide_Wide_Character)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Index;
+
+--  function Index (
+--    Source : Unbounded_Wide_String;
+--    Pattern : Wide_String;
+--    Going : Direction := Forward;
+--    Mapping : Wide_Maps.Wide_Character_Mapping := Maps.Identity)
+--    return Natural;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Going : Direction := Forward)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Index;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Going : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Index;
+
+--  function Index (
+--    Source : Unbounded_Wide_String;
+--    Pattern : Wide_String;
 --    Going : Direction := Forward;
 --    Mapping : Maps.Character_Mapping_Function)
 --    return Natural;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Going : Direction := Forward;
+      Mapping : not null access function (From : Wide_Character)
+         return Wide_Character)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Index_Per_Element;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Going : Direction := Forward;
+      Mapping : not null access function (From : Wide_Wide_Character)
+         return Wide_Wide_Character)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Index;
 
---  function Index (
---    Source : Unbounded_String;
---    Pattern : String;
---    Going : Direction := Forward;
+   function Index (
+      Source : Unbounded_Wide_String;
+      Set : Wide_Maps.Wide_Character_Set;
+      From : Positive;
+      Test : Membership := Inside;
+      Going : Direction := Forward)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Index;
+
+   function Index (
+      Source : Unbounded_Wide_String;
+      Set : Wide_Maps.Wide_Character_Set;
+      Test : Membership := Inside;
+      Going : Direction := Forward)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Index;
+
+   function Index_Non_Blank (
+      Source : Unbounded_Wide_String;
+      From : Positive;
+      Going : Direction := Forward)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Index_Non_Blank;
+
+   function Index_Non_Blank (
+      Source : Unbounded_Wide_String;
+      Going : Direction := Forward)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Index_Non_Blank;
+
+--  function Count (
+--    Source : Unbounded_Wide_String;
+--    Pattern : Wide_String;
 --    Mapping : Maps.Character_Mapping := Maps.Identity)
 --    return Natural;
+   function Count (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Count;
+   function Count (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Count;
 
---  function Index (
---    Source : Unbounded_String;
---    Pattern : String;
---    Going : Direction := Forward;
+--  function Count (
+--    Source : Unbounded_Wide_String;
+--    Pattern : Wide_String;
 --    Mapping : Maps.Character_Mapping_Function)
 --    return Natural;
+   function Count (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Mapping : not null access function (From : Wide_Character)
+         return Wide_Character)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Count_Per_Element;
+   function Count (
+      Source : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      Mapping : not null access function (From : Wide_Wide_Character)
+         return Wide_Wide_Character)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Count;
 
---  function Index (
---    Source : Unbounded_String;
---    Set : Maps.Character_Set;
---    From : Positive;
---    Test : Membership := Inside;
---    Going : Direction := Forward)
---    return Natural;
+   function Count (
+      Source : Unbounded_Wide_String;
+      Set : Wide_Maps.Wide_Character_Set)
+      return Natural
+      renames Unbounded_Wide_Strings.Functions.Maps.Count;
 
---  function Index (
---    Source : Unbounded_String;
---    Set : Maps.Character_Set;
---    Test : Membership := Inside;
---    Going : Direction  := Forward)
---    return Natural;
+   procedure Find_Token (
+      Source : Unbounded_Wide_String;
+      Set : Wide_Maps.Wide_Character_Set;
+      From : Positive;
+      Test : Membership;
+      First : out Positive;
+      Last : out Natural)
+      renames Unbounded_Wide_Strings.Functions.Maps.Find_Token;
 
---  function Index_Non_Blank (
---    Source : Unbounded_String;
---    From : Positive;
---    Going : Direction := Forward)
---    return Natural;
+   procedure Find_Token (
+      Source : Unbounded_Wide_String;
+      Set : Wide_Maps.Wide_Character_Set;
+      Test : Membership;
+      First : out Positive;
+      Last : out Natural)
+      renames Unbounded_Wide_Strings.Functions.Maps.Find_Token;
 
---  function Index_Non_Blank (
---    Source : Unbounded_String;
---    Going : Direction := Forward)
---    return Natural;
+   --  Wide_String translation subprograms
 
---  function Count (
---    Source : Unbounded_String;
---    Pattern : String;
---    Mapping : Maps.Character_Mapping := Maps.Identity)
---    return Natural;
+   function Translate (
+      Source : Unbounded_Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Maps.Translate;
 
---  function Count (
---    Source : Unbounded_String;
---    Pattern : String;
---    Mapping : Maps.Character_Mapping_Function)
---    return Natural;
-
---  function Count (
---    Source : Unbounded_String;
---    Set : Maps.Character_Set)
---    return Natural;
-
---  procedure Find_Token (
---    Source : Unbounded_String;
---    Set : Maps.Character_Set;
---    From : Positive;
---    Test : Membership;
---    First : out Positive;
---    Last : out Natural);
-
---  procedure Find_Token (
---    Source : Unbounded_String;
---    Set : Maps.Character_Set;
---    Test : Membership;
---    First : out Positive;
---    Last : out Natural);
-
-   --  String translation subprograms
+   procedure Translate (
+      Source : in out Unbounded_Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping)
+      renames Unbounded_Wide_Strings.Functions.Maps.Translate;
 
 --  function Translate (
---    Source : Unbounded_String;
---    Mapping : Maps.Character_Mapping)
---    return Unbounded_String;
-
---  procedure Translate (
---    Source : in out Unbounded_String;
---    Mapping : Maps.Character_Mapping);
-
---  function Translate (
---    Source : Unbounded_String;
+--    Source : Unbounded_Wide_String;
 --    Mapping : Maps.Character_Mapping_Function)
---    return Unbounded_String;
+--    return Unbounded_Wide_String;
+   function Translate (
+      Source : Unbounded_Wide_String;
+      Mapping : not null access function (From : Wide_Character)
+         return Wide_Character)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Maps.Translate_Per_Element;
+   function Translate (
+      Source : Unbounded_Wide_String;
+      Mapping : not null access function (From : Wide_Wide_Character)
+         return Wide_Wide_Character)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Maps.Translate;
 
 --  procedure Translate (
---    Source : in out Unbounded_String;
+--    Source : in out Unbounded_Wide_String;
 --    Mapping : Maps.Character_Mapping_Function);
+   procedure Translate (
+      Source : in out Unbounded_Wide_String;
+      Mapping : not null access function (From : Wide_Character)
+         return Wide_Character)
+      renames Unbounded_Wide_Strings.Functions.Maps.Translate_Per_Element;
+   procedure Translate (
+      Source : in out Unbounded_Wide_String;
+      Mapping : not null access function (From : Wide_Wide_Character)
+         return Wide_Wide_Character)
+      renames Unbounded_Wide_Strings.Functions.Maps.Translate;
 
-   --  String transformation subprograms
+   --  Wide_String transformation subprograms
 
---  function Replace_Slice (
---    Source : Unbounded_String;
---    Low : Positive;
---    High : Natural;
---    By : String)
---    return Unbounded_String;
+   function Replace_Slice (
+      Source : Unbounded_Wide_String;
+      Low : Positive;
+      High : Natural;
+      By : Wide_String)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Replace_Slice;
 
---  procedure Replace_Slice (
---    Source : in out Unbounded_String;
---    Low : Positive;
---    High : Natural;
---    By : String);
+   procedure Replace_Slice (
+      Source : in out Unbounded_Wide_String;
+      Low : Positive;
+      High : Natural;
+      By : Wide_String)
+      renames Unbounded_Wide_Strings.Functions.Replace_Slice;
 
---  function Insert (
---    Source : Unbounded_String;
---    Before : Positive;
---    New_Item : String)
---    return Unbounded_String;
+   function Insert (
+      Source : Unbounded_Wide_String;
+      Before : Positive;
+      New_Item : Wide_String)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Insert;
 
---  procedure Insert (
---    Source : in out Unbounded_String;
---    Before : Positive;
---    New_Item : String);
+   procedure Insert (
+      Source : in out Unbounded_Wide_String;
+      Before : Positive;
+      New_Item : Wide_String)
+      renames Unbounded_Wide_Strings.Functions.Insert;
 
---  function Overwrite (
---    Source : Unbounded_String;
---    Position : Positive;
---    New_Item : String)
---    return Unbounded_String;
+   function Overwrite (
+      Source : Unbounded_Wide_String;
+      Position : Positive;
+      New_Item : Wide_String)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Overwrite;
 
---  procedure Overwrite (
---    Source : in out Unbounded_String;
---    Position : Positive;
---    New_Item : String);
+   procedure Overwrite (
+      Source : in out Unbounded_Wide_String;
+      Position : Positive;
+      New_Item : Wide_String)
+      renames Unbounded_Wide_Strings.Functions.Overwrite;
 
---  function Delete (
---    Source : Unbounded_String;
---    From : Positive;
---    Through : Natural)
---    return Unbounded_String;
+   function Delete (
+      Source : Unbounded_Wide_String;
+      From : Positive;
+      Through : Natural)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Delete;
 
---  procedure Delete (
---    Source : in out Unbounded_String;
---    From : Positive;
---    Through : Natural);
+   procedure Delete (
+      Source : in out Unbounded_Wide_String;
+      From : Positive;
+      Through : Natural)
+      renames Unbounded_Wide_Strings.Functions.Delete;
 
---  function Trim (
---    Source : Unbounded_String;
---    Side : Trim_End)
---    return Unbounded_String;
+   function Trim (
+      Source : Unbounded_Wide_String;
+      Side : Trim_End;
+      Left : Wide_Character := Wide_Space; -- extended
+      Right : Wide_Character := Wide_Space) -- extended
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Trim;
 
---  procedure Trim (
---    Source : in out Unbounded_String;
---    Side : Trim_End);
+   procedure Trim (
+      Source : in out Unbounded_Wide_String;
+      Side : Trim_End;
+      Left : Wide_Character := Wide_Space; -- extended
+      Right : Wide_Character := Wide_Space) -- extended
+      renames Unbounded_Wide_Strings.Functions.Trim;
 
---  function Trim (
---    Source : Unbounded_String;
---    Left : Maps.Character_Set;
---    Right : Maps.Character_Set)
---    return Unbounded_String;
+   function Trim (
+      Source : Unbounded_Wide_String;
+      Left : Wide_Maps.Wide_Character_Set;
+      Right : Wide_Maps.Wide_Character_Set)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Maps.Trim;
 
---  procedure Trim (
---    Source : in out Unbounded_String;
---    Left : Maps.Character_Set;
---    Right : Maps.Character_Set);
+   procedure Trim (
+      Source : in out Unbounded_Wide_String;
+      Left : Wide_Maps.Wide_Character_Set;
+      Right : Wide_Maps.Wide_Character_Set)
+      renames Unbounded_Wide_Strings.Functions.Maps.Trim;
 
---  function Head (
---    Source : Unbounded_String;
---    Count : Natural;
---    Pad : Character := Space)
---    return Unbounded_String;
+   function Head (
+      Source : Unbounded_Wide_String;
+      Count : Natural;
+      Pad : Wide_Character := Wide_Space)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Head;
 
---  procedure Head (
---    Source : in out Unbounded_String;
---    Count : Natural;
---    Pad : Character := Space);
+   procedure Head (
+      Source : in out Unbounded_Wide_String;
+      Count : Natural;
+      Pad : Wide_Character := Wide_Space)
+      renames Unbounded_Wide_Strings.Functions.Head;
 
---  function Tail (
---    Source : Unbounded_String;
---    Count : Natural;
---    Pad : Character := Space)
---    return Unbounded_String;
+   function Tail (
+      Source : Unbounded_Wide_String;
+      Count : Natural;
+      Pad : Wide_Character := Wide_Space)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions.Tail;
 
---  procedure Tail (
---    Source : in out Unbounded_String;
---    Count : Natural;
---    Pad : Character := Space);
+   procedure Tail (
+      Source : in out Unbounded_Wide_String;
+      Count : Natural;
+      Pad : Wide_Character := Wide_Space)
+      renames Unbounded_Wide_Strings.Functions.Tail;
 
---  function "*" (
---    Left : Natural;
---    Right : Character)
---    return Unbounded_String;
+   function "*" (Left : Natural; Right : Wide_Character)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions."*";
 
---  function "*" (Left : Natural; Right : String) return Unbounded_String;
+   function "*" (Left : Natural; Right : Wide_String)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions."*";
 
---  function "*" (Left : Natural; Right : Unbounded_String)
---    return Unbounded_String;
+   function "*" (Left : Natural; Right : Unbounded_Wide_String)
+      return Unbounded_Wide_String
+      renames Unbounded_Wide_Strings.Functions."*";
 
 end Ada.Strings.Wide_Unbounded;

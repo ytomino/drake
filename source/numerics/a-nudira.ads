@@ -7,30 +7,23 @@ package Ada.Numerics.Discrete_Random is
    --  Basic facilities
 
 --  type Generator is limited private;
-   subtype Generator is MT19937.Generator; --  extended
+   type Generator is new MT19937.Generator;
 
    function Random (Gen : Generator) return Result_Subtype;
 
 --  procedure Reset (Gen : Generator; Initiator : Integer);
---  procedure Reset (Gen : in Generator);
-
-   --  extended
    procedure Reset (Gen : in out Generator; Initiator : Integer);
-   procedure Reset (Gen : in out Generator)
-      renames MT19937.Reset;
+--  procedure Reset (Gen : in Generator);
+   --  procedure Reset is inherited.
 
    --  Advanced facilities
 
 --  type State is private;
    subtype State is MT19937.State;
 
-   procedure Save (Gen : Generator; To_State : out State)
-      renames MT19937.Save;
+--  procedure Save (Gen : Generator; To_State : out State);
 --  procedure Reset (Gen : in Generator; From_State : State);
-
-   --  extended
-   procedure Reset (Gen : in out Generator; From_State : State)
-      renames MT19937.Reset;
+   --  procedure Save and Load are inherited.
 
    Max_Image_Width : constant := MT19937.Max_Image_Width;
 
