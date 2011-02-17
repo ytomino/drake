@@ -1,3 +1,4 @@
+with Ada.Strings;
 with System.UTF_Conversions;
 package body Ada.Characters.Inside.Maps is
    use type System.UTF_Conversions.UCS_4;
@@ -8,7 +9,7 @@ package body Ada.Characters.Inside.Maps is
       return Character_Mapping is
    begin
       if From'Length /= To'Length then
-         raise Constraint_Error;
+         raise Strings.Translation_Error;
       else
          return Result : aliased Character_Mapping := (
             Length => From'Length,
@@ -71,7 +72,7 @@ package body Ada.Characters.Inside.Maps is
    procedure Translate (
       Source : String;
       Mapping : not null access constant Character_Mapping;
-      Item : out String;
+      Item : out String; --  Source'Length * 6, at least
       Last : out Natural)
    is
       I : Natural := Source'First;
@@ -90,7 +91,6 @@ package body Ada.Characters.Inside.Maps is
                I_Next,
                Code,
                Error);
-            I := I_Next + 1;
             --  map it
             Code := Wide_Wide_Character'Pos (
                Value (Mapping, Wide_Wide_Character'Val (Code)));
@@ -100,24 +100,12 @@ package body Ada.Characters.Inside.Maps is
                Item (J .. Item'Last),
                J_Next,
                Error);
+            --  forwarding
+            I := I_Next + 1;
             J := J_Next + 1;
          end;
       end loop;
       Last := J - 1;
-   end Translate;
-
-   function Translate (
-      Source : String;
-      Mapping : not null access constant Character_Mapping)
-      return String
-   is
-      Result : String (
-         1 ..
-         Source'Length * System.UTF_Conversions.UTF_8_Max_Length);
-      Last : Natural;
-   begin
-      Translate (Source, Mapping, Result, Last);
-      return Result (1 .. Last);
    end Translate;
 
    function Compare (
@@ -177,7 +165,7 @@ package body Ada.Characters.Inside.Maps is
                K : constant Positive := J + 1;
             begin
                if Map.From (J) = Map.From (K) then
-                  raise Constraint_Error;
+                  raise Strings.Translation_Error;
                end if;
                exit when Map.From (J) <= Map.From (K);
                   Temp_F := Map.From (J);

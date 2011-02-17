@@ -103,15 +103,19 @@ package body System.UTF_Conversions is
       --  trailing bytes
       for J in 2 .. Length loop
          if I >= Data'Last then
-            Trail := Character'Val (0);
+            Code := Shift_Left (Code, 6 * (Length - J + 1));
             Error := True; --  trailing byte is nothing
+            exit;
          else
             I := I + 1;
             Trail := Data (I);
             if Trail not in
                Character'Val (2#10000000#) .. Character'Val (2#10111111#)
             then
+               I := I - 1;
+               Code := Shift_Left (Code, 6 * (Length - J + 1));
                Error := True; -- trailing byte is invalid
+               exit;
             end if;
          end if;
          Code := Code * (2 ** 6) or
@@ -123,6 +127,32 @@ package body System.UTF_Conversions is
       Last := I;
       Result := Code;
    end From_UTF_8;
+
+   procedure From_UTF_8_Reverse (
+      Data : String;
+      First : out Positive;
+      Result : out UCS_4;
+      Error : out Boolean)
+   is
+      Length : Positive;
+      Last : Natural; -- ignore
+   begin
+      First := Data'Last;
+      while First > Data'First
+         and then Data (First) in
+            Character'Val (2#10000000#) .. Character'Val (2#10111111#)
+      loop
+         First := First - 1;
+      end loop;
+      UTF_8_Sequence (Data (First), Length, Error);
+      if First + Length - 1 < Data'Last then
+         First := Data'Last;
+         Result := Character'Pos (Data (First));
+         Error := True;
+      else
+         From_UTF_8 (Data (First .. Data'Last), Last, Result, Error);
+      end if;
+   end From_UTF_8_Reverse;
 
    procedure UTF_8_Sequence (
       Leading : Character;
@@ -162,6 +192,7 @@ package body System.UTF_Conversions is
    begin
       case Code is
          when 16#0000# .. 16#d7ff#
+            | 16#d800# .. 16#dfff# -- without checking surrogate pair in To_XXX
             | 16#e000# .. 16#ffff# =>
             Last := Result'First;
             if Last <= Result'Last then
@@ -171,14 +202,6 @@ package body System.UTF_Conversions is
                Last := Result'Last;
                Error := True; -- overflow
             end if;
-         when 16#d800# .. 16#dfff# =>
-            Last := Result'First;
-            if Last <= Result'Last then
-               Result (Last) := Wide_Character'Val (Code);
-            else
-               Last := Result'Last;
-            end if;
-            Error := True; --  trailing byte
          when 16#00010000# .. UCS_4'Last =>
             Last := Result'First;
             if Last <= Result'Last then
@@ -233,6 +256,8 @@ package body System.UTF_Conversions is
                      Wide_Character'Val (16#dc00#) ..
                      Wide_Character'Val (16#dfff#)
                   then
+                     I := I - 1;
+                     Second := Wide_Character'Val (0);
                      Error := True; --  trailing byte is invalid
                   else
                      Error := False;
@@ -255,6 +280,27 @@ package body System.UTF_Conversions is
       end case;
    end From_UTF_16;
 
+   procedure From_UTF_16_Reverse (
+      Data : Wide_String;
+      First : out Positive;
+      Result : out UCS_4;
+      Error : out Boolean)
+   is
+      Last : Natural; -- ignore
+   begin
+      if Data'First < Data'Last
+         and then Data (Data'Last) in
+            Wide_Character'Val (16#dc00#) .. Wide_Character'Val (16#dfff#)
+         and then Data (Data'Last - 1) in
+            Wide_Character'Val (16#d800#) .. Wide_Character'Val (16#dbff#)
+      then
+         First := Data'Last - 1;
+      else
+         First := Data'Last;
+      end if;
+      From_UTF_16 (Data (First .. Data'Last), Last, Result, Error);
+   end From_UTF_16_Reverse;
+
    procedure UTF_16_Sequence (
       Leading : Wide_Character;
       Result : out Positive;
@@ -274,14 +320,33 @@ package body System.UTF_Conversions is
       end case;
    end UTF_16_Sequence;
 
+   procedure To_UTF_32 (
+      Code : UCS_4;
+      Result : out Wide_Wide_String;
+      Last : out Natural;
+      Error : out Boolean) is
+   begin
+      Last := Result'First;
+      if Last <= Result'Last then
+         Result (Last) := Wide_Wide_Character'Val (Code);
+         Error := False;
+      else
+         Last := Result'Last;
+         Error := True; -- overflow
+      end if;
+   end To_UTF_32;
+
    procedure From_UTF_32 (
-      Data : Wide_Wide_Character;
+      Data : Wide_Wide_String;
+      Last : out Natural;
       Result : out UCS_4;
       Error : out Boolean)
    is
       type Unsigned_32 is mod 2 ** Wide_Wide_Character'Size;
-      Code : constant Unsigned_32 := Wide_Wide_Character'Pos (Data);
+      Code : constant Unsigned_32 :=
+         Wide_Wide_Character'Pos (Data (Data'First));
    begin
+      Last := Data'First;
       Result := UCS_4'Mod (Code);
       case Code is
          when 16#d800# .. 16#dfff# | 16#80000000# .. 16#ffffffff# =>
@@ -290,6 +355,32 @@ package body System.UTF_Conversions is
             Error := False;
       end case;
    end From_UTF_32;
+
+   procedure From_UTF_32_Reverse (
+      Data : Wide_Wide_String;
+      First : out Positive;
+      Result : out UCS_4;
+      Error : out Boolean)
+   is
+      Last : Natural; -- ignored
+   begin
+      First := Data'Last;
+      From_UTF_32 (Data (First .. Data'Last), Last, Result, Error);
+   end From_UTF_32_Reverse;
+
+   procedure UTF_32_Sequence (
+      Leading : Wide_Wide_Character;
+      Result : out Positive;
+      Error : out Boolean) is
+   begin
+      Result := 1;
+      case Wide_Wide_Character'Pos (Leading) is
+         when 16#d800# .. 16#dfff# | 16#80000000# .. 16#ffffffff# =>
+            Error := True;
+         when others =>
+            Error := False;
+      end case;
+   end UTF_32_Sequence;
 
    procedure UTF_8_To_UTF_16 (
       Data : String;
@@ -385,9 +476,10 @@ package body System.UTF_Conversions is
       for I in Data'Range loop
          declare
             Code : UCS_4;
+            Next : Natural;
             E : Boolean;
          begin
-            From_UTF_32 (Data (I), Code, E);
+            From_UTF_32 (Data (I .. Data'Last), Next, Code, E);
             Error := Error or E;
             To_UTF_8 (Code, Result (J .. Result'Last), Last, E);
             Error := Error or E;

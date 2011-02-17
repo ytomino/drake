@@ -32,16 +32,11 @@ package Ada.Characters.Inside.Maps is
       Initial_Reference_Count : Interfaces.Integer_32 := -1)
       return Character_Mapping;
 
-   --  for To_Lower, To_Upper
    procedure Translate (
       Source : String;
       Mapping : not null access constant Character_Mapping;
       Item : out String; --  Source'Length * 6, at least
       Last : out Natural);
-   function Translate (
-      Source : String;
-      Mapping : not null access constant Character_Mapping)
-      return String;
 
    --  for Equal_Case_Insensitive, Less_Case_Insensitive
    function Compare (

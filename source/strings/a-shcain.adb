@@ -1,4 +1,4 @@
-with Ada.Characters.Inside.Maps.Lower_Case;
+with Ada.Characters.Inside.Maps.Case_Folding;
 with System.UTF_Conversions;
 function Ada.Strings.Hash_Case_Insensitive (Key : String)
    return Containers.Hash_Type
@@ -23,7 +23,7 @@ begin
          --  update
          Result := Containers.Rotate_Left (Result, 5) xor
             Wide_Wide_Character'Pos (Characters.Inside.Maps.Value (
-               Characters.Inside.Maps.Lower_Case.Lower_Case_Map,
+               Characters.Inside.Maps.Case_Folding.Case_Folding_Map,
                Wide_Wide_Character'Val (Code)));
       end;
    end loop;

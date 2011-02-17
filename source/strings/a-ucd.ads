@@ -16,8 +16,8 @@ package Ada.UCD is
    --  set
 
    type Set_Element_2 is record
-      First : UCS_2;
-      Last : UCS_2;
+      Low : UCS_2;
+      High : UCS_2;
    end record;
    pragma Suppress_Initialization (Set_Element_2);
 
@@ -25,8 +25,8 @@ package Ada.UCD is
    pragma Suppress_Initialization (Set_Type_2);
 
    type Set_Element_4 is record
-      First : UCS_4;
-      Last : UCS_4;
+      Low : UCS_4;
+      High : UCS_4;
    end record;
    pragma Suppress_Initialization (Set_Element_4);
 
