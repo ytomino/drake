@@ -7,11 +7,13 @@ package Ada.Calendar.Delays is
    --  the error is "entity "Ada.Calendar.Delays.Ca_Delay_For" not defined",
    --  but "Delay_For" is required in fact
    procedure Delay_For (D : Duration);
+   pragma Inline_Always (Delay_For);
 
    --  required for delay until statement by compiler (a-caldel.ads)
    --  the error is "entity "Ada.Calendar.Delays.Ca_Delay_Until" not defined",
    --  but "Delay_Until" is required in fact
    procedure Delay_Until (T : Time);
+   pragma Inline_Always (Delay_Until);
 
 private
 

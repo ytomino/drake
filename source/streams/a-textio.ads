@@ -39,8 +39,11 @@ package Ada.Text_IO is
    procedure Reset (File : in out File_Type);
 
    function Mode (File : File_Type) return File_Mode;
+   pragma Inline (Mode);
    function Name (File : File_Type) return String;
+   pragma Inline (Name);
    function Form (File : File_Type) return String;
+   pragma Inline (Form);
 
    function Is_Open (File : File_Type) return Boolean;
    pragma Inline (Is_Open);
@@ -100,9 +103,11 @@ package Ada.Text_IO is
 
    function Line_Length (File : File_Type) return Count;
    function Line_Length return Count;
+   pragma Inline (Line_Length);
 
    function Page_Length (File : File_Type) return Count;
    function Page_Length return Count;
+   pragma Inline (Page_Length);
 
    --  Column, Line, and Page Control
 
@@ -122,6 +127,7 @@ package Ada.Text_IO is
 
    function End_Of_Line (File : File_Type) return Boolean;
    function End_Of_Line return Boolean;
+   pragma Inline (End_Of_Line);
 
    procedure New_Page (File : File_Type);
    procedure New_Page;
@@ -137,11 +143,13 @@ package Ada.Text_IO is
    function End_Of_Page return Boolean;
    --  extended
    function End_Of_Page (File : not null File_Access) return Boolean;
+   pragma Inline (End_Of_Page);
 
    function End_Of_File (File : File_Type) return Boolean;
    function End_Of_File return Boolean;
    --  extended
    function End_Of_File (File : not null File_Access) return Boolean;
+   pragma Inline (End_Of_File);
 
    procedure Set_Col (File : File_Type; To : Positive_Count);
    procedure Set_Col (To : Positive_Count);
@@ -157,14 +165,17 @@ package Ada.Text_IO is
    function Col return Positive_Count;
    --  extended
    function Col (File : not null File_Access) return Positive_Count;
+   pragma Inline (Col);
 
    function Line (File : File_Type) return Positive_Count;
    function Line return Positive_Count;
+   pragma Inline (Line);
 
    function Page (File : File_Type) return Positive_Count;
    function Page return Positive_Count;
    --  extended
    function Page (File : not null File_Access) return Positive_Count;
+   pragma Inline (Page);
 
    --  Character Input-Output
 

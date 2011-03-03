@@ -18,22 +18,17 @@ package Ada.Sequential_IO is
       Mode : File_Mode := Out_File;
       Name : String := "";
       Form : String := "");
-   pragma Inline (Create);
 
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;
       Name : String;
       Form : String := "");
-   pragma Inline (Open);
 
    procedure Close (File : in out File_Type);
-   pragma Inline (Close);
    procedure Delete (File : in out File_Type);
-   pragma Inline (Delete);
    procedure Reset (File : in out File_Type; Mode : File_Mode);
    procedure Reset (File : in out File_Type);
-   pragma Inline (Reset);
 
    function Mode (File : File_Type) return File_Mode;
    pragma Inline (Mode);
@@ -48,12 +43,9 @@ package Ada.Sequential_IO is
    --  Input and output operations
 
    procedure Read (File : File_Type; Item : out Element_Type);
-   pragma Inline (Read);
    procedure Write (File : File_Type; Item : Element_Type);
-   pragma Inline (Write);
 
    function End_Of_File (File : File_Type) return Boolean;
-   pragma Inline (End_Of_File);
 
    --  Exceptions
 

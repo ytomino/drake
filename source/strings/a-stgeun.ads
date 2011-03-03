@@ -100,14 +100,17 @@ package Ada.Strings.Generic_Unbounded is
    function "<=" (Left, Right : Unbounded_String) return Boolean;
    function "<=" (Left : Unbounded_String; Right : String_Type) return Boolean;
    function "<=" (Left : String_Type; Right : Unbounded_String) return Boolean;
+   pragma Inline ("<=");
 
    function ">" (Left, Right : Unbounded_String) return Boolean;
    function ">" (Left : Unbounded_String; Right : String_Type) return Boolean;
    function ">" (Left : String_Type; Right : Unbounded_String) return Boolean;
+   pragma Inline (">");
 
    function ">=" (Left, Right : Unbounded_String) return Boolean;
    function ">=" (Left : Unbounded_String; Right : String_Type) return Boolean;
    function ">=" (Left : String_Type; Right : Unbounded_String) return Boolean;
+   pragma Inline (">=");
 
    --  extended
    package Slicing is new System.Arrays.Generic_Slicing (

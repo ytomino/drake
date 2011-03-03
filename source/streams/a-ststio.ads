@@ -44,6 +44,7 @@ package Ada.Streams.Stream_IO is
    function Is_Open (File : File_Type) return Boolean;
    pragma Inline (Is_Open);
    function End_Of_File (File : File_Type) return Boolean;
+   pragma Inline (End_Of_File);
 
    function Stream (File : File_Type) return Stream_Access;
    pragma Inline (Stream);
@@ -74,7 +75,9 @@ package Ada.Streams.Stream_IO is
    procedure Set_Index (File : File_Type; To : Positive_Count);
 
    function Index (File : File_Type) return Positive_Count;
+   pragma Inline (Index);
    function Size (File : File_Type) return Count;
+   pragma Inline (Size);
 
    procedure Set_Mode (File : in out File_Type; Mode : File_Mode);
 

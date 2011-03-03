@@ -14,8 +14,10 @@ package Ada.Storage_IO is
    --  Input and output operations
 
    procedure Read (Buffer : Buffer_Type; Item : out Element_Type);
+   pragma Inline (Read);
 
    procedure Write (Buffer : out Buffer_Type; Item : Element_Type);
+   pragma Inline (Write);
 
    --  Exceptions
 

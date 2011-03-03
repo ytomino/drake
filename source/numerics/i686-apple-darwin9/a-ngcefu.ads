@@ -25,7 +25,6 @@ package Ada.Numerics.Generic_Complex_Elementary_Functions is
    function Tan (X : Complex) return Complex;
    pragma Inline (Tan);
    function Cot (X : Complex) return Complex;
-   pragma Inline (Cot);
 
    function Arcsin (X : Complex) return Complex;
    pragma Inline (Arcsin);
@@ -34,7 +33,6 @@ package Ada.Numerics.Generic_Complex_Elementary_Functions is
    function Arctan (X : Complex) return Complex;
    pragma Inline (Arctan);
    function Arccot (X : Complex) return Complex;
-   pragma Inline (Arccot);
 
    function Sinh (X : Complex) return Complex;
    pragma Inline (Sinh);
@@ -43,7 +41,6 @@ package Ada.Numerics.Generic_Complex_Elementary_Functions is
    function Tanh (X : Complex) return Complex;
    pragma Inline (Tanh);
    function Coth (X : Complex) return Complex;
-   pragma Inline (Coth);
 
    function Arcsinh (X : Complex) return Complex;
    pragma Inline (Arcsinh);
@@ -52,6 +49,5 @@ package Ada.Numerics.Generic_Complex_Elementary_Functions is
    function Arctanh (X : Complex) return Complex;
    pragma Inline (Arctanh);
    function Arccoth (X : Complex) return Complex;
-   pragma Inline (Arccoth);
 
 end Ada.Numerics.Generic_Complex_Elementary_Functions;

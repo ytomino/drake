@@ -13,8 +13,10 @@ package Ada.Text_IO.Inside is
       Form : String := "");
 
    function Stream (File : File_Type) return Streams.Stream_IO.Stream_Access;
+   pragma Inline (Stream);
    function Stream_IO (File : File_Type)
       return not null access Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+   pragma Inline (Stream_IO);
 
    --  non-controlled
 

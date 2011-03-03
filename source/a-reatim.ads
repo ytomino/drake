@@ -17,11 +17,13 @@ package Ada.Real_Time is
 
 --  Tick : constant Time_Span;
    function Clock return Time;
+   pragma Inline (Clock);
 
 --  function "+" (Left : Time; Right : Time_Span) return Time;
 --  function "+" (Left : Time_Span; Right : Time) return Time;
 --  function "-" (Left : Time; Right : Time_Span) return Time;
    function "-" (Left : Time; Right : Time) return Time_Span;
+   pragma Inline ("-");
 
 --  function "<" (Left, Right : Time) return Boolean;
 --  function "<="(Left, Right : Time) return Boolean;
@@ -44,6 +46,7 @@ package Ada.Real_Time is
 --  function ">="(Left, Right : Time_Span) return Boolean;
 
    function To_Duration (TS : Time_Span) return Duration;
+--  pragma Inline_Always (To_Duration); -- ??
 --  function To_Time_Span (D : Duration) return Time_Span;
 
 --  function Nanoseconds (NS : Integer) return Time_Span;

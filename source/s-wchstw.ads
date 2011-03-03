@@ -12,6 +12,7 @@ package System.WCh_StW is
       R : out Wide_String;
       L : out Natural;
       EM : WC_Encoding_Method);
+   pragma Inline (String_To_Wide_String);
 
    --  required for T'Wide_Wide_Image by compiler (s-wchstw.ads)
    procedure String_To_Wide_Wide_String (
@@ -19,5 +20,6 @@ package System.WCh_StW is
       R : out Wide_Wide_String;
       L : out Natural;
       EM : WC_Encoding_Method);
+   pragma Inline (String_To_Wide_Wide_String);
 
 end System.WCh_StW;

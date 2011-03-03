@@ -25,7 +25,6 @@ package Ada.Numerics.Generic_Elementary_Functions is
    pragma Inline (Tan);
    function Cot (X : Float_Type'Base) return Float_Type'Base;
    function Cot (X, Cycle : Float_Type'Base) return Float_Type'Base;
-   pragma Inline (Cot);
 
    function Arcsin (X : Float_Type'Base) return Float_Type'Base;
    function Arcsin (X, Cycle : Float_Type'Base) return Float_Type'Base;
@@ -57,7 +56,6 @@ package Ada.Numerics.Generic_Elementary_Functions is
    function Tanh (X : Float_Type'Base) return Float_Type'Base;
    pragma Inline (Tanh);
    function Coth (X : Float_Type'Base) return Float_Type'Base;
-   pragma Inline (Coth);
    function Arcsinh (X : Float_Type'Base) return Float_Type'Base;
    pragma Inline (Arcsinh);
    function Arccosh (X : Float_Type'Base) return Float_Type'Base;
@@ -65,6 +63,5 @@ package Ada.Numerics.Generic_Elementary_Functions is
    function Arctanh (X : Float_Type'Base) return Float_Type'Base;
    pragma Inline (Arctanh);
    function Arccoth (X : Float_Type'Base) return Float_Type'Base;
-   pragma Inline (Arccoth);
 
 end Ada.Numerics.Generic_Elementary_Functions;

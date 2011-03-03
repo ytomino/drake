@@ -44,7 +44,6 @@ package Ada.Numerics.Generic_Complex_Types is
       return Complex;
    function Compose_From_Polar (Modulus, Argument, Cycle : Real'Base)
       return Complex;
-   pragma Inline (Compose_From_Polar);
 
    function "+" (Right : Complex) return Complex;
    pragma Inline ("+");
@@ -58,12 +57,9 @@ package Ada.Numerics.Generic_Complex_Types is
    function "-" (Left, Right : Complex) return Complex;
    pragma Inline ("-");
    function "*" (Left, Right : Complex) return Complex;
-   pragma Inline ("*");
    function "/" (Left, Right : Complex) return Complex;
-   pragma Inline ("/");
 
    function "**" (Left : Complex; Right : Integer) return Complex;
-   pragma Inline ("**");
 
    function "+" (Right : Imaginary) return Imaginary;
    pragma Inline ("+");
@@ -84,7 +80,6 @@ package Ada.Numerics.Generic_Complex_Types is
    pragma Inline ("/");
 
    function "**" (Left : Imaginary; Right : Integer) return Complex;
-   pragma Inline ("**");
 
    function "<" (Left, Right : Imaginary) return Boolean;
    pragma Inline ("<");

@@ -33,8 +33,10 @@ package Ada.Memory_Mapped_IO is
    procedure Unmap (Object : in out Mapping);
 
    function Address (Object : Mapping) return System.Address;
+   pragma Inline (Address);
    function Size (Object : Mapping)
       return System.Storage_Elements.Storage_Count;
+   pragma Inline (Size);
 
    Status_Error : exception renames IO_Exceptions.Status_Error;
    Use_Error : exception renames IO_Exceptions.Use_Error;

@@ -80,6 +80,7 @@ package Interfaces is
                                  A2 : Integer_32);
    procedure sync_add_and_fetch (A1 : not null access Integer_64;
                                  A2 : Integer_64);
+   pragma Inline_Always (sync_add_and_fetch);
 
    function sync_sub_and_fetch (A1 : not null access Integer_8;
                                 A2 : Integer_8) return Integer_8;
@@ -89,6 +90,7 @@ package Interfaces is
                                 A2 : Integer_32) return Integer_32;
    function sync_sub_and_fetch (A1 : not null access Integer_64;
                                 A2 : Integer_64) return Integer_64;
+   pragma Inline_Always (sync_sub_and_fetch);
 
    function sync_bool_compare_and_swap (A1 : not null access Integer_8;
                                         A2 : Integer_8;
@@ -102,6 +104,7 @@ package Interfaces is
    function sync_bool_compare_and_swap (A1 : not null access Integer_64;
                                         A2 : Integer_64;
                                         A3 : Integer_64) return Boolean;
+   pragma Inline_Always (sync_bool_compare_and_swap);
 
 private
 

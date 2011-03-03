@@ -16,6 +16,7 @@ package Ada.Streams.Buffer_Storage_IO is
       New_Size : Stream_Element_Count);
 
    function Address (Object : Buffer) return System.Address;
+   pragma Inline (Address);
 
    procedure Query_Elements (
       Object : Buffer;

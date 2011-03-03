@@ -74,14 +74,17 @@ package Ada.Strings.Generic_Bounded is
    function "<=" (Left, Right : Bounded_String) return Boolean;
    function "<=" (Left : Bounded_String; Right : String_Type) return Boolean;
    function "<=" (Left : String_Type; Right : Bounded_String) return Boolean;
+   pragma Inline ("<=");
 
    function ">" (Left, Right : Bounded_String) return Boolean;
    function ">" (Left : Bounded_String; Right : String_Type) return Boolean;
    function ">" (Left : String_Type; Right : Bounded_String) return Boolean;
+   pragma Inline (">");
 
    function ">=" (Left, Right : Bounded_String) return Boolean;
    function ">=" (Left : Bounded_String; Right : String_Type) return Boolean;
    function ">=" (Left : String_Type; Right : Bounded_String) return Boolean;
+   pragma Inline (">=");
 
    --  extended
    package Slicing is new System.Arrays.Generic_Slicing (

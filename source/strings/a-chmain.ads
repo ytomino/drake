@@ -10,13 +10,13 @@ package Ada.Characters.Maps.Inside is
       with function Source
          return not null access Characters.Inside.Sets.Character_Set;
    function To_Set return T;
-   pragma Inline (To_Set);
+   pragma Inline_Always (To_Set);
 
    generic
       type T is new Root_Character_Mapping;
       with function Source
          return not null access Characters.Inside.Maps.Character_Mapping;
    function To_Mapping return T;
-   pragma Inline (To_Mapping);
+   pragma Inline_Always (To_Mapping);
 
 end Ada.Characters.Maps.Inside;

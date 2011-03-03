@@ -182,71 +182,51 @@ package Ada.Wide_Text_IO is
    --  Character Input-Output
 
    procedure Get (File : File_Type; Item : out Wide_Character);
-   pragma Inline (Get);
    procedure Get (Item : out Wide_Character);
-   pragma Inline (Get);
 
    procedure Put (File : File_Type; Item : Wide_Character);
-   pragma Inline (Put);
    procedure Put (Item : Wide_Character);
-   pragma Inline (Put);
 
    procedure Look_Ahead (
       File : File_Type;
       Item : out Wide_Character;
       End_Of_Line : out Boolean);
-   pragma Inline (Look_Ahead);
    procedure Look_Ahead (
       Item : out Wide_Character;
       End_Of_Line : out Boolean);
-   pragma Inline (Look_Ahead);
 
    procedure Get_Immediate (File : File_Type; Item : out Wide_Character);
-   pragma Inline (Get_Immediate);
    procedure Get_Immediate (Item : out Wide_Character);
-   pragma Inline (Get_Immediate);
 
    procedure Get_Immediate (
       File : File_Type;
       Item : out Wide_Character;
       Available : out Boolean);
-   pragma Inline (Get_Immediate);
    procedure Get_Immediate (
       Item : out Wide_Character;
       Available : out Boolean);
-   pragma Inline (Get_Immediate);
 
    --  String Input-Output
 
    procedure Get (File : File_Type; Item : out Wide_String);
-   pragma Inline (Get);
    procedure Get (Item : out Wide_String);
-   pragma Inline (Get);
 
    procedure Put (File : File_Type; Item : Wide_String);
-   pragma Inline (Put);
    procedure Put (Item : Wide_String);
-   pragma Inline (Put);
 
    procedure Get_Line (
       File : File_Type;
       Item : out Wide_String;
       Last : out Natural);
-   pragma Inline (Get_Line);
    procedure Get_Line (
       Item : out Wide_String;
       Last : out Natural);
-   pragma Inline (Get_Line);
 
    function Get_Line (File : File_Type) return Wide_String;
-   pragma Inline (Get_Line);
    function Get_Line return Wide_String;
-   pragma Inline (Get_Line);
 
    procedure Put_Line (File : File_Type; Item : Wide_String);
-   pragma Inline (Put_Line);
    procedure Put_Line (Item : Wide_String);
-   pragma Inline (Put_Line);
 
    --  Generic packages for Input-Output of Integer Types
    --  Generic packages for Input-Output of Real Types

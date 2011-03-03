@@ -17,6 +17,7 @@ package Ada.Streams.Overlay_Storage_IO is
 
    function Stream (Object : Overlay)
       return not null access Root_Stream_Type'Class;
+   pragma Inline (Stream);
 
 private
 

@@ -295,6 +295,7 @@ package Ada.Strings.Generic_Fixed is
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
          return Natural;
+      pragma Inline (Index_Per_Element);
 
       function Index_Per_Element (
          Source : String_Type;
@@ -303,6 +304,7 @@ package Ada.Strings.Generic_Fixed is
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
          return Natural;
+      pragma Inline (Index_Per_Element);
 
       --  extended, forward or backward only version
       function Index_Per_Element_Forward (
