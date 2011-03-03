@@ -1,3 +1,4 @@
+with Ada.Numerics.Generic_Complex_Types.Inside;
 package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
 
@@ -21,36 +22,10 @@ package body Ada.Numerics.Generic_Complex_Types is
       end if;
    end "**";
 
-   function Arctan (
-      Y : Real'Base;
-      X : Real'Base := 1.0)
-      return Real'Base;
-   pragma Inline (Arctan);
-   function Arctan (
-      Y : Real'Base;
-      X : Real'Base := 1.0)
-      return Real'Base
-   is
-      function atan2f (A1, A2 : Float) return Float;
-      pragma Import (Intrinsic, atan2f, "__builtin_atan2f");
-      function atan2 (A1, A2 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, atan2, "__builtin_atan2");
-      function atan2l (A1, A2 : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, atan2l, "__builtin_atan2l");
-   begin
-      if Real'Digits <= Float'Digits then
-         return Real'Base (atan2f (Float (Y), Float (X)));
-      elsif Real'Digits <= Long_Float'Digits then
-         return Real'Base (atan2 (Long_Float (Y), Long_Float (X)));
-      else
-         return Real'Base (atan2l (Long_Long_Float (Y), Long_Long_Float (X)));
-      end if;
-   end Arctan;
+   package Impl is new Inside;
 
-   function Argument (X : Complex) return Real'Base is
-   begin
-      return Arctan (X.Im, X.Re);
-   end Argument;
+   function Argument (X : Complex) return Real'Base
+      renames Impl.Argument;
 
    function Argument (X : Complex; Cycle : Real'Base) return Real'Base is
    begin
