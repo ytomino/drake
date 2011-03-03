@@ -352,13 +352,15 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    function "**" (Left : Complex; Right : Integer) return Complex is
    begin
-      return Compose_From_Polar (Modulus (Left) ** Right,
-                                 Argument (Left) * Real'Base (Right));
+      return Compose_From_Polar (
+         Modulus (Left) ** Right,
+         Argument (Left) * Real'Base (Right));
    end "**";
 
    function "**" (Left : Imaginary; Right : Integer) return Complex is
    begin
-      return Compose_From_Polar ((abs Real'Base (Left)) ** Right,
+      return Compose_From_Polar (
+         (abs Real'Base (Left)) ** Right,
          (Real'Base'(Pi) / Real'Base'(2.0)) * Real'Base (Right));
    end "**";
 
