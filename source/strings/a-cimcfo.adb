@@ -1,5 +1,6 @@
 with Ada.UCD.Case_Folding;
 package body Ada.Characters.Inside.Maps.Case_Folding is
+   pragma Suppress (All_Checks);
    use type UCD.UCS_4;
 
    Mapping : aliased Character_Mapping := (

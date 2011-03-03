@@ -1,5 +1,6 @@
 with Ada.Characters.Inside.Sets.General_Category;
 package body Ada.Characters.Inside.Sets.Constants is
+   pragma Suppress (All_Checks);
    use type Interfaces.Integer_32;
 
    Decimal_Digit_Set_Data : aliased Characters.Inside.Sets.Character_Set := (

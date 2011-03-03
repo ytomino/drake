@@ -1,5 +1,6 @@
 with Ada.UCD.Simple_Case_Mapping;
 package body Ada.Characters.Inside.Maps.Lower_Case is
+   pragma Suppress (All_Checks);
    use type UCD.UCS_4;
 
    Mapping : aliased Character_Mapping := (
