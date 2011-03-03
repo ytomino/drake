@@ -1,16 +1,23 @@
 pragma License (Unrestricted);
 --  generic implementation of Ada.Strings.Bounded
+with Ada.Streams;
 with System.Arrays;
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
+   with procedure Read (
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : out String_Type);
+   with procedure Write (
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : String_Type);
 package Ada.Strings.Generic_Bounded is
    pragma Preelaborate;
 
    --  extended
-   type Bounded_String (Max : Positive) is record
+   type Bounded_String (Capacity : Positive) is record
       Length : Natural := 0;
-      Data : aliased String_Type (1 .. Max);
+      Element : aliased String_Type (1 .. Capacity);
    end record;
 
    function Length (Source : Bounded_String) return Natural;
@@ -91,6 +98,14 @@ package Ada.Strings.Generic_Bounded is
       Positive,
       Character_Type,
       String_Type);
+   function Constant_Reference (
+      Source : not null access constant Bounded_String)
+      return Slicing.Constant_Reference_Type;
+   function Constant_Reference (
+      Source : not null access constant Bounded_String;
+      First_Index : Positive;
+      Last_Index : Natural)
+      return Slicing.Constant_Reference_Type;
    function Reference (Source : not null access Bounded_String)
       return Slicing.Reference_Type;
    function Reference (
@@ -124,6 +139,9 @@ package Ada.Strings.Generic_Bounded is
          Source : String_Type;
          Drop : Truncation := Error)
          return Bounded_String;
+
+      --  extended for shorthand
+      function "+" (Source : String_Type) return Bounded_String;
 
 --    function To_String (Source : Bounded_String) return String_Type;
       --  function To_String is inheried
@@ -744,6 +762,25 @@ package Ada.Strings.Generic_Bounded is
          end Generic_Maps;
 
       end Generic_Functions;
+
+   private
+
+      package No_Primitives is
+         procedure Read (
+            Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+            Item : out Bounded_String);
+         function Input (
+            Stream : not null access Streams.Root_Stream_Type'Class)
+            return Bounded_String;
+         procedure Write (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : Bounded_String);
+      end No_Primitives;
+
+      for Bounded_String'Read use No_Primitives.Read;
+      for Bounded_String'Write use No_Primitives.Write;
+      for Bounded_String'Input use No_Primitives.Input;
+      for Bounded_String'Output use No_Primitives.Write;
 
    end Generic_Bounded_Length;
 

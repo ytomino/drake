@@ -1,7 +1,7 @@
 with System.Address_To_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
-procedure accessconv is
+procedure addrconv is
 	procedure puts (a1 : String);
 	pragma Import (C, puts);
 	package AC1 is new System.Address_To_Access_Conversions (Integer);
@@ -25,4 +25,4 @@ begin
 	else
 		puts ("NG" & ASCII.NUL);
 	end if;
-end accessconv;
+end addrconv;

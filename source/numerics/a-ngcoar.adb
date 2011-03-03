@@ -1,11 +1,10 @@
-with Ada.Numerics.Generic_Elementary_Functions;
-with Ada.Numerics.Generic_Complex_Elementary_Functions;
 with Ada.Numerics.Generic_Arrays;
+with Ada.Numerics.Generic_Complex_Elementary_Functions;
+with Ada.Numerics.Generic_Elementary_Sqrt;
 package body Ada.Numerics.Generic_Complex_Arrays is
    pragma Suppress (All_Checks);
 
-   package Real_Elementary_Functions is
-      new Generic_Elementary_Functions (Real'Base);
+   function Sqrt is new Generic_Elementary_Sqrt (Real'Base);
    package Elementary_Functions is
       new Generic_Complex_Elementary_Functions (Complex_Types);
 
@@ -382,7 +381,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       Complex_Vector,
       Real'Base,
       Zero => 0.0,
-      Sqrt => Real_Elementary_Functions.Sqrt);
+      Sqrt => Sqrt);
 
    function "abs" (Right : Complex_Vector) return Real'Base
       renames abs_Body;

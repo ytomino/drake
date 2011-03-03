@@ -40,11 +40,18 @@ begin
 	pragma Assert (X > "10");
 	pragma Assert (X < "12");
 	declare
+	   package BP is new Ada.Strings.Bounded.Generic_Bounded_Length (10);
+	   use type BP.Bounded_String;
+	   B : BP.Bounded_String := +"123";
+	begin
+		null;
+	end;
+	declare
 	   use type Ada.Strings.Unbounded.Unbounded_String;
 	   U : Ada.Strings.Unbounded.Unbounded_String;
 	begin
 	   pragma Assert (U = "");
-	   U := Ada.Strings.Unbounded.To_Unbounded_String ("B");
+	   U := +"B";
 	   pragma Assert (U > "A");
 	   pragma Assert (U = "B");
 	   pragma Assert (U < "C");

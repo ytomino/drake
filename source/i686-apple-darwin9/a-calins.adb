@@ -101,15 +101,20 @@ package body Ada.Calendar.Inside is
          tm_isdst => 0,
          tm_gmtoff => 0,
          tm_zone => null);
-      Result : constant C.sys.types.time_t := C.time.timegm (tm'Access);
+      C_Result : constant C.sys.types.time_t := C.time.timegm (tm'Access);
+      Result : Time;
    begin
       --  UNIX time starts until 1970, Year_Number stats unitl 1901...
-      if Result = -1 then
-         raise Time_Error;
+      if C_Result = -1 then
+         if Year = 1901 and then Month = 1 and then Day = 1 then
+            Result := -7857734400.0; -- first day in Time
+         else
+            raise Time_Error;
+         end if;
+      else
+         Result := To_Time (C_Result);
       end if;
-      return To_Time (
-         Result - C.sys.types.time_t (Time_Zone) * 60) +
-         Seconds;
+      return Result - Duration (Time_Zone * 60) + Seconds;
    end Time_Of;
 
    procedure Delay_For (D : Duration) is

@@ -640,6 +640,17 @@ package body Ada.Directories is
       end if;
    end Start_Search;
 
+   function Start_Search (
+      Directory : String;
+      Pattern : String;
+      Filter : Filter_Type := (others => True))
+      return Search_Type is
+   begin
+      return Result : Search_Type do
+         Start_Search (Result, Directory, Pattern, Filter);
+      end return;
+   end Start_Search;
+
    function To_File_Kind (Attribute : C.sys.types.mode_t) return File_Kind is
       Kind_Attr : constant C.sys.types.mode_t :=
          Attribute and C.sys.stat.S_IFMT;

@@ -1,4 +1,5 @@
 package body Ada.Strings.Generic_Unbounded is
+   use type Streams.Stream_Element_Offset;
    use type Interfaces.Integer_32;
 
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
@@ -1040,5 +1041,39 @@ package body Ada.Strings.Generic_Unbounded is
       end Generic_Maps;
 
    end Generic_Functions;
+
+   package body No_Primitives is
+
+      procedure Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Unbounded_String)
+      is
+         pragma Suppress (All_Checks);
+         First : Integer;
+         Last : Integer;
+      begin
+         Integer'Read (Stream, First);
+         Integer'Read (Stream, Last);
+         declare
+            Length : constant Integer := Last - First + 1;
+         begin
+            Item.Length := 0;
+            Set_Length (Item, Length);
+            Read (Stream, Item.Data.Items (1 .. Length));
+         end;
+      end Read;
+
+      procedure Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Unbounded_String)
+      is
+         pragma Suppress (All_Checks);
+      begin
+         Integer'Write (Stream, 1);
+         Integer'Write (Stream, Item.Length);
+         Write (Stream, Item.Data.Items (1 .. Item.Length));
+      end Write;
+
+   end No_Primitives;
 
 end Ada.Strings.Generic_Unbounded;

@@ -315,6 +315,13 @@ package Ada.Containers.Limited_Vectors is
          return Boolean;
    end Equivalents;
 --  diff
+--  diff
+--  diff
+
+--  diff (Generic_Array_To_Vector)
+--
+--
+--
 
 private
 

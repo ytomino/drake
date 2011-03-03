@@ -35,7 +35,7 @@ CFLAGS=-gnatf -gnatwI
 BFLAGS=
 endif
 
-LFLAGS=-lc-gnat -lm
+LFLAGS=-lm
 
 .PHONY: all clean
 

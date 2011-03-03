@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  Ada 2012
-private with Ada.Strings.UTF_Encoding.Conversions;
+with Ada.Strings.UTF_Encoding.Conversions;
 package Ada.Strings.UTF_Encoding.Wide_Wide_Strings is
    pragma Pure;
 
@@ -15,7 +15,8 @@ package Ada.Strings.UTF_Encoding.Wide_Wide_Strings is
    function Encode (
       Item : Wide_Wide_String;
       Output_BOM : Boolean := False)
-      return UTF_8_String;
+      return UTF_8_String
+      renames Conversions.Convert;
 
 --  function Encode (
 --    Item : Wide_Wide_String;
@@ -30,13 +31,5 @@ package Ada.Strings.UTF_Encoding.Wide_Wide_Strings is
 --  function Decode (Item : UTF_8_String) return Wide_Wide_String;
 
 --  function Decode (Item : UTF_16_Wide_String) return Wide_Wide_String;
-
-private
-
-   function Encode (
-      Item : Wide_Wide_String;
-      Output_BOM : Boolean := False)
-      return UTF_8_String
-      renames Conversions.Convert;
 
 end Ada.Strings.UTF_Encoding.Wide_Wide_Strings;

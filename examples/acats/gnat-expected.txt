@@ -1,0 +1,77 @@
+c41306a U rendezvous before return
+c45322a N Float'Machine_Overflows
+c45523a N Float'Machine_Overflows
+c4a012b N Float'Machine_Overflows
+c96005b N Duration'Base equals Duration
+ca14028 F on GNAT, it can not use specialized body with generic package spec
+cb10002 N enough memory exists
+ce2102d N In_File is supported in Sequencial_IO
+ce2102e N Out_File is supported in Sequencial_IO
+ce2102f N Inout_File is supported in Direct_IO
+ce2102i N In_File is supported in Direct_IO
+ce2102j N Out_File is supported in Direct_IO
+ce2102n N In_File is supported in Sequencial_IO
+ce2102o N In_File is supported in Sequencial_IO
+ce2102p N Out_File is supported in Sequencial_IO
+ce2102q N Out_File is supported in Sequencial_IO
+ce2102r N Inout_File is supported in Direct_IO
+ce2102s N Inout_File is supported in Direct_IO
+ce2102t N In_File is supported in Direct_IO
+ce2102u N In_File is supported in Direct_IO
+ce2102v N Out_File is supported in Direct_IO
+ce2102w N Out_File is supported in Direct_IO
+ce2203a N capacity is nothing for Sequencial_IO
+ce2403a N capacity is nothing for Direct_IO
+ce3102e N In_File is supported in Text_IO
+ce3102f N Reset is supported in Text_IO
+ce3102g N Delete is supported in Text_IO
+ce3102i N Out_File is supported in Text_IO
+ce3102j N In_File is supported in Text_IO
+ce3102k N Out_File is supported in Text_IO
+ce3115a N multiple internal files are supported in Text_IO
+ce3304a N -1 not in Text_IO.Count
+ce3413b N Text_IO.Count'Last is too large for test
+cxb4009 C it requites COBOL compiler
+cxb5004 C it requites Fortran compiler
+cxb5005 C it requites Fortran compiler
+cxc3001 F Annex C is not supported
+cxc3003 A Annex C is not supported
+cxc3004 A Annex C is not supported
+cxc3006 A Annex C is not supported
+cxc3007 F Annex C is not supported
+cxc3008 F Annex C is not supported
+cxc3009 A Annex C is not supported
+cxd1003 F failed to rendezvous
+cxd1004 F failed to rendezvous
+cxd1005 F failed to rendezvous
+cxd2002 F failed to task priority control
+cxd2003 F failed to task priority control
+cxd2004 F failed to task priority control
+cxd2006 F failed to task priority control
+cxd2007 C Asynchronous_Task_Control is not supported
+cxd2008 F failed to queue priority control
+cxd3001 F pragma Locking_Policy is not working
+cxd3002 F pragma Locking_Policy is not working
+cxd6002 F failed to abort
+cxda004 A Annex C is not supported
+cxdb001 C Asynchronous_Task_Control is not supported
+cxdb002 C Asynchronous_Task_Control is not supported
+cxdb003 C Asynchronous_Task_Control is not supported
+cxdb004 C Asynchronous_Task_Control is not supported
+cxe1001 U GLADE required for Annex E (RPC)
+cxe2001 U GLADE required for Annex E (RPC)
+cxe2002 U GLADE required for Annex E (RPC)
+cxe2003 U GLADE required for Annex E (RPC)
+cxe2004 U GLADE required for Annex E (RPC)
+cxe2005 U GLADE required for Annex E (RPC)
+cxe4001 U GLADE required for Annex E (RPC)
+cxe4002 U GLADE required for Annex E (RPC)
+cxe4003 U GLADE required for Annex E (RPC)
+cxe4004 U GLADE required for Annex E (RPC)
+cxe4005 U GLADE required for Annex E (RPC)
+cxe4006 U GLADE required for Annex E (RPC)
+cxe5002 U GLADE required for Annex E (RPC)
+cxe5003 U GLADE required for Annex E (RPC)
+cxh1001 C all sources should be recompilation with pragma Normalize_Scalars
+cz00004 F z should not equal Z Expecting: z Got: Z. (???)
+lxd7008 C Asynchronous_Task_Control is not supported

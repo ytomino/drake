@@ -36,10 +36,12 @@ package System.Unwind is
       Exception_Occurrence,
       Exception_Occurrence_Access);
 
-   --  (a-except-2005.adb)
+   --  implementation for catching object (a-except-2005.adb)
    procedure Save_Occurrence_No_Private (
       Target : out Exception_Occurrence;
       Source : Exception_Occurrence);
+   pragma Export (Ada, Save_Occurrence_No_Private,
+      "ada__exceptions__save_occurrence");
 
    --  equivalent to Append_Info_Exception_Information (a-exexda.adb)
    generic

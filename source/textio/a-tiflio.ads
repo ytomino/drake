@@ -50,4 +50,12 @@ package Ada.Text_IO.Float_IO is
       Aft : Field := Default_Aft;
       Exp : Field := Default_Exp);
 
+   --  extended for Complex_IO
+   procedure Put (
+      To : out String;
+      Last : out Natural;
+      Item : Num;
+      Aft : Field := Default_Aft;
+      Exp : Field := Default_Exp);
+
 end Ada.Text_IO.Float_IO;

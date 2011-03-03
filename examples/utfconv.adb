@@ -6,7 +6,12 @@ with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 procedure utfconv is
 	S : String := "あいうえお";
 	W : Wide_String := Ada.Strings.UTF_Encoding.Conversions.Convert (S);
-	R : String := Ada.Strings.UTF_Encoding.Conversions.Convert (W);
+	WR : String := Ada.Strings.UTF_Encoding.Conversions.Convert (W);
+	WW : Wide_Wide_String := Ada.Strings.UTF_Encoding.Conversions.Convert (S);
+	WWR : String := Ada.Strings.UTF_Encoding.Conversions.Convert (WW);
 begin
-	Ada.Debug.Put (R);
+	pragma Assert (WR = S);
+	pragma Assert (WWR = S);
+	pragma Debug (Ada.Debug.Put ("OK"));
+	null;
 end utfconv;

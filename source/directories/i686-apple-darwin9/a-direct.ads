@@ -81,6 +81,13 @@ package Ada.Directories is
       Pattern : String;
       Filter : Filter_Type := (others => True));
 
+   --  extended
+   function Start_Search (
+      Directory : String;
+      Pattern : String;
+      Filter : Filter_Type := (others => True))
+      return Search_Type;
+
    procedure End_Search (Search : in out Search_Type);
 
    function More_Entries (Search : Search_Type) return Boolean;

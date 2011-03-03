@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation package
-with Ada.Streams.Stream_IO.Inside;
+with Ada.Streams.Stream_IO.Inside.Standards;
 package Ada.Text_IO.Inside is
 
    --  handle of stream
@@ -174,12 +174,12 @@ private
       Name_Length => 0,
       Form_Length => 0,
       Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standard_Input),
-      File => Streams.Stream_IO.Inside.Standard_Input,
+         Streams.Stream_IO.Inside.Standards.Standard_Input),
+      File => Streams.Stream_IO.Inside.Standards.Standard_Input,
       Mode => File_Mode (Streams.Stream_IO.Inside.Mode (
-         Streams.Stream_IO.Inside.Standard_Input)),
+         Streams.Stream_IO.Inside.Standards.Standard_Input)),
       Encoding => Terminal_To_Encoding (Streams.Stream_IO.Inside.Is_Terminal (
-         Streams.Stream_IO.Inside.Standard_Input)),
+         Streams.Stream_IO.Inside.Standards.Standard_Input)),
       Line_Mark => LF,
       Is_Standard => True,
       others => <>);
@@ -188,12 +188,12 @@ private
       Name_Length => 0,
       Form_Length => 0,
       Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standard_Output),
-      File => Streams.Stream_IO.Inside.Standard_Output,
+         Streams.Stream_IO.Inside.Standards.Standard_Output),
+      File => Streams.Stream_IO.Inside.Standards.Standard_Output,
       Mode => File_Mode (Streams.Stream_IO.Inside.Mode (
-         Streams.Stream_IO.Inside.Standard_Output)),
+         Streams.Stream_IO.Inside.Standards.Standard_Output)),
       Encoding => Terminal_To_Encoding (Streams.Stream_IO.Inside.Is_Terminal (
-         Streams.Stream_IO.Inside.Standard_Output)),
+         Streams.Stream_IO.Inside.Standards.Standard_Output)),
       Line_Mark => LF,
       Is_Standard => True,
       others => <>);
@@ -202,12 +202,12 @@ private
       Name_Length => 0,
       Form_Length => 0,
       Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standard_Error),
-      File => Streams.Stream_IO.Inside.Standard_Error,
+         Streams.Stream_IO.Inside.Standards.Standard_Error),
+      File => Streams.Stream_IO.Inside.Standards.Standard_Error,
       Mode => File_Mode (Streams.Stream_IO.Inside.Mode (
-         Streams.Stream_IO.Inside.Standard_Error)),
+         Streams.Stream_IO.Inside.Standards.Standard_Error)),
       Encoding => Terminal_To_Encoding (Streams.Stream_IO.Inside.Is_Terminal (
-         Streams.Stream_IO.Inside.Standard_Error)),
+         Streams.Stream_IO.Inside.Standards.Standard_Error)),
       Line_Mark => LF,
       Is_Standard => True,
       others => <>);

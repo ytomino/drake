@@ -1,6 +1,13 @@
 package body Ada.Numerics.Generic_Elementary_Functions is
    pragma Suppress (All_Checks);
 
+   --  constants for Sinh/Cosh on high precision mode
+   Log_Two : constant := 0.69314_71805_59945_30941_72321_21458_17656_80755;
+   Log_Inverse_Epsilon : constant Float_Type'Base :=
+      Float_Type'Base (Float_Type'Base'Model_Mantissa - 1) * Log_Two;
+   Lnv : constant := 8#0.542714#;
+   V2minus1 : constant := 0.13830_27787_96019_02638E-4;
+
    function Arccos (X : Float_Type'Base) return Float_Type'Base is
       function acosf (A1 : Float) return Float;
       pragma Import (Intrinsic, acosf, "__builtin_acosf");
@@ -9,7 +16,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       function acosl (A1 : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, acosl, "__builtin_acosl");
    begin
-      if abs X > 1.0 then
+      if not Standard'Fast_Math and then abs X > 1.0 then
          raise Argument_Error; -- CXA5A06
       elsif Float_Type'Digits <= Float'Digits then
          return Float_Type (acosf (Float (X)));
@@ -22,10 +29,16 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Arccos (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin
-      if Cycle <= 0.0 then
-         raise Argument_Error; -- CXA5A06
-      else
+      if Standard'Fast_Math then
          return Arccos (X) * Cycle / (2.0 * Pi);
+      else
+         if Cycle <= 0.0 then
+            raise Argument_Error; -- CXA5A06
+         elsif X = -1.0 then
+            return Cycle / 2.0; -- CXG2015
+         else
+            return Arccos (X) * Cycle / (2.0 * Pi);
+         end if;
       end if;
    end Arccos;
 
@@ -37,7 +50,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       function acoshl (A1 : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, acoshl, "__builtin_acoshl");
    begin
-      if X < 1.0 then
+      if not Standard'Fast_Math and then X < 1.0 then
          raise Argument_Error; -- CXA5A06
       elsif Float_Type'Digits <= Float'Digits then
          return Float_Type (acoshf (Float (X)));
@@ -60,7 +73,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       Cycle : Float_Type'Base)
       return Float_Type'Base is
    begin
-      if Cycle <= 0.0 then
+      if not Standard'Fast_Math and then Cycle <= 0.0 then
          raise Argument_Error; -- CXA5A08
       else
          return Arccot (X, Y) * Cycle / (2.0 * Pi);
@@ -69,7 +82,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Arccoth (X : Float_Type'Base) return Float_Type'Base is
    begin
-      if abs X < 1.0 then
+      if not Standard'Fast_Math and then abs X < 1.0 then
          raise Argument_Error; -- CXA5A04
       else
          return Log ((X + 1.0) / (X - 1.0)) * 0.5;
@@ -84,7 +97,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       function asinl (A1 : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, asinl, "__builtin_asinl");
    begin
-      if abs X > 1.0 then
+      if not Standard'Fast_Math and then abs X > 1.0 then
          raise Argument_Error; -- CXA5A05
       elsif Float_Type'Digits <= Float'Digits then
          return Float_Type (asinf (Float (X)));
@@ -97,10 +110,16 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Arcsin (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin
-      if Cycle <= 0.0 then
-         raise Argument_Error; -- CXA5A05
-      else
+      if Standard'Fast_Math then
          return Arcsin (X) * Cycle / (2.0 * Pi);
+      else
+         if Cycle <= 0.0 then
+            raise Argument_Error; -- CXA5A05
+         elsif abs X = 1.0 then
+            return Float_Type'Base'Copy_Sign (Cycle / 4.0, X); -- CXG2015
+         else
+            return Arcsin (X) * Cycle / (2.0 * Pi);
+         end if;
       end if;
    end Arcsin;
 
@@ -121,35 +140,21 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       end if;
    end Arcsinh;
 
-   function Arctan (Y : Float_Type'Base; X : Float_Type'Base := 1.0)
-      return Float_Type'Base
-   is
-      function atan2f (A1, A2 : Float) return Float;
-      pragma Import (Intrinsic, atan2f, "__builtin_atan2f");
-      function atan2 (A1, A2 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, atan2, "__builtin_atan2");
-      function atan2l (A1, A2 : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, atan2l, "__builtin_atan2l");
-   begin
-      if X = 0.0 and then Y = 0.0 then
-         raise Argument_Error; -- CXA5A07
-      elsif Float_Type'Digits <= Float'Digits then
-         return Float_Type (atan2f (Float (Y), Float (X)));
-      elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (atan2 (Long_Float (Y), Long_Float (X)));
-      else
-         return Float_Type (atan2l (Long_Long_Float (Y), Long_Long_Float (X)));
-      end if;
-   end Arctan;
-
    function Arctan (
       Y : Float_Type'Base;
       X : Float_Type'Base := 1.0;
       Cycle : Float_Type'Base)
       return Float_Type'Base is
    begin
-      if Cycle <= 0.0 then
+      if not Standard'Fast_Math and then Cycle <= 0.0 then
          raise Argument_Error; -- CXA5A07
+      elsif not Standard'Fast_Math and then Y = 0.0 then
+         --  CXG2016 requires
+         if X < 0.0 then
+            return Cycle / 2.0 * Float_Type'Copy_Sign (1.0, Y);
+         else
+            return 0.0;
+         end if;
       else
          return Arctan (Y, X) * Cycle / (2.0 * Pi);
       end if;
@@ -163,7 +168,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       function atanhl (A1 : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, atanhl, "__builtin_atanhl");
    begin
-      if abs X > 1.0 then
+      if not Standard'Fast_Math and then abs X > 1.0 then
          raise Argument_Error; -- CXA5A03
       elsif Float_Type'Digits <= Float'Digits then
          return Float_Type (atanhf (Float (X)));
@@ -193,24 +198,37 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Cos (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin
-      --  CXA5A02 requires just result that is 0.0, 1.0 or -1.0
-      if Cycle <= 0.0 then
-         raise Argument_Error;
+      if Standard'Fast_Math then
+         return Cos (2.0 * Pi * X / Cycle);
       else
-         declare
-            R : constant Float_Type'Base :=
-               Float_Type'Base'Remainder (X / Cycle, 1.0);
-         begin
-            if R = 0.25 then
-               return 0.0;
-            elsif R = 0.5 then
-               return -1.0;
-            elsif R = 0.75 then
-               return 0.0;
-            else
-               return Cos (2.0 * Pi * R);
-            end if;
-         end;
+         --  CXA5A02 requires just result that is 0.0, 1.0 or -1.0
+         --  CXG2004 requires just result that is 0.5
+         if Cycle <= 0.0 then
+            raise Argument_Error;
+         else
+            declare
+               R : constant Float_Type'Base :=
+                  Float_Type'Base'Remainder (X / Cycle, 1.0);
+            begin
+               if R = 2.0 / 12.0 then
+                  return 0.5;
+               elsif R = 0.25 then
+                  return 0.0;
+               elsif R = 4.0 / 12.0 then
+                  return -0.5;
+               elsif R = 0.5 then
+                  return -1.0;
+               elsif R = 8.0 / 12.0 then
+                  return -0.5;
+               elsif R = 0.75 then
+                  return 0.0;
+               elsif R = 10.0 / 12.0 then
+                  return 0.5;
+               else
+                  return Cos (2.0 * Pi * R);
+               end if;
+            end;
+         end if;
       end if;
    end Cos;
 
@@ -222,12 +240,23 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       function coshl (A1 : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, coshl, "__builtin_coshl");
    begin
-      if Float_Type'Digits <= Float'Digits then
-         return Float_Type (coshf (Float (X)));
-      elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (cosh (Long_Float (X)));
+      if not Standard'Fast_Math and then abs X > Log_Inverse_Epsilon then
+         --  CXG2014 requires high precision
+         --  graph of Cosh draws catenary line (Cosh (X) = abs Sinh (X))
+         declare
+            Y : constant Float_Type'Base := Exp (abs X - Lnv);
+            Z : constant Float_Type'Base := Y + V2minus1 * Y;
+         begin
+            return Z;
+         end;
       else
-         return Float_Type (coshl (Long_Long_Float (X)));
+         if Float_Type'Digits <= Float'Digits then
+            return Float_Type (coshf (Float (X)));
+         elsif Float_Type'Digits <= Long_Float'Digits then
+            return Float_Type (cosh (Long_Float (X)));
+         else
+            return Float_Type (coshl (Long_Long_Float (X)));
+         end if;
       end if;
    end Cosh;
 
@@ -238,10 +267,26 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Cot (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin
-      if Cycle <= 0.0 then
-         raise Argument_Error; -- CXA5A04
-      else
+      if Standard'Fast_Math then
          return Cot (2.0 * Pi * X / Cycle);
+      else
+         if Cycle <= 0.0 then
+            raise Argument_Error; -- CXA5A04
+         else
+            --  CXG2013 requires just result that is 0.0
+            declare
+               R : constant Float_Type'Base :=
+                  Float_Type'Base'Remainder (X / Cycle, 1.0);
+            begin
+               if R = 0.25 then
+                  return 0.0;
+               elsif R = 0.75 then
+                  return 0.0;
+               else
+                  return Cot (2.0 * Pi * R);
+               end if;
+            end;
+         end if;
       end if;
    end Cot;
 
@@ -275,8 +320,10 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       function logl (A1 : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, logl, "__builtin_logl");
    begin
-      if X < 0.0 then
+      if not Standard'Fast_Math and then X < 0.0 then
          raise Argument_Error; -- CXA5A09
+      elsif not Standard'Fast_Math and then X = 0.0 then
+         raise Constraint_Error; -- CXG2011
       elsif Float_Type'Digits <= Float'Digits then
          return Float_Type (logf (Float (X)));
       elsif Float_Type'Digits <= Long_Float'Digits then
@@ -288,7 +335,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Log (X, Base : Float_Type'Base) return Float_Type'Base is
    begin
-      if Base <= 0.0 or else Base = 1.0 then
+      if not Standard'Fast_Math and then (Base <= 0.0 or else Base = 1.0) then
          raise Argument_Error; -- CXA5A09
       else
          return Log (X) / Log (Base);
@@ -314,24 +361,37 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Sin (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin
-      --  CXA5A01 requires just result that is 0.0, 1.0 or -1.0
-      if Cycle <= 0.0 then
-         raise Argument_Error;
+      if Standard'Fast_Math then
+         return Sin (2.0 * Pi * X / Cycle);
       else
-         declare
-            R : constant Float_Type'Base :=
-               Float_Type'Base'Remainder (X / Cycle, 1.0);
-         begin
-            if R = 0.25 then
-               return 1.0;
-            elsif R = 0.5 then
-               return 0.0;
-            elsif R = 0.75 then
-               return -1.0;
-            else
-               return Sin (2.0 * Pi * R);
-            end if;
-         end;
+         --  CXA5A01 requires just result that is 0.0, 1.0 or -1.0
+         --  CXG2004 requires just result that is 0.5
+         if Cycle <= 0.0 then
+            raise Argument_Error;
+         else
+            declare
+               R : constant Float_Type'Base :=
+                  Float_Type'Base'Remainder (X / Cycle, 1.0);
+            begin
+               if R = 1.0 / 12.0 then
+                  return 0.5;
+               elsif R = 0.25 then
+                  return 1.0;
+               elsif R = 5.0 / 12.0 then
+                  return 0.5;
+               elsif R = 0.5 then
+                  return 0.0;
+               elsif R = 7.0 / 12.0 then
+                  return -0.5;
+               elsif R = 0.75 then
+                  return -1.0;
+               elsif R = 11.0 / 12.0 then
+                  return -0.5;
+               else
+                  return Sin (2.0 * Pi * R);
+               end if;
+            end;
+         end if;
       end if;
    end Sin;
 
@@ -343,33 +403,24 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       function sinhl (A1 : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, sinhl, "__builtin_sinhl");
    begin
-      if Float_Type'Digits <= Float'Digits then
-         return Float_Type (sinhf (Float (X)));
-      elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (sinh (Long_Float (X)));
+      if not Standard'Fast_Math and then abs X > Log_Inverse_Epsilon then
+         --  CXG2014 requires high precision
+         declare
+            Y : constant Float_Type'Base := Exp (abs X - Lnv);
+            Z : constant Float_Type'Base := Y + V2minus1 * Y;
+         begin
+            return Float_Type'Copy_Sign (Z, X);
+         end;
       else
-         return Float_Type (sinhl (Long_Long_Float (X)));
+         if Float_Type'Digits <= Float'Digits then
+            return Float_Type (sinhf (Float (X)));
+         elsif Float_Type'Digits <= Long_Float'Digits then
+            return Float_Type (sinh (Long_Float (X)));
+         else
+            return Float_Type (sinhl (Long_Long_Float (X)));
+         end if;
       end if;
    end Sinh;
-
-   function Sqrt (X : Float_Type'Base) return Float_Type'Base is
-      function sqrtf (A1 : Float) return Float;
-      pragma Import (Intrinsic, sqrtf, "__builtin_sqrtf");
-      function sqrt (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, sqrt, "__builtin_sqrt");
-      function sqrtl (A1 : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, sqrtl, "__builtin_sqrtl");
-   begin
-      if X < 0.0 then
-         raise Argument_Error; -- CXA5A10
-      elsif Float_Type'Digits <= Float'Digits then
-         return Float_Type (sqrtf (Float (X)));
-      elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (sqrt (Long_Float (X)));
-      else
-         return Float_Type (sqrtl (Long_Long_Float (X)));
-      end if;
-   end Sqrt;
 
    function Tan (X : Float_Type'Base) return Float_Type'Base is
       function tanf (A1 : Float) return Float;
@@ -390,11 +441,24 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Tan (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin
-      --  CXA5A01 requires just result that is 0.0, 1.0 or -1.0
-      if Cycle <= 0.0 then
-         raise Argument_Error;
-      else
+      if Standard'Fast_Math then
          return Tan (2.0 * Pi * X / Cycle);
+      else
+         if Cycle <= 0.0 then
+            raise Argument_Error; -- CXA5A01
+         else
+            --  CXG2013 requires just result that is 0.0
+            declare
+               R : constant Float_Type'Base :=
+                  Float_Type'Base'Remainder (X / Cycle, 1.0);
+            begin
+               if R = 0.5 then
+                  return 0.0;
+               else
+                  return Tan (2.0 * Pi * R);
+               end if;
+            end;
+         end if;
       end if;
    end Tan;
 
@@ -423,16 +487,53 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       function powl (A1, A2 : Long_Long_Float) return Long_Long_Float;
       pragma Import (Intrinsic, powl, "__builtin_powl");
    begin
-      if Left < 0.0 or else (Left = 0.0 and then Right = 0.0) then
-         raise Argument_Error; -- CXA5A09
-      elsif Float_Type'Digits <= Float'Digits then
-         return Float_Type (powf (Float (Left), Float (Right)));
-      elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (pow (Long_Float (Left), Long_Float (Right)));
+      if Standard'Fast_Math then
+         if Float_Type'Digits <= Float'Digits then
+            return Float_Type (powf (Float (Left), Float (Right)));
+         elsif Float_Type'Digits <= Long_Float'Digits then
+            return Float_Type (pow (Long_Float (Left), Long_Float (Right)));
+         else
+            return Float_Type (powl (
+               Long_Long_Float (Left),
+               Long_Long_Float (Right)));
+         end if;
       else
-         return Float_Type (powl (
-            Long_Long_Float (Left),
-            Long_Long_Float (Right)));
+         if Left < 0.0 or else (Left = 0.0 and then Right = 0.0) then
+            raise Argument_Error; -- CXA5A09
+         elsif Left = 0.0 and then Right < 0.0 then
+            raise Constraint_Error; -- CXG2012
+         else
+            --  CXG2012 requires high precision
+            declare
+               RT : constant Float_Type'Base := Float_Type'Truncation (Right);
+               RR : Float_Type'Base;
+               Coef : Float_Type'Base;
+               Result : Float_Type'Base;
+            begin
+               if Right - RT = 0.25 then
+                  RR := RT;
+                  Coef := Sqrt (Sqrt (Left));
+               elsif Right - RT = 0.5 then
+                  RR := RT;
+                  Coef := Sqrt (Left);
+               else
+                  RR := Right;
+                  Coef := 1.0;
+               end if;
+               if Float_Type'Digits <= Float'Digits then
+                  Result := Float_Type (powf (Float (Left), Float (RR)));
+               elsif Float_Type'Digits <= Long_Float'Digits then
+                  Result := Float_Type (pow (
+                     Long_Float (Left),
+                     Long_Float (RR)));
+               else
+                  Result := Float_Type (powl (
+                     Long_Long_Float (Left),
+                     Long_Long_Float (RR)));
+               end if;
+               return Result * Coef;
+            end;
+         end if;
       end if;
    end "**";
 

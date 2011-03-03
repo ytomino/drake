@@ -1,35 +1,22 @@
+with Ada.Float;
 with Ada.Numerics.Generic_Complex_Types.Inside;
 package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
 
-   function "**" (Left : Real'Base; Right : Integer) return Real'Base;
-   pragma Inline ("**");
-   function "**" (Left : Real'Base; Right : Integer) return Real'Base is
-      function powif (A1 : Float; A2 : Integer) return Float;
-      pragma Import (Intrinsic, powif, "__builtin_powif");
-      function powi (A1 : Long_Float; A2 : Integer) return Long_Float;
-      pragma Import (Intrinsic, powi, "__builtin_powi");
-      function powil (A1 : Long_Long_Float; A2 : Integer)
-         return Long_Long_Float;
-      pragma Import (Intrinsic, powil, "__builtin_powil");
-   begin
-      if Real'Digits <= Float'Digits then
-         return Real'Base (powif (Float (Left), Right));
-      elsif Real'Digits <= Long_Float'Digits then
-         return Real'Base (powi (Long_Float (Left), Right));
-      else
-         return Real'Base (powil (Long_Long_Float (Left), Right));
-      end if;
-   end "**";
-
    package Impl is new Inside;
+   function Is_Infinity is new Ada.Float.Is_Infinity (Real'Base);
+   subtype Float is Standard.Float; -- hiding Ada.Float
 
    function Argument (X : Complex) return Real'Base
       renames Impl.Argument;
 
    function Argument (X : Complex; Cycle : Real'Base) return Real'Base is
    begin
-      return Argument (X) * Cycle / (Real'Base'(2.0) * Real'Base'(Pi));
+      if not Standard'Fast_Math and then Cycle <= 0.0 then
+         raise Argument_Error; -- CXG2006
+      else
+         return Argument (X) * Cycle / (Real'Base'(2.0) * Real'Base'(Pi));
+      end if;
    end Argument;
 
    function Compose_From_Cartesian (Re, Im : Real'Base) return Complex is
@@ -79,8 +66,32 @@ package body Ada.Numerics.Generic_Complex_Types is
    function Compose_From_Polar (Modulus, Argument, Cycle : Real'Base)
       return Complex is
    begin
-      return Compose_From_Polar (Modulus,
-         Argument * (Real'Base'(2.0) * Real'Base'(Pi)) / Cycle);
+      if Standard'Fast_Math then
+         return Compose_From_Polar (
+            Modulus,
+            Real'Base'(2.0) * Real'Base'(Pi) * Argument / Cycle);
+      else
+         if Cycle <= 0.0 then
+            raise Argument_Error; -- CXG2007
+         else
+            declare
+               R : constant Real'Base :=
+                  Real'Base'Remainder (Argument / Cycle, 1.0);
+            begin
+               if R = 0.25 then
+                  return (Re => 0.0, Im => Modulus);
+               elsif R = 0.5 then
+                  return (Re => -Modulus, Im => 0.0);
+               elsif R = 0.75 then
+                  return (Re => 0.0, Im => -Modulus);
+               else
+                  return Compose_From_Polar (
+                     Modulus,
+                     Real'Base'(2.0) * Real'Base'(Pi) * R);
+               end if;
+            end;
+         end if;
+      end if;
    end Compose_From_Polar;
 
    function Conjugate (X : Complex) return Complex is
@@ -258,9 +269,23 @@ package body Ada.Numerics.Generic_Complex_Types is
    end "-";
 
    function "*" (Left, Right : Complex) return Complex is
+      Re : Real'Base := Left.Re * Right.Re - Left.Im * Right.Im;
+      Im : Real'Base := Left.Re * Right.Im + Left.Im * Right.Re;
    begin
-      return (Re => Left.Re * Right.Re - Left.Im * Right.Im,
-              Im => Left.Re * Right.Im + Left.Im * Right.Re);
+      if not Standard'Fast_Math then
+         --  CXG2020
+         if Is_Infinity (Re) then
+            Re := 4.0 * (
+               Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Re / 2.0) -
+               Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Im / 2.0));
+         end if;
+         if Is_Infinity (Im) then
+            Im := 4.0 * (
+               Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Im / 2.0) +
+               Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Re / 2.0));
+         end if;
+      end if;
+      return (Re, Im);
    end "*";
 
    function "*" (Left, Right : Imaginary) return Real'Base is

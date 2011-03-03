@@ -156,6 +156,42 @@ package body Ada.Text_IO.Inside.Formatting is
       end;
    end Get_Numeric_Literal;
 
+   function Get_Complex_Literal (File : File_Type) return String is
+      Item : Character;
+      End_Of_Line : Boolean;
+      Paren : Boolean;
+   begin
+      Skip_Spaces (File);
+      Look_Ahead (File, Item, End_Of_Line);
+      Paren := Item = '(';
+      if Paren then
+         Get (File, Item);
+      end if;
+      declare
+         Re : constant String := Get_Numeric_Literal (File, True);
+      begin
+         Skip_Spaces (File);
+         Look_Ahead (File, Item, End_Of_Line);
+         if Item = ',' then
+            Get (File, Item);
+         end if;
+         declare
+            Im : constant String := Get_Numeric_Literal (File, True);
+         begin
+            if Paren then
+               Skip_Spaces (File);
+               Look_Ahead (File, Item, End_Of_Line);
+               if Item = ')' then
+                  Get (File, Item);
+               else
+                  raise Data_Error;
+               end if;
+            end if;
+            return '(' & Re & ',' & Im & ')';
+         end;
+      end;
+   end Get_Complex_Literal;
+
    function Get_Enum_Literal (File : File_Type) return String is
    begin
       Skip_Spaces (File);

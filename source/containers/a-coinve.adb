@@ -162,6 +162,27 @@ package body Ada.Containers.Indefinite_Vectors is
       return (Element => Container.Data.Items (Index).all'Access);
    end Constant_Reference;
 
+--  diff (Constant_Reference)
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Constant_Reference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    function Contains (Container : Vector; Item : Element_Type)
       return Boolean is
    begin

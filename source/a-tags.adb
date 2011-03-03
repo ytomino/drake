@@ -1,7 +1,8 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Formatting;
-with System.UTF_Conversions;
+with System.UTF_Conversions.From_8_To_16;
+with System.UTF_Conversions.From_8_To_32;
 with System.Zero_Terminated_Strings;
 package body Ada.Tags is
    pragma Suppress (All_Checks);
@@ -445,23 +446,13 @@ package body Ada.Tags is
    end Parent_Tag;
 
    function Wide_Expanded_Name (T : Tag) return Wide_String is
-      S : constant String := Expanded_Name (T);
-      W : Wide_String (1 .. S'Length);
-      L : Natural;
-      Error : Boolean; --  ignored
    begin
-      System.UTF_Conversions.UTF_8_To_UTF_16 (S, W, L, Error);
-      return W (1 .. L);
+      return System.UTF_Conversions.From_8_To_16.Convert (Expanded_Name (T));
    end Wide_Expanded_Name;
 
    function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String is
-      S : constant String := Expanded_Name (T);
-      W : Wide_Wide_String (1 .. S'Length);
-      L : Natural;
-      Error : Boolean; --  ignored
    begin
-      System.UTF_Conversions.UTF_8_To_UTF_32 (S, W, L, Error);
-      return W (1 .. L);
+      return System.UTF_Conversions.From_8_To_32.Convert (Expanded_Name (T));
    end Wide_Wide_Expanded_Name;
 
 end Ada.Tags;

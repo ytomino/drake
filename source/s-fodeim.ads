@@ -10,5 +10,5 @@ procedure System.Formatting.Decimal_Image (
    Plus_Sign : Character := ' ';
    Fore_Width : Positive := 1;
    Fore_Padding : Character := '0';
-   Aft_Width : Positive);
+   Aft_Width : Natural);
 pragma Pure (System.Formatting.Decimal_Image);

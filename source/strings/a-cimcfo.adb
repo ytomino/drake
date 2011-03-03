@@ -3,20 +3,19 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
    pragma Suppress (All_Checks);
    use type UCD.UCS_4;
 
-   Mapping : aliased Character_Mapping := (
-      Length =>
-         UCD.Case_Folding.C_Table_2'Length +
-         UCD.Case_Folding.C_Table_4'Length +
-         UCD.Case_Folding.S_Table'Length,
-      Reference_Count => -1, --  constant
-      From => <>,
-      To => <>);
-
-   Initialized : Boolean := False;
+   Mapping : access Character_Mapping;
 
    function Case_Folding_Map return not null access Character_Mapping is
    begin
-      if not Initialized then
+      if Mapping = null then
+         Mapping := new Character_Mapping'(
+            Length =>
+               UCD.Case_Folding.C_Table_2'Length +
+               UCD.Case_Folding.C_Table_4'Length +
+               UCD.Case_Folding.S_Table'Length,
+            Reference_Count => -1, -- constant
+            From => <>,
+            To => <>);
          declare
             I : Positive := Mapping.From'First;
             J : Positive := UCD.Case_Folding.C_Table_2'First;
@@ -55,11 +54,9 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
                   UCD.Case_Folding.C_Table_4 (L).Mapping);
                I := I + 1;
             end loop;
-            pragma Assert (I = Mapping.From'Last + 1);
          end;
-         Initialized := True;
       end if;
-      return Mapping'Access;
+      return Mapping;
    end Case_Folding_Map;
 
 end Ada.Characters.Inside.Maps.Case_Folding;

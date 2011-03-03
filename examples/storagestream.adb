@@ -11,4 +11,16 @@ begin
 	if String'Input (Stream) /= "ABCDEFG" then
 		raise Program_Error;
 	end if;
+	Ada.Streams.Set_Index (Stream.all, 1);
+	Wide_String'Output (Stream, "ABCDEFG");
+	Ada.Streams.Set_Index (Stream.all, 1);
+	if Wide_String'Input (Stream) /= "ABCDEFG" then
+		raise Program_Error;
+	end if;
+	Ada.Streams.Set_Index (Stream.all, 1);
+	Wide_Wide_String'Output (Stream, "ABCDEFG");
+	Ada.Streams.Set_Index (Stream.all, 1);
+	if Wide_Wide_String'Input (Stream) /= "ABCDEFG" then
+		raise Program_Error;
+	end if;
 end storagestream;

@@ -18,6 +18,16 @@ package Ada.Processes is
          Streams.Stream_IO.Standards.Standard_Output.all;
       Error : Streams.Stream_IO.File_Type :=
          Streams.Stream_IO.Standards.Standard_Error.all);
+   function Create (
+      Command_Line : String;
+      Directory : String := "";
+      Input : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standards.Standard_Input.all;
+      Output : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standards.Standard_Output.all;
+      Error : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standards.Standard_Error.all)
+      return Process;
 
    procedure Wait (Child : Process; Status : out Command_Line.Exit_Status);
    procedure Wait (Child : Process);

@@ -3,13 +3,16 @@ with Ada.Strings.Generic_Bounded;
 with Ada.Strings.Wide_Functions;
 with Ada.Strings.Wide_Functions.Maps;
 with Ada.Strings.Wide_Maps;
+with System.Strings.Stream_Ops;
 package Ada.Strings.Wide_Bounded is
    pragma Preelaborate;
 
    --  Generic_Bounded is not able to use directly since some names differ.
    package Instance is new Generic_Bounded (
-      Character_Type => Wide_Character,
-      String_Type => Wide_String);
+      Wide_Character,
+      Wide_String,
+      System.Strings.Stream_Ops.Wide_String_Read_Blk_IO,
+      System.Strings.Stream_Ops.Wide_String_Write_Blk_IO);
 
    generic
       Max : Positive; -- Maximum length of a Bounded_Wide_String
@@ -640,6 +643,27 @@ package Ada.Strings.Wide_Bounded is
          Drop : Truncation := Error)
          return Bounded_Wide_String
          renames Instance.Replicate;
+
+      --  extended
+      function Constant_Reference (
+         Source : not null access constant Bounded_Wide_String)
+         return Wide_Bounded.Instance.Slicing.Constant_Reference_Type
+         renames Instance.Constant_Reference;
+      function Constant_Reference (
+         Source : not null access constant Bounded_Wide_String;
+         First_Index : Positive;
+         Last_Index : Natural)
+         return Wide_Bounded.Instance.Slicing.Constant_Reference_Type
+         renames Instance.Constant_Reference;
+      function Reference (Source : not null access Bounded_Wide_String)
+         return Wide_Bounded.Instance.Slicing.Reference_Type
+         renames Instance.Reference;
+      function Reference (
+         Source : not null access Bounded_Wide_String;
+         First_Index : Positive;
+         Last_Index : Natural)
+         return Wide_Bounded.Instance.Slicing.Reference_Type
+         renames Instance.Reference;
 
    end Generic_Bounded_Length;
 

@@ -868,6 +868,7 @@ package body Ada.Containers.Ordered_Sets is
       begin
          Count_Type'Read (Stream, Length);
          Clear (Container);
+--  diff
          for I in 1 .. Length loop
             declare
                New_Item : Element_Type;

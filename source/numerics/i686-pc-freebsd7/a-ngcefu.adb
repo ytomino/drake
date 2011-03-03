@@ -3,6 +3,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    pragma Suppress (All_Checks);
 
    package Real_Functions is new Generic_Elementary_Functions (Real'Base);
+   --  Arctan, Cos, Cosh, Exp, Log, Sin, Sinh, Sqrt
 
    Sqrt_2 : constant := 1.4142135623730950488016887242096980785696;
    Log_2 : constant := 0.6931471805599453094172321214581765680755;
@@ -64,12 +65,16 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Arccot (X : Complex) return Complex is
    begin
-      return Arctan (1.0 / X);
+      return Pi / 2.0 - Arctan (X);
    end Arccot;
 
    function Arccoth (X : Complex) return Complex is
    begin
-      return Arctanh (1.0 / X);
+      if X.Re = 0.0 and then X.Im = 0.0 then
+         return (0.0, Pi / 2.0);
+      else
+         return Arctanh (1.0 / X);
+      end if;
    end Arccoth;
 
    function Arcsin (X : Complex) return Complex is
@@ -320,14 +325,19 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function "**" (Left : Complex; Right : Complex) return Complex is
    begin
-      if Left.Re = 0.0 and Left.Im = 0.0 then
+      if not Standard'Fast_Math
+         and then Left.Re = 0.0 and then Left.Im = 0.0
+         and then Right.Re = 0.0 and then Right.Im = 0.0
+      then
+         raise Argument_Error; -- CXG1004
+      elsif Right.Re = 1.0 and Right.Im = 0.0 then
+         return Left; -- CXG1005
+      elsif Left.Re = 0.0 and Left.Im = 0.0 then
          return Left;
       elsif Left.Re = 1.0 and Left.Im = 0.0 then
          return Left;
       elsif Right.Re = 0.0 and Right.Im = 0.0 then
          return (Re => 1.0, Im => 0.0);
-      elsif Right.Re = 1.0 and Right.Im = 0.0 then
-         return Left;
       else
          return Exp (Right * Log (Left));
       end if;

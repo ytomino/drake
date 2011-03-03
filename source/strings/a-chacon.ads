@@ -1,5 +1,7 @@
 pragma License (Unrestricted);
-private with Ada.Characters.Inside;
+private with System.UTF_Conversions.From_8_To_16;
+private with System.UTF_Conversions.From_8_To_32;
+private with System.UTF_Conversions.From_16_To_32;
 package Ada.Characters.Conversions is
    pragma Pure;
 
@@ -19,6 +21,7 @@ package Ada.Characters.Conversions is
 
    function To_Wide_Character (Item : Character) return Wide_Character;
    function To_Wide_String (Item : String) return Wide_String;
+   pragma Inline_Always (To_Wide_String);
    function To_Wide_Wide_Character (Item : Character)
       return Wide_Wide_Character;
    function To_Wide_Wide_String (Item : String) return Wide_Wide_String;
@@ -58,9 +61,11 @@ package Ada.Characters.Conversions is
 
 private
 
+   function To_Wide_String (Item : String) return Wide_String
+      renames System.UTF_Conversions.From_8_To_16.Convert;
    function To_Wide_Wide_String (Item : String) return Wide_Wide_String
-      renames Inside.To_Wide_Wide_String;
+      renames System.UTF_Conversions.From_8_To_32.Convert;
    function To_Wide_Wide_String (Item : Wide_String) return Wide_Wide_String
-      renames Inside.To_Wide_Wide_String;
+      renames System.UTF_Conversions.From_16_To_32.Convert;
 
 end Ada.Characters.Conversions;

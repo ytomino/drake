@@ -73,10 +73,12 @@ package body System.Termination is
          Message => Message (1 .. Integer (C.string.strlen (C_Message))));
    end sigaction_Handler;
 
-   Signal_Stack : aliased
-      array (1 .. C.sys.signal.MINSIGSTKSZ) of aliased C.char :=
-      (others => <>); --  uninitialized
-   for Signal_Stack'Size use C.sys.signal.MINSIGSTKSZ * Standard'Storage_Unit;
+   type Signal_Stack_Buffer is
+      array (1 .. C.sys.signal.MINSIGSTKSZ) of aliased C.char;
+   for Signal_Stack_Buffer'Size use
+      C.sys.signal.MINSIGSTKSZ * Standard'Storage_Unit;
+   pragma Suppress_Initialization (Signal_Stack_Buffer);
+   Signal_Stack : aliased Signal_Stack_Buffer;
 
    procedure Install_Exception_Handler (SEH : Address) is
       pragma Unreferenced (SEH);

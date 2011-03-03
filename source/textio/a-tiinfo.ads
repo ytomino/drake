@@ -6,6 +6,9 @@ package Ada.Text_IO.Inside.Formatting is
    function Get_Numeric_Literal (File : File_Type; Real : Boolean)
       return String;
 
+   --  for Complex_IO
+   function Get_Complex_Literal (File : File_Type) return String;
+
    --  for Enumeration_IO
    function Get_Enum_Literal (File : File_Type) return String;
 

@@ -1,69 +1,75 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
-with Ada.IO_Modes;
 with Ada.Text_IO;
 package Ada.Wide_Text_IO is
 
-   type File_Type is limited private;
+--  type File_Type is limited private;
+   type File_Type is new Text_IO.File_Type; -- extended
 
 --  type File_Mode is (In_File, Out_File, Append_File);
-   type File_Mode is new IO_Modes.File_Mode;
+   subtype File_Mode is Text_IO.File_Mode; -- extended
+   function In_File return File_Mode renames Text_IO.In_File;
+   function Out_File return File_Mode renames Text_IO.Out_File;
+   function Append_File return File_Mode renames Text_IO.Append_File;
 
-   type Count is range 0 .. Text_IO.Count'Last; --  implementation-defined
+--  type Count is range 0 .. implementation-defined;
+   subtype Count is Text_IO.Count; -- extended
    subtype Positive_Count is Count range 1 .. Count'Last;
    Unbounded : constant Count := 0;
 
    subtype Field is Integer range
       0 ..
-      Text_IO.Field'Last; --  implementation-defined
+      Text_IO.Field'Last; -- implementation-defined
    subtype Number_Base is Integer range 2 .. 16;
 
 --  type Type_Set is (Lower_Case, Upper_Case);
-   type Type_Set is new Text_IO.Type_Set; --  has no additional primitive
+   subtype Type_Set is Text_IO.Type_Set; -- extended
+   function Lower_Case return Type_Set renames Text_IO.Lower_Case;
+   function Upper_Case return Type_Set renames Text_IO.Upper_Case;
 
    --  File Management
 
-   procedure Create (
-      File : in out File_Type;
-      Mode : File_Mode := Out_File;
-      Name : String := "";
-      Form : String := "");
-   pragma Inline (Create);
+--  procedure Create (
+--    File : in out File_Type;
+--    Mode : File_Mode := Out_File;
+--    Name : String := "";
+--    Form : String := "");
+   --  procedure Create is inherited
 
-   procedure Open (
-      File : in out File_Type;
-      Mode : File_Mode;
-      Name : String;
-      Form : String := "");
-   pragma Inline (Open);
+--  procedure Open (
+--    File : in out File_Type;
+--    Mode : File_Mode;
+--    Name : String;
+--    Form : String := "");
+   --  procedure Open is inherited
 
-   procedure Close (File : in out File_Type);
-   pragma Inline (Close);
-   procedure Delete (File : in out File_Type);
-   pragma Inline (Delete);
-   procedure Reset (File : in out File_Type; Mode : File_Mode);
-   pragma Inline (Reset);
-   procedure Reset (File : in out File_Type);
-   pragma Inline (Reset);
+--  procedure Close (File : in out File_Type);
+   --  procedure Close is inherited
+--  procedure Delete (File : in out File_Type);
+   --  procedure Delete is inherited
+--  procedure Reset (File : in out File_Type; Mode : File_Mode);
+   --  procedure Reset is inherited
+--  procedure Reset (File : in out File_Type);
+   --  procedure Reset is inherited
 
-   function Mode (File : File_Type) return File_Mode;
-   pragma Inline (Mode);
-   function Name (File : File_Type) return String;
-   pragma Inline (Name);
-   function Form (File : File_Type) return String;
-   pragma Inline (Form);
+--  function Mode (File : File_Type) return File_Mode;
+   --  function Mode is inherited
+--  function Name (File : File_Type) return String;
+   --  function Name is inherited
+--  function Form (File : File_Type) return String;
+   --  function Form is inherited
 
-   function Is_Open (File : File_Type) return Boolean;
-   pragma Inline (Is_Open);
+--  function Is_Open (File : File_Type) return Boolean;
+   --  function Is_Open is inherited
 
    --  Control of default input and output files
 
-   procedure Set_Input (File : File_Type);
-   pragma Inline (Set_Input);
-   procedure Set_Output (File : File_Type);
-   pragma Inline (Set_Output);
-   procedure Set_Error (File : File_Type);
-   pragma Inline (Set_Error);
+--  procedure Set_Input (File : File_Type);
+   --  procedure Set_Input is inherited
+--  procedure Set_Output (File : File_Type);
+   --  procedure Set_Output is inherited
+--  procedure Set_Error (File : File_Type);
+   --  procedure Set_Error is inherited
 
 --  function Standard_Input return File_Type;
 --  function Standard_Output return File_Type;
@@ -90,94 +96,94 @@ package Ada.Wide_Text_IO is
    pragma Inline (Current_Error);
 
    --  Buffer control
-   procedure Flush (File : File_Type);
-   pragma Inline (Flush);
-   procedure Flush;
-   pragma Inline (Flush);
+--  procedure Flush (File : File_Type);
+   --  procedure Flush is inherited
+   procedure Flush
+      renames Text_IO.Flush;
 
    --  Specification of line and page lengths
 
-   procedure Set_Line_Length (File : File_Type; To : Count);
-   pragma Inline (Set_Line_Length);
-   procedure Set_Line_Length (To : Count);
-   pragma Inline (Set_Line_Length);
+--  procedure Set_Line_Length (File : File_Type; To : Count);
+   --  procedure Set_Line_Length is inherited;
+   procedure Set_Line_Length (To : Count)
+      renames Text_IO.Set_Line_Length;
 
-   procedure Set_Page_Length (File : File_Type; To : Count);
-   pragma Inline (Set_Page_Length);
-   procedure Set_Page_Length (To : Count);
-   pragma Inline (Set_Page_Length);
+--  procedure Set_Page_Length (File : File_Type; To : Count);
+   --  procedure Set_Page_Length is inherited
+   procedure Set_Page_Length (To : Count)
+      renames Text_IO.Set_Page_Length;
 
-   function Line_Length (File : File_Type) return Count;
-   pragma Inline (Line_Length);
-   function Line_Length return Count;
-   pragma Inline (Line_Length);
+--  function Line_Length (File : File_Type) return Count;
+   --  function Line_Length is inherited
+   function Line_Length return Count
+      renames Text_IO.Line_Length;
 
-   function Page_Length (File : File_Type) return Count;
-   pragma Inline (Page_Length);
-   function Page_Length return Count;
-   pragma Inline (Page_Length);
+--  function Page_Length (File : File_Type) return Count;
+   --  function Page_Length is inherited
+   function Page_Length return Count
+      renames Text_IO.Page_Length;
 
    --  Column, Line, and Page Control
 
-   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1);
-   pragma Inline (New_Line);
-   procedure New_Line (Spacing : Positive_Count := 1);
-   pragma Inline (New_Line);
+--  procedure New_Line (File : File_Type; Spacing : Positive_Count := 1);
+   --  procedure New_Line is inherited
+   procedure New_Line (Spacing : Positive_Count := 1)
+      renames Text_IO.New_Line;
 
-   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1);
-   pragma Inline (Skip_Line);
-   procedure Skip_Line (Spacing : Positive_Count := 1);
-   pragma Inline (Skip_Line);
+--  procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1);
+   --  procedure Skip_Line is inherited
+   procedure Skip_Line (Spacing : Positive_Count := 1)
+      renames Text_IO.Skip_Line;
 
-   function End_Of_Line (File : File_Type) return Boolean;
-   pragma Inline (End_Of_Line);
-   function End_Of_Line return Boolean;
-   pragma Inline (End_Of_Line);
+--  function End_Of_Line (File : File_Type) return Boolean;
+   --  function End_Of_Line is inherited
+   function End_Of_Line return Boolean
+      renames Text_IO.End_Of_Line;
 
-   procedure New_Page (File : File_Type);
-   pragma Inline (New_Page);
-   procedure New_Page;
-   pragma Inline (New_Page);
+--  procedure New_Page (File : File_Type);
+   --  procedure New_Page is inherited
+   procedure New_Page
+      renames Text_IO.New_Page;
 
-   procedure Skip_Page (File : File_Type);
-   pragma Inline (Skip_Page);
-   procedure Skip_Page;
-   pragma Inline (Skip_Page);
+--  procedure Skip_Page (File : File_Type);
+   --  procedure Skip_Page is inherited
+   procedure Skip_Page
+      renames Text_IO.Skip_Page;
 
-   function End_Of_Page (File : File_Type) return Boolean;
-   pragma Inline (End_Of_Page);
-   function End_Of_Page return Boolean;
-   pragma Inline (End_Of_Page);
+--  function End_Of_Page (File : File_Type) return Boolean;
+   --  function End_Of_Page is inherited
+   function End_Of_Page return Boolean
+      renames Text_IO.End_Of_Page;
 
-   function End_Of_File (File : File_Type) return Boolean;
-   pragma Inline (End_Of_File);
-   function End_Of_File return Boolean;
-   pragma Inline (End_Of_File);
+--  function End_Of_File (File : File_Type) return Boolean;
+   --  function End_Of_File is inherited
+   function End_Of_File return Boolean
+      renames Text_IO.End_Of_File;
 
-   procedure Set_Col (File : File_Type; To : Positive_Count);
-   pragma Inline (Set_Col);
-   procedure Set_Col (To : Positive_Count);
-   pragma Inline (Set_Col);
+--  procedure Set_Col (File : File_Type; To : Positive_Count);
+   --  procedure Set_Col is inherited
+   procedure Set_Col (To : Positive_Count)
+      renames Text_IO.Set_Col;
 
-   procedure Set_Line (File : File_Type; To : Positive_Count);
-   pragma Inline (Set_Line);
-   procedure Set_Line (To : Positive_Count);
-   pragma Inline (Set_Line);
+--  procedure Set_Line (File : File_Type; To : Positive_Count);
+   --  procedure Set_Line is inherited
+   procedure Set_Line (To : Positive_Count)
+      renames Text_IO.Set_Line;
 
-   function Col (File : File_Type) return Positive_Count;
-   pragma Inline (Col);
-   function Col return Positive_Count;
-   pragma Inline (Col);
+--  function Col (File : File_Type) return Positive_Count;
+   --  function Col is inherited
+   function Col return Positive_Count
+      renames Text_IO.Col;
 
-   function Line (File : File_Type) return Positive_Count;
-   pragma Inline (Line);
-   function Line return Positive_Count;
-   pragma Inline (Line);
+--  function Line (File : File_Type) return Positive_Count;
+   --  function Line is inherited
+   function Line return Positive_Count
+      renames Text_IO.Line;
 
-   function Page (File : File_Type) return Positive_Count;
-   pragma Inline (Page);
-   function Page return Positive_Count;
-   pragma Inline (Page);
+--  function Page (File : File_Type) return Positive_Count;
+   --  function Page is inherited
+   function Page return Positive_Count
+      renames Text_IO.Page;
 
    --  Character Input-Output
 
@@ -206,6 +212,25 @@ package Ada.Wide_Text_IO is
       Item : out Wide_Character;
       Available : out Boolean);
 
+   --  hiding
+   overriding procedure Get (
+      File : File_Type;
+      Item : out Character) is abstract;
+   overriding procedure Put (
+      File : File_Type;
+      Item : Character) is abstract;
+   overriding procedure Look_Ahead (
+      File : File_Type;
+      Item : out Character;
+      End_Of_Line : out Boolean) is abstract;
+   overriding procedure Get_Immediate (
+      File : File_Type;
+      Item : out Character) is abstract;
+   overriding procedure Get_Immediate (
+      File : File_Type;
+      Item : out Character;
+      Available : out Boolean) is abstract;
+
    --  String Input-Output
 
    procedure Get (File : File_Type; Item : out Wide_String);
@@ -228,6 +253,24 @@ package Ada.Wide_Text_IO is
    procedure Put_Line (File : File_Type; Item : Wide_String);
    procedure Put_Line (Item : Wide_String);
 
+   --  hiding
+   overriding procedure Get (
+      File : File_Type;
+      Item : out String) is abstract;
+   overriding procedure Put (
+      File : File_Type;
+      Item : String) is abstract;
+   overriding procedure Get_Line (
+      File : File_Type;
+      Item : out String;
+      Last : out Natural) is abstract;
+   overriding function Get_Line (
+      File : File_Type)
+      return String is abstract;
+   overriding procedure Put_Line (
+      File : File_Type;
+      Item : String) is abstract;
+
    --  Generic packages for Input-Output of Integer Types
    --  Generic packages for Input-Output of Real Types
    --  Generic package for Input-Output of Enumeration Types
@@ -245,12 +288,5 @@ package Ada.Wide_Text_IO is
    End_Error : exception renames IO_Exceptions.End_Error;
    Data_Error : exception renames IO_Exceptions.Data_Error;
    Layout_Error : exception renames IO_Exceptions.Layout_Error;
-
-private
-
-   type File_Type is new Text_IO.File_Type;
-
-   --  Hide inherited subprogram
-   overriding procedure Put (File : File_Type; Item : Character) is abstract;
 
 end Ada.Wide_Text_IO;

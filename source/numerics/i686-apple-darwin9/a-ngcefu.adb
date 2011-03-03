@@ -37,12 +37,16 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Arccot (X : Complex) return Complex is
    begin
-      return Arctan (1.0 / X);
+      return Pi / 2.0 - Arctan (X);
    end Arccot;
 
    function Arccoth (X : Complex) return Complex is
    begin
-      return Arctanh (1.0 / X);
+      if X.Re = 0.0 and then X.Im = 0.0 then
+         return (0.0, Pi / 2.0);
+      else
+         return Arctanh (1.0 / X);
+      end if;
    end Arccoth;
 
    function Arcsin (X : Complex) return Complex is
@@ -301,7 +305,14 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       function cpowl (A1, A2 : Complex) return Complex;
       pragma Import (Intrinsic, cpowl, "__builtin_cpowl");
    begin
-      if Real'Digits <= Float'Digits then
+      if not Standard'Fast_Math
+         and then Left.Re = 0.0 and then Left.Im = 0.0
+         and then Right.Re = 0.0 and then Right.Im = 0.0
+      then
+         raise Argument_Error; -- CXG1004
+      elsif Right.Re = 1.0 and Right.Im = 0.0 then
+         return Left; -- CXG1005
+      elsif Real'Digits <= Float'Digits then
          return cpowf (Left, Right);
       elsif Real'Digits <= Long_Float'Digits then
          return cpow (Left, Right);

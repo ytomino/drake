@@ -303,6 +303,13 @@ package Ada.Containers.Vectors is
       Index_Type,
       Element_Type,
       Element_Array);
+   function Constant_Reference (Container : not null access constant Vector)
+      return Slicing.Constant_Reference_Type;
+   function Constant_Reference (
+      Container : not null access constant Vector;
+      First_Index : Index_Type;
+      Last_Index : Extended_Index)
+      return Slicing.Constant_Reference_Type;
    function Reference (Container : not null access Vector)
       return Slicing.Reference_Type;
    function Reference (

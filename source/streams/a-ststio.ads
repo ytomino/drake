@@ -22,12 +22,24 @@ package Ada.Streams.Stream_IO is
       Mode : File_Mode := Out_File;
       Name : String := "";
       Form : String := "");
+   --  extended
+   function Create (
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Form : String := "")
+      return File_Type;
 
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;
       Name : String;
       Form : String := "");
+   --  extended
+   function Open (
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "")
+      return File_Type;
 
    procedure Close (File : in out File_Type);
    procedure Delete (File : in out File_Type);

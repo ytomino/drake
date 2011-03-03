@@ -1,11 +1,13 @@
 pragma License (Unrestricted);
+with Ada.Numerics.Generic_Elementary_Arctan;
+with Ada.Numerics.Generic_Elementary_Sqrt;
 generic
    type Float_Type is digits <>;
 package Ada.Numerics.Generic_Elementary_Functions is
    pragma Pure;
 
-   function Sqrt (X : Float_Type'Base) return Float_Type'Base;
-   pragma Inline (Sqrt);
+--  function Sqrt (X : Float_Type'Base) return Float_Type'Base;
+   function Sqrt is new Generic_Elementary_Sqrt (Float_Type'Base);
    function Log (X : Float_Type'Base) return Float_Type'Base;
    function Log (X, Base : Float_Type'Base) return Float_Type'Base;
    pragma Inline (Log);
@@ -32,8 +34,9 @@ package Ada.Numerics.Generic_Elementary_Functions is
    function Arccos (X : Float_Type'Base) return Float_Type'Base;
    function Arccos (X, Cycle : Float_Type'Base) return Float_Type'Base;
    pragma Inline (Arccos);
-   function Arctan (Y : Float_Type'Base; X : Float_Type'Base := 1.0)
-      return Float_Type'Base;
+--  function Arctan (Y : Float_Type'Base; X : Float_Type'Base := 1.0)
+--    return Float_Type'Base;
+   function Arctan is new Generic_Elementary_Arctan (Float_Type'Base);
    function Arctan (
       Y : Float_Type'Base;
       X : Float_Type'Base := 1.0;

@@ -9,7 +9,7 @@ procedure System.Formatting.Decimal_Image (
    Plus_Sign : Character := ' ';
    Fore_Width : Positive := 1;
    Fore_Padding : Character := '0';
-   Aft_Width : Positive)
+   Aft_Width : Natural)
 is
    use type Unsigned_Types.Long_Long_Unsigned;
    Error : Boolean;
@@ -36,13 +36,17 @@ begin
    end if;
    if Scale > 0 then
       declare
+         Rounded_Item : Long_Long_Integer := abs Item;
          Sp : constant Long_Long_Integer := 10 ** Scale;
          Q : Long_Long_Integer;
          R : Long_Long_Integer;
          Aft : System.Formatting.Longest_Unsigned;
          Error : Boolean;
       begin
-         System.Long_Long_Integer_Divide (abs Item, Sp, Q, R);
+         if Aft_Width < Scale then
+            Rounded_Item := Rounded_Item + (10 ** (Scale - Aft_Width)) / 2;
+         end if;
+         System.Long_Long_Integer_Divide (Rounded_Item, Sp, Q, R);
          Aft := System.Formatting.Longest_Unsigned (R);
          System.Formatting.Image (
             System.Formatting.Longest_Unsigned (Q),
@@ -52,21 +56,23 @@ begin
             Padding => Fore_Padding,
             Error => Error);
          pragma Assert (not Error);
-         Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := '.';
-         if Aft_Width > Scale then
-            Aft := Aft * 10 ** (Aft_Width - Scale);
-         elsif Aft_Width < Scale then
-            Aft := Aft / 10 ** (Scale - Aft_Width);
+         if Aft_Width > 0 then
+            Last := Last + 1;
+            pragma Assert (Last <= To'Last);
+            To (Last) := '.';
+            if Aft_Width > Scale then
+               Aft := Aft * 10 ** (Aft_Width - Scale);
+            elsif Aft_Width < Scale then
+               Aft := Aft / 10 ** (Scale - Aft_Width);
+            end if;
+            System.Formatting.Image (
+               Aft,
+               To (Last + 1 .. To'Last),
+               Last,
+               Width => Aft_Width,
+               Error => Error);
+            pragma Assert (not Error);
          end if;
-         System.Formatting.Image (
-            Aft,
-            To (Last + 1 .. To'Last),
-            Last,
-            Width => Aft_Width,
-            Error => Error);
-         pragma Assert (not Error);
       end;
    else
       if Item /= 0 then
@@ -93,13 +99,15 @@ begin
          pragma Assert (Last <= To'Last);
          To (Last) := '0';
       end if;
-      Last := Last + 1;
-      pragma Assert (Last <= To'Last);
-      To (Last) := '.';
-      for I in Last + 1 .. Last + Aft_Width loop
+      if Aft_Width > 0 then
          Last := Last + 1;
          pragma Assert (Last <= To'Last);
-         To (Last) := '0';
-      end loop;
+         To (Last) := '.';
+         for I in Last + 1 .. Last + Aft_Width loop
+            Last := Last + 1;
+            pragma Assert (Last <= To'Last);
+            To (Last) := '0';
+         end loop;
+      end if;
    end if;
 end System.Formatting.Decimal_Image;

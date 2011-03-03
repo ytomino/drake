@@ -11,9 +11,4 @@ package body Ada.Numerics.Discrete_Random is
       return Result_Subtype'Val (Position);
    end Random;
 
-   procedure Reset (Gen : in out Generator; Initiator : Integer) is
-   begin
-      Reset (Gen, MT19937.Cardinal'Mod (Initiator));
-   end Reset;
-
 end Ada.Numerics.Discrete_Random;

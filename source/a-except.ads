@@ -21,7 +21,7 @@ package Ada.Exceptions is
 
    procedure Raise_Exception (E : Exception_Id; Message : String := "");
    pragma No_Return (Raise_Exception);
-   pragma Inline (Raise_Exception);
+   pragma Import (Ada, Raise_Exception, "ada__exceptions__raise_exception");
    function Exception_Message (X : Exception_Occurrence) return String;
    procedure Reraise_Occurrence (X : Exception_Occurrence);
 
@@ -40,6 +40,7 @@ package Ada.Exceptions is
    procedure Save_Occurrence (
       Target : out Exception_Occurrence;
       Source : Exception_Occurrence);
+   pragma Import (Ada, Save_Occurrence, "ada__exceptions__save_occurrence");
    function Save_Occurrence (
       Source : Exception_Occurrence)
       return Exception_Occurrence_Access;
@@ -76,5 +77,7 @@ private
    --  required for reraising by compiler (a-except-2005.ads)
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
+   pragma Import (Ada, Reraise_Occurrence_Always,
+      "ada__exceptions__reraise_occurrence_always");
 
 end Ada.Exceptions;

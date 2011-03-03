@@ -382,110 +382,40 @@ package body System.UTF_Conversions is
       end case;
    end UTF_32_Sequence;
 
-   procedure UTF_8_To_UTF_16 (
-      Data : String;
-      Result : out Wide_String;
+   procedure Convert_Procedure (
+      Source : Source_Type;
+      Result : out Target_Type;
       Last : out Natural;
       Error : out Boolean)
    is
-      I : Natural := Data'First;
+      I : Natural := Source'First;
       J : Natural := Result'First;
    begin
       Last := J - 1;
       Error := False;
-      while I <= Data'Last loop
+      while I <= Source'Last loop
          declare
             Code : UCS_4;
-            Next : Natural;
+            Used : Natural;
             E : Boolean;
          begin
-            From_UTF_8 (Data (I .. Data'Last), Next, Code, E);
+            From_UTF (Source (I .. Source'Last), Used, Code, E);
             Error := Error or E;
-            I := Next + 1;
-            To_UTF_16 (Code, Result (J .. Result'Last), Last, E);
+            I := Used + 1;
+            To_UTF (Code, Result (J .. Result'Last), Last, E);
             Error := Error or E;
             J := Last + 1;
          end;
       end loop;
-   end UTF_8_To_UTF_16;
+   end Convert_Procedure;
 
-   procedure UTF_8_To_UTF_32 (
-      Data : String;
-      Result : out Wide_Wide_String;
-      Last : out Natural;
-      Error : out Boolean)
-   is
-      I : Natural := Data'First;
-      J : Natural := Result'First;
+   function Convert_Function (Source : Source_Type) return Target_Type is
+      Result : Target_Type (1 .. Source'Length * Expanding);
+      Last : Natural;
+      Error : Boolean; -- ignore
    begin
-      Last := J - 1;
-      Error := False;
-      while I <= Data'Last loop
-         declare
-            Code : UCS_4;
-            Next : Natural;
-            E : Boolean;
-         begin
-            From_UTF_8 (Data (I .. Data'Last), Next, Code, E);
-            Error := Error or E;
-            I := Next + 1;
-            Result (J) := Wide_Wide_Character'Val (Code);
-            Last := J;
-            J := Last + 1;
-         end;
-      end loop;
-   end UTF_8_To_UTF_32;
-
-   procedure UTF_16_To_UTF_8 (
-      Data : Wide_String;
-      Result : out String;
-      Last : out Natural;
-      Error : out Boolean)
-   is
-      I : Natural := Data'First;
-      J : Natural := Result'First;
-   begin
-      Last := J - 1;
-      Error := False;
-      while I <= Data'Last loop
-         declare
-            Code : UCS_4;
-            Next : Natural;
-            E : Boolean;
-         begin
-            From_UTF_16 (Data (I .. Data'Last), Next, Code, E);
-            Error := Error or E;
-            I := Next + 1;
-            To_UTF_8 (Code, Result (J .. Result'Last), Last, E);
-            Error := Error or E;
-            J := Last + 1;
-         end;
-      end loop;
-   end UTF_16_To_UTF_8;
-
-   procedure UTF_32_To_UTF_8 (
-      Data : Wide_Wide_String;
-      Result : out String;
-      Last : out Natural;
-      Error : out Boolean)
-   is
-      J : Natural := Result'First;
-   begin
-      Last := J - 1;
-      Error := False;
-      for I in Data'Range loop
-         declare
-            Code : UCS_4;
-            Next : Natural;
-            E : Boolean;
-         begin
-            From_UTF_32 (Data (I .. Data'Last), Next, Code, E);
-            Error := Error or E;
-            To_UTF_8 (Code, Result (J .. Result'Last), Last, E);
-            Error := Error or E;
-            J := Last + 1;
-         end;
-      end loop;
-   end UTF_32_To_UTF_8;
+      Convert_Procedure (Source, Result, Last, Error);
+      return Result (1 .. Last);
+   end Convert_Function;
 
 end System.UTF_Conversions;

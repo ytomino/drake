@@ -486,4 +486,25 @@ package Ada.Strings.Wide_Wide_Unbounded is
       return Unbounded_Wide_Wide_String
       renames Unbounded_Wide_Wide_Strings.Functions."*";
 
+   --  extended
+   function Constant_Reference (
+      Source : not null access constant Unbounded_Wide_Wide_String)
+      return Unbounded_Wide_Wide_Strings.Slicing.Constant_Reference_Type
+      renames Unbounded_Wide_Wide_Strings.Constant_Reference;
+   function Constant_Reference (
+      Source : not null access constant Unbounded_Wide_Wide_String;
+      First_Index : Positive;
+      Last_Index : Natural)
+      return Unbounded_Wide_Wide_Strings.Slicing.Constant_Reference_Type
+      renames Unbounded_Wide_Wide_Strings.Constant_Reference;
+   function Reference (Source : not null access Unbounded_Wide_Wide_String)
+      return Unbounded_Wide_Wide_Strings.Slicing.Reference_Type
+      renames Unbounded_Wide_Wide_Strings.Reference;
+   function Reference (
+      Source : not null access Unbounded_Wide_Wide_String;
+      First_Index : Positive;
+      Last_Index : Natural)
+      return Unbounded_Wide_Wide_Strings.Slicing.Reference_Type
+      renames Unbounded_Wide_Wide_Strings.Reference;
+
 end Ada.Strings.Wide_Wide_Unbounded;

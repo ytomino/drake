@@ -521,15 +521,15 @@ package body Ada.Streams.Stream_IO.Inside is
       if Stream.Mode = Out_File then
          raise Mode_Error;
       end if;
+      if First > Item'Last then
+         Last := First - 1;
+         return;
+      end if;
       if Stream.Last > 0 then
-         if Item'Length = 0 then
-            Last := Item'First - 1;
-            return;
-         end if;
          Item (First) := Stream.Buffer (1);
          First := First + 1;
          Stream.Last := 0;
-         if Item'Last < First then
+         if First > Item'Last then
             Last := Item'First;
             return;
          end if;

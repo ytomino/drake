@@ -55,7 +55,6 @@ package body System.Fat_LLF is
       function Remainder (X, Y : Long_Long_Float) return Long_Long_Float is
          Q, R : Long_Long_Float;
       begin
-         --  some environments does not have "remainderl"
          Long_Long_Float_Divide (X, Y, Q, R);
          return R;
       end Remainder;

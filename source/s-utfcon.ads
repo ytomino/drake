@@ -73,25 +73,38 @@ package System.UTF_Conversions is
       Result : out Positive;
       Error : out Boolean);
 
-   procedure UTF_8_To_UTF_16 (
-      Data : String;
-      Result : out Wide_String;
+   generic
+      type Source_Element_Type is (<>);
+      type Source_Type is array (Positive range <>) of Source_Element_Type;
+      type Target_Element_Type is (<>);
+      type Target_Type is array (Positive range <>) of Target_Element_Type;
+      with procedure From_UTF (
+         Data : Source_Type;
+         Last : out Natural;
+         Result : out UCS_4;
+         Error : out Boolean);
+      with procedure To_UTF (
+         Code : UCS_4;
+         Result : out Target_Type;
+         Last : out Natural;
+         Error : out Boolean);
+   procedure Convert_Procedure (
+      Source : Source_Type;
+      Result : out Target_Type;
       Last : out Natural;
       Error : out Boolean);
-   procedure UTF_8_To_UTF_32 (
-      Data : String;
-      Result : out Wide_Wide_String;
-      Last : out Natural;
-      Error : out Boolean);
-   procedure UTF_16_To_UTF_8 (
-      Data : Wide_String;
-      Result : out String;
-      Last : out Natural;
-      Error : out Boolean);
-   procedure UTF_32_To_UTF_8 (
-      Data : Wide_Wide_String;
-      Result : out String;
-      Last : out Natural;
-      Error : out Boolean);
+
+   generic
+      type Source_Element_Type is (<>);
+      type Source_Type is array (Positive range <>) of Source_Element_Type;
+      type Target_Element_Type is (<>);
+      type Target_Type is array (Positive range <>) of Target_Element_Type;
+      Expanding : Positive;
+      with procedure Convert_Procedure (
+         Source : Source_Type;
+         Result : out Target_Type;
+         Last : out Natural;
+         Error : out Boolean);
+   function Convert_Function (Source : Source_Type) return Target_Type;
 
 end System.UTF_Conversions;

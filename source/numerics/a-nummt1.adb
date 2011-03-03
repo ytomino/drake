@@ -8,6 +8,21 @@ package body Ada.Numerics.MT19937 is
    UPPER_MASK : constant Cardinal := 2 ** (Cardinal'Size - 1);
    LOWER_MASK : constant Cardinal := not UPPER_MASK;
 
+   function Initialize return Generator is
+   begin
+      return (State => Initialize);
+   end Initialize;
+
+   function Initialize (Initiator : Cardinal) return Generator is
+   begin
+      return (State => Initialize (Initiator));
+   end Initialize;
+
+   function Initialize (Initiator : Cardinal_Vector) return Generator is
+   begin
+      return (State => Initialize (Initiator));
+   end Initialize;
+
    function Random_32 (Gen : not null access Generator) return Cardinal is
       mag01 : constant array (Cardinal range 0 .. 1) of Cardinal :=
          (0, MATRIX_A);
@@ -46,30 +61,40 @@ package body Ada.Numerics.MT19937 is
       Init : Cardinal_Vector (N_Range);
    begin
       Initiator (Init);
-      Reset (Gen, Init);
+      Gen.State := Initialize (Init);
    end Reset;
 
-   procedure Reset (Gen : in out Generator; Initiator : Cardinal) is
-      S : State renames Gen.State;
+   procedure Reset (Gen : in out Generator; Initiator : Integer) is
+   begin
+      Gen.State := Initialize (Cardinal'Mod (Initiator));
+   end Reset;
+
+   function Initialize return State is
+      Init : Cardinal_Vector (N_Range);
+   begin
+      Initiator (Init);
+      return Initialize (Init);
+   end Initialize;
+
+   function Initialize (Initiator : Cardinal) return State is
       V : Cardinal := Initiator;
    begin
-      S.Vector (0) := V;
-      for I in 1 .. (N - 1) loop
-         V := 1812433253 * (V xor Interfaces.Shift_Right (V, 30)) +
-              Cardinal (I);
-         S.Vector (I) := V;
-      end loop;
-      S.Condition := N;
-   end Reset;
+      return S : State do
+         S.Vector (0) := V;
+         for I in 1 .. (N - 1) loop
+            V := 1812433253 * (V xor Interfaces.Shift_Right (V, 30)) +
+               Cardinal (I);
+            S.Vector (I) := V;
+         end loop;
+         S.Condition := N;
+      end return;
+   end Initialize;
 
-   procedure Reset (Gen : in out Generator; Initiator : Cardinal_Vector) is
+   function Initialize (Initiator : Cardinal_Vector) return State is
+      i : Integer := 1;
+      j : Integer := 0;
    begin
-      Reset (Gen, 19650218);
-      declare
-         S : State renames Gen.State;
-         i : Integer := 1;
-         j : Integer := 0;
-      begin
+      return S : State := Initialize (19650218) do
          for K in reverse 1 .. Cardinal'Max (N, Initiator'Length) loop
             declare
                P : constant Cardinal := S.Vector (i - 1);
@@ -100,8 +125,8 @@ package body Ada.Numerics.MT19937 is
             end if;
          end loop;
          S.Vector (0) := 16#80000000#;
-      end;
-   end Reset;
+      end return;
+   end Initialize;
 
    procedure Save (Gen : Generator; To_State : out State) is
    begin

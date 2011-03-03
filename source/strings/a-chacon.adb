@@ -1,4 +1,6 @@
-with System.UTF_Conversions;
+with System.UTF_Conversions.From_16_To_8;
+with System.UTF_Conversions.From_32_To_8;
+with System.UTF_Conversions.From_32_To_16;
 package body Ada.Characters.Conversions is
 
    function Is_Character (Item : Wide_Character) return Boolean is
@@ -72,14 +74,8 @@ package body Ada.Characters.Conversions is
       return String
    is
       pragma Unreferenced (Substitute);
-      Result : String (
-         1 ..
-         Item'Length * System.UTF_Conversions.UTF_8_Max_Length);
-      Last : Natural;
-      Error : Boolean;
    begin
-      System.UTF_Conversions.UTF_16_To_UTF_8 (Item, Result, Last, Error);
-      return Result (1 .. Last);
+      return System.UTF_Conversions.From_16_To_8.Convert (Item);
    end To_String;
 
    function To_String (
@@ -89,7 +85,7 @@ package body Ada.Characters.Conversions is
    is
       pragma Unreferenced (Substitute);
    begin
-      return Inside.To_String (Item);
+      return System.UTF_Conversions.From_32_To_8.Convert (Item);
    end To_String;
 
    function To_Wide_Character (Item : Character) return Wide_Character is
@@ -109,15 +105,6 @@ package body Ada.Characters.Conversions is
       end if;
    end To_Wide_Character;
 
-   function To_Wide_String (Item : String) return Wide_String is
-      Result : Wide_String (1 .. Item'Length);
-      Last : Natural;
-      Error : Boolean;
-   begin
-      System.UTF_Conversions.UTF_8_To_UTF_16 (Item, Result, Last, Error);
-      return Result (1 .. Last);
-   end To_Wide_String;
-
    function To_Wide_String (
       Item : Wide_Wide_String;
       Substitute : Wide_Character := ' ')
@@ -125,7 +112,7 @@ package body Ada.Characters.Conversions is
    is
       pragma Unreferenced (Substitute);
    begin
-      return Inside.To_Wide_String (Item);
+      return System.UTF_Conversions.From_32_To_16.Convert (Item);
    end To_Wide_String;
 
    function To_Wide_Wide_Character (Item : Character)

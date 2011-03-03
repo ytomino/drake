@@ -1,16 +1,24 @@
 pragma License (Unrestricted);
 --  generic implementation of Ada.Strings.Unbounded
 with Ada.Unchecked_Deallocation;
+with Ada.Streams;
 with System.Arrays;
 private with Ada.Finalization;
 private with Interfaces;
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
+   with procedure Read (
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : out String_Type);
+   with procedure Write (
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : String_Type);
 package Ada.Strings.Generic_Unbounded is
    pragma Preelaborate;
 
-   type Unbounded_String is private;
+--  type Unbounded_String is private;
+   type Unbounded_String is tagged private; -- extended for dot notation
    pragma Preelaborable_Initialization (Unbounded_String);
 
 --  Null_Unbounded_String : constant Unbounded_String;
@@ -132,6 +140,10 @@ package Ada.Strings.Generic_Unbounded is
       First_Index : Positive;
       Last_Index : Natural)
       return Slicing.Reference_Type;
+
+   --  extended for shorthand
+   function "+" (Source : String_Type) return Unbounded_String
+      renames To_Unbounded_String;
 
    generic
       Space : Character_Type;
@@ -619,5 +631,17 @@ private
 
    overriding procedure Adjust (Object : in out Unbounded_String);
    overriding procedure Finalize (Object : in out Unbounded_String);
+
+   package No_Primitives is
+      procedure Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Unbounded_String);
+      procedure Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Unbounded_String);
+   end No_Primitives;
+
+   for Unbounded_String'Read use No_Primitives.Read;
+   for Unbounded_String'Write use No_Primitives.Write;
 
 end Ada.Strings.Generic_Unbounded;

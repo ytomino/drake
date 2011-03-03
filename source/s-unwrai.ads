@@ -23,9 +23,17 @@ package System.Unwind.Raising is
       renames Raise_Exception;
    --  From_Signal_Handler should be True, but unused it, currently...
 
-   --  required to reraise by compiler (a-except-2005.adb)
+   --  implementation for raising (a-except-2005.adb)
+   procedure Raise_E (
+      E : Standard_Library.Exception_Data_Ptr;
+      Message : String);
+   pragma No_Return (Raise_E);
+   pragma Export (Ada, Raise_E, "ada__exceptions__raise_exception");
+
+   --  implementation for reraising (a-except-2005.adb)
    procedure Reraise (X : Exception_Occurrence);
    pragma No_Return (Reraise);
+   pragma Export (Ada, Reraise, "ada__exceptions__reraise_occurrence_always");
 
    --  for System.Finalization_Implementation (a-except-2005.adb)
    procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
@@ -110,6 +118,10 @@ package System.Unwind.Raising is
    procedure rcheck_24 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_24);
    pragma Export (C, rcheck_24, "__gnat_rcheck_24");
+
+   procedure rcheck_30 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_30);
+   pragma Export (C, rcheck_30, "__gnat_rcheck_30");
 
    procedure rcheck_31 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_31);

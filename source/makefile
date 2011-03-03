@@ -1,3 +1,20 @@
+# targets:
+#   all         building drake runtime (default)
+#   import_objs compiling only translated headers for nesting
+#   c-archive   archiving translated headers to zip
+# variables:
+#   HOST=       host platform (default:gcc -dumpmachine)
+#   TARGET=     target platform (default:HOST)
+#   RTSDIR=     output directory (default:.)
+#   BUILDDIR=   temporary directory (default:RTSDIR/adalib/build)
+#   IMPORTDIR=  pre-translated headers (default:generating on make)
+#   WITHA=      if 0, building minimum runtime (default:1)
+#   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
+#   WITHD=      debug info (default:if TARGET=HOST then 1 else 0)
+#   WITHF=      -ffast-math (default:0)
+#   WITHS=      assembly source (default:0)
+#   CFLAGS=     additional compiler options (default:empty)
+
 HOST=$(shell gcc -dumpmachine)
 TARGET=$(HOST)
 ifeq ($(TARGET),$(HOST))
@@ -9,16 +26,35 @@ AR=$(TARGET)-ar
 endif
 
 # if WITHA=1, all files be compiled
-WITHA=0
+ifeq ($(WITHA),)
+WITHA=1
+endif
 
-# if WITHC=1, creating libc-gnat.a
+# if WITHC=1, including c-*.o to libgnat.a
+ifeq ($(WITHC),)
 WITHC=1
+endif
 
 # if WITHD=1, debug info
+ifeq ($(WITHD),)
+ifeq ($(TARGET),$(HOST))
+WITHD=1
+else
 WITHD=0
+endif
+endif
+
+# if WITHF=1, -ffast-math
+ifeq ($(WITHF),)
+WITHF=0
+endif
 
 # if WITHS=1, assembly sources be outputed
+ifeq ($(WITHS),)
 WITHS=0
+endif
+
+PHASE=
 
 RTSDIR=.
 IMPORTDIR=$(RTSDIR)/adainclude
@@ -63,18 +99,30 @@ endif
 ALL_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(basename $(notdir $(ALL_OBJS)))))
 
 ifneq ($(WITHC),0)
-LIB_C_GNAT=$(RTSDIR)/adalib/libc-gnat.a
+IMPORT_HEADERS=import_objs
 else
-LIB_C_GNAT=$(IMPORTDIR)/c.ads
+IMPORT_HEADERS=$(IMPORTDIR)/c.ads
 endif
 
 ifneq ($(WITHD),0)
-CFLAGS_FOR_COMPILER_UNIT=-nostdinc -I$(RTSDIR)/adainclude -gnatg -gnatwP -Os -g -gnata
+CFLAGS_DEBUG=-g -gnata
+CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer
 else
-CFLAGS_FOR_COMPILER_UNIT=-nostdinc -I$(RTSDIR)/adainclude -gnatg -gnatwP -Os
+CFLAGS_DEBUG=
+CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn -fdata-sections
 endif
 
-.PHONY: all libc-gnat c-archive
+ifneq ($(WITHF),0)
+CFLAGS_MATH=-ffast-math
+else
+CFLAGS_MATH=
+endif
+
+CFLAGS=
+
+CFLAGS_FOR_COMPILER_UNIT=-nostdinc -I$(RTSDIR)/adainclude -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS)
+
+.PHONY: all import_objs c-archive
 
 all: $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
 
@@ -84,10 +132,10 @@ $(RTSDIR)/adalib/libgnat.a: \
 		$(BUILDDIR) \
 		$(RTSDIR)/adainclude/system.ads \
 		$(LIBRARY_SRCS) \
-		$(LIB_C_GNAT) \
+		$(IMPORT_HEADERS) \
 		$(ALL_OBJS)
 	-rm $@
-	$(AR) -q $@ $(ALL_OBJS)
+	$(AR) -q $@ $(BUILDDIR)/*.o
 
 $(RTSDIR)/adainclude:
 	mkdir -p $@
@@ -221,17 +269,9 @@ $(RTSDIR)/adalib/%.ali: $(BUILDDIR)/%.o
 $(IMPORTDIR)/c.ads: import.h
 	headmaster -t ada -p -D $(IMPORTDIR) -gcc=$(GCC) $<
 
-$(RTSDIR)/adalib/libc-gnat.a: $(IMPORTDIR)/c.ads
-	make libc-gnat
-
-c-archive: $(IMPORTDIR)/c.ads
-ifneq ($(DESTDIR),)
-	cd $(IMPORTDIR) && 7za -tzip a $(abspath $(DESTDIR)/import-$(TARGET).zip) c.ads c-*
-else
-	@echo please tell DESTDIR=[DIRECTORY]
-endif
-
 # nested
+
+ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad?) $(IMPORTDIR)/c.ads
 IMPLIB_ITEMS=$(filter-out c-unwind_pe,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
@@ -252,6 +292,22 @@ else
 IMPLIB_LINKS=
 endif
 
-libc-gnat: $(IMPLIB_LINKS) $(IMPLIB_OBJS) $(IMPLIB_ALI)
-	-rm $(RTSDIR)/adalib/libc-gnat.a
-	$(AR) -q $(RTSDIR)/adalib/libc-gnat.a $(IMPLIB_OBJS)
+import_objs: $(IMPLIB_LINKS) $(IMPLIB_OBJS) $(IMPLIB_ALI)
+
+else
+
+# make will expand wildcard at first, generated file may not be included
+
+import_objs: $(IMPORTDIR)/c.ads
+	make import_objs PHASE=2
+
+endif
+
+# archiving import headers
+
+c-archive: $(IMPORTDIR)/c.ads
+ifneq ($(DESTDIR),)
+	cd $(IMPORTDIR) && 7za -tzip a $(abspath $(DESTDIR)/import-$(TARGET).zip) c.ads c-*
+else
+	@echo please tell DESTDIR=[DIRECTORY]
+endif

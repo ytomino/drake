@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation package required by compiler
+with System.Long_Long_Float_Machine_Rounding;
 package System.Fat_LLF is
    pragma Pure;
 
@@ -39,8 +40,8 @@ package System.Fat_LLF is
       function Machine (X : Long_Long_Float) return Long_Long_Float;
 
       --  required for LLF'Machine_Rounding by compiler (s-fatgen.ads)
-      function Machine_Rounding (X : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, Machine_Rounding, "__builtin_nearbyintl");
+      function Machine_Rounding (X : Long_Long_Float) return Long_Long_Float
+         renames Long_Long_Float_Machine_Rounding;
 
       --  required for Long_Long_Float'Model by compiler (s-fatgen.ads)
       function Model (X : Long_Long_Float) return Long_Long_Float

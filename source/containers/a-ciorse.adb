@@ -868,6 +868,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       begin
          Count_Type'Read (Stream, Length);
          Clear (Container);
+         Unique (Container, True);
          for I in 1 .. Length loop
             declare
                Position : constant Cursor := new Node'(
@@ -890,7 +891,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          procedure Process (Position : Cursor);
          procedure Process (Position : Cursor) is
          begin
-            Element_Type'Write (Stream, Position.Element.all);
+            Element_Type'Output (Stream, Position.Element.all);
          end Process;
       begin
          Count_Type'Write (Stream, Container.Length);

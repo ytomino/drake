@@ -15,22 +15,30 @@ procedure run_acats is
 	function "+" (Right : Ada.Strings.Unbounded.Unbounded_String) return String
 		renames Ada.Strings.Unbounded.To_String;
 	
-	Unknown : exception;
+	Command_Not_Found : exception;
 	Command_Failure : exception;
+	Configuration_Error : exception;
+	Unknown_Test : exception;
 	Compile_Failure : exception;
 	Test_Failure : exception;
 	Should_Be_Failure : exception;
-	Configuration_Error : exception;
+	
+	-- child process
 	
 	procedure Shell_Execute (Command : in String; Result : out Integer) is
 		function system (S : String) return Integer;
 		pragma Import (C, system);
 		Code : Integer;
+		type UI is mod 2 ** Integer'Size;
 	begin
 		Ada.Text_IO.Put_Line (Command);
 		Code := system (Command & ASCII.NUL);
 		if Code mod 256 /= 0 then
-			raise Command_Failure with Command & Integer'Image (Code);
+			if (UI (Code) and 4) = 0 then -- WEXITED
+				raise Command_Not_Found with Command & Integer'Image (Code);
+			else
+				raise Command_Failure with Command & Integer'Image (Code);
+			end if;
 		end if;
 		Result := Code / 256;
 	end Shell_Execute;
@@ -43,6 +51,13 @@ procedure run_acats is
 			raise Command_Failure with Command;
 		end if;
 	end Shell_Execute;
+	
+	procedure Symbolic_Link (Source, Destination : in String) is
+	begin
+		Shell_Execute ("ln -s " & Source & " " & Destination);
+	end Symbolic_Link;
+	
+	-- getting environment
 	
 	function Get_Prefix return String is
 	begin
@@ -72,118 +87,7 @@ procedure run_acats is
 	
 	RTS_Dir : constant String := Get_RTS_Dir;
 	
-	type Runtime_Type is (GNAT, Drake);
-	
-	function Get_Runtime return Runtime_Type is
-	begin
-		if RTS_Dir = "" then
-			return GNAT;
-		else
-			return Drake;
-		end if;
-	end Get_Runtime;
-	
-	Runtime : constant Runtime_Type := Get_Runtime;
-	
-	procedure Symbolic_Link (Source, Destination : in String) is
-	begin
-		Shell_Execute ("ln -s " & Source & " " & Destination);
-	end Symbolic_Link;
-	
-	procedure Chop (
-		Name : in String;
-		Destination_Directory : in String := "";
-		Accept_Error : in Boolean := False)
-	is
-		Command : Ada.Strings.Unbounded.Unbounded_String;
-	begin
-		Ada.Strings.Unbounded.Append (Command, "gnatchop -w");
-		if Prefix /= "" then
-			Ada.Strings.Unbounded.Append (Command, " --GCC=");
-			Ada.Strings.Unbounded.Append (Command, Prefix);
-			Ada.Strings.Unbounded.Append (Command, "gcc");
-		end if;
-		Ada.Strings.Unbounded.Append (Command, " ");
-		Ada.Strings.Unbounded.Append (Command, Name);
-		if Destination_Directory /= "" then
-			Ada.Strings.Unbounded.Append (Command, " ");
-			Ada.Strings.Unbounded.Append (Command, Destination_Directory);
-		end if;
-		begin
-			Shell_Execute (+Command);
-		exception
-			when Command_Failure =>
-				if not Accept_Error then
-					raise;
-				end if;
-		end;
-	end Chop;
-	
-	type Ada_Spec is (Ada_95, Ada_2005);
-	
-	procedure Compile_Only (Name : in String) is
-		Command : Ada.Strings.Unbounded.Unbounded_String;
-	begin
-		Ada.Strings.Unbounded.Append (Command, Prefix);
-		Ada.Strings.Unbounded.Append (Command, "gcc -c ");
-		Ada.Strings.Unbounded.Append (Command, Name);
-		Shell_Execute (+Command);
-	end Compile_Only;
-	
-	procedure Compile (
-		Name : in String;
-		Spec : in Ada_Spec;
-		Stack_Check : in Boolean := False;
-		Overflow_Check : in Boolean := False;
-		Dynamic_Elaboration : in Boolean := False;
-		UTF_8 : in Boolean := False;
-		Link_With : in String := "";
-		RTS : in String := "";
-		Save_Log : in Boolean := False)
-	is
-		Command : Ada.Strings.Unbounded.Unbounded_String;
-	begin
-		Ada.Strings.Unbounded.Append (Command, "gnatmake");
-		if Support_Dir /= "" then
-			Ada.Strings.Unbounded.Append (Command, " -I../"); -- relative path from Test_Dir
-			Ada.Strings.Unbounded.Append (Command, Support_Dir);
-		end if;
-		case Spec is
-			when Ada_95 =>
-				Ada.Strings.Unbounded.Append (Command, " -gnat95");
-			when Ada_2005 =>
-				Ada.Strings.Unbounded.Append (Command, " -gnat05");
-		end case;
-		if Stack_Check then
-			Ada.Strings.Unbounded.Append (Command, " -fstack-check");
-		end if;
-		if Overflow_Check then
-			Ada.Strings.Unbounded.Append (Command, " -gnato");
-		end if;
-		if Dynamic_Elaboration then
-			Ada.Strings.Unbounded.Append (Command, " -gnatE -f");
-		end if;
-		Ada.Strings.Unbounded.Append (Command, " -gnatws"); -- suppress all warnings
-		if UTF_8 then
-			Ada.Strings.Unbounded.Append (Command, " -gnatW8");
-		end if;
-		Ada.Strings.Unbounded.Append (Command, " ");
-		Ada.Strings.Unbounded.Append (Command, Name);
-		if Link_With /= "" then
-			Ada.Strings.Unbounded.Append (Command, " -largs ");
-			Ada.Strings.Unbounded.Append (Command, Link_With);
-		end if;
-		if RTS /= "" then
-			Ada.Strings.Unbounded.Append (Command, " --RTS=");
-			Ada.Strings.Unbounded.Append (Command, RTS);
-		end if;
-		if Save_Log then
-			Ada.Strings.Unbounded.Append (Command, " 2>&1 | tee log.txt");
-		end if;
-		Shell_Execute (+Command);
-	exception
-		when Command_Failure => raise Compile_Failure with +Command;
-	end Compile;
+	--  test result
 	
 	type Test_Result is (
 		Passed, -- 0
@@ -191,33 +95,41 @@ procedure run_acats is
 		Not_Applicative, -- 2
 		Tentatively, -- 3,
 		Failed, -- 4
+		Compile_Error,
 		Untested);
 	
-	procedure Invoke (
-		Executable : in String;
-		Expected : in Test_Result;
-		Result : not null access Test_Result)
-	is
-		C : Integer;
+	function Image (Item : Test_Result) return Character is
+		Table : constant array (Test_Result) of Character := "PANTFCU";
 	begin
-		Shell_Execute ("./" & Executable, C);
-		Result.all := Test_Result'Val (C);
-		if Result.all /= Expected then
-			raise Test_Failure;
-		end if;
-	exception
-		when Command_Failure =>
-			Result.all := Any_Exception;
-			raise Test_Failure;
-	end Invoke;
+		return Table (Item);
+	end Image;
 	
-	procedure Setup_Test_Dir is
+	function Value (Item : Character) return Test_Result is
 	begin
-		if Ada.Directories.Exists (Test_Dir) then
-			Ada.Directories.Delete_Tree (Test_Dir);
+		case Item is
+			when 'P' => return Passed;
+			when 'A' => return Any_Exception;
+			when 'N' => return Not_Applicative;
+			when 'T' => return Tentatively;
+			when 'F' => return Failed;
+			when 'C' => return Compile_Error;
+			when 'U' => return Untested;
+			when others => raise Constraint_Error;
+		end case;
+	end Value;
+	
+	-- test info
+	
+	type Ada_Spec is (Ada_95, Ada_2005);
+	
+	function Ada_Spec_Of_Test (Name : String) return Ada_Spec is
+	begin
+		if Ada.Strings.Equal_Case_Insensitive (Name, "c34008a") then
+			return Ada_95;
+		else
+			return Ada_2005;
 		end if;
-		Ada.Directories.Create_Directory (Test_Dir);
-	end Setup_Test_Dir;
+	end Ada_Spec_Of_Test;
 	
 	function Is_Only_Pragmas (Name : String) return Boolean is
 	begin
@@ -247,122 +159,17 @@ procedure run_acats is
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "lxh40142.a");
 	end Is_Only_Pragmas;
 	
-	procedure Adjust_After_Extract (Name : in String) is
-		procedure Delete (Name : in String) is
-		begin
-			Ada.Text_IO.Put_Line ("remove " & Name);
-			Ada.Directories.Delete_File (Name);
-		end Delete;
-		procedure Copy (Source, Destination : in String) is
-		begin
-			Ada.Text_IO.Put_Line ("copy " & Source & " to " & Destination);
-			Ada.Directories.Copy_File (Source, Destination);
-		end Copy;
-	begin
-		if Ada.Strings.Equal_Case_Insensitive (Name, "ca1020e") then
-			Delete ("ca1020e_func1.adb");
-			Delete ("ca1020e_func2.adb");
-			Delete ("ca1020e_proc1.adb");
-			Delete ("ca1020e_proc2.adb");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ca14028") then
-			Delete ("ca14028_func2.adb");
-			Delete ("ca14028_func3.adb");
-			Delete ("ca14028_proc1.adb");
-			Delete ("ca14028_proc3.adb");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ce2108f") then
-			Copy ("../X2108E", "X2108E");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ce2108h") then
-			Copy ("../X2108G", "X2108G");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ce3112d") then
-			Copy ("../X3112C", "X3112C");
-		end if;
-	end Adjust_After_Extract;
-	
-	function Ada_Spec_Of_Test (Name : String) return Ada_Spec is
-	begin
-		if Ada.Strings.Equal_Case_Insensitive (Name, "c34008a") then
-			return Ada_95;
-		else
-			return Ada_2005;
-		end if;
-	end Ada_Spec_Of_Test;
-	
-	function Stack_Check (Name : String) return Boolean is
-	begin
-		return Ada.Strings.Equal_Case_Insensitive (Name, "c52103x")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c52104x")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c52104y")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cb1010c")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cb1010d");
-	end Stack_Check;
-	
-	function Overflow_Check (Name : String; Runtime : Runtime_Type) return Boolean is
-	begin
-		return Ada.Strings.Equal_Case_Insensitive (Name, "c43206a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45304a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45304b")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45304c")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45504a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45504b")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45504c")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45613a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45613b")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45613c")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45632a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45632b")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45632c")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c460008")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c460011")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c46014a")
-			or else (Runtime = Drake and then  Ada.Strings.Equal_Case_Insensitive (Name, "c96005d"));
-	end Overflow_Check;
-	
-	function Dynamic_Elaboration (Name : String) return Boolean is
-	begin
-		return Ada.Strings.Equal_Case_Insensitive (Name, "c731001")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c854002")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ca5006a");
-	end Dynamic_Elaboration;
-	
-	function Skip_Compile (Name : String; Runtime : Runtime_Type) return Boolean is
-	begin
-		return Ada.Strings.Equal_Case_Insensitive (Name, "cxb3006") -- ACATS is older than Ada spec
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cxb4009") -- COBOL
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cxb5004") -- Fortran
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cxb5005") -- Fortran
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd2007")) -- Asynchronous_Task_Control is not supported
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxdb001")) -- Asynchronous_Task_Control is not supported
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxdb002")) -- Asynchronous_Task_Control is not supported
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxdb003")) -- Asynchronous_Task_Control is not supported
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxdb004")) -- Asynchronous_Task_Control is not supported
-			or else Ada.Strings.Equal_Case_Insensitive (Name (Name'First .. Name'First + 2), "cxe") -- GLADE required for Annex E (RPC)
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cxh1001"); -- all sources should be recompilation required by pragma Normalize_Scalars
-	end Skip_Compile;
-	
-	function Skip_Execute (Name : String; Runtime : Runtime_Type) return Boolean is
-	begin
-		return (Runtime = Drake and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3115a")) -- wait for releasing of lock
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c41306a") -- rendezvous before return
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name (Name'First .. Name'First + 2), "cxc")) -- Annex C is not supported
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd1003")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd1004")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd1005")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd2002")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd2003")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd2006")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd2008")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd3001")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd3002")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxd6002")) -- GNAT failed
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "cxda004")); -- GNAT failed
-	end Skip_Execute;
+	--  test info (error class)
 	
 	function Is_Error_Class (Name : String) return Boolean is
 	begin
-		return Name (Name'First) = 'B'
-			or else Name (Name'First) = 'b'
-			or else Name (Name'First) = 'L'
-			or else Name (Name'First) = 'l';
+		-- bxxxxxxx, lxxxxxxx (excluding la1xxxxx)
+		return Name (Name'First) = 'B' or else Name (Name'First) = 'b'
+			or else (
+				(Name (Name'First) = 'L' or else Name (Name'First) = 'l')
+				and then not (
+					(Name (Name'First + 1) = 'A' or else Name (Name'First + 1) = 'a')
+					and then (Name (Name'First + 2) = '1')));
 	end Is_Error_Class;
 	
 	function Is_No_Error (Name : String) return Boolean is
@@ -409,9 +216,278 @@ procedure run_acats is
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "la5008c");
 	end Is_Not_Found;
 	
-	procedure Check_Log_In_Error_Class (Name : in String) is
+	--  expected test results
+	
+	function Expected_Result (Name : String) return Test_Result is
+	begin
+		if (Is_Error_Class (Name) and then not Is_No_Error (Name))
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "cxb3006") -- ACATS is older than Ada2005 spec
+		then
+			return Compile_Error;
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ca11023") then -- bug of ACATS
+			return Failed;
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "cz1101a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "cz1103a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28002b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28005d")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3203a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3204a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3402b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3409f")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3412c")
+		then
+			return Tentatively;
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "eb4011a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "eb4012a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "eb4014a")
+		then
+			return Any_Exception; -- Tentatively
+		else
+			return Passed;
+		end if;
+	end Expected_Result;
+	
+	-- test operations
+	
+	procedure Setup_Test_Dir is
+	begin
+		if Ada.Directories.Exists (Test_Dir) then
+			Ada.Directories.Delete_Tree (Test_Dir);
+		end if;
+		Ada.Directories.Create_Directory (Test_Dir);
+	end Setup_Test_Dir;
+	
+	procedure Adjust_After_Extract (Name : in String) is
+		procedure Delete (Name : in String) is
+		begin
+			Ada.Text_IO.Put_Line ("remove " & Name);
+			Ada.Directories.Delete_File (Name);
+		end Delete;
+		procedure Copy (Source, Destination : in String) is
+		begin
+			Ada.Text_IO.Put_Line ("copy " & Source & " to " & Destination);
+			Ada.Directories.Copy_File (Source, Destination);
+		end Copy;
+	begin
+		if Ada.Strings.Equal_Case_Insensitive (Name, "ca1020e") then
+			Delete ("ca1020e_func1.adb");
+			Delete ("ca1020e_func2.adb");
+			Delete ("ca1020e_proc1.adb");
+			Delete ("ca1020e_proc2.adb");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ca14028") then
+			Delete ("ca14028_func2.adb");
+			Delete ("ca14028_func3.adb");
+			Delete ("ca14028_proc1.adb");
+			Delete ("ca14028_proc3.adb");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ce2108f") then
+			Copy ("../X2108E", "X2108E");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ce2108h") then
+			Copy ("../X2108G", "X2108G");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ce3112d") then
+			Copy ("../X3112C", "X3112C");
+		end if;
+	end Adjust_After_Extract;
+	
+	procedure Invoke (
+		Executable : in String;
+		Expected : in Test_Result;
+		Result : not null access Test_Result)
+	is
+		C : Integer;
+	begin
+		Shell_Execute ("./" & Executable, C);
+		Result.all := Test_Result'Val (C);
+		if Result.all /= Expected then
+			raise Test_Failure;
+		end if;
+	exception
+		when Command_Failure =>
+			Result.all := Any_Exception;
+			if Expected /= Any_Exception then
+				raise Test_Failure;
+			end if;
+	end Invoke;
+	
+	--  compiler commands
+	
+	procedure Chop (
+		Name : in String;
+		Destination_Directory : in String := "";
+		Accept_Error : in Boolean := False)
+	is
+		Command : Ada.Strings.Unbounded.Unbounded_String;
+	begin
+		Ada.Strings.Unbounded.Append (Command, "gnatchop -w");
+		if Prefix /= "" then
+			Ada.Strings.Unbounded.Append (Command, " --GCC=");
+			Ada.Strings.Unbounded.Append (Command, Prefix);
+			Ada.Strings.Unbounded.Append (Command, "gcc");
+		end if;
+		Ada.Strings.Unbounded.Append (Command, " ");
+		Ada.Strings.Unbounded.Append (Command, Name);
+		if Destination_Directory /= "" then
+			Ada.Strings.Unbounded.Append (Command, " ");
+			Ada.Strings.Unbounded.Append (Command, Destination_Directory);
+		end if;
+		begin
+			Shell_Execute (+Command);
+		exception
+			when Command_Failure =>
+				if not Accept_Error then
+					raise;
+				end if;
+		end;
+	end Chop;
+	
+	procedure Compile_Only (Name : in String; Result : not null access Test_Result) is
+		Command : Ada.Strings.Unbounded.Unbounded_String;
+	begin
+		Ada.Strings.Unbounded.Append (Command, Prefix);
+		Ada.Strings.Unbounded.Append (Command, "gcc -c ");
+		Ada.Strings.Unbounded.Append (Command, Name);
+		Shell_Execute (+Command);
+	exception
+		when Command_Failure =>
+			Result.all := Compile_Error;
+			raise Compile_Failure with +Command;
+	end Compile_Only;
+	
+	procedure Compile (
+		Name : in String;
+		Spec : in Ada_Spec;
+		Stack_Check : in Boolean := False;
+		Overflow_Check : in Boolean := False;
+		Dynamic_Elaboration : in Boolean := False;
+		UTF_8 : in Boolean := False;
+		Link_With : in String := "";
+		RTS : in String := "";
+		Save_Log : in Boolean := False;
+		Result : not null access Test_Result)
+	is
+		Command : Ada.Strings.Unbounded.Unbounded_String;
+	begin
+		Ada.Strings.Unbounded.Append (Command, "gnatmake");
+		if Support_Dir /= "" then
+			Ada.Strings.Unbounded.Append (Command, " -I../"); -- relative path from Test_Dir
+			Ada.Strings.Unbounded.Append (Command, Support_Dir);
+		end if;
+		case Spec is
+			when Ada_95 =>
+				Ada.Strings.Unbounded.Append (Command, " -gnat95");
+			when Ada_2005 =>
+				Ada.Strings.Unbounded.Append (Command, " -gnat05");
+		end case;
+		if Stack_Check then
+			Ada.Strings.Unbounded.Append (Command, " -fstack-check");
+		end if;
+		if Overflow_Check then
+			Ada.Strings.Unbounded.Append (Command, " -gnato");
+		end if;
+		if Dynamic_Elaboration then
+			Ada.Strings.Unbounded.Append (Command, " -gnatE -f");
+		end if;
+		Ada.Strings.Unbounded.Append (Command, " -gnatws"); -- suppress all warnings
+		if UTF_8 then
+			Ada.Strings.Unbounded.Append (Command, " -gnatW8");
+		end if;
+		Ada.Strings.Unbounded.Append (Command, " ");
+		Ada.Strings.Unbounded.Append (Command, Name);
+		if Link_With /= "" then
+			Ada.Strings.Unbounded.Append (Command, " -largs ");
+			Ada.Strings.Unbounded.Append (Command, Link_With);
+		end if;
+		if RTS /= "" then
+			Ada.Strings.Unbounded.Append (Command, " --RTS=");
+			Ada.Strings.Unbounded.Append (Command, RTS);
+		end if;
+		if Save_Log then
+			Ada.Strings.Unbounded.Append (Command, " 2>&1 | tee log.txt");
+		end if;
+		Shell_Execute (+Command);
+	exception
+		when Command_Failure =>
+			Result.all := Compile_Error;
+			raise Compile_Failure with +Command;
+	end Compile;
+	
+	-- runtime info
+	
+	type Runtime_Type is (GNAT, Drake);
+	
+	function Get_Runtime return Runtime_Type is
+	begin
+		if RTS_Dir = "" then
+			return GNAT;
+		else
+			return Drake;
+		end if;
+	end Get_Runtime;
+	
+	Runtime : constant Runtime_Type := Get_Runtime;
+	
+	function Get_Expected_File_Name return String is
+	begin
+		case Runtime is
+			when GNAT => return "gnat-expected.txt";
+			when Drake => return "drake-expected.txt";
+		end case;
+	end Get_Expected_File_Name;
+	
+	Expected_File_Name : constant String := Get_Expected_File_Name;
+	
+	function Get_Report_File_Name return String is
+	begin
+		case Runtime is
+			when GNAT => return "gnat-result.txt";
+			when Drake => return "drake-result.txt";
+		end case;
+	end Get_Report_File_Name;
+	
+	Report_File_Name : constant String := Get_Report_File_Name;
+	
+	-- test info for compiler/runtime
+	
+	function Stack_Check (Name : String) return Boolean is
+	begin
+		return Ada.Strings.Equal_Case_Insensitive (Name, "c52103x")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c52104x")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c52104y")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "cb1010c")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "cb1010d");
+	end Stack_Check;
+	
+	function Overflow_Check (Name : String) return Boolean is
+	begin
+		return Ada.Strings.Equal_Case_Insensitive (Name, "c43206a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45304a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45304b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45304c")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45504a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45504b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45504c")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45613a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45613b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45613c")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45632a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45632b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45632c")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c460008")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c460011")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c46014a")
+			or else (Runtime = Drake and then Ada.Strings.Equal_Case_Insensitive (Name, "c96005d"));
+	end Overflow_Check;
+	
+	function Dynamic_Elaboration (Name : String) return Boolean is
+	begin
+		return Ada.Strings.Equal_Case_Insensitive (Name, "c731001")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "c854002")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "ca5006a");
+	end Dynamic_Elaboration;
+	
+	-- test operations for compiler/runtime (error class)
+	
+	procedure Check_Log_In_Error_Class (Name : in String; Result : not null access Test_Result) is
 		File : Ada.Text_IO.File_Type;
-		Error : Boolean := False;
 		Runtime_Configuration_Error : Boolean := False;
 	begin
 		Ada.Text_IO.Open (File, Ada.Text_IO.In_File, "log.txt");
@@ -429,104 +505,105 @@ procedure run_acats is
 					if Runtime_Configuration_Error then
 						null; -- raise Should_Be_Failure
 					elsif Is_Not_Found (Name) then
-						Error := True;
+						Result.all := Compile_Error;
 					else
 						raise Configuration_Error;
 					end if;
 				elsif Ada.Strings.Fixed.Index (Line, "compilation error") >= 1
 					or else Ada.Strings.Fixed.Index (Line, "bind failed") >= 1
 				then
-					Error := True;
+					Result.all := Compile_Error;
 				end if;
 			end;
 		end loop;
 		Ada.Text_IO.Close (File);
-		if not Error and then not Is_No_Error (Name) then
+		if Is_No_Error (Name) then
+			if Result.all = Untested then
+				Result.all := Passed;
+			else
+				raise Compile_Failure;
+			end if;
+		elsif Result.all /= Compile_Error then
+			Result.all := Failed;
 			raise Should_Be_Failure;
 		end if;
 	end Check_Log_In_Error_Class;
+	
+	--  expected test results for compiler/runtime
+	
+	type Expected_Test_Result is record
+		Result : Test_Result;
+		Note : Ada.Strings.Unbounded.Unbounded_String;
+	end record;
+	
+	package Expected_Tables is new Ada.Containers.Indefinite_Ordered_Maps (
+		String,
+		Expected_Test_Result,
+		"<" => Ada.Strings.Less_Case_Insensitive);
+	
+	function Read_Expected_Table return Expected_Tables.Map is
+	begin
+		return Result : Expected_Tables.Map do
+			declare
+				File : Ada.Text_IO.File_Type;
+			begin
+				Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Name => Expected_File_Name);
+				Ada.Text_IO.Put ("reading " & Expected_File_Name & "...");
+				while not Ada.Text_IO.End_Of_File (File) loop
+					declare
+						Line : constant String := Ada.Text_IO.Get_Line (File);
+						Element : Expected_Test_Result;
+					begin
+						if Line (8) /= ' ' or else Line (10) /= ' ' then
+							raise Ada.Text_IO.Data_Error with Line;
+						end if;
+						begin
+							Element.Result := Value (Line (9));
+						exception
+							when Constraint_Error => raise Ada.Text_IO.Data_Error with Line;
+						end;
+						Element.Note := Ada.Strings.Unbounded.To_Unbounded_String (Line (11 .. Line'Last));
+						Expected_Tables.Include (Result, Line (1 .. 7), Element);
+					end;
+				end loop;
+				Ada.Text_IO.Close (File);
+			end;
+		end return;
+	end Read_Expected_Table;
+	
+	Expected_Table : Expected_Tables.Map := Read_Expected_Table;
+	
+	function Runtime_Expected_Result (Name : String) return Expected_Test_Result is
+	begin
+		if Expected_Table.Contains (Name) then
+			return Expected_Table.Element (Name);
+		else
+			return (Passed, Ada.Strings.Unbounded.Null_Unbounded_String);
+		end if;
+	end Runtime_Expected_Result;
+	
+	--  test result records
+	
+	type Test_Record is record
+		Result : Test_Result;
+		Is_Expected : Boolean;
+	end record;
+	
+	package Test_Records is new Ada.Containers.Indefinite_Ordered_Maps (
+		String,
+		Test_Record,
+		"<" => Ada.Strings.Less_Case_Insensitive);
+	
+	Records: Test_Records.Map;
+	
+	--  executing test
 	
 	package String_CI_Sets is new Ada.Containers.Indefinite_Ordered_Sets (
 		String,
 		"<" => Ada.Strings.Less_Case_Insensitive,
 		"=" => Ada.Strings.Equal_Case_Insensitive);
 	
-	package Test_Sets renames String_CI_Sets;
-	
-	function Read_Test_Set (Name : String) return Test_Sets.Set is
-	begin
-		return Result : Test_Sets.Set do
-			declare
-				File : Ada.Text_IO.File_Type;
-			begin
-				Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Name);
-				while not Ada.Text_IO.End_Of_File (File) loop
-					declare
-						Line : constant String := Ada.Text_IO.Get_Line (File);
-					begin
-						Test_Sets.Include (Result, Line);
-					end;
-				end loop;
-				Ada.Text_IO.Close (File);
-			end;
-		end return;
-	end Read_Test_Set;
-	
-	Calendar_Tests : constant Test_Sets.Set := Read_Test_Set ("x_calendar.txt");
-	Tasking_Tests : constant Test_Sets.Set := Read_Test_Set ("x_tasking.txt");
-	Unicode_Tests : constant Test_Sets.Set := Read_Test_Set ("x_unicode.txt");
-	IO_Tests : constant Test_Sets.Set := Read_Test_Set ("x_io.txt");
-	Bug_Of_ACATS_Tests : constant Test_Sets.Set := Read_Test_Set ("x_bugofacats.txt");
-	GNAT_Tests : constant Test_Sets.Set := Read_Test_Set ("x_gnat.txt"); -- failure since spec of gnat
-	
-	Not_Applicative_Tests : constant Test_Sets.Set := Read_Test_Set ("x_notapplicative.txt");
-	
-	function Expected_Result (Name : String; Runtime : Runtime_Type) return Test_Result is
-	begin
-		if Ada.Strings.Equal_Case_Insensitive (Name, "eb4011a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "eb4012a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "eb4014a")
-		then
-			return Any_Exception; -- TENTATIVELY?
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c45322a") -- Float'Machine_Overflows
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c45523a") -- Float'Machine_Overflows
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c4a012b") -- Float'Machine_Overflows
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "c96005b") -- Duration'Base equals Duration
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cb10002") -- enough memory
-			or else (Runtime = GNAT and then Ada.Strings.Equal_Case_Insensitive (Name, "ce3115a"))
-			or else (Runtime = Drake and then Not_Applicative_Tests.Contains (Name))
-		then
-			return Not_Applicative;
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "cz1101a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cz1103a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28002b")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28005d")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3203a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3204a")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3402b")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3409f")
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "ee3412c")
-		then
-			return Tentatively;
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "cz00004") then
-			return Failed;
-		else
-			return Passed;
-		end if;
-	end Expected_Result;
-	
 	type Test_Style is (Legacy, Modern);
-	
-	type Test_Record is record
-		Result : Test_Result;
-		Expected : Boolean;
-	end record;
-	
-	package Test_Records is new Ada.Containers.Indefinite_Ordered_Maps (
-		String,
-		Test_Record);
-	
-	Records: Test_Records.Map;
 	
 	procedure Test (
 		Directory : in String;
@@ -538,6 +615,7 @@ procedure run_acats is
 		Main : Ada.Strings.Unbounded.Unbounded_String;
 		Link_With : Ada.Strings.Unbounded.Unbounded_String;
 		UTF_8 : Boolean := False;
+		Result : aliased Test_Result := Untested;
 		procedure Process_Extract (Dir_Entry : in Ada.Directories.Directory_Entry_Type) is
 			Simple_Name : constant String := Ada.Directories.Simple_Name (Dir_Entry);
 		begin
@@ -555,7 +633,7 @@ procedure run_acats is
 							if Only_Pragmas then
 								Symbolic_Link (
 									Source => "../" & Ada.Directories.Compose (Directory, Simple_Name),
-									Destination => "gnat.adc");
+									Destination => "gnat.adc;");
 							else
 								Chop (
 									"../" & Ada.Directories.Compose (Directory, Simple_Name),
@@ -610,10 +688,8 @@ procedure run_acats is
 						Symbolic_Link (
 							Source => "../" & Ada.Directories.Compose (Directory, Simple_Name),
 							Destination => Simple_Name);
-						if not Skip_Compile (Name, Runtime)
-						   and then not Ada.Strings.Equal_Case_Insensitive (Simple_Name, "cd300051.c") -- use .o in support dir
-						then
-							Compile_Only (Simple_Name);
+						if not Ada.Strings.Equal_Case_Insensitive (Simple_Name, "cd300051.c") then -- use .o in support dir
+							Compile_Only (Simple_Name, Result'Access);
 							if Link_With /= "" then
 								Ada.Strings.Unbounded.Append (Link_With, " ");
 							end if;
@@ -623,13 +699,14 @@ procedure run_acats is
 									Extension => "o"));
 						end if;
 					else
-						raise Unknown with "unknown extension """ & Extension & """ of " & Simple_Name;
+						raise Unknown_Test with "unknown extension """ & Extension & """ of " & Simple_Name;
 					end if;
 				end;
 			end if;
 		end Process_Extract;
-		Result : aliased Test_Result := Untested;
-		Expected : Boolean := False;
+		ACATS_Expected : constant Test_Result := Expected_Result (Name);
+		Runtime_Expected : constant Expected_Test_Result := Runtime_Expected_Result (Name);
+		Is_Expected : Boolean := False;
 	begin
 		Ada.Text_IO.Put_Line ("**** " & Name & " ****");
 		begin
@@ -694,19 +771,19 @@ procedure run_acats is
 					Ada.Text_IO.Put_Line (File, "   null;");
 					Ada.Text_IO.Put_Line (File, "end main;");
 					Ada.Text_IO.Close (File);
-					Compile ("main.adb",
-						Spec => Spec,
-						UTF_8 => UTF_8,
-						RTS => RTS_Dir,
-						Save_Log => True);
-					Check_Log_In_Error_Class (Name);
-					Result := Passed;
-					Expected := True;
-				exception
-					when Command_Failure =>
-						Check_Log_In_Error_Class (Name);
-						Result := Passed;
-						Expected := True;
+					begin
+						Compile ("main.adb",
+							Spec => Spec,
+							UTF_8 => UTF_8,
+							RTS => RTS_Dir,
+							Save_Log => True,
+							Result => Result'Access);
+						-- no error caused by "tee" command when succeeded or failed to compile
+					exception
+						when Compile_Failure => null;
+					end;
+					Check_Log_In_Error_Class (Name, Result'Access);
+					Is_Expected := True;
 				end;
 			else
 				if Main = "" then
@@ -731,66 +808,61 @@ procedure run_acats is
 							Process => Process_Find_Main'Access);
 					end;
 				end if;
-				if Skip_Compile (Name, Runtime) then
-					Ada.Text_IO.Put_Line ("skip compiling...");
-				else
-					if Main = "" then
+				if Main = "" then
+					if Ada.Strings.Equal_Case_Insensitive (Name (Name'First .. Name'First + 2), "cxe") then
+						raise Compile_Failure; -- unimplemented test with GLADE
+					else
 						raise Configuration_Error with "main subprogram is not found.";
 					end if;
-					Compile (
-						+Main,
-						Spec => Spec,
-						Stack_Check => Stack_Check (Name),
-						Overflow_Check => Overflow_Check (Name, Runtime),
-						Dynamic_Elaboration => Dynamic_Elaboration (Name),
-						Link_With => +Link_With,
-						RTS => RTS_Dir,
-						UTF_8 => UTF_8);
-					if Skip_Execute (Name, Runtime) then
-						Ada.Text_IO.Put_Line ("skip executing...");
-						raise Test_Failure;
-					else
-						Invoke (
-							Ada.Directories.Base_Name (+Main),
-							Expected => Expected_Result (Name, Runtime),
-							Result => Result'Access);
-						Expected := True;
-					end if;
+				end if;
+				Compile (
+					+Main,
+					Spec => Spec,
+					Stack_Check => Stack_Check (Name),
+					Overflow_Check => Overflow_Check (Name),
+					Dynamic_Elaboration => Dynamic_Elaboration (Name),
+					Link_With => +Link_With,
+					RTS => RTS_Dir,
+					UTF_8 => UTF_8,
+					Result => Result'Access);
+				if Runtime_Expected.Result = Untested then
+					raise Test_Failure;
+				else
+					Invoke (
+						Ada.Directories.Base_Name (+Main),
+						Expected => ACATS_Expected,
+						Result => Result'Access);
+					Is_Expected := True;
 				end if;
 			end if;
 		exception
 			when E : Compile_Failure | Test_Failure | Should_Be_Failure =>
 				Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
-				if Runtime = Drake then
-					if Calendar_Tests.Contains (Name) then
-						Ada.Text_IO.Put_Line ("known failure of calendar test.");
-						Expected := True;
-					elsif Tasking_Tests.Contains (Name) then
-						Ada.Text_IO.Put_Line ("known failure of tasking test.");
-						Expected := True;
-					elsif Unicode_Tests.Contains (Name) then
-						Ada.Text_IO.Put_Line ("known failure of unicode test.");
-						Expected := True;
-					elsif IO_Tests.Contains (Name) then
-						Ada.Text_IO.Put_Line ("known failure of *_IO test.");
-						Expected := True;
-					elsif Bug_Of_ACATS_Tests.Contains (Name) then
-						Ada.Text_IO.Put_Line ("known failure since bug of acats.");
-						Expected := True;
-					elsif GNAT_Tests.Contains (Name) then
-						Ada.Text_IO.Put_Line ("known failure since spec of gnat.");
-						Expected := True;
+				if Result = ACATS_Expected then
+					Is_Expected := True;
+					Ada.Text_IO.Put_Line ("expected: " & Test_Result'Image (Result));
+				elsif Runtime_Expected.Result /= Passed then
+					Is_Expected := Result = Runtime_Expected.Result;
+					if Is_Expected then
+						Ada.Text_IO.Put_Line (
+							"expected: " & Test_Result'Image (Result) &
+							" " & Ada.Strings.Unbounded.To_String (Runtime_Expected.Note));
 					else
-						Expected := False;
+						Ada.Text_IO.Put_Line (
+							"unexpected: " & Test_Result'Image (Result) &
+							" (expected: " & Test_Result'Image (Runtime_Expected.Result) & ")");
 					end if;
 				else
-					Expected := False;
+					Is_Expected := False;
+					Ada.Text_IO.Put_Line ("unexpected: " & Test_Result'Image (Result));
 				end if;
 		end;
-		Test_Records.Include (Records, Name, Test_Record'(Result => Result, Expected => Expected));
+		Test_Records.Include (Records, Name, Test_Record'(Result => Result, Is_Expected => Is_Expected));
 		Ada.Directories.Set_Directory (Start_Dir);
 		Ada.Text_IO.New_Line;
 	end Test;
+	
+	package Test_Sets renames String_CI_Sets;
 	
 	Executed_Tests : Test_Sets.Set;
 	
@@ -828,7 +900,7 @@ procedure run_acats is
 					if State = Run
 						or else (State = Trial and then (
 							not Records.Contains (Test_Name)
-							or else not Records.Element (Test_Name).Expected))
+							or else not Records.Element (Test_Name).Is_Expected))
 					then
 						if Ada.Strings.Equal_Case_Insensitive (Extension, "ada")
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "dep") -- implementation depending
@@ -844,9 +916,9 @@ procedure run_acats is
 						then
 							Test (Directory, Test_Name, Modern);
 						else
-							raise Unknown with "unknown extension """ & Extension & """ of " & Simple_Name;
+							raise Unknown_Test with "unknown extension """ & Extension & """ of " & Simple_Name;
 						end if;
-						if State = Trial and then not Records.Element (Test_Name).Expected then
+						if State = Trial and then not Records.Element (Test_Name).Is_Expected then
 							State := Stop;
 						end if;
 					else
@@ -854,17 +926,16 @@ procedure run_acats is
 							Test_Records.Include (
 								Records,
 								Test_Name,
-								Test_Record'(Result => Untested, Expected => False));
+								Test_Record'(Result => Untested, Is_Expected => False));
 						end if;
 					end if;
 					declare
 						R : Test_Record renames Test_Records.Element (Records, Test_Name);
-						RI : array (Test_Result) of Character := "PANTFU";
-						XO : array (Boolean) of Character := "XO";
+						XO : constant array (Boolean) of Character := "XO";
 					begin
 						Ada.Text_IO.Put_Line (
 							Report_File,
-							Test_Name & ' ' & RI (R.Result) & ' ' & XO (R.Expected));
+							Test_Name & ' ' & Image (R.Result) & ' ' & XO (R.Is_Expected));
 					end;
 				end if;
 				if State = Run and then Eq_Test_Name (+Run_Until) then
@@ -916,35 +987,31 @@ begin
 		end if;
 	end if;
 	begin
-		Ada.Text_IO.Open (Report_File, Ada.Text_IO.In_File, Name => "result.txt");
-		Ada.Text_IO.Put ("reading result.txt...");
+		Ada.Text_IO.Open (Report_File, Ada.Text_IO.In_File, Name => Report_File_Name);
+		Ada.Text_IO.Put ("reading " & Report_File_Name & "...");
 		while not Ada.Text_IO.End_Of_File (Report_File) loop
 			declare
 				Line : constant String := Ada.Text_IO.Get_Line (Report_File);
 				Result : Test_Result;
-				Expected : Boolean;
+				Is_Expected : Boolean;
 			begin
 				if Line (8) /= ' ' or else Line (10) /= ' ' then
 					raise Ada.Text_IO.Data_Error with Line;
 				end if;
-				case Line (9) is
-					when 'P' => Result := Passed;
-					when 'A' => Result := Any_Exception;
-					when 'N' => Result := Not_Applicative;
-					when 'T' => Result := Tentatively;
-					when 'F' => Result := Failed;
-					when 'U' => Result := Untested;
-					when others => raise Ada.Text_IO.Data_Error with Line;
-				end case;
+				begin
+					Result := Value (Line (9));
+				exception
+					when Constraint_Error => raise Ada.Text_IO.Data_Error with Line;
+				end;
 				case Line (11) is
-					when 'X' => Expected := False;
-					when 'O' => Expected := True;
+					when 'X' => Is_Expected := False;
+					when 'O' => Is_Expected := True;
 					when others => raise Ada.Text_IO.Data_Error with Line;
 				end case;
 				Test_Records.Include (
 					Records,
 					Line (1 .. 7),
-					Test_Record'(Result => Result, Expected => Expected));
+					Test_Record'(Result => Result, Is_Expected => Is_Expected));
 			end;
 		end loop;
 		Ada.Text_IO.Close (Report_File);
@@ -952,7 +1019,7 @@ begin
 	exception
 		when Ada.Text_IO.Name_Error => null;
 	end;
-	Ada.Text_IO.Create (Report_File, Name => "result.txt");
+	Ada.Text_IO.Create (Report_File, Name => Report_File_Name);
 	Ada.Directories.Search (
 		Directory => ACATS_Dir,
 		Pattern => "*",

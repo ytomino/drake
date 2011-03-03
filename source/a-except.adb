@@ -1,5 +1,5 @@
-with System.Unwind.Raising;
-with System.UTF_Conversions;
+with System.UTF_Conversions.From_8_To_16;
+with System.UTF_Conversions.From_8_To_32;
 package body Ada.Exceptions is
    pragma Suppress (All_Checks);
    use type System.Standard_Library.Exception_Data_Ptr;
@@ -73,37 +73,12 @@ package body Ada.Exceptions is
       return Exception_Name (Exception_Id (X.Id));
    end Exception_Name;
 
-   procedure Raise_Exception (E : Exception_Id; Message : String := "") is
-      Actual_E : Exception_Id := E;
-   begin
-      if Actual_E = null then
-         Actual_E := Constraint_Error'Identity;
-      end if;
-      System.Unwind.Raising.Raise_Exception (
-         System.Standard_Library.Exception_Data_Ptr (Actual_E),
-         Message => Message);
-   end Raise_Exception;
-
    procedure Reraise_Occurrence (X : Exception_Occurrence) is
    begin
       if X.Id /= null then
          Reraise_Occurrence_Always (X);
       end if;
    end Reraise_Occurrence;
-
-   procedure Reraise_Occurrence_Always (X : Exception_Occurrence) is
-   begin
-      System.Unwind.Raising.Reraise (System.Unwind.Exception_Occurrence (X));
-   end Reraise_Occurrence_Always;
-
-   procedure Save_Occurrence (
-      Target : out Exception_Occurrence;
-      Source : Exception_Occurrence) is
-   begin
-      System.Unwind.Save_Occurrence_No_Private (
-         System.Unwind.Exception_Occurrence (Target),
-         System.Unwind.Exception_Occurrence (Source));
-   end Save_Occurrence;
 
    function Save_Occurrence (
       Source : Exception_Occurrence)
@@ -117,13 +92,8 @@ package body Ada.Exceptions is
    end Save_Occurrence;
 
    function Wide_Exception_Name (Id : Exception_Id) return Wide_String is
-      S : constant String := Exception_Name (Id);
-      W : Wide_String (1 .. S'Length);
-      L : Natural;
-      Error : Boolean; --  ignored
    begin
-      System.UTF_Conversions.UTF_8_To_UTF_16 (S, W, L, Error);
-      return W (1 .. L);
+      return System.UTF_Conversions.From_8_To_16.Convert (Exception_Name (Id));
    end Wide_Exception_Name;
 
    function Wide_Exception_Name (X : Exception_Occurrence)
@@ -133,15 +103,9 @@ package body Ada.Exceptions is
    end Wide_Exception_Name;
 
    function Wide_Wide_Exception_Name (Id : Exception_Id)
-      return Wide_Wide_String
-   is
-      S : constant String := Exception_Name (Id);
-      W : Wide_Wide_String (1 .. S'Length);
-      L : Natural;
-      Error : Boolean; --  ignored
+      return Wide_Wide_String is
    begin
-      System.UTF_Conversions.UTF_8_To_UTF_32 (S, W, L, Error);
-      return W (1 .. L);
+      return System.UTF_Conversions.From_8_To_32.Convert (Exception_Name (Id));
    end Wide_Wide_Exception_Name;
 
    function Wide_Wide_Exception_Name (X : Exception_Occurrence)

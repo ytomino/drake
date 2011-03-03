@@ -1,6 +1,11 @@
 with Ada.Characters.Inside;
 with Ada.Unchecked_Deallocation;
 with Interfaces;
+with System.Strings.Stream_Ops;
+with System.UTF_Conversions.From_8_To_32;
+with System.UTF_Conversions.From_16_To_32;
+with System.UTF_Conversions.From_32_To_8;
+with System.UTF_Conversions.From_32_To_16;
 package body Ada.Characters.Maps is
    pragma Suppress (All_Checks);
    use type Characters.Inside.Sets.Character_Ranges;
@@ -294,13 +299,14 @@ package body Ada.Characters.Maps is
    function Overloaded_To_Sequence (Set : Root_Character_Set)
       return Character_Sequence is
    begin
-      return Characters.Inside.To_String (Overloaded_To_Sequence (Set));
+      return System.UTF_Conversions.From_32_To_8.Convert (
+         Overloaded_To_Sequence (Set));
    end Overloaded_To_Sequence;
 
    function Overloaded_To_Sequence (Set : Root_Character_Set)
       return Wide_Character_Sequence is
    begin
-      return Characters.Inside.To_Wide_String (
+      return System.UTF_Conversions.From_32_To_16.Convert (
          Overloaded_To_Sequence (Set));
    end Overloaded_To_Sequence;
 
@@ -458,14 +464,14 @@ package body Ada.Characters.Maps is
       return Root_Character_Set is
    begin
       return Overloaded_To_Set (
-         Characters.Inside.To_Wide_Wide_String (Sequence));
+         System.UTF_Conversions.From_8_To_32.Convert (Sequence));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Wide_Character_Sequence)
       return Root_Character_Set is
    begin
       return Overloaded_To_Set (
-         Characters.Inside.To_Wide_Wide_String (Sequence));
+         System.UTF_Conversions.From_16_To_32.Convert (Sequence));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Wide_Wide_Character_Sequence)
@@ -690,6 +696,46 @@ package body Ada.Characters.Maps is
       return (Ada.Finalization.Controlled with Data => Data);
    end "-";
 
+   package body No_Primitives_For_Set is
+
+      procedure Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Root_Character_Set)
+      is
+         Length : Integer;
+         New_Data : Set_Data_Access;
+      begin
+         Integer'Read (Stream, Length);
+         if Length = 0 then
+            New_Data := null;
+         else
+            New_Data := new Set_Data'(
+               Length => Length,
+               Reference_Count => 1,
+               Items => <>);
+            begin
+               Inside.Sets.Character_Ranges'Read (Stream, New_Data.Items);
+               pragma Assert (Valid (Item.Data));
+            exception
+               when others =>
+                  Free (New_Data);
+                  raise;
+            end;
+         end if;
+         Finalize (Item);
+         Item.Data := New_Data;
+      end Read;
+
+      procedure Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Root_Character_Set) is
+      begin
+         Integer'Write (Stream, Item.Data.Length);
+         Inside.Sets.Character_Ranges'Write (Stream, Item.Data.Items);
+      end Write;
+
+   end No_Primitives_For_Set;
+
    --  maps
 
    procedure Free is new Unchecked_Deallocation (Map_Data, Map_Data_Access);
@@ -733,13 +779,15 @@ package body Ada.Characters.Maps is
    function Overloaded_To_Domain (Map : Root_Character_Mapping)
       return Character_Sequence is
    begin
-      return Characters.Inside.To_String (Overloaded_To_Domain (Map));
+      return System.UTF_Conversions.From_32_To_8.Convert (
+         Overloaded_To_Domain (Map));
    end Overloaded_To_Domain;
 
    function Overloaded_To_Domain (Map : Root_Character_Mapping)
       return Wide_Character_Sequence is
    begin
-      return Characters.Inside.To_Wide_String (Overloaded_To_Domain (Map));
+      return System.UTF_Conversions.From_32_To_16.Convert (
+         Overloaded_To_Domain (Map));
    end Overloaded_To_Domain;
 
    function Overloaded_To_Domain (Map : Root_Character_Mapping)
@@ -756,16 +804,16 @@ package body Ada.Characters.Maps is
       return Root_Character_Mapping is
    begin
       return Overloaded_To_Mapping (
-         Characters.Inside.To_Wide_Wide_String (From),
-         Characters.Inside.To_Wide_Wide_String (To));
+         System.UTF_Conversions.From_8_To_32.Convert (From),
+         System.UTF_Conversions.From_8_To_32.Convert (To));
    end Overloaded_To_Mapping;
 
    function Overloaded_To_Mapping (From, To : Wide_Character_Sequence)
       return Root_Character_Mapping is
    begin
       return Overloaded_To_Mapping (
-         Characters.Inside.To_Wide_Wide_String (From),
-         Characters.Inside.To_Wide_Wide_String (To));
+         System.UTF_Conversions.From_16_To_32.Convert (From),
+         System.UTF_Conversions.From_16_To_32.Convert (To));
    end Overloaded_To_Mapping;
 
    function Overloaded_To_Mapping (From, To : Wide_Wide_Character_Sequence)
@@ -787,13 +835,15 @@ package body Ada.Characters.Maps is
    function Overloaded_To_Range (Map : Root_Character_Mapping)
       return Character_Sequence is
    begin
-      return Characters.Inside.To_String (Overloaded_To_Range (Map));
+      return System.UTF_Conversions.From_32_To_8.Convert (
+         Overloaded_To_Range (Map));
    end Overloaded_To_Range;
 
    function Overloaded_To_Range (Map : Root_Character_Mapping)
       return Wide_Character_Sequence is
    begin
-      return Characters.Inside.To_Wide_String (Overloaded_To_Range (Map));
+      return System.UTF_Conversions.From_32_To_16.Convert (
+         Overloaded_To_Range (Map));
    end Overloaded_To_Range;
 
    function Overloaded_To_Range (Map : Root_Character_Mapping)
@@ -846,5 +896,55 @@ package body Ada.Characters.Maps is
             and then Left.Data.From = Right.Data.From
             and then Left.Data.To = Right.Data.To);
    end "=";
+
+   package body No_Primitives_For_Map is
+
+      procedure Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Root_Character_Mapping)
+      is
+         Length : Integer;
+         New_Data : Map_Data_Access;
+      begin
+         Integer'Read (Stream, Length);
+         if Length = 0 then
+            New_Data := null;
+         else
+            New_Data := new Map_Data'(
+               Length => Length,
+               Reference_Count => 1,
+               From => <>,
+               To => <>);
+            begin
+               System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+                  Stream,
+                  New_Data.From);
+               System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+                  Stream,
+                  New_Data.To);
+            exception
+               when others =>
+                  Free (New_Data);
+                  raise;
+            end;
+         end if;
+         Finalize (Item);
+         Item.Data := New_Data;
+      end Read;
+
+      procedure Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Root_Character_Mapping) is
+      begin
+         Integer'Write (Stream, Item.Data.Length);
+         System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+            Stream,
+            Item.Data.From);
+         System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+            Stream,
+            Item.Data.To);
+      end Write;
+
+   end No_Primitives_For_Map;
 
 end Ada.Characters.Maps;

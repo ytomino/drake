@@ -1,4 +1,7 @@
-with System.UTF_Conversions;
+with System.UTF_Conversions.From_8_To_16;
+with System.UTF_Conversions.From_8_To_32;
+with System.UTF_Conversions.From_16_To_8;
+with System.UTF_Conversions.From_32_To_8;
 package body Ada.Strings.UTF_Encoding.Conversions is
 
    function Convert (
@@ -21,7 +24,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          Result (Index) := BOM_16 (1);
          Index := Index + 1;
       end if;
-      System.UTF_Conversions.UTF_8_To_UTF_16 (
+      System.UTF_Conversions.From_8_To_16.Convert (
          Item (Item_First .. Item'Last),
          Result (Index .. Result'Last),
          Last,
@@ -54,7 +57,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          Result (Index .. Index + 2) := BOM_8;
          Index := Index + 3;
       end if;
-      System.UTF_Conversions.UTF_16_To_UTF_8 (
+      System.UTF_Conversions.From_16_To_8.Convert (
          Item (Item_First .. Item'Last),
          Result (Index .. Result'Last),
          Last,
@@ -85,7 +88,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          Result (Index) := BOM_32 (1);
          Index := Index + 1;
       end if;
-      System.UTF_Conversions.UTF_8_To_UTF_32 (
+      System.UTF_Conversions.From_8_To_32.Convert (
          Item (Item_First .. Item'Last),
          Result (Index .. Result'Last),
          Last,
@@ -118,7 +121,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          Result (Index .. Index + 2) := BOM_8;
          Index := Index + 3;
       end if;
-      System.UTF_Conversions.UTF_32_To_UTF_8 (
+      System.UTF_Conversions.From_32_To_8.Convert (
          Item (Item_First .. Item'Last),
          Result (Index .. Result'Last),
          Last,

@@ -1,4 +1,5 @@
 with Ada.Text_IO.Inside.Formatting;
+with System.Formatting.Fixed_Image;
 with System.Formatting.Float_Image;
 with System.Val_Real;
 package body Ada.Text_IO.Float_IO is
@@ -17,14 +18,24 @@ package body Ada.Text_IO.Float_IO is
       Aft : Field;
       Exp : Field) is
    begin
-      System.Formatting.Float_Image (
-         To,
-         Last,
-         Long_Long_Float (Item),
-         Zero_Sign => Character'Val (0),
-         Plus_Sign => Character'Val (0),
-         Aft_Width => Aft,
-         Exponent_Width => Exp - 1);
+      if Exp /= 0 then
+         System.Formatting.Float_Image (
+            To,
+            Last,
+            Long_Long_Float (Item),
+            Zero_Sign => Character'Val (0),
+            Plus_Sign => Character'Val (0),
+            Aft_Width => Aft,
+            Exponent_Width => Exp - 1);
+      else
+         System.Formatting.Fixed_Image (
+            To,
+            Last,
+            Long_Long_Float (Item),
+            Zero_Sign => Character'Val (0),
+            Plus_Sign => Character'Val (0),
+            Aft_Width => Aft);
+      end if;
    end Put_To_Field;
 
    procedure Get_From_Field (
@@ -153,5 +164,13 @@ package body Ada.Text_IO.Float_IO is
       Put_To_Field (S, Last, Item, Aft, Exp);
       Inside.Formatting.Tail (To, S (1 .. Last));
    end Put;
+
+   procedure Put (
+      To : out String;
+      Last : out Natural;
+      Item : Num;
+      Aft : Field := Default_Aft;
+      Exp : Field := Default_Exp)
+      renames Put_To_Field;
 
 end Ada.Text_IO.Float_IO;

@@ -21,6 +21,17 @@ package body Ada.Streams.Stream_IO is
          Form);
    end Create;
 
+   function Create (
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Form : String := "")
+      return File_Type is
+   begin
+      return Result : File_Type do
+         Create (Result, Mode, Name, Form);
+      end return;
+   end Create;
+
    procedure Delete (File : in out File_Type) is
    begin
       Inside.Delete (Inside.Non_Controlled_File_Type (File.Stream));
@@ -82,6 +93,17 @@ package body Ada.Streams.Stream_IO is
          Mode,
          Name,
          Form);
+   end Open;
+
+   function Open (
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "")
+      return File_Type is
+   begin
+      return Result : File_Type do
+         Open (Result, Mode, Name, Form);
+      end return;
    end Open;
 
    procedure Read (

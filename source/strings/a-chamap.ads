@@ -3,6 +3,7 @@ pragma License (Unrestricted);
 private with Ada.Characters.Inside.Maps;
 private with Ada.Characters.Inside.Sets;
 private with Ada.Finalization;
+private with Ada.Streams;
 package Ada.Characters.Maps is
    pragma Preelaborate;
 
@@ -169,6 +170,18 @@ private
    overriding procedure Adjust (Object : in out Root_Character_Set);
    overriding procedure Finalize (Object : in out Root_Character_Set);
 
+   package No_Primitives_For_Set is
+      procedure Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Root_Character_Set);
+      procedure Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Root_Character_Set);
+   end No_Primitives_For_Set;
+
+   for Root_Character_Set'Read use No_Primitives_For_Set.Read;
+   for Root_Character_Set'Write use No_Primitives_For_Set.Write;
+
    subtype Map_Data is Characters.Inside.Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
 
@@ -180,5 +193,17 @@ private
 
    overriding procedure Adjust (Object : in out Root_Character_Mapping);
    overriding procedure Finalize (Object : in out Root_Character_Mapping);
+
+   package No_Primitives_For_Map is
+      procedure Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Root_Character_Mapping);
+      procedure Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Root_Character_Mapping);
+   end No_Primitives_For_Map;
+
+   for Root_Character_Mapping'Read use No_Primitives_For_Map.Read;
+   for Root_Character_Mapping'Write use No_Primitives_For_Map.Write;
 
 end Ada.Characters.Maps;

@@ -1,8 +1,9 @@
 -- This file is UTF-8.
 with Ada.Numerics.Elementary_Functions;
+with Ada.Numerics.Real_Arrays;
 with Ada.Numerics.Complex_Types;
 with Ada.Numerics.Complex_Elementary_Functions;
-with Ada.Numerics.Real_Arrays;
+with Ada.Numerics.Complex_Arrays;
 -- with Ada.Text_IO;
 procedure numerics is
 --	procedure Dump (A : Ada.Numerics.Real_Arrays.Real_Matrix) is
@@ -16,7 +17,7 @@ procedure numerics is
 --		Ada.Text_IO.New_Line;
 --	end Dump;
 	procedure Test_Pi is
-		X : Long_Long_Float := Ada.Numerics.π;
+		X : Long_Long_Float := Ada.Numerics.π; -- use "π"
 	begin
 		pragma Assert (X = Ada.Numerics.Pi);
 		null;

@@ -91,6 +91,17 @@ package body Ada.Text_IO is
          Form);
    end Create;
 
+   function Create (
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Form : String := "")
+      return File_Type is
+   begin
+      return Result : File_Type do
+         Create (Result, Mode, Name, Form);
+      end return;
+   end Create;
+
    function Current_Error return File_Access is
    begin
       return Current_Error_Access;
@@ -274,10 +285,9 @@ package body Ada.Text_IO is
 
    function Get_Line (File : File_Type) return String is
    begin
-      --  if File is really constant, it may raise exception.
+      --  File_Type is tagged, therefore File is passed by reference.
       Check_File_Mode (File, In_File);
       declare
-         --  File_Type is tagged, therefore File is passed by reference.
          Line_Buffer : String_Access := new String (1 .. 256);
          First : Positive := 1;
       begin
@@ -285,12 +295,9 @@ package body Ada.Text_IO is
             declare
                Last : Natural;
             begin
-               Get_Line (
-                  File,
-                  Line_Buffer (First .. Line_Buffer'Last),
-                  Last);
+               Get_Line (File, Line_Buffer (First .. Line_Buffer'Last), Last);
                if Last < Line_Buffer'Last then
-                  return Result : String := Line_Buffer (1 .. Last) do --  copy
+                  return Result : String := Line_Buffer (1 .. Last) do -- copy
                      pragma Unmodified (Result);
                      pragma Unreferenced (Result);
                      Free (Line_Buffer);
@@ -335,6 +342,11 @@ package body Ada.Text_IO is
    function Line return Positive_Count is
    begin
       return Line (Current_Output_Access.all);
+   end Line;
+
+   function Line (File : not null File_Access) return Positive_Count is
+   begin
+      return Line (File.all);
    end Line;
 
    function Line_Length (File : File_Type) return Count is
@@ -423,6 +435,17 @@ package body Ada.Text_IO is
          Mode,
          Name,
          Form);
+   end Open;
+
+   function Open (
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "")
+      return File_Type is
+   begin
+      return Result : File_Type do
+         Open (Result, Mode, Name, Form);
+      end return;
    end Open;
 
    function Page (File : File_Type) return Positive_Count is

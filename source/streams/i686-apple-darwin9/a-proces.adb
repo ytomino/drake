@@ -127,6 +127,22 @@ package body Ada.Processes is
       end if;
    end Create;
 
+   function Create (
+      Command_Line : String;
+      Directory : String := "";
+      Input : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standards.Standard_Input.all;
+      Output : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standards.Standard_Output.all;
+      Error : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standards.Standard_Error.all)
+      return Process is
+   begin
+      return Result : Process := 0 do -- dummy initial value
+         Create (Result, Command_Line, Directory, Input, Output, Error);
+      end return;
+   end Create;
+
    procedure Wait (Child : Process; Status : out Command_Line.Exit_Status) is
       Result : C.sys.types.pid_t;
       Code : aliased C.signed_int;

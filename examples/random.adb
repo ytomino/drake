@@ -1,4 +1,5 @@
 with Ada.Numerics.Discrete_Random;
+with Ada.Numerics.Float_Random;
 procedure random is
 	type T is range 1 .. 100;
 	package R is new Ada.Numerics.Discrete_Random (T);

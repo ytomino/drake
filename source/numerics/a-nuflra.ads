@@ -11,7 +11,8 @@ package Ada.Numerics.Float_Random is
    function Random (Gen : Generator) return Uniformly_Distributed;
 
 --  procedure Reset (Gen : Generator; Initiator : Integer);
-   procedure Reset (Gen : in out Generator; Initiator : Integer);
+   procedure Reset (Gen : in out Generator; Initiator : Integer)
+      renames MT19937.Reset;
 --  procedure Reset (Gen : Generator);
    procedure Reset (Gen : in out Generator)
       renames MT19937.Reset;

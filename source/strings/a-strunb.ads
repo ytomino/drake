@@ -495,4 +495,25 @@ package Ada.Strings.Unbounded is
       return Unbounded_String
       renames Unbounded_Strings.Functions."*";
 
+   --  extended
+   function Constant_Reference (
+      Source : not null access constant Unbounded_String)
+      return Unbounded_Strings.Slicing.Constant_Reference_Type
+      renames Unbounded_Strings.Constant_Reference;
+   function Constant_Reference (
+      Source : not null access constant Unbounded_String;
+      First_Index : Positive;
+      Last_Index : Natural)
+      return Unbounded_Strings.Slicing.Constant_Reference_Type
+      renames Unbounded_Strings.Constant_Reference;
+   function Reference (Source : not null access Unbounded_String)
+      return Unbounded_Strings.Slicing.Reference_Type
+      renames Unbounded_Strings.Reference;
+   function Reference (
+      Source : not null access Unbounded_String;
+      First_Index : Positive;
+      Last_Index : Natural)
+      return Unbounded_Strings.Slicing.Reference_Type
+      renames Unbounded_Strings.Reference;
+
 end Ada.Strings.Unbounded;

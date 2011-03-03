@@ -92,7 +92,7 @@ package body Ada.Calendar is
 
    function "+" (Left : Time; Right : Duration) return Time is
    begin
-      if RM_9_6_26_Overflow_Check /= 0 then
+      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check /= 0 then
          if (Right > 0.0 and then Duration (Left) > Duration'Last - Right)
             or else (Right < 0.0
                and then Duration (Left) < Duration'First - Right)
@@ -105,7 +105,7 @@ package body Ada.Calendar is
 
    function "+" (Left : Duration; Right : Time) return Time is
    begin
-      if RM_9_6_26_Overflow_Check /= 0 then
+      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check /= 0 then
          if (Right > 0.0 and then Left > Duration'Last - Duration (Right))
             or else (Right < 0.0
                and then Left < Duration'First - Duration (Right))
@@ -118,7 +118,7 @@ package body Ada.Calendar is
 
    function "-" (Left : Time; Right : Duration) return Time is
    begin
-      if RM_9_6_26_Overflow_Check /= 0 then
+      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check /= 0 then
          if (Right > 0.0 and then Duration (Left) < Duration'First + Right)
             or else (Right < 0.0
                and then Duration (Left) > Duration'Last + Right)
@@ -131,7 +131,7 @@ package body Ada.Calendar is
 
    function "-" (Left : Time; Right : Time) return Duration is
    begin
-      if RM_9_6_26_Overflow_Check /= 0 then
+      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check /= 0 then
          if (Right > 0.0
             and then Duration (Left) < Duration'First + Duration (Right))
             or else (Right < 0.0

@@ -2,20 +2,19 @@ with Ada.UCD.Simple_Case_Mapping;
 package body Ada.Characters.Inside.Maps.Upper_Case is
    pragma Suppress (All_Checks);
 
-   Mapping : aliased Character_Mapping := (
-      Length =>
-         UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length +
-         UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length +
-         UCD.Simple_Case_Mapping.Difference_Upper_Table_2'Length,
-      Reference_Count => -1, --  constant
-      From => <>,
-      To => <>);
-
-   Initialized : Boolean := False;
+   Mapping : access Character_Mapping;
 
    function Upper_Case_Map return not null access Character_Mapping is
    begin
-      if not Initialized then
+      if Mapping = null then
+         Mapping := new Character_Mapping'(
+            Length =>
+               UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length +
+               UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length +
+               UCD.Simple_Case_Mapping.Difference_Upper_Table_2'Length,
+            Reference_Count => -1, -- constant
+            From => <>,
+            To => <>);
          declare
             I : Positive := Mapping.From'First;
          begin
@@ -45,10 +44,9 @@ package body Ada.Characters.Inside.Maps.Upper_Case is
             end loop;
             pragma Assert (I = Mapping.From'Last + 1);
          end;
-         Sort (Mapping'Access);
-         Initialized := True;
+         Sort (Mapping);
       end if;
-      return Mapping'Access;
+      return Mapping;
    end Upper_Case_Map;
 
 end Ada.Characters.Inside.Maps.Upper_Case;

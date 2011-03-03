@@ -3,13 +3,16 @@ with Ada.Strings.Functions;
 with Ada.Strings.Functions.Maps;
 with Ada.Strings.Generic_Bounded;
 with Ada.Strings.Maps;
+with System.Strings.Stream_Ops;
 package Ada.Strings.Bounded is
    pragma Preelaborate;
 
    --  instantiate Generic_Bounded
    package Instance is new Generic_Bounded (
-      Character_Type => Character,
-      String_Type => String);
+      Character,
+      String,
+      System.Strings.Stream_Ops.String_Read_Blk_IO,
+      System.Strings.Stream_Ops.String_Write_Blk_IO);
 
    generic
       Max : Positive; -- Maximum length of a Bounded_String
@@ -626,6 +629,27 @@ package Ada.Strings.Bounded is
          Drop : Truncation := Error)
          return Bounded_String
          renames Instance.Replicate;
+
+      --  extended
+      function Constant_Reference (
+         Source : not null access constant Bounded_String)
+         return Bounded.Instance.Slicing.Constant_Reference_Type
+         renames Instance.Constant_Reference;
+      function Constant_Reference (
+         Source : not null access constant Bounded_String;
+         First_Index : Positive;
+         Last_Index : Natural)
+         return Bounded.Instance.Slicing.Constant_Reference_Type
+         renames Instance.Constant_Reference;
+      function Reference (Source : not null access Bounded_String)
+         return Bounded.Instance.Slicing.Reference_Type
+         renames Instance.Reference;
+      function Reference (
+         Source : not null access Bounded_String;
+         First_Index : Positive;
+         Last_Index : Natural)
+         return Bounded.Instance.Slicing.Reference_Type
+         renames Instance.Reference;
 
    end Generic_Bounded_Length;
 

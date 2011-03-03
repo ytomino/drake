@@ -3,20 +3,19 @@ package body Ada.Characters.Inside.Maps.Lower_Case is
    pragma Suppress (All_Checks);
    use type UCD.UCS_4;
 
-   Mapping : aliased Character_Mapping := (
-      Length =>
-         UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length +
-         UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length +
-         UCD.Simple_Case_Mapping.Difference_Lower_Table_2'Length,
-      Reference_Count => -1, --  constant
-      From => <>,
-      To => <>);
-
-   Initialized : Boolean := False;
+   Mapping : access Character_Mapping;
 
    function Lower_Case_Map return not null access Character_Mapping is
    begin
-      if not Initialized then
+      if Mapping = null then
+         Mapping := new Character_Mapping'(
+            Length =>
+               UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length +
+               UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length +
+               UCD.Simple_Case_Mapping.Difference_Lower_Table_2'Length,
+            Reference_Count => -1, -- constant
+            From => <>,
+            To => <>);
          declare
             I : Positive := Mapping.From'First;
             J : Positive := UCD.Simple_Case_Mapping.Shared_Lower_Table_2'First;
@@ -62,9 +61,8 @@ package body Ada.Characters.Inside.Maps.Lower_Case is
             end loop;
             pragma Assert (I = Mapping.From'Last + 1);
          end;
-         Initialized := True;
       end if;
-      return Mapping'Access;
+      return Mapping;
    end Lower_Case_Map;
 
 end Ada.Characters.Inside.Maps.Lower_Case;

@@ -3,47 +3,65 @@ package body Ada.Characters.Inside.Sets.Constants is
    pragma Suppress (All_Checks);
    use type Interfaces.Integer_32;
 
-   Decimal_Digit_Set_Data : aliased Characters.Inside.Sets.Character_Set := (
-      Length => 1,
-      Reference_Count => -1,
-      Items => (1 => ('0', '9')));
+   Decimal_Digit_Set_Data : access Characters.Inside.Sets.Character_Set;
 
    function Decimal_Digit_Set return not null access Sets.Character_Set is
    begin
-      return Decimal_Digit_Set_Data'Access;
+      if Decimal_Digit_Set_Data = null then
+         Decimal_Digit_Set_Data := new Characters.Inside.Sets.Character_Set'(
+            Length => 1,
+            Reference_Count => -1,
+            Items => (1 => ('0', '9')));
+      end if;
+      return Decimal_Digit_Set_Data;
    end Decimal_Digit_Set;
 
-   Hexadecimal_Digit_Set_Data :
-      aliased Characters.Inside.Sets.Character_Set := (
-      Length => 3,
-      Reference_Count => -1,
-      Items => (('0', '9'), ('A', 'F'), ('a', 'f')));
+   Hexadecimal_Digit_Set_Data : access Characters.Inside.Sets.Character_Set;
 
    function Hexadecimal_Digit_Set return not null access Sets.Character_Set is
    begin
-      return Hexadecimal_Digit_Set_Data'Access;
+      if Hexadecimal_Digit_Set_Data = null then
+         Hexadecimal_Digit_Set_Data :=
+            new Characters.Inside.Sets.Character_Set'(
+               Length => 3,
+               Reference_Count => -1,
+               Items => (('0', '9'), ('A', 'F'), ('a', 'f')));
+      end if;
+      return Hexadecimal_Digit_Set_Data;
    end Hexadecimal_Digit_Set;
 
-   ISO_646_Set_Data : aliased Characters.Inside.Sets.Character_Set := (
-      Length => 1,
-      Reference_Count => -1,
-      Items => (1 => (Character_Type'Val (0), Character_Type'Val (16#7F#))));
+   ISO_646_Set_Data : access Characters.Inside.Sets.Character_Set;
 
    function ISO_646_Set return not null access Sets.Character_Set is
    begin
-      return ISO_646_Set_Data'Access;
+      if ISO_646_Set_Data = null then
+         ISO_646_Set_Data := new Characters.Inside.Sets.Character_Set'(
+            Length => 1,
+            Reference_Count => -1,
+            Items => (1 => (
+               Character_Type'Val (0),
+               Character_Type'Val (16#7F#))));
+      end if;
+      return ISO_646_Set_Data;
    end ISO_646_Set;
 
-   Wide_Character_Set_Data : aliased Characters.Inside.Sets.Character_Set := (
-      Length => 2,
-      Reference_Count => -1,
-      Items => (
-         (Character_Type'Val (0), Character_Type'Val (16#D7FF#)),
-         (Character_Type'Val (16#E000#), Character_Type'Val (16#FFFF#))));
+   Wide_Character_Set_Data : access Characters.Inside.Sets.Character_Set;
 
    function Wide_Character_Set return not null access Sets.Character_Set is
    begin
-      return Wide_Character_Set_Data'Access;
+      if Wide_Character_Set_Data = null then
+         Wide_Character_Set_Data := new Characters.Inside.Sets.Character_Set'(
+            Length => 2,
+            Reference_Count => -1,
+            Items => (
+               1 => (
+                  Character_Type'Val (0),
+                  Character_Type'Val (16#D7FF#)),
+               2 => (
+                  Character_Type'Val (16#E000#),
+                  Character_Type'Val (16#FFFF#))));
+      end if;
+      return Wide_Character_Set_Data;
    end Wide_Character_Set;
 
    type Character_Set_Access is access Sets.Character_Set;

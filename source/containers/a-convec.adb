@@ -162,6 +162,27 @@ package body Ada.Containers.Vectors is
       return (Element => Container.Data.Items (Index)'Access);
    end Constant_Reference;
 
+   function Constant_Reference (Container : not null access constant Vector)
+      return Slicing.Constant_Reference_Type is
+   begin
+      return Constant_Reference (
+         Container,
+         Index_Type'First,
+         Last_Index (Container.all));
+   end Constant_Reference;
+
+   function Constant_Reference (
+      Container : not null access constant Vector;
+      First_Index : Index_Type;
+      Last_Index : Extended_Index)
+      return Slicing.Constant_Reference_Type is
+   begin
+      return Slicing.Constant_Slice (
+         Container.Data.Items'Unrestricted_Access,
+         First_Index,
+         Last_Index);
+   end Constant_Reference;
+
    function Contains (Container : Vector; Item : Element_Type)
       return Boolean is
    begin

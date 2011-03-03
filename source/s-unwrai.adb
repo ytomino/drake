@@ -253,6 +253,18 @@ package body System.Unwind.Raising is
       Raise_Current_Exception (E);
    end Raise_Exception;
 
+   procedure Raise_E (
+      E : Standard_Library.Exception_Data_Ptr;
+      Message : String)
+   is
+      Actual_E : Standard_Library.Exception_Data_Ptr := E;
+   begin
+      if Actual_E = null then
+         Actual_E := Unwind.Standard.Constraint_Error'Access;
+      end if;
+      Raise_Exception (Actual_E, Message => Message);
+   end Raise_E;
+
    procedure Reraise (X : Exception_Occurrence) is
    begin
       Soft_Links.Abort_Defer.all;
@@ -459,8 +471,18 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_24;
 
-   procedure rcheck_31 (File : not null access Character; Line : Integer) is
+   procedure rcheck_30 (File : not null access Character; Line : Integer) is
       Message : constant String := "explicit raise";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Storage_Error'Access,
+         File,
+         Line,
+         Message);
+   end rcheck_30;
+
+   procedure rcheck_31 (File : not null access Character; Line : Integer) is
+      Message : constant String := "empty storage pool";
    begin
       Raise_Exception (
          Unwind.Standard.Storage_Error'Access,

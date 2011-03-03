@@ -1,10 +1,9 @@
-with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Generic_Arrays;
+with Ada.Numerics.Generic_Elementary_Sqrt;
 package body Ada.Numerics.Generic_Real_Arrays is
    pragma Suppress (All_Checks);
 
-   package Elementary_Functions is
-      new Generic_Elementary_Functions (Real'Base);
+   function Sqrt is new Generic_Elementary_Sqrt (Real'Base);
 
    function Minor is new Generic_Arrays.Minor (
       Real'Base,
@@ -39,7 +38,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Zero => 0.0,
       One => 1.0,
       Two => 2.0,
-      Sqrt => Elementary_Functions.Sqrt,
+      Sqrt => Sqrt,
       Is_Minus => Is_Minus,
       Is_Small => Is_Small,
       To_Real => "+");
@@ -122,7 +121,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Real_Vector,
       Real'Base,
       Zero => 0.0,
-      Sqrt => Elementary_Functions.Sqrt);
+      Sqrt => Sqrt);
 
    function "abs" (Right : Real_Vector) return Real'Base
       renames abs_Body;
