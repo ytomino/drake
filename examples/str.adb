@@ -10,6 +10,7 @@ with Ada.Strings.Wide_Wide_Unbounded;
 with Ada.Strings.Maps.Constants;
 with Ada.Strings.Wide_Maps;
 with Ada.Strings.Wide_Wide_Maps;
+with System;
 procedure str is
 	abcabc : String := "abcabc";
 	Text : String := "the south on south";
@@ -40,21 +41,33 @@ begin
 	pragma Assert (X > "10");
 	pragma Assert (X < "12");
 	declare
-	   package BP is new Ada.Strings.Bounded.Generic_Bounded_Length (10);
-	   use type BP.Bounded_String;
-	   B : BP.Bounded_String := +"123";
+		package BP is new Ada.Strings.Bounded.Generic_Bounded_Length (10);
+		use type BP.Bounded_String;
+		B : BP.Bounded_String := +"123";
 	begin
 		null;
 	end;
 	declare
-	   use type Ada.Strings.Unbounded.Unbounded_String;
-	   U : Ada.Strings.Unbounded.Unbounded_String;
+		use type Ada.Strings.Unbounded.Unbounded_String;
+		use type System.Address;
+		U, V : aliased Ada.Strings.Unbounded.Unbounded_String;
+		A : System.Address;
 	begin
-	   pragma Assert (U = "");
-	   U := +"B";
-	   pragma Assert (U > "A");
-	   pragma Assert (U = "B");
-	   pragma Assert (U < "C");
+		pragma Assert (U = "");
+		U := +"B";
+		pragma Assert (U > "A");
+		pragma Assert (U = "B");
+		pragma Assert (U < "C");
+		Ada.Strings.Unbounded.Set_Unbounded_String (U, "1234"); -- reserve 4
+		Ada.Strings.Unbounded.Append (U, "5"); -- reserve 8 (4 * 2 > 4 + 1)
+		A := U.Constant_Reference.Element.all'Address;
+		V := U; -- sharing
+		Ada.Strings.Unbounded.Append (V, "V"); -- use reserved area
+		pragma Assert (V.Constant_Reference.Element.all'Address = A); -- same area
+		Ada.Strings.Unbounded.Append (U, "U"); -- reallocating
+		pragma Assert (U.Constant_Reference.Element.all'Address /= A); -- other area
+		pragma Assert (U = "12345U");
+		pragma Assert (V = "12345V");
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 	null;

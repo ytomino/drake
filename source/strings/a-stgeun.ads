@@ -4,7 +4,7 @@ with Ada.Unchecked_Deallocation;
 with Ada.Streams;
 with System.Arrays;
 private with Ada.Finalization;
-private with Interfaces;
+private with System.Reference_Counting;
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
@@ -615,23 +615,23 @@ package Ada.Strings.Generic_Unbounded is
 private
 
    type Data (Capacity : Natural) is limited record
-      Reference_Count : aliased Interfaces.Integer_32;
-      Max_Length : aliased Interfaces.Integer_32;
+      Reference_Count : aliased System.Reference_Counting.Counter;
+      Max_Length : aliased Natural;
       Items : aliased String_Type (1 .. Capacity);
    end record;
    pragma Suppress_Initialization (Data);
 
-   type Data_Access is access Data;
+   type Data_Access is access all Data;
 
    Empty_Data : aliased constant Data := (
       Capacity => 0,
-      Reference_Count => Interfaces.Integer_32'Last,
+      Reference_Count => System.Reference_Counting.Static,
       Max_Length => 0,
       Items => <>);
 
    type Unbounded_String is new Finalization.Controlled with record
-      Data : not null Data_Access := Empty_Data'Unrestricted_Access;
-      Length : Natural := 0;
+      Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;
+      Length : aliased Natural := 0;
    end record;
 
    overriding procedure Adjust (Object : in out Unbounded_String);
