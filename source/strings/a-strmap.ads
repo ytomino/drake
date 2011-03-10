@@ -1,12 +1,12 @@
 pragma License (Unrestricted);
-with Ada.Characters.Maps;
+with Ada.Strings.Root_Maps;
 package Ada.Strings.Maps is
 --  pragma Pure;
    pragma Preelaborate; -- controlled types
 
    --  Representation for a set of character values:
 --  type Character_Set is private;
-   type Character_Set is new Characters.Maps.Root_Character_Set;
+   type Character_Set is new Root_Maps.Root_Character_Set;
    pragma Preelaborable_Initialization (Character_Set);
 
 --  Null_Set : constant Character_Set;
@@ -16,11 +16,11 @@ package Ada.Strings.Maps is
 --    Low : Character;
 --    High : Character;
 --  end record;
-   subtype Character_Range is Characters.Maps.Character_Range;
+   subtype Character_Range is Root_Maps.Character_Range;
    --  Represents Character range Low..High
 
 --  type Character_Ranges is array (Positive range <>) of Character_Range;
-   subtype Character_Ranges is Characters.Maps.Character_Ranges;
+   subtype Character_Ranges is Root_Maps.Character_Ranges;
 
    function To_Set (Ranges : Character_Ranges) return Character_Set
       renames Overloaded_To_Set;
@@ -66,7 +66,7 @@ package Ada.Strings.Maps is
 
    --  Representation for a character to character mapping:
 --  type Character_Mapping is private;
-   type Character_Mapping is new Characters.Maps.Root_Character_Mapping;
+   type Character_Mapping is new Root_Maps.Root_Character_Mapping;
    pragma Preelaborable_Initialization (Character_Mapping);
 
    function Value (Map : Character_Mapping; Element : Character)

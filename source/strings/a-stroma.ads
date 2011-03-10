@@ -4,7 +4,7 @@ private with Ada.Characters.Inside.Maps;
 private with Ada.Characters.Inside.Sets;
 private with Ada.Finalization;
 private with Ada.Streams;
-package Ada.Characters.Maps is
+package Ada.Strings.Root_Maps is
    pragma Preelaborate;
 
    type Character_Range is record
@@ -206,4 +206,4 @@ private
    for Root_Character_Mapping'Read use No_Primitives_For_Map.Read;
    for Root_Character_Mapping'Write use No_Primitives_For_Map.Write;
 
-end Ada.Characters.Maps;
+end Ada.Strings.Root_Maps;

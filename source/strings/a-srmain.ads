@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  implementation package
 with Ada.Characters.Inside.Sets;
 with Ada.Characters.Inside.Maps;
-package Ada.Characters.Maps.Inside is
+package Ada.Strings.Root_Maps.Inside is
    pragma Preelaborate;
 
    generic
@@ -19,4 +19,4 @@ package Ada.Characters.Maps.Inside is
    function To_Mapping return T;
    pragma Inline_Always (To_Mapping);
 
-end Ada.Characters.Maps.Inside;
+end Ada.Strings.Root_Maps.Inside;

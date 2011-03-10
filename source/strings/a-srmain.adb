@@ -1,4 +1,4 @@
-package body Ada.Characters.Maps.Inside is
+package body Ada.Strings.Root_Maps.Inside is
 
    function To_Set return T is
    begin
@@ -12,4 +12,4 @@ package body Ada.Characters.Maps.Inside is
          Data => Map_Data_Access'(Source.all'Unchecked_Access)));
    end To_Mapping;
 
-end Ada.Characters.Maps.Inside;
+end Ada.Strings.Root_Maps.Inside;

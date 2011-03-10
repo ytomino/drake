@@ -6,7 +6,7 @@ with System.UTF_Conversions.From_8_To_32;
 with System.UTF_Conversions.From_16_To_32;
 with System.UTF_Conversions.From_32_To_8;
 with System.UTF_Conversions.From_32_To_16;
-package body Ada.Characters.Maps is
+package body Ada.Strings.Root_Maps is
    pragma Suppress (All_Checks);
    use type Characters.Inside.Sets.Character_Ranges;
    use type Interfaces.Integer_32;
@@ -714,7 +714,9 @@ package body Ada.Characters.Maps is
                Reference_Count => 1,
                Items => <>);
             begin
-               Inside.Sets.Character_Ranges'Read (Stream, New_Data.Items);
+               Characters.Inside.Sets.Character_Ranges'Read (
+                  Stream,
+                  New_Data.Items);
                pragma Assert (Valid (Item.Data));
             exception
                when others =>
@@ -731,7 +733,9 @@ package body Ada.Characters.Maps is
          Item : Root_Character_Set) is
       begin
          Integer'Write (Stream, Item.Data.Length);
-         Inside.Sets.Character_Ranges'Write (Stream, Item.Data.Items);
+         Characters.Inside.Sets.Character_Ranges'Write (
+            Stream,
+            Item.Data.Items);
       end Write;
 
    end No_Primitives_For_Set;
@@ -947,4 +951,4 @@ package body Ada.Characters.Maps is
 
    end No_Primitives_For_Map;
 
-end Ada.Characters.Maps;
+end Ada.Strings.Root_Maps;

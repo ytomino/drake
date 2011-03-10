@@ -1,11 +1,11 @@
 pragma License (Unrestricted);
-with Ada.Characters.Maps;
+with Ada.Strings.Root_Maps;
 package Ada.Strings.Wide_Wide_Maps is
    pragma Preelaborate;
 
    --  Representation for a set of Wide_Wide_Character values:
 --  type Wide_Wide_Character_Set is private;
-   type Wide_Wide_Character_Set is new Characters.Maps.Root_Character_Set;
+   type Wide_Wide_Character_Set is new Root_Maps.Root_Character_Set;
    pragma Preelaborable_Initialization (Wide_Wide_Character_Set);
 
 --  Null_Set : constant Wide_Wide_Character_Set;
@@ -15,14 +15,12 @@ package Ada.Strings.Wide_Wide_Maps is
 --    Low : Wide_Wide_Character;
 --    High : Wide_Wide_Character;
 --  end record;
-   subtype Wide_Wide_Character_Range is
-      Characters.Maps.Wide_Wide_Character_Range;
+   subtype Wide_Wide_Character_Range is Root_Maps.Wide_Wide_Character_Range;
    --  Represents Wide_Wide_Character range Low..High
 
 --  type Wide_Wide_Character_Ranges is
 --    array (Positive range <>) of Wide_Wide_Character_Range;
-   subtype Wide_Wide_Character_Ranges is
-      Characters.Maps.Wide_Wide_Character_Ranges;
+   subtype Wide_Wide_Character_Ranges is Root_Maps.Wide_Wide_Character_Ranges;
 
    function To_Set (Ranges : Wide_Wide_Character_Ranges)
       return Wide_Wide_Character_Set
@@ -86,8 +84,7 @@ package Ada.Strings.Wide_Wide_Maps is
    --  Representation for a Wide_Wide_Character to Wide_Wide_Character
    --  mapping:
 --  type Wide_Wide_Character_Mapping is private;
-   type Wide_Wide_Character_Mapping is
-      new Characters.Maps.Root_Character_Mapping;
+   type Wide_Wide_Character_Mapping is new Root_Maps.Root_Character_Mapping;
    pragma Preelaborable_Initialization (Wide_Wide_Character_Mapping);
 
    function Value (
