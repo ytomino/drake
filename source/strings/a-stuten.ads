@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  Ada 2012
+private with System;
 package Ada.Strings.UTF_Encoding is
    pragma Pure;
 
@@ -18,31 +19,31 @@ package Ada.Strings.UTF_Encoding is
 
    Encoding_Error : exception;
 
-   BOM_8 : constant String :=
+   BOM_8 : aliased constant String := -- "aliased" is extended
       Character'Val (16#EF#) &
       Character'Val (16#BB#) &
       Character'Val (16#BF#);
 
-   BOM_16BE : constant String :=
+   BOM_16BE : aliased constant String := -- "aliased" is extended
       Character'Val (16#FE#) &
       Character'Val (16#FF#);
 
-   BOM_16LE : constant String :=
+   BOM_16LE : aliased constant String := -- "aliased" is extended
       Character'Val (16#FF#) &
       Character'Val (16#FE#);
 
-   BOM_16 : constant Wide_String :=
+   BOM_16 : aliased constant Wide_String := -- "aliased" is extended
        (1 => Wide_Character'Val (16#FEFF#));
 
    --  extended
-   BOM_32BE : constant String :=
+   BOM_32BE : aliased constant String :=
       Character'Val (16#00#) &
       Character'Val (16#00#) &
       Character'Val (16#FE#) &
       Character'Val (16#FF#);
 
    --  extended
-   BOM_32LE : constant String :=
+   BOM_32LE : aliased constant String :=
       Character'Val (16#FF#) &
       Character'Val (16#FE#) &
       Character'Val (16#00#) &
@@ -56,5 +57,44 @@ package Ada.Strings.UTF_Encoding is
       Item : UTF_String;
       Default : Encoding_Scheme := UTF_8)
       return Encoding_Scheme;
+
+   --  extended
+   UTF_16_Wide_String_Scheme : constant Encoding_Scheme
+      range UTF_16BE .. UTF_16LE;
+   UTF_32_Wide_Wide_String_Scheme : constant Encoding_Scheme
+      range UTF_32BE .. UTF_32LE;
+
+private
+
+   use type System.Bit_Order;
+
+   UTF_16_Wide_String_Scheme : constant Encoding_Scheme :=
+      Encoding_Scheme'Val (
+         Encoding_Scheme'Pos (UTF_16BE) *
+            Boolean'Pos (System.Default_Bit_Order = System.High_Order_First) +
+         Encoding_Scheme'Pos (UTF_16LE) *
+            Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
+
+   UTF_32_Wide_Wide_String_Scheme : constant Encoding_Scheme :=
+      Encoding_Scheme'Val (
+         Encoding_Scheme'Pos (UTF_32BE) *
+            Boolean'Pos (System.Default_Bit_Order = System.High_Order_First) +
+         Encoding_Scheme'Pos (UTF_32LE) *
+            Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
+
+   function Contains_BOM_8 (Item : UTF_String) return Boolean;
+   function Contains_BOM_16BE (Item : UTF_String) return Boolean;
+   function Contains_BOM_16LE (Item : UTF_String) return Boolean;
+   function Contains_BOM_32BE (Item : UTF_String) return Boolean;
+   function Contains_BOM_32LE (Item : UTF_String) return Boolean;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      BOM : String_Type;
+   function Generic_Add_Or_Remove_BOM (
+      Item : String_Type;
+      Output_BOM : Boolean := False)
+      return String_Type;
 
 end Ada.Strings.UTF_Encoding;
