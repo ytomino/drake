@@ -1,6 +1,7 @@
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Ada.Containers.Limited_Doubly_Linked_Lists;
+with Ada.Containers.Inside.Linked_Lists.Singly;
 with Ada.Text_IO;
 procedure cntnr_d_Linked_List is
 	use type Ada.Containers.Count_Type;
@@ -34,7 +35,7 @@ procedure cntnr_d_Linked_List is
 	pragma Debug (Test_01);
 	procedure Test_02 is
 		use type Lists.Cursor;
-		X : Lists.List;
+		X : aliased Lists.List;
 		C : Character;
 	begin
 		for I in Character'('A') .. 'F' loop
@@ -42,30 +43,30 @@ procedure cntnr_d_Linked_List is
 		end loop;
 		C := 'A';
 		declare
-			I : Lists.Cursor := X.First;
-			Last : Lists.Cursor := X.Last;
+			Ite : Lists.Iterator := X.Iterate;
+			Pos : Lists.Cursor := Lists.First (Ite);
 		begin
-			while I <= Last loop
-				pragma Assert (Lists.Element (I) = C);
+			while Pos /= Lists.No_Element loop
+				pragma Assert (Lists.Element (Pos) = C);
 				C := Character'Succ (C);
-				Lists.Next (I);
+				Pos := Lists.Next (Ite, Pos);
 			end loop;
 		end;
 		declare
-			I : Lists.Cursor := X.Last;
-			First : Lists.Cursor := X.First;
+			Ite : Lists.Iterator := X.Iterate;
+			Pos : Lists.Cursor := Lists.Last (Ite);
 		begin
-			while I >= First loop
+			while Pos /= Lists.No_Element loop
 				C := Character'Pred (C);
-				pragma Assert (Lists.Element (I) = C);
-				Lists.Previous (I);
+				pragma Assert (Lists.Element (Pos) = C);
+				Pos := Lists.Previous (Ite, Pos);
 			end loop;
 		end;
 		declare
 			I : Lists.Cursor := X.First;
 			Last : Lists.Cursor := X.Last;
 		begin
-			if I <= Last then
+			if Lists.Has_Element (I) then
 				loop
 					pragma Assert (Lists.Element (I) = C);
 					C := Character'Succ (C);
@@ -78,7 +79,7 @@ procedure cntnr_d_Linked_List is
 			I : Lists.Cursor := X.Last;
 			First : Lists.Cursor := X.First;
 		begin
-			if I >= First then
+			if Lists.Has_Element (I) then
 				loop
 					C := Character'Pred (C);
 					pragma Assert (Lists.Element (I) = C);
@@ -91,7 +92,7 @@ procedure cntnr_d_Linked_List is
 			I : Lists.Cursor := X.First;
 			Last : Lists.Cursor := Lists.Previous (X.Last);
 		begin
-			if I <= Last then
+			if Lists.Has_Element (I) then
 				loop
 					pragma Assert (Lists.Element (I) = C);
 					exit when I = Last;
@@ -104,18 +105,16 @@ procedure cntnr_d_Linked_List is
 		Lists.Clear (X);
 		declare
 			I : Lists.Cursor := X.First;
-			Last : Lists.Cursor := X.Last;
 		begin
-			while I <= Last loop
+			while Lists.Has_Element (I) loop
 				pragma Assert (False);
 				Lists.Next (I);
 			end loop;
 		end;
 		declare
 			I : Lists.Cursor := X.Last;
-			First : Lists.Cursor := X.First;
 		begin
-			while I >= First loop
+			while Lists.Has_Element (I) loop
 				pragma Assert (False);
 				Lists.Previous (I);
 			end loop;

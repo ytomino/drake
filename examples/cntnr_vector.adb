@@ -166,10 +166,35 @@ procedure cntnr_Vector is
 		for I in Character'('A') .. 'Z' loop
 			Append (X, I);
 		end loop;
-		ada.debug.put (string(X.Reference (1, 26).Element.all));
+		-- accessor
+		-- ada.debug.put (string(X.Reference (1, 26).Element.all));
 		pragma Assert (X.Reference.Element.all = "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 		pragma Assert (X.Reference (1, 26).Element.all = "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 		pragma Assert (X.Reference (2, 3).Element.all = "BC");
+		-- iterator
+		declare
+			Ite : Iterator := X.Iterate;
+			Pos : Cursor := First (Ite);
+			C : Character := 'A';
+		begin
+			while Pos /= No_Element loop
+				pragma Assert (X.Reference (Pos).Element.all = C);
+				C := Character'Succ (C);
+				Pos := Next (Ite, Pos);
+			end loop;
+		end;
+		-- reverse
+		declare
+			Ite : Iterator := X.Iterate;
+			Pos : Cursor := Last (Ite);
+			C : Character := 'Z';
+		begin
+			while Pos /= No_Element loop
+				pragma Assert (X.Reference (Pos).Element.all = C);
+				C := Character'Pred (C);
+				Pos := Previous (Ite, Pos);
+			end loop;
+		end;
 	end Test_08;
 	pragma Debug (Test_08);
 	pragma Debug (Ada.Debug.Put ("OK"));

@@ -26,6 +26,7 @@ package Ada.Containers.Limited_Vectors is
 --  Empty_Vector : constant Vector;
    function Empty_Vector return Vector; --  extended
 --  No_Element : constant Cursor;
+   No_Element : Cursor renames No_Index; -- extended
 
 --  diff ("=")
 
@@ -68,7 +69,7 @@ package Ada.Containers.Limited_Vectors is
 
    procedure Replace_Element (
       Container : in out Vector;
-      Position : Cursor;
+      Position : Index_Type;
       New_Item : not null access function (C : Vector) return Element_Type);
 
 --  diff (Replace_Element)
@@ -194,8 +195,7 @@ package Ada.Containers.Limited_Vectors is
 
    function First_Index (Container : Vector) return Index_Type;
 
-   function First (Container : Vector) return Cursor
-      renames First_Index;
+   function First (Container : Vector) return Cursor;
 
 --  diff (First_Element)
 
@@ -206,13 +206,13 @@ package Ada.Containers.Limited_Vectors is
 
 --  diff (Last_Element)
 
-   function Next (Position : Cursor) return Cursor;
+--  function Next (Position : Cursor) return Cursor;
 
-   procedure Next (Position : in out Cursor);
+--  procedure Next (Position : in out Cursor);
 
-   function Previous (Position : Cursor) return Cursor;
+--  function Previous (Position : Cursor) return Cursor;
 
-   procedure Previous (Position : in out Cursor);
+--  procedure Previous (Position : in out Cursor);
 
 --  diff (Find_Index)
 --
@@ -257,7 +257,7 @@ package Ada.Containers.Limited_Vectors is
 
 --  diff (Contains)
 
---  function Has_Element (Position : Cursor) return Boolean;
+   function Has_Element (Position : Cursor) return Boolean;
 
    procedure Iterate (
       Container : Vector;
@@ -288,6 +288,16 @@ package Ada.Containers.Limited_Vectors is
 --    Container : not null access Vector;
 --    Position : Cursor)
 --    return Reference_Type;
+
+   --  AI05-0139-2
+--  type Iterator_Type is new Reversible_Iterator with private;
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   function Last (Object : Iterator) return Cursor;
+   function Previous (Object : Iterator; Position : Cursor) return Cursor;
+   function Iterate (Container : not null access constant Vector)
+      return Iterator;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
@@ -334,7 +344,7 @@ private
       Items : aliased Element_Array (Index_Type'First .. Capacity_Last);
    end record;
 
-   type Data_Access is access Data;
+   type Data_Access is access all Data;
 
    Empty_Data : aliased constant Data := (
       Capacity_Last => Index_Type'First - 1,
@@ -367,5 +377,9 @@ private
       Element : not null access constant Element_Type) is limited null record;
    type Reference_Type (
       Element : not null access Element_Type) is limited null record;
+
+   type Iterator is limited record
+      Last_Index : Extended_Index;
+   end record;
 
 end Ada.Containers.Limited_Vectors;

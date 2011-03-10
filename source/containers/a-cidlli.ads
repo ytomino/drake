@@ -25,10 +25,6 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    function "=" (Left, Right : List) return Boolean;
 
-   --  extended
-   function "<=" (Left, Right : Cursor) return Boolean;
-   function ">=" (Left, Right : Cursor) return Boolean;
-
    function Length (Container : List) return Count_Type;
 
    function Is_Empty (Container : List) return Boolean;
@@ -185,6 +181,16 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Position : Cursor)
       return Reference_Type;
 
+   --  AI05-0139-2
+--  type Iterator_Type is new Reversible_Iterator with private;
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   function Last (Object : Iterator) return Cursor;
+   function Previous (Object : Iterator; Position : Cursor) return Cursor;
+   function Iterate (Container : not null access constant List)
+      return Iterator;
+
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
@@ -221,6 +227,11 @@ private
    type Node is limited record
       Super : aliased Base.Node;
       Element : Element_Access;
+   end record;
+
+   --  place Super at first whether Element_Type is controlled-type
+   for Node use record
+      Super at 0 range 0 .. Base.Node_Size - 1;
    end record;
 
    type Cursor is access Node;
@@ -261,5 +272,7 @@ private
 
    type Reference_Type (
       Element : not null access Element_Type) is limited null record;
+
+   type Iterator is not null access constant List;
 
 end Ada.Containers.Indefinite_Doubly_Linked_Lists;

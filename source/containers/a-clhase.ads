@@ -113,9 +113,6 @@ package Ada.Containers.Limited_Hashed_Sets is
 
    function First (Container : Set) return Cursor;
 
-   --  extended
-   function Last (Container : Set) return Cursor;
-
    function Next (Position : Cursor) return Cursor;
 
    procedure Next (Position : in out Cursor);
@@ -134,9 +131,6 @@ package Ada.Containers.Limited_Hashed_Sets is
 --  function Equivalent_Elements (Left : Element_Type; Right : Cursor)
 --    return Boolean;
 
-   --  extended
-   function "<=" (Left, Right : Cursor) return Boolean;
-
    procedure Iterate (
       Container : Set;
       Process : not null access procedure (Position : Cursor));
@@ -154,6 +148,14 @@ package Ada.Containers.Limited_Hashed_Sets is
       Container : not null access Set;
       Position : Cursor)
       return Reference_Type;
+
+   --  AI05-0139-2
+--  type Iterator_Type is new Forward_Iterator with private;
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   function Iterate (Container : not null access constant Set)
+      return Iterator;
 
    generic
       type Key_Type (<>) is private;
@@ -205,6 +207,11 @@ private
       Element : Element_Access;
    end record;
 
+   --  place Super at first whether Element_Type is controlled-type
+   for Node use record
+      Super at 0 range 0 .. Hash_Tables.Node_Size - 1;
+   end record;
+
    type Cursor is access Node;
 
 --  diff (Data)
@@ -241,5 +248,7 @@ private
 
    type Reference_Type (
       Element : not null access Element_Type) is limited null record;
+
+   type Iterator is not null access constant Set;
 
 end Ada.Containers.Limited_Hashed_Sets;

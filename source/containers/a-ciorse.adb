@@ -332,6 +332,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end First;
 
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.all);
+   end First;
+
    function Floor (Container : Set; Item : Element_Type) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -485,6 +490,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end Iterate;
 
+   function Iterate (Container : not null access constant Set)
+      return Iterator is
+   begin
+      return Iterator (Container);
+   end Iterate;
+
    function Last (Container : Set) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -494,6 +505,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          return Downcast (Binary_Trees.Last (
             Downcast (Container.Super.Data).Root));
       end if;
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Last (Object.all);
    end Last;
 
    function Length (Container : Set) return Count_Type is
@@ -526,6 +542,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Position := Downcast (Binary_Trees.Next (Upcast (Position)));
    end Next;
 
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
    function No_Element return Cursor is
    begin
       return null;
@@ -551,6 +573,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
+   end Previous;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
    end Previous;
 
    procedure Query_Element (
@@ -725,16 +753,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    begin
       return Left.Element.all < Right.Element.all;
    end "<";
-
-   function "<=" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left /= null and then not (Right.Element.all < Left.Element.all);
-   end "<=";
-
-   function ">=" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left /= null and then not (Left.Element.all < Right.Element.all);
-   end ">=";
 
    package body Generic_Keys is
 

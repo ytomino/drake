@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  diff (System.Arrays)
 private with Ada.Finalization;
 private with Ada.Streams;
-private with Interfaces;
+private with System.Reference_Counting;
 generic
    type Index_Type is range <>;
    type Element_Type (<>) is private;
@@ -26,6 +26,7 @@ package Ada.Containers.Indefinite_Vectors is
 --  Empty_Vector : constant Vector;
    function Empty_Vector return Vector; --  extended
 --  No_Element : constant Cursor;
+   No_Element : Cursor renames No_Index; -- extended
 
    function "=" (Left, Right : Vector) return Boolean;
 
@@ -194,8 +195,7 @@ package Ada.Containers.Indefinite_Vectors is
 
    function First_Index (Container : Vector) return Index_Type;
 
-   function First (Container : Vector) return Cursor
-      renames First_Index;
+   function First (Container : Vector) return Cursor;
 
    function First_Element (Container : Vector) return Element_Type;
 
@@ -206,13 +206,13 @@ package Ada.Containers.Indefinite_Vectors is
 
    function Last_Element (Container : Vector) return Element_Type;
 
-   function Next (Position : Cursor) return Cursor;
+--  function Next (Position : Cursor) return Cursor;
 
-   procedure Next (Position : in out Cursor);
+--  procedure Next (Position : in out Cursor);
 
-   function Previous (Position : Cursor) return Cursor;
+--  function Previous (Position : Cursor) return Cursor;
 
-   procedure Previous (Position : in out Cursor);
+--  procedure Previous (Position : in out Cursor);
 
    function Find_Index (
       Container : Vector;
@@ -257,7 +257,7 @@ package Ada.Containers.Indefinite_Vectors is
 
    function Contains (Container : Vector; Item : Element_Type) return Boolean;
 
---  function Has_Element (Position : Cursor) return Boolean;
+   function Has_Element (Position : Cursor) return Boolean;
 
    procedure Iterate (
       Container : Vector;
@@ -288,6 +288,16 @@ package Ada.Containers.Indefinite_Vectors is
 --    Container : not null access Vector;
 --    Position : Cursor)
 --    return Reference_Type;
+
+   --  AI05-0139-2
+--  type Iterator_Type is new Reversible_Iterator with private;
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   function Last (Object : Iterator) return Cursor;
+   function Previous (Object : Iterator; Position : Cursor) return Cursor;
+   function Iterate (Container : not null access constant Vector)
+      return Iterator;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
@@ -329,21 +339,21 @@ private
    type Element_Array is array (Index_Type range <>) of Element_Access;
 
    type Data (Capacity_Last : Extended_Index) is limited record
-      Reference_Count : aliased Interfaces.Integer_32;
-      Max_Length : aliased Interfaces.Integer_32;
+      Reference_Count : aliased System.Reference_Counting.Counter;
+      Max_Length : aliased Natural;
       Items : aliased Element_Array (Index_Type'First .. Capacity_Last);
    end record;
 
-   type Data_Access is access Data;
+   type Data_Access is access all Data;
 
    Empty_Data : aliased constant Data := (
       Capacity_Last => Index_Type'First - 1,
-      Reference_Count => Interfaces.Integer_32'Last,
+      Reference_Count => System.Reference_Counting.Static,
       Max_Length => 0,
       Items => <>);
 
    type Vector is new Finalization.Controlled with record
-      Data : not null Data_Access := Empty_Data'Unrestricted_Access;
+      Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;
       Length : Count_Type := 0;
    end record;
 
@@ -367,5 +377,9 @@ private
       Element : not null access constant Element_Type) is limited null record;
    type Reference_Type (
       Element : not null access Element_Type) is limited null record;
+
+   type Iterator is limited record
+      Last_Index : Extended_Index;
+   end record;
 
 end Ada.Containers.Indefinite_Vectors;

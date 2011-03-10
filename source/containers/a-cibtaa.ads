@@ -3,10 +3,14 @@ pragma License (Unrestricted);
 package Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
    pragma Preelaborate;
 
+   Node_Size : constant := Standard'Address_Size * 3 + Integer'Size;
+
    type Node is limited record
       Super : aliased Binary_Trees.Node;
       Level : Integer;
    end record;
+
+   for Node'Size use Node_Size;
 
    procedure Insert (
       Container : in out Node_Access;

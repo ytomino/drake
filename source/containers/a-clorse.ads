@@ -143,10 +143,6 @@ package Ada.Containers.Limited_Ordered_Sets is
 
 --  function ">" (Left : Element_Type; Right : Cursor) return Boolean;
 
-   --  extended
-   function "<=" (Left, Right : Cursor) return Boolean;
-   function ">=" (Left, Right : Cursor) return Boolean;
-
    procedure Iterate (
       Container : Set;
       Process : not null access procedure (Position : Cursor));
@@ -168,6 +164,16 @@ package Ada.Containers.Limited_Ordered_Sets is
       Container : not null access Set;
       Position  : Cursor)
       return Reference_Type;
+
+   --  AI05-0139-2
+--  type Iterator_Type is new Reversible_Iterator with private;
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   function Last (Object : Iterator) return Cursor;
+   function Previous (Object : Iterator; Position : Cursor) return Cursor;
+   function Iterate (Container : not null access constant Set)
+      return Iterator;
 
    generic
       type Key_Type (<>) is private;
@@ -224,6 +230,11 @@ private
       Element : Element_Access;
    end record;
 
+   --  place Super at first whether Element_Type is controlled-type
+   for Node use record
+      Super at 0 range 0 .. Base.Node_Size - 1;
+   end record;
+
    type Cursor is access Node;
 
 --  diff (Data)
@@ -260,5 +271,7 @@ private
 
    type Reference_Type (
       Element : not null access Element_Type) is limited null record;
+
+   type Iterator is not null access constant Set;
 
 end Ada.Containers.Limited_Ordered_Sets;

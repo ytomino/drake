@@ -102,9 +102,6 @@ package Ada.Containers.Limited_Hashed_Maps is
 
    function First (Container : Map) return Cursor;
 
-   --  extended
-   function Last (Container : Map) return Cursor;
-
    function Next (Position : Cursor) return Cursor;
 
    procedure Next (Position : in out Cursor);
@@ -122,9 +119,6 @@ package Ada.Containers.Limited_Hashed_Maps is
    function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean;
 
 --  function Equivalent_Keys (Left : Key_Type; Right : Cursor) return Boolean;
-
-   --  extended
-   function "<=" (Left, Right : Cursor) return Boolean;
 
    procedure Iterate (
       Container : Map;
@@ -146,6 +140,14 @@ package Ada.Containers.Limited_Hashed_Maps is
       Position : Cursor)
       return Reference_Type;
 
+   --  AI05-0139-2
+--  type Iterator_Type is new Forward_Iterator with private;
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   function Iterate (Container : not null access constant Map)
+      return Iterator;
+
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
    package Equivalent is
@@ -164,6 +166,11 @@ private
       Super : aliased Hash_Tables.Node;
       Key : Key_Access;
       Element : Element_Access;
+   end record;
+
+   --  place Super at first whether Element_Type is controlled-type
+   for Node use record
+      Super at 0 range 0 .. Hash_Tables.Node_Size - 1;
    end record;
 
    type Cursor is access Node;
@@ -204,5 +211,7 @@ private
    type Reference_Type (
       Key : not null access constant Key_Type;
       Element : not null access Element_Type) is limited null record;
+
+   type Iterator is not null access constant Map;
 
 end Ada.Containers.Limited_Hashed_Maps;

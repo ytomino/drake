@@ -25,16 +25,10 @@ procedure cntnr_Hashed_Set is
 	begin
 		Sets.Insert (X, 2);
 		pragma Assert (X.Length = 1);
-		pragma Assert (Sets.Element (X.First) = 2);
-		pragma Assert (Sets.Element (X.Last) = 2);
 		Sets.Insert (X, 3);
 		pragma Assert (X.Length = 2);
-		pragma Assert (Sets.Element (X.First) = 2);
-		pragma Assert (Sets.Element (X.Last) = 3);
 		Sets.Insert (X, 1);
 		pragma Assert (X.Length = 3);
-		pragma Assert (Sets.Element (X.First) = 1);
-		pragma Assert (Sets.Element (X.Last) = 3);
 	end Test_01;
 	pragma Debug (Test_01);
 	procedure Test_02 is
@@ -49,7 +43,6 @@ procedure cntnr_Hashed_Set is
 		end loop;
 		pragma Assert (X.Length = 0);
 		pragma Assert (X.First = Sets.No_Element);
-		pragma Assert (X.Last = Sets.No_Element);
 		for I in 1 .. 10 loop
 			Sets.Include (X, I);
 		end loop;
@@ -58,7 +51,6 @@ procedure cntnr_Hashed_Set is
 		end loop;
 		pragma Assert (X.Length = 0);
 		pragma Assert (X.First = Sets.No_Element);
-		pragma Assert (X.Last = Sets.No_Element);
 		for I in reverse 1 .. 10 loop
 			Sets.Include (X, I);
 		end loop;
@@ -67,7 +59,6 @@ procedure cntnr_Hashed_Set is
 		end loop;
 		pragma Assert (X.Length = 0);
 		pragma Assert (X.First = Sets.No_Element);
-		pragma Assert (X.Last = Sets.No_Element);
 		for I in reverse 1 .. 10 loop
 			Sets.Include (X, I);
 		end loop;
@@ -76,7 +67,6 @@ procedure cntnr_Hashed_Set is
 		end loop;
 		pragma Assert (X.Length = 0);
 		pragma Assert (X.First = Sets.No_Element);
-		pragma Assert (X.Last = Sets.No_Element);
 	end Test_02;
 	pragma Debug (Test_02);
 	procedure Test_03 is
@@ -96,7 +86,6 @@ procedure cntnr_Hashed_Set is
 			Check (X.Reference (I).Element.all) := True;
 			Sets.Next (I);
 		end loop;
-		I := X.Last;
 		pragma Assert (Check = CA'(1 | 3 | 5 | 7 | 9 => True, others => False));
 	end Test_03;
 	pragma Debug (Test_03);

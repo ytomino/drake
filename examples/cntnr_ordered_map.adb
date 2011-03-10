@@ -42,7 +42,7 @@ procedure cntnr_Ordered_Map is
 	pragma Debug (Test_01);
 	procedure Test_02 is
 		use type Maps.Cursor;
-		X : Maps.Map;
+		X : aliased Maps.Map;
 		C : Character;
 	begin
 		for I in Character'('A') .. 'F' loop
@@ -51,9 +51,8 @@ procedure cntnr_Ordered_Map is
 		C := 'A';
 		declare
 			I : Maps.Cursor := X.First;
-			Last : Maps.Cursor := X.Last;
 		begin
-			while I <= Last loop
+			while Maps.Has_Element (I) loop
 				pragma Assert (Maps.Key (I) = C);
 				C := Character'Succ (C);
 				Maps.Next (I);
@@ -61,9 +60,8 @@ procedure cntnr_Ordered_Map is
 		end;
 		declare
 			I : Maps.Cursor := X.Last;
-			First : Maps.Cursor := X.First;
 		begin
-			while I >= First loop
+			while Maps.Has_Element (I) loop
 				C := Character'Pred (C);
 				pragma Assert (Maps.Key (I) = C);
 				Maps.Previous (I);
@@ -73,7 +71,7 @@ procedure cntnr_Ordered_Map is
 			I : Maps.Cursor := X.First;
 			Last : Maps.Cursor := X.Last;
 		begin
-			if I <= Last then
+			if Maps.Has_Element (I) then
 				loop
 					pragma Assert (Maps.Key (I) = C);
 					C := Character'Succ (C);
@@ -86,7 +84,7 @@ procedure cntnr_Ordered_Map is
 			I : Maps.Cursor := X.Last;
 			First : Maps.Cursor := X.First;
 		begin
-			if I >= First then
+			if Maps.Has_Element (I) then
 				loop
 					C := Character'Pred (C);
 					pragma Assert (Maps.Key (I) = C);
@@ -97,21 +95,21 @@ procedure cntnr_Ordered_Map is
 		end;
 		Maps.Clear (X);
 		declare
-			I : Maps.Cursor := X.First;
-			Last : Maps.Cursor := X.Last;
+			Ite : Maps.Iterator := X.Iterate;
+			Pos : Maps.Cursor := Maps.First (Ite);
 		begin
-			while I <= Last loop
+			while Pos /= Maps.No_Element loop
 				pragma Assert (False);
-				Maps.Next (I);
+				Pos := Maps.Next (Ite, Pos);
 			end loop;
 		end;
 		declare
-			I : Maps.Cursor := X.Last;
-			First : Maps.Cursor := X.First;
+			Ite : Maps.Iterator := X.Iterate;
+			Pos : Maps.Cursor := Maps.Last (Ite);
 		begin
-			while I >= First loop
+			while Pos /= Maps.No_Element loop
 				pragma Assert (False);
-				Maps.Previous (I);
+				Pos := Maps.Previous (Ite, Pos);
 			end loop;
 		end;
 	end Test_02;

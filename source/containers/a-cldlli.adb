@@ -271,6 +271,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end First;
 
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.all);
+   end First;
+
 --  diff (First_Element)
 --
 --
@@ -354,6 +359,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end Iterate;
 
+   function Iterate (Container : not null access constant List)
+      return Iterator is
+   begin
+      return Iterator (Container);
+   end Iterate;
+
    function Last (Container : List) return Cursor is
    begin
       return Downcast (Container.Last);
@@ -362,6 +373,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
 --  diff
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Last (Object.all);
    end Last;
 
 --  diff (Last_Element)
@@ -401,12 +417,22 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position := Downcast (Position.Super.Next);
    end Next;
 
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
    function No_Element return Cursor is
    begin
       return null;
    end No_Element;
 
 --  diff (Prepend)
+--
+--
+--
+--
 --
 --
 --
@@ -422,6 +448,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Position.Super.Super.Previous);
+   end Previous;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
    end Previous;
 
    procedure Query_Element (
@@ -442,9 +474,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Reference;
 
 --  diff (Replace_Element)
---
---
---
 --
 --
 --
@@ -626,18 +655,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
-
-   function "<=" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left /= null
-         and then not Base.Is_Before (Upcast (Right), Upcast (Left));
-   end "<=";
-
-   function ">=" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left /= null
-         and then not Base.Is_Before (Upcast (Left), Upcast (Right));
-   end ">=";
 
    package body Generic_Sorting is
 

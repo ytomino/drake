@@ -3,7 +3,11 @@ pragma License (Unrestricted);
 package Ada.Containers.Inside.Linked_Lists.Singly is
    pragma Preelaborate;
 
+   Node_Size : constant := Standard'Address_Size;
+
    type Node is new Linked_Lists.Node;
+
+   for Node'Size use Node_Size;
 
    function Is_Before (Before, After : Node_Access) return Boolean;
 

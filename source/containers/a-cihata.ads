@@ -3,6 +3,8 @@ pragma License (Unrestricted);
 package Ada.Containers.Inside.Hash_Tables is
    pragma Preelaborate;
 
+   Node_Size : constant := Standard'Address_Size + Hash_Type'Size * 2;
+
    type Node;
    type Node_Access is access Node;
    type Node is limited record
@@ -10,6 +12,7 @@ package Ada.Containers.Inside.Hash_Tables is
       Hash : Hash_Type;
       Index : Hash_Type;
    end record;
+   for Node'Size use Node_Size;
 
    type Entry_List is limited record
       First : Node_Access;

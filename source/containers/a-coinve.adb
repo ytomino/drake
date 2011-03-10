@@ -1,41 +1,91 @@
+with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Containers.Inside.Array_Sorting;
+with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Indefinite_Vectors is
-   use type Interfaces.Integer_32;
+
+   package Data_Cast is
+      new System.Address_To_Named_Access_Conversions (Data, Data_Access);
+
+   subtype Not_Null_Data_Access is not null Data_Access;
+   type Data_Access_Access is access all Not_Null_Data_Access;
+   type System_Address_Access is access all System.Address;
+   function Upcast is new Unchecked_Conversion (
+      Data_Access_Access,
+      System_Address_Access);
 
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
 
+   function Compare_Element (Left : Element_Access; Right : Element_Type)
+      return Boolean;
+   function Compare_Element (Left : Element_Access; Right : Element_Type)
+      return Boolean is
+   begin
+      return Left /= null and then Left.all = Right;
+   end Compare_Element;
+
    procedure Replace_Element (
-      Data : in out not null Data_Access;
-      Index : Index_Type;
+      Item : in out Element_Access;
       New_Item : access constant Element_Type);
    procedure Replace_Element (
-      Data : in out not null Data_Access;
-      Index : Index_Type;
+      Item : in out Element_Access;
       New_Item : access constant Element_Type) is
    begin
-      Free (Data.Items (Index));
+      Free (Item);
       if New_Item /= null then
-         Data.Items (Index) := new Element_Type'(New_Item.all);
+         Item := new Element_Type'(New_Item.all);
       end if;
    end Replace_Element;
 
-   procedure Release (Data : in out Data_Access);
-   procedure Release (Data : in out Data_Access) is
+   procedure Free_Data (Data : System.Address);
+   procedure Free_Data (Data : System.Address) is
+      X : Data_Access := Data_Cast.To_Pointer (Data);
    begin
-      if Data /= Empty_Data'Unrestricted_Access then
-         if Interfaces.sync_sub_and_fetch (
-            Data.Reference_Count'Access,
-            1) = 0
-         then
-            for I in Data.Items'Range loop
-               Free (Data.Items (I));
-            end loop;
-            Free (Data);
-         end if;
+      for I in X.Items'Range loop
+         Free (X.Items (I));
+      end loop;
+      Free (X);
+   end Free_Data;
+--  diff
+
+   procedure Copy_Data (
+      Target : out System.Address;
+      Source : System.Address;
+      Length : Natural;
+      Max_Length : Natural;
+      Capacity : Natural);
+   procedure Copy_Data (
+      Target : out System.Address;
+      Source : System.Address;
+      Length : Natural;
+      Max_Length : Natural;
+      Capacity : Natural)
+   is
+      S : constant not null Data_Access := Data_Cast.To_Pointer (Source);
+      T : not null Data_Access := new Data'(
+         Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
+         Reference_Count => 1,
+         Max_Length => Max_Length,
+         Items => <>);
+      subtype R is Extended_Index range
+         Index_Type'First ..
+         Index_Type'First - 1 + Index_Type'Base (Length);
+   begin
+      if System.Reference_Counting.Shared (S.Reference_Count) then
+         for I in R loop
+            if S.Items (I) /= null then
+               T.Items (I) := new Element_Type'(S.Items (I).all);
+            end if;
+         end loop;
+      else
+         for I in R loop
+            T.Items (I) := S.Items (I);
+            S.Items (I) := null;
+         end loop;
       end if;
-   end Release;
+      Target := T.all'Address;
+   end Copy_Data;
 
    procedure Unique (Container : in out Vector);
    procedure Unique (Container : in out Vector) is
@@ -75,27 +125,21 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 --
 --
---
---
---
---
---
 
    procedure Adjust (Object : in out Vector) is
    begin
-      if Object.Data /= Empty_Data'Unrestricted_Access then
-         Interfaces.sync_add_and_fetch (Object.Data.Reference_Count'Access, 1);
-      end if;
+      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
    end Adjust;
 
    procedure Assign (Target : in out Vector; Source : Vector) is
    begin
+      System.Reference_Counting.Assign (
+         Upcast (Target.Data'Unchecked_Access),
+         Target.Data.Reference_Count'Access,
+         Upcast (Source.Data'Unrestricted_Access),
+         Source.Data.Reference_Count'Access,
+         Free => Free_Data'Access);
       Target.Length := Source.Length;
-      if Target.Data /= Source.Data then
-         Clear (Target);
-         Target.Data := Source.Data;
-         Adjust (Target);
-      end if;
    end Assign;
 
    procedure Append (Container : in out Vector; New_Item : Vector) is
@@ -109,13 +153,13 @@ package body Ada.Containers.Indefinite_Vectors is
             else
                Set_Length (Container, Old_Length + New_Item.Length);
 --  diff
+--  diff
                for I in
                   Index_Type'First + Index_Type'Base (Old_Length) ..
                   Last_Index (Container)
                loop
                   Replace_Element (
-                     Container.Data,
-                     I,
+                     Container.Data.Items (I),
                      New_Item.Data.Items (I - Index_Type'Base (Old_Length)));
                end loop;
             end if;
@@ -136,8 +180,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Last_Index (Container)
       loop
          Replace_Element (
-            Container.Data,
-            I,
+            Container.Data.Items (I),
             New_Item'Unrestricted_Access);
       end loop;
    end Append;
@@ -149,7 +192,10 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Clear (Container : in out Vector) is
    begin
-      Release (Container.Data);
+      System.Reference_Counting.Clear (
+         Upcast (Container.Data'Unchecked_Access),
+         Container.Data.Reference_Count'Access,
+         Free => Free_Data'Access);
       Container.Data := Empty_Data'Unrestricted_Access;
       Container.Length := 0;
    end Clear;
@@ -284,14 +330,26 @@ package body Ada.Containers.Indefinite_Vectors is
       return Extended_Index is
    begin
       for I in Index .. Last_Index (Container) loop
-         if Container.Data.Items (I) /= null
-            and then Container.Data.Items (I).all = Item
-         then
+         if Compare_Element (Container.Data.Items (I), Item) then
             return I;
          end if;
       end loop;
       return No_Index;
    end Find_Index;
+
+   function First (Container : Vector) return Cursor is
+   begin
+      if Container.Length = 0 then
+         return No_Element;
+      else
+         return Index_Type'First;
+      end if;
+   end First;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return Cursor'Min (Index_Type'First, Object.Last_Index);
+   end First;
 
    function First_Element (Container : Vector) return Element_Type is
    begin
@@ -308,6 +366,11 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 --
 --
+
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      return Position > No_Index;
+   end Has_Element;
 
    procedure Insert (
       Container : in out Vector;
@@ -332,8 +395,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Insert_Space (Container, Before, Position, New_Item.Length);
          for I in Before .. Before + Index_Type'Base (New_Item.Length) - 1 loop
             Replace_Element (
-               Container.Data,
-               I,
+               Container.Data.Items (I),
                New_Item.Data.Items (I - Before + Index_Type'First));
          end loop;
       end if;
@@ -360,8 +422,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Insert_Space (Container, Before, Position, Count);
       for I in Before .. Before + Index_Type'Base (Count) - 1 loop
          Replace_Element (
-            Container.Data,
-            I,
+            Container.Data.Items (I),
             New_Item'Unrestricted_Access);
       end loop;
    end Insert;
@@ -441,6 +502,17 @@ package body Ada.Containers.Indefinite_Vectors is
       end loop;
    end Iterate;
 
+   function Iterate (Container : not null access constant Vector)
+      return Iterator is
+   begin
+      return (Last_Index => Last_Index (Container.all));
+   end Iterate;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Object.Last_Index;
+   end Last;
+
    function Last_Element (Container : Vector) return Element_Type is
    begin
       return Container.Data.Items (Last_Index (Container)).all;
@@ -458,21 +530,22 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Move (Target : in out Vector; Source : in out Vector) is
    begin
-      Clear (Target);
-      Target.Data := Source.Data;
+      System.Reference_Counting.Move (
+         Upcast (Target.Data'Unchecked_Access),
+         Target.Data.Reference_Count'Access,
+         Upcast (Source.Data'Unrestricted_Access),
+         Sentinel => Empty_Data'Address,
+         Free => Free_Data'Access);
       Target.Length := Source.Length;
-      Source.Data := Empty_Data'Unrestricted_Access;
-      Source.Length := 0;
    end Move;
 
-   function Next (Position : Cursor) return Cursor is
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
    begin
-      return Position + 1;
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Position + 1;
+      if Position >= Object.Last_Index then
+         return No_Element;
+      else
+         return Position + 1;
+      end if;
    end Next;
 
    procedure Prepend (Container : in out Vector; New_Item : Vector) is
@@ -488,14 +561,10 @@ package body Ada.Containers.Indefinite_Vectors is
       Insert (Container, Index_Type'First, New_Item, Count);
    end Prepend;
 
-   function Previous (Position : Cursor) return Cursor is
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
    begin
-      return Position - 1;
-   end Previous;
-
-   procedure Previous (Position : in out Cursor) is
-   begin
-      Position := Position - 1;
+      return Position - 1; -- error if Position = No_Element
    end Previous;
 
    procedure Query_Element (
@@ -544,8 +613,7 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       Unique (Container);
       Replace_Element (
-         Container.Data,
-         Index,
+         Container.Data.Items (Index),
          New_Item'Unrestricted_Access);
    end Replace_Element;
 
@@ -553,49 +621,27 @@ package body Ada.Containers.Indefinite_Vectors is
       Container : in out Vector;
       Capacity : Count_Type) is
    begin
-      if Capacity /= Indefinite_Vectors.Capacity (Container)
-         or else (Container.Data /= Empty_Data'Unrestricted_Access
-            and then Container.Data.Reference_Count > 1)
-      then
-         declare
-            New_Capacity : constant Count_Type := Count_Type'Max (
-               Capacity,
-               Container.Length);
-            Old_Data : Data_Access := Container.Data;
-         begin
-            if New_Capacity = 0 then
-               Container.Data := Empty_Data'Unrestricted_Access;
-            else
-               declare
-                  Capacity_Last : constant Extended_Index :=
-                     Index_Type'First - 1 + Index_Type'Base (New_Capacity);
-               begin
-                  Container.Data := new Data'(
-                     Capacity_Last => Capacity_Last,
-                     Reference_Count => 1,
-                     Max_Length => Interfaces.Integer_32 (Container.Length),
-                     Items => <>);
-                  declare
-                     Last : constant Extended_Index := Last_Index (Container);
-                     subtype R is Index_Type range Index_Type'First .. Last;
-                  begin
-                     for I in R loop
-                        if Old_Data.Reference_Count > 1 then
-                           if Old_Data.Items (I) /= null then
-                              Container.Data.Items (I) :=
-                                 new Element_Type'(Old_Data.Items (I).all);
-                           end if;
-                        else
-                           Container.Data.Items (I) := Old_Data.Items (I);
-                           Old_Data.Items (I) := null;
-                        end if;
-                     end loop;
-                  end;
-               end;
-            end if;
-            Release (Old_Data);
-         end;
-      end if;
+      System.Reference_Counting.Unique (
+         Target => Upcast (Container.Data'Unchecked_Access),
+         Target_Reference_Count => Container.Data.Reference_Count'Access,
+         Target_Length => Container.Length,
+         Target_Capacity => Indefinite_Vectors.Capacity (Container),
+         Max_Length => Container.Length,
+         Capacity => Capacity,
+         Sentinel => Empty_Data'Address,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
    end Reserve_Capacity;
 
    procedure Reverse_Elements (Container : in out Vector) is
@@ -636,9 +682,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Extended_Index'Min (Index, Last_Index (Container));
    begin
       for I in reverse Index_Type'First .. Start loop
-         if Container.Data.Items (I) /= null
-            and then Container.Data.Items (I).all = Item
-         then
+         if Compare_Element (Container.Data.Items (I), Item) then
             return I;
          end if;
       end loop;
@@ -656,32 +700,16 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
    begin
-      if Length > Container.Length then
-         declare
-            Old_Capacity : constant Count_Type := Capacity (Container);
-         begin
-            if Length > Old_Capacity then
-               declare
-                  New_Capacity : constant Count_Type :=
-                     Count_Type'Max (Old_Capacity * 2, Length);
-               begin
-                  Reserve_Capacity (Container, New_Capacity);
-                  Container.Data.Max_Length := Interfaces.Integer_32 (Length);
-               end;
-            else
-               if Interfaces.sync_bool_compare_and_swap (
-                  Container.Data.Max_Length'Access,
-                  Interfaces.Integer_32 (Container.Length),
-                  Interfaces.Integer_32 (Length))
-               then
-                  null;
-               elsif Container.Data.Reference_Count > 1 then
-                  Reserve_Capacity (Container, Old_Capacity);
-                  Container.Data.Max_Length := Interfaces.Integer_32 (Length);
-               end if;
-            end if;
-         end;
-      end if;
+      System.Reference_Counting.Set_Length (
+         Target => Upcast (Container.Data'Unchecked_Access),
+         Target_Reference_Count => Container.Data.Reference_Count'Access,
+         Target_Length => Container.Length,
+         Target_Max_Length => Container.Data.Max_Length'Access,
+         Target_Capacity => Capacity (Container),
+         New_Length => Length,
+         Sentinel => Empty_Data'Address,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
       Container.Length := Length;
    end Set_Length;
 
@@ -741,12 +769,13 @@ package body Ada.Containers.Indefinite_Vectors is
          return True;
       else
          for I in Index_Type'First .. Last_Index (Left) loop
-            if (Left.Data.Items (I) /= null) /=
-               (Right.Data.Items (I) /= null)
-            then
-               return False;
-            elsif Left.Data.Items (I) /= null
-               and then Left.Data.Items (I).all /= Right.Data.Items (I).all
+            if Left.Data.Items (I) = null then
+               if Right.Data.Items (I) /= null then
+                  return False;
+               end if;
+            elsif not Compare_Element (
+               Right.Data.Items (I),
+               Left.Data.Items (I).all)
             then
                return False;
             end if;

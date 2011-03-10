@@ -29,8 +29,6 @@ procedure cntnr_Hashed_Map is
 		Maps.Insert (X, 'B', 15);
 		pragma Assert (X.Length = 1);
 		pragma Assert (X.Element ('B') = 15);
-		pragma Assert (Maps.Element (X.First) = 15);
-		pragma Assert (Maps.Element (X.Last) = 15);
 		Maps.Insert (X, 'A', 10);
 		pragma Assert (X.Length = 2);
 		pragma Assert (X.Element ('A') = 10);
@@ -52,31 +50,28 @@ procedure cntnr_Hashed_Map is
 		pragma Assert (X.Length = 6);
 		declare
 			I : Maps.Cursor := X.First;
-			Last : Maps.Cursor := X.Last;
 			type CA is array (Character range 'A' .. 'F') of Boolean;
 			Check : CA := (others => False);
 		begin
-			while I <= Last loop
+			while Maps.Has_Element (I) loop
 				--Ada.Text_IO.Put (X.Constant_Reference (I).Key.all);
 				Check (X.Constant_Reference (I).Key.all) := True;
 				Maps.Next (I);
 			end loop;
-			pragma Assert (not Maps.Has_Element (I));
 			pragma Assert (Check = CA'(others => True));
 		end;
 		X.Delete ('C');
 		pragma Assert (X.Length = 5);
 		declare
-			I : Maps.Cursor := X.First;
-			Last : Maps.Cursor := X.Last;
+			Ite : Maps.Iterator := X.Iterate;
+			Pos : Maps.Cursor := Maps.First (Ite);
 			type CA is array (Character range 'A' .. 'F') of Boolean;
 			Check : CA := (others => False);
 		begin
-			while I <= Last loop
-				Check (X.Constant_Reference (I).Key.all) := True;
-				Maps.Next (I);
+			while Pos /= Maps.No_Element loop
+				Check (X.Constant_Reference (Pos).Key.all) := True;
+				Pos := Maps.Next (Ite, Pos);
 			end loop;
-			pragma Assert (not Maps.Has_Element (I));
 			pragma Assert (Check = CA'('C' => False, others => True));
 		end;
 	end Test_02;

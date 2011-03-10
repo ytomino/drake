@@ -274,6 +274,11 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       end if;
    end First;
 
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.all);
+   end First;
+
    function Floor (Container : Map; Key : Key_Type) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -397,6 +402,12 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       end if;
    end Iterate;
 
+   function Iterate (Container : not null access constant Map)
+      return Iterator is
+   begin
+      return Iterator (Container);
+   end Iterate;
+
    function Key (Position : Cursor) return Key_Type is
    begin
       return Position.Key.all;
@@ -411,6 +422,11 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          return Downcast (Binary_Trees.Last (
             Downcast (Container.Super.Data).Root));
       end if;
+   end Last;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Last (Object.all);
    end Last;
 
    function Length (Container : Map) return Count_Type is
@@ -443,6 +459,12 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Position := Downcast (Binary_Trees.Next (Upcast (Position)));
    end Next;
 
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
    function No_Element return Cursor is
    begin
       return null;
@@ -456,6 +478,12 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
+   end Previous;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
    end Previous;
 
    procedure Query_Element (
@@ -573,16 +601,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    begin
       return Left.Key.all < Right.Key.all;
    end "<";
-
-   function "<=" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left /= null and then not (Right.Key.all < Left.Key.all);
-   end "<=";
-
-   function ">=" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left /= null and then not (Left.Key.all < Right.Key.all);
-   end ">=";
 
    package body No_Primitives is
 

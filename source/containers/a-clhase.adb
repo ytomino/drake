@@ -317,6 +317,11 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --  diff
    end First;
 
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.all);
+   end First;
+
 --  diff (Generic_Array_To_Set)
 --
 --
@@ -456,16 +461,11 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --  diff
    end Iterate;
 
-   function Last (Container : Set) return Cursor is
+   function Iterate (Container : not null access constant Set)
+      return Iterator is
    begin
-      return Downcast (Hash_Tables.Last (Container.Table));
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-   end Last;
+      return Iterator (Container);
+   end Iterate;
 
    function Length (Container : Set) return Count_Type is
    begin
@@ -493,6 +493,12 @@ package body Ada.Containers.Limited_Hashed_Sets is
    procedure Next (Position : in out Cursor) is
    begin
       Position := Downcast (Position.Super.Next);
+   end Next;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
    end Next;
 
    function No_Element return Cursor is
@@ -677,12 +683,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
-
-   function "<=" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left /= null and then
-         not Hash_Tables.Is_Before (Upcast (Right), Upcast (Left));
-   end "<=";
 
    package body Generic_Keys is
 

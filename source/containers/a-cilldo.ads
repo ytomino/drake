@@ -3,10 +3,14 @@ pragma License (Unrestricted);
 package Ada.Containers.Inside.Linked_Lists.Doubly is
    pragma Preelaborate;
 
+   Node_Size : constant := Standard'Address_Size * 2;
+
    type Node is limited record
       Super : aliased Linked_Lists.Node;
       Next : Node_Access;
    end record;
+
+   for Node'Size use Node_Size;
 
    procedure Iterate (
       First : Node_Access;

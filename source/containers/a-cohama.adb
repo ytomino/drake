@@ -255,6 +255,11 @@ package body Ada.Containers.Hashed_Maps is
       end if;
    end First;
 
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.all);
+   end First;
+
    function Has_Element (Position : Cursor) return Boolean is
    begin
       return Position /= null;
@@ -361,21 +366,16 @@ package body Ada.Containers.Hashed_Maps is
       end if;
    end Iterate;
 
+   function Iterate (Container : not null access constant Map)
+      return Iterator is
+   begin
+      return Iterator (Container);
+   end Iterate;
+
    function Key (Position : Cursor) return Key_Type is
    begin
       return Position.Key;
    end Key;
-
-   function Last (Container : Map) return Cursor is
-   begin
-      if Is_Empty (Container) then
-         return null;
-      else
-         Unique (Container'Unrestricted_Access.all, False);
-         return Downcast (Hash_Tables.Last (
-            Downcast (Container.Super.Data).Table));
-      end if;
-   end Last;
 
    function Length (Container : Map) return Count_Type is
    begin
@@ -403,6 +403,12 @@ package body Ada.Containers.Hashed_Maps is
    procedure Next (Position : in out Cursor) is
    begin
       Position := Downcast (Position.Super.Next);
+   end Next;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
    end Next;
 
    function No_Element return Cursor is
@@ -505,12 +511,6 @@ package body Ada.Containers.Hashed_Maps is
             Equivalent => Equivalent'Access);
       end if;
    end "=";
-
-   function "<=" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left /= null and then
-         not Hash_Tables.Is_Before (Upcast (Right), Upcast (Left));
-   end "<=";
 
    package body No_Primitives is
 
