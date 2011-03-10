@@ -54,7 +54,7 @@ package body System.Img_WChar is
          begin
             Formatting.Image (
                Formatting.Unsigned'(Wide_Wide_Character'Pos (V)),
-               S,
+               S (S'First + Img_Char.Hex_Prefix'Length .. S'Last),
                P,
                Base => 16,
                Width => 8,

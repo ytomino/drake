@@ -6,15 +6,18 @@ package System.Formatting.Float is
    subtype Longest_Unsigned_Float is Long_Long_Float
       range 0.0 .. Long_Long_Float'Last;
 
+   --  decimal part for floating-point format = Aft / Base ** Exponent
+
    procedure Split (
       X : Longest_Unsigned_Float;
       Fore : out Unsigned; -- Fore < Base
-      Aft : out Longest_Unsigned_Float; -- Aft < 1.0
+      Aft : out Longest_Unsigned_Float;
       Exponent : out Integer;
       Base : Number_Base := 10);
 
    procedure Aft_Image (
-      Value : Longest_Unsigned_Float; -- Aft < 1.0
+      Value : Longest_Unsigned_Float;
+      Exponent : Integer;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;

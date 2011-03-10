@@ -105,6 +105,7 @@ begin
          pragma Assert (Last + 1 + Aft_Width <= To'Last);
          Float.Aft_Image (
             Aft,
+            Exponent,
             To (Last + 1 .. To'Last),
             Last,
             Base => Base,

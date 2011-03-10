@@ -1,3 +1,4 @@
+with System.Long_Long_Float_Divide;
 package body System.Formatting.Float is
    pragma Suppress (All_Checks);
 
@@ -24,23 +25,35 @@ package body System.Formatting.Float is
                   end;
                   Exponent := Exponent + 1;
                end loop;
-               Aft := Longest_Unsigned_Float'Succ (X / B); -- ceiling
+               declare
+                  Scaled : constant Longest_Unsigned_Float := X / B;
+                  Fore_Float : constant Longest_Unsigned_Float :=
+                     Longest_Unsigned_Float'Truncation (Scaled);
+               begin
+                  Fore := Unsigned (Fore_Float);
+                  Aft := X - Fore_Float * B;
+               end;
             end;
          else
-            Aft := X;
-            Exponent := 0;
-            while Aft < 1.0 loop
-               Aft := Aft * Longest_Unsigned_Float (Base);
-               Exponent := Exponent - 1;
-            end loop;
+            declare
+               Scaled : Longest_Unsigned_Float := X;
+               B : Longest_Unsigned_Float := 1.0;
+            begin
+               Exponent := 0;
+               while Scaled < 1.0 loop
+                  Scaled := Scaled * Longest_Unsigned_Float (Base);
+                  B := B * Longest_Unsigned_Float (Base);
+                  Exponent := Exponent - 1;
+               end loop;
+               declare
+                  Fore_Float : constant Longest_Unsigned_Float :=
+                     Longest_Unsigned_Float'Truncation (Scaled);
+               begin
+                  Fore := Unsigned (Fore_Float);
+                  Aft := X - Fore_Float / B;
+               end;
+            end;
          end if;
-         declare
-            Fore_Float : constant Longest_Unsigned_Float :=
-               Longest_Unsigned_Float'Truncation (Aft);
-         begin
-            Aft := Aft - Fore_Float;
-            Fore := Unsigned (Fore_Float);
-         end;
       else
          Fore := 0;
          Aft := 0.0;
@@ -50,33 +63,32 @@ package body System.Formatting.Float is
 
    procedure Aft_Image (
       Value : Longest_Unsigned_Float;
+      Exponent : Integer;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
       Casing : Casing_Type := Upper;
       Width : Positive := Standard.Float'Digits - 1)
    is
-      X : Long_Long_Float := Value;
-      Int_Part : Long_Long_Float;
+      X : Longest_Unsigned_Float;
    begin
-      Last := Item'First;
-      Item (Last) := '.';
-      for I in 2 .. Width loop --  drop last one
-         X := X * Longest_Unsigned_Float (Base);
-         Int_Part := Longest_Unsigned_Float'Truncation (X);
-         X := X - Int_Part;
-         Last := Last + 1;
-         Image (
-            Unsigned (Int_Part),
-            Item (Last),
-            Casing);
+      Last := Item'First + Width;
+      Item (Item'First) := '.';
+      X := Longest_Unsigned_Float'Rounding (
+         Value * Longest_Unsigned_Float (Base) ** (Width - Exponent));
+      for I in reverse Item'First + 1 .. Last loop
+         declare
+            Q : Long_Long_Float;
+            R : Long_Long_Float;
+         begin
+            Long_Long_Float_Divide (X, Long_Long_Float (Base), Q, R);
+            Image (
+               Digit (R),
+               Item (I),
+               Casing => Casing);
+            X := Q;
+         end;
       end loop;
-      X := X * Longest_Unsigned_Float (Base);
-      Last := Last + 1;
-      Image (
-         Unsigned (Longest_Unsigned_Float'Rounding (X)), -- last one
-         Item (Last),
-         Casing);
    end Aft_Image;
 
 end System.Formatting.Float;

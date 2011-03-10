@@ -16,7 +16,9 @@ package body Ada.Text_IO.Fixed_IO is
       Last : out Natural;
       Item : Num;
       Aft : Field;
-      Exp : Field) is
+      Exp : Field)
+   is
+      Aft_Width : constant Field := Field'Max (1, Aft);
    begin
       if Exp /= 0 then
          System.Formatting.Float_Image (
@@ -25,7 +27,7 @@ package body Ada.Text_IO.Fixed_IO is
             Long_Long_Float (Item),
             Zero_Sign => Character'Val (0),
             Plus_Sign => Character'Val (0),
-            Aft_Width => Aft,
+            Aft_Width => Aft_Width,
             Exponent_Width => Exp - 1);
       else
          System.Formatting.Fixed_Image (
@@ -34,7 +36,7 @@ package body Ada.Text_IO.Fixed_IO is
             Long_Long_Float (Item),
             Zero_Sign => Character'Val (0),
             Plus_Sign => Character'Val (0),
-            Aft_Width => Aft);
+            Aft_Width => Aft_Width);
       end if;
    end Put_To_Field;
 

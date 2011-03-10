@@ -26,7 +26,7 @@ package body Ada.Text_IO.Decimal_IO is
             Long_Long_Float (Item),
             Zero_Sign => Character'Val (0),
             Plus_Sign => Character'Val (0),
-            Aft_Width => Aft,
+            Aft_Width => Field'Max (1, Aft),
             Exponent_Width => Exp - 1);
       else
          System.Formatting.Decimal_Image (
