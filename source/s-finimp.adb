@@ -1,7 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Tags.Inside;
 with Ada.Unchecked_Conversion;
-with System.Debug;
 with System.Soft_Links;
 with System.Standard_Library;
 with System.Storage_Elements;
@@ -18,10 +17,10 @@ package body System.Finalization_Implementation is
    procedure Finalize_Global_List;
    procedure Finalize_Global_List is
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Soft_Links.Abort_Defer.all;
       Finalize_List (Global_Final_List);
-      pragma Check (Trace, Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Finalize_Global_List;
 
    Finalize_Global_List_Registered : Boolean := False;

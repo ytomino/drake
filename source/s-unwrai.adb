@@ -471,8 +471,18 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_24;
 
+   procedure rcheck_25 (File : not null access Character; Line : Integer) is
+      Message : constant String := "overlaid controlled object";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Program_Error'Access,
+         File,
+         Line,
+         Message);
+   end rcheck_25;
+
    procedure rcheck_30 (File : not null access Character; Line : Integer) is
-      Message : constant String := "explicit raise";
+      Message : constant String := "empty storage pool";
    begin
       Raise_Exception (
          Unwind.Standard.Storage_Error'Access,
@@ -482,7 +492,7 @@ package body System.Unwind.Raising is
    end rcheck_30;
 
    procedure rcheck_31 (File : not null access Character; Line : Integer) is
-      Message : constant String := "empty storage pool";
+      Message : constant String := "explicit raise";
    begin
       Raise_Exception (
          Unwind.Standard.Storage_Error'Access,
