@@ -5,20 +5,26 @@ package body Ada.Characters.Inside.Maps is
 
    function To_Mapping (
       From, To : Character_Sequence;
-      Initial_Reference_Count : Interfaces.Integer_32 := -1)
-      return Character_Mapping is
+      Initial_Reference_Count : System.Reference_Counting.Counter)
+      return Character_Mapping
+   is
+      From_Length : constant Natural := From'Length;
    begin
-      if From'Length /= To'Length then
+      if From_Length /= To'Length then
          raise Strings.Translation_Error;
       else
-         return Result : aliased Character_Mapping := (
-            Length => From'Length,
-            Reference_Count => Initial_Reference_Count,
-            From => From,
-            To => To)
-         do
-            Sort (Result'Access);
-         end return;
+         declare
+            Sorted_From : Character_Sequence (1 .. From_Length) := From;
+            Sorted_To : Character_Sequence (1 .. From_Length) := To;
+            Last : Natural;
+         begin
+            Sort (Sorted_From, Sorted_To, Last);
+            return Character_Mapping'(
+               Length => Last,
+               Reference_Count => Initial_Reference_Count,
+               From => Sorted_From (1 .. Last),
+               To => Sorted_To (1 .. Last));
+         end;
       end if;
    end To_Mapping;
 
@@ -151,32 +157,43 @@ package body Ada.Characters.Inside.Maps is
       return Boolean'Pos (I <= Left'Last) - Boolean'Pos (J <= Right'Last);
    end Compare;
 
-   procedure Sort (Map : not null access Character_Mapping) is
-      Offset : constant Integer := Map.To'First - Map.From'First;
-      pragma Warnings (Off);
-      pragma Compile_Time_Error (Offset /= 0, "always zero");
-      pragma Warnings (On);
+   procedure Sort (From, To : in out Character_Sequence) is
+      pragma Assert (From'First = To'First);
    begin
-      for I in Map.From'First + 1 .. Map.From'Last loop
-         for J in reverse Map.From'First .. I - 1 loop
+      for I in From'First + 1 .. From'Last loop
+         for J in reverse From'First .. I - 1 loop
             declare
                Temp_F : Character_Type;
                Temp_T : Character_Type;
                K : constant Positive := J + 1;
             begin
-               if Map.From (J) = Map.From (K) then
+               if From (J) = From (K) then
                   raise Strings.Translation_Error;
                end if;
-               exit when Map.From (J) <= Map.From (K);
-                  Temp_F := Map.From (J);
-                  Temp_T := Map.To (Offset + J);
-                  Map.From (J) := Map.From (K);
-                  Map.To (Offset + J) := Map.To (Offset + K);
-                  Map.From (K) := Temp_F;
-                  Map.To (Offset + K) := Temp_T;
+               exit when From (J) <= From (K);
+               Temp_F := From (J);
+               Temp_T := To (J);
+               From (J) := From (K);
+               To (J) := To (K);
+               From (K) := Temp_F;
+               To (K) := Temp_T;
             end;
          end loop;
       end loop;
+   end Sort;
+
+   procedure Sort (From, To : in out Character_Sequence; Last : out Natural) is
+      pragma Assert (From'First = To'First);
+   begin
+      Last := From'Last;
+      for I in reverse From'Range loop
+         if From (I) = To (I) then
+            From (I) := From (Last);
+            To (I) := To (Last);
+            Last := Last - 1;
+         end if;
+      end loop;
+      Sort (From (From'First .. Last), To (To'First .. Last));
    end Sort;
 
 end Ada.Characters.Inside.Maps;

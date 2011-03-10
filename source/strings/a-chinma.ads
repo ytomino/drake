@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation package
-with Interfaces;
+with System.Reference_Counting;
 package Ada.Characters.Inside.Maps is
    pragma Pure;
 
@@ -8,7 +8,7 @@ package Ada.Characters.Inside.Maps is
    subtype Character_Sequence is Wide_Wide_String;
 
    type Character_Mapping (Length : Natural) is limited record
-      Reference_Count : aliased Interfaces.Integer_32; --  -1 as constant
+      Reference_Count : aliased System.Reference_Counting.Counter;
       From : Character_Sequence (1 .. Length); --  To_Domain
       To : Character_Sequence (1 .. Length); --  To_Range
    end record;
@@ -25,11 +25,9 @@ package Ada.Characters.Inside.Maps is
       Element : Character)
       return Character;
 
-   use type Interfaces.Integer_32;
-
    function To_Mapping (
       From, To : Character_Sequence;
-      Initial_Reference_Count : Interfaces.Integer_32 := -1)
+      Initial_Reference_Count : System.Reference_Counting.Counter)
       return Character_Mapping;
 
    procedure Translate (
@@ -47,6 +45,8 @@ package Ada.Characters.Inside.Maps is
 
 private
 
-   procedure Sort (Map : not null access Character_Mapping);
+   procedure Sort (From, To : in out Character_Sequence);
+   procedure Sort (From, To : in out Character_Sequence; Last : out Natural);
+   --  From'First = To'First
 
 end Ada.Characters.Inside.Maps;

@@ -4,6 +4,7 @@ private with Ada.Characters.Inside.Maps;
 private with Ada.Characters.Inside.Sets;
 private with Ada.Finalization;
 private with Ada.Streams;
+private with System.Reference_Counting;
 package Ada.Strings.Root_Maps is
    pragma Preelaborate;
 
@@ -163,8 +164,14 @@ private
    subtype Set_Data is Characters.Inside.Sets.Character_Set;
    type Set_Data_Access is access all Set_Data;
 
+   Empty_Set_Data : constant Set_Data := (
+      Length => 0,
+      Reference_Count => System.Reference_Counting.Static,
+      Items => <>);
+
    type Root_Character_Set is new Ada.Finalization.Controlled with record
-      Data : Set_Data_Access;
+      Data : aliased not null Set_Data_Access :=
+         Empty_Set_Data'Unrestricted_Access;
    end record;
 
    overriding procedure Adjust (Object : in out Root_Character_Set);
@@ -185,10 +192,17 @@ private
    subtype Map_Data is Characters.Inside.Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
 
+   Empty_Map_Data : constant Map_Data := (
+      Length => 0,
+      Reference_Count => System.Reference_Counting.Static,
+      From => <>,
+      To => <>);
+
    type Root_Character_Mapping is
       new Ada.Finalization.Controlled with
    record
-      Data : Map_Data_Access;
+      Data : aliased not null Map_Data_Access :=
+         Empty_Map_Data'Unrestricted_Access;
    end record;
 
    overriding procedure Adjust (Object : in out Root_Character_Mapping);

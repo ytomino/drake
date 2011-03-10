@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation package
-with Interfaces;
+with System.Reference_Counting;
 package Ada.Characters.Inside.Sets is
    pragma Pure;
 
@@ -17,7 +17,7 @@ package Ada.Characters.Inside.Sets is
    pragma Suppress_Initialization (Character_Ranges);
 
    type Character_Set (Length : Natural) is limited record
-      Reference_Count : aliased Interfaces.Integer_32; --  -1 as constant
+      Reference_Count : aliased System.Reference_Counting.Counter;
       Items : aliased Character_Ranges (1 .. Length);
    end record;
    pragma Suppress_Initialization (Character_Set);

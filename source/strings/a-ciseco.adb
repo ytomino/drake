@@ -1,7 +1,7 @@
 with Ada.Characters.Inside.Sets.General_Category;
+with System.Reference_Counting;
 package body Ada.Characters.Inside.Sets.Constants is
    pragma Suppress (All_Checks);
-   use type Interfaces.Integer_32;
 
    Decimal_Digit_Set_Data : access Characters.Inside.Sets.Character_Set;
 
@@ -10,7 +10,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       if Decimal_Digit_Set_Data = null then
          Decimal_Digit_Set_Data := new Characters.Inside.Sets.Character_Set'(
             Length => 1,
-            Reference_Count => -1,
+            Reference_Count => System.Reference_Counting.Static,
             Items => (1 => ('0', '9')));
       end if;
       return Decimal_Digit_Set_Data;
@@ -24,7 +24,7 @@ package body Ada.Characters.Inside.Sets.Constants is
          Hexadecimal_Digit_Set_Data :=
             new Characters.Inside.Sets.Character_Set'(
                Length => 3,
-               Reference_Count => -1,
+               Reference_Count => System.Reference_Counting.Static,
                Items => (('0', '9'), ('A', 'F'), ('a', 'f')));
       end if;
       return Hexadecimal_Digit_Set_Data;
@@ -37,7 +37,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       if ISO_646_Set_Data = null then
          ISO_646_Set_Data := new Characters.Inside.Sets.Character_Set'(
             Length => 1,
-            Reference_Count => -1,
+            Reference_Count => System.Reference_Counting.Static,
             Items => (1 => (
                Character_Type'Val (0),
                Character_Type'Val (16#7F#))));
@@ -52,7 +52,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       if Wide_Character_Set_Data = null then
          Wide_Character_Set_Data := new Characters.Inside.Sets.Character_Set'(
             Length => 2,
-            Reference_Count => -1,
+            Reference_Count => System.Reference_Counting.Static,
             Items => (
                1 => (
                   Character_Type'Val (0),
@@ -95,7 +95,7 @@ package body Ada.Characters.Inside.Sets.Constants is
             Merge (Items, Last, Source);
             Letter_Set_Data := new Sets.Character_Set'(
                Length => Last,
-               Reference_Count => -1,
+               Reference_Count => System.Reference_Counting.Static,
                Items => Items (1 .. Last));
          end;
       end if;
@@ -119,7 +119,7 @@ package body Ada.Characters.Inside.Sets.Constants is
             Merge (Items, Last, Source);
             Alphanumeric_Set_Data := new Sets.Character_Set'(
                Length => Last,
-               Reference_Count => -1,
+               Reference_Count => System.Reference_Counting.Static,
                Items => Items (1 .. Last));
          end;
       end if;
@@ -155,7 +155,7 @@ package body Ada.Characters.Inside.Sets.Constants is
             Merge (Items, Last, Source);
             Special_Set_Data := new Sets.Character_Set'(
                Length => Last,
-               Reference_Count => -1,
+               Reference_Count => System.Reference_Counting.Static,
                Items => Items (1 .. Last));
          end;
       end if;
@@ -177,7 +177,7 @@ package body Ada.Characters.Inside.Sets.Constants is
             Merge (Items, Last, Source);
             Graphic_Set_Data := new Sets.Character_Set'(
                Length => Last,
-               Reference_Count => -1,
+               Reference_Count => System.Reference_Counting.Static,
                Items => Items (1 .. Last));
          end;
       end if;

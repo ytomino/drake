@@ -1,4 +1,5 @@
 with Ada.UCD.Simple_Case_Mapping;
+with System.Reference_Counting;
 package body Ada.Characters.Inside.Maps.Upper_Case is
    pragma Suppress (All_Checks);
 
@@ -12,7 +13,7 @@ package body Ada.Characters.Inside.Maps.Upper_Case is
                UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length +
                UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length +
                UCD.Simple_Case_Mapping.Difference_Upper_Table_2'Length,
-            Reference_Count => -1, -- constant
+            Reference_Count => System.Reference_Counting.Static,
             From => <>,
             To => <>);
          declare
@@ -44,7 +45,7 @@ package body Ada.Characters.Inside.Maps.Upper_Case is
             end loop;
             pragma Assert (I = Mapping.From'Last + 1);
          end;
-         Sort (Mapping);
+         Sort (Mapping.From, Mapping.To);
       end if;
       return Mapping;
    end Upper_Case_Map;

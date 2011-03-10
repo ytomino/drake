@@ -1,4 +1,5 @@
 with Ada.UCD.Simple_Case_Mapping;
+with System.Reference_Counting;
 package body Ada.Characters.Inside.Maps.Lower_Case is
    pragma Suppress (All_Checks);
    use type UCD.UCS_4;
@@ -13,7 +14,7 @@ package body Ada.Characters.Inside.Maps.Lower_Case is
                UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length +
                UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length +
                UCD.Simple_Case_Mapping.Difference_Lower_Table_2'Length,
-            Reference_Count => -1, -- constant
+            Reference_Count => System.Reference_Counting.Static,
             From => <>,
             To => <>);
          declare

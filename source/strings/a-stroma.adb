@@ -1,6 +1,7 @@
 with Ada.Characters.Inside;
+with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Interfaces;
+with System.Address_To_Named_Access_Conversions;
 with System.Strings.Stream_Ops;
 with System.UTF_Conversions.From_8_To_32;
 with System.UTF_Conversions.From_16_To_32;
@@ -9,35 +10,38 @@ with System.UTF_Conversions.From_32_To_16;
 package body Ada.Strings.Root_Maps is
    pragma Suppress (All_Checks);
    use type Characters.Inside.Sets.Character_Ranges;
-   use type Interfaces.Integer_32;
 
    --  sets
 
-   function Valid (Data : Set_Data_Access) return Boolean;
-   function Valid (Data : Set_Data_Access) return Boolean is
+   function Valid (Data : not null Set_Data_Access) return Boolean;
+   function Valid (Data : not null Set_Data_Access) return Boolean is
    begin
-      if Data = null then
-         return True;
-      elsif Data.Length = 0 then
-         return False;
-      else
-         for I in Data.Items'First .. Data.Items'Last loop
-            if Data.Items (I).High < Data.Items (I).Low then
-               return False;
-            end if;
-         end loop;
-         for I in Data.Items'First .. Data.Items'Last - 1 loop
-            if Data.Items (I).High >=
-               Wide_Wide_Character'Pred (Data.Items (I + 1).Low)
-            then
-               return False;
-            end if;
-         end loop;
-         return True;
-      end if;
+      for I in Data.Items'First .. Data.Items'Last loop
+         if Data.Items (I).High < Data.Items (I).Low then
+            return False;
+         end if;
+      end loop;
+      for I in Data.Items'First .. Data.Items'Last - 1 loop
+         if Data.Items (I).High >=
+            Wide_Wide_Character'Pred (Data.Items (I + 1).Low)
+         then
+            return False;
+         end if;
+      end loop;
+      return True;
    end Valid;
 
    procedure Free is new Unchecked_Deallocation (Set_Data, Set_Data_Access);
+
+   procedure Free_Set_Data (Data : System.Address);
+   procedure Free_Set_Data (Data : System.Address) is
+      package Conv is new System.Address_To_Named_Access_Conversions (
+         Set_Data,
+         Set_Data_Access);
+      X : Set_Data_Access := Conv.To_Pointer (Data);
+   begin
+      Free (X);
+   end Free_Set_Data;
 
    --  local, "-" operation
    procedure Sub (
@@ -129,40 +133,33 @@ package body Ada.Strings.Root_Maps is
 
    Full_Set_Data : aliased constant Set_Data := (
       Length => 1,
-      Reference_Count => -1, -- -1 as constant
+      Reference_Count => System.Reference_Counting.Static,
       Items => (1 => (
          Low => Wide_Wide_Character'First,
          High => Wide_Wide_Character'Last)));
 
    overriding procedure Adjust (Object : in out Root_Character_Set) is
    begin
-      if Object.Data /= null
-         and then Object.Data.Reference_Count /= -1
-      then
-         Interfaces.sync_add_and_fetch (
-            Object.Data.Reference_Count'Access,
-            1);
-      end if;
+      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
    end Adjust;
 
    overriding procedure Finalize (Object : in out Root_Character_Set) is
+      subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
+      type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
+      type System_Address_Access is access all System.Address;
+      function Upcast is new Unchecked_Conversion (
+         Set_Data_Access_Access,
+         System_Address_Access);
    begin
-      if Object.Data /= null
-         and then Object.Data.Reference_Count /= -1
-      then
-         if Interfaces.sync_sub_and_fetch (
-            Object.Data.Reference_Count'Access,
-            1) = 0
-         then
-            Free (Object.Data);
-         end if;
-      end if;
+      System.Reference_Counting.Clear (
+         Upcast (Object.Data'Access),
+         Object.Data.Reference_Count'Access,
+         Free => Free_Set_Data'Access);
    end Finalize;
 
    function Is_Null (Set : Root_Character_Set) return Boolean is
    begin
-      pragma Assert (Valid (Set.Data));
-      return Set.Data = null;
+      return Set.Data.Length = 0;
    end Is_Null;
 
    function Is_Subset (
@@ -172,9 +169,7 @@ package body Ada.Strings.Root_Maps is
    begin
       pragma Assert (Valid (Elements.Data));
       pragma Assert (Valid (Set.Data));
-      if Elements.Data = null then
-         return True;
-      elsif Set.Data = null then
+      if Set.Data.Length = 0 then
          return False;
       else
          declare
@@ -206,7 +201,8 @@ package body Ada.Strings.Root_Maps is
 
    function Null_Set return Root_Character_Set is
    begin
-      return (Ada.Finalization.Controlled with Data => null);
+      return (Ada.Finalization.Controlled with
+         Data => Empty_Set_Data'Unrestricted_Access);
    end Null_Set;
 
    function Overloaded_Is_In (
@@ -235,65 +231,49 @@ package body Ada.Strings.Root_Maps is
       return Boolean is
    begin
       pragma Assert (Valid (Set.Data));
-      if Set.Data = null then
-         return False;
-      else
-         return Characters.Inside.Sets.Is_In (Element, Set.Data);
-      end if;
+      return Characters.Inside.Sets.Is_In (Element, Set.Data);
    end Overloaded_Is_In;
 
    function Overloaded_To_Ranges (Set : Root_Character_Set)
       return Character_Ranges is
    begin
       pragma Assert (Valid (Set.Data));
-      if Set.Data = null then
-         return Character_Ranges'(1 .. 0 => <>); --  empty
-      else
-         return Result : Character_Ranges (Set.Data.Items'Range) do
-            for I in Result'Range loop
-               Result (I).Low := Characters.Inside.To_Character (
-                  Set.Data.Items (I).Low);
-               Result (I).High := Characters.Inside.To_Character (
-                  Set.Data.Items (I).High);
-            end loop;
-         end return;
-      end if;
+      return Result : Character_Ranges (Set.Data.Items'Range) do
+         for I in Result'Range loop
+            Result (I).Low := Characters.Inside.To_Character (
+               Set.Data.Items (I).Low);
+            Result (I).High := Characters.Inside.To_Character (
+               Set.Data.Items (I).High);
+         end loop;
+      end return;
    end Overloaded_To_Ranges;
 
    function Overloaded_To_Ranges (Set : Root_Character_Set)
       return Wide_Character_Ranges is
    begin
       pragma Assert (Valid (Set.Data));
-      if Set.Data = null then
-         return Wide_Character_Ranges'(1 .. 0 => <>); --  empty
-      else
-         return Result : Wide_Character_Ranges (Set.Data.Items'Range) do
-            for I in Result'Range loop
-               Result (I).Low := Characters.Inside.To_Wide_Character (
-                  Set.Data.Items (I).Low);
-               Result (I).High := Characters.Inside.To_Wide_Character (
-                  Set.Data.Items (I).High);
-            end loop;
-         end return;
-      end if;
+      return Result : Wide_Character_Ranges (Set.Data.Items'Range) do
+         for I in Result'Range loop
+            Result (I).Low := Characters.Inside.To_Wide_Character (
+               Set.Data.Items (I).Low);
+            Result (I).High := Characters.Inside.To_Wide_Character (
+               Set.Data.Items (I).High);
+         end loop;
+      end return;
    end Overloaded_To_Ranges;
 
    function Overloaded_To_Ranges (Set : Root_Character_Set)
       return Wide_Wide_Character_Ranges is
    begin
       pragma Assert (Valid (Set.Data));
-      if Set.Data = null then
-         return Wide_Wide_Character_Ranges'(1 .. 0 => <>); --  empty
-      else
-         return Result : Wide_Wide_Character_Ranges (
-            Set.Data.Items'Range)
-         do
-            for I in Result'Range loop
-               Result (I).Low := Set.Data.Items (I).Low;
-               Result (I).High := Set.Data.Items (I).High;
-            end loop;
-         end return;
-      end if;
+      return Result : Wide_Wide_Character_Ranges (
+         Set.Data.Items'Range)
+      do
+         for I in Result'Range loop
+            Result (I).Low := Set.Data.Items (I).Low;
+            Result (I).High := Set.Data.Items (I).High;
+         end loop;
+      end return;
    end Overloaded_To_Ranges;
 
    function Overloaded_To_Sequence (Set : Root_Character_Set)
@@ -311,35 +291,26 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Sequence;
 
    function Overloaded_To_Sequence (Set : Root_Character_Set)
-      return Wide_Wide_Character_Sequence is
-   begin
+      return Wide_Wide_Character_Sequence
+   is
       pragma Assert (Valid (Set.Data));
-      if Set.Data = null then
-         return "";
-      else
-         declare
-            Length : Natural := 0;
-            Position : Positive;
-         begin
-            for I in Set.Data.Items'Range loop
-               Length := Length +
-                  Wide_Wide_Character'Pos (Set.Data.Items (I).High) -
-                  Wide_Wide_Character'Pos (Set.Data.Items (I).Low) + 1;
+      Length : Natural := 0;
+      Position : Positive;
+   begin
+      for I in Set.Data.Items'Range loop
+         Length := Length +
+            Wide_Wide_Character'Pos (Set.Data.Items (I).High) -
+            Wide_Wide_Character'Pos (Set.Data.Items (I).Low) + 1;
+      end loop;
+      return Result : Wide_Wide_String (1 .. Length) do
+         Position := 1;
+         for I in Set.Data.Items'Range loop
+            for J in Set.Data.Items (I).Low .. Set.Data.Items (I).High loop
+               Result (Position) := J;
+               Position := Position + 1;
             end loop;
-            return Result : Wide_Wide_String (1 .. Length) do
-               Position := 1;
-               for I in Set.Data.Items'Range loop
-                  for J in
-                     Set.Data.Items (I).Low ..
-                     Set.Data.Items (I).High
-                  loop
-                     Result (Position) := J;
-                     Position := Position + 1;
-                  end loop;
-               end loop;
-            end return;
-         end;
-      end if;
+         end loop;
+      end return;
    end Overloaded_To_Sequence;
 
    function Overloaded_To_Set (Ranges : Character_Ranges)
@@ -359,7 +330,7 @@ package body Ada.Strings.Root_Maps is
          end if;
       end loop;
       if Last < Items'First then
-         Data := null;
+         Data := Empty_Set_Data'Unrestricted_Access;
       else
          Data := new Set_Data'(
             Length => Last,
@@ -387,7 +358,7 @@ package body Ada.Strings.Root_Maps is
          end if;
       end loop;
       if Last < Items'First then
-         Data := null;
+         Data := Empty_Set_Data'Unrestricted_Access;
       else
          Data := new Set_Data'(
             Length => Last,
@@ -415,7 +386,7 @@ package body Ada.Strings.Root_Maps is
          end if;
       end loop;
       if Last < Items'First then
-         Data := null;
+         Data := Empty_Set_Data'Unrestricted_Access;
       else
          Data := new Set_Data'(
             Length => Last,
@@ -448,7 +419,7 @@ package body Ada.Strings.Root_Maps is
       Data : Set_Data_Access;
    begin
       if Span.Low > Span.High then
-         Data := null;
+         Data := Empty_Set_Data'Unrestricted_Access;
       else
          Data := new Set_Data'(
             Length => 1,
@@ -490,7 +461,7 @@ package body Ada.Strings.Root_Maps is
             Sequence (I));
       end loop;
       if Last < Items'First then
-         Data := null;
+         Data := Empty_Set_Data'Unrestricted_Access;
       else
          Data := new Set_Data'(
             Length => Last - Items'First + 1,
@@ -529,16 +500,13 @@ package body Ada.Strings.Root_Maps is
    begin
       pragma Assert (Valid (Left.Data));
       pragma Assert (Valid (Right.Data));
-      return Left.Data = Right.Data
-         or else (Left.Data /= null
-            and then Right.Data /= null
-            and then Left.Data.Items = Right.Data.Items);
+      return Left.Data = Right.Data or else Left.Data.Items = Right.Data.Items;
    end "=";
 
    function "not" (Right : Root_Character_Set) return Root_Character_Set is
       Data : Set_Data_Access;
    begin
-      if Right.Data = null then
+      if Right.Data.Length = 0 then
          Data := Full_Set_Data'Unrestricted_Access;
       else
          declare
@@ -549,7 +517,7 @@ package body Ada.Strings.Root_Maps is
          begin
             Sub (Items, Last, Full_Set_Data.Items, Right.Data.Items);
             if Last < Items'First then
-               Data := null;
+               Data := Empty_Set_Data'Unrestricted_Access;
             else
                Data := new Set_Data'(
                   Length => Last - Items'First + 1,
@@ -567,8 +535,8 @@ package body Ada.Strings.Root_Maps is
    is
       Data : Set_Data_Access;
    begin
-      if Left.Data = null or else Right.Data = null then
-         Data := null;
+      if Left.Data.Length = 0 or else Right.Data.Length = 0 then
+         Data := Empty_Set_Data'Unrestricted_Access;
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -578,7 +546,7 @@ package body Ada.Strings.Root_Maps is
          begin
             Mul (Items, Last, Left.Data.Items, Right.Data.Items);
             if Last < Items'First then
-               Data := null;
+               Data := Empty_Set_Data'Unrestricted_Access;
             else
                Data := new Set_Data'(
                   Length => Last - Items'First + 1,
@@ -596,12 +564,12 @@ package body Ada.Strings.Root_Maps is
    is
       Data : Set_Data_Access;
    begin
-      if Left.Data = null and then Right.Data = null then
-         Data := null;
-      elsif Left.Data = null then
-         return Right;
-      elsif Right.Data = null then
-         return Left;
+      if Left.Data.Length = 0 then
+         Data := Right.Data;
+         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
+      elsif Right.Data.Length = 0 then
+         Data := Left.Data;
+         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -628,12 +596,12 @@ package body Ada.Strings.Root_Maps is
       return Root_Character_Set is
       Data : Set_Data_Access;
    begin
-      if Left.Data = null and then Right.Data = null then
-         Data := null;
-      elsif Left.Data = null then
-         return Right;
-      elsif Right.Data = null then
-         return Left;
+      if Left.Data.Length = 0 then
+         Data := Right.Data;
+         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
+      elsif Right.Data.Length = 0 then
+         Data := Left.Data;
+         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
       else
          declare
             Max : constant Natural := Left.Data.Length + Right.Data.Length;
@@ -652,7 +620,7 @@ package body Ada.Strings.Root_Maps is
             Mul (Y, Y_Last, Left.Data.Items, Right.Data.Items);
             Sub (Items, Last, X (1 .. X_Last), Y (1 .. Y_Last));
             if Last < Items'First then
-               Data := null;
+               Data := Empty_Set_Data'Unrestricted_Access;
             else
                Data := new Set_Data'(
                   Length => Last - Items'First + 1,
@@ -670,10 +638,11 @@ package body Ada.Strings.Root_Maps is
    is
       Data : Set_Data_Access;
    begin
-      if Left.Data = null then
-         Data := null;
-      elsif Right.Data = null then
-         return Left;
+      if Left.Data.Length = 0 then
+         Data := Empty_Set_Data'Unrestricted_Access;
+      elsif Right.Data.Length = 0 then
+         Data := Left.Data;
+         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -683,7 +652,7 @@ package body Ada.Strings.Root_Maps is
          begin
             Sub (Items, Last, Left.Data.Items, Right.Data.Items);
             if Last < Items'First then
-               Data := null;
+               Data := Empty_Set_Data'Unrestricted_Access;
             else
                Data := new Set_Data'(
                   Length => Last - Items'First + 1,
@@ -707,7 +676,7 @@ package body Ada.Strings.Root_Maps is
       begin
          Integer'Read (Stream, Length);
          if Length = 0 then
-            New_Data := null;
+            New_Data := Empty_Set_Data'Unrestricted_Access;
          else
             New_Data := new Set_Data'(
                Length => Length,
@@ -744,40 +713,44 @@ package body Ada.Strings.Root_Maps is
 
    procedure Free is new Unchecked_Deallocation (Map_Data, Map_Data_Access);
 
+   procedure Free_Map_Data (Data : System.Address);
+   procedure Free_Map_Data (Data : System.Address) is
+      package Conv is new System.Address_To_Named_Access_Conversions (
+         Map_Data,
+         Map_Data_Access);
+      X : Map_Data_Access := Conv.To_Pointer (Data);
+   begin
+      Free (X);
+   end Free_Map_Data;
+
    overriding procedure Adjust (Object : in out Root_Character_Mapping) is
    begin
-      if Object.Data /= null
-         and then Object.Data.Reference_Count /= -1
-      then
-         Interfaces.sync_add_and_fetch (
-            Object.Data.Reference_Count'Access,
-            1);
-      end if;
+      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
    end Adjust;
 
    overriding procedure Finalize (Object : in out Root_Character_Mapping) is
+      subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
+      type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
+      type System_Address_Access is access all System.Address;
+      function Upcast is new Unchecked_Conversion (
+         Map_Data_Access_Access,
+         System_Address_Access);
    begin
-      if Object.Data /= null
-         and then Object.Data.Reference_Count /= -1
-      then
-         if Interfaces.sync_sub_and_fetch (
-            Object.Data.Reference_Count'Access,
-            1) = 0
-         then
-            Free (Object.Data);
-         end if;
-      end if;
+      System.Reference_Counting.Clear (
+         Upcast (Object.Data'Access),
+         Object.Data.Reference_Count'Access,
+         Free => Free_Map_Data'Access);
    end Finalize;
 
    function Identity return Root_Character_Mapping is
    begin
-      return (Ada.Finalization.Controlled with Data => null);
+      return (Ada.Finalization.Controlled with
+         Data => Empty_Map_Data'Unrestricted_Access);
    end Identity;
 
    function Is_Identity (Map : Root_Character_Mapping) return Boolean is
    begin
-      pragma Assert (Map.Data = null or else Map.Data.Length > 0);
-      return Map.Data = null;
+      return Map.Data.Length = 0;
    end Is_Identity;
 
    function Overloaded_To_Domain (Map : Root_Character_Mapping)
@@ -797,11 +770,7 @@ package body Ada.Strings.Root_Maps is
    function Overloaded_To_Domain (Map : Root_Character_Mapping)
       return Wide_Wide_Character_Sequence is
    begin
-      if Map.Data = null then
-         return "";
-      else
-         return Map.Data.From;
-      end if;
+      return Map.Data.From;
    end Overloaded_To_Domain;
 
    function Overloaded_To_Mapping (From, To : Character_Sequence)
@@ -826,7 +795,7 @@ package body Ada.Strings.Root_Maps is
       New_Data : Map_Data_Access;
    begin
       if From'Length = 0 then
-         New_Data := null;
+         New_Data := Empty_Map_Data'Unrestricted_Access;
       else
          New_Data := new Map_Data'(Characters.Inside.Maps.To_Mapping (
             From,
@@ -853,11 +822,7 @@ package body Ada.Strings.Root_Maps is
    function Overloaded_To_Range (Map : Root_Character_Mapping)
       return Wide_Wide_Character_Sequence is
    begin
-      if Map.Data = null then
-         return "";
-      else
-         return Map.Data.To;
-      end if;
+      return Map.Data.To;
    end Overloaded_To_Range;
 
    function Overloaded_Value (
@@ -885,19 +850,14 @@ package body Ada.Strings.Root_Maps is
       Element : Wide_Wide_Character)
       return Wide_Wide_Character is
    begin
-      if Map.Data = null then
-         return Element;
-      else
-         return Characters.Inside.Maps.Value (Map.Data, Element);
-      end if;
+      return Characters.Inside.Maps.Value (Map.Data, Element);
    end Overloaded_Value;
 
    function "=" (Left, Right : Root_Character_Mapping) return Boolean is
    begin
       return Left.Data = Right.Data
-         or else (Left.Data /= null
-            and then Right.Data /= null
-            and then Left.Data.From = Right.Data.From
+         or else (
+            Left.Data.From = Right.Data.From
             and then Left.Data.To = Right.Data.To);
    end "=";
 
@@ -912,7 +872,7 @@ package body Ada.Strings.Root_Maps is
       begin
          Integer'Read (Stream, Length);
          if Length = 0 then
-            New_Data := null;
+            New_Data := Empty_Map_Data'Unrestricted_Access;
          else
             New_Data := new Map_Data'(
                Length => Length,

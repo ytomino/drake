@@ -1,4 +1,5 @@
 with Ada.UCD.Case_Folding;
+with System.Reference_Counting;
 package body Ada.Characters.Inside.Maps.Case_Folding is
    pragma Suppress (All_Checks);
    use type UCD.UCS_4;
@@ -13,7 +14,7 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
                UCD.Case_Folding.C_Table_2'Length +
                UCD.Case_Folding.C_Table_4'Length +
                UCD.Case_Folding.S_Table'Length,
-            Reference_Count => -1, -- constant
+            Reference_Count => System.Reference_Counting.Static,
             From => <>,
             To => <>);
          declare
@@ -54,6 +55,7 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
                   UCD.Case_Folding.C_Table_4 (L).Mapping);
                I := I + 1;
             end loop;
+            pragma Assert (I = Mapping.From'Last + 1);
          end;
       end if;
       return Mapping;
