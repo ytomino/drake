@@ -52,6 +52,24 @@ package Ada.Directories is
       Extension : String := "")
       return String;
 
+   --  extended for extracting sub-filename
+   procedure Simple_Name (
+      Name : String;
+      First : out Positive;
+      Last : out Natural);
+   procedure Containing_Directory (
+      Name : String;
+      First : out Positive;
+      Last : out Natural);
+   procedure Extension (
+      Name : String;
+      First : out Positive;
+      Last : out Natural);
+   procedure Base_Name (
+      Name : String;
+      First : out Positive;
+      Last : out Natural);
+
    --  File and directory queries:
 
    type File_Kind is (Directory, Ordinary_File, Special_File);
@@ -158,7 +176,7 @@ private
       S : in out String;
       Last : in out Natural);
 
-   --  local subprogram
+   --  for Ada.Directories.Hierarchical_File_Names
    procedure Exclude_Trailing_Path_Delimiter (
       S : String;
       Last : in out Natural);

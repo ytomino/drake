@@ -51,15 +51,31 @@ package body Ada.Directories is
 
    function To_File_Kind (Attribute : C.sys.types.mode_t) return File_Kind;
 
-   function Base_Name (Name : String) return String is
-      S : constant String := Simple_Name (Name);
+   procedure Base_Name (
+      Name : String;
+      First : out Positive;
+      Last : out Natural) is
    begin
-      for I in reverse S'Range loop
-         if S (I) = '.' then
-            return S (S'First .. I - 1);
-         end if;
-      end loop;
-      return S;
+      Simple_Name (Name, First, Last);
+      if First > Last or else Name (Last) /= '.' then -- AA-A-16 79.a/2
+         for I in reverse First .. Last - 1 loop
+            if Name (I) = '.' then
+               --  Base_Name (".DOTFILE") = ".DOTFILE"
+               if I > First then
+                  Last := I - 1;
+               end if;
+               exit;
+            end if;
+         end loop;
+      end if;
+   end Base_Name;
+
+   function Base_Name (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+   begin
+      Base_Name (Name, First, Last);
+      return Name (First .. Last);
    end Base_Name;
 
    procedure Check_Assigned (Directory_Entry : Directory_Entry_Type) is
@@ -74,6 +90,8 @@ package body Ada.Directories is
       Name : String;
       Extension : String := "") return String
    is
+      --  if you want to fold '.' or '..',
+      --  use Ada.Directories.Hierarchical_File_Names.Compose
       Result : String (
          1 ..
          Containing_Directory'Length + Name'Length + Extension'Length + 2);
@@ -98,14 +116,30 @@ package body Ada.Directories is
       return Result (1 .. Last);
    end Compose;
 
-   function Containing_Directory (Name : String) return String is
-      First : constant Positive := Name'First;
-      Last : Natural := Name'Last;
+   procedure Containing_Directory (
+      Name : String;
+      First : out Positive;
+      Last : out Natural) is
    begin
-      while Last >= First and then Name (Last) /= '/' loop
-         Last := Last - 1;
+      First := Name'First;
+      Last := Name'First - 1;
+      for I in reverse Name'Range loop
+         case Name (I) is
+            when '/' =>
+               Last := I; -- no removing root '/'
+               Exclude_Trailing_Path_Delimiter (Name, Last);
+               exit; -- found
+            when others =>
+               null;
+         end case;
       end loop;
-      Exclude_Trailing_Path_Delimiter (Name, Last);
+   end Containing_Directory;
+
+   function Containing_Directory (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+   begin
+      Containing_Directory (Name, First, Last);
       return Name (First .. Last);
    end Containing_Directory;
 
@@ -300,7 +334,9 @@ package body Ada.Directories is
       S : String;
       Last : in out Natural) is
    begin
-      while Last >= S'First and then S (Last) = '/' loop
+      while Last > S'First -- no removing root '/'
+         and then S (Last) = '/'
+      loop
          Last := Last - 1;
       end loop;
    end Exclude_Trailing_Path_Delimiter;
@@ -314,23 +350,35 @@ package body Ada.Directories is
       return C.sys.stat.lstat (C_Name (0)'Access, Data'Access) = 0;
    end Exists;
 
-   function Extension (Name : String) return String is
+   procedure Extension (
+      Name : String;
+      First : out Positive;
+      Last : out Natural) is
    begin
+      First := Name'Last + 1;
+      Last := Name'Last;
       for I in reverse Name'Range loop
          case Name (I) is
             when '/' =>
-               return ""; --  not found
+               exit; -- not found
             when '.' =>
-               declare
-                  subtype T is String (1 .. Name'Last - I);
-               begin
-                  return T (Name (I + 1 .. Name'Last));
-               end;
+               --  Extension (".DOTFILE") = ""
+               if I > Name'First and then Name (I - 1) /= '/' then
+                  First := I + 1;
+               end if;
+               exit; -- found
             when others =>
                null;
          end case;
       end loop;
-      return ""; --  not found
+   end Extension;
+
+   function Extension (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+   begin
+      Extension (Name, First, Last);
+      return Name (First .. Last);
    end Extension;
 
    procedure Finalize (Search : in out Search_Type) is
@@ -519,17 +567,30 @@ package body Ada.Directories is
       end if;
    end Set_Directory;
 
-   function Simple_Name (Name : String) return String is
+   procedure Simple_Name (
+      Name : String;
+      First : out Positive;
+      Last : out Natural) is
    begin
+      First := Name'First;
+      Last := Name'Last;
       for I in reverse Name'Range loop
          case Name (I) is
             when '/' =>
-               return Name (I + 1 .. Name'Last);
+               First := I + 1;
+               exit; -- found
             when others =>
                null;
          end case;
       end loop;
-      return Name;
+   end Simple_Name;
+
+   function Simple_Name (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+   begin
+      Simple_Name (Name, First, Last);
+      return Name (First .. Last);
    end Simple_Name;
 
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
