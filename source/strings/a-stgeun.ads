@@ -607,6 +607,11 @@ package Ada.Strings.Generic_Unbounded is
 
    end Generic_Functions;
 
+   generic
+      type Hash_Type is private;
+      with function Fixed_Hash (Key : String_Type) return Hash_Type;
+   function Generic_Hash (Key : Unbounded_String) return Hash_Type;
+
 private
 
    type Data (Capacity : Natural) is limited record
