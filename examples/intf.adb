@@ -1,4 +1,5 @@
 with Interfaces.C.Pointers;
+with Interfaces.C.Strings;
 procedure intf is
 	type Unsigned_Long_Long is mod 2 ** Long_Long_Integer'Size;
 	procedure sscanf (a1 : String; a2 : String; a3 : access Long_Long_Integer);
