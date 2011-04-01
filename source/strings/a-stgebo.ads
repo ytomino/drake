@@ -767,7 +767,7 @@ package Ada.Strings.Generic_Bounded is
 
       package No_Primitives is
          procedure Read (
-            Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+            Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Bounded_String);
          function Input (
             Stream : not null access Streams.Root_Stream_Type'Class)

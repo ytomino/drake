@@ -169,7 +169,7 @@ private
       Reference_Count => System.Reference_Counting.Static,
       Items => <>);
 
-   type Root_Character_Set is new Ada.Finalization.Controlled with record
+   type Root_Character_Set is new Finalization.Controlled with record
       Data : aliased not null Set_Data_Access :=
          Empty_Set_Data'Unrestricted_Access;
    end record;
@@ -198,9 +198,7 @@ private
       From => <>,
       To => <>);
 
-   type Root_Character_Mapping is
-      new Ada.Finalization.Controlled with
-   record
+   type Root_Character_Mapping is new Finalization.Controlled with record
       Data : aliased not null Map_Data_Access :=
          Empty_Map_Data'Unrestricted_Access;
    end record;

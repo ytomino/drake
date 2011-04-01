@@ -201,7 +201,7 @@ package body Ada.Strings.Root_Maps is
 
    function Null_Set return Root_Character_Set is
    begin
-      return (Ada.Finalization.Controlled with
+      return (Finalization.Controlled with
          Data => Empty_Set_Data'Unrestricted_Access);
    end Null_Set;
 
@@ -338,7 +338,7 @@ package body Ada.Strings.Root_Maps is
             Items => Data.Items (1 .. Last));
          pragma Assert (Valid (Data));
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Ranges : Wide_Character_Ranges)
@@ -366,7 +366,7 @@ package body Ada.Strings.Root_Maps is
             Items => Data.Items (1 .. Last));
          pragma Assert (Valid (Data));
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Ranges : Wide_Wide_Character_Ranges)
@@ -394,7 +394,7 @@ package body Ada.Strings.Root_Maps is
             Items => Data.Items (1 .. Last));
          pragma Assert (Valid (Data));
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Character_Range)
@@ -428,7 +428,7 @@ package body Ada.Strings.Root_Maps is
          Data.Items (Data.Items'First).Low := Span.Low;
          Data.Items (Data.Items'First).High := Span.High;
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Character_Sequence)
@@ -469,7 +469,7 @@ package body Ada.Strings.Root_Maps is
             Items => Items (Items'First .. Last));
          pragma Assert (Valid (Data));
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Singleton : Character)
@@ -489,7 +489,7 @@ package body Ada.Strings.Root_Maps is
    function Overloaded_To_Set (Singleton : Wide_Wide_Character)
       return Root_Character_Set is
    begin
-      return (Ada.Finalization.Controlled with
+      return (Finalization.Controlled with
          Data => new Set_Data'(
             Length => 1,
             Reference_Count => 1,
@@ -527,7 +527,7 @@ package body Ada.Strings.Root_Maps is
             end if;
          end;
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end "not";
 
    function "and" (Left, Right : Root_Character_Set)
@@ -556,7 +556,7 @@ package body Ada.Strings.Root_Maps is
             end if;
          end;
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end "and";
 
    function "or" (Left, Right : Root_Character_Set)
@@ -589,7 +589,7 @@ package body Ada.Strings.Root_Maps is
             pragma Assert (Valid (Data));
          end;
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end "or";
 
    function "xor" (Left, Right : Root_Character_Set)
@@ -630,7 +630,7 @@ package body Ada.Strings.Root_Maps is
             end if;
          end;
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end "xor";
 
    function "-" (Left, Right : Root_Character_Set)
@@ -662,7 +662,7 @@ package body Ada.Strings.Root_Maps is
             end if;
          end;
       end if;
-      return (Ada.Finalization.Controlled with Data => Data);
+      return (Finalization.Controlled with Data => Data);
    end "-";
 
    package body No_Primitives_For_Set is
@@ -744,7 +744,7 @@ package body Ada.Strings.Root_Maps is
 
    function Identity return Root_Character_Mapping is
    begin
-      return (Ada.Finalization.Controlled with
+      return (Finalization.Controlled with
          Data => Empty_Map_Data'Unrestricted_Access);
    end Identity;
 
