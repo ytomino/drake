@@ -8,9 +8,10 @@ package body System.Compare_Array_Unsigned_32 is
       Right_Len : Natural)
       return Integer
    is
-      L : Wide_Wide_String (1 .. Left_Len);
+      type Unsigned_32 is mod 2 ** 32;
+      L : array (1 .. Left_Len) of Unsigned_32;
       for L'Address use Left;
-      R : Wide_Wide_String (1 .. Right_Len);
+      R : array (1 .. Right_Len) of Unsigned_32;
       for R'Address use Right;
    begin
       for I in 1 .. Integer'Min (Left_Len, Right_Len) loop

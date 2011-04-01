@@ -14,39 +14,23 @@ package body System.Compare_Array_Unsigned_8 is
       Right : Address;
       Left_Len : Natural;
       Right_Len : Natural)
-      return Integer is
+      return Integer
+   is
+      Result : constant Integer := memcmp (
+         Left,
+         Right,
+         Storage_Elements.Storage_Count (Integer'Min (Left_Len, Right_Len)));
    begin
-      if Left_Len < Right_Len then
-         declare
-            Result : constant Integer := memcmp (
-               Left,
-               Right,
-               Storage_Elements.Storage_Count (Left_Len));
-         begin
-            if Result = 0 then
-               return -1;
-            else
-               return Result;
-            end if;
-         end;
-      elsif Left_Len > Right_Len then
-         declare
-            Result : constant Integer := memcmp (
-               Left,
-               Right,
-               Storage_Elements.Storage_Count (Right_Len));
-         begin
-            if Result = 0 then
-               return 1;
-            else
-               return Result;
-            end if;
-         end;
+      if Result = 0 then
+         if Left_Len < Right_Len then
+            return -1;
+         elsif Left_Len > Right_Len then
+            return 1;
+         else
+            return 0;
+         end if;
       else
-         return memcmp (
-            Left,
-            Right,
-            Storage_Elements.Storage_Count (Left_Len));
+         return Result;
       end if;
    end Compare_Array_U8_Unaligned;
 

@@ -1,17 +1,17 @@
-package body System.Compare_Array_Unsigned_16 is
+package body System.Compare_Array_Signed_16 is
    pragma Suppress (All_Checks);
 
-   function Compare_Array_U16 (
+   function Compare_Array_S16 (
       Left : Address;
       Right : Address;
       Left_Len : Natural;
       Right_Len : Natural)
       return Integer
    is
-      type Unsigned_16 is mod 2 ** 16;
-      L : array (1 .. Left_Len) of Unsigned_16;
+      type Integer_16 is range -2 ** 15 .. 2 ** 15 - 1;
+      L : array (1 .. Left_Len) of Integer_16;
       for L'Address use Left;
-      R : array (1 .. Right_Len) of Unsigned_16;
+      R : array (1 .. Right_Len) of Integer_16;
       for R'Address use Right;
    begin
       for I in 1 .. Integer'Min (Left_Len, Right_Len) loop
@@ -28,6 +28,6 @@ package body System.Compare_Array_Unsigned_16 is
       else
          return 0;
       end if;
-   end Compare_Array_U16;
+   end Compare_Array_S16;
 
-end System.Compare_Array_Unsigned_16;
+end System.Compare_Array_Signed_16;

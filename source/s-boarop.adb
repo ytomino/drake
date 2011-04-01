@@ -1,9 +1,11 @@
 package body System.Boolean_Array_Operations is
+   pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Element;
    use type Storage_Elements.Storage_Offset;
 
    type Word is mod 2 ** Standard'Word_Size;
    Word_Unit : constant := Standard'Word_Size / Standard'Storage_Unit;
+   Word_Mask : constant := Word_Unit - 1;
 
    pragma Compile_Time_Error (Word_Unit > 8, "should fix Vector_Not");
 
@@ -12,22 +14,19 @@ package body System.Boolean_Array_Operations is
       Length : Storage_Elements.Storage_Count)
    is
       Dest : Address := R;
-      Source_Right : Address := X;
-      Source_Lp1 : constant Address := X + Length;
+      Source_R : Address := X;
+      Dest_End : constant Address := Dest + Length;
    begin
-      if ((Dest or Source_Right) and
-         Address'(Word_Unit - Address'(1))) = 0
-      then
+      if ((Dest or Source_R) and Address'(Word_Mask)) = 0 then
          declare
-            Source_Lp1A : constant Address :=
-               Source_Lp1 and not (Word_Unit - Address'(1));
+            Dest_End_Word : constant Address := Dest_End and not Word_Mask;
          begin
-            while Source_Right < Source_Lp1A loop
+            while Dest < Dest_End_Word loop
                declare
                   Result : Word;
                   for Result'Address use Dest;
                   Right : Word;
-                  for Right'Address use Source_Right;
+                  for Right'Address use Source_R;
                begin
                   Result := (
                      2 ** 0 or
@@ -41,21 +40,21 @@ package body System.Boolean_Array_Operations is
                      Right;
                end;
                Dest := Dest + Address'(Word_Unit);
-               Source_Right := Source_Right + Address'(Word_Unit);
+               Source_R := Source_R + Address'(Word_Unit);
             end loop;
          end;
       end if;
-      while Source_Right < Source_Lp1 loop
+      while Dest < Dest_End loop
          declare
             Result : Storage_Elements.Storage_Element;
             for Result'Address use Dest;
             Right : Storage_Elements.Storage_Element;
-            for Right'Address use Source_Right;
+            for Right'Address use Source_R;
          begin
             Result := 1 xor Right;
          end;
          Dest := Dest + Address'(1);
-         Source_Right := Source_Right + Address'(1);
+         Source_R := Source_R + Address'(1);
       end loop;
    end Vector_Not;
 
@@ -64,48 +63,45 @@ package body System.Boolean_Array_Operations is
       Length : Storage_Elements.Storage_Count)
    is
       Dest : Address := R;
-      Source_Left : Address := X;
-      Source_Right : Address := Y;
-      Source_Lp1 : constant Address := Y + Length;
+      Source_L : Address := X;
+      Source_R : Address := Y;
+      Dest_End : constant Address := Dest + Length;
    begin
-      if ((Dest or Source_Left or Source_Right) and
-         Address'(Word_Unit - Address'(1))) = 0
-      then
+      if ((Dest or Source_L or Source_R) and Address'(Word_Mask)) = 0 then
          declare
-            Source_Lp1A : constant Address :=
-               Source_Lp1 and not (Word_Unit - Address'(1));
+            Dest_End_Word : constant Address := Dest_End and not Word_Mask;
          begin
-            while Source_Right < Source_Lp1A loop
+            while Dest < Dest_End_Word loop
                declare
                   Result : Word;
                   for Result'Address use Dest;
                   Left : Word;
-                  for Left'Address use Source_Left;
+                  for Left'Address use Source_L;
                   Right : Word;
-                  for Right'Address use Source_Right;
+                  for Right'Address use Source_R;
                begin
                   Result := Left and Right;
                end;
                Dest := Dest + Address'(Word_Unit);
-               Source_Left := Source_Left + Address'(Word_Unit);
-               Source_Right := Source_Right + Address'(Word_Unit);
+               Source_L := Source_L + Address'(Word_Unit);
+               Source_R := Source_R + Address'(Word_Unit);
             end loop;
          end;
       end if;
-      while Source_Right < Source_Lp1 loop
+      while Dest < Dest_End loop
          declare
             Result : Storage_Elements.Storage_Element;
             for Result'Address use Dest;
             Left : Storage_Elements.Storage_Element;
-            for Left'Address use Source_Left;
+            for Left'Address use Source_L;
             Right : Storage_Elements.Storage_Element;
-            for Right'Address use Source_Right;
+            for Right'Address use Source_R;
          begin
             Result := Left and Right;
          end;
          Dest := Dest + Address'(1);
-         Source_Left := Source_Left + Address'(1);
-         Source_Right := Source_Right + Address'(1);
+         Source_L := Source_L + Address'(1);
+         Source_R := Source_R + Address'(1);
       end loop;
    end Vector_And;
 
@@ -114,48 +110,45 @@ package body System.Boolean_Array_Operations is
       Length : Storage_Elements.Storage_Count)
    is
       Dest : Address := R;
-      Source_Left : Address := X;
-      Source_Right : Address := Y;
-      Source_Lp1 : constant Address := Y + Length;
+      Source_L : Address := X;
+      Source_R : Address := Y;
+      Dest_End : constant Address := Dest + Length;
    begin
-      if ((Dest or Source_Left or Source_Right) and
-         Address'(Word_Unit - Address'(1))) = 0
-      then
+      if ((Dest or Source_L or Source_R) and Address'(Word_Mask)) = 0 then
          declare
-            Source_Lp1A : constant Address :=
-               Source_Lp1 and not (Word_Unit - Address'(1));
+            Dest_End_Word : constant Address := Dest_End and not Word_Mask;
          begin
-            while Source_Right < Source_Lp1A loop
+            while Dest < Dest_End_Word loop
                declare
                   Result : Word;
                   for Result'Address use Dest;
                   Left : Word;
-                  for Left'Address use Source_Left;
+                  for Left'Address use Source_L;
                   Right : Word;
-                  for Right'Address use Source_Right;
+                  for Right'Address use Source_R;
                begin
                   Result := Left or Right;
                end;
                Dest := Dest + Address'(Word_Unit);
-               Source_Left := Source_Left + Address'(Word_Unit);
-               Source_Right := Source_Right + Address'(Word_Unit);
+               Source_L := Source_L + Address'(Word_Unit);
+               Source_R := Source_R + Address'(Word_Unit);
             end loop;
          end;
       end if;
-      while Source_Right < Source_Lp1 loop
+      while Dest < Dest_End loop
          declare
             Result : Storage_Elements.Storage_Element;
             for Result'Address use Dest;
             Left : Storage_Elements.Storage_Element;
-            for Left'Address use Source_Left;
+            for Left'Address use Source_L;
             Right : Storage_Elements.Storage_Element;
-            for Right'Address use Source_Right;
+            for Right'Address use Source_R;
          begin
             Result := Left or Right;
          end;
          Dest := Dest + Address'(1);
-         Source_Left := Source_Left + Address'(1);
-         Source_Right := Source_Right + Address'(1);
+         Source_L := Source_L + Address'(1);
+         Source_R := Source_R + Address'(1);
       end loop;
    end Vector_Or;
 
@@ -164,48 +157,45 @@ package body System.Boolean_Array_Operations is
       Length : Storage_Elements.Storage_Count)
    is
       Dest : Address := R;
-      Source_Left : Address := X;
-      Source_Right : Address := Y;
-      Source_Lp1 : constant Address := Y + Length;
+      Source_L : Address := X;
+      Source_R : Address := Y;
+      Dest_End : constant Address := Dest + Length;
    begin
-      if ((Dest or Source_Left or Source_Right) and
-         Address'(Word_Unit - Address'(1))) = 0
-      then
+      if ((Dest or Source_L or Source_R) and Address'(Word_Mask)) = 0 then
          declare
-            Source_Lp1A : constant Address :=
-               Source_Lp1 and not (Word_Unit - Address'(1));
+            Dest_End_Word : constant Address := Dest_End and not Word_Mask;
          begin
-            while Source_Right < Source_Lp1A loop
+            while Dest < Dest_End_Word loop
                declare
                   Result : Word;
                   for Result'Address use Dest;
                   Left : Word;
-                  for Left'Address use Source_Left;
+                  for Left'Address use Source_L;
                   Right : Word;
-                  for Right'Address use Source_Right;
+                  for Right'Address use Source_R;
                begin
                   Result := Left xor Right;
                end;
                Dest := Dest + Address'(Word_Unit);
-               Source_Left := Source_Left + Address'(Word_Unit);
-               Source_Right := Source_Right + Address'(Word_Unit);
+               Source_L := Source_L + Address'(Word_Unit);
+               Source_R := Source_R + Address'(Word_Unit);
             end loop;
          end;
       end if;
-      while Source_Right < Source_Lp1 loop
+      while Dest < Dest_End loop
          declare
             Result : Storage_Elements.Storage_Element;
             for Result'Address use Dest;
             Left : Storage_Elements.Storage_Element;
-            for Left'Address use Source_Left;
+            for Left'Address use Source_L;
             Right : Storage_Elements.Storage_Element;
-            for Right'Address use Source_Right;
+            for Right'Address use Source_R;
          begin
             Result := Left xor Right;
          end;
          Dest := Dest + Address'(1);
-         Source_Left := Source_Left + Address'(1);
-         Source_Right := Source_Right + Address'(1);
+         Source_L := Source_L + Address'(1);
+         Source_R := Source_R + Address'(1);
       end loop;
    end Vector_Xor;
 
