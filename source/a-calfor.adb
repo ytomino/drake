@@ -2,6 +2,7 @@ with Ada.Calendar.Inside;
 with System.Formatting;
 package body Ada.Calendar.Formatting is
    pragma Suppress (All_Checks);
+   use type Time_Zones.Time_Offset;
 
    procedure Image (
       Hour : Natural;
@@ -599,6 +600,83 @@ package body Ada.Calendar.Formatting is
          Minute_Number (Minute),
          Second_Number (Second),
          Sub_Second);
+   end Value;
+
+   function Image (Time_Zone : Time_Zones.Time_Offset) return String is
+      U_Time_Zone : constant Natural := Natural (abs Time_Zone);
+      Hour : constant Hour_Number := U_Time_Zone / 60;
+      Minute : constant Minute_Number := U_Time_Zone mod 60;
+      Last : Natural;
+      Error : Boolean;
+   begin
+      return Result : String (1 .. 6) do
+         if Time_Zone < 0 then
+            Result (1) := '-';
+         else
+            Result (1) := '+';
+         end if;
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Hour),
+            Result (2 .. 3),
+            Last,
+            Width => 2,
+            Error => Error);
+         pragma Assert (not Error and then Last = 3);
+         Result (4) := ':';
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Minute),
+            Result (5 .. 6),
+            Last,
+            Width => 2,
+            Error => Error);
+         pragma Assert (not Error and then Last = 6);
+      end return;
+   end Image;
+
+   function Value (Time_Zone : String) return Time_Zones.Time_Offset is
+      Minus : Boolean;
+      Hour : System.Formatting.Unsigned;
+      Minute : System.Formatting.Unsigned;
+      Last : Natural;
+      Error : Boolean;
+      Result : Time_Zones.Time_Offset;
+   begin
+      Last := Time_Zone'First - 1;
+      if Last < Time_Zone'Last and then Time_Zone (Last + 1) = '-' then
+         Minus := True;
+         Last := Last + 1;
+      else
+         Minus := False;
+         if Last < Time_Zone'Last and then Time_Zone (Last + 1) = '+' then
+            Last := Last + 1;
+         end if;
+      end if;
+      System.Formatting.Value (
+         Time_Zone (Last + 1 .. Time_Zone'Last),
+         Last,
+         Hour,
+         Error => Error);
+      if Error
+         or else Last >= Time_Zone'Last
+         or else Time_Zone (Last + 1) /= ':'
+      then
+         raise Constraint_Error;
+      end if;
+      Last := Last + 1;
+      System.Formatting.Value (
+         Time_Zone (Last + 1 .. Time_Zone'Last),
+         Last,
+         Minute,
+         Error => Error);
+      if Error or else Last /= Time_Zone'Last then
+         raise Constraint_Error;
+      end if;
+      Result := Time_Zones.Time_Offset'Base (Hour) * 60 +
+         Time_Zones.Time_Offset'Base (Minute);
+      if Minus then
+         Result := -Result;
+      end if;
+      return Result;
    end Value;
 
 end Ada.Calendar.Formatting;

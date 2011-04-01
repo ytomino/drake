@@ -136,4 +136,8 @@ package Ada.Calendar.Formatting is
 
    function Value (Elapsed_Time : String) return Duration;
 
+   --  extended, the format of time-zone is "+00:00"
+   function Image (Time_Zone : Time_Zones.Time_Offset) return String;
+   function Value (Time_Zone : String) return Time_Zones.Time_Offset;
+
 end Ada.Calendar.Formatting;

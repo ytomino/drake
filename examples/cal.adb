@@ -4,6 +4,7 @@ with Ada.Calendar.Formatting;
 with Ada.Calendar.Time_Zones;
 procedure cal is
 	use type Ada.Calendar.Time;
+	use type Ada.Calendar.Time_Zones.Time_Offset;
 	Now : Ada.Calendar.Time := Ada.Calendar.Clock;
 	Year : Ada.Calendar.Year_Number;
 	Month : Ada.Calendar.Month_Number;
@@ -32,6 +33,10 @@ begin
 	Remaked := Ada.Calendar.Time_Of (Year, Month, Day, Seconds);
 	pragma Assert (Remaked = Now);
 	printf ("TZ = %d" & ASCII.LF & ASCII.NUL, Ada.Calendar.Time_Zones.UTC_Time_Offset);
+	Ada.Debug.Put (Ada.Calendar.Formatting.Image (Ada.Calendar.Time_Zones.UTC_Time_Offset));
+	pragma Assert (Ada.Calendar.Formatting.Value (
+		Ada.Calendar.Formatting.Image (Ada.Calendar.Time_Zones.UTC_Time_Offset)) =
+		Ada.Calendar.Time_Zones.UTC_Time_Offset);
 	-- Time_Offset = 540 in Japan
 	Ada.Calendar.Formatting.Split (Now, Year, Month, Day, H, M, S, SS, LS,
 		Time_Zone => Ada.Calendar.Time_Zones.UTC_Time_Offset);
