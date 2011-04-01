@@ -16,7 +16,7 @@ package System.Unsigned_Types is
       return Long_Long_Unsigned;
    pragma Import (Intrinsic, Shift_Left);
 
-   --  required for ??? by compiler (s-unstyp.ads)
+   --  required for packed boolean arrays by compiler (s-unstyp.ads)
 
    type Packed_Byte is mod 2 ** Standard'Storage_Unit;
    for Packed_Byte'Size use Standard'Storage_Unit;

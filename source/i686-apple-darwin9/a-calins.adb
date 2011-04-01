@@ -69,6 +69,7 @@ package body Ada.Calendar.Inside is
       Split (Date, C_time, Sub_Second);
       C_time := C_time + C.sys.types.time_t (Time_Zone) * 60;
       tm := C.time.gmtime_r (C_time'Access, Buffer'Access);
+      --  does gmtime_r return no error ?
       Year := Year_Number (tm.tm_year + 1900);
       Month := Month_Number (tm.tm_mon + 1);
       Day := Day_Number (tm.tm_mday);
