@@ -121,6 +121,9 @@ package body Ada.Streams.Stream_IO.Inside is
          Mode => Mode,
          Name => Name,
          Form => Form);
+      if Mode = Append_File then
+         Set_Index_To_End (File); --  Append_File sets index to the last
+      end if;
    end Create;
 
    procedure Delete (File : in out Non_Controlled_File_Type) is
@@ -394,7 +397,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Table : constant array (File_Mode) of C.unsigned_int := (
                      In_File => O_RDWR or O_CREAT or O_TRUNC,
                      Out_File => O_WRONLY or O_CREAT or O_TRUNC,
-                     Append_File => O_RDWR or O_CREAT or O_TRUNC);
+                     Append_File => O_RDWR or O_CREAT); -- no truncation
                begin
                   Flags := Table (Mode);
                end;
