@@ -1,11 +1,25 @@
 with Ada.Environment_Variables.Inside;
+with Ada.Unchecked_Conversion;
 with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.string;
 package body Ada.Environment_Variables is
    pragma Suppress (All_Checks);
    use type C.char_ptr;
+   use type C.char_ptr_ptr;
    use type C.signed_int;
+   use type C.ptrdiff_t;
+
+   function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
+      return C.char_ptr_ptr;
+   function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
+      return C.char_ptr_ptr
+   is
+      function I is new Unchecked_Conversion (C.char_ptr_ptr, C.ptrdiff_t);
+      function P is new Unchecked_Conversion (C.ptrdiff_t, C.char_ptr_ptr);
+   begin
+      return P (I (Left) + Right * (C.char_ptr'Size / Standard'Storage_Unit));
+   end "+";
 
    function getenv (Name : String) return C.char_ptr;
    function getenv (Name : String) return C.char_ptr is
@@ -77,64 +91,103 @@ package body Ada.Environment_Variables is
    end Clear;
 
    procedure Clear is
-      type String_Array is array (Natural) of C.char_ptr;
-      environment : String_Array;
-      pragma Import (C, environment);
-      for environment'Address use Inside.Environment_Block.all'Address;
-      Count : Natural := 0;
+      Block : constant C.char_ptr_ptr := Inside.Environment_Block;
+      I : C.char_ptr_ptr := Block;
    begin
-      while environment (Count) /= null loop
-         Count := Count + 1;
+      while I.all /= null loop
+         I := I + 1;
       end loop;
-      for I in reverse 0 .. Count - 1 loop
-         declare
-            p : constant C.char_ptr := environment (I);
-            subtype Fixed_String is String (Positive);
-            S : Fixed_String;
-            for S'Address use p.all'Address;
-            I : Positive := 1;
-         begin
-            loop
-               case S (I) is
-                  when '=' | Character'Val (0) =>
-                     Clear (S (1 .. I - 1));
-                     exit;
-                  when others =>
-                     null;
-               end case;
-               I := I + 1;
-            end loop;
-         end;
+      while I /= Block loop
+         I := I + (-1);
+         Clear (Constant_Reference (Cursor (I)).Name.all);
       end loop;
    end Clear;
 
    procedure Iterate (
       Process : not null access procedure (Name, Value : String))
    is
-      type String_Array is array (Natural) of C.char_ptr;
-      environment : String_Array;
-      pragma Import (C, environment);
-      for environment'Address use Inside.Environment_Block.all'Address;
-      I : Natural := 0;
+      I : C.char_ptr_ptr := Inside.Environment_Block;
    begin
-      while environment (I) /= null loop
+      while I.all /= null loop
          declare
-            p : constant C.char_ptr := environment (I);
-            Length : constant Natural := Integer (C.string.strlen (p));
-            S : String (1 .. Length);
-            for S'Address use p.all'Address;
+            pragma Warnings (Off); -- compiler...
+            Ref : Constant_Reference_Type := Constant_Reference (Cursor (I));
+            pragma Warnings (On);
          begin
-            for I in S'Range loop
-               if S (I) = '=' then
-                  Process (S (1 .. I - 1), S (I + 1 .. Length));
-                  goto Next;
-               end if;
-            end loop;
-            Process (S, "");
+            Process (Ref.Name.all, Ref.Value.all);
          end;
-         <<Next>>
          I := I + 1;
       end loop;
    end Iterate;
+
+   function Iterate return Iterator is
+   begin
+      return (null record);
+   end Iterate;
+
+   function First (Object : Iterator) return Cursor is
+      pragma Unreferenced (Object);
+      Result : Cursor := Cursor (Inside.Environment_Block);
+   begin
+      if Result.all = null then
+         Result := null;
+      end if;
+      return Result;
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+      Result : Cursor := Cursor (C.char_ptr_ptr (Position) + 1);
+   begin
+      if Result.all = null then
+         Result := null;
+      end if;
+      return Result;
+   end Next;
+
+   function Constant_Reference (Position : Cursor)
+      return Constant_Reference_Type
+   is
+      p : constant C.char_ptr := Position.all;
+      Length : constant Natural := Integer (C.string.strlen (p));
+      S : String (1 .. Length);
+      for S'Address use p.all'Address;
+      Name_Last : Natural := Length;
+      Value_First : Positive := Length + 1;
+   begin
+      for I in S'Range loop
+         if S (I) = '=' then
+            Name_Last := I - 1;
+            Value_First := I + 1;
+            exit;
+         end if;
+      end loop;
+      --  see s-arrays.adb
+      return Result : aliased Constant_Reference_Type := (
+         Name => S'Unrestricted_Access, -- dummy
+         Value => S'Unrestricted_Access,
+         Name_First => 1,
+         Name_Last => Name_Last,
+         Value_First => Value_First,
+         Value_Last => Length)
+      do
+         declare
+            type Repr is record
+               Data : System.Address;
+               Constraints : System.Address;
+            end record;
+            pragma Suppress_Initialization (Repr);
+            Name_R : Repr;
+            for Name_R'Address use Result.Name'Address;
+            Value_R : Repr;
+            for Value_R'Address use Result.Value'Address;
+         begin
+            Name_R.Data := S (Result.Name_First)'Address;
+            Name_R.Constraints := Result.Name_First'Address;
+            Value_R.Data := S (Result.Value_First)'Address;
+            Value_R.Constraints := Result.Value_First'Address;
+         end;
+      end return;
+   end Constant_Reference;
 
 end Ada.Environment_Variables;
