@@ -18,7 +18,7 @@ is
    pragma Suppress (All_Checks);
    function signbit (X : Long_Long_Float) return Integer;
    pragma Import (Intrinsic, signbit, "__builtin_signbitl");
-   Fore : Long_Long_Float;
+   Item_Fore : Long_Long_Float;
    Aft : Long_Long_Float;
    Required_Fore_Width : Positive;
    Error : Boolean;
@@ -57,9 +57,9 @@ begin
    end if;
    --  integer part
    Aft := abs Item;
-   Fore := Long_Long_Float'Truncation (Aft);
-   Aft := Aft - Fore;
-   Required_Fore_Width := Fore.Fore_Width (Fore, Base => Base);
+   Item_Fore := Long_Long_Float'Truncation (Aft);
+   Aft := Aft - Item_Fore;
+   Required_Fore_Width := Fore.Fore_Width (Item_Fore, Base => Base);
    for I in Required_Fore_Width + 1 .. Fore_Width loop
       Last := Last + 1;
       pragma Assert (Last <= To'Last);
@@ -71,12 +71,12 @@ begin
          Q : Long_Long_Float;
          R : Long_Long_Float;
       begin
-         Long_Long_Float_Divide (Fore, Long_Long_Float (Base), Q, R);
+         Long_Long_Float_Divide (Item_Fore, Long_Long_Float (Base), Q, R);
          Image (
             Digit (R),
             To (I),
             Casing => Casing);
-         Fore := Q;
+         Item_Fore := Q;
       end;
    end loop;
    Last := Last + Required_Fore_Width;
