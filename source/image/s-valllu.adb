@@ -64,8 +64,7 @@ package body System.Val_LLU is
       end if;
       Val_Uns.Get_Exponent (S, Last, Exponent, Positive_Only => True);
       if Exponent /= 0 then
-         Result := Result *
-            System.Formatting.Longest_Unsigned (Base) ** Exponent;
+         Result := Result * Formatting.Longest_Unsigned (Base) ** Exponent;
       end if;
    end Get_Longest_Unsigned_Literal_Without_Sign;
 

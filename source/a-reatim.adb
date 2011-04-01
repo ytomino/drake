@@ -1,6 +1,6 @@
 package body Ada.Real_Time is
    pragma Suppress (All_Checks);
-   use type Ada.Calendar.Time;
+   use type Calendar.Time;
 
    function Clock return Time is
    begin

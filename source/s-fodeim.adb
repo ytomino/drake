@@ -40,16 +40,16 @@ begin
          Sp : constant Long_Long_Integer := 10 ** Scale;
          Q : Long_Long_Integer;
          R : Long_Long_Integer;
-         Aft : System.Formatting.Longest_Unsigned;
+         Aft : Formatting.Longest_Unsigned;
          Error : Boolean;
       begin
          if Aft_Width < Scale then
             Rounded_Item := Rounded_Item + (10 ** (Scale - Aft_Width)) / 2;
          end if;
-         System.Long_Long_Integer_Divide (Rounded_Item, Sp, Q, R);
-         Aft := System.Formatting.Longest_Unsigned (R);
-         System.Formatting.Image (
-            System.Formatting.Longest_Unsigned (Q),
+         Long_Long_Integer_Divide (Rounded_Item, Sp, Q, R);
+         Aft := Formatting.Longest_Unsigned (R);
+         Formatting.Image (
+            Formatting.Longest_Unsigned (Q),
             To (Last + 1 .. To'Last),
             Last,
             Width => Fore_Width,
@@ -65,7 +65,7 @@ begin
             elsif Aft_Width < Scale then
                Aft := Aft / 10 ** (Scale - Aft_Width);
             end if;
-            System.Formatting.Image (
+            Formatting.Image (
                Aft,
                To (Last + 1 .. To'Last),
                Last,
@@ -76,8 +76,8 @@ begin
       end;
    else
       if Item /= 0 then
-         System.Formatting.Image (
-            System.Formatting.Longest_Unsigned (abs Item),
+         Formatting.Image (
+            Formatting.Longest_Unsigned (abs Item),
             To (Last + 1 .. To'Last),
             Last,
             Width => Fore_Width,

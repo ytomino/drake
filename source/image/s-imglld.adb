@@ -8,7 +8,7 @@ package body System.Img_LLD is
       P : out Natural;
       Scale : Integer) is
    begin
-      System.Formatting.Decimal_Image (
+      Formatting.Decimal_Image (
          S,
          P,
          V,

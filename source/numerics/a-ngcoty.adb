@@ -4,8 +4,8 @@ package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
 
    package Impl is new Inside;
-   function Is_Infinity is new Ada.Float.Is_Infinity (Real'Base);
-   subtype Float is Standard.Float; -- hiding Ada.Float
+   function Is_Infinity is new Float.Is_Infinity (Real'Base);
+   subtype Float is Standard.Float; -- hiding "Float" package
 
    function Argument (X : Complex) return Real'Base
       renames Impl.Argument;

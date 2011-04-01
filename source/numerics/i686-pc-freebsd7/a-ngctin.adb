@@ -3,7 +3,7 @@ package body Ada.Numerics.Generic_Complex_Types.Inside is
 
    --  FreeBSD does not have carg
 
-   function Arctan is new Ada.Numerics.Generic_Elementary_Arctan (Real'Base);
+   function Arctan is new Generic_Elementary_Arctan (Real'Base);
 
    function Argument (X : Complex) return Real'Base is
    begin

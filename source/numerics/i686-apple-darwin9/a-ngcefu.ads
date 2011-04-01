@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 with Ada.Numerics.Generic_Complex_Types;
 generic
-   with package Complex_Types is new Ada.Numerics.Generic_Complex_Types (<>);
+   with package Complex_Types is new Generic_Complex_Types (<>);
    use Complex_Types;
 package Ada.Numerics.Generic_Complex_Elementary_Functions is
    pragma Pure;

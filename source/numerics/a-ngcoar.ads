@@ -1,9 +1,9 @@
 pragma License (Unrestricted);
 with Ada.Numerics.Generic_Real_Arrays, Ada.Numerics.Generic_Complex_Types;
 generic
-   with package Real_Arrays is new Ada.Numerics.Generic_Real_Arrays (<>);
+   with package Real_Arrays is new Generic_Real_Arrays (<>);
    use Real_Arrays;
-   with package Complex_Types is new Ada.Numerics.Generic_Complex_Types (Real);
+   with package Complex_Types is new Generic_Complex_Types (Real);
    use Complex_Types;
 package Ada.Numerics.Generic_Complex_Arrays is
    pragma Pure;

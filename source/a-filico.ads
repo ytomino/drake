@@ -6,7 +6,7 @@ package Ada.Finalization.List_Controller is
 
    --  unnecessary ??? (a-filico.ads)
    type Simple_List_Controller is
-      new Ada.Finalization.Limited_Controlled with
+      new Finalization.Limited_Controlled with
    record
       F : System.Finalization_Root.Finalizable_Ptr;
    end record;

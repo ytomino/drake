@@ -59,7 +59,7 @@ begin
    Aft := abs Item;
    Fore := Long_Long_Float'Truncation (Aft);
    Aft := Aft - Fore;
-   Required_Fore_Width := System.Fore.Fore_Width (Fore, Base => Base);
+   Required_Fore_Width := Fore.Fore_Width (Fore, Base => Base);
    for I in Required_Fore_Width + 1 .. Fore_Width loop
       Last := Last + 1;
       pragma Assert (Last <= To'Last);

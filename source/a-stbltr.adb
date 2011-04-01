@@ -1,6 +1,6 @@
 package body Ada.Streams.Block_Transmission is
    pragma Suppress (All_Checks);
-   use type Ada.Streams.Stream_Element_Offset;
+   use type Streams.Stream_Element_Offset;
 
    procedure Read (
       Stream : not null access Root_Stream_Type'Class;
