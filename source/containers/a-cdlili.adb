@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System;
 package body Ada.Containers.Doubly_Linked_Lists is
    use type Linked_Lists.Node_Access;
    use type Copy_On_Write.Data_Access;
@@ -18,33 +19,25 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Copy_On_Write.Data_Access,
       Data_Access);
 
-   type Direction_Type is (Forward, Backward);
-   pragma Discard_Names (Direction_Type);
+   type Context_Type is limited record
+      Left : not null access Element_Type;
+   end record;
+   pragma Suppress_Initialization (Context_Type);
 
-   function Find (
-      Direction : Direction_Type;
-      Start : Linked_Lists.Node_Access;
-      Item : Element_Type) return Linked_Lists.Node_Access;
-   function Find (
-      Direction : Direction_Type;
-      Start : Linked_Lists.Node_Access;
-      Item : Element_Type) return Linked_Lists.Node_Access
+   function Equivalent_Element (
+      Right : not null Linked_Lists.Node_Access;
+      Params : System.Address)
+      return Boolean;
+   function Equivalent_Element (
+      Right : not null Linked_Lists.Node_Access;
+      Params : System.Address)
+      return Boolean
    is
-      function Equivalent (Right : not null Linked_Lists.Node_Access)
-         return Boolean;
-      function Equivalent (Right : not null Linked_Lists.Node_Access)
-         return Boolean is
-      begin
-         return Item = Downcast (Right).Element;
-      end Equivalent;
+      Context : Context_Type;
+      for Context'Address use Params;
    begin
-      case Direction is
-         when Forward =>
-            return Base.Find (Start, Equivalent'Access);
-         when Backward =>
-            return Linked_Lists.Reverse_Find (Start, Equivalent'Access);
-      end case;
-   end Find;
+      return Context.Left.all = Downcast (Right).Element;
+   end Equivalent_Element;
 
    procedure Copy_Node (
       Target : out Linked_Lists.Node_Access;
@@ -246,10 +239,14 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return null;
       else
          Unique (Container'Unrestricted_Access.all, False);
-         return Downcast (Find (
-            Forward,
-            Downcast (Container.Super.Data).First,
-            Item));
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Base.Find (
+               Downcast (Container.Super.Data).First,
+               Context'Address,
+               Equivalent => Equivalent_Element'Access));
+         end;
       end if;
    end Find;
 
@@ -257,8 +254,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
       return Cursor
    is
       pragma Unreferenced (Container);
+      Context : Context_Type := (Left => Item'Unrestricted_Access);
    begin
-      return Downcast (Find (Forward, Upcast (Position), Item));
+      return Downcast (Base.Find (
+         Upcast (Position),
+         Context'Address,
+         Equivalent => Equivalent_Element'Access));
    end Find;
 
    function First (Container : List) return Cursor is
@@ -342,20 +343,19 @@ package body Ada.Containers.Doubly_Linked_Lists is
          or else Downcast (Container.Super.Data).Last = null;
    end Is_Empty;
 
-   procedure Iterate (Container : List;
+   procedure Iterate (
+      Container : List;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Linked_Lists.Node_Access);
-      procedure Process_2 (Position : not null Linked_Lists.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Linked_Lists.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
          Unique (Container'Unrestricted_Access.all, False);
          Base.Iterate (
             Downcast (Container.Super.Data).First,
-            Process_2'Access);
+            Cast (Process));
       end if;
    end Iterate;
 
@@ -422,11 +422,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       return Next (Position);
    end Next;
-
-   function No_Element return Cursor is
-   begin
-      return null;
-   end No_Element;
 
    procedure Prepend (
       Container : in out List;
@@ -502,9 +497,14 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return null;
       else
          Unique (Container'Unrestricted_Access.all, False);
-         return Downcast (Find (
-            Backward,
-            Downcast (Container.Super.Data).First, Item));
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Linked_Lists.Reverse_Find (
+               Downcast (Container.Super.Data).Last,
+               Context'Address,
+               Equivalent => Equivalent_Element'Access));
+         end;
       end if;
    end Reverse_Find;
 
@@ -514,25 +514,27 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Position : Cursor) return Cursor
    is
       pragma Unreferenced (Container);
+      Context : Context_Type := (Left => Item'Unrestricted_Access);
    begin
-      return Downcast (Find (Backward, Upcast (Position), Item));
+      return Downcast (Linked_Lists.Reverse_Find (
+         Upcast (Position),
+         Context'Address,
+         Equivalent => Equivalent_Element'Access));
    end Reverse_Find;
 
    procedure Reverse_Iterate (
       Container : List;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Linked_Lists.Node_Access);
-      procedure Process_2 (Position : not null Linked_Lists.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Linked_Lists.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
          Unique (Container'Unrestricted_Access.all, False);
          Linked_Lists.Reverse_Iterate (
             Downcast (Container.Super.Data).Last,
-            Process_2'Access);
+            Cast (Process));
       end if;
    end Reverse_Iterate;
 
@@ -697,17 +699,22 @@ package body Ada.Containers.Doubly_Linked_Lists is
       procedure Merge (Target : in out List; Source : in out List) is
       begin
          if not Is_Empty (Source) then
-            Unique (Target, True);
-            Linked_Lists.Merge (
-               Downcast (Target.Super.Data).First,
-               Downcast (Target.Super.Data).Last,
-               Downcast (Target.Super.Data).Length,
-               Downcast (Source.Super.Data).First,
-               Downcast (Source.Super.Data).Last,
-               Downcast (Source.Super.Data).Length,
-               LT => LT'Access,
-               Insert => Base.Insert'Access,
-               Remove => Base.Remove'Access);
+            if Is_Empty (Target) then
+               Move (Target, Source);
+            else
+               Unique (Target, True);
+               Unique (Source, True);
+               Linked_Lists.Merge (
+                  Downcast (Target.Super.Data).First,
+                  Downcast (Target.Super.Data).Last,
+                  Downcast (Target.Super.Data).Length,
+                  Downcast (Source.Super.Data).First,
+                  Downcast (Source.Super.Data).Last,
+                  Downcast (Source.Super.Data).Length,
+                  LT => LT'Access,
+                  Insert => Base.Insert'Access,
+                  Remove => Base.Remove'Access);
+            end if;
          end if;
       end Merge;
 

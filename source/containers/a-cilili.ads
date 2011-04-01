@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation package
+with System;
 package Ada.Containers.Inside.Linked_Lists is
    pragma Preelaborate;
 
@@ -19,7 +20,10 @@ package Ada.Containers.Inside.Linked_Lists is
 
    function Reverse_Find (
       Last : Node_Access;
-      Equivalent : not null access function (Right : not null Node_Access)
+      Params : System.Address;
+      Equivalent : not null access function (
+         Right : not null Node_Access;
+         Params : System.Address)
          return Boolean)
       return Node_Access;
 

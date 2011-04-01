@@ -1,6 +1,7 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Containers.Comparators;
+with Ada.Containers.Composites;
+with System;
 package body Ada.Containers.Limited_Ordered_Maps is
    use type Binary_Trees.Node_Access;
 --  diff
@@ -19,30 +20,29 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 
-   function Compare is new Comparators.Generic_Compare (Key_Type);
+   function Compare is new Composites.Compare (Key_Type);
 
-   function Find (
-      Data : Map;
-      Key : Key_Type;
-      Mode : Binary_Trees.Find_Mode) return Cursor;
-   function Find (
-      Data : Map;
-      Key : Key_Type;
-      Mode : Binary_Trees.Find_Mode) return Cursor
+   type Context_Type is limited record
+      Left : not null access Key_Type;
+   end record;
+   pragma Suppress_Initialization (Context_Type);
+
+   function Compare_Key (
+      Position : not null Binary_Trees.Node_Access;
+      Params : System.Address)
+      return Integer;
+   function Compare_Key (
+      Position : not null Binary_Trees.Node_Access;
+      Params : System.Address)
+      return Integer
    is
-      function Compare (Right : not null Binary_Trees.Node_Access)
-         return Integer;
-      function Compare (Right : not null Binary_Trees.Node_Access)
-         return Integer is
-      begin
-         return Compare (Key, Downcast (Right).Key.all);
-      end Compare;
+      Context : Context_Type;
+      for Context'Address use Params;
    begin
-      return Downcast (Binary_Trees.Find (
-         Data.Root,
-         Mode,
-         Compare => Compare'Access));
-   end Find;
+      return Compare (
+         Context.Left.all,
+         Downcast (Position).Key.all);
+   end Compare_Key;
 
 --  diff (Copy_Node)
 --
@@ -148,14 +148,19 @@ package body Ada.Containers.Limited_Ordered_Maps is
 
    function Ceiling (Container : Map; Key : Key_Type) return Cursor is
    begin
-      return Find (Container, Key, Binary_Trees.Ceiling);
 --  diff
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
+         declare
+            Context : Context_Type := (Left => Key'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Ceiling,
+               Context'Address,
+               Compare => Compare_Key'Access));
+         end;
 --  diff
    end Ceiling;
 
@@ -256,10 +261,15 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
 --  diff
 --  diff
-      return Find (
-         Container,
-         Key,
-         Binary_Trees.Just);
+         declare
+            Context : Context_Type := (Left => Key'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Just,
+               Context'Address,
+               Compare => Compare_Key'Access));
+         end;
 --  diff
    end Find;
 
@@ -285,10 +295,15 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
 --  diff
 --  diff
-      return Find (
-         Container,
-         Key,
-         Binary_Trees.Floor);
+         declare
+            Context : Context_Type := (Left => Key'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Floor,
+               Context'Address,
+               Compare => Compare_Key'Access));
+         end;
 --  diff
    end Floor;
 
@@ -388,17 +403,15 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Container : Map;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Binary_Trees.Node_Access);
-      procedure Process_2 (Position : not null Binary_Trees.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Binary_Trees.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
 --  diff
 --  diff
       Binary_Trees.Iterate (
          Container.Root,
-         Process_2'Access);
+         Cast (Process));
 --  diff
    end Iterate;
 
@@ -464,11 +477,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
    begin
       return Next (Position);
    end Next;
-
-   function No_Element return Cursor is
-   begin
-      return null;
-   end No_Element;
 
    function Previous (Position : Cursor) return Cursor is
    begin
@@ -542,17 +550,15 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Container : Map;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Binary_Trees.Node_Access);
-      procedure Process_2 (Position : not null Binary_Trees.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Binary_Trees.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
 --  diff
 --  diff
       Binary_Trees.Reverse_Iterate (
          Container.Root,
-         Process_2'Access);
+         Cast (Process));
 --  diff
    end Reverse_Iterate;
 

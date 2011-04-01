@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System;
 package body Ada.Containers.Hashed_Sets is
    use type Hash_Tables.Table_Access;
    use type Copy_On_Write.Data_Access;
@@ -18,6 +19,28 @@ package body Ada.Containers.Hashed_Sets is
       Copy_On_Write.Data_Access,
       Data_Access);
 
+   type Context_Type is limited record
+      Left : not null access Element_Type;
+   end record;
+   pragma Suppress_Initialization (Context_Type);
+
+   function Equivalent_Element (
+      Position : not null Hash_Tables.Node_Access;
+      Params : System.Address)
+      return Boolean;
+   function Equivalent_Element (
+      Position : not null Hash_Tables.Node_Access;
+      Params : System.Address)
+      return Boolean
+   is
+      Context : Context_Type;
+      for Context'Address use Params;
+   begin
+      return Equivalent_Elements (
+         Context.Left.all,
+         Downcast (Position).Element);
+   end Equivalent_Element;
+
    function Equivalent_Node (Left, Right : not null Hash_Tables.Node_Access)
       return Boolean;
    function Equivalent_Node (Left, Right : not null Hash_Tables.Node_Access)
@@ -27,25 +50,6 @@ package body Ada.Containers.Hashed_Sets is
          Downcast (Left).Element,
          Downcast (Right).Element);
    end Equivalent_Node;
-
-   function Find (Data : Data_Access; Hash : Hash_Type; Item : Element_Type)
-      return Cursor;
-   function Find (Data : Data_Access; Hash : Hash_Type; Item : Element_Type)
-      return Cursor
-   is
-      function Equivalent (Position : not null Hash_Tables.Node_Access)
-         return Boolean;
-      function Equivalent (Position : not null Hash_Tables.Node_Access)
-         return Boolean is
-      begin
-         return Equivalent_Elements (Downcast (Position).Element, Item);
-      end Equivalent;
-   begin
-      return Downcast (Hash_Tables.Find (
-         Data.Table,
-         Hash,
-         Equivalent => Equivalent'Access));
-   end Find;
 
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
@@ -142,10 +146,15 @@ package body Ada.Containers.Hashed_Sets is
          return null;
       else
          Unique (Container'Unrestricted_Access.all, False);
-         return Find (
-            Downcast (Container.Super.Data),
-            Hash,
-            Item);
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Hash_Tables.Find (
+               Downcast (Container.Super.Data).Table,
+               Hash,
+               Context'Address,
+               Equivalent => Equivalent_Element'Access));
+         end;
       end if;
    end Find;
 
@@ -447,17 +456,15 @@ package body Ada.Containers.Hashed_Sets is
       Container : Set;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Hash_Tables.Node_Access);
-      procedure Process_2 (Position : not null Hash_Tables.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Hash_Tables.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
          Unique (Container'Unrestricted_Access.all, False);
          Hash_Tables.Iterate (
             Downcast (Container.Super.Data).Table,
-            Process_2'Access);
+            Cast (Process));
       end if;
    end Iterate;
 
@@ -500,11 +507,6 @@ package body Ada.Containers.Hashed_Sets is
    begin
       return Next (Position);
    end Next;
-
-   function No_Element return Cursor is
-   begin
-      return null;
-   end No_Element;
 
    function Overlap (Left, Right : Set) return Boolean is
    begin
@@ -686,6 +688,28 @@ package body Ada.Containers.Hashed_Sets is
 
    package body Generic_Keys is
 
+      type Context_Type is limited record
+         Left : not null access Key_Type;
+      end record;
+      pragma Suppress_Initialization (Context_Type);
+
+      function Equivalent_Key (
+         Position : not null Hash_Tables.Node_Access;
+         Params : System.Address)
+         return Boolean;
+      function Equivalent_Key (
+         Position : not null Hash_Tables.Node_Access;
+         Params : System.Address)
+         return Boolean
+      is
+         Context : Context_Type;
+         for Context'Address use Params;
+      begin
+         return Equivalent_Keys (
+            Context.Left.all,
+            Key (Downcast (Position).Element));
+      end Equivalent_Key;
+
       function Contains (Container : Set; Key : Key_Type) return Boolean is
       begin
          return Find (Container, Key) /= null;
@@ -705,23 +729,20 @@ package body Ada.Containers.Hashed_Sets is
       end Exclude;
 
       function Find (Container : Set; Key : Key_Type) return Cursor is
-         function Equivalent (Position : not null Hash_Tables.Node_Access)
-            return Boolean;
-         function Equivalent (Position : not null Hash_Tables.Node_Access)
-            return Boolean is
-         begin
-            return Equivalent_Keys (
-               Generic_Keys.Key (Downcast (Position).Element), Key);
-         end Equivalent;
       begin
          if Is_Empty (Container) then
             return null;
          else
             Unique (Container'Unrestricted_Access.all, False);
-            return Downcast (Hash_Tables.Find (
-               Downcast (Container.Super.Data).Table,
-               Hash (Key),
-               Equivalent => Equivalent'Access));
+            declare
+               Context : Context_Type := (Left => Key'Unrestricted_Access);
+            begin
+               return Downcast (Hash_Tables.Find (
+                  Downcast (Container.Super.Data).Table,
+                  Hash (Key),
+                  Context'Address,
+                  Equivalent => Equivalent_Key'Access));
+            end;
          end if;
       end Find;
 
@@ -785,14 +806,14 @@ package body Ada.Containers.Hashed_Sets is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Container : Set)
       is
-         procedure Process (Position : Cursor);
-         procedure Process (Position : Cursor) is
-         begin
-            Element_Type'Write (Stream, Position.Element);
-         end Process;
+         Position : Cursor;
       begin
          Count_Type'Write (Stream, Container.Length);
-         Iterate (Container, Process'Access);
+         Position := First (Container);
+         while Position /= null loop
+            Element_Type'Write (Stream, Position.Element);
+            Next (Position);
+         end loop;
       end Write;
 
    end No_Primitives;

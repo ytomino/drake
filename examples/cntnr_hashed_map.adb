@@ -1,28 +1,41 @@
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Containers.Limited_Hashed_Maps;
-with Ada.Text_IO;
+with Ada.Streams.Buffer_Storage_IO;
+-- with Ada.Text_IO;
 procedure cntnr_Hashed_Map is
 	use type Ada.Containers.Count_Type;
 	function Hash (X : Character) return Ada.Containers.Hash_Type is
 	begin
 		return Character'Pos (X);
 	end Hash;
-	package Maps is new Ada.Containers.Hashed_Maps (Character, Integer,
+	package Maps is new Ada.Containers.Hashed_Maps (
+		Character,
+		Integer,
 		Hash => Hash,
 		Equivalent_Keys => "=");
-	procedure Dump (X : Maps.Map) is
-		I : Maps.Cursor := X.First;
-	begin
-		while Maps.Has_Element (I) loop
-			Ada.Text_IO.Put (Maps.Key(I)'Img);
-			Ada.Text_IO.Put (" =");
-			Ada.Text_IO.Put (Maps.Element(I)'Img);
-			Ada.Text_IO.Put (", ");
-			Maps.Next (I);
-		end loop;
-		Ada.Text_IO.New_Line;
-	end Dump;
+	package IMaps is new Ada.Containers.Indefinite_Hashed_Maps (
+		Character,
+		Integer,
+		Hash => Hash,
+		Equivalent_Keys => "=");
+	package LMaps is new Ada.Containers.Limited_Hashed_Maps (
+		Character,
+		Integer,
+		Hash => Hash,
+		Equivalent_Keys => "=");
+--	procedure Dump (X : Maps.Map) is
+--		I : Maps.Cursor := X.First;
+--	begin
+--		while Maps.Has_Element (I) loop
+--			Ada.Text_IO.Put (Maps.Key(I)'Img);
+--			Ada.Text_IO.Put (" =");
+--			Ada.Text_IO.Put (Maps.Element(I)'Img);
+--			Ada.Text_IO.Put (", ");
+--			Maps.Next (I);
+--		end loop;
+--		Ada.Text_IO.New_Line;
+--	end Dump;
 	procedure Test_01 is
 		X : Maps.Map;
 	begin
@@ -76,7 +89,29 @@ procedure cntnr_Hashed_Map is
 		end;
 	end Test_02;
 	pragma Debug (Test_02);
-	pragma Debug (Ada.Debug.Put ("OK"));
 begin
-	null;
+	Stream_Test : declare
+		X : Maps.Map;
+		IX : IMaps.Map;
+		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+	begin
+		-- Definite -> Inefinite (0)
+		Maps.Map'Write (Buffer.Stream, X); -- write empty
+		IMaps.Insert (IX, '#', 9);
+		pragma Assert (IX.Length = 1);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		IMaps.Map'Read (Buffer.Stream, IX);
+		pragma Assert (IX.Length = 0);
+		-- Indefinite -> Definite (1)
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		IMaps.Insert (IX, '$', 10);
+		pragma Assert (IX.Length = 1);
+		IMaps.Map'Write (Buffer.Stream, IX); -- write 'b'
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		Maps.Map'Read (Buffer.Stream, X);
+		pragma Assert (X.Length = 1);
+		pragma Assert (Maps.Element (X.First) = 10);
+		pragma Assert (X.Element ('$') = 10);
+	end Stream_Test;
+	pragma Debug (Ada.Debug.Put ("OK"));
 end cntnr_Hashed_Map;

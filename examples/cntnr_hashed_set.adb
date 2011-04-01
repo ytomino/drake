@@ -1,25 +1,35 @@
 with Ada.Containers.Hashed_Sets;
 with Ada.Containers.Indefinite_Hashed_Sets;
 with Ada.Containers.Limited_Hashed_Sets;
-with Ada.Text_IO;
+with Ada.Streams.Buffer_Storage_IO;
+-- with Ada.Text_IO;
 procedure cntnr_Hashed_Set is
 	use type Ada.Containers.Count_Type;
 	function Hash (X : Integer) return Ada.Containers.Hash_Type is
 	begin
 		return Ada.Containers.Hash_Type (X rem 10);
 	end Hash;
-	package Sets is new Ada.Containers.Hashed_Sets (Integer,
+	package Sets is new Ada.Containers.Hashed_Sets (
+		Integer,
 		Hash => Hash,
 		Equivalent_Elements => "=");
-	procedure Dump (X : Sets.Set) is
-		I : Sets.Cursor := X.First;
-	begin
-		while Sets.Has_Element (I) loop
-			Ada.Text_IO.Put (Sets.Element(I)'Img);
-			Sets.Next (I);
-		end loop;
-		Ada.Text_IO.New_Line;
-	end Dump;
+	package ISets is new Ada.Containers.Indefinite_Hashed_Sets (
+		Integer,
+		Hash => Hash,
+		Equivalent_Elements => "=");
+	package LSets is new Ada.Containers.Limited_Hashed_Sets (
+		Integer,
+		Hash => Hash,
+		Equivalent_Elements => "=");
+--	procedure Dump (X : Sets.Set) is
+--		I : Sets.Cursor := X.First;
+--	begin
+--		while Sets.Has_Element (I) loop
+--			Ada.Text_IO.Put (Sets.Element(I)'Img);
+--			Sets.Next (I);
+--		end loop;
+--		Ada.Text_IO.New_Line;
+--	end Dump;
 	procedure Test_01 is
 		X : Sets.Set;
 	begin
@@ -29,6 +39,7 @@ procedure cntnr_Hashed_Set is
 		pragma Assert (X.Length = 2);
 		Sets.Insert (X, 1);
 		pragma Assert (X.Length = 3);
+		pragma Assert (Sets.Element (X.Find (3)) = 3);
 	end Test_01;
 	pragma Debug (Test_01);
 	procedure Test_02 is
@@ -160,7 +171,28 @@ procedure cntnr_Hashed_Set is
 		pragma Assert (Z = Sets.To_Set (2));
 	end Test_06;
 	pragma Debug (Test_06);
-	pragma Debug (Ada.Debug.Put ("OK"));
 begin
-	null;
+	Stream_Test : declare
+		X : Sets.Set;
+		IX : ISets.Set;
+		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+	begin
+		-- Definite -> Inefinite (0)
+		Sets.Set'Write (Buffer.Stream, X); -- write empty
+		ISets.Insert (IX, 9);
+		pragma Assert (IX.Length = 1);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		ISets.Set'Read (Buffer.Stream, IX);
+		pragma Assert (IX.Length = 0);
+		-- Indefinite -> Definite (1)
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		ISets.Insert (IX, 10);
+		pragma Assert (IX.Length = 1);
+		ISets.Set'Write (Buffer.Stream, IX); -- write 'b'
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		Sets.Set'Read (Buffer.Stream, X);
+		pragma Assert (X.Length = 1);
+		pragma Assert (Sets.Element (X.First) = 10);
+	end Stream_Test;
+	pragma Debug (Ada.Debug.Put ("OK"));
 end cntnr_Hashed_Set;

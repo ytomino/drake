@@ -1,6 +1,7 @@
 package body Ada.Containers.Inside.Linked_Lists is
 
-   procedure Reverse_Iterate (Last : Node_Access;
+   procedure Reverse_Iterate (
+      Last : Node_Access;
       Process : not null access procedure (Position : not null Node_Access))
    is
       Position : Node_Access := Last;
@@ -11,15 +12,19 @@ package body Ada.Containers.Inside.Linked_Lists is
       end loop;
    end Reverse_Iterate;
 
-   function Reverse_Find (Last : Node_Access;
-      Equivalent : not null access function (Right : not null Node_Access)
+   function Reverse_Find (
+      Last : Node_Access;
+      Params : System.Address;
+      Equivalent : not null access function (
+         Right : not null Node_Access;
+         Params : System.Address)
          return Boolean)
       return Node_Access
    is
       I : Node_Access := Last;
    begin
       while I /= null loop
-         if Equivalent (I) then
+         if Equivalent (I, Params) then
             return I;
          end if;
          I := I.Previous;
@@ -27,7 +32,8 @@ package body Ada.Containers.Inside.Linked_Lists is
       return null;
    end Reverse_Find;
 
-   function Equivalent (Left_Last, Right_Last : Node_Access;
+   function Equivalent (
+      Left_Last, Right_Last : Node_Access;
       Equivalent : not null access function (
          Left : not null Node_Access;
          Right : not null Node_Access)

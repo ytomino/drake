@@ -157,7 +157,10 @@ package body Ada.Containers.Inside.Hash_Tables is
    function Find (
       Container : Table_Access;
       Hash : Hash_Type;
-      Equivalent : not null access function (Position : not null Node_Access)
+      Params : System.Address;
+      Equivalent : not null access function (
+         Position : not null Node_Access;
+         Params : System.Address)
          return Boolean)
       return Node_Access is
    begin
@@ -168,7 +171,7 @@ package body Ada.Containers.Inside.Hash_Tables is
          begin
             if Position /= null then
                loop
-                  if Equivalent (Position) then
+                  if Equivalent (Position, Params) then
                      return Position;
                   end if;
                   exit when Position = Container.Entries (Index).Last;

@@ -2,20 +2,23 @@ with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Ada.Containers.Limited_Doubly_Linked_Lists;
 with Ada.Containers.Inside.Linked_Lists.Singly;
-with Ada.Text_IO;
+with Ada.Streams.Buffer_Storage_IO;
+-- with Ada.Text_IO;
 procedure cntnr_d_Linked_List is
 	use type Ada.Containers.Count_Type;
 	package Lists is new Ada.Containers.Doubly_Linked_Lists (Character);
-	procedure Dump (X : Lists.List) is
-		I : Lists.Cursor := X.First;
-	begin
-		while Lists.Has_Element (I) loop
-			Ada.Text_IO.Put (Lists.Element (I)'Img);
-			Ada.Text_IO.Put (", ");
-			Lists.Next (I);
-		end loop;
-		Ada.Text_IO.New_Line;
-	end Dump;
+	package ILists is new Ada.Containers.Indefinite_Doubly_Linked_Lists (Character);
+	package LLists is new Ada.Containers.Limited_Doubly_Linked_Lists (Character);
+--	procedure Dump (X : Lists.List) is
+--		I : Lists.Cursor := X.First;
+--	begin
+--		while Lists.Has_Element (I) loop
+--			Ada.Text_IO.Put (Lists.Element (I)'Img);
+--			Ada.Text_IO.Put (", ");
+--			Lists.Next (I);
+--		end loop;
+--		Ada.Text_IO.New_Line;
+--	end Dump;
 	procedure Test_01 is
 		X : Lists.List;
 	begin
@@ -251,7 +254,44 @@ procedure cntnr_d_Linked_List is
 		pragma Assert (X_F /= Y_F, "should be copied");
 	end Test_06;
 	pragma Debug (Test_06);
-	pragma Debug (Ada.Debug.Put ("OK"));
+	procedure Test_07 is
+		use type Lists.Cursor;
+		X : Lists.List;
+		Fst_A, Snd_A : Lists.Cursor;
+	begin
+		Lists.Insert (X, Lists.No_Element, 'b');
+		Lists.Insert (X, Lists.No_Element, 'a', Fst_A);
+		Lists.Insert (X, Lists.No_Element, 'b');
+		Lists.Insert (X, Lists.No_Element, 'a', Snd_A);
+		Lists.Insert (X, Lists.No_Element, 'b');
+		pragma Assert (Lists.Find (X, 'a') = Fst_A);
+		pragma Assert (Lists.Find (X, 'a', Lists.Next (Fst_A)) = Snd_A);
+		pragma Assert (Lists.Reverse_Find (X, 'a') = Snd_A);
+		pragma Assert (Lists.Reverse_Find (X, 'a', Lists.Previous (Snd_A)) = Fst_A);
+	end Test_07;
+	pragma Debug (Test_07);
 begin
-	null;
+	Stream_Test : declare
+		X : Lists.List;
+		IX : ILists.List;
+		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+	begin
+		-- Definite -> Inefinite (0)
+		Lists.List'Write (Buffer.Stream, X); -- write empty
+		ILists.Append (IX, 'a');
+		pragma Assert (IX.Length = 1);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		ILists.List'Read (Buffer.Stream, IX);
+		pragma Assert (IX.Length = 0);
+		-- Indefinite -> Definite (1)
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		ILists.Append (IX, 'b');
+		pragma Assert (IX.Length = 1);
+		ILists.List'Write (Buffer.Stream, IX); -- write 'b'
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		Lists.List'Read (Buffer.Stream, X);
+		pragma Assert (X.Length = 1);
+		pragma Assert (X.First_Element = 'b');
+	end Stream_Test;
+	pragma Debug (Ada.Debug.Put ("OK"));
 end cntnr_d_Linked_List;

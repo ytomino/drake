@@ -1,23 +1,40 @@
 with Ada.Containers.Inside.Array_Sorting;
+with System;
 procedure Ada.Containers.Generic_Constrained_Array_Sort (
    Container : in out Array_Type)
 is
-   function LT (Left, Right : Integer) return Boolean;
-   function LT (Left, Right : Integer) return Boolean is
+   type Context_Type is limited record
+      Container : not null access Array_Type;
+   end record;
+   pragma Suppress_Initialization (Context_Type);
+   function LT (Left, Right : Integer; Params : System.Address)
+      return Boolean;
+   function LT (Left, Right : Integer; Params : System.Address)
+      return Boolean
+   is
+      Context : Context_Type;
+      for Context'Address use Params;
    begin
-      return Container (Index_Type'Val (Left)) <
-             Container (Index_Type'Val (Right));
+      return Context.Container (Index_Type'Val (Left)) <
+         Context.Container (Index_Type'Val (Right));
    end LT;
-   procedure Swap (Left, Right : Integer);
-   procedure Swap (Left, Right : Integer) is
-      Temp : constant Element_Type := Container (Index_Type'Val (Left));
+   procedure Swap (Left, Right : Integer; Params : System.Address);
+   procedure Swap (Left, Right : Integer; Params : System.Address) is
+      Context : Context_Type;
+      for Context'Address use Params;
+      Temp : constant Element_Type :=
+         Context.Container (Index_Type'Val (Left));
    begin
-      Container (Index_Type'Val (Left)) := Container (Index_Type'Val (Right));
-      Container (Index_Type'Val (Right)) := Temp;
+      Context.Container (Index_Type'Val (Left)) :=
+         Context.Container (Index_Type'Val (Right));
+      Context.Container (Index_Type'Val (Right)) := Temp;
    end Swap;
+   Context : Context_Type := (Container => Container'Unrestricted_Access);
 begin
-   Inside.Array_Sorting.In_Place_Merge_Sort (Index_Type'Pos (Container'First),
-                                           Index_Type'Pos (Container'Last),
-                                           LT => LT'Access,
-                                           Swap => Swap'Access);
+   Inside.Array_Sorting.In_Place_Merge_Sort (
+      Index_Type'Pos (Container'First),
+      Index_Type'Pos (Container'Last),
+      Context'Address,
+      LT => LT'Access,
+      Swap => Swap'Access);
 end Ada.Containers.Generic_Constrained_Array_Sort;

@@ -23,8 +23,7 @@ package Ada.Containers.Limited_Hashed_Sets is
 --  Empty_Set : constant Set;
    function Empty_Set return Set;
 
---  No_Element : constant Cursor;
-   function No_Element return Cursor;
+   No_Element : constant Cursor;
 
 --  diff ("=")
 
@@ -212,8 +211,6 @@ private
       Super at 0 range 0 .. Hash_Tables.Node_Size - 1;
    end record;
 
-   type Cursor is access Node;
-
 --  diff (Data)
 --
 --
@@ -243,11 +240,15 @@ private
 --  diff ('Read)
 --  diff ('Write)
 
+   type Cursor is access Node;
+
+   No_Element : constant Cursor := null;
+
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is limited null record;
+      Element : not null access constant Element_Type) is null record;
 
    type Reference_Type (
-      Element : not null access Element_Type) is limited null record;
+      Element : not null access Element_Type) is null record;
 
    type Iterator is not null access constant Set;
 

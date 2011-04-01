@@ -1,4 +1,5 @@
 with Ada.Containers.Indefinite_Holders;
+with Ada.Streams.Buffer_Storage_IO;
 procedure cntnr_holder is
 	package String_Holders is new Ada.Containers.Indefinite_Holders (String);
 	procedure Test_1 is
@@ -10,7 +11,27 @@ procedure cntnr_holder is
 		null;
 	end Test_1;
 	pragma Debug (Test_1);
-	pragma Debug (Ada.Debug.Put ("OK"));
 begin
-	 null;
+	Stream_Test : declare
+		X : String_Holders.Holder;
+		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+	begin
+		-- Holder -> Raw
+		String_Holders.Replace_Element (X, "");
+		String_Holders.Holder'Write (Buffer.Stream, X);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		declare
+			S : constant String := String'Input (Buffer.Stream);
+		begin
+			pragma Assert (S = "");
+			null;
+		end;
+		-- Raw -> Holder
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		String'Output (Buffer.Stream, "XYZ");
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		String_Holders.Holder'Read (Buffer.Stream, X);
+		pragma Assert (X.Element = "XYZ");
+	end Stream_Test;
+	pragma Debug (Ada.Debug.Put ("OK"));
 end cntnr_holder;

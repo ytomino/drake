@@ -374,11 +374,11 @@ private
    for Vector'Write use No_Primitives.Write;
 
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is limited null record;
+      Element : not null access constant Element_Type) is null record;
    type Reference_Type (
-      Element : not null access Element_Type) is limited null record;
+      Element : not null access Element_Type) is null record;
 
-   type Iterator is limited record
+   type Iterator is record
       Last_Index : Extended_Index;
    end record;
 

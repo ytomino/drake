@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System;
 package body Ada.Containers.Limited_Hashed_Sets is
    use type Hash_Tables.Table_Access;
 --  diff
@@ -18,6 +19,28 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 
+   type Context_Type is limited record
+      Left : not null access Element_Type;
+   end record;
+   pragma Suppress_Initialization (Context_Type);
+
+   function Equivalent_Element (
+      Position : not null Hash_Tables.Node_Access;
+      Params : System.Address)
+      return Boolean;
+   function Equivalent_Element (
+      Position : not null Hash_Tables.Node_Access;
+      Params : System.Address)
+      return Boolean
+   is
+      Context : Context_Type;
+      for Context'Address use Params;
+   begin
+      return Equivalent_Elements (
+         Context.Left.all,
+         Downcast (Position).Element.all);
+   end Equivalent_Element;
+
    function Equivalent_Node (Left, Right : not null Hash_Tables.Node_Access)
       return Boolean;
    function Equivalent_Node (Left, Right : not null Hash_Tables.Node_Access)
@@ -27,25 +50,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Downcast (Left).Element.all,
          Downcast (Right).Element.all);
    end Equivalent_Node;
-
-   function Find (Data : Set; Hash : Hash_Type; Item : Element_Type)
-      return Cursor;
-   function Find (Data : Set; Hash : Hash_Type; Item : Element_Type)
-      return Cursor
-   is
-      function Equivalent (Position : not null Hash_Tables.Node_Access)
-         return Boolean;
-      function Equivalent (Position : not null Hash_Tables.Node_Access)
-         return Boolean is
-      begin
-         return Equivalent_Elements (Downcast (Position).Element.all, Item);
-      end Equivalent;
-   begin
-      return Downcast (Hash_Tables.Find (
-         Data.Table,
-         Hash,
-         Equivalent => Equivalent'Access));
-   end Find;
 
 --  diff (Copy_Node)
 --
@@ -133,21 +137,26 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 
---  diff (Find)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
+      return Cursor;
+   function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
+      return Cursor is
+   begin
+      if Is_Empty (Container) then
+         return null;
+      else
+--  diff
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Hash_Tables.Find (
+               Container.Table,
+               Hash,
+               Context'Address,
+               Equivalent => Equivalent_Element'Access));
+         end;
+      end if;
+   end Find;
 
 --  diff (Adjust)
 --
@@ -186,7 +195,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    is
       pragma Unreferenced (Container);
    begin
-      return (Element => Position.Element);
+      return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
    function Contains (Container : Set; Item : Element_Type) return Boolean is
@@ -447,17 +456,15 @@ package body Ada.Containers.Limited_Hashed_Sets is
       Container : Set;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Hash_Tables.Node_Access);
-      procedure Process_2 (Position : not null Hash_Tables.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Hash_Tables.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
 --  diff
 --  diff
       Hash_Tables.Iterate (
          Container.Table,
-         Process_2'Access);
+         Cast (Process));
 --  diff
    end Iterate;
 
@@ -501,11 +508,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
       return Next (Position);
    end Next;
 
-   function No_Element return Cursor is
-   begin
-      return null;
-   end No_Element;
-
    function Overlap (Left, Right : Set) return Boolean is
    begin
 --  diff
@@ -530,7 +532,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    is
       pragma Unreferenced (Container);
    begin
-      return (Element => Position.Element);
+      return (Element => Position.Element.all'Access);
    end Reference;
 
 --  diff (Replace)
@@ -686,6 +688,28 @@ package body Ada.Containers.Limited_Hashed_Sets is
 
    package body Generic_Keys is
 
+      type Context_Type is limited record
+         Left : not null access Key_Type;
+      end record;
+      pragma Suppress_Initialization (Context_Type);
+
+      function Equivalent_Key (
+         Position : not null Hash_Tables.Node_Access;
+         Params : System.Address)
+         return Boolean;
+      function Equivalent_Key (
+         Position : not null Hash_Tables.Node_Access;
+         Params : System.Address)
+         return Boolean
+      is
+         Context : Context_Type;
+         for Context'Address use Params;
+      begin
+         return Equivalent_Keys (
+            Context.Left.all,
+            Key (Downcast (Position).Element.all));
+      end Equivalent_Key;
+
       function Contains (Container : Set; Key : Key_Type) return Boolean is
       begin
          return Find (Container, Key) /= null;
@@ -705,24 +729,21 @@ package body Ada.Containers.Limited_Hashed_Sets is
       end Exclude;
 
       function Find (Container : Set; Key : Key_Type) return Cursor is
-         function Equivalent (Position : not null Hash_Tables.Node_Access)
-            return Boolean;
-         function Equivalent (Position : not null Hash_Tables.Node_Access)
-            return Boolean is
-         begin
-            return Equivalent_Keys (
-               Generic_Keys.Key (Downcast (Position).Element.all), Key);
-         end Equivalent;
       begin
+         if Is_Empty (Container) then
+            return null;
+         else
 --  diff
---  diff
---  diff
---  diff
-         return Downcast (Hash_Tables.Find (
-            Container.Table,
-            Hash (Key),
-            Equivalent => Equivalent'Access));
---  diff
+            declare
+               Context : Context_Type := (Left => Key'Unrestricted_Access);
+            begin
+               return Downcast (Hash_Tables.Find (
+                  Container.Table,
+                  Hash (Key),
+                  Context'Address,
+                  Equivalent => Equivalent_Key'Access));
+            end;
+         end if;
       end Find;
 
       procedure Delete (Container : in out Set; Key : Key_Type) is

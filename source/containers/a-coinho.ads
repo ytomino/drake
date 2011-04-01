@@ -91,8 +91,8 @@ private
    for Holder'Write use No_Primitives.Write;
 
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is limited null record;
+      Element : not null access constant Element_Type) is null record;
    type Reference_Type (
-      Element : not null access Element_Type) is limited null record;
+      Element : not null access Element_Type) is null record;
 
 end Ada.Containers.Indefinite_Holders;

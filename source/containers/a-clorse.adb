@@ -1,6 +1,7 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Containers.Comparators;
+with Ada.Containers.Composites;
+with System;
 package body Ada.Containers.Limited_Ordered_Sets is
    use type Binary_Trees.Node_Access;
 --  diff
@@ -19,7 +20,29 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 
-   function Compare is new Comparators.Generic_Compare (Element_Type);
+   function Compare is new Composites.Compare (Element_Type);
+
+   type Context_Type is limited record
+      Left : not null access Element_Type;
+   end record;
+   pragma Suppress_Initialization (Context_Type);
+
+   function Compare_Element (
+      Position : not null Binary_Trees.Node_Access;
+      Params : System.Address)
+      return Integer;
+   function Compare_Element (
+      Position : not null Binary_Trees.Node_Access;
+      Params : System.Address)
+      return Integer
+   is
+      Context : Context_Type;
+      for Context'Address use Params;
+   begin
+      return Compare (
+         Context.Left.all,
+         Downcast (Position).Element.all);
+   end Compare_Element;
 
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
       return Integer;
@@ -30,31 +53,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Downcast (Left).Element.all,
          Downcast (Right).Element.all);
    end Compare_Node;
-
-   function Find (
-      Container : Set;
-      Item : Element_Type;
-      Mode : Binary_Trees.Find_Mode)
-      return Cursor;
-   function Find (
-      Container : Set;
-      Item : Element_Type;
-      Mode : Binary_Trees.Find_Mode)
-      return Cursor
-   is
-      function Compare (Right : not null Binary_Trees.Node_Access)
-         return Integer;
-      function Compare (Right : not null Binary_Trees.Node_Access)
-         return Integer is
-      begin
-         return Compare (Item, Downcast (Right).Element.all);
-      end Compare;
-   begin
-      return Downcast (Binary_Trees.Find (
-         Container.Root,
-         Mode,
-         Compare => Compare'Access));
-   end Find;
 
 --  diff (Copy_Node)
 --
@@ -157,14 +155,19 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    function Ceiling (Container : Set; Item : Element_Type) return Cursor is
    begin
-      return Find (Container, Item, Binary_Trees.Ceiling);
 --  diff
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Ceiling,
+               Context'Address,
+               Compare => Compare_Element'Access));
+         end;
 --  diff
    end Ceiling;
 
@@ -182,7 +185,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    is
       pragma Unreferenced (Container);
    begin
-      return (Element => Position.Element);
+      return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
    function Contains (Container : Set; Item : Element_Type) return Boolean is
@@ -310,14 +313,19 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    function Find (Container : Set; Item : Element_Type) return Cursor is
    begin
-      return Find (Container, Item, Binary_Trees.Just);
 --  diff
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Just,
+               Context'Address,
+               Compare => Compare_Element'Access));
+         end;
 --  diff
    end Find;
 
@@ -339,14 +347,19 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    function Floor (Container : Set; Item : Element_Type) return Cursor is
    begin
-      return Find (Container, Item, Binary_Trees.Floor);
 --  diff
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Floor,
+               Context'Address,
+               Compare => Compare_Element'Access));
+         end;
 --  diff
    end Floor;
 
@@ -476,17 +489,15 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Container : Set;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Binary_Trees.Node_Access);
-      procedure Process_2 (Position : not null Binary_Trees.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Binary_Trees.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
 --  diff
 --  diff
       Binary_Trees.Iterate (
          Container.Root,
-         Process_2'Access);
+         Cast (Process));
 --  diff
    end Iterate;
 
@@ -548,11 +559,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
       return Next (Position);
    end Next;
 
-   function No_Element return Cursor is
-   begin
-      return null;
-   end No_Element;
-
    function Overlap (Left, Right : Set) return Boolean is
    begin
 --  diff
@@ -595,7 +601,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    is
       pragma Unreferenced (Container);
    begin
-      return (Element => Position.Element);
+      return (Element => Position.Element.all'Access);
    end Reference;
 
 --  diff (Replace)
@@ -617,17 +623,15 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Container : Set;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Binary_Trees.Node_Access);
-      procedure Process_2 (Position : not null Binary_Trees.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Binary_Trees.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
 --  diff
 --  diff
       Binary_Trees.Reverse_Iterate (
          Container.Root,
-         Process_2'Access);
+         Cast (Process));
 --  diff
    end Reverse_Iterate;
 
@@ -756,43 +760,45 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    package body Generic_Keys is
 
-      function Compare is new Comparators.Generic_Compare (Key_Type);
+      function Compare is new Composites.Compare (Key_Type);
 
-      function Find (
-         Container : Set;
-         Key : Key_Type;
-         Mode : Binary_Trees.Find_Mode) return Cursor;
-      function Find (
-         Container : Set;
-         Key : Key_Type;
-         Mode : Binary_Trees.Find_Mode) return Cursor
+      type Context_Type is limited record
+         Left : not null access Key_Type;
+      end record;
+      pragma Suppress_Initialization (Context_Type);
+
+      function Compare_Key (
+         Position : not null Binary_Trees.Node_Access;
+         Params : System.Address)
+         return Integer;
+      function Compare_Key (
+         Position : not null Binary_Trees.Node_Access;
+         Params : System.Address)
+         return Integer
       is
-         function Compare (Right : not null Binary_Trees.Node_Access)
-            return Integer;
-         function Compare (Right : not null Binary_Trees.Node_Access)
-            return Integer is
-         begin
-            return Compare (
-               Key,
-               Generic_Keys.Key (Downcast (Right).Element.all));
-         end Compare;
+         Context : Context_Type;
+         for Context'Address use Params;
       begin
-         return Downcast (Binary_Trees.Find (
-            Container.Root,
-            Mode,
-            Compare => Compare'Access));
-      end Find;
+         return Compare (
+            Context.Left.all,
+            Key (Downcast (Position).Element.all));
+      end Compare_Key;
 
       function Ceiling (Container : Set; Key : Key_Type) return Cursor is
       begin
-         return Find (Container, Key, Binary_Trees.Ceiling);
 --  diff
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
+            declare
+               Context : Context_Type := (Left => Key'Unrestricted_Access);
+            begin
+               return Downcast (Binary_Trees.Find (
+                  Container.Root,
+                  Binary_Trees.Ceiling,
+                  Context'Address,
+                  Compare => Compare_Key'Access));
+            end;
 --  diff
       end Ceiling;
 
@@ -827,27 +833,37 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
       function Find (Container : Set; Key : Key_Type) return Cursor is
       begin
-         return Find (Container, Key, Binary_Trees.Just);
 --  diff
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
+            declare
+               Context : Context_Type := (Left => Key'Unrestricted_Access);
+            begin
+               return Downcast (Binary_Trees.Find (
+                  Container.Root,
+                  Binary_Trees.Just,
+                  Context'Address,
+                  Compare => Compare_Key'Access));
+            end;
 --  diff
       end Find;
 
       function Floor (Container : Set; Key : Key_Type) return Cursor is
       begin
-         return Find (Container, Key, Binary_Trees.Floor);
 --  diff
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
+            declare
+               Context : Context_Type := (Left => Key'Unrestricted_Access);
+            begin
+               return Downcast (Binary_Trees.Find (
+                  Container.Root,
+                  Binary_Trees.Floor,
+                  Context'Address,
+                  Compare => Compare_Key'Access));
+            end;
 --  diff
       end Floor;
 
@@ -887,10 +903,11 @@ package body Ada.Containers.Limited_Ordered_Sets is
             return Downcast (Left).Element.all = Downcast (Right).Element.all;
          end Equivalent;
       begin
-         return Left.Length = Right.Length and then
-            Binary_Trees.Equivalent (Left.Root,
-                                     Right.Root,
-                                     Equivalent'Access);
+         return Left.Length = Right.Length
+            and then Binary_Trees.Equivalent (
+               Left.Root,
+               Right.Root,
+               Equivalent'Access);
       end "=";
 
    end Equivalents;

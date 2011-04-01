@@ -17,13 +17,22 @@ package body Ada.Containers.Indefinite_Vectors is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
 
-   function Compare_Element (Left : Element_Access; Right : Element_Type)
+   procedure Swap_Element (I, J : Integer; Params : System.Address);
+   procedure Swap_Element (I, J : Integer; Params : System.Address) is
+      Data : Data_Access := Data_Cast.To_Pointer (Params);
+      Temp : constant Element_Access := Data.Items (Index_Type'Val (I));
+   begin
+      Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
+      Data.Items (Index_Type'Val (J)) := Temp;
+   end Swap_Element;
+
+   function Equivalent_Element (Left : Element_Access; Right : Element_Type)
       return Boolean;
-   function Compare_Element (Left : Element_Access; Right : Element_Type)
+   function Equivalent_Element (Left : Element_Access; Right : Element_Type)
       return Boolean is
    begin
       return Left /= null and then Left.all = Right;
-   end Compare_Element;
+   end Equivalent_Element;
 
    procedure Replace_Element (
       Item : in out Element_Access;
@@ -330,7 +339,7 @@ package body Ada.Containers.Indefinite_Vectors is
       return Extended_Index is
    begin
       for I in Index .. Last_Index (Container) loop
-         if Compare_Element (Container.Data.Items (I), Item) then
+         if Equivalent_Element (Container.Data.Items (I), Item) then
             return I;
          end if;
       end loop;
@@ -645,16 +654,13 @@ package body Ada.Containers.Indefinite_Vectors is
    end Reserve_Capacity;
 
    procedure Reverse_Elements (Container : in out Vector) is
-      procedure Swap (I, J : Integer);
-      procedure Swap (I, J : Integer) is
-      begin
-         Swap (Container, Index_Type'Val (I), Index_Type'Val (J));
-      end Swap;
    begin
       Unique (Container);
-      Inside.Array_Sorting.In_Place_Reverse (Index_Type'Pos (Index_Type'First),
+      Inside.Array_Sorting.In_Place_Reverse (
+         Index_Type'Pos (Index_Type'First),
          Index_Type'Pos (Last_Index (Container)),
-         Swap => Swap'Access);
+         Data_Cast.To_Address (Container.Data),
+         Swap => Swap_Element'Access);
    end Reverse_Elements;
 
    function Reverse_Find (Container : Vector; Item : Element_Type)
@@ -682,7 +688,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Extended_Index'Min (Index, Last_Index (Container));
    begin
       for I in reverse Index_Type'First .. Start loop
-         if Compare_Element (Container.Data.Items (I), Item) then
+         if Equivalent_Element (Container.Data.Items (I), Item) then
             return I;
          end if;
       end loop;
@@ -716,12 +722,10 @@ package body Ada.Containers.Indefinite_Vectors is
    procedure Swap (Container : in out Vector; I, J : Index_Type) is
    begin
       Unique (Container);
-      declare
-         Temp : constant Element_Access := Container.Data.Items (I);
-      begin
-         Container.Data.Items (I) := Container.Data.Items (J);
-         Container.Data.Items (J) := Temp;
-      end;
+      Swap_Element (
+         Index_Type'Pos (I),
+         Index_Type'Pos (J),
+         Data_Cast.To_Address (Container.Data));
    end Swap;
 
    function To_Cursor (Container : Vector; Index : Extended_Index)
@@ -773,7 +777,7 @@ package body Ada.Containers.Indefinite_Vectors is
                if Right.Data.Items (I) /= null then
                   return False;
                end if;
-            elsif not Compare_Element (
+            elsif not Equivalent_Element (
                Right.Data.Items (I),
                Left.Data.Items (I).all)
             then
@@ -818,73 +822,65 @@ package body Ada.Containers.Indefinite_Vectors is
 
    package body Generic_Sorting is
 
+      function LT (Left, Right : Integer; Params : System.Address)
+         return Boolean;
+      function LT (Left, Right : Integer; Params : System.Address)
+         return Boolean
+      is
+         Data : constant Data_Access := Data_Cast.To_Pointer (Params);
+      begin
+         return Data.Items (Index_Type'Val (Left)).all <
+            Data.Items (Index_Type'Val (Right)).all;
+      end LT;
+
       function Is_Sorted (Container : Vector) return Boolean is
-         function LT (Left, Right : Integer) return Boolean;
-         function LT (Left, Right : Integer) return Boolean is
-         begin
-            return Container.Data.Items (Index_Type'Val (Left)).all <
-               Container.Data.Items (Index_Type'Val (Right)).all;
-         end LT;
       begin
          return Inside.Array_Sorting.Is_Sorted (
             Index_Type'Pos (Index_Type'First),
             Index_Type'Pos (Last_Index (Container)),
+            Data_Cast.To_Address (Container.Data),
             LT => LT'Access);
       end Is_Sorted;
 
       procedure Sort (Container : in out Vector) is
-         function LT (Left, Right : Integer) return Boolean;
-         function LT (Left, Right : Integer) return Boolean is
-         begin
-            return Container.Data.Items (Index_Type'Val (Left)).all <
-               Container.Data.Items (Index_Type'Val (Right)).all;
-         end LT;
-         procedure Swap (I, J : Integer);
-         procedure Swap (I, J : Integer) is
-         begin
-            Swap (Container, Index_Type'Val (I), Index_Type'Val (J));
-         end Swap;
       begin
          Unique (Container);
          Inside.Array_Sorting.In_Place_Merge_Sort (
             Index_Type'Pos (Index_Type'First),
             Index_Type'Pos (Last_Index (Container)),
+            Data_Cast.To_Address (Container.Data),
             LT => LT'Access,
-            Swap => Swap'Access);
+            Swap => Swap_Element'Access);
       end Sort;
 
       procedure Merge (Target : in out Vector; Source : in out Vector) is
-         function LT (Left, Right : Integer) return Boolean;
-         function LT (Left, Right : Integer) return Boolean is
-         begin
-            return Target.Data.Items (Index_Type'Val (Left)).all <
-               Target.Data.Items (Index_Type'Val (Right)).all;
-         end LT;
-         procedure Swap (I, J : Integer);
-         procedure Swap (I, J : Integer) is
-         begin
-            Swap (Target, Index_Type'Val (I), Index_Type'Val (J));
-         end Swap;
-         Old_Length : constant Count_Type := Target.Length;
       begin
-         if Old_Length = 0 then
-            Move (Target, Source);
-         else
-            Set_Length (Target, Old_Length + Source.Length);
-            for I in Index_Type'First .. Last_Index (Source) loop
-               Target.Data.Items (I + Index_Type'Base (Old_Length)) :=
-                  Source.Data.Items (I);
-               Source.Data.Items (I) := null;
-            end loop;
-            Source.Length := 0;
-            Unique (Target);
+         if Source.Length > 0 then
+            declare
+               Old_Length : constant Count_Type := Target.Length;
+            begin
+               if Old_Length = 0 then
+                  Move (Target, Source);
+               else
+                  Unique (Target);
+                  Set_Length (Target, Old_Length + Source.Length);
+                  Unique (Source); -- splicing
+                  for I in Index_Type'First .. Last_Index (Source) loop
+                     Target.Data.Items (I + Index_Type'Base (Old_Length)) :=
+                        Source.Data.Items (I);
+                     Source.Data.Items (I) := null;
+                  end loop;
+                  Source.Length := 0;
+                  Inside.Array_Sorting.In_Place_Merge (
+                     Index_Type'Pos (Index_Type'First),
+                     Integer (Index_Type'First) - 1 + Integer (Old_Length),
+                     Index_Type'Pos (Last_Index (Target)),
+                     Data_Cast.To_Address (Target.Data),
+                     LT => LT'Access,
+                     Swap => Swap_Element'Access);
+               end if;
+            end;
          end if;
-         Inside.Array_Sorting.In_Place_Merge (
-            Index_Type'Pos (Index_Type'First),
-            Integer (Index_Type'First) - 1 + Integer (Old_Length),
-            Index_Type'Pos (Last_Index (Target)),
-            LT => LT'Access,
-            Swap => Swap'Access);
       end Merge;
 
    end Generic_Sorting;

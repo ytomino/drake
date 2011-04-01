@@ -77,6 +77,20 @@ package body Ada.Containers.Inside.Binary_Trees is
       end if;
    end Iterate;
 
+   procedure Iterate (
+      Container : Node_Access;
+      Params : System.Address;
+      Process : not null access procedure (
+         Position : not null Node_Access;
+         Params : System.Address)) is
+   begin
+      if Container /= null then
+         Iterate (Container.Left, Params, Process);
+         Process (Container, Params);
+         Iterate (Container.Right, Params, Process);
+      end if;
+   end Iterate;
+
    procedure Reverse_Iterate (
       Container : Node_Access;
       Process : not null access procedure (Position : not null Node_Access)) is
@@ -91,7 +105,10 @@ package body Ada.Containers.Inside.Binary_Trees is
    function Find (
       Container : Node_Access;
       Mode : Find_Mode;
-      Compare : not null access function (Right : not null Node_Access)
+      Params : System.Address;
+      Compare : not null access function (
+         Right : not null Node_Access;
+         Params : System.Address)
          return Integer)
       return Node_Access
    is
@@ -102,7 +119,7 @@ package body Ada.Containers.Inside.Binary_Trees is
       else
          loop
             declare
-               Comparison : constant Integer := Compare (Current);
+               Comparison : constant Integer := Compare (Current, Params);
             begin
                if Comparison < 0 then
                   if Current.Left = null then

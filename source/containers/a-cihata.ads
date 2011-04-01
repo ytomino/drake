@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation package
+with System;
 package Ada.Containers.Inside.Hash_Tables is
    pragma Preelaborate;
 
@@ -32,7 +33,8 @@ package Ada.Containers.Inside.Hash_Tables is
    function First (Container : Table_Access) return Node_Access;
    function Last (Container : Table_Access) return Node_Access;
 
-   procedure Iterate (Container : Table_Access;
+   procedure Iterate (
+      Container : Table_Access;
       Process : not null access procedure (Position : not null Node_Access));
 
    function Is_Before (Before, After : Node_Access) return Boolean;
@@ -42,7 +44,10 @@ package Ada.Containers.Inside.Hash_Tables is
    function Find (
       Container : Table_Access;
       Hash : Hash_Type;
-      Equivalent : not null access function (Position : not null Node_Access)
+      Params : System.Address;
+      Equivalent : not null access function (
+         Position : not null Node_Access;
+         Params : System.Address)
          return Boolean)
       return Node_Access;
 

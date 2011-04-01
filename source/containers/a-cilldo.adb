@@ -7,7 +7,8 @@ package body Ada.Containers.Inside.Linked_Lists.Doubly is
       Node_Access,
       Doubly_Node_Access);
 
-   procedure Iterate (First : Node_Access;
+   procedure Iterate (
+      First : Node_Access;
       Process : not null access procedure (Position : not null Node_Access))
    is
       Position : Node_Access := First;
@@ -18,15 +19,19 @@ package body Ada.Containers.Inside.Linked_Lists.Doubly is
       end loop;
    end Iterate;
 
-   function Find (First : Node_Access;
-      Equivalent : not null access function (Right : not null Node_Access)
+   function Find (
+      First : Node_Access;
+      Params : System.Address;
+      Equivalent : not null access function (
+         Right : not null Node_Access;
+         Params : System.Address)
          return Boolean)
       return Node_Access
    is
       I : Node_Access := First;
    begin
       while I /= null loop
-         if Equivalent (I) then
+         if Equivalent (I, Params) then
             return I;
          end if;
          I := Downcast (I).Next;

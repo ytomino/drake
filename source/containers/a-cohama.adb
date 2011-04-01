@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System;
 package body Ada.Containers.Hashed_Maps is
    use type Hash_Tables.Table_Access;
    use type Copy_On_Write.Data_Access;
@@ -18,24 +19,27 @@ package body Ada.Containers.Hashed_Maps is
       Copy_On_Write.Data_Access,
       Data_Access);
 
-   function Find (Data : Data_Access; Hash : Hash_Type; Key : Key_Type)
-      return Cursor;
-   function Find (Data : Data_Access; Hash : Hash_Type; Key : Key_Type)
-      return Cursor
+   type Context_Type is limited record
+      Left : not null access Key_Type;
+   end record;
+   pragma Suppress_Initialization (Context_Type);
+
+   function Equivalent_Key (
+      Position : not null Hash_Tables.Node_Access;
+      Params : System.Address)
+      return Boolean;
+   function Equivalent_Key (
+      Position : not null Hash_Tables.Node_Access;
+      Params : System.Address)
+      return Boolean
    is
-      function Equivalent (Position : not null Hash_Tables.Node_Access)
-         return Boolean;
-      function Equivalent (Position : not null Hash_Tables.Node_Access)
-         return Boolean is
-      begin
-         return Equivalent_Keys (Downcast (Position).Key, Key);
-      end Equivalent;
+      Context : Context_Type;
+      for Context'Address use Params;
    begin
-      return Downcast (Hash_Tables.Find (
-         Data.Table,
-         Hash,
-         Equivalent => Equivalent'Access));
-   end Find;
+      return Equivalent_Keys (
+         Context.Left.all,
+         Downcast (Position).Key);
+   end Equivalent_Key;
 
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
@@ -135,10 +139,15 @@ package body Ada.Containers.Hashed_Maps is
          return null;
       else
          Unique (Container'Unrestricted_Access.all, False);
-         return Find (
-            Downcast (Container.Super.Data),
-            Hash,
-            Key);
+         declare
+            Context : Context_Type := (Left => Key'Unrestricted_Access);
+         begin
+            return Downcast (Hash_Tables.Find (
+               Downcast (Container.Super.Data).Table,
+               Hash,
+               Context'Address,
+               Equivalent => Equivalent_Key'Access));
+         end;
       end if;
    end Find;
 
@@ -179,7 +188,9 @@ package body Ada.Containers.Hashed_Maps is
    is
       pragma Unreferenced (Container);
    begin
-      return (Key => Position.Key'Access, Element => Position.Element'Access);
+      return (
+         Key => Position.Key'Access,
+         Element => Position.Element'Access);
    end Constant_Reference;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean is
@@ -352,17 +363,15 @@ package body Ada.Containers.Hashed_Maps is
       Container : Map;
       Process : not null access procedure (Position : Cursor))
    is
-      procedure Process_2 (Position : not null Hash_Tables.Node_Access);
-      procedure Process_2 (Position : not null Hash_Tables.Node_Access) is
-      begin
-         Process (Downcast (Position));
-      end Process_2;
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Hash_Tables.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
          Unique (Container'Unrestricted_Access.all, False);
          Hash_Tables.Iterate (
             Downcast (Container.Super.Data).Table,
-            Process_2'Access);
+            Cast (Process));
       end if;
    end Iterate;
 
@@ -411,11 +420,6 @@ package body Ada.Containers.Hashed_Maps is
       return Next (Position);
    end Next;
 
-   function No_Element return Cursor is
-   begin
-      return null;
-   end No_Element;
-
    procedure Query_Element (
       Position : Cursor;
       Process : not null access procedure (
@@ -432,7 +436,9 @@ package body Ada.Containers.Hashed_Maps is
    begin
       Unique (Container.all, True);
 --  diff
-      return (Key => Position.Key'Access, Element => Position.Element'Access);
+      return (
+         Key => Position.Key'Access,
+         Element => Position.Element'Access);
    end Reference;
 
    procedure Replace (
@@ -538,15 +544,15 @@ package body Ada.Containers.Hashed_Maps is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Container : Map)
       is
-         procedure Process (Position : Cursor);
-         procedure Process (Position : Cursor) is
-         begin
-            Key_Type'Write (Stream, Position.Key);
-            Element_Type'Write (Stream, Position.Element);
-         end Process;
+         Position : Cursor;
       begin
          Count_Type'Write (Stream, Container.Length);
-         Iterate (Container, Process'Access);
+         Position := First (Container);
+         while Position /= null loop
+            Key_Type'Write (Stream, Position.Key);
+            Element_Type'Write (Stream, Position.Element);
+            Next (Position);
+         end loop;
       end Write;
 
    end No_Primitives;

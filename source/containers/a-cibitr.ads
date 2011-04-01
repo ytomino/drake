@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation package
+with System;
 package Ada.Containers.Inside.Binary_Trees is
    pragma Preelaborate;
 
@@ -17,10 +18,19 @@ package Ada.Containers.Inside.Binary_Trees is
    function Last (Container : Node_Access) return Node_Access;
    function Previous (Item : not null Node_Access) return Node_Access;
 
-   procedure Iterate (Container : Node_Access;
+   procedure Iterate (
+      Container : Node_Access;
       Process : not null access procedure (Position : not null Node_Access));
 
-   procedure Reverse_Iterate (Container : Node_Access;
+   procedure Iterate (
+      Container : Node_Access;
+      Params : System.Address;
+      Process : not null access procedure (
+         Position : not null Node_Access;
+         Params : System.Address));
+
+   procedure Reverse_Iterate (
+      Container : Node_Access;
       Process : not null access procedure (Position : not null Node_Access));
 
    --  binary search
@@ -31,7 +41,10 @@ package Ada.Containers.Inside.Binary_Trees is
    function Find (
       Container : Node_Access;
       Mode : Find_Mode;
-      Compare : not null access function (Right : not null Node_Access)
+      Params : System.Address;
+      Compare : not null access function (
+         Right : not null Node_Access;
+         Params : System.Address)
          return Integer)
       return Node_Access;
 

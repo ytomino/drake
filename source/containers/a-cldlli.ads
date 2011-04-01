@@ -20,8 +20,7 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 --  Empty_List : constant List;
    function Empty_List return List; --  extended
 
---  No_Element : constant Cursor;
-   function No_Element return Cursor; --  extended
+   No_Element : constant Cursor;
 
 --  diff ("=")
 
@@ -234,8 +233,6 @@ private
       Super at 0 range 0 .. Base.Node_Size - 1;
    end record;
 
-   type Cursor is access Node;
-
 --  diff (Data)
 --
 --
@@ -267,11 +264,15 @@ private
 --  diff ('Read)
 --  diff ('Write)
 
+   type Cursor is access Node;
+
+   No_Element : constant Cursor := null;
+
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is limited null record;
+      Element : not null access constant Element_Type) is null record;
 
    type Reference_Type (
-      Element : not null access Element_Type) is limited null record;
+      Element : not null access Element_Type) is null record;
 
    type Iterator is not null access constant List;
 

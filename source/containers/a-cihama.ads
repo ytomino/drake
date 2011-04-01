@@ -23,8 +23,7 @@ package Ada.Containers.Indefinite_Hashed_Maps is
 --  Empty_Map : constant Map;
    function Empty_Map return Map;
 
---  No_Element : constant Cursor;
-   function No_Element return Cursor;
+   No_Element : constant Cursor;
 
    function "=" (Left, Right : Map) return Boolean;
 
@@ -173,8 +172,6 @@ private
       Super at 0 range 0 .. Hash_Tables.Node_Size - 1;
    end record;
 
-   type Cursor is access Node;
-
    type Data is limited record
       Super : aliased Copy_On_Write.Data;
       Table : Hash_Tables.Table_Access := null;
@@ -204,13 +201,17 @@ private
    for Map'Read use No_Primitives.Read;
    for Map'Write use No_Primitives.Write;
 
+   type Cursor is access Node;
+
+   No_Element : constant Cursor := null;
+
    type Constant_Reference_Type (
       Key : not null access constant Key_Type;
-      Element : not null access constant Element_Type) is limited null record;
+      Element : not null access constant Element_Type) is null record;
 
    type Reference_Type (
       Key : not null access constant Key_Type;
-      Element : not null access Element_Type) is limited null record;
+      Element : not null access Element_Type) is null record;
 
    type Iterator is not null access constant Map;
 

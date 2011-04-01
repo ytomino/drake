@@ -18,7 +18,10 @@ package Ada.Containers.Inside.Linked_Lists.Doubly is
 
    function Find (
       First : Node_Access;
-      Equivalent : not null access function (Right : not null Node_Access)
+      Params : System.Address;
+      Equivalent : not null access function (
+         Right : not null Node_Access;
+         Params : System.Address)
          return Boolean)
       return Node_Access;
 
