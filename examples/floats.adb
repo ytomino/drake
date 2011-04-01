@@ -7,6 +7,7 @@ procedure floats is
 	procedure Test is
 		function Infinity is new Ada.Float.Infinity (T);
 --		function NaN is new Ada.Float.NaN (T);
+		function Is_Negative is new Ada.Float.Is_Negative (T);
 		X : T := T'Value ("2.0");
 		type R is record
 			Padding : Character;
@@ -20,6 +21,9 @@ procedure floats is
 --		pragma Assert (T'Image (NaN) = " NAN");
 --		pragma Assert (T'Image (-NaN) = "-NAN");
 --		pragma Assert (not (-NaN < 0.0)); -- comparison NaN is always False
+		pragma Assert (Is_Negative (-1.0));
+		pragma Assert (not Is_Negative (0.0));
+		pragma Assert (not Is_Negative (+1.0));
 		pragma Assert (T'Adjacent (X, Infinity) > X);
 		pragma Assert (T'Adjacent (X, -Infinity) < X);
 		pragma Assert (T'Floor (T'Adjacent (X, Infinity)) = X);

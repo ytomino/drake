@@ -70,23 +70,6 @@ package body Ada.Float is
       end if;
    end Is_NaN;
 
-   function Is_Negative (X : Float_Type) return Boolean is
-      function signbitf (x : Standard.Float) return Integer;
-      pragma Import (Intrinsic, signbitf, "__builtin_signbitf");
-      function signbit (x : Long_Float) return Integer;
-      pragma Import (Intrinsic, signbit, "__builtin_signbit");
-      function signbitl (x : Long_Long_Float) return Integer;
-      pragma Import (Intrinsic, signbitl, "__builtin_signbitl");
-   begin
-      if Float_Type'Digits <= Standard.Float'Digits then
-         return signbitf (Standard.Float (X)) /= 0;
-      elsif Float_Type'Digits <= Long_Float'Digits then
-         return signbit (Long_Float (X)) /= 0;
-      else
-         return signbitl (Long_Long_Float (X)) /= 0;
-      end if;
-   end Is_Negative;
-
    procedure Divide (
       Dividend : Dividend_Type;
       Divisor : Divisor_Type;

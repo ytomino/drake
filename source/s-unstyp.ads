@@ -34,4 +34,7 @@ package System.Unsigned_Types is
    for Packed_Bytes4'Alignment use Integer'Min (4, Standard'Maximum_Alignment);
    pragma Suppress_Initialization (Packed_Bytes4);
 
+   --  required for Is_Negative by compiler (s-unstyp.ads)
+   type Float_Unsigned is mod 2 ** Float'Size;
+
 end System.Unsigned_Types;
