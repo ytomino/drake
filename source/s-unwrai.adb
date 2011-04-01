@@ -27,11 +27,13 @@ package body System.Unwind.Raising is
    end Separated;
 
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
-   procedure Call_Chain (Current : not null Exception_Occurrence_Access);
-   pragma Import (Ada, Call_Chain, "ada__exceptions__call_chain");
+   Call_Chain : access procedure (
+      Current : not null Exception_Occurrence_Access);
+   pragma Import (Ada, Call_Chain, "__drake_ref_call_chain");
    pragma Weak_External (Call_Chain);
-   procedure Report_Traceback (Current : Exception_Occurrence);
-   pragma Import (Ada, Report_Traceback, "ada__exceptions__report_traceback");
+   Report_Traceback : access procedure (
+      Current : Exception_Occurrence);
+   pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
    pragma Weak_External (Report_Traceback);
 
    --  (a-exextr.adb)
@@ -361,7 +363,7 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_06;
 
-   procedure rcheck_07 (File : not null access Character; Line : Integer) is
+   procedure rcheck_07 (File : access Character; Line : Integer) is
       Message : constant String := "length check failed";
    begin
       Raise_Exception (

@@ -70,9 +70,14 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_06);
    pragma Export (C, rcheck_06, "__gnat_rcheck_06");
 
-   procedure rcheck_07 (File : not null access Character; Line : Integer);
+   procedure rcheck_07 (File : access Character; Line : Integer);
    pragma No_Return (rcheck_07);
    pragma Export (C, rcheck_07, "__gnat_rcheck_07");
+
+   procedure Length_Check_Failed (
+      File : access constant Character := null;
+      Line : Integer := 0)
+      renames rcheck_07;
 
    procedure rcheck_09 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_09);

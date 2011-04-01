@@ -2,9 +2,9 @@ package body System.Standard_Library is
    pragma Suppress (All_Checks);
 
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
-   procedure Install_Exception_Handler (SEH : Address);
+   Install_Exception_Handler : access procedure (SEH : Address);
    pragma Import (Ada, Install_Exception_Handler,
-      "__drake_install_exception_handler");
+      "__drake_ref_install_exception_handler");
    pragma Weak_External (Install_Exception_Handler);
 
    procedure Initialize (SEH : Address) is

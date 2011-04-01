@@ -20,6 +20,15 @@ package System.Termination is
    procedure Install_Exception_Handler (SEH : Address);
    pragma Export (Ada, Install_Exception_Handler,
       "__drake_install_exception_handler");
-   pragma Weak_External (Install_Exception_Handler);
+
+private
+
+   --  for weak linking,
+   --  this symbol will be linked other symbols are used
+   Install_Exception_Handler_Ref : constant not null access procedure (
+      SEH : Address) :=
+      Install_Exception_Handler'Access;
+   pragma Export (Ada, Install_Exception_Handler_Ref,
+      "__drake_ref_install_exception_handler");
 
 end System.Termination;
