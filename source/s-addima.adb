@@ -2,6 +2,7 @@ with System.Formatting;
 function System.Address_Image (A : Address)
    return Storage_Elements.Address_Image
 is
+   pragma Suppress (All_Checks);
    Use_Longest : constant Boolean :=
       Standard'Address_Size > Formatting.Unsigned'Size;
    Last : Natural;

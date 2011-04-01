@@ -15,6 +15,7 @@ procedure System.Formatting.Fixed_Image (
    Fore_Padding : Character := '0';
    Aft_Width : Positive)
 is
+   pragma Suppress (All_Checks);
    function signbit (X : Long_Long_Float) return Integer;
    pragma Import (Intrinsic, signbit, "__builtin_signbitl");
    Fore : Long_Long_Float;

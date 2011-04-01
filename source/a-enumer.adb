@@ -1,4 +1,5 @@
 package body Ada.Enumeration is
+   pragma Suppress (All_Checks);
 
    package body Arithmetic is
 

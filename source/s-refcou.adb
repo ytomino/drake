@@ -1,4 +1,5 @@
 package body System.Reference_Counting is
+   pragma Suppress (All_Checks);
 
    procedure sync_add_and_fetch_32 (
       A1 : not null access Counter;

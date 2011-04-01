@@ -21,6 +21,7 @@ procedure System.Formatting.Float_Image (
    NaN : String := "NAN";
    Infinity : String := "INF")
 is
+   pragma Suppress (All_Checks);
    function isnan (X : Long_Long_Float) return Integer;
    pragma Import (Intrinsic, isnan, "__builtin_isnanl");
    function isinf (X : Long_Long_Float) return Integer;
