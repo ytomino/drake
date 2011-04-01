@@ -1,6 +1,7 @@
 with System.Unwind.Raising;
 pragma Warnings (Off, System.Unwind.Raising);
 package body System.Exp_Uns is
+   pragma Suppress (All_Checks);
    use type Unsigned_Types.Unsigned;
 
    function Exp_Unsigned (

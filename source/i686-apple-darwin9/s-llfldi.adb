@@ -2,6 +2,7 @@ procedure System.Long_Long_Float_Divide (
    Left, Right : Long_Long_Float;
    Quotient, Remainder : out Long_Long_Float)
 is
+   pragma Suppress (All_Checks);
    function remainderl (x, y : Long_Long_Float) return Long_Long_Float;
    pragma Import (Intrinsic, remainderl, "__builtin_remainderl");
 begin

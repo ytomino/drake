@@ -1,5 +1,6 @@
 with System.Long_Long_Float_Divide;
 package body System.Fat_Lflt is
+   pragma Suppress (All_Checks);
 
    function frexp (value : Long_Float; exp : access Integer)
       return Long_Float;

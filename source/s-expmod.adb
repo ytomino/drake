@@ -1,4 +1,5 @@
 package body System.Exp_Mod is
+   pragma Suppress (All_Checks);
 
    function Exp_Modular (Left : Integer; Modulus : Integer; Right : Natural)
       return Integer

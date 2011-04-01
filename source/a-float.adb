@@ -1,5 +1,6 @@
 with System.Long_Long_Float_Divide;
 package body Ada.Float is
+   pragma Suppress (All_Checks);
 
    function Infinity return Float_Type is
       function inff return Standard.Float;
