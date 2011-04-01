@@ -8,10 +8,8 @@ package Ada.Tags.Delegating is
       type I is limited interface;
       with function Get (Object : not null access T'Class)
          return access I'Class;
-   package Implements is
-   private
-      function F (Object : System.Address) return System.Address;
-   end Implements;
+      pragma Convention (Ada, Get);
+   procedure Implements;
 
 private
 

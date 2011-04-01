@@ -120,22 +120,25 @@ package body Ada.Tags.Delegating is
       return System.Address
    is
       function Cast is new Unchecked_Conversion (System.Address, Tag_Ptr);
-      T : constant Tag := Cast (Object).all;
-      D : constant D_Node_Access := D_Find (Delegating_Map, T);
+      T : Tag := Cast (Object).all;
    begin
-      if D = null then
-         return System.Null_Address;
-      else
+      Search : loop
          declare
-            I : constant I_Node_Access := I_Find (D.Map, Interface_Tag);
+            D : constant D_Node_Access := D_Find (Delegating_Map, T);
          begin
-            if I = null then
-               return System.Null_Address;
-            else
-               return I.Get (Object);
+            if D /= null then
+               declare
+                  I : constant I_Node_Access := I_Find (D.Map, Interface_Tag);
+               begin
+                  exit Search when I = null;
+                  return I.Get (Object);
+               end;
             end if;
          end;
-      end if;
+         T := Parent_Tag (T);
+         exit Search when T = No_Tag;
+      end loop Search;
+      return System.Null_Address;
    end Get_Delegation;
 
    procedure Register_Delegation (
@@ -150,20 +153,14 @@ package body Ada.Tags.Delegating is
       I_Insert (D.Map, Interface_Tag, Get);
    end Register_Delegation;
 
-   package body Implements is
+   type Get_Access is
+      access function (Object : System.Address) return System.Address;
 
-      function F (Object : System.Address) return System.Address is
-         type T_Ref is access all T'Class;
-         function Cast is new Unchecked_Conversion (System.Address, T_Ref);
-         type I_Ref is access all I'Class;
-         function Cast is new Unchecked_Conversion (I_Ref, System.Address);
-      begin
-         return Cast (I_Ref (Get (Cast (Object))));
-      end F;
-
+   procedure Implements is
+      function Cast is new Unchecked_Conversion (System.Address, Get_Access);
    begin
       Tags.Get_Delegation := Get_Delegation'Access;
-      Register_Delegation (T'Tag, I'Tag, F'Access);
+      Register_Delegation (T'Tag, I'Tag, Cast (Get'Code_Address));
    end Implements;
 
 end Ada.Tags.Delegating;
