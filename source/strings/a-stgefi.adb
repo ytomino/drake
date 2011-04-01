@@ -1,3 +1,5 @@
+with Ada.Unchecked_Conversion;
+with System.Address_To_Access_Conversions;
 with System.Storage_Elements;
 package body Ada.Strings.Generic_Fixed is
    use type System.Address;
@@ -607,6 +609,235 @@ package body Ada.Strings.Generic_Fixed is
          return Result;
       end Last_Of_Index_Backward;
 
+      function Index_Forward (
+         Source : String_Type;
+         Pattern : String_Type;
+         Params : System.Address;
+         Mapping : not null access function (
+            From : Wide_Wide_Character;
+            Params : System.Address)
+            return Wide_Wide_Character)
+         return Natural;
+      function Index_Forward (
+         Source : String_Type;
+         Pattern : String_Type;
+         Params : System.Address;
+         Mapping : not null access function (
+            From : Wide_Wide_Character;
+            Params : System.Address)
+            return Wide_Wide_Character)
+         return Natural is
+      begin
+         if Pattern'Length = 0 then
+            raise Pattern_Error;
+         else
+            declare
+               Buffer : String_Type (1 .. UTF_Max_Length);
+               Current : Natural := Source'First;
+            begin
+               while Current <= Source'Last loop
+                  declare
+                     Next : Positive;
+                     J, J_Next, P, Character_Length : Positive;
+                     Code : System.UTF_Conversions.UCS_4;
+                     Error : Boolean;
+                  begin
+                     From_UTF (
+                        Source (Current .. Source'Last),
+                        Next,
+                        Code,
+                        Error);
+                     Code := Wide_Wide_Character'Pos (Mapping (
+                        Wide_Wide_Character'Val (Code),
+                        Params));
+                     To_UTF (Code, Buffer, Character_Length, Error);
+                     P := Pattern'First + Character_Length;
+                     if Buffer (1 .. Character_Length) =
+                        Pattern (Pattern'First .. P - 1)
+                     then
+                        J_Next := Next;
+                        loop
+                           if P > Pattern'Last then
+                              return Current;
+                           end if;
+                           J := J_Next + 1;
+                           exit when J > Source'Last;
+                           From_UTF (
+                              Source (J .. Source'Last),
+                              J_Next,
+                              Code,
+                              Error);
+                           Code := Wide_Wide_Character'Pos (Mapping (
+                              Wide_Wide_Character'Val (Code),
+                              Params));
+                           To_UTF (Code, Buffer, Character_Length, Error);
+                           exit when Buffer (1 .. Character_Length) /=
+                              Pattern (P .. P + Character_Length - 1);
+                           P := P + Character_Length;
+                        end loop;
+                     end if;
+                     Current := Next + 1;
+                  end;
+               end loop;
+               return 0;
+            end;
+         end if;
+      end Index_Forward;
+
+      function Index_Backward (
+         Source : String_Type;
+         Pattern : String_Type;
+         Params : System.Address;
+         Mapping : not null access function (
+            From : Wide_Wide_Character;
+            Params : System.Address)
+            return Wide_Wide_Character)
+         return Natural;
+      function Index_Backward (
+         Source : String_Type;
+         Pattern : String_Type;
+         Params : System.Address;
+         Mapping : not null access function (
+            From : Wide_Wide_Character;
+            Params : System.Address)
+            return Wide_Wide_Character)
+         return Natural is
+      begin
+         if Pattern'Length = 0 then
+            raise Pattern_Error;
+         else
+            declare
+               Buffer : String_Type (1 .. UTF_Max_Length);
+               Current : Natural := Source'Last;
+            begin
+               while Current >= Source'First loop
+                  declare
+                     Previous : Natural;
+                     J, J_Previous, P, Character_Length : Natural;
+                     Code : System.UTF_Conversions.UCS_4;
+                     Error : Boolean;
+                  begin
+                     From_UTF_Reverse (
+                        Source (Source'First .. Current),
+                        Previous,
+                        Code,
+                        Error);
+                     Code := Wide_Wide_Character'Pos (Mapping (
+                        Wide_Wide_Character'Val (Code),
+                        Params));
+                     To_UTF (Code, Buffer, Character_Length, Error);
+                     P := Pattern'Last - Character_Length;
+                     if Buffer (1 .. Character_Length) =
+                        Pattern (P + 1 .. Pattern'Last)
+                     then
+                        J_Previous := Previous;
+                        loop
+                           if P < Pattern'First then
+                              return J_Previous;
+                           end if;
+                           J := J_Previous - 1;
+                           exit when J < Source'First;
+                           From_UTF_Reverse (
+                              Source (Source'First .. J),
+                              J_Previous,
+                              Code,
+                              Error);
+                           Code := Wide_Wide_Character'Pos (Mapping (
+                              Wide_Wide_Character'Val (Code),
+                              Params));
+                           To_UTF (Code, Buffer, Character_Length, Error);
+                           exit when Buffer (1 .. Character_Length) /=
+                              Pattern (P - Character_Length + 1 .. P);
+                           P := P - Character_Length;
+                        end loop;
+                     end if;
+                     Current := Previous - 1;
+                  end;
+               end loop;
+               return 0;
+            end;
+         end if;
+      end Index_Backward;
+
+      function Translate (
+         Source : String_Type;
+         Params : System.Address;
+         Mapping : not null access function (
+            From : Wide_Wide_Character;
+            Params : System.Address)
+            return Wide_Wide_Character)
+         return String_Type;
+      function Translate (
+         Source : String_Type;
+         Params : System.Address;
+         Mapping : not null access function (
+            From : Wide_Wide_Character;
+            Params : System.Address)
+            return Wide_Wide_Character)
+         return String_Type
+      is
+         Result : String_Type (
+            1 ..
+            Source'Length * UTF_Max_Length);
+         Last : Natural;
+         I : Natural := Source'First;
+         J : Natural := Result'First;
+      begin
+         while I <= Source'Last loop
+            declare
+               Code : System.UTF_Conversions.UCS_4;
+               I_Next : Natural;
+               J_Next : Natural;
+               Error : Boolean; --  ignore
+            begin
+               --  get single unicode character
+               From_UTF (
+                  Source (I .. Source'Last),
+                  I_Next,
+                  Code,
+                  Error);
+               --  map it
+               Code := Wide_Wide_Character'Pos (
+                  Mapping (Wide_Wide_Character'Val (Code),
+                  Params));
+               --  put it
+               To_UTF (
+                  Code,
+                  Result (J .. Result'Last),
+                  J_Next,
+                  Error);
+               --  forwarding
+               I := I_Next + 1;
+               J := J_Next + 1;
+            end;
+         end loop;
+         Last := J - 1;
+         return Result (1 .. Last);
+      end Translate;
+
+      function By_Mapping (From : Wide_Wide_Character; Params : System.Address)
+         return Wide_Wide_Character;
+      function By_Mapping (From : Wide_Wide_Character; Params : System.Address)
+         return Wide_Wide_Character
+      is
+         package Conv is
+            new System.Address_To_Access_Conversions (Character_Mapping);
+      begin
+         return Value (Conv.To_Pointer (Params).all, From);
+      end By_Mapping;
+
+      function By_Func (From : Wide_Wide_Character; Params : System.Address)
+         return Wide_Wide_Character;
+      function By_Func (From : Wide_Wide_Character; Params : System.Address)
+         return Wide_Wide_Character
+      is
+         type T is access function (From : Wide_Wide_Character)
+            return Wide_Wide_Character;
+         function Cast is new Unchecked_Conversion (System.Address, T);
+      begin
+         return Cast (Params) (From);
+      end By_Func;
+
       function Index (
          Source : String_Type;
          Pattern : String_Type;
@@ -650,30 +881,26 @@ package body Ada.Strings.Generic_Fixed is
          Source : String_Type;
          Pattern : String_Type;
          Mapping : Character_Mapping)
-         return Natural
-      is
-         function M (From : Wide_Wide_Character) return Wide_Wide_Character;
-         function M (From : Wide_Wide_Character) return Wide_Wide_Character is
-         begin
-            return Value (Mapping, From);
-         end M;
+         return Natural is
       begin
-         return Index_Forward (Source, Pattern, M'Access);
+         return Index_Forward (
+            Source,
+            Pattern,
+            Mapping'Address,
+            By_Mapping'Access);
       end Index_Forward;
 
       function Index_Backward (
          Source : String_Type;
          Pattern : String_Type;
          Mapping : Character_Mapping)
-         return Natural
-      is
-         function M (From : Wide_Wide_Character) return Wide_Wide_Character;
-         function M (From : Wide_Wide_Character) return Wide_Wide_Character is
-         begin
-            return Value (Mapping, From);
-         end M;
+         return Natural is
       begin
-         return Index_Backward (Source, Pattern, M'Access);
+         return Index_Backward (
+            Source,
+            Pattern,
+            Mapping'Address,
+            By_Mapping'Access);
       end Index_Backward;
 
       function Index (
@@ -722,60 +949,17 @@ package body Ada.Strings.Generic_Fixed is
          Pattern : String_Type;
          Mapping : not null access function (From : Wide_Wide_Character)
             return Wide_Wide_Character)
-         return Natural is
+         return Natural
+      is
+         type T is access function (From : Wide_Wide_Character)
+            return Wide_Wide_Character;
+         function Cast is new Unchecked_Conversion (T, System.Address);
       begin
-         if Pattern'Length = 0 then
-            raise Pattern_Error;
-         else
-            declare
-               Buffer : String_Type (1 .. UTF_Max_Length);
-               Current : Natural := Source'First;
-            begin
-               while Current <= Source'Last loop
-                  declare
-                     Next : Positive;
-                     J, J_Next, P, Character_Length : Positive;
-                     Code : System.UTF_Conversions.UCS_4;
-                     Error : Boolean;
-                  begin
-                     From_UTF (
-                        Source (Current .. Source'Last),
-                        Next,
-                        Code,
-                        Error);
-                     Code := Wide_Wide_Character'Pos (Mapping (
-                        Wide_Wide_Character'Val (Code)));
-                     To_UTF (Code, Buffer, Character_Length, Error);
-                     P := Pattern'First + Character_Length;
-                     if Buffer (1 .. Character_Length) =
-                        Pattern (Pattern'First .. P - 1)
-                     then
-                        J_Next := Next;
-                        loop
-                           if P > Pattern'Last then
-                              return Current;
-                           end if;
-                           J := J_Next + 1;
-                           exit when J > Source'Last;
-                           From_UTF (
-                              Source (J .. Source'Last),
-                              J_Next,
-                              Code,
-                              Error);
-                           Code := Wide_Wide_Character'Pos (Mapping (
-                              Wide_Wide_Character'Val (Code)));
-                           To_UTF (Code, Buffer, Character_Length, Error);
-                           exit when Buffer (1 .. Character_Length) /=
-                              Pattern (P .. P + Character_Length - 1);
-                           P := P + Character_Length;
-                        end loop;
-                     end if;
-                     Current := Next + 1;
-                  end;
-               end loop;
-               return 0;
-            end;
-         end if;
+         return Index_Forward (
+            Source,
+            Pattern,
+            Cast (Mapping),
+            By_Func'Access);
       end Index_Forward;
 
       function Index_Backward (
@@ -783,60 +967,17 @@ package body Ada.Strings.Generic_Fixed is
          Pattern : String_Type;
          Mapping : not null access function (From : Wide_Wide_Character)
             return Wide_Wide_Character)
-         return Natural is
+         return Natural
+      is
+         type T is access function (From : Wide_Wide_Character)
+            return Wide_Wide_Character;
+         function Cast is new Unchecked_Conversion (T, System.Address);
       begin
-         if Pattern'Length = 0 then
-            raise Pattern_Error;
-         else
-            declare
-               Buffer : String_Type (1 .. UTF_Max_Length);
-               Current : Natural := Source'Last;
-            begin
-               while Current >= Source'First loop
-                  declare
-                     Previous : Natural;
-                     J, J_Previous, P, Character_Length : Natural;
-                     Code : System.UTF_Conversions.UCS_4;
-                     Error : Boolean;
-                  begin
-                     From_UTF_Reverse (
-                        Source (Source'First .. Current),
-                        Previous,
-                        Code,
-                        Error);
-                     Code := Wide_Wide_Character'Pos (Mapping (
-                        Wide_Wide_Character'Val (Code)));
-                     To_UTF (Code, Buffer, Character_Length, Error);
-                     P := Pattern'Last - Character_Length;
-                     if Buffer (1 .. Character_Length) =
-                        Pattern (P + 1 .. Pattern'Last)
-                     then
-                        J_Previous := Previous;
-                        loop
-                           if P < Pattern'First then
-                              return J_Previous;
-                           end if;
-                           J := J_Previous - 1;
-                           exit when J < Source'First;
-                           From_UTF_Reverse (
-                              Source (Source'First .. J),
-                              J_Previous,
-                              Code,
-                              Error);
-                           Code := Wide_Wide_Character'Pos (Mapping (
-                              Wide_Wide_Character'Val (Code)));
-                           To_UTF (Code, Buffer, Character_Length, Error);
-                           exit when Buffer (1 .. Character_Length) /=
-                              Pattern (P - Character_Length + 1 .. P);
-                           P := P - Character_Length;
-                        end loop;
-                     end if;
-                     Current := Previous - 1;
-                  end;
-               end loop;
-               return 0;
-            end;
-         end if;
+         return Index_Backward (
+            Source,
+            Pattern,
+            Cast (Mapping),
+            By_Func'Access);
       end Index_Backward;
 
       function Index_Per_Element (
@@ -1195,15 +1336,12 @@ package body Ada.Strings.Generic_Fixed is
       function Translate (
          Source : String_Type;
          Mapping : Character_Mapping)
-         return String_Type
-      is
-         function M (From : Wide_Wide_Character) return Wide_Wide_Character;
-         function M (From : Wide_Wide_Character) return Wide_Wide_Character is
-         begin
-            return Value (Mapping, From);
-         end M;
+         return String_Type is
       begin
-         return Translate (Source, M'Access);
+         return Translate (
+            Source,
+            Mapping'Address,
+            By_Mapping'Access);
       end Translate;
 
       procedure Translate (
@@ -1224,42 +1362,14 @@ package body Ada.Strings.Generic_Fixed is
             return Wide_Wide_Character)
          return String_Type
       is
-         Result : String_Type (
-            1 ..
-            Source'Length * UTF_Max_Length);
-         Last : Natural;
-         I : Natural := Source'First;
-         J : Natural := Result'First;
+         type T is access function (From : Wide_Wide_Character)
+            return Wide_Wide_Character;
+         function Cast is new Unchecked_Conversion (T, System.Address);
       begin
-         while I <= Source'Last loop
-            declare
-               Code : System.UTF_Conversions.UCS_4;
-               I_Next : Natural;
-               J_Next : Natural;
-               Error : Boolean; --  ignore
-            begin
-               --  get single unicode character
-               From_UTF (
-                  Source (I .. Source'Last),
-                  I_Next,
-                  Code,
-                  Error);
-               --  map it
-               Code := Wide_Wide_Character'Pos (
-                  Mapping (Wide_Wide_Character'Val (Code)));
-               --  put it
-               To_UTF (
-                  Code,
-                  Result (J .. Result'Last),
-                  J_Next,
-                  Error);
-               --  forwarding
-               I := I_Next + 1;
-               J := J_Next + 1;
-            end;
-         end loop;
-         Last := J - 1;
-         return Result (1 .. Last);
+         return Translate (
+            Source,
+            Cast (Mapping),
+            By_Func'Access);
       end Translate;
 
       procedure Translate (

@@ -176,6 +176,11 @@ package body Ada.Strings.Generic_Unbounded is
       Object.Length := 0;
    end Finalize;
 
+   function Is_Null (Source : Unbounded_String) return Boolean is
+   begin
+      return Source.Length = 0;
+   end Is_Null;
+
    function Length (Source : Unbounded_String) return Natural is
    begin
       return Source.Length;

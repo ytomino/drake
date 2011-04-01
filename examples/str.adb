@@ -15,12 +15,21 @@ procedure str is
 	abcabc : String := "abcabc";
 	Text : String := "the south on south";
 	X : String := "11";
+	function M (Item : Wide_Wide_Character) return Wide_Wide_Character is
+	begin
+		case Item is
+			when 'a' => return 'b';
+			when others => return Item;
+		end case;
+	end M;
 begin
 	pragma Assert (Ada.Strings.Fixed.Index ("abc", 'b') = 2);
 	pragma Assert (Ada.Strings.Fixed.Index ("abc", 'd') = 0);
 	pragma Assert (Ada.Strings.Fixed.Index (abcabc (3 .. 6), 'b') = 5);
 	pragma Assert (Ada.Strings.Fixed.Index ("aaabbb", "bbb") = 4);
 	pragma Assert (Ada.Strings.Fixed.Index ("aaabbb", "aaa", Going => Ada.Strings.Backward) = 1);
+	pragma Assert (Ada.Strings.Fixed.Index ("aaabbb", "ab", Going => Ada.Strings.Backward, Mapping => M'Access) = 0);
+	pragma Assert (Ada.Strings.Fixed.Index ("bcac", "bc", Going => Ada.Strings.Backward, Mapping => M'Access) = 3);
 	pragma Assert (Ada.Strings.Fixed.Index (Text (10 .. Text'Last), "south") = 14);
 	pragma Assert (Ada.Strings.Fixed.Index (Text, "south", 10, Mapping => Ada.Strings.Maps.Identity) = 14);
 	pragma Assert (Ada.Strings.Fixed.Index (Text, "SOUTH", 10, Mapping => Ada.Strings.Maps.Constants.Upper_Case_Map) = 14);
@@ -68,6 +77,7 @@ begin
 		pragma Assert (U.Constant_Reference.Element.all'Address /= A); -- other area
 		pragma Assert (U = "12345U");
 		pragma Assert (V = "12345V");
+		pragma Assert (V.Reference.Element.all = "12345V");
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 	null;

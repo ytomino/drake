@@ -121,6 +121,10 @@ package Ada.Strings.Generic_Unbounded is
    pragma Inline (">=");
 
    --  extended
+   function Is_Null (Source : Unbounded_String) return Boolean;
+   pragma Inline (Is_Null);
+
+   --  extended
    package Slicing is new System.Arrays.Generic_Slicing (
       Positive,
       Character_Type,
