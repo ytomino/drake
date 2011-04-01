@@ -54,6 +54,13 @@ ifeq ($(WITHS),)
 WITHS=0
 endif
 
+# if the format is ELF, ld may accept --gc-sections
+ifneq ($(findstring freebsd,$(TARGET)),)
+ELF=1
+else
+ELF=0
+endif
+
 PHASE=
 
 RTSDIR=.
@@ -62,17 +69,29 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib/build
 
-SUBDIRS=ada83 containers directories image interfaces numerics streams strings tasking textio zcx
+ifneq ($(shell grep -i "ZCX_By_Default.*True" $(GCCLIBDIR)/adainclude/system.ads),)
+EH=zcx
+else
+EH=sjlj
+endif
+
+SUBDIRS=ada83 containers directories image interfaces numerics streams strings tasking textio $(EH)
 
 SRC=$(wildcard *.ad?) $(wildcard $(TARGET)/*.ad?) \
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad?) $(wildcard $(i)/$(TARGET)/*.ad?))
 
-SEPARATED=zcx/s-unrase.adb zcx/s-untrse.adb
+SEPARATED=$(EH)/s-unrase.adb $(EH)/s-untrse.adb
 
 LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 
+ifeq ($(EH),zcx)
+EH_OBJS=c-unwind_pe.o
+else
+EH_OBJS=
+endif
+
 COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
-	c-unwind_pe.o \
+	$(EH_OBJS) \
 	system.o \
 	s-debug.o \
 	s-exctab.o \
@@ -109,7 +128,11 @@ CFLAGS_DEBUG=-g -gnata
 CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer
 else
 CFLAGS_DEBUG=
-CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn -fdata-sections
+ifneq ($(ELF),0)
+CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn -ffunction-sections -fdata-sections
+else
+CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn
+endif
 endif
 
 ifneq ($(WITHF),0)
@@ -245,10 +268,10 @@ $(RTSDIR)/adainclude/%.ads: textio/%.ads
 $(RTSDIR)/adainclude/%.adb: textio/%.adb
 	ln -s $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: zcx/%.ads
+$(RTSDIR)/adainclude/%.ads: $(EH)/%.ads
 	ln -s $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.adb: zcx/%.adb
+$(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	ln -s $(abspath $<) $@
 
 $(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
@@ -267,7 +290,7 @@ $(RTSDIR)/adalib/%.ali: $(BUILDDIR)/%.o
 	install -m 444 $(basename $<).ali $@
 
 $(IMPORTDIR)/c.ads: import.h
-	headmaster -t ada -p -D $(IMPORTDIR) -gcc=$(GCC) $<
+	headmaster -t ada -p -D $(IMPORTDIR) -gcc="$(GCC)" $<
 
 # nested
 

@@ -28,9 +28,10 @@
 #endif
 #include <string.h> /* string op */
 
+#if defined(__unix__) || defined(__APPLE__)
 #pragma for Ada overload int open(const char *, int, mode_t)
 #pragma for Ada overload int fcntl(int, int, int)
-
+#endif
 #if defined(__APPLE__)
 #pragma for Ada "errno.h" include "sys/errno.h"
 #pragma for Ada "sys/signal.h" include "sys/_structs.h" /* stack_t */
