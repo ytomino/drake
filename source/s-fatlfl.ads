@@ -73,7 +73,7 @@ package System.Fat_Lflt is
 
       --  required for Long_Float'Valid by compiler (s-fatgen.ads)
       function Valid (X : not null access Long_Float) return Boolean;
-      function Unaligned_Valid (A : System.Address) return Boolean;
+      function Unaligned_Valid (A : Address) return Boolean;
       pragma Import (Ada, Unaligned_Valid);
       for Unaligned_Valid'Address use Valid'Address;
 
