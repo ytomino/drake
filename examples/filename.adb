@@ -78,8 +78,13 @@ begin
 	pragma Assert (ADH.Relative_Name ("/A/B", "/A/C") = "../B");
 	pragma Assert (ADH.Relative_Name ("../A", "B") = "../../A");
 	pragma Assert (ADH.Relative_Name ("../A", "../B") = "../A");
-	pragma Assert (ADH.Relative_Name ("A", ".") = "A");
 	pragma Assert (ADH.Relative_Name ("A", "B/C") = "../../A");
+	pragma Assert (ADH.Relative_Name ("A", "") = "A");
+	pragma Assert (ADH.Relative_Name ("A", ".") = "A");
+	pragma Assert (ADH.Relative_Name ("", "") = ".");
+	pragma Assert (ADH.Relative_Name ("", ".") = ".");
+	pragma Assert (ADH.Relative_Name ("", "A") = "..");
+	pragma Assert (ADH.Relative_Name (".", "A") = "..");
 	begin
 		declare
 			X : constant String := ADH.Relative_Name ("A", "..");

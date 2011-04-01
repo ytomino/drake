@@ -269,6 +269,31 @@ package body Ada.Directories.Hierarchical_File_Names is
                   end if;
                end;
             end loop;
+            --  strip "./" in remainder of Name
+            while R_N_First <= R_N_Last loop
+               declare
+                  I_N_First : Positive; -- Initial_Directory (Name)
+                  I_N_Last : Natural;
+                  Old_R_N_First : constant Positive := R_N_First;
+               begin
+                  Initial_Directory (
+                     Name (R_N_First .. R_N_Last),
+                     I_N_First,
+                     I_N_Last);
+                  if I_N_First > I_N_Last then
+                     I_N_Last := R_N_Last;
+                  end if;
+                  exit when not Is_Current_Directory_Name (
+                     Name (I_N_First .. I_N_Last));
+                  Relative_Name (
+                     From (R_N_First .. R_N_Last),
+                     R_N_First,
+                     R_N_Last);
+                  if R_N_First = Old_R_N_First then
+                     R_N_First := R_N_Last + 1;
+                  end if;
+               end;
+            end loop;
             --  remainder of From
             while R_F_First <= R_F_Last loop
                declare
@@ -306,9 +331,13 @@ package body Ada.Directories.Hierarchical_File_Names is
                end;
             end loop;
             if Parent_Count > 0 then
-               return Directories.Compose (
-                  Parent_Directory_Name (Parent_Count),
-                  Name (R_N_First .. R_N_Last));
+               if R_N_First > R_N_Last then
+                  return Parent_Directory_Name (Parent_Count);
+               else
+                  return Directories.Compose (
+                     Parent_Directory_Name (Parent_Count),
+                     Name (R_N_First .. R_N_Last));
+               end if;
             elsif R_N_First > R_N_Last then
                return ".";
             else

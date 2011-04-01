@@ -15,10 +15,10 @@ package Ada.Directories.Hierarchical_File_Names is
    function Is_Relative_Name (Name : String) return Boolean;
 
    function Simple_Name (Name : String) return String
-      renames Ada.Directories.Simple_Name;
+      renames Directories.Simple_Name;
 
    function Containing_Directory (Name : String) return String
-      renames Ada.Directories.Containing_Directory;
+      renames Directories.Containing_Directory;
 
    function Initial_Directory (Name : String) return String;
 

@@ -12,7 +12,8 @@ package body Ada.Directories.Temporary is
    function Temporary_Directory return String is
       Temp_Dir : C.char_ptr;
    begin
-      Temp_Dir := C.stdlib.getenv (Temp_Variable (1)'Unrestricted_Access);
+      Temp_Dir := C.stdlib.getenv (
+         Temp_Variable (Temp_Variable'First)'Unrestricted_Access);
       if Temp_Dir = null then
          return Current_Directory;
       else

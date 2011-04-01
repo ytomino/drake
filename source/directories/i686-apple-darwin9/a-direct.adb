@@ -90,8 +90,7 @@ package body Ada.Directories is
       Name : String;
       Extension : String := "") return String
    is
-      --  if you want to fold '.' or '..',
-      --  use Ada.Directories.Hierarchical_File_Names.Compose
+      --  if you want to fold '.' or '..', use Hierarchical_File_Names.Compose
       Result : String (
          1 ..
          Containing_Directory'Length + Name'Length + Extension'Length + 2);

@@ -165,18 +165,18 @@ private
    overriding procedure Finalize (Search : in out Search_Type);
    procedure End_Search (Search : in out Search_Type) renames Finalize;
 
-   --  for Ada.Directories.Information
+   --  for Information
    procedure Check_Assigned (Directory_Entry : Directory_Entry_Type);
    procedure Get_Attributes (
       Name : String;
       Attributes : out C.sys.stat.struct_stat);
 
-   --  for Ada.Directories.Temporary
+   --  for Temporary
    procedure Include_Trailing_Path_Delimiter (
       S : in out String;
       Last : in out Natural);
 
-   --  for Ada.Directories.Hierarchical_File_Names
+   --  for Hierarchical_File_Names
    procedure Exclude_Trailing_Path_Delimiter (
       S : String;
       Last : in out Natural);
