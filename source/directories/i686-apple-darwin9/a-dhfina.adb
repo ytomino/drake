@@ -286,7 +286,7 @@ package body Ada.Directories.Hierarchical_File_Names is
                   exit when not Is_Current_Directory_Name (
                      Name (I_N_First .. I_N_Last));
                   Relative_Name (
-                     From (R_N_First .. R_N_Last),
+                     Name (R_N_First .. R_N_Last),
                      R_N_First,
                      R_N_Last);
                   if R_N_First = Old_R_N_First then
