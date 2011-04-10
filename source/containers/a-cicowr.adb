@@ -81,6 +81,7 @@ package body Ada.Containers.Inside.Copy_On_Write is
                      I := I.Next_Follower;
                   end loop;
                end;
+               Target.Next_Follower := null;
             end;
          end if;
       else
