@@ -93,11 +93,23 @@ package body System.Secondary_Stack is
    end SS_Allocate;
 
    function SS_Mark return Mark_Id is
+      Header_Size : constant Storage_Elements.Storage_Count :=
+         Block'Size / Standard'Storage_Unit;
       Top : constant Address :=
          Soft_Links.Get_Task_Local_Storage.all.Secondary_Stack;
    begin
       if Top = Null_Address then
          return (Sstk => Null_Address, Sptr => 0);
+      elsif Cast (Top).Used = Top + Header_Size then
+         declare
+            Previous : constant Address := Cast (Top).Previous;
+         begin
+            if Previous = Null_Address then
+               return (Sstk => Null_Address, Sptr => 0);
+            else
+               return (Sstk => Previous, Sptr => Cast (Previous).Used);
+            end if;
+         end;
       else
          return (Sstk => Top, Sptr => Cast (Top).Used);
       end if;
