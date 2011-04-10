@@ -575,7 +575,7 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
       Right_Length := a'Length;
       return Result : constant C.char_ptr :=
-         Cast (C.stdlib.realloc (Cast (s), Left_Length + Right_Length))
+         Cast (C.stdlib.realloc (Cast (s), Left_Length + Right_Length + 1))
       do
          if Result = null then
             C.stdlib.free (Cast (s));

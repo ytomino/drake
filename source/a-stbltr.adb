@@ -16,12 +16,19 @@ package body Ada.Streams.Block_Transmission is
                Streams.Stream_Element_Offset (
                   (Element_Type'Stream_Size / Stream_Element'Size) * Length));
             for Item_As'Address use Item'Address;
-            Last : Stream_Element_Offset;
+            Previous_Last : Stream_Element_Offset;
+            Last : Stream_Element_Offset := 0;
          begin
-            Read (Stream.all, Item_As, Last);
-            if Last < Item_As'Last then
-               raise End_Error;
-            end if;
+            while Last < Item_As'Last loop
+               Previous_Last := Last;
+               Read (
+                  Stream.all,
+                  Item_As (Previous_Last + 1 .. Item_As'Last),
+                  Last);
+               if Last <= Previous_Last then
+                  raise End_Error;
+               end if;
+            end loop;
          end;
       else
          Array_Type'Read (Stream, Item);
