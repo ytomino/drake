@@ -1,6 +1,50 @@
 package body System.UTF_Conversions is
    pragma Suppress (All_Checks);
 
+   procedure UTF_8_Length (
+      Code : UCS_4;
+      Leading : out Character;
+      Length : out Natural;
+      Error : out Boolean);
+   --  local
+   procedure UTF_8_Length (
+      Code : UCS_4;
+      Leading : out Character;
+      Length : out Natural;
+      Error : out Boolean) is
+   begin
+      case Code is
+         when 0 .. 16#7f# =>
+            Leading := Character'Val (Code);
+            Length := 1;
+            Error := False;
+         when 16#80# .. 2 ** (5 + 6) - 1 =>
+            Leading := Character'Val (2#11000000# or Code / (2 ** 6));
+            Length := 2;
+            Error := False;
+         when 16#d800# .. 16#dfff# =>
+            Leading := Character'Val (2#11100000# or Code / (2 ** 12));
+            Length := 3;
+            Error := True; --  range of surrogate pair
+         when 2 ** (5 + 6) .. 16#d7ff# | 16#e000# .. 2 ** (4 + 6 + 6) - 1 =>
+            Leading := Character'Val (2#11100000# or Code / (2 ** 12));
+            Length := 3;
+            Error := False;
+         when 2 ** (4 + 6 + 6) .. 2 ** (3 + 6 + 6 + 6) - 1 =>
+            Leading := Character'Val (2#11110000# or Code / (2 ** 18));
+            Length := 4;
+            Error := False;
+         when 2 ** (3 + 6 + 6 + 6) .. 2 ** (2 + 6 + 6 + 6 + 6) - 1 =>
+            Leading := Character'Val (2#11111000# or Code / (2 ** 24));
+            Length := 5;
+            Error := False;
+         when 2 ** (2 + 6 + 6 + 6 + 6) .. 2 ** (1 + 6 + 6 + 6 + 6 + 6) - 1 =>
+            Leading := Character'Val (2#11111100# or Code / (2 ** 30));
+            Length := 6;
+            Error := False;
+      end case;
+   end UTF_8_Length;
+
    procedure To_UTF_8 (
       Code : UCS_4;
       Result : out String;
@@ -10,49 +54,23 @@ package body System.UTF_Conversions is
       I : constant Natural := Result'First;
       Length : Natural;
       Code_2 : UCS_4;
+      Dummy_Error : Boolean; --  without checking surrogate pair in To_XXX
    begin
       if I > Result'Last then
          Last := Result'Last;
          Error := True; --  overflow
          return;
       end if;
-      Error := False;
-      case Code is
-         when 0 .. 16#7f# =>
-            Last := I;
-            Result (I) := Character'Val (Code);
-            return;
-         when 16#80# .. 2 ** (5 + 6) - 1 =>
-            Result (I) := Character'Val (
-               2#11000000# or Code / (2 ** 6));
-            Length := 2;
-         when 2 ** (5 + 6) .. 2 ** (4 + 6 + 6) - 1 =>
-            if Code in 16#d800# .. 16#dfff# then
-               Error := True; --  range of surrogate pair
-            end if;
-            Result (I) := Character'Val (
-               2#11100000# or Code / (2 ** 12));
-            Length := 3;
-         when 2 ** (4 + 6 + 6) .. 2 ** (3 + 6 + 6 + 6) - 1 =>
-            Result (I) := Character'Val (
-               2#11110000# or Code / (2 ** 18));
-            Length := 4;
-         when 2 ** (3 + 6 + 6 + 6) .. 2 ** (2 + 6 + 6 + 6 + 6) - 1 =>
-            Result (I) := Character'Val (
-               2#11111000# or Code / (2 ** 24));
-            Length := 5;
-         when 2 ** (2 + 6 + 6 + 6 + 6) .. 2 ** (1 + 6 + 6 + 6 + 6 + 6) - 1 =>
-            Result (I) := Character'Val (
-               2#11111100# or Code / (2 ** 30));
-            Length := 6;
-      end case;
-      Code_2 := Code;
+      UTF_8_Length (Code, Result (I), Length, Dummy_Error);
       Last := I + Length - 1;
       if Last > Result'Last then
          Last := Result'Last;
          Length := Result'Last + 1 - I;
          Error := True; --  overflow
+      else
+         Error := False;
       end if;
+      Code_2 := Code;
       for J in reverse 2 .. Length loop
          Result (I + J - 1) := Character'Val (
             2#10000000# or (Code_2 and (2 ** 6 - 1)));
@@ -70,6 +88,9 @@ package body System.UTF_Conversions is
       First : constant Character := Data (I);
       Trail : Character;
       Length : Natural;
+      Shortest_Leading : Character;
+      Shortest_Length : Natural;
+      Code_Error : Boolean;
       Code : UCS_4;
    begin
       Error := False;
@@ -121,8 +142,9 @@ package body System.UTF_Conversions is
          Code := Code * (2 ** 6) or
             (Character'Pos (Trail) and (2 ** 6 - 1));
       end loop;
-      if Code in 16#d800# .. 16#dfff# then
-         Error := True; --  range of surrogate pair
+      UTF_8_Length (Code, Shortest_Leading, Shortest_Length, Code_Error);
+      if Shortest_Length /= Length or else Code_Error then
+         Error := True; --  too long or surrogate pair
       end if;
       Last := I;
       Result := Code;
@@ -209,7 +231,7 @@ package body System.UTF_Conversions is
                   Code_2 : constant UCS_4 := Code - 16#00010000#;
                begin
                   Result (Last) := Wide_Character'Val (
-                     16#d800# or (Code_2 / (2 ** 10)));
+                     16#d800# or ((Code_2 / (2 ** 10)) and (2 ** 10 - 1)));
                   Last := Last + 1;
                   if Last <= Result'Last then
                      Result (Last) := Wide_Character'Val (
@@ -270,7 +292,7 @@ package body System.UTF_Conversions is
                   Low : constant UCS_4 :=
                      Wide_Character'Pos (Second) and (2 ** 10 - 1);
                begin
-                  Result := (High * (2 ** 10)) or Low;
+                  Result := ((High * (2 ** 10)) or Low) + 16#00010000#;
                end;
             end;
          when Wide_Character'Val (16#dc00#) .. Wide_Character'Val (16#dfff#) =>
