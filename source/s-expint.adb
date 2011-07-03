@@ -1,5 +1,5 @@
 with System.Unwind.Raising;
-pragma Warnings (Off, System.Unwind.Raising);
+pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Exp_Int is
    pragma Suppress (All_Checks);
 

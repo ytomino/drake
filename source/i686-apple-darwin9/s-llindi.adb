@@ -1,5 +1,5 @@
 with C.stdlib;
-pragma Warnings (Off, C.stdlib);
+pragma Warnings (Off, C.stdlib); -- break "pure" rule
 procedure System.Long_Long_Integer_Divide (
    Left, Right : Long_Long_Integer;
    Quotient, Remainder : out Long_Long_Integer)

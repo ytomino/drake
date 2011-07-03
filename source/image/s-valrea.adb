@@ -1,7 +1,7 @@
 with System.Formatting;
 with System.Val_Uns;
 with System.Unwind.Raising;
-pragma Warnings (Off, System.Unwind.Raising);
+pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Val_Real is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;

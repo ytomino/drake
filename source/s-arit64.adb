@@ -1,6 +1,6 @@
 with System.Long_Long_Integer_Divide;
 with System.Unwind.Raising;
-pragma Warnings (Off, System.Unwind.Raising);
+pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Arith_64 is
    pragma Suppress (All_Checks);
    use type Interfaces.Integer_64;
