@@ -16,4 +16,7 @@ package System.Img_WChar is
       S : in out String;
       P : out Natural);
 
+   --  helper
+   Image_ad : constant String := "SOFT_HYPHEN";
+
 end System.Img_WChar;

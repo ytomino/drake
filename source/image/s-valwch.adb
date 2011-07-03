@@ -1,10 +1,19 @@
 with System.Formatting;
+with System.Img_WChar;
 with System.Val_Char;
 with System.Val_Enum;
 with System.UTF_Conversions;
 package body System.Val_WChar is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
+
+   function Value_Named (S : String) return Wide_Character is
+   begin
+      if S = Img_WChar.Image_ad then
+         return Wide_Character'Val (16#ad#);
+      end if;
+      return Wide_Character'Val (Character'Pos (Val_Char.Value_Named (S)));
+   end Value_Named;
 
    function Value_Wide_Character (Str : String; EM : WC_Encoding_Method)
       return Wide_Character
@@ -73,8 +82,7 @@ package body System.Val_WChar is
                   return Wide_Character'Val (Result);
                end;
             else
-               return Wide_Character'Val (Character'Pos (
-                  Val_Char.Value_Named (S)));
+               return Value_Named (S);
             end if;
          end;
       end if;
@@ -139,8 +147,8 @@ package body System.Val_WChar is
                   return Wide_Wide_Character'Val (Result);
                end;
             else
-               return Wide_Wide_Character'Val (Character'Pos (
-                  Val_Char.Value_Named (S)));
+               return Wide_Wide_Character'Val (Wide_Character'Pos (
+                  Value_Named (S)));
             end if;
          end;
       end if;

@@ -14,4 +14,7 @@ package System.Val_WChar is
    function Value_Wide_Wide_Character (Str : String; EM : WC_Encoding_Method)
       return Wide_Wide_Character;
 
+   --  helper
+   function Value_Named (S : String) return Wide_Character;
+
 end System.Val_WChar;

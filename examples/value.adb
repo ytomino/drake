@@ -32,10 +32,20 @@ begin
 	pragma Assert (Enum32'Value (Enum32'Image (Enum32'First)) = Enum32'First);
 	pragma Assert (Enum32'Value (Enum32'Image (Enum32'Last)) = Enum32'Last);
 	pragma Assert (Character'Value (Character'Image (Character'First)) = Character'First);
+	begin
+		if Character'Value ("SOFT_HYPHEN") = Character'Val (16#ad#) then
+			null;
+		end if;
+		pragma Assert (False);
+	exception
+		when Constraint_Error => null; -- OK
+	end;
 	pragma Assert (Character'Value (Character'Image (Character'Last)) = Character'Last);
 	pragma Assert (Wide_Character'Value (Wide_Character'Image (Wide_Character'First)) = Wide_Character'First);
+	pragma Assert (Wide_Character'Value ("SOFT_HYPHEN") = Wide_Character'Val (16#ad#));
 	pragma Assert (Wide_Character'Value (Wide_Character'Image (Wide_Character'Last)) = Wide_Character'Last);
 	pragma Assert (Wide_Wide_Character'Value ("Hex_00000000") = Wide_Wide_Character'First);
+	pragma Assert (Wide_Wide_Character'Value ("SOFT_HYPHEN") = Wide_Wide_Character'Val (16#ad#));
 	pragma Assert (Wide_Wide_Character'Value ("Hex_7fffffff") = Wide_Wide_Character'Last);
 	pragma Assert (Integer'Value (Integer'Image (Integer'First)) = Integer'First);
 	pragma Assert (Integer'Value (Integer'Image (Integer'Last)) = Integer'Last);
