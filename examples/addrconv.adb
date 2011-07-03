@@ -1,9 +1,8 @@
+with Ada;
 with System.Address_To_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
 procedure addrconv is
-	procedure puts (a1 : String);
-	pragma Import (C, puts);
 	package AC1 is new System.Address_To_Access_Conversions (Integer);
 	type TA is access all Integer;
 	pragma No_Strict_Aliasing (TA);
@@ -20,9 +19,6 @@ begin
 	V := 10;
 	V1.all := V1.all + 10;
 	V2.all := V2.all + 10;
-	if V3.all = 30 then
-		puts ("OK" & ASCII.NUL);
-	else
-		puts ("NG" & ASCII.NUL);
-	end if;
+	pragma Assert (V3.all = 30);
+	Ada.Debug.Put ("OK");
 end addrconv;

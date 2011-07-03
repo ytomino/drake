@@ -1,4 +1,5 @@
 -- stack trace must be shown with gnatbind -E
+with Ada;
 with Unchecked_Conversion; -- renamed ver
 with System.Machine_Code;
 with Interfaces;
@@ -39,5 +40,6 @@ begin
 		Volatile => True);
 	printf ("%.4hx" & ASCII.LF & ASCII.NUL, CW);
 	Y := 0;
+	Ada.Debug.Put ("CONSTRAINT_ERROR is right.");
 	Deep;
 end signal;

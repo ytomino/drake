@@ -16,4 +16,5 @@ begin
 		pragma Assert (State_2 = State);
 		Ada.Debug.Put (Image);
 	end;
+	Ada.Debug.Put ("OK");
 end random;

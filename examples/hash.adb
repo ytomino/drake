@@ -9,13 +9,21 @@ with Ada.Strings.Unbounded.Hash;
 with Ada.Strings.Wide_Unbounded.Hash;
 with Ada.Strings.Wide_Wide_Unbounded.Hash;
 procedure hash is
-	procedure printf (f : String; d : Ada.Containers.Hash_Type);
-	pragma Import (C, printf);
+	use type Ada.Containers.Hash_Type;
+	type HA is array (Positive range <>) of Ada.Containers.Hash_Type;
+	D : HA := (
+		Ada.Strings.Hash ("abcdefg"),
+		Ada.Strings.Hash ("ab"),
+		Ada.Strings.Hash ("ba"),
+		Ada.Strings.Hash ("----------"),
+		Ada.Strings.Hash ("-----------"),
+		Ada.Strings.Hash ("------------"));
 begin
-	printf ("%.8x" & ASCII.LF & ASCII.NUL, Ada.Strings.Hash ("abcdefg"));
-	printf ("%.8x" & ASCII.LF & ASCII.NUL, Ada.Strings.Hash ("ab"));
-	printf ("%.8x" & ASCII.LF & ASCII.NUL, Ada.Strings.Hash ("ba"));
-	printf ("%.8x" & ASCII.LF & ASCII.NUL, Ada.Strings.Hash ("----------"));
-	printf ("%.8x" & ASCII.LF & ASCII.NUL, Ada.Strings.Hash ("-----------"));
-	printf ("%.8x" & ASCII.LF & ASCII.NUL, Ada.Strings.Hash ("------------"));
+	for I in D'First .. D'Last - 1 loop
+		for J in I + 1 .. D'Last loop
+			pragma Assert (D (I) /= D (J));
+			null;
+		end loop;
+	end loop;
+	Ada.Debug.Put ("OK");
 end hash;
