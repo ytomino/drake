@@ -110,9 +110,7 @@ package body Ada.Environment_Variables is
    begin
       while I.all /= null loop
          declare
-            pragma Warnings (Off, "variable ""Ref"" is not referenced");
             Ref : Constant_Reference_Type := Constant_Reference (Cursor (I));
-            pragma Warnings (On, "variable ""Ref"" is not referenced");
          begin
             Process (Ref.Name.all, Ref.Value.all);
          end;

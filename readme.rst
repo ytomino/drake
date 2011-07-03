@@ -34,8 +34,11 @@ headmaster (or pre-translated headers)
 Downloads
 ---------
 
-for gcc-4.5
+for gcc-4.6
  ``git clone git://github.com/ytomino/drake.git``
+
+for gcc-4.5
+ ``git clone git://github.com/ytomino/drake.git -b gcc-4.5``
 
 Short Example
 -------------

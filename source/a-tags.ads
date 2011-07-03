@@ -119,6 +119,7 @@ private
       External_Tag : Cstring_Ptr;
       HT_Link : Tag_Ptr;
       Transportable : Boolean;
+      Type_Is_Abstract : Boolean;
       RC_Offset : System.Storage_Elements.Storage_Offset;
       Size_Func : Size_Ptr;
       Interfaces_Table : Interface_Data_Ptr;

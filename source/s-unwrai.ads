@@ -11,6 +11,7 @@ package System.Unwind.Raising is
       E : not null Standard_Library.Exception_Data_Ptr;
       File : access constant Character := null;
       Line : Integer := 0;
+      Column : Integer := 0;
       Message : String := "");
    pragma No_Return (Raise_Exception);
 
@@ -19,6 +20,7 @@ package System.Unwind.Raising is
       E : not null Standard_Library.Exception_Data_Ptr;
       File : access constant Character := null;
       Line : Integer := 0;
+      Column : Integer := 0;
       Message : String := "")
       renames Raise_Exception;
    --  From_Signal_Handler should be True, but unused it, currently...
@@ -108,17 +110,13 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_15);
    pragma Export (C, rcheck_15, "__gnat_rcheck_15");
 
-   procedure rcheck_20 (File : not null access Character; Line : Integer);
-   pragma No_Return (rcheck_20);
-   pragma Export (C, rcheck_20, "__gnat_rcheck_20");
-
    procedure rcheck_21 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_21);
    pragma Export (C, rcheck_21, "__gnat_rcheck_21");
 
-   procedure rcheck_23 (File : not null access Character; Line : Integer);
-   pragma No_Return (rcheck_23);
-   pragma Export (C, rcheck_23, "__gnat_rcheck_23");
+   procedure rcheck_22 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_22);
+   pragma Export (C, rcheck_22, "__gnat_rcheck_22");
 
    procedure rcheck_24 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_24);
@@ -128,17 +126,21 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_25);
    pragma Export (C, rcheck_25, "__gnat_rcheck_25");
 
-   procedure rcheck_30 (File : not null access Character; Line : Integer);
-   pragma No_Return (rcheck_30);
-   pragma Export (C, rcheck_30, "__gnat_rcheck_30");
+   procedure rcheck_26 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_26);
+   pragma Export (C, rcheck_26, "__gnat_rcheck_26");
 
    procedure rcheck_31 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_31);
    pragma Export (C, rcheck_31, "__gnat_rcheck_31");
 
-   procedure rcheck_33 (File : not null access Character; Line : Integer);
-   pragma No_Return (rcheck_33);
-   pragma Export (C, rcheck_33, "__gnat_rcheck_33");
+   procedure rcheck_32 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_32);
+   pragma Export (C, rcheck_32, "__gnat_rcheck_32");
+
+   procedure rcheck_34 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_34);
+   pragma Export (C, rcheck_34, "__gnat_rcheck_34");
 
    --  excluding code range
    function AAA return Address;

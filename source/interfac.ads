@@ -84,7 +84,7 @@ package Interfaces is
    procedure sync_add_and_fetch (
       A1 : not null access Integer_64;
       A2 : Integer_64);
-   pragma Inline_Always (sync_add_and_fetch);
+--  pragma Inline_Always (sync_add_and_fetch); -- [gcc 4.6] compiler crushes
 
    function sync_sub_and_fetch (
       A1 : not null access Integer_8;
@@ -102,7 +102,7 @@ package Interfaces is
       A1 : not null access Integer_64;
       A2 : Integer_64)
       return Integer_64;
-   pragma Inline_Always (sync_sub_and_fetch);
+--  pragma Inline_Always (sync_sub_and_fetch); -- [gcc 4.6] compiler crushes
 
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_8;
@@ -124,7 +124,7 @@ package Interfaces is
       A2 : Integer_64;
       A3 : Integer_64)
       return Boolean;
-   pragma Inline_Always (sync_bool_compare_and_swap);
+--  pragma Inline_Always (sync_bool_compare_and_swap); -- [gcc 4.6] crushes
 
 private
 

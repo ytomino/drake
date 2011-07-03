@@ -10,6 +10,7 @@ package body System.Fat_Lflt is
    pragma Import (Intrinsic, inf, "__builtin_inf");
 
    function isfinite (X : Long_Float) return Integer;
+   pragma Warnings (Off, isfinite); -- [gcc 4.6] excessive prototype checking
    pragma Import (Intrinsic, isfinite, "__builtin_isfinite");
 
    package body Attr_Long_Float is

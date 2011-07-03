@@ -55,7 +55,7 @@ package System.Unwind.Handling is
       Exception_Object : access C.unwind.struct_Unwind_Exception;
       Context : access C.unwind.struct_Unwind_Context)
       return C.unwind.Unwind_Reason_Code;
-   pragma Export (C, Personality, "__gnat_eh_personality");
+   pragma Export (C, Personality, "__gnat_personality_v0");
    pragma Compile_Time_Error (
       Personality'Access = C.unwind.Unwind_Personality_Fn'(null),
       "this expression is always false, for type check purpose");

@@ -113,11 +113,13 @@ package body System.Unwind.Raising is
       Id : Standard_Library.Exception_Data_Ptr;
       File : access constant Character := null;
       Line : Integer := 0;
+      Column : Integer := 0;
       Message : String);
    procedure Set_Exception_Message (
       Id : Standard_Library.Exception_Data_Ptr;
       File : access constant Character := null;
       Line : Integer := 0;
+      Column : Integer := 0;
       Message : String)
    is
       Current : constant not null Exception_Occurrence_Access :=
@@ -165,7 +167,22 @@ package body System.Unwind.Raising is
                end if;
             end;
          end if;
-         if (File /= null or else Line > 0)
+         if Column > 0 then
+            declare
+               Error : Boolean;
+            begin
+               Formatting.Image (
+                  Formatting.Unsigned (Column),
+                  Current.Msg (Last + 1 .. Current.Msg'Last),
+                  Last,
+                  Error => Error);
+               if not Error and then Last < Current.Msg'Last then
+                  Last := Last + 1;
+                  Current.Msg (Last) := ':';
+               end if;
+            end;
+         end if;
+         if (File /= null or else Line > 0 or else Column > 0)
             and then Last < Current.Msg'Last
          then
             Last := Last + 1;
@@ -248,9 +265,10 @@ package body System.Unwind.Raising is
       E : not null Standard_Library.Exception_Data_Ptr;
       File : access constant Character := null;
       Line : Integer := 0;
+      Column : Integer := 0;
       Message : String := "") is
    begin
-      Set_Exception_Message (E, File, Line, Message);
+      Set_Exception_Message (E, File, Line, Column, Message);
       Soft_Links.Abort_Defer.all;
       Raise_Current_Exception (E);
    end Raise_Exception;
@@ -433,18 +451,8 @@ package body System.Unwind.Raising is
          Message => Message);
    end rcheck_15;
 
-   procedure rcheck_20 (File : not null access Character; Line : Integer) is
-      Message : constant String := "explicit raise";
-   begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
-         File,
-         Line,
-         Message => Message);
-   end rcheck_20;
-
    procedure rcheck_21 (File : not null access Character; Line : Integer) is
-      Message : constant String := "finalize/adjust raised exception";
+      Message : constant String := "explicit raise";
    begin
       Raise_Exception (
          Unwind.Standard.Program_Error'Access,
@@ -453,18 +461,18 @@ package body System.Unwind.Raising is
          Message => Message);
    end rcheck_21;
 
-   procedure rcheck_23 (File : not null access Character; Line : Integer) is
-      Message : constant String := "misaligned address value";
+   procedure rcheck_22 (File : not null access Character; Line : Integer) is
+      Message : constant String := "finalize/adjust raised exception";
    begin
       Raise_Exception (
          Unwind.Standard.Program_Error'Access,
          File,
          Line,
          Message => Message);
-   end rcheck_23;
+   end rcheck_22;
 
    procedure rcheck_24 (File : not null access Character; Line : Integer) is
-      Message : constant String := "missing return";
+      Message : constant String := "misaligned address value";
    begin
       Raise_Exception (
          Unwind.Standard.Program_Error'Access,
@@ -474,7 +482,7 @@ package body System.Unwind.Raising is
    end rcheck_24;
 
    procedure rcheck_25 (File : not null access Character; Line : Integer) is
-      Message : constant String := "overlaid controlled object";
+      Message : constant String := "missing return";
    begin
       Raise_Exception (
          Unwind.Standard.Program_Error'Access,
@@ -483,18 +491,18 @@ package body System.Unwind.Raising is
          Message => Message);
    end rcheck_25;
 
-   procedure rcheck_30 (File : not null access Character; Line : Integer) is
-      Message : constant String := "empty storage pool";
+   procedure rcheck_26 (File : not null access Character; Line : Integer) is
+      Message : constant String := "overlaid controlled object";
    begin
       Raise_Exception (
-         Unwind.Standard.Storage_Error'Access,
+         Unwind.Standard.Program_Error'Access,
          File,
          Line,
          Message => Message);
-   end rcheck_30;
+   end rcheck_26;
 
    procedure rcheck_31 (File : not null access Character; Line : Integer) is
-      Message : constant String := "explicit raise";
+      Message : constant String := "empty storage pool";
    begin
       Raise_Exception (
          Unwind.Standard.Storage_Error'Access,
@@ -503,7 +511,17 @@ package body System.Unwind.Raising is
          Message => Message);
    end rcheck_31;
 
-   procedure rcheck_33 (File : not null access Character; Line : Integer) is
+   procedure rcheck_32 (File : not null access Character; Line : Integer) is
+      Message : constant String := "explicit raise";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Storage_Error'Access,
+         File,
+         Line,
+         Message => Message);
+   end rcheck_32;
+
+   procedure rcheck_34 (File : not null access Character; Line : Integer) is
       Message : constant String := "object too large";
    begin
       Raise_Exception (
@@ -511,7 +529,7 @@ package body System.Unwind.Raising is
          File,
          Line,
          Message => Message);
-   end rcheck_33;
+   end rcheck_34;
 
    --  local / at last
    function ZZZ return Address is

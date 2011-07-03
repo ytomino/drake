@@ -19,6 +19,8 @@ package System.Standard_Library is
    --  filled by gnatbind (init.c)
    Main_Priority : Integer := -1;
    pragma Export (C, Main_Priority, "__gl_main_priority");
+   Main_CPU : Integer := -1;
+   pragma Export (C, Main_CPU,  "__gl_main_cpu");
    Time_Slice_Value : Integer := -1;
    pragma Export (C, Time_Slice_Value, "__gl_time_slice_val");
    WC_Encoding : Character := 'n';

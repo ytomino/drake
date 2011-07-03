@@ -42,6 +42,7 @@ package System.Fat_LLF is
       --  required for LLF'Machine_Rounding by compiler (s-fatgen.ads)
       function Machine_Rounding (X : Long_Long_Float) return Long_Long_Float
          renames Long_Long_Float_Machine_Rounding;
+      --  [gcc 4.6] compiler crushes on directly-renaming intrinsic function
 
       --  required for Long_Long_Float'Model by compiler (s-fatgen.ads)
       function Model (X : Long_Long_Float) return Long_Long_Float

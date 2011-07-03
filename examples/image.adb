@@ -29,10 +29,9 @@ begin
 	pragma Assert (Wide_Character'Image (Wide_Character'First) = "NUL");
 	pragma Assert (Wide_Character'Image (Wide_Character'Val (16#ad#)) = "SOFT_HYPHEN");
 	pragma Assert (Wide_Character'Image (Wide_Character'Last) = "Hex_FFFF");
-	-- when using Wide_Wide_Character'Image, gcc-4.4.*/4.5.* are very slow...???
---	pragma Assert (Wide_Wide_Character'Image (Wide_Wide_Character'First) = "NUL");
---	pragma Assert (Wide_Wide_Character'Image (Wide_Wide_Character'Val (16#ad#)) = "SOFT_HYPHEN");
---	pragma Assert (Wide_Wide_Character'Image (Wide_Wide_Character'Last) = "Hex_7FFFFFFF");
+	pragma Assert (Wide_Wide_Character'Image (Wide_Wide_Character'First) = "NUL");
+	pragma Assert (Wide_Wide_Character'Image (Wide_Wide_Character'Val (16#ad#)) = "SOFT_HYPHEN");
+	pragma Assert (Wide_Wide_Character'Image (Wide_Wide_Character'Last) = "Hex_7FFFFFFF");
 	Ada.Debug.Put (Integer'Image (Integer'First));
 	Ada.Debug.Put (Integer'Image (Integer'Last));
 	Ada.Debug.Put (Long_Long_Integer'Image (Long_Long_Integer'First));

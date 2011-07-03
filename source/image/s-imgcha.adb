@@ -4,7 +4,7 @@ with System.Formatting;
 package body System.Img_Char is
    pragma Suppress (All_Checks);
 
-   procedure Image_Character (
+   procedure Image_Character_05 (
       V : Character;
       S : in out String;
       P : out Natural) is
@@ -45,6 +45,6 @@ package body System.Img_Char is
                pragma Assert (not Error);
             end;
       end case;
-   end Image_Character;
+   end Image_Character_05;
 
 end System.Img_Char;

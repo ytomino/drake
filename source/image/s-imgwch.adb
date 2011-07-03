@@ -13,7 +13,7 @@ package body System.Img_WChar is
    begin
       case V is
          when Wide_Character'Val (0) .. Wide_Character'Val (16#7f#) =>
-            Img_Char.Image_Character (
+            Img_Char.Image_Character_05 (
                Character'Val (Wide_Character'Pos (V)),
                S,
                P);
@@ -49,7 +49,7 @@ package body System.Img_WChar is
          when Wide_Wide_Character'Val (0) ..
             Wide_Wide_Character'Val (16#7f#)
          =>
-            Img_Char.Image_Character (
+            Img_Char.Image_Character_05 (
                Character'Val (Wide_Wide_Character'Pos (V)),
                S,
                P);

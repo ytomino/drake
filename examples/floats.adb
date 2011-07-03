@@ -6,7 +6,7 @@ procedure floats is
 	procedure Test;
 	procedure Test is
 		function Infinity is new Ada.Float.Infinity (T);
---		function NaN is new Ada.Float.NaN (T);
+		function NaN is new Ada.Float.NaN (T);
 		function Is_Infinity is new Ada.Float.Is_Infinity (T);
 		function Is_NaN is new Ada.Float.Is_NaN (T);
 		function Is_Negative is new Ada.Float.Is_Negative (T);
@@ -20,9 +20,9 @@ procedure floats is
 	begin
 		pragma Assert (T'Image (Infinity) = " INF");
 		pragma Assert (T'Image (-Infinity) = "-INF");
---		pragma Assert (T'Image (NaN) = " NAN");
---		pragma Assert (T'Image (-NaN) = "-NAN");
---		pragma Assert (not (-NaN < 0.0)); -- comparison NaN is always False
+		pragma Assert (T'Image (NaN) = " NAN");
+		pragma Assert (T'Image (-NaN) = "-NAN");
+		pragma Assert (not (-NaN < 0.0)); -- comparison NaN is always False
 		pragma Assert (Is_Negative (-1.0));
 		pragma Assert (not Is_Negative (0.0));
 		pragma Assert (not Is_Negative (+1.0));

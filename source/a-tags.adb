@@ -316,18 +316,12 @@ package body Ada.Tags is
 
    function Is_Abstract (T : Tag) return Boolean is
       DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      function Cast is new Unchecked_Conversion (
+         System.Address,
+         Type_Specific_Data_Ptr);
+      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
    begin
-      case DT.Signature is
-         when Primary_DT =>
-            case DT.Tag_Kind is
-               when TK_Abstract_Limited_Tagged | TK_Abstract_Tagged =>
-                  return True;
-               when TK_Limited_Tagged | TK_Protected | TK_Tagged | TK_Task =>
-                  return False;
-            end case;
-         when Secondary_DT | Unknown =>
-            return True; --  interface
-      end case;
+      return TSD.Type_Is_Abstract;
    end Is_Abstract;
 
    function Is_Descendant (

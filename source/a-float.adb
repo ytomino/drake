@@ -74,6 +74,8 @@ package body Ada.Float is
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
             function isinf (x : Long_Float) return Integer;
+            pragma Warnings (Off, isinf);
+            --  [gcc 4.6] excessive prototype checking
             pragma Import (Intrinsic, isinf, "__builtin_isinf");
          begin
             return isinf (Long_Float (X)) /= 0;
@@ -100,6 +102,8 @@ package body Ada.Float is
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
             function isnan (x : Long_Float) return Integer;
+            pragma Warnings (Off, isnan);
+            --  [gcc 4.6] excessive prototype checking
             pragma Import (Intrinsic, isnan, "__builtin_isnan");
          begin
             return isnan (Long_Float (X)) /= 0;

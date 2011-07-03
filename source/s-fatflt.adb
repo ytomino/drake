@@ -10,6 +10,7 @@ package body System.Fat_Flt is
    pragma Import (Intrinsic, inf, "__builtin_inff");
 
    function isfinite (X : Float) return Integer;
+   pragma Warnings (Off, isfinite); -- [gcc 4.6] excessive prototype checking
    pragma Import (Intrinsic, isfinite, "__builtin_isfinite");
 
    package body Attr_Float is
