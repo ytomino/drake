@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 package Interfaces is
    pragma Pure;
 
-   type Integer_8 is range -2 ** 7 .. 2 ** 7 - 1;   --  2's complement
+   type Integer_8 is range -2 ** 7 .. 2 ** 7 - 1; -- 2's complement
    for Integer_8'Size use 8;
    type Integer_16 is range -2 ** 15 .. 2 ** 15 - 1;
    for Integer_16'Size use 16;
@@ -72,129 +72,189 @@ package Interfaces is
 
    --  extended
 
-   procedure sync_add_and_fetch (A1 : not null access Integer_8;
-                                 A2 : Integer_8);
-   procedure sync_add_and_fetch (A1 : not null access Integer_16;
-                                 A2 : Integer_16);
-   procedure sync_add_and_fetch (A1 : not null access Integer_32;
-                                 A2 : Integer_32);
-   procedure sync_add_and_fetch (A1 : not null access Integer_64;
-                                 A2 : Integer_64);
+   procedure sync_add_and_fetch (
+      A1 : not null access Integer_8;
+      A2 : Integer_8);
+   procedure sync_add_and_fetch (
+      A1 : not null access Integer_16;
+      A2 : Integer_16);
+   procedure sync_add_and_fetch (
+      A1 : not null access Integer_32;
+      A2 : Integer_32);
+   procedure sync_add_and_fetch (
+      A1 : not null access Integer_64;
+      A2 : Integer_64);
    pragma Inline_Always (sync_add_and_fetch);
 
-   function sync_sub_and_fetch (A1 : not null access Integer_8;
-                                A2 : Integer_8) return Integer_8;
-   function sync_sub_and_fetch (A1 : not null access Integer_16;
-                                A2 : Integer_16) return Integer_16;
-   function sync_sub_and_fetch (A1 : not null access Integer_32;
-                                A2 : Integer_32) return Integer_32;
-   function sync_sub_and_fetch (A1 : not null access Integer_64;
-                                A2 : Integer_64) return Integer_64;
+   function sync_sub_and_fetch (
+      A1 : not null access Integer_8;
+      A2 : Integer_8)
+      return Integer_8;
+   function sync_sub_and_fetch (
+      A1 : not null access Integer_16;
+      A2 : Integer_16)
+      return Integer_16;
+   function sync_sub_and_fetch (
+      A1 : not null access Integer_32;
+      A2 : Integer_32)
+      return Integer_32;
+   function sync_sub_and_fetch (
+      A1 : not null access Integer_64;
+      A2 : Integer_64)
+      return Integer_64;
    pragma Inline_Always (sync_sub_and_fetch);
 
-   function sync_bool_compare_and_swap (A1 : not null access Integer_8;
-                                        A2 : Integer_8;
-                                        A3 : Integer_8) return Boolean;
-   function sync_bool_compare_and_swap (A1 : not null access Integer_16;
-                                        A2 : Integer_16;
-                                        A3 : Integer_16) return Boolean;
-   function sync_bool_compare_and_swap (A1 : not null access Integer_32;
-                                        A2 : Integer_32;
-                                        A3 : Integer_32) return Boolean;
-   function sync_bool_compare_and_swap (A1 : not null access Integer_64;
-                                        A2 : Integer_64;
-                                        A3 : Integer_64) return Boolean;
+   function sync_bool_compare_and_swap (
+      A1 : not null access Integer_8;
+      A2 : Integer_8;
+      A3 : Integer_8)
+      return Boolean;
+   function sync_bool_compare_and_swap (
+      A1 : not null access Integer_16;
+      A2 : Integer_16;
+      A3 : Integer_16)
+      return Boolean;
+   function sync_bool_compare_and_swap (
+      A1 : not null access Integer_32;
+      A2 : Integer_32;
+      A3 : Integer_32)
+      return Boolean;
+   function sync_bool_compare_and_swap (
+      A1 : not null access Integer_64;
+      A2 : Integer_64;
+      A3 : Integer_64)
+      return Boolean;
    pragma Inline_Always (sync_bool_compare_and_swap);
 
 private
 
-   procedure sync_add_and_fetch_8 (A1 : not null access Integer_8;
-                                   A2 : Integer_8);
+   procedure sync_add_and_fetch_8 (
+      A1 : not null access Integer_8;
+      A2 : Integer_8);
    pragma Import (Intrinsic, sync_add_and_fetch_8, "__sync_add_and_fetch_1");
-   procedure sync_add_and_fetch_16 (A1 : not null access Integer_16;
-                                    A2 : Integer_16);
+   procedure sync_add_and_fetch_16 (
+      A1 : not null access Integer_16;
+      A2 : Integer_16);
    pragma Import (Intrinsic, sync_add_and_fetch_16, "__sync_add_and_fetch_2");
-   procedure sync_add_and_fetch_32 (A1 : not null access Integer_32;
-                                    A2 : Integer_32);
+   procedure sync_add_and_fetch_32 (
+      A1 : not null access Integer_32;
+      A2 : Integer_32);
    pragma Import (Intrinsic, sync_add_and_fetch_32, "__sync_add_and_fetch_4");
-   procedure sync_add_and_fetch_64 (A1 : not null access Integer_64;
-                                    A2 : Integer_64);
+   procedure sync_add_and_fetch_64 (
+      A1 : not null access Integer_64;
+      A2 : Integer_64);
    pragma Import (Intrinsic, sync_add_and_fetch_64, "__sync_add_and_fetch_8");
 
-   procedure sync_add_and_fetch (A1 : not null access Integer_8;
-                                 A2 : Integer_8)
+   procedure sync_add_and_fetch (
+      A1 : not null access Integer_8;
+      A2 : Integer_8)
       renames sync_add_and_fetch_8;
-   procedure sync_add_and_fetch (A1 : not null access Integer_16;
-                                 A2 : Integer_16)
+   procedure sync_add_and_fetch (
+      A1 : not null access Integer_16;
+      A2 : Integer_16)
       renames sync_add_and_fetch_16;
-   procedure sync_add_and_fetch (A1 : not null access Integer_32;
-                                 A2 : Integer_32)
+   procedure sync_add_and_fetch (
+      A1 : not null access Integer_32;
+      A2 : Integer_32)
       renames sync_add_and_fetch_32;
-   procedure sync_add_and_fetch (A1 : not null access Integer_64;
-                                 A2 : Integer_64)
+   procedure sync_add_and_fetch (
+      A1 : not null access Integer_64;
+      A2 : Integer_64)
       renames sync_add_and_fetch_64;
 
-   function sync_sub_and_fetch_8 (A1 : not null access Integer_8;
-                                  A2 : Integer_8) return Integer_8;
+   function sync_sub_and_fetch_8 (
+      A1 : not null access Integer_8;
+      A2 : Integer_8)
+      return Integer_8;
    pragma Import (Intrinsic, sync_sub_and_fetch_8, "__sync_sub_and_fetch_1");
-   function sync_sub_and_fetch_16 (A1 : not null access Integer_16;
-                                   A2 : Integer_16) return Integer_16;
+   function sync_sub_and_fetch_16 (
+      A1 : not null access Integer_16;
+      A2 : Integer_16)
+      return Integer_16;
    pragma Import (Intrinsic, sync_sub_and_fetch_16, "__sync_sub_and_fetch_2");
-   function sync_sub_and_fetch_32 (A1 : not null access Integer_32;
-                                   A2 : Integer_32) return Integer_32;
+   function sync_sub_and_fetch_32 (
+      A1 : not null access Integer_32;
+      A2 : Integer_32)
+      return Integer_32;
    pragma Import (Intrinsic, sync_sub_and_fetch_32, "__sync_sub_and_fetch_4");
-   function sync_sub_and_fetch_64 (A1 : not null access Integer_64;
-                                   A2 : Integer_64) return Integer_64;
+   function sync_sub_and_fetch_64 (
+      A1 : not null access Integer_64;
+      A2 : Integer_64)
+      return Integer_64;
    pragma Import (Intrinsic, sync_sub_and_fetch_64, "__sync_sub_and_fetch_8");
-   function sync_sub_and_fetch (A1 : not null access Integer_8;
-                                A2 : Integer_8) return Integer_8
+   function sync_sub_and_fetch (
+      A1 : not null access Integer_8;
+      A2 : Integer_8)
+      return Integer_8
       renames sync_sub_and_fetch_8;
-   function sync_sub_and_fetch (A1 : not null access Integer_16;
-                                A2 : Integer_16) return Integer_16
+   function sync_sub_and_fetch (
+      A1 : not null access Integer_16;
+      A2 : Integer_16)
+      return Integer_16
       renames sync_sub_and_fetch_16;
-   function sync_sub_and_fetch (A1 : not null access Integer_32;
-                                A2 : Integer_32) return Integer_32
+   function sync_sub_and_fetch (
+      A1 : not null access Integer_32;
+      A2 : Integer_32)
+      return Integer_32
       renames sync_sub_and_fetch_32;
-   function sync_sub_and_fetch (A1 : not null access Integer_64;
-                                A2 : Integer_64) return Integer_64
+   function sync_sub_and_fetch (
+      A1 : not null access Integer_64;
+      A2 : Integer_64)
+      return Integer_64
       renames sync_sub_and_fetch_64;
 
-   function sync_bool_compare_and_swap_8 (A1 : not null access Integer_8;
-                                          A2 : Integer_8;
-                                          A3 : Integer_8) return Boolean;
+   function sync_bool_compare_and_swap_8 (
+      A1 : not null access Integer_8;
+      A2 : Integer_8;
+      A3 : Integer_8)
+      return Boolean;
    pragma Import (Intrinsic, sync_bool_compare_and_swap_8,
-                  "__sync_bool_compare_and_swap_1");
-   function sync_bool_compare_and_swap_16 (A1 : not null access Integer_16;
-                                           A2 : Integer_16;
-                                           A3 : Integer_16) return Boolean;
+      "__sync_bool_compare_and_swap_1");
+   function sync_bool_compare_and_swap_16 (
+      A1 : not null access Integer_16;
+      A2 : Integer_16;
+      A3 : Integer_16)
+      return Boolean;
    pragma Import (Intrinsic, sync_bool_compare_and_swap_16,
-                  "__sync_bool_compare_and_swap_2");
-   function sync_bool_compare_and_swap_32 (A1 : not null access Integer_32;
-                                           A2 : Integer_32;
-                                           A3 : Integer_32) return Boolean;
+      "__sync_bool_compare_and_swap_2");
+   function sync_bool_compare_and_swap_32 (
+      A1 : not null access Integer_32;
+      A2 : Integer_32;
+      A3 : Integer_32)
+      return Boolean;
    pragma Import (Intrinsic, sync_bool_compare_and_swap_32,
-                  "__sync_bool_compare_and_swap_4");
-   function sync_bool_compare_and_swap_64 (A1 : not null access Integer_64;
-                                           A2 : Integer_64;
-                                           A3 : Integer_64) return Boolean;
+      "__sync_bool_compare_and_swap_4");
+   function sync_bool_compare_and_swap_64 (
+      A1 : not null access Integer_64;
+      A2 : Integer_64;
+      A3 : Integer_64)
+      return Boolean;
    pragma Import (Intrinsic, sync_bool_compare_and_swap_64,
-                  "__sync_bool_compare_and_swap_8");
+      "__sync_bool_compare_and_swap_8");
 
-   function sync_bool_compare_and_swap (A1 : not null access Integer_8;
-                                        A2 : Integer_8;
-                                        A3 : Integer_8) return Boolean
+   function sync_bool_compare_and_swap (
+      A1 : not null access Integer_8;
+      A2 : Integer_8;
+      A3 : Integer_8)
+      return Boolean
       renames sync_bool_compare_and_swap_8;
-   function sync_bool_compare_and_swap (A1 : not null access Integer_16;
-                                        A2 : Integer_16;
-                                        A3 : Integer_16) return Boolean
+   function sync_bool_compare_and_swap (
+      A1 : not null access Integer_16;
+      A2 : Integer_16;
+      A3 : Integer_16)
+      return Boolean
       renames sync_bool_compare_and_swap_16;
-   function sync_bool_compare_and_swap (A1 : not null access Integer_32;
-                                        A2 : Integer_32;
-                                        A3 : Integer_32) return Boolean
+   function sync_bool_compare_and_swap (
+      A1 : not null access Integer_32;
+      A2 : Integer_32;
+      A3 : Integer_32)
+      return Boolean
       renames sync_bool_compare_and_swap_32;
-   function sync_bool_compare_and_swap (A1 : not null access Integer_64;
-                                        A2 : Integer_64;
-                                        A3 : Integer_64) return Boolean
+   function sync_bool_compare_and_swap (
+      A1 : not null access Integer_64;
+      A2 : Integer_64;
+      A3 : Integer_64)
+      return Boolean
       renames sync_bool_compare_and_swap_64;
 
 end Interfaces;
