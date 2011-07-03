@@ -154,7 +154,6 @@ package body Ada.Numerics.MT19937 is
             Base => 16,
             Width => Cardinal'Size / 4,
             Error => Error);
-         Debug.Put (Result'First'Img & Result'Last'Img & Last'Img);
          pragma Assert (not Error and then Last = Result'Last);
       end Hex;
       Result : String (1 .. Max_Image_Width);
