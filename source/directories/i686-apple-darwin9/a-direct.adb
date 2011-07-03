@@ -597,11 +597,13 @@ package body Ada.Directories is
    begin
       Check_Assigned (Directory_Entry);
       declare
-         subtype Fixed_String is String (Positive);
-         Result : Fixed_String;
+         subtype Result_String is String (
+            1 ..
+            Natural (Directory_Entry.Entry_Data.d_namlen));
+         Result : Result_String;
          for Result'Address use Directory_Entry.Entry_Data.d_name'Address;
       begin
-         return Result (1 .. Natural (Directory_Entry.Entry_Data.d_namlen));
+         return Result;
       end;
    end Simple_Name;
 
