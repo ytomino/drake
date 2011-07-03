@@ -50,7 +50,7 @@ package System.WWd_Enum is
       EM : WC_Encoding_Method := 1)
       return Natural;
 
-   --  it needs default values for EM to avoiding bug of compiler
+   --  [gcc 4.5/4.6] it needs default values for EM to avoiding bug of compiler
    --  (missing argument for parameter "EM" in call to ...)
 
 end System.WWd_Enum;

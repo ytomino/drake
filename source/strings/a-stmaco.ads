@@ -13,8 +13,8 @@ package Ada.Strings.Maps.Constants is
 
    --  This implementations is heavy for size of the executable file,
    --  because all UCD table may be linked. It should be separating...
-   --  Unfortunately, Root_Maps.Inside.To_Set/To_Mapping are not inlined
-   --  though Inline_Always.
+   --  [gcc 4.5/4.6] Unfortunately, Root_Maps.Inside.To_Set/To_Mapping are
+   --  not inlined though Inline_Always.
    --  (and, Inline_Always for returning a controlled-type is buggy...)
    --  Same with Wide_Constants/Wide_Wide_Contants.
 

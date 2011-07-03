@@ -103,10 +103,12 @@ package body Ada.Direct_IO is
    end Read;
 
    procedure Read (File : File_Type; Item : out Element_Type) is
-      pragma Warnings (Off);
+      pragma Warnings (Off,
+         "constrained for private type is an obsolescent feature (RM J.4)");
       Constrained : constant Boolean := Element_Type'Constrained;
       --  'Definite / 'Has_Discriminants attribute are disallowed here
-      pragma Warnings (On);
+      pragma Warnings (On,
+         "constrained for private type is an obsolescent feature (RM J.4)");
    begin
       if not Constrained then
          --  indefinite (or unconstrained) types

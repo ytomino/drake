@@ -4,7 +4,8 @@ package body Ada.Calendar is
    RM_9_6_26_Overflow_Check : constant := Boolean'Pos (
       Overflow_Check'Enabled /= False);
    --  it could not use 'Enabled in "+", "-" since Inline_Always.
-   pragma Warnings (Off, RM_9_6_26_Overflow_Check); --  always true or false
+   pragma Warnings (Off, RM_9_6_26_Overflow_Check);
+   --  [gcc-4.5/4.6] condition is always False/True
    pragma Suppress (All_Checks);
 
    function Clock return Time

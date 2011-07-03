@@ -27,9 +27,8 @@ package body System.Reference_Counting is
          Integer'Size /= 32 and then Integer'Size /= 64,
          "Integer'Size is neither 32 nor 64");
    begin
-      pragma Warnings (Off);
+      pragma Warnings (Off, "condition is always True");
       if Integer'Size = 32 then
-         pragma Warnings (On);
          declare
             function sync_bool_compare_and_swap_32 (
                A1 : not null access Natural;
@@ -42,7 +41,6 @@ package body System.Reference_Counting is
             return sync_bool_compare_and_swap_32 (A1, A2, A3);
          end;
       else
-         pragma Warnings (On);
          declare
             function sync_bool_compare_and_swap_64 (
                A1 : not null access Natural;
@@ -55,7 +53,7 @@ package body System.Reference_Counting is
             return sync_bool_compare_and_swap_64 (A1, A2, A3);
          end;
       end if;
-      pragma Warnings (On);
+      pragma Warnings (On, "condition is always True");
    end sync_bool_compare_and_swap;
 
    function Shared (Count : Counter) return Boolean is
