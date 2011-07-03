@@ -4,7 +4,6 @@ package body Ada.Memory_Mapped_IO is
    use type Streams.Stream_IO.Count;
    use type System.Address;
    use type C.signed_int;
-   use type C.void_ptr;
    use type C.sys.types.off_t;
 
    procedure Map (
@@ -91,7 +90,9 @@ package body Ada.Memory_Mapped_IO is
          C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
          Handle,
          C.sys.types.off_t (Offset) - 1);
-      if Mapped_Address = C.sys.mman.MAP_FAILED then
+      if System.Address (Mapped_Address)
+         = System.Address (C.sys.mman.MAP_FAILED)
+      then
          raise Use_Error;
       end if;
       Object.Address := System.Address (Mapped_Address);
