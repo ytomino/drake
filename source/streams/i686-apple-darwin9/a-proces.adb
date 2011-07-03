@@ -10,6 +10,10 @@ package body Ada.Processes is
    use type C.signed_int;
    use type C.size_t;
 
+   --  the imported name of _exit differs versions of the translated header
+   procedure C_qexit (status : C.signed_int);
+   pragma Import (C, C_qexit, "_exit");
+
    function WIFEXITED (x : C.signed_int) return Boolean;
    function WIFEXITED (x : C.signed_int) return Boolean is
    begin
@@ -50,7 +54,7 @@ package body Ada.Processes is
                for C_Directory'Address use Z_Directory'Address;
             begin
                if C.unistd.chdir (C_Directory (0)'Access) = -1 then
-                  C.unistd.C_exit (127);
+                  C_qexit (127);
                end if;
             end;
          end if;
@@ -122,7 +126,7 @@ package body Ada.Processes is
                Argument (0),
                Argument (1)'Access,
                Environment_Variables.Inside.Environment_Block);
-            C.unistd.C_exit (127);
+            C_qexit (127);
          end;
       end if;
    end Create;
