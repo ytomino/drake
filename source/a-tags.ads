@@ -24,7 +24,7 @@ package Ada.Tags is
 
    function Interface_Ancestor_Tags (T : Tag) return Tag_Array;
 
-   function Is_Abstract (T : Tag) return Boolean; --  Ada 2012
+   function Is_Abstract (T : Tag) return Boolean; -- Ada 2012
 
    Tag_Error : exception;
 
