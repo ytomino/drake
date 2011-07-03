@@ -1,5 +1,7 @@
 pragma License (Unrestricted);
 with Ada.Numerics.Generic_Elementary_Arctan;
+with Ada.Numerics.Generic_Elementary_Cos;
+with Ada.Numerics.Generic_Elementary_Sin;
 with Ada.Numerics.Generic_Elementary_Sqrt;
 generic
    type Float_Type is digits <>;
@@ -16,10 +18,10 @@ package Ada.Numerics.Generic_Elementary_Functions is
    function "**" (Left, Right : Float_Type'Base) return Float_Type'Base;
    pragma Inline ("**");
 
-   function Sin (X : Float_Type'Base) return Float_Type'Base;
+   function Sin is new Generic_Elementary_Sin (Float_Type'Base);
    function Sin (X, Cycle : Float_Type'Base) return Float_Type'Base;
    pragma Inline (Sin);
-   function Cos (X : Float_Type'Base) return Float_Type'Base;
+   function Cos is new Generic_Elementary_Cos (Float_Type'Base);
    function Cos (X, Cycle : Float_Type'Base) return Float_Type'Base;
    pragma Inline (Cos);
    function Tan (X : Float_Type'Base) return Float_Type'Base;

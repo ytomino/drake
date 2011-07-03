@@ -179,23 +179,6 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       end if;
    end Arctanh;
 
-   function Cos (X : Float_Type'Base) return Float_Type'Base is
-      function cosf (A1 : Float) return Float;
-      pragma Import (Intrinsic, cosf, "__builtin_cosf");
-      function cos (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, cos, "__builtin_cos");
-      function cosl (A1 : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, cosl, "__builtin_cosl");
-   begin
-      if Float_Type'Digits <= Float'Digits then
-         return Float_Type (cosf (Float (X)));
-      elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (cos (Long_Float (X)));
-      else
-         return Float_Type (cosl (Long_Long_Float (X)));
-      end if;
-   end Cos;
-
    function Cos (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin
       if Standard'Fast_Math then
@@ -341,23 +324,6 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          return Log (X) / Log (Base);
       end if;
    end Log;
-
-   function Sin (X : Float_Type'Base) return Float_Type'Base is
-      function sinf (A1 : Float) return Float;
-      pragma Import (Intrinsic, sinf, "__builtin_sinf");
-      function sin (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, sin, "__builtin_sin");
-      function sinl (A1 : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, sinl, "__builtin_sinl");
-   begin
-      if Float_Type'Digits <= Float'Digits then
-         return Float_Type (sinf (Float (X)));
-      elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (sin (Long_Float (X)));
-      else
-         return Float_Type (sinl (Long_Long_Float (X)));
-      end if;
-   end Sin;
 
    function Sin (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin

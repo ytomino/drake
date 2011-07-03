@@ -5,14 +5,6 @@ package body Ada.Strings.Generic_Fixed is
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
-   --  gcc's builtin-function
-   function memchr (
-      s : System.Address;
-      c : System.Storage_Elements.Storage_Element;
-      n : System.Storage_Elements.Storage_Count)
-      return System.Address;
-   pragma Import (Intrinsic, memchr, "__builtin_memchr");
-
    procedure Move (
       Source : String_Type;
       Target : out String_Type;
@@ -96,10 +88,20 @@ package body Ada.Strings.Generic_Fixed is
    begin
       if Character_Type'Size = Character'Size then
          declare
-            Result : constant System.Address := memchr (
-               Source'Address,
-               Character_Type'Pos (Pattern),
-               Source'Length);
+            package Conv is
+               new System.Address_To_Access_Conversions (Character);
+               --  gcc's builtin-function
+            function memchr (
+               s : Conv.Object_Pointer;
+               c : Integer;
+               n : System.Storage_Elements.Storage_Count)
+               return Conv.Object_Pointer;
+            pragma Import (Intrinsic, memchr, "__builtin_memchr");
+            Result : constant System.Address := Conv.To_Address (
+               memchr (
+                  Conv.To_Pointer (Source'Address),
+                  Character_Type'Pos (Pattern),
+                  Source'Length));
          begin
             if Result = System.Null_Address then
                return 0;

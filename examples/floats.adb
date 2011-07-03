@@ -7,6 +7,8 @@ procedure floats is
 	procedure Test is
 		function Infinity is new Ada.Float.Infinity (T);
 --		function NaN is new Ada.Float.NaN (T);
+		function Is_Infinity is new Ada.Float.Is_Infinity (T);
+		function Is_NaN is new Ada.Float.Is_NaN (T);
 		function Is_Negative is new Ada.Float.Is_Negative (T);
 		X : T := T'Value ("2.0");
 		type R is record

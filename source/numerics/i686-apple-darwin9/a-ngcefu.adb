@@ -2,36 +2,54 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    pragma Suppress (All_Checks);
 
    function Arccos (X : Complex) return Complex is
-      function cacosf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cacosf, "__builtin_cacosf");
-      function cacos (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cacos, "__builtin_cacos");
-      function cacosl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cacosl, "__builtin_cacosl");
    begin
       if Real'Digits <= Float'Digits then
-         return cacosf (X);
+         declare
+            function cacosf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cacosf, "__builtin_cacosf");
+         begin
+            return cacosf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return cacos (X);
+         declare
+            function cacos (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cacos, "__builtin_cacos");
+         begin
+            return cacos (X);
+         end;
       else
-         return cacosl (X);
+         declare
+            function cacosl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cacosl, "__builtin_cacosl");
+         begin
+            return cacosl (X);
+         end;
       end if;
    end Arccos;
 
    function Arccosh (X : Complex) return Complex is
-      function cacoshf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cacoshf, "__builtin_cacoshf");
-      function cacosh (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cacosh, "__builtin_cacosh");
-      function cacoshl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cacoshl, "__builtin_cacoshl");
    begin
       if Real'Digits <= Float'Digits then
-         return cacoshf (X);
+         declare
+            function cacoshf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cacoshf, "__builtin_cacoshf");
+         begin
+            return cacoshf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return cacosh (X);
+         declare
+            function cacosh (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cacosh, "__builtin_cacosh");
+         begin
+            return cacosh (X);
+         end;
       else
-         return cacoshl (X);
+         declare
+            function cacoshl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cacoshl, "__builtin_cacoshl");
+         begin
+            return cacoshl (X);
+         end;
       end if;
    end Arccosh;
 
@@ -50,104 +68,158 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    end Arccoth;
 
    function Arcsin (X : Complex) return Complex is
-      function casinf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, casinf, "__builtin_casinf");
-      function casin (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, casin, "__builtin_casin");
-      function casinl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, casinl, "__builtin_casinl");
    begin
       if Real'Digits <= Float'Digits then
-         return casinf (X);
+         declare
+            function casinf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, casinf, "__builtin_casinf");
+         begin
+            return casinf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return casin (X);
+         declare
+            function casin (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, casin, "__builtin_casin");
+         begin
+            return casin (X);
+         end;
       else
-         return casinl (X);
+         declare
+            function casinl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, casinl, "__builtin_casinl");
+         begin
+            return casinl (X);
+         end;
       end if;
    end Arcsin;
 
    function Arcsinh (X : Complex) return Complex is
-      function casinhf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, casinhf, "__builtin_casinhf");
-      function casinh (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, casinh, "__builtin_casinh");
-      function casinhl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, casinhl, "__builtin_casinhl");
    begin
       if Real'Digits <= Float'Digits then
-         return casinhf (X);
+         declare
+            function casinhf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, casinhf, "__builtin_casinhf");
+         begin
+            return casinhf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return casinh (X);
+         declare
+            function casinh (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, casinh, "__builtin_casinh");
+         begin
+            return casinh (X);
+         end;
       else
-         return casinhl (X);
+         declare
+            function casinhl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, casinhl, "__builtin_casinhl");
+         begin
+            return casinhl (X);
+         end;
       end if;
    end Arcsinh;
 
    function Arctan (X : Complex) return Complex is
-      function catanf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, catanf, "__builtin_catanf");
-      function catan (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, catan, "__builtin_catan");
-      function catanl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, catanl, "__builtin_catanl");
    begin
       if Real'Digits <= Float'Digits then
-         return catanf (X);
+         declare
+            function catanf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, catanf, "__builtin_catanf");
+         begin
+            return catanf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return catan (X);
+         declare
+            function catan (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, catan, "__builtin_catan");
+         begin
+            return catan (X);
+         end;
       else
-         return catanl (X);
+         declare
+            function catanl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, catanl, "__builtin_catanl");
+         begin
+            return catanl (X);
+         end;
       end if;
    end Arctan;
 
    function Arctanh (X : Complex) return Complex is
-      function catanhf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, catanhf, "__builtin_catanhf");
-      function catanh (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, catanh, "__builtin_catanh");
-      function catanhl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, catanhl, "__builtin_catanhl");
    begin
       if Real'Digits <= Float'Digits then
-         return catanhf (X);
+         declare
+            function catanhf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, catanhf, "__builtin_catanhf");
+         begin
+            return catanhf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return catanh (X);
+         declare
+            function catanh (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, catanh, "__builtin_catanh");
+         begin
+            return catanh (X);
+         end;
       else
-         return catanhl (X);
+         declare
+            function catanhl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, catanhl, "__builtin_catanhl");
+         begin
+            return catanhl (X);
+         end;
       end if;
    end Arctanh;
 
    function Cos (X : Complex) return Complex is
-      function ccosf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ccosf, "__builtin_ccosf");
-      function ccos (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ccos, "__builtin_ccos");
-      function ccosl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ccosl, "__builtin_ccosl");
    begin
       if Real'Digits <= Float'Digits then
-         return ccosf (X);
+         declare
+            function ccosf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ccosf, "__builtin_ccosf");
+         begin
+            return ccosf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return ccos (X);
+         declare
+            function ccos (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ccos, "__builtin_ccos");
+         begin
+            return ccos (X);
+         end;
       else
-         return ccosl (X);
+         declare
+            function ccosl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ccosl, "__builtin_ccosl");
+         begin
+            return ccosl (X);
+         end;
       end if;
    end Cos;
 
    function Cosh (X : Complex) return Complex is
-      function ccoshf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ccoshf, "__builtin_ccoshf");
-      function ccosh (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ccosh, "__builtin_ccosh");
-      function ccoshl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ccoshl, "__builtin_ccoshl");
    begin
       if Real'Digits <= Float'Digits then
-         return ccoshf (X);
+         declare
+            function ccoshf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ccoshf, "__builtin_ccoshf");
+         begin
+            return ccoshf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return ccosh (X);
+         declare
+            function ccosh (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ccosh, "__builtin_ccosh");
+         begin
+            return ccosh (X);
+         end;
       else
-         return ccoshl (X);
+         declare
+            function ccoshl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ccoshl, "__builtin_ccoshl");
+         begin
+            return ccoshl (X);
+         end;
       end if;
    end Cosh;
 
@@ -162,148 +234,214 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    end Coth;
 
    function Exp (X : Complex) return Complex is
-      function cexpf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cexpf, "__builtin_cexpf");
-      function cexp (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cexp, "__builtin_cexp");
-      function cexpl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, cexpl, "__builtin_cexpl");
    begin
       if Real'Digits <= Float'Digits then
-         return cexpf (X);
+         declare
+            function cexpf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cexpf, "__builtin_cexpf");
+         begin
+            return cexpf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return cexp (X);
+         declare
+            function cexp (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cexp, "__builtin_cexp");
+         begin
+            return cexp (X);
+         end;
       else
-         return cexpl (X);
+         declare
+            function cexpl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, cexpl, "__builtin_cexpl");
+         begin
+            return cexpl (X);
+         end;
       end if;
    end Exp;
 
    function Exp (X : Imaginary) return Complex is
-      function cexpif (A1 : Float) return Complex;
-      pragma Import (Intrinsic, cexpif, "__builtin_cexpif");
-      function cexpi (A1 : Long_Float) return Complex;
-      pragma Import (Intrinsic, cexpi, "__builtin_cexpi");
-      function cexpil (A1 : Long_Long_Float) return Complex;
-      pragma Import (Intrinsic, cexpil, "__builtin_cexpil");
    begin
       if Real'Digits <= Float'Digits then
-         return cexpif (Float (Im (X)));
+         declare
+            function cexpif (A1 : Float) return Complex;
+            pragma Import (Intrinsic, cexpif, "__builtin_cexpif");
+         begin
+            return cexpif (Float (Im (X)));
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return cexpi (Long_Float (Im (X)));
+         declare
+            function cexpi (A1 : Long_Float) return Complex;
+            pragma Import (Intrinsic, cexpi, "__builtin_cexpi");
+         begin
+            return cexpi (Long_Float (Im (X)));
+         end;
       else
-         return cexpil (Long_Long_Float (Im (X)));
+         declare
+            function cexpil (A1 : Long_Long_Float) return Complex;
+            pragma Import (Intrinsic, cexpil, "__builtin_cexpil");
+         begin
+            return cexpil (Long_Long_Float (Im (X)));
+         end;
       end if;
    end Exp;
 
    function Log (X : Complex) return Complex is
-      function clogf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, clogf, "__builtin_clogf");
-      function clog (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, clog, "__builtin_clog");
-      function clogl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, clogl, "__builtin_clogl");
    begin
       if Real'Digits <= Float'Digits then
-         return clogf (X);
+         declare
+            function clogf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, clogf, "__builtin_clogf");
+         begin
+            return clogf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return clog (X);
+         declare
+            function clog (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, clog, "__builtin_clog");
+         begin
+            return clog (X);
+         end;
       else
-         return clogl (X);
+         declare
+            function clogl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, clogl, "__builtin_clogl");
+         begin
+            return clogl (X);
+         end;
       end if;
    end Log;
 
    function Sin (X : Complex) return Complex is
-      function csinf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csinf, "__builtin_csinf");
-      function csin (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csin, "__builtin_csin");
-      function csinl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csinl, "__builtin_csinl");
    begin
       if Real'Digits <= Float'Digits then
-         return csinf (X);
+         declare
+            function csinf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csinf, "__builtin_csinf");
+         begin
+            return csinf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return csin (X);
+         declare
+            function csin (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csin, "__builtin_csin");
+         begin
+            return csin (X);
+         end;
       else
-         return csinl (X);
+         declare
+            function csinl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csinl, "__builtin_csinl");
+         begin
+            return csinl (X);
+         end;
       end if;
    end Sin;
 
    function Sinh (X : Complex) return Complex is
-      function csinhf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csinhf, "__builtin_csinhf");
-      function csinh (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csinh, "__builtin_csinh");
-      function csinhl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csinhl, "__builtin_csinhl");
    begin
       if Real'Digits <= Float'Digits then
-         return csinhf (X);
+         declare
+            function csinhf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csinhf, "__builtin_csinhf");
+         begin
+            return csinhf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return csinh (X);
+         declare
+            function csinh (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csinh, "__builtin_csinh");
+         begin
+            return csinh (X);
+         end;
       else
-         return csinhl (X);
+         declare
+            function csinhl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csinhl, "__builtin_csinhl");
+         begin
+            return csinhl (X);
+         end;
       end if;
    end Sinh;
 
    function Sqrt (X : Complex) return Complex is
-      function csqrtf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csqrtf, "__builtin_csqrtf");
-      function csqrt (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csqrt, "__builtin_csqrt");
-      function csqrtl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, csqrtl, "__builtin_csqrtl");
    begin
       if Real'Digits <= Float'Digits then
-         return csqrtf (X);
+         declare
+            function csqrtf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csqrtf, "__builtin_csqrtf");
+         begin
+            return csqrtf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return csqrt (X);
+         declare
+            function csqrt (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csqrt, "__builtin_csqrt");
+         begin
+            return csqrt (X);
+         end;
       else
-         return csqrtl (X);
+         declare
+            function csqrtl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, csqrtl, "__builtin_csqrtl");
+         begin
+            return csqrtl (X);
+         end;
       end if;
    end Sqrt;
 
    function Tan (X : Complex) return Complex is
-      function ctanf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ctanf, "__builtin_ctanf");
-      function ctan (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ctan, "__builtin_ctan");
-      function ctanl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ctanl, "__builtin_ctanl");
    begin
       if Real'Digits <= Float'Digits then
-         return ctanf (X);
+         declare
+            function ctanf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ctanf, "__builtin_ctanf");
+         begin
+            return ctanf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return ctan (X);
+         declare
+            function ctan (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ctan, "__builtin_ctan");
+         begin
+            return ctan (X);
+         end;
       else
-         return ctanl (X);
+         declare
+            function ctanl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ctanl, "__builtin_ctanl");
+         begin
+            return ctanl (X);
+         end;
       end if;
    end Tan;
 
    function Tanh (X : Complex) return Complex is
-      function ctanhf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ctanhf, "__builtin_ctanhf");
-      function ctanh (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ctanh, "__builtin_ctanh");
-      function ctanhl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, ctanhl, "__builtin_ctanhl");
    begin
       if Real'Digits <= Float'Digits then
-         return ctanhf (X);
+         declare
+            function ctanhf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ctanhf, "__builtin_ctanhf");
+         begin
+            return ctanhf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return ctanh (X);
+         declare
+            function ctanh (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ctanh, "__builtin_ctanh");
+         begin
+            return ctanh (X);
+         end;
       else
-         return ctanhl (X);
+         declare
+            function ctanhl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, ctanhl, "__builtin_ctanhl");
+         begin
+            return ctanhl (X);
+         end;
       end if;
    end Tanh;
 
    function "**" (Left : Complex; Right : Complex) return Complex is
-      function cpowf (A1, A2 : Complex) return Complex;
-      pragma Import (Intrinsic, cpowf, "__builtin_cpowf");
-      function cpow (A1, A2 : Complex) return Complex;
-      pragma Import (Intrinsic, cpow, "__builtin_cpow");
-      function cpowl (A1, A2 : Complex) return Complex;
-      pragma Import (Intrinsic, cpowl, "__builtin_cpowl");
    begin
       if not Standard'Fast_Math
          and then Left.Re = 0.0 and then Left.Im = 0.0
@@ -313,11 +451,26 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       elsif Right.Re = 1.0 and Right.Im = 0.0 then
          return Left; -- CXG1005
       elsif Real'Digits <= Float'Digits then
-         return cpowf (Left, Right);
+         declare
+            function cpowf (A1, A2 : Complex) return Complex;
+            pragma Import (Intrinsic, cpowf, "__builtin_cpowf");
+         begin
+            return cpowf (Left, Right);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return cpow (Left, Right);
+         declare
+            function cpow (A1, A2 : Complex) return Complex;
+            pragma Import (Intrinsic, cpow, "__builtin_cpow");
+         begin
+            return cpow (Left, Right);
+         end;
       else
-         return cpowl (Left, Right);
+         declare
+            function cpowl (A1, A2 : Complex) return Complex;
+            pragma Import (Intrinsic, cpowl, "__builtin_cpowl");
+         begin
+            return cpowl (Left, Right);
+         end;
       end if;
    end "**";
 

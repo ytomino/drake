@@ -1,5 +1,7 @@
 with Ada.Float;
 with Ada.Numerics.Generic_Complex_Types.Inside;
+with Ada.Numerics.Generic_Elementary_Cos;
+with Ada.Numerics.Generic_Elementary_Sin;
 package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
 
@@ -37,30 +39,12 @@ package body Ada.Numerics.Generic_Complex_Types is
    function Compose_From_Polar (Modulus, Argument : Real'Base)
       return Complex
    is
-      function sinf (A1 : Float) return Float;
-      pragma Import (Intrinsic, sinf, "__builtin_sinf");
-      function sin (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, sin, "__builtin_sin");
-      function sinl (A1 : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, sinl, "__builtin_sinl");
-      function cosf (A1 : Float) return Float;
-      pragma Import (Intrinsic, cosf, "__builtin_cosf");
-      function cos (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, cos, "__builtin_cos");
-      function cosl (A1 : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, cosl, "__builtin_cosl");
+      function Sin is new Generic_Elementary_Sin (Real'Base);
+      function Cos is new Generic_Elementary_Cos (Real'Base);
    begin
-      if Real'Digits <= Float'Digits then
-         return (Re => Modulus * Real'Base (cosf (Float (Argument))),
-                 Im => Modulus * Real'Base (sinf (Float (Argument))));
-      elsif Real'Digits <= Long_Float'Digits then
-         return (Re => Modulus * Real'Base (cos (Long_Float (Argument))),
-                 Im => Modulus * Real'Base (sin (Long_Float (Argument))));
-      else
-         return (Re => Modulus * Real'Base (cosl (Long_Long_Float (Argument))),
-                 Im => Modulus *
-                       Real'Base (sinl (Long_Long_Float (Argument))));
-      end if;
+      return (
+         Re => Modulus * Cos (Argument),
+         Im => Modulus * Sin (Argument));
    end Compose_From_Polar;
 
    function Compose_From_Polar (Modulus, Argument, Cycle : Real'Base)
@@ -95,19 +79,28 @@ package body Ada.Numerics.Generic_Complex_Types is
    end Compose_From_Polar;
 
    function Conjugate (X : Complex) return Complex is
-      function conjf (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, conjf, "__builtin_conjf");
-      function conj (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, conj, "__builtin_conj");
-      function conjl (A1 : Complex) return Complex;
-      pragma Import (Intrinsic, conjl, "__builtin_conjl");
    begin
       if Real'Digits <= Float'Digits then
-         return conjf (X);
+         declare
+            function conjf (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, conjf, "__builtin_conjf");
+         begin
+            return conjf (X);
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return conj (X);
+         declare
+            function conj (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, conj, "__builtin_conj");
+         begin
+            return conj (X);
+         end;
       else
-         return conjl (X);
+         declare
+            function conjl (A1 : Complex) return Complex;
+            pragma Import (Intrinsic, conjl, "__builtin_conjl");
+         begin
+            return conjl (X);
+         end;
       end if;
    end Conjugate;
 
@@ -127,19 +120,28 @@ package body Ada.Numerics.Generic_Complex_Types is
    end Im;
 
    function Modulus (X : Complex) return Real'Base is
-      function cabsf (A1 : Complex) return Float;
-      pragma Import (Intrinsic, cabsf, "__builtin_cabsf");
-      function cabs (A1 : Complex) return Long_Float;
-      pragma Import (Intrinsic, cabs, "__builtin_cabs");
-      function cabsl (A1 : Complex) return Long_Long_Float;
-      pragma Import (Intrinsic, cabsl, "__builtin_cabsl");
    begin
       if Real'Digits <= Float'Digits then
-         return Real'Base (cabsf (X));
+         declare
+            function cabsf (A1 : Complex) return Float;
+            pragma Import (Intrinsic, cabsf, "__builtin_cabsf");
+         begin
+            return Real'Base (cabsf (X));
+         end;
       elsif Real'Digits <= Long_Float'Digits then
-         return Real'Base (cabs (X));
+         declare
+            function cabs (A1 : Complex) return Long_Float;
+            pragma Import (Intrinsic, cabs, "__builtin_cabs");
+         begin
+            return Real'Base (cabs (X));
+         end;
       else
-         return Real'Base (cabsl (X));
+         declare
+            function cabsl (A1 : Complex) return Long_Long_Float;
+            pragma Import (Intrinsic, cabsl, "__builtin_cabsl");
+         begin
+            return Real'Base (cabsl (X));
+         end;
       end if;
    end Modulus;
 

@@ -3,70 +3,114 @@ package body Ada.Float is
    pragma Suppress (All_Checks);
 
    function Infinity return Float_Type is
-      function inff return Standard.Float;
-      pragma Import (Intrinsic, inff, "__builtin_inff");
-      function inf return Long_Float;
-      pragma Import (Intrinsic, inf, "__builtin_inf");
-      function infl return Long_Long_Float;
-      pragma Import (Intrinsic, infl, "__builtin_infl");
    begin
       if Float_Type'Digits <= Standard.Float'Digits then
-         return Float_Type (inff);
+         declare
+            function inff return Standard.Float;
+            pragma Import (Intrinsic, inff, "__builtin_inff");
+         begin
+            return Float_Type (inff);
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (inf);
+         declare
+            function inf return Long_Float;
+            pragma Import (Intrinsic, inf, "__builtin_inf");
+         begin
+            return Float_Type (inf);
+         end;
       else
-         return Float_Type (infl);
+         declare
+            function infl return Long_Long_Float;
+            pragma Import (Intrinsic, infl, "__builtin_infl");
+         begin
+            return Float_Type (infl);
+         end;
       end if;
    end Infinity;
 
    function NaN return Float_Type is
-      function nanf (tagp : access Character) return Standard.Float;
-      pragma Import (Intrinsic, nanf, "__builtin_nanf");
-      function nan (tagp : access Character) return Long_Float;
-      pragma Import (Intrinsic, nan, "__builtin_nan");
-      function nanl (tagp : access Character) return Long_Long_Float;
-      pragma Import (Intrinsic, nanl, "__builtin_nanl");
    begin
       if Float_Type'Digits <= Standard.Float'Digits then
-         return Float_Type (nanf (null));
+         declare
+            function nanf (tagp : access constant Character)
+               return Standard.Float;
+            pragma Import (Intrinsic, nanf, "__builtin_nanf");
+            Z : constant array (0 .. 0) of aliased Character :=
+               (0 => Character'Val (0));
+         begin
+            return Float_Type (nanf (Z (0)'Access));
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type (nan (null));
+         declare
+            function nan (tagp : access constant Character) return Long_Float;
+            pragma Import (Intrinsic, nan, "__builtin_nan");
+            Z : constant array (0 .. 0) of aliased Character :=
+               (0 => Character'Val (0));
+         begin
+            return Float_Type (nan (Z (0)'Access));
+         end;
       else
-         return Float_Type (nanl (null));
+         declare
+            function nanl (tagp : access constant Character)
+               return Long_Long_Float;
+            pragma Import (Intrinsic, nanl, "__builtin_nanl");
+            Z : constant array (0 .. 0) of aliased Character :=
+               (0 => Character'Val (0));
+         begin
+            return Float_Type (nanl (Z (0)'Access));
+         end;
       end if;
    end NaN;
 
    function Is_Infinity (X : Float_Type) return Boolean is
-      function isinff (x : Standard.Float) return Integer;
-      pragma Import (Intrinsic, isinff, "__builtin_isinff");
-      function isinf (x : Long_Float) return Integer;
-      pragma Import (Intrinsic, isinf, "__builtin_isinf");
-      function isinfl (x : Long_Long_Float) return Integer;
-      pragma Import (Intrinsic, isinfl, "__builtin_isinfl");
    begin
       if Float_Type'Digits <= Standard.Float'Digits then
-         return isinff (Standard.Float (X)) /= 0;
+         declare
+            function isinff (x : Standard.Float) return Integer;
+            pragma Import (Intrinsic, isinff, "__builtin_isinff");
+         begin
+            return isinff (Standard.Float (X)) /= 0;
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return isinf (Long_Float (X)) /= 0;
+         declare
+            function isinf (x : Long_Float) return Integer;
+            pragma Import (Intrinsic, isinf, "__builtin_isinf");
+         begin
+            return isinf (Long_Float (X)) /= 0;
+         end;
       else
-         return isinfl (Long_Long_Float (X)) /= 0;
+         declare
+            function isinfl (x : Long_Long_Float) return Integer;
+            pragma Import (Intrinsic, isinfl, "__builtin_isinfl");
+         begin
+            return isinfl (Long_Long_Float (X)) /= 0;
+         end;
       end if;
    end Is_Infinity;
 
    function Is_NaN (X : Float_Type) return Boolean is
-      function isnanf (x : Standard.Float) return Integer;
-      pragma Import (Intrinsic, isnanf, "__builtin_isnanf");
-      function isnan (x : Long_Float) return Integer;
-      pragma Import (Intrinsic, isnan, "__builtin_isnan");
-      function isnanl (x : Long_Long_Float) return Integer;
-      pragma Import (Intrinsic, isnanl, "__builtin_isnanl");
    begin
       if Float_Type'Digits <= Standard.Float'Digits then
-         return isnanf (Standard.Float (X)) /= 0;
+         declare
+            function isnanf (x : Standard.Float) return Integer;
+            pragma Import (Intrinsic, isnanf, "__builtin_isnanf");
+         begin
+            return isnanf (Standard.Float (X)) /= 0;
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return isnan (Long_Float (X)) /= 0;
+         declare
+            function isnan (x : Long_Float) return Integer;
+            pragma Import (Intrinsic, isnan, "__builtin_isnan");
+         begin
+            return isnan (Long_Float (X)) /= 0;
+         end;
       else
-         return isnanl (Long_Long_Float (X)) /= 0;
+         declare
+            function isnanl (x : Long_Long_Float) return Integer;
+            pragma Import (Intrinsic, isnanl, "__builtin_isnanl");
+         begin
+            return isnanl (Long_Long_Float (X)) /= 0;
+         end;
       end if;
    end Is_NaN;
 
