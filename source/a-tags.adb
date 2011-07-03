@@ -11,12 +11,12 @@ package body Ada.Tags is
 
    Nested_Prefix : constant String := "Internal tag at 16#";
 
-   function External_Tag_Impl (T : Tag) return String;
-   function External_Tag_Impl (T : Tag) return String is
+   function External_Tag_Impl (DT : Dispatch_Table_Ptr) return String;
+   function External_Tag_Impl (DT : Dispatch_Table_Ptr) return String is
       function Cast is new Unchecked_Conversion (
          System.Address,
          Type_Specific_Data_Ptr);
-      TSD : constant Type_Specific_Data_Ptr := Cast (DT (T).TSD);
+      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
    begin
       return System.Zero_Terminated_Strings.Value (
          TSD.External_Tag.all'Address);
@@ -41,9 +41,9 @@ package body Ada.Tags is
    begin
       if Node = null then
          Node := new E_Node'(Left => null, Right => null, Tag => T);
-      elsif External_Tag_Impl (Node.Tag) > External then
+      elsif External_Tag_Impl (DT (Node.Tag)) > External then
          E_Insert (Node.Left, T, External);
-      elsif External_Tag_Impl (Node.Tag) < External then
+      elsif External_Tag_Impl (DT (Node.Tag)) < External then
          E_Insert (Node.Right, T, External);
       else
          null; --  already added
@@ -57,9 +57,9 @@ package body Ada.Tags is
    begin
       if Node = null then
          return null;
-      elsif External_Tag_Impl (Node.Tag) > External then
+      elsif External_Tag_Impl (DT (Node.Tag)) > External then
          return E_Find (Node.Left, External);
-      elsif External_Tag_Impl (Node.Tag) < External then
+      elsif External_Tag_Impl (DT (Node.Tag)) < External then
          return E_Find (Node.Right, External);
       else
          return Node;
@@ -67,6 +67,18 @@ package body Ada.Tags is
    end E_Find;
 
    External_Map : E_Node_Access;
+
+   function DT_With_Checking (T : Tag) return Dispatch_Table_Ptr;
+   function DT_With_Checking (T : Tag) return Dispatch_Table_Ptr is
+   begin
+      if T = No_Tag then
+         raise Tag_Error;
+      else
+         return DT (T);
+      end if;
+   end DT_With_Checking;
+
+   --  implementation
 
    function Base_Address (This : System.Address) return System.Address is
       function Offset_To_Top (This : System.Address)
@@ -190,39 +202,30 @@ package body Ada.Tags is
    end DT;
 
    function Expanded_Name (T : Tag) return String is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      function Cast is new Unchecked_Conversion (
+         System.Address,
+         Type_Specific_Data_Ptr);
+      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
    begin
-      if T = No_Tag then
-         raise Tag_Error;
-      else
-         declare
-            function Cast is new Unchecked_Conversion (
-               System.Address,
-               Type_Specific_Data_Ptr);
-            TSD : constant Type_Specific_Data_Ptr := Cast (DT (T).TSD);
-         begin
-            return System.Zero_Terminated_Strings.Value (
-               TSD.Expanded_Name.all'Address);
-         end;
-      end if;
+      return System.Zero_Terminated_Strings.Value (
+         TSD.Expanded_Name.all'Address);
    end Expanded_Name;
 
    function External_Tag (T : Tag) return String is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
    begin
-      if T = No_Tag then
-         raise Tag_Error;
-      else
-         return Result : constant String := External_Tag_Impl (T) do
-            if Result'Length > Nested_Prefix'Length
-               and then Result (
-                  Result'First + Result'First - 1 ..
-                  Nested_Prefix'Length) = Nested_Prefix
-            then
-               null; -- nested
-            else
-               E_Insert (External_Map, T, Result); -- library level
-            end if;
-         end return;
-      end if;
+      return Result : constant String := External_Tag_Impl (DT) do
+         if Result'Length > Nested_Prefix'Length
+            and then Result (
+               Result'First + Result'First - 1 ..
+               Nested_Prefix'Length) = Nested_Prefix
+         then
+            null; -- nested
+         else
+            E_Insert (External_Map, T, Result); -- library level
+         end if;
+      end return;
    end External_Tag;
 
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
@@ -237,30 +240,24 @@ package body Ada.Tags is
    end Get_Prim_Op_Kind;
 
    function Interface_Ancestor_Tags (T : Tag) return Tag_Array is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      function Cast is new Unchecked_Conversion (
+         System.Address,
+         Type_Specific_Data_Ptr);
+      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
+      Intf_Table : constant Interface_Data_Ptr := TSD.Interfaces_Table;
+      Length : Natural;
    begin
-      if T = No_Tag then
-         raise Tag_Error;
+      if Intf_Table = null then
+         Length := 0;
       else
-         declare
-            function Cast is new Unchecked_Conversion (
-               System.Address,
-               Type_Specific_Data_Ptr);
-            TSD : constant Type_Specific_Data_Ptr := Cast (DT (T).TSD);
-            Intf_Table : constant Interface_Data_Ptr := TSD.Interfaces_Table;
-            Length : Natural;
-         begin
-            if Intf_Table = null then
-               Length := 0;
-            else
-               Length := Intf_Table.Nb_Ifaces;
-            end if;
-            return Result : Tag_Array (1 .. Length) do
-               for I in Result'Range loop
-                  Result (I) := Intf_Table.Ifaces_Table (I).Iface_Tag;
-               end loop;
-            end return;
-         end;
+         Length := Intf_Table.Nb_Ifaces;
       end if;
+      return Result : Tag_Array (1 .. Length) do
+         for I in Result'Range loop
+            Result (I) := Intf_Table.Ifaces_Table (I).Iface_Tag;
+         end loop;
+      end return;
    end Interface_Ancestor_Tags;
 
    function Internal_Tag (External : String) return Tag is
@@ -318,11 +315,11 @@ package body Ada.Tags is
    end Internal_Tag;
 
    function Is_Abstract (T : Tag) return Boolean is
-      T_DT : constant Dispatch_Table_Ptr := DT (T);
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
    begin
-      case T_DT.Signature is
+      case DT.Signature is
          when Primary_DT =>
-            case T_DT.Tag_Kind is
+            case DT.Tag_Kind is
                when TK_Abstract_Limited_Tagged | TK_Abstract_Tagged =>
                   return True;
                when TK_Limited_Tagged | TK_Protected | TK_Tagged | TK_Task =>
@@ -337,53 +334,48 @@ package body Ada.Tags is
       Descendant, Ancestor : Tag;
       Primary_Only : Boolean;
       Same_Level : Boolean)
-      return Boolean is
+      return Boolean
+   is
+      D_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Descendant);
+      A_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Ancestor);
+      function Cast is new Unchecked_Conversion (
+         System.Address,
+         Type_Specific_Data_Ptr);
+      D_TSD : constant Type_Specific_Data_Ptr := Cast (D_DT.TSD);
+      A_TSD : constant Type_Specific_Data_Ptr := Cast (A_DT.TSD);
    begin
-      if Descendant = No_Tag or else Ancestor = No_Tag then
-         raise Tag_Error;
+      if Same_Level and then D_TSD.Access_Level /= A_TSD.Access_Level then
+         return False;
       else
-         declare
-            function Cast is new Unchecked_Conversion (
-               System.Address,
-               Type_Specific_Data_Ptr);
-            A_DT : constant Dispatch_Table_Ptr := DT (Ancestor);
-            D : constant Type_Specific_Data_Ptr := Cast (DT (Descendant).TSD);
-            A : constant Type_Specific_Data_Ptr := Cast (A_DT.TSD);
-         begin
-            if Same_Level and then D.Access_Level /= A.Access_Level then
-               return False;
-            else
-               case A_DT.Signature is
-                  when Primary_DT => --  tagged record
-                     declare
-                        Offset : constant Integer := D.Idepth - A.Idepth;
-                     begin
-                        return Offset >= 0
-                           and then D.Tags_Table (Offset) = Ancestor;
-                     end;
-                  when Secondary_DT | Unknown => --  interface
-                     if Primary_Only then
-                        return False;
-                     else
-                        declare
-                           Intf_Table : constant Interface_Data_Ptr :=
-                              D.Interfaces_Table;
-                        begin
-                           if Intf_Table /= null then
-                              for Id in 1 .. Intf_Table.Nb_Ifaces loop
-                                 if Intf_Table.Ifaces_Table (Id).Iface_Tag =
-                                    Ancestor
-                                 then
-                                    return True;
-                                 end if;
-                              end loop;
+         case A_DT.Signature is
+            when Primary_DT => --  tagged record
+               declare
+                  Offset : constant Integer := D_TSD.Idepth - A_TSD.Idepth;
+               begin
+                  return Offset >= 0
+                     and then D_TSD.Tags_Table (Offset) = Ancestor;
+               end;
+            when Secondary_DT | Unknown => --  interface
+               if Primary_Only then
+                  return False;
+               else
+                  declare
+                     Intf_Table : constant Interface_Data_Ptr :=
+                        D_TSD.Interfaces_Table;
+                  begin
+                     if Intf_Table /= null then
+                        for Id in 1 .. Intf_Table.Nb_Ifaces loop
+                           if Intf_Table.Ifaces_Table (Id).Iface_Tag =
+                              Ancestor
+                           then
+                              return True;
                            end if;
-                           return False;
-                        end;
+                        end loop;
                      end if;
-               end case;
-            end if;
-         end;
+                     return False;
+                  end;
+               end if;
+         end case;
       end if;
    end Is_Descendant;
 
@@ -426,22 +418,16 @@ package body Ada.Tags is
    end IW_Membership;
 
    function Parent_Tag (T : Tag) return Tag is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      function Cast is new Unchecked_Conversion (
+         System.Address,
+         Type_Specific_Data_Ptr);
+      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
    begin
-      if T = No_Tag then
-         raise Tag_Error;
+      if TSD.Idepth = 0 then
+         return No_Tag;
       else
-         declare
-            function Cast is new Unchecked_Conversion (
-               System.Address,
-               Type_Specific_Data_Ptr);
-            TSD : constant Type_Specific_Data_Ptr := Cast (DT (T).TSD);
-         begin
-            if TSD.Idepth = 0 then
-               return No_Tag;
-            else
-               return TSD.Tags_Table (1);
-            end if;
-         end;
+         return TSD.Tags_Table (1);
       end if;
    end Parent_Tag;
 

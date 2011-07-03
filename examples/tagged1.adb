@@ -20,6 +20,8 @@ begin
 	pragma Assert (Ada.Tags.Is_Descendant_At_Same_Level (D'Tag, T'Tag));
 	pragma Assert (Ada.Tags.Is_Descendant_At_Same_Level (D'Tag, D'Tag));
 	pragma Assert (Ada.Tags.Is_Descendant_At_Same_Level (DI'Tag, I'Tag));
+	pragma Assert (not Ada.Tags.Is_Abstract (T'Tag));
+	pragma Assert (Ada.Tags.Is_Abstract (I'Tag));
 	declare
 		Obj : aliased DI;
 		Ref : access T'Class := Obj'Access;
