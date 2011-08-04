@@ -331,6 +331,7 @@ endif
 
 c-archive: $(IMPORTDIR)/c.ads
 ifneq ($(DESTDIR),)
+	-rm $(DESTDIR)/import-$(TARGET).zip
 	cd $(IMPORTDIR) && 7za -tzip a $(abspath $(DESTDIR)/import-$(TARGET).zip) c.ads c-*
 else
 	@echo please tell DESTDIR=[DIRECTORY]
