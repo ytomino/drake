@@ -35,9 +35,15 @@ package System.Soft_Links is
    procedure Nop is null;
    procedure Nop (Current : Unwind.Exception_Occurrence) is null;
 
-   --  required for controlled types by compiler (s-soflin.ads)
+   --  required for controlled types and task by compiler (s-soflin.ads)
    Current_Master : not null access function return Integer := Zero'Access;
    pragma Suppress (Access_Check, Current_Master);
+
+   --  required for task by compiler (s-soflin.ads)
+   Enter_Master : not null access procedure :=  Nop'Access;
+   pragma Suppress (Access_Check, Enter_Master);
+   Complete_Master : not null access procedure :=  Nop'Access;
+   pragma Suppress (Access_Check, Complete_Master);
 
    --  required for many times by compiler (s-soflin.ads)
    Abort_Defer : not null access procedure := Nop'Access;
