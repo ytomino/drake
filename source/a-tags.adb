@@ -1,6 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Formatting;
+with System.Shared_Locking;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_8_To_32;
 with System.Zero_Terminated_Strings;
@@ -223,7 +224,9 @@ package body Ada.Tags is
          then
             null; -- nested
          else
+            System.Shared_Locking.Enter;
             E_Insert (External_Map, T, Result); -- library level
+            System.Shared_Locking.Leave;
          end if;
       end return;
    end External_Tag;
@@ -304,8 +307,11 @@ package body Ada.Tags is
          end;
       else
          declare
-            Node : constant E_Node_Access := E_Find (External_Map, External);
+            Node : E_Node_Access;
          begin
+            System.Shared_Locking.Enter;
+            Node := E_Find (External_Map, External);
+            System.Shared_Locking.Leave;
             if Node = null then
                raise Tag_Error;
             end if;

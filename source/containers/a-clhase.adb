@@ -136,6 +136,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
 
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
       return Cursor;
@@ -557,6 +558,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
+--  diff
 --  diff
 --  diff
 --  diff

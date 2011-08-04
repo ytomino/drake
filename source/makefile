@@ -97,6 +97,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-exctab.o \
 	s-format.o \
 	s-memory.o \
+	s-shaloc.o \
 	s-soflin.o \
 	s-stalib.o \
 	s-termin.o \

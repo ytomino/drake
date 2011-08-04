@@ -1,6 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Tags.Inside;
 with Ada.Unchecked_Conversion;
+with System.Shared_Locking;
 with System.Soft_Links;
 with System.Standard_Library;
 with System.Storage_Elements;
@@ -122,11 +123,12 @@ package body System.Finalization_Implementation is
          when 2 => --  dynamic allocated object
             pragma Assert (L /= null
                and then L.all'Address /= Collection_Finalization_Started);
+            Shared_Locking.Enter;
             Obj.Next := L.Next;
             Obj.Prev := L.Next.Prev;
             L.Next.Prev := Obj'Unchecked_Access;
             L.Next := Obj'Unchecked_Access;
-            --  should synchronize... unimplemented
+            Shared_Locking.Leave;
          when 3 => --  return
             declare
                P : Finalization_Root.Finalizable_Ptr := Obj'Unchecked_Access;
@@ -151,12 +153,13 @@ package body System.Finalization_Implementation is
    begin
       if Obj.Next /= null and then Obj.Prev /= null then
          --  dynamic allocated object
+         Shared_Locking.Enter;
          Obj.Next.Prev := Obj.Prev;
          Obj.Prev.Next := Obj.Next;
          Obj.Next := null;
          Obj.Prev := null;
+         Shared_Locking.Leave;
       end if;
-      --  should synchronize... unimplemented
    end Detach_From_Final_List;
 
    procedure Deep_Tag_Attach (

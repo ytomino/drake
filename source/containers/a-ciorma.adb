@@ -130,7 +130,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          To_Update,
          0,
          Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access);
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
    end Unique;
 
    overriding procedure Adjust (Object : in out Map) is

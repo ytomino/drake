@@ -7,20 +7,17 @@ package Ada.Containers.Inside.Copy_On_Write is
 
    type Data is limited record
       Follower : access Container; --  first container is owner
+      pragma Atomic (Follower);
    end record;
 
    type Data_Access is access Data;
 
    type Container is record
       Data : Data_Access;
+      pragma Atomic (Data);
       Next_Follower : access Container;
+      pragma Atomic (Next_Follower);
    end record;
-
-   procedure Follow (
-      Target : not null access Container;
-      Data : not null Data_Access);
-   procedure Unfollow (
-      Target : not null access Container);
 
    procedure Unique (
       Target : not null access Container;
@@ -30,7 +27,8 @@ package Ada.Containers.Inside.Copy_On_Write is
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
-         Capacity : Count_Type));
+         Capacity : Count_Type);
+      Free : not null access procedure (Object : in out Data_Access));
 
    procedure Adjust (
       Target : not null access Container);

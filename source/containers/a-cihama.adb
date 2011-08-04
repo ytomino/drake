@@ -127,7 +127,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          To_Update,
          Capacity (Container),
          Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access);
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
    end Unique;
 
    function Find (Container : Map; Hash : Hash_Type; Key : Key_Type)
@@ -471,7 +472,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          True,
          New_Capacity,
          Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access);
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
       Hash_Tables.Rebuild (
          Downcast (Container.Super.Data).Table,
          New_Capacity);
