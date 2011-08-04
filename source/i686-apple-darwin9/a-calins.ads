@@ -63,6 +63,7 @@ package Ada.Calendar.Inside is
       Result : out C.sys.types.time_t;
       Sub_Second : out Second_Duration);
 
+   function To_timespec (T : Time) return C.sys.time.struct_timespec;
    function To_timespec (D : Duration) return C.sys.time.struct_timespec;
 
 end Ada.Calendar.Inside;
