@@ -90,7 +90,7 @@ package body Ada.Strings.Generic_Fixed is
          declare
             package Conv is
                new System.Address_To_Access_Conversions (Character);
-               --  gcc's builtin-function
+            --  gcc's builtin-function
             function memchr (
                s : Conv.Object_Pointer;
                c : Integer;
