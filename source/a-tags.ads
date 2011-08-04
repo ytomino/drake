@@ -262,5 +262,6 @@ private
       Object : System.Address;
       Interface_Tag : Tag)
       return System.Address := null;
+   pragma Atomic (Get_Delegation);
 
 end Ada.Tags;
