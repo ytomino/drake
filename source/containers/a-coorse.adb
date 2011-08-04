@@ -137,7 +137,8 @@ package body Ada.Containers.Ordered_Sets is
          To_Update,
          0,
          Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access);
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
    end Unique;
 
    overriding procedure Adjust (Object : in out Set) is

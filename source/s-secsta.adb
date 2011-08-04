@@ -144,4 +144,18 @@ package body System.Secondary_Stack is
       end if;
    end SS_Release;
 
+   procedure Clear is
+      TLS : constant Soft_Links.Task_Local_Storage_Access :=
+         Soft_Links.Get_Task_Local_Storage.all;
+   begin
+      while TLS.Secondary_Stack /= Null_Address loop
+         declare
+            Top : constant Address := TLS.Secondary_Stack;
+         begin
+            TLS.Secondary_Stack := Cast (Top).Previous;
+            Memory.Unmap (Top, Cast (Top).Last - Top);
+         end;
+      end loop;
+   end Clear;
+
 end System.Secondary_Stack;

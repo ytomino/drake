@@ -1,4 +1,4 @@
-with Ada.Unchecked_Conversion;
+with System.Address_To_Named_Access_Conversions;
 with System.Finalization_Implementation;
 package body Ada.Finalization.List_Controller is
    pragma Suppress (All_Checks);
@@ -11,11 +11,11 @@ package body Ada.Finalization.List_Controller is
    end Finalize;
 
    overriding procedure Finalize (Object : in out List_Controller) is
-      function Cast is new Unchecked_Conversion (
-         System.Address,
+      package Conv is new System.Address_To_Named_Access_Conversions (
+         System.Finalization_Root.Root_Controlled'Class,
          System.Finalization_Root.Finalizable_Ptr);
    begin
-      Object.F := Cast (
+      Object.F := Conv.To_Pointer (
          System.Finalization_Implementation.Collection_Finalization_Started);
       while Object.Item.Next /= Object.Item'Unchecked_Access loop
          System.Finalization_Implementation.Finalize_One (

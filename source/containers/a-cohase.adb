@@ -134,7 +134,8 @@ package body Ada.Containers.Hashed_Sets is
          To_Update,
          Capacity (Container),
          Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access);
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
    end Unique;
 
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
@@ -562,7 +563,8 @@ package body Ada.Containers.Hashed_Sets is
          True,
          New_Capacity,
          Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access);
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
       Hash_Tables.Rebuild (
          Downcast (Container.Super.Data).Table,
          New_Capacity);

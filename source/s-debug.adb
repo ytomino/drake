@@ -1,3 +1,4 @@
+with System.Shared_Locking;
 with System.Termination;
 package body System.Debug is
    pragma Suppress (All_Checks);
@@ -8,12 +9,14 @@ package body System.Debug is
       Enclosing_Entity : String)
       return Boolean is
    begin
+      Shared_Locking.Enter;
       Termination.Error_Put (Source_Location);
       Termination.Error_Put (": (");
       Termination.Error_Put (Enclosing_Entity);
       Termination.Error_Put (") ");
       Termination.Error_Put (S);
       Termination.Error_New_Line;
+      Shared_Locking.Leave;
       return True;
    end Default_Put;
 

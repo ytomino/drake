@@ -97,6 +97,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-exctab.o \
 	s-format.o \
 	s-memory.o \
+	s-shaloc.o \
 	s-soflin.o \
 	s-stalib.o \
 	s-termin.o \
@@ -330,6 +331,7 @@ endif
 
 c-archive: $(IMPORTDIR)/c.ads
 ifneq ($(DESTDIR),)
+	-rm $(DESTDIR)/import-$(TARGET).zip
 	cd $(IMPORTDIR) && 7za -tzip a $(abspath $(DESTDIR)/import-$(TARGET).zip) c.ads c-*
 else
 	@echo please tell DESTDIR=[DIRECTORY]

@@ -129,6 +129,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
 
    function Find (Container : Map; Hash : Hash_Type; Key : Key_Type)
       return Cursor;
@@ -466,6 +467,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
+--  diff
 --  diff
 --  diff
 --  diff

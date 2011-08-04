@@ -1,5 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
+with System.Address_To_Constant_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 with System.Debug;
 with System.Soft_Links;
 with C.unwind_pe;
@@ -23,14 +25,11 @@ package body System.Unwind.Handling is
 
    procedure Increment (p : in out C.unsigned_char_const_ptr);
    procedure Increment (p : in out C.unsigned_char_const_ptr) is
-      function Cast is new Ada.Unchecked_Conversion (
-         C.unsigned_char_const_ptr,
-         C.ptrdiff_t);
-      function Cast is new Ada.Unchecked_Conversion (
-         C.ptrdiff_t,
+      package uchar_Conv is new Address_To_Constant_Access_Conversions (
+         C.unsigned_char,
          C.unsigned_char_const_ptr);
    begin
-      p := Cast (Cast (p) + 1);
+      p := uchar_Conv.To_Pointer (uchar_Conv.To_Address (p) + 1);
    end Increment;
 
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
@@ -38,23 +37,21 @@ package body System.Unwind.Handling is
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         C.unsigned_char_const_ptr,
-         C.ptrdiff_t);
-      function Cast is new Ada.Unchecked_Conversion (
-         C.ptrdiff_t,
+      package uchar_Conv is new Address_To_Constant_Access_Conversions (
+         C.unsigned_char,
          C.unsigned_char_const_ptr);
    begin
-      return Cast (Cast (Left) + Right);
+      return uchar_Conv.To_Pointer (uchar_Conv.To_Address (Left)
+         + Address (Right));
    end "+";
 
    function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean;
    function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean is
-      function Cast is new Ada.Unchecked_Conversion (
-         C.unsigned_char_const_ptr,
-         C.ptrdiff_t);
+      package uchar_Conv is new Address_To_Constant_Access_Conversions (
+         C.unsigned_char,
+         C.unsigned_char_const_ptr);
    begin
-      return Cast (Left) < Cast (Right);
+      return uchar_Conv.To_Address (Left) < uchar_Conv.To_Address (Right);
    end "<";
 
    procedure Begin_Handler (GCC_Exception : GNAT_GCC_Exception_Access) is
@@ -74,11 +71,11 @@ package body System.Unwind.Handling is
             Iter.Private_Data = Null_Address,
             "Iter.Private_Data = null"));
          declare
-            function Cast is new Ada.Unchecked_Conversion (
-               Address,
+            package GGE_Conv is new Address_To_Named_Access_Conversions (
+               GNAT_GCC_Exception,
                GNAT_GCC_Exception_Access);
             I_GCC_Exception : GNAT_GCC_Exception_Access :=
-               Cast (Iter.Private_Data);
+               GGE_Conv.To_Pointer (Iter.Private_Data);
          begin
             if I_GCC_Exception = GCC_Exception then
                if Prev = null then --  top(Current)

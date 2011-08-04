@@ -10,7 +10,6 @@ package System.Finalization_Root is
 
    type Finalizable_Ptr is access all Root_Controlled'Class;
    for Finalizable_Ptr'Storage_Size use 0;
-   pragma No_Strict_Aliasing (Finalizable_Ptr);
 
    type Root_Controlled is tagged record
       Prev, Next : Finalizable_Ptr;

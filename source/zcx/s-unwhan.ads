@@ -29,7 +29,6 @@ package System.Unwind.Handling is
    pragma Suppress_Initialization (GNAT_GCC_Exception);
 
    type GNAT_GCC_Exception_Access is access all GNAT_GCC_Exception;
-   pragma No_Strict_Aliasing (GNAT_GCC_Exception_Access);
    procedure Free is new Ada.Unchecked_Deallocation (
       GNAT_GCC_Exception,
       GNAT_GCC_Exception_Access);

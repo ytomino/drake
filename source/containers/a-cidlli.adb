@@ -127,7 +127,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          To_Update,
          0,
          Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access);
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
    end Unique;
 
    procedure Adjust (Object : in out List) is

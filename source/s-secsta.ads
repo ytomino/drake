@@ -21,4 +21,7 @@ package System.Secondary_Stack is
 
    procedure SS_Release (M : Mark_Id);
 
+   --  for Tasking.Inside
+   procedure Clear;
+
 end System.Secondary_Stack;

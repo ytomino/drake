@@ -1,5 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
+with System.Shared_Locking;
 package body Ada.Tags.Delegating is
    pragma Suppress (All_Checks);
    use type System.Address;
@@ -120,8 +121,10 @@ package body Ada.Tags.Delegating is
       return System.Address
    is
       function Cast is new Unchecked_Conversion (System.Address, Tag_Ptr);
+      Result : System.Address := System.Null_Address;
       T : Tag := Cast (Object).all;
    begin
+      System.Shared_Locking.Enter;
       Search : loop
          declare
             D : constant D_Node_Access := D_Find (Delegating_Map, T);
@@ -131,14 +134,16 @@ package body Ada.Tags.Delegating is
                   I : constant I_Node_Access := I_Find (D.Map, Interface_Tag);
                begin
                   exit Search when I = null;
-                  return I.Get (Object);
+                  Result := I.Get (Object);
+                  exit Search;
                end;
             end if;
          end;
          T := Parent_Tag (T);
          exit Search when T = No_Tag;
       end loop Search;
-      return System.Null_Address;
+      System.Shared_Locking.Leave;
+      return Result;
    end Get_Delegation;
 
    procedure Register_Delegation (
@@ -149,8 +154,10 @@ package body Ada.Tags.Delegating is
    is
       D : D_Node_Access;
    begin
+      System.Shared_Locking.Enter;
       D_Insert (Delegating_Map, T, D);
       I_Insert (D.Map, Interface_Tag, Get);
+      System.Shared_Locking.Leave;
    end Register_Delegation;
 
    type Get_Access is

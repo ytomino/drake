@@ -1,6 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Tags.Inside;
-with Ada.Unchecked_Conversion;
+with System.Address_To_Named_Access_Conversions;
+with System.Shared_Locking;
 with System.Soft_Links;
 with System.Standard_Library;
 with System.Storage_Elements;
@@ -67,11 +68,13 @@ package body System.Finalization_Implementation is
    type RC_Ptr is access all Record_Controller;
    function Get_Deep_Controller (Obj : Address) return RC_Ptr;
    function Get_Deep_Controller (Obj : Address) return RC_Ptr is
-      function Cast is new Ada.Unchecked_Conversion (Address, RC_Ptr);
-      function To_Any_Class_Wide is new Ada.Unchecked_Conversion (
-         Address,
+      package RC_Conv is new Address_To_Named_Access_Conversions (
+         Record_Controller,
+         RC_Ptr);
+      package Finalizable_Conv is new Address_To_Named_Access_Conversions (
+         Finalization_Root.Finalizable,
          Finalization_Root.Finalizable_Ptr);
-      The_Tag : Ada.Tags.Tag := To_Any_Class_Wide (Obj)'Tag;
+      The_Tag : Ada.Tags.Tag := Finalizable_Conv.To_Pointer (Obj)'Tag;
       Offset : Storage_Elements.Storage_Offset :=
          Ada.Tags.Inside.Get_RC_Offset (The_Tag);
    begin
@@ -82,7 +85,7 @@ package body System.Finalization_Implementation is
       if Offset = 0 then
          return null;
       elsif Offset > 0 then
-         return Cast (Obj + Offset);
+         return RC_Conv.To_Pointer (Obj + Offset);
       else
          declare
             type Faked_Record_Controller is record
@@ -100,9 +103,12 @@ package body System.Finalization_Implementation is
             end record;
             pragma Suppress_Initialization (Faked_Type_Of_Obj);
             type Obj_Ptr is access all Faked_Type_Of_Obj;
-            function Cast is new Ada.Unchecked_Conversion (Address, Obj_Ptr);
+            package FTOO_Conv is new Address_To_Named_Access_Conversions (
+               Faked_Type_Of_Obj,
+               Obj_Ptr);
          begin
-            return Cast (Cast (Obj).Controller'Address);
+            return RC_Conv.To_Pointer (
+               FTOO_Conv.To_Pointer (Obj).Controller'Address);
          end;
       end if;
    end Get_Deep_Controller;
@@ -122,11 +128,12 @@ package body System.Finalization_Implementation is
          when 2 => --  dynamic allocated object
             pragma Assert (L /= null
                and then L.all'Address /= Collection_Finalization_Started);
+            Shared_Locking.Enter;
             Obj.Next := L.Next;
             Obj.Prev := L.Next.Prev;
             L.Next.Prev := Obj'Unchecked_Access;
             L.Next := Obj'Unchecked_Access;
-            --  should synchronize... unimplemented
+            Shared_Locking.Leave;
          when 3 => --  return
             declare
                P : Finalization_Root.Finalizable_Ptr := Obj'Unchecked_Access;
@@ -151,12 +158,13 @@ package body System.Finalization_Implementation is
    begin
       if Obj.Next /= null and then Obj.Prev /= null then
          --  dynamic allocated object
+         Shared_Locking.Enter;
          Obj.Next.Prev := Obj.Prev;
          Obj.Prev.Next := Obj.Next;
          Obj.Next := null;
          Obj.Prev := null;
+         Shared_Locking.Leave;
       end if;
-      --  should synchronize... unimplemented
    end Detach_From_Final_List;
 
    procedure Deep_Tag_Attach (
@@ -175,11 +183,12 @@ package body System.Finalization_Implementation is
          Finalization_Root.Root_Controlled'Tag)
       then
          declare
-            function Cast is new Ada.Unchecked_Conversion (
-               Address,
-               Finalization_Root.Finalizable_Ptr);
+            package Finalizable_Conv is
+               new Address_To_Named_Access_Conversions (
+                  Finalization_Root.Finalizable,
+                  Finalization_Root.Finalizable_Ptr);
          begin
-            Attach_To_Final_List (L, Cast (A).all, B);
+            Attach_To_Final_List (L, Finalizable_Conv.To_Pointer (A).all, B);
          end;
       end if;
    end Deep_Tag_Attach;
@@ -255,15 +264,13 @@ package body System.Finalization_Implementation is
          Object.My_Address - Object'Address;
       procedure Ptr_Adjust (Ptr : in out Finalization_Root.Finalizable_Ptr);
       procedure Ptr_Adjust (Ptr : in out Finalization_Root.Finalizable_Ptr) is
-         function Cast is new Ada.Unchecked_Conversion (
-            Finalization_Root.Finalizable_Ptr,
-            Address);
-         function Cast is new Ada.Unchecked_Conversion (
-            Address,
+         package Finalizable_Conv is new Address_To_Named_Access_Conversions (
+            Finalization_Root.Finalizable,
             Finalization_Root.Finalizable_Ptr);
       begin
          if Ptr /= null then
-            Ptr := Cast (Cast (Ptr) - My_Offset);
+            Ptr := Finalizable_Conv.To_Pointer (
+               Finalizable_Conv.To_Address (Ptr) - My_Offset);
          end if;
       end Ptr_Adjust;
       procedure Reverse_Adjust (P : Finalization_Root.Finalizable_Ptr);

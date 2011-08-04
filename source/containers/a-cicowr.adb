@@ -1,7 +1,10 @@
 pragma Check_Policy (Trace, Off);
+with System.Shared_Locking;
 package body Ada.Containers.Inside.Copy_On_Write is
-   --  should synchronize... unimplemented
 
+   procedure Follow (
+      Target : not null access Container;
+      Data : not null Data_Access);
    procedure Follow (
       Target : not null access Container;
       Data : not null Data_Access)
@@ -14,24 +17,30 @@ package body Ada.Containers.Inside.Copy_On_Write is
       if Data.Follower = null then
          pragma Assert (Target.Next_Follower = null);
          Data.Follower := Target;
-         pragma Check (Trace, Debug.Put ("1"));
       else
          --  keep first follower
          Target.Next_Follower := Data.Follower.Next_Follower;
          Data.Follower.Next_Follower := Target;
-         pragma Check (Trace, Debug.Put ("2"));
       end if;
       pragma Check (Trace, Debug.Put ("leave"));
    end Follow;
 
    procedure Unfollow (
-      Target : not null access Container)
+      Target : not null access Container;
+      To_Free : out Data_Access);
+   procedure Unfollow (
+      Target : not null access Container;
+      To_Free : out Data_Access)
    is
       Data : constant Data_Access := Target.Data;
    begin
       pragma Check (Trace, Debug.Put ("enter"));
+      To_Free := null;
       if Data.Follower = Target then
          Data.Follower := Target.Next_Follower;
+         if Data.Follower = null then
+            To_Free := Data;
+         end if;
       else
          declare
             I : access Container := Data.Follower;
@@ -47,6 +56,8 @@ package body Ada.Containers.Inside.Copy_On_Write is
       pragma Check (Trace, Debug.Put ("leave"));
    end Unfollow;
 
+   --  implementation
+
    procedure Unique (
       Target : not null access Container;
       To_Update : Boolean;
@@ -55,15 +66,23 @@ package body Ada.Containers.Inside.Copy_On_Write is
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
-         Capacity : Count_Type)) is
+         Capacity : Count_Type);
+      Free : not null access procedure (Object : in out Data_Access)) is
    begin
       if Target.Data /= null then
+         System.Shared_Locking.Enter;
          if Target.Data.Follower /= Target then
             declare
                New_Data : Data_Access;
+               To_Free : Data_Access;
             begin
-               Copy (New_Data, Target.Data, Capacity);
-               Unfollow (Target);
+               System.Shared_Locking.Leave;
+               Copy (New_Data, Target.Data, Capacity); -- *A*
+               System.Shared_Locking.Enter;
+               Unfollow (Target, To_Free);
+               if To_Free /= null then
+                  Free (To_Free); -- unfollowed by other task at *A*
+               end if;
                Follow (Target, New_Data);
             end;
          elsif To_Update and then Target.Next_Follower /= null then
@@ -71,7 +90,10 @@ package body Ada.Containers.Inside.Copy_On_Write is
             declare
                New_Data : Data_Access;
             begin
-               Copy (New_Data, Target.Data, Capacity);
+               System.Shared_Locking.Leave;
+               Copy (New_Data, Target.Data, Capacity); -- *B*
+               System.Shared_Locking.Enter;
+               --  target uses old data, other followers use new data
                New_Data.Follower := Target.Next_Follower;
                declare
                   I : access Container := Target.Next_Follower;
@@ -84,12 +106,13 @@ package body Ada.Containers.Inside.Copy_On_Write is
                Target.Next_Follower := null;
             end;
          end if;
+         System.Shared_Locking.Leave;
       else
          declare
             New_Data : Data_Access;
          begin
             Allocate (New_Data);
-            Follow (Target, New_Data);
+            Follow (Target, New_Data); -- no sync
          end;
       end if;
    end Unique;
@@ -100,7 +123,9 @@ package body Ada.Containers.Inside.Copy_On_Write is
       Data : constant Data_Access := Target.Data;
    begin
       if Data /= null then
+         System.Shared_Locking.Enter;
          Follow (Target, Data);
+         System.Shared_Locking.Leave;
       end if;
    end Adjust;
 
@@ -115,7 +140,9 @@ package body Ada.Containers.Inside.Copy_On_Write is
             Target.Data := null;
             pragma Assert (Target.Next_Follower = null);
          else
+            System.Shared_Locking.Enter;
             Follow (Target, Source.Data);
+            System.Shared_Locking.Leave;
          end if;
       end if;
    end Assign;
@@ -127,10 +154,16 @@ package body Ada.Containers.Inside.Copy_On_Write is
       Data : Data_Access := Target.Data;
    begin
       if Data /= null then
-         Unfollow (Target);
-         if Data.Follower = null then
-            Free (Data);
-         end if;
+         declare
+            To_Free : Data_Access;
+         begin
+            System.Shared_Locking.Enter;
+            Unfollow (Target, To_Free);
+            System.Shared_Locking.Leave;
+            if To_Free /= null then
+               Free (Data);
+            end if;
+         end;
       end if;
    end Clear;
 
@@ -149,7 +182,7 @@ package body Ada.Containers.Inside.Copy_On_Write is
                New_Data : Data_Access;
             begin
                Copy (New_Data, Source.Data, Capacity);
-               Follow (Result'Access, New_Data);
+               Follow (Result'Access, New_Data); -- no sync
             end;
          end if;
       end return;
@@ -166,9 +199,18 @@ package body Ada.Containers.Inside.Copy_On_Write is
          else
             if Target.Data /= Source.Data then
                Clear (Target, Free);
+               System.Shared_Locking.Enter;
                Follow (Target, Source.Data);
+               System.Shared_Locking.Leave;
             end if;
-            Unfollow (Source);
+            declare
+               Dummy : Data_Access;
+            begin
+               System.Shared_Locking.Enter;
+               Unfollow (Source, Dummy);
+               System.Shared_Locking.Leave;
+               pragma Assert (Dummy = null);
+            end;
          end if;
       end if;
    end Move;
