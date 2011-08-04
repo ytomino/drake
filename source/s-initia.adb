@@ -7,7 +7,7 @@ package body System.Initialization is
    use Aux_Dec;
 
    type Object_Access is access all Object;
-   for Object_Access'Storage_Pool use Storage_Pools.Overlay.Global_Pool;
+   for Object_Access'Storage_Pool use Storage_Pools.Overlay.Pool;
 
    procedure Free is new Ada.Unchecked_Deallocation (
       Object,
@@ -20,10 +20,8 @@ package body System.Initialization is
          or else Object'Has_Tagged_Values
          or else Object'Type_Class = Type_Class_Task
       then
-         Storage_Pools.Overlay.Global_Pool.Overlay_Address :=
-            Storage.all'Address;
+         Storage_Pools.Overlay.Set_Address (Storage.all'Address);
          return Object_Pointer (Object_Access'(new Object));
-         --  should synchronize... unimplemented
       else
          declare
             type Storage_Access is access all Object_Storage;
@@ -45,10 +43,8 @@ package body System.Initialization is
          or else Object'Has_Tagged_Values
          or else Object'Type_Class = Type_Class_Task
       then
-         Storage_Pools.Overlay.Global_Pool.Overlay_Address :=
-            Storage.all'Address;
+         Storage_Pools.Overlay.Set_Address (Storage.all'Address);
          return Object_Pointer (Object_Access'(new Object'(Value)));
-         --  should synchronize... unimplemented
       else
          declare
             type Storage_Access is access all Object_Storage;
