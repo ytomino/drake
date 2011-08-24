@@ -20,5 +20,5 @@ begin
 	V1.all := V1.all + 10;
 	V2.all := V2.all + 10;
 	pragma Assert (V3.all = 30);
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end addrconv;

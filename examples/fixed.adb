@@ -61,5 +61,5 @@ begin
 		Ada.Text_IO.Put_Line ("T5'Small = " & Long_Long_Float'Image (T5'Small));
 		pragma Assert (T5'Image (-128.0) = "-128.0");
 	end;
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end fixed;

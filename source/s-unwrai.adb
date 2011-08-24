@@ -483,6 +483,16 @@ package body System.Unwind.Raising is
          Message => Message);
    end rcheck_25;
 
+   procedure rcheck_28 (File : not null access Character; Line : Integer) is
+      Message : constant String := "unchecked union restriction";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Program_Error'Access,
+         File,
+         Line,
+         Message => Message);
+   end rcheck_28;
+
    procedure rcheck_30 (File : not null access Character; Line : Integer) is
       Message : constant String := "empty storage pool";
    begin

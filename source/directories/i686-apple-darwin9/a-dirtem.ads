@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package for temporary files
+--  extended unit
 with Ada.IO_Exceptions;
 package Ada.Directories.Temporary is
 

@@ -17,5 +17,5 @@ begin
 	System.Tasking.Inside.Create (Id2, N2'Address, Process'Access);
 	System.Tasking.Inside.Wait (Id1);
 	System.Tasking.Inside.Wait (Id2);
-	Ada.Debug.Put ("ok");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking1;

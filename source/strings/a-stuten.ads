@@ -20,34 +20,34 @@ package Ada.Strings.UTF_Encoding is
    Encoding_Error : exception;
 
    BOM_8 : aliased constant String := -- "aliased" is extended
-      Character'Val (16#EF#) &
-      Character'Val (16#BB#) &
-      Character'Val (16#BF#);
+      Character'Val (16#EF#)
+      & Character'Val (16#BB#)
+      & Character'Val (16#BF#);
 
    BOM_16BE : aliased constant String := -- "aliased" is extended
-      Character'Val (16#FE#) &
-      Character'Val (16#FF#);
+      Character'Val (16#FE#)
+      & Character'Val (16#FF#);
 
    BOM_16LE : aliased constant String := -- "aliased" is extended
-      Character'Val (16#FF#) &
-      Character'Val (16#FE#);
+      Character'Val (16#FF#)
+      & Character'Val (16#FE#);
 
    BOM_16 : aliased constant Wide_String := -- "aliased" is extended
        (1 => Wide_Character'Val (16#FEFF#));
 
    --  extended
    BOM_32BE : aliased constant String :=
-      Character'Val (16#00#) &
-      Character'Val (16#00#) &
-      Character'Val (16#FE#) &
-      Character'Val (16#FF#);
+      Character'Val (16#00#)
+      & Character'Val (16#00#)
+      & Character'Val (16#FE#)
+      & Character'Val (16#FF#);
 
    --  extended
    BOM_32LE : aliased constant String :=
-      Character'Val (16#FF#) &
-      Character'Val (16#FE#) &
-      Character'Val (16#00#) &
-      Character'Val (16#00#);
+      Character'Val (16#FF#)
+      & Character'Val (16#FE#)
+      & Character'Val (16#00#)
+      & Character'Val (16#00#);
 
    --  extended
    BOM_32 : constant Wide_Wide_String :=
@@ -71,15 +71,15 @@ private
    UTF_16_Wide_String_Scheme : constant Encoding_Scheme :=
       Encoding_Scheme'Val (
          Encoding_Scheme'Pos (UTF_16BE) *
-            Boolean'Pos (System.Default_Bit_Order = System.High_Order_First) +
-         Encoding_Scheme'Pos (UTF_16LE) *
+            Boolean'Pos (System.Default_Bit_Order = System.High_Order_First)
+         + Encoding_Scheme'Pos (UTF_16LE) *
             Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
 
    UTF_32_Wide_Wide_String_Scheme : constant Encoding_Scheme :=
       Encoding_Scheme'Val (
          Encoding_Scheme'Pos (UTF_32BE) *
-            Boolean'Pos (System.Default_Bit_Order = System.High_Order_First) +
-         Encoding_Scheme'Pos (UTF_32LE) *
+            Boolean'Pos (System.Default_Bit_Order = System.High_Order_First)
+         + Encoding_Scheme'Pos (UTF_32LE) *
             Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
 
    function Contains_BOM_8 (Item : UTF_String) return Boolean;

@@ -6,7 +6,6 @@ package System.Tasking.Inside is
    pragma Preelaborate;
 
    type Task_Record (<>) is limited private;
-
    type Task_Id is access all Task_Record;
 
    function Get_Current_Task_Id return Task_Id;

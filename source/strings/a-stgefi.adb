@@ -291,9 +291,9 @@ package body Ada.Strings.Generic_Fixed is
       if Low - 1 > Source'Last or else High < Source'First - 1 then
          raise Index_Error;
       end if;
-      return Source (Source'First .. Low - 1) &
-         By &
-         Source (Positive'Max (Low, High + 1) .. Source'Last);
+      return Source (Source'First .. Low - 1)
+         & By
+         & Source (Positive'Max (Low, High + 1) .. Source'Last);
    end Replace_Slice;
 
    procedure Replace_Slice (
@@ -581,14 +581,10 @@ package body Ada.Strings.Generic_Fixed is
                Pattern_Count := Pattern_Count + 1;
                declare
                   Next : Positive;
-                  Code : System.UTF_Conversions.UCS_4;
+                  Code : Wide_Wide_Character;
                   Error : Boolean;
                begin
-                  From_UTF (
-                     Pattern (P .. Pattern'Last),
-                     Next,
-                     Code,
-                     Error);
+                  Get (Pattern (P .. Pattern'Last), Next, Code, Error);
                   P := Next + 1;
                end;
             end loop;
@@ -596,14 +592,10 @@ package body Ada.Strings.Generic_Fixed is
          while Pattern_Count > 0 and then Result < Source'Last loop
             declare
                Next : Positive;
-               Code : System.UTF_Conversions.UCS_4;
+               Code : Wide_Wide_Character;
                Error : Boolean;
             begin
-               From_UTF (
-                  Source (Result + 1 .. Source'Last),
-                  Next,
-                  Code,
-                  Error);
+               Get (Source (Result + 1 .. Source'Last), Next, Code, Error);
                Result := Next;
             end;
             Pattern_Count := Pattern_Count - 1;
@@ -634,25 +626,19 @@ package body Ada.Strings.Generic_Fixed is
             raise Pattern_Error;
          else
             declare
-               Buffer : String_Type (1 .. UTF_Max_Length);
+               Buffer : String_Type (1 .. Expanding);
                Current : Natural := Source'First;
             begin
                while Current <= Source'Last loop
                   declare
                      Next : Positive;
                      J, J_Next, P, Character_Length : Positive;
-                     Code : System.UTF_Conversions.UCS_4;
+                     Code : Wide_Wide_Character;
                      Error : Boolean;
                   begin
-                     From_UTF (
-                        Source (Current .. Source'Last),
-                        Next,
-                        Code,
-                        Error);
-                     Code := Wide_Wide_Character'Pos (Mapping (
-                        Wide_Wide_Character'Val (Code),
-                        Params));
-                     To_UTF (Code, Buffer, Character_Length, Error);
+                     Get (Source (Current .. Source'Last), Next, Code, Error);
+                     Code := Mapping (Code, Params);
+                     Put (Code, Buffer, Character_Length);
                      P := Pattern'First + Character_Length;
                      if Buffer (1 .. Character_Length) =
                         Pattern (Pattern'First .. P - 1)
@@ -664,15 +650,13 @@ package body Ada.Strings.Generic_Fixed is
                            end if;
                            J := J_Next + 1;
                            exit when J > Source'Last;
-                           From_UTF (
+                           Get (
                               Source (J .. Source'Last),
                               J_Next,
                               Code,
                               Error);
-                           Code := Wide_Wide_Character'Pos (Mapping (
-                              Wide_Wide_Character'Val (Code),
-                              Params));
-                           To_UTF (Code, Buffer, Character_Length, Error);
+                           Code := Mapping (Code, Params);
+                           Put (Code, Buffer, Character_Length);
                            exit when Buffer (1 .. Character_Length) /=
                               Pattern (P .. P + Character_Length - 1);
                            P := P + Character_Length;
@@ -709,25 +693,23 @@ package body Ada.Strings.Generic_Fixed is
             raise Pattern_Error;
          else
             declare
-               Buffer : String_Type (1 .. UTF_Max_Length);
+               Buffer : String_Type (1 .. Expanding);
                Current : Natural := Source'Last;
             begin
                while Current >= Source'First loop
                   declare
                      Previous : Natural;
                      J, J_Previous, P, Character_Length : Natural;
-                     Code : System.UTF_Conversions.UCS_4;
+                     Code : Wide_Wide_Character;
                      Error : Boolean;
                   begin
-                     From_UTF_Reverse (
+                     Get_Reverse (
                         Source (Source'First .. Current),
                         Previous,
                         Code,
                         Error);
-                     Code := Wide_Wide_Character'Pos (Mapping (
-                        Wide_Wide_Character'Val (Code),
-                        Params));
-                     To_UTF (Code, Buffer, Character_Length, Error);
+                     Code := Mapping (Code, Params);
+                     Put (Code, Buffer, Character_Length);
                      P := Pattern'Last - Character_Length;
                      if Buffer (1 .. Character_Length) =
                         Pattern (P + 1 .. Pattern'Last)
@@ -739,15 +721,13 @@ package body Ada.Strings.Generic_Fixed is
                            end if;
                            J := J_Previous - 1;
                            exit when J < Source'First;
-                           From_UTF_Reverse (
+                           Get_Reverse (
                               Source (Source'First .. J),
                               J_Previous,
                               Code,
                               Error);
-                           Code := Wide_Wide_Character'Pos (Mapping (
-                              Wide_Wide_Character'Val (Code),
-                              Params));
-                           To_UTF (Code, Buffer, Character_Length, Error);
+                           Code := Mapping (Code, Params);
+                           Put (Code, Buffer, Character_Length);
                            exit when Buffer (1 .. Character_Length) /=
                               Pattern (P - Character_Length + 1 .. P);
                            P := P - Character_Length;
@@ -780,34 +760,24 @@ package body Ada.Strings.Generic_Fixed is
       is
          Result : String_Type (
             1 ..
-            Source'Length * UTF_Max_Length);
+            Source'Length * Expanding);
          Last : Natural;
          I : Natural := Source'First;
          J : Natural := Result'First;
       begin
          while I <= Source'Last loop
             declare
-               Code : System.UTF_Conversions.UCS_4;
+               Code : Wide_Wide_Character;
                I_Next : Natural;
                J_Next : Natural;
                Error : Boolean; --  ignore
             begin
                --  get single unicode character
-               From_UTF (
-                  Source (I .. Source'Last),
-                  I_Next,
-                  Code,
-                  Error);
+               Get (Source (I .. Source'Last), I_Next, Code, Error);
                --  map it
-               Code := Wide_Wide_Character'Pos (
-                  Mapping (Wide_Wide_Character'Val (Code),
-                  Params));
+               Code := Mapping (Code, Params);
                --  put it
-               To_UTF (
-                  Code,
-                  Result (J .. Result'Last),
-                  J_Next,
-                  Error);
+               Put (Code, Result (J .. Result'Last), J_Next);
                --  forwarding
                I := I_Next + 1;
                J := J_Next + 1;
@@ -1146,17 +1116,11 @@ package body Ada.Strings.Generic_Fixed is
          while I <= Source'Last loop
             declare
                I_Next : Positive;
-               Code : System.UTF_Conversions.UCS_4;
+               Code : Wide_Wide_Character;
                Error : Boolean;
             begin
-               From_UTF (
-                  Source (I .. Source'Last),
-                  I_Next,
-                  Code,
-                  Error);
-               if Is_In (Wide_Wide_Character'Val (Code), Set) =
-                  (Test = Inside)
-               then
+               Get (Source (I .. Source'Last), I_Next, Code, Error);
+               if Is_In (Code, Set) = (Test = Inside) then
                   return I;
                end if;
                I := I_Next + 1;
@@ -1176,17 +1140,15 @@ package body Ada.Strings.Generic_Fixed is
          while I >= Source'First loop
             declare
                I_Previous : Positive;
-               Code : System.UTF_Conversions.UCS_4;
+               Code : Wide_Wide_Character;
                Error : Boolean;
             begin
-               From_UTF_Reverse (
+               Get_Reverse (
                   Source (Source'First .. I),
                   I_Previous,
                   Code,
                   Error);
-               if Is_In (Wide_Wide_Character'Val (Code), Set) =
-                  (Test = Inside)
-               then
+               if Is_In (Code, Set) = (Test = Inside) then
                   return I;
                end if;
                I := I_Previous - 1;
@@ -1235,15 +1197,11 @@ package body Ada.Strings.Generic_Fixed is
          while I <= Source'Last loop
             declare
                I_Next : Positive;
-               Code : System.UTF_Conversions.UCS_4;
+               Code : Wide_Wide_Character;
                Error : Boolean;
             begin
-               From_UTF (
-                  Source (I .. Source'Last),
-                  I_Next,
-                  Code,
-                  Error);
-               if Is_In (Wide_Wide_Character'Val (Code), Set) then
+               Get (Source (I .. Source'Last), I_Next, Code, Error);
+               if Is_In (Code, Set) then
                   Result := Result + 1;
                end if;
                I := I_Next + 1;
@@ -1292,16 +1250,11 @@ package body Ada.Strings.Generic_Fixed is
          while Last < Source'Last loop
             declare
                Next : Positive;
-               Code : System.UTF_Conversions.UCS_4;
+               Code : Wide_Wide_Character;
                Error : Boolean; -- ignore
             begin
-               From_UTF (
-                  Source (Last + 1 .. Source'Last),
-                  Next,
-                  Code,
-                  Error);
-               exit when Is_In (Wide_Wide_Character'Val (Code), Set) /=
-                  (Test = Inside);
+               Get (Source (Last + 1 .. Source'Last), Next, Code, Error);
+               exit when Is_In (Code, Set) /= (Test = Inside);
                Last := Next;
             end;
          end loop;
@@ -1319,16 +1272,15 @@ package body Ada.Strings.Generic_Fixed is
          while First > Source'First loop
             declare
                Previous : Positive;
-               Code : System.UTF_Conversions.UCS_4;
+               Code : Wide_Wide_Character;
                Error : Boolean; -- ignore
             begin
-               From_UTF_Reverse (
+               Get_Reverse (
                   Source (Source'First .. First - 1),
                   Previous,
                   Code,
                   Error);
-               exit when Is_In (Wide_Wide_Character'Val (Code), Set) /=
-                  (Test = Inside);
+               exit when Is_In (Code, Set) /= (Test = Inside);
                First := Previous;
             end;
          end loop;

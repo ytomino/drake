@@ -1,4 +1,5 @@
 package body Ada.Characters.Inside.Sets is
+   pragma Suppress (All_Checks);
 
    procedure Add (
       A : in out Character_Ranges;
@@ -176,7 +177,7 @@ package body Ada.Characters.Inside.Sets is
    begin
       loop
          if First > Last then
-            return First; -- return A'Last + 1 when not found
+            return First; -- return the insertion position when not found
          else
             declare
                Middle : constant Integer := (First + Last) / 2;

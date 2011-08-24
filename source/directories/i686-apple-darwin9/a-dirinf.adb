@@ -7,6 +7,24 @@ package body Ada.Directories.Information is
 
    function To_Permission_Set (Mode : C.sys.types.mode_t)
       return Permission_Set_Type;
+   function To_Permission_Set (Mode : C.sys.types.mode_t)
+      return Permission_Set_Type is
+   begin
+      return (
+         Others_Execute => (Mode and C.sys.stat.S_IXOTH) /= 0,
+         Others_Write => (Mode and C.sys.stat.S_IWOTH) /= 0,
+         Others_Read => (Mode and C.sys.stat.S_IROTH) /= 0,
+         Group_Execute => (Mode and C.sys.stat.S_IXGRP) /= 0,
+         Group_Write => (Mode and C.sys.stat.S_IWGRP) /= 0,
+         Group_Read => (Mode and C.sys.stat.S_IRGRP) /= 0,
+         Owner_Execute => (Mode and C.sys.stat.S_IXUSR) /= 0,
+         Owner_Write => (Mode and C.sys.stat.S_IWUSR) /= 0,
+         Owner_Read => (Mode and C.sys.stat.S_IRUSR) /= 0,
+         Set_Group_ID => (Mode and C.sys.stat.S_ISGID) /= 0,
+         Set_User_ID => (Mode and C.sys.stat.S_ISUID) /= 0);
+   end To_Permission_Set;
+
+   --  implementation
 
    function Group (Name : String) return String is
       Attributes : C.sys.stat.struct_stat;
@@ -157,22 +175,5 @@ package body Ada.Directories.Information is
       Check_Assigned (Directory_Entry);
       return To_Permission_Set (Directory_Entry.State_Data.st_mode);
    end Permission_Set;
-
-   function To_Permission_Set (Mode : C.sys.types.mode_t)
-      return Permission_Set_Type is
-   begin
-      return (
-         Others_Execute => (Mode and C.sys.stat.S_IXOTH) /= 0,
-         Others_Write => (Mode and C.sys.stat.S_IWOTH) /= 0,
-         Others_Read => (Mode and C.sys.stat.S_IROTH) /= 0,
-         Group_Execute => (Mode and C.sys.stat.S_IXGRP) /= 0,
-         Group_Write => (Mode and C.sys.stat.S_IWGRP) /= 0,
-         Group_Read => (Mode and C.sys.stat.S_IRGRP) /= 0,
-         Owner_Execute => (Mode and C.sys.stat.S_IXUSR) /= 0,
-         Owner_Write => (Mode and C.sys.stat.S_IWUSR) /= 0,
-         Owner_Read => (Mode and C.sys.stat.S_IRUSR) /= 0,
-         Set_Group_ID => (Mode and C.sys.stat.S_ISGID) /= 0,
-         Set_User_ID => (Mode and C.sys.stat.S_ISUID) /= 0);
-   end To_Permission_Set;
 
 end Ada.Directories.Information;

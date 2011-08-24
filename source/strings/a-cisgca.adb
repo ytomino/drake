@@ -2,6 +2,7 @@ with Ada.UCD.General_Category;
 with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Sets.General_Category is
+   pragma Suppress (All_Checks);
 
    procedure Fill (
       To : out Character_Ranges;
@@ -184,10 +185,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Unassigned_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Cn_Table_2x1'Length +
-            UCD.General_Category.Cn_Table_4x1'Length +
-            UCD.General_Category.Cn_Table_2x2'Length +
-            UCD.General_Category.Cn_Table_4x2'Length,
+            UCD.General_Category.Cn_Table_2x1'Length
+            + UCD.General_Category.Cn_Table_4x1'Length
+            + UCD.General_Category.Cn_Table_2x2'Length
+            + UCD.General_Category.Cn_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -245,10 +246,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Uppercase_Letter_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Lu_Table_2x1'Length +
-            UCD.General_Category.Lu_Table_4x1'Length +
-            UCD.General_Category.Lu_Table_2x2'Length +
-            UCD.General_Category.Lu_Table_4x2'Length,
+            UCD.General_Category.Lu_Table_2x1'Length
+            + UCD.General_Category.Lu_Table_4x1'Length
+            + UCD.General_Category.Lu_Table_2x2'Length
+            + UCD.General_Category.Lu_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -277,10 +278,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Lowercase_Letter_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Ll_Table_2x1'Length +
-            UCD.General_Category.Ll_Table_4x1'Length +
-            UCD.General_Category.Ll_Table_2x2'Length +
-            UCD.General_Category.Ll_Table_4x2'Length,
+            UCD.General_Category.Ll_Table_2x1'Length
+            + UCD.General_Category.Ll_Table_4x1'Length
+            + UCD.General_Category.Ll_Table_2x2'Length
+            + UCD.General_Category.Ll_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -309,8 +310,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Titlecase_Letter_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Lt_Table_2x1'Length +
-            UCD.General_Category.Lt_Table_2x2'Length,
+            UCD.General_Category.Lt_Table_2x1'Length
+            + UCD.General_Category.Lt_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -337,8 +338,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Modifier_Letter_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Lm_Table_2x1'Length +
-            UCD.General_Category.Lm_Table_2x2'Length,
+            UCD.General_Category.Lm_Table_2x1'Length
+            + UCD.General_Category.Lm_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -365,10 +366,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Other_Letter_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Lo_Table_2x1'Length +
-            UCD.General_Category.Lo_Table_4x1'Length +
-            UCD.General_Category.Lo_Table_2x2'Length +
-            UCD.General_Category.Lo_Table_4x2'Length,
+            UCD.General_Category.Lo_Table_2x1'Length
+            + UCD.General_Category.Lo_Table_4x1'Length
+            + UCD.General_Category.Lo_Table_2x2'Length
+            + UCD.General_Category.Lo_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -397,10 +398,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Nonspacing_Mark_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Mn_Table_2x1'Length +
-            UCD.General_Category.Mn_Table_4x1'Length +
-            UCD.General_Category.Mn_Table_2x2'Length +
-            UCD.General_Category.Mn_Table_4x2'Length,
+            UCD.General_Category.Mn_Table_2x1'Length
+            + UCD.General_Category.Mn_Table_4x1'Length
+            + UCD.General_Category.Mn_Table_2x2'Length
+            + UCD.General_Category.Mn_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -429,8 +430,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Enclosing_Mark_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Me_Table_2x1'Length +
-            UCD.General_Category.Me_Table_2x2'Length,
+            UCD.General_Category.Me_Table_2x1'Length
+            + UCD.General_Category.Me_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -457,10 +458,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Spacing_Mark_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Mc_Table_2x1'Length +
-            UCD.General_Category.Mc_Table_4x1'Length +
-            UCD.General_Category.Mc_Table_2x2'Length +
-            UCD.General_Category.Mc_Table_4x2'Length,
+            UCD.General_Category.Mc_Table_2x1'Length
+            + UCD.General_Category.Mc_Table_4x1'Length
+            + UCD.General_Category.Mc_Table_2x2'Length
+            + UCD.General_Category.Mc_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -489,8 +490,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Decimal_Number_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Nd_Table_2x2'Length +
-            UCD.General_Category.Nd_Table_4x2'Length,
+            UCD.General_Category.Nd_Table_2x2'Length
+            + UCD.General_Category.Nd_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -517,10 +518,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Letter_Number_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Nl_Table_2x1'Length +
-            UCD.General_Category.Nl_Table_4x1'Length +
-            UCD.General_Category.Nl_Table_2x2'Length +
-            UCD.General_Category.Nl_Table_4x2'Length,
+            UCD.General_Category.Nl_Table_2x1'Length
+            + UCD.General_Category.Nl_Table_4x1'Length
+            + UCD.General_Category.Nl_Table_2x2'Length
+            + UCD.General_Category.Nl_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -549,10 +550,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Other_Number_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.No_Table_2x1'Length +
-            UCD.General_Category.No_Table_4x1'Length +
-            UCD.General_Category.No_Table_2x2'Length +
-            UCD.General_Category.No_Table_4x2'Length,
+            UCD.General_Category.No_Table_2x1'Length
+            + UCD.General_Category.No_Table_4x1'Length
+            + UCD.General_Category.No_Table_2x2'Length
+            + UCD.General_Category.No_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -581,8 +582,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Space_Separator_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Zs_Table_2x1'Length +
-            UCD.General_Category.Zs_Table_2x2'Length,
+            UCD.General_Category.Zs_Table_2x1'Length
+            + UCD.General_Category.Zs_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -687,10 +688,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Format_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Cf_Table_2x1'Length +
-            UCD.General_Category.Cf_Table_4x1'Length +
-            UCD.General_Category.Cf_Table_2x2'Length +
-            UCD.General_Category.Cf_Table_4x2'Length,
+            UCD.General_Category.Cf_Table_2x1'Length
+            + UCD.General_Category.Cf_Table_4x1'Length
+            + UCD.General_Category.Cf_Table_2x2'Length
+            + UCD.General_Category.Cf_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -719,8 +720,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Private_Use_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Co_Table_2x2'Length +
-            UCD.General_Category.Co_Table_4x2'Length,
+            UCD.General_Category.Co_Table_2x2'Length
+            + UCD.General_Category.Co_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -773,8 +774,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Dash_Punctuation_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Pd_Table_2x1'Length +
-            UCD.General_Category.Pd_Table_2x2'Length,
+            UCD.General_Category.Pd_Table_2x1'Length
+            + UCD.General_Category.Pd_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -827,8 +828,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Close_Punctuation_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Pe_Table_2x1'Length +
-            UCD.General_Category.Pe_Table_2x2'Length,
+            UCD.General_Category.Pe_Table_2x1'Length
+            + UCD.General_Category.Pe_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -855,8 +856,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Connector_Punctuation_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Pc_Table_2x1'Length +
-            UCD.General_Category.Pc_Table_2x2'Length,
+            UCD.General_Category.Pc_Table_2x1'Length
+            + UCD.General_Category.Pc_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -883,10 +884,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Other_Punctuation_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Po_Table_2x1'Length +
-            UCD.General_Category.Po_Table_4x1'Length +
-            UCD.General_Category.Po_Table_2x2'Length +
-            UCD.General_Category.Po_Table_4x2'Length,
+            UCD.General_Category.Po_Table_2x1'Length
+            + UCD.General_Category.Po_Table_4x1'Length
+            + UCD.General_Category.Po_Table_2x2'Length
+            + UCD.General_Category.Po_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -915,9 +916,9 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Math_Symbol_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Sm_Table_2x1'Length +
-            UCD.General_Category.Sm_Table_4x1'Length +
-            UCD.General_Category.Sm_Table_2x2'Length,
+            UCD.General_Category.Sm_Table_2x1'Length
+            + UCD.General_Category.Sm_Table_4x1'Length
+            + UCD.General_Category.Sm_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -945,8 +946,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Currency_Symbol_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Sc_Table_2x1'Length +
-            UCD.General_Category.Sc_Table_2x2'Length,
+            UCD.General_Category.Sc_Table_2x1'Length
+            + UCD.General_Category.Sc_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -973,8 +974,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Modifier_Symbol_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Sk_Table_2x1'Length +
-            UCD.General_Category.Sk_Table_2x2'Length,
+            UCD.General_Category.Sk_Table_2x1'Length
+            + UCD.General_Category.Sk_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -1001,10 +1002,10 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Other_Symbol_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.So_Table_2x1'Length +
-            UCD.General_Category.So_Table_4x1'Length +
-            UCD.General_Category.So_Table_2x2'Length +
-            UCD.General_Category.So_Table_4x2'Length,
+            UCD.General_Category.So_Table_2x1'Length
+            + UCD.General_Category.So_Table_4x1'Length
+            + UCD.General_Category.So_Table_2x2'Length
+            + UCD.General_Category.So_Table_4x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
@@ -1033,8 +1034,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
    begin
       Initial_Punctuation_Set := new Character_Set'(
          Length =>
-            UCD.General_Category.Pi_Table_2x1'Length +
-            UCD.General_Category.Pi_Table_2x2'Length,
+            UCD.General_Category.Pi_Table_2x1'Length
+            + UCD.General_Category.Pi_Table_2x2'Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (

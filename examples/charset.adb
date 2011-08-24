@@ -1,4 +1,3 @@
-with Ada.Characters.Handling;
 with Ada.Strings.Maps.Constants;
 with Ada.Strings.Wide_Maps.Wide_Constants;
 with Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants;

@@ -22,9 +22,9 @@ procedure exception5 is
 			when E : Program_Error =>
 				Ada.Debug.Put (Ada.Exceptions.Exception_Information (E));
 		end;
-		Ada.Debug.Put ("OK");
 	end Test;
 
 begin
 	Test;
+	pragma Debug (Ada.Debug.Put ("OK"));
 end exception5;

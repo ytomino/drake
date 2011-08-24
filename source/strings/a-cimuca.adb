@@ -12,9 +12,9 @@ package body Ada.Characters.Inside.Maps.Upper_Case is
    begin
       Mapping := new Character_Mapping'(
          Length =>
-            UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length +
-            UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length +
-            UCD.Simple_Case_Mapping.Difference_Upper_Table_2'Length,
+            UCD.Simple_Case_Mapping.Shared_Lower_Table_2'Length
+            + UCD.Simple_Case_Mapping.Shared_Lower_Table_4'Length
+            + UCD.Simple_Case_Mapping.Difference_Upper_Table_2'Length,
          Reference_Count => System.Reference_Counting.Static,
          From => <>,
          To => <>);

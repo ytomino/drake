@@ -7,5 +7,5 @@ begin
 	delay until Ada.Calendar.Clock + 1.0;
 	pragma Assert (Ada.Calendar.Clock - Start >= 2.0);
 	pragma Assert (Ada.Calendar.Clock - Start < 3.0); -- ??
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end delays;

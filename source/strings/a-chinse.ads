@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 with System.Reference_Counting;
 package Ada.Characters.Inside.Sets is
    pragma Pure;

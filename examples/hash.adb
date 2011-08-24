@@ -25,5 +25,5 @@ begin
 			null;
 		end loop;
 	end loop;
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end hash;

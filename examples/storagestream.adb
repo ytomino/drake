@@ -23,5 +23,5 @@ begin
 	if Wide_Wide_String'Input (Stream) /= "ABCDEFG" then
 		raise Program_Error;
 	end if;
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end storagestream;

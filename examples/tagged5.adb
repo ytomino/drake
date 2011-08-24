@@ -5,15 +5,10 @@ procedure tagged5 is
 	type T is tagged null record;
 begin
 	Ada.Debug.Put (T'External_Tag);
-	if Ada.Tags.Internal_Tag (T'External_Tag) = T'Tag then
-		Ada.Debug.Put ("OK");
-	end if;
+	pragma Assert (Ada.Tags.Internal_Tag (T'External_Tag) = T'Tag);
 	Ada.Debug.Put (Ada.Finalization.Controlled'External_Tag);
-	if Ada.Tags.Internal_Tag (Ada.Finalization.Controlled'External_Tag) = Ada.Finalization.Controlled'Tag then
-		Ada.Debug.Put ("OK");
-	end if;
+	pragma Assert (Ada.Tags.Internal_Tag (Ada.Finalization.Controlled'External_Tag) = Ada.Finalization.Controlled'Tag);
 	Ada.Debug.Put (Ada.Finalization.Limited_Controlled'External_Tag);
-	if Ada.Tags.Internal_Tag (Ada.Finalization.Limited_Controlled'External_Tag) = Ada.Finalization.Limited_Controlled'Tag then
-		Ada.Debug.Put ("OK");
-	end if;
+	pragma Assert (Ada.Tags.Internal_Tag (Ada.Finalization.Limited_Controlled'External_Tag) = Ada.Finalization.Limited_Controlled'Tag);
+	pragma Debug (Ada.Debug.Put ("OK"));
 end tagged5;

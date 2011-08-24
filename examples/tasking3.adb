@@ -14,8 +14,8 @@ procedure tasking3 is
 	begin
 		delay 0.1;
 		Ada.Debug.Put (
-			Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task) &
-			Integer'Image (Attr.Value));
+			Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task)
+			& Integer'Image (Attr.Value));
 	end Process;
 	Ts : array (1 .. Count) of System.Tasking.Inside.Task_Id;
 begin
@@ -26,5 +26,5 @@ begin
 	for I in Ts'Range loop
 		System.Tasking.Inside.Wait (Ts (I));
 	end loop;
-	Ada.Debug.Put ("ok");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking3;

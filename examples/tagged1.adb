@@ -37,5 +37,5 @@ begin
 			null;
 		end;
 	end;
-	Ada.Debug.Put ("ok");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end tagged1;

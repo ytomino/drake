@@ -56,5 +56,5 @@ begin
 		Ada.Synchronous_Task_Control.Set_True (Start);
 		delay 0.1;
 	end;
-	Ada.Debug.Put ("ok");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking2;

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Ada.Strings.Functions;
 package Ada.Strings.Unbounded_Strings.Functions is new Generic_Functions (
    Space => Space,

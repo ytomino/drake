@@ -12,4 +12,11 @@ procedure directories is
 begin
 	Ada.Debug.Put ("current user: " & Ada.Permissions.User_Name);
 	Ada.Directories.Search (".", "*", Process => Process'Access);
+	-- copy
+	begin
+		Ada.Directories.Copy_File ("%%%%NOTHING1%%%%", "%%%%NOTHING2%%%%");
+		raise Program_Error;
+	exception
+		when Ada.Directories.Name_Error => null;
+	end;
 end directories;

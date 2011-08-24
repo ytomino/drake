@@ -24,5 +24,5 @@ begin
 	Ada.Debug.Put (Paren ("{}"));
 	Ada.Debug.Put (Ada.Exceptions.Exception_Name (Constraint_Error'Identity));
 	Heavy_Use (1);
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end sstack;

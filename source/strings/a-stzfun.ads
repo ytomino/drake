@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Ada.Strings.Generic_Fixed;
 package Ada.Strings.Wide_Wide_Functions is new Generic_Fixed (
    Character_Type => Wide_Wide_Character,

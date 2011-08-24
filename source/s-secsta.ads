@@ -5,7 +5,7 @@ package System.Secondary_Stack is
    pragma Preelaborate;
 
    --  required for secondary stack by compiler (s-secsta.ads)
-   SS_Pool : Integer;
+   SS_Pool : Integer; -- unused, but compiler requires
 
    type Mark_Id is record
       Sstk : Address;

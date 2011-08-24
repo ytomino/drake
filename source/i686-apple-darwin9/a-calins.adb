@@ -179,13 +179,26 @@ package body Ada.Calendar.Inside is
          Time_Rep'(Cast (Date) - Cast (Sub_Second)) / 1000000000 - Diff);
    end Split;
 
+   function To_timespec (T : Time) return C.sys.time.struct_timespec is
+      function Cast is new Unchecked_Conversion (Time, Time_Rep);
+      Sub_Second : constant Time_Rep := Cast (T) mod 1000000000;
+   begin
+      return (
+         tv_sec =>
+            C.sys.types.time_t ((Cast (T) - Sub_Second) / 1000000000 - Diff),
+         tv_nsec =>
+            C.signed_long (Sub_Second));
+   end To_timespec;
+
    function To_timespec (D : Duration) return C.sys.time.struct_timespec is
       function Cast is new Unchecked_Conversion (Duration, Time_Rep);
       Sub_Second : constant Time_Rep := Cast (D) mod 1000000000;
    begin
       return (
-         tv_sec => C.sys.types.time_t ((Cast (D) - Sub_Second) / 1000000000),
-         tv_nsec => C.signed_long (Sub_Second));
+         tv_sec =>
+            C.sys.types.time_t ((Cast (D) - Sub_Second) / 1000000000),
+         tv_nsec =>
+            C.signed_long (Sub_Second));
    end To_timespec;
 
 end Ada.Calendar.Inside;

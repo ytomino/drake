@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  DerivedCombiningClass.txt
 package Ada.UCD.Combining_Class is
+   pragma Pure;
 
    subtype Table_Type_2 is Class_Type_2;
    subtype Table_Type_4 is Class_Type_4;

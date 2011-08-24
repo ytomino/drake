@@ -92,7 +92,7 @@ package System.UTF_Conversions is
       Source : Source_Type;
       Result : out Target_Type;
       Last : out Natural;
-      Error : out Boolean);
+      Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#));
 
    generic
       type Source_Element_Type is (<>);
@@ -104,7 +104,10 @@ package System.UTF_Conversions is
          Source : Source_Type;
          Result : out Target_Type;
          Last : out Natural;
-         Error : out Boolean);
-   function Convert_Function (Source : Source_Type) return Target_Type;
+         Substitute : Target_Element_Type);
+   function Convert_Function (
+      Source : Source_Type;
+      Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
+      return Target_Type;
 
 end System.UTF_Conversions;

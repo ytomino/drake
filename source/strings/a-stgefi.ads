@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  generic implementation of Ada.Strings.Fixed
-with System.UTF_Conversions;
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
@@ -195,22 +194,21 @@ package Ada.Strings.Generic_Fixed is
       return String_Type;
 
    generic
-      UTF_Max_Length : Natural;
-      with procedure To_UTF (
-         Code : System.UTF_Conversions.UCS_4;
-         Result : out String_Type;
+      Expanding : Natural;
+      with procedure Put (
+         Value : Wide_Wide_Character;
+         Item : out String_Type;
+         Last : out Natural);
+      with procedure Get (
+         Item : String_Type;
          Last : out Natural;
-         Error : out Boolean);
-      with procedure From_UTF (
-         Data : String_Type;
-         Last : out Natural;
-         Result : out System.UTF_Conversions.UCS_4;
-         Error : out Boolean);
-      with procedure From_UTF_Reverse (
-         Data : String_Type;
+         Value : out Wide_Wide_Character;
+         Is_Illegal_Sequence : out Boolean);
+      with procedure Get_Reverse (
+         Item : String_Type;
          First : out Positive;
-         Result : out System.UTF_Conversions.UCS_4;
-         Error : out Boolean);
+         Value : out Wide_Wide_Character;
+         Is_Illegal_Sequence : out Boolean);
       type Character_Set is private;
       with function Is_In (
          Element : Wide_Wide_Character;
