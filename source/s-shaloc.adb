@@ -1,4 +1,5 @@
 package body System.Shared_Locking is
+   pragma Suppress (All_Checks);
 
    procedure Enter is
    begin

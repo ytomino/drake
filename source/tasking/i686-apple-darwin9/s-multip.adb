@@ -1,5 +1,6 @@
 with C.unistd;
 package body System.Multiprocessors is
+   pragma Suppress (All_Checks);
    use type C.signed_long;
 
    function Number_Of_CPUs return CPU is

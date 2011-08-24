@@ -1,4 +1,5 @@
 package body Ada.Synchronous_Task_Control is
+   pragma Suppress (All_Checks);
 
    procedure Set_True (S : in out Suspension_Object) is
    begin

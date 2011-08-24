@@ -3,6 +3,7 @@ with System.Address_To_Named_Access_Conversions;
 with System.Tasking.Inside;
 with System.Termination;
 package body System.Tasking.Stages is
+   pragma Suppress (All_Checks);
 
    package Task_Record_Conv is new Address_To_Named_Access_Conversions (
       Inside.Task_Record,
