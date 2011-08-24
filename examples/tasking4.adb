@@ -45,5 +45,5 @@ begin
 	end loop;
 	Display (X);
 	System.Tasking.Inside.Wait (T);
-	Ada.Debug.Put ("ok");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking4;

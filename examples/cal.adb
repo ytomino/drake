@@ -83,6 +83,7 @@ begin
 		D := Now - Duration'First + Duration'Last; -- out of range
 		Ada.Debug.Put ("plase compile with -gnato");
 	exception
-		when Ada.Calendar.Time_Error => Ada.Debug.Put ("OK");
+		when Ada.Calendar.Time_Error => null;
 	end;
+	pragma Debug (Ada.Debug.Put ("OK"));
 end cal;

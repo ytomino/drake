@@ -36,5 +36,5 @@ begin
 		Free (A (1));
 		Free (A (2));
 	end;
-	Ada.Debug.Put ("ok");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end storagesize;

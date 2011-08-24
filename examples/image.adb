@@ -52,5 +52,5 @@ begin
 	pragma Assert (Short_Fixed'Image (Short_Fixed'Last) = " 9.9");
 	pragma Assert (Long_Fixed'Image (Long_Fixed'First) = "-999999999.9");
 	pragma Assert (Long_Fixed'Image (Long_Fixed'Last) = " 999999999.9");
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end image;

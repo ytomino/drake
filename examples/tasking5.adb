@@ -151,5 +151,5 @@ begin
 		-- wait here
 	end;
 	pragma Assert (Joined);
-	Ada.Debug.Put ("ok");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking5;

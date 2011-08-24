@@ -38,5 +38,5 @@ begin
 	Ada.Environment_Variables.Iterate (Process'Access);
 	pragma Assert (Count = 1);
 	pragma Assert (Ada.Environment_Variables.Value ("A") = "B");
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end cmdline;

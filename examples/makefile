@@ -28,10 +28,10 @@ MFLAGS=-a
 endif
 
 ifneq ($(WITHD),0)
-CFLAGS=-gnatf -gnatwI -g -gnata
+CFLAGS=-gnatf -gnatwIj -g -gnata
 BFLAGS=-E
 else
-CFLAGS=-gnatf -gnatwI
+CFLAGS=-gnatf -gnatwIj
 BFLAGS=
 endif
 

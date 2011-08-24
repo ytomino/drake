@@ -51,5 +51,5 @@ begin
 		pragma Assert (String'(Interfaces.C.Strings.Value (p)) = "ABC");
 		Interfaces.C.Strings.Free (p);
 	end;
-	Ada.Debug.Put ("OK");
+	pragma Debug (Ada.Debug.Put ("OK"));
 end intf;
