@@ -5,17 +5,6 @@ with System.Parameters;
 with System.Task_Info;
 package System.Tasking.Stages is
 
-   --  (s-taskin.ads)
-   type Access_Boolean is access all Boolean;
-
-   --  (s-taskin.ads)
-   Null_Entry : constant := 0;
-   Max_Entry : constant := Integer'Last;
-   Interrupt_Entry : constant := -2;
-   Cancelled_Entry : constant := -1;
-   type Entry_Index is range Interrupt_Entry .. Max_Entry;
-   type Task_Entry_Index is new Entry_Index range Null_Entry .. Max_Entry;
-
    --  required for task by compiler (s-tassta.ads)
    procedure Create_Task (
       Priority : Integer; -- range -1 .. Any_Priority'Last;
@@ -51,6 +40,12 @@ package System.Tasking.Stages is
    procedure Move_Activation_Chain (
       From, To : Activation_Chain_Access;
       New_Master : Master_ID);
+
+   --  required for entry of task by compiler (s-tassta.ads)
+   procedure Set_Entry_Name (
+      T : Task_Id;
+      Pos : Task_Entry_Index;
+      Val : Entry_Name_Access);
 
    --  task type be expanded below:
    --

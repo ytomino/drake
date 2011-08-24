@@ -1,4 +1,5 @@
 with Ada.Unchecked_Conversion;
+with System.Standard_Library;
 package body System.Soft_Links is
    pragma Suppress (All_Checks);
 
@@ -14,6 +15,17 @@ package body System.Soft_Links is
    begin
       return Cast (Main_Task_Local_Storage.Current_Exception'Access);
    end Get_Main_Current_Excep;
+
+   function Get_GNAT_Exception return Ada.Exceptions.Exception_Id is
+      function Cast is new Ada.Unchecked_Conversion (
+         Ada.Exceptions.Exception_Occurrence_Access,
+         Unwind.Exception_Occurrence_Access);
+      function Cast is new Ada.Unchecked_Conversion (
+         Standard_Library.Exception_Data_Ptr,
+         Ada.Exceptions.Exception_Id);
+   begin
+      return Cast (Cast (Get_Current_Excep.all).Id);
+   end Get_GNAT_Exception;
 
    function Get_Main_Task_Local_Storage
       return not null Task_Local_Storage_Access is

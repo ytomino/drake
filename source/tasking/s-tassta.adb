@@ -25,13 +25,13 @@ package body System.Tasking.Stages is
    procedure Enter_Master;
    procedure Enter_Master is
    begin
-      Inside.Enter_Master (Inside.Get_Current_Task_Id);
+      Inside.Enter_Master;
    end Enter_Master;
 
    procedure Complete_Master;
    procedure Complete_Master is
    begin
-      Inside.Leave_Master (Inside.Get_Current_Task_Id);
+      Inside.Leave_Master;
    end Complete_Master;
 
    --  implementation
@@ -57,24 +57,20 @@ package body System.Tasking.Stages is
       pragma Unreferenced (Task_Info);
       pragma Unreferenced (CPU);
       pragma Unreferenced (Relative_Deadline);
-      pragma Unreferenced (Num_Entries);
-      pragma Unreferenced (Elaborated);
-      pragma Unreferenced (Task_Image);
       pragma Unreferenced (Build_Entry_Names);
-      Parent : Inside.Task_Id;
+      Master_Of_Parent : constant Inside.Master_Access :=
+         Inside.Get_Master_Of_Parent (Master);
       New_Task_Id : Inside.Task_Id;
    begin
-      Parent := Inside.Get_Current_Task_Id;
-      while Inside.Master_Level_Of (Parent) >= Master loop
-         Parent := Inside.Parent (Parent);
-      end loop;
       Inside.Create (
          New_Task_Id,
          Discriminants,
          State,
+         Name => Task_Image,
          Chain => Chain'Unrestricted_Access,
-         Master => Master,
-         Parent => Parent);
+         Elaborated => Elaborated,
+         Master => Master_Of_Parent,
+         Entry_Last_Index => Num_Entries);
       Created_Task := Task_Record_Conv.To_Address (New_Task_Id);
    end Create_Task;
 
@@ -84,9 +80,14 @@ package body System.Tasking.Stages is
    end Complete_Activation;
 
    procedure Activate_Tasks (
-      Chain_Access : not null access Activation_Chain) is
+      Chain_Access : not null access Activation_Chain)
+   is
+      Has_Error : Boolean;
    begin
-      Inside.Activate (Chain_Access);
+      Inside.Activate (Chain_Access, Has_Error);
+      if Has_Error then
+         raise Program_Error; -- C39008A, RM 3.11 (14)
+      end if;
    end Activate_Tasks;
 
    procedure Free_Task (T : Task_Id) is
@@ -97,10 +98,21 @@ package body System.Tasking.Stages is
 
    procedure Move_Activation_Chain (
       From, To : Activation_Chain_Access;
-      New_Master : Master_ID) is
+      New_Master : Master_ID)
+   is
+      New_Master_Of_Parent : constant Inside.Master_Access :=
+         Inside.Get_Master_Of_Parent (New_Master);
    begin
-      Inside.Move (From, To, New_Master);
+      Inside.Move (From, To, New_Master_Of_Parent);
    end Move_Activation_Chain;
+
+   procedure Set_Entry_Name (
+      T : Task_Id;
+      Pos : Task_Entry_Index;
+      Val : Entry_Name_Access) is
+   begin
+      Inside.Set_Entry_Name (Task_Record_Conv.To_Pointer (T), Pos, Val);
+   end Set_Entry_Name;
 
 begin
    Soft_Links.Current_Master := Current_Master'Access;
