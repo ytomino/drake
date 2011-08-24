@@ -298,9 +298,9 @@ package body Ada.Strings.Maps is
       Position : Positive;
    begin
       for I in Set.Data.Items'Range loop
-         Length := Length +
-            Wide_Wide_Character'Pos (Set.Data.Items (I).High) -
-            Wide_Wide_Character'Pos (Set.Data.Items (I).Low) + 1;
+         Length := Length + (
+            Wide_Wide_Character'Pos (Set.Data.Items (I).High)
+            - Wide_Wide_Character'Pos (Set.Data.Items (I).Low) + 1);
       end loop;
       return Result : Wide_Wide_String (1 .. Length) do
          Position := 1;

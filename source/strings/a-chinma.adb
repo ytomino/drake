@@ -33,38 +33,24 @@ package body Ada.Characters.Inside.Maps is
       Element : Character_Type)
       return Character_Type
    is
-      function Search (
-         A : Character_Sequence;
-         E : Character_Type)
-         return Integer;
-      function Search (
-         A : Character_Sequence;
-         E : Character_Type)
-         return Integer is
-      begin
-         if A'First > A'Last then
-            return -1;
-         else
-            declare
-               Middle : constant Integer := (A'First + A'Last) / 2;
-            begin
-               if E < A (Middle) then
-                  return Search (A (A'First .. Middle - 1), E);
-               elsif E > A (Middle) then
-                  return Search (A (Middle + 1 .. A'Last), E);
-               else
-                  return Middle;
-               end if;
-            end;
-         end if;
-      end Search;
-      Index : constant Integer := Search (Map.From, Element);
+      L : Positive := Map.From'First;
+      H : Natural := Map.From'Last;
    begin
-      if Index < 0 then
-         return Element;
-      else
-         return Map.To (Index);
-      end if;
+      loop
+         exit when L > H;
+         declare
+            M : constant Positive := (L + H) / 2;
+         begin
+            if Element < Map.From (M) then
+               H := M - 1;
+            elsif Element > Map.From (M) then
+               L := M + 1;
+            else
+               return Map.To (M);
+            end if;
+         end;
+      end loop;
+      return Element;
    end Value;
 
    function Value (
