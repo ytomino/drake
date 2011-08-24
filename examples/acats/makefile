@@ -236,5 +236,5 @@ $(SUPPORTDIR):
 	mkdir $@
 
 clean:
-	rm -r $(SUPPORTDIR)
-	rm -r $(TESTDIR)
+	-rm -r $(SUPPORTDIR)
+	-rm -r $(TESTDIR)
