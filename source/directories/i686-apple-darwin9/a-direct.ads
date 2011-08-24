@@ -30,7 +30,7 @@ package Ada.Directories is
    procedure Rename (Old_Name, New_Name : String);
 
    procedure Copy_File (
-      Source_Name,
+      Source_Name : String;
       Target_Name : String;
       Form : String := "");
 
@@ -96,13 +96,13 @@ package Ada.Directories is
    procedure Start_Search (
       Search : in out Search_Type;
       Directory : String;
-      Pattern : String;
+      Pattern : String := "*"; -- extended default
       Filter : Filter_Type := (others => True));
 
    --  extended
    function Start_Search (
       Directory : String;
-      Pattern : String;
+      Pattern : String := "*";
       Filter : Filter_Type := (others => True))
       return Search_Type;
 
@@ -116,7 +116,7 @@ package Ada.Directories is
 
    procedure Search (
       Directory : String;
-      Pattern : String;
+      Pattern : String := "*"; -- extended default
       Filter : Filter_Type := (others => True);
       Process : not null access procedure (
          Directory_Entry : Directory_Entry_Type));
@@ -145,13 +145,13 @@ package Ada.Directories is
 
 private
 
+   type String_Access is access String;
+
    type Directory_Entry_Type is limited record
-      Search : access Search_Type := null;
+      Path : String_Access := null;
       Entry_Data : aliased C.sys.dirent.struct_dirent;
       State_Data : aliased C.sys.stat.struct_stat;
    end record;
-
-   type String_Access is access String;
 
    type Search_Type is new Finalization.Limited_Controlled with record
       Handle : C.dirent.DIR_ptr := null;

@@ -9,6 +9,8 @@ package body Ada.Directories.Temporary is
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant String := "ADAXXXXXX";
 
+   --  implementation
+
    function Temporary_Directory return String is
       Temp_Dir : C.char_ptr;
    begin

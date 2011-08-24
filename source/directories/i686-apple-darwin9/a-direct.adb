@@ -37,6 +37,7 @@ package body Ada.Directories is
          if C.errno.errno /= C.errno.EEXIST then
             return -1;
          end if;
+         --  try to overwrite
          if C.unistd.unlink (zto) < 0
             or else C.unistd.link (zfrom, zto) < 0
          then
@@ -93,7 +94,7 @@ package body Ada.Directories is
 
    procedure Check_Assigned (Directory_Entry : Directory_Entry_Type) is
    begin
-      if Directory_Entry.Search = null then
+      if Directory_Entry.Path = null then
          raise Status_Error;
       end if;
    end Check_Assigned;
@@ -364,7 +365,7 @@ package body Ada.Directories is
    begin
       Check_Assigned (Directory_Entry);
       return Compose (
-         Directory_Entry.Search.Path.all,
+         Directory_Entry.Path.all,
          Simple_Name (Directory_Entry));
    end Full_Name;
 
@@ -392,7 +393,7 @@ package body Ada.Directories is
          raise Status_Error;
       else
          --  copy entry and get info
-         Directory_Entry.Search := Search'Unchecked_Access; --  overwrite
+         Directory_Entry.Path := Search.Path; --  overwrite
          Directory_Entry.Entry_Data := Search.Data;
          declare
             Z_Name : String := Full_Name (Directory_Entry) & Character'Val (0);
@@ -499,7 +500,7 @@ package body Ada.Directories is
 
    procedure Search (
       Directory : String;
-      Pattern : String;
+      Pattern : String := "*";
       Filter : Filter_Type := (others => True);
       Process : not null access procedure (
          Directory_Entry : Directory_Entry_Type))
@@ -579,7 +580,7 @@ package body Ada.Directories is
 
    function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
    begin
-      if Directory_Entry.Search = null
+      if Directory_Entry.Path = null
          or else To_File_Kind (Directory_Entry.State_Data.st_mode) /=
             Ordinary_File
       then
@@ -592,7 +593,7 @@ package body Ada.Directories is
    procedure Start_Search (
       Search : in out Search_Type;
       Directory : String;
-      Pattern : String;
+      Pattern : String := "*";
       Filter : Filter_Type := (others => True)) is
    begin
       Finalize (Search); --  cleanup
@@ -663,7 +664,7 @@ package body Ada.Directories is
 
    function Start_Search (
       Directory : String;
-      Pattern : String;
+      Pattern : String := "*";
       Filter : Filter_Type := (others => True))
       return Search_Type is
    begin
