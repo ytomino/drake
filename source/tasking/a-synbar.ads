@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  Ada 2012
-with Ada.Finalization;
+private with Ada.Finalization;
 private with System.Tasking.Inside;
 package Ada.Synchronous_Barriers is
    pragma Preelaborate;
