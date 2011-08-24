@@ -1,11 +1,11 @@
 pragma License (Unrestricted);
-with Ada.Strings.Root_Maps;
+with Ada.Strings.Maps;
 package Ada.Strings.Wide_Maps is
    pragma Preelaborate;
 
    --  Representation for a set of Wide_Character values:
 --  type Wide_Character_Set is private;
-   type Wide_Character_Set is new Root_Maps.Root_Character_Set;
+   type Wide_Character_Set is new Maps.Character_Set;
    pragma Preelaborable_Initialization (Wide_Character_Set);
 
 --  Null_Set : constant Wide_Character_Set;
@@ -15,12 +15,12 @@ package Ada.Strings.Wide_Maps is
 --    Low : Wide_Character;
 --    High : Wide_Character;
 --  end record;
-   subtype Wide_Character_Range is Root_Maps.Wide_Character_Range;
+   subtype Wide_Character_Range is Maps.Wide_Character_Range;
    --  Represents Wide_Character range Low..High
 
 --  type Wide_Character_Ranges is
 --    array (Positive range <>) of Wide_Character_Range;
-   subtype Wide_Character_Ranges is Root_Maps.Wide_Character_Ranges;
+   subtype Wide_Character_Ranges is Maps.Wide_Character_Ranges;
 
    function To_Set (Ranges : Wide_Character_Ranges)
       return Wide_Character_Set
@@ -73,9 +73,25 @@ package Ada.Strings.Wide_Maps is
       return Wide_Character_Sequence
       renames Overloaded_To_Sequence;
 
+   --  hiding
+   function To_Set (Ranges : Maps.Character_Ranges)
+      return Wide_Character_Set is abstract;
+   function To_Set (Span : Maps.Character_Range) return Wide_Character_Set is
+      abstract;
+   function To_Ranges (Set : Wide_Character_Set)
+      return Maps.Character_Ranges is abstract;
+   function Is_In (Element : Character; Set : Wide_Character_Set)
+      return Boolean is abstract;
+   function To_Set (Sequence : Maps.Character_Sequence)
+      return Wide_Character_Set is abstract;
+   function To_Set (Singleton : Character) return Wide_Character_Set is
+      abstract;
+   function To_Sequence (Set : Wide_Character_Set)
+      return Maps.Character_Sequence is abstract;
+
    --  Representation for a Wide_Character to Wide_Character mapping:
 --  type Wide_Character_Mapping is private;
-   type Wide_Character_Mapping is new Root_Maps.Root_Character_Mapping;
+   type Wide_Character_Mapping is new Maps.Character_Mapping;
    pragma Preelaborable_Initialization (Wide_Character_Mapping);
 
    function Value (Map : Wide_Character_Mapping; Element : Wide_Character)
@@ -96,6 +112,16 @@ package Ada.Strings.Wide_Maps is
    function To_Range (Map : Wide_Character_Mapping)
       return Wide_Character_Sequence
       renames Overloaded_To_Range;
+
+   --  hiding
+   function Value (Map : Wide_Character_Mapping; Element : Character)
+      return Character is abstract;
+   function To_Mapping (From, To : Maps.Character_Sequence)
+      return Wide_Character_Mapping is abstract;
+   function To_Domain (Map : Wide_Character_Mapping)
+      return Maps.Character_Sequence is abstract;
+   function To_Range (Map : Wide_Character_Mapping)
+      return Maps.Character_Sequence is abstract;
 
    type Wide_Character_Mapping_Function is
       access function (From : Wide_Character) return Wide_Character;

@@ -7,7 +7,7 @@ with System.UTF_Conversions.From_8_To_32;
 with System.UTF_Conversions.From_16_To_32;
 with System.UTF_Conversions.From_32_To_8;
 with System.UTF_Conversions.From_32_To_16;
-package body Ada.Strings.Root_Maps is
+package body Ada.Strings.Maps is
    pragma Suppress (All_Checks);
    use type Characters.Inside.Sets.Character_Ranges;
 
@@ -138,12 +138,12 @@ package body Ada.Strings.Root_Maps is
          Low => Wide_Wide_Character'First,
          High => Wide_Wide_Character'Last)));
 
-   overriding procedure Adjust (Object : in out Root_Character_Set) is
+   overriding procedure Adjust (Object : in out Character_Set) is
    begin
       System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
    end Adjust;
 
-   overriding procedure Finalize (Object : in out Root_Character_Set) is
+   overriding procedure Finalize (Object : in out Character_Set) is
       subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
       type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
       type System_Address_Access is access all System.Address;
@@ -157,14 +157,14 @@ package body Ada.Strings.Root_Maps is
          Free => Free_Set_Data'Access);
    end Finalize;
 
-   function Is_Null (Set : Root_Character_Set) return Boolean is
+   function Is_Null (Set : Character_Set) return Boolean is
    begin
       return Set.Data.Length = 0;
    end Is_Null;
 
    function Is_Subset (
-      Elements : Root_Character_Set;
-      Set : Root_Character_Set)
+      Elements : Character_Set;
+      Set : Character_Set)
       return Boolean is
    begin
       pragma Assert (Valid (Elements.Data));
@@ -199,7 +199,7 @@ package body Ada.Strings.Root_Maps is
       end if;
    end Is_Subset;
 
-   function Null_Set return Root_Character_Set is
+   function Null_Set return Character_Set is
    begin
       return (Finalization.Controlled with
          Data => Empty_Set_Data'Unrestricted_Access);
@@ -207,7 +207,7 @@ package body Ada.Strings.Root_Maps is
 
    function Overloaded_Is_In (
       Element : Character;
-      Set : Root_Character_Set)
+      Set : Character_Set)
       return Boolean is
    begin
       return Overloaded_Is_In (
@@ -217,7 +217,7 @@ package body Ada.Strings.Root_Maps is
 
    function Overloaded_Is_In (
       Element : Wide_Character;
-      Set : Root_Character_Set)
+      Set : Character_Set)
       return Boolean is
    begin
       return Overloaded_Is_In (
@@ -227,14 +227,14 @@ package body Ada.Strings.Root_Maps is
 
    function Overloaded_Is_In (
       Element : Wide_Wide_Character;
-      Set : Root_Character_Set)
+      Set : Character_Set)
       return Boolean is
    begin
       pragma Assert (Valid (Set.Data));
       return Characters.Inside.Sets.Is_In (Element, Set.Data);
    end Overloaded_Is_In;
 
-   function Overloaded_To_Ranges (Set : Root_Character_Set)
+   function Overloaded_To_Ranges (Set : Character_Set)
       return Character_Ranges is
    begin
       pragma Assert (Valid (Set.Data));
@@ -248,7 +248,7 @@ package body Ada.Strings.Root_Maps is
       end return;
    end Overloaded_To_Ranges;
 
-   function Overloaded_To_Ranges (Set : Root_Character_Set)
+   function Overloaded_To_Ranges (Set : Character_Set)
       return Wide_Character_Ranges is
    begin
       pragma Assert (Valid (Set.Data));
@@ -262,7 +262,7 @@ package body Ada.Strings.Root_Maps is
       end return;
    end Overloaded_To_Ranges;
 
-   function Overloaded_To_Ranges (Set : Root_Character_Set)
+   function Overloaded_To_Ranges (Set : Character_Set)
       return Wide_Wide_Character_Ranges is
    begin
       pragma Assert (Valid (Set.Data));
@@ -276,21 +276,21 @@ package body Ada.Strings.Root_Maps is
       end return;
    end Overloaded_To_Ranges;
 
-   function Overloaded_To_Sequence (Set : Root_Character_Set)
+   function Overloaded_To_Sequence (Set : Character_Set)
       return Character_Sequence is
    begin
       return System.UTF_Conversions.From_32_To_8.Convert (
          Overloaded_To_Sequence (Set));
    end Overloaded_To_Sequence;
 
-   function Overloaded_To_Sequence (Set : Root_Character_Set)
+   function Overloaded_To_Sequence (Set : Character_Set)
       return Wide_Character_Sequence is
    begin
       return System.UTF_Conversions.From_32_To_16.Convert (
          Overloaded_To_Sequence (Set));
    end Overloaded_To_Sequence;
 
-   function Overloaded_To_Sequence (Set : Root_Character_Set)
+   function Overloaded_To_Sequence (Set : Character_Set)
       return Wide_Wide_Character_Sequence
    is
       pragma Assert (Valid (Set.Data));
@@ -314,7 +314,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Sequence;
 
    function Overloaded_To_Set (Ranges : Character_Ranges)
-      return Root_Character_Set
+      return Character_Set
    is
       Items : Characters.Inside.Sets.Character_Ranges (1 .. Ranges'Length);
       Last : Natural := Items'First - 1;
@@ -342,7 +342,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Ranges : Wide_Character_Ranges)
-      return Root_Character_Set
+      return Character_Set
    is
       Items : Characters.Inside.Sets.Character_Ranges (1 .. Ranges'Length);
       Last : Natural := Items'First - 1;
@@ -370,7 +370,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Ranges : Wide_Wide_Character_Ranges)
-      return Root_Character_Set
+      return Character_Set
    is
       Items : Characters.Inside.Sets.Character_Ranges (1 .. Ranges'Length);
       Last : Natural := Items'First - 1;
@@ -398,7 +398,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Character_Range)
-      return Root_Character_Set is
+      return Character_Set is
    begin
       return Overloaded_To_Set (Wide_Wide_Character_Range'(
          Low => Characters.Inside.To_Wide_Wide_Character (Span.Low),
@@ -406,7 +406,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Wide_Character_Range)
-      return Root_Character_Set is
+      return Character_Set is
    begin
       return Overloaded_To_Set (Wide_Wide_Character_Range'(
          Low => Characters.Inside.To_Wide_Wide_Character (Span.Low),
@@ -414,7 +414,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Wide_Wide_Character_Range)
-      return Root_Character_Set
+      return Character_Set
    is
       Data : Set_Data_Access;
    begin
@@ -432,21 +432,21 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Character_Sequence)
-      return Root_Character_Set is
+      return Character_Set is
    begin
       return Overloaded_To_Set (
          System.UTF_Conversions.From_8_To_32.Convert (Sequence));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Wide_Character_Sequence)
-      return Root_Character_Set is
+      return Character_Set is
    begin
       return Overloaded_To_Set (
          System.UTF_Conversions.From_16_To_32.Convert (Sequence));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Wide_Wide_Character_Sequence)
-      return Root_Character_Set
+      return Character_Set
    is
       Items : Characters.Inside.Sets.Character_Ranges (Sequence'Range);
       Last : Natural := Items'First - 1;
@@ -473,21 +473,21 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Singleton : Character)
-      return Root_Character_Set is
+      return Character_Set is
    begin
       return Overloaded_To_Set (
          Characters.Inside.To_Wide_Wide_Character (Singleton));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Singleton : Wide_Character)
-      return Root_Character_Set is
+      return Character_Set is
    begin
       return Overloaded_To_Set (
          Characters.Inside.To_Wide_Wide_Character (Singleton));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Singleton : Wide_Wide_Character)
-      return Root_Character_Set is
+      return Character_Set is
    begin
       return (Finalization.Controlled with
          Data => new Set_Data'(
@@ -496,14 +496,14 @@ package body Ada.Strings.Root_Maps is
             Items => (1 => (Low => Singleton, High => Singleton))));
    end Overloaded_To_Set;
 
-   function "=" (Left, Right : Root_Character_Set) return Boolean is
+   function "=" (Left, Right : Character_Set) return Boolean is
    begin
       pragma Assert (Valid (Left.Data));
       pragma Assert (Valid (Right.Data));
       return Left.Data = Right.Data or else Left.Data.Items = Right.Data.Items;
    end "=";
 
-   function "not" (Right : Root_Character_Set) return Root_Character_Set is
+   function "not" (Right : Character_Set) return Character_Set is
       Data : Set_Data_Access;
    begin
       if Right.Data.Length = 0 then
@@ -530,8 +530,8 @@ package body Ada.Strings.Root_Maps is
       return (Finalization.Controlled with Data => Data);
    end "not";
 
-   function "and" (Left, Right : Root_Character_Set)
-      return Root_Character_Set
+   function "and" (Left, Right : Character_Set)
+      return Character_Set
    is
       Data : Set_Data_Access;
    begin
@@ -559,8 +559,8 @@ package body Ada.Strings.Root_Maps is
       return (Finalization.Controlled with Data => Data);
    end "and";
 
-   function "or" (Left, Right : Root_Character_Set)
-      return Root_Character_Set
+   function "or" (Left, Right : Character_Set)
+      return Character_Set
    is
       Data : Set_Data_Access;
    begin
@@ -592,8 +592,8 @@ package body Ada.Strings.Root_Maps is
       return (Finalization.Controlled with Data => Data);
    end "or";
 
-   function "xor" (Left, Right : Root_Character_Set)
-      return Root_Character_Set is
+   function "xor" (Left, Right : Character_Set)
+      return Character_Set is
       Data : Set_Data_Access;
    begin
       if Left.Data.Length = 0 then
@@ -633,8 +633,8 @@ package body Ada.Strings.Root_Maps is
       return (Finalization.Controlled with Data => Data);
    end "xor";
 
-   function "-" (Left, Right : Root_Character_Set)
-      return Root_Character_Set
+   function "-" (Left, Right : Character_Set)
+      return Character_Set
    is
       Data : Set_Data_Access;
    begin
@@ -669,7 +669,7 @@ package body Ada.Strings.Root_Maps is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : out Root_Character_Set)
+         Item : out Character_Set)
       is
          Length : Integer;
          New_Data : Set_Data_Access;
@@ -699,7 +699,7 @@ package body Ada.Strings.Root_Maps is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Root_Character_Set) is
+         Item : Character_Set) is
       begin
          Integer'Write (Stream, Item.Data.Length);
          Characters.Inside.Sets.Character_Ranges'Write (
@@ -723,12 +723,12 @@ package body Ada.Strings.Root_Maps is
       Free (X);
    end Free_Map_Data;
 
-   overriding procedure Adjust (Object : in out Root_Character_Mapping) is
+   overriding procedure Adjust (Object : in out Character_Mapping) is
    begin
       System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
    end Adjust;
 
-   overriding procedure Finalize (Object : in out Root_Character_Mapping) is
+   overriding procedure Finalize (Object : in out Character_Mapping) is
       subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
       type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
       type System_Address_Access is access all System.Address;
@@ -742,39 +742,39 @@ package body Ada.Strings.Root_Maps is
          Free => Free_Map_Data'Access);
    end Finalize;
 
-   function Identity return Root_Character_Mapping is
+   function Identity return Character_Mapping is
    begin
       return (Finalization.Controlled with
          Data => Empty_Map_Data'Unrestricted_Access);
    end Identity;
 
-   function Is_Identity (Map : Root_Character_Mapping) return Boolean is
+   function Is_Identity (Map : Character_Mapping) return Boolean is
    begin
       return Map.Data.Length = 0;
    end Is_Identity;
 
-   function Overloaded_To_Domain (Map : Root_Character_Mapping)
+   function Overloaded_To_Domain (Map : Character_Mapping)
       return Character_Sequence is
    begin
       return System.UTF_Conversions.From_32_To_8.Convert (
          Overloaded_To_Domain (Map));
    end Overloaded_To_Domain;
 
-   function Overloaded_To_Domain (Map : Root_Character_Mapping)
+   function Overloaded_To_Domain (Map : Character_Mapping)
       return Wide_Character_Sequence is
    begin
       return System.UTF_Conversions.From_32_To_16.Convert (
          Overloaded_To_Domain (Map));
    end Overloaded_To_Domain;
 
-   function Overloaded_To_Domain (Map : Root_Character_Mapping)
+   function Overloaded_To_Domain (Map : Character_Mapping)
       return Wide_Wide_Character_Sequence is
    begin
       return Map.Data.From;
    end Overloaded_To_Domain;
 
    function Overloaded_To_Mapping (From, To : Character_Sequence)
-      return Root_Character_Mapping is
+      return Character_Mapping is
    begin
       return Overloaded_To_Mapping (
          System.UTF_Conversions.From_8_To_32.Convert (From),
@@ -782,7 +782,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Mapping;
 
    function Overloaded_To_Mapping (From, To : Wide_Character_Sequence)
-      return Root_Character_Mapping is
+      return Character_Mapping is
    begin
       return Overloaded_To_Mapping (
          System.UTF_Conversions.From_16_To_32.Convert (From),
@@ -790,7 +790,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_To_Mapping;
 
    function Overloaded_To_Mapping (From, To : Wide_Wide_Character_Sequence)
-      return Root_Character_Mapping
+      return Character_Mapping
    is
       New_Data : Map_Data_Access;
    begin
@@ -805,28 +805,28 @@ package body Ada.Strings.Root_Maps is
       return (Finalization.Controlled with Data => New_Data);
    end Overloaded_To_Mapping;
 
-   function Overloaded_To_Range (Map : Root_Character_Mapping)
+   function Overloaded_To_Range (Map : Character_Mapping)
       return Character_Sequence is
    begin
       return System.UTF_Conversions.From_32_To_8.Convert (
          Overloaded_To_Range (Map));
    end Overloaded_To_Range;
 
-   function Overloaded_To_Range (Map : Root_Character_Mapping)
+   function Overloaded_To_Range (Map : Character_Mapping)
       return Wide_Character_Sequence is
    begin
       return System.UTF_Conversions.From_32_To_16.Convert (
          Overloaded_To_Range (Map));
    end Overloaded_To_Range;
 
-   function Overloaded_To_Range (Map : Root_Character_Mapping)
+   function Overloaded_To_Range (Map : Character_Mapping)
       return Wide_Wide_Character_Sequence is
    begin
       return Map.Data.To;
    end Overloaded_To_Range;
 
    function Overloaded_Value (
-      Map : Root_Character_Mapping;
+      Map : Character_Mapping;
       Element : Character)
       return Character is
    begin
@@ -836,7 +836,7 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_Value;
 
    function Overloaded_Value (
-      Map : Root_Character_Mapping;
+      Map : Character_Mapping;
       Element : Wide_Character)
       return Wide_Character is
    begin
@@ -846,14 +846,14 @@ package body Ada.Strings.Root_Maps is
    end Overloaded_Value;
 
    function Overloaded_Value (
-      Map : Root_Character_Mapping;
+      Map : Character_Mapping;
       Element : Wide_Wide_Character)
       return Wide_Wide_Character is
    begin
       return Characters.Inside.Maps.Value (Map.Data, Element);
    end Overloaded_Value;
 
-   function "=" (Left, Right : Root_Character_Mapping) return Boolean is
+   function "=" (Left, Right : Character_Mapping) return Boolean is
    begin
       return Left.Data = Right.Data
          or else (
@@ -865,7 +865,7 @@ package body Ada.Strings.Root_Maps is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : out Root_Character_Mapping)
+         Item : out Character_Mapping)
       is
          Length : Integer;
          New_Data : Map_Data_Access;
@@ -898,7 +898,7 @@ package body Ada.Strings.Root_Maps is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Root_Character_Mapping) is
+         Item : Character_Mapping) is
       begin
          Integer'Write (Stream, Item.Data.Length);
          System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
@@ -911,4 +911,4 @@ package body Ada.Strings.Root_Maps is
 
    end No_Primitives_For_Map;
 
-end Ada.Strings.Root_Maps;
+end Ada.Strings.Maps;
