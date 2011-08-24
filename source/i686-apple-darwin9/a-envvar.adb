@@ -36,6 +36,8 @@ package body Ada.Environment_Variables is
       return C.stdlib.getenv (C_Name (0)'Access);
    end getenv;
 
+   --  implementation
+
    function Value (Name : String) return String is
       Result : constant C.char_ptr := getenv (Name);
    begin
@@ -99,7 +101,7 @@ package body Ada.Environment_Variables is
       end loop;
       while I /= Block loop
          I := I + (-1);
-         Clear (Constant_Reference (Cursor (I)).Name.all);
+         Clear (Name (Cursor (I)).Element.all);
       end loop;
    end Clear;
 
@@ -109,11 +111,9 @@ package body Ada.Environment_Variables is
       I : C.char_ptr_ptr := Inside.Environment_Block;
    begin
       while I.all /= null loop
-         declare
-            Ref : Constant_Reference_Type := Constant_Reference (Cursor (I));
-         begin
-            Process (Ref.Name.all, Ref.Value.all);
-         end;
+         Process (
+            Name (Cursor (I)).Element.all,
+            Value (Cursor (I)).Element.all);
          I := I + 1;
       end loop;
    end Iterate;
@@ -122,6 +122,11 @@ package body Ada.Environment_Variables is
    begin
       return (null record);
    end Iterate;
+
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      return Position /= null;
+   end Has_Element;
 
    function First (Object : Iterator) return Cursor is
       pragma Unreferenced (Object);
@@ -143,49 +148,40 @@ package body Ada.Environment_Variables is
       return Result;
    end Next;
 
-   function Constant_Reference (Position : Cursor)
-      return Constant_Reference_Type
-   is
-      p : constant C.char_ptr := Position.all;
-      Length : constant Natural := Integer (C.string.strlen (p));
-      S : String (1 .. Length);
-      for S'Address use p.all'Address;
-      Name_Last : Natural := Length;
-      Value_First : Positive := Length + 1;
+   function Name (Position : Cursor) return Slicing.Constant_Reference_Type is
+      subtype Fixed_String is String (Positive);
+      S : Fixed_String;
+      for S'Address use Position.all.all'Address;
+      I : Positive := 1;
    begin
-      for I in S'Range loop
+      while S (I) /= '=' and then S (I) /= Character'Val (0) loop
+         I := I + 1;
+      end loop;
+      return Slicing.Constant_Slice (S'Unrestricted_Access, 1, I - 1);
+   end Name;
+
+   function Value (Position : Cursor) return Slicing.Constant_Reference_Type is
+      subtype Fixed_String is String (Positive);
+      S : Fixed_String;
+      for S'Address use Position.all.all'Address;
+      First : Positive;
+      Last : Natural;
+      I : Positive := 1;
+   begin
+      loop
          if S (I) = '=' then
-            Name_Last := I - 1;
-            Value_First := I + 1;
+            First := I + 1;
+            Last := I + Natural (
+               C.string.strlen ((C.char (S (I + 1))'Unrestricted_Access)));
+            exit;
+         elsif S (I) = Character'Val (0) then
+            First := I;
+            Last := I - 1;
             exit;
          end if;
+         I := I + 1;
       end loop;
-      --  see s-arrays.adb
-      return Result : aliased Constant_Reference_Type := (
-         Name => S'Unrestricted_Access, -- dummy
-         Value => S'Unrestricted_Access,
-         Name_First => 1,
-         Name_Last => Name_Last,
-         Value_First => Value_First,
-         Value_Last => Length)
-      do
-         declare
-            type Repr is record
-               Data : System.Address;
-               Constraints : System.Address;
-            end record;
-            pragma Suppress_Initialization (Repr);
-            Name_R : Repr;
-            for Name_R'Address use Result.Name'Address;
-            Value_R : Repr;
-            for Value_R'Address use Result.Value'Address;
-         begin
-            Name_R.Data := S (Result.Name_First)'Address;
-            Name_R.Constraints := Result.Name_First'Address;
-            Value_R.Data := S (Result.Value_First)'Address;
-            Value_R.Constraints := Result.Value_First'Address;
-         end;
-      end return;
-   end Constant_Reference;
+      return Slicing.Constant_Slice (S'Unrestricted_Access, First, Last);
+   end Value;
 
 end Ada.Environment_Variables;
