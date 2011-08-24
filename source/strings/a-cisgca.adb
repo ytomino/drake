@@ -2,6 +2,7 @@ with Ada.UCD.General_Category;
 with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Sets.General_Category is
+   pragma Suppress (All_Checks);
 
    procedure Fill (
       To : out Character_Ranges;

@@ -1,4 +1,5 @@
 package body Ada.Characters.ASCII.Handling is
+   pragma Suppress (All_Checks);
 
    function To_Lower (Item : Character) return Character is
    begin

@@ -1,4 +1,5 @@
 package body Ada.Characters.Inside.Sets is
+   pragma Suppress (All_Checks);
 
    procedure Add (
       A : in out Character_Ranges;

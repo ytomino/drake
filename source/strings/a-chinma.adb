@@ -1,6 +1,7 @@
 with Ada.Strings;
 with System.UTF_Conversions;
 package body Ada.Characters.Inside.Maps is
+   pragma Suppress (All_Checks);
    use type System.UTF_Conversions.UCS_4;
 
    function To_Mapping (
