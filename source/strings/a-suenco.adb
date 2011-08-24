@@ -76,7 +76,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
             Last := Last + 1;
             Result (Last) := Character'Val (E / 256);
             Last := Last + 1;
-            Result (Last) := Character'Val (E mod 256);
+            Result (Last) := Character'Val (E rem 256);
          end;
       end loop;
    end To_UTF_16BE;
@@ -158,7 +158,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
             E : constant U16 := Wide_Character'Pos (W_Result (I));
          begin
             Last := Last + 1;
-            Result (Last) := Character'Val (E mod 256);
+            Result (Last) := Character'Val (E rem 256);
             Last := Last + 1;
             Result (Last) := Character'Val (E / 256);
          end;
@@ -234,11 +234,11 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Last := Result'First;
       Result (Last) := Character'Val (Code / 16#1000000#);
       Last := Last + 1;
-      Result (Last) := Character'Val (Code / 16#10000# mod 16#100#);
+      Result (Last) := Character'Val (Code / 16#10000# rem 16#100#);
       Last := Last + 1;
-      Result (Last) := Character'Val (Code / 16#100# mod 16#100#);
+      Result (Last) := Character'Val (Code / 16#100# rem 16#100#);
       Last := Last + 1;
-      Result (Last) := Character'Val (Code mod 16#100#);
+      Result (Last) := Character'Val (Code rem 16#100#);
       Error := False;
    end To_UTF_32BE;
 
@@ -292,11 +292,11 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Error : out Boolean) is
    begin
       Last := Result'First;
-      Result (Last) := Character'Val (Code mod 16#100#);
+      Result (Last) := Character'Val (Code rem 16#100#);
       Last := Last + 1;
-      Result (Last) := Character'Val (Code / 16#100# mod 16#100#);
+      Result (Last) := Character'Val (Code / 16#100# rem 16#100#);
       Last := Last + 1;
-      Result (Last) := Character'Val (Code / 16#10000# mod 16#100#);
+      Result (Last) := Character'Val (Code / 16#10000# rem 16#100#);
       Last := Last + 1;
       Result (Last) := Character'Val (Code / 16#1000000#);
       Error := False;
