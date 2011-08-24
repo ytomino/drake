@@ -117,7 +117,7 @@ package body System.UTF_Conversions is
             Length := 6;
          when others =>
             Last := I;
-            Result := Character'Pos (First);
+            Result := Character'Pos (First) + (UCS_4'Last - 16#ff#); -- dummy
             Error := True; --  trailing byte or invalid code
             return;
       end case;
@@ -408,35 +408,41 @@ package body System.UTF_Conversions is
       Source : Source_Type;
       Result : out Target_Type;
       Last : out Natural;
-      Error : out Boolean)
+      Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
    is
       I : Natural := Source'First;
       J : Natural := Result'First;
    begin
       Last := J - 1;
-      Error := False;
       while I <= Source'Last loop
          declare
             Code : UCS_4;
             Used : Natural;
-            E : Boolean;
+            Error : Boolean;
          begin
-            From_UTF (Source (I .. Source'Last), Used, Code, E);
-            Error := Error or E;
+            From_UTF (Source (I .. Source'Last), Used, Code, Error);
             I := Used + 1;
-            To_UTF (Code, Result (J .. Result'Last), Last, E);
-            Error := Error or E;
+            if Error then
+               Result (J) := Substitute;
+               Last := J;
+            else
+               To_UTF (Code, Result (J .. Result'Last), Last, Error);
+               --  ignore error
+            end if;
             J := Last + 1;
          end;
       end loop;
    end Convert_Procedure;
 
-   function Convert_Function (Source : Source_Type) return Target_Type is
+   function Convert_Function (
+      Source : Source_Type;
+      Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
+      return Target_Type
+   is
       Result : Target_Type (1 .. Source'Length * Expanding);
       Last : Natural;
-      Error : Boolean; -- ignore
    begin
-      Convert_Procedure (Source, Result, Last, Error);
+      Convert_Procedure (Source, Result, Last, Substitute);
       return Result (1 .. Last);
    end Convert_Function;
 

@@ -4,6 +4,13 @@ package Ada.Characters.Handling is
 --  pragma Pure;
    pragma Preelaborate; --  use mapping
 
+   --  note: if single character item in 16#80# .. 16#FF# was passed,
+   --        these functions raises Constraint_Error.
+   --        if you want to handle full-unicode, use Wide_Wide_Character.
+   --        if you want to handle ISO_646, use ASCII.Handling.
+   --        if you want to handle latin-1, sorry
+   --        this runtime can not handle the code incompatible with unicode.
+
    --  Character classification functions
 
    function Is_Control (Item : Character) return Boolean;
@@ -85,10 +92,16 @@ package Ada.Characters.Handling is
       return String
       renames Conversions.To_String;
 
-   function To_Wide_Character (Item : Character) return Wide_Character
+   function To_Wide_Character (
+      Item : Character;
+      Substitute : Wide_Character := ' ')
+      return Wide_Character
       renames Conversions.To_Wide_Character;
 
-   function To_Wide_String (Item : String) return Wide_String
+   function To_Wide_String (
+      Item : String;
+      Substitute : Wide_Character := ' ')
+      return Wide_String
       renames Conversions.To_Wide_String;
 
 end Ada.Characters.Handling;

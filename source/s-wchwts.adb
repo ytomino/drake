@@ -11,9 +11,8 @@ package body System.WCh_WtS is
       pragma Unreferenced (EM);
       R : String (S'First .. S'First - 1 + 3 * S'Length);
       Last : Natural;
-      Error : Boolean; -- ignore
    begin
-      UTF_Conversions.From_16_To_8.Convert (S, R, Last, Error);
+      UTF_Conversions.From_16_To_8.Convert (S, R, Last);
       return R (R'First .. Last);
    end Wide_String_To_String;
 
@@ -24,9 +23,8 @@ package body System.WCh_WtS is
       pragma Unreferenced (EM);
       R : String (S'First .. S'First - 1 + 6 * S'Length);
       Last : Natural;
-      Error : Boolean; -- ignore
    begin
-      UTF_Conversions.From_32_To_8.Convert (S, R, Last, Error);
+      UTF_Conversions.From_32_To_8.Convert (S, R, Last);
       return R (R'First .. Last);
    end Wide_Wide_String_To_String;
 

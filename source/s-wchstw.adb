@@ -10,9 +10,8 @@ package body System.WCh_StW is
       EM : WC_Encoding_Method)
    is
       pragma Unreferenced (EM);
-      Error : Boolean; -- ignore
    begin
-      UTF_Conversions.From_8_To_16.Convert (S, R, L, Error);
+      UTF_Conversions.From_8_To_16.Convert (S, R, L);
    end String_To_Wide_String;
 
    procedure String_To_Wide_Wide_String (
@@ -22,9 +21,8 @@ package body System.WCh_StW is
       EM : WC_Encoding_Method)
    is
       pragma Unreferenced (EM);
-      Error : Boolean; -- ignore
    begin
-      UTF_Conversions.From_8_To_32.Convert (S, R, L, Error);
+      UTF_Conversions.From_8_To_32.Convert (S, R, L);
    end String_To_Wide_Wide_String;
 
 end System.WCh_StW;
