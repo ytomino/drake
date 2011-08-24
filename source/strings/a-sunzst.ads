@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Ada.Strings.Generic_Unbounded;
 with System.Strings.Stream_Ops;
 package Ada.Strings.Unbounded_Wide_Wide_Strings is new Generic_Unbounded (

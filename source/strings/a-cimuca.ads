@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Characters.Inside.Maps.Upper_Case is
    pragma Preelaborate;
 

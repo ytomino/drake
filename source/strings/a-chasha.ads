@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 package Ada.Characters.ASCII.Handling is
    pragma Pure;
 

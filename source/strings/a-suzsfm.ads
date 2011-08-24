@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Ada.Strings.Wide_Wide_Functions.Maps;
 with Ada.Strings.Wide_Wide_Maps;
 package Ada.Strings.Unbounded_Wide_Wide_Strings.Functions.Maps is

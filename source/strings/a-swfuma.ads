@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Ada.Strings.Wide_Maps;
 with System.UTF_Conversions;
 package Ada.Strings.Wide_Functions.Maps is new Generic_Maps (
