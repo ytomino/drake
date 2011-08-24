@@ -76,7 +76,7 @@ package body Ada.Containers.Inside.Hash_Tables is
                exit;
             end if;
          end loop;
-         <<Linked>>
+      <<Linked>>
          Container.Entries (Index).First := New_Item;
          Container.Entries (Index).Last := New_Item;
       end if;

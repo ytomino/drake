@@ -621,8 +621,8 @@ package body Ada.Directories is
                C.void_ptr (Search.Pattern.all'Address),
                C.void_const_ptr (Pattern'Address),
                Length);
-            Term := Cast (C.void_ptr (Search.Pattern.all'Address +
-               System.Storage_Elements.Storage_Offset (Length)));
+            Term := Cast (C.void_ptr (Search.Pattern.all'Address
+               + System.Storage_Elements.Storage_Offset (Length)));
             Term.all := C.char'Val (0);
          end;
          Search.Filter := Filter;
