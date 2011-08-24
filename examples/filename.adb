@@ -1,5 +1,7 @@
 with Ada.Directories;
 with Ada.Directories.Hierarchical_File_Names;
+with Ada.Directories.Equal_File_Names;
+with Ada.Directories.Less_File_Names;
 procedure filename is
 	package AD renames Ada.Directories;
 	package ADH renames Ada.Directories.Hierarchical_File_Names;
@@ -96,6 +98,21 @@ begin
 	end;
 	pragma Assert (ADH.Relative_Name ("A/B", "C/../D") = "../A/B");
 	Ada.Debug.Put (ADH.Relative_Name ("A/B", "C/../A")); -- "../A/B", it should be normalized to "B" ?
+	if Standard'Target_Name = "i686-apple-darwin9" then
+		Ada.Debug.Put ("test for comparing HFS+ filenames");
+		pragma Assert (AD.Equal_File_Names ("", ""));
+		pragma Assert (not AD.Equal_File_Names ("", "#"));
+		pragma Assert (not AD.Equal_File_Names ("#", ""));
+		pragma Assert (AD.Equal_File_Names ("#", "#"));
+		pragma Assert (AD.Equal_File_Names ("A", "A"));
+		pragma Assert (AD.Equal_File_Names ("a", "A"));
+		pragma Assert (AD.Equal_File_Names ("ａ", "Ａ"));
+		pragma Assert (not AD.Less_File_Names ("", ""));
+		pragma Assert (AD.Less_File_Names ("", "#"));
+		pragma Assert (not AD.Less_File_Names ("#", ""));
+		pragma Assert (not AD.Less_File_Names ("#", "#"));
+		pragma Assert (AD.Less_File_Names ("Ａ", "ｂ"));
+		pragma Assert (AD.Less_File_Names ("ａ", "Ｂ"));
+	end if;
 	pragma Debug (Ada.Debug.Put ("OK"));
-	null;
 end filename;

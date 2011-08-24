@@ -298,7 +298,7 @@ $(IMPORTDIR)/c.ads: import.h
 ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad?) $(IMPORTDIR)/c.ads
-IMPLIB_ITEMS=$(filter-out c-unwind_pe,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
+IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
 IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 
