@@ -1,4 +1,5 @@
 package body Ada.Synchronous_Barriers is
+   pragma Suppress (All_Checks);
 
    procedure Wait_For_Release (
       The_Barrier : in out Synchronous_Barrier;

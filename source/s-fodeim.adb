@@ -11,6 +11,7 @@ procedure System.Formatting.Decimal_Image (
    Fore_Padding : Character := '0';
    Aft_Width : Natural)
 is
+   pragma Suppress (All_Checks);
    use type Unsigned_Types.Long_Long_Unsigned;
    Error : Boolean;
 begin

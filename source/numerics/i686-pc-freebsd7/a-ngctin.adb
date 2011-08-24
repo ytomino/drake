@@ -1,5 +1,6 @@
 with Ada.Numerics.Generic_Elementary_Arctan;
 package body Ada.Numerics.Generic_Complex_Types.Inside is
+   pragma Suppress (All_Checks);
 
    --  FreeBSD does not have carg
 

@@ -1,4 +1,5 @@
 package body Ada.Text_IO.Bounded_IO is
+   pragma Suppress (All_Checks);
 
    procedure Put (
       File : File_Type;

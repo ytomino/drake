@@ -1,5 +1,7 @@
 function Ada.Numerics.Generic_Elementary_Cos (X : Float_Type'Base)
-   return Float_Type'Base is
+   return Float_Type'Base
+is
+   pragma Suppress (All_Checks);
 begin
    if Float_Type'Digits <= Float'Digits then
       declare

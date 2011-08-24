@@ -1,4 +1,5 @@
 package body Ada.Numerics.Generic_Complex_Types.Inside is
+   pragma Suppress (All_Checks);
 
    function Argument (X : Complex) return Real'Base is
    begin

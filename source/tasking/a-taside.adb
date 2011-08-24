@@ -7,8 +7,16 @@ package body Ada.Task_Identification is
       if T = null then
          return "";
       else
-         --  address of Task_Record
-         return System.Address_Image (T.all'Address);
+         declare
+            N : String renames Name (T);
+            A : String renames System.Address_Image (T.all'Address);
+         begin
+            if N = "" then
+               return A;
+            else
+               return N & ":" & A;
+            end if;
+         end;
       end if;
    end Image;
 

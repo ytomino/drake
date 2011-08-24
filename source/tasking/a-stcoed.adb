@@ -1,4 +1,5 @@
 package body Ada.Synchronous_Task_Control.EDF is
+   pragma Suppress (All_Checks);
 
    procedure Suspend_Until_True_And_Set_Deadline (
       S : in out Suspension_Object;

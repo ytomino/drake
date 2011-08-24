@@ -1,7 +1,9 @@
 function Ada.Numerics.Generic_Elementary_Arctan (
    Y : Float_Type'Base;
    X : Float_Type'Base := 1.0)
-   return Float_Type'Base is
+   return Float_Type'Base
+is
+   pragma Suppress (All_Checks);
 begin
    if not Standard'Fast_Math and then X = 0.0 and then Y = 0.0 then
       raise Argument_Error; -- CXA5A07
