@@ -6,6 +6,7 @@ with System.Memory;
 with System.Once;
 with System.Secondary_Stack;
 with System.Shared_Locking;
+with System.Soft_Links;
 with System.Storage_Elements;
 with System.Tasking.Yield;
 with System.Termination;
@@ -34,11 +35,16 @@ package body System.Tasking.Inside is
    pragma Import (Intrinsic, sync_bool_compare_and_swap,
       "__sync_bool_compare_and_swap_1");
 
-   function sync_sub_and_fetch (
+   function sync_add_and_fetch (
       A1 : not null access Counter;
       A2 : Counter)
       return Counter;
-   pragma Import (Intrinsic, sync_sub_and_fetch, "__sync_sub_and_fetch_4");
+   pragma Import (Intrinsic, sync_add_and_fetch, "__sync_add_and_fetch_4");
+
+   Report_Traceback : access procedure (
+      Current : Ada.Exceptions.Exception_Occurrence);
+   pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
+   pragma Weak_External (Report_Traceback);
 
    generic
       type Element_Type is private;
@@ -108,12 +114,19 @@ package body System.Tasking.Inside is
       Item : Task_Id) is
    begin
       Enter (Master.Mutex);
-      Item.Master_Of_Parent := Master;
-      Item.Next_At_Same_Level := Master.List;
-      if Item.Next_At_Same_Level /= null then
+      if Master.List = null then
+         --  making a ringed list
+         Item.Previous_At_Same_Level := Item;
+         Item.Next_At_Same_Level := Item;
+         Master.List := Item;
+      else
+         --  append to last
+         Item.Previous_At_Same_Level := Master.List.Previous_At_Same_Level;
+         Item.Previous_At_Same_Level.Next_At_Same_Level := Item;
+         Item.Next_At_Same_Level := Master.List;
          Item.Next_At_Same_Level.Previous_At_Same_Level := Item;
       end if;
-      Master.List := Item;
+      Item.Master_Of_Parent := Master;
       Leave (Master.Mutex);
    end Append_To_Completion_List;
 
@@ -122,17 +135,20 @@ package body System.Tasking.Inside is
    begin
       if Item.Master_Of_Parent /= null then
          Enter (Item.Master_Of_Parent.Mutex);
-         if Item.Previous_At_Same_Level /= null then
-            Item.Previous_At_Same_Level.Next_At_Same_Level :=
-               Item.Next_At_Same_Level;
-         else
-            pragma Assert (Item.Master_Of_Parent.List = Item);
-            Item.Master_Of_Parent.List := Item.Next_At_Same_Level;
+         if Item = Item.Master_Of_Parent.List then
+            --  first-in, first-out
+            if Item = Item.Next_At_Same_Level then
+               Item.Master_Of_Parent.List := null;
+               goto Cleared;
+            else
+               Item.Master_Of_Parent.List := Item.Next_At_Same_Level;
+            end if;
          end if;
-         if Item.Next_At_Same_Level /= null then
-            Item.Next_At_Same_Level.Previous_At_Same_Level :=
-               Item.Previous_At_Same_Level;
-         end if;
+         Item.Previous_At_Same_Level.Next_At_Same_Level :=
+            Item.Next_At_Same_Level;
+         Item.Next_At_Same_Level.Previous_At_Same_Level :=
+            Item.Previous_At_Same_Level;
+      <<Cleared>>
          Leave (Item.Master_Of_Parent.Mutex);
          Item.Master_Of_Parent := null;
          Item.Previous_At_Same_Level := null;
@@ -142,6 +158,12 @@ package body System.Tasking.Inside is
 
    procedure Free (Item : in out Task_Id);
    procedure Free (Item : in out Task_Id) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
+         String,
+         String_Access);
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
+         Rendezvous_Record,
+         Rendezvous_Access);
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
          Task_Record,
          Task_Id);
@@ -160,14 +182,41 @@ package body System.Tasking.Inside is
       end loop;
       Attribute_Vectors.Clear (Item.Attributes, Item.Attributes_Length);
       --  free task record
+      if Item.Rendezvous /= null then
+         Finalize (Item.Rendezvous.Calling, Free_Node => null);
+         Unchecked_Free (Item.Rendezvous);
+      end if;
+      Unchecked_Free (Item.Name);
       Unchecked_Free (Item);
    end Free;
 
-   --  activation / completion
+   --  activation
 
    package Activation_Chain_Conv is new Address_To_Named_Access_Conversions (
       Activation_Chain_Data,
       Activation_Chain_Access);
+
+   procedure Remove_From_Merged_Activation_Chain_List (
+      C : not null Activation_Chain_Access);
+   procedure Remove_From_Merged_Activation_Chain_List (
+      C : not null Activation_Chain_Access)
+   is
+      Chain : constant access Activation_Chain := C.Self;
+   begin
+      if Activation_Chain_Conv.To_Pointer (Chain.Data) = C then
+         Chain.Data := Null_Address;
+      else
+         declare
+            I : Activation_Chain_Access :=
+               Activation_Chain_Conv.To_Pointer (Chain.Data);
+         begin
+            while I.Merged /= C loop
+               I := I.Merged;
+            end loop;
+            I.Merged := C.Merged;
+         end;
+      end if;
+   end Remove_From_Merged_Activation_Chain_List;
 
    procedure Free (Item : in out Activation_Chain_Access);
    procedure Free (Item : in out Activation_Chain_Access) is
@@ -180,10 +229,31 @@ package body System.Tasking.Inside is
       Unchecked_Free (Item);
    end Free;
 
+   procedure Set_Active (T : not null Task_Id);
+   procedure Set_Active (T : not null Task_Id) is
+   begin
+      if T.Elaborated /= null and then not T.Elaborated.all then
+         T.Activation_Chain.Elaboration_Error := True;
+      end if;
+      T.Activation_State := True;
+   end Set_Active;
+
+   procedure Set_Active (C : not null Activation_Chain_Access);
+   procedure Set_Active (C : not null Activation_Chain_Access) is
+      I : Task_Id := C.List;
+   begin
+      while I /= null loop
+         Set_Active (I);
+         I := I.Next_Of_Activation_Chain;
+      end loop;
+   end Set_Active;
+
+   --  completion
+
    procedure Free (Item : in out Master_Access);
    procedure Free (Item : in out Master_Access) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-         Master_Data,
+         Master_Record,
          Master_Access);
    begin
       Finalize (Item.Mutex);
@@ -257,6 +327,12 @@ package body System.Tasking.Inside is
    procedure Unregister;
    procedure Unregister is
    begin
+      if Main_Task_Record.Master_Top /= null then
+         pragma Assert (Main_Task_Record.Master_Top.Within =
+            Library_Task_Level);
+         Leave_Master;
+         pragma Assert (Main_Task_Record.Master_Top = null);
+      end if;
       --  shared lock
       Finalize (Shared_Lock);
       Shared_Locking.Enter_Hook := Shared_Locking.Nop'Access;
@@ -298,14 +374,59 @@ package body System.Tasking.Inside is
          Main_Task_Record.Handle := C.pthread.pthread_self;
          Main_Task_Record.Attributes := null;
          Main_Task_Record.Attributes_Length := 0;
-         Main_Task_Record.Activated := True;
-         Main_Task_Record.Parent := null;
+         Main_Task_Record.Activation_State := True;
+         Main_Task_Record.Termination_State := TS_Active;
          Main_Task_Record.Master_Level := Environment_Task_Level;
          Main_Task_Record.Master_Top := null; -- start from Library_Task_Level
       end if;
    end Register;
 
    --  thread body
+
+   procedure Report (
+      T : not null Task_Id;
+      Current : Ada.Exceptions.Exception_Occurrence);
+   procedure Report (
+      T : not null Task_Id;
+      Current : Ada.Exceptions.Exception_Occurrence)
+   is
+      function Cast is new Ada.Unchecked_Conversion (
+         Ada.Exceptions.Exception_Occurrence,
+         Unwind.Exception_Occurrence);
+      subtype Fixed_String is String (Positive);
+      Full_Name : Fixed_String;
+      for Full_Name'Address use Cast (Current).Id.Full_Name;
+   begin
+      Termination.Error_New_Line;
+      if Cast (Current).Num_Tracebacks > 0
+         and then Report_Traceback'Address /= Null_Address
+      then
+         if T.Name = null then
+            Termination.Error_Put ("One task");
+         else
+            Termination.Error_Put (T.Name.all);
+         end if;
+         Termination.Error_Put (" terminated by unhandled exception");
+         Termination.Error_New_Line;
+         Report_Traceback (Current);
+      else
+         Termination.Error_Put ("in ");
+         if T.Name = null then
+            Termination.Error_Put ("one task");
+         else
+            Termination.Error_Put (T.Name.all);
+         end if;
+         Termination.Error_Put (", raised ");
+         Termination.Error_Put (
+            Full_Name (1 .. Cast (Current).Id.Name_Length));
+         if Cast (Current).Msg_Length > 0 then
+            Termination.Error_Put (" : ");
+            Termination.Error_Put (
+               Cast (Current).Msg (1 .. Cast (Current).Msg_Length));
+         end if;
+         Termination.Error_New_Line;
+      end if;
+   end Report;
 
    function Thread (Rec : C.void_ptr) return C.void_ptr;
    pragma Convention (C, Thread);
@@ -317,16 +438,20 @@ package body System.Tasking.Inside is
       TLS_Current_Task_Id := T;
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
+      Local.Current_Exception.Private_Data := Null_Address;
       TLS_Stack := Local'Unchecked_Access;
-      --  activate (auto mode)
-      if T.Activation_Chain = null then
-         T.Activated := True;
-      end if;
       --  execute
-      T.Process (T.Params);
+      begin
+         T.Process (T.Params);
+      exception
+         when Standard'Abort_Signal =>
+            null;
+         when E : others =>
+            Report (T, E);
+      end;
       --  deactivate
       if sync_bool_compare_and_swap (
-         T.State'Access,
+         T.Termination_State'Access,
          TS_Active,
          TS_Terminated)
       then
@@ -360,16 +485,22 @@ package body System.Tasking.Inside is
       T : out Task_Id;
       Params : Address;
       Process : not null access procedure (Params : Address);
+      Name : String := "";
       Chain : access Activation_Chain := null;
-      Master : Master_Level := Soft_Links.Current_Master.all;
-      Parent : Task_Id := null)
+      Elaborated : access Boolean := null;
+      Master : Master_Access := null;
+      Entry_Last_Index : Task_Entry_Index := 0)
    is
+      Name_Data : String_Access := null;
       Chain_Data : Activation_Chain_Access := null;
-      Master_Of_Parent : Master_Access := null;
-      Error : C.signed_int;
+      Level : Master_Level := Library_Task_Level;
+      Rendezvous : Rendezvous_Access := null;
    begin
       Register;
-      pragma Assert (Master /= Foreign_Task_Level + 2);
+      --  name
+      if Name'Length /= 0 then
+         Name_Data := new String'(Name);
+      end if;
       --  activation chain
       if Chain /= null then
          Chain_Data := Activation_Chain_Conv.To_Pointer (Chain.Data);
@@ -378,40 +509,47 @@ package body System.Tasking.Inside is
                List => null,
                Task_Count => 0,
                Activated_Count => 0,
-               Mutex => (Handle => C.pthread.PTHREAD_MUTEX_INITIALIZER),
-               Condition_Variable =>
-                  (Handle => C.pthread.PTHREAD_COND_INITIALIZER),
-               Merged => null);
+               Release_Count => 0,
+               Elaboration_Error => False,
+               Mutex => <>, -- default initializer
+               Condition_Variable => <>, -- default initializer
+               Merged => null,
+               Self => Chain);
             Chain.Data := Activation_Chain_Conv.To_Address (Chain_Data);
          end if;
       end if;
       --  master
-      if Parent /= null then
-         pragma Assert (Parent.Master_Top /= null);
-         Master_Of_Parent := Parent.Master_Top;
-         while Master_Of_Parent.Within > Master loop
-            Master_Of_Parent := Master_Of_Parent.Previous;
-         end loop;
+      if Master /= null then
+         Level := Master.Within;
+         pragma Assert (Level /= Foreign_Task_Level + 2); -- ???
+      end if;
+      --  rendezvous
+      if Entry_Last_Index > 0 then
+         Rendezvous := new Rendezvous_Record'(
+            Last_Index => Entry_Last_Index,
+            Calling => <>, -- default initializer
+            Names => (others => null));
       end if;
       --  task record
       T := new Task_Record'(
          Kind => Sub,
-         Handle => <>,
+         Handle => <>, -- uninitialized
          Attributes => null,
          Attributes_Length => 0,
-         Handle_Received => False,
-         Activated => False,
-         Parent => Parent,
-         Master_Level => Master,
+         Activation_State => Chain_Data = null, -- active if no chain
+         Termination_State => TS_Active,
+         Master_Level => Level,
          Master_Top => null,
          Params => Params,
          Process => Process.all'Unrestricted_Access,
-         State => TS_Active,
+         Name => Name_Data,
          Activation_Chain => Chain_Data,
          Next_Of_Activation_Chain => null,
-         Master_Of_Parent => Master_Of_Parent,
+         Elaborated => Elaborated,
+         Master_Of_Parent => Master,
          Previous_At_Same_Level => null,
-         Next_At_Same_Level => null);
+         Next_At_Same_Level => null,
+         Rendezvous => Rendezvous);
       --  apeend to activation chain
       if Chain_Data /= null then
          T.Next_Of_Activation_Chain := Chain_Data.List;
@@ -419,17 +557,16 @@ package body System.Tasking.Inside is
          Chain_Data.Task_Count := Chain_Data.Task_Count + 1;
       end if;
       --  append to the parent's master
-      if Parent /= null then
-         Append_To_Completion_List (Master_Of_Parent, T);
+      if Master /= null then
+         Append_To_Completion_List (Master, T);
       end if;
       --  try create
-      Error := C.pthread.pthread_create (
+      if C.pthread.pthread_create (
          T.Handle'Access,
          null,
          Thread'Access,
-         C.void_ptr (Task_Record_Conv.To_Address (T)));
-      T.Handle_Received := True;
-      if Error /= 0 then
+         C.void_ptr (Task_Record_Conv.To_Address (T))) /= 0
+      then
          if Chain_Data /= null then
             Chain_Data.Task_Count := Chain_Data.Task_Count - 1;
          end if;
@@ -441,31 +578,15 @@ package body System.Tasking.Inside is
    procedure Wait (T : in out Task_Id) is
    begin
       if T /= null then
+         pragma Assert (T.Kind = Sub);
          declare
             T2 : constant Task_Id := T;
             Rec : aliased C.void_ptr;
          begin
             T := null; -- clear before raising any exception
-            Joining : loop
-               declare
-                  Handle_Received : constant Boolean := T2.Handle_Received;
-               begin
-                  case C.pthread.pthread_join (T2.Handle, Rec'Access) is
-                     when 0 =>
-                        exit Joining;
-                     when C.errno.ESRCH =>
-                        if Handle_Received then
-                           raise Tasking_Error;
-                        end if;
-                        Yield;
-                        --  if the thread of caling Create and
-                        --  the thread of calling Wait are different,
-                        --  retry when handle is not received
-                     when others =>
-                        raise Tasking_Error;
-                  end case;
-               end;
-            end loop Joining;
+            if C.pthread.pthread_join (T2.Handle, Rec'Access) /= 0 then
+               raise Tasking_Error;
+            end if;
             if Rec /= C.void_ptr (Null_Address) then
                declare
                   Returned_T : Task_Id :=
@@ -481,8 +602,9 @@ package body System.Tasking.Inside is
    procedure Detach (T : in out Task_Id) is
    begin
       if T /= null then
+         pragma Assert (T.Kind = Sub);
          if sync_bool_compare_and_swap (
-            T.State'Access,
+            T.Termination_State'Access,
             TS_Active,
             TS_Detached)
          then
@@ -504,10 +626,8 @@ package body System.Tasking.Inside is
    begin
       if T = null then
          raise Program_Error; -- RM C.7.1(15)
-      elsif T.Kind = Main then
-         return False;
       else
-         return T.State = TS_Terminated;
+         return T.Termination_State = TS_Terminated;
       end if;
    end Terminated;
 
@@ -516,49 +636,76 @@ package body System.Tasking.Inside is
       if T = null then
          raise Program_Error; -- RM C.7.1(15)
       else
-         return T.Activated;
+         return T.Activation_State;
       end if;
    end Activated;
+
+   function Name (T : Task_Id) return String is
+   begin
+      if T.Kind = Main then
+         return "*main";
+      elsif T.Name = null then
+         return "";
+      else
+         return T.Name.all;
+      end if;
+   end Name;
 
    procedure Accept_Activation is
       T : constant Task_Id := Get_Current_Task_Id;
       C : Activation_Chain_Access := T.Activation_Chain;
+      Some_Error : Boolean;
    begin
       pragma Assert (C /= null);
       Enter (C.Mutex);
       C.Activated_Count := C.Activated_Count + 1;
       if C.Activated_Count > C.Task_Count then
+         Set_Active (C);
          Notify_All (C.Condition_Variable);
       else
-         Wait (C.Condition_Variable, C.Mutex);
+         while not T.Activation_State loop
+            Wait (C.Condition_Variable, C.Mutex);
+         end loop;
       end if;
-      T.Activated := True;
+      Some_Error := C.Elaboration_Error;
       Leave (C.Mutex);
       --  cleanup
-      if sync_sub_and_fetch (C.Activated_Count'Access, 1) = 0 then
+      if sync_add_and_fetch (C.Release_Count'Access, 1) > C.Task_Count then
          Free (C);
+      end if;
+      if Some_Error then
+         raise Standard'Abort_Signal;
       end if;
    end Accept_Activation;
 
-   procedure Activate (Chain : not null access Activation_Chain) is
+   procedure Activate (
+      Chain : not null access Activation_Chain;
+      Has_Error : out Boolean)
+   is
       C : Activation_Chain_Access :=
          Activation_Chain_Conv.To_Pointer (Chain.Data);
    begin
+      Has_Error := False;
       while C /= null loop
+         pragma Assert (C.Self = Chain);
          Enter (C.Mutex);
          C.Activated_Count := C.Activated_Count + 1;
          if C.Activated_Count > C.Task_Count then
+            Set_Active (C);
             Notify_All (C.Condition_Variable);
          else
             Wait (C.Condition_Variable, C.Mutex);
          end if;
+         Has_Error := Has_Error or else C.Elaboration_Error;
+         Remove_From_Merged_Activation_Chain_List (C);
          Leave (C.Mutex);
          --  cleanup
          declare
             Merged : constant Activation_Chain_Access := C.Merged;
          begin
-            Chain.Data := Null_Address;
-            if sync_sub_and_fetch (C.Activated_Count'Access, 1) = 0 then
+            if sync_add_and_fetch (C.Release_Count'Access, 1)
+               > C.Task_Count
+            then
                Free (C);
             end if;
             C := Merged;
@@ -566,37 +713,63 @@ package body System.Tasking.Inside is
       end loop;
    end Activate;
 
-   procedure Move (
-      From, To : not null access Activation_Chain;
-      New_Master : Master_Level) is
+   procedure Activate (T : Task_Id; Final : Boolean) is
+      C : Activation_Chain_Access := T.Activation_Chain;
+      To_Free : Boolean := False;
    begin
-      if From.Data /= Null_Address then
-         --  change master of tasks
+      Enter (C.Mutex);
+      Set_Active (T);
+      if Final then
+         To_Free := True;
          declare
-            I : Task_Id := Activation_Chain_Conv.To_Pointer (From.Data).List;
+            I : Task_Id := C.List;
          begin
             while I /= null loop
-               --  master
-               I.Master_Level := New_Master;
-               pragma Assert (I.Master_Top = null);
-               --  activation
-               I.Activation_Chain :=
-                  Activation_Chain_Conv.To_Pointer (To.Data);
-               --  completion
-               if I.Master_Of_Parent /= null then
-                  declare
-                     New_Master_Of_Parent : Master_Access :=
-                        I.Master_Of_Parent;
-                  begin
-                     Remove_From_Completion_List (I);
-                     while New_Master_Of_Parent.Within > New_Master loop
-                        New_Master_Of_Parent := New_Master_Of_Parent.Previous;
-                     end loop;
-                     Append_To_Completion_List (New_Master_Of_Parent, I);
-                  end;
+               if not I.Activation_State then
+                  To_Free := False;
                end if;
-               --  continue
                I := I.Next_Of_Activation_Chain;
+            end loop;
+         end;
+      end if;
+      Notify_All (C.Condition_Variable);
+      if To_Free then
+         Remove_From_Merged_Activation_Chain_List (C);
+      end if;
+      Leave (C.Mutex);
+      if To_Free
+         and then sync_add_and_fetch (C.Release_Count'Access, 1) > C.Task_Count
+      then
+         Free (C);
+      end if;
+   end Activate;
+
+   procedure Move (
+      From, To : not null access Activation_Chain;
+      New_Master : Master_Access) is
+   begin
+      --  note: keep master level of tasks because it's meaningless
+      if From.Data /= Null_Address then
+         --  change completion lists
+         declare
+            A : Activation_Chain_Access :=
+               Activation_Chain_Conv.To_Pointer (From.Data);
+         begin
+            loop
+               A.Self := To;
+               declare
+                  I : Task_Id := A.List;
+               begin
+                  while I /= null loop
+                     if I.Master_Of_Parent /= null then
+                        Remove_From_Completion_List (I);
+                        Append_To_Completion_List (New_Master, I);
+                     end if;
+                     I := I.Next_Of_Activation_Chain;
+                  end loop;
+               end;
+               A := A.Merged;
+               exit when A = null;
             end loop;
          end;
          --  merge lists
@@ -619,7 +792,7 @@ package body System.Tasking.Inside is
 
    function Parent (T : Task_Id) return Task_Id is
    begin
-      return T.Parent;
+      return T.Master_Of_Parent.Parent;
    end Parent;
 
    function Master_Level_Of (T : Task_Id) return Master_Level is
@@ -636,18 +809,21 @@ package body System.Tasking.Inside is
       end if;
    end Master_Within;
 
-   procedure Enter_Master (T : Task_Id) is
-      New_Master : constant Master_Access := new Master_Data'(
+   procedure Enter_Master is
+      T : constant Task_Id := Get_Current_Task_Id; -- and register
+      New_Master : constant Master_Access := new Master_Record'(
          Previous => T.Master_Top,
+         Parent => T,
          Within =>
             Master_Level'Max (Master_Within (T), Library_Task_Level) + 1,
          List => null,
-         Mutex => (Handle => C.pthread.PTHREAD_MUTEX_INITIALIZER));
+         Mutex => <>); -- default initializer
    begin
       T.Master_Top := New_Master;
    end Enter_Master;
 
-   procedure Leave_Master (T : Task_Id) is
+   procedure Leave_Master is
+      T : constant Task_Id := TLS_Current_Task_Id;
       M : Master_Access := T.Master_Top;
    begin
       Enter (M.Mutex);
@@ -656,6 +832,11 @@ package body System.Tasking.Inside is
             Taken : Task_Id := M.List;
          begin
             Leave (M.Mutex);
+            if not Taken.Activation_State then
+               --  the task has not been activated
+               Taken.Activation_Chain.Elaboration_Error := True;
+               Activate (Taken, Final => True);
+            end if;
             Wait (Taken);
             Enter (M.Mutex);
          end;
@@ -668,6 +849,60 @@ package body System.Tasking.Inside is
          T.Master_Top := Previous;
       end;
    end Leave_Master;
+
+   function Get_Master_Of_Parent (Level : Master_Level) return Master_Access is
+      Actual_Level : Master_Level := Level;
+      Parent : Task_Id := Get_Current_Task_Id;
+      Result : Master_Access;
+   begin
+      if Actual_Level = 0 then
+         pragma Assert (Parent.Kind = Main);
+         Actual_Level := Library_Task_Level;
+      else
+         while Parent.Master_Level >= Actual_Level loop
+            pragma Assert (Parent.Kind = Sub);
+            pragma Assert (Parent.Master_Of_Parent /= null);
+            pragma Assert (Parent.Master_Of_Parent.Parent /= null);
+            Parent := Parent.Master_Of_Parent.Parent;
+         end loop;
+      end if;
+      if Parent.Master_Top = null then
+         --  library level
+         pragma Assert (Parent = Main_Task_Record'Access);
+         Enter_Master;
+         pragma Assert (Parent.Master_Top.Within = Library_Task_Level + 1);
+         Parent.Master_Top.Within := Library_Task_Level;
+         Result := Parent.Master_Top;
+      else
+         Result := Parent.Master_Top;
+         while Result.Within > Level loop
+            pragma Assert (Result.Previous /= null);
+            Result := Result.Previous;
+         end loop;
+      end if;
+      return Result;
+   end Get_Master_Of_Parent;
+
+   procedure Set_Entry_Name (
+      T : Task_Id;
+      Index : Task_Entry_Index;
+      Name : Entry_Name_Access) is
+   begin
+      T.Rendezvous.Names (Index) := Name;
+   end Set_Entry_Name;
+
+   procedure Call (T : Task_Id; Item : not null Queue_Node_Access) is
+   begin
+      Add (T.Rendezvous.Calling, Item);
+   end Call;
+
+   procedure Accept_Call (
+      Item : out Queue_Node_Access;
+      Params : Address;
+      Filter : Queue_Filter) is
+   begin
+      Take (Get_Current_Task_Id.Rendezvous.Calling, Item, Params, Filter);
+   end Accept_Call;
 
    --  thread local storage
 
@@ -971,6 +1206,94 @@ package body System.Tasking.Inside is
             raise Tasking_Error;
       end case;
    end Wait;
+
+   --  queue
+
+   procedure Finalize (
+      Object : in out Queue;
+      Free_Node : access procedure (X : in out Queue_Node_Access)) is
+   begin
+      Finalize (Object.Mutex);
+      Finalize (Object.Condition_Variable);
+      if Free_Node /= null then
+         while Object.Head /= null loop
+            declare
+               Next : constant Queue_Node_Access := Object.Head.Next;
+            begin
+               Free_Node (Object.Head);
+               Object.Head := Next;
+            end;
+         end loop;
+      end if;
+   end Finalize;
+
+   procedure Add (
+      Object : in out Queue;
+      Item : not null Queue_Node_Access) is
+   begin
+      Enter (Object.Mutex);
+      if Object.Head = null then
+         Object.Head := Item;
+      else
+         Object.Tail.Next := Item;
+      end if;
+      Object.Tail := Item;
+      Item.Next := null;
+      if Object.Waiting
+         and then (Object.Filter = null
+            or else Object.Filter (Item, Object.Params))
+      then
+         Notify_All (Object.Condition_Variable);
+      end if;
+      Leave (Object.Mutex);
+   end Add;
+
+   procedure Take (
+      Object : in out Queue;
+      Item : out Queue_Node_Access;
+      Params : Address;
+      Filter : Queue_Filter)
+   is
+      Previous : Queue_Node_Access := null;
+      I : Queue_Node_Access := Object.Head;
+   begin
+      Enter (Object.Mutex);
+      Taking : loop
+         Search : while I /= null loop
+            if Filter = null or else Filter (I, Params) then
+               if Previous /= null then
+                  Previous.Next := I.Next;
+               else
+                  Object.Head := I.Next;
+               end if;
+               if I = Object.Tail then
+                  Object.Tail := Previous;
+               end if;
+               Item := I;
+               exit Taking;
+            end if;
+            Previous := I;
+            I := I.Next;
+         end loop Search;
+         Not_Found : declare
+            Tail_On_Waiting : constant Queue_Node_Access := Object.Tail;
+         begin
+            Object.Waiting := True;
+            Object.Params := Params;
+            Object.Filter := Filter;
+            Wait (Object.Condition_Variable, Object.Mutex);
+            Object.Waiting := False;
+            if Tail_On_Waiting /= null then
+               Previous := Tail_On_Waiting;
+               I := Tail_On_Waiting.Next;
+            else
+               Previous := null;
+               I := Object.Head;
+            end if;
+         end Not_Found;
+      end loop Taking;
+      Leave (Object.Mutex);
+   end Take;
 
    --  event
 

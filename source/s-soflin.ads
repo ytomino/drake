@@ -30,6 +30,10 @@ package System.Soft_Links is
       Get_Main_Current_Excep'Access;
    pragma Suppress (Access_Check, Get_Current_Excep);
 
+   --  required for entry of task by compiler (s-soflin.ads)
+   function Get_GNAT_Exception return Ada.Exceptions.Exception_Id;
+   pragma Inline (Get_GNAT_Exception);
+
    --  no-operation
    function Zero return Integer; --  always return 0
    procedure Nop is null;

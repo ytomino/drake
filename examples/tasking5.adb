@@ -150,6 +150,21 @@ begin
 		null;
 		-- wait here
 	end;
+	Ada.Debug.Put ("*** test for no activation ***");
+	begin
+		declare
+			task NAT;
+			task body NAT is
+			begin
+				raise Program_Error;
+			end NAT;
+			A : Integer := Integer'Value ("###"); -- raise Constraint_Error
+		begin
+			raise Program_Error;
+		end;
+	exception
+		when Constraint_Error => null;
+	end;
 	pragma Assert (Joined);
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking5;

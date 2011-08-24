@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  implementation package
-with System.Soft_Links;
 private with C.pthread;
 package System.Tasking.Inside is
    pragma Preelaborate;
@@ -11,34 +10,65 @@ package System.Tasking.Inside is
    function Get_Current_Task_Id return Task_Id;
    function Get_Main_Task_Id return Task_Id;
 
+   type Master_Record is limited private;
+   type Master_Access is access all Master_Record;
+
    procedure Create (
       T : out Task_Id;
       Params : Address;
       Process : not null access procedure (Params : Address);
+      --  name
+      Name : String := "";
       --  activation
       Chain : access Activation_Chain := null;
+      Elaborated : access Boolean := null;
       --  completion
-      Master : Master_Level := Soft_Links.Current_Master.all;
-      Parent : Task_Id := null);
+      Master : Master_Access := null;
+      --  rendezvous
+      Entry_Last_Index : Task_Entry_Index := 0);
 
    procedure Wait (T : in out Task_Id);
    procedure Detach (T : in out Task_Id);
    function Terminated (T : Task_Id) return Boolean;
    function Activated (T : Task_Id) return Boolean;
 
+   --  name
+   function Name (T : Task_Id) return String;
+
    --  for manual activation (Chain /= null)
-   procedure Accept_Activation; -- in task
-   procedure Activate (Chain : not null access Activation_Chain);
+   procedure Accept_Activation; -- current task
+   procedure Activate (
+      Chain : not null access Activation_Chain;
+      Has_Error : out Boolean);
+   procedure Activate (T : Task_Id; Final : Boolean); -- activate single task
    procedure Move (
       From, To : not null access Activation_Chain;
-      New_Master : Master_Level);
+      New_Master : Master_Access);
 
-   --  for manual completion (Parent /= null)
+   --  for manual completion (Master /= null)
    function Parent (T : Task_Id) return Task_Id;
    function Master_Level_Of (T : Task_Id) return Master_Level;
    function Master_Within (T : Task_Id) return Master_Level;
-   procedure Enter_Master (T : Task_Id);
-   procedure Leave_Master (T : Task_Id);
+   procedure Enter_Master; -- current task
+   procedure Leave_Master; -- current task
+   function Get_Master_Of_Parent (Level : Master_Level) return Master_Access;
+
+   --  for rendezvous
+   procedure Set_Entry_Name (
+      T : Task_Id;
+      Index : Task_Entry_Index;
+      Name : Entry_Name_Access);
+   type Queue_Node is limited private;
+   type Queue_Node_Access is access all Queue_Node;
+   type Queue_Filter is access function (
+      Item : not null Queue_Node_Access;
+      Params : Address)
+      return Boolean;
+   procedure Call (T : Task_Id; Item : not null Queue_Node_Access);
+   procedure Accept_Call (
+      Item : out Queue_Node_Access;
+      Params : Address;
+      Filter : Queue_Filter);
 
    --  thread local storage
    --  pragma Thread_Local_Storage is valid
@@ -98,6 +128,28 @@ package System.Tasking.Inside is
       Timeout : Duration;
       Notified : out Boolean);
 
+   --  queue
+
+   type Queue is limited private;
+--  type Queue_Node is limited private;
+--  type Queue_Node_Access is access all Queue_Node;
+--  type Queue_Filter is access function (
+--    Item : not null Queue_Node_Access;
+--    Params : Address)
+--    return Boolean;
+   procedure Initialize (Object : in out Queue) is null;
+   procedure Finalize (
+      Object : in out Queue;
+      Free_Node : access procedure (X : in out Queue_Node_Access));
+   procedure Add (
+      Object : in out Queue;
+      Item : not null Queue_Node_Access);
+   procedure Take (
+      Object : in out Queue;
+      Item : out Queue_Node_Access;
+      Params : Address;
+      Filter : Queue_Filter);
+
    --  event for Ada.Synchronous_Task_Control
 
    type Event is limited private;
@@ -113,7 +165,7 @@ package System.Tasking.Inside is
       Timeout : Duration;
       Value : out Boolean);
 
-   --  semaphore for Ada.Synchronous_Barriers
+   --  group-synchronization for Ada.Synchronous_Barriers
 
    type Barrier is limited private;
 
@@ -136,6 +188,8 @@ package System.Tasking.Inside is
 
 private
 
+   type String_Access is access String;
+
    type Counter is mod 2 ** 32;
    for Counter'Size use 32;
 
@@ -145,21 +199,14 @@ private
       List : Task_Id;
       Task_Count : Counter;
       Activated_Count : aliased Counter;
+      Release_Count : aliased Counter;
+      Elaboration_Error : Boolean;
       Mutex : Inside.Mutex;
       Condition_Variable : Inside.Condition_Variable;
       Merged : Activation_Chain_Access;
+      Self : access Activation_Chain;
    end record;
    pragma Suppress_Initialization (Activation_Chain_Data);
-
-   type Master_Data;
-   type Master_Access is access all Master_Data;
-   type Master_Data is limited record
-      Previous : Master_Access;
-      Within : Tasking.Master_Level; -- level of stack
-      List : Task_Id;
-      Mutex : Inside.Mutex;
-   end record;
-   pragma Suppress_Initialization (Master_Data);
 
    type Task_Kind is (Main, Sub);
    pragma Discard_Names (Task_Kind);
@@ -182,16 +229,27 @@ private
    TS_Detached : constant Termination_State := 1;
    TS_Terminated : constant Termination_State := 2;
 
+   type Entry_Name_Array is
+      array (Task_Entry_Index range <>) of Entry_Name_Access;
+   pragma Suppress_Initialization (Entry_Name_Array);
+
+   type Rendezvous_Record (Last_Index : Task_Entry_Index) is limited record
+      Calling : Queue;
+      Names : Entry_Name_Array (1 .. Last_Index);
+   end record;
+   pragma Suppress_Initialization (Rendezvous_Record);
+
+   type Rendezvous_Access is access Rendezvous_Record;
+
    type Task_Record (Kind : Task_Kind) is limited record
       Handle : aliased C.pthread.pthread_t;
       Attributes : Attribute_Array_Access;
       Attributes_Length : Natural;
       --  activation / completion
-      Handle_Received : aliased Boolean;
-      pragma Atomic (Handle_Received);
-      Activated : Boolean;
-      pragma Atomic (Activated);
-      Parent : Task_Id;
+      Activation_State : aliased Boolean;
+      pragma Atomic (Activation_State);
+      Termination_State : aliased Inside.Termination_State;
+      pragma Atomic (Termination_State);
       Master_Level : Tasking.Master_Level; -- level of self
       Master_Top : Master_Access; -- stack
       --  for sub task
@@ -201,18 +259,30 @@ private
          when Sub =>
             Params : Address;
             Process : not null access procedure (Params : Address);
-            State : aliased Termination_State;
-            pragma Atomic (State);
-            --  activation
+            --  name
+            Name : String_Access;
+            --  manual activation
             Activation_Chain : Activation_Chain_Access;
             Next_Of_Activation_Chain : Task_Id;
-            --  completion
+            Elaborated : access Boolean;
+            --  manual completion
             Master_Of_Parent : Master_Access;
             Previous_At_Same_Level : Task_Id;
             Next_At_Same_Level : Task_Id;
+            --  rendezvous
+            Rendezvous : Rendezvous_Access;
       end case;
    end record;
    pragma Suppress_Initialization (Task_Record);
+
+   type Master_Record is limited record
+      Previous : Master_Access; -- previous item in stack
+      Parent : Task_Id;
+      Within : Tasking.Master_Level; -- level of stack
+      List : Task_Id; -- ringed list
+      Mutex : Inside.Mutex;
+   end record;
+   pragma Suppress_Initialization (Master_Record);
 
 --  type TLS_Index is new C.pthread.pthread_key_t;
 
@@ -231,6 +301,20 @@ private
    type Condition_Variable is limited record
       Handle : aliased C.pthread.pthread_cond_t :=
          C.pthread.PTHREAD_COND_INITIALIZER;
+   end record;
+
+   type Queue is limited record
+      Mutex : Inside.Mutex;
+      Condition_Variable : Inside.Condition_Variable;
+      Head : aliased Queue_Node_Access := null;
+      Tail : Queue_Node_Access := null;
+      Waiting : Boolean := False;
+      Params : Address;
+      Filter : Queue_Filter := null;
+   end record;
+
+   type Queue_Node is limited record
+      Next : aliased Queue_Node_Access;
    end record;
 
    type Event is limited record
