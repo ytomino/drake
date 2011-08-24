@@ -13,9 +13,9 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
    begin
       Mapping := new Character_Mapping'(
          Length =>
-            UCD.Case_Folding.C_Table_2'Length +
-            UCD.Case_Folding.C_Table_4'Length +
-            UCD.Case_Folding.S_Table'Length,
+            UCD.Case_Folding.C_Table_2'Length
+            + UCD.Case_Folding.C_Table_4'Length
+            + UCD.Case_Folding.S_Table'Length,
          Reference_Count => System.Reference_Counting.Static,
          From => <>,
          To => <>);

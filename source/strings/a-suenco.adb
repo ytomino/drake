@@ -98,8 +98,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       else
          declare
             Leading : constant Wide_Character := Wide_Character'Val (
-               Character'Pos (Data (Data'First)) * 256 +
-               Character'Pos (Data (Data'First + 1)));
+               Character'Pos (Data (Data'First)) * 256
+               + Character'Pos (Data (Data'First + 1)));
             Length : Natural;
          begin
             Last := Data'First + 1;
@@ -113,8 +113,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                      declare
                         Trailing : constant Wide_Character :=
                            Wide_Character'Val (
-                              Character'Pos (Data (Data'First + 2)) * 256 +
-                              Character'Pos (Data (Data'First + 3)));
+                              Character'Pos (Data (Data'First + 2)) * 256
+                              + Character'Pos (Data (Data'First + 3)));
                         W_Data : constant Wide_String (1 .. 2) :=
                            (Leading, Trailing);
                         W_Last : Natural;
@@ -182,8 +182,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       else
          declare
             Leading : constant Wide_Character := Wide_Character'Val (
-               Character'Pos (Data (Data'First)) +
-               Character'Pos (Data (Data'First + 1)) * 256);
+               Character'Pos (Data (Data'First))
+               + Character'Pos (Data (Data'First + 1)) * 256);
             Length : Natural;
          begin
             Last := Data'First + 1;
@@ -197,8 +197,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                      declare
                         Trailing : constant Wide_Character :=
                            Wide_Character'Val (
-                              Character'Pos (Data (Data'First + 2)) +
-                              Character'Pos (Data (Data'First + 3)) * 256);
+                              Character'Pos (Data (Data'First + 2))
+                              + Character'Pos (Data (Data'First + 3)) * 256);
                         W_Data : constant Wide_String (1 .. 2) :=
                            (Leading, Trailing);
                         W_Last : Natural;
@@ -260,10 +260,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          declare
             type U32 is mod 2 ** 32; -- Wide_Wide_Character'Size = 31(?)
             Leading : constant U32 :=
-               Character'Pos (Data (Data'First)) * 16#1000000# +
-               Character'Pos (Data (Data'First + 1)) * 16#10000# +
-               Character'Pos (Data (Data'First + 2)) * 16#100# +
-               Character'Pos (Data (Data'First + 3));
+               Character'Pos (Data (Data'First)) * 16#1000000#
+               + Character'Pos (Data (Data'First + 1)) * 16#10000#
+               + Character'Pos (Data (Data'First + 2)) * 16#100#
+               + Character'Pos (Data (Data'First + 3));
             Length : Natural;
          begin
             Last := Data'First + 3;
@@ -320,10 +320,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          declare
             type U32 is mod 2 ** 32; -- Wide_Wide_Character'Size = 31(?)
             Leading : constant U32 :=
-               Character'Pos (Data (Data'First)) +
-               Character'Pos (Data (Data'First + 1)) * 16#100# +
-               Character'Pos (Data (Data'First + 2)) * 16#10000# +
-               Character'Pos (Data (Data'First + 3)) * 16#1000000#;
+               Character'Pos (Data (Data'First))
+               + Character'Pos (Data (Data'First + 1)) * 16#100#
+               + Character'Pos (Data (Data'First + 2)) * 16#10000#
+               + Character'Pos (Data (Data'First + 3)) * 16#1000000#;
             Length : Natural;
          begin
             Last := Data'First + 3;

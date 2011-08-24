@@ -291,9 +291,9 @@ package body Ada.Strings.Generic_Fixed is
       if Low - 1 > Source'Last or else High < Source'First - 1 then
          raise Index_Error;
       end if;
-      return Source (Source'First .. Low - 1) &
-         By &
-         Source (Positive'Max (Low, High + 1) .. Source'Last);
+      return Source (Source'First .. Low - 1)
+         & By
+         & Source (Positive'Max (Low, High + 1) .. Source'Last);
    end Replace_Slice;
 
    procedure Replace_Slice (
