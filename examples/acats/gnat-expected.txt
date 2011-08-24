@@ -1,4 +1,4 @@
-c41306a U rendezvous before return
+c41306a U dead lock, rendezvous before return
 c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows

@@ -582,6 +582,16 @@ procedure run_acats is
 		end if;
 	end Runtime_Expected_Result;
 	
+	function ACATS_And_Runtime_Expected_Result (Name : String) return Expected_Test_Result is
+	begin
+		return Result : Expected_Test_Result := Runtime_Expected_Result (Name) do
+			if Result.Result = Passed then
+				Result.Result := Expected_Result (Name);
+				Result.Note := +"violate ACATS";
+			end if;
+		end return;
+	end ACATS_And_Runtime_Expected_Result;
+	
 	--  test result records
 	
 	type Test_Record is record
@@ -704,8 +714,7 @@ procedure run_acats is
 				end;
 			end if;
 		end Process_Extract;
-		ACATS_Expected : constant Test_Result := Expected_Result (Name);
-		Runtime_Expected : constant Expected_Test_Result := Runtime_Expected_Result (Name);
+		Expected : constant Expected_Test_Result := ACATS_And_Runtime_Expected_Result (Name);
 		Is_Expected : Boolean := False;
 	begin
 		Ada.Text_IO.Put_Line ("**** " & Name & " ****");
@@ -825,12 +834,12 @@ procedure run_acats is
 					RTS => RTS_Dir,
 					UTF_8 => UTF_8,
 					Result => Result'Access);
-				if Runtime_Expected.Result = Untested then
+				if Expected.Result = Untested then
 					raise Test_Failure;
 				else
 					Invoke (
 						Ada.Directories.Base_Name (+Main),
-						Expected => ACATS_Expected,
+						Expected => Expected.Result,
 						Result => Result'Access);
 					Is_Expected := True;
 				end if;
@@ -838,19 +847,16 @@ procedure run_acats is
 		exception
 			when E : Compile_Failure | Test_Failure | Should_Be_Failure =>
 				Ada.Text_IO.Put_Line (Ada.Exceptions.Exception_Information (E));
-				if Result = ACATS_Expected then
-					Is_Expected := True;
-					Ada.Text_IO.Put_Line ("expected: " & Test_Result'Image (Result));
-				elsif Runtime_Expected.Result /= Passed then
-					Is_Expected := Result = Runtime_Expected.Result;
+				if Expected.Result /= Passed then
+					Is_Expected := Result = Expected.Result;
 					if Is_Expected then
 						Ada.Text_IO.Put_Line (
 							"expected: " & Test_Result'Image (Result) &
-							" " & Ada.Strings.Unbounded.To_String (Runtime_Expected.Note));
+							" " & Ada.Strings.Unbounded.To_String (Expected.Note));
 					else
 						Ada.Text_IO.Put_Line (
 							"unexpected: " & Test_Result'Image (Result) &
-							" (expected: " & Test_Result'Image (Runtime_Expected.Result) & ")");
+							" (expected: " & Test_Result'Image (Expected.Result) & ")");
 					end if;
 				else
 					Is_Expected := False;

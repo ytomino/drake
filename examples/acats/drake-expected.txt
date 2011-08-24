@@ -1,37 +1,21 @@
 a83a02b C tasking features are not implemented
-a85013b C tasking features are not implemented
 a87b59a C tasking features are not implemented
 a95001c C tasking features are not implemented
-a95074d C tasking features are not implemented
 a97106a C tasking features are not implemented
 a99006a C tasking features are not implemented
 aa2010a C tasking features are not implemented
 ac3207a C tasking features are not implemented
-ad7201a C tasking features are not implemented
-ad7203b C tasking features are not implemented
 ad7205b C tasking features are not implemented
-ada101a C tasking features are not implemented
 c250002 C tasking features are not implemented
 c34007j C tasking features are not implemented
 c34008a C tasking features are not implemented
-c35102a C tasking features are not implemented
-c352001 F unicode
-c37402a C tasking features are not implemented
-c37403a C tasking features are not implemented
+c352001 F unicode ('Image of 16#80#..16#ff#)
 c380003 C tasking features are not implemented
 c380004 C tasking features are not implemented
-c38102d C tasking features are not implemented
-c39008a C tasking features are not implemented
-c39008b C tasking features are not implemented
-c39008c C tasking features are not implemented
 c394001 C tasking features are not implemented
 c3a1001 C tasking features are not implemented
 c3a1002 C tasking features are not implemented
 c410001 C tasking features are not implemented
-c41306a C tasking features are not implemented
-c41306b C tasking features are not implemented
-c41306c C tasking features are not implemented
-c41307d C tasking features are not implemented
 c41401a C tasking features are not implemented
 c431a01 C tasking features are not implemented
 c431a02 C tasking features are not implemented
@@ -42,24 +26,18 @@ c433a01 C tasking features are not implemented
 c433a02 C tasking features are not implemented
 c433a03 C tasking features are not implemented
 c433a04 C tasking features are not implemented
-c45282b C tasking features are not implemented
 c45291a C tasking features are not implemented
 c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows
-c46051a C tasking features are not implemented
-c51004a C tasking features are not implemented
 c59002c C tasking features are not implemented
 c64201b C tasking features are not implemented
 c64201c C tasking features are not implemented
 c74004a C tasking features are not implemented
 c74401k C tasking features are not implemented
-c74406a C tasking features are not implemented
 c750b01 C tasking features are not implemented
 c761001 C tasking features are not implemented
 c761007 C tasking features are not implemented
-c83023a C tasking features are not implemented
-c85004b C tasking features are not implemented
 c85005a C tasking features are not implemented
 c85005b C tasking features are not implemented
 c85005c C tasking features are not implemented
@@ -72,30 +50,18 @@ c85006d C tasking features are not implemented
 c85006e C tasking features are not implemented
 c85014a C tasking features are not implemented
 c85014b C tasking features are not implemented
-c85014c C tasking features are not implemented
 c85018a C tasking features are not implemented
 c85018b C tasking features are not implemented
 c87b26b C tasking features are not implemented
-c87b41a C tasking features are not implemented
-c87b45c C tasking features are not implemented
-c87b54a C tasking features are not implemented
-c87b62d C tasking features are not implemented
 c910001 C tasking features are not implemented
 c910002 C tasking features are not implemented
 c910003 C tasking features are not implemented
 c91004b C tasking features are not implemented
 c91004c C tasking features are not implemented
-c91006a C tasking features are not implemented
-c91007a C tasking features are not implemented
-c92002a C tasking features are not implemented
 c92003a C tasking features are not implemented
 c92005a C tasking features are not implemented
 c92005b C tasking features are not implemented
-c92006a C tasking features are not implemented
 c930001 C tasking features are not implemented
-c93001a C tasking features are not implemented
-c93002a C tasking features are not implemented
-c93003a C tasking features are not implemented
 c93004a C tasking features are not implemented
 c93004b C tasking features are not implemented
 c93004c C tasking features are not implemented
@@ -110,9 +76,7 @@ c93005f C tasking features are not implemented
 c93005g C tasking features are not implemented
 c93005h C tasking features are not implemented
 c93006a C tasking features are not implemented
-c93007a C tasking features are not implemented
 c93008a C tasking features are not implemented
-c93008b C tasking features are not implemented
 c940001 C tasking features are not implemented
 c940002 C tasking features are not implemented
 c940004 C tasking features are not implemented
@@ -129,8 +93,6 @@ c940016 C tasking features are not implemented
 c94001a C tasking features are not implemented
 c94001b C tasking features are not implemented
 c94001c C tasking features are not implemented
-c94001e C tasking features are not implemented
-c94001f C tasking features are not implemented
 c94001g C tasking features are not implemented
 c94002a C tasking features are not implemented
 c94002b C tasking features are not implemented
@@ -150,15 +112,12 @@ c94008a C tasking features are not implemented
 c94008b C tasking features are not implemented
 c94008c C tasking features are not implemented
 c94008d C tasking features are not implemented
-c94010a C tasking features are not implemented
 c94011a C tasking features are not implemented
 c94020a C tasking features are not implemented
 c940a03 C tasking features are not implemented
 c95008a C tasking features are not implemented
 c95009a C tasking features are not implemented
 c95010a C tasking features are not implemented
-c95011a C tasking features are not implemented
-c95012a C tasking features are not implemented
 c95021a C tasking features are not implemented
 c95022a C tasking features are not implemented
 c95022b C tasking features are not implemented
@@ -171,23 +130,16 @@ c95040a C tasking features are not implemented
 c95040b C tasking features are not implemented
 c95040c C tasking features are not implemented
 c95040d C tasking features are not implemented
-c95041a C tasking features are not implemented
 c95065a C tasking features are not implemented
 c95065b C tasking features are not implemented
 c95065c C tasking features are not implemented
 c95065d C tasking features are not implemented
 c95065e C tasking features are not implemented
 c95065f C tasking features are not implemented
-c95066a C tasking features are not implemented
 c95067a C tasking features are not implemented
-c95071a C tasking features are not implemented
-c95072a C tasking features are not implemented
-c95072b C tasking features are not implemented
-c95073a C tasking features are not implemented
 c95074c C tasking features are not implemented
 c95076a C tasking features are not implemented
 c95078a C tasking features are not implemented
-c95080b C tasking features are not implemented
 c95082g C tasking features are not implemented
 c95085a C tasking features are not implemented
 c95085b C tasking features are not implemented
@@ -206,24 +158,11 @@ c95085n C tasking features are not implemented
 c95085o C tasking features are not implemented
 c95086a C tasking features are not implemented
 c95086b C tasking features are not implemented
-c95086c C tasking features are not implemented
-c95086d C tasking features are not implemented
-c95086e C tasking features are not implemented
-c95086f C tasking features are not implemented
-c95087a C tasking features are not implemented
-c95087b C tasking features are not implemented
-c95087c C tasking features are not implemented
-c95087d C tasking features are not implemented
-c95088a C tasking features are not implemented
 c95089a C tasking features are not implemented
-c95090a C tasking features are not implemented
-c95092a C tasking features are not implemented
-c95093a C tasking features are not implemented
 c95095a C tasking features are not implemented
 c95095b C tasking features are not implemented
 c95095c C tasking features are not implemented
 c95095d C tasking features are not implemented
-c95095e C tasking features are not implemented
 c951001 C tasking features are not implemented
 c951002 C tasking features are not implemented
 c953001 C tasking features are not implemented
@@ -255,7 +194,7 @@ c960002 C tasking features are not implemented
 c960004 C tasking features are not implemented
 c96005b N Duration'Base equals Duration
 c96006a A calendar (out of UNIX time)
-c96007a F calendar
+c96007a F calendar (exception not raised on feburary 30th)
 c97112a C tasking features are not implemented
 c97113a C tasking features are not implemented
 c97114a C tasking features are not implemented
@@ -340,20 +279,13 @@ cb20005 C tasking features are not implemented
 cb20006 C tasking features are not implemented
 cb20007 C tasking features are not implemented
 cb4013a C tasking features are not implemented
-cb41002 C tasking features are not implemented
-cb5001a C tasking features are not implemented
-cb5001b C tasking features are not implemented
 cb5002a C tasking features are not implemented
 cc1104c C tasking features are not implemented
-cc1207b C tasking features are not implemented
 cc1225a C tasking features are not implemented
 cc1310a C tasking features are not implemented
 cc3019c C tasking features are not implemented
-cc3106b C tasking features are not implemented
 cc3120b C tasking features are not implemented
 cc3207b C tasking features are not implemented
-cc3225a C tasking features are not implemented
-cc3601c C tasking features are not implemented
 cc3602a C tasking features are not implemented
 cc51007 A calendar (out of UNIX time)
 cd10002 C tasking features are not implemented
@@ -366,7 +298,6 @@ cd20001 C tasking features are not implemented
 cd2a91c C tasking features are not implemented
 cd2c11a C tasking features are not implemented
 cd2c11d C tasking features are not implemented
-cd5003e C tasking features are not implemented
 cd72a02 C tasking features are not implemented
 ce2102d N In_File is supported in Sequencial_IO
 ce2102e N Out_File is supported in Sequencial_IO
@@ -403,22 +334,23 @@ ce3410c A strict End_Of_Line
 ce3413b N Text_IO.Count'Last is too large for test
 ce3606a F strict End_Of_Line
 ce3606b F strict End_Of_Line
-cxa3001 C unicode
-cxa3002 C unicode
-cxa3003 C unicode
-cxa3004 F unicode
+cxa3001 C unicode (latin-1)
+cxa3002 C unicode (To_Basic is unimplemented)
+cxa3003 C unicode (latin-1)
+cxa3004 F unicode (Is_String, To_Character, To_String)
 cxa4025 C extended parameters of Ada.Strings.Trim
 cxa4026 C extended parameters of Ada.Strings.Trim
+cxa4027 C "use" and "use type" Ada.Strings.Bounded at the same time
 cxa4028 C "use" and "use type" Ada.Strings.Bounded at the same time
 cxa4029 C "use" and "use type" Ada.Strings.Wide_Bounded at the same time
 cxa4030 C "use" and "use type" Ada.Strings.Unbounded at the same time
-cxa4033 F unicode
+cxa4033 F unicode (translate Wide_String with Characters.To_Upper, To_Lower)
 cxa5013 C tasking features are not implemented
 cxaa006 F strict End_Of_Line
-cxaa019 C GNAT BUG DETECTED (gcc-4.5.2)
+cxaa019 C see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48002
 cxab001 F strict End_Of_Line
 cxac003 F strict End_Of_Line
-cxac004 C unicode
+cxac004 C unicode (latin-1)
 cxb3001 C some Interfaces.C features are unimplemented
 cxb3002 C some Interfaces.C features are unimplemented
 cxb3003 C some Interfaces.C features are unimplemented
@@ -496,7 +428,6 @@ cxd6003 C tasking features are not implemented
 cxd8002 C tasking features are not implemented
 cxd8003 C Ada.Real_Time.Split/Time_Of are unimplemented
 cxd9001 C tasking features are not implemented
-cxda001 C tasking features are not implemented
 cxda002 C tasking features are not implemented
 cxda003 C tasking features are not implemented
 cxda004 C tasking features are not implemented
@@ -525,5 +456,4 @@ cxh3003 C tasking features are not implemented
 cxh1001 C tasking features are not implemented
 cz00004 F z should not equal Z Expecting: z Got: Z. (???)
 ee3402b F strict End_Of_Line
-la14010 C tasking features are not implemented
 la14027 C tasking features are not implemented
