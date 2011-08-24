@@ -306,10 +306,10 @@ package body System.Unwind.Handling is
                               ttype_table + (-filter),
                               choice'Access);
                            is_handled := choice = Cast (GCC_Exception.Id)
-                              or else choice = Cast (Others_Value'Access)
-                              or else (choice = Cast (All_Others_Value'Access)
-                                 and then
-                                    GCC_Exception.Id.Not_Handled_By_Others);
+                              or else (choice = Cast (Others_Value'Access)
+                                 and then not
+                                    GCC_Exception.Id.Not_Handled_By_Others)
+                              or else choice = Cast (All_Others_Value'Access);
                            if is_handled then
                               ttype_filter := C.unwind.Unwind_Sword (
                                  ar_filter);
