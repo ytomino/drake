@@ -49,6 +49,20 @@ package body Ada.Directories is
    procedure Free is new Unchecked_Deallocation (String, String_Access);
 
    function To_File_Kind (Attribute : C.sys.types.mode_t) return File_Kind;
+   function To_File_Kind (Attribute : C.sys.types.mode_t) return File_Kind is
+      Kind_Attr : constant C.sys.types.mode_t :=
+         Attribute and C.sys.stat.S_IFMT;
+   begin
+      if Kind_Attr = C.sys.stat.S_IFDIR then
+         return Directory;
+      elsif Kind_Attr /= C.sys.stat.S_IFREG then
+         return Special_File;
+      else
+         return Ordinary_File;
+      end if;
+   end To_File_Kind;
+
+   --  implementation
 
    procedure Base_Name (
       Name : String;
@@ -657,18 +671,5 @@ package body Ada.Directories is
          Start_Search (Result, Directory, Pattern, Filter);
       end return;
    end Start_Search;
-
-   function To_File_Kind (Attribute : C.sys.types.mode_t) return File_Kind is
-      Kind_Attr : constant C.sys.types.mode_t :=
-         Attribute and C.sys.stat.S_IFMT;
-   begin
-      if Kind_Attr = C.sys.stat.S_IFDIR then
-         return Directory;
-      elsif Kind_Attr /= C.sys.stat.S_IFREG then
-         return Special_File;
-      else
-         return Ordinary_File;
-      end if;
-   end To_File_Kind;
 
 end Ada.Directories;
