@@ -2,7 +2,6 @@
 #include <stdint.h> /* included by unwind-pe.h */
 #if defined(__APPLE__)
 #include <sys/types.h> /* avoiding circular dependency */
-#include <crt_externs.h> /* environment variable */
 #endif
 #if defined(__FreeBSD__)
 #include <sys/types.h>
@@ -28,6 +27,10 @@
 #include <pthread.h> /* tasking */
 #endif
 #include <string.h> /* string op */
+#if defined(__APPLE__)
+#include <crt_externs.h> /* environment variable */
+#include <copyfile.h> /* copyfile */
+#endif
 
 #if defined(__unix__) || defined(__APPLE__)
 #pragma instance pthread_rwlock_t "PTHREAD_RWLOCK_INITIALIZER"
