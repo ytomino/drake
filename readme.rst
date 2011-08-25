@@ -74,6 +74,6 @@ Limitations
 Many many features are unimplemented !!!
 
 And there are several intentional ACATS violations for usability.
-For example, all functions treat String as UTF-8, Wide_String as UTF-16,
-and Wide_Wide_String as UTF-32.
-This behavior violates standard, but useful for real-world applications.
+See incompatibility_.
+
+.. _incompatibility: https://github.com/ytomino/drake/wiki/Incompatibility
