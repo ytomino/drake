@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
-private with Ada.Calendar;
 private with Ada.Unchecked_Conversion;
 package Ada.Real_Time is
 
@@ -79,12 +78,10 @@ package Ada.Real_Time is
 
 private
 
-   type Time is new Calendar.Time;
+   type Time is new Duration;
 
-   function Cast is new Unchecked_Conversion (Duration, Time);
-
-   Time_First : constant Time := Cast (Duration'First);
-   Time_Last : constant Time := Cast (Duration'Last);
+   Time_First : constant Time := Time'First;
+   Time_Last : constant Time := Time'Last;
 
    type Time_Span is new Duration;
 
