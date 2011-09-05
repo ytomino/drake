@@ -587,7 +587,7 @@ procedure run_acats is
 		return Result : Expected_Test_Result := Runtime_Expected_Result (Name) do
 			if Result.Result = Passed then
 				Result.Result := Expected_Result (Name);
-				Result.Note := +"violate ACATS";
+				Result.Note := Ada.Strings.Unbounded.To_Unbounded_String ("violate ACATS");
 			end if;
 		end return;
 	end ACATS_And_Runtime_Expected_Result;
