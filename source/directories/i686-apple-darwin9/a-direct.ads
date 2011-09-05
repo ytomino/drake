@@ -27,12 +27,16 @@ package Ada.Directories is
 
    procedure Delete_File (Name : String);
 
-   procedure Rename (Old_Name, New_Name : String);
+   procedure Rename (
+      Old_Name : String;
+      New_Name : String;
+      Overwrite : Boolean := True); -- extended
 
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String := "");
+      Form : String := "";
+      Overwrite : Boolean := True); -- extended
 
    --  File and directory name operations:
 
