@@ -48,10 +48,12 @@
 #pragma for Ada "termios.h" include "sys/termios.h"
 #pragma for Ada "sys/stat.h" include "sys/fcntl.h" /* S_IF* */
 #pragma for Ada "pthread.h" include "sys/types.h"
+#pragma for Ada "pthread.h" include "signal.h" /* pthread_kill */
 #elif defined(__FreeBSD__)
 #pragma for Ada "sys/time.h" include "sys/_timeval.h"
 #pragma for Ada "sys/time.h" include "sys/timespec.h"
 #pragma for Ada "sys/mman.h" include "sys/types.h" /* mmap */
+#pragma for Ada "sys/signal.h" include "sys/select.h" /* sigset_t */
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
 #endif

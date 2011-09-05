@@ -1,10 +1,16 @@
+with Ada.Calendar;
 package body Ada.Real_Time is
    pragma Suppress (All_Checks);
    use type Calendar.Time;
 
+   --  implementation
+
    function Clock return Time is
+      function Cast is new Unchecked_Conversion (
+         Ada.Calendar.Time,
+         Time);
    begin
-      return Time (Calendar.Clock);
+      return Cast (Calendar.Clock);
    end Clock;
 
    function Microseconds (US : Integer) return Time_Span is
@@ -34,12 +40,12 @@ package body Ada.Real_Time is
 
    function "+" (Left : Time; Right : Time_Span) return Time is
    begin
-      return Time (Calendar.Time (Left) + Duration (Right));
+      return Time (Duration (Left) + Duration (Right));
    end "+";
 
    function "+" (Left : Time_Span; Right : Time) return Time is
    begin
-      return Time (Duration (Left) + Calendar.Time (Right));
+      return Time (Duration (Left) + Duration (Right));
    end "+";
 
    function "+" (Left, Right : Time_Span) return Time_Span is
@@ -49,12 +55,12 @@ package body Ada.Real_Time is
 
    function "-" (Left : Time; Right : Time_Span) return Time is
    begin
-      return Time (Calendar.Time (Left) - Duration (Right));
+      return Time (Duration (Left) - Duration (Right));
    end "-";
 
    function "-" (Left : Time; Right : Time) return Time_Span is
    begin
-      return Time_Span (Calendar.Time (Left) - Calendar.Time (Right));
+      return Time_Span (Duration (Left) - Duration (Right));
    end "-";
 
    function "-" (Left, Right : Time_Span) return Time_Span is
@@ -89,7 +95,7 @@ package body Ada.Real_Time is
 
    function "<" (Left, Right : Time) return Boolean is
    begin
-      return Calendar.Time (Left) < Calendar.Time (Right);
+      return Duration (Left) < Duration (Right);
    end "<";
 
    function "<" (Left, Right : Time_Span) return Boolean is
@@ -99,7 +105,7 @@ package body Ada.Real_Time is
 
    function "<=" (Left, Right : Time) return Boolean is
    begin
-      return Calendar.Time (Left) <= Calendar.Time (Right);
+      return Duration (Left) <= Duration (Right);
    end "<=";
 
    function "<=" (Left, Right : Time_Span) return Boolean is
@@ -109,7 +115,7 @@ package body Ada.Real_Time is
 
    function ">" (Left, Right : Time) return Boolean is
    begin
-      return Calendar.Time (Left) > Calendar.Time (Right);
+      return Duration (Left) > Duration (Right);
    end ">";
 
    function ">" (Left, Right : Time_Span) return Boolean is
@@ -119,7 +125,7 @@ package body Ada.Real_Time is
 
    function ">=" (Left, Right : Time) return Boolean is
    begin
-      return Calendar.Time (Left) >= Calendar.Time (Right);
+      return Duration (Left) >= Duration (Right);
    end ">=";
 
    function ">=" (Left, Right : Time_Span) return Boolean is

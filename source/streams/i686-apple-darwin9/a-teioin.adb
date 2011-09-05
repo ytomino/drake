@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with C.termios;
 with C.time;
@@ -568,7 +569,7 @@ package body Ada.Text_IO.Inside is
       Name : String;
       Form : String)
    is
-      New_File : Non_Controlled_File_Type := new Text_Type'(
+      New_File : aliased Non_Controlled_File_Type := new Text_Type'(
          Name_Length => 0,
          Form_Length => 0,
          Stream => <>,
@@ -579,18 +580,24 @@ package body Ada.Text_IO.Inside is
          Name => "",
          Form => "",
          others => <>);
+      procedure Finally (X : not null access Non_Controlled_File_Type);
+      procedure Finally (X : not null access Non_Controlled_File_Type) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is new Exceptions.Finally.Scoped_Holder (
+         Non_Controlled_File_Type,
+         Finally);
    begin
+      Holder.Assign (New_File'Access);
       Open_Proc.all (
          File => New_File.File,
          Mode => Streams.Stream_IO.File_Mode (Mode),
          Name => Name,
          Form => Form);
       New_File.Stream := Streams.Stream_IO.Inside.Stream (New_File.File);
+      Holder.Clear;
       File := New_File;
-   exception
-      when others =>
-         Free (New_File);
-         raise;
    end Open_File;
 
    function Page (File : Non_Controlled_File_Type) return Positive_Count is

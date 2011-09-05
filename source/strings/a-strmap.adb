@@ -672,29 +672,21 @@ package body Ada.Strings.Maps is
          Item : out Character_Set)
       is
          Length : Integer;
-         New_Data : Set_Data_Access;
       begin
+         Finalize (Item);
          Integer'Read (Stream, Length);
          if Length = 0 then
-            New_Data := Empty_Set_Data'Unrestricted_Access;
+            Item.Data := Empty_Set_Data'Unrestricted_Access;
          else
-            New_Data := new Set_Data'(
+            Item.Data := new Set_Data'(
                Length => Length,
                Reference_Count => 1,
                Items => <>);
-            begin
-               Characters.Inside.Sets.Character_Ranges'Read (
-                  Stream,
-                  New_Data.Items);
-               pragma Assert (Valid (Item.Data));
-            exception
-               when others =>
-                  Free (New_Data);
-                  raise;
-            end;
+            Characters.Inside.Sets.Character_Ranges'Read (
+               Stream,
+               Item.Data.Items);
+            pragma Assert (Valid (Item.Data));
          end if;
-         Finalize (Item);
-         Item.Data := New_Data;
       end Read;
 
       procedure Write (
@@ -868,32 +860,24 @@ package body Ada.Strings.Maps is
          Item : out Character_Mapping)
       is
          Length : Integer;
-         New_Data : Map_Data_Access;
       begin
+         Finalize (Item);
          Integer'Read (Stream, Length);
          if Length = 0 then
-            New_Data := Empty_Map_Data'Unrestricted_Access;
+            Item.Data := Empty_Map_Data'Unrestricted_Access;
          else
-            New_Data := new Map_Data'(
+            Item.Data := new Map_Data'(
                Length => Length,
                Reference_Count => 1,
                From => <>,
                To => <>);
-            begin
-               System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
-                  Stream,
-                  New_Data.From);
-               System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
-                  Stream,
-                  New_Data.To);
-            exception
-               when others =>
-                  Free (New_Data);
-                  raise;
-            end;
+            System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+               Stream,
+               Item.Data.From);
+            System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+               Stream,
+               Item.Data.To);
          end if;
-         Finalize (Item);
-         Item.Data := New_Data;
       end Read;
 
       procedure Write (

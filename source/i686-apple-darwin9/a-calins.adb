@@ -1,7 +1,9 @@
 with Ada.Unchecked_Conversion;
 with C.time;
+with System;
 package body Ada.Calendar.Inside is
    pragma Suppress (All_Checks);
+   use type System.Address;
    use type C.signed_int; --  time_t is signed int or signed long
    use type C.signed_long;
 
@@ -118,10 +120,17 @@ package body Ada.Calendar.Inside is
       return Result - Duration (Time_Zone * 60) + Seconds;
    end Time_Of;
 
+   Delay_Hook : access procedure (D : Duration);
+   pragma Import (Ada, Delay_Hook, "__drake_ref_delay_hook");
+   pragma Weak_External (Delay_Hook);
+
    procedure Delay_For (D : Duration) is
    begin
-      --  tasking feature is unimplemented
-      if D > 0.0 then
+      if Delay_Hook'Address /= System.Null_Address
+         and then Delay_Hook /= null
+      then
+         Delay_Hook (D);
+      elsif D > 0.0 then
          declare
             T : aliased C.sys.time.struct_timespec := To_timespec (D);
             Dummy : C.signed_int;
@@ -134,7 +143,6 @@ package body Ada.Calendar.Inside is
 
    procedure Delay_Until (T : Time) is
    begin
-      --  tasking feature is unimplemented
       Delay_For (T - Clock);
    end Delay_Until;
 

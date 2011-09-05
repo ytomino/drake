@@ -12,6 +12,8 @@ with System.Tasking.Yield;
 with System.Termination;
 with System.Unwind;
 with C.errno;
+with C.signal;
+with C.sys.signal;
 with C.sys.time;
 with C.sys.types;
 package body System.Tasking.Inside is
@@ -162,6 +164,9 @@ package body System.Tasking.Inside is
          String,
          String_Access);
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
+         String,
+         Entry_Name_Access);
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
          Rendezvous_Record,
          Rendezvous_Access);
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
@@ -184,6 +189,11 @@ package body System.Tasking.Inside is
       --  free task record
       if Item.Rendezvous /= null then
          Finalize (Item.Rendezvous.Calling, Free_Node => null);
+         if Item.Rendezvous.To_Deallocate_Names then
+            for I in Item.Rendezvous.Names'Range loop
+               Unchecked_Free (Item.Rendezvous.Names (I));
+            end loop;
+         end if;
          Unchecked_Free (Item.Rendezvous);
       end if;
       Unchecked_Free (Item.Name);
@@ -276,6 +286,29 @@ package body System.Tasking.Inside is
       Leave (Shared_Lock);
    end Shared_Lock_Leave;
 
+   --  delay statement
+
+   procedure Delay_For (D : Duration);
+   procedure Delay_For (D : Duration) is
+      M : Mutex;
+      C : Condition_Variable;
+      Notified : Boolean;
+      Aborted : Boolean;
+   begin
+      Enable_Abort;
+      Initialize (M);
+      Enter (M);
+      Wait (
+         C,
+         M,
+         Timeout => Duration'Max (D, 0.0),
+         Notified => Notified,
+         Aborted => Aborted);
+      Leave (M);
+      Finalize (M);
+      Disable_Abort (Aborted);
+   end Delay_For;
+
    --  attribute indexes
 
    Attribute_Indexes_Lock : Mutex := (Handle => <>); -- uninitialized
@@ -319,6 +352,74 @@ package body System.Tasking.Inside is
 
    Main_Task_Record : aliased Task_Record (Main);
 
+   --  signal handler
+
+   Old_SIGTERM_Action : aliased C.sys.signal.struct_sigaction :=
+      (others => <>); --  uninitialized
+
+   procedure Restore_SIGTERM_Handler;
+   procedure Restore_SIGTERM_Handler is
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      Dummy := C.signal.sigaction (
+         C.sys.signal.SIGTERM,
+         Old_SIGTERM_Action'Access,
+         null);
+   end Restore_SIGTERM_Handler;
+
+   procedure SIGTERM_Handler (
+      Signal_Number : C.signed_int;
+      Info : access C.sys.signal.struct_siginfo;
+      Context : C.void_ptr);
+   pragma Convention (C, SIGTERM_Handler);
+   procedure SIGTERM_Handler (
+      Signal_Number : C.signed_int;
+      Info : access C.sys.signal.struct_siginfo;
+      Context : C.void_ptr)
+   is
+      pragma Unreferenced (Info);
+      pragma Unreferenced (Context);
+      T : constant Task_Id := TLS_Current_Task_Id;
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      T.Aborted := True;
+      if T.Kind = Main then
+         Restore_SIGTERM_Handler;
+         Dummy := C.pthread.pthread_kill (T.Handle, Signal_Number);
+      end if;
+   end SIGTERM_Handler;
+
+   procedure Set_SIGTERM_Handler;
+   procedure Set_SIGTERM_Handler is
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+      act : aliased C.sys.signal.struct_sigaction :=
+         (others => <>); --  uninitialized
+   begin
+      act.sigaction_u.sa_sigaction := SIGTERM_Handler'Access;
+      act.sa_flags := C.sys.signal.SA_NODEFER +
+         C.sys.signal.SA_RESTART +
+         C.sys.signal.SA_SIGINFO;
+      Dummy := C.signal.sigemptyset (act.sa_mask'Access);
+      Dummy := C.signal.sigaction (
+         C.sys.signal.SIGTERM,
+         act'Access,
+         Old_SIGTERM_Action'Access);
+   end Set_SIGTERM_Handler;
+
+   procedure Mask_SIGTERM (How : C.signed_int);
+   procedure Mask_SIGTERM (How : C.signed_int) is
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+      Mask : aliased C.sys.signal.sigset_t;
+   begin
+      Dummy := C.signal.sigemptyset (Mask'Access);
+      Dummy := C.signal.sigaddset (Mask'Access, C.sys.signal.SIGTERM);
+      Dummy := C.pthread.pthread_sigmask (How, Mask'Access, null);
+   end Mask_SIGTERM;
+
    --  registration
 
    Registered : Boolean := False;
@@ -339,6 +440,8 @@ package body System.Tasking.Inside is
       Shared_Locking.Leave_Hook := Shared_Locking.Nop'Access;
       --  once
       Once.Yield_Hook := Once.Nop'Access;
+      --  delay statement
+      Delay_Hook := null;
       --  attribute indexes
       Finalize (Attribute_Indexes_Lock);
       Attribute_Index_Sets.Clear (Attribute_Indexes, Attribute_Indexes_Length);
@@ -348,6 +451,8 @@ package body System.Tasking.Inside is
       Soft_Links.Get_Current_Excep := Soft_Links.Get_Main_Current_Excep'Access;
       --  thread id
       null;
+      --  signal handler
+      Restore_SIGTERM_Handler;
    end Unregister;
 
    procedure Register;
@@ -363,6 +468,8 @@ package body System.Tasking.Inside is
          Shared_Locking.Leave_Hook := Shared_Lock_Leave'Access;
          --  once
          Once.Yield_Hook := Yield'Access;
+         --  delay statement
+         Delay_Hook := Delay_For'Access;
          --  attribute indexes
          Attribute_Indexes_Lock.Handle := C.pthread.PTHREAD_MUTEX_INITIALIZER;
          --  secondary stack and exception occurrence
@@ -372,12 +479,15 @@ package body System.Tasking.Inside is
          --  thread id
          TLS_Current_Task_Id := Main_Task_Record'Access;
          Main_Task_Record.Handle := C.pthread.pthread_self;
+         Main_Task_Record.Aborted := False;
          Main_Task_Record.Attributes := null;
          Main_Task_Record.Attributes_Length := 0;
          Main_Task_Record.Activation_State := True;
          Main_Task_Record.Termination_State := TS_Active;
          Main_Task_Record.Master_Level := Environment_Task_Level;
          Main_Task_Record.Master_Top := null; -- start from Library_Task_Level
+         --  signal handler
+         Set_SIGTERM_Handler;
       end if;
    end Register;
 
@@ -436,6 +546,8 @@ package body System.Tasking.Inside is
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
    begin
       TLS_Current_Task_Id := T;
+      --  block SIGTERM
+      Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
       Local.Current_Exception.Private_Data := Null_Address;
@@ -528,12 +640,14 @@ package body System.Tasking.Inside is
          Rendezvous := new Rendezvous_Record'(
             Last_Index => Entry_Last_Index,
             Calling => <>, -- default initializer
+            To_Deallocate_Names => False,
             Names => (others => null));
       end if;
       --  task record
       T := new Task_Record'(
          Kind => Sub,
          Handle => <>, -- uninitialized
+         Aborted => False,
          Attributes => null,
          Attributes_Length => 0,
          Activation_State => Chain_Data = null, -- active if no chain
@@ -651,10 +765,36 @@ package body System.Tasking.Inside is
       end if;
    end Name;
 
+   procedure Abort_Task (T : Task_Id) is
+   begin
+      if T = TLS_Current_Task_Id then
+         T.Aborted := True;
+         raise Standard'Abort_Signal;
+      elsif C.pthread.pthread_kill (T.Handle, C.sys.signal.SIGTERM) /= 0 then
+         raise Tasking_Error;
+      end if;
+   end Abort_Task;
+
+   procedure Enable_Abort is
+   begin
+      Register;
+      Mask_SIGTERM (C.sys.signal.SIG_UNBLOCK);
+   end Enable_Abort;
+
+   procedure Disable_Abort (Aborted : Boolean) is
+      pragma Unreferenced (Aborted); -- dummy parameter for coding check
+   begin
+      Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
+      if TLS_Current_Task_Id.Aborted then
+         raise Standard'Abort_Signal;
+      end if;
+   end Disable_Abort;
+
    procedure Accept_Activation is
       T : constant Task_Id := Get_Current_Task_Id;
       C : Activation_Chain_Access := T.Activation_Chain;
       Some_Error : Boolean;
+      Aborted : Boolean;
    begin
       pragma Assert (C /= null);
       Enter (C.Mutex);
@@ -664,7 +804,8 @@ package body System.Tasking.Inside is
          Notify_All (C.Condition_Variable);
       else
          while not T.Activation_State loop
-            Wait (C.Condition_Variable, C.Mutex);
+            Wait (C.Condition_Variable, C.Mutex, Aborted => Aborted);
+            pragma Assert (not Aborted);
          end loop;
       end if;
       Some_Error := C.Elaboration_Error;
@@ -680,7 +821,8 @@ package body System.Tasking.Inside is
 
    procedure Activate (
       Chain : not null access Activation_Chain;
-      Has_Error : out Boolean)
+      Has_Error : out Boolean;
+      Aborted : out Boolean)
    is
       C : Activation_Chain_Access :=
          Activation_Chain_Conv.To_Pointer (Chain.Data);
@@ -694,7 +836,7 @@ package body System.Tasking.Inside is
             Set_Active (C);
             Notify_All (C.Condition_Variable);
          else
-            Wait (C.Condition_Variable, C.Mutex);
+            Wait (C.Condition_Variable, C.Mutex, Aborted => Aborted);
          end if;
          Has_Error := Has_Error or else C.Elaboration_Error;
          Remove_From_Merged_Activation_Chain_List (C);
@@ -866,19 +1008,20 @@ package body System.Tasking.Inside is
             Parent := Parent.Master_Of_Parent.Parent;
          end loop;
       end if;
-      if Parent.Master_Top = null then
+      Result := Parent.Master_Top;
+      while Result /= null and then Result.Within > Actual_Level loop
+         Result := Result.Previous;
+      end loop;
+      if Result = null then
          --  library level
          pragma Assert (Parent = Main_Task_Record'Access);
-         Enter_Master;
-         pragma Assert (Parent.Master_Top.Within = Library_Task_Level + 1);
-         Parent.Master_Top.Within := Library_Task_Level;
+         if Parent.Master_Top = null then
+            Enter_Master;
+            pragma Assert (Parent.Master_Top.Within = Library_Task_Level + 1);
+            Parent.Master_Top.Within := Library_Task_Level;
+         end if;
+         pragma Assert (Parent.Master_Top.Within = Library_Task_Level);
          Result := Parent.Master_Top;
-      else
-         Result := Parent.Master_Top;
-         while Result.Within > Level loop
-            pragma Assert (Result.Previous /= null);
-            Result := Result.Previous;
-         end loop;
       end if;
       return Result;
    end Get_Master_Of_Parent;
@@ -891,6 +1034,13 @@ package body System.Tasking.Inside is
       T.Rendezvous.Names (Index) := Name;
    end Set_Entry_Name;
 
+   procedure Set_Entry_Names_To_Deallocate (T : Task_Id) is
+   begin
+      if T.Rendezvous /= null then
+         T.Rendezvous.To_Deallocate_Names := True;
+      end if;
+   end Set_Entry_Names_To_Deallocate;
+
    procedure Call (T : Task_Id; Item : not null Queue_Node_Access) is
    begin
       Add (T.Rendezvous.Calling, Item);
@@ -899,9 +1049,15 @@ package body System.Tasking.Inside is
    procedure Accept_Call (
       Item : out Queue_Node_Access;
       Params : Address;
-      Filter : Queue_Filter) is
+      Filter : Queue_Filter;
+      Aborted : out Boolean) is
    begin
-      Take (Get_Current_Task_Id.Rendezvous.Calling, Item, Params, Filter);
+      Take (
+         Get_Current_Task_Id.Rendezvous.Calling,
+         Item,
+         Params,
+         Filter,
+         Aborted);
    end Accept_Call;
 
    --  thread local storage
@@ -1161,7 +1317,8 @@ package body System.Tasking.Inside is
 
    procedure Wait (
       Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex) is
+      Mutex : in out Inside.Mutex;
+      Aborted : out Boolean) is
    begin
       if C.pthread.pthread_cond_wait (
          Object.Handle'Access,
@@ -1169,13 +1326,15 @@ package body System.Tasking.Inside is
       then
          raise Tasking_Error;
       end if;
+      Aborted := TLS_Current_Task_Id.Aborted;
    end Wait;
 
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
       Timeout : Duration;
-      Notified : out Boolean)
+      Notified : out Boolean;
+      Aborted : out Boolean)
    is
       function Cast is new Ada.Unchecked_Conversion (Duration, Time_Rep);
       Now : aliased C.sys.time.struct_timeval;
@@ -1205,6 +1364,7 @@ package body System.Tasking.Inside is
          when others =>
             raise Tasking_Error;
       end case;
+      Aborted := TLS_Current_Task_Id.Aborted;
    end Wait;
 
    --  queue
@@ -1252,11 +1412,13 @@ package body System.Tasking.Inside is
       Object : in out Queue;
       Item : out Queue_Node_Access;
       Params : Address;
-      Filter : Queue_Filter)
+      Filter : Queue_Filter;
+      Aborted : out Boolean)
    is
       Previous : Queue_Node_Access := null;
       I : Queue_Node_Access := Object.Head;
    begin
+      Aborted := False;
       Enter (Object.Mutex);
       Taking : loop
          Search : while I /= null loop
@@ -1281,7 +1443,14 @@ package body System.Tasking.Inside is
             Object.Waiting := True;
             Object.Params := Params;
             Object.Filter := Filter;
-            Wait (Object.Condition_Variable, Object.Mutex);
+            loop
+               Wait (
+                  Object.Condition_Variable,
+                  Object.Mutex,
+                  Aborted => Aborted);
+               exit Taking when Aborted;
+               exit when Object.Tail /= Tail_On_Waiting;
+            end loop;
             Object.Waiting := False;
             if Tail_On_Waiting /= null then
                Previous := Tail_On_Waiting;
@@ -1323,11 +1492,18 @@ package body System.Tasking.Inside is
       return Object.Value; -- atomic, is it ok?
    end Get;
 
-   procedure Wait (Object : in out Event) is
+   procedure Wait (
+      Object : in out Event;
+      Aborted : out Boolean) is
    begin
       Enter (Object.Mutex);
-      if not Object.Value then
-         Wait (Object.Condition_Variable, Object.Mutex);
+      if Object.Value then
+         Aborted := False;
+      else
+         loop
+            Wait (Object.Condition_Variable, Object.Mutex, Aborted => Aborted);
+            exit when Object.Value or else Aborted;
+         end loop;
       end if;
       Leave (Object.Mutex);
    end Wait;
@@ -1335,13 +1511,20 @@ package body System.Tasking.Inside is
    procedure Wait (
       Object : in out Event;
       Timeout : Duration;
-      Value : out Boolean) is
+      Value : out Boolean;
+      Aborted : out Boolean) is
    begin
       Enter (Object.Mutex);
       if Object.Value then
          Value := True;
+         Aborted := False;
       else
-         Wait (Object.Condition_Variable, Object.Mutex, Timeout, Value);
+         Wait (
+            Object.Condition_Variable,
+            Object.Mutex,
+            Timeout,
+            Value,
+            Aborted => Aborted);
       end if;
       Leave (Object.Mutex);
    end Wait;
@@ -1364,7 +1547,8 @@ package body System.Tasking.Inside is
 
    procedure Wait (
       Object : in out Barrier;
-      Notified : out Boolean) is
+      Notified : out Boolean;
+      Aborted : out Boolean) is
    begin
       Enter (Object.Mutex);
       Notified := Object.Blocked = 0;
@@ -1372,8 +1556,9 @@ package body System.Tasking.Inside is
       if Object.Blocked = Object.Release_Threshold then
          Notify_All (Object.Condition_Variable);
          Object.Blocked := 0;
+         Aborted := False;
       else
-         Wait (Object.Condition_Variable, Object.Mutex);
+         Wait (Object.Condition_Variable, Object.Mutex, Aborted => Aborted);
       end if;
       Leave (Object.Mutex);
    end Wait;

@@ -12,6 +12,7 @@
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
 #   WITHD=      debug info (default:if TARGET=HOST then 1 else 0)
 #   WITHF=      -ffast-math (default:0)
+#   WITHL=      link time optimization (default:0)
 #   WITHS=      assembly source (default:0)
 #   CFLAGS=     additional compiler options (default:empty)
 
@@ -47,6 +48,11 @@ endif
 # if WITHF=1, -ffast-math
 ifeq ($(WITHF),)
 WITHF=0
+endif
+
+# if WITHL=1, link-time optimization be enabled
+ifeq ($(WITHL),)
+WITHL=0
 endif
 
 # if WITHS=1, assembly sources be outputed
@@ -142,9 +148,15 @@ else
 CFLAGS_MATH=
 endif
 
+ifneq ($(WITHL),0)
+CFLAGS_LTO=-flto -fwhole-program
+else
+CFLAGS_LTO=
+endif
+
 CFLAGS=
 
-CFLAGS_FOR_COMPILER_UNIT=-nostdinc -I$(RTSDIR)/adainclude -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS)
+CFLAGS_FOR_COMPILER_UNIT=-nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_LTO) $(CFLAGS)
 
 .PHONY: all import_objs c-archive
 

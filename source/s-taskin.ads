@@ -38,7 +38,14 @@ package System.Tasking is
    type Entry_Index is range Interrupt_Entry .. Max_Entry;
    type Task_Entry_Index is new Entry_Index range Null_Entry .. Max_Entry;
 
+   --  required for abort statement by compiler (s-taskin.ads)
+   type Task_List is array (Positive range <>) of Task_Id;
+
    --  equivalent to String_Access (s-taskin.ads)
    type Entry_Name_Access is access all String;
+
+   --  equivalent to Timed_Delay (s-soflin.ads)
+   Delay_Hook : access procedure (D : Duration) := null;
+   pragma Export (Ada, Delay_Hook, "__drake_ref_delay_hook");
 
 end System.Tasking;

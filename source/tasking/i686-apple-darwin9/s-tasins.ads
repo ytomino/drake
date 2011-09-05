@@ -35,11 +35,17 @@ package System.Tasking.Inside is
    --  name
    function Name (T : Task_Id) return String;
 
+   --  abort
+   procedure Abort_Task (T : Task_Id);
+   procedure Enable_Abort;
+   procedure Disable_Abort (Aborted : Boolean); -- check and disable
+
    --  for manual activation (Chain /= null)
    procedure Accept_Activation; -- current task
    procedure Activate (
       Chain : not null access Activation_Chain;
-      Has_Error : out Boolean);
+      Has_Error : out Boolean;
+      Aborted : out Boolean);
    procedure Activate (T : Task_Id; Final : Boolean); -- activate single task
    procedure Move (
       From, To : not null access Activation_Chain;
@@ -58,6 +64,7 @@ package System.Tasking.Inside is
       T : Task_Id;
       Index : Task_Entry_Index;
       Name : Entry_Name_Access);
+   procedure Set_Entry_Names_To_Deallocate (T : Task_Id);
    type Queue_Node is limited private;
    type Queue_Node_Access is access all Queue_Node;
    type Queue_Filter is access function (
@@ -68,7 +75,8 @@ package System.Tasking.Inside is
    procedure Accept_Call (
       Item : out Queue_Node_Access;
       Params : Address;
-      Filter : Queue_Filter);
+      Filter : Queue_Filter;
+      Aborted : out Boolean);
 
    --  thread local storage
    --  pragma Thread_Local_Storage is valid
@@ -121,12 +129,14 @@ package System.Tasking.Inside is
    procedure Notify_All (Object : in out Condition_Variable);
    procedure Wait (
       Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex);
+      Mutex : in out Inside.Mutex;
+      Aborted : out Boolean);
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
       Timeout : Duration;
-      Notified : out Boolean);
+      Notified : out Boolean;
+      Aborted : out Boolean);
 
    --  queue
 
@@ -148,7 +158,8 @@ package System.Tasking.Inside is
       Object : in out Queue;
       Item : out Queue_Node_Access;
       Params : Address;
-      Filter : Queue_Filter);
+      Filter : Queue_Filter;
+      Aborted : out Boolean);
 
    --  event for Ada.Synchronous_Task_Control
 
@@ -159,11 +170,14 @@ package System.Tasking.Inside is
    procedure Set (Object : in out Event);
    procedure Reset (Object : in out Event);
    function Get (Object : Event) return Boolean;
-   procedure Wait (Object : in out Event);
+   procedure Wait (
+      Object : in out Event;
+      Aborted : out Boolean);
    procedure Wait (
       Object : in out Event;
       Timeout : Duration;
-      Value : out Boolean);
+      Value : out Boolean;
+      Aborted : out Boolean);
 
    --  group-synchronization for Ada.Synchronous_Barriers
 
@@ -173,7 +187,8 @@ package System.Tasking.Inside is
    procedure Finalize (Object : in out Barrier);
    procedure Wait (
       Object : in out Barrier;
-      Notified : out Boolean);
+      Notified : out Boolean;
+      Aborted : out Boolean);
 
    --  multi-read/exclusive-write lock for protected
 
@@ -235,6 +250,7 @@ private
 
    type Rendezvous_Record (Last_Index : Task_Entry_Index) is limited record
       Calling : Queue;
+      To_Deallocate_Names : Boolean;
       Names : Entry_Name_Array (1 .. Last_Index);
    end record;
    pragma Suppress_Initialization (Rendezvous_Record);
@@ -243,6 +259,7 @@ private
 
    type Task_Record (Kind : Task_Kind) is limited record
       Handle : aliased C.pthread.pthread_t;
+      Aborted : Boolean;
       Attributes : Attribute_Array_Access;
       Attributes_Length : Natural;
       --  activation / completion

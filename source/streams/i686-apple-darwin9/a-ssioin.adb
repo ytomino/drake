@@ -35,7 +35,8 @@ package body Ada.Streams.Stream_IO.Inside is
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
 
-   function Form_Share_Mode (Form : String) return C.unsigned_int;
+   function Form_Share_Mode (Form : String; Default : C.unsigned_int)
+      return C.unsigned_int;
 
    procedure Check_File_Open (File : Non_Controlled_File_Type);
 
@@ -217,15 +218,19 @@ package body Ada.Streams.Stream_IO.Inside is
       Last := First - 1;
    end Form_Parameter;
 
-   function Form_Share_Mode (Form : String) return C.unsigned_int is
+   function Form_Share_Mode (Form : String; Default : C.unsigned_int)
+      return C.unsigned_int
+   is
       First : Positive;
       Last : Natural;
    begin
       Form_Parameter (Form, "shared", First, Last);
       if First <= Last and then Form (First) = 'y' then
          return C.sys.fcntl.O_SHLOCK;
-      else
+      elsif First <= Last and then Form (First) = 'n' then
          return C.sys.fcntl.O_EXLOCK;
+      else
+         return Default;
       end if;
    end Form_Share_Mode;
 
@@ -361,6 +366,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Temp_Template : constant String := "ADAXXXXXX";
       Temp_Dir : C.char_ptr;
       Flags : C.unsigned_int;
+      Default_Lock_Flags : C.unsigned_int;
       Modes : constant := 8#644#;
       Kind : Stream_Kind;
       Full_Name : C.char_ptr;
@@ -390,6 +396,11 @@ package body Ada.Streams.Stream_IO.Inside is
          --  Normal File
          Kind := Normal;
          --  Flags, Append_File always has read and write access for Inout_File
+         if Mode = In_File then
+            Default_Lock_Flags := C.sys.fcntl.O_SHLOCK;
+         else
+            Default_Lock_Flags := C.sys.fcntl.O_EXLOCK;
+         end if;
          case Method is
             when Create =>
                declare
@@ -400,6 +411,7 @@ package body Ada.Streams.Stream_IO.Inside is
                      Append_File => O_RDWR or O_CREAT); -- no truncation
                begin
                   Flags := Table (Mode);
+                  Default_Lock_Flags := O_EXLOCK;
                end;
             when Open =>
                declare
@@ -422,7 +434,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Flags := Table (Mode);
                end;
          end case;
-         Flags := Flags or Form_Share_Mode (Form);
+         Flags := Flags or Form_Share_Mode (Form, Default_Lock_Flags);
          --  Open
          Handle := C.sys.fcntl.open (
             Full_Name,

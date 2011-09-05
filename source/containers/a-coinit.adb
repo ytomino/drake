@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Input_Iterators is
 
@@ -29,11 +30,20 @@ package body Ada.Containers.Input_Iterators is
          return (Finalization.Controlled with Node => null); -- No_Element
       else
          declare
-            New_Node : Node_Access := new Node'(
+            New_Node : aliased Node_Access := new Node'(
                Reference_Count => 1,
                Next => null,
                Element => <>);
+            procedure Finally (X : not null access Node_Access);
+            procedure Finally (X : not null access Node_Access) is
+            begin
+               Free (X.all);
+            end Finally;
+            package Holder is new Exceptions.Finally.Scoped_Holder (
+               Node_Access,
+               Finally);
          begin
+            Holder.Assign (New_Node'Access);
             Get (Queue.File.all, New_Node.Element);
             if Queue.Last /= null then
                pragma Assert (Queue.Last.Next = null);
@@ -43,11 +53,8 @@ package body Ada.Containers.Input_Iterators is
             Release (Queue.Last);
             Queue.Last := New_Node;
             Retain (New_Node);
+            Holder.Clear;
             return (Finalization.Controlled with Node => New_Node);
-         exception
-            when others =>
-               Free (New_Node);
-               raise;
          end;
       end if;
    end Get_Next;

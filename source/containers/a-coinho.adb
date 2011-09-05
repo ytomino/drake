@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
@@ -18,18 +19,23 @@ package body Ada.Containers.Indefinite_Holders is
 
    function Hold (New_Item : Element_Access) return not null Data_Access;
    function Hold (New_Item : Element_Access) return not null Data_Access is
+      Result : Data_Access;
+      New_Item_Var : aliased Element_Access := New_Item;
+      procedure Finally (X : not null access Element_Access);
+      procedure Finally (X : not null access Element_Access) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is new Exceptions.Finally.Scoped_Holder (
+         Element_Access,
+         Finally);
    begin
-      return new Indefinite_Holders.Data'(
+      Holder.Assign (New_Item_Var'Access);
+      Result := new Indefinite_Holders.Data'(
          Reference_Count => 1,
          Element => New_Item);
-   exception
-      when others =>
-         declare
-            X : Element_Access := New_Item;
-         begin
-            Free (X);
-         end;
-         raise;
+      Holder.Clear;
+      return Result;
    end Hold;
 
    procedure Free_Data (Data : System.Address);

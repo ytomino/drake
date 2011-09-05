@@ -1,4 +1,4 @@
-with Ada;
+with Ada.Unchecked_Deallocation;
 procedure tasking6 is
 begin
 	declare
@@ -72,6 +72,27 @@ begin
 		Ada.Debug.Put ("before");
 		Z.E2;
 		Ada.Debug.Put ("after");
+	end;
+	declare
+		task type T3 is
+			entry E1;
+		end T3;
+		task body T3 is
+		begin
+			Ada.Debug.Put ("begin T3");
+			accept E1;
+			Ada.Debug.Put ("end T3");
+		end T3;
+		type T3_Access is access T3;
+		procedure Free is new Ada.Unchecked_Deallocation (T3, T3_Access);
+		P : T3_Access := null;
+	begin
+		Ada.Debug.Put ("*** rendezvous with dynamic ***");
+		P := new T3;
+		Ada.Debug.Put ("before");
+		P.E1;
+		Ada.Debug.Put ("after");
+		Free (P);
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking6;

@@ -25,16 +25,18 @@ package body Ada.Directories is
    --  http://www.opensource.apple.com/source/gcc/gcc-5664/libiberty/rename.c
    function C_rename (
       zfrom : access constant C.char;
-      zto : access constant C.char)
+      zto : access constant C.char;
+      Overwrite : Boolean)
       return C.signed_int;
    pragma Convention (C, C_rename);
    function C_rename (
       zfrom : access constant C.char;
-      zto : access constant C.char)
+      zto : access constant C.char;
+      Overwrite : Boolean)
       return C.signed_int is
    begin
       if C.unistd.link (zfrom, zto) < 0 then
-         if C.errno.errno /= C.errno.EEXIST then
+         if C.errno.errno /= C.errno.EEXIST or else not Overwrite then
             return -1;
          end if;
          --  try to overwrite
@@ -159,7 +161,8 @@ package body Ada.Directories is
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String := "")
+      Form : String := "";
+      Overwrite : Boolean := True)
       renames Inside.Copy_File;
 
    procedure Create_Directory (New_Directory : String; Form : String := "") is
@@ -477,7 +480,11 @@ package body Ada.Directories is
       return Search.Handle /= null and then Search.Has_Next;
    end More_Entries;
 
-   procedure Rename (Old_Name, New_Name : String) is
+   procedure Rename (
+      Old_Name : String;
+      New_Name : String;
+      Overwrite : Boolean := True)
+   is
       Z_Old : constant String := Old_Name & Character'Val (0);
       C_Old : C.char_array (0 .. Z_Old'Length);
       for C_Old'Address use Z_Old'Address;
@@ -485,7 +492,7 @@ package body Ada.Directories is
       C_New : C.char_array (0 .. Z_New'Length);
       for C_New'Address use Z_New'Address;
    begin
-      if C_rename (C_Old (0)'Access, C_New (0)'Access) = -1 then
+      if C_rename (C_Old (0)'Access, C_New (0)'Access, Overwrite) = -1 then
          case C.errno.errno is
             when C.errno.ENOENT
                | C.errno.ENOTDIR

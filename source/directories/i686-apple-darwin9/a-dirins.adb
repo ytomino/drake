@@ -2,11 +2,13 @@ with C.copyfile;
 with C.errno;
 package body Ada.Directories.Inside is
    use type C.signed_int;
+   use type C.unsigned_int;
 
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String := "")
+      Form : String := "";
+      Overwrite : Boolean := True)
    is
       pragma Unreferenced (Form);
       Z_Source : String := Source_Name & Character'Val (0);
@@ -15,13 +17,16 @@ package body Ada.Directories.Inside is
       Z_Target : String := Target_Name & Character'Val (0);
       C_Target : C.char_array (0 .. Z_Target'Length);
       for C_Target'Address use Z_Target'Address;
+      Flag : C.unsigned_int := C.copyfile.COPYFILE_ALL;
    begin
+      if not Overwrite then
+         Flag := Flag or C.copyfile.COPYFILE_EXCL;
+      end if;
       if C.copyfile.copyfile (
          C_Source (0)'Access,
          C_Target (0)'Access,
          null,
-         C.copyfile.COPYFILE_ALL) < 0
-         --  add COPYFILE_EXCL to disable overwriting
+         Flag) < 0
       then
          case C.errno.errno is
             when C.errno.ENOENT

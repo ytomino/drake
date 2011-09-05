@@ -19,6 +19,7 @@
 --
 --  ***************************************************************************
 pragma Check_Policy (Finalize, Off);
+with Ada.Exceptions.Finally;
 with Ada.Text_IO.Inside; --  full view
 with Ada.Unchecked_Deallocation;
 package body Ada.Text_IO is
@@ -284,39 +285,34 @@ package body Ada.Text_IO is
    end Get_Line;
 
    function Get_Line (File : File_Type) return String is
-   begin
-      --  File_Type is tagged, therefore File is passed by reference.
-      Check_File_Mode (File, In_File);
-      declare
-         Line_Buffer : String_Access := new String (1 .. 256);
-         First : Positive := 1;
+      Line_Buffer : aliased String_Access :=
+         new String (1 .. 256);
+      Next : Positive := 1;
+      Last : Natural;
+      procedure Finally (X : not null access String_Access);
+      procedure Finally (X : not null access String_Access) is
       begin
-         loop
-            declare
-               Last : Natural;
-            begin
-               Get_Line (File, Line_Buffer (First .. Line_Buffer'Last), Last);
-               if Last < Line_Buffer'Last then
-                  return Result : String := Line_Buffer (1 .. Last) do -- copy
-                     pragma Unmodified (Result);
-                     pragma Unreferenced (Result);
-                     Free (Line_Buffer);
-                  end return;
-               else
-                  First := Last + 1;
-                  declare
-                     New_Buffer : constant String_Access := new String (
-                        1 ..
-                        Line_Buffer'Last * 2);
-                  begin
-                     New_Buffer (Line_Buffer'Range) := Line_Buffer.all;
-                     Free (Line_Buffer);
-                     Line_Buffer := New_Buffer;
-                  end;
-               end if;
-            end;
-         end loop;
-      end;
+         Free (X.all);
+      end Finally;
+      package Holder is new Exceptions.Finally.Scoped_Holder (
+         String_Access,
+         Finally);
+   begin
+      Holder.Assign (Line_Buffer'Access);
+      loop
+         Get_Line (File, Line_Buffer (Next .. Line_Buffer'Last), Last);
+         exit when Last < Line_Buffer'Last;
+         Next := Line_Buffer'Last + 1;
+         declare
+            New_Buffer : constant String_Access :=
+               new String (1 .. Line_Buffer'Last * 2);
+         begin
+            New_Buffer (Line_Buffer'Range) := Line_Buffer.all;
+            Free (Line_Buffer);
+            Line_Buffer := New_Buffer;
+         end;
+      end loop;
+      return Line_Buffer (1 .. Last);
    end Get_Line;
 
    function Get_Line return String is

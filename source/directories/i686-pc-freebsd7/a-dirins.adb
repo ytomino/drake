@@ -10,7 +10,8 @@ package body Ada.Directories.Inside is
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String := "")
+      Form : String := "";
+      Overwrite : Boolean := True)
    is
       pragma Unreferenced (Form);
       Z_Source : String := Source_Name & Character'Val (0);
@@ -21,6 +22,10 @@ package body Ada.Directories.Inside is
       C_Target : C.char_array (0 .. Z_Target'Length);
       for C_Target'Address use Z_Target'Address;
       Target : C.signed_int;
+      Flag : C.unsigned_int :=
+         C.sys.fcntl.O_WRONLY or
+         C.sys.fcntl.O_CREAT or
+         C.sys.fcntl.O_EXLOCK;
       Data : aliased C.sys.stat.struct_stat;
       Map : C.void_ptr;
       Written : C.sys.types.ssize_t;
@@ -37,13 +42,12 @@ package body Ada.Directories.Inside is
          Dummy := C.unistd.close (Source);
          raise Use_Error;
       end if;
+      if not Overwrite then
+         Flag := Flag or C.sys.fcntl.O_EXCL;
+      end if;
       Target := C.sys.fcntl.open (
          C_Target (0)'Access,
-         C.signed_int (C.unsigned_int'(
-            C.sys.fcntl.O_WRONLY or
-            C.sys.fcntl.O_CREAT or
-            C.sys.fcntl.O_EXLOCK)),
-            --  add O_EXCL to disable overwriting
+         C.signed_int (Flag),
          Data.st_mode);
       if Target < 0 then
          Dummy := C.unistd.close (Source);
