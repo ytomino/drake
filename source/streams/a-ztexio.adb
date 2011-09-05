@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Text_IO.Inside.Wide;
 with Ada.Unchecked_Deallocation;
 package body Ada.Wide_Wide_Text_IO is
@@ -98,37 +99,34 @@ package body Ada.Wide_Wide_Text_IO is
    end Get_Line;
 
    function Get_Line (File : File_Type) return Wide_Wide_String is
-      Line_Buffer : Wide_Wide_String_Access := new Wide_Wide_String (1 .. 256);
-      First : Positive := 1;
+      Line_Buffer : aliased Wide_Wide_String_Access :=
+         new Wide_Wide_String (1 .. 256);
+      Next : Positive := 1;
+      Last : Natural;
+      procedure Finally (X : not null access Wide_Wide_String_Access);
+      procedure Finally (X : not null access Wide_Wide_String_Access) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is new Exceptions.Finally.Scoped_Holder (
+         Wide_Wide_String_Access,
+         Finally);
    begin
+      Holder.Assign (Line_Buffer'Access);
       loop
+         Get_Line (File, Line_Buffer (Next .. Line_Buffer'Last), Last);
+         exit when Last < Line_Buffer'Last;
+         Next := Line_Buffer'Last + 1;
          declare
-            Last : Natural;
+            New_Buffer : constant Wide_Wide_String_Access :=
+               new Wide_Wide_String (1 .. Line_Buffer'Last * 2);
          begin
-            Get_Line (File, Line_Buffer (First .. Line_Buffer'Last), Last);
-            if Last < Line_Buffer'Last then
-               return Result : Wide_Wide_String := Line_Buffer (1 .. Last) do
-                  pragma Unmodified (Result);
-                  pragma Unreferenced (Result);
-                  Free (Line_Buffer);
-               end return;
-            else
-               First := Line_Buffer'Last + 1;
-               declare
-                  New_Buffer : constant Wide_Wide_String_Access :=
-                     new Wide_Wide_String (1 .. Line_Buffer'Last * 2);
-               begin
-                  New_Buffer (Line_Buffer'Range) := Line_Buffer.all;
-                  Free (Line_Buffer);
-                  Line_Buffer := New_Buffer;
-               end;
-            end if;
+            New_Buffer (Line_Buffer'Range) := Line_Buffer.all;
+            Free (Line_Buffer);
+            Line_Buffer := New_Buffer;
          end;
       end loop;
-   exception
-      when others =>
-         Free (Line_Buffer);
-         raise;
+      return Line_Buffer (1 .. Last);
    end Get_Line;
 
    function Get_Line return Wide_Wide_String is

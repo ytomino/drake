@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with C.sys.mman;
 with C.sys.types;
 package body Ada.Memory_Mapped_IO is
@@ -47,23 +48,34 @@ package body Ada.Memory_Mapped_IO is
    begin
       Streams.Stream_IO.Inside.Open (Object.File, Mode, Name, Form);
       declare
-         Map_Size : Streams.Stream_IO.Count := Size;
-      begin
-         if Map_Size = 0 then
-            Map_Size := Streams.Stream_IO.Inside.Size (Object.File);
-         end if;
-         Map (
-            Object,
-            Streams.Stream_IO.Inside.Handle (Object.File),
-            Offset,
-            Map_Size,
-            Writable => Mode /= In_File);
-      exception
-         when others =>
+         procedure Finally (X : not null access
+            Streams.Stream_IO.Inside.Non_Controlled_File_Type);
+         procedure Finally (X : not null access
+            Streams.Stream_IO.Inside.Non_Controlled_File_Type) is
+         begin
             Streams.Stream_IO.Inside.Close (
-               Object.File,
+               X.all,
                Raise_On_Error => False);
-            raise;
+         end Finally;
+         package Holder is new Exceptions.Finally.Scoped_Holder (
+            Streams.Stream_IO.Inside.Non_Controlled_File_Type,
+            Finally);
+      begin
+         Holder.Assign (Object.File'Access);
+         declare
+            Map_Size : Streams.Stream_IO.Count := Size;
+         begin
+            if Map_Size = 0 then
+               Map_Size := Streams.Stream_IO.Inside.Size (Object.File);
+            end if;
+            Map (
+               Object,
+               Streams.Stream_IO.Inside.Handle (Object.File),
+               Offset,
+               Map_Size,
+               Writable => Mode /= In_File);
+         end;
+         Holder.Clear;
       end;
    end Map;
 

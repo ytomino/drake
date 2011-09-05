@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Inside.Formatting is
@@ -5,6 +6,12 @@ package body Ada.Text_IO.Inside.Formatting is
 
    type String_Access is access String;
    procedure Free is new Unchecked_Deallocation (String, String_Access);
+
+   procedure Finally (X : not null access String_Access);
+   procedure Finally (X : not null access String_Access) is
+   begin
+      Free (X.all);
+   end Finally;
 
    procedure Skip_Spaces (File : File_Type);
    procedure Skip_Spaces (File : File_Type) is
@@ -91,68 +98,73 @@ package body Ada.Text_IO.Inside.Formatting is
       end loop;
    end Get_Num;
 
+   --  implementation
+
    function Get_Numeric_Literal (File : File_Type; Real : Boolean)
       return String is
    begin
       Skip_Spaces (File);
       declare
-         Buffer : String_Access := new String (1 .. 256);
-         Prev_Last : Natural;
+         Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
-         Mark : Character;
-         Item : Character;
-         End_Of_Line : Boolean;
+         package Holder is new Exceptions.Finally.Scoped_Holder (
+            String_Access,
+            Finally);
       begin
-         Look_Ahead (File, Item, End_Of_Line);
-         if Item = '+' or else Item = '-' then
-            Add (Buffer, Last, Item);
-            Get (File, Item);
+         Holder.Assign (Buffer'Access);
+         declare
+            Prev_Last : Natural;
+            Mark : Character;
+            Item : Character;
+            End_Of_Line : Boolean;
+         begin
             Look_Ahead (File, Item, End_Of_Line);
-         end if;
-         Prev_Last := Last;
-         Get_Num (File, Buffer, Last, Based => False);
-         if Last > Prev_Last then
-            Look_Ahead (File, Item, End_Of_Line);
-            if Item = '#' or else Item = ':' then
-               Mark := Item;
+            if Item = '+' or else Item = '-' then
                Add (Buffer, Last, Item);
                Get (File, Item);
-               Get_Num (File, Buffer, Last, Based => True);
                Look_Ahead (File, Item, End_Of_Line);
-               if Item = '.' and then Real then
+            end if;
+            Prev_Last := Last;
+            Get_Num (File, Buffer, Last, Based => False);
+            if Last > Prev_Last then
+               Look_Ahead (File, Item, End_Of_Line);
+               if Item = '#' or else Item = ':' then
+                  Mark := Item;
+                  Add (Buffer, Last, Item);
+                  Get (File, Item);
+                  Get_Num (File, Buffer, Last, Based => True);
+                  Look_Ahead (File, Item, End_Of_Line);
+                  if Item = '.' and then Real then
+                     Add (Buffer, Last, Item);
+                     Get (File, Item);
+                     Get_Num (File, Buffer, Last, Based => False);
+                     Look_Ahead (File, Item, End_Of_Line);
+                  end if;
+                  if Item = Mark then
+                     Add (Buffer, Last, Item);
+                     Get (File, Item);
+                     Look_Ahead (File, Item, End_Of_Line);
+                  end if;
+               elsif Item = '.' and then Real then
                   Add (Buffer, Last, Item);
                   Get (File, Item);
                   Get_Num (File, Buffer, Last, Based => False);
                   Look_Ahead (File, Item, End_Of_Line);
                end if;
-               if Item = Mark then
+               if Item = 'E' or else Item = 'e' then
                   Add (Buffer, Last, Item);
                   Get (File, Item);
                   Look_Ahead (File, Item, End_Of_Line);
+                  if Item = '+' or else Item = '-' then
+                     Add (Buffer, Last, Item);
+                     Get (File, Item);
+                     Look_Ahead (File, Item, End_Of_Line);
+                  end if;
+                  Get_Num (File, Buffer, Last, Based => False);
                end if;
-            elsif Item = '.' and then Real then
-               Add (Buffer, Last, Item);
-               Get (File, Item);
-               Get_Num (File, Buffer, Last, Based => False);
-               Look_Ahead (File, Item, End_Of_Line);
             end if;
-            if Item = 'E' or else Item = 'e' then
-               Add (Buffer, Last, Item);
-               Get (File, Item);
-               Look_Ahead (File, Item, End_Of_Line);
-               if Item = '+' or else Item = '-' then
-                  Add (Buffer, Last, Item);
-                  Get (File, Item);
-                  Look_Ahead (File, Item, End_Of_Line);
-               end if;
-               Get_Num (File, Buffer, Last, Based => False);
-            end if;
-         end if;
-         return Result : String := Buffer (1 .. Last) do
-            pragma Unmodified (Result);
-            pragma Unreferenced (Result);
-            Free (Buffer);
-         end return;
+         end;
+         return Buffer (1 .. Last);
       end;
    end Get_Numeric_Literal;
 
@@ -196,65 +208,71 @@ package body Ada.Text_IO.Inside.Formatting is
    begin
       Skip_Spaces (File);
       declare
-         Buffer : String_Access := new String (1 .. 256);
+         Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
-         Item : Character;
-         End_Of_Line : Boolean;
+         package Holder is new Exceptions.Finally.Scoped_Holder (
+            String_Access,
+            Finally);
       begin
-         Look_Ahead (File, Item, End_Of_Line);
-         if Item = ''' then
-            Add (Buffer, Last, Item);
-            Get (File, Item);
+         Holder.Assign (Buffer'Access);
+         declare
+            Item : Character;
+            End_Of_Line : Boolean;
+         begin
             Look_Ahead (File, Item, End_Of_Line);
-            if not End_Of_Line then
-               declare
-                  Length : Natural;
-                  Error : Boolean;
-               begin
-                  System.UTF_Conversions.UTF_8_Sequence (Item, Length, Error);
-                  Add (Buffer, Last, Item);
-                  Get (File, Item);
-                  for I in 2 .. Length loop
-                     Look_Ahead (File, Item, End_Of_Line);
-                     exit when End_Of_Line;
-                     Add (Buffer, Last, Item);
-                     Get (File, Item);
-                  end loop;
-               end;
-               Look_Ahead (File, Item, End_Of_Line);
-               if Item = ''' then
-                  Add (Buffer, Last, Item);
-                  Get (File, Item);
-               end if;
-            end if;
-         elsif Item in 'A' .. 'Z'
-            or else Item in 'a' .. 'z'
-            or else Item >= Character'Val (16#80#)
-         then
-            while not End_Of_Line
-               and then Item /= ' '
-               and then Item /= Character'Val (9)
-            loop
-               if Item = '_' then
-                  Add (Buffer, Last, Item);
-                  Get (File, Item);
-                  Look_Ahead (File, Item, End_Of_Line);
-               end if;
-               exit when not (
-                  Item in 'A' .. 'Z'
-                  or else Item in 'a' .. 'z'
-                  or else Item in '0' .. '9'
-                  or else Item >= Character'Val (16#80#));
+            if Item = ''' then
                Add (Buffer, Last, Item);
                Get (File, Item);
                Look_Ahead (File, Item, End_Of_Line);
-            end loop;
-         end if;
-         return Result : String := Buffer (1 .. Last) do
-            pragma Unmodified (Result);
-            pragma Unreferenced (Result);
-            Free (Buffer);
-         end return;
+               if not End_Of_Line then
+                  declare
+                     Length : Natural;
+                     Error : Boolean;
+                  begin
+                     System.UTF_Conversions.UTF_8_Sequence (
+                        Item,
+                        Length,
+                        Error);
+                     Add (Buffer, Last, Item);
+                     Get (File, Item);
+                     for I in 2 .. Length loop
+                        Look_Ahead (File, Item, End_Of_Line);
+                        exit when End_Of_Line;
+                        Add (Buffer, Last, Item);
+                        Get (File, Item);
+                     end loop;
+                  end;
+                  Look_Ahead (File, Item, End_Of_Line);
+                  if Item = ''' then
+                     Add (Buffer, Last, Item);
+                     Get (File, Item);
+                  end if;
+               end if;
+            elsif Item in 'A' .. 'Z'
+               or else Item in 'a' .. 'z'
+               or else Item >= Character'Val (16#80#)
+            then
+               while not End_Of_Line
+                  and then Item /= ' '
+                  and then Item /= Character'Val (9)
+               loop
+                  if Item = '_' then
+                     Add (Buffer, Last, Item);
+                     Get (File, Item);
+                     Look_Ahead (File, Item, End_Of_Line);
+                  end if;
+                  exit when not (
+                     Item in 'A' .. 'Z'
+                     or else Item in 'a' .. 'z'
+                     or else Item in '0' .. '9'
+                     or else Item >= Character'Val (16#80#));
+                  Add (Buffer, Last, Item);
+                  Get (File, Item);
+                  Look_Ahead (File, Item, End_Of_Line);
+               end loop;
+            end if;
+         end;
+         return Buffer (1 .. Last);
       end;
    end Get_Enum_Literal;
 

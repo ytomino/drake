@@ -290,7 +290,7 @@ package body System.Finalization_Implementation is
       Reverse_Adjust (First_Comp);
       Object.My_Address := Object'Address;
    exception
-      when others =>
+      when others => -- it could NOT handle except Ada exception...
          Finalize (Object);
          raise;
    end Adjust;

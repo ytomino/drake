@@ -46,7 +46,7 @@ private
    type Mapping is limited record
       Address : System.Address := System.Null_Address;
       Size : System.Storage_Elements.Storage_Count;
-      File : Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      File : aliased Streams.Stream_IO.Inside.Non_Controlled_File_Type;
    end record;
 
 end Ada.Memory_Mapped_IO;
