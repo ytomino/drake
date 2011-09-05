@@ -1,3 +1,4 @@
+c250002 C on GNAT, it can not use non-ASCII source filename
 c41306a U dead lock, rendezvous before return
 c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
