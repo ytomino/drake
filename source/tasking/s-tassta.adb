@@ -84,8 +84,9 @@ package body System.Tasking.Stages is
       Chain_Access : not null access Activation_Chain)
    is
       Has_Error : Boolean;
+      Aborted : Boolean; -- ignore abort
    begin
-      Inside.Activate (Chain_Access, Has_Error);
+      Inside.Activate (Chain_Access, Has_Error, Aborted);
       if Has_Error then
          raise Program_Error; -- C39008A, RM 3.11 (14)
       end if;
@@ -94,6 +95,7 @@ package body System.Tasking.Stages is
    procedure Free_Task (T : Task_Id) is
       Id : Inside.Task_Id := Task_Record_Conv.To_Pointer (T);
    begin
+      Inside.Set_Entry_Names_To_Deallocate (Id);
       Inside.Wait (Id);
    end Free_Task;
 
@@ -114,6 +116,13 @@ package body System.Tasking.Stages is
    begin
       Inside.Set_Entry_Name (Task_Record_Conv.To_Pointer (T), Pos, Val);
    end Set_Entry_Name;
+
+   procedure Abort_Tasks (Tasks : Task_List) is
+   begin
+      for I in Tasks'Range loop
+         Inside.Abort_Task (Task_Record_Conv.To_Pointer (Tasks (I)));
+      end loop;
+   end Abort_Tasks;
 
 begin
    Soft_Links.Current_Master := Current_Master'Access;

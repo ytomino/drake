@@ -45,8 +45,15 @@ package body System.Tasking.Rendezvous is
       Uninterpreted_Data : out Address)
    is
       The_Node : Inside.Queue_Node_Access;
+      Aborted : Boolean;
    begin
-      Inside.Accept_Call (The_Node, Address (E), Filter'Access);
+      Inside.Enable_Abort;
+      Inside.Accept_Call (
+         The_Node,
+         Address (E),
+         Filter'Access,
+         Aborted => Aborted);
+      Inside.Disable_Abort (Aborted); -- if aborted, raise here
       TLS_Current_Call := Downcast (The_Node);
       Uninterpreted_Data := Downcast (The_Node).Uninterpreted_Data;
    end Accept_Call;
@@ -56,6 +63,14 @@ package body System.Tasking.Rendezvous is
       Inside.Set (TLS_Current_Call.Waiting);
       TLS_Current_Call := null;
    end Complete_Rendezvous;
+
+   procedure Accept_Trivial (E : Task_Entry_Index) is
+      Dummy : Address;
+      pragma Unreferenced (Dummy);
+   begin
+      Accept_Call (E, Dummy);
+      Complete_Rendezvous;
+   end Accept_Trivial;
 
    procedure Exceptional_Complete_Rendezvous (
       Ex : Ada.Exceptions.Exception_Id)
@@ -74,32 +89,37 @@ package body System.Tasking.Rendezvous is
    procedure Call_Simple (
       Acceptor : Task_Id;
       E : Task_Entry_Index;
-      Uninterpreted_Data : Address)
-   is
-      The_Node : aliased Node := (
-         Super => <>,
-         E => E,
-         Uninterpreted_Data => Uninterpreted_Data,
-         Waiting => <>, -- default initializer
-         X => <>); -- default initializer
+      Uninterpreted_Data : Address) is
    begin
-      Inside.Initialize (The_Node.Waiting);
       if not Inside.Activated (Task_Record_Conv.To_Pointer (Acceptor)) then
          --  in extended return statement
          Inside.Activate (
             Task_Record_Conv.To_Pointer (Acceptor),
             Final => False); -- for Move_Activation_Chain
       end if;
-      Inside.Call (
-         Task_Record_Conv.To_Pointer (Acceptor),
-         The_Node.Super'Unchecked_Access);
-      Inside.Wait (The_Node.Waiting);
-      Inside.Finalize (The_Node.Waiting);
-      if Ada.Exceptions.Exception_Identity (The_Node.X)
-         /= Ada.Exceptions.Null_Id
-      then
-         Ada.Exceptions.Reraise_Occurrence (The_Node.X);
-      end if;
+      declare
+         The_Node : aliased Node := (
+            Super => <>,
+            E => E,
+            Uninterpreted_Data => Uninterpreted_Data,
+            Waiting => <>, -- default initializer
+            X => <>); -- default initializer
+         Aborted : Boolean;
+      begin
+         Inside.Enable_Abort;
+         Inside.Initialize (The_Node.Waiting);
+         Inside.Call (
+            Task_Record_Conv.To_Pointer (Acceptor),
+            The_Node.Super'Unchecked_Access);
+         Inside.Wait (The_Node.Waiting, Aborted => Aborted);
+         Inside.Finalize (The_Node.Waiting);
+         Inside.Disable_Abort (Aborted); -- if aborted, raise here
+         if Ada.Exceptions.Exception_Identity (The_Node.X)
+            /= Ada.Exceptions.Null_Id
+         then
+            Ada.Exceptions.Reraise_Occurrence (The_Node.X);
+         end if;
+      end;
    end Call_Simple;
 
 end System.Tasking.Rendezvous;

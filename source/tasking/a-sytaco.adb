@@ -17,8 +17,11 @@ package body Ada.Synchronous_Task_Control is
    end Current_State;
 
    procedure Suspend_Until_True (S : in out Suspension_Object) is
+      Aborted : Boolean;
    begin
-      System.Tasking.Inside.Wait (S.Object);
+      System.Tasking.Inside.Enable_Abort;
+      System.Tasking.Inside.Wait (S.Object, Aborted => Aborted);
+      System.Tasking.Inside.Disable_Abort (Aborted);
    end Suspend_Until_True;
 
    overriding procedure Initialize (Object : in out Suspension_Object) is

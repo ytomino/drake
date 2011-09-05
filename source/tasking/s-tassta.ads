@@ -47,6 +47,9 @@ package System.Tasking.Stages is
       Pos : Task_Entry_Index;
       Val : Entry_Name_Access);
 
+   --  required for abort statement by compiler (s-tassta.ads)
+   procedure Abort_Tasks (Tasks : Task_List);
+
    --  task type be expanded below:
    --
    --  _chain : aliased Activation_Chain;
