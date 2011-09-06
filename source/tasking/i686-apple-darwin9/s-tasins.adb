@@ -181,7 +181,7 @@ package body System.Tasking.Inside is
       Attribute_Vectors.Clear (Item.Attributes, Item.Attributes_Length);
       --  free task record
       if Item.Rendezvous /= null then
-         Finalize (Item.Rendezvous.Calling, Free_Node => null);
+         Finalize (Item.Rendezvous.Calling);
          if Item.Rendezvous.To_Deallocate_Names then
             for I in Item.Rendezvous.Names'Range loop
                Unchecked_Free (Item.Rendezvous.Names (I));
@@ -569,6 +569,7 @@ package body System.Tasking.Inside is
       Result : C.void_ptr;
       Local : aliased Soft_Links.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
+      No_Detached : Boolean;
    begin
       TLS_Current_Task_Id := T;
       --  block SIGTERM
@@ -587,11 +588,14 @@ package body System.Tasking.Inside is
             Report (T, E);
       end;
       --  deactivate
-      if sync_bool_compare_and_swap (
+      No_Detached := sync_bool_compare_and_swap (
          T.Termination_State'Access,
          TS_Active,
-         TS_Terminated)
-      then
+         TS_Terminated);
+      --  cancel calling queue
+      Cancel (T.Rendezvous.Calling, Cancel_Node => Cancel_Call_Hook);
+      --  free
+      if No_Detached then
          Result := Rec;
       else
          --  detached
@@ -1372,43 +1376,58 @@ package body System.Tasking.Inside is
 
    --  queue
 
-   procedure Finalize (
-      Object : in out Queue;
-      Free_Node : access procedure (X : in out Queue_Node_Access)) is
+   procedure Finalize (Object : in out Queue) is
    begin
       Finalize (Object.Mutex);
       Finalize (Object.Condition_Variable);
-      if Free_Node /= null then
+   end Finalize;
+
+   procedure Cancel (
+      Object : in out Queue;
+      Cancel_Node : access procedure (X : in out Queue_Node_Access)) is
+   begin
+      Enter (Object.Mutex);
+      Object.Canceled := True;
+      if Cancel_Node /= null then
          while Object.Head /= null loop
             declare
                Next : constant Queue_Node_Access := Object.Head.Next;
             begin
-               Free_Node (Object.Head);
+               Cancel_Node (Object.Head);
                Object.Head := Next;
             end;
          end loop;
       end if;
-   end Finalize;
+      Leave (Object.Mutex);
+   end Cancel;
 
    procedure Add (
       Object : in out Queue;
-      Item : not null Queue_Node_Access) is
+      Item : not null Queue_Node_Access)
+   is
+      Error : Boolean;
    begin
       Enter (Object.Mutex);
-      if Object.Head = null then
-         Object.Head := Item;
-      else
-         Object.Tail.Next := Item;
-      end if;
-      Object.Tail := Item;
-      Item.Next := null;
-      if Object.Waiting
-         and then (Object.Filter = null
-            or else Object.Filter (Item, Object.Params))
-      then
-         Notify_All (Object.Condition_Variable);
+      Error := Object.Canceled;
+      if not Error then
+         if Object.Head = null then
+            Object.Head := Item;
+         else
+            Object.Tail.Next := Item;
+         end if;
+         Object.Tail := Item;
+         Item.Next := null;
+         if Object.Waiting
+            and then (Object.Filter = null
+               or else Object.Filter (Item, Object.Params))
+         then
+            Notify_All (Object.Condition_Variable);
+         end if;
       end if;
       Leave (Object.Mutex);
+      if Error then
+         raise Tasking_Error;
+      end if;
    end Add;
 
    procedure Take (
