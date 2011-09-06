@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 private with Ada.Calendar.Inside;
 package Ada.Calendar.Delays is
 

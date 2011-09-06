@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 with C.sys.time;
 with C.sys.types;
 package Ada.Calendar.Inside is

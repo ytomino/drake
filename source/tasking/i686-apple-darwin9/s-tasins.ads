@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 private with C.pthread;
 package System.Tasking.Inside is
    pragma Preelaborate;
