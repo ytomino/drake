@@ -8,7 +8,7 @@ package Ada.Command_Line is
 
    function Command_Name return String;
 
-   type Exit_Status is new Integer; --  implementation-defined integer type
+   type Exit_Status is new Integer; -- implementation-defined integer type
 
    Success : constant Exit_Status;
    Failure : constant Exit_Status;
