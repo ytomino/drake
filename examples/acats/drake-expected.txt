@@ -267,7 +267,6 @@ ca13001 C unimplemented tasking features (protected)
 ca14028 F on GNAT, it can not use specialized body with generic package spec
 ca5004a C unimplemented tasking features (select)
 cb10002 N enough memory exists
-cb1010a A it can not handle stack overflow in task (it shold be fixed)
 cb20001 C unimplemented tasking features (TASK'Callable)
 cb20004 C unimplemented tasking features (protected)
 cb20005 C unimplemented tasking features
