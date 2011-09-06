@@ -25,6 +25,7 @@
 #include <termios.h> /* terminal control */
 #include <stdlib.h> /* memory op, abort */
 #include <pthread.h> /* tasking */
+#include <sys/syscall.h>
 #endif
 #include <string.h> /* string op */
 #if defined(__APPLE__)
@@ -39,6 +40,7 @@
 #pragma instance pthread_once_t "PTHREAD_ONCE_INIT"
 #pragma for Ada overload int open(const char *, int, mode_t)
 #pragma for Ada overload int fcntl(int, int, int)
+#pragma for Ada overload int syscall(int, void *, unsigned int)
 #endif
 #if defined(__APPLE__)
 #pragma for Ada "errno.h" include "sys/errno.h"

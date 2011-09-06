@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with Ada.Exceptions;
 package System.Tasking.Rendezvous is
 
@@ -11,7 +11,7 @@ package System.Tasking.Rendezvous is
    --  required optional for accept statement by compiler (s-tasren.ads)
    procedure Complete_Rendezvous;
 
-   --  required optional for simple accept statement by compiler (s-tasren.ads)
+   --  required for simple accept statement by compiler (s-tasren.ads)
    procedure Accept_Trivial (E : Task_Entry_Index);
 
    --  required for accept statement by compiler (s-tasren.ads)

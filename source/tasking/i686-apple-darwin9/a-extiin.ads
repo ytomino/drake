@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Execution_Time.Inside is
 
    function Clock return CPU_Time;

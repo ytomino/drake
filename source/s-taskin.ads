@@ -44,8 +44,4 @@ package System.Tasking is
    --  equivalent to String_Access (s-taskin.ads)
    type Entry_Name_Access is access all String;
 
-   --  equivalent to Timed_Delay (s-soflin.ads)
-   Delay_Hook : access procedure (D : Duration) := null;
-   pragma Export (Ada, Delay_Hook, "__drake_ref_delay_hook");
-
 end System.Tasking;

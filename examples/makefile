@@ -35,7 +35,9 @@ CFLAGS=-gnatf -gnatwIj
 BFLAGS=
 endif
 
-LFLAGS=-lm -lpthread
+ifneq ($(findstring freebsd,$(TARGET)),)
+LFLAGS=-lm -lpthread -lgcc_eh
+endif
 
 .PHONY: all clean
 

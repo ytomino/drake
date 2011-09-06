@@ -1,4 +1,5 @@
 with Ada.Calendar.Inside;
+with System.Native_Time;
 package body Ada.Calendar is
    --  please use -gnato for overflow checking
    RM_9_6_26_Overflow_Check : constant := Boolean'Pos (
@@ -8,8 +9,10 @@ package body Ada.Calendar is
    --  [gcc-4.5/4.6] condition is always False/True
    pragma Suppress (All_Checks);
 
-   function Clock return Time
-      renames Inside.Clock;
+   function Clock return Time is
+   begin
+      return Time (System.Native_Time.To_Time (System.Native_Time.Clock));
+   end Clock;
 
    function Year (Date : Time) return Year_Number is
       Year : Year_Number;

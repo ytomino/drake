@@ -1,7 +1,7 @@
-with Ada.Calendar.Inside;
 with Ada.Directories.Inside;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System.Native_Time;
 with System.Storage_Elements;
 with C.errno;
 with C.fnmatch;
@@ -462,17 +462,21 @@ package body Ada.Directories is
    end Kind;
 
    function Modification_Time (Name : String) return Calendar.Time is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Attributes : C.sys.stat.struct_stat;
    begin
       Get_Attributes (Name, Attributes);
-      return Calendar.Inside.To_Time (Attributes.st_mtimespec);
+      return Cast (System.Native_Time.To_Time (Attributes.st_mtimespec));
    end Modification_Time;
 
    function Modification_Time (Directory_Entry : Directory_Entry_Type)
-      return Calendar.Time is
+      return Calendar.Time
+   is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
       Check_Assigned (Directory_Entry);
-      return Calendar.Inside.To_Time (Directory_Entry.State_Data.st_mtimespec);
+      return Cast (
+         System.Native_Time.To_Time (Directory_Entry.State_Data.st_mtimespec));
    end Modification_Time;
 
    function More_Entries (Search : Search_Type) return Boolean is

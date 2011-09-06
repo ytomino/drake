@@ -94,5 +94,28 @@ begin
 		Ada.Debug.Put ("after");
 		Free (P);
 	end;
+	declare
+		Flag : Boolean := False;
+		task T4 is
+			entry E1;
+		end T4;
+		task body T4 is
+		begin
+			Ada.Debug.Put ("in T4");
+			if Flag then
+				accept E1;
+			end if;
+			delay 1.0;
+		end T4;
+	begin
+		Ada.Debug.Put ("*** ignored rendezvous ***");
+		Ada.Debug.Put ("before");
+		delay 1.0;
+		T4.E1;
+		Ada.Debug.Put ("after");
+		raise Program_Error;
+	exception
+		when Tasking_Error => null;
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking6;

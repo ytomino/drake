@@ -6,11 +6,14 @@ with C.signal;
 with C.stdlib;
 with C.string;
 with C.unistd;
-with C.sys.signal;
+with C.sys.syscall;
 with C.sys.types;
 package body System.Termination is
    pragma Suppress (All_Checks);
    use type C.signed_int;
+   use type C.size_t;
+   use type C.unsigned_int;
+   use type C.unsigned_long;
 
    procedure Error_Put (S : String) is
       Dummy : C.sys.types.ssize_t;
@@ -64,6 +67,17 @@ package body System.Termination is
          when C.sys.signal.SIGFPE =>
             Eexception_Id := Unwind.Standard.Constraint_Error'Access;
          when C.sys.signal.SIGBUS | C.sys.signal.SIGSEGV =>
+            declare
+               UC_RESET_ALT_STACK : constant := 16#80000000#; -- ???
+               Dummy : C.signed_int;
+               pragma Unreferenced (Dummy);
+            begin
+               --  emulate normal return
+               Dummy := C.unistd.syscall (
+                  C.sys.syscall.SYS_sigreturn,
+                  C.void_ptr (Null_Address),
+                  UC_RESET_ALT_STACK);
+            end;
             Eexception_Id := Unwind.Standard.Storage_Error'Access;
          when others =>
             Eexception_Id := Unwind.Standard.Program_Error'Access;
@@ -73,44 +87,48 @@ package body System.Termination is
          Message => Message (1 .. Integer (C.string.strlen (C_Message))));
    end sigaction_Handler;
 
-   type Signal_Stack_Buffer is
-      array (1 .. C.sys.signal.MINSIGSTKSZ) of aliased C.char;
-   for Signal_Stack_Buffer'Size use
-      C.sys.signal.MINSIGSTKSZ * Standard'Storage_Unit;
-   pragma Suppress_Initialization (Signal_Stack_Buffer);
-   Signal_Stack : aliased Signal_Stack_Buffer;
+   Signal_Stack : aliased Signal_Stack_Type;
 
    procedure Install_Exception_Handler (SEH : Address) is
       pragma Unreferenced (SEH);
-      function Cast is
-         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); --  OSX
-      function Cast is
-         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); --  FreeBSD
-      pragma Warnings (Off, Cast);
-      stack : aliased C.sys.signal.stack_t := (
-         ss_sp => Cast (Signal_Stack (Signal_Stack'First)'Access),
-         ss_size => C.sys.signal.MINSIGSTKSZ,
-         ss_flags => 0);
       act : aliased C.sys.signal.struct_sigaction :=
          (others => <>); --  uninitialized
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
    begin
       act.sigaction_u.sa_sigaction := sigaction_Handler'Access;
-      act.sa_flags := C.sys.signal.SA_NODEFER +
-         C.sys.signal.SA_RESTART +
-         C.sys.signal.SA_SIGINFO;
+      act.sa_flags := C.signed_int (C.unsigned_int'(
+         C.sys.signal.SA_NODEFER
+         or C.sys.signal.SA_RESTART
+         or C.sys.signal.SA_SIGINFO));
       Dummy := C.signal.sigemptyset (act.sa_mask'Access);
       --  illegal instruction
       Dummy := C.signal.sigaction (C.sys.signal.SIGILL, act'Access, null);
       --  floating-point exception
       Dummy := C.signal.sigaction (C.sys.signal.SIGFPE, act'Access, null);
       --  bus error
-      Dummy := C.signal.sigaltstack (stack'Access, null);
-      act.sa_flags := act.sa_flags + C.sys.signal.SA_ONSTACK;
+      Set_Signal_Stack (Signal_Stack'Access);
+      act.sa_flags := C.signed_int (C.unsigned_int (act.sa_flags)
+         or C.sys.signal.SA_ONSTACK);
       Dummy := C.signal.sigaction (C.sys.signal.SIGBUS, act'Access, null);
       --  segmentation violation
       Dummy := C.signal.sigaction (C.sys.signal.SIGSEGV, act'Access, null);
    end Install_Exception_Handler;
+
+   procedure Set_Signal_Stack (S : access Signal_Stack_Type) is
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); --  OSX
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); --  FreeBSD
+      pragma Warnings (Off, Cast);
+      stack : aliased C.sys.signal.stack_t := (
+         ss_sp => Cast (S (S'First)'Access),
+         ss_size => Signal_Stack_Type'Size / Standard'Storage_Unit,
+         ss_flags => 0);
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      Dummy := C.signal.sigaltstack (stack'Access, null);
+   end Set_Signal_Stack;
 
 end System.Termination;

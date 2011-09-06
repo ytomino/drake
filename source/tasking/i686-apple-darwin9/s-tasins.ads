@@ -1,5 +1,7 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
+with System.Native_Time;
+private with System.Termination;
 private with C.pthread;
 package System.Tasking.Inside is
    pragma Preelaborate;
@@ -78,6 +80,8 @@ package System.Tasking.Inside is
       Filter : Queue_Filter;
       Aborted : out Boolean);
 
+   Cancel_Call_Hook : access procedure (X : in out Queue_Node_Access) := null;
+
    --  thread local storage
    --  pragma Thread_Local_Storage is valid
 
@@ -134,7 +138,7 @@ package System.Tasking.Inside is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
-      Timeout : Duration;
+      Timeout : Native_Time.Native_Time;
       Notified : out Boolean;
       Aborted : out Boolean);
 
@@ -148,9 +152,10 @@ package System.Tasking.Inside is
 --    Params : Address)
 --    return Boolean;
    procedure Initialize (Object : in out Queue) is null;
-   procedure Finalize (
+   procedure Finalize (Object : in out Queue);
+   procedure Cancel (
       Object : in out Queue;
-      Free_Node : access procedure (X : in out Queue_Node_Access));
+      Cancel_Node : access procedure (X : in out Queue_Node_Access));
    procedure Add (
       Object : in out Queue;
       Item : not null Queue_Node_Access);
@@ -288,6 +293,8 @@ private
             Next_At_Same_Level : Task_Id;
             --  rendezvous
             Rendezvous : Rendezvous_Access;
+            --  signal alt stack
+            Signal_Stack : aliased Termination.Signal_Stack_Type;
       end case;
    end record;
    pragma Suppress_Initialization (Task_Record);
@@ -328,6 +335,7 @@ private
       Waiting : Boolean := False;
       Params : Address;
       Filter : Queue_Filter := null;
+      Canceled : Boolean := False;
    end record;
 
    type Queue_Node is limited record

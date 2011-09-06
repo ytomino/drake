@@ -9,13 +9,10 @@ with System.Shared_Locking;
 with System.Soft_Links;
 with System.Storage_Elements;
 with System.Tasking.Yield;
-with System.Termination;
 with System.Unwind;
 with C.errno;
 with C.signal;
 with C.sys.signal;
-with C.sys.time;
-with C.sys.types;
 package body System.Tasking.Inside is
    pragma Suppress (All_Checks);
    use type C.signed_int;
@@ -23,11 +20,6 @@ package body System.Tasking.Inside is
    use type C.void_ptr;
 
    type Word is mod 2 ** Standard'Word_Size;
-
-   type Time_Rep is range
-      -(2 ** (Duration'Size - 1)) ..
-      +(2 ** (Duration'Size - 1)) - 1;
-   for Time_Rep'Size use Duration'Size;
 
    function sync_bool_compare_and_swap (
       A1 : not null access Termination_State;
@@ -188,7 +180,7 @@ package body System.Tasking.Inside is
       Attribute_Vectors.Clear (Item.Attributes, Item.Attributes_Length);
       --  free task record
       if Item.Rendezvous /= null then
-         Finalize (Item.Rendezvous.Calling, Free_Node => null);
+         Finalize (Item.Rendezvous.Calling);
          if Item.Rendezvous.To_Deallocate_Names then
             for I in Item.Rendezvous.Names'Range loop
                Unchecked_Free (Item.Rendezvous.Names (I));
@@ -288,6 +280,15 @@ package body System.Tasking.Inside is
 
    --  delay statement
 
+   function "+" (Left : Native_Time.Native_Time; Right : Duration)
+      return Native_Time.Native_Time;
+   function "+" (Left : Native_Time.Native_Time; Right : Duration)
+      return Native_Time.Native_Time is
+   begin
+      return Native_Time.To_Native_Time (
+         Native_Time.To_Time (Left) + Right);
+   end "+";
+
    procedure Delay_For (D : Duration);
    procedure Delay_For (D : Duration) is
       M : Mutex;
@@ -301,13 +302,34 @@ package body System.Tasking.Inside is
       Wait (
          C,
          M,
-         Timeout => Duration'Max (D, 0.0),
+         Timeout => Native_Time.Clock + Duration'Max (D, 0.0),
          Notified => Notified,
          Aborted => Aborted);
       Leave (M);
       Finalize (M);
       Disable_Abort (Aborted);
    end Delay_For;
+
+   procedure Delay_Until (T : Native_Time.Native_Time);
+   procedure Delay_Until (T : Native_Time.Native_Time) is
+      M : Mutex;
+      C : Condition_Variable;
+      Notified : Boolean;
+      Aborted : Boolean;
+   begin
+      Enable_Abort;
+      Initialize (M);
+      Enter (M);
+      Wait (
+         C,
+         M,
+         Timeout => T,
+         Notified => Notified,
+         Aborted => Aborted);
+      Leave (M);
+      Finalize (M);
+      Disable_Abort (Aborted);
+   end Delay_Until;
 
    --  attribute indexes
 
@@ -441,7 +463,8 @@ package body System.Tasking.Inside is
       --  once
       Once.Yield_Hook := Once.Nop'Access;
       --  delay statement
-      Delay_Hook := null;
+      Native_Time.Delay_For_Hook := Native_Time.Simple_Delay_For'Access;
+      Native_Time.Delay_Until_Hook := Native_Time.Simple_Delay_Until'Access;
       --  attribute indexes
       Finalize (Attribute_Indexes_Lock);
       Attribute_Index_Sets.Clear (Attribute_Indexes, Attribute_Indexes_Length);
@@ -469,7 +492,8 @@ package body System.Tasking.Inside is
          --  once
          Once.Yield_Hook := Yield'Access;
          --  delay statement
-         Delay_Hook := Delay_For'Access;
+         Native_Time.Delay_For_Hook := Delay_For'Access;
+         Native_Time.Delay_Until_Hook := Delay_Until'Access;
          --  attribute indexes
          Attribute_Indexes_Lock.Handle := C.pthread.PTHREAD_MUTEX_INITIALIZER;
          --  secondary stack and exception occurrence
@@ -544,6 +568,7 @@ package body System.Tasking.Inside is
       Result : C.void_ptr;
       Local : aliased Soft_Links.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
+      No_Detached : Boolean;
    begin
       TLS_Current_Task_Id := T;
       --  block SIGTERM
@@ -552,6 +577,8 @@ package body System.Tasking.Inside is
       Local.Secondary_Stack := Null_Address;
       Local.Current_Exception.Private_Data := Null_Address;
       TLS_Stack := Local'Unchecked_Access;
+      --  setup signal stack
+      Termination.Set_Signal_Stack (T.Signal_Stack'Access);
       --  execute
       begin
          T.Process (T.Params);
@@ -562,11 +589,14 @@ package body System.Tasking.Inside is
             Report (T, E);
       end;
       --  deactivate
-      if sync_bool_compare_and_swap (
+      No_Detached := sync_bool_compare_and_swap (
          T.Termination_State'Access,
          TS_Active,
-         TS_Terminated)
-      then
+         TS_Terminated);
+      --  cancel calling queue
+      Cancel (T.Rendezvous.Calling, Cancel_Node => Cancel_Call_Hook);
+      --  free
+      if No_Detached then
          Result := Rec;
       else
          --  detached
@@ -663,7 +693,8 @@ package body System.Tasking.Inside is
          Master_Of_Parent => Master,
          Previous_At_Same_Level => null,
          Next_At_Same_Level => null,
-         Rendezvous => Rendezvous);
+         Rendezvous => Rendezvous,
+         Signal_Stack => <>); -- uninitialized
       --  apeend to activation chain
       if Chain_Data /= null then
          T.Next_Of_Activation_Chain := Chain_Data.List;
@@ -1332,30 +1363,14 @@ package body System.Tasking.Inside is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
-      Timeout : Duration;
+      Timeout : Native_Time.Native_Time;
       Notified : out Boolean;
-      Aborted : out Boolean)
-   is
-      function Cast is new Ada.Unchecked_Conversion (Duration, Time_Rep);
-      Now : aliased C.sys.time.struct_timeval;
-      abstime : aliased C.sys.time.struct_timespec;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      Aborted : out Boolean) is
    begin
-      Dummy := C.sys.time.gettimeofday (Now'Access, null);
-      abstime.tv_sec := Now.tv_sec
-         + C.sys.types.time_t (Cast (Timeout) / 1000_000_000);
-      abstime.tv_nsec := C.signed_long (Now.tv_usec) * 1000
-         + C.signed_long (Cast (Timeout) mod 1000_000_000);
-      if abstime.tv_nsec >= 1000_000_000 then
-         abstime.tv_sec := abstime.tv_sec + 1;
-         abstime.tv_nsec := abstime.tv_nsec - 1000_000_000;
-      end if;
-      --  wait
       case C.pthread.pthread_cond_timedwait (
          Object.Handle'Access,
          Mutex.Handle'Access,
-         abstime'Access)
+         Timeout'Unrestricted_Access)
       is
          when 0 =>
             Notified := True;
@@ -1369,43 +1384,58 @@ package body System.Tasking.Inside is
 
    --  queue
 
-   procedure Finalize (
-      Object : in out Queue;
-      Free_Node : access procedure (X : in out Queue_Node_Access)) is
+   procedure Finalize (Object : in out Queue) is
    begin
       Finalize (Object.Mutex);
       Finalize (Object.Condition_Variable);
-      if Free_Node /= null then
+   end Finalize;
+
+   procedure Cancel (
+      Object : in out Queue;
+      Cancel_Node : access procedure (X : in out Queue_Node_Access)) is
+   begin
+      Enter (Object.Mutex);
+      Object.Canceled := True;
+      if Cancel_Node /= null then
          while Object.Head /= null loop
             declare
                Next : constant Queue_Node_Access := Object.Head.Next;
             begin
-               Free_Node (Object.Head);
+               Cancel_Node (Object.Head);
                Object.Head := Next;
             end;
          end loop;
       end if;
-   end Finalize;
+      Leave (Object.Mutex);
+   end Cancel;
 
    procedure Add (
       Object : in out Queue;
-      Item : not null Queue_Node_Access) is
+      Item : not null Queue_Node_Access)
+   is
+      Error : Boolean;
    begin
       Enter (Object.Mutex);
-      if Object.Head = null then
-         Object.Head := Item;
-      else
-         Object.Tail.Next := Item;
-      end if;
-      Object.Tail := Item;
-      Item.Next := null;
-      if Object.Waiting
-         and then (Object.Filter = null
-            or else Object.Filter (Item, Object.Params))
-      then
-         Notify_All (Object.Condition_Variable);
+      Error := Object.Canceled;
+      if not Error then
+         if Object.Head = null then
+            Object.Head := Item;
+         else
+            Object.Tail.Next := Item;
+         end if;
+         Object.Tail := Item;
+         Item.Next := null;
+         if Object.Waiting
+            and then (Object.Filter = null
+               or else Object.Filter (Item, Object.Params))
+         then
+            Notify_All (Object.Condition_Variable);
+         end if;
       end if;
       Leave (Object.Mutex);
+      if Error then
+         raise Tasking_Error;
+      end if;
    end Add;
 
    procedure Take (
@@ -1522,7 +1552,7 @@ package body System.Tasking.Inside is
          Wait (
             Object.Condition_Variable,
             Object.Mutex,
-            Timeout,
+            Native_Time.Clock + Timeout,
             Value,
             Aborted => Aborted);
       end if;

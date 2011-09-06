@@ -1,16 +1,12 @@
-with Ada.Calendar;
+with System.Native_Time;
 package body Ada.Real_Time is
    pragma Suppress (All_Checks);
-   use type Calendar.Time;
 
    --  implementation
 
    function Clock return Time is
-      function Cast is new Unchecked_Conversion (
-         Ada.Calendar.Time,
-         Time);
    begin
-      return Cast (Calendar.Clock);
+      return Time (System.Native_Time.To_Time (System.Native_Time.Clock));
    end Clock;
 
    function Microseconds (US : Integer) return Time_Span is

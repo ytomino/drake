@@ -35,6 +35,19 @@ package body System.Tasking.Rendezvous is
       return Downcast (The_Node).E = Task_Entry_Index (Params);
    end Filter;
 
+   procedure Cancel_Call (X : in out Inside.Queue_Node_Access);
+   procedure Cancel_Call (X : in out Inside.Queue_Node_Access) is
+      Call : constant not null Node_Access := Downcast (X);
+   begin
+      begin
+         raise Tasking_Error;
+      exception
+         when E : Tasking_Error =>
+            Ada.Exceptions.Save_Occurrence (Call.X, E);
+      end;
+      Inside.Set (Call.Waiting);
+   end Cancel_Call;
+
    TLS_Current_Call : Node_Access := null;
    pragma Thread_Local_Storage (TLS_Current_Call);
 
@@ -122,4 +135,6 @@ package body System.Tasking.Rendezvous is
       end;
    end Call_Simple;
 
+begin
+   Inside.Cancel_Call_Hook := Cancel_Call'Access;
 end System.Tasking.Rendezvous;
