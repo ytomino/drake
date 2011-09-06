@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 pragma Compiler_Unit;
---  implementation package
+--  implementation unit
+private with C.sys.signal;
 package System.Termination is
    pragma Preelaborate;
 
@@ -21,7 +22,21 @@ package System.Termination is
    pragma Export (Ada, Install_Exception_Handler,
       "__drake_install_exception_handler");
 
+   --  signal alt stack
+   type Signal_Stack_Type is private;
+   procedure Set_Signal_Stack (S : access Signal_Stack_Type);
+
 private
+
+   Signal_Stack_Storage_Count : constant :=
+      C.size_t'Max (C.sys.signal.MINSIGSTKSZ, 32768);
+
+   type Signal_Stack_Type is array (
+     1 ..
+     Signal_Stack_Storage_Count) of aliased C.char;
+   pragma Suppress_Initialization (Signal_Stack_Type);
+   for Signal_Stack_Type'Size use
+      Signal_Stack_Storage_Count * Standard'Storage_Unit;
 
    --  for weak linking,
    --  this symbol will be linked other symbols are used

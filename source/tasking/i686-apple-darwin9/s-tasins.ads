@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 with System.Native_Time;
+private with System.Termination;
 private with C.pthread;
 package System.Tasking.Inside is
    pragma Preelaborate;
@@ -292,6 +293,8 @@ private
             Next_At_Same_Level : Task_Id;
             --  rendezvous
             Rendezvous : Rendezvous_Access;
+            --  signal alt stack
+            Signal_Stack : aliased Termination.Signal_Stack_Type;
       end case;
    end record;
    pragma Suppress_Initialization (Task_Record);

@@ -9,7 +9,6 @@ with System.Shared_Locking;
 with System.Soft_Links;
 with System.Storage_Elements;
 with System.Tasking.Yield;
-with System.Termination;
 with System.Unwind;
 with C.errno;
 with C.signal;
@@ -578,6 +577,8 @@ package body System.Tasking.Inside is
       Local.Secondary_Stack := Null_Address;
       Local.Current_Exception.Private_Data := Null_Address;
       TLS_Stack := Local'Unchecked_Access;
+      --  setup signal stack
+      Termination.Set_Signal_Stack (T.Signal_Stack'Access);
       --  execute
       begin
          T.Process (T.Params);
@@ -692,7 +693,8 @@ package body System.Tasking.Inside is
          Master_Of_Parent => Master,
          Previous_At_Same_Level => null,
          Next_At_Same_Level => null,
-         Rendezvous => Rendezvous);
+         Rendezvous => Rendezvous,
+         Signal_Stack => <>); -- uninitialized
       --  apeend to activation chain
       if Chain_Data /= null then
          T.Next_Of_Activation_Chain := Chain_Data.List;
