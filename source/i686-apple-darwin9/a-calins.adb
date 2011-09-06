@@ -1,9 +1,9 @@
 with Ada.Unchecked_Conversion;
+with System.Native_Time;
 with C.time;
-with System;
+with C.sys.types;
 package body Ada.Calendar.Inside is
    pragma Suppress (All_Checks);
-   use type System.Address;
    use type C.signed_int; --  time_t is signed int or signed long
    use type C.signed_long;
 
@@ -12,14 +12,7 @@ package body Ada.Calendar.Inside is
       +(2 ** (Time'Size - 1)) - 1;
    for Time_Rep'Size use Time'Size;
 
-   function Clock return Time is
-      Result : aliased C.sys.time.struct_timeval;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-   begin
-      Dummy := C.sys.time.gettimeofday (Result'Access, null);
-      return To_Time (Result);
-   end Clock;
+   --  implementation
 
    function Seconds (Date : Time; Time_Zone : Time_Offset)
       return Day_Duration
@@ -64,13 +57,15 @@ package body Ada.Calendar.Inside is
       Day_of_Week : out Day_Name;
       Time_Zone : Time_Offset)
    is
-      C_time : aliased C.sys.types.time_t;
+      function Cast is new Unchecked_Conversion (Time_Rep, Duration);
+      timespec : aliased System.Native_Time.Native_Time :=
+         System.Native_Time.To_Native_Time (Duration (Date));
       Buffer : aliased C.time.struct_tm := (others => <>); --  uninitialized
       tm : access C.time.struct_tm;
    begin
-      Split (Date, C_time, Sub_Second);
-      C_time := C_time + C.sys.types.time_t (Time_Zone) * 60;
-      tm := C.time.gmtime_r (C_time'Access, Buffer'Access);
+      Sub_Second := Cast (Time_Rep (timespec.tv_nsec));
+      timespec.tv_sec := timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
+      tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
       --  does gmtime_r return no error ?
       Year := Year_Number (tm.tm_year + 1900);
       Month := Month_Number (tm.tm_mon + 1);
@@ -115,98 +110,9 @@ package body Ada.Calendar.Inside is
             raise Time_Error;
          end if;
       else
-         Result := To_Time (C_Result);
+         Result := Time (System.Native_Time.To_Time (C_Result));
       end if;
       return Result - Duration (Time_Zone * 60) + Seconds;
    end Time_Of;
-
-   Delay_Hook : access procedure (D : Duration);
-   pragma Import (Ada, Delay_Hook, "__drake_ref_delay_hook");
-   pragma Weak_External (Delay_Hook);
-
-   procedure Delay_For (D : Duration) is
-   begin
-      if Delay_Hook'Address /= System.Null_Address
-         and then Delay_Hook /= null
-      then
-         Delay_Hook (D);
-      elsif D > 0.0 then
-         declare
-            T : aliased C.sys.time.struct_timespec := To_timespec (D);
-            Dummy : C.signed_int;
-            pragma Unreferenced (Dummy);
-         begin
-            Dummy := C.time.nanosleep (T'Access, null);
-         end;
-      end if;
-   end Delay_For;
-
-   procedure Delay_Until (T : Time) is
-   begin
-      Delay_For (T - Clock);
-   end Delay_Until;
-
-   --  type Duration is delta 0.000000001 range ... (1-nanosecond)
-   --  The unit of struct timespec (tv_nsec) is same 1-nanosecond.
-   --  The unit of struct timeval (tv_usec) is same 1-microsecond.
-
-   Diff : constant Time_Rep := -5680281600; -- 1971-01-01 - 2150-01-01
-
-   function To_Time (T : C.sys.types.time_t) return Time is
-      function Cast is new Unchecked_Conversion (Time_Rep, Time);
-   begin
-      return Cast ((Time_Rep (T) + Diff) * 1000000000);
-   end To_Time;
-
-   function To_Time (T : C.sys.time.struct_timespec) return Time is
-      function Cast is new Unchecked_Conversion (Time_Rep, Time);
-   begin
-      return Cast ((Time_Rep (T.tv_sec) + Diff) * 1000000000 +
-         Time_Rep (T.tv_nsec));
-   end To_Time;
-
-   function To_Time (T : C.sys.time.struct_timeval) return Time is
-      function Cast is new Unchecked_Conversion (Time_Rep, Time);
-   begin
-      return Cast ((Time_Rep (T.tv_sec) + Diff) * 1000000000 +
-         Time_Rep (T.tv_usec) * 1000);
-   end To_Time;
-
-   procedure Split (
-      Date : Time;
-      Result : out C.sys.types.time_t;
-      Sub_Second : out Second_Duration)
-   is
-      function Cast is new Unchecked_Conversion (Time, Time_Rep);
-      function Cast is new Unchecked_Conversion (Duration, Time_Rep);
-      function Cast is new Unchecked_Conversion (Time_Rep, Duration);
-   begin
-      Sub_Second := Cast (Cast (Date) mod 1000000000);
-      --  Under_Second >= 0
-      Result := C.sys.types.time_t (
-         Time_Rep'(Cast (Date) - Cast (Sub_Second)) / 1000000000 - Diff);
-   end Split;
-
-   function To_timespec (T : Time) return C.sys.time.struct_timespec is
-      function Cast is new Unchecked_Conversion (Time, Time_Rep);
-      Sub_Second : constant Time_Rep := Cast (T) mod 1000000000;
-   begin
-      return (
-         tv_sec =>
-            C.sys.types.time_t ((Cast (T) - Sub_Second) / 1000000000 - Diff),
-         tv_nsec =>
-            C.signed_long (Sub_Second));
-   end To_timespec;
-
-   function To_timespec (D : Duration) return C.sys.time.struct_timespec is
-      function Cast is new Unchecked_Conversion (Duration, Time_Rep);
-      Sub_Second : constant Time_Rep := Cast (D) mod 1000000000;
-   begin
-      return (
-         tv_sec =>
-            C.sys.types.time_t ((Cast (D) - Sub_Second) / 1000000000),
-         tv_nsec =>
-            C.signed_long (Sub_Second));
-   end To_timespec;
 
 end Ada.Calendar.Inside;

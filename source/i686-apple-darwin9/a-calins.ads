@@ -1,12 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with C.sys.time;
-with C.sys.types;
 package Ada.Calendar.Inside is
-
-   --  implementation
-
-   function Clock return Time;
 
    subtype Time_Offset is Integer range -28 * 60 .. 28 * 60;
 
@@ -48,22 +42,5 @@ package Ada.Calendar.Inside is
       Leap_Second : Boolean := False;
       Time_Zone : Time_Offset)
       return Time;
-
-   procedure Delay_For (D : Duration);
-   procedure Delay_Until (T : Time);
-
-   --  UNIX time
-
-   function To_Time (T : C.sys.types.time_t) return Time;
-   function To_Time (T : C.sys.time.struct_timespec) return Time;
-   function To_Time (T : C.sys.time.struct_timeval) return Time;
-
-   procedure Split (
-      Date : Time;
-      Result : out C.sys.types.time_t;
-      Sub_Second : out Second_Duration);
-
-   function To_timespec (T : Time) return C.sys.time.struct_timespec;
-   function To_timespec (D : Duration) return C.sys.time.struct_timespec;
 
 end Ada.Calendar.Inside;

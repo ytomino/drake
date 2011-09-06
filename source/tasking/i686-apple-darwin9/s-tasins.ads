@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
+with System.Native_Time;
 private with C.pthread;
 package System.Tasking.Inside is
    pragma Preelaborate;
@@ -134,7 +135,7 @@ package System.Tasking.Inside is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
-      Timeout : Duration;
+      Timeout : Native_Time.Native_Time;
       Notified : out Boolean;
       Aborted : out Boolean);
 

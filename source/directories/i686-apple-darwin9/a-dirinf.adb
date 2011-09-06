@@ -1,5 +1,6 @@
-with Ada.Calendar.Inside;
 with Ada.Permissions.Inside;
+with Ada.Unchecked_Conversion;
+with System.Native_Time;
 with C.sys.stat;
 with C.sys.types;
 package body Ada.Directories.Information is
@@ -120,33 +121,41 @@ package body Ada.Directories.Information is
    end Is_Symbolic_Link;
 
    function Last_Access_Time (Name : String) return Calendar.Time is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Attributes : C.sys.stat.struct_stat;
    begin
       Get_Attributes (Name, Attributes);
-      return Calendar.Inside.To_Time (Attributes.st_atimespec);
+      return Cast (System.Native_Time.To_Time (Attributes.st_atimespec));
    end Last_Access_Time;
 
    function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
-      return Calendar.Time is
+      return Calendar.Time
+   is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
       Check_Assigned (Directory_Entry);
-      return Calendar.Inside.To_Time (Directory_Entry.State_Data.st_atimespec);
+      return Cast (
+         System.Native_Time.To_Time (Directory_Entry.State_Data.st_atimespec));
    end Last_Access_Time;
 
    function Last_Status_Change_Time (Name : String)
       return Calendar.Time
    is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Attributes : C.sys.stat.struct_stat;
    begin
       Get_Attributes (Name, Attributes);
-      return Calendar.Inside.To_Time (Attributes.st_ctimespec);
+      return Cast (System.Native_Time.To_Time (Attributes.st_ctimespec));
    end Last_Status_Change_Time;
 
    function Last_Status_Change_Time (Directory_Entry : Directory_Entry_Type)
-      return Calendar.Time is
+      return Calendar.Time
+   is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
       Check_Assigned (Directory_Entry);
-      return Calendar.Inside.To_Time (Directory_Entry.State_Data.st_ctimespec);
+      return Cast (
+         System.Native_Time.To_Time (Directory_Entry.State_Data.st_ctimespec));
    end Last_Status_Change_Time;
 
    function Owner (Name : String) return String is
