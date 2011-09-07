@@ -11,7 +11,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Ordered_Maps is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 

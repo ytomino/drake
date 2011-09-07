@@ -9,7 +9,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Doubly_Linked_Lists is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    type List is tagged limited private;
    pragma Preelaborable_Initialization (List);

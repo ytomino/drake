@@ -9,7 +9,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Vectors is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    subtype Extended_Index is Index_Type'Base range
          Index_Type'First - 1 ..

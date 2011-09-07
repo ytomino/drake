@@ -4,47 +4,47 @@ package Interfaces.C is
 
    --  Declarations based on C's <limits.h>
 
-   CHAR_BIT : constant := 8; --  typically 8
-   SCHAR_MIN : constant := -128; --  typically -128
-   SCHAR_MAX : constant := 127; --  typically 127
-   UCHAR_MAX : constant := 255; --  typically 255
+   CHAR_BIT : constant := 8; -- typically 8
+   SCHAR_MIN : constant := -128; -- typically -128
+   SCHAR_MAX : constant := 127; -- typically 127
+   UCHAR_MAX : constant := 255; -- typically 255
 
    --  Signed and Unsigned Integers
 
-   type int is new Integer; --  implementation-defined
-   type short is new Short_Integer; --  implementation-defined
-   type long is new Long_Integer; --  implementation-defined
+   type int is new Integer; -- implementation-defined
+   type short is new Short_Integer; -- implementation-defined
+   type long is new Long_Integer; -- implementation-defined
 
    type signed_char is range SCHAR_MIN .. SCHAR_MAX;
    for signed_char'Size use CHAR_BIT;
 
-   type unsigned is mod 2 ** int'Size; --  implementation-defined
-   type unsigned_short is mod 2 ** short'Size; --  implementation-defined
-   type unsigned_long is mod 2 ** long'Size; --  implementation-defined
+   type unsigned is mod 2 ** int'Size; -- implementation-defined
+   type unsigned_short is mod 2 ** short'Size; -- implementation-defined
+   type unsigned_long is mod 2 ** long'Size; -- implementation-defined
 
    type unsigned_char is mod UCHAR_MAX + 1;
    for unsigned_char'Size use CHAR_BIT;
 
-   subtype plain_char is unsigned_char; --  implementation-defined
+   subtype plain_char is unsigned_char; -- implementation-defined
 
    type ptrdiff_t is range
       -(2 ** (Standard'Address_Size - 1)) ..
-      +(2 ** (Standard'Address_Size - 1) - 1); --  implementation-defined
+      +(2 ** (Standard'Address_Size - 1) - 1); -- implementation-defined
 
-   type size_t is mod 2 ** Standard'Address_Size; --  implementation-defined
+   type size_t is mod 2 ** Standard'Address_Size; -- implementation-defined
 
    --  Floating Point
 
-   type C_float is new Standard.Float; --  implementation-defined
-   type double is new Standard.Long_Float; --  implementation-defined
-   type long_double is new Standard.Long_Long_Float; --  implementation-defined
+   type C_float is new Standard.Float; -- implementation-defined
+   type double is new Standard.Long_Float; -- implementation-defined
+   type long_double is new Standard.Long_Long_Float; -- implementation-defined
 
    --  Characters and Strings
 
---  type char is new Character; --  implementation-defined character type
+--  type char is new Character; -- implementation-defined character type
    subtype char is Character; --  extended
 
-   nul : constant char := char'Val (0); --  implementation-defined
+   nul : constant char := char'Val (0); -- implementation-defined
 
    function To_C (Item : Character) return char;
    function To_Ada (Item : char) return Character;
@@ -74,13 +74,13 @@ package Interfaces.C is
    --  Wide Character and Wide String
 
 --  type wchar_t is
---    new Wide_Character; --  implementation-defined character type
+--    new Wide_Character; -- implementation-defined character type
    subtype wchar_t is Wide_Character; --  extended
    pragma Compile_Time_Error (
       wchar_t'Size /= Standard'Wchar_T_Size,
       "bad size of wchar_t");
 
-   wide_nul : constant wchar_t := wchar_t'Val (0); --  implementation-defined
+   wide_nul : constant wchar_t := wchar_t'Val (0); -- implementation-defined
 
 --  function To_C (Item : Wide_Character) return wchar_t;
 --  function To_Ada (Item : wchar_t) return Wide_Character;
@@ -109,11 +109,11 @@ package Interfaces.C is
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.
 
 --  type char16_t is
---    new Wide_Character; --  implementation-defined character type
+--    new Wide_Character; -- implementation-defined character type
    subtype char16_t is Wide_Character; -- extended
 
    char16_nul : constant char16_t :=
-      char16_t'Val (0); --  implementation-defined
+      char16_t'Val (0); -- implementation-defined
 
    function To_C (Item : Wide_Character) return char16_t;
    function To_Ada (Item : char16_t) return Wide_Character;
@@ -140,11 +140,11 @@ package Interfaces.C is
 --    Trim_Nul : Boolean := True);
 
 --  type char32_t is
---    new Wide_Wide_Character; --  implementation-defined character type
+--    new Wide_Wide_Character; -- implementation-defined character type
    subtype char32_t is Wide_Wide_Character; -- extended
 
    char32_nul : constant char32_t :=
-      char32_t'Val (0); --  implementation-defined
+      char32_t'Val (0); -- implementation-defined
 
    function To_C (Item : Wide_Wide_Character) return char32_t;
    function To_Ada (Item : char32_t) return Wide_Wide_Character;
