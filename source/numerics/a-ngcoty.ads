@@ -12,8 +12,12 @@ package Ada.Numerics.Generic_Complex_Types is
    type Imaginary is private;
    pragma Preelaborable_Initialization (Imaginary);
 
+   --  extended
 --   i : constant Imaginary;
 --   j : constant Imaginary;
+   function i return Imaginary;
+   pragma Inline (i);
+   function j return Imaginary renames i;
 
    function Re (X : Complex) return Real'Base;
    pragma Inline (Re);
@@ -128,11 +132,6 @@ package Ada.Numerics.Generic_Complex_Types is
    function "/" (Left : Imaginary; Right : Real'Base) return Imaginary;
    function "/" (Left : Real'Base; Right : Imaginary) return Imaginary;
    pragma Inline ("/");
-
-   --  extended
-   function i return Imaginary;
-   pragma Inline (i);
-   function j return Imaginary renames i;
 
 private
 
