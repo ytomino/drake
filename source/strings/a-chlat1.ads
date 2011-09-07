@@ -117,7 +117,8 @@ package Ada.Characters.Latin_1 is
    IS2 : Character renames RS;
    IS1 : Character renames US;
 
-   --  extended... String is stored as UTF-8
+   --  extended from here
+   --  These constants are stored as UTF-8, not Character but String.
 
    Reserved_128 : constant String :=
       Character'Val (16#c2#) & Character'Val (16#80#);

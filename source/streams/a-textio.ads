@@ -54,13 +54,14 @@ package Ada.Text_IO is
    function Mode (File : File_Type) return File_Mode;
    pragma Inline (Mode);
    function Name (File : File_Type) return String;
-   function Name (File : not null File_Access) return String; -- extended
+   function Name (File : not null File_Access) return String; -- alt
    pragma Inline (Name);
    function Form (File : File_Type) return String;
    pragma Inline (Form);
 
    function Is_Open (File : File_Type) return Boolean;
-   function Is_Open (File : not null File_Access) return Boolean; -- extended
+   --  extended
+   function Is_Open (File : not null File_Access) return Boolean;
    pragma Inline (Is_Open);
 
    --  Control of default input and output files
@@ -73,6 +74,7 @@ package Ada.Text_IO is
    procedure Set_Output (File : not null File_Access);
    procedure Set_Error (File : not null File_Access);
 
+   --  Wait for Implicit_Dereference since File_Type is limited (marked "alt")
 --  function Standard_Input return File_Type;
 --  function Standard_Output return File_Type;
 --  function Standard_Error return File_Type;
@@ -106,11 +108,11 @@ package Ada.Text_IO is
 
    procedure Set_Line_Length (File : File_Type; To : Count);
    procedure Set_Line_Length (To : Count);
-   procedure Set_Line_Length (File : not null File_Access; To : Count); -- ex
+   procedure Set_Line_Length (File : not null File_Access; To : Count); -- alt
 
    procedure Set_Page_Length (File : File_Type; To : Count);
    procedure Set_Page_Length (To : Count);
-   procedure Set_Page_Length (File : not null File_Access; To : Count); -- ex
+   procedure Set_Page_Length (File : not null File_Access; To : Count); -- alt
 
    function Line_Length (File : File_Type) return Count;
    function Line_Length return Count;
@@ -126,13 +128,13 @@ package Ada.Text_IO is
    procedure New_Line (Spacing : Positive_Count := 1);
    procedure New_Line (
       File : not null File_Access;
-      Spacing : Positive_Count := 1); -- extended
+      Spacing : Positive_Count := 1); -- alt
 
    procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1);
    procedure Skip_Line (Spacing : Positive_Count := 1);
    procedure Skip_Line (
       File : not null File_Access;
-      Spacing : Positive_Count := 1); -- extended
+      Spacing : Positive_Count := 1); -- alt
 
    function End_Of_Line (File : File_Type) return Boolean;
    function End_Of_Line return Boolean;
@@ -140,54 +142,56 @@ package Ada.Text_IO is
 
    procedure New_Page (File : File_Type);
    procedure New_Page;
-   procedure New_Page (File : not null File_Access); -- extended
+   procedure New_Page (File : not null File_Access); -- alt
 
    procedure Skip_Page (File : File_Type);
    procedure Skip_Page;
-   procedure Skip_Page (File : not null File_Access); -- extended
+   procedure Skip_Page (File : not null File_Access); -- alt
 
    function End_Of_Page (File : File_Type) return Boolean;
    function End_Of_Page return Boolean;
-   function End_Of_Page (File : not null File_Access) return Boolean; -- ex
+   function End_Of_Page (File : not null File_Access) return Boolean; -- alt
    pragma Inline (End_Of_Page);
 
    function End_Of_File (File : File_Type) return Boolean;
    function End_Of_File return Boolean;
-   function End_Of_File (File : not null File_Access) return Boolean; -- ex
+   function End_Of_File (File : not null File_Access) return Boolean; -- alt
    pragma Inline (End_Of_File);
 
    procedure Set_Col (File : File_Type; To : Positive_Count);
    procedure Set_Col (To : Positive_Count);
-   procedure Set_Col (File : not null File_Access; To : Positive_Count); -- ex
+   procedure Set_Col (File : not null File_Access; To : Positive_Count); -- alt
 
    procedure Set_Line (File : File_Type; To : Positive_Count);
    procedure Set_Line (To : Positive_Count);
-   procedure Set_Line (File : not null File_Access; To : Positive_Count); -- ex
+   procedure Set_Line (
+      File : not null File_Access;
+      To : Positive_Count); -- alt
 
    function Col (File : File_Type) return Positive_Count;
    function Col return Positive_Count;
-   function Col (File : not null File_Access) return Positive_Count; -- ex
+   function Col (File : not null File_Access) return Positive_Count; -- alt
    pragma Inline (Col);
 
    function Line (File : File_Type) return Positive_Count;
    function Line return Positive_Count;
-   function Line (File : not null File_Access) return Positive_Count; -- ex
+   function Line (File : not null File_Access) return Positive_Count; -- alt
    pragma Inline (Line);
 
    function Page (File : File_Type) return Positive_Count;
    function Page return Positive_Count;
-   function Page (File : not null File_Access) return Positive_Count; -- ex
+   function Page (File : not null File_Access) return Positive_Count; -- alt
    pragma Inline (Page);
 
    --  Character Input-Output
 
    procedure Get (File : File_Type; Item : out Character);
    procedure Get (Item : out Character);
-   procedure Get (File : not null File_Access; Item : out Character); -- ex
+   procedure Get (File : not null File_Access; Item : out Character); -- alt
 
    procedure Put (File : File_Type; Item : Character);
    procedure Put (Item : Character);
-   procedure Put (File : not null File_Access; Item : Character); -- extended
+   procedure Put (File : not null File_Access; Item : Character); -- alt
 
    procedure Look_Ahead (
       File : File_Type;
@@ -212,11 +216,11 @@ package Ada.Text_IO is
 
    procedure Get (File : File_Type; Item : out String);
    procedure Get (Item : out String);
-   procedure Get (File : not null File_Access; Item : out String); -- extended
+   procedure Get (File : not null File_Access; Item : out String); -- alt
 
    procedure Put (File : File_Type; Item : String);
    procedure Put (Item : String);
-   procedure Put (File : not null File_Access; Item : String); -- extended
+   procedure Put (File : not null File_Access; Item : String); -- alt
 
    procedure Get_Line (
       File : File_Type;
@@ -228,14 +232,14 @@ package Ada.Text_IO is
    procedure Get_Line (
       File : not null File_Access;
       Item : out String;
-      Last : out Natural); -- extended
+      Last : out Natural); -- alt
 
    function Get_Line (File : File_Type) return String;
    function Get_Line return String;
 
    procedure Put_Line (File : File_Type; Item : String);
    procedure Put_Line (Item : String);
-   procedure Put_Line (File : not null File_Access; Item : String); -- extended
+   procedure Put_Line (File : not null File_Access; Item : String); -- alt
 
    --  Generic packages for Input-Output of Integer Types
    --  Generic packages for Input-Output of Real Types

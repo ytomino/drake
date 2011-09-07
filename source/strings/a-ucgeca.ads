@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  DerivedGeneralCategory.txt
+--  translated unit from DerivedGeneralCategory.txt
 package Ada.UCD.General_Category is
    pragma Pure;
 

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  UnicodeData.txt (13, 14)
+--  translated unit from UnicodeData.txt (13, 14)
 package Ada.UCD.Simple_Case_Mapping is
    pragma Pure;
 

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Linked_Lists.Doubly;
 private with Ada.Finalization;
@@ -17,8 +17,9 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+--  diff
 --  Empty_List : constant List;
-   function Empty_List return List; --  extended
+   function Empty_List return List;
 
    No_Element : constant Cursor;
 
@@ -198,7 +199,6 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
       procedure Merge (Target : in out List; Source : in out List);
    end Generic_Sorting;
 
-   --  extended
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
    package Equivalents is

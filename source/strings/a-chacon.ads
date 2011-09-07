@@ -34,33 +34,36 @@ package Ada.Characters.Conversions is
    --  Is_Wide_Character return False when surrogate pair and greater
    --  Is_String, Is_Wide_String return True always
 
+   --  modified
    function To_Wide_Character (
       Item : Character;
-      Substitute : Wide_Character := ' ') -- extended
+      Substitute : Wide_Character := ' ') -- additional
       return Wide_Character;
    function To_Wide_String (
       Item : String;
-      Substitute : Wide_Character := ' ') -- extended
+      Substitute : Wide_Character := ' ') -- additional
       return Wide_String;
    pragma Inline_Always (To_Wide_String);
 
+   --  modified
    function To_Wide_Wide_Character (
       Item : Character;
-      Substitute : Wide_Wide_Character := ' ') -- extended
+      Substitute : Wide_Wide_Character := ' ') -- additional
       return Wide_Wide_Character;
    function To_Wide_Wide_String (
       Item : String;
-      Substitute : Wide_Wide_Character := ' ') -- extended
+      Substitute : Wide_Wide_Character := ' ') -- additional
       return Wide_Wide_String;
    pragma Inline_Always (To_Wide_Wide_String);
 
+   --  modified
    function To_Wide_Wide_Character (
       Item : Wide_Character;
-      Substitute : Wide_Wide_Character := ' ') -- extended
+      Substitute : Wide_Wide_Character := ' ') -- additional
       return Wide_Wide_Character;
    function To_Wide_Wide_String (
       Item : Wide_String;
-      Substitute : Wide_Wide_Character := ' ') -- extended
+      Substitute : Wide_Wide_Character := ' ') -- additional
       return Wide_Wide_String;
    pragma Inline_Always (To_Wide_Wide_String);
 
@@ -94,7 +97,8 @@ package Ada.Characters.Conversions is
       return Wide_String;
    pragma Inline_Always (To_Wide_String);
 
-   --  extended, code-point based decoding iteration
+   --  extended
+   --  There are functions for code-point based decoding iteration.
    procedure Get (
       Item : String;
       Last : out Natural;
@@ -156,7 +160,8 @@ package Ada.Characters.Conversions is
       Value : out Wide_Wide_Character;
       Is_Illegal_Sequence : out Boolean);
 
-   --  extended, encoding
+   --  extended
+   --  There are encoding functions.
    procedure Put (
       Value : Wide_Wide_Character;
       Item : out String;

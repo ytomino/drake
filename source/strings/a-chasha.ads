@@ -1,6 +1,8 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.Characters.ASCII.Handling is
+   --  There are functions handling only lower-half characters in
+   --    16#00# .. 16#7F#.
    pragma Pure;
 
    function Is_Control (Item : Character) return Boolean;

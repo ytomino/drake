@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Streams.Stream_IO.Inside.Standards is
 
    Standard_Input : constant Non_Controlled_File_Type;

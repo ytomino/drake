@@ -30,7 +30,8 @@ package Ada.Directories.Hierarchical_File_Names is
       Extension : String := "")
       return String;
 
-   --  extended for extracting sub-filename
+   --  extended
+   --  These functions extract a part of filename.
    procedure Initial_Directory (
       Name : String;
       First : out Positive;
@@ -40,9 +41,10 @@ package Ada.Directories.Hierarchical_File_Names is
       First : out Positive;
       Last : out Natural);
 
-   --  extended for getting the relative name from the base directory
-   --  for example: Relative_Name ("A", "B") = "../A"
-   --  Relative_Name (Name, Initial_Directory (Name)) = Relative_Name (Name)
+   --  extended
+   --  This function returns the relative name from the base directory.
+   --  For example: Relative_Name ("A", "B") = "../A",
+   --    Relative_Name (Name, Initial_Directory (Name)) = Relative_Name (Name)
    function Relative_Name (Name : String; From : String)
       return String;
 

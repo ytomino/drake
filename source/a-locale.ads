@@ -4,9 +4,10 @@ package Ada.Locales is
    pragma Preelaborate;
    pragma Remote_Types;
 
-   --  extended for ISO 639-1
-   --  almost all the operating systems use alpha-2
-   --  in spite of that Ada RM requires alpha-3
+   --  extended
+   --  These are for ISO 639-1.
+   --  Ada RM requires alpha-3 in spite of that
+   --    almost all the operating systems use alpha-2.
    type ISO_639_Alpha_2 is array (1 .. 2) of Character range 'a' .. 'z';
    type ISO_639_Alpha_3 is array (1 .. 3) of Character range 'a' .. 'z';
    ISO_639_Alpha_2_Unknown : constant ISO_639_Alpha_2 := "un"; -- ???
@@ -15,11 +16,15 @@ package Ada.Locales is
    function To_Alpha_3 (Item : ISO_639_Alpha_2) return ISO_639_Alpha_3;
    function Language return ISO_639_Alpha_2;
    function Language return ISO_639_Alpha_3;
-   --  extended for ISO 3166
+
+   --  extended
+   --  These are for ISO 3166.
    type ISO_3166_1_Alpha_2 is array (1 .. 2) of Character range 'A' .. 'Z';
    ISO_3166_1_Alpha_2_Unknown : constant ISO_3166_1_Alpha_2 := "ZZ";
    function Country return ISO_3166_1_Alpha_2;
-   --  extended for ease to put
+
+   --  extended
+   --  These functions are for ease to put.
    subtype String_2 is String (1 .. 2);
    subtype String_3 is String (1 .. 3);
    function To_String (Item : ISO_639_Alpha_2) return String_2;

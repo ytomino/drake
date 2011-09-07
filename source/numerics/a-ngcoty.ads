@@ -12,7 +12,7 @@ package Ada.Numerics.Generic_Complex_Types is
    type Imaginary is private;
    pragma Preelaborable_Initialization (Imaginary);
 
-   --  extended
+   --  modified
 --   i : constant Imaginary;
 --   j : constant Imaginary;
    function i return Imaginary;

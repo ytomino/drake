@@ -18,7 +18,8 @@ package Ada.Strings.Maps.Constants is
    --  (and, Inline_Always for returning a controlled-type is buggy...)
    --  Same with Wide_Constants/Wide_Wide_Contants.
 
-   --  extended sets of unicode category
+   --  extended
+   --  There are sets of unicode category.
    function Unassigned_Set return Character_Set;
    --  pragma Inline_Always (Unassigned_Set);
    function Uppercase_Letter_Set return Character_Set;
@@ -64,7 +65,7 @@ package Ada.Strings.Maps.Constants is
    --  * Hexadecimal_Digit = Decimal_Digit + ('A' .. 'F' | 'a' .. 'f')
    --  * Basic = Letter without modifier(s)
    --
-   --  extended for Unicode
+   --  constants are modified for Unicode
    --
    --  + all characters
    --     + Unassigned (Cn + (16#110000# .. Character'Last))

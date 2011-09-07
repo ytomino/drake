@@ -21,6 +21,7 @@ package Ada.Containers.Indefinite_Ordered_Maps is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+   --  modified
 --  Empty_Map : constant Map;
    function Empty_Map return Map;
 

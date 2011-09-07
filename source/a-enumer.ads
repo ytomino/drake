@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 package Ada.Enumeration is
+   --  There are helper functions for enumeration types.
    pragma Pure;
 
    generic

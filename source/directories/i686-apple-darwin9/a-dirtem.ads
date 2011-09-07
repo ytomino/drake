@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.IO_Exceptions;
 package Ada.Directories.Temporary is
+   --  There are functions to create temporary file or directory.
 
    function Temporary_Directory return String;
 

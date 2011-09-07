@@ -5,10 +5,9 @@ package Ada.Assertions is
    Assertion_Error : exception;
    pragma Export (Ada, Assertion_Error, "assertion_error");
 
+   --  modified
 --  procedure Assert (Check : Boolean);
 --  procedure Assert (Check : Boolean; Message : String);
-
-   --  extended
    procedure Assert (
       Check : Boolean;
       Message : String := Debug.Source_Location);

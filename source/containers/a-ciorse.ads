@@ -20,8 +20,9 @@ package Ada.Containers.Indefinite_Ordered_Sets is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+   --  modified
 --  Empty_Set : constant Set;
-   function Empty_Set return Set; --  extended
+   function Empty_Set return Set;
 
    No_Element : constant Cursor;
 

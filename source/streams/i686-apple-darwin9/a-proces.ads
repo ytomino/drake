@@ -1,10 +1,11 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Ada.Command_Line;
 with Ada.IO_Exceptions;
 with Ada.Streams.Stream_IO.Standards;
 private with C.sys.types;
 package Ada.Processes is
+   --  This package provides the way to execute new child process.
 
    type Process is limited private;
 

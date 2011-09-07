@@ -19,14 +19,17 @@ package Ada.Containers.Indefinite_Vectors is
    type Vector is tagged private;
    pragma Preelaborable_Initialization (Vector);
 
+   --  modified
 --  type Cursor is private;
 --  pragma Preelaborable_Initialization (Cursor);
-   subtype Cursor is Extended_Index; --  extended
+   subtype Cursor is Extended_Index;
 
+   --  modified
 --  Empty_Vector : constant Vector;
-   function Empty_Vector return Vector; --  extended
+   function Empty_Vector return Vector;
+
 --  No_Element : constant Cursor;
-   No_Element : Cursor renames No_Index; -- extended
+   No_Element : Cursor renames No_Index;
 
    function "=" (Left, Right : Vector) return Boolean;
 

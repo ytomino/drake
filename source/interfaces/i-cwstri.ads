@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+--  extended unit
 with Interfaces.C.Zero_Terminated_Strings;
 with Interfaces.C.WChar_Pointers;
 package Interfaces.C.WStrings is new Interfaces.C.Zero_Terminated_Strings (

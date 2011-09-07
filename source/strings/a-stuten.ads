@@ -5,8 +5,9 @@ package Ada.Strings.UTF_Encoding is
    pragma Pure;
 
    --  Declarations common to the string encoding packages
+   --  modified
    type Encoding_Scheme is (UTF_8, UTF_16BE, UTF_16LE,
-      UTF_32BE, UTF_32LE); --  extended
+      UTF_32BE, UTF_32LE); -- additional
 
    subtype UTF_String is String;
 

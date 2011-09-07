@@ -41,8 +41,9 @@ package Interfaces.C is
 
    --  Characters and Strings
 
+   --  modified
 --  type char is new Character; -- implementation-defined character type
-   subtype char is Character; --  extended
+   subtype char is Character;
 
    nul : constant char := char'Val (0); -- implementation-defined
 
@@ -73,9 +74,10 @@ package Interfaces.C is
 
    --  Wide Character and Wide String
 
+   --  modified
 --  type wchar_t is
 --    new Wide_Wide_Character; -- implementation-defined character type
-   subtype wchar_t is Wide_Wide_Character; --  extended
+   subtype wchar_t is Wide_Wide_Character;
    pragma Compile_Time_Error (
       wchar_t'Size /= Standard'Wchar_T_Size,
       "bad size of wchar_t");
@@ -108,9 +110,10 @@ package Interfaces.C is
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.
 
+   --  modified
 --  type char16_t is
 --    new Wide_Character; -- implementation-defined character type
-   subtype char16_t is Wide_Character; -- extended
+   subtype char16_t is Wide_Character;
 
    char16_nul : constant char16_t :=
       char16_t'Val (0); -- implementation-defined
@@ -139,9 +142,10 @@ package Interfaces.C is
 --    Count : out Natural;
 --    Trim_Nul : Boolean := True);
 
+   --  modified
 --  type char32_t is
 --    new Wide_Wide_Character; -- implementation-defined character type
-   subtype char32_t is Wide_Wide_Character; -- extended
+   subtype char32_t is Wide_Wide_Character;
 
    char32_nul : constant char32_t :=
       char32_t'Val (0); -- implementation-defined

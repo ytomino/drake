@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 package Ada.Streams.Stream_IO.Pipes is
+   --  There is a function to create pipe.
 
    procedure Create (Reading, Writing : out File_Type);
 

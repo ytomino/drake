@@ -27,16 +27,18 @@ package Ada.Directories is
 
    procedure Delete_File (Name : String);
 
+   --  modified
    procedure Rename (
       Old_Name : String;
       New_Name : String;
-      Overwrite : Boolean := True); -- extended
+      Overwrite : Boolean := True); -- additional
 
+   --  modified
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
       Form : String := "";
-      Overwrite : Boolean := True); -- extended
+      Overwrite : Boolean := True); -- additional
 
    --  File and directory name operations:
 
@@ -56,7 +58,8 @@ package Ada.Directories is
       Extension : String := "")
       return String;
 
-   --  extended for extracting sub-filename
+   --  extended
+   --  There are procedure version.
    procedure Simple_Name (
       Name : String;
       First : out Positive;
@@ -97,10 +100,11 @@ package Ada.Directories is
 
    type Search_Type is limited private;
 
+   --  modified
    procedure Start_Search (
       Search : in out Search_Type;
       Directory : String;
-      Pattern : String := "*"; -- extended default
+      Pattern : String := "*"; -- additional default
       Filter : Filter_Type := (others => True));
 
    --  extended
@@ -118,9 +122,10 @@ package Ada.Directories is
       Search : in out Search_Type;
       Directory_Entry : out Directory_Entry_Type);
 
+   --  modified
    procedure Search (
       Directory : String;
-      Pattern : String := "*"; -- extended default
+      Pattern : String := "*"; -- additional default
       Filter : Filter_Type := (others => True);
       Process : not null access procedure (
          Directory_Entry : Directory_Entry_Type));

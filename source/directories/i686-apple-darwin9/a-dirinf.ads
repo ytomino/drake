@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  this package defined by Ada 2005 AARM A.16 (124.b/2)
+--  Ada 2005, this package defined by Ada 2005 AARM A.16 (124.b/2)
 package Ada.Directories.Information is
    --  System-specific directory information.
    --  Unix and similar systems version.

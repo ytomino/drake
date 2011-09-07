@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.UCD is
+   --  This is the parent package of Unicode Character Database.
    pragma Pure;
 
    type UCS_4 is mod 16#80000000#; --  same as System.UTF_Conversions.UCS_4

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 private with Ada.Finalization;
 --  diff (Ada.Streams)
 --  diff (Interfaces)
@@ -19,14 +19,17 @@ package Ada.Containers.Limited_Vectors is
    type Vector is tagged limited private;
    pragma Preelaborable_Initialization (Vector);
 
+--  diff
 --  type Cursor is private;
 --  pragma Preelaborable_Initialization (Cursor);
-   subtype Cursor is Extended_Index; --  extended
+   subtype Cursor is Extended_Index;
 
+--  diff
 --  Empty_Vector : constant Vector;
-   function Empty_Vector return Vector; --  extended
+   function Empty_Vector return Vector;
+
 --  No_Element : constant Cursor;
-   No_Element : Cursor renames No_Index; -- extended
+   No_Element : Cursor renames No_Index;
 
 --  diff ("=")
 

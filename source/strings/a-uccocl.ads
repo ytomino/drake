@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  DerivedCombiningClass.txt
+--  translated unit from DerivedCombiningClass.txt
 package Ada.UCD.Combining_Class is
    pragma Pure;
 

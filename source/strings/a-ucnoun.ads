@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  UnicodeData.txt (6), CompositionExclusions.txt
+--  translated unit from UnicodeData.txt (6), CompositionExclusions.txt
 package Ada.UCD.Normalization.Unreversible is
    pragma Pure;
 

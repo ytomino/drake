@@ -47,6 +47,8 @@ package Ada.Calendar.Formatting is
    function Sub_Second (Date : Time) return Second_Duration;
 
    --  extended
+   --  This function returns seconds in a day
+   --    including the offset of the time zone.
    function Seconds (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Day_Duration;
 
@@ -136,7 +138,8 @@ package Ada.Calendar.Formatting is
 
    function Value (Elapsed_Time : String) return Duration;
 
-   --  extended, the format of time-zone is "+00:00"
+   --  extended
+   --  The format of time-zone is "+00:00".
    function Image (Time_Zone : Time_Zones.Time_Offset) return String;
    function Value (Time_Zone : String) return Time_Zones.Time_Offset;
 

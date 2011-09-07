@@ -16,7 +16,8 @@ package Ada.Environment_Variables is
    procedure Iterate (
       Process : not null access procedure (Name, Value : String));
 
-   --  extended, iterator like AI05-0139-2 style
+   --  extended
+   --  There are iterator functions like AI05-0139-2 style.
    package Slicing is new System.Arrays.Generic_Slicing (
       Positive,
       Character,

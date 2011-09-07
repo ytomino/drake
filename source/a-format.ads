@@ -1,6 +1,8 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 package Ada.Formatting is
+   --  There are generic formatting functions more powerful than
+   --    Ada.Text_IO.*_IO.
    pragma Pure;
 
    type Form_Type is (Simple, Ada);

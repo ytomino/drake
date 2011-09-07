@@ -15,11 +15,10 @@ package Ada.Text_IO.Fixed_IO is
    procedure Get (
       Item : out Num;
       Width : Field := 0);
-   --  extended
    procedure Get (
       File : not null File_Access;
       Item : out Num;
-      Width : Field := 0);
+      Width : Field := 0); -- alt
 
    procedure Put (
       File : File_Type;
@@ -32,13 +31,12 @@ package Ada.Text_IO.Fixed_IO is
       Fore : Field := Default_Fore;
       Aft : Field := Default_Aft;
       Exp : Field := Default_Exp);
-   --  extended
    procedure Put (
       File : not null File_Access;
       Item : Num;
       Fore : Field := Default_Fore;
       Aft : Field := Default_Aft;
-      Exp : Field := Default_Exp);
+      Exp : Field := Default_Exp); -- alt
 
    procedure Get (
       From : String;

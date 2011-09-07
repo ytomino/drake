@@ -1,7 +1,8 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with System.Storage_Elements;
 package Ada.Streams.Overlay_Storage_IO is
+   --  This package provides overlay stream to access existing memory.
    pragma Preelaborate;
 
    pragma Compile_Time_Error (

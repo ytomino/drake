@@ -445,19 +445,21 @@ package Ada.Strings.Wide_Unbounded is
       Through : Natural)
       renames Unbounded_Wide_Strings.Functions.Delete;
 
+   --  modified
    function Trim (
       Source : Unbounded_Wide_String;
       Side : Trim_End;
-      Left : Wide_Character := Wide_Space; -- extended
-      Right : Wide_Character := Wide_Space) -- extended
+      Left : Wide_Character := Wide_Space; -- additional
+      Right : Wide_Character := Wide_Space) -- additional
       return Unbounded_Wide_String
       renames Unbounded_Wide_Strings.Functions.Trim;
 
+   --  modified
    procedure Trim (
       Source : in out Unbounded_Wide_String;
       Side : Trim_End;
-      Left : Wide_Character := Wide_Space; -- extended
-      Right : Wide_Character := Wide_Space) -- extended
+      Left : Wide_Character := Wide_Space; -- additional
+      Right : Wide_Character := Wide_Space) -- additional
       renames Unbounded_Wide_Strings.Functions.Trim;
 
    function Trim (

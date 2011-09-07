@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 package System.Arrays is
+   --  There are helpers for returning sliced pointer of array from function.
    pragma Pure;
 
    --  magic to carry out ARRAY (F .. L)'Access to out of subprogram

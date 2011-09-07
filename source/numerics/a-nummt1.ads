@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+--  translated unit from MT19937
 --
 --   A C-program for MT19937, with initialization improved 2002/1/26.
 --   Coded by Takuji Nishimura and Makoto Matsumoto.

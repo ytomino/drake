@@ -8,6 +8,7 @@ generic
    with function End_Of_File (File : File_Type) return Boolean is <>;
    with procedure Get (File : in out File_Type; Item : out Element_Type) is <>;
 package Ada.Containers.Input_Iterators is
+   --  This package makes iterators from End_Of_*/Get_* style functions.
    pragma Preelaborate;
 
    type Iterator is tagged limited private;

@@ -17,7 +17,8 @@ package Ada.Strings.Wide_Wide_Fixed is
 
    --  Search subprograms
 
-   --  extended, character searching
+   --  extended
+   --  These functions search signle character in string.
    function Index (
       Source : Wide_Wide_String;
       Pattern : Wide_Wide_Character;
@@ -202,17 +203,19 @@ package Ada.Strings.Wide_Wide_Fixed is
       return Wide_Wide_String
       renames Wide_Wide_Functions.Maps.Translate;
 
+   --  modified
 --  procedure Translate (
 --    Source : in out Wide_Wide_String;
 --    Mapping : Maps.Character_Mapping);
    procedure Translate (
       Source : in out Wide_Wide_String;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping;
-      Drop : Truncation := Error; -- extended
-      Justify : Alignment := Left; -- extended
-      Pad : Wide_Wide_Character := Wide_Wide_Space) -- extended
+      Drop : Truncation := Error; -- additional
+      Justify : Alignment := Left; -- additional
+      Pad : Wide_Wide_Character := Wide_Wide_Space) -- additional
       renames Wide_Wide_Functions.Maps.Translate;
 
+   --  modified
 --  function Translate (
 --    Source : Wide_Wide_String;
 --    Mapping : Maps.Character_Mapping_Function)
@@ -224,6 +227,7 @@ package Ada.Strings.Wide_Wide_Fixed is
       return Wide_Wide_String
       renames Wide_Wide_Functions.Maps.Translate;
 
+   --  modified
 --  procedure Translate (
 --    Source : in out Wide_Wide_String;
 --    Mapping : Maps.Character_Mapping_Function);
@@ -231,9 +235,9 @@ package Ada.Strings.Wide_Wide_Fixed is
       Source : in out Wide_Wide_String;
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character;
-      Drop : Truncation := Error; -- extended
-      Justify : Alignment := Left; -- extended
-      Pad : Wide_Wide_Character := Wide_Wide_Space) -- extended
+      Drop : Truncation := Error; -- additional
+      Justify : Alignment := Left; -- additional
+      Pad : Wide_Wide_Character := Wide_Wide_Space) -- additional
       renames Wide_Wide_Functions.Maps.Translate;
 
    --  Wide_Wide_String transformation subprograms
@@ -300,6 +304,7 @@ package Ada.Strings.Wide_Wide_Fixed is
       renames Wide_Wide_Functions.Delete;
 
    --  Wide_Wide_String selector subprograms
+   --  modified
 --  function Trim (
 --    Source : Wide_Wide_String;
 --    Side : Trim_End)
@@ -307,11 +312,12 @@ package Ada.Strings.Wide_Wide_Fixed is
    function Trim (
       Source : Wide_Wide_String;
       Side : Trim_End;
-      Left : Wide_Wide_Character := Wide_Wide_Space; -- extended
-      Right : Wide_Wide_Character := Wide_Wide_Space) -- extended
+      Left : Wide_Wide_Character := Wide_Wide_Space; -- additional
+      Right : Wide_Wide_Character := Wide_Wide_Space) -- additional
       return Wide_Wide_String
       renames Wide_Wide_Functions.Trim;
 
+   --  modified
 --  procedure Trim (
 --    Source : in out Wide_Wide_String;
 --    Side : Trim_End;
@@ -320,8 +326,8 @@ package Ada.Strings.Wide_Wide_Fixed is
    procedure Trim (
       Source : in out Wide_Wide_String;
       Side : Trim_End;
-      Left : Wide_Wide_Character := Wide_Wide_Space; -- extended
-      Right : Wide_Wide_Character := Wide_Wide_Space; -- extended
+      Left : Wide_Wide_Character := Wide_Wide_Space; -- additional
+      Right : Wide_Wide_Character := Wide_Wide_Space; -- additional
       Justify : Alignment := Strings.Left;
       Pad : Wide_Wide_Character := Wide_Wide_Space)
       renames Wide_Wide_Functions.Trim;

@@ -17,8 +17,9 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+   --  modified
 --  Empty_List : constant List;
-   function Empty_List return List; --  extended
+   function Empty_List return List;
 
    No_Element : constant Cursor;
 
@@ -199,7 +200,6 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    end Generic_Sorting;
 
 --  diff (Equivalents)
---
 --
 --
 --

@@ -2,8 +2,9 @@ pragma License (Unrestricted);
 with Ada.Text_IO.Editing;
 package Ada.Wide_Text_IO.Editing is
 
+   --  modified
 --  type Picture is private;
-   type Picture is new Text_IO.Editing.Picture; -- extended
+   type Picture is new Text_IO.Editing.Picture;
 
    function Valid (
       Pic_String : String;

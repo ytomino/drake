@@ -17,9 +17,9 @@ package Interfaces.Fortran is
    type Complex is new Single_Precision_Complex_Types.Complex;
 
    subtype Imaginary is Single_Precision_Complex_Types.Imaginary;
+   --  modified
 --  i : Imaginary renames Single_Precision_Complex_Types.i;
 --  j : Imaginary renames Single_Precision_Complex_Types.j;
-   --  extended
    function i return Imaginary renames Single_Precision_Complex_Types.i;
    function j return Imaginary renames Single_Precision_Complex_Types.j;
 

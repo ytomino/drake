@@ -13,8 +13,9 @@ package Ada.Containers.Indefinite_Holders is
    type Holder is tagged private;
    pragma Preelaborable_Initialization (Holder);
 
+   --  modified
 --  Empty_Holder : constant Holder;
-   function Empty_Holder return Holder; -- extended
+   function Empty_Holder return Holder;
 
    function "=" (Left, Right : Holder) return Boolean;
 
