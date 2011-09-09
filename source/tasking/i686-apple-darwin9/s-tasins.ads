@@ -34,11 +34,22 @@ package System.Tasking.Inside is
    function Terminated (T : Task_Id) return Boolean;
    function Activated (T : Task_Id) return Boolean;
 
+   type Free_Mode is (Wait, Detach);
+   pragma Discard_Names (Free_Mode);
+
+   function Preferred_Free_Mode (T : Task_Id) return Free_Mode;
+   procedure Set_Preferred_Free_Mode (T : Task_Id; Mode : Free_Mode);
+
+   procedure Get_Stack (
+      T : Task_Id;
+      Addr : out Address;
+      Size : out Storage_Elements.Storage_Count);
+
    --  name
    function Name (T : Task_Id) return String;
 
    --  abort
-   procedure Abort_Task (T : Task_Id);
+   procedure Send_Abort (T : Task_Id);
    procedure Enable_Abort;
    procedure Disable_Abort (Aborted : Boolean); -- check and disable
 
@@ -79,6 +90,12 @@ package System.Tasking.Inside is
       Params : Address;
       Filter : Queue_Filter;
       Aborted : out Boolean);
+   function Call_Count (
+      T : Task_Id;
+      Params : Address;
+      Filter : Queue_Filter)
+      return Natural;
+   function Callable (T : Task_Id) return Boolean;
 
    Cancel_Call_Hook : access procedure (X : in out Queue_Node_Access) := null;
 
@@ -165,6 +182,12 @@ package System.Tasking.Inside is
       Params : Address;
       Filter : Queue_Filter;
       Aborted : out Boolean);
+   function Count (
+      Object : not null access Queue;
+      Params : Address;
+      Filter : Queue_Filter)
+      return Natural;
+   function Canceled (Object : Queue) return Boolean;
 
    --  event for Ada.Synchronous_Task_Control
 
@@ -254,7 +277,7 @@ private
    pragma Suppress_Initialization (Entry_Name_Array);
 
    type Rendezvous_Record (Last_Index : Task_Entry_Index) is limited record
-      Calling : Queue;
+      Calling : aliased Queue;
       To_Deallocate_Names : Boolean;
       Names : Entry_Name_Array (1 .. Last_Index);
    end record;
@@ -281,6 +304,8 @@ private
          when Sub =>
             Params : Address;
             Process : not null access procedure (Params : Address);
+            --  free mode
+            Preferred_Free_Mode : Free_Mode;
             --  name
             Name : String_Access;
             --  manual activation
@@ -291,6 +316,7 @@ private
             Master_Of_Parent : Master_Access;
             Previous_At_Same_Level : Task_Id;
             Next_At_Same_Level : Task_Id;
+            Auto_Detach : Boolean;
             --  rendezvous
             Rendezvous : Rendezvous_Access;
             --  signal alt stack
@@ -304,7 +330,7 @@ private
       Parent : Task_Id;
       Within : Tasking.Master_Level; -- level of stack
       List : Task_Id; -- ringed list
-      Mutex : Inside.Mutex;
+      Mutex : aliased Inside.Mutex;
    end record;
    pragma Suppress_Initialization (Master_Record);
 

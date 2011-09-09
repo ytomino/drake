@@ -63,4 +63,10 @@ package System.Tasking.Rendezvous is
    --    entry_index,
    --    (const system__address) &P);
 
+   --  required for 'Callable by compiler (s-tasren.ads)
+   function Callable (T : Task_Id) return Boolean;
+
+   --  required for 'Count by compiler (s-tasren.ads)
+   function Task_Count (E : Task_Entry_Index) return Natural;
+
 end System.Tasking.Rendezvous;

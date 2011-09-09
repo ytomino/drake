@@ -11,6 +11,7 @@ begin
 		task body T1 is
 		begin
 			Ada.Debug.Put ("begin T1");
+			Ada.Debug.Put (Integer'Image (E1'Count));
 			accept E1 do
 				Ada.Debug.Put ("in E1");
 				Flag := True;

@@ -32,6 +32,9 @@
 #include <crt_externs.h> /* environment variable */
 #include <copyfile.h> /* copyfile */
 #endif
+#if defined(__FreeBSD__)
+#include <pthread_np.h> /* pthread_attr_get_np */
+#endif
 
 #if defined(__unix__) || defined(__APPLE__)
 #pragma instance pthread_rwlock_t "PTHREAD_RWLOCK_INITIALIZER"
