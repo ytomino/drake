@@ -1,18 +1,16 @@
 a87b59a C unimplemented tasking features (select)
 a97106a C unimplemented tasking features (select)
-a99006a C unimplemented tasking features (ENTRY'Count)
 ac3207a C unimplemented tasking features (select)
-ad7205b C unimplemented tasking features (TASK'Storage_Size)
 c250002 C on GNAT, it can not use non-ASCII source filename
-c34007j C unimplemented tasking features (TASK'Callable)
+c34007j C unimplemented tasking features (select)
 c34008a C this test requires Ada95 mode
 c352001 F unicode ('Image of 16#80#..16#ff#)
 c380003 C unimplemented tasking features (protected)
-c380004 C unimplemented tasking features (ENTRY'Count)
+c380004 C unimplemented tasking features (select)
 c394001 C unimplemented tasking features (synchronized interface)
 c3a1001 C unimplemented tasking features (protected)
 c3a1002 C unimplemented tasking features (select)
-c410001 C unimplemented tasking features
+c410001 C unimplemented tasking features (protected)
 c41401a C unimplemented tasking features
 c431a01 C unimplemented tasking features
 c431a02 C unimplemented tasking features
@@ -21,17 +19,14 @@ c432005 C unimplemented tasking features
 c43204g C unimplemented tasking features
 c433a01 C unimplemented tasking features
 c433a02 C unimplemented tasking features
-c433a03 C unimplemented tasking features
+c433a03 C unimplemented tasking features (protected)
 c433a04 C unimplemented tasking features (protected)
 c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows
-c59002c C unimplemented tasking features (ENTRY'Count)
-c64201b C unimplemented tasking features
-c64201c C unimplemented tasking features
-c74004a C unimplemented tasking features
-c74401k C unimplemented tasking features
-c750b01 C unimplemented tasking features
+c59002c C unimplemented tasking features (select)
+c74401k C unimplemented tasking features (select)
+c750b01 C unimplemented tasking features (protected)
 c761001 C unimplemented tasking features
 c761007 C unimplemented tasking features
 c85005a C unimplemented tasking features
@@ -191,7 +186,7 @@ c96005b N Duration'Base equals Duration
 c96006a A calendar (out of UNIX time)
 c96007a F calendar (exception not raised on feburary 30th)
 c97112a C unimplemented tasking features (select)
-c97113a C unimplemented tasking features
+c97113a C unimplemented tasking features (select)
 c97114a C unimplemented tasking features
 c97115a C unimplemented tasking features
 c97116a C unimplemented tasking features
@@ -262,12 +257,12 @@ c9a009g C unimplemented tasking features
 c9a009h C unimplemented tasking features
 c9a010a C unimplemented tasking features
 c9a011a C unimplemented tasking features
-c9a011b C unimplemented tasking features
+c9a011b C unimplemented tasking features (select)
 ca13001 C unimplemented tasking features (protected)
 ca14028 F on GNAT, it can not use specialized body with generic package spec
 ca5004a C unimplemented tasking features (select)
 cb10002 N enough memory exists
-cb20001 C unimplemented tasking features (TASK'Callable)
+cb20001 C unimplemented tasking features (select)
 cb20004 C unimplemented tasking features (protected)
 cb20005 C unimplemented tasking features
 cb20006 C unimplemented tasking features
@@ -279,19 +274,11 @@ cc1225a C unimplemented tasking features
 cc1310a C unimplemented tasking features
 cc3019c C unimplemented tasking features
 cc3120b C unimplemented tasking features
-cc3207b C unimplemented tasking features
+cc3207b C unimplemented tasking features (select)
 cc3602a C unimplemented tasking features (select)
 cc51007 A calendar (out of UNIX time)
 cd10002 C unimplemented tasking features (protected)
-cd1009k C unimplemented tasking features (TASK'Storage_Size)
-cd1009t C unimplemented tasking features (TASK'Storage_Size)
-cd1009u C unimplemented tasking features (TASK'Storage_Size)
-cd1c03e C unimplemented tasking features (TASK'Storage_Size)
-cd1c06a C unimplemented tasking features (TASK'Storage_Size)
-cd20001 C unimplemented tasking features (TASK'Storage_Size)
 cd2a91c C unimplemented tasking features (select)
-cd2c11a C unimplemented tasking features (TASK'Callable)
-cd2c11d C unimplemented tasking features (TASK'Storage_Size)
 cd72a02 C unimplemented tasking features (select)
 ce2102d N In_File is supported in Sequencial_IO
 ce2102e N Out_File is supported in Sequencial_IO
@@ -373,7 +360,7 @@ cxb5003 C some Interfaces.Fortran features are unimplemented
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
 cxc3001 C unimplemented tasking features (protected)
-cxc3002 C unimplemented tasking features
+cxc3002 C unimplemented tasking features (System.Interrupts)
 cxc3003 C unimplemented tasking features
 cxc3004 C unimplemented tasking features
 cxc3005 C unimplemented tasking features
@@ -419,7 +406,6 @@ cxd5001 C unimplemented tasking features
 cxd6001 C unimplemented tasking features
 cxd6002 C unimplemented tasking features
 cxd6003 C unimplemented tasking features (protected)
-cxd8002 C delay statement for Ada.Real_Time.Time is unimplemented
 cxd8003 C Ada.Real_Time.Split/Time_Of are unimplemented
 cxd9001 C unimplemented tasking features (protected)
 cxda002 C unimplemented tasking features (protected)
