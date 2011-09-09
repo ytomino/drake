@@ -11,8 +11,9 @@ package Ada.Strings.Maps is
    type Character_Set is private;
    pragma Preelaborable_Initialization (Character_Set);
 
+   --  modified
 --  Null_Set : constant Character_Set;
-   function Null_Set return Character_Set; -- extended
+   function Null_Set return Character_Set;
    pragma Inline (Null_Set);
 
    --  extended
@@ -167,8 +168,9 @@ package Ada.Strings.Maps is
       return Character
       renames Overloaded_Value;
 
+   --  modified
 --  Identity : constant Character_Mapping;
-   function Identity return Character_Mapping; -- extended
+   function Identity return Character_Mapping;
    pragma Inline (Identity);
 
    --  extended

@@ -6,6 +6,7 @@ generic
    type Object is private;
    --  limited type could not have copy-assign version New_Object
 package System.Initialization is
+   --  This is an implementation of Matthew Heaney's plan in AI05-0001-1.
    pragma Preelaborate;
 
    type Object_Storage is private;

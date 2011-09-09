@@ -10,7 +10,8 @@ package Interfaces.C.Pointers is
    pragma Pure;
 
    type Pointer is access all Element;
-   for Pointer'Storage_Size use 0; --  extended
+   --  modified
+   for Pointer'Storage_Size use 0;
    pragma No_Strict_Aliasing (Pointer);
 
 --  function Value (Ref : Pointer; Terminator : Element := Default_Terminator)
@@ -70,7 +71,7 @@ package Interfaces.C.Pointers is
 --     Target : Pointer;
 --     Length : ptrdiff_t);
 
-   --  extended
+   --  extended from here
 
    type Constant_Pointer is access constant Element;
    for Constant_Pointer'Storage_Size use 0;

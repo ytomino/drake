@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Interfaces.C.Pointers;
 package Interfaces.C.Char_Pointers is new Interfaces.C.Pointers (
    Index => size_t,

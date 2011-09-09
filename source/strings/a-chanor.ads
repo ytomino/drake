@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.Characters.Normalization is
+   --  This package provides unicode normalization.
    pragma Preelaborate;
 
    type Class is range 0 .. 255;

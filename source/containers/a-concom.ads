@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.Containers.Composites is
+   --  There are tiny generic functions for ease to make comparator or more.
    pragma Pure;
 
    --  comparators

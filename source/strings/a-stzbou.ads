@@ -425,19 +425,22 @@ package Ada.Strings.Wide_Wide_Bounded is
 
       --  Wide_Wide_String translation subprograms
 
+      --  modified
       function Translate (
          Source : Bounded_Wide_Wide_String;
          Mapping : Strings.Wide_Wide_Maps.Wide_Wide_Character_Mapping;
-         Drop : Truncation := Error) -- extended
+         Drop : Truncation := Error) -- additional
          return Bounded_Wide_Wide_String
          renames Maps.Translate;
 
+      --  modified
       procedure Translate (
          Source : in out Bounded_Wide_Wide_String;
          Mapping : Strings.Wide_Wide_Maps.Wide_Wide_Character_Mapping;
-         Drop : Truncation := Error) -- extended
+         Drop : Truncation := Error) -- additional
          renames Maps.Translate;
 
+      --  modified
 --    function Translate (
 --       Source : Bounded_Wide_Wide_String;
 --       Mapping : Maps.Character_Mapping_Function)
@@ -450,6 +453,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          return Bounded_Wide_Wide_String
          renames Maps.Translate;
 
+      --  modified
 --    procedure Translate (
 --       Source : in out Bounded_Wide_Wide_String;
 --       Mapping : Maps.Character_Mapping_Function);

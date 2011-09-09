@@ -10,7 +10,8 @@ private with Ada.Strings.Maps.Inside;
 package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
    pragma Preelaborate;
 
-   --  extended sets of unicode category
+   --  extended
+   --  There are sets of unicode category.
    function Unassigned_Set return Wide_Wide_Character_Set;
    --  pragma Inline_Always (Unassigned_Set);
    function Uppercase_Letter_Set return Wide_Wide_Character_Set;

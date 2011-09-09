@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Binary_Trees.Arne_Andersson;
 private with Ada.Finalization;
@@ -10,7 +10,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Ordered_Sets is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
@@ -20,8 +20,9 @@ package Ada.Containers.Limited_Ordered_Sets is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+--  diff
 --  Empty_Set : constant Set;
-   function Empty_Set return Set; --  extended
+   function Empty_Set return Set;
 
    No_Element : constant Cursor;
 

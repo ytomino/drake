@@ -3,17 +3,18 @@ with Ada.IO_Exceptions;
 with Ada.Text_IO;
 package Ada.Wide_Text_IO is
 
+   --  modified
 --  type File_Type is limited private;
-   type File_Type is new Text_IO.File_Type; -- extended
+   type File_Type is new Text_IO.File_Type;
 
 --  type File_Mode is (In_File, Out_File, Append_File);
-   subtype File_Mode is Text_IO.File_Mode; -- extended
+   subtype File_Mode is Text_IO.File_Mode;
    function In_File return File_Mode renames Text_IO.In_File;
    function Out_File return File_Mode renames Text_IO.Out_File;
    function Append_File return File_Mode renames Text_IO.Append_File;
 
 --  type Count is range 0 .. implementation-defined;
-   subtype Count is Text_IO.Count; -- extended
+   subtype Count is Text_IO.Count;
    subtype Positive_Count is Count range 1 .. Count'Last;
    Unbounded : constant Count := 0;
 
@@ -23,7 +24,7 @@ package Ada.Wide_Text_IO is
    subtype Number_Base is Integer range 2 .. 16;
 
 --  type Type_Set is (Lower_Case, Upper_Case);
-   subtype Type_Set is Text_IO.Type_Set; -- extended
+   subtype Type_Set is Text_IO.Type_Set;
    function Lower_Case return Type_Set renames Text_IO.Lower_Case;
    function Upper_Case return Type_Set renames Text_IO.Upper_Case;
 

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 generic
    type Index_Type is range <>;
    type Element_Type is private;
@@ -7,6 +7,7 @@ generic
    type Array_Access is access Array_Type;
    with procedure Free (X : in out Array_Access) is <>;
 package Ada.Containers.Generic_Arrays is
+   --  There are utility functions like Vectors for access-to-array types.
    pragma Preelaborate;
 
    type New_Array (<>) is limited private;

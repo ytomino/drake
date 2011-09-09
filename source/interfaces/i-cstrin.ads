@@ -1,9 +1,10 @@
 pragma License (Unrestricted);
-with Interfaces.C.Zero_Terminated_Strings;
 with Interfaces.C.Char_Pointers;
-package Interfaces.C.Strings is new Interfaces.C.Zero_Terminated_Strings (
-   Character_Type => Interfaces.C.char,
+with Interfaces.C.Generic_Strings;
+package Interfaces.C.Strings is new Generic_Strings (
+   Character_Type => Character,
    String_Type => String,
+   Element => char,
    Element_Array => char_array,
    Pointers => Char_Pointers);
-pragma Pure (Interfaces.C.Strings);
+pragma Preelaborate (Interfaces.C.Strings);

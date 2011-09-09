@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Binary_Trees.Arne_Andersson;
 private with Ada.Finalization;
@@ -11,7 +11,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Ordered_Maps is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
@@ -21,6 +21,7 @@ package Ada.Containers.Limited_Ordered_Maps is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+--  diff
 --  Empty_Map : constant Map;
    function Empty_Map return Map;
 

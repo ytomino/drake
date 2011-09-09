@@ -4,6 +4,7 @@ generic
    type Object (<>) is limited private;
    type Object_Pointer is access constant Object;
 package System.Address_To_Constant_Access_Conversions is
+   --  This is an implementation of Robert I. Eachus's plan in AI05-0002-1.
    pragma Preelaborate;
 
    function To_Pointer (Value : Address) return Object_Pointer;

@@ -431,19 +431,21 @@ package Ada.Strings.Unbounded is
       Through : Natural)
       renames Unbounded_Strings.Functions.Delete;
 
+   --  modified
    function Trim (
       Source : Unbounded_String;
       Side : Trim_End;
-      Left : Character := Space; -- extended
-      Right : Character := Space) -- extended
+      Left : Character := Space; -- additional
+      Right : Character := Space) -- additional
       return Unbounded_String
       renames Unbounded_Strings.Functions.Trim;
 
+   --  modified
    procedure Trim (
       Source : in out Unbounded_String;
       Side : Trim_End;
-      Left : Character := Space; -- extended
-      Right : Character := Space) -- extended
+      Left : Character := Space; -- additional
+      Right : Character := Space) -- additional
       renames Unbounded_Strings.Functions.Trim;
 
    function Trim (

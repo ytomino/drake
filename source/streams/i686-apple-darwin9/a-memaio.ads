@@ -1,10 +1,11 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Ada.IO_Exceptions;
 with Ada.Streams.Stream_IO;
 with System.Storage_Elements;
 private with Ada.Streams.Stream_IO.Inside;
 package Ada.Memory_Mapped_IO is
+   --  This package provides memory-mapped I/O.
 
    subtype File_Mode is Streams.Stream_IO.File_Mode;
    function In_File return File_Mode

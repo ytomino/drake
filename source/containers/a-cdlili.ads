@@ -9,7 +9,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Doubly_Linked_Lists is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    type List is tagged private;
    pragma Preelaborable_Initialization (List);
@@ -17,8 +17,9 @@ package Ada.Containers.Doubly_Linked_Lists is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+   --  modified
 --  Empty_List : constant List;
-   function Empty_List return List; --  extended
+   function Empty_List return List;
 
    No_Element : constant Cursor;
 
@@ -199,7 +200,6 @@ package Ada.Containers.Doubly_Linked_Lists is
    end Generic_Sorting;
 
 --  diff (Equivalents)
---
 --
 --
 --

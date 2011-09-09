@@ -3,7 +3,9 @@ package Ada is
    pragma Pure;
 
    --  extended
-
+   --  This is usable debug output.
+   --  It placed in package Ada directly,
+   --    therefore it makes no necessary additonal "with" clause.
    package Debug is
       function File return String;
       pragma Import (Intrinsic, File);

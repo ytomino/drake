@@ -428,17 +428,19 @@ package Ada.Strings.Bounded is
 
       --  String translation subprograms
 
+      --  modified
       function Translate (
          Source : Bounded_String;
          Mapping : Strings.Maps.Character_Mapping;
-         Drop : Truncation := Error) -- extended
+         Drop : Truncation := Error) -- additional
          return Bounded_String
          renames Maps.Translate;
 
+      --  modified
       procedure Translate (
          Source : in out Bounded_String;
          Mapping : Strings.Maps.Character_Mapping;
-         Drop : Truncation := Error) -- extended
+         Drop : Truncation := Error) -- additional
          renames Maps.Translate;
 
 --    function Translate (

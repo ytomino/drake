@@ -1,9 +1,10 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 with Ada.IO_Exceptions;
 with System.Storage_Elements;
 private with Ada.Finalization;
 package Ada.Streams.Buffer_Storage_IO is
+   --  This package provides temporary stream on memory.
    pragma Preelaborate;
 
    type Buffer is tagged private;

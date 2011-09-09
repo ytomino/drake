@@ -10,7 +10,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Ordered_Sets is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
@@ -20,8 +20,9 @@ package Ada.Containers.Ordered_Sets is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+   --  modified
 --  Empty_Set : constant Set;
-   function Empty_Set return Set; --  extended
+   function Empty_Set return Set;
 
    No_Element : constant Cursor;
 

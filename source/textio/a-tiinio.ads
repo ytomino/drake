@@ -14,11 +14,10 @@ package Ada.Text_IO.Integer_IO is
    procedure Get (
       Item : out Num;
       Width : Field := 0);
-   --  extended
    procedure Get (
       File : not null File_Access;
       Item : out Num;
-      Width : Field := 0);
+      Width : Field := 0); -- alt
 
    procedure Put (
       File : File_Type;
@@ -29,12 +28,11 @@ package Ada.Text_IO.Integer_IO is
       Item : Num;
       Width : Field := Default_Width;
       Base : Number_Base := Default_Base);
-   --  extended
    procedure Put (
       File : not null File_Access;
       Item : Num;
       Width : Field := Default_Width;
-      Base : Number_Base := Default_Base);
+      Base : Number_Base := Default_Base); -- alt
 
    procedure Get (
       From : String;

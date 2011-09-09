@@ -17,7 +17,8 @@ package Ada.Strings.Fixed is
 
    --  Search subprograms
 
-   --  extended, character searching
+   --  extended
+   --  These functions search signle character in string.
    function Index (
       Source : String;
       Pattern : Character;
@@ -223,15 +224,16 @@ package Ada.Strings.Fixed is
       return String
       renames Functions.Maps.Translate;
 
+   --  modified
 --  procedure Translate (
 --    Source : in out String;
 --    Mapping : Maps.Character_Mapping);
    procedure Translate (
       Source : in out String;
       Mapping : Maps.Character_Mapping;
-      Drop : Truncation := Error; -- extended
-      Justify : Alignment := Left; -- extended
-      Pad : Character := Space) -- extended
+      Drop : Truncation := Error; -- additional
+      Justify : Alignment := Left; -- additional
+      Pad : Character := Space) -- additional
       renames Functions.Maps.Translate;
 
 --  function Translate (
@@ -250,6 +252,7 @@ package Ada.Strings.Fixed is
       return String
       renames Functions.Maps.Translate;
 
+   --  modified
 --  procedure Translate (
 --    Source : in out String;
 --    Mapping : Maps.Character_Mapping_Function);
@@ -261,9 +264,9 @@ package Ada.Strings.Fixed is
       Source : in out String;
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character;
-      Drop : Truncation := Error; -- extended
-      Justify : Alignment := Left; -- extended
-      Pad : Character := Space) -- extended
+      Drop : Truncation := Error; -- additional
+      Justify : Alignment := Left; -- additional
+      Pad : Character := Space) -- additional
       renames Functions.Maps.Translate;
 
    --  String transformation subprograms
@@ -330,6 +333,7 @@ package Ada.Strings.Fixed is
       renames Functions.Delete;
 
    --  String selector subprograms
+   --  modified
 --  function Trim (
 --    Source : String;
 --    Side : Trim_End)
@@ -337,11 +341,12 @@ package Ada.Strings.Fixed is
    function Trim (
       Source : String;
       Side : Trim_End;
-      Left : Character := Space; -- extended
-      Right : Character := Space) -- extended
+      Left : Character := Space; -- additional
+      Right : Character := Space) -- additional
       return String
       renames Functions.Trim;
 
+   --  modified
 --  procedure Trim (
 --    Source : in out String;
 --    Side : Trim_End;
@@ -350,8 +355,8 @@ package Ada.Strings.Fixed is
    procedure Trim (
       Source : in out String;
       Side : Trim_End;
-      Left : Character := Space; -- extended
-      Right : Character := Space; -- extended
+      Left : Character := Space; -- additional
+      Right : Character := Space; -- additional
       Justify : Alignment := Strings.Left;
       Pad : Character := Space)
       renames Functions.Trim;

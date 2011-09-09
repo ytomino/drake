@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended package
+--  extended unit
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Hash_Tables;
 private with Ada.Finalization;
@@ -20,6 +20,7 @@ package Ada.Containers.Limited_Hashed_Sets is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+--  diff
 --  Empty_Set : constant Set;
    function Empty_Set return Set;
 

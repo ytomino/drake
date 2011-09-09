@@ -11,7 +11,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Indefinite_Ordered_Maps is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
@@ -21,6 +21,7 @@ package Ada.Containers.Indefinite_Ordered_Maps is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+   --  modified
 --  Empty_Map : constant Map;
    function Empty_Map return Map;
 

@@ -1,7 +1,8 @@
 pragma License (Unrestricted);
---  extended package for Delphi-like interface delegation
+--  extended unit
 private with System;
 package Ada.Tags.Delegating is
+   --  This package provides Delphi-like interface delegation.
 
    generic
       type T (<>) is abstract tagged limited private;

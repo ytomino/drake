@@ -70,7 +70,8 @@ package Interfaces is
       return Unsigned_64;
    pragma Import (Intrinsic, Rotate_Right);
 
-   --  extended
+   --  extended from here
+   --  Builtin-functions of gcc.
 
    procedure sync_add_and_fetch (
       A1 : not null access Integer_8;

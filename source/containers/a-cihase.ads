@@ -20,6 +20,7 @@ package Ada.Containers.Indefinite_Hashed_Sets is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+   --  modified
 --  Empty_Set : constant Set;
    function Empty_Set return Set;
 
