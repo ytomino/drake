@@ -1,5 +1,5 @@
 with Ada.Unchecked_Conversion;
-package body Interfaces.C.Zero_Terminated_Strings is
+package body Interfaces.C.Generic_Strings is
    pragma Suppress (All_Checks);
 
    package libc is
@@ -209,4 +209,4 @@ package body Interfaces.C.Zero_Terminated_Strings is
       return Source;
    end Value;
 
-end Interfaces.C.Zero_Terminated_Strings;
+end Interfaces.C.Generic_Strings;

@@ -10,7 +10,7 @@ generic
       Element => Character_Type,
       Element_Array => Element_Array,
       Default_Terminator => Character_Type'Val (0));
-package Interfaces.C.Zero_Terminated_Strings is
+package Interfaces.C.Generic_Strings is
 --  pragma Preelaborate;
    pragma Pure;
 
@@ -126,4 +126,4 @@ package Interfaces.C.Zero_Terminated_Strings is
    function New_Chars_Ptr (Item : not null access constant Character_Type)
       return not null chars_ptr;
 
-end Interfaces.C.Zero_Terminated_Strings;
+end Interfaces.C.Generic_Strings;
