@@ -135,6 +135,19 @@ package body System.Tasking.Rendezvous is
       end;
    end Call_Simple;
 
+   function Callable (T : Task_Id) return Boolean is
+   begin
+      return Inside.Callable (Task_Record_Conv.To_Pointer (T));
+   end Callable;
+
+   function Task_Count (E : Task_Entry_Index) return Natural is
+   begin
+      return Inside.Call_Count (
+         Inside.Get_Current_Task_Id,
+         Address (E),
+         Filter'Access);
+   end Task_Count;
+
 begin
    Inside.Cancel_Call_Hook := Cancel_Call'Access;
 end System.Tasking.Rendezvous;

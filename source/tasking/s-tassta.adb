@@ -35,6 +35,15 @@ package body System.Tasking.Stages is
       Inside.Leave_Master;
    end Complete_Master;
 
+   function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count;
+   function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count is
+      Addr : Address;
+      Size : Storage_Elements.Storage_Count;
+   begin
+      Inside.Get_Stack (Task_Record_Conv.To_Pointer (T), Addr, Size);
+      return Size;
+   end Storage_Size;
+
    --  implementation
 
    procedure Create_Task (
@@ -94,7 +103,12 @@ package body System.Tasking.Stages is
       Id : Inside.Task_Id := Task_Record_Conv.To_Pointer (T);
    begin
       Inside.Set_Entry_Names_To_Deallocate (Id);
-      Inside.Wait (Id);
+      case Inside.Preferred_Free_Mode (Id) is
+         when Inside.Wait =>
+            Inside.Wait (Id);
+         when Inside.Detach =>
+            Inside.Detach (Id);
+      end case;
    end Free_Task;
 
    procedure Move_Activation_Chain (
@@ -118,13 +132,19 @@ package body System.Tasking.Stages is
    procedure Abort_Tasks (Tasks : Task_List) is
    begin
       for I in Tasks'Range loop
-         Inside.Abort_Task (Task_Record_Conv.To_Pointer (Tasks (I)));
+         Inside.Send_Abort (Task_Record_Conv.To_Pointer (Tasks (I)));
       end loop;
    end Abort_Tasks;
+
+   function Terminated (T : Task_Id) return Boolean is
+   begin
+      return Inside.Terminated (Task_Record_Conv.To_Pointer (T));
+   end Terminated;
 
 begin
    Soft_Links.Current_Master := Current_Master'Access;
    Soft_Links.Enter_Master := Enter_Master'Access;
    Soft_Links.Complete_Master := Complete_Master'Access;
+   Tasking.Storage_Size := Storage_Size'Access;
    Termination.Register_Exit (Unregister'Access);
 end System.Tasking.Stages;

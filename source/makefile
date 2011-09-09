@@ -81,7 +81,20 @@ else
 EH=sjlj
 endif
 
-SUBDIRS=ada83 containers directories image interfaces numerics streams strings tasking textio $(EH)
+SUBDIRS=ada83 containers directories image interfaces numerics primitives streams strings tasking textio $(EH)
+
+# relation of sub directoris
+# (root) + primitives + zcx or sjlj    -- minimum runtime
+# + tasking           :                -- syntax support for task and protected
+# + image             :                -- syntax support for 'Image and 'Value
+# + streams           :                -- all *_IO packages (including Text_IO)
+#   + text_io         : image streams  -- child packages of Text_IO
+#     + ada83         : stream text_io -- Ada 83 names
+# + strings           :                -- Ada.Characters and Ada.Strings
+#   + directories     : strings        -- Ada.Directories
+# + numerics          :                -- Ada.Numerics and Interfaces.Fortran
+# + interfaces        :                -- Interfaces.C and Interfaces.COBOL
+# + containers        :                -- Ada.Containers
 
 SRC=$(wildcard *.ad?) $(wildcard $(TARGET)/*.ad?) \
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad?) $(wildcard $(i)/$(TARGET)/*.ad?))
@@ -243,6 +256,12 @@ $(RTSDIR)/adainclude/%.ads: numerics/$(TARGET)/%.ads
 	ln -s $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: numerics/$(TARGET)/%.adb
+	ln -s $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: primitives/%.ads
+	ln -s $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: primitives/%.adb
 	ln -s $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: streams/%.ads

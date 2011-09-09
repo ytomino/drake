@@ -9,8 +9,8 @@ package Ada.Characters.Inside.Maps is
 
    type Character_Mapping (Length : Natural) is limited record
       Reference_Count : aliased System.Reference_Counting.Counter;
-      From : Character_Sequence (1 .. Length); --  To_Domain
-      To : Character_Sequence (1 .. Length); --  To_Range
+      From : Character_Sequence (1 .. Length); -- To_Domain
+      To : Character_Sequence (1 .. Length); -- To_Range
    end record;
    pragma Suppress_Initialization (Character_Mapping);
    --  all object must have explicit initialization
@@ -33,7 +33,7 @@ package Ada.Characters.Inside.Maps is
    procedure Translate (
       Source : String;
       Mapping : not null access constant Character_Mapping;
-      Item : out String; --  Source'Length * 6, at least
+      Item : out String; -- Source'Length * 6, at least
       Last : out Natural);
 
    --  for Equal_Case_Insensitive, Less_Case_Insensitive

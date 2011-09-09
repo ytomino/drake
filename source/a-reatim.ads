@@ -1,12 +1,13 @@
 pragma License (Unrestricted);
 private with Ada.Unchecked_Conversion;
+private with System.Native_Time;
 package Ada.Real_Time is
 
    type Time is private;
    Time_First : constant Time;
    Time_Last : constant Time;
    Time_Unit : constant :=
-      Duration'Delta; --  implementation-defined-real-number
+      Duration'Delta; -- implementation-defined-real-number
 
    type Time_Span is private;
    Time_Span_First : constant Time_Span;
@@ -14,7 +15,7 @@ package Ada.Real_Time is
    Time_Span_Zero : constant Time_Span;
    Time_Span_Unit : constant Time_Span;
 
---  Tick : constant Time_Span;
+   Tick : constant Time_Span;
    function Clock return Time;
    pragma Inline (Clock);
 
@@ -71,8 +72,9 @@ package Ada.Real_Time is
 
    type Seconds_Count is range
       -(2 ** (Duration'Size - 1)) / 1000000000 ..
-      +(2 ** (Duration'Size - 1) - 1) / 1000000000; --  implementation-defined
+      +(2 ** (Duration'Size - 1) - 1) / 1000000000; -- implementation-defined
 
+   --  what is Split meaning? because origin point of Time is unspecified...
 --  procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
 --  function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
 
@@ -89,6 +91,8 @@ private
    Time_Span_Last : constant Time_Span := Time_Span'Last;
    Time_Span_Zero : constant Time_Span := 0.0;
    Time_Span_Unit : constant Time_Span := Time_Span'Delta;
+
+   Tick : constant Time_Span := System.Native_Time.Tick;
 
    function Cast is new Unchecked_Conversion (Time_Span, Duration);
    function Cast is new Unchecked_Conversion (Duration, Time_Span);

@@ -49,6 +49,9 @@ package System.Tasking.Stages is
    --  required for abort statement by compiler (s-tassta.ads)
    procedure Abort_Tasks (Tasks : Task_List);
 
+   --  required for 'Terminated by compiler (s-tassta.ads)
+   function Terminated (T : Task_Id) return Boolean;
+
    --  task type be expanded below:
    --
    --  _chain : aliased Activation_Chain;

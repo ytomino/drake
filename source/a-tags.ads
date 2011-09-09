@@ -33,7 +33,7 @@ private
    type Prim_Ptr is access procedure;
    type Address_Array is array (Positive range <>) of Prim_Ptr;
    pragma Suppress_Initialization (Address_Array);
-   subtype Dispatch_Table is Address_Array (1 .. 1); --  gdb knows it ?
+   subtype Dispatch_Table is Address_Array (1 .. 1); -- gdb knows it ?
 
    --  full declaration
 
@@ -234,7 +234,7 @@ private
 --      Offset_Func : Offset_To_Top_Function_Ptr);
 
    --  required for library-level tagged types by compiler (s-exctab.ads)
-   procedure Register_Tag (T : Tag) is null; --  unimplemented
+   procedure Register_Tag (T : Tag) is null; -- unimplemented
 
 --   procedure Set_Dynamic_Offset_To_Top (
 --      This : System.Address;

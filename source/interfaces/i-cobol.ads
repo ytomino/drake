@@ -5,21 +5,21 @@ package Interfaces.COBOL is
 
    --  Types and operations for internal data representations
 
-   type Floating is new Float; --  implementation-defined
-   type Long_Floating is new Long_Float; --  implementation-defined
+   type Floating is new Float; -- implementation-defined
+   type Long_Floating is new Long_Float; -- implementation-defined
 
-   type Binary is new Integer; --  implementation-defined
-   type Long_Binary is new Long_Long_Integer; --  implementation-defined
+   type Binary is new Integer; -- implementation-defined
+   type Long_Binary is new Long_Long_Integer; -- implementation-defined
 
-   Max_Digits_Binary : constant := 9; --  implementation-defined
-   Max_Digits_Long_Binary : constant := 18; --  implementation-defined
+   Max_Digits_Binary : constant := 9; -- implementation-defined
+   Max_Digits_Long_Binary : constant := 18; -- implementation-defined
 
-   type Decimal_Element is mod 2 ** 4; --  implementation-defined
+   type Decimal_Element is mod 2 ** 4; -- implementation-defined
    type Packed_Decimal is array (Positive range <>) of Decimal_Element;
    pragma Pack (Packed_Decimal);
 
    type COBOL_Character is
-      new Character; --  implementation-defined character type
+      new Character; -- implementation-defined character type
 
 --  Ada_To_COBOL : array (Character) of COBOL_Character :=
 --    implementation-defined;

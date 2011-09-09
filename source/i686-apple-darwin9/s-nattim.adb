@@ -104,4 +104,9 @@ package body System.Native_Time is
       Delay_Until_Hook.all (T);
    end Delay_Until;
 
+   procedure Generic_Delay_Until (T : Ada_Time) is
+   begin
+      Delay_Until (To_Native_Time (Duration (T)));
+   end Generic_Delay_Until;
+
 end System.Native_Time;

@@ -134,7 +134,7 @@ private
       Name_Length : Natural;
       Form_Length : Natural) is limited
    record
-      Stream : Streams.Stream_IO.Stream_Access; --  internal stream
+      Stream : Streams.Stream_IO.Stream_Access; -- internal stream
       File : aliased Streams.Stream_IO.Inside.Non_Controlled_File_Type;
       Page : Count := 1;
       Line : Count := 1;

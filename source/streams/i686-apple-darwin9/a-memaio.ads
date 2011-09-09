@@ -3,6 +3,7 @@ pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.Streams.Stream_IO;
 with System.Storage_Elements;
+private with Ada.Finalization;
 private with Ada.Streams.Stream_IO.Inside;
 package Ada.Memory_Mapped_IO is
    --  This package provides memory-mapped I/O.
@@ -16,6 +17,9 @@ package Ada.Memory_Mapped_IO is
       renames Streams.Stream_IO."=";
 
    type Mapping is limited private;
+
+   function Is_Map (Object : Mapping) return Boolean;
+   pragma Inline (Is_Map);
 
    procedure Map (
       Object : out Mapping;
@@ -44,10 +48,12 @@ package Ada.Memory_Mapped_IO is
 
 private
 
-   type Mapping is limited record
+   type Mapping is new Ada.Finalization.Limited_Controlled with record
       Address : System.Address := System.Null_Address;
       Size : System.Storage_Elements.Storage_Count;
       File : aliased Streams.Stream_IO.Inside.Non_Controlled_File_Type;
    end record;
+
+   overriding procedure Finalize (Object : in out Mapping);
 
 end Ada.Memory_Mapped_IO;

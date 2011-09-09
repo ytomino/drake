@@ -22,7 +22,7 @@ package Ada.Strings.Generic_Unbounded is
    pragma Preelaborable_Initialization (Unbounded_String);
 
 --  Null_Unbounded_String : constant Unbounded_String;
-   function Null_Unbounded_String return Unbounded_String; --  extended
+   function Null_Unbounded_String return Unbounded_String; -- extended
 
    function Length (Source : Unbounded_String) return Natural;
    pragma Inline (Length);

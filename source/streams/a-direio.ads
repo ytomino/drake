@@ -8,7 +8,7 @@ package Ada.Direct_IO is
    type File_Type is limited private;
 
    type File_Mode is (In_File, Inout_File, Out_File);
-   type Count is new Streams.Stream_IO.Count; --  implementation-defined
+   type Count is new Streams.Stream_IO.Count; -- implementation-defined
    subtype Positive_Count is Count range 1 .. Count'Last;
 
    --  File management

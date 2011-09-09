@@ -3,6 +3,7 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Memory;
+with System.Native_Stack;
 with System.Once;
 with System.Secondary_Stack;
 with System.Shared_Locking;
@@ -124,29 +125,40 @@ package body System.Tasking.Inside is
       Leave (Master.Mutex);
    end Append_To_Completion_List;
 
+   procedure Remove_From_Completion_List_No_Sync (Item : Task_Id);
+   procedure Remove_From_Completion_List_No_Sync (Item : Task_Id) is
+   begin
+      if Item = Item.Master_Of_Parent.List then
+         --  first-in, first-out
+         if Item = Item.Next_At_Same_Level then
+            Item.Master_Of_Parent.List := null;
+            goto Cleared;
+         else
+            Item.Master_Of_Parent.List := Item.Next_At_Same_Level;
+         end if;
+      end if;
+      Item.Previous_At_Same_Level.Next_At_Same_Level :=
+         Item.Next_At_Same_Level;
+      Item.Next_At_Same_Level.Previous_At_Same_Level :=
+         Item.Previous_At_Same_Level;
+   <<Cleared>>
+      Item.Master_Of_Parent := null;
+      Item.Previous_At_Same_Level := null;
+      Item.Next_At_Same_Level := null;
+   end Remove_From_Completion_List_No_Sync;
+
    procedure Remove_From_Completion_List (Item : Task_Id);
    procedure Remove_From_Completion_List (Item : Task_Id) is
    begin
       if Item.Master_Of_Parent /= null then
-         Enter (Item.Master_Of_Parent.Mutex);
-         if Item = Item.Master_Of_Parent.List then
-            --  first-in, first-out
-            if Item = Item.Next_At_Same_Level then
-               Item.Master_Of_Parent.List := null;
-               goto Cleared;
-            else
-               Item.Master_Of_Parent.List := Item.Next_At_Same_Level;
-            end if;
-         end if;
-         Item.Previous_At_Same_Level.Next_At_Same_Level :=
-            Item.Next_At_Same_Level;
-         Item.Next_At_Same_Level.Previous_At_Same_Level :=
-            Item.Previous_At_Same_Level;
-      <<Cleared>>
-         Leave (Item.Master_Of_Parent.Mutex);
-         Item.Master_Of_Parent := null;
-         Item.Previous_At_Same_Level := null;
-         Item.Next_At_Same_Level := null;
+         declare
+            Mutex_Ref : constant not null access Mutex :=
+               Item.Master_Of_Parent.Mutex'Access;
+         begin
+            Enter (Mutex_Ref.all);
+            Remove_From_Completion_List_No_Sync (Item);
+            Leave (Mutex_Ref.all);
+         end;
       end if;
    end Remove_From_Completion_List;
 
@@ -594,14 +606,37 @@ package body System.Tasking.Inside is
          TS_Active,
          TS_Terminated);
       --  cancel calling queue
-      Cancel (T.Rendezvous.Calling, Cancel_Node => Cancel_Call_Hook);
+      if T.Rendezvous /= null then
+         Cancel (T.Rendezvous.Calling, Cancel_Node => Cancel_Call_Hook);
+      end if;
       --  free
       if No_Detached then
-         Result := Rec;
-      else
-         --  detached
-         Free (T);
-         Result := C.void_ptr (Null_Address);
+         Result := Rec; -- caller or master may wait
+      else --  detached
+         if T.Master_Of_Parent /= null then
+            declare
+               Mutex_Ref : constant not null access Mutex :=
+                  T.Master_Of_Parent.Mutex'Access;
+            begin
+               Enter (Mutex_Ref.all);
+               if T.Auto_Detach then
+                  Remove_From_Completion_List_No_Sync (T);
+                  if C.pthread.pthread_detach (T.Handle) /= 0 then
+                     null; -- should be report ?
+                  end if;
+               end if;
+               Leave (Mutex_Ref.all);
+            end;
+            if T.Auto_Detach then
+               Result := Rec; -- master already has been waiting
+            else
+               Free (T);
+               Result := C.void_ptr (Null_Address);
+            end if;
+         else
+            Free (T);
+            Result := C.void_ptr (Null_Address);
+         end if;
       end if;
       --  cleanup secondary stack
       Secondary_Stack.Clear;
@@ -686,6 +721,7 @@ package body System.Tasking.Inside is
          Master_Top => null,
          Params => Params,
          Process => Process.all'Unrestricted_Access,
+         Preferred_Free_Mode => Detach,
          Name => Name_Data,
          Activation_Chain => Chain_Data,
          Next_Of_Activation_Chain => null,
@@ -693,6 +729,7 @@ package body System.Tasking.Inside is
          Master_Of_Parent => Master,
          Previous_At_Same_Level => null,
          Next_At_Same_Level => null,
+         Auto_Detach => False,
          Rendezvous => Rendezvous,
          Signal_Stack => <>); -- uninitialized
       --  apeend to activation chain
@@ -753,14 +790,20 @@ package body System.Tasking.Inside is
             TS_Active,
             TS_Detached)
          then
-            declare
-               Handle : constant C.pthread.pthread_t := T.Handle;
-            begin
-               T := null;
-               if C.pthread.pthread_detach (Handle) /= 0 then
-                  raise Tasking_Error;
-               end if;
-            end;
+            if T.Master_Of_Parent /= null then
+               Enter (T.Master_Of_Parent.Mutex);
+               T.Auto_Detach := True;
+               Leave (T.Master_Of_Parent.Mutex);
+            else
+               declare
+                  Handle : constant C.pthread.pthread_t := T.Handle;
+               begin
+                  T := null;
+                  if C.pthread.pthread_detach (Handle) /= 0 then
+                     raise Tasking_Error;
+                  end if;
+               end;
+            end if;
          else
             Wait (T); -- release by caller
          end if;
@@ -785,6 +828,24 @@ package body System.Tasking.Inside is
       end if;
    end Activated;
 
+   function Preferred_Free_Mode (T : Task_Id) return Free_Mode is
+   begin
+      return T.Preferred_Free_Mode;
+   end Preferred_Free_Mode;
+
+   procedure Set_Preferred_Free_Mode (T : Task_Id; Mode : Free_Mode) is
+   begin
+      T.Preferred_Free_Mode := Mode;
+   end Set_Preferred_Free_Mode;
+
+   procedure Get_Stack (
+      T : Task_Id;
+      Addr : out Address;
+      Size : out Storage_Elements.Storage_Count) is
+   begin
+      Native_Stack.Get (T.Handle, Addr, Size);
+   end Get_Stack;
+
    function Name (T : Task_Id) return String is
    begin
       if T.Kind = Main then
@@ -796,7 +857,7 @@ package body System.Tasking.Inside is
       end if;
    end Name;
 
-   procedure Abort_Task (T : Task_Id) is
+   procedure Send_Abort (T : Task_Id) is
    begin
       if T = TLS_Current_Task_Id then
          T.Aborted := True;
@@ -804,7 +865,7 @@ package body System.Tasking.Inside is
       elsif C.pthread.pthread_kill (T.Handle, C.sys.signal.SIGTERM) /= 0 then
          raise Tasking_Error;
       end if;
-   end Abort_Task;
+   end Send_Abort;
 
    procedure Enable_Abort is
    begin
@@ -1004,6 +1065,7 @@ package body System.Tasking.Inside is
          declare
             Taken : Task_Id := M.List;
          begin
+            Taken.Auto_Detach := False; -- mark inside mutex
             Leave (M.Mutex);
             if not Taken.Activation_State then
                --  the task has not been activated
@@ -1090,6 +1152,28 @@ package body System.Tasking.Inside is
          Filter,
          Aborted);
    end Accept_Call;
+
+   function Call_Count (
+      T : Task_Id;
+      Params : Address;
+      Filter : Queue_Filter)
+      return Natural is
+   begin
+      if not Callable (T) or else T.Rendezvous = null then
+         return 0;
+      else
+         return Count (T.Rendezvous.Calling'Access, Params, Filter);
+      end if;
+   end Call_Count;
+
+   function Callable (T : Task_Id) return Boolean is
+   begin
+      return not Terminated (T)
+         and then T.Kind = Sub
+         and then (
+            T.Rendezvous = null
+            or else not Canceled (T.Rendezvous.Calling));
+   end Callable;
 
    --  thread local storage
 
@@ -1443,56 +1527,86 @@ package body System.Tasking.Inside is
       Item : out Queue_Node_Access;
       Params : Address;
       Filter : Queue_Filter;
-      Aborted : out Boolean)
-   is
-      Previous : Queue_Node_Access := null;
-      I : Queue_Node_Access := Object.Head;
+      Aborted : out Boolean) is
    begin
       Aborted := False;
       Enter (Object.Mutex);
-      Taking : loop
-         Search : while I /= null loop
-            if Filter = null or else Filter (I, Params) then
-               if Previous /= null then
-                  Previous.Next := I.Next;
+      declare
+         Previous : Queue_Node_Access := null;
+         I : Queue_Node_Access := Object.Head;
+      begin
+         Taking : loop
+            Search : while I /= null loop
+               if Filter = null or else Filter (I, Params) then
+                  if Previous /= null then
+                     Previous.Next := I.Next;
+                  else
+                     Object.Head := I.Next;
+                  end if;
+                  if I = Object.Tail then
+                     Object.Tail := Previous;
+                  end if;
+                  Item := I;
+                  exit Taking;
+               end if;
+               Previous := I;
+               I := I.Next;
+            end loop Search;
+            Not_Found : declare
+               Tail_On_Waiting : constant Queue_Node_Access := Object.Tail;
+            begin
+               Object.Waiting := True;
+               Object.Params := Params;
+               Object.Filter := Filter;
+               loop
+                  Wait (
+                     Object.Condition_Variable,
+                     Object.Mutex,
+                     Aborted => Aborted);
+                  exit Taking when Aborted;
+                  exit when Object.Tail /= Tail_On_Waiting;
+               end loop;
+               Object.Waiting := False;
+               if Tail_On_Waiting /= null then
+                  Previous := Tail_On_Waiting;
+                  I := Tail_On_Waiting.Next;
                else
-                  Object.Head := I.Next;
+                  Previous := null;
+                  I := Object.Head;
                end if;
-               if I = Object.Tail then
-                  Object.Tail := Previous;
-               end if;
-               Item := I;
-               exit Taking;
-            end if;
-            Previous := I;
-            I := I.Next;
-         end loop Search;
-         Not_Found : declare
-            Tail_On_Waiting : constant Queue_Node_Access := Object.Tail;
-         begin
-            Object.Waiting := True;
-            Object.Params := Params;
-            Object.Filter := Filter;
-            loop
-               Wait (
-                  Object.Condition_Variable,
-                  Object.Mutex,
-                  Aborted => Aborted);
-               exit Taking when Aborted;
-               exit when Object.Tail /= Tail_On_Waiting;
-            end loop;
-            Object.Waiting := False;
-            if Tail_On_Waiting /= null then
-               Previous := Tail_On_Waiting;
-               I := Tail_On_Waiting.Next;
-            else
-               Previous := null;
-               I := Object.Head;
-            end if;
-         end Not_Found;
-      end loop Taking;
+            end Not_Found;
+         end loop Taking;
+      end;
       Leave (Object.Mutex);
    end Take;
+
+   function Count (
+      Object : not null access Queue;
+      Params : Address;
+      Filter : Queue_Filter)
+      return Natural
+   is
+      Result : Natural := 0;
+   begin
+      Enter (Object.Mutex);
+      declare
+         I : Queue_Node_Access := Object.Head;
+      begin
+         while I /= null loop
+            if Filter = null or else Filter (I, Params) then
+               Result := Result + 1;
+            end if;
+            I := I.Next;
+         end loop;
+      end;
+      Leave (Object.Mutex);
+      return Result;
+   end Count;
+
+   function Canceled (Object : Queue) return Boolean is
+   begin
+      return Object.Canceled;
+   end Canceled;
 
    --  event
 

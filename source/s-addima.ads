@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation required for nested tagged types by compiler
+--  implementation unit required by compiler for nested tagged types
 with System.Storage_Elements;
 function System.Address_Image (A : Address)
    return Storage_Elements.Address_Image;

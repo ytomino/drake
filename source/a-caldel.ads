@@ -15,4 +15,12 @@ package Ada.Calendar.Delays is
    procedure Delay_Until (T : Time);
    pragma Inline (Delay_Until);
 
+private
+
+   procedure Delay_Until_Body is
+      new System.Native_Time.Generic_Delay_Until (Time);
+
+   procedure Delay_Until (T : Time)
+      renames Delay_Until_Body;
+
 end Ada.Calendar.Delays;

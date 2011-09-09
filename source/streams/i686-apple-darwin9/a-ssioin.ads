@@ -158,7 +158,7 @@ private
          (Root_Stream_Type with Stream => Stream_Type'Unchecked_Access);
       Seekable_Dispatcher : aliased Dispatchers.Seekable_Dispatcher :=
          (Seekable_Stream_Type with Stream => Stream_Type'Unchecked_Access);
-      Handle : C.signed_int; --  file descripter
+      Handle : C.signed_int; -- file descripter
       Mode : File_Mode;
       Kind : Stream_Kind;
       Buffer : aliased Stream_Element_Array (1 .. 1);

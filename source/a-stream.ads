@@ -6,10 +6,10 @@ package Ada.Streams is
    pragma Preelaborable_Initialization (Root_Stream_Type);
 
    type Stream_Element is
-      mod 2 ** Standard'Storage_Unit; --  implementation-defined
+      mod 2 ** Standard'Storage_Unit; -- implementation-defined
    type Stream_Element_Offset is range
       -(2 ** (Standard'Address_Size - 1)) ..
-      +(2 ** (Standard'Address_Size - 1)) - 1; --  implementation-defined
+      +(2 ** (Standard'Address_Size - 1)) - 1; -- implementation-defined
    subtype Stream_Element_Count is
       Stream_Element_Offset range 0 .. Stream_Element_Offset'Last;
    type Stream_Element_Array is
@@ -24,7 +24,8 @@ package Ada.Streams is
       Stream : in out Root_Stream_Type;
       Item : Stream_Element_Array) is abstract;
 
-   --  extended
+   --  extended from here
+
    type Seekable_Stream_Type is
       abstract limited new Root_Stream_Type with private;
    pragma Preelaborable_Initialization (Seekable_Stream_Type);

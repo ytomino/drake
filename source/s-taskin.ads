@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation package required by compiler
+with System.Storage_Elements;
 package System.Tasking is
    pragma Preelaborate;
 
@@ -40,6 +41,12 @@ package System.Tasking is
 
    --  required for abort statement by compiler (s-taskin.ads)
    type Task_List is array (Positive range <>) of Task_Id;
+
+   --  required for 'Storage_Size by compiler (s-taskin.ads)
+   Storage_Size : access function (T : Task_Id)
+      return Storage_Elements.Storage_Count := null;
+      --  System.Parameters.Size_Type ???
+   pragma Suppress (Access_Check, Storage_Size);
 
    --  equivalent to String_Access (s-taskin.ads)
    type Entry_Name_Access is access all String;

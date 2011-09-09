@@ -9,13 +9,13 @@ package Ada.Text_IO is
    type File_Access is access constant File_Type; -- moved from below
 
 --  type File_Mode is (In_File, Out_File, Append_File);
-   type File_Mode is new IO_Modes.File_Mode; --  for conversion
+   type File_Mode is new IO_Modes.File_Mode; -- for conversion
 
    type Count is range 0 .. Natural'Last;
    subtype Positive_Count is Count range 1 .. Count'Last;
    Unbounded : constant Count := 0;
 
-   subtype Field is Integer range 0 .. 255; --  implementation-defined
+   subtype Field is Integer range 0 .. 255; -- implementation-defined
    subtype Number_Base is Integer range 2 .. 16;
 
    type Type_Set is (Lower_Case, Upper_Case);

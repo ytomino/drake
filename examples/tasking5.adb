@@ -27,6 +27,9 @@ begin
 	begin
 		Joined := False;
 		Ada.Debug.Put (Ada.Task_Identification.Image (Id));
+		Ada.Debug.Put ("'Callable = " & Boolean'Image (T1'Callable));
+		Ada.Debug.Put ("'Terminated = " & Boolean'Image (T1'Terminated));
+		Ada.Debug.Put ("'Storage_Size = " & Integer'Image (T1'Storage_Size));
 		-- wait end of T1 here
 	end;
 	pragma Assert (Joined);

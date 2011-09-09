@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with Interfaces;
 package System.Arith_64 is
    pragma Pure;
@@ -11,7 +11,7 @@ package System.Arith_64 is
 
    --  required for fixed-decimal (X * Y) / Z by compiler (s-arit64.ads)
    procedure Scaled_Divide (
-      X, Y, Z : Interfaces.Integer_64; --  X * Y / Z
+      X, Y, Z : Interfaces.Integer_64; -- X * Y / Z
       Q, R : out Interfaces.Integer_64;
       Round : Boolean);
 

@@ -23,7 +23,7 @@ package Ada is
          S : String;
          Source_Location : String := Debug.Source_Location;
          Enclosing_Entity : String := Debug.Enclosing_Entity)
-         return Boolean; --  always True to use in pragma Assert/Check
+         return Boolean; -- always True to use in pragma Assert/Check
       pragma Import (Ada, Put, "__drake_debug_put");
    end Debug;
 

@@ -10,7 +10,7 @@ package Ada.Streams.Stream_IO is
    type File_Type is limited private;
 
 --  type File_Mode is (In_File, Out_File, Append_File);
-   type File_Mode is new IO_Modes.File_Mode; --  for conversion
+   type File_Mode is new IO_Modes.File_Mode; -- for conversion
 
    --  modified
 --  type Count is range 0 .. implementation-defined;

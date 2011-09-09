@@ -13,11 +13,62 @@ package body Ada.Memory_Mapped_IO is
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0;
       Writable : Boolean);
-
-   function Address (Object : Mapping) return System.Address is
+   procedure Map (
+      Object : out Mapping;
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0;
+      Writable : Boolean)
+   is
+      Protects : constant array (Boolean) of C.signed_int := (
+         C.sys.mman.PROT_READ,
+         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
+      Mapped_Address : C.void_ptr;
    begin
-      return Object.Address;
-   end Address;
+      if Object.Address /= System.Null_Address then
+         raise Status_Error;
+      end if;
+      Mapped_Address := C.sys.mman.mmap (
+         C.void_ptr (System.Null_Address),
+         C.size_t (Size),
+         Protects (Writable),
+         C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
+         Handle,
+         C.sys.types.off_t (Offset) - 1);
+      if System.Address (Mapped_Address)
+         = System.Address (C.sys.mman.MAP_FAILED)
+      then
+         raise Use_Error;
+      end if;
+      Object.Address := System.Address (Mapped_Address);
+      Object.Size := System.Storage_Elements.Storage_Count (Size);
+   end Map;
+
+   procedure Unmap (Object : in out Mapping; Raise_On_Error : Boolean);
+   procedure Unmap (Object : in out Mapping; Raise_On_Error : Boolean) is
+   begin
+      if C.sys.mman.munmap (
+         C.void_ptr (Object.Address),
+         C.size_t (Object.Size)) /= 0
+      then
+         if Raise_On_Error then
+            raise Use_Error;
+         end if;
+      end if;
+      if Streams.Stream_IO.Inside.Is_Open (Object.File) then
+         Streams.Stream_IO.Inside.Close (
+            Object.File,
+            Raise_On_Error => Raise_On_Error);
+      end if;
+      Object.Address := System.Null_Address;
+   end Unmap;
+
+   --  implementation
+
+   function Is_Map (Object : Mapping) return Boolean is
+   begin
+      return Object.Address /= System.Null_Address;
+   end Is_Map;
 
    procedure Map (
       Object : out Mapping;
@@ -79,38 +130,6 @@ package body Ada.Memory_Mapped_IO is
       end;
    end Map;
 
-   --  local
-   procedure Map (
-      Object : out Mapping;
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
-      Offset : Streams.Stream_IO.Positive_Count := 1;
-      Size : Streams.Stream_IO.Count := 0;
-      Writable : Boolean)
-   is
-      Protects : constant array (Boolean) of C.signed_int := (
-         C.sys.mman.PROT_READ,
-         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
-      Mapped_Address : C.void_ptr;
-   begin
-      if Object.Address /= System.Null_Address then
-         raise Status_Error;
-      end if;
-      Mapped_Address := C.sys.mman.mmap (
-         C.void_ptr (System.Null_Address),
-         C.size_t (Size),
-         Protects (Writable),
-         C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
-         Handle,
-         C.sys.types.off_t (Offset) - 1);
-      if System.Address (Mapped_Address)
-         = System.Address (C.sys.mman.MAP_FAILED)
-      then
-         raise Use_Error;
-      end if;
-      Object.Address := System.Address (Mapped_Address);
-      Object.Size := System.Storage_Elements.Storage_Count (Size);
-   end Map;
-
    procedure Unmap (Object : in out Mapping) is
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
@@ -118,19 +137,25 @@ package body Ada.Memory_Mapped_IO is
       if Object.Address = System.Null_Address then
          raise Status_Error;
       end if;
-      Dummy := C.sys.mman.munmap (
-         C.void_ptr (Object.Address),
-         C.size_t (Object.Size));
-      if Streams.Stream_IO.Inside.Is_Open (Object.File) then
-         Streams.Stream_IO.Inside.Close (Object.File);
-      end if;
-      Object.Address := System.Null_Address;
+      Unmap (Object, Raise_On_Error => True);
    end Unmap;
+
+   function Address (Object : Mapping) return System.Address is
+   begin
+      return Object.Address;
+   end Address;
 
    function Size (Object : Mapping)
       return System.Storage_Elements.Storage_Count is
    begin
       return Object.Size;
    end Size;
+
+   overriding procedure Finalize (Object : in out Mapping) is
+   begin
+      if Object.Address /= System.Null_Address then
+         Unmap (Object, Raise_On_Error => False);
+      end if;
+   end Finalize;
 
 end Ada.Memory_Mapped_IO;

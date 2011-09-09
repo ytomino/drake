@@ -14,10 +14,10 @@ package Ada.Task_Identification is
    function Image (T : Task_Id) return String;
    function Current_Task return Task_Id;
    function Environment_Task return Task_Id;
---  procedure Abort_Task (T : in Task_Id);
+   procedure Abort_Task (T : Task_Id);
 
    function Is_Terminated (T : Task_Id) return Boolean;
---  function Is_Callable (T : Task_Id) return Boolean;
+   function Is_Callable (T : Task_Id) return Boolean;
    function Activation_Is_Complete (T : Task_Id) return Boolean;
 
 private
@@ -32,8 +32,14 @@ private
    function Environment_Task return Task_Id
       renames Get_Main_Task_Id; -- inherited
 
+   procedure Abort_Task (T : Task_Id)
+      renames Send_Abort; -- inherited
+
    function Is_Terminated (T : Task_Id) return Boolean
       renames Terminated; -- inherited
+
+   function Is_Callable (T : Task_Id) return Boolean
+      renames Callable; -- inherited
 
    function Activation_Is_Complete (T : Task_Id) return Boolean
       renames Activated; -- inherited
