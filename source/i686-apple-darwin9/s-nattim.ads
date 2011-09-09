@@ -17,6 +17,8 @@ package System.Native_Time is
 
    function Clock return Native_Time;
 
+   Tick : constant := 1.0 / 100_000; -- gettimeofday returns timeval
+
    --  for delay
 
    procedure Simple_Delay_For (D : Duration);
@@ -40,5 +42,10 @@ package System.Native_Time is
 
    procedure Delay_Until (T : Native_Time);
    pragma Inline (Delay_Until);
+
+   generic
+      type Ada_Time is new Duration;
+   procedure Generic_Delay_Until (T : Ada_Time);
+   pragma Inline (Generic_Delay_Until);
 
 end System.Native_Time;
