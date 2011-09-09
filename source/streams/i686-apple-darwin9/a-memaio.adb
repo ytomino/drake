@@ -13,11 +13,38 @@ package body Ada.Memory_Mapped_IO is
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0;
       Writable : Boolean);
-
-   function Address (Object : Mapping) return System.Address is
+   procedure Map (
+      Object : out Mapping;
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0;
+      Writable : Boolean)
+   is
+      Protects : constant array (Boolean) of C.signed_int := (
+         C.sys.mman.PROT_READ,
+         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
+      Mapped_Address : C.void_ptr;
    begin
-      return Object.Address;
-   end Address;
+      if Object.Address /= System.Null_Address then
+         raise Status_Error;
+      end if;
+      Mapped_Address := C.sys.mman.mmap (
+         C.void_ptr (System.Null_Address),
+         C.size_t (Size),
+         Protects (Writable),
+         C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
+         Handle,
+         C.sys.types.off_t (Offset) - 1);
+      if System.Address (Mapped_Address)
+         = System.Address (C.sys.mman.MAP_FAILED)
+      then
+         raise Use_Error;
+      end if;
+      Object.Address := System.Address (Mapped_Address);
+      Object.Size := System.Storage_Elements.Storage_Count (Size);
+   end Map;
+
+   --  implementation
 
    procedure Map (
       Object : out Mapping;
@@ -79,38 +106,6 @@ package body Ada.Memory_Mapped_IO is
       end;
    end Map;
 
-   --  local
-   procedure Map (
-      Object : out Mapping;
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
-      Offset : Streams.Stream_IO.Positive_Count := 1;
-      Size : Streams.Stream_IO.Count := 0;
-      Writable : Boolean)
-   is
-      Protects : constant array (Boolean) of C.signed_int := (
-         C.sys.mman.PROT_READ,
-         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
-      Mapped_Address : C.void_ptr;
-   begin
-      if Object.Address /= System.Null_Address then
-         raise Status_Error;
-      end if;
-      Mapped_Address := C.sys.mman.mmap (
-         C.void_ptr (System.Null_Address),
-         C.size_t (Size),
-         Protects (Writable),
-         C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
-         Handle,
-         C.sys.types.off_t (Offset) - 1);
-      if System.Address (Mapped_Address)
-         = System.Address (C.sys.mman.MAP_FAILED)
-      then
-         raise Use_Error;
-      end if;
-      Object.Address := System.Address (Mapped_Address);
-      Object.Size := System.Storage_Elements.Storage_Count (Size);
-   end Map;
-
    procedure Unmap (Object : in out Mapping) is
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
@@ -126,6 +121,11 @@ package body Ada.Memory_Mapped_IO is
       end if;
       Object.Address := System.Null_Address;
    end Unmap;
+
+   function Address (Object : Mapping) return System.Address is
+   begin
+      return Object.Address;
+   end Address;
 
    function Size (Object : Mapping)
       return System.Storage_Elements.Storage_Count is
