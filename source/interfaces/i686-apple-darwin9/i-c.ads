@@ -41,9 +41,7 @@ package Interfaces.C is
 
    --  Characters and Strings
 
-   --  modified
---  type char is new Character; -- implementation-defined character type
-   subtype char is Character;
+   type char is new Character; -- implementation-defined character type
 
    nul : constant char := char'Val (0); -- implementation-defined
 
@@ -51,7 +49,6 @@ package Interfaces.C is
    function To_Ada (Item : char) return Character;
 
    type char_array is array (size_t range <>) of aliased char;
---  pragma Pack (char_array);
    for char_array'Component_Size use CHAR_BIT;
 
 --  function Is_Nul_Terminated (Item : char_array) return Boolean;
@@ -74,21 +71,24 @@ package Interfaces.C is
 
    --  Wide Character and Wide String
 
-   --  modified
---  type wchar_t is
---    new Wide_Wide_Character; -- implementation-defined character type
-   subtype wchar_t is Wide_Wide_Character;
+   type wchar_t is
+      new Wide_Wide_Character; -- implementation-defined character type
    pragma Compile_Time_Error (
       wchar_t'Size /= Standard'Wchar_T_Size,
       "bad size of wchar_t");
 
    wide_nul : constant wchar_t := wchar_t'Val (0); -- implementation-defined
 
+   --  extended
+   subtype wchar_Character is Wide_Wide_Character;
+   subtype wchar_String is Wide_Wide_String;
+   --  wchar_t does not correspond Wide_Character in all platform
+
 --  function To_C (Item : Wide_Character) return wchar_t;
 --  function To_Ada (Item : wchar_t) return Wide_Character;
 
    type wchar_array is array (size_t range <>) of aliased wchar_t;
---  pragma Pack (wchar_array);
+   pragma Pack (wchar_array);
 
 --  function Is_Nul_Terminated (Item : wchar_array) return Boolean;
 
@@ -110,10 +110,8 @@ package Interfaces.C is
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.
 
-   --  modified
---  type char16_t is
---    new Wide_Character; -- implementation-defined character type
-   subtype char16_t is Wide_Character;
+   type char16_t is
+      new Wide_Character; -- implementation-defined character type
 
    char16_nul : constant char16_t :=
       char16_t'Val (0); -- implementation-defined
@@ -122,7 +120,7 @@ package Interfaces.C is
    function To_Ada (Item : char16_t) return Wide_Character;
 
    type char16_array is array (size_t range <>) of aliased char16_t;
---  pragma Pack (char16_array);
+   pragma Pack (char16_array);
 
 --  function Is_Nul_Terminated (Item : char16_array) return Boolean;
 
@@ -142,10 +140,8 @@ package Interfaces.C is
 --    Count : out Natural;
 --    Trim_Nul : Boolean := True);
 
-   --  modified
---  type char32_t is
---    new Wide_Wide_Character; -- implementation-defined character type
-   subtype char32_t is Wide_Wide_Character;
+   type char32_t is
+      new Wide_Wide_Character; -- implementation-defined character type
 
    char32_nul : constant char32_t :=
       char32_t'Val (0); -- implementation-defined
@@ -154,7 +150,7 @@ package Interfaces.C is
    function To_Ada (Item : char32_t) return Wide_Wide_Character;
 
    type char32_array is array (size_t range <>) of aliased char32_t;
---  pragma Pack (char32_array);
+   pragma Pack (char32_array);
 
 --  function Is_Nul_Terminated (Item : in char32_array) return Boolean;
 
@@ -180,7 +176,5 @@ private
 
    pragma Import (Intrinsic, To_C, "+");
    pragma Import (Intrinsic, To_Ada, "+");
-
-   subtype wchar_t_String is Wide_Wide_String;
 
 end Interfaces.C;

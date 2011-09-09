@@ -1,26 +1,29 @@
-with Ada.Unchecked_Conversion;
+with System.Address_To_Named_Access_Conversions;
+with System.Address_To_Constant_Access_Conversions;
+with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
    pragma Suppress (All_Checks);
+   use type System.Storage_Elements.Storage_Offset;
 
    package libc is
 
-      function strlen (Item : not null access constant Character_Type)
+      function strlen (Item : not null access constant Element)
          return size_t;
       pragma Import (Intrinsic, strlen, "__builtin_strlen");
 
-      function wcslen (Item : not null access constant Character_Type)
+      function wcslen (Item : not null access constant Element)
          return size_t;
       pragma Import (C, wcslen);
 
       procedure memcpy (
-         s1 : not null access Character_Type;
-         s2 : not null access constant Character_Type;
+         s1 : not null access Element;
+         s2 : not null access constant Element;
          n : size_t);
       pragma Import (Intrinsic, memcpy, "__builtin_memcpy");
 
       procedure memmove (
-         s1 : not null access Character_Type;
-         s2 : not null access constant Character_Type;
+         s1 : not null access Element;
+         s2 : not null access constant Element;
          n : size_t);
       pragma Import (Intrinsic, memmove, "__builtin_memmove");
 
@@ -32,6 +35,29 @@ package body Interfaces.C.Generic_Strings is
 
    end libc;
 
+   package Conv is new System.Address_To_Named_Access_Conversions (
+      Element,
+      chars_ptr);
+   package const_Conv is new System.Address_To_Constant_Access_Conversions (
+      Element,
+      const_chars_ptr);
+
+   --  implementation
+
+   function Constant_Reference (
+      Item : not null access constant Element;
+      Length : size_t)
+      return Slicing.Constant_Reference_Type
+   is
+      Source : aliased String_Type (1 .. Natural (Length));
+      for Source'Address use Item.all'Address;
+   begin
+      return Slicing.Constant_Slice (
+         Source'Unrestricted_Access,
+         Source'First,
+         Source'Last);
+   end Constant_Reference;
+
    procedure Free (Item : in out chars_ptr) is
    begin
       libc.free (Item);
@@ -42,61 +68,131 @@ package body Interfaces.C.Generic_Strings is
       return not null chars_ptr
    is
       Source : constant const_chars_ptr :=
-         Chars (Chars'First)'Unchecked_Access;
+         const_Conv.To_Pointer (Chars'Address);
       Length : constant size_t := size_t'Min (Chars'Length, Strlen (Source));
    begin
       return New_Chars_Ptr (Source, Length);
    end New_Char_Array;
 
-   function New_Chars_Ptr (Item : not null access constant Character_Type)
+   function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
+      Size : constant System.Storage_Elements.Storage_Count :=
+         System.Storage_Elements.Storage_Count (Length)
+         * (Element'Size / Standard'Storage_Unit);
+      Result : constant chars_ptr := libc.malloc (
+         C.size_t (Size + Element'Size / Standard'Storage_Unit));
+   begin
+      if Result = null then
+         raise Storage_Error;
+      end if;
+      Result.all := Element'Val (0);
+      return Result;
+   end New_Chars_Ptr;
+
+   function New_Chars_Ptr (
+      Item : not null access constant Element;
+      Length : size_t)
+      return not null chars_ptr
+   is
+      Result : constant chars_ptr := New_Chars_Ptr (Length);
+      Size : constant System.Storage_Elements.Storage_Count :=
+         System.Storage_Elements.Storage_Count (Length)
+         * (Element'Size / Standard'Storage_Unit);
+   begin
+      libc.memmove (Result, Item, C.size_t (Size));
+      Conv.To_Pointer (Conv.To_Address (Result) + Size).all := Element'Val (0);
+      return Result;
+   end New_Chars_Ptr;
+
+   function New_Chars_Ptr (Item : not null access constant Element)
       return not null chars_ptr is
    begin
       return New_Chars_Ptr (Item, Strlen (Item));
    end New_Chars_Ptr;
 
-   function New_Chars_Ptr (
-      Item : not null access constant Character_Type;
-      Length : size_t)
+   function New_Strcat (Items : const_chars_ptr_array)
       return not null chars_ptr
    is
-      function N is new Ada.Unchecked_Conversion (chars_ptr, size_t);
-      function P is new Ada.Unchecked_Conversion (size_t, chars_ptr);
-      Size : constant size_t := Length *
-         (Character_Type'Size / Standard'Storage_Unit);
-      Result : constant chars_ptr := libc.malloc (Size + 1);
+      Lengths : array (Items'Range) of size_t;
+      Total_Length : size_t;
+      Offset : size_t;
+      Result : chars_ptr;
    begin
-      if Result = null then
-         raise Storage_Error;
-      end if;
-      libc.memmove (Result, Item, Size);
-      P (N (Result) + Size).all := Character_Type'Val (0);
+      --  get length
+      Total_Length := 0;
+      for I in Items'Range loop
+         Lengths (I) := Strlen (Items (I));
+         Total_Length := Total_Length + Lengths (I);
+      end loop;
+      --  allocate
+      Result := New_Chars_Ptr (Total_Length);
+      --  copy
+      Offset := 0;
+      for I in Items'Range loop
+         Update (Result, Offset, Items (I), Lengths (I));
+         Offset := Offset + Lengths (I);
+      end loop;
       return Result;
-   end New_Chars_Ptr;
+   end New_Strcat;
+
+   function New_Strcat (Items : const_chars_ptr_With_Length_array)
+      return not null chars_ptr
+   is
+      Total_Length : size_t;
+      Offset : size_t;
+      Result : chars_ptr;
+   begin
+      --  get length
+      Total_Length := 0;
+      for I in Items'Range loop
+         Total_Length := Total_Length + Items (I).Length;
+      end loop;
+      --  allocate
+      Result := New_Chars_Ptr (Total_Length);
+      --  copy
+      Offset := 0;
+      for I in Items'Range loop
+         Update (Result, Offset, Items (I).ptr, Items (I).Length);
+         Offset := Offset + Items (I).Length;
+      end loop;
+      return Result;
+   end New_Strcat;
 
    function New_String (Str : String_Type) return not null chars_ptr is
    begin
-      return New_Chars_Ptr (Str (Str'First)'Unrestricted_Access, Str'Length);
+      return New_Chars_Ptr (Conv.To_Pointer (Str'Address), Str'Length);
    end New_String;
 
-   function Strlen (Item : not null access constant Character_Type)
+   function Reference (
+      Item : not null access Element;
+      Length : size_t)
+      return Slicing.Reference_Type
+   is
+      Source : aliased String_Type (1 .. Natural (Length));
+      for Source'Address use Item.all'Address;
+   begin
+      return Slicing.Slice (
+         Source'Unrestricted_Access,
+         Source'First,
+         Source'Last);
+   end Reference;
+
+   function Strlen (Item : not null access constant Element)
       return size_t is
    begin
-      if Character_Type'Size = char'Size then
+      if Element'Size = char'Size then
          return libc.strlen (Item);
-      elsif Character_Type'Size = wchar_t'Size then
+      elsif Element'Size = wchar_t'Size then
          return libc.wcslen (Item);
       else
          declare
-            function N is
-               new Ada.Unchecked_Conversion (const_chars_ptr, size_t);
-            function P is
-               new Ada.Unchecked_Conversion (size_t, const_chars_ptr);
             S : const_chars_ptr := const_chars_ptr (Item);
             Length : size_t := 0;
          begin
-            while S.all /= Character_Type'Val (0) loop
+            while S.all /= Element'Val (0) loop
                Length := Length + 1;
-               S := P (N (S) + Character_Type'Size / Standard'Storage_Unit);
+               S := const_Conv.To_Pointer (
+                  const_Conv.To_Address (S)
+                  + Element'Size / Standard'Storage_Unit);
             end loop;
             return Length;
          end;
@@ -116,73 +212,95 @@ package body Interfaces.C.Generic_Strings is
    function To_Chars_Ptr (Item : not null access String_Type)
       return not null chars_ptr is
    begin
-      return Item.all (Item.all'First)'Unrestricted_Access;
+      return Conv.To_Pointer (Item.all'Address);
    end To_Chars_Ptr;
+
+   function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
+      return not null const_chars_ptr is
+   begin
+      return Item.all (Item.all'First)'Access;
+   end To_Const_Chars_Ptr;
 
    function To_Const_Chars_Ptr (Item : not null access constant String_Type)
       return not null const_chars_ptr is
    begin
-      return Item.all (Item.all'First)'Unrestricted_Access;
+      return const_Conv.To_Pointer (Item.all'Address);
    end To_Const_Chars_Ptr;
 
    procedure Update (
-      Item : not null access Character_Type;
+      Item : not null access Element;
       Offset : size_t;
       Chars : Element_Array;
       Check : Boolean := True)
    is
       pragma Unreferenced (Check);
-      function N is new Ada.Unchecked_Conversion (chars_ptr, size_t);
-      function P is new Ada.Unchecked_Conversion (size_t, chars_ptr);
-      Offset_Size : constant size_t := Offset *
-         (Character_Type'Size / Standard'Storage_Unit);
+      Source : constant const_chars_ptr :=
+         const_Conv.To_Pointer (Chars'Address);
    begin
       Update (
-         P (N (chars_ptr (Item)) + Offset_Size),
-         Chars (Chars'First)'Access,
-         Strlen (Chars (Chars'First)'Access));
+         Item,
+         Offset,
+         Source,
+         size_t'Min (Chars'Length, Strlen (Source)));
    end Update;
 
    procedure Update (
-      Item : not null access Character_Type;
+      Item : not null access Element;
       Offset : size_t;
       Str : String_Type;
       Check : Boolean := True)
    is
       pragma Unreferenced (Check);
-      function N is new Ada.Unchecked_Conversion (chars_ptr, size_t);
-      function P is new Ada.Unchecked_Conversion (size_t, chars_ptr);
-      Offset_Size : constant size_t := Offset *
-         (Character_Type'Size / Standard'Storage_Unit);
+      Source : constant const_chars_ptr :=
+         const_Conv.To_Pointer (Str'Address);
    begin
       Update (
-         P (N (chars_ptr (Item)) + Offset_Size),
-         Str (Str'First)'Unrestricted_Access,
+         Item,
+         Offset,
+         Source,
          Str'Length);
    end Update;
 
    procedure Update (
-      Item : not null access Character_Type;
-      Source : not null access constant Character_Type;
+      Item : not null access Element;
+      Offset : size_t;
+      Source : not null access constant Element;
       Length : size_t)
    is
-      function N is new Ada.Unchecked_Conversion (chars_ptr, size_t);
-      function P is new Ada.Unchecked_Conversion (size_t, chars_ptr);
-      Size : constant size_t := Length *
-         (Character_Type'Size / Standard'Storage_Unit);
+      Offset_Size : constant System.Storage_Elements.Storage_Count :=
+         System.Storage_Elements.Storage_Count (Offset)
+         * (Element'Size / Standard'Storage_Unit);
+      Offsetted_Item : constant chars_ptr :=
+         Conv.To_Pointer (Conv.To_Address (chars_ptr (Item)) + Offset_Size);
+      Size : constant System.Storage_Elements.Storage_Count :=
+         System.Storage_Elements.Storage_Count (Length)
+         * (Element'Size / Standard'Storage_Unit);
    begin
-      libc.memcpy (Item, Source, Size);
-      P (N (chars_ptr (Item)) + Size).all := Character_Type'Val (0);
+      libc.memcpy (Offsetted_Item, Source, C.size_t (Size));
+      Conv.To_Pointer (Conv.To_Address (Offsetted_Item) + Size).all :=
+         Element'Val (0);
    end Update;
 
-   function Value (Item : not null access constant Character_Type)
+   procedure Update (
+      Item : not null access Element;
+      Offset : size_t;
+      Source : not null access constant Element) is
+   begin
+      Update (
+         Item,
+         Offset,
+         Source,
+         Strlen (Source));
+   end Update;
+
+   function Value (Item : not null access constant Element)
       return Element_Array is
    begin
       return Value (Item, Strlen (Item));
    end Value;
 
    function Value (
-      Item : access constant Character_Type;
+      Item : access constant Element;
       Length : size_t)
       return Element_Array
    is
@@ -192,14 +310,14 @@ package body Interfaces.C.Generic_Strings is
       return Source;
    end Value;
 
-   function Value (Item : not null access constant Character_Type)
+   function Value (Item : not null access constant Element)
       return String_Type is
    begin
       return Value (Item, Strlen (Item));
    end Value;
 
    function Value (
-      Item : access constant Character_Type;
+      Item : access constant Element;
       Length : size_t)
       return String_Type
    is

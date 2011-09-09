@@ -2,6 +2,7 @@ with Ada;
 with Interfaces;
 with Interfaces.C.Pointers;
 with Interfaces.C.Strings;
+with Interfaces.C.WStrings;
 procedure intf is
 begin
 	-- pragma Import
@@ -46,10 +47,15 @@ begin
 	end;
 	-- Interfaces.C.Strings
 	declare
+		Ada_Str : aliased String := "12345";
+		Ada_Sub_Str : String renames Ada_Str (3 .. 5);
 		p : Interfaces.C.Strings.chars_ptr := Interfaces.C.Strings.New_String ("ABC");
 	begin
-		pragma Assert (String'(Interfaces.C.Strings.Value (p)) = "ABC");
+		pragma Assert (Interfaces.C.Strings.Value (p) = String'("ABC"));
+		Interfaces.C.Strings.Update (p, 1, String'("Z"));
+		pragma Assert (Interfaces.C.Strings.Value (p) = String'("AZ"));
 		Interfaces.C.Strings.Free (p);
+		pragma Assert (Interfaces.C.Strings.Value (Interfaces.C.Strings.To_Const_Chars_Ptr (Ada_Sub_Str'Unrestricted_Access), 3) = String'("345"));
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end intf;
