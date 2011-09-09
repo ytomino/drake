@@ -24,7 +24,8 @@ package Ada.Streams is
       Stream : in out Root_Stream_Type;
       Item : Stream_Element_Array) is abstract;
 
-   --  extended
+   --  extended from here
+
    type Seekable_Stream_Type is
       abstract limited new Root_Stream_Type with private;
    pragma Preelaborable_Initialization (Seekable_Stream_Type);

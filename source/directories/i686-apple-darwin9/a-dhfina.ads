@@ -31,7 +31,7 @@ package Ada.Directories.Hierarchical_File_Names is
       return String;
 
    --  extended
-   --  These functions extract a part of filename.
+   --  There are procedure version.
    procedure Initial_Directory (
       Name : String;
       First : out Positive;

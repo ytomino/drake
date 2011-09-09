@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with Interfaces;
 package System.Arith_64 is
    pragma Pure;
