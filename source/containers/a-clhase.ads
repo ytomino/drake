@@ -12,7 +12,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Hashed_Sets is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    type Set is tagged limited private;
    pragma Preelaborable_Initialization (Set);

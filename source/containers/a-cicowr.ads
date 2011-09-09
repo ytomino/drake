@@ -6,7 +6,7 @@ package Ada.Containers.Inside.Copy_On_Write is
    type Container;
 
    type Data is limited record
-      Follower : access Container; --  first container is owner
+      Follower : access Container; -- first container is owner
       pragma Atomic (Follower);
    end record;
 

@@ -7,7 +7,7 @@ package System.Val_Char is
    function Value_Character (Str : String) return Character;
 
    --  helper
-   HEX_Prefix : constant String := "HEX_"; --  upper case
+   HEX_Prefix : constant String := "HEX_"; -- upper case
    function Value_Named (S : String) return Character;
 
 end System.Val_Char;

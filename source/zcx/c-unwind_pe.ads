@@ -1,5 +1,5 @@
 --  unwind-pe.h is a part of gcc, not in runtime libraries.
-pragma License (GPL); --  and "GCC Runtime Library Exception"
+pragma License (GPL); -- and "GCC Runtime Library Exception"
 with C.stdlib;
 with C.unwind;
 package C.unwind_pe is

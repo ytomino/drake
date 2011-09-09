@@ -35,7 +35,7 @@ package System.Soft_Links is
    pragma Inline (Get_GNAT_Exception);
 
    --  no-operation
-   function Zero return Integer; --  always return 0
+   function Zero return Integer; -- always return 0
    procedure Nop is null;
    procedure Nop (Current : Unwind.Exception_Occurrence) is null;
 

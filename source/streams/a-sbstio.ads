@@ -76,7 +76,7 @@ private
          Object : Buffer);
       procedure Read (
          Stream : not null access Root_Stream_Type'Class;
-         Object : out Buffer) is null; --  "out" parameter destructs size info
+         Object : out Buffer) is null; -- "out" parameter destructs size info
 
    end No_Primitives;
 

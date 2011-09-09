@@ -12,7 +12,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Hashed_Maps is
    pragma Preelaborate;
---  pragma Remote_Types; --  it defends to define Reference_Type...
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    type Map is tagged limited private;
    pragma Preelaborable_Initialization (Map);

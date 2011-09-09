@@ -122,7 +122,7 @@ package Ada.Strings.Generic_Bounded is
 
 --    type Bounded_String is private;
       type Bounded_String is
-         new Generic_Bounded.Bounded_String (Max); --  extended
+         new Generic_Bounded.Bounded_String (Max); -- extended
 
 --    Null_Bounded_String : constant Bounded_String;
       function Null_Bounded_String return Bounded_String;

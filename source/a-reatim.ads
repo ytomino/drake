@@ -7,7 +7,7 @@ package Ada.Real_Time is
    Time_First : constant Time;
    Time_Last : constant Time;
    Time_Unit : constant :=
-      Duration'Delta; --  implementation-defined-real-number
+      Duration'Delta; -- implementation-defined-real-number
 
    type Time_Span is private;
    Time_Span_First : constant Time_Span;
@@ -72,7 +72,7 @@ package Ada.Real_Time is
 
    type Seconds_Count is range
       -(2 ** (Duration'Size - 1)) / 1000000000 ..
-      +(2 ** (Duration'Size - 1) - 1) / 1000000000; --  implementation-defined
+      +(2 ** (Duration'Size - 1) - 1) / 1000000000; -- implementation-defined
 
    --  what is Split meaning? because origin point of Time is unspecified...
 --  procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);

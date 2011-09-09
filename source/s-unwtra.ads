@@ -5,7 +5,7 @@ package System.Unwind.Traceback is
    pragma Preelaborate;
 
    --  filled by gnatbind (init.c)
-   Exception_Tracebacks : Integer := 0; --  set by "-E" option
+   Exception_Tracebacks : Integer := 0; -- set by "-E" option
    pragma Export (C, Exception_Tracebacks, "__gl_exception_tracebacks");
 
    --  get traceback (a-excach.adb)

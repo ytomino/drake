@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 with Ada.Characters.Conversions;
 package Ada.Characters.Handling is
 --  pragma Pure;
-   pragma Preelaborate; --  use mapping
+   pragma Preelaborate; -- use mapping
 
    --  note: if single character item in 16#80# .. 16#FF# was passed,
    --        these functions raises Constraint_Error.

@@ -22,7 +22,7 @@ package Ada.Wide_Text_IO.Editing is
 --  function Blank_When_Zero (Pic : Picture) return Boolean;
    --  function Blank_When_Zero is inherited
 
-   Max_Picture_Length : constant := 30; --  implementation_defined
+   Max_Picture_Length : constant := 30; -- implementation_defined
 
    Picture_Error : exception;
 

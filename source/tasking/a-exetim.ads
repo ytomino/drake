@@ -1,19 +1,19 @@
 pragma License (Unrestricted);
 --  with Ada.Task_Identification;
-with Ada.Real_Time; --  use Ada.Real_Time;
+with Ada.Real_Time; -- use Ada.Real_Time;
 package Ada.Execution_Time is
 
    type CPU_Time is private;
    CPU_Time_First : constant CPU_Time;
    CPU_Time_Last : constant CPU_Time;
    CPU_Time_Unit : constant :=
-      Duration'Delta; --  implementation-defined-real-number
+      Duration'Delta; -- implementation-defined-real-number
 --  CPU_Tick : constant Time_Span;
 
 --  function Clock (
 --    T : Task_Identification.Task_Id := Task_Identification.Current_Task)
 --    return CPU_Time;
-   function Clock return CPU_Time; --  substitution
+   function Clock return CPU_Time; -- substitution
    pragma Inline (Clock);
 
 --  function "+" (Left : CPU_Time; Right : Time_Span) return CPU_Time;
@@ -34,10 +34,10 @@ package Ada.Execution_Time is
 --    return CPU_Time;
 
    Interrupt_Clocks_Supported : constant Boolean :=
-      False; --  implementation-defined
+      False; -- implementation-defined
 
    Separate_Interrupt_Clocks_Supported : constant Boolean :=
-     False; --  implementation-defined
+     False; -- implementation-defined
 
 --  function Clock_For_Interrupts return CPU_Time;
 

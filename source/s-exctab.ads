@@ -7,6 +7,6 @@ package System.Exception_Table is
 
    --  required for user-defined exception by compiler (s-exctab.ads)
    procedure Register_Exception (X : Standard_Library.Exception_Data_Ptr) is
-      null; --  unimplemented
+      null; -- unimplemented
 
 end System.Exception_Table;

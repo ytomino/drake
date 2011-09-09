@@ -53,6 +53,6 @@ package Ada.Calendar is
 
 private
 
-   type Time is new Duration; --  0 = 2150-01-01 00:00:00
+   type Time is new Duration; -- 0 = 2150-01-01 00:00:00
 
 end Ada.Calendar;

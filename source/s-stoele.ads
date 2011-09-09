@@ -4,11 +4,11 @@ package System.Storage_Elements is
 
    type Storage_Offset is range
       -(2 ** (Standard'Address_Size - 1)) ..
-      +(2 ** (Standard'Address_Size - 1)) - 1; --  implementation-defined
+      +(2 ** (Standard'Address_Size - 1)) - 1; -- implementation-defined
 
    subtype Storage_Count is Storage_Offset range 0 .. Storage_Offset'Last;
 
-   type Storage_Element is mod 2 ** Storage_Unit; --  implementation-defined
+   type Storage_Element is mod 2 ** Storage_Unit; -- implementation-defined
    for Storage_Element'Size use Storage_Unit;
    type Storage_Array is
       array (Storage_Offset range <>) of aliased Storage_Element;
@@ -40,7 +40,7 @@ package System.Storage_Elements is
 
    --  Conversion to/from integers:
 
-   type Integer_Address is mod Memory_Size; --  implementation-defined
+   type Integer_Address is mod Memory_Size; -- implementation-defined
    function To_Address (Value : Integer_Address) return Address;
    pragma Convention (Intrinsic, To_Address);
    pragma Pure_Function (To_Address);
