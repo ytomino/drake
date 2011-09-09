@@ -122,6 +122,111 @@ procedure arrayop is
 	type llua is array (Positive range <>) of Long_Long_Unsigned;
 	procedure tc_llua is new Generic_Test_Comparison (Long_Long_Unsigned, llua);
 	pragma Debug (tc_llua);
+	-- 1-bit width unsigned integers
+	type u1 is mod 2;
+	for u1'Size use 1;
+	type u1a is array (Positive range <>) of u1;
+	for u1a'Component_Size use 1;
+	procedure tc_u1a is new Generic_Test_Comparison (u1, u1a);
+	pragma Debug (tc_u1a);
+	-- 2-bit width unsigned integers
+	type u2 is mod 2 ** 2;
+	for u2'Size use 2;
+	type u2a is array (Positive range <>) of u2;
+	for u2a'Component_Size use 2;
+	procedure tc_u2a is new Generic_Test_Comparison (u2, u2a);
+	pragma Debug (tc_u2a);
+	-- 3-bit width unsigned integers
+	type u3 is mod 2 ** 3;
+	for u3'Size use 3;
+	type u3a is array (Positive range <>) of u3;
+	for u3a'Component_Size use 3;
+	procedure tc_u3a is new Generic_Test_Comparison (u3, u3a);
+	pragma Debug (tc_u3a);
+	-- 4-bit width unsigned integers
+	type u4 is mod 2 ** 4;
+	for u4'Size use 4;
+	type u4a is array (Positive range <>) of u4;
+	for u4a'Component_Size use 4;
+	procedure tc_u4a is new Generic_Test_Comparison (u4, u4a);
+	pragma Debug (tc_u4a);
+	-- 5-bit width unsigned integers
+	type u5 is mod 2 ** 5;
+	for u5'Size use 5;
+	type u5a is array (Positive range <>) of u5;
+	for u5a'Component_Size use 5;
+	procedure tc_u5a is new Generic_Test_Comparison (u5, u5a);
+	pragma Debug (tc_u5a);
+	-- 6-bit width unsigned integers
+	type u6 is mod 2 ** 6;
+	for u6'Size use 6;
+	type u6a is array (Positive range <>) of u6;
+	for u6a'Component_Size use 6;
+	procedure tc_u6a is new Generic_Test_Comparison (u6, u6a);
+	pragma Debug (tc_u6a);
+	-- 7-bit width unsigned integers
+	type u7 is mod 2 ** 7;
+	for u7'Size use 7;
+	type u7a is array (Positive range <>) of u7;
+	for u7a'Component_Size use 7;
+	procedure tc_u7a is new Generic_Test_Comparison (u7, u7a);
+	pragma Debug (tc_u7a);
+	-- 8-bit width unsigned integers
+	type u8 is mod 2 ** 8;
+	for u8'Size use 8;
+	type u8a is array (Positive range <>) of u8;
+	for u8a'Component_Size use 8;
+	procedure tc_u8a is new Generic_Test_Comparison (u8, u8a);
+	pragma Debug (tc_u8a);
+	-- 9-bit width unsigned integers
+	type u9 is mod 2 ** 9;
+	for u9'Size use 9;
+	type u9a is array (Positive range <>) of u9;
+	for u9a'Component_Size use 9;
+	procedure tc_u9a is new Generic_Test_Comparison (u9, u9a);
+	pragma Debug (tc_u9a);
+	-- 10-bit width unsigned integers
+	type u10 is mod 2 ** 10;
+	for u10'Size use 10;
+	type u10a is array (Positive range <>) of u10;
+	for u10a'Component_Size use 10;
+	procedure tc_u10a is new Generic_Test_Comparison (u10, u10a);
+	pragma Debug (tc_u10a);
+	-- 11-bit width unsigned integers
+	type u11 is mod 2 ** 11;
+	for u11'Size use 11;
+	type u11a is array (Positive range <>) of u11;
+	for u11a'Component_Size use 11;
+	procedure tc_u11a is new Generic_Test_Comparison (u11, u11a);
+	pragma Debug (tc_u11a);
+	-- 12-bit width unsigned integers
+	type u12 is mod 2 ** 12;
+	for u12'Size use 12;
+	type u12a is array (Positive range <>) of u12;
+	for u12a'Component_Size use 12;
+	procedure tc_u12a is new Generic_Test_Comparison (u12, u12a);
+	pragma Debug (tc_u12a);
+	-- 13-bit width unsigned integers
+	type u13 is mod 2 ** 13;
+	for u13'Size use 13;
+	type u13a is array (Positive range <>) of u13;
+	for u13a'Component_Size use 13;
+	procedure tc_u13a is new Generic_Test_Comparison (u13, u13a);
+	pragma Debug (tc_u13a);
+	-- 14-bit width unsigned integers
+	type u14 is mod 2 ** 14;
+	for u14'Size use 14;
+	type u14a is array (Positive range <>) of u14;
+	for u14a'Component_Size use 14;
+	procedure tc_u14a is new Generic_Test_Comparison (u14, u14a);
+	pragma Debug (tc_u14a);
+	-- 15-bit width unsigned integers
+	type u15 is mod 2 ** 15;
+	for u15'Size use 15;
+	type u15a is array (Positive range <>) of u15;
+	for u15a'Component_Size use 15;
+	procedure tc_u15a is new Generic_Test_Comparison (u15, u15a);
+	pragma Debug (tc_u15a);
 begin
 	pragma Assert (Ada.Debug.Put ("OK"));
 	null;
