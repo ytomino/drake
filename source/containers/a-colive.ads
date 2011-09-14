@@ -9,7 +9,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Vectors is
    pragma Preelaborate;
---  pragma Remote_Types; -- it defends to define Reference_Type...
+--  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
 
    subtype Extended_Index is Index_Type'Base range
          Index_Type'First - 1 ..
@@ -28,8 +28,18 @@ package Ada.Containers.Limited_Vectors is
 --  Empty_Vector : constant Vector;
    function Empty_Vector return Vector;
 
---  No_Element : constant Cursor;
-   No_Element : Cursor renames No_Index;
+   No_Element : Cursor
+      renames No_Index;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+--  package Vector_Iterator_Interfaces is
+--     new Ada.Iterator_Interfaces (Cursor, Has_Element);
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   function Last (Object : Iterator) return Cursor;
+   function Previous (Object : Iterator; Position : Cursor) return Cursor;
 
 --  diff ("=")
 
@@ -63,9 +73,13 @@ package Ada.Containers.Limited_Vectors is
    function To_Cursor (Container : Vector; Index : Extended_Index)
       return Cursor;
 
-   function To_Index (Position : Cursor) return Extended_Index;
+   function To_Index (Position : Cursor) return Extended_Index
+      renames "+";
 
 --  diff (Element)
+--
+--
+--
 --
 
 --  diff (Element)
@@ -73,24 +87,26 @@ package Ada.Containers.Limited_Vectors is
    procedure Replace_Element (
       Container : in out Vector;
       Position : Index_Type;
-      New_Item : not null access function (C : Vector) return Element_Type);
+      New_Item : not null access function return Element_Type);
 
 --  diff (Replace_Element)
 --
 --
 --
 
+   --  modified
    procedure Query_Element (
-      Container : Vector;
+      Container : Vector'Class; -- not primitive
       Index : Index_Type;
       Process : not null access procedure (Element : Element_Type));
 
 --  procedure Query_Element (
---    Position : Cursor;
---    Process : not null access procedure (Element : Element_Type));
+--    Position : in Cursor;
+--    Process : not null access procedure (Element : in Element_Type));
 
+   --  modified
    procedure Update_Element (
-      Container : in out Vector;
+      Container : in out Vector'Class; -- not primitive
       Index : Index_Type;
       Process : not null access procedure (Element : in out Element_Type));
 
@@ -98,6 +114,32 @@ package Ada.Containers.Limited_Vectors is
 --    Container : in out Vector;
 --    Position : Cursor;
 --    Process : not null access procedure (Element : in out Element_Type));
+
+   type Constant_Reference_Type (
+      Element : not null access constant Element_Type) is private;
+
+   type Reference_Type (
+      Element : not null access Element_Type) is private;
+
+   function Constant_Reference (
+      Container : not null access constant Vector; -- [gcc 4.5/4.6] aliased
+      Index : Index_Type)
+      return Constant_Reference_Type;
+
+   function Reference (
+      Container : not null access Vector; -- [gcc 4.5/4.6] aliased
+      Index : Index_Type)
+      return Reference_Type;
+
+--  function Constant_Reference (
+--    Container : aliased in Vector;
+--    Position : Cursor)
+--    return Constant_Reference_Type;
+
+--  function Reference (
+--    Container : aliased in out Vector;
+--    Position : Cursor)
+--    return Reference_Type;
 
 --  diff (Assign)
 
@@ -136,20 +178,20 @@ package Ada.Containers.Limited_Vectors is
    procedure Insert (
       Container : in out Vector;
       Before : Cursor;
-      New_Item : not null access function (C : Vector) return Element_Type;
+      New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Count : Count_Type := 1);
 
 --  diff (Insert)
---  diff
---  diff
---  diff
+--
+--
+--
 
 --  diff (Insert)
---  diff
---  diff
---  diff
---  diff
+--
+--
+--
+--
 
 --  diff (Prepend)
 
@@ -237,6 +279,7 @@ package Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
 
 --  diff (Reverse_Find_Index)
 --
@@ -257,49 +300,31 @@ package Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
 --  diff (Contains)
 
-   function Has_Element (Position : Cursor) return Boolean;
-
+   --  modified
    procedure Iterate (
-      Container : Vector;
+      Container : Vector'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
+   --  modified
    procedure Reverse_Iterate (
-      Container : Vector;
+      Container : Vector'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
-   --  AI05-0212-1
-   type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is limited private;
-   type Reference_Type (
-      Element : not null access Element_Type) is limited private;
-   function Constant_Reference (
-      Container : not null access constant Vector;
-      Index : Index_Type)
-      return Constant_Reference_Type;
---  function Constant_Reference (
---    Container : not null access constant Vector;
---    Position : Cursor)
---    return Constant_Reference_Type;
-   function Reference (
-      Container : not null access Vector;
-      Index : Index_Type)
-      return Reference_Type;
---  function Reference (
---    Container : not null access Vector;
---    Position : Cursor)
---    return Reference_Type;
+--  function Iterate (Container : Vector)
+--    return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
+   function Iterate (Container : Vector)
+      return Iterator;
 
-   --  AI05-0139-2
---  type Iterator_Type is new Reversible_Iterator with private;
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
-   function Last (Object : Iterator) return Cursor;
-   function Previous (Object : Iterator; Position : Cursor) return Cursor;
-   function Iterate (Container : not null access constant Vector)
+--  function Iterate (Container : Vector; Start : Cursor)
+--    return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
+
+   --  extended
+   function Iterate (Container : Vector; First, Last : Cursor)
       return Iterator;
 
    generic
@@ -382,7 +407,8 @@ private
       Element : not null access Element_Type) is null record;
 
    type Iterator is record
-      Last_Index : Extended_Index;
+      First : Extended_Index;
+      Last : Extended_Index;
    end record;
 
 end Ada.Containers.Limited_Vectors;

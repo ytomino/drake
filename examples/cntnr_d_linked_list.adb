@@ -133,9 +133,9 @@ procedure cntnr_d_Linked_List is
 		Lists.Append (X, 'C');
 		Lists.Reverse_Elements (X);
 		pragma Assert (X.Length = 3);
-		pragma Assert (X.First_Element = 'C');
+		pragma Assert (Lists.Element (X.First) = 'C');
 		pragma Assert (Lists.Element (Lists.Next (X.First)) = 'B');
-		pragma Assert (X.Last_Element = 'A');
+		pragma Assert (Lists.Element (X.Last) = 'A');
 		Lists.Swap_Links (X, X.First, X.Last);
 		declare
 			Data : String := "ABC";
@@ -185,8 +185,8 @@ procedure cntnr_d_Linked_List is
 		Lists.Append (Y, '2');
 		Lists.Splice (X, Lists.No_Element, Y);
 		pragma Assert (X.Length = 4);
-		pragma Assert (X.First_Element = 'A');
-		pragma Assert (X.Last_Element = '2');
+		pragma Assert (Lists.Element (X.First) = 'A');
+		pragma Assert (Lists.Element (X.Last) = '2');
 		pragma Assert (Y.Length = 0);
 		pragma Assert (Y.First = Lists.No_Element);
 		pragma Assert (Y.Last = Lists.No_Element);
@@ -291,7 +291,7 @@ begin
 		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
 		Lists.List'Read (Buffer.Stream, X);
 		pragma Assert (X.Length = 1);
-		pragma Assert (X.First_Element = 'b');
+		pragma Assert (Lists.Element (X.First) = 'b');
 	end Stream_Test;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end cntnr_d_Linked_List;

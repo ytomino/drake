@@ -275,13 +275,8 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 
    function First (Object : Iterator) return Cursor is
    begin
-      return First (Object.all);
+      return Object.First;
    end First;
-
---  diff (First_Element)
---
---
---
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
@@ -309,7 +304,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    procedure Insert (
       Container : in out List;
       Before : Cursor;
-      New_Item : not null access function (C : List) return Element_Type;
+      New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
@@ -317,7 +312,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       for I in 1 .. Count loop
          Position := new Node'(
             Super => <>,
-            Element => new Element_Type'(New_Item (Container)));
+            Element => new Element_Type'(New_Item.all));
          Base.Insert (
             Container.First,
             Container.Last,
@@ -345,7 +340,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Is_Empty;
 
    procedure Iterate (
-      Container : List;
+      Container : List'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -360,10 +355,22 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end Iterate;
 
-   function Iterate (Container : not null access constant List)
+   function Iterate (Container : List)
       return Iterator is
    begin
-      return Iterator (Container);
+      return (First => First (Container), Last => Last (Container));
+   end Iterate;
+
+   function Iterate (Container : List; First, Last : Cursor)
+      return Iterator
+   is
+      pragma Unreferenced (Container);
+   begin
+      if Base.Is_Before (Upcast (Last), Upcast (First)) then
+         return (First => No_Element, Last => No_Element);
+      else
+         return (First => First, Last => Last);
+      end if;
    end Iterate;
 
    function Last (Container : List) return Cursor is
@@ -378,13 +385,8 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 
    function Last (Object : Iterator) return Cursor is
    begin
-      return Last (Object.all);
+      return Object.Last;
    end Last;
-
---  diff (Last_Element)
---
---
---
 
    function Length (Container : List) return Count_Type is
    begin
@@ -419,9 +421,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Next;
 
    function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
    begin
-      return Next (Position);
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
    end Next;
 
 --  diff (Prepend)
@@ -447,9 +452,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Previous;
 
    function Previous (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
    begin
-      return Previous (Position);
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
    end Previous;
 
    procedure Query_Element (
@@ -624,13 +632,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Swap_Links;
 
    procedure Update_Element (
-      Container : in out List;
+      Container : in out List'Class;
       Position : Cursor;
-      Process : not null access procedure (Element : in out Element_Type))
-   is
-      pragma Unreferenced (Container);
+      Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Position.Element.all);
+      Process (
+         Reference (Container'Unrestricted_Access, Position).Element.all);
    end Update_Element;
 
 --  diff ("=")
@@ -658,6 +665,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+
+   function "<" (Left, Right : Cursor) return Boolean is
+   begin
+      return Base.Is_Before (Upcast (Left), Upcast (Right));
+   end "<";
 
    package body Generic_Sorting is
 

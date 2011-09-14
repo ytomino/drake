@@ -12,7 +12,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Hashed_Sets is
    pragma Preelaborate;
---  pragma Remote_Types; -- it defends to define Reference_Type...
+--  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
 
    type Set is tagged private;
    pragma Preelaborable_Initialization (Set);
@@ -25,6 +25,14 @@ package Ada.Containers.Hashed_Sets is
    function Empty_Set return Set;
 
    No_Element : constant Cursor;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+--  package Set_Iterator_Interfaces is new
+--    Ada.Iterator_Interfaces (Cursor, Has_Element);
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
 
    function "=" (Left, Right : Set) return Boolean;
 
@@ -55,6 +63,14 @@ package Ada.Containers.Hashed_Sets is
       Position : Cursor;
       Process : not null access procedure (Element : Element_Type));
 
+   type Constant_Reference_Type (
+      Element : not null access constant Element_Type) is private;
+
+   function Constant_Reference (
+      Container : not null access constant Set; -- [gcc 4.5/4.6] aliased
+      Position : Cursor)
+      return Constant_Reference_Type;
+
    procedure Assign (Target : in out Set; Source : Set);
 
    function Copy (Source : Set; Capacity : Count_Type := 0) return Set;
@@ -67,7 +83,9 @@ package Ada.Containers.Hashed_Sets is
       Position : out Cursor;
       Inserted : out Boolean);
 
-   procedure Insert (Container : in out Set; New_Item : Element_Type);
+   procedure Insert (
+      Container : in out Set;
+      New_Item : Element_Type);
 
    procedure Include (Container : in out Set; New_Item : Element_Type);
 
@@ -121,9 +139,7 @@ package Ada.Containers.Hashed_Sets is
 
    function Contains (Container : Set; Item : Element_Type) return Boolean;
 
-   function Has_Element (Position : Cursor) return Boolean;
-
---  function Equivalent_Elements (Left, Right : Cursor) return Boolean;
+   function Equivalent_Elements (Left, Right : Cursor) return Boolean;
 
    function Equivalent_Elements (Left : Cursor; Right : Element_Type)
       return Boolean;
@@ -131,30 +147,14 @@ package Ada.Containers.Hashed_Sets is
 --  function Equivalent_Elements (Left : Element_Type; Right : Cursor)
 --    return Boolean;
 
+   --  modified
    procedure Iterate (
-      Container : Set;
+      Container : Set'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
-   --  AI05-0212-1
-   type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is limited private;
-   type Reference_Type (
-      Element : not null access Element_Type) is limited private;
-   function Constant_Reference (
-      Container : not null access constant Set;
-      Position : Cursor)
-      return Constant_Reference_Type;
-   function Reference (
-      Container : not null access Set;
-      Position : Cursor)
-      return Reference_Type;
-
-   --  AI05-0139-2
---  type Iterator_Type is new Forward_Iterator with private;
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
-   function Iterate (Container : not null access constant Set)
+--  function Iterate (Container : Set)
+--    return Map_Iterator_Interfaces.Forward_Iterator'Class;
+   function Iterate (Container : Set)
       return Iterator;
 
    generic
@@ -186,6 +186,29 @@ package Ada.Containers.Hashed_Sets is
          Position : Cursor;
          Process : not null access procedure (Element : in out Element_Type));
 
+      type Reference_Type (
+         Element : not null access Element_Type) is private;
+
+      function Reference_Preserving_Key (
+         Container : not null access Set; -- [gcc 4.5/4.6] aliased
+         Position : Cursor)
+         return Reference_Type;
+
+      function Constant_Reference (
+         Container : not null access constant Set; -- [gcc 4.5/4.6] aliased
+         Key : Key_Type)
+         return Constant_Reference_Type;
+
+      function Reference_Preserving_Key (
+         Container : not null access Set; -- [gcc 4.5/4.6] aliased
+         Key : Key_Type)
+         return Reference_Type;
+
+   private
+
+      type Reference_Type (
+         Element : not null access Element_Type) is null record;
+
    end Generic_Keys;
 
    --  extended
@@ -193,7 +216,6 @@ package Ada.Containers.Hashed_Sets is
       type Index_Type is (<>);
       type Element_Array is array (Index_Type range <>) of Element_Type;
    function Generic_Array_To_Set (S : Element_Array) return Set;
---  diff
 
 private
 
@@ -247,9 +269,6 @@ private
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
-
-   type Reference_Type (
-      Element : not null access Element_Type) is null record;
 
    type Iterator is not null access constant Set;
 

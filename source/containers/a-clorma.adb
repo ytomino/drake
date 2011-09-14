@@ -179,9 +179,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    is
       pragma Unreferenced (Container);
    begin
-      return (
-         Key => Position.Key.all'Access,
-         Element => Position.Element.all'Access);
+      return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
    function Constant_Reference (
@@ -191,9 +189,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    is
       Position : constant not null Cursor := Find (Container.all, Key);
    begin
-      return (
-         Key => Position.Key.all'Access,
-         Element => Position.Element.all'Access);
+      return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean is
@@ -234,6 +230,9 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 
 --  diff (Element)
+--
+--
+--
 --
 --
 --
@@ -355,20 +354,20 @@ package body Ada.Containers.Limited_Ordered_Maps is
 
    procedure Insert (
       Container : in out Map;
-      New_Key : not null access function (C : Map) return Key_Type;
-      New_Item : not null access function (C : Map) return Element_Type;
-      Position : out Cursor)
---  diff
+      New_Key : not null access function return Key_Type;
+      New_Item : not null access function return Element_Type;
+      Position : out Cursor;
+      Inserted : out Boolean)
    is
-      The_Key : Key_Access := new Key_Type'(New_Key (Container));
+      The_Key : Key_Access := new Key_Type'(New_Key.all);
       Before : constant Cursor := Ceiling (Container, The_Key.all);
    begin
-      if Before = null or else The_Key.all < Before.Key.all then
---  diff
+      Inserted := Before = null or else The_Key.all < Before.Key.all;
+      if Inserted then
          Position := new Node'(
             Super => <>,
             Key => The_Key,
-            Element => new Element_Type'(New_Item (Container)));
+            Element => new Element_Type'(New_Item.all));
          Base.Insert (
             Container.Root,
             Container.Length,
@@ -376,23 +375,23 @@ package body Ada.Containers.Limited_Ordered_Maps is
             Upcast (Position));
       else
          Free (The_Key);
-         raise Constraint_Error;
+         Position := Before;
       end if;
    end Insert;
 
---  diff (Insert)
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Insert (
+      Container : in out Map;
+      Key : not null access function return Key_Type;
+      New_Item : not null access function return Element_Type)
+   is
+      Position : Cursor;
+      Inserted : Boolean;
+   begin
+      Insert (Container, Key, New_Item, Position, Inserted);
+      if not Inserted then
+         raise Constraint_Error;
+      end if;
+   end Insert;
 
    function Is_Empty (Container : Map) return Boolean is
    begin
@@ -401,7 +400,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Is_Empty;
 
    procedure Iterate (
-      Container : Map;
+      Container : Map'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -416,16 +415,16 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
    end Iterate;
 
-   function Iterate (Container : not null access constant Map)
+   function Iterate (Container : Map)
       return Iterator is
    begin
-      return Iterator (Container);
+      return Container'Unrestricted_Access;
    end Iterate;
 
---  diff (Key)
---
---
---
+   function Key (Position : Cursor) return Key_Reference_Type is
+   begin
+      return (Element => Position.Key.all'Access);
+   end Key;
 
    function Last (Container : Map) return Cursor is
    begin
@@ -511,9 +510,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    is
       pragma Unreferenced (Container);
    begin
-      return (
-         Key => Position.Key.all'Access,
-         Element => Position.Element.all'Access);
+      return (Element => Position.Element.all'Access);
    end Reference;
 
    function Reference (
@@ -524,9 +521,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Position : constant not null Cursor := Find (Container.all, Key);
    begin
 --  diff
-      return (
-         Key => Position.Key.all'Access,
-         Element => Position.Element.all'Access);
+      return (Element => Position.Element.all'Access);
    end Reference;
 
 --  diff (Replace)
@@ -548,7 +543,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 
    procedure Reverse_Iterate (
-      Container : Map;
+      Container : Map'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -564,15 +559,15 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Reverse_Iterate;
 
    procedure Update_Element (
-      Container : in out Map;
+      Container : in out Map'Class;
       Position : Cursor;
       Process : not null access procedure (
          Key : Key_Type;
-         Element : in out Element_Type))
-   is
-      pragma Unreferenced (Container);
+         Element : in out Element_Type)) is
    begin
-      Process (Position.Key.all, Position.Element.all);
+      Process (
+         Position.Key.all,
+         Reference (Container'Unrestricted_Access, Position).Element.all);
    end Update_Element;
 
 --  diff ("=")
@@ -607,6 +602,11 @@ package body Ada.Containers.Limited_Ordered_Maps is
    function "<" (Left, Right : Cursor) return Boolean is
    begin
       return Left.Key.all < Right.Key.all;
+   end "<";
+
+   function "<" (Left : Cursor; Right : Key_Type) return Boolean is
+   begin
+      return Left.Key.all < Right;
    end "<";
 
    package body Equivalents is

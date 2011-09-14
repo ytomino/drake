@@ -12,7 +12,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Indefinite_Hashed_Maps is
    pragma Preelaborate;
---  pragma Remote_Types; -- it defends to define Reference_Type...
+--  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
 
    type Map is tagged private;
    pragma Preelaborable_Initialization (Map);
@@ -25,6 +25,14 @@ package Ada.Containers.Indefinite_Hashed_Maps is
    function Empty_Map return Map;
 
    No_Element : constant Cursor;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+--  package Map_Iterator_Interfaces is new
+--    Ada.Iterator_Interfaces (Cursor, Has_Element);
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
 
    function "=" (Left, Right : Map) return Boolean;
 
@@ -53,12 +61,39 @@ package Ada.Containers.Indefinite_Hashed_Maps is
          Key : Key_Type;
          Element : Element_Type));
 
+   --  modified
    procedure Update_Element (
-      Container : in out Map;
+      Container : in out Map'Class; -- not primitive
       Position : Cursor;
       Process : not null access procedure (
          Key : Key_Type;
          Element : in out Element_Type));
+
+   type Constant_Reference_Type (
+      Element : not null access constant Element_Type) is private;
+
+   type Reference_Type (
+      Element : not null access Element_Type) is private;
+
+   function Constant_Reference (
+      Container : not null access constant Map; -- [gcc 4.5/4.6] aliased
+      Position : Cursor)
+      return Constant_Reference_Type;
+
+   function Reference (
+      Container : not null access Map; -- [gcc 4.5/4.6] aliased
+      Position : Cursor)
+      return Reference_Type;
+
+   function Constant_Reference (
+      Container : not null access constant Map; -- [gcc 4.5/4.6] aliased
+      Key : Key_Type)
+      return Constant_Reference_Type;
+
+   function Reference (
+      Container : not null access Map; -- [gcc 4.5/4.6] aliased
+      Key : Key_Type)
+      return Reference_Type;
 
    procedure Assign (Target : in out Map; Source : Map);
 
@@ -108,44 +143,27 @@ package Ada.Containers.Indefinite_Hashed_Maps is
 
    function Find (Container : Map; Key : Key_Type) return Cursor;
 
-   function Element (Container : Map; Key : Key_Type) return Element_Type;
+   --  modified
+   function Element (
+      Container : Map'Class; -- not primitive
+      Key : Key_Type) return Element_Type;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
 
-   function Has_Element (Position : Cursor) return Boolean;
-
---  function Equivalent_Keys (Left, Right : Cursor) return Boolean;
+   function Equivalent_Keys (Left, Right : Cursor) return Boolean;
 
    function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean;
 
 --  function Equivalent_Keys (Left : Key_Type; Right : Cursor) return Boolean;
 
+   --  modified
    procedure Iterate (
-      Container : Map;
+      Container : Map'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
-   --  AI05-0212-1
-   type Constant_Reference_Type (
-      Key : not null access constant Key_Type;
-      Element : not null access constant Element_Type) is limited private;
-   type Reference_Type (
-      Key : not null access constant Key_Type;
-      Element : not null access Element_Type) is limited private;
-   function Constant_Reference (
-      Container : not null access constant Map;
-      Position : Cursor)
-      return Constant_Reference_Type;
-   function Reference (
-      Container : not null access Map;
-      Position : Cursor)
-      return Reference_Type;
-
-   --  AI05-0139-2
---  type Iterator_Type is new Forward_Iterator with private;
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
-   function Iterate (Container : not null access constant Map)
+--  function Iterate (Container : Map)
+--    return Map_Iterator_Interfaces.Forward_Iterator'Class;
+   function Iterate (Container : Map)
       return Iterator;
 
 --  diff (Equivalent)
@@ -207,11 +225,9 @@ private
    No_Element : constant Cursor := null;
 
    type Constant_Reference_Type (
-      Key : not null access constant Key_Type;
       Element : not null access constant Element_Type) is null record;
 
    type Reference_Type (
-      Key : not null access constant Key_Type;
       Element : not null access Element_Type) is null record;
 
    type Iterator is not null access constant Map;

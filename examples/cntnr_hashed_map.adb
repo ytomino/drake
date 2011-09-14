@@ -67,8 +67,7 @@ procedure cntnr_Hashed_Map is
 			Check : CA := (others => False);
 		begin
 			while Maps.Has_Element (I) loop
-				--Ada.Text_IO.Put (X.Constant_Reference (I).Key.all);
-				Check (X.Constant_Reference (I).Key.all) := True;
+				Check (Maps.Key (I)) := True;
 				Maps.Next (I);
 			end loop;
 			pragma Assert (Check = CA'(others => True));
@@ -82,7 +81,7 @@ procedure cntnr_Hashed_Map is
 			Check : CA := (others => False);
 		begin
 			while Pos /= Maps.No_Element loop
-				Check (X.Constant_Reference (Pos).Key.all) := True;
+				Check (Maps.Key (Pos)) := True;
 				Pos := Maps.Next (Ite, Pos);
 			end loop;
 			pragma Assert (Check = CA'('C' => False, others => True));

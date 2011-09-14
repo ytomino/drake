@@ -279,6 +279,12 @@ package body Ada.Containers.Hashed_Sets is
       return (Finalization.Controlled with Super => (null, null));
    end Empty_Set;
 
+   function Equivalent_Elements (Left, Right : Cursor)
+      return Boolean is
+   begin
+      return Equivalent_Elements (Left.Element, Right.Element);
+   end Equivalent_Elements;
+
    function Equivalent_Elements (Left : Cursor; Right : Element_Type)
       return Boolean is
    begin
@@ -377,10 +383,15 @@ package body Ada.Containers.Hashed_Sets is
             Downcast (Container.Super.Data).Length,
             New_Hash,
             Upcast (Position));
+--  diff
+--  diff
       end if;
    end Insert;
 
-   procedure Insert (Container : in out Set; New_Item : Element_Type) is
+   procedure Insert (
+      Container : in out Set;
+      New_Item : Element_Type)
+   is
       Position : Cursor;
       Inserted : Boolean;
    begin
@@ -454,7 +465,7 @@ package body Ada.Containers.Hashed_Sets is
    end Is_Subset;
 
    procedure Iterate (
-      Container : Set;
+      Container : Set'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -462,17 +473,17 @@ package body Ada.Containers.Hashed_Sets is
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
-         Unique (Container'Unrestricted_Access.all, False);
+         Unique (Set (Container'Unrestricted_Access.all), False);
          Hash_Tables.Iterate (
             Downcast (Container.Super.Data).Table,
             Cast (Process));
       end if;
    end Iterate;
 
-   function Iterate (Container : not null access constant Set)
+   function Iterate (Container : Set)
       return Iterator is
    begin
-      return Iterator (Container);
+      return Container'Unrestricted_Access;
    end Iterate;
 
    function Length (Container : Set) return Count_Type is
@@ -527,14 +538,6 @@ package body Ada.Containers.Hashed_Sets is
    begin
       Process (Position.Element);
    end Query_Element;
-
-   function Reference (Container : not null access Set; Position : Cursor)
-      return Reference_Type is
-   begin
-      Unique (Container.all, True);
---  diff
-      return (Element => Position.Element'Access);
-   end Reference;
 
    procedure Replace (Container : in out Set; New_Item : Element_Type) is
    begin
@@ -712,6 +715,14 @@ package body Ada.Containers.Hashed_Sets is
             Key (Downcast (Position).Element));
       end Equivalent_Key;
 
+      function Constant_Reference (
+         Container : not null access constant Set;
+         Key : Key_Type)
+         return Constant_Reference_Type is
+      begin
+         return (Element => Find (Container.all, Key).Element'Access);
+      end Constant_Reference;
+
       function Contains (Container : Set; Key : Key_Type) return Boolean is
       begin
          return Find (Container, Key) /= null;
@@ -759,6 +770,25 @@ package body Ada.Containers.Hashed_Sets is
          return Key (Position.Element);
       end Key;
 
+      function Reference_Preserving_Key (
+         Container : not null access Set;
+         Position : Cursor)
+         return Reference_Type is
+      begin
+         Unique (Container.all, True);
+--  diff
+         return (Element => Position.Element'Access);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key (
+         Container : not null access Set;
+         Key : Key_Type)
+         return Reference_Type is
+      begin
+         Unique (Container.all, True);
+         return (Element => Find (Container.all, Key).Element'Access);
+      end Reference_Preserving_Key;
+
       procedure Replace (
          Container : in out Set;
          Key : Key_Type;
@@ -773,8 +803,9 @@ package body Ada.Containers.Hashed_Sets is
          Process : not null access procedure (Element : in out Element_Type))
          is
       begin
-         Unique (Container, True);
-         Process (Position.Element);
+         Process (
+            Reference_Preserving_Key (
+               Container'Unrestricted_Access, Position).Element.all);
       end Update_Element_Preserving_Key;
 
    end Generic_Keys;

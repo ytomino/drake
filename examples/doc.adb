@@ -395,11 +395,11 @@ procedure doc is
 			end Check;
 		else
 			Insert : declare
-				function New_Key (C : Doc_Maps.Map) return String is
+				function New_Key return String is
 				begin
 					return Unit_Name.Constant_Reference.Element.all;
 				end New_Key;
-				function New_Element (C : Doc_Maps.Map) return Unit_Contents is
+				function New_Element return Unit_Contents is
 				begin
 					pragma Assert (Name (Name'First .. Name'First + 2) = "../");
 					return (
@@ -411,10 +411,9 @@ procedure doc is
 						Reference => Reference,
 						Document => Document);
 				end New_Element;
-				Position : Doc_Maps.Cursor;
 			begin
 				if Kind = Extended_Unit or else not Document.Is_Null then
-					Doc_Maps.Insert (Extendeds, New_Key'Access, New_Element'Access, Position);
+					Doc_Maps.Insert (Extendeds, New_Key'Access, New_Element'Access);
 				end if;
 			end Insert;
 		end if;
@@ -453,7 +452,7 @@ begin
 	Ada.Text_IO.New_Line;
 	declare
 		procedure Output_Unit (I : in Doc_Maps.Cursor) is
-			Unit_Name : String renames Extendeds.Constant_Reference (I).Key.all;
+			Unit_Name : String renames Doc_Maps.Key (I).Element.all;
 			Contents : Unit_Contents renames Extendeds.Constant_Reference (I).Element.all;
 		begin
 			Ada.Text_IO.Put_Line (Unit_Name);

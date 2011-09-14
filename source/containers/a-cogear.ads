@@ -27,8 +27,8 @@ package Ada.Containers.Generic_Arrays is
 
    procedure Move (Target : in out Array_Access; Source : in out Array_Access);
 
-   procedure Replace (Target : in out Array_Access; Source : Array_Access);
-   procedure Replace (Target : in out Array_Access; Source : New_Array);
+   procedure Assign (Target : in out Array_Access; Source : Array_Access);
+   procedure Assign (Target : in out Array_Access; Source : New_Array);
 
    procedure Insert (
       Container : in out Array_Access;

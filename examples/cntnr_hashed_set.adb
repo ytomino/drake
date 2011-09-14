@@ -94,7 +94,7 @@ procedure cntnr_Hashed_Set is
 		Sets.Include (X, 3);
 		I := X.First;
 		while Sets.Has_Element (I) loop
-			Check (X.Reference (I).Element.all) := True;
+			Check (X.Constant_Reference (I).Element.all) := True;
 			Sets.Next (I);
 		end loop;
 		pragma Assert (Check = CA'(1 | 3 | 5 | 7 | 9 => True, others => False));

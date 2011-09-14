@@ -275,13 +275,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    function First (Object : Iterator) return Cursor is
    begin
-      return First (Object.all);
+      return Object.First;
    end First;
-
-   function First_Element (Container : List) return Element_Type is
-   begin
-      return First (Container).Element;
-   end First_Element;
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
@@ -345,7 +340,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
    end Is_Empty;
 
    procedure Iterate (
-      Container : List;
+      Container : List'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -353,17 +348,29 @@ package body Ada.Containers.Doubly_Linked_Lists is
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
-         Unique (Container'Unrestricted_Access.all, False);
+         Unique (List (Container'Unrestricted_Access.all), False);
          Base.Iterate (
             Downcast (Container.Super.Data).First,
             Cast (Process));
       end if;
    end Iterate;
 
-   function Iterate (Container : not null access constant List)
+   function Iterate (Container : List)
       return Iterator is
    begin
-      return Iterator (Container);
+      return (First => First (Container), Last => Last (Container));
+   end Iterate;
+
+   function Iterate (Container : List; First, Last : Cursor)
+      return Iterator
+   is
+      pragma Unreferenced (Container);
+   begin
+      if Base.Is_Before (Upcast (Last), Upcast (First)) then
+         return (First => No_Element, Last => No_Element);
+      else
+         return (First => First, Last => Last);
+      end if;
    end Iterate;
 
    function Last (Container : List) return Cursor is
@@ -378,13 +385,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    function Last (Object : Iterator) return Cursor is
    begin
-      return Last (Object.all);
+      return Object.Last;
    end Last;
-
-   function Last_Element (Container : List) return Element_Type is
-   begin
-      return Last (Container).Element;
-   end Last_Element;
 
    function Length (Container : List) return Count_Type is
    begin
@@ -419,9 +421,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    end Next;
 
    function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
    begin
-      return Next (Position);
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
    end Next;
 
    procedure Prepend (
@@ -447,9 +452,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    end Previous;
 
    function Previous (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
    begin
-      return Previous (Position);
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
    end Previous;
 
    procedure Query_Element (
@@ -524,7 +532,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
    end Reverse_Find;
 
    procedure Reverse_Iterate (
-      Container : List;
+      Container : List'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -532,7 +540,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
-         Unique (Container'Unrestricted_Access.all, False);
+         Unique (List (Container'Unrestricted_Access.all), False);
          Linked_Lists.Reverse_Iterate (
             Downcast (Container.Super.Data).Last,
             Cast (Process));
@@ -624,13 +632,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    end Swap_Links;
 
    procedure Update_Element (
-      Container : in out List;
+      Container : in out List'Class;
       Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type)) is
---  diff
    begin
-      Unique (Container, True);
-      Process (Position.Element);
+      Process (
+         Reference (Container'Unrestricted_Access, Position).Element.all);
    end Update_Element;
 
    function "=" (Left, Right : List) return Boolean is
@@ -658,6 +665,11 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return False;
       end if;
    end "=";
+
+   function "<" (Left, Right : Cursor) return Boolean is
+   begin
+      return Base.Is_Before (Upcast (Left), Upcast (Right));
+   end "<";
 
    package body Generic_Sorting is
 

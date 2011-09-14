@@ -9,7 +9,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Doubly_Linked_Lists is
    pragma Preelaborate;
---  pragma Remote_Types; -- it defends to define Reference_Type...
+--  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
 
    type List is tagged limited private;
    pragma Preelaborable_Initialization (List);
@@ -22,6 +22,16 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
    function Empty_List return List;
 
    No_Element : constant Cursor;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+--  package List_Iterator_Interfaces is new
+--     Ada.Iterator_Interfaces (Cursor, Has_Element);
+   type Iterator is limited private;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   function Last (Object : Iterator) return Cursor;
+   function Previous (Object : Iterator; Position : Cursor) return Cursor;
 
 --  diff ("=")
 
@@ -42,10 +52,27 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
       Position : Cursor;
       Process : not null access procedure (Element : Element_Type));
 
+   --  modified
    procedure Update_Element (
-      Container : in out List;
+      Container : in out List'Class; -- not primitive
       Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type));
+
+   type Constant_Reference_Type (
+      Element : not null access constant Element_Type) is private;
+
+   type Reference_Type (
+      Element : not null access Element_Type) is private;
+
+   function Constant_Reference (
+      Container : not null access constant List; -- [gcc 4.5/4.6] aliased
+      Position : Cursor)
+      return Constant_Reference_Type;
+
+   function Reference (
+      Container : not null access List; -- [gcc 4.5/4.6] aliased
+      Position : Cursor)
+      return Reference_Type;
 
 --  diff (Assign)
 
@@ -62,7 +89,7 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
    procedure Insert (
       Container : in out List;
       Before : Cursor;
-      New_Item : not null access function (C : List) return Element_Type;
+      New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Count : Count_Type := 1);
 
@@ -140,8 +167,13 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+--
+--
+--
 
 --  diff (Reverse_Find)
+--
+--
 --
 --
 --
@@ -157,38 +189,29 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 
 --  diff (Contains)
 
-   function Has_Element (Position : Cursor) return Boolean;
+   --  extended
+   function "<" (Left, Right : Cursor) return Boolean;
 
+   --  modified
    procedure Iterate (
-      Container : List;
+      Container : List'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
+   --  modified
    procedure Reverse_Iterate (
-      Container : List;
+      Container : List; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
-   --  AI05-0212-1
-   type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is limited private;
-   type Reference_Type (
-      Element : not null access Element_Type) is limited private;
-   function Constant_Reference (
-      Container : not null access constant List;
-      Position : Cursor)
-      return Constant_Reference_Type;
-   function Reference (
-      Container : not null access List;
-      Position : Cursor)
-      return Reference_Type;
+--  function Iterate (Container : List)
+--    return List_Iterator_Interfaces.Reversible_Iterator'Class;
+   function Iterate (Container : List)
+      return Iterator;
 
-   --  AI05-0139-2
---  type Iterator_Type is new Reversible_Iterator with private;
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
-   function Last (Object : Iterator) return Cursor;
-   function Previous (Object : Iterator; Position : Cursor) return Cursor;
-   function Iterate (Container : not null access constant List)
+--  function Iterate (Container : in List; Start : in Cursor)
+--    return List_Iterator_Interfaces.Reversible_Iterator'Class;
+
+   --  extended
+   function Iterate (Container : List; First, Last : Cursor)
       return Iterator;
 
    generic
@@ -274,6 +297,9 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   type Iterator is not null access constant List;
+   type Iterator is record
+      First : Cursor;
+      Last : Cursor;
+   end record;
 
 end Ada.Containers.Limited_Doubly_Linked_Lists;
