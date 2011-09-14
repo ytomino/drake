@@ -15,6 +15,8 @@ package body Ada.Containers.Generic_Arrays is
       Swap (Context.Container, Index_Type'Val (I), Index_Type'Val (J));
    end Swap;
 
+   --  implementation
+
    procedure Append (
       Container : in out Array_Access;
       New_Item : Array_Type) is
@@ -43,6 +45,22 @@ package body Ada.Containers.Generic_Arrays is
    begin
       Insert (Container, Container'Last + 1, Count);
    end Append;
+
+   procedure Assign (Target : in out Array_Access; Source : Array_Access) is
+   begin
+      if Target /= Source then
+         Free (Target);
+         if Source /= null and then Source'Length > 0 then
+            Target := new Array_Type'(Source.all);
+         end if;
+      end if;
+   end Assign;
+
+   procedure Assign (Target : in out Array_Access; Source : New_Array) is
+   begin
+      Free (Target);
+      Target := Array_Access (Source);
+   end Assign;
 
    procedure Delete (
       Container : in out Array_Access;
@@ -237,22 +255,6 @@ package body Ada.Containers.Generic_Arrays is
    begin
       Insert (Container, Container'First, Count);
    end Prepend;
-
-   procedure Replace (Target : in out Array_Access; Source : Array_Access) is
-   begin
-      if Target /= Source then
-         Free (Target);
-         if Source /= null and then Source'Length > 0 then
-            Target := new Array_Type'(Source.all);
-         end if;
-      end if;
-   end Replace;
-
-   procedure Replace (Target : in out Array_Access; Source : New_Array) is
-   begin
-      Free (Target);
-      Target := Array_Access (Source);
-   end Replace;
 
    procedure Reverse_Elements (Container : in out Array_Access) is
       pragma Unmodified (Container);

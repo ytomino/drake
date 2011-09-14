@@ -189,9 +189,17 @@ package body Ada.Containers.Hashed_Maps is
    is
       pragma Unreferenced (Container);
    begin
-      return (
-         Key => Position.Key'Access,
-         Element => Position.Element'Access);
+      return (Element => Position.Element'Access);
+   end Constant_Reference;
+
+   function Constant_Reference (
+      Container : not null access constant Map;
+      Key : Key_Type)
+      return Constant_Reference_Type
+   is
+      Position : constant not null Cursor := Find (Container.all, Key);
+   begin
+      return (Element => Position.Element'Access);
    end Constant_Reference;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean is
@@ -223,7 +231,10 @@ package body Ada.Containers.Hashed_Maps is
       Free (Position);
    end Delete;
 
-   function Element (Container : Map; Key : Key_Type) return Element_Type is
+   function Element (
+      Container : Map'Class;
+      Key : Key_Type)
+      return Element_Type is
    begin
       return Find (Container, Key).Element;
    end Element;
@@ -237,6 +248,11 @@ package body Ada.Containers.Hashed_Maps is
    begin
       return (Finalization.Controlled with Super => (null, null));
    end Empty_Map;
+
+   function Equivalent_Keys (Left, Right : Cursor) return Boolean is
+   begin
+      return Equivalent_Keys (Left.Key, Right.Key);
+   end Equivalent_Keys;
 
    function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean is
    begin
@@ -337,6 +353,8 @@ package body Ada.Containers.Hashed_Maps is
             Downcast (Container.Super.Data).Length,
             New_Hash,
             Upcast (Position));
+--  diff
+--  diff
       end if;
    end Insert;
 
@@ -361,7 +379,7 @@ package body Ada.Containers.Hashed_Maps is
    end Is_Empty;
 
    procedure Iterate (
-      Container : Map;
+      Container : Map'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -369,17 +387,17 @@ package body Ada.Containers.Hashed_Maps is
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
-         Unique (Container'Unrestricted_Access.all, False);
+         Unique (Map (Container'Unrestricted_Access.all), False);
          Hash_Tables.Iterate (
             Downcast (Container.Super.Data).Table,
             Cast (Process));
       end if;
    end Iterate;
 
-   function Iterate (Container : not null access constant Map)
+   function Iterate (Container : Map)
       return Iterator is
    begin
-      return Iterator (Container);
+      return Container'Unrestricted_Access;
    end Iterate;
 
    function Key (Position : Cursor) return Key_Type is
@@ -437,9 +455,18 @@ package body Ada.Containers.Hashed_Maps is
    begin
       Unique (Container.all, True);
 --  diff
-      return (
-         Key => Position.Key'Access,
-         Element => Position.Element'Access);
+      return (Element => Position.Element'Access);
+   end Reference;
+
+   function Reference (
+      Container : not null access Map;
+      Key : Key_Type)
+      return Reference_Type
+   is
+      Position : constant not null Cursor := Find (Container.all, Key);
+   begin
+      Unique (Container.all, True);
+      return (Element => Position.Element'Access);
    end Reference;
 
    procedure Replace (
@@ -480,15 +507,15 @@ package body Ada.Containers.Hashed_Maps is
    end Reserve_Capacity;
 
    procedure Update_Element (
-      Container : in out Map;
+      Container : in out Map'Class;
       Position : Cursor;
       Process : not null access procedure (
          Key : Key_Type;
          Element : in out Element_Type)) is
    begin
-      Unique (Container, True);
---  diff
-      Process (Position.Key, Position.Element);
+      Process (
+         Position.Key,
+         Reference (Container'Unrestricted_Access, Position).Element.all);
    end Update_Element;
 
    function "=" (Left, Right : Map) return Boolean is

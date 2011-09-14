@@ -8,7 +8,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Indefinite_Holders is
    pragma Preelaborate;
---  pragma Remote_Types; -- it defends to define Reference_Type...
+--  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
 
    type Holder is tagged private;
    pragma Preelaborable_Initialization (Holder);
@@ -25,35 +25,44 @@ package Ada.Containers.Indefinite_Holders is
 
    procedure Clear (Container : in out Holder);
 
-   function Element (Container : Holder) return Element_Type;
+   --  modified
+   function Element (
+      Container : Holder'Class) -- not primitive
+      return Element_Type;
 
    procedure Replace_Element (
       Container : in out Holder;
       New_Item : Element_Type);
 
+   --  modified
    procedure Query_Element (
-      Container : Holder;
+      Container : Holder'Class; -- not primitive
       Process : not null access procedure (Element : Element_Type));
 
+   --  modified
    procedure Update_Element (
-      Container : in out Holder;
+      Container : in out Holder'Class; -- not primitive
       Process : not null access procedure (Element : in out Element_Type));
+
+   type Constant_Reference_Type (
+      Element : not null access constant Element_Type) is private;
+
+   type Reference_Type (
+      Element : not null access Element_Type) is private;
+
+   function Constant_Reference (
+      Container : not null access constant Holder) -- [gcc 4.5/4.6] aliased
+      return Constant_Reference_Type;
+
+   function Reference (
+      Container : not null access Holder) -- [gcc 4.5/4.6] aliased
+      return Reference_Type;
 
    procedure Assign (Target : in out Holder; Source : Holder);
 
    function Copy (Source : Holder) return Holder;
 
    procedure Move (Target : in out Holder; Source : in out Holder);
-
-   --  AI05-0212-1
-   type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is limited private;
-   type Reference_Type (
-      Element : not null access Element_Type) is limited private;
-   function Constant_Reference (Container : not null access constant Holder)
-      return Constant_Reference_Type;
-   function Reference (Container : not null access Holder)
-      return Reference_Type;
 
 private
 

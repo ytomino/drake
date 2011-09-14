@@ -391,13 +391,15 @@ package body Ada.Containers.Limited_Ordered_Sets is
    procedure Insert (
       Container : in out Set;
       New_Item : not null access function (C : Set) return Element_Type;
-      Position  : out Cursor)
---  diff
+      Position : out Cursor;
+      Inserted : out Boolean)
    is
-      New_Element : Element_Access := new Element_Type'(New_Item (Container));
+      New_Element : Element_Access :=
+         new Element_Type'(New_Item.all (Container)); -- [gcc-4.5]
       Before : constant Cursor := Ceiling (Container, New_Element.all);
    begin
-      if Before = null or else New_Element.all < Before.Element.all then
+      Inserted := Before = null or else New_Element.all < Before.Element.all;
+      if Inserted then
          Position := new Node'(
             Super => <>,
             Element => New_Element);
@@ -406,22 +408,24 @@ package body Ada.Containers.Limited_Ordered_Sets is
             Container.Length,
             Upcast (Before),
             Upcast (Position));
---  diff
       else
          Free (New_Element);
-         raise Constraint_Error;
+         Position := Before;
       end if;
    end Insert;
 
---  diff (Insert)
---
---
---
---
---
---
---
---
+   procedure Insert (
+      Container : in out Set;
+      New_Item : not null access function (C : Set) return Element_Type)
+   is
+      Position : Cursor;
+      Inserted : Boolean;
+   begin
+      Insert (Container, New_Item, Position, Inserted);
+      if not Inserted then
+         raise Constraint_Error;
+      end if;
+   end Insert;
 
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
@@ -487,7 +491,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Is_Subset;
 
    procedure Iterate (
-      Container : Set;
+      Container : Set'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -502,10 +506,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
    end Iterate;
 
-   function Iterate (Container : not null access constant Set)
+   function Iterate (Container : Set)
       return Iterator is
    begin
-      return Iterator (Container);
+      return Container'Unrestricted_Access;
    end Iterate;
 
    function Last (Container : Set) return Cursor is
@@ -595,16 +599,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Process (Position.Element.all);
    end Query_Element;
 
-   function Reference (
-      Container : not null access Set;
-      Position : Cursor)
-      return Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
 --  diff (Replace)
 --
 --
@@ -621,7 +615,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 
    procedure Reverse_Iterate (
-      Container : Set;
+      Container : Set'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -759,6 +753,11 @@ package body Ada.Containers.Limited_Ordered_Sets is
       return Left.Element.all < Right.Element.all;
    end "<";
 
+   function "<" (Left : Cursor; Right : Element_Type) return Boolean is
+   begin
+      return Left.Element.all < Right;
+   end "<";
+
    package body Generic_Keys is
 
       function Compare is new Composites.Compare (Key_Type);
@@ -802,6 +801,14 @@ package body Ada.Containers.Limited_Ordered_Sets is
             end;
 --  diff
       end Ceiling;
+
+      function Constant_Reference (
+         Container : not null access constant Set;
+         Key : Key_Type)
+         return Constant_Reference_Type is
+      begin
+         return (Element => Find (Container.all, Key).Element);
+      end Constant_Reference;
 
       function Contains (Container : Set; Key : Key_Type) return Boolean is
       begin
@@ -868,6 +875,25 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
       end Floor;
 
+      function Reference_Preserving_Key (
+         Container : not null access Set;
+         Position : Cursor)
+         return Reference_Type
+      is
+         pragma Unreferenced (Container);
+      begin
+         return (Element => Position.Element);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key (
+         Container : not null access Set;
+         Key : Key_Type)
+         return Reference_Type is
+      begin
+--  diff
+         return (Element => Find (Container.all, Key).Element);
+      end Reference_Preserving_Key;
+
 --  diff (Replace)
 --
 --
@@ -885,10 +911,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Container : in out Set;
          Position  : Cursor;
          Process : not null access procedure (Element : in out Element_Type))
-      is
-         pragma Unreferenced (Container);
+         is
       begin
-         Process (Position.Element.all);
+         Process (
+            Reference_Preserving_Key (
+               Container'Unrestricted_Access,
+               Position).Element.all);
       end Update_Element_Preserving_Key;
 
    end Generic_Keys;

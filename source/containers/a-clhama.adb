@@ -189,9 +189,17 @@ package body Ada.Containers.Limited_Hashed_Maps is
    is
       pragma Unreferenced (Container);
    begin
-      return (
-         Key => Position.Key.all'Access,
-         Element => Position.Element.all'Access);
+      return (Element => Position.Element.all'Access);
+   end Constant_Reference;
+
+   function Constant_Reference (
+      Container : not null access constant Map;
+      Key : Key_Type)
+      return Constant_Reference_Type
+   is
+      Position : constant not null Cursor := Find (Container.all, Key);
+   begin
+      return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean is
@@ -227,6 +235,9 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
+--
+--
 
 --  diff (Element)
 --
@@ -237,6 +248,11 @@ package body Ada.Containers.Limited_Hashed_Maps is
    begin
       return (Finalization.Limited_Controlled with Table => null, Length => 0);
    end Empty_Map;
+
+   function Equivalent_Keys (Left, Right : Cursor) return Boolean is
+   begin
+      return Equivalent_Keys (Left.Key.all, Right.Key.all);
+   end Equivalent_Keys;
 
    function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean is
    begin
@@ -319,16 +335,19 @@ package body Ada.Containers.Limited_Hashed_Maps is
       Container : in out Map;
       New_Key : not null access function (C : Map) return Key_Type;
       New_Item : not null access function (C : Map) return Element_Type;
-      Position : out Cursor)
+      Position : out Cursor;
+      Inserted : out Boolean)
    is
-      Key : Key_Access := new Key_Type'(New_Key (Container));
+      Key : Key_Access := new Key_Type'(New_Key.all (Container));
       New_Hash : constant Hash_Type := Hash (Key.all);
    begin
-      if Find (Container, New_Hash, Key.all) = null then
+      Position := Find (Container, New_Hash, Key.all);
+      Inserted := Position = null;
+      if Inserted then
          Position := new Node'(
             Super => <>,
             Key => Key,
-            Element => new Element_Type'(New_Item (Container)));
+            Element => new Element_Type'(New_Item.all (Container)));
          Hash_Tables.Insert (
             Container.Table,
             Container.Length,
@@ -336,23 +355,22 @@ package body Ada.Containers.Limited_Hashed_Maps is
             Upcast (Position));
       else
          Free (Key);
-         raise Constraint_Error;
       end if;
    end Insert;
 
---  diff (Insert)
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Insert (
+      Container : in out Map;
+      Key : not null access function (C : Map) return Key_Type;
+      New_Item : not null access function (C : Map) return Element_Type)
+   is
+      Position : Cursor;
+      Inserted : Boolean;
+   begin
+      Insert (Container, Key, New_Item, Position, Inserted);
+      if not Inserted then
+         raise Constraint_Error;
+      end if;
+   end Insert;
 
    function Is_Empty (Container : Map) return Boolean is
    begin
@@ -361,7 +379,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Is_Empty;
 
    procedure Iterate (
-      Container : Map;
+      Container : Map'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -376,10 +394,10 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --  diff
    end Iterate;
 
-   function Iterate (Container : not null access constant Map)
+   function Iterate (Container : Map)
       return Iterator is
    begin
-      return Iterator (Container);
+      return Container'Unrestricted_Access;
    end Iterate;
 
 --  diff (Key)
@@ -437,9 +455,18 @@ package body Ada.Containers.Limited_Hashed_Maps is
    is
       pragma Unreferenced (Container);
    begin
-      return (
-         Key => Position.Key.all'Access,
-         Element => Position.Element.all'Access);
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
+   function Reference (
+      Container : not null access Map;
+      Key : Key_Type)
+      return Reference_Type
+   is
+      Position : constant not null Cursor := Find (Container.all, Key);
+   begin
+--  diff
+      return (Element => Position.Element.all'Access);
    end Reference;
 
 --  diff (Replace)
@@ -480,15 +507,15 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Reserve_Capacity;
 
    procedure Update_Element (
-      Container : in out Map;
+      Container : in out Map'Class;
       Position : Cursor;
       Process : not null access procedure (
          Key : Key_Type;
-         Element : in out Element_Type))
-   is
-      pragma Unreferenced (Container);
+         Element : in out Element_Type)) is
    begin
-      Process (Position.Key.all, Position.Element.all);
+      Process (
+         Position.Key.all,
+         Reference (Container'Unrestricted_Access, Position).Element.all);
    end Update_Element;
 
 --  diff ("=")

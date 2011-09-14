@@ -394,9 +394,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff [gcc-4.5]
       Before : constant Cursor := Ceiling (Container, New_Item);
    begin
-      if Before = null or else New_Item < Before.Element.all then
+      Inserted := Before = null or else New_Item < Before.Element.all;
+      if Inserted then
          Unique (Container, True);
          Position := new Node'(
             Super => <>,
@@ -406,14 +408,16 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Downcast (Container.Super.Data).Length,
             Upcast (Before),
             Upcast (Position));
-         Inserted := True;
       else
+--  diff
          Position := Before;
-         Inserted := False;
       end if;
    end Insert;
 
-   procedure Insert (Container : in out Set; New_Item : Element_Type) is
+   procedure Insert (
+      Container : in out Set;
+      New_Item : Element_Type)
+   is
       Position : Cursor;
       Inserted : Boolean;
    begin
@@ -487,7 +491,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    end Is_Subset;
 
    procedure Iterate (
-      Container : Set;
+      Container : Set'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -495,17 +499,17 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
-         Unique (Container'Unrestricted_Access.all, False);
+         Unique (Set (Container'Unrestricted_Access.all), False);
          Binary_Trees.Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
       end if;
    end Iterate;
 
-   function Iterate (Container : not null access constant Set)
+   function Iterate (Container : Set)
       return Iterator is
    begin
-      return Iterator (Container);
+      return Container'Unrestricted_Access;
    end Iterate;
 
    function Last (Container : Set) return Cursor is
@@ -595,16 +599,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Process (Position.Element.all);
    end Query_Element;
 
-   function Reference (
-      Container : not null access Set;
-      Position : Cursor)
-      return Reference_Type is
-   begin
-      Unique (Container.all, True);
---  diff
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
    procedure Replace (Container : in out Set; New_Item : Element_Type) is
    begin
       Replace_Element (Container, Find (Container, New_Item), New_Item);
@@ -621,7 +615,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    end Replace_Element;
 
    procedure Reverse_Iterate (
-      Container : Set;
+      Container : Set'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -629,7 +623,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
-         Unique (Container'Unrestricted_Access.all, False);
+         Unique (Set (Container'Unrestricted_Access.all), False);
          Binary_Trees.Reverse_Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -759,6 +753,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       return Left.Element.all < Right.Element.all;
    end "<";
 
+   function "<" (Left : Cursor; Right : Element_Type) return Boolean is
+   begin
+      return Left.Element.all < Right;
+   end "<";
+
    package body Generic_Keys is
 
       function Compare is new Composites.Compare (Key_Type);
@@ -802,6 +801,14 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             end;
          end if;
       end Ceiling;
+
+      function Constant_Reference (
+         Container : not null access constant Set;
+         Key : Key_Type)
+         return Constant_Reference_Type is
+      begin
+         return (Element => Find (Container.all, Key).Element);
+      end Constant_Reference;
 
       function Contains (Container : Set; Key : Key_Type) return Boolean is
       begin
@@ -868,6 +875,25 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          end if;
       end Floor;
 
+      function Reference_Preserving_Key (
+         Container : not null access Set;
+         Position : Cursor)
+         return Reference_Type is
+      begin
+         Unique (Container.all, True);
+--  diff
+         return (Element => Position.Element);
+      end Reference_Preserving_Key;
+
+      function Reference_Preserving_Key (
+         Container : not null access Set;
+         Key : Key_Type)
+         return Reference_Type is
+      begin
+         Unique (Container.all, True);
+         return (Element => Find (Container.all, Key).Element);
+      end Reference_Preserving_Key;
+
       procedure Replace (
          Container : in out Set;
          Key : Key_Type;
@@ -887,8 +913,10 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Process : not null access procedure (Element : in out Element_Type))
          is
       begin
-         Unique (Container, True);
-         Process (Position.Element.all);
+         Process (
+            Reference_Preserving_Key (
+               Container'Unrestricted_Access,
+               Position).Element.all);
       end Update_Element_Preserving_Key;
 
    end Generic_Keys;

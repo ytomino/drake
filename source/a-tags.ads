@@ -208,6 +208,7 @@ private
    --  required for downcast to interface types by compiler (a-tags.ads)
    function Displace (This : System.Address; T : Tag) return System.Address;
 
+   --  required for Generic_Dispatching_Constructor with interface ???
 --   function Secondary_Tag (T, Iface : Tag) return Tag;
 
 --   function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
@@ -218,20 +219,24 @@ private
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind;
 
+   --  required for select statement with synchronized interface ???
 --   function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
 
    --  required for Obj in Intf'Class by compiler (a-tags.ads)
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
 
+   --  required (optional) for dynamic secondary dispatch table ???
 --   function Offset_To_Top (This : System.Address)
 --      return System.Storage_Elements.Storage_Offset;
 
---   procedure Register_Interface_Offset (
---      This : System.Address;
---      Interface_T : Tag;
---      Is_Static : Boolean;
---      Offset_Value : System.Storage_Elements.Storage_Offset;
---      Offset_Func : Offset_To_Top_Function_Ptr);
+   --  required for tagged types having two (or more) ancestors
+   --    by compiler (s-exctab.ads)
+   procedure Register_Interface_Offset (
+      This : System.Address;
+      Interface_T : Tag;
+      Is_Static : Boolean;
+      Offset_Value : System.Storage_Elements.Storage_Offset;
+      Offset_Func : Offset_To_Top_Function_Ptr);
 
    --  required for library-level tagged types by compiler (s-exctab.ads)
    procedure Register_Tag (T : Tag) is null; -- unimplemented

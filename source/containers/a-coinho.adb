@@ -82,6 +82,8 @@ package body Ada.Containers.Indefinite_Holders is
          Free => Free_Data'Access);
    end Unique;
 
+   --  implementation
+
    overriding procedure Adjust (Object : in out Holder) is
    begin
       System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
@@ -117,9 +119,9 @@ package body Ada.Containers.Indefinite_Holders is
       return Source; -- Adjust called by the auto
    end Copy;
 
-   function Element (Container : Holder) return Element_Type is
+   function Element (Container : Holder'Class) return Element_Type is
    begin
-      return Container.Data.Element.all;
+      return Constant_Reference (Container'Unrestricted_Access).Element.all;
    end Element;
 
    function Empty_Holder return Holder is
@@ -144,10 +146,10 @@ package body Ada.Containers.Indefinite_Holders is
    end Is_Empty;
 
    procedure Query_Element (
-      Container : Holder;
+      Container : Holder'Class;
       Process : not null access procedure (Element : Element_Type)) is
    begin
-      Process (Container.Data.Element.all);
+      Process (Constant_Reference (Container'Unrestricted_Access).Element.all);
    end Query_Element;
 
    function Reference (Container : not null access Holder)
@@ -173,11 +175,10 @@ package body Ada.Containers.Indefinite_Holders is
    end To_Holder;
 
    procedure Update_Element (
-      Container : in out Holder;
+      Container : in out Holder'Class;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Unique (Container);
-      Process (Container.Data.Element.all);
+      Process (Reference (Container'Unrestricted_Access).Element.all);
    end Update_Element;
 
    function "=" (Left, Right : Holder) return Boolean is

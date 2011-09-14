@@ -300,10 +300,11 @@ package body Ada.Containers.Indefinite_Vectors is
       Container.Length := Container.Length - Count;
    end Delete_Last;
 
-   function Element (Container : Vector; Index : Index_Type)
+   function Element (Container : Vector'Class; Index : Index_Type)
       return Element_Type is
    begin
-      return Container.Data.Items (Index).all;
+      return
+         Constant_Reference (Container'Unrestricted_Access, Index).Element.all;
    end Element;
 
    function Empty_Vector return Vector is
@@ -321,15 +322,9 @@ package body Ada.Containers.Indefinite_Vectors is
    function Find (
       Container : Vector;
       Item : Element_Type;
-      Position : Cursor) return Cursor
-   is
-      Result : constant Cursor := Find_Index (Container, Item, Position);
+      Position : Cursor) return Cursor is
    begin
-      if Result = No_Index then
-         return Cursor'Last; --  Find (...) <= Last
-      else
-         return Result;
-      end if;
+      return Find_Index (Container, Item, Position);
    end Find;
 
    function Find_Index (
@@ -357,13 +352,8 @@ package body Ada.Containers.Indefinite_Vectors is
 
    function First (Object : Iterator) return Cursor is
    begin
-      return Cursor'Min (Index_Type'First, Object.Last_Index);
+      return Object.First;
    end First;
-
-   function First_Element (Container : Vector) return Element_Type is
-   begin
-      return Container.Data.Items (Index_Type'First).all;
-   end First_Element;
 
    function First_Index (Container : Vector) return Index_Type is
       pragma Unreferenced (Container);
@@ -503,7 +493,7 @@ package body Ada.Containers.Indefinite_Vectors is
    end Is_Empty;
 
    procedure Iterate (
-      Container : Vector;
+      Container : Vector'Class;
       Process : not null access procedure (Position : Cursor)) is
    begin
       for I in Index_Type'First .. Last_Index (Container) loop
@@ -511,21 +501,28 @@ package body Ada.Containers.Indefinite_Vectors is
       end loop;
    end Iterate;
 
-   function Iterate (Container : not null access constant Vector)
+   function Iterate (Container : Vector)
       return Iterator is
    begin
-      return (Last_Index => Last_Index (Container.all));
+      return (First => First (Container), Last => Last (Container));
+   end Iterate;
+
+   function Iterate (Container : Vector; First, Last : Cursor)
+      return Iterator
+   is
+      pragma Unreferenced (Container);
+   begin
+      if First > Last then
+         return (First => No_Element, Last => No_Element);
+      else
+         return (First => First, Last => Last);
+      end if;
    end Iterate;
 
    function Last (Object : Iterator) return Cursor is
    begin
-      return Object.Last_Index;
+      return Object.Last;
    end Last;
-
-   function Last_Element (Container : Vector) return Element_Type is
-   begin
-      return Container.Data.Items (Last_Index (Container)).all;
-   end Last_Element;
 
    function Last_Index (Container : Vector) return Extended_Index is
    begin
@@ -550,7 +547,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    function Next (Object : Iterator; Position : Cursor) return Cursor is
    begin
-      if Position >= Object.Last_Index then
+      if Position >= Object.Last then
          return No_Element;
       else
          return Position + 1;
@@ -571,17 +568,22 @@ package body Ada.Containers.Indefinite_Vectors is
    end Prepend;
 
    function Previous (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
    begin
-      return Position - 1; -- error if Position = No_Element
+      if Position <= Object.First then
+         return No_Element;
+      else
+         return Position - 1;
+      end if;
    end Previous;
 
    procedure Query_Element (
-      Container : Vector;
+      Container : Vector'Class;
       Index : Index_Type;
       Process  : not null access procedure (Element : Element_Type)) is
    begin
-      Process (Container.Data.Items (Index).all);
+      Process (
+         Constant_Reference (
+            Container'Unrestricted_Access, Index).Element.all);
    end Query_Element;
 
    function Reference (
@@ -696,7 +698,7 @@ package body Ada.Containers.Indefinite_Vectors is
    end Reverse_Find_Index;
 
    procedure Reverse_Iterate (
-      Container : Vector;
+      Container : Vector'Class;
       Process : not null access procedure (Position : Cursor)) is
    begin
       for I in reverse Index_Type'First .. Last_Index (Container) loop
@@ -736,11 +738,6 @@ package body Ada.Containers.Indefinite_Vectors is
       return Cursor (Index);
    end To_Cursor;
 
-   function To_Index (Position : Cursor) return Extended_Index is
-   begin
-      return Position;
-   end To_Index;
-
    function To_Vector (Length : Count_Type) return Vector is
    begin
       return Result : Vector do
@@ -757,12 +754,11 @@ package body Ada.Containers.Indefinite_Vectors is
    end To_Vector;
 
    procedure Update_Element (
-      Container : in out Vector;
+      Container : in out Vector'Class;
       Index : Index_Type;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Unique (Container);
-      Process (Container.Data.Items (Index).all);
+      Process (Reference (Container'Unrestricted_Access, Index).Element.all);
    end Update_Element;
 
    function "=" (Left, Right : Vector) return Boolean is

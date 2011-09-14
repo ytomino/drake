@@ -101,14 +101,14 @@ procedure cntnr_Vector is
 		Z : aliased Vectors.Vector;
 	begin
 		pragma Assert (X.Length = 3);
-		pragma Assert (X.Last_Element = 'C');
+		pragma Assert (X.Element (X.Last) = 'C');
 		pragma Assert (X.Constant_Reference (X.Last_Index).Element.all = 'C');
 		Y := X & 'D';
 		Z := X & 'E';
 		pragma Assert (Y.Length = 4);
-		pragma Assert (Y.Last_Element = 'D');
+		pragma Assert (Y.Element (Y.Last) = 'D');
 		pragma Assert (Z.Length = 4);
-		pragma Assert (Z.Last_Element = 'E');
+		pragma Assert (Z.Element (Z.Last) = 'E');
 		pragma Assert (X.Constant_Reference (1).Element =
 			Y.Constant_Reference (1).Element);
 		pragma Assert (X.Constant_Reference (1).Element /=
@@ -122,8 +122,8 @@ procedure cntnr_Vector is
 	begin
 		Vectors.Delete (X, 2, 2);
 		pragma Assert (X.Length = 2);
-		pragma Assert (X.First_Element = 'A');
-		pragma Assert (X.Last_Element = 'D');
+		pragma Assert (X.Element (X.First) = 'A');
+		pragma Assert (X.Element (X.Last) = 'D');
 		Vectors.Insert (X, 2, 'Z');
 		pragma Assert (X.Length = 3);
 		pragma Assert (X.Element (1) = 'A');
@@ -139,13 +139,13 @@ procedure cntnr_Vector is
 		Z : aliased IVectors.Vector;
 	begin
 		pragma Assert (X.Length = 3);
-		pragma Assert (X.Last_Element = 'C');
+		pragma Assert (X.Element (X.Last) = 'C');
 		Y := X & 'D';
 		Z := X & 'E';
 		pragma Assert (Y.Length = 4);
-		pragma Assert (Y.Last_Element = 'D');
+		pragma Assert (Y.Element (Y.Last) = 'D');
 		pragma Assert (Z.Length = 4);
-		pragma Assert (Z.Last_Element = 'E');
+		pragma Assert (Z.Element (Z.Last) = 'E');
 		pragma Assert (X.Constant_Reference (1).Element =
 			Y.Constant_Reference (1).Element);
 		pragma Assert (X.Constant_Reference (1).Element /=
@@ -153,8 +153,8 @@ procedure cntnr_Vector is
 		X := 'A' & 'B' & 'C' & 'D';
 		IVectors.Delete (X, 2, 2);
 		pragma Assert (X.Length = 2);
-		pragma Assert (X.First_Element = 'A');
-		pragma Assert (X.Last_Element = 'D');
+		pragma Assert (X.Element (X.First) = 'A');
+		pragma Assert (X.Element (X.Last) = 'D');
 		IVectors.Insert (X, 2, 'Z');
 		pragma Assert (X.Length = 3);
 		pragma Assert (X.Element (1) = 'A');

@@ -113,7 +113,7 @@ procedure cntnr_Ordered_Set is
 		I := X.First;
 		N := 1;
 		while Sets.Has_Element (I) loop
-			pragma Assert (X.Reference (I).Element.all = N);
+			pragma Assert (X.Constant_Reference (I).Element.all = N);
 			Sets.Next (I);
 			N := N + 2;
 		end loop;

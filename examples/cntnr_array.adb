@@ -27,7 +27,7 @@ procedure cntnr_Array is
 		Y : String_Access;
 	begin
 		pragma Assert (Arrays.Length (X) = 3);
-		Arrays.Replace (Y, X & 'D');
+		Arrays.Assign (Y, X & 'D');
 		pragma Assert (Arrays.Length (Y) = 4);
 		pragma Assert (Y.all = "ABCD");
 		Free (X);

@@ -179,9 +179,7 @@ package body Ada.Containers.Ordered_Maps is
    is
       pragma Unreferenced (Container);
    begin
-      return (
-         Key => Position.Key'Access,
-         Element => Position.Element'Access);
+      return (Element => Position.Element'Access);
    end Constant_Reference;
 
    function Constant_Reference (
@@ -191,9 +189,7 @@ package body Ada.Containers.Ordered_Maps is
    is
       Position : constant not null Cursor := Find (Container.all, Key);
    begin
-      return (
-         Key => Position.Key'Access,
-         Element => Position.Element'Access);
+      return (Element => Position.Element'Access);
    end Constant_Reference;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean is
@@ -233,7 +229,10 @@ package body Ada.Containers.Ordered_Maps is
       return Position.Element;
    end Element;
 
-   function Element (Container : Map; Key : Key_Type) return Element_Type is
+   function Element (
+      Container : Map'Class;
+      Key : Key_Type)
+      return Element_Type is
    begin
       return Find (Container, Key).Element;
    end Element;
@@ -362,7 +361,8 @@ package body Ada.Containers.Ordered_Maps is
    is
       Before : constant Cursor := Ceiling (Container, Key);
    begin
-      if Before = null or else Key < Before.Key then
+      Inserted := Before = null or else Key < Before.Key;
+      if Inserted then
          Unique (Container, True);
          Position := new Node'(
             Super => <>,
@@ -373,10 +373,9 @@ package body Ada.Containers.Ordered_Maps is
             Downcast (Container.Super.Data).Length,
             Upcast (Before),
             Upcast (Position));
-         Inserted := True;
       else
+--  diff
          Position := Before;
-         Inserted := False;
       end if;
    end Insert;
 
@@ -401,7 +400,7 @@ package body Ada.Containers.Ordered_Maps is
    end Is_Empty;
 
    procedure Iterate (
-      Container : Map;
+      Container : Map'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -409,17 +408,17 @@ package body Ada.Containers.Ordered_Maps is
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
-         Unique (Container'Unrestricted_Access.all, False);
+         Unique (Map (Container'Unrestricted_Access.all), False);
          Binary_Trees.Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
       end if;
    end Iterate;
 
-   function Iterate (Container : not null access constant Map)
+   function Iterate (Container : Map)
       return Iterator is
    begin
-      return Iterator (Container);
+      return Container'Unrestricted_Access;
    end Iterate;
 
    function Key (Position : Cursor) return Key_Type is
@@ -511,9 +510,7 @@ package body Ada.Containers.Ordered_Maps is
    begin
       Unique (Container.all, True);
 --  diff
-      return (
-         Key => Position.Key'Access,
-         Element => Position.Element'Access);
+      return (Element => Position.Element'Access);
    end Reference;
 
    function Reference (
@@ -524,9 +521,7 @@ package body Ada.Containers.Ordered_Maps is
       Position : constant not null Cursor := Find (Container.all, Key);
    begin
       Unique (Container.all, True);
-      return (
-         Key => Position.Key'Access,
-         Element => Position.Element'Access);
+      return (Element => Position.Element'Access);
    end Reference;
 
    procedure Replace (
@@ -548,7 +543,7 @@ package body Ada.Containers.Ordered_Maps is
    end Replace_Element;
 
    procedure Reverse_Iterate (
-      Container : Map;
+      Container : Map'Class;
       Process : not null access procedure (Position : Cursor))
    is
       type P1 is access procedure (Position : Cursor);
@@ -556,7 +551,7 @@ package body Ada.Containers.Ordered_Maps is
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
       if not Is_Empty (Container) then
-         Unique (Container'Unrestricted_Access.all, False);
+         Unique (Map (Container'Unrestricted_Access.all), False);
          Binary_Trees.Reverse_Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -564,15 +559,15 @@ package body Ada.Containers.Ordered_Maps is
    end Reverse_Iterate;
 
    procedure Update_Element (
-      Container : in out Map;
+      Container : in out Map'Class;
       Position : Cursor;
       Process : not null access procedure (
          Key : Key_Type;
          Element : in out Element_Type)) is
    begin
-      Unique (Container, True);
---  diff
-      Process (Position.Key, Position.Element);
+      Process (
+         Position.Key,
+         Reference (Container'Unrestricted_Access, Position).Element.all);
    end Update_Element;
 
    function "=" (Left, Right : Map) return Boolean is
@@ -607,6 +602,11 @@ package body Ada.Containers.Ordered_Maps is
    function "<" (Left, Right : Cursor) return Boolean is
    begin
       return Left.Key < Right.Key;
+   end "<";
+
+   function "<" (Left : Cursor; Right : Key_Type) return Boolean is
+   begin
+      return Left.Key < Right;
    end "<";
 
    package body No_Primitives is

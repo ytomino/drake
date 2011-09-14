@@ -437,6 +437,41 @@ package body Ada.Tags is
       end if;
    end Parent_Tag;
 
+   procedure Register_Interface_Offset (
+      This : System.Address;
+      Interface_T : Tag;
+      Is_Static : Boolean;
+      Offset_Value : System.Storage_Elements.Storage_Offset;
+      Offset_Func : Offset_To_Top_Function_Ptr)
+   is
+      function Cast is new Unchecked_Conversion (
+         System.Address,
+         Tag_Ptr);
+      function Cast is new Unchecked_Conversion (
+         System.Address,
+         Type_Specific_Data_Ptr);
+      DT : constant Dispatch_Table_Ptr := Tags.DT (Cast (This).all);
+      Iface_Table : constant Interface_Data_Ptr :=
+         Cast (DT.TSD).Interfaces_Table;
+   begin
+      for I in 1 .. Iface_Table.Nb_Ifaces loop
+         declare
+            Item : Interface_Data_Element renames Iface_Table.Ifaces_Table (I);
+         begin
+            if Item.Iface_Tag = Interface_T then
+               Item.Static_Offset_To_Top := Is_Static or else Offset_Value = 0;
+               if Item.Static_Offset_To_Top then
+                  Item.Offset_To_Top_Value := Offset_Value;
+               else
+                  Item.Offset_To_Top_Func := Offset_Func;
+               end if;
+               exit;
+            end if;
+         end;
+      end loop;
+      --  should it raise some error ???
+   end Register_Interface_Offset;
+
    function Wide_Expanded_Name (T : Tag) return Wide_String is
    begin
       return System.UTF_Conversions.From_8_To_16.Convert (Expanded_Name (T));
