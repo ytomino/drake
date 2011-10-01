@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
    pragma Preelaborate;
 

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Containers.Inside.Linked_Lists.Doubly is
    pragma Preelaborate;
 

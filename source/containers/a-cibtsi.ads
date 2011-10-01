@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Containers.Inside.Binary_Trees.Simple is
    pragma Preelaborate;
 
