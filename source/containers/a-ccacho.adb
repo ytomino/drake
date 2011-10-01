@@ -2,10 +2,8 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Counted_Access_Holders is
+   use type Containers.Inside.Weak_Access_Holders.Data_Access;
    use type System.Reference_Counting.Counter;
-
-   package Data_Cast is
-      new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
    subtype Not_Null_Data_Access is not null Data_Access;
    type Data_Access_Access is access all Not_Null_Data_Access;
@@ -16,12 +14,17 @@ package body Ada.Containers.Counted_Access_Holders is
 
    procedure Free_Data (X : System.Address);
    procedure Free_Data (X : System.Address) is
+      package Data_Cast is new System.Address_To_Named_Access_Conversions (
+         Data,
+         Data_Access);
       procedure Unchecked_Free is new Unchecked_Deallocation (
          Data,
          Data_Access);
       Y : Data_Access := Data_Cast.To_Pointer (X);
    begin
-      Weak.Clear (Y.all);
+      Containers.Inside.Weak_Access_Holders.Clear_Weaks (
+         Y.Super,
+         Null_Data.Super'Unchecked_Access);
       Free (Y.Item);
       Unchecked_Free (Y);
    end Free_Data;
@@ -36,24 +39,26 @@ package body Ada.Containers.Counted_Access_Holders is
    function To_Holder (Source : Name) return Holder is
    begin
       return Result : Holder do
-         Result.Data := new Data'(Source, 1, null);
+         if Source /= Null_Data.Item then
+            Result.Data := new Data'((1, null), Source);
+         end if;
       end return;
    end To_Holder;
 
    function Null_Holder return Holder is
    begin
-      return (Finalization.Controlled with Data => Default_Data'Access);
+      return (Finalization.Controlled with Data => Null_Data'Access);
    end Null_Holder;
 
    function Is_Null (Container : Holder) return Boolean is
    begin
-      return Container.Data.Item = Default_Data.Item;
+      return Container.Data = Null_Data'Access;
    end Is_Null;
 
    procedure Clear (Container : in out Holder) is
    begin
       Finalize (Container);
-      Container.Data := Default_Data'Access;
+      Container.Data := Null_Data'Access;
    end Clear;
 
    function Constant_Reference (Container : Holder) return Name is
@@ -69,16 +74,18 @@ package body Ada.Containers.Counted_Access_Holders is
    procedure Replace_Element (Target : in out Holder; Source : Name) is
    begin
       Clear (Target);
-      Target.Data := new Data'(Source, 1, null);
+      if Source /= Null_Data.Item then
+         Target.Data := new Data'((1, null), Source);
+      end if;
    end Replace_Element;
 
    procedure Assign (Target : in out Holder; Source : Holder) is
    begin
       System.Reference_Counting.Assign (
          Target => Upcast (Target.Data'Unchecked_Access),
-         Target_Reference_Count => Target.Data.Reference_Count'Access,
+         Target_Reference_Count => Target.Data.Super.Reference_Count'Access,
          Source => Upcast (Source.Data'Unrestricted_Access),
-         Source_Reference_Count => Source.Data.Reference_Count'Access,
+         Source_Reference_Count => Source.Data.Super.Reference_Count'Access,
          Free => Free_Data'Access);
    end Assign;
 
@@ -88,9 +95,9 @@ package body Ada.Containers.Counted_Access_Holders is
    begin
       System.Reference_Counting.Move (
          Target => Upcast (Target.Data'Unchecked_Access),
-         Target_Reference_Count => Target.Data.Reference_Count'Access,
+         Target_Reference_Count => Target.Data.Super.Reference_Count'Access,
          Source => Upcast (Source.Data'Unchecked_Access),
-         Sentinel => Default_Data'Address,
+         Sentinel => Null_Data'Address,
          Free => Free_Data'Access);
    end Move;
 
@@ -103,36 +110,36 @@ package body Ada.Containers.Counted_Access_Holders is
 
    overriding procedure Adjust (Object : in out Holder) is
    begin
-      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
+      System.Reference_Counting.Adjust (
+         Object.Data.Super.Reference_Count'Access);
    end Adjust;
 
    overriding procedure Finalize (Object : in out Holder) is
    begin
       System.Reference_Counting.Clear (
          Target => Upcast (Object.Data'Unchecked_Access),
-         Reference_Count => Object.Data.Reference_Count'Access,
+         Reference_Count => Object.Data.Super.Reference_Count'Access,
          Free => Free_Data'Access);
    end Finalize;
 
    package body Weak is
 
+      function Downcast is new Unchecked_Conversion (
+         Containers.Inside.Weak_Access_Holders.Data_Access,
+         Data_Access);
+
       function "=" (Left, Right : Weak_Holder) return Boolean is
       begin
-         if Is_Null (Left) then
-            return Is_Null (Right);
-         elsif Is_Null (Right) then
-            return False;
-         else
-            return Left.Data = Right.Data;
-         end if;
+         return Left.Super.Data = Right.Super.Data;
       end "=";
 
-      function To_Weak_Holder (Source : Holder)
-         return Weak_Holder is
+      function To_Weak_Holder (Source : Holder) return Weak_Holder is
       begin
          return Result : Weak_Holder := (Finalization.Controlled with
-            Data => Data_Access (Source.Data),
-            others => <>)
+            Super => (
+               Data => Source.Data.Super'Unchecked_Access,
+               Previous => <>,
+               Next => <>))
          do
             Adjust (Result);
          end return;
@@ -143,12 +150,11 @@ package body Ada.Containers.Counted_Access_Holders is
          return (Finalization.Controlled with others => <>);
       end Null_Weak_Holder;
 
-      function To_Holder (Source : Weak_Holder)
-         return Holder is
+      function To_Holder (Source : Weak_Holder) return Holder is
       begin
          return Result : Holder do
             if not Is_Null (Source) then
-               Result.Data := Counted_Access_Holders.Data_Access (Source.Data);
+               Result.Data := Downcast (Source.Super.Data);
                Adjust (Result);
             end if;
          end return;
@@ -156,16 +162,13 @@ package body Ada.Containers.Counted_Access_Holders is
 
       function Is_Null (Container : Weak_Holder) return Boolean is
       begin
-         return Container.Data = null
-            or else Container.Data.Item = Default_Data.Item;
+         return Container.Super.Data = Null_Data.Super'Unchecked_Access;
       end Is_Null;
 
       procedure Clear (Container : in out Weak_Holder) is
       begin
          Finalize (Container);
-         Container.Data := null;
-         Container.Previous := null;
-         Container.Next := null;
+         Initialize (Container);
       end Clear;
 
       procedure Assign (
@@ -173,7 +176,7 @@ package body Ada.Containers.Counted_Access_Holders is
          Source : Holder) is
       begin
          Clear (Target);
-         Target.Data := Data_Access (Source.Data);
+         Target.Super.Data := Source.Data.Super'Unchecked_Access;
          Adjust (Target);
       end Assign;
 
@@ -182,71 +185,32 @@ package body Ada.Containers.Counted_Access_Holders is
          Source : Weak_Holder) is
       begin
          Clear (Target);
-         if Source.Data /= null then
-            Target.Data := Counted_Access_Holders.Data_Access (Source.Data);
-            Adjust (Target);
-         end if;
+         Target.Data := Downcast (Source.Super.Data);
+         Adjust (Target);
       end Assign;
 
-      overriding procedure Adjust (Object : in out Weak_Holder) is
-         procedure Add_To_Weak_List (A : not null Weak_Holder_Access);
-         procedure Add_To_Weak_List (A : not null Weak_Holder_Access) is
-         begin
-            A.Previous := null;
-            A.Data.Weak_List := Counted_Access_Holders.Weak_Holder_Access (A);
-            A.Next := Weak_Holder_Access (A.Data.Weak_List);
-            A.Next.Previous := A;
-         end Add_To_Weak_List;
+      overriding procedure Initialize (Object : in out Weak_Holder) is
       begin
-         if Object.Data /= null
-            and then Object.Data.Reference_Count
-               /= System.Reference_Counting.Static
-         then
-            Add_To_Weak_List (Object'Unrestricted_Access);
+         Object.Super.Data := Null_Data.Super'Unchecked_Access;
+         Object.Super.Previous := null;
+         Object.Super.Next := null;
+      end Initialize;
+
+      overriding procedure Adjust (Object : in out Weak_Holder) is
+      begin
+         if not Is_Null (Object) then
+            Containers.Inside.Weak_Access_Holders.Add_Weak (
+               Object.Super'Unchecked_Access);
          end if;
       end Adjust;
 
       overriding procedure Finalize (Object : in out Weak_Holder) is
-         procedure Remove_From_Weak_List (A : not null Weak_Holder_Access);
-         procedure Remove_From_Weak_List (A : not null Weak_Holder_Access) is
-         begin
-            if A.Previous /= null then
-               pragma Assert (A.Previous.Next = A);
-               A.Previous.Next := A.Next;
-            else
-               pragma Assert (Weak_Holder_Access (A.Data.Weak_List) = A);
-               A.Data.Weak_List :=
-                  Counted_Access_Holders.Weak_Holder_Access (A.Next);
-            end if;
-            if A.Next /= null then
-               pragma Assert (A.Next.Previous = A);
-               A.Next.Previous := A.Previous;
-            end if;
-         end Remove_From_Weak_List;
       begin
-         if Object.Data /= null
-            and then Object.Data.Reference_Count
-               /= System.Reference_Counting.Static
-         then
-            Remove_From_Weak_List (Object'Unrestricted_Access);
+         if not Is_Null (Object) then
+            Containers.Inside.Weak_Access_Holders.Remove_Weak (
+               Object.Super'Unchecked_Access);
          end if;
       end Finalize;
-
-      procedure Clear (Item : Data) is
-         type T is access all Weak.Weak_Holder;
-         I : T := T (Item.Weak_List);
-      begin
-         while I /= null loop
-            declare
-               Next : constant T := T (I.Next);
-            begin
-               I.Data := null;
-               I.Previous := null;
-               I.Next := null;
-               I := Next;
-            end;
-         end loop;
-      end Clear;
 
    end Weak;
 

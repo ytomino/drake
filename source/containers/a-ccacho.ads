@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
+private with Ada.Containers.Inside.Weak_Access_Holders;
 private with Ada.Finalization;
 private with System.Reference_Counting;
 generic
@@ -37,8 +38,6 @@ package Ada.Containers.Counted_Access_Holders is
 
    procedure Swap (I, J : in out Holder);
 
-   type Data (<>) is limited private; -- for implementation of Weak
-
    package Weak is
 
       type Weak_Holder is tagged private;
@@ -66,20 +65,13 @@ package Ada.Containers.Counted_Access_Holders is
          Target : in out Holder;
          Source : Weak_Holder);
 
-      procedure Clear (Item : Data); -- for implementation
-
    private
 
-      type Data_Access is access all Data;
-
-      type Weak_Holder_Access is access all Weak_Holder;
-
       type Weak_Holder is new Finalization.Controlled with record
-         Data : Data_Access := null;
-         Previous : Weak_Holder_Access := null;
-         Next : Weak_Holder_Access := null;
+         Super : aliased Containers.Inside.Weak_Access_Holders.Weak_Holder;
       end record;
 
+      overriding procedure Initialize (Object : in out Weak_Holder);
       overriding procedure Adjust (Object : in out Weak_Holder);
       overriding procedure Finalize (Object : in out Weak_Holder);
 
@@ -87,24 +79,26 @@ package Ada.Containers.Counted_Access_Holders is
 
 private
 
-   type Data_Access is access all Data;
-
-   type Weak_Holder_Access is access all Weak.Weak_Holder;
-
    type Data is limited record
+      Super : aliased Containers.Inside.Weak_Access_Holders.Data;
       Item : aliased Name;
-      Reference_Count : aliased System.Reference_Counting.Counter;
-      Weak_List : Weak_Holder_Access;
    end record;
    pragma Suppress_Initialization (Data);
 
-   Default_Data : aliased Data := (
-      Item => <>,
-      Reference_Count => System.Reference_Counting.Static,
-      Weak_List => null);
+   for Data use record
+      Super at 0 range
+         0 ..
+         Containers.Inside.Weak_Access_Holders.Data_Size - 1;
+   end record;
+
+   Null_Data : aliased Data := (
+      Super => (System.Reference_Counting.Static, null),
+      Item => <>);
+
+   type Data_Access is access all Data;
 
    type Holder is new Finalization.Controlled with record
-      Data : aliased not null Data_Access := Default_Data'Access;
+      Data : aliased not null Data_Access := Null_Data'Access;
    end record;
 
    overriding procedure Adjust (Object : in out Holder);
