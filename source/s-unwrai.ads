@@ -118,6 +118,10 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_22);
    pragma Export (C, rcheck_22, "__gnat_rcheck_22");
 
+   procedure rcheck_23 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_23);
+   pragma Export (C, rcheck_23, "__gnat_rcheck_23");
+
    procedure rcheck_24 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_24);
    pragma Export (C, rcheck_24, "__gnat_rcheck_24");
