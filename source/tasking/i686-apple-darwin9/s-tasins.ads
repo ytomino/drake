@@ -55,7 +55,8 @@ package System.Tasking.Inside is
    function Is_Aborted return Boolean;
 
    --  for manual activation (Chain /= null)
-   procedure Accept_Activation (Aborted : out Boolean); -- current task
+   function Elaborated (T : not null Task_Id) return Boolean;
+   procedure Accept_Activation (Aborted : out Boolean);
    procedure Activate ( -- activate all task
       Chain : not null access Activation_Chain;
       Aborted : out Boolean);

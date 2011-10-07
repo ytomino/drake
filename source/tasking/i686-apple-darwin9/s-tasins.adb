@@ -609,30 +609,18 @@ package body System.Tasking.Inside is
       return Result;
    end Thread;
 
-   type Execution_Error is (None, Aborted, Elaboration_Error);
+   type Execution_Error is (None, Aborted, Elaboration_Error, Done);
    pragma Discard_Names (Execution_Error);
 
-   procedure Execute (
-      T : Task_Id;
-      Done : out Boolean;
-      Error : out Execution_Error);
-   procedure Execute (
-      T : Task_Id;
-      Done : out Boolean;
-      Error : out Execution_Error) is
+   procedure Execute (T : Task_Id; Error : out Execution_Error);
+   procedure Execute (T : Task_Id; Error : out Execution_Error) is
    begin
-      Done := not sync_bool_compare_and_swap (
+      if not sync_bool_compare_and_swap (
          T.Activation_State'Access,
          AS_Suspended,
-         AS_Activating);
-      if Done then
-         if T.Activation_State /= AS_Error then
-            Error := None;
-         elsif T.Aborted then
-            Error := Aborted;
-         else
-            Error := Elaboration_Error;
-         end if;
+         AS_Activating)
+      then
+         Error := Done;
       elsif T.Aborted then -- aborted before activation
          Error := Aborted;
          T.Activation_State := AS_Error;
@@ -739,7 +727,8 @@ package body System.Tasking.Inside is
    procedure Set_Active (T : not null Task_Id);
    procedure Set_Active (T : not null Task_Id) is
    begin
-      if T.Elaborated /= null and then not T.Elaborated.all then
+      if not Elaborated (T) then
+         pragma Check (Trance, Ada.Debug.Put ("elab error in " & Name (T)));
          T.Activation_Chain.Error := Elaboration_Error;
       end if;
       T.Activation_State := AS_Active;
@@ -776,12 +765,13 @@ package body System.Tasking.Inside is
          Enter (C.Mutex);
          declare
             I : Task_Id := C.List;
-            Done : Boolean;
             Error_On_Execute : Execution_Error;
          begin
             while I /= null loop
-               Execute (I, Done, Error_On_Execute);
-               if not Done and then Error_On_Execute /= None then
+               Execute (I, Error_On_Execute);
+               if Error_On_Execute /= None
+                  and then Error_On_Execute /= Done
+               then
                   C.Task_Count := C.Task_Count - 1;
                   if Error_On_Execute = Elaboration_Error then
                      Error := Elaboration_Error;
@@ -817,12 +807,11 @@ package body System.Tasking.Inside is
 
    procedure Activate (T : Task_Id; Error : out Activation_Error);
    procedure Activate (T : Task_Id; Error : out Activation_Error) is
-      Done : Boolean;
       Error_On_Execute : Execution_Error;
    begin
       Error := None;
-      Execute (T, Done, Error_On_Execute);
-      if not Done then
+      Execute (T, Error_On_Execute);
+      if Error_On_Execute /= Done then
          declare
             C : constant Activation_Chain_Access := T.Activation_Chain;
          begin
@@ -936,7 +925,6 @@ package body System.Tasking.Inside is
       Chain_Data : Activation_Chain_Access := null;
       Level : Master_Level := Library_Task_Level;
       Rendezvous : Rendezvous_Access := null;
-      Done : Boolean;
       Error : Execution_Error;
    begin
       Register;
@@ -1014,7 +1002,7 @@ package body System.Tasking.Inside is
          Chain_Data.Task_Count := Chain_Data.Task_Count + 1;
       else
          --  try to create
-         Execute (T, Done, Error);
+         Execute (T, Error);
          if Error /= None then
             if Master /= null then
                Remove_From_Completion_List (T); -- rollback
@@ -1141,6 +1129,7 @@ package body System.Tasking.Inside is
          T.Aborted := True;
       else
          Send_Abort_Signal (T);
+         T.Aborted := True; -- set 'Callable to false, C9A009H
          --  abort myself if parent task is aborted, C9A007A
          declare
             P : Task_Id := Current_Task_Id;
@@ -1149,7 +1138,7 @@ package body System.Tasking.Inside is
                P := Parent (P);
                exit when P = null;
                if P = T then
-                  T.Aborted := True;
+                  Current_Task_Id.Aborted := True;
                   raise Standard'Abort_Signal;
                end if;
             end loop;
@@ -1182,6 +1171,11 @@ package body System.Tasking.Inside is
    begin
       return T /= null and then T.Aborted;
    end Is_Aborted;
+
+   function Elaborated (T : not null Task_Id) return Boolean is
+   begin
+      return T.Elaborated = null or else T.Elaborated.all;
+   end Elaborated;
 
    procedure Accept_Activation (Aborted : out Boolean) is
       T : constant Task_Id := TLS_Current_Task_Id;

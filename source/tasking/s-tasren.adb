@@ -124,7 +124,9 @@ package body System.Tasking.Rendezvous is
       E : Task_Entry_Index;
       Uninterpreted_Data : Address) is
    begin
-      if not Inside.Activated (Task_Record_Conv.To_Pointer (Acceptor)) then
+      if Inside.Elaborated (Task_Record_Conv.To_Pointer (Acceptor))
+         and then not Inside.Activated (Task_Record_Conv.To_Pointer (Acceptor))
+      then
          --  in extended return statement
          Inside.Activate (Task_Record_Conv.To_Pointer (Acceptor));
       end if;
