@@ -11,12 +11,10 @@ c394001 C unimplemented tasking features (synchronized interface)
 c3a1001 C unimplemented tasking features (protected)
 c3a1002 C unimplemented tasking features (select)
 c410001 C unimplemented tasking features (protected)
-c41401a C unimplemented tasking features
 c431a01 C unimplemented tasking features
 c431a02 C unimplemented tasking features
 c431a03 C unimplemented tasking features
 c432005 C unimplemented tasking features
-c43204g C unimplemented tasking features
 c433a01 C unimplemented tasking features
 c433a02 C unimplemented tasking features
 c433a03 C unimplemented tasking features (protected)
@@ -27,7 +25,6 @@ c4a012b N Float'Machine_Overflows
 c59002c C unimplemented tasking features (select)
 c74401k C unimplemented tasking features (select)
 c750b01 C unimplemented tasking features (protected)
-c761001 C unimplemented tasking features
 c761007 C unimplemented tasking features
 c85005a C unimplemented tasking features
 c85005b C unimplemented tasking features
@@ -43,21 +40,11 @@ c85014a C unimplemented tasking features
 c85014b C unimplemented tasking features
 c85018a C unimplemented tasking features
 c85018b C unimplemented tasking features
-c87b26b C unimplemented tasking features
-c910001 C unimplemented tasking features
-c910002 C unimplemented tasking features
 c910003 C unimplemented tasking features
 c91004b C unimplemented tasking features
 c91004c C unimplemented tasking features
 c92003a C unimplemented tasking features
-c92005a C unimplemented tasking features
-c92005b C unimplemented tasking features
 c930001 C unimplemented tasking features
-c93004a C unimplemented tasking features
-c93004b C unimplemented tasking features
-c93004c C unimplemented tasking features
-c93004d C unimplemented tasking features
-c93004f C unimplemented tasking features
 c93005a C unimplemented tasking features
 c93005b C unimplemented tasking features
 c93005c C unimplemented tasking features
@@ -81,21 +68,8 @@ c940013 C unimplemented tasking features
 c940014 C unimplemented tasking features
 c940015 C unimplemented tasking features
 c940016 C unimplemented tasking features
-c94001a C unimplemented tasking features
-c94001b C unimplemented tasking features
-c94001c C unimplemented tasking features
 c94001g C unimplemented tasking features
-c94002a C unimplemented tasking features
-c94002b C unimplemented tasking features
-c94002d C unimplemented tasking features
-c94002e C unimplemented tasking features
-c94002f C unimplemented tasking features
-c94002g C unimplemented tasking features
-c94004a C unimplemented tasking features
-c94004b C unimplemented tasking features
 c94004c C unimplemented tasking features
-c94005a C unimplemented tasking features
-c94005b C unimplemented tasking features
 c94006a C unimplemented tasking features
 c94007a C unimplemented tasking features
 c94007b C unimplemented tasking features
@@ -103,24 +77,9 @@ c94008a C unimplemented tasking features
 c94008b C unimplemented tasking features
 c94008c C unimplemented tasking features
 c94008d C unimplemented tasking features
-c94011a C unimplemented tasking features
 c94020a C unimplemented tasking features
 c940a03 C unimplemented tasking features
 c95008a C unimplemented tasking features
-c95009a C unimplemented tasking features
-c95010a C unimplemented tasking features
-c95021a C unimplemented tasking features
-c95022a C unimplemented tasking features
-c95022b C unimplemented tasking features
-c95033a C unimplemented tasking features
-c95033b C unimplemented tasking features
-c95034a C unimplemented tasking features
-c95034b C unimplemented tasking features
-c95035a C unimplemented tasking features
-c95040a C unimplemented tasking features
-c95040b C unimplemented tasking features
-c95040c C unimplemented tasking features
-c95040d C unimplemented tasking features
 c95065a C unimplemented tasking features
 c95065b C unimplemented tasking features
 c95065c C unimplemented tasking features
@@ -128,9 +87,6 @@ c95065d C unimplemented tasking features
 c95065e C unimplemented tasking features
 c95065f C unimplemented tasking features
 c95067a C unimplemented tasking features
-c95074c C unimplemented tasking features
-c95076a C unimplemented tasking features
-c95078a C unimplemented tasking features
 c95082g C unimplemented tasking features
 c95085a C unimplemented tasking features
 c95085b C unimplemented tasking features
@@ -148,12 +104,10 @@ c95085m C unimplemented tasking features
 c95085n C unimplemented tasking features
 c95085o C unimplemented tasking features
 c95086a C unimplemented tasking features
-c95086b C unimplemented tasking features
 c95089a C unimplemented tasking features
 c95095a C unimplemented tasking features
 c95095b C unimplemented tasking features
 c95095c C unimplemented tasking features
-c95095d C unimplemented tasking features
 c951001 C unimplemented tasking features
 c951002 C unimplemented tasking features
 c953001 C unimplemented tasking features
@@ -245,17 +199,10 @@ c974014 C unimplemented tasking features
 c980001 C unimplemented tasking features
 c980002 C unimplemented tasking features
 c980003 C unimplemented tasking features
-c990001 C unimplemented tasking features
 c99005a C unimplemented tasking features
-c9a003a C unimplemented tasking features
-c9a004a C unimplemented tasking features
-c9a007a C unimplemented tasking features
 c9a009a C unimplemented tasking features
-c9a009c C unimplemented tasking features
 c9a009f C unimplemented tasking features
 c9a009g C unimplemented tasking features
-c9a009h C unimplemented tasking features
-c9a010a C unimplemented tasking features
 c9a011a C unimplemented tasking features
 c9a011b C unimplemented tasking features (select)
 ca13001 C unimplemented tasking features (protected)
@@ -267,9 +214,6 @@ cb20004 C unimplemented tasking features (protected)
 cb20005 C unimplemented tasking features
 cb20006 C unimplemented tasking features
 cb20007 C unimplemented tasking features
-cb4013a C unimplemented tasking features
-cb5002a C unimplemented tasking features
-cc1104c C unimplemented tasking features
 cc1225a C unimplemented tasking features
 cc1310a C unimplemented tasking features
 cc3019c C unimplemented tasking features
@@ -370,8 +314,6 @@ cxc3008 C unimplemented tasking features
 cxc3009 C unimplemented tasking features
 cxc6003 C unimplemented tasking features
 cxc7001 C unimplemented tasking features
-cxc7002 C unimplemented tasking features
-cxc7003 C unimplemented tasking features
 cxc7004 C unimplemented tasking features
 cxc7005 C unimplemented tasking features
 cxd1001 C unimplemented tasking features
