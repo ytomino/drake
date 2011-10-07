@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 with System;
 package Ada.Containers.Inside.Array_Sorting is
    pragma Pure;

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Containers.Inside is
    pragma Pure;
 end Ada.Containers.Inside;

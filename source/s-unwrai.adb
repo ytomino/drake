@@ -453,6 +453,16 @@ package body System.Unwind.Raising is
          Message => Message);
    end rcheck_21;
 
+   procedure rcheck_22 (File : not null access Character; Line : Integer) is
+      Message : constant String := "implicit return with No_Return";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Program_Error'Access,
+         File,
+         Line,
+         Message => Message);
+   end rcheck_22;
+
    procedure rcheck_23 (File : not null access Character; Line : Integer) is
       Message : constant String := "misaligned address value";
    begin
