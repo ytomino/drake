@@ -11,12 +11,12 @@ package System.Tasking.Rendezvous is
    --  required optional for accept statement by compiler (s-tasren.ads)
    procedure Complete_Rendezvous;
 
-   --  required for simple accept statement by compiler (s-tasren.ads)
-   procedure Accept_Trivial (E : Task_Entry_Index);
-
    --  required for accept statement by compiler (s-tasren.ads)
    procedure Exceptional_Complete_Rendezvous (
       Ex : Ada.Exceptions.Exception_Id);
+
+   --  required for simple accept statement by compiler (s-tasren.ads)
+   procedure Accept_Trivial (E : Task_Entry_Index);
 
    --  by -fdump-tree-all, accept statement expanded below:
    --

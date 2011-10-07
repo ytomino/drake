@@ -41,6 +41,77 @@ package body System.Tasking.Inside is
    pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
    pragma Weak_External (Report_Traceback);
 
+   --  delay statement
+
+   function "+" (Left : Native_Time.Native_Time; Right : Duration)
+      return Native_Time.Native_Time;
+   function "+" (Left : Native_Time.Native_Time; Right : Duration)
+      return Native_Time.Native_Time is
+   begin
+      return Native_Time.To_Native_Time (
+         Native_Time.To_Time (Left) + Right);
+   end "+";
+
+   procedure Delay_For (D : Duration);
+   procedure Delay_For (D : Duration) is
+      M : Mutex;
+      C : Condition_Variable;
+      Notified : Boolean;
+      Aborted : Boolean;
+   begin
+      Enable_Abort;
+      Initialize (M);
+      Enter (M);
+      Wait (
+         C,
+         M,
+         Timeout => Native_Time.Clock + Duration'Max (D, 0.0),
+         Notified => Notified,
+         Aborted => Aborted);
+      Leave (M);
+      Finalize (M);
+      Disable_Abort (Aborted);
+   end Delay_For;
+
+   procedure Delay_Until (T : Native_Time.Native_Time);
+   procedure Delay_Until (T : Native_Time.Native_Time) is
+      M : Mutex;
+      C : Condition_Variable;
+      Notified : Boolean;
+      Aborted : Boolean;
+   begin
+      Enable_Abort;
+      Initialize (M);
+      Enter (M);
+      Wait (
+         C,
+         M,
+         Timeout => T,
+         Notified => Notified,
+         Aborted => Aborted);
+      Leave (M);
+      Finalize (M);
+      Disable_Abort (Aborted);
+   end Delay_Until;
+
+   --  shared lock
+
+   Shared_Lock : Mutex := (Handle => <>); -- uninitialized
+
+   procedure Shared_Lock_Enter;
+   procedure Shared_Lock_Enter is
+   begin
+      Enter (Shared_Lock);
+   end Shared_Lock_Enter;
+
+   procedure Shared_Lock_Leave;
+   procedure Shared_Lock_Leave is
+   begin
+      Leave (Shared_Lock);
+   end Shared_Lock_Leave;
+
+   --  attribute indexes
+
    generic
       type Element_Type is private;
       type Array_Type is array (Natural) of Element_Type;
@@ -94,6 +165,20 @@ package body System.Tasking.Inside is
       Attribute_Array_Access);
 
    function To_Address is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+
+   Attribute_Indexes_Lock : Mutex := (Handle => <>); -- uninitialized
+
+   type Attribute_Index_Set is array (Natural) of Word;
+   pragma Suppress_Initialization (Attribute_Index_Set);
+   type Attribute_Index_Set_Access is access Attribute_Index_Set;
+
+   Attribute_Indexes : Attribute_Index_Set_Access := null;
+   Attribute_Indexes_Length : Natural := 0;
+
+   package Attribute_Index_Sets is new Simple_Vectors (
+      Word,
+      Attribute_Index_Set,
+      Attribute_Index_Set_Access);
 
    --  task record
 
@@ -204,160 +289,12 @@ package body System.Tasking.Inside is
       Unchecked_Free (Item);
    end Free;
 
-   --  activation
+   --  thead id
 
-   package Activation_Chain_Conv is new Address_To_Named_Access_Conversions (
-      Activation_Chain_Data,
-      Activation_Chain_Access);
+   TLS_Current_Task_Id : Task_Id := null;
+   pragma Thread_Local_Storage (TLS_Current_Task_Id);
 
-   procedure Remove_From_Merged_Activation_Chain_List (
-      C : not null Activation_Chain_Access);
-   procedure Remove_From_Merged_Activation_Chain_List (
-      C : not null Activation_Chain_Access)
-   is
-      Chain : constant access Activation_Chain := C.Self;
-   begin
-      if Activation_Chain_Conv.To_Pointer (Chain.Data) = C then
-         Chain.Data := Null_Address;
-      else
-         declare
-            I : Activation_Chain_Access :=
-               Activation_Chain_Conv.To_Pointer (Chain.Data);
-         begin
-            while I.Merged /= C loop
-               I := I.Merged;
-            end loop;
-            I.Merged := C.Merged;
-         end;
-      end if;
-   end Remove_From_Merged_Activation_Chain_List;
-
-   procedure Free (Item : in out Activation_Chain_Access);
-   procedure Free (Item : in out Activation_Chain_Access) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-         Activation_Chain_Data,
-         Activation_Chain_Access);
-   begin
-      Finalize (Item.Mutex);
-      Finalize (Item.Condition_Variable);
-      Unchecked_Free (Item);
-   end Free;
-
-   procedure Set_Active (T : not null Task_Id);
-   procedure Set_Active (T : not null Task_Id) is
-   begin
-      if T.Elaborated /= null and then not T.Elaborated.all then
-         T.Activation_Chain.Elaboration_Error := True;
-      end if;
-      T.Activation_State := True;
-   end Set_Active;
-
-   procedure Set_Active (C : not null Activation_Chain_Access);
-   procedure Set_Active (C : not null Activation_Chain_Access) is
-      I : Task_Id := C.List;
-   begin
-      while I /= null loop
-         Set_Active (I);
-         I := I.Next_Of_Activation_Chain;
-      end loop;
-   end Set_Active;
-
-   --  completion
-
-   procedure Free (Item : in out Master_Access);
-   procedure Free (Item : in out Master_Access) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-         Master_Record,
-         Master_Access);
-   begin
-      Finalize (Item.Mutex);
-      Unchecked_Free (Item);
-   end Free;
-
-   --  shared lock
-
-   Shared_Lock : Mutex := (Handle => <>); -- uninitialized
-
-   procedure Shared_Lock_Enter;
-   procedure Shared_Lock_Enter is
-   begin
-      Enter (Shared_Lock);
-   end Shared_Lock_Enter;
-
-   procedure Shared_Lock_Leave;
-   procedure Shared_Lock_Leave is
-   begin
-      Leave (Shared_Lock);
-   end Shared_Lock_Leave;
-
-   --  delay statement
-
-   function "+" (Left : Native_Time.Native_Time; Right : Duration)
-      return Native_Time.Native_Time;
-   function "+" (Left : Native_Time.Native_Time; Right : Duration)
-      return Native_Time.Native_Time is
-   begin
-      return Native_Time.To_Native_Time (
-         Native_Time.To_Time (Left) + Right);
-   end "+";
-
-   procedure Delay_For (D : Duration);
-   procedure Delay_For (D : Duration) is
-      M : Mutex;
-      C : Condition_Variable;
-      Notified : Boolean;
-      Aborted : Boolean;
-   begin
-      Enable_Abort;
-      Initialize (M);
-      Enter (M);
-      Wait (
-         C,
-         M,
-         Timeout => Native_Time.Clock + Duration'Max (D, 0.0),
-         Notified => Notified,
-         Aborted => Aborted);
-      Leave (M);
-      Finalize (M);
-      Disable_Abort (Aborted);
-   end Delay_For;
-
-   procedure Delay_Until (T : Native_Time.Native_Time);
-   procedure Delay_Until (T : Native_Time.Native_Time) is
-      M : Mutex;
-      C : Condition_Variable;
-      Notified : Boolean;
-      Aborted : Boolean;
-   begin
-      Enable_Abort;
-      Initialize (M);
-      Enter (M);
-      Wait (
-         C,
-         M,
-         Timeout => T,
-         Notified => Notified,
-         Aborted => Aborted);
-      Leave (M);
-      Finalize (M);
-      Disable_Abort (Aborted);
-   end Delay_Until;
-
-   --  attribute indexes
-
-   Attribute_Indexes_Lock : Mutex := (Handle => <>); -- uninitialized
-
-   type Attribute_Index_Set is array (Natural) of Word;
-   pragma Suppress_Initialization (Attribute_Index_Set);
-   type Attribute_Index_Set_Access is access Attribute_Index_Set;
-
-   Attribute_Indexes : Attribute_Index_Set_Access := null;
-   Attribute_Indexes_Length : Natural := 0;
-
-   package Attribute_Index_Sets is new Simple_Vectors (
-      Word,
-      Attribute_Index_Set,
-      Attribute_Index_Set_Access);
+   Main_Task_Record : aliased Task_Record (Main);
 
    --  secondary stack and exception occurrence
 
@@ -378,13 +315,6 @@ package body System.Tasking.Inside is
    begin
       return Cast (Get_SS.Current_Exception'Access);
    end Get_CE;
-
-   --  thead id
-
-   TLS_Current_Task_Id : Task_Id := null;
-   pragma Thread_Local_Storage (TLS_Current_Task_Id);
-
-   Main_Task_Record : aliased Task_Record (Main);
 
    --  signal handler
 
@@ -643,6 +573,76 @@ package body System.Tasking.Inside is
       --  return
       return Result;
    end Thread;
+
+   --  activation
+
+   package Activation_Chain_Conv is new Address_To_Named_Access_Conversions (
+      Activation_Chain_Data,
+      Activation_Chain_Access);
+
+   procedure Remove_From_Merged_Activation_Chain_List (
+      C : not null Activation_Chain_Access);
+   procedure Remove_From_Merged_Activation_Chain_List (
+      C : not null Activation_Chain_Access)
+   is
+      Chain : constant access Activation_Chain := C.Self;
+   begin
+      if Activation_Chain_Conv.To_Pointer (Chain.Data) = C then
+         Chain.Data := Null_Address;
+      else
+         declare
+            I : Activation_Chain_Access :=
+               Activation_Chain_Conv.To_Pointer (Chain.Data);
+         begin
+            while I.Merged /= C loop
+               I := I.Merged;
+            end loop;
+            I.Merged := C.Merged;
+         end;
+      end if;
+   end Remove_From_Merged_Activation_Chain_List;
+
+   procedure Free (Item : in out Activation_Chain_Access);
+   procedure Free (Item : in out Activation_Chain_Access) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
+         Activation_Chain_Data,
+         Activation_Chain_Access);
+   begin
+      Finalize (Item.Mutex);
+      Finalize (Item.Condition_Variable);
+      Unchecked_Free (Item);
+   end Free;
+
+   procedure Set_Active (T : not null Task_Id);
+   procedure Set_Active (T : not null Task_Id) is
+   begin
+      if T.Elaborated /= null and then not T.Elaborated.all then
+         T.Activation_Chain.Elaboration_Error := True;
+      end if;
+      T.Activation_State := True;
+   end Set_Active;
+
+   procedure Set_Active (C : not null Activation_Chain_Access);
+   procedure Set_Active (C : not null Activation_Chain_Access) is
+      I : Task_Id := C.List;
+   begin
+      while I /= null loop
+         Set_Active (I);
+         I := I.Next_Of_Activation_Chain;
+      end loop;
+   end Set_Active;
+
+   --  completion
+
+   procedure Free (Item : in out Master_Access);
+   procedure Free (Item : in out Master_Access) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
+         Master_Record,
+         Master_Access);
+   begin
+      Finalize (Item.Mutex);
+      Unchecked_Free (Item);
+   end Free;
 
    --  implementation
 

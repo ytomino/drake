@@ -77,14 +77,6 @@ package body System.Tasking.Rendezvous is
       TLS_Current_Call := null;
    end Complete_Rendezvous;
 
-   procedure Accept_Trivial (E : Task_Entry_Index) is
-      Dummy : Address;
-      pragma Unreferenced (Dummy);
-   begin
-      Accept_Call (E, Dummy);
-      Complete_Rendezvous;
-   end Accept_Trivial;
-
    procedure Exceptional_Complete_Rendezvous (
       Ex : Ada.Exceptions.Exception_Id)
    is
@@ -98,6 +90,14 @@ package body System.Tasking.Rendezvous is
       TLS_Current_Call := null;
       Ada.Exceptions.Reraise_Occurrence (Occ);
    end Exceptional_Complete_Rendezvous;
+
+   procedure Accept_Trivial (E : Task_Entry_Index) is
+      Dummy : Address;
+      pragma Unreferenced (Dummy);
+   begin
+      Accept_Call (E, Dummy);
+      Complete_Rendezvous;
+   end Accept_Trivial;
 
    procedure Call_Simple (
       Acceptor : Task_Id;
