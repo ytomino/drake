@@ -12,10 +12,11 @@ procedure tasking1 is
 	N2 : aliased constant Integer := 2;
 	Id1 : System.Tasking.Inside.Task_Id;
 	Id2 : System.Tasking.Inside.Task_Id;
+	Aborted : Boolean;
 begin
 	System.Tasking.Inside.Create (Id1, N1'Address, Process'Access);
 	System.Tasking.Inside.Create (Id2, N2'Address, Process'Access);
-	System.Tasking.Inside.Wait (Id1);
-	System.Tasking.Inside.Wait (Id2);
+	System.Tasking.Inside.Wait (Id1, Aborted => Aborted);
+	System.Tasking.Inside.Wait (Id2, Aborted => Aborted);
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking1;

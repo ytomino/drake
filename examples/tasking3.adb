@@ -18,13 +18,14 @@ procedure tasking3 is
 			& Integer'Image (Attr.Value));
 	end Process;
 	Ts : array (1 .. Count) of System.Tasking.Inside.Task_Id;
+	Aborted : Boolean;
 begin
 	for I in Ts'Range loop
 		System.Tasking.Inside.Create (Ts (I), System.Null_Address, Process'Access);
 		Attr.Set_Value (I, T => Cast (Ts (I)));
 	end loop;
 	for I in Ts'Range loop
-		System.Tasking.Inside.Wait (Ts (I));
+		System.Tasking.Inside.Wait (Ts (I), Aborted => Aborted);
 	end loop;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking3;

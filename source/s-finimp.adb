@@ -30,8 +30,10 @@ package body System.Finalization_Implementation is
    procedure Register_Finalize_Global_List is
    begin
       if not Finalize_Global_List_Registered then
+         pragma Check (Trace, Ada.Debug.Put ("enter"));
          Finalize_Global_List_Registered := True;
          Termination.Register_Exit (Finalize_Global_List'Access);
+         pragma Check (Trace, Ada.Debug.Put ("leave"));
       end if;
    end Register_Finalize_Global_List;
 

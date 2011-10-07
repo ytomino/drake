@@ -53,16 +53,21 @@ package body Ada.Task_Attributes is
       return Attribute is
    begin
       Check (T);
-      declare
-         Item : constant System.Address :=
-            System.Tasking.Inside.Get (Cast (T), Index);
-      begin
-         if Item = System.Null_Address then
-            return Initial_Value;
-         else
-            return Cast (Item).all;
-         end if;
-      end;
+      return Result : Attribute do
+         declare
+            procedure Process (Item : System.Address);
+            procedure Process (Item : System.Address) is
+            begin
+               if Item = System.Null_Address then
+                  Result := Initial_Value;
+               else
+                  Result := Cast (Item).all;
+               end if;
+            end Process;
+         begin
+            System.Tasking.Inside.Query (Cast (T), Index, Process'Access);
+         end;
+      end return;
    end Value;
 
    function Reference (

@@ -9,8 +9,8 @@ package System.Tasking.Inside is
    type Task_Record (<>) is limited private;
    type Task_Id is access all Task_Record;
 
-   function Get_Current_Task_Id return Task_Id;
-   function Get_Main_Task_Id return Task_Id;
+   function Current_Task_Id return Task_Id;
+   function Main_Task_Id return Task_Id;
 
    type Master_Record is limited private;
    type Master_Access is access all Master_Record;
@@ -29,7 +29,7 @@ package System.Tasking.Inside is
       --  rendezvous
       Entry_Last_Index : Task_Entry_Index := 0);
 
-   procedure Wait (T : in out Task_Id);
+   procedure Wait (T : in out Task_Id; Aborted : out Boolean);
    procedure Detach (T : in out Task_Id);
    function Terminated (T : Task_Id) return Boolean;
    function Activated (T : Task_Id) return Boolean;
@@ -37,70 +37,76 @@ package System.Tasking.Inside is
    type Free_Mode is (Wait, Detach);
    pragma Discard_Names (Free_Mode);
 
-   function Preferred_Free_Mode (T : Task_Id) return Free_Mode;
-   procedure Set_Preferred_Free_Mode (T : Task_Id; Mode : Free_Mode);
+   function Preferred_Free_Mode (T : not null Task_Id) return Free_Mode;
+   procedure Set_Preferred_Free_Mode (T : not null Task_Id; Mode : Free_Mode);
 
    procedure Get_Stack (
-      T : Task_Id;
+      T : not null Task_Id;
       Addr : out Address;
       Size : out Storage_Elements.Storage_Count);
 
    --  name
-   function Name (T : Task_Id) return String;
+   function Name (T : not null Task_Id) return String;
 
    --  abort
-   procedure Send_Abort (T : Task_Id);
+   procedure Send_Abort (T : not null Task_Id);
    procedure Enable_Abort;
    procedure Disable_Abort (Aborted : Boolean); -- check and disable
+   function Is_Aborted return Boolean;
 
    --  for manual activation (Chain /= null)
-   procedure Accept_Activation; -- current task
-   procedure Activate (
+   procedure Accept_Activation (Aborted : out Boolean); -- current task
+   procedure Activate ( -- activate all task
       Chain : not null access Activation_Chain;
-      Has_Error : out Boolean;
       Aborted : out Boolean);
-   procedure Activate (T : Task_Id; Final : Boolean); -- activate single task
+   procedure Activate (T : not null Task_Id); -- activate single task
    procedure Move (
       From, To : not null access Activation_Chain;
       New_Master : Master_Access);
 
    --  for manual completion (Master /= null)
-   function Parent (T : Task_Id) return Task_Id;
-   function Master_Level_Of (T : Task_Id) return Master_Level;
-   function Master_Within (T : Task_Id) return Master_Level;
-   procedure Enter_Master; -- current task
-   procedure Leave_Master; -- current task
-   function Get_Master_Of_Parent (Level : Master_Level) return Master_Access;
+   function Parent (T : not null Task_Id) return Task_Id;
+   function Master_Level_Of (T : not null Task_Id) return Master_Level;
+   function Master_Within return Master_Level;
+   procedure Enter_Master;
+   procedure Leave_Master;
+   procedure Leave_All_Masters; -- for System.Tasking.Stages.Complete_Task
+   function Master_Of_Parent (Level : Master_Level) return Master_Access;
 
    --  for rendezvous
    procedure Set_Entry_Name (
-      T : Task_Id;
+      T : not null Task_Id;
       Index : Task_Entry_Index;
       Name : Entry_Name_Access);
-   procedure Set_Entry_Names_To_Deallocate (T : Task_Id);
+   procedure Set_Entry_Names_To_Deallocate (T : not null Task_Id);
    type Queue_Node is limited private;
    type Queue_Node_Access is access all Queue_Node;
    type Queue_Filter is access function (
       Item : not null Queue_Node_Access;
       Params : Address)
       return Boolean;
-   procedure Call (T : Task_Id; Item : not null Queue_Node_Access);
+   procedure Cancel_Calls; -- for System.Tasking.Stages.Complete_Task
+   procedure Call (T : not null Task_Id; Item : not null Queue_Node_Access);
+   procedure Uncall (
+      T : not null Task_Id;
+      Item : not null Queue_Node_Access;
+      Already_Taken : out Boolean);
    procedure Accept_Call (
       Item : out Queue_Node_Access;
       Params : Address;
       Filter : Queue_Filter;
       Aborted : out Boolean);
    function Call_Count (
-      T : Task_Id;
+      T : not null Task_Id;
       Params : Address;
       Filter : Queue_Filter)
       return Natural;
-   function Callable (T : Task_Id) return Boolean;
+   function Callable (T : not null Task_Id) return Boolean;
 
    Cancel_Call_Hook : access procedure (X : in out Queue_Node_Access) := null;
 
    --  thread local storage
-   --  pragma Thread_Local_Storage is valid
+   --  note, use pragma Thread_Local_Storage instead of pthead TLS functions
 
 --  type TLS_Index is limited private;
 
@@ -115,20 +121,23 @@ package System.Tasking.Inside is
 
    procedure Allocate (Index : in out Attribute_Index);
    procedure Free (Index : in out Attribute_Index);
-   function Get (T : Task_Id; Index : Attribute_Index) return Address;
+   procedure Query (
+      T : not null Task_Id;
+      Index : in out Attribute_Index;
+      Process : not null access procedure (Item : Address));
    procedure Set (
-      T : Task_Id;
+      T : not null Task_Id;
       Index : in out Attribute_Index;
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address));
    procedure Reference (
-      T : Task_Id;
+      T : not null Task_Id;
       Index : in out Attribute_Index;
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address);
       Result : out Address);
    procedure Clear (
-      T : Task_Id;
+      T : not null Task_Id;
       Index : in out Attribute_Index);
 
    --  mutex
@@ -150,14 +159,33 @@ package System.Tasking.Inside is
    procedure Notify_All (Object : in out Condition_Variable);
    procedure Wait (
       Object : in out Condition_Variable;
+      Mutex : in out Inside.Mutex);
+   procedure Wait (
+      Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
-      Aborted : out Boolean);
+      Timeout : Native_Time.Native_Time;
+      Notified : out Boolean);
+   procedure Wait (
+      Object : in out Condition_Variable;
+      Mutex : in out Inside.Mutex;
+      Timeout : Duration;
+      Notified : out Boolean);
+   procedure Wait (
+      Object : in out Condition_Variable;
+      Mutex : in out Inside.Mutex;
+      Aborted : out Boolean); -- with abort checking
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
       Timeout : Native_Time.Native_Time;
       Notified : out Boolean;
-      Aborted : out Boolean);
+      Aborted : out Boolean); -- with abort checking
+   procedure Wait (
+      Object : in out Condition_Variable;
+      Mutex : in out Inside.Mutex;
+      Timeout : Duration;
+      Notified : out Boolean;
+      Aborted : out Boolean); -- with abort checking
 
    --  queue
 
@@ -176,7 +204,12 @@ package System.Tasking.Inside is
    procedure Add (
       Object : in out Queue;
       Item : not null Queue_Node_Access);
-   procedure Take (
+   procedure Take ( -- no waiting
+      Object : in out Queue;
+      Item : out Queue_Node_Access;
+      Params : Address;
+      Filter : Queue_Filter);
+   procedure Take ( -- waiting
       Object : in out Queue;
       Item : out Queue_Node_Access;
       Params : Address;
@@ -198,6 +231,7 @@ package System.Tasking.Inside is
    procedure Set (Object : in out Event);
    procedure Reset (Object : in out Event);
    function Get (Object : Event) return Boolean;
+   procedure Wait (Object : in out Event); -- without abort checking
    procedure Wait (
       Object : in out Event;
       Aborted : out Boolean);
@@ -236,6 +270,9 @@ private
    type Counter is mod 2 ** 32;
    for Counter'Size use 32;
 
+   type Activation_Error is (None, Any_Exception, Elaboration_Error);
+   pragma Discard_Names (Activation_Error);
+
    type Activation_Chain_Data;
    type Activation_Chain_Access is access all Activation_Chain_Data;
    type Activation_Chain_Data is limited record
@@ -243,9 +280,9 @@ private
       Task_Count : Counter;
       Activated_Count : aliased Counter;
       Release_Count : aliased Counter;
-      Elaboration_Error : Boolean;
       Mutex : Inside.Mutex;
       Condition_Variable : Inside.Condition_Variable;
+      Error : Activation_Error;
       Merged : Activation_Chain_Access;
       Self : access Activation_Chain;
    end record;
@@ -266,6 +303,13 @@ private
    pragma Suppress_Initialization (Attribute_Array);
    type Attribute_Array_Access is access Attribute_Array;
 
+   type Activation_State is range 0 .. 3;
+   for Activation_State'Size use 8;
+   AS_Suspended : constant Activation_State := 0;
+   AS_Activating : constant Activation_State := 1;
+   AS_Active : constant Activation_State := 2;
+   AS_Error : constant Activation_State := 3;
+
    type Termination_State is range 0 .. 2;
    for Termination_State'Size use 8;
    TS_Active : constant Termination_State := 0;
@@ -285,13 +329,17 @@ private
 
    type Rendezvous_Access is access Rendezvous_Record;
 
+   type Abort_Handler is access procedure (T : Task_Id);
+
    type Task_Record (Kind : Task_Kind) is limited record
       Handle : aliased C.pthread.pthread_t;
       Aborted : Boolean;
+      pragma Atomic (Aborted);
+      Abort_Handler : Inside.Abort_Handler;
       Attributes : Attribute_Array_Access;
       Attributes_Length : Natural;
       --  activation / completion
-      Activation_State : aliased Boolean;
+      Activation_State : aliased Inside.Activation_State;
       pragma Atomic (Activation_State);
       Termination_State : aliased Inside.Termination_State;
       pragma Atomic (Termination_State);
@@ -311,6 +359,7 @@ private
             --  manual activation
             Activation_Chain : Activation_Chain_Access;
             Next_Of_Activation_Chain : Task_Id;
+            Activation_Chain_Living : Boolean;
             Elaborated : access Boolean;
             --  manual completion
             Master_Of_Parent : Master_Access;

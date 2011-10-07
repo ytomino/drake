@@ -17,23 +17,14 @@ package body System.Tasking.Stages is
       Soft_Links.Complete_Master := Soft_Links.Nop'Access;
    end Unregister;
 
-   function Current_Master return Master_Level;
-   function Current_Master return Master_Level is
-   begin
-      return Inside.Master_Within (Inside.Get_Current_Task_Id);
-   end Current_Master;
+   function Current_Master return Master_Level
+      renames Inside.Master_Within;
 
-   procedure Enter_Master;
-   procedure Enter_Master is
-   begin
-      Inside.Enter_Master;
-   end Enter_Master;
+   procedure Enter_Master
+      renames Inside.Enter_Master;
 
-   procedure Complete_Master;
-   procedure Complete_Master is
-   begin
-      Inside.Leave_Master;
-   end Complete_Master;
+   procedure Complete_Master
+      renames Inside.Leave_Master;
 
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count;
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count is
@@ -67,7 +58,7 @@ package body System.Tasking.Stages is
       pragma Unreferenced (Relative_Deadline);
       pragma Unreferenced (Build_Entry_Names);
       Master_Of_Parent : constant Inside.Master_Access :=
-         Inside.Get_Master_Of_Parent (Master);
+         Inside.Master_Of_Parent (Master);
       New_Task_Id : Inside.Task_Id;
    begin
       Inside.Create (
@@ -83,20 +74,31 @@ package body System.Tasking.Stages is
    end Create_Task;
 
    procedure Complete_Activation is
+      Aborted : Boolean; -- abort or elaboration error
    begin
-      Inside.Accept_Activation;
+      Inside.Accept_Activation (Aborted);
+      if Aborted then
+         raise Standard'Abort_Signal;
+      end if;
    end Complete_Activation;
+
+   procedure Complete_Task is
+   begin
+      Inside.Cancel_Calls;
+      --  compiler omits final one calling Complete_Master, so do it here
+      --  do it before returning task body, since descriptors and discriminants
+      --  of child tasks are placed on the stack of task body
+      --  do it before set 'Terminated to False required by C94001A
+      Inside.Leave_All_Masters;
+   end Complete_Task;
 
    procedure Activate_Tasks (
       Chain_Access : not null access Activation_Chain)
    is
-      Has_Error : Boolean;
       Aborted : Boolean; -- ignore abort
+      pragma Unreferenced (Aborted);
    begin
-      Inside.Activate (Chain_Access, Has_Error, Aborted);
-      if Has_Error then
-         raise Program_Error; -- C39008A, RM 3.11 (14)
-      end if;
+      Inside.Activate (Chain_Access, Aborted => Aborted);
    end Activate_Tasks;
 
    procedure Free_Task (T : Task_Id) is
@@ -105,7 +107,11 @@ package body System.Tasking.Stages is
       Inside.Set_Entry_Names_To_Deallocate (Id);
       case Inside.Preferred_Free_Mode (Id) is
          when Inside.Wait =>
-            Inside.Wait (Id);
+            declare
+               Aborted : Boolean; -- ignored
+            begin
+               Inside.Wait (Id, Aborted => Aborted);
+            end;
          when Inside.Detach =>
             Inside.Detach (Id);
       end case;
@@ -116,7 +122,7 @@ package body System.Tasking.Stages is
       New_Master : Master_ID)
    is
       New_Master_Of_Parent : constant Inside.Master_Access :=
-         Inside.Get_Master_Of_Parent (New_Master);
+         Inside.Master_Of_Parent (New_Master);
    begin
       Inside.Move (From, To, New_Master_Of_Parent);
    end Move_Activation_Chain;
