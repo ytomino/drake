@@ -24,7 +24,7 @@ package System.Tasking.Stages is
 
    --  required (optional?) for task by compiler (s-tassta.ads)
    procedure Complete_Activation;
-   procedure Complete_Task is null;
+   procedure Complete_Task;
 
    --  required for task by compiler (s-tassta.ads)
    procedure Activate_Tasks (Chain_Access : not null access Activation_Chain);

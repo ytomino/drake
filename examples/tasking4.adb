@@ -34,6 +34,7 @@ procedure tasking4 is
 		Display (Y);
 	end Process;
 	T : System.Tasking.Inside.Task_Id;
+	Aborted : Boolean;
 begin
 	for I in Character'('A') .. 'C' loop
 		Lists.Append (X, I);
@@ -44,6 +45,6 @@ begin
 		Lists.Append (X, I); -- break sharing
 	end loop;
 	Display (X);
-	System.Tasking.Inside.Wait (T);
+	System.Tasking.Inside.Wait (T, Aborted => Aborted);
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking4;

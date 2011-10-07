@@ -9,15 +9,17 @@ package body System.Tasking.Rendezvous is
       Inside.Task_Record,
       Inside.Task_Id);
 
+   type Node;
+   type Node_Access is access all Node;
    type Node is limited record
       Super : aliased Inside.Queue_Node;
+      Previous : Node_Access;
       E : Task_Entry_Index;
       Uninterpreted_Data : Address;
       Waiting : Inside.Event;
       X : Ada.Exceptions.Exception_Occurrence;
    end record;
    pragma Suppress_Initialization (Node);
-   type Node_Access is access all Node;
 
    function Downcast is new Ada.Unchecked_Conversion (
       Inside.Queue_Node_Access,
@@ -35,9 +37,8 @@ package body System.Tasking.Rendezvous is
       return Downcast (The_Node).E = Task_Entry_Index (Params);
    end Filter;
 
-   procedure Cancel_Call (X : in out Inside.Queue_Node_Access);
-   procedure Cancel_Call (X : in out Inside.Queue_Node_Access) is
-      Call : constant not null Node_Access := Downcast (X);
+   procedure Cancel_Call (Call : not null Node_Access);
+   procedure Cancel_Call (Call : not null Node_Access) is
    begin
       begin
          raise Tasking_Error;
@@ -48,8 +49,29 @@ package body System.Tasking.Rendezvous is
       Inside.Set (Call.Waiting);
    end Cancel_Call;
 
+   procedure Cancel_Call (X : in out Inside.Queue_Node_Access);
+   procedure Cancel_Call (X : in out Inside.Queue_Node_Access) is
+      Call : constant not null Node_Access := Downcast (X);
+   begin
+      Cancel_Call (Call);
+   end Cancel_Call;
+
    TLS_Current_Call : Node_Access := null;
    pragma Thread_Local_Storage (TLS_Current_Call);
+
+   procedure Exceptional_Complete_Rendezvous (
+      X : Ada.Exceptions.Exception_Occurrence);
+   pragma No_Return (Exceptional_Complete_Rendezvous);
+   procedure Exceptional_Complete_Rendezvous (
+      X : Ada.Exceptions.Exception_Occurrence)
+   is
+      Current_Call : constant Node_Access := TLS_Current_Call;
+   begin
+      Ada.Exceptions.Save_Occurrence (Current_Call.X, X);
+      Inside.Set (Current_Call.Waiting);
+      TLS_Current_Call := Current_Call.Previous;
+      Ada.Exceptions.Reraise_Occurrence (X);
+   end Exceptional_Complete_Rendezvous;
 
    --  implementation
 
@@ -67,28 +89,26 @@ package body System.Tasking.Rendezvous is
          Filter'Access,
          Aborted => Aborted);
       Inside.Disable_Abort (Aborted); -- if aborted, raise here
+      Downcast (The_Node).Previous := TLS_Current_Call;
       TLS_Current_Call := Downcast (The_Node);
       Uninterpreted_Data := Downcast (The_Node).Uninterpreted_Data;
    end Accept_Call;
 
    procedure Complete_Rendezvous is
+      Current_Call : constant Node_Access := TLS_Current_Call;
    begin
-      Inside.Set (TLS_Current_Call.Waiting);
-      TLS_Current_Call := null;
+      Inside.Set (Current_Call.Waiting);
+      TLS_Current_Call := Current_Call.Previous;
    end Complete_Rendezvous;
 
    procedure Exceptional_Complete_Rendezvous (
       Ex : Ada.Exceptions.Exception_Id)
    is
-      Current_Call : constant Node_Access := TLS_Current_Call;
       Occ : Ada.Exceptions.Exception_Occurrence
          renames Soft_Links.Get_Current_Excep.all.all;
    begin
       pragma Assert (Ada.Exceptions.Exception_Identity (Occ) = Ex);
-      Ada.Exceptions.Save_Occurrence (Current_Call.X, Occ);
-      Inside.Set (Current_Call.Waiting);
-      TLS_Current_Call := null;
-      Ada.Exceptions.Reraise_Occurrence (Occ);
+      Exceptional_Complete_Rendezvous (Occ);
    end Exceptional_Complete_Rendezvous;
 
    procedure Accept_Trivial (E : Task_Entry_Index) is
@@ -106,13 +126,12 @@ package body System.Tasking.Rendezvous is
    begin
       if not Inside.Activated (Task_Record_Conv.To_Pointer (Acceptor)) then
          --  in extended return statement
-         Inside.Activate (
-            Task_Record_Conv.To_Pointer (Acceptor),
-            Final => False); -- for Move_Activation_Chain
+         Inside.Activate (Task_Record_Conv.To_Pointer (Acceptor));
       end if;
       declare
          The_Node : aliased Node := (
             Super => <>,
+            Previous => null,
             E => E,
             Uninterpreted_Data => Uninterpreted_Data,
             Waiting => <>, -- default initializer
@@ -125,6 +144,19 @@ package body System.Tasking.Rendezvous is
             Task_Record_Conv.To_Pointer (Acceptor),
             The_Node.Super'Unchecked_Access);
          Inside.Wait (The_Node.Waiting, Aborted => Aborted);
+         if Aborted then
+            declare
+               Already_Taken : Boolean;
+            begin
+               Inside.Uncall (
+                  Task_Record_Conv.To_Pointer (Acceptor),
+                  The_Node.Super'Unchecked_Access,
+                  Already_Taken => Already_Taken);
+               if Already_Taken then
+                  Inside.Wait (The_Node.Waiting); -- without abort checking
+               end if;
+            end;
+         end if;
          Inside.Finalize (The_Node.Waiting);
          Inside.Disable_Abort (Aborted); -- if aborted, raise here
          if Ada.Exceptions.Exception_Identity (The_Node.X)
@@ -143,7 +175,7 @@ package body System.Tasking.Rendezvous is
    function Task_Count (E : Task_Entry_Index) return Natural is
    begin
       return Inside.Call_Count (
-         Inside.Get_Current_Task_Id,
+         Inside.Current_Task_Id,
          Address (E),
          Filter'Access);
    end Task_Count;

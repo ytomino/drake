@@ -27,10 +27,10 @@ private
    Null_Task_Id : constant Task_Id := null;
 
    function Current_Task return Task_Id
-      renames Get_Current_Task_Id; -- inherited
+      renames Current_Task_Id; -- inherited
 
    function Environment_Task return Task_Id
-      renames Get_Main_Task_Id; -- inherited
+      renames Main_Task_Id; -- inherited
 
    procedure Abort_Task (T : Task_Id)
       renames Send_Abort; -- inherited
