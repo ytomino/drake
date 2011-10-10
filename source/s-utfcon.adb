@@ -6,7 +6,6 @@ package body System.UTF_Conversions is
       Leading : out Character;
       Length : out Natural;
       Error : out Boolean);
-   --  local
    procedure UTF_8_Length (
       Code : UCS_4;
       Leading : out Character;
@@ -44,6 +43,8 @@ package body System.UTF_Conversions is
             Error := False;
       end case;
    end UTF_8_Length;
+
+   --  implementation
 
    procedure To_UTF_8 (
       Code : UCS_4;

@@ -43,7 +43,7 @@ package body Ada.Strings.Maps is
       Free (X);
    end Free_Set_Data;
 
-   --  local, "-" operation
+   --  "-" operation
    procedure Sub (
       Result : in out Characters.Inside.Sets.Character_Ranges;
       Last : out Natural;
@@ -97,7 +97,7 @@ package body Ada.Strings.Maps is
       end loop;
    end Sub;
 
-   --  local, "*"/and operation
+   --  "*"/and operation
    procedure Mul (
       Result : in out Characters.Inside.Sets.Character_Ranges;
       Last : out Natural;
@@ -137,6 +137,8 @@ package body Ada.Strings.Maps is
       Items => (1 => (
          Low => Wide_Wide_Character'First,
          High => Wide_Wide_Character'Last)));
+
+   --  implementation of sets
 
    overriding procedure Adjust (Object : in out Character_Set) is
    begin
@@ -714,6 +716,8 @@ package body Ada.Strings.Maps is
    begin
       Free (X);
    end Free_Map_Data;
+
+   --  implementation of maps
 
    overriding procedure Adjust (Object : in out Character_Mapping) is
    begin

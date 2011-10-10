@@ -49,7 +49,6 @@ package body Ada.Text_IO.Inside is
 
    procedure Wait;
 
-   --  local
    procedure Check_File_Mode (
       File : Non_Controlled_File_Type;
       Expected : File_Mode) is
@@ -59,7 +58,6 @@ package body Ada.Text_IO.Inside is
       end if;
    end Check_File_Mode;
 
-   --  local
    procedure Check_File_Open (File : Non_Controlled_File_Type) is
    begin
       if not Is_Open (File) then
@@ -67,7 +65,6 @@ package body Ada.Text_IO.Inside is
       end if;
    end Check_File_Open;
 
-   --  local
    procedure Check_Stream_IO_Open (File : Non_Controlled_File_Type) is
    begin
       if not Is_Open (File)
@@ -76,6 +73,83 @@ package body Ada.Text_IO.Inside is
          raise Status_Error;
       end if;
    end Check_Stream_IO_Open;
+
+   procedure Read_Buffer (
+      File : Non_Controlled_File_Type;
+      Wanted : Natural := 1)
+   is
+      Wanted_or_1 : constant Positive := Integer'Max (1, Wanted);
+   begin
+      if not File.End_Of_File and then File.Last < Wanted_or_1 then
+         declare
+            Old_Last : constant Natural := File.Last;
+            --  read next single character
+            Buffer : Streams.Stream_Element_Array (
+               Streams.Stream_Element_Offset (Old_Last + 1) ..
+               Streams.Stream_Element_Offset (Wanted_or_1));
+            for Buffer'Address use
+               File.Buffer (Old_Last + 1 .. Wanted_or_1)'Address;
+            Last : Streams.Stream_Element_Offset := 0;
+         begin
+            begin
+               Streams.Read (File.Stream.all, Buffer, Last);
+            exception
+               when End_Error =>
+                  File.End_Of_File := True;
+            end;
+            if Integer (Last) < Wanted then
+               File.End_Of_File := True;
+            end if;
+            File.Last := Integer (Last);
+            File.Buffer_Col := Count (Integer (Last) - Old_Last);
+         end;
+      end if;
+   end Read_Buffer;
+
+   procedure Take_Buffer (File : Non_Controlled_File_Type) is
+      New_Last : constant Natural := File.Last - 1;
+   begin
+      File.Buffer (1 .. New_Last) := File.Buffer (2 .. File.Last);
+      File.Last := New_Last;
+      File.Buffer_Col := 0;
+      File.Dummy_Mark := None;
+   end Take_Buffer;
+
+   procedure Wait is
+      Time : aliased constant C.sys.time.struct_timespec := (
+         tv_sec => 0,
+         tv_nsec => 1);
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      Dummy := C.time.nanosleep (Time'Access, null);
+   end Wait;
+
+   procedure Write_Buffer (File : Non_Controlled_File_Type) is
+      Length : constant Natural := File.Last;
+   begin
+      if Length > 0 then
+         File.Last := 0; --  before New_Line to block Flush
+         if File.Line_Length /= 0
+            and then File.Col > File.Line_Length
+         then
+            New_Line (File); --  New_Line does not touch buffer
+         end if;
+         declare
+            Buffer : Streams.Stream_Element_Array (1 .. 1);
+            for Buffer'Address use File.Buffer'Address;
+         begin
+            Streams.Write (File.Stream.all, Buffer);
+         end;
+         File.Last := Length - 1;
+         File.Buffer (1 .. File.Last) := File.Buffer (2 .. Length);
+         File.Buffer_Col := 1;
+      else
+         File.Buffer_Col := 0; --  No filled
+      end if;
+   end Write_Buffer;
+
+   --  implementation
 
    procedure Close (
       File : in out Non_Controlled_File_Type;
@@ -621,39 +695,6 @@ package body Ada.Text_IO.Inside is
       File.Col := File.Col + File.Buffer_Col;
    end Put;
 
-   --  local
-   procedure Read_Buffer (
-      File : Non_Controlled_File_Type;
-      Wanted : Natural := 1)
-   is
-      Wanted_or_1 : constant Positive := Integer'Max (1, Wanted);
-   begin
-      if not File.End_Of_File and then File.Last < Wanted_or_1 then
-         declare
-            Old_Last : constant Natural := File.Last;
-            --  read next single character
-            Buffer : Streams.Stream_Element_Array (
-               Streams.Stream_Element_Offset (Old_Last + 1) ..
-               Streams.Stream_Element_Offset (Wanted_or_1));
-            for Buffer'Address use
-               File.Buffer (Old_Last + 1 .. Wanted_or_1)'Address;
-            Last : Streams.Stream_Element_Offset := 0;
-         begin
-            begin
-               Streams.Read (File.Stream.all, Buffer, Last);
-            exception
-               when End_Error =>
-                  File.End_Of_File := True;
-            end;
-            if Integer (Last) < Wanted then
-               File.End_Of_File := True;
-            end if;
-            File.Last := Integer (Last);
-            File.Buffer_Col := Count (Integer (Last) - Old_Last);
-         end;
-      end if;
-   end Read_Buffer;
-
    procedure Reset (
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode)
@@ -859,51 +900,5 @@ package body Ada.Text_IO.Inside is
       Check_Stream_IO_Open (File);
       return File.File'Access;
    end Stream_IO;
-
-   --  local
-   procedure Take_Buffer (File : Non_Controlled_File_Type) is
-      New_Last : constant Natural := File.Last - 1;
-   begin
-      File.Buffer (1 .. New_Last) := File.Buffer (2 .. File.Last);
-      File.Last := New_Last;
-      File.Buffer_Col := 0;
-      File.Dummy_Mark := None;
-   end Take_Buffer;
-
-   --  local
-   procedure Wait is
-      Time : aliased constant C.sys.time.struct_timespec := (
-         tv_sec => 0,
-         tv_nsec => 1);
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-   begin
-      Dummy := C.time.nanosleep (Time'Access, null);
-   end Wait;
-
-   --  local
-   procedure Write_Buffer (File : Non_Controlled_File_Type) is
-      Length : constant Natural := File.Last;
-   begin
-      if Length > 0 then
-         File.Last := 0; --  before New_Line to block Flush
-         if File.Line_Length /= 0
-            and then File.Col > File.Line_Length
-         then
-            New_Line (File); --  New_Line does not touch buffer
-         end if;
-         declare
-            Buffer : Streams.Stream_Element_Array (1 .. 1);
-            for Buffer'Address use File.Buffer'Address;
-         begin
-            Streams.Write (File.Stream.all, Buffer);
-         end;
-         File.Last := Length - 1;
-         File.Buffer (1 .. File.Last) := File.Buffer (2 .. Length);
-         File.Buffer_Col := 1;
-      else
-         File.Buffer_Col := 0; --  No filled
-      end if;
-   end Write_Buffer;
 
 end Ada.Text_IO.Inside;

@@ -9,7 +9,7 @@ package body System.Unwind.Raising is
    pragma Suppress (All_Checks);
    use type Standard_Library.Exception_Data_Ptr;
 
-   --  local package separated for depending on zcx / sjlj
+   --  package separated for depending on zcx / sjlj
    package Separated is
 
       --  (a-exexpr-gcc.adb)
@@ -209,21 +209,35 @@ package body System.Unwind.Raising is
       Current.Num_Tracebacks := 0;
    end Set_Exception_Message;
 
-   --  local / at first
+   --  equivalent to Raise_Current_Excep (a-except-2005.adb)
+   procedure Raise_Current_Exception (
+      E : not null Standard_Library.Exception_Data_Ptr);
+   pragma No_Return (Raise_Current_Exception);
+   --  gdb knows external name ???
+   pragma Export (C, Raise_Current_Exception, "__gnat_raise_nodefer_with_msg");
+
+   --  (a-except-2005.adb)
+   procedure Raise_Exception_No_Defer (
+      E : not null Standard_Library.Exception_Data_Ptr;
+      Message : String := "");
+   pragma No_Return (Raise_Exception_No_Defer);
+
+   procedure Reraise_No_Defer (X : Exception_Occurrence);
+   pragma No_Return (Reraise_No_Defer);
+
+   --  implementation
+
+   --  at first of exclusion
    function AAA return Address is
    begin
       <<Code>>
       return Code'Address;
    end AAA;
 
+   --  start private part in exclusion
+
    package body Separated is separate;
 
-   --  local / equivalent to Raise_Current_Excep (a-except-2005.adb)
-   procedure Raise_Current_Exception (
-      E : not null Standard_Library.Exception_Data_Ptr);
-   pragma No_Return (Raise_Current_Exception);
-   --  gdb knows external name ???
-   pragma Export (C, Raise_Current_Exception, "__gnat_raise_nodefer_with_msg");
    procedure Raise_Current_Exception (
       E : not null Standard_Library.Exception_Data_Ptr)
    is
@@ -232,11 +246,6 @@ package body System.Unwind.Raising is
       Separated.Propagate_Exception (E, False);
    end Raise_Current_Exception;
 
-   --  local (a-except-2005.adb)
-   procedure Raise_Exception_No_Defer (
-      E : not null Standard_Library.Exception_Data_Ptr;
-      Message : String := "");
-   pragma No_Return (Raise_Exception_No_Defer);
    procedure Raise_Exception_No_Defer (
       E : not null Standard_Library.Exception_Data_Ptr;
       Message : String := "") is
@@ -245,9 +254,6 @@ package body System.Unwind.Raising is
       Raise_Current_Exception (E);
    end Raise_Exception_No_Defer;
 
-   --  local
-   procedure Reraise_No_Defer (X : Exception_Occurrence);
-   pragma No_Return (Reraise_No_Defer);
    procedure Reraise_No_Defer (X : Exception_Occurrence) is
       Current : constant not null Exception_Occurrence_Access :=
          Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
@@ -260,6 +266,8 @@ package body System.Unwind.Raising is
       pragma Check (Trace, Debug.Put ("reraising..."));
       Raise_Current_Exception (X.Id);
    end Reraise_No_Defer;
+
+   --  end private part in exclusion
 
    procedure Raise_Exception (
       E : not null Standard_Library.Exception_Data_Ptr;
@@ -551,7 +559,7 @@ package body System.Unwind.Raising is
          Message => Message);
    end rcheck_34;
 
-   --  local / at last
+   --  at last of exclusion
    function ZZZ return Address is
    begin
       <<Code>>

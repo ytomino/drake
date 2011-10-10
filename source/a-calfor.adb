@@ -12,6 +12,56 @@ package body Ada.Calendar.Formatting is
       Include_Time_Fraction : Boolean;
       Item : out String;
       Last : out Natural);
+   procedure Image (
+      Hour : Natural;
+      Minute : Minute_Number;
+      Second : Second_Number;
+      Sub_Second : Second_Duration;
+      Include_Time_Fraction : Boolean;
+      Item : out String;
+      Last : out Natural)
+   is
+      Error : Boolean;
+   begin
+      System.Formatting.Image (
+         System.Formatting.Unsigned (Hour),
+         Item,
+         Last,
+         Width => 2,
+         Error => Error);
+      pragma Assert (not Error);
+      Last := Last + 1;
+      Item (Last) := ':';
+      System.Formatting.Image (
+         System.Formatting.Unsigned (Minute),
+         Item (Last + 1 .. Item'Last),
+         Last,
+         Width => 2,
+         Error => Error);
+      pragma Assert (not Error);
+      Last := Last + 1;
+      Item (Last) := ':';
+      System.Formatting.Image (
+         System.Formatting.Unsigned (Second),
+         Item (Last + 1 .. Item'Last),
+         Last,
+         Width => 2,
+         Error => Error);
+      pragma Assert (not Error);
+      if Include_Time_Fraction then
+         Last := Last + 1;
+         Item (Last) := '.';
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Sub_Second * 100.0),
+            Item (Last + 1 .. Item'Last),
+            Last,
+            Width => 2,
+            Error => Error);
+            pragma Assert (not Error);
+      end if;
+   end Image;
+
+   --  implementation
 
    function Day_Of_Week (
       Date : Time;
@@ -452,56 +502,6 @@ package body Ada.Calendar.Formatting is
          Leap_Second => False,
          Time_Zone => Time_Zone);
    end Value;
-
-   --  local
-   procedure Image (
-      Hour : Natural;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
-      Include_Time_Fraction : Boolean;
-      Item : out String;
-      Last : out Natural)
-   is
-      Error : Boolean;
-   begin
-      System.Formatting.Image (
-         System.Formatting.Unsigned (Hour),
-         Item,
-         Last,
-         Width => 2,
-         Error => Error);
-      pragma Assert (not Error);
-      Last := Last + 1;
-      Item (Last) := ':';
-      System.Formatting.Image (
-         System.Formatting.Unsigned (Minute),
-         Item (Last + 1 .. Item'Last),
-         Last,
-         Width => 2,
-         Error => Error);
-      pragma Assert (not Error);
-      Last := Last + 1;
-      Item (Last) := ':';
-      System.Formatting.Image (
-         System.Formatting.Unsigned (Second),
-         Item (Last + 1 .. Item'Last),
-         Last,
-         Width => 2,
-         Error => Error);
-      pragma Assert (not Error);
-      if Include_Time_Fraction then
-         Last := Last + 1;
-         Item (Last) := '.';
-         System.Formatting.Image (
-            System.Formatting.Unsigned (Sub_Second * 100.0),
-            Item (Last + 1 .. Item'Last),
-            Last,
-            Width => 2,
-            Error => Error);
-            pragma Assert (not Error);
-      end if;
-   end Image;
 
    function Image (
       Elapsed_Time : Duration;

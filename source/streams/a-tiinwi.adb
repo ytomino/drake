@@ -6,6 +6,39 @@ package body Ada.Text_IO.Inside.Wide is
       File : File_Type;
       C : Wide_Wide_Character;
       Item : out Wide_Character);
+   procedure Store_Second (
+      File : File_Type;
+      C : Wide_Wide_Character;
+      Item : out Wide_Character)
+   is
+      W_Buffer : Wide_String (1 .. System.UTF_Conversions.UTF_16_Max_Length);
+      W_Last : Natural;
+      Error : Boolean; --  ignore
+   begin
+      System.UTF_Conversions.To_UTF_16 (
+         Wide_Wide_Character'Pos (C),
+         W_Buffer,
+         W_Last,
+         Error);
+      Item := W_Buffer (1);
+      if W_Last >= 2 then
+         --  store second of surrogate pair
+         declare
+            Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
+            Last : Natural;
+         begin
+            System.UTF_Conversions.To_UTF_8 (
+               Wide_Character'Pos (W_Buffer (2)),
+               Buffer,
+               Last,
+               Error);
+            File.Text.Last := Last;
+            File.Text.Buffer (1 .. Last) := Buffer (1 .. Last);
+         end;
+      end if;
+   end Store_Second;
+
+   --  implementation
 
    procedure Get (File : File_Type; Item : out Wide_Character) is
       C : Wide_Wide_Character;
@@ -264,38 +297,5 @@ package body Ada.Text_IO.Inside.Wide is
          end;
       end if;
    end Put;
-
-   --  local
-   procedure Store_Second (
-      File : File_Type;
-      C : Wide_Wide_Character;
-      Item : out Wide_Character)
-   is
-      W_Buffer : Wide_String (1 .. System.UTF_Conversions.UTF_16_Max_Length);
-      W_Last : Natural;
-      Error : Boolean; --  ignore
-   begin
-      System.UTF_Conversions.To_UTF_16 (
-         Wide_Wide_Character'Pos (C),
-         W_Buffer,
-         W_Last,
-         Error);
-      Item := W_Buffer (1);
-      if W_Last >= 2 then
-         --  store second of surrogate pair
-         declare
-            Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
-            Last : Natural;
-         begin
-            System.UTF_Conversions.To_UTF_8 (
-               Wide_Character'Pos (W_Buffer (2)),
-               Buffer,
-               Last,
-               Error);
-            File.Text.Last := Last;
-            File.Text.Buffer (1 .. Last) := Buffer (1 .. Last);
-         end;
-      end if;
-   end Store_Second;
 
 end Ada.Text_IO.Inside.Wide;

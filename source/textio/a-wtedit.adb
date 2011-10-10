@@ -1,15 +1,6 @@
 package body Ada.Wide_Text_IO.Editing is
 
-   function Valid (
-      Pic_String : String;
-      Blank_When_Zero : Boolean := False)
-      return Boolean is
-   begin
-      return Text_IO.Editing.Valid (Pic_String, Blank_When_Zero);
-   end Valid;
-
    procedure Tail (Target : out Wide_String; Source : Wide_String);
-   --  local
    procedure Tail (Target : out Wide_String; Source : Wide_String) is
       Padding : constant Wide_Character := ' ';
    begin
@@ -21,6 +12,16 @@ package body Ada.Wide_Text_IO.Editing is
       end loop;
       Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
    end Tail;
+
+   --  implementation
+
+   function Valid (
+      Pic_String : String;
+      Blank_When_Zero : Boolean := False)
+      return Boolean is
+   begin
+      return Text_IO.Editing.Valid (Pic_String, Blank_When_Zero);
+   end Valid;
 
    package body Decimal_Output is
 

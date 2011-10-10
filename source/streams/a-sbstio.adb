@@ -9,7 +9,6 @@ package body Ada.Streams.Buffer_Storage_IO is
       Stream_Type,
       Stream_Access);
 
-   --  local
    procedure Set_Size (
       Storage : in out Stream_Element_Array_Access;
       New_Size : Stream_Element_Count);
@@ -28,6 +27,8 @@ package body Ada.Streams.Buffer_Storage_IO is
       Storage (Copy_Range) := Old (Copy_Range);
       Free (Old);
    end Set_Size;
+
+   --  implementation
 
    function Size (Object : Buffer) return Stream_Element_Count is
    begin

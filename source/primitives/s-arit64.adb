@@ -12,7 +12,6 @@ package body System.Arith_64 is
       "Long_Long_Integer is not 64-bit.");
 
    function Multiply_Overflow (X, Y : Interfaces.Integer_64) return Boolean;
-   --  local
    function Multiply_Overflow (X, Y : Interfaces.Integer_64) return Boolean is
    begin
       if X > 0 then
@@ -34,20 +33,10 @@ package body System.Arith_64 is
       end if;
    end Multiply_Overflow;
 
-   function Multiply (X, Y : Interfaces.Integer_64)
-      return Interfaces.Integer_64 is
-   begin
-      if Multiply_Overflow (X, Y) then
-         Unwind.Raising.Overflow;
-      end if;
-      return X * Y;
-   end Multiply;
-
    subtype U32 is Interfaces.Unsigned_32;
    subtype U64 is Interfaces.Unsigned_64;
 
    procedure Add (X : U64; R1, R2, R3 : in out U32);
-   --  local
    procedure Add (X : U64; R1, R2, R3 : in out U32) is
       R : constant U64 := U64 (R1) or Interfaces.Shift_Left (U64 (R2), 32);
       Result : constant U64 := X + R;
@@ -60,7 +49,6 @@ package body System.Arith_64 is
    end Add;
 
    procedure Mul (X : U64; Y : U64; RL, RH : out U64);
-   --  local
    procedure Mul (X : U64; Y : U64; RL, RH : out U64) is
       X1 : constant U32 := U32'Mod (X);
       X2 : constant U32 := U32'Mod (Interfaces.Shift_Right (X, 32));
@@ -116,7 +104,6 @@ package body System.Arith_64 is
    end Mul;
 
    procedure Div (X : U64; Y : U64; Q : out U64; R : out U64);
-   --  local
    procedure Div (X : U64; Y : U64; Q : out U64; R : out U64) is
    begin
       Long_Long_Integer_Divide (
@@ -127,7 +114,6 @@ package body System.Arith_64 is
    end Div;
 
    function Bits (X : U64) return Natural;
-   --  local
    function Bits (X : U64) return Natural is
       T : U64 := X;
    begin
@@ -140,7 +126,6 @@ package body System.Arith_64 is
    end Bits;
 
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64);
-   --  local
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64) is
       --  pragma Assert (XH < Y);
       Temp_XL : U64 := XL;
@@ -187,6 +172,17 @@ package body System.Arith_64 is
       Div (Temp_XL, Y, Rem_Q, R);
       Q := Q + Rem_Q;
    end Div;
+
+   --  implementation
+
+   function Multiply (X, Y : Interfaces.Integer_64)
+      return Interfaces.Integer_64 is
+   begin
+      if Multiply_Overflow (X, Y) then
+         Unwind.Raising.Overflow;
+      end if;
+      return X * Y;
+   end Multiply;
 
    procedure Scaled_Divide (
       X, Y, Z : Interfaces.Integer_64;
