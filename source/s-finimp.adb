@@ -14,7 +14,7 @@ package body System.Finalization_Implementation is
    use type Standard_Library.Exception_Data_Ptr;
    use type Storage_Elements.Storage_Offset;
 
-   --  local / finalize global controlled objects (s-finimp.ads)
+   --  finalize global controlled objects (s-finimp.ads)
    procedure Finalize_Global_List;
    procedure Finalize_Global_List is
    begin
@@ -38,7 +38,7 @@ package body System.Finalization_Implementation is
       end if;
    end Register_Finalize_Global_List;
 
-   --  local (s-finimp.adb)
+   --  (s-finimp.adb)
    procedure Raise_From_Finalize (
       L : Finalization_Root.Finalizable_Ptr;
       From_Abort : Boolean;
@@ -67,7 +67,7 @@ package body System.Finalization_Implementation is
       end if;
    end Raise_From_Finalize;
 
-   --  local (s-finimp.adb)
+   --  (s-finimp.adb)
    type RC_Ptr is access all Record_Controller;
    function Get_Deep_Controller (Obj : Address) return RC_Ptr;
    function Get_Deep_Controller (Obj : Address) return RC_Ptr is
@@ -115,6 +115,8 @@ package body System.Finalization_Implementation is
          end;
       end if;
    end Get_Deep_Controller;
+
+   --  implementation
 
    procedure Attach_To_Final_List (
       L : in out Finalization_Root.Finalizable_Ptr;
