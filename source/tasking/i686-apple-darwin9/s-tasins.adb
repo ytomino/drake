@@ -419,6 +419,7 @@ package body System.Tasking.Inside is
          pragma Assert (Main_Task_Record.Master_Top = null);
       end if;
       Clear_Attributes (Main_Task_Record'Access);
+      pragma Assert (Main_Task_Record.Abort_Locking = 2);
       TLS_Current_Task_Id := null;
       --  shared lock
       Finalize (Shared_Lock);
@@ -470,6 +471,8 @@ package body System.Tasking.Inside is
          TLS_Current_Task_Id := Main_Task_Record'Access;
          Main_Task_Record.Handle := C.pthread.pthread_self;
          Main_Task_Record.Aborted := False;
+         Main_Task_Record.Abort_Handler := null;
+         Main_Task_Record.Abort_Locking := 2;
          Main_Task_Record.Attributes := null;
          Main_Task_Record.Attributes_Length := 0;
          Main_Task_Record.Activation_State := AS_Active;
@@ -540,6 +543,7 @@ package body System.Tasking.Inside is
       TLS_Current_Task_Id := T;
       --  block SIGTERM
       Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
+      T.Abort_Locking := 1;
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
       Local.Current_Exception.Private_Data := Null_Address;
@@ -552,21 +556,33 @@ package body System.Tasking.Inside is
          procedure On_Exception is
             Aborted : Boolean; -- ignored
          begin
+            pragma Check (Trace, Ada.Debug.Put ("enter"));
             if T.Activation_State <= AS_Activating then
+               pragma Check (Trace, Ada.Debug.Put ("unactivated"));
                --  an exception was raised until calling Accept_Activation
                T.Activation_Chain.Error := Any_Exception;
+               T.Abort_Locking := T.Abort_Locking - 1; -- cancel below +1
                Accept_Activation (Aborted => Aborted);
             end if;
+            pragma Check (Trace, Ada.Debug.Put ("leave"));
          end On_Exception;
       begin
+         if T.Activation_Chain /= null then
+            --  Abort_Underder will be called Accpet_Activation
+            T.Abort_Locking := T.Abort_Locking + 1;
+         end if;
          T.Process (T.Params);
       exception
          when Standard'Abort_Signal =>
+            pragma Check (Trace, Ada.Debug.Put ("Abort_Signal"));
+            --  Abort_Undefer will not be called by compiler
+            T.Abort_Locking := T.Abort_Locking - 1;
             On_Exception;
          when E : others =>
             Report (T, E);
             On_Exception;
       end;
+      pragma Assert (T.Abort_Locking = 1);
       --  cancel calling queue
       Cancel_Calls;
       --  deactivate and set 'Terminated to False
@@ -968,6 +984,7 @@ package body System.Tasking.Inside is
          Handle => <>, -- uninitialized
          Aborted => False,
          Abort_Handler => null,
+         Abort_Locking => 0,
          Attributes => null,
          Attributes_Length => 0,
          Activation_State => AS_Suspended, -- unexecuted
@@ -1149,8 +1166,16 @@ package body System.Tasking.Inside is
    procedure Enable_Abort is
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
-      if T /= null and then T.Kind = Sub then
-         Mask_SIGTERM (C.sys.signal.SIG_UNBLOCK);
+      if T /= null then
+         pragma Check (Trace, Ada.Debug.Put (Name (T)
+            & Natural'Image (T.Abort_Locking) & " =>"
+            & Natural'Image (T.Abort_Locking - 1)));
+         pragma Assert (T.Abort_Locking > 0);
+         T.Abort_Locking := T.Abort_Locking - 1;
+         if T.Kind = Sub then
+            pragma Assert (T.Abort_Locking = 0);
+            Mask_SIGTERM (C.sys.signal.SIG_UNBLOCK);
+         end if;
       end if;
    end Enable_Abort;
 
@@ -1158,13 +1183,38 @@ package body System.Tasking.Inside is
       pragma Unreferenced (Aborted); -- dummy parameter for coding check
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
-      if T /= null and then T.Kind = Sub then
-         Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
-      end if;
-      if T /= null and then T.Aborted then
-         raise Standard'Abort_Signal;
+      if T /= null then
+         pragma Check (Trace, Ada.Debug.Put (Name (T)
+            & Natural'Image (T.Abort_Locking) & " =>"
+            & Natural'Image (T.Abort_Locking + 1)));
+         if T.Kind = Sub then
+            pragma Assert (T.Abort_Locking = 0);
+            Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
+         end if;
+         T.Abort_Locking := T.Abort_Locking + 1;
+         if T.Aborted and then T.Abort_Locking = 1 then
+            raise Standard'Abort_Signal;
+         end if;
       end if;
    end Disable_Abort;
+
+   procedure Enter_Unabortable is
+      T : constant Task_Id := Current_Task_Id;
+   begin
+      pragma Check (Trace, Ada.Debug.Put (Name (T)
+         & Natural'Image (T.Abort_Locking) & " =>"
+         & Natural'Image (T.Abort_Locking + 1)));
+      T.Abort_Locking := T.Abort_Locking + 1;
+   end Enter_Unabortable;
+
+   procedure Leave_Unabortable is
+      T : constant Task_Id := TLS_Current_Task_Id;
+   begin
+      pragma Check (Trace, Ada.Debug.Put (Name (T)
+         & Natural'Image (T.Abort_Locking) & " =>"
+         & Natural'Image (T.Abort_Locking - 1)));
+      T.Abort_Locking := T.Abort_Locking - 1;
+   end Leave_Unabortable;
 
    function Is_Aborted return Boolean is
       T : constant Task_Id := TLS_Current_Task_Id;
@@ -1199,6 +1249,7 @@ package body System.Tasking.Inside is
       Leave (C.Mutex);
       --  cleanup
       Release (C);
+      pragma Check (Trace, Ada.Debug.Put ("aborted = " & Aborted'Img));
    end Accept_Activation;
 
    procedure Activate (
@@ -1281,7 +1332,7 @@ package body System.Tasking.Inside is
 
    function Parent (T : not null Task_Id) return Task_Id is
    begin
-      if T.Master_Of_Parent = null then
+      if T.Kind = Main or else T.Master_Of_Parent = null then
          return null;
       else
          return T.Master_Of_Parent.Parent;
@@ -1352,9 +1403,13 @@ package body System.Tasking.Inside is
             pragma Assert (Current_Task_Id.Abort_Handler = null);
             Current_Task_Id.Abort_Handler :=
                Abort_Handler_On_Leave_Master'Access;
-            Mask_SIGTERM (C.sys.signal.SIG_UNBLOCK);
+            if T.Kind = Sub then
+               Mask_SIGTERM (C.sys.signal.SIG_UNBLOCK);
+            end if;
             Wait (Taken, Free_Task_Id);
-            Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
+            if T.Kind = Sub then
+               Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
+            end if;
             Current_Task_Id.Abort_Handler := null;
             if Free_Task_Id /= null then
                Remove_From_Completion_List (Free_Task_Id);

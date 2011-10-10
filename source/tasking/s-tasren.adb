@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
@@ -16,7 +17,7 @@ package body System.Tasking.Rendezvous is
       Previous : Node_Access;
       E : Task_Entry_Index;
       Uninterpreted_Data : Address;
-      Waiting : Inside.Event;
+      Waiting : aliased Inside.Event;
       X : Ada.Exceptions.Exception_Occurrence;
    end record;
    pragma Suppress_Initialization (Node);
@@ -70,6 +71,7 @@ package body System.Tasking.Rendezvous is
       Ada.Exceptions.Save_Occurrence (Current_Call.X, X);
       Inside.Set (Current_Call.Waiting);
       TLS_Current_Call := Current_Call.Previous;
+      Inside.Leave_Unabortable; -- Abort_Undefer will not be called by compiler
       Ada.Exceptions.Reraise_Occurrence (X);
    end Exceptional_Complete_Rendezvous;
 
@@ -131,6 +133,13 @@ package body System.Tasking.Rendezvous is
          Inside.Activate (Task_Record_Conv.To_Pointer (Acceptor));
       end if;
       declare
+         procedure Finally (X : not null access Inside.Event);
+         procedure Finally (X : not null access Inside.Event) is
+         begin
+            Inside.Finalize (X.all);
+         end Finally;
+         package Holder is
+            new Ada.Exceptions.Finally.Scoped_Holder (Inside.Event, Finally);
          The_Node : aliased Node := (
             Super => <>,
             Previous => null,
@@ -140,11 +149,12 @@ package body System.Tasking.Rendezvous is
             X => <>); -- default initializer
          Aborted : Boolean;
       begin
-         Inside.Enable_Abort;
          Inside.Initialize (The_Node.Waiting);
+         Holder.Assign (The_Node.Waiting'Access);
          Inside.Call (
             Task_Record_Conv.To_Pointer (Acceptor),
             The_Node.Super'Unchecked_Access);
+         Inside.Enable_Abort;
          Inside.Wait (The_Node.Waiting, Aborted => Aborted);
          if Aborted then
             declare
@@ -159,7 +169,6 @@ package body System.Tasking.Rendezvous is
                end if;
             end;
          end if;
-         Inside.Finalize (The_Node.Waiting);
          Inside.Disable_Abort (Aborted); -- if aborted, raise here
          if Ada.Exceptions.Exception_Identity (The_Node.X)
             /= Ada.Exceptions.Null_Id

@@ -21,6 +21,7 @@ package body System.Finalization_Implementation is
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       Soft_Links.Abort_Defer.all;
       Finalize_List (Global_Final_List);
+      Soft_Links.Abort_Undefer.all;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Finalize_Global_List;
 

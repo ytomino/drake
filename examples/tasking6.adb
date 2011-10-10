@@ -110,8 +110,8 @@ begin
 		end T4;
 	begin
 		Ada.Debug.Put ("*** ignored rendezvous ***");
-		Ada.Debug.Put ("before");
 		delay 1.0;
+		Ada.Debug.Put ("before");
 		T4.E1;
 		Ada.Debug.Put ("after");
 		raise Program_Error;

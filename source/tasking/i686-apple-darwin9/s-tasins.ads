@@ -52,6 +52,8 @@ package System.Tasking.Inside is
    procedure Send_Abort (T : not null Task_Id);
    procedure Enable_Abort;
    procedure Disable_Abort (Aborted : Boolean); -- check and disable
+   procedure Enter_Unabortable;
+   procedure Leave_Unabortable;
    function Is_Aborted return Boolean;
 
    --  for manual activation (Chain /= null)
@@ -337,6 +339,7 @@ private
       Aborted : Boolean;
       pragma Atomic (Aborted);
       Abort_Handler : Inside.Abort_Handler;
+      Abort_Locking : Natural;
       Attributes : Attribute_Array_Access;
       Attributes_Length : Natural;
       --  activation / completion

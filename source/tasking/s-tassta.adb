@@ -26,6 +26,12 @@ package body System.Tasking.Stages is
    procedure Complete_Master
       renames Inside.Leave_Master;
 
+   procedure Abort_Defer
+      renames Inside.Enter_Unabortable;
+
+   procedure Abort_Undefer
+      renames Inside.Leave_Unabortable;
+
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count;
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count is
       Addr : Address;
@@ -153,6 +159,8 @@ begin
    Soft_Links.Current_Master := Current_Master'Access;
    Soft_Links.Enter_Master := Enter_Master'Access;
    Soft_Links.Complete_Master := Complete_Master'Access;
+   Soft_Links.Abort_Defer := Abort_Defer'Access;
+   Soft_Links.Abort_Undefer := Abort_Undefer'Access;
    Tasking.Storage_Size := Storage_Size'Access;
    Termination.Register_Exit (Unregister'Access);
 end System.Tasking.Stages;

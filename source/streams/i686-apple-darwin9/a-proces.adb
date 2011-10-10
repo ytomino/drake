@@ -1,5 +1,7 @@
 with Ada.Environment_Variables.Inside;
 with Ada.Streams.Stream_IO.Inside;
+with System.Soft_Links;
+with C.errno;
 with C.stdlib;
 with C.unistd;
 with C.sys.fcntl;
@@ -151,19 +153,27 @@ package body Ada.Processes is
       Result : C.sys.types.pid_t;
       Code : aliased C.signed_int;
    begin
-      Result := C.sys.wait.waitpid (
-         C.sys.types.pid_t (Child),
-         Code'Access,
-         0);
-      if Result < 0 then
-         raise Use_Error;
-      else
-         if WIFEXITED (Code) then
-            Status := Command_Line.Exit_Status (WEXITSTATUS (Code));
+      loop
+         System.Soft_Links.Abort_Undefer.all;
+         Result := C.sys.wait.waitpid (
+            C.sys.types.pid_t (Child),
+            Code'Access,
+            0);
+         System.Soft_Links.Abort_Defer.all; -- raise an exception if aborted
+         if Result < 0 then
+            if C.errno.errno /= C.errno.EINTR then
+               raise Use_Error;
+            end if;
+            --  interrupted and the signal is not "abort", then retry
          else
-            Status := -1;
+            if WIFEXITED (Code) then
+               Status := Command_Line.Exit_Status (WEXITSTATUS (Code));
+            else
+               Status := -1;
+            end if;
+            exit;
          end if;
-      end if;
+      end loop;
    end Wait;
 
    procedure Wait (Child : Process) is
