@@ -8,8 +8,8 @@ package body Ada.Task_Identification is
          return "";
       else
          declare
-            N : String renames Name (T);
-            A : String renames System.Address_Image (T.all'Address);
+            N : constant String := Name (T);
+            A : constant String := System.Address_Image (T.all'Address);
          begin
             if N = "" then
                return A;

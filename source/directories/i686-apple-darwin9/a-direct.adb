@@ -215,8 +215,8 @@ package body Ada.Directories is
          if Step then
             if Created < J then
                declare
-                  Step_Dir : String
-                     renames New_Directory (New_Directory'First .. Last);
+                  Step_Dir : constant String :=
+                     New_Directory (New_Directory'First .. Last);
                begin
                   case Kind (Step_Dir) is
                      when Ordinary_File | Special_File =>
@@ -277,14 +277,15 @@ package body Ada.Directories is
          begin
             Get_Next_Entry (Search, Directory_Entry);
             declare
-               Name : String renames Full_Name (Directory_Entry);
+               Name : constant String := Full_Name (Directory_Entry);
             begin
                case Kind (Directory_Entry) is
                   when Ordinary_File | Special_File =>
                      Delete_File (Name);
                   when Directories.Directory =>
                      declare
-                        Simple : String renames Simple_Name (Directory_Entry);
+                        Simple : constant String :=
+                           Simple_Name (Directory_Entry);
                      begin
                         if Simple /= "." and then Simple /= ".." then
                            Delete_Tree (Name);
