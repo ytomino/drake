@@ -1,6 +1,7 @@
 with Ada.Directories.Inside;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System.Address_To_Named_Access_Conversions;
 with System.Memory;
 with System.Native_Time;
 with System.Storage_Elements;
@@ -49,6 +50,10 @@ package body Ada.Directories is
       end if;
       return C.unistd.unlink (zfrom);
    end C_rename;
+
+   package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
+      C.char,
+      C.char_ptr);
 
    procedure Free is new Unchecked_Deallocation (String, String_Access);
 
@@ -352,7 +357,7 @@ package body Ada.Directories is
          Dummy := C.dirent.closedir (Search.Handle);
          Search.Handle := null;
          Free (Search.Path);
-         System.Memory.Free (Search.Pattern.all'Address);
+         System.Memory.Free (char_ptr_Conv.To_Address (Search.Pattern));
       end if;
    end Finalize;
 
@@ -621,23 +626,20 @@ package body Ada.Directories is
       else
          Search.Path := new String'(Full_Name (Directory));
          declare
-            function Cast is new Unchecked_Conversion (
-               C.void_ptr,
-               C.char_ptr);
             Length : constant C.size_t := Pattern'Length;
             Term : C.char_ptr;
             Dummy : C.void_ptr;
             pragma Unreferenced (Dummy);
          begin
-            Search.Pattern := Cast (
+            Search.Pattern := char_ptr_Conv.To_Pointer (
                System.Memory.Allocate (
                   System.Storage_Elements.Storage_Offset (Length + 1)));
             Dummy := C.string.memcpy (
                C.void_ptr (Search.Pattern.all'Address),
                C.void_const_ptr (Pattern'Address),
                Length);
-            Term := Cast (
-               Search.Pattern.all'Address
+            Term := char_ptr_Conv.To_Pointer (
+               char_ptr_Conv.To_Address (Search.Pattern)
                + System.Storage_Elements.Storage_Offset (Length));
             Term.all := C.char'Val (0);
          end;
