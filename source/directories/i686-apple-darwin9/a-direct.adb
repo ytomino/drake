@@ -1,6 +1,7 @@
 with Ada.Directories.Inside;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System.Memory;
 with System.Native_Time;
 with System.Storage_Elements;
 with C.errno;
@@ -351,7 +352,7 @@ package body Ada.Directories is
          Dummy := C.dirent.closedir (Search.Handle);
          Search.Handle := null;
          Free (Search.Path);
-         C.stdlib.free (C.void_ptr (Search.Pattern.all'Address));
+         System.Memory.Free (Search.Pattern.all'Address);
       end if;
    end Finalize;
 
@@ -628,13 +629,16 @@ package body Ada.Directories is
             Dummy : C.void_ptr;
             pragma Unreferenced (Dummy);
          begin
-            Search.Pattern := Cast (C.stdlib.malloc (Length + 1));
+            Search.Pattern := Cast (
+               System.Memory.Allocate (
+                  System.Storage_Elements.Storage_Offset (Length + 1)));
             Dummy := C.string.memcpy (
                C.void_ptr (Search.Pattern.all'Address),
                C.void_const_ptr (Pattern'Address),
                Length);
-            Term := Cast (C.void_ptr (Search.Pattern.all'Address
-               + System.Storage_Elements.Storage_Offset (Length)));
+            Term := Cast (
+               Search.Pattern.all'Address
+               + System.Storage_Elements.Storage_Offset (Length));
             Term.all := C.char'Val (0);
          end;
          Search.Filter := Filter;
