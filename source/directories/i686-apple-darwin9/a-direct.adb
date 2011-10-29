@@ -174,7 +174,7 @@ package body Ada.Directories is
    procedure Create_Directory (New_Directory : String; Form : String := "") is
       pragma Unreferenced (Form);
       Z_New_Directory : constant String := New_Directory & Character'Val (0);
-      C_New_Directory : C.char_array (0 .. Z_New_Directory'Length);
+      C_New_Directory : C.char_array (C.size_t);
       for C_New_Directory'Address use Z_New_Directory'Address;
    begin
       if C.sys.stat.mkdir (C_New_Directory (0)'Access, 8#755#) /= 0 then
@@ -249,7 +249,7 @@ package body Ada.Directories is
 
    procedure Delete_Directory (Directory : String) is
       Z_Directory : constant String := Directory & Character'Val (0);
-      C_Directory : C.char_array (0 .. Z_Directory'Length);
+      C_Directory : C.char_array (C.size_t);
       for C_Directory'Address use Z_Directory'Address;
    begin
       if C.unistd.rmdir (C_Directory (0)'Access) < 0 then
@@ -259,7 +259,7 @@ package body Ada.Directories is
 
    procedure Delete_File (Name : String) is
       Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (0 .. Z_Name'Length);
+      C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
    begin
       if C.unistd.unlink (C_Name (0)'Access) < 0 then
@@ -311,7 +311,7 @@ package body Ada.Directories is
 
    function Exists (Name : String) return Boolean is
       Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (0 .. Z_Name'Length);
+      C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
       Data : aliased C.sys.stat.struct_stat;
    begin
@@ -383,7 +383,7 @@ package body Ada.Directories is
       Attributes : out C.sys.stat.struct_stat)
    is
       Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (0 .. Z_Name'Length);
+      C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
    begin
       if C.sys.stat.lstat (
@@ -406,7 +406,7 @@ package body Ada.Directories is
          Directory_Entry.Entry_Data := Search.Data;
          declare
             Z_Name : String := Full_Name (Directory_Entry) & Character'Val (0);
-            C_Name : C.char_array (0 .. Z_Name'Length);
+            C_Name : C.char_array (C.size_t);
             for C_Name'Address use Z_Name'Address;
          begin
             if C.sys.stat.lstat (
@@ -496,10 +496,10 @@ package body Ada.Directories is
       Overwrite : Boolean := True)
    is
       Z_Old : constant String := Old_Name & Character'Val (0);
-      C_Old : C.char_array (0 .. Z_Old'Length);
+      C_Old : C.char_array (C.size_t);
       for C_Old'Address use Z_Old'Address;
       Z_New : constant String := New_Name & Character'Val (0);
-      C_New : C.char_array (0 .. Z_New'Length);
+      C_New : C.char_array (C.size_t);
       for C_New'Address use Z_New'Address;
    begin
       if C_rename (C_Old (0)'Access, C_New (0)'Access, Overwrite) = -1 then
@@ -535,7 +535,7 @@ package body Ada.Directories is
 
    procedure Set_Directory (Directory : String) is
       Z_Directory : constant String := Directory & Character'Val (0);
-      C_Directory : C.char_array (0 .. Z_Directory'Length);
+      C_Directory : C.char_array (C.size_t);
       for C_Directory'Address use Z_Directory'Address;
    begin
       if C.unistd.chdir (C_Directory (0)'Access) /= 0 then
@@ -616,7 +616,7 @@ package body Ada.Directories is
       Finalize (Search); --  cleanup
       declare
          Z_Directory : constant String := Directory & Character'Val (0);
-         C_Directory : C.char_array (0 .. Z_Directory'Length);
+         C_Directory : C.char_array (C.size_t);
          for C_Directory'Address use Z_Directory'Address;
       begin
          Search.Handle := C.dirent.opendir (C_Directory (0)'Access);
