@@ -5,6 +5,7 @@ package Ada.Directories.Temporary is
    --  There are functions to create temporary file or directory.
 
    function Temporary_Directory return String;
+   procedure Set_Temporary_Directory (Name : String);
 
    function Create_Temporary_File (
       Directory : String := Temporary_Directory)
