@@ -684,4 +684,38 @@ package body Ada.Directories is
       end return;
    end Start_Search;
 
+   procedure Symbolic_Link (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean := True)
+   is
+      Z_Source : constant String := Source_Name & Character'Val (0);
+      C_Source : C.char_array (C.size_t);
+      for C_Source'Address use Z_Source'Address;
+      Z_Target : constant String := Target_Name & Character'Val (0);
+      C_Target : C.char_array (C.size_t);
+      for C_Target'Address use Z_Target'Address;
+      path1 : constant not null access constant C.char := C_Source (0)'Access;
+      path2 : constant not null access constant C.char := C_Target (0)'Access;
+   begin
+      if C.unistd.symlink (path1, path2) < 0 then
+         if C.errno.errno = C.errno.EEXIST and then Overwrite then
+            --  try to overwrite
+            if C.unistd.unlink (path2) = 0
+               and then C.unistd.symlink (path1, path2) = 0
+            then
+               return; -- success
+            end if;
+         end if;
+         case C.errno.errno is
+            when C.errno.ENOENT
+               | C.errno.ENOTDIR
+               | C.errno.ENAMETOOLONG =>
+               raise Name_Error;
+            when others =>
+               raise Use_Error;
+         end case;
+      end if;
+   end Symbolic_Link;
+
 end Ada.Directories;

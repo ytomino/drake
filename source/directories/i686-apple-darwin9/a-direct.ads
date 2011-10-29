@@ -40,6 +40,13 @@ package Ada.Directories is
       Form : String := "";
       Overwrite : Boolean := True); -- additional
 
+   --  extended
+   --  Create a symbolic link.
+   procedure Symbolic_Link (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean := True);
+
    --  File and directory name operations:
 
    function Full_Name (Name : String) return String;

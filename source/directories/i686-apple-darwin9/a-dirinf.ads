@@ -69,4 +69,10 @@ package Ada.Directories.Information is
       return Boolean;
 
    --  Additional implementation-defined subprograms allowed here.
+
+   --  extended
+   function Read_Symbolic_Link (Name : String) return String;
+   function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+      return String;
+
 end Ada.Directories.Information;
