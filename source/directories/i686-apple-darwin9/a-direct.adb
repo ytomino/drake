@@ -503,7 +503,7 @@ package body Ada.Directories is
       C_New : C.char_array (C.size_t);
       for C_New'Address use Z_New'Address;
    begin
-      if C_rename (C_Old (0)'Access, C_New (0)'Access, Overwrite) = -1 then
+      if C_rename (C_Old (0)'Access, C_New (0)'Access, Overwrite) < 0 then
          case C.errno.errno is
             when C.errno.ENOENT
                | C.errno.ENOTDIR
