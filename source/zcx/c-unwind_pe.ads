@@ -8,7 +8,8 @@ package C.unwind_pe is
    subtype sleb128_t is signed_long;
    subtype uleb128_t is unsigned_long;
 
-   procedure gxx_abort renames stdlib.C_abort;
+   procedure gxx_abort
+      renames stdlib.C_abort;
 
    DW_EH_PE_absptr : constant := 16#00#;
    DW_EH_PE_omit : constant := 16#ff#;

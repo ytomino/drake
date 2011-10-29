@@ -49,13 +49,20 @@ package Ada.Sequential_IO is
 
    --  Exceptions
 
-   Status_Error : exception renames IO_Exceptions.Status_Error;
-   Mode_Error : exception renames IO_Exceptions.Mode_Error;
-   Name_Error : exception renames IO_Exceptions.Name_Error;
-   Use_Error : exception renames IO_Exceptions.Use_Error;
-   Device_Error : exception renames IO_Exceptions.Device_Error;
-   End_Error : exception renames IO_Exceptions.End_Error;
-   Data_Error : exception renames IO_Exceptions.Data_Error;
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
+   Mode_Error : exception
+      renames IO_Exceptions.Mode_Error;
+   Name_Error : exception
+      renames IO_Exceptions.Name_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames IO_Exceptions.Device_Error;
+   End_Error : exception
+      renames IO_Exceptions.End_Error;
+   Data_Error : exception
+      renames IO_Exceptions.Data_Error;
 
 private
 

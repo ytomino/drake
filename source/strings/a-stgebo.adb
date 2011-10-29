@@ -654,7 +654,8 @@ package body Ada.Strings.Generic_Bounded is
             Right : Character_Type := Space)
             return Bounded_String
          is
-            S : String_Type renames Source.Element (1 .. Source.Length);
+            S : String_Type
+               renames Source.Element (1 .. Source.Length);
             First : Positive;
             Last : Natural;
          begin
@@ -668,7 +669,8 @@ package body Ada.Strings.Generic_Bounded is
             Left : Character_Type := Space;
             Right : Character_Type := Space)
          is
-            S : String_Type renames Source.Element (1 .. Source.Length);
+            S : String_Type
+               renames Source.Element (1 .. Source.Length);
             First : Positive;
             Last : Natural;
          begin
@@ -1024,7 +1026,8 @@ package body Ada.Strings.Generic_Bounded is
                Right : Character_Set)
                return Bounded_String
             is
-               S : String_Type renames Source.Element (1 .. Source.Length);
+               S : String_Type
+                  renames Source.Element (1 .. Source.Length);
                First : Positive;
                Last : Natural;
             begin
@@ -1037,7 +1040,8 @@ package body Ada.Strings.Generic_Bounded is
                Left : Character_Set;
                Right : Character_Set)
             is
-               S : String_Type renames Source.Element (1 .. Source.Length);
+               S : String_Type
+                  renames Source.Element (1 .. Source.Length);
                First : Positive;
                Last : Natural;
             begin

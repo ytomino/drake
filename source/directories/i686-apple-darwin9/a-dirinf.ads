@@ -57,13 +57,13 @@ package Ada.Directories.Information is
    function Is_Block_Special_File (Directory_Entry : Directory_Entry_Type)
       return Boolean;
 
-   function Is_Character_Special_File (
-      Directory_Entry : Directory_Entry_Type) return Boolean;
+   function Is_Character_Special_File (Directory_Entry : Directory_Entry_Type)
+      return Boolean;
 
    function Is_FIFO (Directory_Entry : Directory_Entry_Type) return Boolean;
 
-   function Is_Symbolic_Link (
-      Directory_Entry : Directory_Entry_Type) return Boolean;
+   function Is_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+      return Boolean;
 
    function Is_Socket (Directory_Entry : Directory_Entry_Type)
       return Boolean;

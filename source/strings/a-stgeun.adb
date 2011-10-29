@@ -616,8 +616,8 @@ package body Ada.Strings.Generic_Unbounded is
          Right : Character_Type := Space)
          return Unbounded_String
       is
-         S : String_Type renames
-            Constant_Reference (Source'Access).Element.all;
+         S : String_Type
+            renames Constant_Reference (Source'Access).Element.all;
          First : Positive;
          Last : Natural;
       begin
@@ -1010,8 +1010,8 @@ package body Ada.Strings.Generic_Unbounded is
             Right : Character_Set)
             return Unbounded_String
          is
-            S : String_Type renames
-               Constant_Reference (Source'Access).Element.all;
+            S : String_Type
+               renames Constant_Reference (Source'Access).Element.all;
             First : Positive;
             Last : Natural;
          begin

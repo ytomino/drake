@@ -17,7 +17,8 @@ package Ada.Numerics.Generic_Complex_Types is
 --   j : constant Imaginary;
    function i return Imaginary;
    pragma Inline (i);
-   function j return Imaginary renames i;
+   function j return Imaginary
+      renames i;
 
    function Re (X : Complex) return Real'Base;
    pragma Inline (Re);
@@ -38,7 +39,8 @@ package Ada.Numerics.Generic_Complex_Types is
 
    function Modulus (X : Complex) return Real'Base;
    pragma Inline (Modulus);
-   function "abs" (Right : Complex) return Real'Base renames Modulus;
+   function "abs" (Right : Complex) return Real'Base
+      renames Modulus;
 
    function Argument (X : Complex) return Real'Base;
    function Argument (X : Complex; Cycle : Real'Base) return Real'Base;

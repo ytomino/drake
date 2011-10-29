@@ -37,9 +37,11 @@ package Ada.Locales is
    subtype Country_Code is ISO_3166_1_Alpha_2;
 
 --  Language_Unknown : constant Language_Code := "und";
-   Language_Unknown : Language_Code renames ISO_639_Alpha_3_Unknown;
+   Language_Unknown : Language_Code
+      renames ISO_639_Alpha_3_Unknown;
 --  Country_Unknown : constant Country_Code := "ZZ";
-   Country_Unknown : Country_Code renames ISO_3166_1_Alpha_2_Unknown;
+   Country_Unknown : Country_Code
+      renames ISO_3166_1_Alpha_2_Unknown;
 
 --  function Language return Language_Code;
 --  function Country return Country_Code;

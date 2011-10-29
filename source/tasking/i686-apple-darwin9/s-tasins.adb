@@ -179,7 +179,8 @@ package body System.Tasking.Inside is
    begin
       for I in 0 .. Item.Attributes_Length - 1 loop
          declare
-            A : Attribute renames Item.Attributes (I);
+            A : Attribute
+               renames Item.Attributes (I);
          begin
             if A.Index /= null then
                Clear (Item, A.Index.all);
@@ -1642,7 +1643,8 @@ package body System.Tasking.Inside is
                Index.List.Attributes (Index.Index).Next;
          begin
             declare
-               A : Attribute renames Index.List.Attributes (Index.Index);
+               A : Attribute
+                  renames Index.List.Attributes (Index.Index);
             begin
                A.Finalize (A.Item);
                A.Index := null;
@@ -1696,7 +1698,8 @@ package body System.Tasking.Inside is
          Index.Index + 1,
          Attribute'(Index => null, others => <>));
       declare
-         A : Attribute renames T.Attributes (Index.Index);
+         A : Attribute
+            renames T.Attributes (Index.Index);
       begin
          if A.Index = Index'Unrestricted_Access then
             A.Finalize (A.Item);
@@ -1730,7 +1733,8 @@ package body System.Tasking.Inside is
          Index.Index + 1,
          Attribute'(Index => null, others => <>));
       declare
-         A : Attribute renames T.Attributes (Index.Index);
+         A : Attribute
+            renames T.Attributes (Index.Index);
       begin
          if A.Index /= Index'Unrestricted_Access then
             A.Item := New_Item.all;
@@ -1759,7 +1763,8 @@ package body System.Tasking.Inside is
          and then T.Attributes (Index.Index).Index = Index'Unrestricted_Access
       then
          declare
-            A : Attribute renames T.Attributes (Index.Index);
+            A : Attribute
+               renames T.Attributes (Index.Index);
          begin
             A.Finalize (A.Item);
             if A.Previous /= null then

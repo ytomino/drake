@@ -101,25 +101,29 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    function Union (Left, Right : Set) return Set;
 
-   function "or" (Left, Right : Set) return Set renames Union;
+   function "or" (Left, Right : Set) return Set
+      renames Union;
 
    procedure Intersection (Target : in out Set; Source : Set);
 
    function Intersection (Left, Right : Set) return Set;
 
-   function "and" (Left, Right : Set) return Set renames Intersection;
+   function "and" (Left, Right : Set) return Set
+      renames Intersection;
 
    procedure Difference (Target : in out Set; Source : Set);
 
    function Difference (Left, Right : Set) return Set;
 
-   function "-" (Left, Right : Set) return Set renames Difference;
+   function "-" (Left, Right : Set) return Set
+      renames Difference;
 
    procedure Symmetric_Difference (Target : in out Set; Source : Set);
 
    function Symmetric_Difference (Left, Right : Set) return Set;
 
-   function "xor" (Left, Right : Set) return Set renames Symmetric_Difference;
+   function "xor" (Left, Right : Set) return Set
+      renames Symmetric_Difference;
 
    function Overlap (Left, Right : Set) return Boolean;
 

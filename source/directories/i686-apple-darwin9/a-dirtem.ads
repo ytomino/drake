@@ -15,6 +15,7 @@ package Ada.Directories.Temporary is
       Directory : String := Temporary_Directory)
       return String;
 
-   Use_Error : exception renames IO_Exceptions.Use_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
 
 end Ada.Directories.Temporary;

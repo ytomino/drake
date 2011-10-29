@@ -22,7 +22,8 @@ package Interfaces.C.Generic_Strings is
 --  type chars_ptr is private;
 --  pragma Preelaborable_Initialization (chars_ptr);
    subtype chars_ptr is Pointers.Pointer;
-   function "=" (Left, Right : chars_ptr) return Boolean renames Pointers."=";
+   function "=" (Left, Right : chars_ptr) return Boolean
+      renames Pointers."=";
 
    type chars_ptr_array is array (size_t range <>) of aliased chars_ptr;
 

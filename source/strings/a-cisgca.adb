@@ -14,7 +14,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
       pragma Assert (Table'Length = To'Length);
       for I in Table'Range loop
          declare
-            T : Character_Range renames To (To'First - Table'First + I);
+            T : Character_Range
+               renames To (To'First - Table'First + I);
          begin
             T.Low := Wide_Wide_Character'Val (Table (I));
             T.High := Wide_Wide_Character'Val (Table (I));
@@ -32,7 +33,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
       pragma Assert (Table'Length = To'Length);
       for I in Table'Range loop
          declare
-            T : Character_Range renames To (To'First - Table'First + I);
+            T : Character_Range
+               renames To (To'First - Table'First + I);
          begin
             T.Low := Wide_Wide_Character'Val (Table (I));
             T.High := Wide_Wide_Character'Val (Table (I));
@@ -50,7 +52,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
       pragma Assert (Table'Length = To'Length);
       for I in Table'Range loop
          declare
-            T : Character_Range renames To (To'First - Table'First + I);
+            T : Character_Range
+               renames To (To'First - Table'First + I);
          begin
             T.Low := Wide_Wide_Character'Val (Table (I).Low);
             T.High := Wide_Wide_Character'Val (Table (I).High);
@@ -68,7 +71,8 @@ package body Ada.Characters.Inside.Sets.General_Category is
       pragma Assert (Table'Length = To'Length);
       for I in Table'Range loop
          declare
-            T : Character_Range renames To (To'First - Table'First + I);
+            T : Character_Range
+               renames To (To'First - Table'First + I);
          begin
             T.Low := Wide_Wide_Character'Val (Table (I).Low);
             T.High := Wide_Wide_Character'Val (Table (I).High);

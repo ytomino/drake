@@ -204,6 +204,7 @@ package System.Stream_Attributes is
    Block_IO_OK : constant Boolean := True;
 
    --  for shorthand
-   End_Error : exception renames Ada.IO_Exceptions.End_Error;
+   End_Error : exception
+      renames Ada.IO_Exceptions.End_Error;
 
 end System.Stream_Attributes;

@@ -27,7 +27,8 @@ package body Ada.Numerics.MT19937 is
       mag01 : constant array (Cardinal range 0 .. 1) of Cardinal :=
          (0, MATRIX_A);
       y : Cardinal;
-      S : State renames Gen.State;
+      S : State
+         renames Gen.State;
    begin
       if S.Condition >= N then
          for kk in 0 .. (N - M - 1) loop

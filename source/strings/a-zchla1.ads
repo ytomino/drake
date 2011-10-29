@@ -100,7 +100,8 @@ package Ada.Wide_Wide_Characters.Latin_1 is
       Wide_Wide_Character'Val (44); -- ','
    Hyphen : constant Wide_Wide_Character :=
       Wide_Wide_Character'Val (45); -- '-'
-   Minus_Sign : Wide_Wide_Character renames Hyphen;
+   Minus_Sign : Wide_Wide_Character
+      renames Hyphen;
    Full_Stop : constant Wide_Wide_Character :=
       Wide_Wide_Character'Val (46); -- '.'
    Solidus : constant Wide_Wide_Character :=
@@ -281,7 +282,8 @@ package Ada.Wide_Wide_Characters.Latin_1 is
    --  Character positions 160 (16#A0#) .. 175 (16#AF#):
    No_Break_Space : constant Wide_Wide_Character :=
       Wide_Wide_Character'Val (160); -- ' '
-   NBSP : Wide_Wide_Character renames No_Break_Space;
+   NBSP : Wide_Wide_Character
+      renames No_Break_Space;
    Inverted_Exclamation : constant Wide_Wide_Character :=
       Wide_Wide_Character'Val (161); -- '¡'
    Cent_Sign : constant Wide_Wide_Character :=
@@ -316,7 +318,8 @@ package Ada.Wide_Wide_Characters.Latin_1 is
    --  Character positions 176 (16#B0#) .. 191 (16#BF#):
    Degree_Sign : constant Wide_Wide_Character :=
       Wide_Wide_Character'Val (176); -- '°'
-   Ring_Above : Wide_Wide_Character renames Degree_Sign;
+   Ring_Above : Wide_Wide_Character
+      renames Degree_Sign;
    Plus_Minus_Sign : constant Wide_Wide_Character :=
       Wide_Wide_Character'Val (177); -- '±'
    Superscript_Two : constant Wide_Wide_Character :=
@@ -329,7 +332,8 @@ package Ada.Wide_Wide_Characters.Latin_1 is
       Wide_Wide_Character'Val (181); -- 'µ'
    Pilcrow_Sign : constant Wide_Wide_Character :=
       Wide_Wide_Character'Val (182); -- '¶'
-   Paragraph_Sign : Wide_Wide_Character renames Pilcrow_Sign;
+   Paragraph_Sign : Wide_Wide_Character
+      renames Pilcrow_Sign;
    Middle_Dot : constant Wide_Wide_Character :=
       Wide_Wide_Character'Val (183); -- '·'
    Cedilla : constant Wide_Wide_Character :=

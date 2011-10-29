@@ -63,7 +63,8 @@ package Ada.Strings.Wide_Bounded is
          Fixed_Trim_Set => Strings.Wide_Functions.Maps.Trim);
 
 --    Max_Length : constant Positive := Max;
-      Max_Length : Positive renames Instance.Max_Length;
+      Max_Length : Positive
+         renames Instance.Max_Length;
 
 --    type Bounded_Wide_String is private;
       subtype Bounded_Wide_String is Instance.Bounded_String;

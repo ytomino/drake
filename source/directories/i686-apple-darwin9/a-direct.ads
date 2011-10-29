@@ -154,10 +154,14 @@ package Ada.Directories is
    function Modification_Time (Directory_Entry : Directory_Entry_Type)
       return Calendar.Time;
 
-   Status_Error : exception renames IO_Exceptions.Status_Error;
-   Name_Error : exception renames IO_Exceptions.Name_Error;
-   Use_Error : exception renames IO_Exceptions.Use_Error;
-   Device_Error : exception renames IO_Exceptions.Device_Error;
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
+   Name_Error : exception
+      renames IO_Exceptions.Name_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames IO_Exceptions.Device_Error;
 
 private
 

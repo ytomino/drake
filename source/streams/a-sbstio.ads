@@ -32,7 +32,8 @@ package Ada.Streams.Buffer_Storage_IO is
       return not null access Root_Stream_Type'Class;
    pragma Inline (Stream);
 
-   End_Error : exception renames IO_Exceptions.End_Error;
+   End_Error : exception
+      renames IO_Exceptions.End_Error;
 
 private
 

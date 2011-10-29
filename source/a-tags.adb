@@ -450,7 +450,8 @@ package body Ada.Tags is
    begin
       for I in 1 .. Iface_Table.Nb_Ifaces loop
          declare
-            Item : Interface_Data_Element renames Iface_Table.Ifaces_Table (I);
+            Item : Interface_Data_Element
+               renames Iface_Table.Ifaces_Table (I);
          begin
             if Item.Iface_Tag = Interface_T then
                Item.Static_Offset_To_Top := Is_Static or else Offset_Value = 0;

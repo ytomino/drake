@@ -64,7 +64,8 @@ package Ada.Strings.Wide_Wide_Maps is
    function "<=" (
       Left : Wide_Wide_Character_Set;
       Right : Wide_Wide_Character_Set)
-      return Boolean renames Is_Subset;
+      return Boolean
+      renames Is_Subset;
 
    --  Alternative representation for a set of Wide_Wide_Character values:
    subtype Wide_Wide_Character_Sequence is Wide_Wide_String;
