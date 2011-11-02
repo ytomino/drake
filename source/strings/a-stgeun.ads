@@ -31,6 +31,9 @@ package Ada.Strings.Generic_Unbounded is
    function Length (Source : Unbounded_String) return Natural;
    pragma Inline (Length);
 
+   --  extended
+   procedure Set_Length (Item : in out Unbounded_String; Length : Natural);
+
    type String_Access is access all String_Type;
 --  procedure Free (X : in out String_Access);
    procedure Free is new Unchecked_Deallocation (String_Type, String_Access);

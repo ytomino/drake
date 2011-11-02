@@ -71,22 +71,6 @@ package body Ada.Strings.Generic_Unbounded is
       Reserve_Capacity (Item, Item.Data.Capacity);
    end Unique;
 
-   procedure Set_Length (Item : in out Unbounded_String; Length : Natural);
-   procedure Set_Length (Item : in out Unbounded_String; Length : Natural) is
-   begin
-      System.Reference_Counting.Set_Length (
-         Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Reference_Count => Item.Data.Reference_Count'Access,
-         Target_Length => Item.Length,
-         Target_Max_Length => Item.Data.Max_Length'Access,
-         Target_Capacity => Item.Data.Capacity,
-         New_Length => Length,
-         Sentinel => Empty_Data'Address,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
-      Item.Length := Length;
-   end Set_Length;
-
    procedure Assign (
       Target : in out Unbounded_String;
       Source : Unbounded_String);
@@ -121,6 +105,21 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       return Source.Length;
    end Length;
+
+   procedure Set_Length (Item : in out Unbounded_String; Length : Natural) is
+   begin
+      System.Reference_Counting.Set_Length (
+         Target => Upcast (Item.Data'Unchecked_Access),
+         Target_Reference_Count => Item.Data.Reference_Count'Access,
+         Target_Length => Item.Length,
+         Target_Max_Length => Item.Data.Max_Length'Access,
+         Target_Capacity => Item.Data.Capacity,
+         New_Length => Length,
+         Sentinel => Empty_Data'Address,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
+      Item.Length := Length;
+   end Set_Length;
 
    function To_Unbounded_String (Source : String_Type)
       return Unbounded_String
