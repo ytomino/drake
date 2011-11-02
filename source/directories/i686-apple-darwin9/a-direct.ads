@@ -99,6 +99,10 @@ package Ada.Directories is
 
    function Modification_Time (Name : String) return Calendar.Time;
 
+   --  extended
+   --  Set modification time of a file.
+   procedure Set_Modification_Time (Name : String; Time : Calendar.Time);
+
    --  Directory searching:
 
    type Directory_Entry_Type is limited private;

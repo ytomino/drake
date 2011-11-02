@@ -10,6 +10,7 @@ with C.fnmatch;
 with C.stdlib;
 with C.string;
 with C.unistd;
+with C.sys.time;
 with C.sys.types;
 package body Ada.Directories is
    use type System.Storage_Elements.Storage_Offset;
@@ -543,6 +544,34 @@ package body Ada.Directories is
          raise Name_Error;
       end if;
    end Set_Directory;
+
+   procedure Set_Modification_Time (Name : String; Time : Calendar.Time) is
+      function Cast is new Unchecked_Conversion (Calendar.Time, Duration);
+      function To_timeval (X : C.sys.time.struct_timespec)
+         return C.sys.time.struct_timeval;
+      function To_timeval (X : C.sys.time.struct_timespec)
+         return C.sys.time.struct_timeval is
+      begin
+         return (
+            tv_sec => X.tv_sec,
+            tv_usec => C.signed_int (X.tv_nsec / 1000));
+      end To_timeval;
+      Z_Name : constant String := Name & Character'Val (0);
+      C_Name : C.char_array (C.size_t);
+      for C_Name'Address use Z_Name'Address;
+      Attributes : aliased C.sys.stat.struct_stat;
+      Times : aliased array (0 .. 1) of aliased C.sys.time.struct_timeval;
+   begin
+      if C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) < 0 then
+         raise Name_Error;
+      end if;
+      Times (0) := To_timeval (Attributes.st_atimespec);
+      Times (1) := To_timeval (
+         System.Native_Time.To_Native_Time (Cast (Time)));
+      if C.sys.time.lutimes (C_Name (0)'Access, Times (0)'Access) < 0 then
+         raise Use_Error;
+      end if;
+   end Set_Modification_Time;
 
    procedure Simple_Name (
       Name : String;
