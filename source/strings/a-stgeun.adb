@@ -106,19 +106,19 @@ package body Ada.Strings.Generic_Unbounded is
       return Source.Length;
    end Length;
 
-   procedure Set_Length (Item : in out Unbounded_String; Length : Natural) is
+   procedure Set_Length (Source : in out Unbounded_String; Length : Natural) is
    begin
       System.Reference_Counting.Set_Length (
-         Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Reference_Count => Item.Data.Reference_Count'Access,
-         Target_Length => Item.Length,
-         Target_Max_Length => Item.Data.Max_Length'Access,
-         Target_Capacity => Item.Data.Capacity,
+         Target => Upcast (Source.Data'Unchecked_Access),
+         Target_Reference_Count => Source.Data.Reference_Count'Access,
+         Target_Length => Source.Length,
+         Target_Max_Length => Source.Data.Max_Length'Access,
+         Target_Capacity => Source.Data.Capacity,
          New_Length => Length,
          Sentinel => Empty_Data'Address,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
-      Item.Length := Length;
+      Source.Length := Length;
    end Set_Length;
 
    function To_Unbounded_String (Source : String_Type)
@@ -276,11 +276,11 @@ package body Ada.Strings.Generic_Unbounded is
       Source : Unbounded_String;
       Low : Positive;
       High : Natural)
-      return Unbounded_String
-   is
-      pragma Suppress (All_Checks);
+      return Unbounded_String is
    begin
-      return To_Unbounded_String (Source.Data.Items (Low .. High));
+      return Result : Unbounded_String do
+         Unbounded_Slice (Source, Result, Low, High);
+      end return;
    end Unbounded_Slice;
 
    procedure Unbounded_Slice (
@@ -289,51 +289,46 @@ package body Ada.Strings.Generic_Unbounded is
       Low : Positive;
       High : Natural) is
    begin
-      Set_Unbounded_String (Target, Source.Data.Items (Low .. High));
+      if Low = 1 then
+         Target := Source;
+         Set_Length (Target, High);
+      else
+         Set_Unbounded_String (Target, Source.Data.Items (Low .. High));
+      end if;
    end Unbounded_Slice;
 
    function "=" (Left, Right : Unbounded_String) return Boolean is
-      pragma Suppress (All_Checks);
    begin
       return Left.Data.Items (1 .. Left.Length) =
          Right.Data.Items (1 .. Right.Length);
    end "=";
 
    function "=" (Left : Unbounded_String; Right : String_Type)
-      return Boolean
-   is
-      pragma Suppress (All_Checks);
+      return Boolean is
    begin
       return Left.Data.Items (1 .. Left.Length) = Right;
    end "=";
 
    function "=" (Left : String_Type; Right : Unbounded_String)
-      return Boolean
-   is
-      pragma Suppress (All_Checks);
+      return Boolean is
    begin
       return Left = Right.Data.Items (1 .. Right.Length);
    end "=";
 
    function "<" (Left, Right : Unbounded_String) return Boolean is
-      pragma Suppress (All_Checks);
    begin
       return Left.Data.Items (1 .. Left.Length) <
          Right.Data.Items (1 .. Right.Length);
    end "<";
 
    function "<" (Left : Unbounded_String; Right : String_Type)
-      return Boolean
-   is
-      pragma Suppress (All_Checks);
+      return Boolean is
    begin
       return Left.Data.Items (1 .. Left.Length) < Right;
    end "<";
 
    function "<" (Left : String_Type; Right : Unbounded_String)
-      return Boolean
-   is
-      pragma Suppress (All_Checks);
+      return Boolean is
    begin
       return Left < Right.Data.Items (1 .. Right.Length);
    end "<";
@@ -590,11 +585,9 @@ package body Ada.Strings.Generic_Unbounded is
          Through : Natural)
          return Unbounded_String is
       begin
-         return To_Unbounded_String (
-            Fixed_Delete (
-               Constant_Reference (Source'Access).Element.all,
-               From,
-               Through));
+         return Result : Unbounded_String := Source do
+            Delete (Result, From, Through);
+         end return;
       end Delete;
 
       procedure Delete (
@@ -602,12 +595,24 @@ package body Ada.Strings.Generic_Unbounded is
          From : Positive;
          Through : Natural) is
       begin
-         Set_Unbounded_String (
-            Source,
-            Fixed_Delete (
-               Constant_Reference (Source'Access).Element.all,
-               From,
-               Through));
+         if From <= Through then
+            declare
+               Old_Length : constant Natural := Length (Source);
+               New_Length : Natural;
+            begin
+               if Through >= Old_Length then
+                  New_Length := From - 1;
+               else
+                  New_Length := Old_Length;
+                  Fixed_Delete (
+                     Reference (Source'Access).Element.all,
+                     New_Length,
+                     From,
+                     Through);
+               end if;
+               Set_Length (Source, New_Length);
+            end;
+         end if;
       end Delete;
 
       function Trim (
@@ -617,13 +622,17 @@ package body Ada.Strings.Generic_Unbounded is
          Right : Character_Type := Space)
          return Unbounded_String
       is
-         S : String_Type
-            renames Constant_Reference (Source'Access).Element.all;
          First : Positive;
          Last : Natural;
       begin
-         Fixed_Trim (S, Side, Left, Right, First, Last);
-         return To_Unbounded_String (S (First .. Last));
+         Fixed_Trim (
+            Constant_Reference (Source'Access).Element.all,
+            Side,
+            Left,
+            Right,
+            First,
+            Last);
+         return Unbounded_Slice (Source, First, Last);
       end Trim;
 
       procedure Trim (
@@ -1011,13 +1020,16 @@ package body Ada.Strings.Generic_Unbounded is
             Right : Character_Set)
             return Unbounded_String
          is
-            S : String_Type
-               renames Constant_Reference (Source'Access).Element.all;
             First : Positive;
             Last : Natural;
          begin
-            Fixed_Trim_Set (S, Left, Right, First, Last);
-            return To_Unbounded_String (S (First .. Last));
+            Fixed_Trim_Set (
+               Constant_Reference (Source'Access).Element.all,
+               Left,
+               Right,
+               First,
+               Last);
+            return Unbounded_Slice (Source, First, Last);
          end Trim;
 
          procedure Trim (
@@ -1052,7 +1064,6 @@ package body Ada.Strings.Generic_Unbounded is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : out Unbounded_String)
       is
-         pragma Suppress (All_Checks);
          First : Integer;
          Last : Integer;
       begin
@@ -1069,9 +1080,7 @@ package body Ada.Strings.Generic_Unbounded is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Unbounded_String)
-      is
-         pragma Suppress (All_Checks);
+         Item : Unbounded_String) is
       begin
          Integer'Write (Stream, 1);
          Integer'Write (Stream, Item.Length);

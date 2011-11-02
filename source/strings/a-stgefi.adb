@@ -5,6 +5,41 @@ package body Ada.Strings.Generic_Fixed is
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
+   procedure Fill (
+      Target : out String_Type;
+      Pad : Character_Type := Space);
+   procedure Fill (
+      Target : out String_Type;
+      Pad : Character_Type := Space) is
+   begin
+      if Character_Type'Size = Character'Size then
+         declare
+            package Conv is
+               new System.Address_To_Access_Conversions (Character);
+            --  gcc's builtin-function
+            function memset (
+               b : Conv.Object_Pointer;
+               c : Integer;
+               n : System.Storage_Elements.Storage_Count)
+               return Conv.Object_Pointer;
+            pragma Import (Intrinsic, memset, "__builtin_memset");
+            Dummy : Conv.Object_Pointer;
+            pragma Unreferenced (Dummy);
+         begin
+            Dummy := memset (
+               Conv.To_Pointer (Target'Address),
+               Character_Type'Pos (Pad),
+               Target'Length);
+         end;
+      else
+         for I in Target'Range loop
+            Target (I) := Pad;
+         end loop;
+      end if;
+   end Fill;
+
+   --  implementation
+
    procedure Move (
       Source : String_Type;
       Target : out String_Type;
@@ -44,14 +79,10 @@ package body Ada.Strings.Generic_Fixed is
             Target_Last := Target'Last;
             Target_First := Target_Last - (Source_Last - Source_First);
       end case;
-      for I in Target'First .. Target_First - 1 loop
-         Target (I) := Pad;
-      end loop;
       Target (Target_First .. Target_Last) :=
          Source (Source_First .. Source_Last);
-      for I in Target_Last + 1 .. Target'Last loop
-         Target (I) := Pad;
-      end loop;
+      Fill (Target (Target'First .. Target_First - 1), Pad);
+      Fill (Target (Target_Last + 1 .. Target'Last), Pad);
    end Move;
 
    function Index (
@@ -286,14 +317,28 @@ package body Ada.Strings.Generic_Fixed is
       Low : Positive;
       High : Natural;
       By : String_Type)
-      return String_Type is
+      return String_Type
+   is
+      Previous_Length : constant Integer := Low - Source'First;
    begin
-      if Low - 1 > Source'Last or else High < Source'First - 1 then
+      if Previous_Length < 0
+         or else Low > Source'Last + 1
+         or else High < Source'First - 1
+         or else High > Source'Last
+      then
          raise Index_Error;
       end if;
-      return Source (Source'First .. Low - 1)
-         & By
-         & Source (Positive'Max (Low, High + 1) .. Source'Last);
+      return Result : String_Type (
+         1 ..
+         Source'Length - (High - Low + 1) + By'Length)
+      do
+         Result (1 .. Previous_Length) :=
+            Source (Source'First .. Low - 1);
+         Result (Previous_Length + 1 .. Previous_Length + By'Length) :=
+            By;
+         Result (Previous_Length + By'Length + 1 .. Result'Last) :=
+            Source (High + 1 .. Source'Last);
+      end return;
    end Replace_Slice;
 
    procedure Replace_Slice (
@@ -303,11 +348,14 @@ package body Ada.Strings.Generic_Fixed is
       By : String_Type;
       Drop : Truncation := Error;
       Justify : Alignment := Left;
-      Pad : Character_Type := Space)
-   is
-      Result : constant String_Type := Replace_Slice (Source, Low, High, By);
+      Pad : Character_Type := Space) is
    begin
-      Move (Result, Source, Drop, Justify, Pad);
+      Move (
+         Replace_Slice (Source, Low, High, By),
+         Source,
+         Drop,
+         Justify,
+         Pad);
    end Replace_Slice;
 
    function Insert (
@@ -335,11 +383,14 @@ package body Ada.Strings.Generic_Fixed is
       Source : in out String_Type;
       Before : Positive;
       New_Item : String_Type;
-      Drop : Truncation := Error)
-   is
-      Result : constant String_Type := Insert (Source, Before, New_Item);
+      Drop : Truncation := Error) is
    begin
-      Move (Result, Source, Drop, Justify => Left, Pad => Space);
+      Move (
+         Insert (Source, Before, New_Item),
+         Source,
+         Drop,
+         Justify => Left,
+         Pad => Space);
    end Insert;
 
    function Overwrite (
@@ -370,11 +421,14 @@ package body Ada.Strings.Generic_Fixed is
       Source : in out String_Type;
       Position : Positive;
       New_Item : String_Type;
-      Drop : Truncation := Right)
-   is
-      Result : constant String_Type := Overwrite (Source, Position, New_Item);
+      Drop : Truncation := Right) is
    begin
-      Move (Result, Source, Drop, Justify => Left, Pad => Space);
+      Move (
+         Overwrite (Source, Position, New_Item),
+         Source,
+         Drop,
+         Justify => Left,
+         Pad => Space);
    end Overwrite;
 
    function Delete (
@@ -403,14 +457,33 @@ package body Ada.Strings.Generic_Fixed is
       From : Positive;
       Through : Natural;
       Justify : Alignment := Left;
-      Pad : Character_Type := Space) is
+      Pad : Character_Type := Space)
+   is
+      Last : Natural := Source'Last;
    begin
+      Delete (Source, Last, From, Through);
       Move (
-         Delete (Source, From, Through),
+         Source (Source'First .. Last),
          Source,
          Error, -- no raising because Source'Length be not growing
          Justify,
          Pad);
+   end Delete;
+
+   procedure Delete (
+      Source : in out String_Type;
+      Last : in out Natural;
+      From : Positive;
+      Through : Natural) is
+   begin
+      if From <= Through then
+         declare
+            Old_Last : constant Natural := Last;
+         begin
+            Last := Last - (Through - From + 1);
+            Source (From .. Last) := Source (Through + 1 .. Old_Last);
+         end;
+      end if;
    end Delete;
 
    function Trim (
@@ -437,10 +510,14 @@ package body Ada.Strings.Generic_Fixed is
       Left : Character_Type := Space;
       Right : Character_Type := Space;
       Justify : Alignment := Strings.Left;
-      Pad : Character_Type := Space) is
+      Pad : Character_Type := Space)
+   is
+      First : Positive;
+      Last : Natural;
    begin
+      Trim (Source, Side, Left, Right, First, Last);
       Move (
-         Trim (Source, Side, Left, Right), -- copy because it rewrite Source
+         Source (First .. Last),
          Source,
          Error, -- no raising because Source'Length be not growing
          Justify,
@@ -486,9 +563,7 @@ package body Ada.Strings.Generic_Fixed is
       return Result : String_Type (1 .. Count) do
          Result (1 .. Taking) :=
             Source (Source'First .. Source'First + Taking - 1);
-         for I in Taking + 1 .. Count loop
-            Result (I) := Pad;
-         end loop;
+         Fill (Result (Taking + 1 .. Count), Pad);
       end return;
    end Head;
 
@@ -515,11 +590,9 @@ package body Ada.Strings.Generic_Fixed is
       Taking : constant Natural := Natural'Min (Source'Length, Count);
    begin
       return Result : String_Type (1 .. Count) do
-         for I in 1 .. Count - Taking loop
-            Result (I) := Pad;
-         end loop;
          Result (Count - Taking + 1 .. Count) :=
             Source (Source'Last - Taking + 1 .. Source'Last);
+         Fill (Result (1 .. Count - Taking), Pad);
       end return;
    end Tail;
 
@@ -1303,11 +1376,14 @@ package body Ada.Strings.Generic_Fixed is
          Mapping : Character_Mapping;
          Drop : Truncation := Error;
          Justify : Alignment := Left;
-         Pad : Character_Type := Space)
-      is
-         Result : constant String_Type := Translate (Source, Mapping);
+         Pad : Character_Type := Space) is
       begin
-         Move (Result, Source, Drop, Justify, Pad);
+         Move (
+            Translate (Source, Mapping),
+            Source,
+            Drop,
+            Justify,
+            Pad);
       end Translate;
 
       function Translate (
@@ -1332,11 +1408,14 @@ package body Ada.Strings.Generic_Fixed is
             return Wide_Wide_Character;
          Drop : Truncation := Error;
          Justify : Alignment := Left;
-         Pad : Character_Type := Space)
-      is
-         Result : constant String_Type := Translate (Source, Mapping);
+         Pad : Character_Type := Space) is
       begin
-         Move (Result, Source, Drop, Justify, Pad);
+         Move (
+            Translate (Source, Mapping),
+            Source,
+            Drop,
+            Justify,
+            Pad);
       end Translate;
 
       function Translate_Per_Element (
@@ -1385,10 +1464,14 @@ package body Ada.Strings.Generic_Fixed is
          Left : Character_Set;
          Right : Character_Set;
          Justify : Alignment := Strings.Left;
-         Pad : Character_Type := Space) is
+         Pad : Character_Type := Space)
+      is
+         First : Positive;
+         Last : Natural;
       begin
+         Trim (Source, Left, Right, First, Last);
          Move (
-            Trim (Source, Left, Right), -- copy because it rewrite Source
+            Source (First .. Last),
             Source,
             Error, -- no raising because Source'Length be not growing
             Justify,

@@ -168,6 +168,7 @@ package body System.Reference_Counting is
       Free : not null access procedure (Object : Address)) is
    begin
       if New_Length > Target_Length then
+         --  inscreasing
          if New_Length > Target_Capacity then
             --  expanding
             declare
@@ -204,7 +205,14 @@ package body System.Reference_Counting is
                   Sentinel => Sentinel,
                   Copy => Copy, -- Copy should set Max_Length
                   Free => Free);
+            else -- reference count = 1
+               Target_Max_Length.all := New_Length;
             end if;
+         end if;
+      else
+         --  decreasing
+         if Target_Reference_Count.all = 1 then
+            Target_Max_Length.all := New_Length;
          end if;
       end if;
    end Set_Length;

@@ -32,7 +32,7 @@ package Ada.Strings.Generic_Unbounded is
    pragma Inline (Length);
 
    --  extended
-   procedure Set_Length (Item : in out Unbounded_String; Length : Natural);
+   procedure Set_Length (Source : in out Unbounded_String; Length : Natural);
 
    type String_Access is access all String_Type;
 --  procedure Free (X : in out String_Access);
@@ -194,11 +194,11 @@ package Ada.Strings.Generic_Unbounded is
          Position : Positive;
          New_Item : String_Type)
          return String_Type;
-      with function Fixed_Delete (
-         Source : String_Type;
+      with procedure Fixed_Delete (
+         Source : in out String_Type;
+         Last : in out Natural;
          From : Positive;
-         Through : Natural)
-         return String_Type;
+         Through : Natural);
       with procedure Fixed_Trim (
          Source : String_Type;
          Side : Trim_End;

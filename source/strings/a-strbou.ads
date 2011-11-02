@@ -67,6 +67,7 @@ package Ada.Strings.Bounded is
 --    type Bounded_String is private;
       subtype Bounded_String is Instance.Bounded_String;
 
+      --  modified
 --    Null_Bounded_String : constant Bounded_String;
       function Null_Bounded_String return Bounded_String
          renames Instance.Null_Bounded_String;
@@ -245,6 +246,7 @@ package Ada.Strings.Bounded is
 
       --  Search subprograms
 
+      --  modified
 --    function Index (
 --       Source : Bounded_String;
 --       Pattern : String;
@@ -268,6 +270,7 @@ package Ada.Strings.Bounded is
          return Natural
          renames Maps.Index;
 
+      --  modified
 --    function Index (
 --       Source : Bounded_String;
 --       Pattern : String;
@@ -294,6 +297,7 @@ package Ada.Strings.Bounded is
          return Natural
          renames Maps.Index;
 
+      --  modified
 --    function Index (
 --       Source : Bounded_String;
 --       Pattern : String;
@@ -314,6 +318,7 @@ package Ada.Strings.Bounded is
          return Natural
          renames Maps.Index;
 
+      --  modified
 --    function Index (
 --       Source : Bounded_String;
 --       Pattern : String;
@@ -367,6 +372,7 @@ package Ada.Strings.Bounded is
          return Natural
          renames Functions.Index_Non_Blank;
 
+      --  modified
 --    function Count (
 --       Source : Bounded_String;
 --       Pattern : String;
@@ -384,6 +390,7 @@ package Ada.Strings.Bounded is
          return Natural
          renames Maps.Count;
 
+      --  modified
 --    function Count (
 --       Source : Bounded_String;
 --       Pattern : String;
@@ -444,6 +451,7 @@ package Ada.Strings.Bounded is
          Drop : Truncation := Error) -- additional
          renames Maps.Translate;
 
+      --  modified
 --    function Translate (
 --       Source : Bounded_String;
 --       Mapping : Maps.Character_Mapping_Function)
@@ -462,6 +470,7 @@ package Ada.Strings.Bounded is
          return Bounded_String
          renames Maps.Translate;
 
+      --  modified
 --    procedure Translate (
 --       Source : in out Bounded_String;
 --       Mapping : Maps.Character_Mapping_Function);
@@ -632,27 +641,6 @@ package Ada.Strings.Bounded is
          Drop : Truncation := Error)
          return Bounded_String
          renames Instance.Replicate;
-
-      --  extended
-      function Constant_Reference (
-         Source : not null access constant Bounded_String)
-         return Bounded.Instance.Slicing.Constant_Reference_Type
-         renames Instance.Constant_Reference;
-      function Constant_Reference (
-         Source : not null access constant Bounded_String;
-         First_Index : Positive;
-         Last_Index : Natural)
-         return Bounded.Instance.Slicing.Constant_Reference_Type
-         renames Instance.Constant_Reference;
-      function Reference (Source : not null access Bounded_String)
-         return Bounded.Instance.Slicing.Reference_Type
-         renames Instance.Reference;
-      function Reference (
-         Source : not null access Bounded_String;
-         First_Index : Positive;
-         Last_Index : Natural)
-         return Bounded.Instance.Slicing.Reference_Type
-         renames Instance.Reference;
 
    end Generic_Bounded_Length;
 

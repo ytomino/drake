@@ -340,11 +340,11 @@ package Ada.Strings.Generic_Bounded is
             Position : Positive;
             New_Item : String_Type)
             return String_Type;
-         with function Fixed_Delete (
-            Source : String_Type;
+         with procedure Fixed_Delete (
+            Source : in out String_Type;
+            Last : in out Natural;
             From : Positive;
-            Through : Natural)
-            return String_Type;
+            Through : Natural);
          with procedure Fixed_Trim (
             Source : String_Type;
             Side : Trim_End;
