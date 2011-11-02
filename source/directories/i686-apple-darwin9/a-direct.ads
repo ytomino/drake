@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.Calendar;
+with Ada.Streams;
 private with Ada.Finalization;
 private with C.dirent;
 private with C.sys.dirent;
@@ -88,8 +89,9 @@ package Ada.Directories is
 
    type File_Kind is (Directory, Ordinary_File, Special_File);
 
+   --  modified
 --  type File_Size is range 0 .. implementation-defined;
-   type File_Size is mod 2 ** 64;
+   subtype File_Size is Streams.Stream_Element_Count;
 
    function Exists (Name : String) return Boolean;
 
