@@ -183,8 +183,11 @@ package body Ada.Processes is
       Wait (Child, Dummy);
    end Wait;
 
-   procedure Shell (Command : String; Status : out Command_Line.Exit_Status) is
-      Z_Command : String := Command & Character'Val (0);
+   procedure Shell (
+      Command_Line : String;
+      Status : out Ada.Command_Line.Exit_Status)
+   is
+      Z_Command : String := Command_Line & Character'Val (0);
       C_Command : C.char_array (0 .. Z_Command'Length);
       for C_Command'Address use Z_Command'Address;
       Code : C.signed_int;
@@ -194,18 +197,51 @@ package body Ada.Processes is
          raise Name_Error;
       else
          if WIFEXITED (Code) then
-            Status := Command_Line.Exit_Status (WEXITSTATUS (Code));
+            Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));
          else
             Status := -1;
          end if;
       end if;
    end Shell;
 
-   procedure Shell (Command : String) is
-      Dummy : Command_Line.Exit_Status;
+   procedure Shell (
+      Command_Line : String)
+   is
+      Dummy : Ada.Command_Line.Exit_Status;
       pragma Unreferenced (Dummy);
    begin
-      Shell (Command, Dummy);
+      Shell (Command_Line, Dummy);
    end Shell;
+
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String) is
+   begin
+      if Last >= Command_Line'First then
+         if Last >= Command_Line'Last then
+            raise Constraint_Error;
+         end if;
+         Last := Last + 1;
+         Command_Line (Last) := ' ';
+      end if;
+      for I in Argument'Range loop
+         if Argument (I) = ' ' then
+            if Last + 1 >= Command_Line'Last then
+               raise Constraint_Error;
+            end if;
+            Last := Last + 1;
+            Command_Line (Last) := '\';
+            Last := Last + 1;
+            Command_Line (Last) := ' ';
+         else
+            if Last >= Command_Line'Last then
+               raise Constraint_Error;
+            end if;
+            Last := Last + 1;
+            Command_Line (Last) := Argument (I);
+         end if;
+      end loop;
+   end Append_Argument;
 
 end Ada.Processes;
