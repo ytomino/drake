@@ -413,7 +413,7 @@ package body Ada.Strings.Generic_Fixed is
          Result (Previous_Length + 1 .. Previous_Length + New_Item'Length) :=
             New_Item;
          Result (Previous_Length + New_Item'Length + 1 .. Result'Length) :=
-           Source (Position + New_Item'Length .. Source'Last);
+            Source (Position + New_Item'Length .. Source'Last);
       end return;
    end Overwrite;
 

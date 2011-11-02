@@ -54,7 +54,7 @@ begin
 		I.Move (S2, S1);
 		pragma Assert (S2.Element.all = 1);
 	end;
-	--  derived to base
+	-- derived to base
 	declare
 		package SB is new Ada.Containers.Counted_Access_Holders (Base_Access);
 		use type SB.Holder;
