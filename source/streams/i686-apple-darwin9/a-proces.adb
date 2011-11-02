@@ -126,7 +126,7 @@ package body Ada.Processes is
             Dummy := C.sys.fcntl.fcntl (2, C.sys.fcntl.F_SETFD, 0);
             Dummy := C.unistd.execve (
                Argument (0),
-               Argument (1)'Access,
+               Argument (0)'Access,
                Environment_Variables.Inside.Environment_Block);
             C_qexit (127);
          end;
