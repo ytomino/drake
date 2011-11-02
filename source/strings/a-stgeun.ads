@@ -24,6 +24,10 @@ package Ada.Strings.Generic_Unbounded is
 --  Null_Unbounded_String : constant Unbounded_String;
    function Null_Unbounded_String return Unbounded_String; -- extended
 
+   --  extended
+   function Is_Null (Source : Unbounded_String) return Boolean;
+   pragma Inline (Is_Null);
+
    function Length (Source : Unbounded_String) return Natural;
    pragma Inline (Length);
 
@@ -38,6 +42,10 @@ package Ada.Strings.Generic_Unbounded is
 
    function To_Unbounded_String (Length : Natural)
       return Unbounded_String;
+
+   --  extended for shorthand
+   function "+" (Source : String_Type) return Unbounded_String
+      renames To_Unbounded_String;
 
    function To_String (Source : Unbounded_String) return String_Type;
 
@@ -121,10 +129,6 @@ package Ada.Strings.Generic_Unbounded is
    pragma Inline (">=");
 
    --  extended
-   function Is_Null (Source : Unbounded_String) return Boolean;
-   pragma Inline (Is_Null);
-
-   --  extended
    package Slicing is new System.Arrays.Generic_Slicing (
       Positive,
       Character_Type,
@@ -144,10 +148,6 @@ package Ada.Strings.Generic_Unbounded is
       First_Index : Positive;
       Last_Index : Natural)
       return Slicing.Reference_Type;
-
-   --  extended for shorthand
-   function "+" (Source : String_Type) return Unbounded_String
-      renames To_Unbounded_String;
 
    generic
       Space : Character_Type;
