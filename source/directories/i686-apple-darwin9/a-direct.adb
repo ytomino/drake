@@ -315,9 +315,9 @@ package body Ada.Directories is
       Z_Name : constant String := Name & Character'Val (0);
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
-      Data : aliased C.sys.stat.struct_stat;
+      Attributes : aliased C.sys.stat.struct_stat;
    begin
-      return C.sys.stat.lstat (C_Name (0)'Access, Data'Access) = 0;
+      return C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) = 0;
    end Exists;
 
    procedure Extension (
