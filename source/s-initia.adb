@@ -1,13 +1,13 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Aux_Dec;
-with System.Storage_Pools.Overlay;
+with System.Storage_Pools.Overlaps;
 package body System.Initialization is
    pragma Suppress (All_Checks);
    use Aux_Dec;
 
    type Object_Access is access all Object;
-   for Object_Access'Storage_Pool use Storage_Pools.Overlay.Pool;
+   for Object_Access'Storage_Pool use Storage_Pools.Overlaps.Pool;
 
    procedure Free is new Ada.Unchecked_Deallocation (
       Object,
@@ -20,7 +20,7 @@ package body System.Initialization is
          or else Object'Has_Tagged_Values
          or else Object'Type_Class = Type_Class_Task
       then
-         Storage_Pools.Overlay.Set_Address (Storage.all'Address);
+         Storage_Pools.Overlaps.Set_Address (Storage.all'Address);
          return Object_Pointer (Object_Access'(new Object));
       else
          declare
@@ -43,7 +43,7 @@ package body System.Initialization is
          or else Object'Has_Tagged_Values
          or else Object'Type_Class = Type_Class_Task
       then
-         Storage_Pools.Overlay.Set_Address (Storage.all'Address);
+         Storage_Pools.Overlaps.Set_Address (Storage.all'Address);
          return Object_Pointer (Object_Access'(new Object'(Value)));
       else
          declare

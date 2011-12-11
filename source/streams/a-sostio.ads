@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  extended unit
 with System.Storage_Elements;
-package Ada.Streams.Overlay_Storage_IO is
-   --  This package provides overlay stream to access existing memory.
+package Ada.Streams.Overlaps_Storage_IO is
+   --  This package provides overlapping stream to access existing memory.
    pragma Preelaborate;
 
    pragma Compile_Time_Error (
@@ -43,4 +43,4 @@ private
    overriding function Size (Object : Overlay)
       return Stream_Element_Count;
 
-end Ada.Streams.Overlay_Storage_IO;
+end Ada.Streams.Overlaps_Storage_IO;

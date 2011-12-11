@@ -1,4 +1,4 @@
-package body System.Storage_Pools.Overlay is
+package body System.Storage_Pools.Overlaps is
    pragma Suppress (All_Checks);
 
    Overlaid_Allocation : Address;
@@ -10,7 +10,7 @@ package body System.Storage_Pools.Overlay is
    end Set_Address;
 
    overriding procedure Allocate (
-      Pool : in out Overlay_Storage_Pool;
+      Pool : in out Overlay_Pool;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
@@ -22,7 +22,7 @@ package body System.Storage_Pools.Overlay is
       Storage_Address := Overlaid_Allocation;
    end Allocate;
 
-   overriding function Storage_Size (Pool : Overlay_Storage_Pool)
+   overriding function Storage_Size (Pool : Overlay_Pool)
       return Storage_Elements.Storage_Count
    is
       pragma Unreferenced (Pool);
@@ -30,4 +30,4 @@ package body System.Storage_Pools.Overlay is
       return 0;
    end Storage_Size;
 
-end System.Storage_Pools.Overlay;
+end System.Storage_Pools.Overlaps;
