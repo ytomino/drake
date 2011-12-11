@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit;
 --  runtime unit required by compiler
 package System.Standard_Library is
    pragma Preelaborate;

@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit;
 --  runtime unit
 with System.Standard_Library;
 package System.Unwind.Standard is

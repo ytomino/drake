@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit;
 --  runtime unit
 with Ada.Unchecked_Deallocation;
 with C.unwind;

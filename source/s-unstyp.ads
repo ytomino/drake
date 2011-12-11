@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit; -- used in System.Formatting
 --  runtime unit for System.Formatting
 package System.Unsigned_Types is
    pragma Pure;
