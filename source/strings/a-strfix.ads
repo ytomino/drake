@@ -85,10 +85,10 @@ package Ada.Strings.Fixed is
 
    --  modified
 --  function Index (
---    Source : in String;
---    Pattern : in String;
---    Going : in Direction := Forward;
---    Mapping : in Maps.Character_Mapping := Maps.Identity)
+--    Source : String;
+--    Pattern : String;
+--    Going : Direction := Forward;
+--    Mapping : Maps.Character_Mapping := Maps.Identity)
 --    return Natural;
    function Index (
       Source : String;

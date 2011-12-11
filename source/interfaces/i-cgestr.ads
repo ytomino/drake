@@ -30,8 +30,8 @@ package Interfaces.C.Generic_Strings is
    Null_Ptr : constant chars_ptr := null;
 
 --  function To_Chars_Ptr (
---    Item : in char_array_access;
---    Nul_Check : in Boolean := False)
+--    Item : char_array_access;
+--    Nul_Check : Boolean := False)
 --    return chars_ptr;
    function To_Chars_Ptr (
       Item : not null access Element_Array;
@@ -40,42 +40,42 @@ package Interfaces.C.Generic_Strings is
    pragma Pure_Function (To_Chars_Ptr);
    pragma Inline_Always (To_Chars_Ptr);
 
---  function New_Char_Array (Chars : in char_array) return chars_ptr;
+--  function New_Char_Array (Chars : char_array) return chars_ptr;
    function New_Char_Array (Chars : Element_Array) return not null chars_ptr;
 
---  function New_String (Str : in String) return chars_ptr;
+--  function New_String (Str : String) return chars_ptr;
    function New_String (Str : String_Type) return not null chars_ptr;
 
    procedure Free (Item : in out chars_ptr);
 
 --  Dereference_Error : exception;
 
---  function Value (Item : in chars_ptr) return char_array;
+--  function Value (Item : chars_ptr) return char_array;
    function Value (Item : not null access constant Element)
       return Element_Array;
 
---  function Value (Item : in chars_ptr; Length : in size_t)
+--  function Value (Item : chars_ptr; Length : size_t)
 --    return char_array;
    function Value (Item : access constant Element; Length : size_t)
       return Element_Array;
 
---  function Value (Item : in chars_ptr) return String;
+--  function Value (Item : chars_ptr) return String;
    function Value (Item : not null access constant Element)
       return String_Type;
 
---  function Value (Item : in chars_ptr; Length : in size_t) return String;
+--  function Value (Item : chars_ptr; Length : size_t) return String;
    function Value (Item : access constant Element; Length : size_t)
       return String_Type;
 
---  function Strlen (Item : in chars_ptr) return size_t;
+--  function Strlen (Item : chars_ptr) return size_t;
    function Strlen (Item : not null access constant Element)
       return size_t;
 
 --  procedure Update (
---    Item : in chars_ptr;
---    Offset : in size_t;
---    Chars : in char_array;
---    Check : in Boolean := True);
+--    Item : chars_ptr;
+--    Offset : size_t;
+--    Chars : char_array;
+--    Check : Boolean := True);
    procedure Update (
       Item : not null access Element;
       Offset : size_t;
@@ -83,10 +83,10 @@ package Interfaces.C.Generic_Strings is
       Check : Boolean := True);
 
 --  procedure Update (
---    Item : in chars_ptr;
---    Offset : in size_t;
---    Str : in String;
---    Check : in Boolean := True);
+--    Item : chars_ptr;
+--    Offset : size_t;
+--    Str : String;
+--    Check : Boolean := True);
    procedure Update (
       Item : not null access Element;
       Offset : size_t;

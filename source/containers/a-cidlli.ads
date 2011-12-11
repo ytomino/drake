@@ -207,7 +207,7 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    function Iterate (Container : List)
       return Iterator;
 
---  function Iterate (Container : in List; Start : in Cursor)
+--  function Iterate (Container : List; Start : Cursor)
 --    return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
    --  extended

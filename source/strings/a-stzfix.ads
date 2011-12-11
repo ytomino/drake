@@ -78,10 +78,10 @@ package Ada.Strings.Wide_Wide_Fixed is
 
    --  modified
 --  function Index (
---    Source : in Wide_Wide_String;
---    Pattern : in Wide_Wide_String;
---    Going : in Direction := Forward;
---    Mapping : in Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
+--    Source : Wide_Wide_String;
+--    Pattern : Wide_Wide_String;
+--    Going : Direction := Forward;
+--    Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
 --       Wide_Wide_Maps.Identity)
 --    return Natural;
    function Index (

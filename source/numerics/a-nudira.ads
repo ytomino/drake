@@ -21,7 +21,7 @@ package Ada.Numerics.Discrete_Random is
    subtype State is MT19937.State;
 
 --  procedure Save (Gen : Generator; To_State : out State);
---  procedure Reset (Gen : in Generator; From_State : State);
+--  procedure Reset (Gen : Generator; From_State : State);
    --  procedure Save and Load are inherited.
 
    Max_Image_Width : constant := MT19937.Max_Image_Width;

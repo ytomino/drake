@@ -101,8 +101,8 @@ package Ada.Containers.Limited_Vectors is
       Process : not null access procedure (Element : Element_Type));
 
 --  procedure Query_Element (
---    Position : in Cursor;
---    Process : not null access procedure (Element : in Element_Type));
+--    Position : Cursor;
+--    Process : not null access procedure (Element : Element_Type));
 
    --  modified
    procedure Update_Element (
