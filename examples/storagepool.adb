@@ -1,6 +1,6 @@
 with Ada.Unchecked_Deallocation;
 with System.Address_Image;
-procedure storagesize is
+procedure storagepool is
 	type T is access Integer;
 	for T'Storage_Size use (Integer'Size / Standard'Storage_Unit) * 25;
 	-- using System.Pool_Size
@@ -37,4 +37,4 @@ begin
 		Free (A (2));
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
-end storagesize;
+end storagepool;
