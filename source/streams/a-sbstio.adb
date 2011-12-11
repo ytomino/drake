@@ -1,32 +1,45 @@
 with Ada.Unchecked_Deallocation;
+with System.Memory.Allocated_Size;
 package body Ada.Streams.Buffer_Storage_IO is
-
-   procedure Free is new Unchecked_Deallocation (
-      Stream_Element_Array,
-      Stream_Element_Array_Access);
 
    procedure Free is new Unchecked_Deallocation (
       Stream_Type,
       Stream_Access);
 
-   procedure Set_Size (
-      Storage : in out Stream_Element_Array_Access;
-      New_Size : Stream_Element_Count);
-   procedure Set_Size (
-      Storage : in out Stream_Element_Array_Access;
-      New_Size : Stream_Element_Count)
-   is
-      Old : Stream_Element_Array_Access := Storage;
-      subtype Copy_Range is Stream_Element_Count range
-         1 ..
-         Stream_Element_Count'Min (New_Size, Old'Last);
+   procedure Allocate (
+      Stream : in out Stream_Type;
+      Size : Stream_Element_Count);
+   procedure Allocate (
+      Stream : in out Stream_Type;
+      Size : Stream_Element_Count) is
    begin
-      Storage := new Stream_Element_Array (
-         1 ..
-         Stream_Element_Count'Max (256, New_Size));
-      Storage (Copy_Range) := Old (Copy_Range);
-      Free (Old);
-   end Set_Size;
+      Stream.Data := System.Memory.Allocate (
+         System.Storage_Elements.Storage_Count (Size));
+      Stream.Capacity := Stream_Element_Offset (
+         System.Memory.Allocated_Size (Stream.Data));
+   end Allocate;
+
+   procedure Reallocate (
+      Stream : in out Stream_Type;
+      Size : Stream_Element_Count);
+   procedure Reallocate (
+      Stream : in out Stream_Type;
+      Size : Stream_Element_Count) is
+   begin
+      Stream.Data := System.Memory.Reallocate (
+         Stream.Data,
+         System.Storage_Elements.Storage_Count (Size));
+      Stream.Capacity := Stream_Element_Offset (
+         System.Memory.Allocated_Size (Stream.Data));
+   end Reallocate;
+
+   procedure Deallocate (Stream : in out Stream_Type);
+   procedure Deallocate (Stream : in out Stream_Type) is
+   begin
+      System.Memory.Free (Stream.Data);
+      Stream.Data := System.Null_Address;
+      Stream.Capacity := 0;
+   end Deallocate;
 
    --  implementation
 
@@ -39,7 +52,7 @@ package body Ada.Streams.Buffer_Storage_IO is
       Object : in out Buffer;
       New_Size : Stream_Element_Count) is
    begin
-      Set_Size (Object.Stream.Storage, New_Size);
+      Reallocate (Object.Stream.all, New_Size);
       if Object.Stream.Last > New_Size then
          Object.Stream.Last := New_Size;
          if Object.Stream.Index > New_Size + 1 then
@@ -50,34 +63,14 @@ package body Ada.Streams.Buffer_Storage_IO is
 
    function Address (Object : Buffer) return System.Address is
    begin
-      return Object.Stream.Storage.all'Address;
+      return Object.Stream.Data;
    end Address;
 
-   procedure Query_Elements (
-      Object : Buffer;
-      Process : not null access procedure (
-         Item : System.Storage_Elements.Storage_Array))
-   is
-      Item : System.Storage_Elements.Storage_Array (
-         1 ..
-         System.Storage_Elements.Storage_Offset (Object.Stream.Last));
-      for Item'Address use Object.Stream.Storage.all'Address;
+   function Size (Object : Buffer)
+      return System.Storage_Elements.Storage_Count is
    begin
-      Process (Item);
-   end Query_Elements;
-
-   procedure Update_Elements (
-      Object : in out Buffer;
-      Process : not null access procedure (
-         Item : in out System.Storage_Elements.Storage_Array))
-   is
-      Item : System.Storage_Elements.Storage_Array (
-         1 ..
-         System.Storage_Elements.Storage_Offset (Object.Stream.Last));
-      for Item'Address use Object.Stream.Storage.all'Address;
-   begin
-      Process (Item);
-   end Update_Elements;
+      return System.Storage_Elements.Storage_Count (Object.Stream.Last);
+   end Size;
 
    function Stream (Object : Buffer)
       return not null access Root_Stream_Type'Class is
@@ -97,9 +90,14 @@ package body Ada.Streams.Buffer_Storage_IO is
          Length := Rest;
       end if;
       Last := Item'First + Length - 1;
-      Item (Item'First .. Last) := Stream.Storage (
-         Stream.Index ..
-         Stream.Index + Length - 1);
+      declare
+         Stream_Item : Stream_Element_Array (1 .. Stream.Last);
+         for Stream_Item'Address use Stream.Data;
+      begin
+         Item (Item'First .. Last) := Stream_Item (
+            Stream.Index ..
+            Stream.Index + Length - 1);
+      end;
       Stream.Index := Stream.Index + Length;
    end Read;
 
@@ -111,14 +109,19 @@ package body Ada.Streams.Buffer_Storage_IO is
       New_Index : constant Stream_Element_Count := Stream.Index + Length;
       Copy_Last : constant Stream_Element_Offset := New_Index - 1;
    begin
-      if Copy_Last > Stream.Storage'Last then
-         Set_Size (
-            Stream.Storage,
+      if Copy_Last > Stream.Capacity then
+         Reallocate (
+            Stream,
             Stream_Element_Count'Max (
                Copy_Last,
-               Stream.Storage'Length * 2));
+               Stream.Capacity * 2));
       end if;
-      Stream.Storage (Stream.Index .. Copy_Last) := Item;
+      declare
+         Stream_Item : Stream_Element_Array (1 .. Stream.Last);
+         for Stream_Item'Address use Stream.Data;
+      begin
+         Stream_Item (Stream.Index .. Copy_Last) := Item;
+      end;
       Stream.Index := New_Index;
       if Stream.Last < Copy_Last then
          Stream.Last := Copy_Last;
@@ -149,16 +152,17 @@ package body Ada.Streams.Buffer_Storage_IO is
 
    overriding procedure Initialize (Object : in out Buffer) is
    begin
-      Object.Stream := new Stream_Type;
-      Object.Stream.Storage := new Stream_Element_Array (1 .. 256);
-      Object.Stream.Last := 0;
-      Object.Stream.Index := 1;
+      Object.Stream := new Stream_Type'(
+         Data => System.Null_Address,
+         Capacity => 0,
+         Last => 0,
+         Index => 1);
    end Initialize;
 
    overriding procedure Finalize (Object : in out Buffer) is
    begin
       if Object.Stream /= null then
-         Free (Object.Stream.Storage);
+         Deallocate (Object.Stream.all);
          Free (Object.Stream);
       end if;
    end Finalize;
@@ -167,21 +171,28 @@ package body Ada.Streams.Buffer_Storage_IO is
       Old_Stream : constant Stream_Access := Object.Stream;
    begin
       Object.Stream := new Stream_Type;
-      Object.Stream.Storage :=
-         new Stream_Element_Array'(Object.Stream.Storage.all);
+      Allocate (Object.Stream.all, Old_Stream.Last);
       Object.Stream.Last := Old_Stream.Last;
       Object.Stream.Index := Old_Stream.Index;
    end Adjust;
 
    package body No_Primitives is
 
+      procedure Read (
+         Stream : not null access Root_Stream_Type'Class;
+         Object : out Buffer) is
+      begin
+         raise Program_Error; -- "out" parameter destructs size info
+      end Read;
+
       procedure Write (
          Stream : not null access Root_Stream_Type'Class;
-         Object : Buffer) is
+         Object : Buffer)
+      is
+         Stream_Item : Stream_Element_Array (1 .. Object.Stream.Last);
+         for Stream_Item'Address use Object.Stream.Data;
       begin
-         Streams.Write (
-            Stream.all,
-            Object.Stream.Storage (1 .. Object.Stream.Last));
+         Streams.Write (Stream.all, Stream_Item);
       end Write;
 
    end No_Primitives;

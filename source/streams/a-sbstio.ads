@@ -15,18 +15,14 @@ package Ada.Streams.Buffer_Storage_IO is
       Object : in out Buffer;
       New_Size : Stream_Element_Count);
 
+   --  direct storage accessing
    function Address (Object : Buffer) return System.Address;
    pragma Inline (Address);
+   function Size (Object : Buffer)
+      return System.Storage_Elements.Storage_Count;
+   pragma Inline (Size);
 
-   procedure Query_Elements (
-      Object : Buffer;
-      Process : not null access procedure (
-         Item : System.Storage_Elements.Storage_Array));
-   procedure Update_Elements (
-      Object : in out Buffer;
-      Process : not null access procedure (
-         Item : in out System.Storage_Elements.Storage_Array));
-
+   --  streaming
    function Stream (Object : Buffer)
       return not null access Root_Stream_Type'Class;
    pragma Inline (Stream);
@@ -39,7 +35,8 @@ private
    type Stream_Element_Array_Access is access Stream_Element_Array;
 
    type Stream_Type is new Seekable_Stream_Type with record
-      Storage : Stream_Element_Array_Access;
+      Data : System.Address;
+      Capacity : Stream_Element_Offset;
       Last : Stream_Element_Offset;
       Index : Stream_Element_Offset := 1;
    end record;
@@ -73,7 +70,7 @@ private
 
       procedure Read (
          Stream : not null access Root_Stream_Type'Class;
-         Object : out Buffer) is null; -- "out" parameter destructs size info
+         Object : out Buffer);
       procedure Write (
          Stream : not null access Root_Stream_Type'Class;
          Object : Buffer);
@@ -82,7 +79,5 @@ private
 
    for Buffer'Write use No_Primitives.Write;
    for Buffer'Read use No_Primitives.Read;
-
---  pragma Finalize_Storage_Only (Buffer);
 
 end Ada.Streams.Buffer_Storage_IO;
