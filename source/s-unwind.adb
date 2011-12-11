@@ -8,7 +8,7 @@ package body System.Unwind is
       for Full_Name'Address use X.Id.Full_Name;
    begin
       Put ("Exception name: ");
-      Put (Full_Name (1 .. X.Id.Name_Length));
+      Put (Full_Name (1 .. X.Id.Name_Length - 1));
       New_Line;
       Put ("Message: ");
       Put (X.Msg (1 .. X.Msg_Length));

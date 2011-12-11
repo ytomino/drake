@@ -88,7 +88,7 @@ package body System.Unwind.Raising is
          Report_Traceback (Current);
       else
          Termination.Error_Put ("raised ");
-         Termination.Error_Put (Full_Name (1 .. Current.Id.Name_Length));
+         Termination.Error_Put (Full_Name (1 .. Current.Id.Name_Length - 1));
          if Current.Msg_Length > 0 then
             Termination.Error_Put (" : ");
             Termination.Error_Put (Current.Msg (1 .. Current.Msg_Length));
@@ -312,7 +312,7 @@ package body System.Unwind.Raising is
             Full_Name : Fixed_String;
             for Full_Name'Address use X.Id.Full_Name;
             New_Message : constant String := Prefix &
-               Full_Name (1 .. X.Id.Name_Length) &
+               Full_Name (1 .. X.Id.Name_Length - 1) &
                ": " &
                X.Msg (1 .. X.Msg_Length);
             Last : Natural;

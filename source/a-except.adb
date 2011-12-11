@@ -63,7 +63,7 @@ package body Ada.Exceptions is
             Full_Name : Fixed_String;
             for Full_Name'Address use Id.Full_Name;
          begin
-            return Full_Name (1 .. Id.Name_Length);
+            return Full_Name (1 .. Id.Name_Length - 1);
          end;
       end if;
    end Exception_Name;
