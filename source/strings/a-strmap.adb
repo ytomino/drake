@@ -191,7 +191,7 @@ package body Ada.Strings.Maps is
                            return False;
                         end if;
                      else
-                        exit; --  ok for E
+                        exit; -- ok for E
                      end if;
                   end loop;
                end;

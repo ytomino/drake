@@ -20,7 +20,7 @@
 --  ***************************************************************************
 pragma Check_Policy (Finalize, Off);
 with Ada.Exceptions.Finally;
-with Ada.Text_IO.Inside; --  full view
+with Ada.Text_IO.Inside; -- full view
 with Ada.Unchecked_Deallocation;
 package body Ada.Text_IO is
 

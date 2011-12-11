@@ -12,7 +12,7 @@ begin
       declare
          Code : System.UTF_Conversions.UCS_4;
          Next : Natural;
-         Error : Boolean; --  ignore
+         Error : Boolean; -- ignore
       begin
          --  get single unicode character
          System.UTF_Conversions.From_UTF_8 (

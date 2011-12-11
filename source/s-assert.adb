@@ -1,9 +1,9 @@
-with Ada.Assertions; --  force to link exception data
+with Ada.Assertions; -- force to link exception data
 pragma Unreferenced (Ada.Assertions);
 with System.Standard_Library;
-pragma Warnings (Off, System.Standard_Library); --  break "pure" rule
+pragma Warnings (Off, System.Standard_Library); -- break "pure" rule
 with System.Unwind.Raising;
-pragma Warnings (Off, System.Unwind.Raising); --  break "pure" rule
+pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Assertions is
    pragma Suppress (All_Checks);
 

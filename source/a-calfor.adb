@@ -212,7 +212,7 @@ package body Ada.Calendar.Formatting is
       Sub_Second : Second_Duration;
    begin
       Split (
-         Seconds (Date, Time_Zone => 0), --  unit of Time_Zone is minute
+         Seconds (Date, Time_Zone => 0), -- unit of Time_Zone is minute
          Hour,
          Minute,
          Second,
@@ -227,7 +227,7 @@ package body Ada.Calendar.Formatting is
       Sub_Second : Second_Duration;
    begin
       Split (
-         Seconds (Date, Time_Zone => 0), --  unit of Time_Zone is minute
+         Seconds (Date, Time_Zone => 0), -- unit of Time_Zone is minute
          Hour,
          Minute,
          Second,
@@ -401,7 +401,7 @@ package body Ada.Calendar.Formatting is
       Second : Second_Number;
       Sub_Second : Second_Duration;
       Leap_Second : Boolean;
-      Result : String (1 .. 22 + Integer'Width); --  yyyy-mm-dd hh:mm:ss.ss
+      Result : String (1 .. 22 + Integer'Width); -- yyyy-mm-dd hh:mm:ss.ss
       Last : Natural;
       Error : Boolean;
    begin
@@ -512,7 +512,7 @@ package body Ada.Calendar.Formatting is
       Minute : Minute_Number;
       Second : Second_Number;
       Sub_Second : Second_Duration;
-      Result : String (1 .. 11 + Integer'Width); --  hh:mm:ss.ss
+      Result : String (1 .. 11 + Integer'Width); -- hh:mm:ss.ss
       Last : Natural;
    begin
       Inside.Split (

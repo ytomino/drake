@@ -29,7 +29,7 @@ package body System.Unwind.Traceback is
             Current.Num_Tracebacks,
             Raising.AAA,
             Raising.ZZZ,
-            3); --  Propagate_Exception, Call_Chain, Get_Traceback
+            3); -- Propagate_Exception, Call_Chain, Get_Traceback
       end if;
    end Call_Chain;
 

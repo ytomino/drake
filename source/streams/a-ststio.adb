@@ -1,4 +1,4 @@
-with Ada.Streams.Stream_IO.Inside; --  full view
+with Ada.Streams.Stream_IO.Inside; -- full view
 package body Ada.Streams.Stream_IO is
 
    procedure Close (File : in out File_Type) is

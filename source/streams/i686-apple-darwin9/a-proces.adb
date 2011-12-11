@@ -19,7 +19,7 @@ package body Ada.Processes is
    function WIFEXITED (x : C.signed_int) return Boolean;
    function WIFEXITED (x : C.signed_int) return Boolean is
    begin
-      return x mod (8#177# + 1) = 0; --  x & 0177
+      return x mod (8#177# + 1) = 0; -- x & 0177
    end WIFEXITED;
 
    function WEXITSTATUS (x : C.signed_int) return C.signed_int;

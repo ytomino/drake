@@ -10,7 +10,7 @@ package body System.Fore is
          Max_Abs := -Lo;
       elsif Lo >= 0.0 then
          Max_Abs := Hi;
-      else --  Lo < 0 and then Hi > 0
+      else -- Lo < 0 and then Hi > 0
          Max_Abs := Long_Long_Float'Max (-Lo, Hi);
       end if;
       return Fore_Width (Max_Abs) + 1;

@@ -92,7 +92,7 @@ package body System.Termination is
    procedure Install_Exception_Handler (SEH : Address) is
       pragma Unreferenced (SEH);
       act : aliased C.sys.signal.struct_sigaction :=
-         (others => <>); --  uninitialized
+         (others => <>); -- uninitialized
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
    begin
@@ -117,9 +117,9 @@ package body System.Termination is
 
    procedure Set_Signal_Stack (S : access Signal_Stack_Type) is
       function Cast is
-         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); --  OSX
+         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); -- OSX
       function Cast is
-         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); --  FreeBSD
+         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); -- FreeBSD
       pragma Warnings (Off, Cast);
       stack : aliased C.sys.signal.stack_t := (
          ss_sp => Cast (S (S'First)'Access),

@@ -328,7 +328,7 @@ package body Ada.Text_IO.Inside.Formatting is
       First : out Positive;
       Last : out Natural) is
    begin
-      Get_Tail (Item, First); --  skip first spaces
+      Get_Tail (Item, First); -- skip first spaces
       Last := First;
       while Last < Item'Last
          and then Item (Last + 1) /= ' '

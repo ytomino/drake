@@ -47,8 +47,8 @@ package body System.Unwind.Raising is
       pragma Unreferenced (Current);
       pragma Unreferenced (Is_Unhandled);
    begin
-      null; --  exception tracing (g-exctra.ads) is not implementd.
-      null; --  exception action handler (g-excact.ads) is not implemented.
+      null; -- exception tracing (g-exctra.ads) is not implementd.
+      null; -- exception action handler (g-excact.ads) is not implemented.
    end Notify_Exception;
 
    --  (a-exextr.adb)
@@ -76,7 +76,7 @@ package body System.Unwind.Raising is
 --    Soft_Links.Task_Termination_Handler := Soft_Links.Nop'Access;
       Standard_Library.AdaFinal;
       Termination.Error_New_Line;
-      if Full_Name (1) = '_' then --  Standard'Abort_Signal
+      if Full_Name (1) = '_' then -- Standard'Abort_Signal
          Termination.Error_Put (
             "Execution terminated by abort of environment task");
          Termination.Error_New_Line;

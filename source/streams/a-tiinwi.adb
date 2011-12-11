@@ -13,7 +13,7 @@ package body Ada.Text_IO.Inside.Wide is
    is
       W_Buffer : Wide_String (1 .. System.UTF_Conversions.UTF_16_Max_Length);
       W_Last : Natural;
-      Error : Boolean; --  ignore
+      Error : Boolean; -- ignore
    begin
       System.UTF_Conversions.To_UTF_16 (
          Wide_Wide_Character'Pos (C),
@@ -43,7 +43,7 @@ package body Ada.Text_IO.Inside.Wide is
    procedure Get (File : File_Type; Item : out Wide_Character) is
       C : Wide_Wide_Character;
    begin
-      Get (File, C); --  Wide_Wide
+      Get (File, C); -- Wide_Wide
       Store_Second (File, C, Item);
    end Get;
 
@@ -109,7 +109,7 @@ package body Ada.Text_IO.Inside.Wide is
    is
       C : Wide_Wide_Character;
    begin
-      Get_Immediate (File, C, Available, Wait); --  Wide_Wide
+      Get_Immediate (File, C, Available, Wait); -- Wide_Wide
       if Available then
          Store_Second (File, C, Item);
       end if;
@@ -160,14 +160,14 @@ package body Ada.Text_IO.Inside.Wide is
    is
       C : Wide_Wide_Character;
    begin
-      Look_Ahead (File, C, End_Of_Line); --  Wide_Wide
+      Look_Ahead (File, C, End_Of_Line); -- Wide_Wide
       if End_Of_Line then
          Item := Wide_Character'Val (0);
       else
          declare
             Wide_Buffer : Wide_String (1 .. 2);
             Wide_Last : Natural;
-            Error : Boolean; --  ignore
+            Error : Boolean; -- ignore
          begin
             System.UTF_Conversions.To_UTF_16 (
                Wide_Wide_Character'Pos (C),
@@ -192,7 +192,7 @@ package body Ada.Text_IO.Inside.Wide is
       else
          declare
             Length : Natural;
-            Error : Boolean; --  ignore
+            Error : Boolean; -- ignore
          begin
             System.UTF_Conversions.UTF_8_Sequence (C, Length, Error);
             declare
@@ -215,7 +215,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Look_Ahead;
 
    procedure Put (File : File_Type; Item : Wide_Character) is
-      Error : Boolean; --  ignore
+      Error : Boolean; -- ignore
    begin
       if File.Text.Last > 0 then
          declare
@@ -240,7 +240,7 @@ package body Ada.Text_IO.Inside.Wide is
                   or else First >= 16#ffff#
                   or else Last /= File.Text.Last
                then
-                  raise Data_Error; --  previous data is wrong
+                  raise Data_Error; -- previous data is wrong
                end if;
             end;
             declare
@@ -281,12 +281,12 @@ package body Ada.Text_IO.Inside.Wide is
    procedure Put (File : File_Type; Item : Wide_Wide_Character) is
    begin
       if File.Text.Last > 0 then
-         raise Data_Error; --  previous data is rested
+         raise Data_Error; -- previous data is rested
       else
          declare
             Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
             Last : Natural;
-            Error : Boolean; --  ignore
+            Error : Boolean; -- ignore
          begin
             System.UTF_Conversions.To_UTF_8 (
                Wide_Wide_Character'Pos (Item),

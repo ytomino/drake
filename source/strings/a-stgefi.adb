@@ -843,7 +843,7 @@ package body Ada.Strings.Generic_Fixed is
                Code : Wide_Wide_Character;
                I_Next : Natural;
                J_Next : Natural;
-               Error : Boolean; --  ignore
+               Error : Boolean; -- ignore
             begin
                --  get single unicode character
                Get (Source (I .. Source'Last), I_Next, Code, Error);

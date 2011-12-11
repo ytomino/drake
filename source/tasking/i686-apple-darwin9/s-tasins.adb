@@ -334,7 +334,7 @@ package body System.Tasking.Inside is
    --  signal handler
 
    Old_SIGTERM_Action : aliased C.sys.signal.struct_sigaction :=
-      (others => <>); --  uninitialized
+      (others => <>); -- uninitialized
 
    procedure Restore_SIGTERM_Handler;
    procedure Restore_SIGTERM_Handler is
@@ -379,7 +379,7 @@ package body System.Tasking.Inside is
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
       act : aliased C.sys.signal.struct_sigaction :=
-         (others => <>); --  uninitialized
+         (others => <>); -- uninitialized
    begin
       act.sigaction_u.sa_sigaction := SIGTERM_Handler'Access;
       act.sa_flags := -- C.sys.signal.SA_NODEFER +

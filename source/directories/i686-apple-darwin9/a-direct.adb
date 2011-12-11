@@ -15,7 +15,7 @@ with C.sys.types;
 package body Ada.Directories is
    use type System.Storage_Elements.Storage_Offset;
    use type C.char;
-   use type C.signed_int; --  ssize_t is signed int or signed long
+   use type C.signed_int; -- ssize_t is signed int or signed long
    use type C.signed_long;
    use type C.size_t;
    use type C.unsigned_char;
@@ -241,7 +241,7 @@ package body Ada.Directories is
       Path_String : String (1 .. Natural (Path_Length));
       for Path_String'Address use Path.all'Address;
    begin
-      return Result : String := Path_String do --  copy
+      return Result : String := Path_String do -- copy
          pragma Unmodified (Result);
          pragma Unreferenced (Result);
          C.stdlib.free (C.void_ptr (Path.all'Address));
@@ -404,7 +404,7 @@ package body Ada.Directories is
          raise Status_Error;
       else
          --  copy entry and get info
-         Directory_Entry.Path := Search.Path; --  overwrite
+         Directory_Entry.Path := Search.Path; -- overwrite
          Directory_Entry.Entry_Data := Search.Data;
          declare
             Z_Name : String := Full_Name (Directory_Entry) & Character'Val (0);
@@ -429,7 +429,7 @@ package body Ada.Directories is
                   Result'Access) < 0
                   or else Result = null
                then
-                  Search.Has_Next := False; --  end
+                  Search.Has_Next := False; -- end
                   exit;
                end if;
             end;
@@ -440,7 +440,7 @@ package body Ada.Directories is
                   Search.Pattern,
                   Search.Data.d_name (0)'Access, 0) = 0
             then
-               exit; --  found
+               exit; -- found
             end if;
          end loop;
       end if;
@@ -643,7 +643,7 @@ package body Ada.Directories is
       Pattern : String := "*";
       Filter : Filter_Type := (others => True)) is
    begin
-      Finalize (Search); --  cleanup
+      Finalize (Search); -- cleanup
       declare
          Z_Directory : constant String := Directory & Character'Val (0);
          C_Directory : C.char_array (C.size_t);
@@ -703,7 +703,7 @@ package body Ada.Directories is
                         Search.Data.d_name (1) /= '.'
                         or else Search.Data.d_namlen > 2)))
             then
-               exit; --  found
+               exit; -- found
             end if;
          end loop;
       end if;

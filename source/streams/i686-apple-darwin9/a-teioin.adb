@@ -129,11 +129,11 @@ package body Ada.Text_IO.Inside is
       Length : constant Natural := File.Last;
    begin
       if Length > 0 then
-         File.Last := 0; --  before New_Line to block Flush
+         File.Last := 0; -- before New_Line to block Flush
          if File.Line_Length /= 0
             and then File.Col > File.Line_Length
          then
-            New_Line (File); --  New_Line does not touch buffer
+            New_Line (File); -- New_Line does not touch buffer
          end if;
          declare
             Buffer : Streams.Stream_Element_Array (1 .. 1);
@@ -145,7 +145,7 @@ package body Ada.Text_IO.Inside is
          File.Buffer (1 .. File.Last) := File.Buffer (2 .. Length);
          File.Buffer_Col := 1;
       else
-         File.Buffer_Col := 0; --  No filled
+         File.Buffer_Col := 0; -- No filled
       end if;
    end Write_Buffer;
 
@@ -322,7 +322,7 @@ package body Ada.Text_IO.Inside is
                      File.Col := 1;
                      Take_Buffer (File);
                   when Character'Val (16#1a#) =>
-                     File.End_Of_File := True; --  for next loop
+                     File.End_Of_File := True; -- for next loop
                      File.Last := 0;
                   when others =>
                      Item := C;
@@ -408,12 +408,12 @@ package body Ada.Text_IO.Inside is
             if File.Last > 0 then
                Item (I) := File.Buffer (1);
                Last := I;
-               Take_Buffer (File); --  not add File.Text.Col
-               exit Single_Character; --  next character
+               Take_Buffer (File); -- not add File.Text.Col
+               exit Single_Character; -- next character
             elsif File.End_Of_File then
                raise End_Error;
             elsif Wait then
-               Inside.Wait; --  wait and retry
+               Inside.Wait; -- wait and retry
             else
                exit Multi_Character;
             end if;
@@ -705,7 +705,7 @@ package body Ada.Text_IO.Inside is
       if Current_Mode /= Mode and then File.Is_Standard then
          raise Mode_Error;
       elsif not Streams.Stream_IO.Inside.Is_Open (File.File) then
-         raise Status_Error; --  External stream mode
+         raise Status_Error; -- External stream mode
       else
          if Current_Mode /= In_File then
             Flush (File);
@@ -731,7 +731,7 @@ package body Ada.Text_IO.Inside is
          --  In_File
          loop
             if End_Of_Page (File) then
-               Skip_Page (File); --  raise End_Error when End_Of_File.
+               Skip_Page (File); -- raise End_Error when End_Of_File.
             elsif End_Of_Line (File) then
                Skip_Line (File);
             else
@@ -835,7 +835,7 @@ package body Ada.Text_IO.Inside is
                         File.Col := 1;
                         exit;
                      when Character'Val (16#1a#) =>
-                        File.End_Of_File := True; --  for next loop
+                        File.End_Of_File := True; -- for next loop
                         File.Last := 0;
                      when others =>
                         File.Col := File.Col + File.Buffer_Col;

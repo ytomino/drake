@@ -11,7 +11,6 @@ package Ada.Streams.Buffer_Storage_IO is
 
    function Size (Object : Buffer) return Stream_Element_Count;
    pragma Inline (Size);
-
    procedure Set_Size (
       Object : in out Buffer;
       New_Size : Stream_Element_Count);

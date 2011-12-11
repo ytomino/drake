@@ -191,8 +191,8 @@ package body Ada.Numerics.Generic_Arrays is
                a11 := mat (mat'First (1) + i, mat'First (2) + i);
                a12 := mat (mat'First (1) + i, mat'First (2) + j);
                a22 := mat (mat'First (1) + j, mat'First (2) + j);
-               if Is_Small (a12 * a12) then --  1.0e-32 * abs (a11 * a22)
-                  null; --  continue
+               if Is_Small (a12 * a12) then -- 1.0e-32 * abs (a11 * a22)
+                  null; -- continue
                else
                   p := (a22 - a11) / Two;
                   q := a12;

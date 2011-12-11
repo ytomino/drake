@@ -15,7 +15,7 @@ package body System.Wid_LLI is
                Max_Abs := Formatting.Longest_Unsigned'Mod (-Lo);
             elsif Lo >= 0 then
                Max_Abs := Formatting.Longest_Unsigned (Hi);
-            else --  Lo < 0 and then Hi > 0
+            else -- Lo < 0 and then Hi > 0
                Max_Abs := Formatting.Longest_Unsigned'Max (
                   Formatting.Longest_Unsigned'Mod (-Lo),
                   Formatting.Longest_Unsigned (Hi));

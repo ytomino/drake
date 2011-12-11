@@ -47,7 +47,7 @@ package body Ada.Tags is
       elsif External_Tag_Impl (DT (Node.Tag)) < External then
          E_Insert (Node.Right, T, External);
       else
-         null; --  already added
+         null; -- already added
       end if;
    end E_Insert;
 
@@ -348,14 +348,14 @@ package body Ada.Tags is
          return False;
       else
          case A_DT.Signature is
-            when Primary_DT => --  tagged record
+            when Primary_DT => -- tagged record
                declare
                   Offset : constant Integer := D_TSD.Idepth - A_TSD.Idepth;
                begin
                   return Offset >= 0
                      and then D_TSD.Tags_Table (Offset) = Ancestor;
                end;
-            when Secondary_DT | Unknown => --  interface
+            when Secondary_DT | Unknown => -- interface
                if Primary_Only then
                   return False;
                else

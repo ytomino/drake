@@ -4,7 +4,7 @@ with C.time;
 with C.sys.types;
 package body Ada.Calendar.Inside is
    pragma Suppress (All_Checks);
-   use type C.signed_int; --  time_t is signed int or signed long
+   use type C.signed_int; -- time_t is signed int or signed long
    use type C.signed_long;
 
    type Time_Rep is range
@@ -33,12 +33,12 @@ package body Ada.Calendar.Inside is
    is
       function Cast is new Unchecked_Conversion (Duration, Time_Rep);
       function Cast is new Unchecked_Conversion (Time_Rep, Duration);
-      X : Time_Rep := Cast (Seconds); --  unit is 1-nanoscond
+      X : Time_Rep := Cast (Seconds); -- unit is 1-nanoscond
    begin
       Sub_Second := Cast (X rem 1000000000);
-      X := (X - Cast (Sub_Second)) / 1000000000; --  unit is 1-second
+      X := (X - Cast (Sub_Second)) / 1000000000; -- unit is 1-second
       Second := Second_Number (X rem 60);
-      X := (X - Time_Rep (Second)) / 60; --  unit is 1-minute
+      X := (X - Time_Rep (Second)) / 60; -- unit is 1-minute
       Minute := Minute_Number (X rem 60);
       X := (X - Time_Rep (Minute)) / 60;
       Hour := Integer (X);
@@ -60,7 +60,7 @@ package body Ada.Calendar.Inside is
       function Cast is new Unchecked_Conversion (Time_Rep, Duration);
       timespec : aliased System.Native_Time.Native_Time :=
          System.Native_Time.To_Native_Time (Duration (Date));
-      Buffer : aliased C.time.struct_tm := (others => <>); --  uninitialized
+      Buffer : aliased C.time.struct_tm := (others => <>); -- uninitialized
       tm : access C.time.struct_tm;
    begin
       Sub_Second := Cast (Time_Rep (timespec.tv_nsec));
@@ -73,7 +73,7 @@ package body Ada.Calendar.Inside is
       Hour := Hour_Number (tm.tm_hour);
       Minute := Minute_Number (tm.tm_min);
       Second := Second_Number (tm.tm_sec);
-      Day_of_Week := Day_Name ((tm.tm_wday + 6) rem 7); --  starts from Monday
+      Day_of_Week := Day_Name ((tm.tm_wday + 6) rem 7); -- starts from Monday
       Leap_Second := False;
    end Split;
 

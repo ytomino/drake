@@ -27,7 +27,7 @@ package body System.Storage_Elements is
    function "mod" (Left : Address; Right : Storage_Offset)
       return Storage_Offset is
    begin
-      return Storage_Offset (Left mod Address (Right)); --  unsigned mod
+      return Storage_Offset (Left mod Address (Right)); -- unsigned mod
    end "mod";
 
    function To_Address (Value : Integer_Address) return Address is

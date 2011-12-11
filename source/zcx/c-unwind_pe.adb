@@ -160,7 +160,7 @@ package body C.unwind_pe is
                s2 : stdint.int16_t;
             when DW_EH_PE_sdata4 =>
                s4 : stdint.int32_t;
-            when others => --  DW_EH_PE_sdata8
+            when others => -- DW_EH_PE_sdata8
                s8 : stdint.int64_t;
          end case;
       end record;
