@@ -16,7 +16,7 @@ procedure doc is
 	Parse_Error : exception;
 	Extended_Style_Error : exception;
 	Mismatch_Error : exception;
-	type Unit_Kind is (Standard_Unit, Extended_Unit, Implementation_Unit);
+	type Unit_Kind is (Standard_Unit, Extended_Unit, Runtime_Unit, Implementation_Unit);
 	type Unit_Contents is limited record
 		File_Name : aliased Ada.Strings.Unbounded.Unbounded_String;
 		Relative_Name : aliased Ada.Strings.Unbounded.Unbounded_String;
@@ -79,10 +79,8 @@ procedure doc is
 				declare
 					Line : constant String := Ada.Text_IO.Get_Line (File);
 				begin
-					if Line'Length >= 2 and then Line (1 .. 2) = "--" then
-						if (Line'Length >= 7 and then Line (1 .. 7) = "--  Ada")
-							or else Line = "--  separated and auto-loaded by compiler"
-						then
+					if Start_With (Line, "--") then
+						if Start_With (Line, "--  Ada") or else Line = "--  separated and auto-loaded by compiler" then
 							Kind := Standard_Unit;
 							exit;
 						elsif Start_With (Line, "--  extended ") then
@@ -104,12 +102,17 @@ procedure doc is
 							Kind := Extended_Unit;
 							Reference := +Line (Line'First + 25 .. Line'Last);
 							exit;
-						elsif (Line'Length >= 18 and then Line (1 .. 18) = "--  implementation") then
+						elsif Start_With (Line, "--  runtime") then
+							Kind := Runtime_Unit;
+							if Line /= "--  runtime unit" and then not Start_With (Line, "--  runtime unit ") then
+								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
+								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);
+							end if;
+							exit;
+						elsif Start_With (Line, "--  implementation") then
 							Kind := Implementation_Unit;
 							exit;
-						elsif (Line'Length >= 8 and then Line (1 .. 8) = "--  with")
-							or else (Line'Length >= 8 and then Line (1 .. 8) = "--  diff")
-						then
+						elsif Start_With (Line, "--  with") or else Start_With (Line, "--  diff") then
 							null; -- skip
 						else
 							raise Unknown_Unit_Kind_Error with Name & " """ & Line & """";
@@ -373,7 +376,7 @@ procedure doc is
 					if not Document.Is_Null then
 						Ada.Strings.Unbounded.Append (Document, ASCII.LF);
 					end if;
-				when Implementation_Unit =>
+				when Runtime_Unit | Implementation_Unit =>
 					null;
 			end case;
 		end;
