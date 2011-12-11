@@ -71,12 +71,12 @@ private
 
    package No_Primitives is
 
-      procedure Write (
-         Stream : not null access Root_Stream_Type'Class;
-         Object : Buffer);
       procedure Read (
          Stream : not null access Root_Stream_Type'Class;
          Object : out Buffer) is null; -- "out" parameter destructs size info
+      procedure Write (
+         Stream : not null access Root_Stream_Type'Class;
+         Object : Buffer);
 
    end No_Primitives;
 

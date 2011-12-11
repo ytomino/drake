@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  generic implementation of Ada.Strings.Unbounded
-with Ada.Unchecked_Deallocation;
 with Ada.Streams;
+with Ada.Unchecked_Deallocation;
 with System.Arrays;
 private with Ada.Finalization;
 private with System.Reference_Counting;
@@ -42,13 +42,12 @@ package Ada.Strings.Generic_Unbounded is
 
    function To_Unbounded_String (Source : String_Type)
       return Unbounded_String;
-
-   function To_Unbounded_String (Length : Natural)
-      return Unbounded_String;
-
    --  extended for shorthand
    function "+" (Source : String_Type) return Unbounded_String
       renames To_Unbounded_String;
+
+   function To_Unbounded_String (Length : Natural)
+      return Unbounded_String;
 
    function To_String (Source : Unbounded_String) return String_Type;
 
