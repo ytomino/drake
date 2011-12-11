@@ -1,6 +1,7 @@
 with Ada.Strings.Fixed;
 with Ada.Strings.Bounded;
 with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded_Strings;
 with Ada.Strings.Wide_Fixed;
 with Ada.Strings.Wide_Bounded;
 with Ada.Strings.Wide_Unbounded;
@@ -87,9 +88,11 @@ begin
 		use type System.Address;
 		U, V : aliased Ada.Strings.Unbounded.Unbounded_String;
 		A : System.Address;
+		package CP is new Ada.Strings.Unbounded_Strings.Generic_Constant (new String'("CONSTANT"));
 	begin
 		pragma Assert (U = "");
 		U := +"B";
+		Ada.Debug.Put (Integer'Image (U.Capacity));
 		pragma Assert (U > "A");
 		pragma Assert (U = "B");
 		pragma Assert (U < "C");
@@ -108,6 +111,15 @@ begin
 		Ada.Strings.Unbounded.Delete (V, 2, 3);
 		pragma Assert (V.Constant_Reference.Element.all'Address = A); -- keep area
 		pragma Assert (V.Reference.Element.all = "145V");
+		U := CP.Value;
+		A := U.Constant_Reference.Element.all'Address;
+		V := U; -- sharing
+		pragma Assert (U = "CONSTANT");
+		Ada.Strings.Unbounded.Append (V, "V"); -- reallocating
+		pragma Assert (U = "CONSTANT");
+		pragma Assert (V = "CONSTANTV");
+		pragma Assert (U.Constant_Reference.Element.all'Address = A);
+		pragma Assert (V.Constant_Reference.Element.all'Address /= A);
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end str;

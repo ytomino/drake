@@ -37,10 +37,15 @@ package Ada.Strings.Generic_Unbounded is
 
    --  extended
    procedure Set_Length (Source : in out Unbounded_String; Length : Natural);
+   function Capacity (Source : Unbounded_String'Class) return Natural;
+   pragma Inline (Capacity);
 
    type String_Access is access all String_Type;
 --  procedure Free (X : in out String_Access);
    procedure Free is new Unchecked_Deallocation (String_Type, String_Access);
+
+   --  extended
+   type String_Constant_Access is access constant String_Type;
 
    --  Conversion, Concatenation, and Selection functions
 
@@ -618,22 +623,30 @@ package Ada.Strings.Generic_Unbounded is
       with function Fixed_Hash (Key : String_Type) return Hash_Type;
    function Generic_Hash (Key : Unbounded_String) return Hash_Type;
 
+   --  for making constant Unbounded_String without dynamic allocation
+   generic
+      S : not null String_Constant_Access;
+   package Generic_Constant is
+      function Value return Unbounded_String;
+   end Generic_Constant;
+
 private
 
-   type Data (Capacity : Natural) is limited record
+   type Data is limited record
       Reference_Count : aliased System.Reference_Counting.Counter;
       Max_Length : aliased Natural;
-      Items : aliased String_Type (1 .. Capacity);
+      Items : not null String_Access;
+      --  the storage be allocated in here
    end record;
    pragma Suppress_Initialization (Data);
 
    type Data_Access is access all Data;
 
+   Empty_String : aliased constant String_Type := (1 .. 0 => <>);
    Empty_Data : aliased constant Data := (
-      Capacity => 0,
       Reference_Count => System.Reference_Counting.Static,
       Max_Length => 0,
-      Items => <>);
+      Items => Empty_String'Unrestricted_Access);
 
    type Unbounded_String is new Finalization.Controlled with record
       Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;
