@@ -28,4 +28,20 @@ private
    type Root_Storage_Pool is
       abstract new Ada.Finalization.Limited_Controlled with null record;
 
+   --  required for allocation with explicit 'Storage_Pool by compiler
+   --  (s-stopoo.ads)
+   procedure Allocate_Any (
+      Pool : in out Root_Storage_Pool'Class;
+      Storage_Address : out Address;
+      Size_In_Storage_Elements : Storage_Elements.Storage_Count;
+      Alignment : Storage_Elements.Storage_Count);
+
+   --  required for deallocation with explicit 'Storage_Pool by compiler
+   --  (s-stopoo.ads)
+   procedure Deallocate_Any (
+      Pool : in out Root_Storage_Pool'Class;
+      Storage_Address : Address;
+      Size_In_Storage_Elements : Storage_Elements.Storage_Count;
+      Alignment : Storage_Elements.Storage_Count);
+
 end System.Storage_Pools;
