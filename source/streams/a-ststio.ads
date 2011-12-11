@@ -4,6 +4,7 @@ with Ada.IO_Modes;
 private with Ada.Finalization;
 limited private with Ada.Streams.Stream_IO.Inside;
 package Ada.Streams.Stream_IO is
+   pragma Preelaborate; -- AI12-0010-1
 
    type Stream_Access is access all Root_Stream_Type'Class;
 

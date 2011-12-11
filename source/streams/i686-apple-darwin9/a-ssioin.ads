@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  implementation unit
 with C;
 package Ada.Streams.Stream_IO.Inside is
+   pragma Preelaborate;
 
    --  handle of operating system
 

@@ -48,6 +48,7 @@ pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Interfaces;
 package Ada.Numerics.MT19937 is
+   pragma Preelaborate;
 
    subtype Cardinal is Interfaces.Unsigned_32;
    type Cardinal_Vector is array (Natural range <>) of Cardinal;
