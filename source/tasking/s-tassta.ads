@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with Ada.Real_Time;
 with System.Parameters;
 with System.Task_Info;

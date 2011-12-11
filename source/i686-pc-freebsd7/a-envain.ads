@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 with C;
 package Ada.Environment_Variables.Inside is
    pragma Preelaborate;

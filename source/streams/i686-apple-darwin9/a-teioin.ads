@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 with Ada.Streams.Stream_IO.Inside.Standards;
 package Ada.Text_IO.Inside is
 

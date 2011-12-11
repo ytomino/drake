@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Text_IO.Inside.Wide is
 
    --  for Wide_Text_IO, Wide_Wide_Text_IO

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Storage_Elements;
 with System.Storage_Pools;
 package System.Pool_Size is

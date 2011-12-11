@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 pragma Compiler_Unit;
---  implementation package
+--  runtime unit
 with System.Unsigned_Types;
 package System.Formatting is
    pragma Pure;

@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 pragma Compiler_Unit;
---  implementation package
+--  runtime unit
 package System.Debug is
    pragma Preelaborate;
 

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 procedure System.Long_Long_Float_Divide (
    Left, Right : Long_Long_Float;
    Quotient, Remainder : out Long_Long_Float);

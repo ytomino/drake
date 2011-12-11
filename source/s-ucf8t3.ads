@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package System.UTF_Conversions.From_8_To_32 is
    pragma Pure;
 

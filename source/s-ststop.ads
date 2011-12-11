@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with Ada.Streams.Block_Transmission;
 package System.Strings.Stream_Ops is
    pragma Pure;

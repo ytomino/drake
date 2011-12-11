@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 pragma Compiler_Unit;
---  implementation unit
+--  runtime unit
 private with C.sys.signal;
 package System.Termination is
    pragma Preelaborate;

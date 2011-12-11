@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package Ada.Text_IO.Inside.Formatting is
 
    --  for Integer_IO, Modular_IO, Float_IO, Fixed_IO

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with Ada.IO_Exceptions;
 with Ada.Streams;
 with System.Unsigned_Types;

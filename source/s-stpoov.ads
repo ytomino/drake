@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package for System.Initialization
+--  implementation unit for System.Initialization
 package System.Storage_Pools.Overlay is
    pragma Preelaborate;
 

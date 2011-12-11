@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 with System.Storage_Elements;
 package Ada.Tags.Inside is
    pragma Preelaborate;

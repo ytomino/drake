@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 procedure System.Formatting.Fixed_Image (
    To : out String; -- To'Length >= T'Fore + T'Aft + 5 (16#.#)
    Last : out Natural;

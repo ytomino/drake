@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Long_Long_Float_Machine_Rounding;
 package System.Fat_LLF is
    pragma Pure;
