@@ -24,6 +24,7 @@
 #include <fnmatch.h> /* wildcard */
 #include <termios.h> /* terminal control */
 #include <stdlib.h> /* memory op, abort */
+#include <sys/socket.h> /* socket */
 #include <pthread.h> /* tasking */
 #include <sys/syscall.h>
 #endif
@@ -31,9 +32,11 @@
 #if defined(__APPLE__)
 #include <crt_externs.h> /* environment variable */
 #include <copyfile.h> /* copyfile */
+#include <malloc/malloc.h>
 #endif
 #if defined(__FreeBSD__)
 #include <pthread_np.h> /* pthread_attr_get_np */
+#include <malloc_np.h>
 #endif
 
 #if defined(__unix__) || defined(__APPLE__)
