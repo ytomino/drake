@@ -104,6 +104,7 @@ begin
 		Ada.Debug.Put (Integer'Image (T'Width));
 		Ada.Debug.Put (Integer'Image (T'Wide_Width));
 		Ada.Debug.Put (Integer'Image (T'Wide_Wide_Width));
+		Ada.Debug.Put (Integer'Image (T'Fore));
 	end;
 	declare
 		subtype T is Short_Fixed range Short_Fixed'First .. Short_Fixed'Value (Short_Fixed'Image (Short_Fixed'Last));
@@ -111,6 +112,7 @@ begin
 		Ada.Debug.Put (Integer'Image (T'Width));
 		Ada.Debug.Put (Integer'Image (T'Wide_Width));
 		Ada.Debug.Put (Integer'Image (T'Wide_Wide_Width));
+		Ada.Debug.Put (Integer'Image (T'Fore));
 	end;
 	declare
 		subtype T is Long_Fixed range Long_Fixed'First .. Long_Fixed'Value (Long_Fixed'Image (Long_Fixed'Last));
@@ -118,5 +120,6 @@ begin
 		Ada.Debug.Put (Integer'Image (T'Width));
 		Ada.Debug.Put (Integer'Image (T'Wide_Width));
 		Ada.Debug.Put (Integer'Image (T'Wide_Wide_Width));
+		Ada.Debug.Put (Integer'Image (T'Fore));
 	end;
 end width;

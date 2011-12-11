@@ -1,6 +1,33 @@
 pragma License (Unrestricted);
 --  implementation unit
+with System.Formatting;
 package Ada.Text_IO.Inside.Formatting is
+
+   --  for Integer_IO
+   procedure Integer_Image (
+      To : out String;
+      Last : out Natural;
+      Item : Integer;
+      Base : Number_Base);
+   procedure Integer_Image (
+      To : out String;
+      Last : out Natural;
+      Item : Long_Long_Integer;
+      Base : Number_Base);
+
+   --  for Modular_IO
+   procedure Modular_Image (
+      To : out String;
+      Last : out Natural;
+      Item : System.Formatting.Unsigned;
+      Base : Number_Base);
+   procedure Modular_Image (
+      To : out String;
+      Last : out Natural;
+      Item : System.Formatting.Longest_Unsigned;
+      Base : Number_Base);
+
+   --  for Modular_IO
 
    --  for Integer_IO, Modular_IO, Float_IO, Fixed_IO
    function Get_Numeric_Literal (File : File_Type; Real : Boolean)

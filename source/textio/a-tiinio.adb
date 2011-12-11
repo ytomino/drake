@@ -1,4 +1,3 @@
-with Ada.Formatting.Inside;
 with Ada.Text_IO.Inside.Formatting;
 with System.Val_Int;
 with System.Val_LLI;
@@ -17,21 +16,17 @@ package body Ada.Text_IO.Integer_IO is
       Base : Number_Base) is
    begin
       if Num'Size > Integer'Size then
-         Formatting.Inside.Integer_Image (
+         Inside.Formatting.Integer_Image (
             To,
             Last,
             Long_Long_Integer (Item),
-            Base => Base,
-            Zero_Sign => Formatting.None,
-            Plus_Sign => Formatting.None);
+            Base);
       else
-         Formatting.Inside.Integer_Image (
+         Inside.Formatting.Integer_Image (
             To,
             Last,
             Integer (Item),
-            Base => Base,
-            Zero_Sign => Formatting.None,
-            Plus_Sign => Formatting.None);
+            Base);
       end if;
    end Put_To_Field;
 
@@ -132,7 +127,7 @@ package body Ada.Text_IO.Integer_IO is
       Width : Field := Default_Width;
       Base : Number_Base := Default_Base)
    is
-      S : String (1 .. Formatting.Inside.Integer_Width);
+      S : String (1 .. 4 + Num'Width + Width); -- "16##"
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Base);
@@ -170,7 +165,7 @@ package body Ada.Text_IO.Integer_IO is
       Item : Num;
       Base : Number_Base := Default_Base)
    is
-      S : String (1 .. Formatting.Inside.Integer_Width);
+      S : String (1 .. To'Length);
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Base);

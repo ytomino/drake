@@ -100,6 +100,136 @@ package body Ada.Text_IO.Inside.Formatting is
 
    --  implementation
 
+   procedure Integer_Image (
+      To : out String;
+      Last : out Natural;
+      Item : Integer;
+      Base : Number_Base)
+   is
+      Unsigned_Item : System.Formatting.Unsigned;
+   begin
+      Last := To'First - 1;
+      if Item < 0 then
+         Last := Last + 1;
+         To (Last) := '-';
+         Unsigned_Item := System.Formatting.Unsigned'Mod (-Item);
+      else
+         Unsigned_Item := System.Formatting.Unsigned (Item);
+      end if;
+      Modular_Image (
+         To (Last + 1 .. To'Last),
+         Last,
+         Unsigned_Item,
+         Base);
+   end Integer_Image;
+
+   procedure Integer_Image (
+      To : out String;
+      Last : out Natural;
+      Item : Long_Long_Integer;
+      Base : Number_Base)
+   is
+      Unsigned_Item : System.Formatting.Longest_Unsigned;
+   begin
+      Last := To'First - 1;
+      if Item < 0 then
+         Last := Last + 1;
+         To (Last) := '-';
+         Unsigned_Item := System.Formatting.Longest_Unsigned'Mod (-Item);
+      else
+         Unsigned_Item := System.Formatting.Longest_Unsigned (Item);
+      end if;
+      Modular_Image (
+         To (Last + 1 .. To'Last),
+         Last,
+         Unsigned_Item,
+         Base);
+   end Integer_Image;
+
+   procedure Modular_Image (
+      To : out String;
+      Last : out Natural;
+      Item : System.Formatting.Unsigned;
+      Base : Number_Base)
+   is
+      Error : Boolean;
+   begin
+      Last := To'First - 1;
+      if Base /= 10 then
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Base),
+            To (Last + 1 .. To'Last),
+            Last,
+            Error => Error);
+         if Error then
+            raise Layout_Error;
+         end if;
+         Last := Last + 1;
+         if Last > To'Last then
+            raise Layout_Error;
+         end if;
+         To (Last) := '#';
+      end if;
+      System.Formatting.Image (
+         Item,
+         To (Last + 1 .. To'Last),
+         Last,
+         Base => Base,
+         Error => Error);
+      if Error then
+         raise Layout_Error;
+      end if;
+      if Base /= 10 then
+         Last := Last + 1;
+         if Last > To'Last then
+            raise Layout_Error;
+         end if;
+         To (Last) := '#';
+      end if;
+   end Modular_Image;
+
+   procedure Modular_Image (
+      To : out String;
+      Last : out Natural;
+      Item : System.Formatting.Longest_Unsigned;
+      Base : Number_Base)
+   is
+      Error : Boolean;
+   begin
+      Last := To'First - 1;
+      if Base /= 10 then
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Base),
+            To (Last + 1 .. To'Last),
+            Last,
+            Error => Error);
+         if Error then
+            raise Layout_Error;
+         end if;
+         Last := Last + 1;
+         if Last > To'Last then
+            raise Layout_Error;
+         end if;
+         To (Last) := '#';
+      end if;
+      System.Formatting.Image (
+         Item,
+         To (Last + 1 .. To'Last),
+         Last,
+         Base => Base,
+         Error => Error);
+      if Error then
+         raise Layout_Error;
+      end if;
+      if Base /= 10 then
+         Last := Last + 1;
+         if Last > To'Last then
+            raise Layout_Error;
+         end if;
+         To (Last) := '#';
+      end if;
+   end Modular_Image;
+
    function Get_Numeric_Literal (File : File_Type; Real : Boolean)
       return String is
    begin

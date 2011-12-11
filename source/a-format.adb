@@ -1,4 +1,3 @@
-with Ada.Formatting.Inside;
 with System.Formatting.Decimal_Image;
 with System.Formatting.Float_Image;
 with System.Formatting.Fixed_Image;
@@ -6,155 +5,121 @@ package body Ada.Formatting is
    pragma Suppress (All_Checks);
 
    function Integer_Image (Item : T) return String is
-      Result : String (1 .. Inside.Integer_Width + Width);
-      Last : Natural;
+      Result : String (
+         1 ..
+         4 + Long_Long_Integer'Width + Width); -- "16##"
+      Last : Natural := Result'First - 1;
+      Error : Boolean;
    begin
-      case Form is
-         when Simple =>
-            Last := Result'First - 1;
-            declare
-               Error : Boolean;
-            begin
-               if Item < 0 then
-                  if Minus_Sign /= None then
-                     Last := Last + 1;
-                     Result (Last) := Minus_Sign;
-                  end if;
-               elsif Item > 0 then
-                  if Plus_Sign /= None then
-                     Last := Last + 1;
-                     Result (Last) := Plus_Sign;
-                  end if;
-               else
-                  if Zero_Sign /= None then
-                     Last := Last + 1;
-                     Result (Last) := Zero_Sign;
-                  end if;
-               end if;
-               if T'Size > System.Formatting.Unsigned'Size then
-                  System.Formatting.Image (
-                     System.Formatting.Longest_Unsigned (abs Item),
-                     Result (Last + 1 .. Result'Last),
-                     Last,
-                     Base => Base,
-                     Casing => System.Formatting.Casing_Type'Enum_Val (
-                        Casing_Type'Enum_Rep (Casing)),
-                     Width => Width,
-                     Padding => Padding,
-                     Error => Error);
-               else
-                  System.Formatting.Image (
-                     System.Formatting.Unsigned (abs Item),
-                     Result (Last + 1 .. Result'Last),
-                     Last,
-                     Base => Base,
-                     Casing => System.Formatting.Casing_Type'Enum_Val (
-                        Casing_Type'Enum_Rep (Casing)),
-                     Width => Width,
-                     Padding => Padding,
-                     Error => Error);
-               end if;
-            end;
-         when Ada =>
-            if T'Size > Integer'Size then
-               Inside.Integer_Image (
-                  Result,
-                  Last,
-                  Long_Long_Integer (Item),
-                  Minus_Sign => Minus_Sign,
-                  Zero_Sign => Zero_Sign,
-                  Plus_Sign => Plus_Sign,
-                  Base => Base,
-                  Casing => Casing,
-                  Width => Width,
-                  Padding => Padding);
-            else
-               Inside.Integer_Image (
-                  Result,
-                  Last,
-                  Integer (Item),
-                  Minus_Sign => Minus_Sign,
-                  Zero_Sign => Zero_Sign,
-                  Plus_Sign => Plus_Sign,
-                  Base => Base,
-                  Casing => Casing,
-                  Width => Width,
-                  Padding => Padding);
-            end if;
-      end case;
+      if Item < 0 then
+         if Signs (-1) /= None then
+            Last := Last + 1;
+            Result (Last) := Signs (-1);
+         end if;
+      elsif Item > 0 then
+         if Signs (1) /= None then
+            Last := Last + 1;
+            Result (Last) := Signs (1);
+         end if;
+      else
+         if Signs (0) /= None then
+            Last := Last + 1;
+            Result (Last) := Signs (0);
+         end if;
+      end if;
+      if Form = Ada and then Base /= 10 then
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Base),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Error => Error);
+         Last := Last + 1;
+         Result (Last) := '#';
+      end if;
+      if T'Size > System.Formatting.Unsigned'Size then
+         System.Formatting.Image (
+            System.Formatting.Longest_Unsigned (abs Item),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Base => Base,
+            Casing => System.Formatting.Casing_Type'Enum_Val (
+               Casing_Type'Enum_Rep (Casing)),
+            Width => Width,
+            Padding => Padding,
+            Error => Error);
+      else
+         System.Formatting.Image (
+            System.Formatting.Unsigned (abs Item),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Base => Base,
+            Casing => System.Formatting.Casing_Type'Enum_Val (
+               Casing_Type'Enum_Rep (Casing)),
+            Width => Width,
+            Padding => Padding,
+            Error => Error);
+      end if;
+      if Form = Ada and then Base /= 10 then
+         Last := Last + 1;
+         Result (Last) := '#';
+      end if;
       return Result (1 .. Last);
    end Integer_Image;
 
    function Modular_Image (Item : T) return String is
-      Result : String (1 .. Inside.Integer_Width + Width);
-      Last : Natural;
+      Result : String (
+         1 ..
+         4 + System.Formatting.Longest_Unsigned'Width + Width); -- "16##"
+      Last : Natural := Result'First - 1;
+      Error : Boolean;
    begin
-      case Form is
-         when Simple =>
-            Last := Result'First - 1;
-            declare
-               Error : Boolean;
-            begin
-               if Item > 0 then
-                  if Plus_Sign /= None then
-                     Last := Last + 1;
-                     Result (Last) := Plus_Sign;
-                  end if;
-               else
-                  if Zero_Sign /= None then
-                     Last := Last + 1;
-                     Result (Last) := Zero_Sign;
-                  end if;
-               end if;
-               if T'Size > System.Formatting.Unsigned'Size then
-                  System.Formatting.Image (
-                     System.Formatting.Longest_Unsigned (Item),
-                     Result (Last + 1 .. Result'Last),
-                     Last,
-                     Base => Base,
-                     Casing => System.Formatting.Casing_Type'Enum_Val (
-                        Casing_Type'Enum_Rep (Casing)),
-                     Width => Width,
-                     Padding => Padding,
-                     Error => Error);
-               else
-                  System.Formatting.Image (
-                     System.Formatting.Unsigned (Item),
-                     Result (Last + 1 .. Result'Last),
-                     Last,
-                     Base => Base,
-                     Casing => System.Formatting.Casing_Type'Enum_Val (
-                        Casing_Type'Enum_Rep (Casing)),
-                     Width => Width,
-                     Padding => Padding,
-                     Error => Error);
-               end if;
-            end;
-         when Ada =>
-            if T'Size > System.Formatting.Unsigned'Size then
-               Inside.Modular_Image (
-                  Result,
-                  Last,
-                  System.Formatting.Longest_Unsigned (Item),
-                  Zero_Sign => Zero_Sign,
-                  Plus_Sign => Plus_Sign,
-                  Base => Base,
-                  Casing => Casing,
-                  Width => Width,
-                  Padding => Padding);
-            else
-               Inside.Modular_Image (
-                  Result,
-                  Last,
-                  System.Formatting.Unsigned (Item),
-                  Zero_Sign => Zero_Sign,
-                  Plus_Sign => Plus_Sign,
-                  Base => Base,
-                  Casing => Casing,
-                  Width => Width,
-                  Padding => Padding);
-            end if;
-      end case;
+      if Item > 0 then
+         if Signs (1) /= None then
+            Last := Last + 1;
+            Result (Last) := Signs (1);
+         end if;
+      else
+         if Signs (0) /= None then
+            Last := Last + 1;
+            Result (Last) := Signs (0);
+         end if;
+      end if;
+      if Form = Ada and then Base /= 10 then
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Base),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Error => Error);
+         Last := Last + 1;
+         Result (Last) := '#';
+      end if;
+      if T'Size > System.Formatting.Unsigned'Size then
+         System.Formatting.Image (
+            System.Formatting.Longest_Unsigned (Item),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Base => Base,
+            Casing => System.Formatting.Casing_Type'Enum_Val (
+               Casing_Type'Enum_Rep (Casing)),
+            Width => Width,
+            Padding => Padding,
+            Error => Error);
+      else
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Item),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Base => Base,
+            Casing => System.Formatting.Casing_Type'Enum_Val (
+               Casing_Type'Enum_Rep (Casing)),
+            Width => Width,
+            Padding => Padding,
+            Error => Error);
+      end if;
+      if Form = Ada and then Base /= 10 then
+         Last := Last + 1;
+         Result (Last) := '#';
+      end if;
       return Result (1 .. Last);
    end Modular_Image;
 
@@ -168,9 +133,9 @@ package body Ada.Formatting is
          Result,
          Last,
          Long_Long_Float (Item),
-         Minus_Sign => Minus_Sign,
-         Zero_Sign => Zero_Sign,
-         Plus_Sign => Plus_Sign,
+         Minus_Sign => Signs (-1),
+         Zero_Sign => Signs (0),
+         Plus_Sign => Signs (1),
          Base => Base,
          Base_Form => Form = Ada and then Base /= 10,
          Casing => System.Formatting.Casing_Type'Enum_Val (
@@ -201,9 +166,9 @@ package body Ada.Formatting is
             Result,
             Last,
             Long_Long_Float (Item),
-            Minus_Sign => Minus_Sign,
-            Zero_Sign => Zero_Sign,
-            Plus_Sign => Plus_Sign,
+            Minus_Sign => Signs (-1),
+            Zero_Sign => Signs (0),
+            Plus_Sign => Signs (1),
             Base => Base,
             Base_Form => Form = Ada and then Base /= 10,
             Casing => System.Formatting.Casing_Type'Enum_Val (
@@ -222,9 +187,9 @@ package body Ada.Formatting is
             Result,
             Last,
             Long_Long_Float (Item),
-            Minus_Sign => Minus_Sign,
-            Zero_Sign => Zero_Sign,
-            Plus_Sign => Plus_Sign,
+            Minus_Sign => Signs (-1),
+            Zero_Sign => Signs (0),
+            Plus_Sign => Signs (1),
             Base => Base,
             Base_Form => Form = Ada and then Base /= 10,
             Casing => System.Formatting.Casing_Type'Enum_Val (
@@ -248,9 +213,9 @@ package body Ada.Formatting is
             Result,
             Last,
             Long_Long_Float (Item),
-            Minus_Sign => Minus_Sign,
-            Zero_Sign => Zero_Sign,
-            Plus_Sign => Plus_Sign,
+            Minus_Sign => Signs (-1),
+            Zero_Sign => Signs (0),
+            Plus_Sign => Signs (1),
             Fore_Width => Fore_Width,
             Fore_Padding => Fore_Padding,
             Aft_Width => Aft_Width,
@@ -266,9 +231,9 @@ package body Ada.Formatting is
             Last,
             Long_Long_Integer'Integer_Value (Item),
             T'Scale,
-            Minus_Sign => Minus_Sign,
-            Zero_Sign => Zero_Sign,
-            Plus_Sign => Plus_Sign,
+            Minus_Sign => Signs (-1),
+            Zero_Sign => Signs (0),
+            Plus_Sign => Signs (1),
             Fore_Width => Fore_Width,
             Fore_Padding => Fore_Padding,
             Aft_Width => Aft_Width);
