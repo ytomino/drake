@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
-with System.Arrays;
+with Ada.References;
 private with Ada.Finalization;
 private with Ada.Streams;
 private with System.Reference_Counting;
@@ -337,7 +337,7 @@ package Ada.Containers.Vectors is
 
    --  extended
    type Element_Array is array (Index_Type range <>) of aliased Element_Type;
-   package Slicing is new System.Arrays.Generic_Slicing (
+   package Slicing is new Ada.References.Generic_Slicing (
       Index_Type,
       Element_Type,
       Element_Array);

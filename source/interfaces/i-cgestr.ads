@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  generic implementation of Interfaces.C.Strings
-with System.Arrays;
+with Ada.References;
 with Interfaces.C.Pointers;
 generic
    type Character_Type is (<>);
@@ -12,6 +12,10 @@ generic
       Element => Element,
       Element_Array => Element_Array,
       Default_Terminator => Element'Val (0));
+   with package Slicing is new Ada.References.Generic_Slicing (
+      Positive,
+      Character_Type,
+      String_Type);
 package Interfaces.C.Generic_Strings is
    pragma Preelaborate;
 
@@ -153,11 +157,6 @@ package Interfaces.C.Generic_Strings is
       Item : not null access Element;
       Offset : size_t;
       Source : not null access constant Element);
-
-   package Slicing is new System.Arrays.Generic_Slicing (
-      Positive,
-      Character_Type,
-      String_Type);
 
    function Reference (
       Item : not null access Element;

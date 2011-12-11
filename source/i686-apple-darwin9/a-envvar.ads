@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
-with System.Arrays;
+with Ada.References.String;
 private with C;
 package Ada.Environment_Variables is
    pragma Preelaborate;
@@ -17,11 +17,7 @@ package Ada.Environment_Variables is
       Process : not null access procedure (Name, Value : String));
 
    --  extended
-   --  There are iterator functions like AI05-0139-2 style.
-   package Slicing is new System.Arrays.Generic_Slicing (
-      Positive,
-      Character,
-      String);
+   --  There is an iterator for AI12-0009-1 (?)
    type Iterator is limited private;
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -29,8 +25,10 @@ package Ada.Environment_Variables is
    function Iterate return Iterator;
    function First (Object : Iterator) return Cursor;
    function Next (Object : Iterator; Position : Cursor) return Cursor;
-   function Name (Position : Cursor) return Slicing.Constant_Reference_Type;
-   function Value (Position : Cursor) return Slicing.Constant_Reference_Type;
+   function Name (Position : Cursor)
+      return References.String.Slicing.Constant_Reference_Type;
+   function Value (Position : Cursor)
+      return References.String.Slicing.Constant_Reference_Type;
 
 private
 

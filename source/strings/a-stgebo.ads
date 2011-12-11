@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  generic implementation of Ada.Strings.Bounded
+with Ada.References;
 with Ada.Streams;
-with System.Arrays;
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
@@ -11,6 +11,10 @@ generic
    with procedure Write (
       Stream : not null access Streams.Root_Stream_Type'Class;
       Item : String_Type);
+   with package Slicing is new References.Generic_Slicing (
+      Positive,
+      Character_Type,
+      String_Type);
 package Ada.Strings.Generic_Bounded is
    pragma Preelaborate;
 
@@ -94,10 +98,6 @@ package Ada.Strings.Generic_Bounded is
    pragma Inline (">=");
 
    --  extended
-   package Slicing is new System.Arrays.Generic_Slicing (
-      Positive,
-      Character_Type,
-      String_Type);
    function Constant_Reference (
       Source : not null access constant Bounded_String)
       return Slicing.Constant_Reference_Type;

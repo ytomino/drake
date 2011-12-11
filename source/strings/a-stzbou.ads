@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+with Ada.References.Wide_Wide_String;
 with Ada.Strings.Generic_Bounded;
 with Ada.Strings.Wide_Wide_Functions;
 with Ada.Strings.Wide_Wide_Functions.Maps;
@@ -12,7 +13,8 @@ package Ada.Strings.Wide_Wide_Bounded is
       Wide_Wide_Character,
       Wide_Wide_String,
       System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO,
-      System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO);
+      System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO,
+      References.Wide_Wide_String.Slicing);
 
    generic
       Max : Positive; -- Maximum length of a Bounded_String

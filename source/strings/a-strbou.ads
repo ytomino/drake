@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+with Ada.References.String;
 with Ada.Strings.Functions;
 with Ada.Strings.Functions.Maps;
 with Ada.Strings.Generic_Bounded;
@@ -12,7 +13,8 @@ package Ada.Strings.Bounded is
       Character,
       String,
       System.Strings.Stream_Ops.String_Read_Blk_IO,
-      System.Strings.Stream_Ops.String_Write_Blk_IO);
+      System.Strings.Stream_Ops.String_Write_Blk_IO,
+      Ada.References.String.Slicing);
 
    generic
       Max : Positive; -- Maximum length of a Bounded_String
