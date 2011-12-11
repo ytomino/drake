@@ -143,6 +143,20 @@ package Ada.Directories is
       Process : not null access procedure (
          Directory_Entry : Directory_Entry_Type));
 
+   --  extended
+   --  There is an iterator for AI12-0009-1 (?)
+   type Iterator is limited private;
+   type Cursor is private;
+   pragma Preelaborable_Initialization (Cursor);
+   function Has_Element (Position : Cursor) return Boolean;
+   function Iterate (Container : Search_Type) return Iterator;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   type Constant_Reference_Type (
+      Element : not null access constant Directory_Entry_Type) is null record;
+   function Constant_Reference (Container : Search_Type; Position : Cursor)
+      return Constant_Reference_Type;
+
    --  Operations on Directory Entries:
 
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
@@ -173,7 +187,7 @@ private
 
    type String_Access is access String;
 
-   type Directory_Entry_Type is limited record
+   type Directory_Entry_Type is record -- not limited in full view
       Path : String_Access := null;
       Entry_Data : aliased C.sys.dirent.struct_dirent;
       State_Data : aliased C.sys.stat.struct_stat;
@@ -184,12 +198,21 @@ private
       Path : String_Access;
       Pattern : C.char_ptr;
       Filter : Filter_Type;
+      Count : Natural;
       Has_Next : Boolean;
       Data : aliased C.sys.dirent.struct_dirent;
    end record;
 
    overriding procedure Finalize (Search : in out Search_Type);
    procedure End_Search (Search : in out Search_Type) renames Finalize;
+
+   type Iterator is access Search_Type;
+
+   type Cursor is record
+      Search : Iterator := null;
+      Directory_Entry : aliased Directory_Entry_Type;
+      Index : Positive;
+   end record;
 
    --  for Information
    procedure Check_Assigned (Directory_Entry : Directory_Entry_Type);

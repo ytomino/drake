@@ -10,17 +10,35 @@ procedure directories is
 	use type Ada.Calendar.Time;
 begin
 	Ada.Debug.Put ("current user: " & Ada.Permissions.User_Name);
-	-- iteration
+	-- iteration (closure style)
 	declare
+		First : Boolean := True;
 		procedure Process (Directory_Entry : Ada.Directories.Directory_Entry_Type) is
 		begin
+			if First then
+				Ada.Debug.Put (Ada.Directories.Information.Owner (Directory_Entry));
+				Ada.Debug.Put (Ada.Directories.Information.Group (Directory_Entry));
+				First := False;
+			end if;
 			Ada.Debug.Put (Ada.Directories.Simple_Name (Directory_Entry));
-			Ada.Debug.Put (Ada.Directories.Information.Owner (Directory_Entry));
-			Ada.Debug.Put (Ada.Directories.Information.Group (Directory_Entry));
 		end Process;
 	begin
 		Ada.Directories.Search (".", "*", Process => Process'Access);
 	end;
+	-- iteration (iterator style)
+	declare
+		Search : aliased Ada.Directories.Search_Type := Ada.Directories.Start_Search (".");
+		Ite : Ada.Directories.Iterator := Ada.Directories.Iterate (Search);
+		Position : Ada.Directories.Cursor := Ada.Directories.First (Ite);
+	begin
+		while Ada.Directories.Has_Element (Position) loop
+			Ada.Debug.Put (Ada.Directories.Simple_Name (Ada.Directories.Constant_Reference (Search, Position).Element.all));
+			Position := Ada.Directories.Next (Ite, Position);
+		end loop;
+	end;
+--	for I of Ada.Directories.Start_Search (".") loop
+--		Ada.Debug.Put (Ada.Directories.Simple_Name (I));
+--	end loop;
 	-- copy
 	begin
 		Ada.Directories.Copy_File ("%%%%NOTHING1%%%%", "%%%%NOTHING2%%%%");

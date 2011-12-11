@@ -418,6 +418,8 @@ package body Ada.Directories is
                raise Use_Error;
             end if;
          end;
+         --  counting
+         Search.Count := Search.Count + 1;
          --  search next
          loop
             declare
@@ -674,6 +676,7 @@ package body Ada.Directories is
             Term.all := C.char'Val (0);
          end;
          Search.Filter := Filter;
+         Search.Count := 0;
          Search.Has_Next := True;
          loop
             declare
@@ -753,5 +756,54 @@ package body Ada.Directories is
          end case;
       end if;
    end Symbolic_Link;
+
+   --  iterator
+
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      return Position.Search /= null;
+   end Has_Element;
+
+   function Iterate (Container : Search_Type) return Iterator is
+   begin
+      return Container'Unrestricted_Access;
+   end Iterate;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      if Object.Count /= 0 then
+         raise Constraint_Error; -- Status_Error?
+      end if;
+      return Result : Cursor do
+         if More_Entries (Object.all) then
+            Result.Search := Object;
+            Get_Next_Entry (Object.all, Result.Directory_Entry);
+            Result.Index := Object.Count;
+         end if;
+      end return;
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor)
+      return Cursor is
+   begin
+      if Object.Count /= Position.Index then
+         raise Constraint_Error; -- Status_Error?
+      end if;
+      return Result : Cursor do
+         if More_Entries (Object.all) then
+            Result.Search := Object;
+            Get_Next_Entry (Object.all, Result.Directory_Entry);
+            Result.Index := Object.Count;
+         end if;
+      end return;
+   end Next;
+
+   function Constant_Reference (Container : Search_Type; Position : Cursor)
+      return Constant_Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Directory_Entry'Access);
+   end Constant_Reference;
 
 end Ada.Directories;
