@@ -1,21 +1,19 @@
 #include <unwind.h> /* exception mechanism of gcc */
 #include <stdint.h> /* included by unwind-pe.h */
-#if defined(__APPLE__)
-#include <sys/types.h> /* avoiding circular dependency */
-#endif
-#if defined(__FreeBSD__)
-#include <sys/types.h>
-#include <sys/param.h> /* PAGE_SIZE */
-#endif
+
 #if defined(__unix__) || defined(__APPLE__)
+#include <sys/types.h> /* before other system headers */
+#include <signal.h> /* before unistd.h */
 #include <errno.h>
-#include <signal.h> /* signal handler */
+#include <string.h> /* strsignal */
+#include <sys/syscall.h> /* sigreturn */
+#include <sys/mman.h> /* low-level memory op */
+#include <unistd.h> /* low-level I/O */
+#include <stdlib.h> /* memory op, abort */
 #include <time.h> /* time and sleep */
 #include <sys/time.h> /* get current time */
 #include <sys/resource.h> /* get CPU time */
-#include <sys/mman.h> /* memory mapped I/O */
 #include <sys/wait.h> /* waitpid */
-#include <unistd.h> /* low-level I/O */
 #include <pwd.h> /* user info */
 #include <grp.h> /* group info */
 #include <sys/fcntl.h> /* low-level file op */
@@ -23,20 +21,45 @@
 #include <dirent.h> /* directory searching */
 #include <fnmatch.h> /* wildcard */
 #include <termios.h> /* terminal control */
-#include <stdlib.h> /* memory op, abort */
 #include <sys/socket.h> /* socket */
+#include <netdb.h> /* getaddrinfo */
+#include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
-#include <sys/syscall.h>
 #endif
-#include <string.h> /* string op */
 #if defined(__APPLE__)
 #include <crt_externs.h> /* environment variable */
+#include <malloc/malloc.h> /* malloc_size */
 #include <copyfile.h> /* copyfile */
-#include <malloc/malloc.h>
-#endif
-#if defined(__FreeBSD__)
+#elif defined(__FreeBSD__)
+#include <sys/param.h> /* PAGE_SIZE */
+#include <malloc_np.h> /* malloc_usable_size */
 #include <pthread_np.h> /* pthread_attr_get_np */
-#include <malloc_np.h>
+#endif
+
+#if defined(__WINNT__)
+#define UNICODE
+#define WIN32_LEAN_AND_MEAN
+
+/* avoiding circular dependency between windef.h and winnt.h */
+#define CONST const
+#define UCHAR unsigned char
+#define BYTE uint8_t
+#define WORD uint16_t
+#define DWORD uint32_t
+#define PDWORD uint32_t *
+#define WINAPI __stdcall
+#include <winnt.h>
+#undef CONST
+#undef UCHAR
+#undef BYTE
+#undef WORD
+#undef DWORD
+#undef PDWORD
+#undef WINAPI
+
+#include <windows.h>
+#undef UNICODE
+#undef WIN32_LEAN_AND_MEAN
 #endif
 
 #if defined(__unix__) || defined(__APPLE__)
@@ -64,4 +87,7 @@
 #pragma for Ada "sys/signal.h" include "sys/select.h" /* sigset_t */
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
+#endif
+
+#if defined(__WINNT__)
 #endif
