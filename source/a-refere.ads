@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
-package System.Arrays is
-   --  There are helpers for returning sliced pointer of array from function.
+package Ada.References is
+   --  There are helpers for returning sliced pointer of array from a function.
    pragma Pure;
 
    --  magic to carry out ARRAY (F .. L)'Access to out of subprogram
@@ -50,4 +50,4 @@ package System.Arrays is
 
    end Generic_Slicing;
 
-end System.Arrays;
+end Ada.References;

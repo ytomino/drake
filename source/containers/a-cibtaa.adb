@@ -176,7 +176,7 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
                            Level => -1);
       Root : constant Node_Access := Root_Body.Super'Unrestricted_Access;
       Leaf : Node_Access;
-      Current : Node_Access; --  leveling point
+      Current : Node_Access; -- leveling point
    begin
       --  make virtual root to make it easy to parent access
       if Container /= null then
@@ -189,7 +189,7 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
          Leaf := Last (Position.Left);
       elsif Position.Right /= null then
          Leaf := Position.Right;
-         pragma Assert (Leaf.Left = null); --  be balanced
+         pragma Assert (Leaf.Left = null); -- be balanced
       else
          Leaf := Position;
       end if;

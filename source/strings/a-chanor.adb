@@ -237,7 +237,8 @@ package body Ada.Characters.Normalization is
          begin
             for I in D_Map'Range loop
                declare
-                  To : Decomposed_Wide_Wide_String renames D_Map (I).To;
+                  To : Decomposed_Wide_Wide_String
+                     renames D_Map (I).To;
                   To_Last : Natural := Decomposed_Length (To);
                   J : Natural := To_Last;
                begin

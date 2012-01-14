@@ -12,7 +12,7 @@ package body System.Unwind.Handling is
    use type C.size_t;
    use type C.unsigned_char;
    use type C.unsigned_char_const_ptr;
-   use type C.unsigned_int; --  _Unwind_Ptr is unsigned int or unsigned long
+   use type C.unsigned_int; -- _Unwind_Ptr is unsigned int or unsigned long
    use type C.unsigned_long;
    use type C.unsigned_long_long;
    use type C.void_ptr;
@@ -78,7 +78,7 @@ package body System.Unwind.Handling is
                GGE_Conv.To_Pointer (Iter.Private_Data);
          begin
             if I_GCC_Exception = GCC_Exception then
-               if Prev = null then --  top(Current)
+               if Prev = null then -- top(Current)
                   pragma Check (Trace, Debug.Put ("Prev = null"));
                   Iter := I_GCC_Exception.Next_Exception;
                   if Iter = null then
@@ -126,7 +126,7 @@ package body System.Unwind.Handling is
       GCC_Exception : GNAT_GCC_Exception;
       for GCC_Exception'Address use Exception_Object.all'Address;
       landing_pad : C.unwind.Unwind_Ptr;
-      ttype_filter : C.unwind.Unwind_Sword; --  0 => finally, others => handler
+      ttype_filter : C.unwind.Unwind_Sword; -- 0 => finally, others => handler
    begin
       pragma Check (Trace, Debug.Put ("enter"));
       if ABI_Version /= 1 then
@@ -193,7 +193,7 @@ package body System.Unwind.Handling is
                else
                   pragma Check (Trace, Debug.Put (
                      "ttype_encoding = DW_EH_PE_omit"));
-                  ttype_table := null; --  be access violation ?
+                  ttype_table := null; -- be access violation ?
                end if;
                ttype_base := C.unwind_pe.base_of_encoded_value (
                   ttype_encoding,
@@ -332,16 +332,16 @@ package body System.Unwind.Handling is
                end;
             end if;
             if (C.unsigned_int (Phases) and C.unwind.UA_SEARCH_PHASE) /= 0 then
-               if ttype_filter = 0 then --  cleanup
+               if ttype_filter = 0 then -- cleanup
                   if Exception_Class = GNAT_Exception_Class then
                      GCC_Exception.N_Cleanups_To_Trigger :=
-                        GCC_Exception.N_Cleanups_To_Trigger + 1; --  increment
+                        GCC_Exception.N_Cleanups_To_Trigger + 1; -- increment
                      pragma Check (Trace, Debug.Put ("Adjust_N_Cleanups_For"));
                   end if;
                   pragma Check (Trace, Debug.Put ("UA_SEARCH_PHASE, cleanup"));
                   return C.unwind.URC_CONTINUE_UNWIND;
                else
-                  null; --  exception tracing (a-exextr.adb) is not implementd.
+                  null; -- exception tracing (a-exextr.adb) is not implementd.
                   pragma Check (Trace, Debug.Put ("UA_SEARCH_PHASE, handler"));
                   --  shortcut for phase2
                   GCC_Exception.landing_pad := landing_pad;
@@ -355,7 +355,7 @@ package body System.Unwind.Handling is
          and then ttype_filter = 0
       then
          GCC_Exception.N_Cleanups_To_Trigger :=
-            GCC_Exception.N_Cleanups_To_Trigger - 1; --  decrement
+            GCC_Exception.N_Cleanups_To_Trigger - 1; -- decrement
          pragma Check (Trace, Debug.Put ("Adjust_N_Cleanups_For"));
       end if;
       pragma Check (Trace, Debug.Put ("unwind!"));

@@ -1,5 +1,7 @@
 with Ada.Environment_Variables.Inside;
 with Ada.Streams.Stream_IO.Inside;
+with System.Soft_Links;
+with C.errno;
 with C.stdlib;
 with C.unistd;
 with C.sys.fcntl;
@@ -17,7 +19,7 @@ package body Ada.Processes is
    function WIFEXITED (x : C.signed_int) return Boolean;
    function WIFEXITED (x : C.signed_int) return Boolean is
    begin
-      return x mod (8#177# + 1) = 0; --  x & 0177
+      return x mod (8#177# + 1) = 0; -- x & 0177
    end WIFEXITED;
 
    function WEXITSTATUS (x : C.signed_int) return C.signed_int;
@@ -124,7 +126,7 @@ package body Ada.Processes is
             Dummy := C.sys.fcntl.fcntl (2, C.sys.fcntl.F_SETFD, 0);
             Dummy := C.unistd.execve (
                Argument (0),
-               Argument (1)'Access,
+               Argument (0)'Access,
                Environment_Variables.Inside.Environment_Block);
             C_qexit (127);
          end;
@@ -151,19 +153,27 @@ package body Ada.Processes is
       Result : C.sys.types.pid_t;
       Code : aliased C.signed_int;
    begin
-      Result := C.sys.wait.waitpid (
-         C.sys.types.pid_t (Child),
-         Code'Access,
-         0);
-      if Result < 0 then
-         raise Use_Error;
-      else
-         if WIFEXITED (Code) then
-            Status := Command_Line.Exit_Status (WEXITSTATUS (Code));
+      loop
+         System.Soft_Links.Abort_Undefer.all;
+         Result := C.sys.wait.waitpid (
+            C.sys.types.pid_t (Child),
+            Code'Access,
+            0);
+         System.Soft_Links.Abort_Defer.all; -- raise an exception if aborted
+         if Result < 0 then
+            if C.errno.errno /= C.errno.EINTR then
+               raise Use_Error;
+            end if;
+            --  interrupted and the signal is not "abort", then retry
          else
-            Status := -1;
+            if WIFEXITED (Code) then
+               Status := Command_Line.Exit_Status (WEXITSTATUS (Code));
+            else
+               Status := -1;
+            end if;
+            exit;
          end if;
-      end if;
+      end loop;
    end Wait;
 
    procedure Wait (Child : Process) is
@@ -173,8 +183,11 @@ package body Ada.Processes is
       Wait (Child, Dummy);
    end Wait;
 
-   procedure Shell (Command : String; Status : out Command_Line.Exit_Status) is
-      Z_Command : String := Command & Character'Val (0);
+   procedure Shell (
+      Command_Line : String;
+      Status : out Ada.Command_Line.Exit_Status)
+   is
+      Z_Command : String := Command_Line & Character'Val (0);
       C_Command : C.char_array (0 .. Z_Command'Length);
       for C_Command'Address use Z_Command'Address;
       Code : C.signed_int;
@@ -184,18 +197,51 @@ package body Ada.Processes is
          raise Name_Error;
       else
          if WIFEXITED (Code) then
-            Status := Command_Line.Exit_Status (WEXITSTATUS (Code));
+            Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));
          else
             Status := -1;
          end if;
       end if;
    end Shell;
 
-   procedure Shell (Command : String) is
-      Dummy : Command_Line.Exit_Status;
+   procedure Shell (
+      Command_Line : String)
+   is
+      Dummy : Ada.Command_Line.Exit_Status;
       pragma Unreferenced (Dummy);
    begin
-      Shell (Command, Dummy);
+      Shell (Command_Line, Dummy);
    end Shell;
+
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String) is
+   begin
+      if Last >= Command_Line'First then
+         if Last >= Command_Line'Last then
+            raise Constraint_Error;
+         end if;
+         Last := Last + 1;
+         Command_Line (Last) := ' ';
+      end if;
+      for I in Argument'Range loop
+         if Argument (I) = ' ' then
+            if Last + 1 >= Command_Line'Last then
+               raise Constraint_Error;
+            end if;
+            Last := Last + 1;
+            Command_Line (Last) := '\';
+            Last := Last + 1;
+            Command_Line (Last) := ' ';
+         else
+            if Last >= Command_Line'Last then
+               raise Constraint_Error;
+            end if;
+            Last := Last + 1;
+            Command_Line (Last) := Argument (I);
+         end if;
+      end loop;
+   end Append_Argument;
 
 end Ada.Processes;

@@ -33,12 +33,13 @@ package Ada.Strings.Wide_Fixed is
       return Natural
       renames Wide_Functions.Index;
 
+   --  modified
 --  function Index (
 --    Source : Wide_String;
 --    Pattern : Wide_String;
 --    From : Positive;
 --    Going : Direction := Forward;
---    Mapping : Maps.Character_Mapping := Maps.Identity)
+--    Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
 --    return Natural;
    function Index (
       Source : Wide_String;
@@ -56,12 +57,13 @@ package Ada.Strings.Wide_Fixed is
       return Natural
       renames Wide_Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : Wide_String;
 --    Pattern : Wide_String;
 --    From : Positive;
 --    Going : Direction := Forward;
---    Mapping : Maps.Character_Mapping_Function)
+--    Mapping : Wide_Maps.Wide_Character_Mapping_Function)
 --    return Natural;
    function Index (
       Source : Wide_String;
@@ -82,11 +84,12 @@ package Ada.Strings.Wide_Fixed is
       return Natural
       renames Wide_Functions.Maps.Index;
 
+   --  modified
 --  function Index (
---    Source : in Wide_String;
---    Pattern : in Wide_String;
---    Going : in Direction := Forward;
---    Mapping : in Maps.Character_Mapping := Maps.Identity)
+--    Source : Wide_String;
+--    Pattern : Wide_String;
+--    Going : Direction := Forward;
+--    Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
 --    return Natural;
    function Index (
       Source : Wide_String;
@@ -102,11 +105,12 @@ package Ada.Strings.Wide_Fixed is
       return Natural
       renames Wide_Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : Wide_String;
 --    Pattern : Wide_String;
 --    Going : Direction := Forward;
---    Mapping : Maps.Character_Mapping_Function)
+--    Mapping : Wide_Maps.Wide_Character_Mapping_Function)
 --    return Natural;
    function Index (
       Source : Wide_String;
@@ -155,10 +159,11 @@ package Ada.Strings.Wide_Fixed is
       return Natural
       renames Wide_Functions.Index_Non_Blank;
 
+   --  modified
 --  function Count (
 --    Source : Wide_String;
 --    Pattern : Wide_String;
---    Mapping : Maps.Character_Mapping := Maps.Identity)
+--    Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
 --    return Natural;
    function Count (
       Source : Wide_String;
@@ -172,10 +177,11 @@ package Ada.Strings.Wide_Fixed is
       return Natural
       renames Wide_Functions.Maps.Count;
 
+   --  modified
 --  function Count (
 --    Source : Wide_String;
 --    Pattern : Wide_String;
---    Mapping : Maps.Character_Mapping_Function)
+--    Mapping : Wide_Maps.Wide_Character_Mapping_Function)
 --    return Natural;
    function Count (
       Source : Wide_String;
@@ -217,10 +223,6 @@ package Ada.Strings.Wide_Fixed is
 
    --  Wide_String translation subprograms
 
---  function Translate (
---    Source : Wide_String;
---    Mapping : Maps.Character_Mapping)
---    return Wide_String;
    function Translate (
       Source : Wide_String;
       Mapping : Wide_Maps.Wide_Character_Mapping)
@@ -230,7 +232,7 @@ package Ada.Strings.Wide_Fixed is
    --  modified
 --  procedure Translate (
 --    Source : in out Wide_String;
---    Mapping : Maps.Character_Mapping);
+--    Mapping : Wide_Maps.Wide_Character_Mapping);
    procedure Translate (
       Source : in out Wide_String;
       Mapping : Wide_Maps.Wide_Character_Mapping;
@@ -242,7 +244,7 @@ package Ada.Strings.Wide_Fixed is
    --  modified
 --  function Translate (
 --    Source : Wide_String;
---    Mapping : Maps.Character_Mapping_Function)
+--    Mapping : Wide_Maps.Wide_Character_Mapping_Function)
 --    return Wide_String;
    function Translate (
       Source : Wide_String;
@@ -260,7 +262,7 @@ package Ada.Strings.Wide_Fixed is
    --  modified
 --  procedure Translate (
 --    Source : in out Wide_String;
---    Mapping : Maps.Character_Mapping_Function);
+--    Mapping : Wide_Maps.Wide_Character_Mapping_Function);
    procedure Translate (
       Source : in out Wide_String;
       Mapping : not null access function (From : Wide_Character)
@@ -357,7 +359,7 @@ package Ada.Strings.Wide_Fixed is
 --    Source : in out Wide_String;
 --    Side : Trim_End;
 --    Justify : Alignment := Left;
---    Pad : Character := Space);
+--    Pad : Wide_Character := Wide_Space);
    procedure Trim (
       Source : in out Wide_String;
       Side : Trim_End;

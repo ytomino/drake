@@ -48,6 +48,7 @@ pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Interfaces;
 package Ada.Numerics.MT19937 is
+   pragma Preelaborate;
 
    subtype Cardinal is Interfaces.Unsigned_32;
    type Cardinal_Vector is array (Natural range <>) of Cardinal;
@@ -96,7 +97,8 @@ package Ada.Numerics.MT19937 is
       function Random (Gen : not null access Generator) return Result_Subtype;
    end Discrete_Random;
 
-   Use_Error : exception renames IO_Exceptions.Use_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
    --  be raised from Initiator
 
 private

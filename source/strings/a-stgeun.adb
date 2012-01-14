@@ -1,7 +1,11 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
+with System.Memory.Allocated_Size;
+with System.Storage_Elements;
 package body Ada.Strings.Generic_Unbounded is
    use type Streams.Stream_Element_Offset;
+   use type System.Address;
+   use type System.Storage_Elements.Storage_Offset;
 
    package Data_Cast is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
@@ -13,13 +17,62 @@ package body Ada.Strings.Generic_Unbounded is
       Data_Access_Access,
       System_Address_Access);
 
-   procedure Free is new Unchecked_Deallocation (Data, Data_Access);
+   function Allocate_Data (Max_Length, Capacity : Natural)
+      return not null Data_Access;
+   function Allocate_Data (Max_Length, Capacity : Natural)
+      return not null Data_Access is
+   begin
+      if Capacity = 0 then
+         return Empty_Data'Unrestricted_Access;
+      else
+         declare
+            Header_Size : constant System.Storage_Elements.Storage_Count :=
+               Data'Size / Standard'Storage_Unit
+               + Integer'Size / Standard'Storage_Unit * 2; -- constraints
+            Required_Size : constant System.Storage_Elements.Storage_Count :=
+               Header_Size
+               + Character_Type'Size / Standard'Storage_Unit
+                  * System.Storage_Elements.Storage_Count (Capacity);
+            M : constant System.Address :=
+               System.Memory.Allocate (Required_Size);
+         begin
+            return Result : not null Data_Access := Data_Cast.To_Pointer (M) do
+               Result.Reference_Count := 1;
+               Result.Max_Length := Max_Length;
+               declare
+                  type Repr is record
+                     Data : System.Address;
+                     Constraints : System.Address;
+                  end record;
+                  pragma Suppress_Initialization (Repr);
+                  R : Repr;
+                  for R'Address use Result.Items'Address;
+                  First : Integer;
+                  for First'Address use M
+                     + Data'Size / Standard'Storage_Unit;
+                  Last : Integer;
+                  for Last'Address use First'Address
+                     + Integer'Size / Standard'Storage_Unit;
+                  Data : Character_Type;
+                  for Data'Address use Last'Address
+                     + Integer'Size / Standard'Storage_Unit;
+               begin
+                  First := 1;
+                  Last := Integer (
+                     (System.Memory.Allocated_Size (M) - Header_Size)
+                     / (Character_Type'Size / Standard'Storage_Unit));
+                  R.Constraints := First'Address;
+                  R.Data := Data'Address;
+               end;
+            end return;
+         end;
+      end if;
+   end Allocate_Data;
 
    procedure Free_Data (Data : System.Address);
    procedure Free_Data (Data : System.Address) is
-      X : Data_Access := Data_Cast.To_Pointer (Data);
    begin
-      Free (X);
+      System.Memory.Free (Data);
    end Free_Data;
 
    procedure Copy_Data (
@@ -35,29 +88,25 @@ package body Ada.Strings.Generic_Unbounded is
       Max_Length : Natural;
       Capacity : Natural)
    is
-      T : not null Data_Access := new Data'(
-         Capacity => Capacity,
-         Reference_Count => 1,
-         Max_Length => Max_Length,
-         Items => <>);
+      Data : not null Data_Access := Allocate_Data (Max_Length, Capacity);
       subtype R is Integer range 1 .. Length;
    begin
-      T.Items (R) := Data_Cast.To_Pointer (Source).Items (R);
-      Target := T.all'Address;
+      Data.Items (R) := Data_Cast.To_Pointer (Source).Items (R);
+      Target := Data_Cast.To_Address (Data);
    end Copy_Data;
 
    procedure Reserve_Capacity (
       Item : in out Unbounded_String;
-      Capacity : Integer);
+      Capacity : Natural);
    procedure Reserve_Capacity (
       Item : in out Unbounded_String;
-      Capacity : Integer) is
+      Capacity : Natural) is
    begin
       System.Reference_Counting.Unique (
          Target => Upcast (Item.Data'Unchecked_Access),
          Target_Reference_Count => Item.Data.Reference_Count'Access,
          Target_Length => Item.Length,
-         Target_Capacity => Item.Data.Capacity,
+         Target_Capacity => Generic_Unbounded.Capacity (Item),
          Max_Length => Item.Length,
          Capacity => Capacity,
          Sentinel => Empty_Data'Address,
@@ -68,24 +117,8 @@ package body Ada.Strings.Generic_Unbounded is
    procedure Unique (Item : in out Unbounded_String);
    procedure Unique (Item : in out Unbounded_String) is
    begin
-      Reserve_Capacity (Item, Item.Data.Capacity);
+      Reserve_Capacity (Item, Capacity (Item));
    end Unique;
-
-   procedure Set_Length (Item : in out Unbounded_String; Length : Natural);
-   procedure Set_Length (Item : in out Unbounded_String; Length : Natural) is
-   begin
-      System.Reference_Counting.Set_Length (
-         Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Reference_Count => Item.Data.Reference_Count'Access,
-         Target_Length => Item.Length,
-         Target_Max_Length => Item.Data.Max_Length'Access,
-         Target_Capacity => Item.Data.Capacity,
-         New_Length => Length,
-         Sentinel => Empty_Data'Address,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
-      Item.Length := Length;
-   end Set_Length;
 
    procedure Assign (
       Target : in out Unbounded_String;
@@ -103,10 +136,80 @@ package body Ada.Strings.Generic_Unbounded is
       Target.Length := Source.Length;
    end Assign;
 
-   overriding procedure Adjust (Object : in out Unbounded_String) is
+   --  implementation
+
+   function Null_Unbounded_String return Unbounded_String is
    begin
-      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
-   end Adjust;
+      return (Finalization.Controlled with
+         Data => Empty_Data'Unrestricted_Access,
+         Length => 0);
+   end Null_Unbounded_String;
+
+   function Is_Null (Source : Unbounded_String) return Boolean is
+   begin
+      return Source.Length = 0;
+   end Is_Null;
+
+   function Length (Source : Unbounded_String) return Natural is
+   begin
+      return Source.Length;
+   end Length;
+
+   procedure Set_Length (Source : in out Unbounded_String; Length : Natural) is
+   begin
+      System.Reference_Counting.Set_Length (
+         Target => Upcast (Source.Data'Unchecked_Access),
+         Target_Reference_Count => Source.Data.Reference_Count'Access,
+         Target_Length => Source.Length,
+         Target_Max_Length => Source.Data.Max_Length'Access,
+         Target_Capacity => Capacity (Source),
+         New_Length => Length,
+         Sentinel => Empty_Data'Address,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
+      Source.Length := Length;
+   end Set_Length;
+
+   function Capacity (Source : Unbounded_String'Class) return Natural is
+   begin
+      return Source.Data.Items'Last;
+   end Capacity;
+
+   function To_Unbounded_String (Source : String_Type)
+      return Unbounded_String
+   is
+      Length : constant Natural := Source'Length;
+      New_Data : constant not null Data_Access :=
+         Allocate_Data (Length, Length);
+   begin
+      New_Data.Items.all := Source;
+      return (Finalization.Controlled with Data => New_Data, Length => Length);
+   end To_Unbounded_String;
+
+   function To_Unbounded_String (Length : Natural)
+      return Unbounded_String
+   is
+      New_Data : constant not null Data_Access :=
+         Allocate_Data (Length, Length);
+   begin
+      return (Finalization.Controlled with Data => New_Data, Length => Length);
+   end To_Unbounded_String;
+
+   function To_String (Source : Unbounded_String) return String_Type is
+   begin
+      return Source.Data.Items (1 .. Source.Length);
+   end To_String;
+
+   procedure Set_Unbounded_String (
+      Target : out Unbounded_String;
+      Source : String_Type)
+   is
+      Length : constant Natural := Source'Length;
+   begin
+      Target.Length := 0;
+      Set_Length (Target, Length);
+      Target.Data.Items (1 .. Length) := Source;
+   end Set_Unbounded_String;
 
    procedure Append (
       Source : in out Unbounded_String;
@@ -140,166 +243,6 @@ package body Ada.Strings.Generic_Unbounded is
       Set_Length (Source, Total_Length);
       Source.Data.Items (Total_Length) := New_Item;
    end Append;
-
-   function Constant_Reference (
-      Source : not null access constant Unbounded_String)
-      return Slicing.Constant_Reference_Type is
-   begin
-      return Constant_Reference (Source, 1, Source.Length);
-   end Constant_Reference;
-
-   function Constant_Reference (
-      Source : not null access constant Unbounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Slicing.Constant_Reference_Type is
-   begin
-      return Slicing.Constant_Slice (
-         Source.Data.Items'Unrestricted_Access,
-         First_Index,
-         Last_Index);
-   end Constant_Reference;
-
-   function Element (Source : Unbounded_String; Index : Positive)
-      return Character_Type is
-   begin
-      return Source.Data.Items (Index);
-   end Element;
-
-   overriding procedure Finalize (Object : in out Unbounded_String) is
-   begin
-      System.Reference_Counting.Clear (
-         Upcast (Object.Data'Unchecked_Access),
-         Object.Data.Reference_Count'Access,
-         Free => Free_Data'Access);
-      Object.Data := Empty_Data'Unrestricted_Access;
-      Object.Length := 0;
-   end Finalize;
-
-   function Is_Null (Source : Unbounded_String) return Boolean is
-   begin
-      return Source.Length = 0;
-   end Is_Null;
-
-   function Length (Source : Unbounded_String) return Natural is
-   begin
-      return Source.Length;
-   end Length;
-
-   function Null_Unbounded_String return Unbounded_String is
-   begin
-      return (Finalization.Controlled with
-         Data => Empty_Data'Unrestricted_Access,
-         Length => 0);
-   end Null_Unbounded_String;
-
-   function Reference (Source : not null access Unbounded_String)
-      return Slicing.Reference_Type is
-   begin
-      return Reference (Source, 1, Source.Length);
-   end Reference;
-
-   function Reference (
-      Source : not null access Unbounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Slicing.Reference_Type is
-   begin
-      Unique (Source.all);
-      return Slicing.Slice (
-         Source.Data.Items'Unrestricted_Access,
-         First_Index,
-         Last_Index);
-   end Reference;
-
-   procedure Replace_Element (
-      Source : in out Unbounded_String;
-      Index : Positive;
-      By : Character_Type) is
-   begin
-      Unique (Source);
-      Source.Data.Items (Index) := By;
-   end Replace_Element;
-
-   procedure Set_Unbounded_String (
-      Target : out Unbounded_String;
-      Source : String_Type)
-   is
-      Length : constant Natural := Source'Length;
-   begin
-      Target.Length := 0;
-      Set_Length (Target, Length);
-      Target.Data.Items (1 .. Length) := Source;
-   end Set_Unbounded_String;
-
-   function Slice (
-      Source : Unbounded_String;
-      Low : Positive;
-      High : Natural)
-      return String_Type is
-   begin
-      return Source.Data.Items (Low .. High);
-   end Slice;
-
-   function To_String (Source : Unbounded_String) return String_Type is
-   begin
-      return Source.Data.Items (1 .. Source.Length);
-   end To_String;
-
-   function To_Unbounded_String (Source : String_Type)
-      return Unbounded_String
-   is
-      Length : constant Natural := Source'Length;
-      New_Data : Data_Access;
-   begin
-      if Length = 0 then
-         New_Data := Empty_Data'Unrestricted_Access;
-      else
-         New_Data := new Data'(
-            Capacity => Length,
-            Reference_Count => 1,
-            Max_Length => Length,
-            Items => Source);
-      end if;
-      return (Finalization.Controlled with Data => New_Data, Length => Length);
-   end To_Unbounded_String;
-
-   function To_Unbounded_String (Length : Natural)
-      return Unbounded_String
-   is
-      New_Data : Data_Access;
-   begin
-      if Length = 0 then
-         New_Data := Empty_Data'Unrestricted_Access;
-      else
-         New_Data := new Data'(
-            Capacity => Length,
-            Reference_Count => 1,
-            Max_Length => Length,
-            Items => <>);
-      end if;
-      return (Finalization.Controlled with Data => New_Data, Length => Length);
-   end To_Unbounded_String;
-
-   function Unbounded_Slice (
-      Source : Unbounded_String;
-      Low : Positive;
-      High : Natural)
-      return Unbounded_String
-   is
-      pragma Suppress (All_Checks);
-   begin
-      return To_Unbounded_String (Source.Data.Items (Low .. High));
-   end Unbounded_Slice;
-
-   procedure Unbounded_Slice (
-      Source : Unbounded_String;
-      Target : out Unbounded_String;
-      Low : Positive;
-      High : Natural) is
-   begin
-      Set_Unbounded_String (Target, Source.Data.Items (Low .. High));
-   end Unbounded_Slice;
 
    function "&" (Left, Right : Unbounded_String) return Unbounded_String is
    begin
@@ -344,48 +287,87 @@ package body Ada.Strings.Generic_Unbounded is
       end return;
    end "&";
 
+   function Element (Source : Unbounded_String; Index : Positive)
+      return Character_Type is
+   begin
+      return Source.Data.Items (Index);
+   end Element;
+
+   procedure Replace_Element (
+      Source : in out Unbounded_String;
+      Index : Positive;
+      By : Character_Type) is
+   begin
+      Unique (Source);
+      Source.Data.Items (Index) := By;
+   end Replace_Element;
+
+   function Slice (
+      Source : Unbounded_String;
+      Low : Positive;
+      High : Natural)
+      return String_Type is
+   begin
+      return Source.Data.Items (Low .. High);
+   end Slice;
+
+   function Unbounded_Slice (
+      Source : Unbounded_String;
+      Low : Positive;
+      High : Natural)
+      return Unbounded_String is
+   begin
+      return Result : Unbounded_String do
+         Unbounded_Slice (Source, Result, Low, High);
+      end return;
+   end Unbounded_Slice;
+
+   procedure Unbounded_Slice (
+      Source : Unbounded_String;
+      Target : out Unbounded_String;
+      Low : Positive;
+      High : Natural) is
+   begin
+      if Low = 1 then
+         Target := Source;
+         Set_Length (Target, High);
+      else
+         Set_Unbounded_String (Target, Source.Data.Items (Low .. High));
+      end if;
+   end Unbounded_Slice;
+
    function "=" (Left, Right : Unbounded_String) return Boolean is
-      pragma Suppress (All_Checks);
    begin
       return Left.Data.Items (1 .. Left.Length) =
          Right.Data.Items (1 .. Right.Length);
    end "=";
 
    function "=" (Left : Unbounded_String; Right : String_Type)
-      return Boolean
-   is
-      pragma Suppress (All_Checks);
+      return Boolean is
    begin
       return Left.Data.Items (1 .. Left.Length) = Right;
    end "=";
 
    function "=" (Left : String_Type; Right : Unbounded_String)
-      return Boolean
-   is
-      pragma Suppress (All_Checks);
+      return Boolean is
    begin
       return Left = Right.Data.Items (1 .. Right.Length);
    end "=";
 
    function "<" (Left, Right : Unbounded_String) return Boolean is
-      pragma Suppress (All_Checks);
    begin
       return Left.Data.Items (1 .. Left.Length) <
          Right.Data.Items (1 .. Right.Length);
    end "<";
 
    function "<" (Left : Unbounded_String; Right : String_Type)
-      return Boolean
-   is
-      pragma Suppress (All_Checks);
+      return Boolean is
    begin
       return Left.Data.Items (1 .. Left.Length) < Right;
    end "<";
 
    function "<" (Left : String_Type; Right : Unbounded_String)
-      return Boolean
-   is
-      pragma Suppress (All_Checks);
+      return Boolean is
    begin
       return Left < Right.Data.Items (1 .. Right.Length);
    end "<";
@@ -440,6 +422,59 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       return not (Left < Right);
    end ">=";
+
+   function Constant_Reference (
+      Source : not null access constant Unbounded_String)
+      return Slicing.Constant_Reference_Type is
+   begin
+      return Constant_Reference (Source, 1, Source.Length);
+   end Constant_Reference;
+
+   function Constant_Reference (
+      Source : not null access constant Unbounded_String;
+      First_Index : Positive;
+      Last_Index : Natural)
+      return Slicing.Constant_Reference_Type is
+   begin
+      return Slicing.Constant_Slice (
+         Source.Data.Items,
+         First_Index,
+         Last_Index);
+   end Constant_Reference;
+
+   function Reference (Source : not null access Unbounded_String)
+      return Slicing.Reference_Type is
+   begin
+      return Reference (Source, 1, Source.Length);
+   end Reference;
+
+   function Reference (
+      Source : not null access Unbounded_String;
+      First_Index : Positive;
+      Last_Index : Natural)
+      return Slicing.Reference_Type is
+   begin
+      Unique (Source.all);
+      return Slicing.Slice (
+         Source.Data.Items,
+         First_Index,
+         Last_Index);
+   end Reference;
+
+   overriding procedure Adjust (Object : in out Unbounded_String) is
+   begin
+      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
+   end Adjust;
+
+   overriding procedure Finalize (Object : in out Unbounded_String) is
+   begin
+      System.Reference_Counting.Clear (
+         Upcast (Object.Data'Unchecked_Access),
+         Object.Data.Reference_Count'Access,
+         Free => Free_Data'Access);
+      Object.Data := Empty_Data'Unrestricted_Access;
+      Object.Length := 0;
+   end Finalize;
 
    package body Generic_Functions is
 
@@ -589,11 +624,9 @@ package body Ada.Strings.Generic_Unbounded is
          Through : Natural)
          return Unbounded_String is
       begin
-         return To_Unbounded_String (
-            Fixed_Delete (
-               Constant_Reference (Source'Access).Element.all,
-               From,
-               Through));
+         return Result : Unbounded_String := Source do
+            Delete (Result, From, Through);
+         end return;
       end Delete;
 
       procedure Delete (
@@ -601,12 +634,24 @@ package body Ada.Strings.Generic_Unbounded is
          From : Positive;
          Through : Natural) is
       begin
-         Set_Unbounded_String (
-            Source,
-            Fixed_Delete (
-               Constant_Reference (Source'Access).Element.all,
-               From,
-               Through));
+         if From <= Through then
+            declare
+               Old_Length : constant Natural := Length (Source);
+               New_Length : Natural;
+            begin
+               if Through >= Old_Length then
+                  New_Length := From - 1;
+               else
+                  New_Length := Old_Length;
+                  Fixed_Delete (
+                     Reference (Source'Access).Element.all,
+                     New_Length,
+                     From,
+                     Through);
+               end if;
+               Set_Length (Source, New_Length);
+            end;
+         end if;
       end Delete;
 
       function Trim (
@@ -616,13 +661,17 @@ package body Ada.Strings.Generic_Unbounded is
          Right : Character_Type := Space)
          return Unbounded_String
       is
-         S : String_Type renames
-            Constant_Reference (Source'Access).Element.all;
          First : Positive;
          Last : Natural;
       begin
-         Fixed_Trim (S, Side, Left, Right, First, Last);
-         return To_Unbounded_String (S (First .. Last));
+         Fixed_Trim (
+            Constant_Reference (Source'Access).Element.all,
+            Side,
+            Left,
+            Right,
+            First,
+            Last);
+         return Unbounded_Slice (Source, First, Last);
       end Trim;
 
       procedure Trim (
@@ -1010,13 +1059,16 @@ package body Ada.Strings.Generic_Unbounded is
             Right : Character_Set)
             return Unbounded_String
          is
-            S : String_Type renames
-               Constant_Reference (Source'Access).Element.all;
             First : Positive;
             Last : Natural;
          begin
-            Fixed_Trim_Set (S, Left, Right, First, Last);
-            return To_Unbounded_String (S (First .. Last));
+            Fixed_Trim_Set (
+               Constant_Reference (Source'Access).Element.all,
+               Left,
+               Right,
+               First,
+               Last);
+            return Unbounded_Slice (Source, First, Last);
          end Trim;
 
          procedure Trim (
@@ -1045,13 +1097,31 @@ package body Ada.Strings.Generic_Unbounded is
       return Fixed_Hash (Key.Data.Items (1 .. Key.Length));
    end Generic_Hash;
 
+   package body Generic_Constant is
+
+      S_Data : aliased constant Data := (
+         Reference_Count => System.Reference_Counting.Static,
+         Max_Length => Integer'Last,
+         Items => S.all'Unrestricted_Access);
+
+      function Value return Unbounded_String is
+      begin
+         if S'First /= 1 then
+            raise Constraint_Error;
+         end if;
+         return (Finalization.Controlled with
+            Data => S_Data'Unrestricted_Access,
+            Length => S'Last);
+      end Value;
+
+   end Generic_Constant;
+
    package body No_Primitives is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : out Unbounded_String)
       is
-         pragma Suppress (All_Checks);
          First : Integer;
          Last : Integer;
       begin
@@ -1068,9 +1138,7 @@ package body Ada.Strings.Generic_Unbounded is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Unbounded_String)
-      is
-         pragma Suppress (All_Checks);
+         Item : Unbounded_String) is
       begin
          Integer'Write (Stream, 1);
          Integer'Write (Stream, Item.Length);

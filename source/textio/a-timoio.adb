@@ -1,4 +1,3 @@
-with Ada.Formatting.Inside;
 with Ada.Text_IO.Inside.Formatting;
 with System.Formatting;
 with System.Val_LLU;
@@ -20,21 +19,17 @@ package body Ada.Text_IO.Modular_IO is
       Base : Number_Base) is
    begin
       if Num'Size > System.Formatting.Unsigned'Size then
-         Formatting.Inside.Modular_Image (
+         Inside.Formatting.Modular_Image (
             To,
             Last,
             System.Formatting.Longest_Unsigned (Item),
-            Base => Base,
-            Zero_Sign => Formatting.None,
-            Plus_Sign => Formatting.None);
+            Base);
       else
-         Formatting.Inside.Modular_Image (
+         Inside.Formatting.Modular_Image (
             To,
             Last,
             System.Formatting.Unsigned (Item),
-            Base => Base,
-            Zero_Sign => Formatting.None,
-            Plus_Sign => Formatting.None);
+            Base);
       end if;
    end Put_To_Field;
 
@@ -123,7 +118,7 @@ package body Ada.Text_IO.Modular_IO is
       Width : Field := Default_Width;
       Base : Number_Base := Default_Base)
    is
-      S : String (1 .. Formatting.Inside.Modular_Width);
+      S : String (1 .. 4 + Num'Width + Width); -- "16##"
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Base);
@@ -152,7 +147,7 @@ package body Ada.Text_IO.Modular_IO is
       Item : Num;
       Base : Number_Base := Default_Base)
    is
-      S : String (1 .. Formatting.Inside.Modular_Width);
+      S : String (1 .. To'Length);
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Base);

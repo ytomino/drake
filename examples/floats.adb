@@ -56,18 +56,32 @@ procedure floats is
 		pragma Assert (Y.Value'Valid); -- Unaligned_Valid
 		null;
 	end Test;
-	procedure Float_Test is new Test (Float);
-	procedure Long_Float_Test is new Test (Long_Float);
-	procedure Long_Long_Float_Test is new Test (Long_Long_Float);
-	procedure Short_Float_Test is new Test (Short_Float);
-	type Custom_Float is digits 12;
-	procedure Custom_Float_Test is new Test (Custom_Float);
 begin
-	pragma Debug (Float_Test);
-	pragma Debug (Long_Float_Test);
-	pragma Debug (Long_Long_Float_Test);
-	pragma Debug (Short_Float_Test);
-	pragma Debug (Custom_Float_Test);
+	declare
+		procedure Short_Float_Test is new Test (Short_Float);
+	begin
+		Short_Float_Test;
+	end;
+	declare
+		procedure Float_Test is new Test (Float);
+	begin
+		Float_Test;
+	end;
+	declare
+		procedure Long_Float_Test is new Test (Long_Float);
+	begin
+		Long_Float_Test;
+	end;
+	declare
+		procedure Long_Long_Float_Test is new Test (Long_Long_Float);
+	begin
+		Long_Long_Float_Test;
+	end;
+	declare
+		type Custom_Float is digits 12;
+		procedure Custom_Float_Test is new Test (Custom_Float);
+	begin
+		Custom_Float_Test;
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
-	null;
 end floats;

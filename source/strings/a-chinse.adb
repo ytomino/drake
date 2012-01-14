@@ -1,6 +1,29 @@
 package body Ada.Characters.Inside.Sets is
    pragma Suppress (All_Checks);
 
+   procedure Append (
+      Target : in out Character_Ranges;
+      Last : in out Natural;
+      Item : Character_Range);
+   procedure Append (
+      Target : in out Character_Ranges;
+      Last : in out Natural;
+      Item : Character_Range) is
+   begin
+      if Last >= Target'First
+         and then Target (Last).High >= Wide_Wide_Character'Pred (Item.Low)
+      then
+         if Item.High > Target (Last).High then
+            Target (Last).High := Item.High;
+         end if;
+      else
+         Last := Last + 1;
+         Target (Last) := Item;
+      end if;
+   end Append;
+
+   --  implementation
+
    procedure Add (
       A : in out Character_Ranges;
       Last : in out Natural;
@@ -83,28 +106,6 @@ package body Ada.Characters.Inside.Sets is
    begin
       return Is_In (To_Wide_Wide_Character (Element), Set);
    end Is_In;
-
-   procedure Append (
-      Target : in out Character_Ranges;
-      Last : in out Natural;
-      Item : Character_Range);
-   --  local
-   procedure Append (
-      Target : in out Character_Ranges;
-      Last : in out Natural;
-      Item : Character_Range) is
-   begin
-      if Last >= Target'First
-         and then Target (Last).High >= Wide_Wide_Character'Pred (Item.Low)
-      then
-         if Item.High > Target (Last).High then
-            Target (Last).High := Item.High;
-         end if;
-      else
-         Last := Last + 1;
-         Target (Last) := Item;
-      end if;
-   end Append;
 
    procedure Merge (
       Target : out Character_Ranges;

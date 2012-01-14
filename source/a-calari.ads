@@ -10,7 +10,7 @@ package Ada.Calendar.Arithmetic is
    subtype Leap_Seconds_Count is Integer range -2047 .. 2047;
 
 --  procedure Difference (
---    Left, Right : in Time;
+--    Left, Right : Time;
 --    Days : out Day_Count;
 --    Seconds : out Duration;
 --    Leap_Seconds : out Leap_Seconds_Count);

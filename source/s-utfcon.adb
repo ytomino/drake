@@ -6,7 +6,6 @@ package body System.UTF_Conversions is
       Leading : out Character;
       Length : out Natural;
       Error : out Boolean);
-   --  local
    procedure UTF_8_Length (
       Code : UCS_4;
       Leading : out Character;
@@ -25,7 +24,7 @@ package body System.UTF_Conversions is
          when 16#d800# .. 16#dfff# =>
             Leading := Character'Val (2#11100000# or Code / (2 ** 12));
             Length := 3;
-            Error := True; --  range of surrogate pair
+            Error := True; -- range of surrogate pair
          when 2 ** (5 + 6) .. 16#d7ff# | 16#e000# .. 2 ** (4 + 6 + 6) - 1 =>
             Leading := Character'Val (2#11100000# or Code / (2 ** 12));
             Length := 3;
@@ -45,6 +44,8 @@ package body System.UTF_Conversions is
       end case;
    end UTF_8_Length;
 
+   --  implementation
+
    procedure To_UTF_8 (
       Code : UCS_4;
       Result : out String;
@@ -54,11 +55,11 @@ package body System.UTF_Conversions is
       I : constant Natural := Result'First;
       Length : Natural;
       Code_2 : UCS_4;
-      Dummy_Error : Boolean; --  without checking surrogate pair in To_XXX
+      Dummy_Error : Boolean; -- without checking surrogate pair in To_XXX
    begin
       if I > Result'Last then
          Last := Result'Last;
-         Error := True; --  overflow
+         Error := True; -- overflow
          return;
       end if;
       UTF_8_Length (Code, Result (I), Length, Dummy_Error);
@@ -66,7 +67,7 @@ package body System.UTF_Conversions is
       if Last > Result'Last then
          Last := Result'Last;
          Length := Result'Last + 1 - I;
-         Error := True; --  overflow
+         Error := True; -- overflow
       else
          Error := False;
       end if;
@@ -118,14 +119,14 @@ package body System.UTF_Conversions is
          when others =>
             Last := I;
             Result := Character'Pos (First) + (UCS_4'Last - 16#ff#); -- dummy
-            Error := True; --  trailing byte or invalid code
+            Error := True; -- trailing byte or invalid code
             return;
       end case;
       --  trailing bytes
       for J in 2 .. Length loop
          if I >= Data'Last then
             Code := Shift_Left (Code, 6 * (Length - J + 1));
-            Error := True; --  trailing byte is nothing
+            Error := True; -- trailing byte is nothing
             exit;
          else
             I := I + 1;
@@ -144,7 +145,7 @@ package body System.UTF_Conversions is
       end loop;
       UTF_8_Length (Code, Shortest_Leading, Shortest_Length, Code_Error);
       if Shortest_Length /= Length or else Code_Error then
-         Error := True; --  too long or surrogate pair
+         Error := True; -- too long or surrogate pair
       end if;
       Last := I;
       Result := Code;
@@ -236,14 +237,14 @@ package body System.UTF_Conversions is
                   if Last <= Result'Last then
                      Result (Last) := Wide_Character'Val (
                         16#dc00# or (Code_2 and (2 ** 10 - 1)));
-                     Error := Code_2 >= 2 ** 20; --  over range of UTF-16
+                     Error := Code_2 >= 2 ** 20; -- over range of UTF-16
                   else
-                     Last := Result'Last; --  overflow
+                     Last := Result'Last; -- overflow
                      Error := True;
                   end if;
                end;
             else
-               Last := Result'Last; --  overflow
+               Last := Result'Last; -- overflow
                Error := True;
             end if;
       end case;
@@ -269,7 +270,7 @@ package body System.UTF_Conversions is
                Second : Wide_Character;
             begin
                if I >= Data'Last then
-                  Error := True; --  trailing byte is nothing
+                  Error := True; -- trailing byte is nothing
                   Second := Wide_Character'Val (0);
                else
                   I := I + 1;
@@ -280,7 +281,7 @@ package body System.UTF_Conversions is
                   then
                      I := I - 1;
                      Second := Wide_Character'Val (0);
-                     Error := True; --  trailing byte is invalid
+                     Error := True; -- trailing byte is invalid
                   else
                      Error := False;
                   end if;
@@ -298,7 +299,7 @@ package body System.UTF_Conversions is
          when Wide_Character'Val (16#dc00#) .. Wide_Character'Val (16#dfff#) =>
             Last := I;
             Result := Wide_Character'Pos (First);
-            Error := True; --  trailing byte
+            Error := True; -- trailing byte
       end case;
    end From_UTF_16;
 
@@ -338,7 +339,7 @@ package body System.UTF_Conversions is
             Error := False;
          when Wide_Character'Val (16#dc00#) .. Wide_Character'Val (16#dfff#) =>
             Result := 1;
-            Error := True; --  trailing byte
+            Error := True; -- trailing byte
       end case;
    end UTF_16_Sequence;
 

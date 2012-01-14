@@ -166,9 +166,12 @@ package body Ada.Numerics.Generic_Arrays is
       Values : out Real_Vector;
       Vectors : out Matrix)
    is
-      mat1 : Matrix renames A;
-      lami : Real_Vector renames Values;
-      eigenvecs : Matrix renames Vectors;
+      mat1 : Matrix
+         renames A;
+      lami : Real_Vector
+         renames Values;
+      eigenvecs : Matrix
+         renames Vectors;
       n : constant Integer := A'Length (1);
       mat : Matrix := mat1;
       a11, a12, a22, p, q, y11, y12, y21, y22, y, v1, v2 : Number;
@@ -188,8 +191,8 @@ package body Ada.Numerics.Generic_Arrays is
                a11 := mat (mat'First (1) + i, mat'First (2) + i);
                a12 := mat (mat'First (1) + i, mat'First (2) + j);
                a22 := mat (mat'First (1) + j, mat'First (2) + j);
-               if Is_Small (a12 * a12) then --  1.0e-32 * abs (a11 * a22)
-                  null; --  continue
+               if Is_Small (a12 * a12) then -- 1.0e-32 * abs (a11 * a22)
+                  null; -- continue
                else
                   p := (a22 - a11) / Two;
                   q := a12;

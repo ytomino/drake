@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit;
---  implementation package
+--  runtime unit
 package System.Unwind.Traceback is
    pragma Preelaborate;
 

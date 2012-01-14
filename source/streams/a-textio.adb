@@ -20,7 +20,7 @@
 --  ***************************************************************************
 pragma Check_Policy (Finalize, Off);
 with Ada.Exceptions.Finally;
-with Ada.Text_IO.Inside; --  full view
+with Ada.Text_IO.Inside; -- full view
 with Ada.Unchecked_Deallocation;
 package body Ada.Text_IO is
 
@@ -46,8 +46,6 @@ package body Ada.Text_IO is
    procedure Check_File_Mode (
       File : File_Type;
       Expected : File_Mode);
-
-   --  local
    procedure Check_File_Mode (
       File : File_Type;
       Expected : File_Mode) is
@@ -56,6 +54,8 @@ package body Ada.Text_IO is
          raise Mode_Error;
       end if;
    end Check_File_Mode;
+
+   --  implementation
 
    procedure Close (File : in out File_Type) is
    begin

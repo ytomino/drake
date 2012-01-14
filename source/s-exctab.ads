@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit;
---  implementation package required by compiler
+--  runtime unit
 with System.Standard_Library;
 package System.Exception_Table is
    pragma Preelaborate;

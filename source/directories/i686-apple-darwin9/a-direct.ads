@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.Calendar;
+with Ada.Streams;
 private with Ada.Finalization;
 private with C.dirent;
 private with C.sys.dirent;
@@ -39,6 +40,13 @@ package Ada.Directories is
       Target_Name : String;
       Form : String := "";
       Overwrite : Boolean := True); -- additional
+
+   --  extended
+   --  Create a symbolic link.
+   procedure Symbolic_Link (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean := True);
 
    --  File and directory name operations:
 
@@ -81,8 +89,9 @@ package Ada.Directories is
 
    type File_Kind is (Directory, Ordinary_File, Special_File);
 
+   --  modified
 --  type File_Size is range 0 .. implementation-defined;
-   type File_Size is mod 2 ** 64;
+   subtype File_Size is Streams.Stream_Element_Count;
 
    function Exists (Name : String) return Boolean;
 
@@ -91,6 +100,10 @@ package Ada.Directories is
    function Size (Name : String) return File_Size;
 
    function Modification_Time (Name : String) return Calendar.Time;
+
+   --  extended
+   --  Set modification time of a file.
+   procedure Set_Modification_Time (Name : String; Time : Calendar.Time);
 
    --  Directory searching:
 
@@ -130,6 +143,20 @@ package Ada.Directories is
       Process : not null access procedure (
          Directory_Entry : Directory_Entry_Type));
 
+   --  extended
+   --  There is an iterator for AI12-0009-1 (?)
+   type Iterator is limited private;
+   type Cursor is private;
+   pragma Preelaborable_Initialization (Cursor);
+   function Has_Element (Position : Cursor) return Boolean;
+   function Iterate (Container : Search_Type) return Iterator;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   type Constant_Reference_Type (
+      Element : not null access constant Directory_Entry_Type) is null record;
+   function Constant_Reference (Container : Search_Type; Position : Cursor)
+      return Constant_Reference_Type;
+
    --  Operations on Directory Entries:
 
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
@@ -147,16 +174,20 @@ package Ada.Directories is
    function Modification_Time (Directory_Entry : Directory_Entry_Type)
       return Calendar.Time;
 
-   Status_Error : exception renames IO_Exceptions.Status_Error;
-   Name_Error : exception renames IO_Exceptions.Name_Error;
-   Use_Error : exception renames IO_Exceptions.Use_Error;
-   Device_Error : exception renames IO_Exceptions.Device_Error;
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
+   Name_Error : exception
+      renames IO_Exceptions.Name_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames IO_Exceptions.Device_Error;
 
 private
 
    type String_Access is access String;
 
-   type Directory_Entry_Type is limited record
+   type Directory_Entry_Type is record -- not limited in full view
       Path : String_Access := null;
       Entry_Data : aliased C.sys.dirent.struct_dirent;
       State_Data : aliased C.sys.stat.struct_stat;
@@ -167,12 +198,21 @@ private
       Path : String_Access;
       Pattern : C.char_ptr;
       Filter : Filter_Type;
+      Count : Natural;
       Has_Next : Boolean;
       Data : aliased C.sys.dirent.struct_dirent;
    end record;
 
    overriding procedure Finalize (Search : in out Search_Type);
    procedure End_Search (Search : in out Search_Type) renames Finalize;
+
+   type Iterator is access Search_Type;
+
+   type Cursor is record
+      Search : Iterator := null;
+      Directory_Entry : aliased Directory_Entry_Type;
+      Index : Positive;
+   end record;
 
    --  for Information
    procedure Check_Assigned (Directory_Entry : Directory_Entry_Type);

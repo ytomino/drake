@@ -176,7 +176,7 @@ package body Ada.Wide_Wide_Text_IO is
    procedure Put_Line (File : File_Type; Item : Wide_Wide_String) is
    begin
       Put (File, Item);
-      Text_IO.New_Line (Text_IO.File_Type (File)); --  New_Line is ambiguous
+      Text_IO.New_Line (Text_IO.File_Type (File)); -- New_Line is ambiguous
    end Put_Line;
 
    procedure Put_Line (Item : Wide_Wide_String) is

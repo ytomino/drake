@@ -7,5 +7,6 @@ package Interfaces.C.WStrings is new Generic_Strings (
    String_Type => wchar_String,
    Element => wchar_t,
    Element_Array => wchar_array,
-   Pointers => WChar_Pointers);
+   Pointers => WChar_Pointers,
+   Slicing => wchar_String_Slicing);
 pragma Preelaborate (Interfaces.C.WStrings);

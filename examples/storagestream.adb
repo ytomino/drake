@@ -1,4 +1,4 @@
-with Ada.Streams.Overlay_Storage_IO;
+with Ada.Streams.Overlaps_Storage_IO;
 with Ada.Streams.Buffer_Storage_IO;
 procedure storagestream is
 	Memory : Ada.Streams.Buffer_Storage_IO.Buffer;

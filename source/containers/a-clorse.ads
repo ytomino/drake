@@ -102,24 +102,28 @@ package Ada.Containers.Limited_Ordered_Sets is
 --  diff (Union)
 
 --  diff ("or")
+--
 
    procedure Intersection (Target : in out Set; Source : Set);
 
 --  diff (Intersection)
 
 --  diff ("and")
+--
 
    procedure Difference (Target : in out Set; Source : Set);
 
 --  diff (Difference)
 
 --  diff ("-")
+--
 
 --  diff (Symmetric_Difference)
 
 --  diff (Symmetric_Difference)
 
 --  diff ("xor")
+--
 
    function Overlap (Left, Right : Set) return Boolean;
 

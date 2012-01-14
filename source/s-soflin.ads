@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  runtime unit required by compiler
 with Ada.Exceptions;
 with System.Unwind;
 package System.Soft_Links is

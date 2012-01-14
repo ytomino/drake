@@ -4,10 +4,10 @@
 with Ada.Characters.Normalization;
 with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
+with System.Memory;
 with System.Storage_Elements;
 with System.Once;
 with C.hfs_casetables;
-with C.stdlib;
 package body Ada.Directories.Inside.File_Names is
    use type System.Storage_Elements.Storage_Offset;
    use type C.signed_int;
@@ -40,8 +40,8 @@ package body Ada.Directories.Inside.File_Names is
             C.hfs_casetables.compressed_block_const_ptr);
       m_bp : not null C.hfs_casetables.compressed_block_const_ptr := bp;
       l_out : constant C.unsigned_short_ptr :=
-         unsigned_short_ptr_Conv.To_Pointer (
-            System.Address (C.stdlib.malloc (C.size_t (size))));
+         unsigned_short_ptr_Conv.To_Pointer (System.Memory.Allocate (
+            System.Storage_Elements.Storage_Offset (size)));
       op : C.unsigned_short_ptr := l_out;
       data : C.unsigned_short;
    begin

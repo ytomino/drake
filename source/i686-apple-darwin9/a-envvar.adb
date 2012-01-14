@@ -148,7 +148,9 @@ package body Ada.Environment_Variables is
       return Result;
    end Next;
 
-   function Name (Position : Cursor) return Slicing.Constant_Reference_Type is
+   function Name (Position : Cursor)
+      return References.String.Slicing.Constant_Reference_Type
+   is
       subtype Fixed_String is String (Positive);
       S : Fixed_String;
       for S'Address use Position.all.all'Address;
@@ -157,10 +159,15 @@ package body Ada.Environment_Variables is
       while S (I) /= '=' and then S (I) /= Character'Val (0) loop
          I := I + 1;
       end loop;
-      return Slicing.Constant_Slice (S'Unrestricted_Access, 1, I - 1);
+      return References.String.Slicing.Constant_Slice (
+         S'Unrestricted_Access,
+         1,
+         I - 1);
    end Name;
 
-   function Value (Position : Cursor) return Slicing.Constant_Reference_Type is
+   function Value (Position : Cursor)
+      return References.String.Slicing.Constant_Reference_Type
+   is
       subtype Fixed_String is String (Positive);
       S : Fixed_String;
       for S'Address use Position.all.all'Address;
@@ -181,7 +188,10 @@ package body Ada.Environment_Variables is
          end if;
          I := I + 1;
       end loop;
-      return Slicing.Constant_Slice (S'Unrestricted_Access, First, Last);
+      return References.String.Slicing.Constant_Slice (
+         S'Unrestricted_Access,
+         First,
+         Last);
    end Value;
 
 end Ada.Environment_Variables;

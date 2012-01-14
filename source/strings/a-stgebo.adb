@@ -625,12 +625,9 @@ package body Ada.Strings.Generic_Bounded is
             Through : Natural)
             return Bounded_String is
          begin
-            return To_Bounded_String (
-               Fixed_Delete (
-                  Source.Element (1 .. Source.Length),
-                  From,
-                  Through),
-               Error);
+            return Result : Bounded_String := Source do
+               Delete (Result, From, Through);
+            end return;
          end Delete;
 
          procedure Delete (
@@ -638,13 +635,13 @@ package body Ada.Strings.Generic_Bounded is
             From : Positive;
             Through : Natural) is
          begin
-            Set_Bounded_String (
-               Source,
-               Fixed_Delete (
-                  Source.Element (1 .. Source.Length),
-                  From,
-                  Through),
-               Error);
+            if From <= Through then
+               if Through >= Source.Length then
+                  Source.Length := From - 1;
+               else
+                  Fixed_Delete (Source.Element, Source.Length, From, Through);
+               end if;
+            end if;
          end Delete;
 
          function Trim (
@@ -654,12 +651,17 @@ package body Ada.Strings.Generic_Bounded is
             Right : Character_Type := Space)
             return Bounded_String
          is
-            S : String_Type renames Source.Element (1 .. Source.Length);
             First : Positive;
             Last : Natural;
          begin
-            Fixed_Trim (S, Side, Left, Right, First, Last);
-            return To_Bounded_String (S (First .. Last), Error);
+            Fixed_Trim (
+               Source.Element (1 .. Source.Length),
+               Side,
+               Left,
+               Right,
+               First,
+               Last);
+            return Bounded_Slice (Source, First, Last);
          end Trim;
 
          procedure Trim (
@@ -668,12 +670,17 @@ package body Ada.Strings.Generic_Bounded is
             Left : Character_Type := Space;
             Right : Character_Type := Space)
          is
-            S : String_Type renames Source.Element (1 .. Source.Length);
             First : Positive;
             Last : Natural;
          begin
-            Fixed_Trim (S, Side, Left, Right, First, Last);
-            Set_Bounded_String (Source, S (First .. Last), Error);
+            Fixed_Trim (
+               Source.Element (1 .. Source.Length),
+               Side,
+               Left,
+               Right,
+               First,
+               Last);
+            Bounded_Slice (Source, Source, First, Last);
          end Trim;
 
          function Head (
@@ -1024,12 +1031,16 @@ package body Ada.Strings.Generic_Bounded is
                Right : Character_Set)
                return Bounded_String
             is
-               S : String_Type renames Source.Element (1 .. Source.Length);
                First : Positive;
                Last : Natural;
             begin
-               Fixed_Trim_Set (S, Left, Right, First, Last);
-               return To_Bounded_String (S (First .. Last), Error);
+               Fixed_Trim_Set (
+                  Source.Element (1 .. Source.Length),
+                  Left,
+                  Right,
+                  First,
+                  Last);
+               return Bounded_Slice (Source, First, Last);
             end Trim;
 
             procedure Trim (
@@ -1037,12 +1048,16 @@ package body Ada.Strings.Generic_Bounded is
                Left : Character_Set;
                Right : Character_Set)
             is
-               S : String_Type renames Source.Element (1 .. Source.Length);
                First : Positive;
                Last : Natural;
             begin
-               Fixed_Trim_Set (S, Left, Right, First, Last);
-               Set_Bounded_String (Source, S (First .. Last), Error);
+               Fixed_Trim_Set (
+                  Source.Element (1 .. Source.Length),
+                  Left,
+                  Right,
+                  First,
+                  Last);
+               Bounded_Slice (Source, Source, First, Last);
             end Trim;
 
          end Generic_Maps;

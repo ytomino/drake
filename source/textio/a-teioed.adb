@@ -4,264 +4,8 @@ with System.Val_Uns;
 package body Ada.Text_IO.Editing is
    use type System.Formatting.Unsigned;
 
-   function Valid (
-      Pic_String : String;
-      Blank_When_Zero : Boolean := False)
-      return Boolean is
-   begin
-      declare
-         Dummy : constant Picture := To_Picture (Pic_String, Blank_When_Zero);
-         pragma Unreferenced (Dummy);
-      begin
-         return True;
-      end;
-   exception
-      when Picture_Error =>
-         return False;
-   end Valid;
-
-   function To_Picture (
-      Pic_String : String;
-      Blank_When_Zero : Boolean := False)
-      return Picture
-   is
-      type Currency_State is (None, Dollar, Sharp);
-      pragma Discard_Names (Currency_State);
-      Currency : Currency_State := None;
-      type Paren_State is (None, Opened, Closed);
-      pragma Discard_Names (Paren_State);
-      Paren : Paren_State := None;
-      type Sign_State is (None, Plus, Minus);
-      pragma Discard_Names (Sign_State);
-      Sign : Sign_State := None;
-      type Suppression_State is (None, Z, Asterisk);
-      pragma Discard_Names (Suppression_State);
-      Suppression : Suppression_State := None;
-      type State_Type is (
-         Start,
-         Any_Sign,
-         B_After_Sign,
-         Any_Suppression,
-         Nine,
-         Radix,
-         Fraction);
-      pragma Discard_Names (State_Type);
-      State : State_Type := Start;
-      I : Positive := Pic_String'First;
-   begin
-      return Result : Picture do
-         Result.Length := 0;
-         Result.Has_V := False;
-         Result.Has_Dollar := None;
-         Result.Blank_When_Zero := Blank_When_Zero;
-         Result.Real_Blank_When_Zero := True;
-         Result.First_Sign_Position := 0;
-         Result.Aft := 0;
-         while I <= Pic_String'Last loop
-            case Pic_String (I) is
-               when '(' =>
-                  declare
-                     Count_First : Positive;
-                     Count_Last : Natural;
-                     Count : System.Formatting.Unsigned;
-                  begin
-                     Inside.Formatting.Get_Tail (
-                        Pic_String (I + 1 .. Pic_String'Last),
-                        First => Count_First);
-                     begin
-                        System.Val_Uns.Get_Unsigned_Literal (
-                           Pic_String (Count_First .. Pic_String'Last),
-                           Count_Last,
-                           Count);
-                     exception
-                        when Constraint_Error =>
-                           raise Picture_Error;
-                     end;
-                     if Count = 0
-                        or else I = Pic_String'First
-                        or else I + Integer (Count) - 1 > Pic_String'Last
-                     then
-                        raise Picture_Error;
-                     end if;
-                     for J in 2 .. Count loop
-                        Result.Length := Result.Length + 1;
-                        Result.Expanded (Result.Length) := Pic_String (I - 1);
-                     end loop;
-                     I := Count_Last + 1;
-                  end;
-               when ')' =>
-                  raise Picture_Error;
-               when others =>
-                  Result.Length := Result.Length + 1;
-                  if Result.Length > Result.Expanded'Last then
-                     raise Picture_Error;
-                  end if;
-                  Result.Expanded (Result.Length) := Pic_String (I);
-                  case Pic_String (I) is
-                     when '$' =>
-                        if Currency = Sharp then
-                           raise Picture_Error;
-                        end if;
-                        Currency := Dollar;
-                        if State >= Radix then
-                           if Result.Has_Dollar = None then
-                              raise Layout_Error;
-                           end if;
-                           Result.Aft := Result.Aft + 1;
-                        else
-                           Result.Has_Dollar := Previous;
-                        end if;
-                     when '#' =>
-                        if Currency = Dollar then
-                           raise Picture_Error;
-                        end if;
-                        Currency := Sharp;
-                     when '<' =>
-                        if Paren = Closed then
-                           raise Picture_Error;
-                        end if;
-                        Paren := Opened;
-                        if Result.First_Sign_Position = 0 then
-                           Result.First_Sign_Position := Result.Length;
-                        end if;
-                        if State >= Radix then
-                           State := Fraction;
-                           Result.Aft := Result.Aft + 1;
-                        end if;
-                     when '>' =>
-                        if Paren /= Opened then
-                           raise Picture_Error;
-                        end if;
-                        Paren := Closed;
-                     when '+' =>
-                        if Sign = Minus or else State >= Radix then
-                           raise Picture_Error;
-                        end if;
-                        if Result.First_Sign_Position = 0 then
-                           Result.First_Sign_Position := Result.Length;
-                        end if;
-                        Sign := Plus;
-                        if State < Any_Sign then
-                           State := Any_Sign;
-                        end if;
-                     when '-' =>
-                        if Sign = Plus or else State >= Radix then
-                           raise Picture_Error;
-                        end if;
-                        if Result.First_Sign_Position = 0 then
-                           Result.First_Sign_Position := Result.Length;
-                        end if;
-                        Sign := Minus;
-                        if State < Any_Sign then
-                           State := Any_Sign;
-                        end if;
-                     when '*' =>
-                        if Blank_When_Zero then
-                           raise Picture_Error;
-                        end if;
-                        Result.Real_Blank_When_Zero := False;
-                        if State >= Radix then
-                           State := Fraction;
-                           Result.Aft := Result.Aft + 1;
-                        elsif Suppression = Z
-                           or else State > Any_Suppression
-                        then
-                           raise Picture_Error;
-                        else
-                           Suppression := Asterisk;
-                           State := Any_Suppression;
-                        end if;
-                     when 'Z' | 'z' =>
-                        Result.Expanded (Result.Length) := 'Z';
-                        if State >= Radix then
-                           State := Fraction;
-                           Result.Aft := Result.Aft + 1;
-                        elsif Suppression = Asterisk
-                           or else State > Any_Suppression
-                        then
-                           raise Picture_Error;
-                        else
-                           Suppression := Z;
-                           State := Any_Suppression;
-                        end if;
-                     when '9' =>
-                        Result.Real_Blank_When_Zero := False;
-                        if State >= Radix then
-                           State := Fraction;
-                           Result.Aft := Result.Aft + 1;
-                        elsif State > Nine then
-                           raise Picture_Error;
-                        else
-                           State := Nine;
-                        end if;
-                     when '.' =>
-                        if State > Radix
-                           or else (
-                              State <= Any_Sign
-                              and then Currency = None
-                              and then Paren = None)
-                        then
-                           raise Picture_Error;
-                        end if;
-                        State := Radix;
-                        Result.Radix_Position := Result.Length;
-                     when 'V' | 'v' =>
-                        Result.Expanded (Result.Length) := 'V';
-                        if State > Radix
-                           or else (
-                              State <= Any_Sign
-                              and then Currency = None
-                              and then Paren = None)
-                        then
-                           raise Picture_Error;
-                        end if;
-                        State := Radix;
-                        Result.Radix_Position := Result.Length;
-                        Result.Has_V := True;
-                     when 'B' | 'b' =>
-                        Result.Expanded (Result.Length) := 'B';
-                        if State = Any_Sign then
-                           State := B_After_Sign;
-                        end if;
-                     when '_' | '/' | '0' =>
-                        null;
-                     when others =>
-                        raise Picture_Error;
-                  end case;
-                  I := I + 1;
-            end case;
-         end loop;
-         if Paren = Opened
-            or else (
-               State < Any_Sign
-               and then Currency = None
-               and then Paren = None)
-            or else State = B_After_Sign -- CXF3A01
-         then
-            raise Picture_Error;
-         end if;
-         if State < Radix then
-            Result.Radix_Position := Result.Length + 1;
-         end if;
-         Result.Real_Blank_When_Zero :=
-            (Result.Real_Blank_When_Zero and then State > Any_Suppression)
-            or else Blank_When_Zero;
-      end return;
-   end To_Picture;
-
-   function Pic_String (Pic : Picture) return String is
-   begin
-      return Pic.Expanded (1 .. Pic.Length);
-   end Pic_String;
-
-   function Blank_When_Zero (Pic : Picture) return Boolean is
-   begin
-      return Pic.Blank_When_Zero;
-   end Blank_When_Zero;
-
    function Length (Pic : Picture; Currency : String := Default_Currency)
       return Natural;
-   --  local
    function Length (Pic : Picture; Currency : String := Default_Currency)
       return Natural
    is
@@ -286,7 +30,6 @@ package body Ada.Text_IO.Editing is
       Separator : Character := Default_Separator;
       Radix_Mark : Character := Default_Radix_Mark)
       return String;
-   --  local
    function Image (
       Item : Long_Long_Integer;
       Scale : Integer;
@@ -575,6 +318,263 @@ package body Ada.Text_IO.Editing is
          end if;
       end return;
    end Image;
+
+   --  implementation
+
+   function Valid (
+      Pic_String : String;
+      Blank_When_Zero : Boolean := False)
+      return Boolean is
+   begin
+      declare
+         Dummy : constant Picture := To_Picture (Pic_String, Blank_When_Zero);
+         pragma Unreferenced (Dummy);
+      begin
+         return True;
+      end;
+   exception
+      when Picture_Error =>
+         return False;
+   end Valid;
+
+   function To_Picture (
+      Pic_String : String;
+      Blank_When_Zero : Boolean := False)
+      return Picture
+   is
+      type Currency_State is (None, Dollar, Sharp);
+      pragma Discard_Names (Currency_State);
+      Currency : Currency_State := None;
+      type Paren_State is (None, Opened, Closed);
+      pragma Discard_Names (Paren_State);
+      Paren : Paren_State := None;
+      type Sign_State is (None, Plus, Minus);
+      pragma Discard_Names (Sign_State);
+      Sign : Sign_State := None;
+      type Suppression_State is (None, Z, Asterisk);
+      pragma Discard_Names (Suppression_State);
+      Suppression : Suppression_State := None;
+      type State_Type is (
+         Start,
+         Any_Sign,
+         B_After_Sign,
+         Any_Suppression,
+         Nine,
+         Radix,
+         Fraction);
+      pragma Discard_Names (State_Type);
+      State : State_Type := Start;
+      I : Positive := Pic_String'First;
+   begin
+      return Result : Picture do
+         Result.Length := 0;
+         Result.Has_V := False;
+         Result.Has_Dollar := None;
+         Result.Blank_When_Zero := Blank_When_Zero;
+         Result.Real_Blank_When_Zero := True;
+         Result.First_Sign_Position := 0;
+         Result.Aft := 0;
+         while I <= Pic_String'Last loop
+            case Pic_String (I) is
+               when '(' =>
+                  declare
+                     Count_First : Positive;
+                     Count_Last : Natural;
+                     Count : System.Formatting.Unsigned;
+                  begin
+                     Inside.Formatting.Get_Tail (
+                        Pic_String (I + 1 .. Pic_String'Last),
+                        First => Count_First);
+                     begin
+                        System.Val_Uns.Get_Unsigned_Literal (
+                           Pic_String (Count_First .. Pic_String'Last),
+                           Count_Last,
+                           Count);
+                     exception
+                        when Constraint_Error =>
+                           raise Picture_Error;
+                     end;
+                     if Count = 0
+                        or else I = Pic_String'First
+                        or else I + Integer (Count) - 1 > Pic_String'Last
+                     then
+                        raise Picture_Error;
+                     end if;
+                     for J in 2 .. Count loop
+                        Result.Length := Result.Length + 1;
+                        Result.Expanded (Result.Length) := Pic_String (I - 1);
+                     end loop;
+                     I := Count_Last + 1;
+                  end;
+               when ')' =>
+                  raise Picture_Error;
+               when others =>
+                  Result.Length := Result.Length + 1;
+                  if Result.Length > Result.Expanded'Last then
+                     raise Picture_Error;
+                  end if;
+                  Result.Expanded (Result.Length) := Pic_String (I);
+                  case Pic_String (I) is
+                     when '$' =>
+                        if Currency = Sharp then
+                           raise Picture_Error;
+                        end if;
+                        Currency := Dollar;
+                        if State >= Radix then
+                           if Result.Has_Dollar = None then
+                              raise Layout_Error;
+                           end if;
+                           Result.Aft := Result.Aft + 1;
+                        else
+                           Result.Has_Dollar := Previous;
+                        end if;
+                     when '#' =>
+                        if Currency = Dollar then
+                           raise Picture_Error;
+                        end if;
+                        Currency := Sharp;
+                     when '<' =>
+                        if Paren = Closed then
+                           raise Picture_Error;
+                        end if;
+                        Paren := Opened;
+                        if Result.First_Sign_Position = 0 then
+                           Result.First_Sign_Position := Result.Length;
+                        end if;
+                        if State >= Radix then
+                           State := Fraction;
+                           Result.Aft := Result.Aft + 1;
+                        end if;
+                     when '>' =>
+                        if Paren /= Opened then
+                           raise Picture_Error;
+                        end if;
+                        Paren := Closed;
+                     when '+' =>
+                        if Sign = Minus or else State >= Radix then
+                           raise Picture_Error;
+                        end if;
+                        if Result.First_Sign_Position = 0 then
+                           Result.First_Sign_Position := Result.Length;
+                        end if;
+                        Sign := Plus;
+                        if State < Any_Sign then
+                           State := Any_Sign;
+                        end if;
+                     when '-' =>
+                        if Sign = Plus or else State >= Radix then
+                           raise Picture_Error;
+                        end if;
+                        if Result.First_Sign_Position = 0 then
+                           Result.First_Sign_Position := Result.Length;
+                        end if;
+                        Sign := Minus;
+                        if State < Any_Sign then
+                           State := Any_Sign;
+                        end if;
+                     when '*' =>
+                        if Blank_When_Zero then
+                           raise Picture_Error;
+                        end if;
+                        Result.Real_Blank_When_Zero := False;
+                        if State >= Radix then
+                           State := Fraction;
+                           Result.Aft := Result.Aft + 1;
+                        elsif Suppression = Z
+                           or else State > Any_Suppression
+                        then
+                           raise Picture_Error;
+                        else
+                           Suppression := Asterisk;
+                           State := Any_Suppression;
+                        end if;
+                     when 'Z' | 'z' =>
+                        Result.Expanded (Result.Length) := 'Z';
+                        if State >= Radix then
+                           State := Fraction;
+                           Result.Aft := Result.Aft + 1;
+                        elsif Suppression = Asterisk
+                           or else State > Any_Suppression
+                        then
+                           raise Picture_Error;
+                        else
+                           Suppression := Z;
+                           State := Any_Suppression;
+                        end if;
+                     when '9' =>
+                        Result.Real_Blank_When_Zero := False;
+                        if State >= Radix then
+                           State := Fraction;
+                           Result.Aft := Result.Aft + 1;
+                        elsif State > Nine then
+                           raise Picture_Error;
+                        else
+                           State := Nine;
+                        end if;
+                     when '.' =>
+                        if State > Radix
+                           or else (
+                              State <= Any_Sign
+                              and then Currency = None
+                              and then Paren = None)
+                        then
+                           raise Picture_Error;
+                        end if;
+                        State := Radix;
+                        Result.Radix_Position := Result.Length;
+                     when 'V' | 'v' =>
+                        Result.Expanded (Result.Length) := 'V';
+                        if State > Radix
+                           or else (
+                              State <= Any_Sign
+                              and then Currency = None
+                              and then Paren = None)
+                        then
+                           raise Picture_Error;
+                        end if;
+                        State := Radix;
+                        Result.Radix_Position := Result.Length;
+                        Result.Has_V := True;
+                     when 'B' | 'b' =>
+                        Result.Expanded (Result.Length) := 'B';
+                        if State = Any_Sign then
+                           State := B_After_Sign;
+                        end if;
+                     when '_' | '/' | '0' =>
+                        null;
+                     when others =>
+                        raise Picture_Error;
+                  end case;
+                  I := I + 1;
+            end case;
+         end loop;
+         if Paren = Opened
+            or else (
+               State < Any_Sign
+               and then Currency = None
+               and then Paren = None)
+            or else State = B_After_Sign -- CXF3A01
+         then
+            raise Picture_Error;
+         end if;
+         if State < Radix then
+            Result.Radix_Position := Result.Length + 1;
+         end if;
+         Result.Real_Blank_When_Zero :=
+            (Result.Real_Blank_When_Zero and then State > Any_Suppression)
+            or else Blank_When_Zero;
+      end return;
+   end To_Picture;
+
+   function Pic_String (Pic : Picture) return String is
+   begin
+      return Pic.Expanded (1 .. Pic.Length);
+   end Pic_String;
+
+   function Blank_When_Zero (Pic : Picture) return Boolean is
+   begin
+      return Pic.Blank_When_Zero;
+   end Blank_When_Zero;
 
    package body Decimal_Output is
 

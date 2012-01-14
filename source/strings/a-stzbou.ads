@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+with Ada.References.Wide_Wide_String;
 with Ada.Strings.Generic_Bounded;
 with Ada.Strings.Wide_Wide_Functions;
 with Ada.Strings.Wide_Wide_Functions.Maps;
@@ -12,7 +13,8 @@ package Ada.Strings.Wide_Wide_Bounded is
       Wide_Wide_Character,
       Wide_Wide_String,
       System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO,
-      System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO);
+      System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO,
+      References.Wide_Wide_String.Slicing);
 
    generic
       Max : Positive; -- Maximum length of a Bounded_String
@@ -67,11 +69,13 @@ package Ada.Strings.Wide_Wide_Bounded is
          Fixed_Trim_Set => Strings.Wide_Wide_Functions.Maps.Trim);
 
 --    Max_Length : constant Positive := Max;
-      Max_Length : Positive renames Instance.Max_Length;
+      Max_Length : Positive
+         renames Instance.Max_Length;
 
 --    type Bounded_Wide_Wide_String is private;
       subtype Bounded_Wide_Wide_String is Instance.Bounded_String;
 
+      --  modified
 --    Null_Wide_Wide_Bounded_String : constant Bounded_Wide_Wide_String;
       function Null_Bounded_Wide_Wide_String return Bounded_Wide_Wide_String
          renames Instance.Null_Bounded_String;
@@ -265,6 +269,7 @@ package Ada.Strings.Wide_Wide_Bounded is
 
       --  Search subprograms
 
+      --  modified
 --    function Index (
 --       Source : Bounded_Wide_Wide_String;
 --       Pattern : Wide_Wide_String;
@@ -288,6 +293,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          return Natural
          renames Maps.Index;
 
+      --  modified
 --    function Index (
 --       Source : Bounded_Wide_Wide_String;
 --       Pattern : Wide_Wide_String;
@@ -305,6 +311,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          return Natural
          renames Maps.Index;
 
+      --  modified
 --    function Index (
 --       Source : Bounded_Wide_Wide_String;
 --       Pattern : Wide_Wide_String;
@@ -325,6 +332,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          return Natural
          renames Maps.Index;
 
+      --  modified
 --    function Index (
 --       Source : Bounded_Wide_Wide_String;
 --       Pattern : Wide_Wide_String;
@@ -370,6 +378,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          return Natural
          renames Functions.Index_Non_Blank;
 
+      --  modified
 --    function Count (
 --       Source : Bounded_Wide_Wide_String;
 --       Pattern : Wide_Wide_String;
@@ -387,6 +396,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          return Natural
          renames Maps.Count;
 
+      --  modified
 --    function Count (
 --       Source : Bounded_Wide_Wide_String;
 --       Pattern : Wide_Wide_String;
@@ -619,27 +629,6 @@ package Ada.Strings.Wide_Wide_Bounded is
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
          renames Instance.Replicate;
-
-      --  extended
-      function Constant_Reference (
-         Source : not null access constant Bounded_Wide_Wide_String)
-         return Wide_Wide_Bounded.Instance.Slicing.Constant_Reference_Type
-         renames Instance.Constant_Reference;
-      function Constant_Reference (
-         Source : not null access constant Bounded_Wide_Wide_String;
-         First_Index : Positive;
-         Last_Index : Natural)
-         return Wide_Wide_Bounded.Instance.Slicing.Constant_Reference_Type
-         renames Instance.Constant_Reference;
-      function Reference (Source : not null access Bounded_Wide_Wide_String)
-         return Wide_Wide_Bounded.Instance.Slicing.Reference_Type
-         renames Instance.Reference;
-      function Reference (
-         Source : not null access Bounded_Wide_Wide_String;
-         First_Index : Positive;
-         Last_Index : Natural)
-         return Wide_Wide_Bounded.Instance.Slicing.Reference_Type
-         renames Instance.Reference;
 
    end Generic_Bounded_Length;
 

@@ -61,7 +61,7 @@ package body System.Pool_Size is
       Shared_Locking.Enter;
       if Pool.Elmt_Size = 0 then
          --  variable size mode
-         null; --  deallocation is unimplemented...
+         null; -- deallocation is unimplemented...
       else
          --  fixed size mode
          pragma Assert (Size_In_Storage_Elements = Pool.Elmt_Size);

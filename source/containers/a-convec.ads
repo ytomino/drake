@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
-with System.Arrays;
+with Ada.References;
 private with Ada.Finalization;
 private with Ada.Streams;
 private with System.Reference_Counting;
@@ -91,8 +91,8 @@ package Ada.Containers.Vectors is
 
 --  procedure Replace_Element (
 --    Container : in out Vector;
---    Position : in Cursor;
---    New_item : in Element_Type);
+--    Position : Cursor;
+--    New_item : Element_Type);
 
    --  modified
    procedure Query_Element (
@@ -101,8 +101,8 @@ package Ada.Containers.Vectors is
       Process : not null access procedure (Element : Element_Type));
 
 --  procedure Query_Element (
---    Position : in Cursor;
---    Process : not null access procedure (Element : in Element_Type));
+--    Position : Cursor;
+--    Process : not null access procedure (Element : Element_Type));
 
    --  modified
    procedure Update_Element (
@@ -112,7 +112,7 @@ package Ada.Containers.Vectors is
 
 --  procedure Update_Element (
 --    Container : in out Vector;
---    Position : in Cursor;
+--    Position : Cursor;
 --    Process : not null access procedure (Element : in out Element_Type));
 
    type Constant_Reference_Type (
@@ -154,8 +154,8 @@ package Ada.Containers.Vectors is
 
 --  procedure Insert (
 --    Container : in out Vector;
---    Before : in Cursor;
---    New_Item : in Vector);
+--    Before : Cursor;
+--    New_Item : Vector);
 
    procedure Insert (
       Container : in out Vector;
@@ -171,9 +171,9 @@ package Ada.Containers.Vectors is
 
 --  procedure Insert (
 --    Container : in out Vector;
---    Before : in Cursor;
---    New_Item : in Element_Type;
---    Count : in Count_Type := 1);
+--    Before : Cursor;
+--    New_Item : Element_Type;
+--    Count : Count_Type := 1);
 
    procedure Insert (
       Container : in out Vector;
@@ -226,7 +226,7 @@ package Ada.Containers.Vectors is
 --  procedure Delete (
 --    Container : in out Vector;
 --    Position : in out Cursor;
---    Count : in Count_Type := 1);
+--    Count : Count_Type := 1);
 
    procedure Delete_First (Container : in out Vector; Count : Count_Type := 1);
 
@@ -236,7 +236,7 @@ package Ada.Containers.Vectors is
 
    procedure Swap (Container : in out Vector; I, J : Index_Type);
 
---  procedure Swap (Container : in out Vector; I, J : in Cursor);
+--  procedure Swap (Container : in out Vector; I, J : Cursor);
 
    function First_Index (Container : Vector) return Index_Type;
 
@@ -337,7 +337,7 @@ package Ada.Containers.Vectors is
 
    --  extended
    type Element_Array is array (Index_Type range <>) of aliased Element_Type;
-   package Slicing is new System.Arrays.Generic_Slicing (
+   package Slicing is new Ada.References.Generic_Slicing (
       Index_Type,
       Element_Type,
       Element_Array);

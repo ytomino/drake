@@ -47,7 +47,7 @@ package body Ada.Tags is
       elsif External_Tag_Impl (DT (Node.Tag)) < External then
          E_Insert (Node.Right, T, External);
       else
-         null; --  already added
+         null; -- already added
       end if;
    end E_Insert;
 
@@ -354,14 +354,14 @@ package body Ada.Tags is
          return False;
       else
          case A_DT.Signature is
-            when Primary_DT => --  tagged record
+            when Primary_DT => -- tagged record
                declare
                   Offset : constant Integer := D_TSD.Idepth - A_TSD.Idepth;
                begin
                   return Offset >= 0
                      and then D_TSD.Tags_Table (Offset) = Ancestor;
                end;
-            when Secondary_DT | Unknown => --  interface
+            when Secondary_DT | Unknown => -- interface
                if Primary_Only then
                   return False;
                else
@@ -456,7 +456,8 @@ package body Ada.Tags is
    begin
       for I in 1 .. Iface_Table.Nb_Ifaces loop
          declare
-            Item : Interface_Data_Element renames Iface_Table.Ifaces_Table (I);
+            Item : Interface_Data_Element
+               renames Iface_Table.Ifaces_Table (I);
          begin
             if Item.Iface_Tag = Interface_T then
                Item.Static_Offset_To_Top := Is_Static or else Offset_Value = 0;

@@ -6,9 +6,9 @@ package body System.Wid_Bool is
       if Lo > Hi then
          return 0;
       elsif Lo then
-         return 4; --  "TRUE"
+         return 4; -- "TRUE"
       else
-         return 5; --  "FALSE"
+         return 5; -- "FALSE"
       end if;
    end Width_Boolean;
 

@@ -33,6 +33,7 @@ package Ada.Strings.Fixed is
       return Natural
       renames Functions.Index;
 
+   --  modified
 --  function Index (
 --    Source : String;
 --    Pattern : String;
@@ -56,6 +57,7 @@ package Ada.Strings.Fixed is
       return Natural
       renames Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : String;
 --    Pattern : String;
@@ -81,11 +83,12 @@ package Ada.Strings.Fixed is
       return Natural
       renames Functions.Maps.Index;
 
+   --  modified
 --  function Index (
---    Source : in String;
---    Pattern : in String;
---    Going : in Direction := Forward;
---    Mapping : in Maps.Character_Mapping := Maps.Identity)
+--    Source : String;
+--    Pattern : String;
+--    Going : Direction := Forward;
+--    Mapping : Maps.Character_Mapping := Maps.Identity)
 --    return Natural;
    function Index (
       Source : String;
@@ -101,6 +104,7 @@ package Ada.Strings.Fixed is
       return Natural
       renames Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : String;
 --    Pattern : String;
@@ -153,6 +157,7 @@ package Ada.Strings.Fixed is
       return Natural
       renames Functions.Index_Non_Blank;
 
+   --  modified
 --  function Count (
 --    Source : String;
 --    Pattern : String;
@@ -170,6 +175,7 @@ package Ada.Strings.Fixed is
       return Natural
       renames Functions.Maps.Count;
 
+   --  modified
 --  function Count (
 --    Source : String;
 --    Pattern : String;
@@ -214,10 +220,6 @@ package Ada.Strings.Fixed is
 
    --  String translation subprograms
 
---  function Translate (
---    Source : String;
---    Mapping : Maps.Character_Mapping)
---    return String;
    function Translate (
       Source : String;
       Mapping : Maps.Character_Mapping)
@@ -236,6 +238,7 @@ package Ada.Strings.Fixed is
       Pad : Character := Space) -- additional
       renames Functions.Maps.Translate;
 
+   --  modified
 --  function Translate (
 --    Source : String;
 --    Mapping : Maps.Character_Mapping_Function)

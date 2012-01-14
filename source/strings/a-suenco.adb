@@ -424,7 +424,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       end loop;
    end Do_Convert;
 
-   --  bodies
+   --  implementation
 
    function Convert (
       Item : UTF_String;

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 package System.Assertions is
    pragma Pure; -- called from Ada.Assertions
 

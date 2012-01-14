@@ -17,6 +17,10 @@ package Ada.Strings.Unbounded is
    function Length (Source : Unbounded_String) return Natural
       renames Unbounded_Strings.Length;
 
+   --  extended
+   procedure Set_Length (Source : in out Unbounded_String; Length : Natural)
+      renames Unbounded_Strings.Set_Length;
+
 --  type String_Access is access all String;
    subtype String_Access is Unbounded_Strings.String_Access;
    procedure Free (X : in out String_Access)
@@ -154,6 +158,7 @@ package Ada.Strings.Unbounded is
 
    --  Search subprograms
 
+   --  modified
 --  function Index (
 --    Source : Unbounded_String;
 --    Pattern : String;
@@ -177,6 +182,7 @@ package Ada.Strings.Unbounded is
       return Natural
       renames Unbounded_Strings.Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : Unbounded_String;
 --    Pattern : String;
@@ -202,6 +208,7 @@ package Ada.Strings.Unbounded is
       return Natural
       renames Unbounded_Strings.Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : Unbounded_String;
 --    Pattern : String;
@@ -222,6 +229,7 @@ package Ada.Strings.Unbounded is
       return Natural
       renames Unbounded_Strings.Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : Unbounded_String;
 --    Pattern : String;
@@ -274,6 +282,7 @@ package Ada.Strings.Unbounded is
       return Natural
       renames Unbounded_Strings.Functions.Index_Non_Blank;
 
+   --  modified
 --  function Count (
 --    Source : Unbounded_String;
 --    Pattern : String;
@@ -291,6 +300,7 @@ package Ada.Strings.Unbounded is
       return Natural
       renames Unbounded_Strings.Functions.Maps.Count;
 
+   --  modified
 --  function Count (
 --    Source : Unbounded_String;
 --    Pattern : String;
@@ -346,6 +356,7 @@ package Ada.Strings.Unbounded is
       Mapping : Maps.Character_Mapping)
       renames Unbounded_Strings.Functions.Maps.Translate;
 
+   --  modified
 --  function Translate (
 --    Source : Unbounded_String;
 --    Mapping : Maps.Character_Mapping_Function)
@@ -362,6 +373,7 @@ package Ada.Strings.Unbounded is
       return Unbounded_String
       renames Unbounded_Strings.Functions.Maps.Translate;
 
+   --  modified
 --  procedure Translate (
 --    Source : in out Unbounded_String;
 --    Mapping : Maps.Character_Mapping_Function);
@@ -496,26 +508,5 @@ package Ada.Strings.Unbounded is
    function "*" (Left : Natural; Right : Unbounded_String)
       return Unbounded_String
       renames Unbounded_Strings.Functions."*";
-
-   --  extended
-   function Constant_Reference (
-      Source : not null access constant Unbounded_String)
-      return Unbounded_Strings.Slicing.Constant_Reference_Type
-      renames Unbounded_Strings.Constant_Reference;
-   function Constant_Reference (
-      Source : not null access constant Unbounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Unbounded_Strings.Slicing.Constant_Reference_Type
-      renames Unbounded_Strings.Constant_Reference;
-   function Reference (Source : not null access Unbounded_String)
-      return Unbounded_Strings.Slicing.Reference_Type
-      renames Unbounded_Strings.Reference;
-   function Reference (
-      Source : not null access Unbounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Unbounded_Strings.Slicing.Reference_Type
-      renames Unbounded_Strings.Reference;
 
 end Ada.Strings.Unbounded;

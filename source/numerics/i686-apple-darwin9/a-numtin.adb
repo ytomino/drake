@@ -4,7 +4,7 @@ with C.unistd;
 procedure Ada.Numerics.MT19937.Initiator (Item : out Cardinal_Vector) is
    pragma Suppress (All_Checks);
    use type C.char_array;
-   use type C.signed_int; --  ssize_t is signed int or signed long
+   use type C.signed_int; -- ssize_t is signed int or signed long
    use type C.signed_long;
    use type C.size_t;
    Random_File_Name : constant C.char_array := "/dev/random" & C.char'Val (0);

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package System.Zero_Terminated_Strings is
    pragma Preelaborate;
 

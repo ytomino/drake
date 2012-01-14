@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit;
---  implementation package
+--  runtime unit
 with System.Storage_Elements;
 package System.Memory is
    pragma Preelaborate;

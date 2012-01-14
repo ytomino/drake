@@ -26,8 +26,8 @@ begin
 	declare
 		use Ada.Directories, DII;
 		Search : aliased Search_Type := Start_Search (".", "*");
-		Ite : Iterator := Iterate (Search'Access);
-		Pos : Cursor := First (Ite);
+		Ite : DII.Iterator := Iterate (Search'Access);
+		Pos : DII.Cursor := First (Ite);
 	begin
 		Ada.Debug.Put (">>>>");
 		while Pos /= No_Element loop

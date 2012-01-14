@@ -42,7 +42,7 @@ package body Ada.Tags.Delegating is
       elsif Cast (Node.Interface_Tag) < Cast (Interface_Tag) then
          I_Insert (Node.Right, Interface_Tag, Get);
       else
-         null; --  already added
+         null; -- already added
       end if;
    end I_Insert;
 

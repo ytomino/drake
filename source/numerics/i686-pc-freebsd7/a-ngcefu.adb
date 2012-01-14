@@ -1,9 +1,15 @@
-with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Float.Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    pragma Suppress (All_Checks);
 
-   package Real_Functions is new Generic_Elementary_Functions (Real'Base);
-   --  Arctan, Cos, Cosh, Exp, Log, Sin, Sinh, Sqrt
+   function Sqrt is new Float.Elementary_Functions.Sqrt (Real'Base);
+   function Log is new Float.Elementary_Functions.Log (Real'Base);
+   function Exp is new Float.Elementary_Functions.Exp (Real'Base);
+   function Sin is new Float.Elementary_Functions.Sin (Real'Base);
+   function Cos is new Float.Elementary_Functions.Cos (Real'Base);
+   function Arctan is new Float.Elementary_Functions.Arctan (Real'Base);
+   function Sinh is new Float.Elementary_Functions.Sinh (Real'Base);
+   function Cosh is new Float.Elementary_Functions.Cosh (Real'Base);
 
    Sqrt_2 : constant := 1.4142135623730950488016887242096980785696;
    Log_2 : constant := 0.6931471805599453094172321214581765680755;
@@ -163,15 +169,15 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    function Cos (X : Complex) return Complex is
    begin
       return (
-         Re => Real_Functions.Cos (X.Re)  * Real_Functions.Cosh (X.Im),
-         Im => -(Real_Functions.Sin (X.Re) * Real_Functions.Sinh (X.Im)));
+         Re => Cos (X.Re)  * Cosh (X.Im),
+         Im => -(Sin (X.Re) * Sinh (X.Im)));
    end Cos;
 
    function Cosh (X : Complex) return Complex is
    begin
       return (
-         Re => Real_Functions.Cosh (X.Re) * Real_Functions.Cos (X.Im),
-         Im => Real_Functions.Sinh (X.Re) * Real_Functions.Sin (X.Im));
+         Re => Cosh (X.Re) * Cos (X.Im),
+         Im => Sinh (X.Re) * Sin (X.Im));
    end Cosh;
 
    function Cot (X : Complex) return Complex is
@@ -185,18 +191,18 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    end Coth;
 
    function Exp (X : Complex) return Complex is
-      Y : constant Real'Base := Real_Functions.Exp (X.Re);
+      Y : constant Real'Base := Exp (X.Re);
    begin
       return (
-         Re => Y * Real_Functions.Cos (X.Im),
-         Im => Y * Real_Functions.Sin (X.Im));
+         Re => Y * Cos (X.Im),
+         Im => Y * Sin (X.Im));
    end Exp;
 
    function Exp (X : Imaginary) return Complex is
    begin
       return (
-         Re => Real_Functions.Cos (Im (X)),
-         Im => Real_Functions.Sin (Im (X)));
+         Re => Cos (Im (X)),
+         Im => Sin (Im (X)));
    end Exp;
 
    function Log (X : Complex) return Complex is
@@ -212,8 +218,8 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
          end;
       else
          declare
-            Result_Re : constant Real'Base := Real_Functions.Log (Modulus (X));
-            Result_Im : Real'Base := Real_Functions.Arctan (X.Im, X.Re);
+            Result_Re : constant Real'Base := Log (Modulus (X));
+            Result_Im : Real'Base := Arctan (X.Im, X.Re);
          begin
             if Result_Im > Pi then
                Result_Im := Result_Im - 2.0 * Pi;
@@ -231,8 +237,8 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
          return X;
       else
          return (
-            Re => Real_Functions.Sin (X.Re) * Real_Functions.Cosh (X.Im),
-            Im => Real_Functions.Cos (X.Re) * Real_Functions.Sinh (X.Im));
+            Re => Sin (X.Re) * Cosh (X.Im),
+            Im => Cos (X.Re) * Sinh (X.Im));
       end if;
    end Sin;
 
@@ -244,8 +250,8 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
          return X;
       else
          return (
-            Re => Real_Functions.Sinh (X.Re) * Real_Functions.Cos (X.Im),
-            Im => Real_Functions.Cosh (X.Re) * Real_Functions.Sin (X.Im));
+            Re => Sinh (X.Re) * Cos (X.Im),
+            Im => Cosh (X.Re) * Sin (X.Im));
       end if;
    end Sinh;
 
@@ -255,13 +261,13 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
          return X;
       elsif X.Im = 0.0 then
          if X.Re > 0.0 then
-            return (Re => Real_Functions.Sqrt (X.Re), Im => 0.0);
+            return (Re => Sqrt (X.Re), Im => 0.0);
          else
-            return (Re => 0.0, Im => Real_Functions.Sqrt (-X.Re));
+            return (Re => 0.0, Im => Sqrt (-X.Re));
          end if;
       elsif X.Re = 0.0 then
          declare
-            Y : constant Real'Base := Real_Functions.Sqrt (abs X.Im);
+            Y : constant Real'Base := Sqrt (abs X.Im);
          begin
             if X.Im > 0.0 then
                return (Re => Y, Im => Y);
@@ -271,9 +277,8 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
          end;
       else
          declare
-            A : constant Real'Base := Real_Functions.Sqrt (
-               0.5 * (
-                  Real_Functions.Sqrt (X.Re * X.Re + X.Im * X.Im) + abs X.Re));
+            A : constant Real'Base := Sqrt (
+               0.5 * (Sqrt (X.Re * X.Re + X.Im * X.Im) + abs X.Re));
             B : constant Real'Base := X.Im / (2.0 * A);
          begin
             if X.Re > 0.0 then

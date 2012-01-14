@@ -19,7 +19,7 @@ package body System.Wid_Char is
                   Img_Char.Images_1f (I).all'Length,
                   Result);
             end loop;
-            return Result; --  2 or 3
+            return Result; -- 2 or 3
          end;
       end if;
    end Width_Character;

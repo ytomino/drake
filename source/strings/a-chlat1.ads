@@ -54,7 +54,8 @@ package Ada.Characters.Latin_1 is
    Plus_Sign : constant Character := Character'Val (43); -- '+'
    Comma : constant Character := Character'Val (44); -- ','
    Hyphen : constant Character := Character'Val (45); -- '-'
-   Minus_Sign : Character renames Hyphen;
+   Minus_Sign : Character
+      renames Hyphen;
    Full_Stop : constant Character := Character'Val (46); -- '.'
    Solidus : constant Character := Character'Val (47); -- '/'
 
@@ -192,7 +193,8 @@ package Ada.Characters.Latin_1 is
    --  Character positions 160 (16#A0#) .. 175 (16#AF#):
    No_Break_Space : constant String :=
       Character'Val (16#c2#) & Character'Val (16#a0#); -- ' '
-   NBSP : String renames No_Break_Space;
+   NBSP : String
+      renames No_Break_Space;
    Inverted_Exclamation : constant String :=
       Character'Val (16#c2#) & Character'Val (16#a1#); -- '¡'
    Cent_Sign : constant String :=
@@ -227,7 +229,8 @@ package Ada.Characters.Latin_1 is
    --  Character positions 176 (16#B0#) .. 191 (16#BF#):
    Degree_Sign : constant String :=
       Character'Val (16#c2#) & Character'Val (16#b0#); -- '°'
-   Ring_Above : String renames Degree_Sign;
+   Ring_Above : String
+      renames Degree_Sign;
    Plus_Minus_Sign : constant String :=
       Character'Val (16#c2#) & Character'Val (16#b1#); -- '±'
    Superscript_Two : constant String :=
@@ -240,7 +243,8 @@ package Ada.Characters.Latin_1 is
       Character'Val (16#c2#) & Character'Val (16#b5#); -- 'µ'
    Pilcrow_Sign : constant String :=
       Character'Val (16#c2#) & Character'Val (16#b6#); -- '¶'
-   Paragraph_Sign : String renames Pilcrow_Sign;
+   Paragraph_Sign : String
+      renames Pilcrow_Sign;
    Middle_Dot : constant String :=
       Character'Val (16#c2#) & Character'Val (16#b7#); -- '·'
    Cedilla : constant String :=

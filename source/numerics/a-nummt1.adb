@@ -8,26 +8,14 @@ package body Ada.Numerics.MT19937 is
    UPPER_MASK : constant Cardinal := 2 ** (Cardinal'Size - 1);
    LOWER_MASK : constant Cardinal := not UPPER_MASK;
 
-   function Initialize return Generator is
-   begin
-      return (State => Initialize);
-   end Initialize;
-
-   function Initialize (Initiator : Cardinal) return Generator is
-   begin
-      return (State => Initialize (Initiator));
-   end Initialize;
-
-   function Initialize (Initiator : Cardinal_Vector) return Generator is
-   begin
-      return (State => Initialize (Initiator));
-   end Initialize;
+   --  implementation
 
    function Random_32 (Gen : not null access Generator) return Cardinal is
       mag01 : constant array (Cardinal range 0 .. 1) of Cardinal :=
          (0, MATRIX_A);
       y : Cardinal;
-      S : State renames Gen.State;
+      S : State
+         renames Gen.State;
    begin
       if S.Condition >= N then
          for kk in 0 .. (N - M - 1) loop
@@ -56,6 +44,21 @@ package body Ada.Numerics.MT19937 is
       y := y xor Interfaces.Shift_Right (y, 18);
       return y;
    end Random_32;
+
+   function Initialize return Generator is
+   begin
+      return (State => Initialize);
+   end Initialize;
+
+   function Initialize (Initiator : Cardinal) return Generator is
+   begin
+      return (State => Initialize (Initiator));
+   end Initialize;
+
+   function Initialize (Initiator : Cardinal_Vector) return Generator is
+   begin
+      return (State => Initialize (Initiator));
+   end Initialize;
 
    procedure Reset (Gen : in out Generator) is
       Init : Cardinal_Vector (N_Range);

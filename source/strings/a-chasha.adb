@@ -73,4 +73,22 @@ package body Ada.Characters.ASCII.Handling is
       end if;
    end To_Upper;
 
+   function To_Lower (Item : String) return String is
+   begin
+      return Result : String (1 .. Item'Length) do
+         for I in Item'Range loop
+            Result (Result'First - Item'First + I) := To_Lower (Item (I));
+         end loop;
+      end return;
+   end To_Lower;
+
+   function To_Upper (Item : String) return String is
+   begin
+      return Result : String (1 .. Item'Length) do
+         for I in Item'Range loop
+            Result (Result'First - Item'First + I) := To_Upper (Item (I));
+         end loop;
+      end return;
+   end To_Upper;
+
 end Ada.Characters.ASCII.Handling;

@@ -15,13 +15,30 @@ package body Ada.Directories.Temporary is
       Temp_Dir : C.char_ptr;
    begin
       Temp_Dir := C.stdlib.getenv (
-         Temp_Variable (Temp_Variable'First)'Unrestricted_Access);
+         Temp_Variable (Temp_Variable'First)'Access);
       if Temp_Dir = null then
          return Current_Directory;
       else
          return System.Zero_Terminated_Strings.Value (Temp_Dir.all'Address);
       end if;
    end Temporary_Directory;
+
+   procedure Set_Temporary_Directory (Name : String) is
+      Last : constant Integer := Name'Length;
+      Z_Name : String (1 .. Last + 1);
+      C_Name : C.char_array (C.size_t);
+      for C_Name'Address use Z_Name'Address;
+   begin
+      Z_Name (1 .. Last) := Name;
+      Z_Name (Last + 1) := Character'Val (0);
+      if C.stdlib.setenv (
+         Temp_Variable (Temp_Variable'First)'Access,
+         C_Name (C_Name'First)'Access,
+         1) /= 0
+      then
+         raise Use_Error;
+      end if;
+   end Set_Temporary_Directory;
 
    function Create_Temporary_File (
       Directory : String := Temporary_Directory) return String

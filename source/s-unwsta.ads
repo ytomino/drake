@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit;
---  implementation package
+--  runtime unit
 with System.Standard_Library;
 package System.Unwind.Standard is
    pragma Preelaborate;

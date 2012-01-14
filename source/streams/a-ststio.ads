@@ -4,6 +4,7 @@ with Ada.IO_Modes;
 private with Ada.Finalization;
 limited private with Ada.Streams.Stream_IO.Inside;
 package Ada.Streams.Stream_IO is
+   pragma Preelaborate; -- AI12-0010-1
 
    type Stream_Access is access all Root_Stream_Type'Class;
 
@@ -98,13 +99,20 @@ package Ada.Streams.Stream_IO is
 
    --  exceptions
 
-   Status_Error : exception renames IO_Exceptions.Status_Error;
-   Mode_Error : exception renames IO_Exceptions.Mode_Error;
-   Name_Error : exception renames IO_Exceptions.Name_Error;
-   Use_Error : exception renames IO_Exceptions.Use_Error;
-   Device_Error : exception renames IO_Exceptions.Device_Error;
-   End_Error : exception renames IO_Exceptions.End_Error;
-   Data_Error : exception renames IO_Exceptions.Data_Error;
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
+   Mode_Error : exception
+      renames IO_Exceptions.Mode_Error;
+   Name_Error : exception
+      renames IO_Exceptions.Name_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames IO_Exceptions.Device_Error;
+   End_Error : exception
+      renames IO_Exceptions.End_Error;
+   Data_Error : exception
+      renames IO_Exceptions.Data_Error;
 
 private
 

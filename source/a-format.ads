@@ -7,9 +7,17 @@ package Ada.Formatting is
 
    type Form_Type is (Simple, Ada);
 
-   subtype Number_Base is Integer range 2 .. 16; -- same as Text_IO.Number_Base
+   type Sign_Marks is array (-1 .. 1) of Character;
+   type Unsign_Marks is array (0 .. 1) of Character;
 
    None : constant Character := Character'Val (0);
+
+   Spacing_Sign_Marks : constant Sign_Marks := ('-', ' ', ' ');
+   Triming_Sign_Marks : constant Sign_Marks := ('-', None, None);
+   Spacing_Unsign_Marks : constant Unsign_Marks := (' ', ' ');
+   Triming_Unsign_Marks : constant Unsign_Marks := (None, None);
+
+   subtype Number_Base is Integer range 2 .. 16; -- same as Text_IO.Number_Base
 
    type Casing_Type is (Upper, Lower);
    --  same as System.Formating.Casing_Type
@@ -17,9 +25,7 @@ package Ada.Formatting is
    generic
       type T is range <>;
       Form : Form_Type := Ada;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := Spacing_Sign_Marks;
       Base : Number_Base := 10;
       Casing : Casing_Type := Upper;
       Width : Positive := 1;
@@ -29,8 +35,7 @@ package Ada.Formatting is
    generic
       type T is mod <>;
       Form : Form_Type := Ada;
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Unsign_Marks := Spacing_Unsign_Marks;
       Base : Number_Base := 10;
       Casing : Casing_Type := Upper;
       Width : Positive := 1;
@@ -40,9 +45,7 @@ package Ada.Formatting is
    generic
       type T is digits <>;
       Form : Form_Type := Ada;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := Spacing_Sign_Marks;
       Base : Number_Base := 10;
       Casing : Casing_Type := Upper;
       Fore_Width : Positive := 1;
@@ -62,9 +65,7 @@ package Ada.Formatting is
       type T is delta <>;
       Form : Form_Type := Ada;
       Exponent : Boolean := False;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := Spacing_Sign_Marks;
       Base : Number_Base := 10;
       Casing : Casing_Type := Upper;
       Fore_Width : Positive := 1;
@@ -83,9 +84,7 @@ package Ada.Formatting is
       Form : Form_Type := Ada;
       pragma Unreferenced (Form); -- 10-based only
       Exponent : Boolean := False;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := Spacing_Sign_Marks;
       Fore_Width : Positive := 1;
       Fore_Padding : Character := '0';
       Aft_Width : Positive := T'Aft;

@@ -30,7 +30,8 @@ package Ada.Numerics.Generic_Complex_Arrays is
       return Complex_Vector;
 
    function Modulus (X : Complex_Vector) return Real_Vector;
-   function "abs" (Right : Complex_Vector) return Real_Vector renames Modulus;
+   function "abs" (Right : Complex_Vector) return Real_Vector
+      renames Modulus;
    function Argument (X : Complex_Vector) return Real_Vector;
    function Argument (X : Complex_Vector; Cycle : Real'Base)
       return Real_Vector;
@@ -107,7 +108,8 @@ package Ada.Numerics.Generic_Complex_Arrays is
       return Complex_Matrix;
 
    function Modulus (X : Complex_Matrix) return Real_Matrix;
-   function "abs" (Right : Complex_Matrix) return Real_Matrix renames Modulus;
+   function "abs" (Right : Complex_Matrix) return Real_Matrix
+      renames Modulus;
 
    function Argument (X : Complex_Matrix) return Real_Matrix;
    function Argument (X : Complex_Matrix; Cycle : Real'Base)

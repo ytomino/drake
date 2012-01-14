@@ -14,7 +14,8 @@ package body Ada.Locales is
       array (Positive range <>) of Language_Table_Element;
    pragma Suppress_Initialization (Language_Table_Array);
 
-   unde : ISO_639_Alpha_2 renames ISO_639_Alpha_2_Unknown;
+   unde : ISO_639_Alpha_2
+      renames ISO_639_Alpha_2_Unknown;
 
    Language_Table : constant Language_Table_Array := (
       ("aar", "aa"), --  "Afar", "afar"
@@ -717,8 +718,11 @@ package body Ada.Locales is
       return (1 => Item (1), 2 => Item (2));
    end To_String;
 
-   function Language return ISO_639_Alpha_2 renames Inside.Language;
-   function Language return ISO_639_Alpha_3 renames Inside.Language;
-   function Country return ISO_3166_1_Alpha_2 renames Inside.Country;
+   function Language return ISO_639_Alpha_2
+      renames Inside.Language;
+   function Language return ISO_639_Alpha_3
+      renames Inside.Language;
+   function Country return ISO_3166_1_Alpha_2
+      renames Inside.Country;
 
 end Ada.Locales;

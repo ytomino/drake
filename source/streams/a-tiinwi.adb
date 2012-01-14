@@ -6,11 +6,44 @@ package body Ada.Text_IO.Inside.Wide is
       File : File_Type;
       C : Wide_Wide_Character;
       Item : out Wide_Character);
+   procedure Store_Second (
+      File : File_Type;
+      C : Wide_Wide_Character;
+      Item : out Wide_Character)
+   is
+      W_Buffer : Wide_String (1 .. System.UTF_Conversions.UTF_16_Max_Length);
+      W_Last : Natural;
+      Error : Boolean; -- ignore
+   begin
+      System.UTF_Conversions.To_UTF_16 (
+         Wide_Wide_Character'Pos (C),
+         W_Buffer,
+         W_Last,
+         Error);
+      Item := W_Buffer (1);
+      if W_Last >= 2 then
+         --  store second of surrogate pair
+         declare
+            Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
+            Last : Natural;
+         begin
+            System.UTF_Conversions.To_UTF_8 (
+               Wide_Character'Pos (W_Buffer (2)),
+               Buffer,
+               Last,
+               Error);
+            File.Text.Last := Last;
+            File.Text.Buffer (1 .. Last) := Buffer (1 .. Last);
+         end;
+      end if;
+   end Store_Second;
+
+   --  implementation
 
    procedure Get (File : File_Type; Item : out Wide_Character) is
       C : Wide_Wide_Character;
    begin
-      Get (File, C); --  Wide_Wide
+      Get (File, C); -- Wide_Wide
       Store_Second (File, C, Item);
    end Get;
 
@@ -76,7 +109,7 @@ package body Ada.Text_IO.Inside.Wide is
    is
       C : Wide_Wide_Character;
    begin
-      Get_Immediate (File, C, Available, Wait); --  Wide_Wide
+      Get_Immediate (File, C, Available, Wait); -- Wide_Wide
       if Available then
          Store_Second (File, C, Item);
       end if;
@@ -127,14 +160,14 @@ package body Ada.Text_IO.Inside.Wide is
    is
       C : Wide_Wide_Character;
    begin
-      Look_Ahead (File, C, End_Of_Line); --  Wide_Wide
+      Look_Ahead (File, C, End_Of_Line); -- Wide_Wide
       if End_Of_Line then
          Item := Wide_Character'Val (0);
       else
          declare
             Wide_Buffer : Wide_String (1 .. 2);
             Wide_Last : Natural;
-            Error : Boolean; --  ignore
+            Error : Boolean; -- ignore
          begin
             System.UTF_Conversions.To_UTF_16 (
                Wide_Wide_Character'Pos (C),
@@ -159,7 +192,7 @@ package body Ada.Text_IO.Inside.Wide is
       else
          declare
             Length : Natural;
-            Error : Boolean; --  ignore
+            Error : Boolean; -- ignore
          begin
             System.UTF_Conversions.UTF_8_Sequence (C, Length, Error);
             declare
@@ -182,7 +215,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Look_Ahead;
 
    procedure Put (File : File_Type; Item : Wide_Character) is
-      Error : Boolean; --  ignore
+      Error : Boolean; -- ignore
    begin
       if File.Text.Last > 0 then
          declare
@@ -207,7 +240,7 @@ package body Ada.Text_IO.Inside.Wide is
                   or else First >= 16#ffff#
                   or else Last /= File.Text.Last
                then
-                  raise Data_Error; --  previous data is wrong
+                  raise Data_Error; -- previous data is wrong
                end if;
             end;
             declare
@@ -248,12 +281,12 @@ package body Ada.Text_IO.Inside.Wide is
    procedure Put (File : File_Type; Item : Wide_Wide_Character) is
    begin
       if File.Text.Last > 0 then
-         raise Data_Error; --  previous data is rested
+         raise Data_Error; -- previous data is rested
       else
          declare
             Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
             Last : Natural;
-            Error : Boolean; --  ignore
+            Error : Boolean; -- ignore
          begin
             System.UTF_Conversions.To_UTF_8 (
                Wide_Wide_Character'Pos (Item),
@@ -264,38 +297,5 @@ package body Ada.Text_IO.Inside.Wide is
          end;
       end if;
    end Put;
-
-   --  local
-   procedure Store_Second (
-      File : File_Type;
-      C : Wide_Wide_Character;
-      Item : out Wide_Character)
-   is
-      W_Buffer : Wide_String (1 .. System.UTF_Conversions.UTF_16_Max_Length);
-      W_Last : Natural;
-      Error : Boolean; --  ignore
-   begin
-      System.UTF_Conversions.To_UTF_16 (
-         Wide_Wide_Character'Pos (C),
-         W_Buffer,
-         W_Last,
-         Error);
-      Item := W_Buffer (1);
-      if W_Last >= 2 then
-         --  store second of surrogate pair
-         declare
-            Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
-            Last : Natural;
-         begin
-            System.UTF_Conversions.To_UTF_8 (
-               Wide_Character'Pos (W_Buffer (2)),
-               Buffer,
-               Last,
-               Error);
-            File.Text.Last := Last;
-            File.Text.Buffer (1 .. Last) := Buffer (1 .. Last);
-         end;
-      end if;
-   end Store_Second;
 
 end Ada.Text_IO.Inside.Wide;

@@ -91,8 +91,8 @@ package Ada.Containers.Indefinite_Vectors is
 
 --  procedure Replace_Element (
 --    Container : in out Vector;
---    Position : in Cursor;
---    New_item : in Element_Type);
+--    Position : Cursor;
+--    New_item : Element_Type);
 
    --  modified
    procedure Query_Element (
@@ -101,8 +101,8 @@ package Ada.Containers.Indefinite_Vectors is
       Process : not null access procedure (Element : Element_Type));
 
 --  procedure Query_Element (
---    Position : in Cursor;
---    Process : not null access procedure (Element : in Element_Type));
+--    Position : Cursor;
+--    Process : not null access procedure (Element : Element_Type));
 
    --  modified
    procedure Update_Element (
@@ -112,7 +112,7 @@ package Ada.Containers.Indefinite_Vectors is
 
 --  procedure Update_Element (
 --    Container : in out Vector;
---    Position : in Cursor;
+--    Position : Cursor;
 --    Process : not null access procedure (Element : in out Element_Type));
 
    type Constant_Reference_Type (
@@ -154,8 +154,8 @@ package Ada.Containers.Indefinite_Vectors is
 
 --  procedure Insert (
 --    Container : in out Vector;
---    Before : in Cursor;
---    New_Item : in Vector);
+--    Before : Cursor;
+--    New_Item : Vector);
 
    procedure Insert (
       Container : in out Vector;
@@ -171,8 +171,8 @@ package Ada.Containers.Indefinite_Vectors is
 
 --  procedure Insert (
 --    Container : in out Vector;
---    Before : in Cursor;
---    New_Item : in Element_Type;
+--    Before : Cursor;
+--    New_Item : Element_Type;
 --    Count : Count_Type := 1);
 
    procedure Insert (

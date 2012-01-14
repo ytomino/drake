@@ -135,6 +135,13 @@ package Ada.Strings.Generic_Fixed is
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
 
+   --  extended, for Bounede_String and Unbounede_String
+   procedure Delete (
+      Source : in out String_Type;
+      Last : in out Natural;
+      From : Positive;
+      Through : Natural);
+
    --  String selector subprograms
 
    function Trim (

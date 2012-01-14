@@ -56,7 +56,8 @@ package Ada.Strings.Wide_Maps is
    --  function Is_Subset is inherited
 
    function "<=" (Left : Wide_Character_Set; Right : Wide_Character_Set)
-      return Boolean renames Is_Subset;
+      return Boolean
+      renames Is_Subset;
 
    --  Alternative representation for a set of Wide_Character values:
    subtype Wide_Character_Sequence is Wide_String;

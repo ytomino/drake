@@ -14,13 +14,14 @@ package body System.Finalization_Implementation is
    use type Standard_Library.Exception_Data_Ptr;
    use type Storage_Elements.Storage_Offset;
 
-   --  local / finalize global controlled objects (s-finimp.ads)
+   --  finalize global controlled objects (s-finimp.ads)
    procedure Finalize_Global_List;
    procedure Finalize_Global_List is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       Soft_Links.Abort_Defer.all;
       Finalize_List (Global_Final_List);
+      Soft_Links.Abort_Undefer.all;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Finalize_Global_List;
 
@@ -37,7 +38,7 @@ package body System.Finalization_Implementation is
       end if;
    end Register_Finalize_Global_List;
 
-   --  local (s-finimp.adb)
+   --  (s-finimp.adb)
    procedure Raise_From_Finalize (
       L : Finalization_Root.Finalizable_Ptr;
       From_Abort : Boolean;
@@ -54,9 +55,9 @@ package body System.Finalization_Implementation is
             Next : constant Finalization_Root.Finalizable_Ptr := I.Next;
          begin
             begin
-               Finalization_Root.Finalize (I.all); --  dynamic dispatching
+               Finalization_Root.Finalize (I.all); -- dynamic dispatching
             exception
-               when others => null; --  already in exception handler
+               when others => null; -- already in exception handler
             end;
             I := Next;
          end;
@@ -66,7 +67,7 @@ package body System.Finalization_Implementation is
       end if;
    end Raise_From_Finalize;
 
-   --  local (s-finimp.adb)
+   --  (s-finimp.adb)
    type RC_Ptr is access all Record_Controller;
    function Get_Deep_Controller (Obj : Address) return RC_Ptr;
    function Get_Deep_Controller (Obj : Address) return RC_Ptr is
@@ -115,19 +116,21 @@ package body System.Finalization_Implementation is
       end if;
    end Get_Deep_Controller;
 
+   --  implementation
+
    procedure Attach_To_Final_List (
       L : in out Finalization_Root.Finalizable_Ptr;
       Obj : in out Finalization_Root.Finalizable;
       Nb_Link : Short_Short_Integer) is
    begin
-      Register_Finalize_Global_List; --  regist here
+      Register_Finalize_Global_List; -- regist here
       case Nb_Link is
-         when 0 => --  ???
+         when 0 => -- ???
             null;
-         when 1 => --  normal object
+         when 1 => -- normal object
             Obj.Next := L;
             L := Obj'Unchecked_Access;
-         when 2 => --  dynamic allocated object
+         when 2 => -- dynamic allocated object
             pragma Assert (L /= null
                and then L.all'Address /= Collection_Finalization_Started);
             Shared_Locking.Enter;
@@ -136,7 +139,7 @@ package body System.Finalization_Implementation is
             L.Next.Prev := Obj'Unchecked_Access;
             L.Next := Obj'Unchecked_Access;
             Shared_Locking.Leave;
-         when 3 => --  return
+         when 3 => -- return
             declare
                P : Finalization_Root.Finalizable_Ptr := Obj'Unchecked_Access;
             begin
@@ -146,7 +149,7 @@ package body System.Finalization_Implementation is
                P.Next := L;
                L := Obj'Unchecked_Access;
             end;
-         when 4 => --  Finalize_Storage_Only ?
+         when 4 => -- Finalize_Storage_Only ?
             Obj.Prev := null;
             Obj.Next := null;
          when others =>
@@ -198,7 +201,7 @@ package body System.Finalization_Implementation is
    procedure Finalize_One (Obj : in out Finalization_Root.Finalizable) is
    begin
       Detach_From_Final_List (Obj);
-      Finalization_Root.Finalize (Obj); --  dynamic dispatching
+      Finalization_Root.Finalize (Obj); -- dynamic dispatching
    exception
       when others =>
          declare
@@ -223,7 +226,7 @@ package body System.Finalization_Implementation is
             Next : constant Finalization_Root.Finalizable_Ptr := I.Next;
          begin
             begin
-               Finalization_Root.Finalize (I.all); --  dynamic dispatching
+               Finalization_Root.Finalize (I.all); -- dynamic dispatching
             exception
                when others =>
                   declare
@@ -281,7 +284,7 @@ package body System.Finalization_Implementation is
          if P /= null then
             Ptr_Adjust (P.Next);
             Reverse_Adjust (P.Next);
-            Finalization_Root.Adjust (P.all); --  dynamic dispatching
+            Finalization_Root.Adjust (P.all); -- dynamic dispatching
             Object.F := P;
          end if;
       end Reverse_Adjust;

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 package System.Strings is
    pragma Pure;
 end System.Strings;

@@ -18,6 +18,12 @@ package Ada.Strings.Wide_Wide_Unbounded is
    function Length (Source : Unbounded_Wide_Wide_String) return Natural
       renames Unbounded_Wide_Wide_Strings.Length;
 
+   --  extended
+   procedure Set_Length (
+      Source : in out Unbounded_Wide_Wide_String;
+      Length : Natural)
+      renames Unbounded_Wide_Wide_Strings.Set_Length;
+
 --  type Wide_Wide_String_Access is access all Wide_Wide_String;
    subtype Wide_Wide_String_Access is
       Unbounded_Wide_Wide_Strings.String_Access;
@@ -170,6 +176,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
 
    --  Search subprograms
 
+   --  modified
 --  function Index (
 --    Source : Unbounded_Wide_Wide_String;
 --    Pattern : Wide_Wide_String;
@@ -194,6 +201,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       return Natural
       renames Unbounded_Wide_Wide_Strings.Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : Unbounded_Wide_Wide_String;
 --    Pattern : Wide_Wide_String;
@@ -211,6 +219,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       return Natural
       renames Unbounded_Wide_Wide_Strings.Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : Unbounded_Wide_Wide_String;
 --    Pattern : Wide_Wide_String;
@@ -232,6 +241,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       return Natural
       renames Unbounded_Wide_Wide_Strings.Functions.Maps.Index;
 
+   --  modified
 --  function Index (
 --    Source : Unbounded_Wide_Wide_String;
 --    Pattern : Wide_Wide_String;
@@ -277,6 +287,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       return Natural
       renames Unbounded_Wide_Wide_Strings.Functions.Index_Non_Blank;
 
+   --  modified
 --  function Count (
 --    Source : Unbounded_Wide_Wide_String;
 --    Pattern : Wide_Wide_String;
@@ -295,6 +306,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       return Natural
       renames Unbounded_Wide_Wide_Strings.Functions.Maps.Count;
 
+   --  modified
 --  function Count (
 --    Source : Unbounded_String;
 --    Pattern : String;
@@ -344,6 +356,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping)
       renames Unbounded_Wide_Wide_Strings.Functions.Maps.Translate;
 
+   --  modified
 --  function Translate (
 --    Source : Unbounded_Wide_Wide_String;
 --    Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping_Function)
@@ -355,6 +368,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       return Unbounded_Wide_Wide_String
       renames Unbounded_Wide_Wide_Strings.Functions.Maps.Translate;
 
+   --  modified
 --  procedure Translate (
 --    Source : in out Unbounded_Wide_Wide_String;
 --    Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping_Function);
@@ -487,26 +501,5 @@ package Ada.Strings.Wide_Wide_Unbounded is
    function "*" (Left : Natural; Right : Unbounded_Wide_Wide_String)
       return Unbounded_Wide_Wide_String
       renames Unbounded_Wide_Wide_Strings.Functions."*";
-
-   --  extended
-   function Constant_Reference (
-      Source : not null access constant Unbounded_Wide_Wide_String)
-      return Unbounded_Wide_Wide_Strings.Slicing.Constant_Reference_Type
-      renames Unbounded_Wide_Wide_Strings.Constant_Reference;
-   function Constant_Reference (
-      Source : not null access constant Unbounded_Wide_Wide_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Unbounded_Wide_Wide_Strings.Slicing.Constant_Reference_Type
-      renames Unbounded_Wide_Wide_Strings.Constant_Reference;
-   function Reference (Source : not null access Unbounded_Wide_Wide_String)
-      return Unbounded_Wide_Wide_Strings.Slicing.Reference_Type
-      renames Unbounded_Wide_Wide_Strings.Reference;
-   function Reference (
-      Source : not null access Unbounded_Wide_Wide_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Unbounded_Wide_Wide_Strings.Slicing.Reference_Type
-      renames Unbounded_Wide_Wide_Strings.Reference;
 
 end Ada.Strings.Wide_Wide_Unbounded;

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 procedure System.Formatting.Decimal_Image (
    To : out String; -- To'Length >= T'Fore + T'Aft + 1 (.)
    Last : out Natural;

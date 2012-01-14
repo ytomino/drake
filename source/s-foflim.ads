@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 procedure System.Formatting.Float_Image (
    To : out String; -- To'Length >= Long_Long_Float'Width + 4 (16##)
    Last : out Natural;

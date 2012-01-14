@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  generic implementation of Interfaces.C.Strings
-with System.Arrays;
+with Ada.References;
 with Interfaces.C.Pointers;
 generic
    type Character_Type is (<>);
@@ -12,6 +12,10 @@ generic
       Element => Element,
       Element_Array => Element_Array,
       Default_Terminator => Element'Val (0));
+   with package Slicing is new Ada.References.Generic_Slicing (
+      Positive,
+      Character_Type,
+      String_Type);
 package Interfaces.C.Generic_Strings is
    pragma Preelaborate;
 
@@ -22,15 +26,16 @@ package Interfaces.C.Generic_Strings is
 --  type chars_ptr is private;
 --  pragma Preelaborable_Initialization (chars_ptr);
    subtype chars_ptr is Pointers.Pointer;
-   function "=" (Left, Right : chars_ptr) return Boolean renames Pointers."=";
+   function "=" (Left, Right : chars_ptr) return Boolean
+      renames Pointers."=";
 
    type chars_ptr_array is array (size_t range <>) of aliased chars_ptr;
 
    Null_Ptr : constant chars_ptr := null;
 
 --  function To_Chars_Ptr (
---    Item : in char_array_access;
---    Nul_Check : in Boolean := False)
+--    Item : char_array_access;
+--    Nul_Check : Boolean := False)
 --    return chars_ptr;
    function To_Chars_Ptr (
       Item : not null access Element_Array;
@@ -39,42 +44,42 @@ package Interfaces.C.Generic_Strings is
    pragma Pure_Function (To_Chars_Ptr);
    pragma Inline_Always (To_Chars_Ptr);
 
---  function New_Char_Array (Chars : in char_array) return chars_ptr;
+--  function New_Char_Array (Chars : char_array) return chars_ptr;
    function New_Char_Array (Chars : Element_Array) return not null chars_ptr;
 
---  function New_String (Str : in String) return chars_ptr;
+--  function New_String (Str : String) return chars_ptr;
    function New_String (Str : String_Type) return not null chars_ptr;
 
    procedure Free (Item : in out chars_ptr);
 
 --  Dereference_Error : exception;
 
---  function Value (Item : in chars_ptr) return char_array;
+--  function Value (Item : chars_ptr) return char_array;
    function Value (Item : not null access constant Element)
       return Element_Array;
 
---  function Value (Item : in chars_ptr; Length : in size_t)
+--  function Value (Item : chars_ptr; Length : size_t)
 --    return char_array;
    function Value (Item : access constant Element; Length : size_t)
       return Element_Array;
 
---  function Value (Item : in chars_ptr) return String;
+--  function Value (Item : chars_ptr) return String;
    function Value (Item : not null access constant Element)
       return String_Type;
 
---  function Value (Item : in chars_ptr; Length : in size_t) return String;
+--  function Value (Item : chars_ptr; Length : size_t) return String;
    function Value (Item : access constant Element; Length : size_t)
       return String_Type;
 
---  function Strlen (Item : in chars_ptr) return size_t;
+--  function Strlen (Item : chars_ptr) return size_t;
    function Strlen (Item : not null access constant Element)
       return size_t;
 
 --  procedure Update (
---    Item : in chars_ptr;
---    Offset : in size_t;
---    Chars : in char_array;
---    Check : in Boolean := True);
+--    Item : chars_ptr;
+--    Offset : size_t;
+--    Chars : char_array;
+--    Check : Boolean := True);
    procedure Update (
       Item : not null access Element;
       Offset : size_t;
@@ -82,10 +87,10 @@ package Interfaces.C.Generic_Strings is
       Check : Boolean := True);
 
 --  procedure Update (
---    Item : in chars_ptr;
---    Offset : in size_t;
---    Str : in String;
---    Check : in Boolean := True);
+--    Item : chars_ptr;
+--    Offset : size_t;
+--    Str : String;
+--    Check : Boolean := True);
    procedure Update (
       Item : not null access Element;
       Offset : size_t;
@@ -152,11 +157,6 @@ package Interfaces.C.Generic_Strings is
       Item : not null access Element;
       Offset : size_t;
       Source : not null access constant Element);
-
-   package Slicing is new System.Arrays.Generic_Slicing (
-      Positive,
-      Character_Type,
-      String_Type);
 
    function Reference (
       Item : not null access Element;

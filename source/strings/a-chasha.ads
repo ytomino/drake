@@ -25,4 +25,9 @@ package Ada.Characters.ASCII.Handling is
    function To_Case_Folding (Item : Character) return Character
       renames To_Lower;
 
+   function To_Lower (Item : String) return String;
+   function To_Upper (Item : String) return String;
+   function To_Case_Folding (Item : String) return String
+      renames To_Lower;
+
 end Ada.Characters.ASCII.Handling;

@@ -1,4 +1,4 @@
-package body Ada.Streams.Overlay_Storage_IO is
+package body Ada.Streams.Overlaps_Storage_IO is
    use type System.Storage_Elements.Storage_Offset;
 
    function Create (
@@ -82,4 +82,4 @@ package body Ada.Streams.Overlay_Storage_IO is
       Object.Index := Next_Index;
    end Write;
 
-end Ada.Streams.Overlay_Storage_IO;
+end Ada.Streams.Overlaps_Storage_IO;

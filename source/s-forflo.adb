@@ -91,4 +91,17 @@ package body System.Formatting.Float is
       end loop;
    end Aft_Image;
 
+   function Fore_Width (Value : Longest_Float; Base : Number_Base := 10)
+      return Positive
+   is
+      V : Long_Long_Float := Value;
+      Result : Positive := 1;
+   begin
+      while V >= Long_Long_Float (Base) loop
+         V := V / Long_Long_Float (Base);
+         Result := Result + 1;
+      end loop;
+      return Result;
+   end Fore_Width;
+
 end System.Formatting.Float;

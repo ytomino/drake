@@ -14,7 +14,7 @@ package body Ada.Streams.Stream_IO.Inside is
    use type C.char;
    use type C.char_array;
    use type C.char_ptr;
-   use type C.signed_int; --  ssize_t is signed int or signed long
+   use type C.signed_int; -- ssize_t is signed int or signed long
    use type C.signed_long;
    use type C.size_t;
    use type C.unsigned_short;
@@ -103,7 +103,7 @@ package body Ada.Streams.Stream_IO.Inside is
          when External_No_Close =>
             Free (File);
          when Standard_Handle =>
-            null; --  statically allocated
+            null; -- statically allocated
       end case;
    end Close;
 
@@ -123,7 +123,7 @@ package body Ada.Streams.Stream_IO.Inside is
          Name => Name,
          Form => Form);
       if Mode = Append_File then
-         Set_Index_To_End (File); --  Append_File sets index to the last
+         Set_Index_To_End (File); -- Append_File sets index to the last
       end if;
    end Create;
 
@@ -319,7 +319,7 @@ package body Ada.Streams.Stream_IO.Inside is
          Name => Name,
          Form => Form);
       if Mode = Append_File then
-         Set_Index_To_End (File); --  Append_File sets index to the last
+         Set_Index_To_End (File); -- Append_File sets index to the last
       end if;
    end Open;
 

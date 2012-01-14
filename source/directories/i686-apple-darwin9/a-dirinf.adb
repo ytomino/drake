@@ -1,10 +1,18 @@
+with Ada.Exceptions.Finally;
 with Ada.Permissions.Inside;
 with Ada.Unchecked_Conversion;
+with System.Address_To_Named_Access_Conversions;
+with System.Memory;
 with System.Native_Time;
+with System.Storage_Elements;
+with C.errno;
 with C.sys.stat;
 with C.sys.types;
+with C.unistd;
 package body Ada.Directories.Information is
+   use type C.size_t;
    use type C.sys.types.mode_t;
+   use type C.sys.types.ssize_t;
 
    function To_Permission_Set (Mode : C.sys.types.mode_t)
       return Permission_Set_Type;
@@ -184,5 +192,72 @@ package body Ada.Directories.Information is
       Check_Assigned (Directory_Entry);
       return To_Permission_Set (Directory_Entry.State_Data.st_mode);
    end Permission_Set;
+
+   function Read_Symbolic_Link (Name : String) return String is
+      package Conv is new System.Address_To_Named_Access_Conversions (
+         C.char,
+         C.char_ptr);
+      Buffer_Length : C.size_t := 1024;
+      Buffer : aliased C.char_ptr := Conv.To_Pointer (System.Memory.Allocate (
+         System.Storage_Elements.Storage_Count (Buffer_Length)));
+      procedure Finally (X : not null access C.char_ptr);
+      procedure Finally (X : not null access C.char_ptr) is
+      begin
+         System.Memory.Free (Conv.To_Address (X.all));
+      end Finally;
+      package Holder is new Exceptions.Finally.Scoped_Holder (
+         C.char_ptr,
+         Finally);
+      Z_Name : constant String := Name & Character'Val (0);
+      C_Name : C.char_array (C.size_t);
+      for C_Name'Address use Z_Name'Address;
+   begin
+      Holder.Assign (Buffer'Access);
+      loop
+         declare
+            function To_size is new Ada.Unchecked_Conversion (
+               C.size_t,
+               C.size_t); -- OSX
+            function To_size is new Ada.Unchecked_Conversion (
+               C.size_t,
+               C.signed_int); -- FreeBSD
+            pragma Warnings (Off, To_size);
+            Result : constant C.sys.types.ssize_t := C.unistd.readlink (
+               C_Name (0)'Access,
+               Buffer,
+               To_size (Buffer_Length));
+         begin
+            if Result < 0 then
+               case C.errno.errno is
+                  when C.errno.ENAMETOOLONG
+                     | C.errno.ENOENT
+                     | C.errno.ENOTDIR
+                  =>
+                     raise Name_Error;
+                  when others =>
+                     raise Use_Error;
+               end case;
+            end if;
+            if C.size_t (Result) < Buffer_Length then
+               declare
+                  Image : String (1 .. Natural (Result));
+                  for Image'Address use Conv.To_Address (Buffer);
+               begin
+                  return Image;
+               end;
+            end if;
+            Buffer_Length := Buffer_Length * 2;
+            Buffer := Conv.To_Pointer (System.Memory.Reallocate (
+               Conv.To_Address (Buffer),
+               System.Storage_Elements.Storage_Count (Buffer_Length)));
+         end;
+      end loop;
+   end Read_Symbolic_Link;
+
+   function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+      return String is
+   begin
+      return Read_Symbolic_Link (Full_Name (Directory_Entry));
+   end Read_Symbolic_Link;
 
 end Ada.Directories.Information;

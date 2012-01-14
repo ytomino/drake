@@ -43,8 +43,10 @@ package Ada.Memory_Mapped_IO is
       return System.Storage_Elements.Storage_Count;
    pragma Inline (Size);
 
-   Status_Error : exception renames IO_Exceptions.Status_Error;
-   Use_Error : exception renames IO_Exceptions.Use_Error;
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
 
 private
 

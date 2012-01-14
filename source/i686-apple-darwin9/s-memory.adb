@@ -3,7 +3,7 @@ pragma Compiler_Unit;
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Debug;
-with System.Unwind.Raising; --  raising exception in compiler unit
+with System.Unwind.Raising; -- raising exception in compiler unit
 with System.Unwind.Standard;
 with C.stdlib;
 with C.unistd;

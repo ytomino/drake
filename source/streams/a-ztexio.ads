@@ -9,9 +9,12 @@ package Ada.Wide_Wide_Text_IO is
 
 --  type File_Mode is (In_File, Out_File, Append_File);
    subtype File_Mode is Text_IO.File_Mode;
-   function In_File return File_Mode renames Text_IO.In_File;
-   function Out_File return File_Mode renames Text_IO.Out_File;
-   function Append_File return File_Mode renames Text_IO.Append_File;
+   function In_File return File_Mode
+      renames Text_IO.In_File;
+   function Out_File return File_Mode
+      renames Text_IO.Out_File;
+   function Append_File return File_Mode
+      renames Text_IO.Append_File;
 
 --  type Count is range 0 .. implementation-defined;
    subtype Count is Text_IO.Count;
@@ -25,8 +28,10 @@ package Ada.Wide_Wide_Text_IO is
 
 --  type Type_Set is (Lower_Case, Upper_Case);
    subtype Type_Set is Text_IO.Type_Set;
-   function Lower_Case return Type_Set renames Text_IO.Lower_Case;
-   function Upper_Case return Type_Set renames Text_IO.Upper_Case;
+   function Lower_Case return Type_Set
+      renames Text_IO.Lower_Case;
+   function Upper_Case return Type_Set
+      renames Text_IO.Upper_Case;
 
    --  File Management
 
@@ -281,13 +286,21 @@ package Ada.Wide_Wide_Text_IO is
 
    --  Exceptions
 
-   Status_Error : exception renames IO_Exceptions.Status_Error;
-   Mode_Error : exception renames IO_Exceptions.Mode_Error;
-   Name_Error : exception renames IO_Exceptions.Name_Error;
-   Use_Error : exception renames IO_Exceptions.Use_Error;
-   Device_Error : exception renames IO_Exceptions.Device_Error;
-   End_Error : exception renames IO_Exceptions.End_Error;
-   Data_Error : exception renames IO_Exceptions.Data_Error;
-   Layout_Error : exception renames IO_Exceptions.Layout_Error;
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
+   Mode_Error : exception
+      renames IO_Exceptions.Mode_Error;
+   Name_Error : exception
+      renames IO_Exceptions.Name_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames IO_Exceptions.Device_Error;
+   End_Error : exception
+      renames IO_Exceptions.End_Error;
+   Data_Error : exception
+      renames IO_Exceptions.Data_Error;
+   Layout_Error : exception
+      renames IO_Exceptions.Layout_Error;
 
 end Ada.Wide_Wide_Text_IO;

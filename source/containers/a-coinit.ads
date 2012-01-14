@@ -33,7 +33,8 @@ package Ada.Containers.Input_Iterators is
       Position : Cursor)
       return Constant_Reference_Type;
 
-   Status_Error : exception renames IO_Exceptions.Status_Error;
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
 
 private
 

@@ -6,6 +6,7 @@ package Ada.Characters.ASCII is
    --  This is an alternative package of Standard.ASCII.
    pragma Pure;
 
-   NUL : Character renames Standard.ASCII.NUL;
+   NUL : Character
+      renames Standard.ASCII.NUL;
 
 end Ada.Characters.ASCII;

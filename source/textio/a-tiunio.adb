@@ -5,9 +5,7 @@ package body Ada.Text_IO.Unbounded_IO is
       File : File_Type;
       Item : Strings.Unbounded.Unbounded_String) is
    begin
-      Put (
-         File,
-         Strings.Unbounded.Constant_Reference (Item'Access).Element.all);
+      Put (File, Item.Constant_Reference.Element.all);
    end Put;
 
    procedure Put (
@@ -20,9 +18,7 @@ package body Ada.Text_IO.Unbounded_IO is
       File : File_Type;
       Item : Strings.Unbounded.Unbounded_String) is
    begin
-      Put_Line (
-         File,
-         Strings.Unbounded.Constant_Reference (Item'Access).Element.all);
+      Put_Line (File, Item.Constant_Reference.Element.all);
    end Put_Line;
 
    procedure Put_Line (

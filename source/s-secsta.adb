@@ -7,7 +7,7 @@ package body System.Secondary_Stack is
 
    type Block is record
       Previous : Address;
-      Last : Address; --  Last + 1
+      Last : Address; -- Last + 1
       Used : Address;
    end record;
    pragma Suppress_Initialization (Block);

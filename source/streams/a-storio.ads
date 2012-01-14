@@ -21,6 +21,7 @@ package Ada.Storage_IO is
 
    --  Exceptions
 
-   Data_Error : exception renames IO_Exceptions.Data_Error;
+   Data_Error : exception
+      renames IO_Exceptions.Data_Error;
 
 end Ada.Storage_IO;

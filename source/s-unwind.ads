@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
-pragma Compiler_Unit;
---  implementation package
+--  runtime unit
 with Ada.Unchecked_Deallocation;
 with System.Standard_Library;
 package System.Unwind is

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with Ada.Streams;
 with System.Finalization_Root;
 package System.Finalization_Implementation is

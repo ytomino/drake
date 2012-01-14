@@ -65,7 +65,7 @@ package body Ada.Characters.Inside.Maps is
    procedure Translate (
       Source : String;
       Mapping : not null access constant Character_Mapping;
-      Item : out String; --  Source'Length * 6, at least
+      Item : out String; -- Source'Length * 6, at least
       Last : out Natural)
    is
       I : Natural := Source'First;
@@ -76,7 +76,7 @@ package body Ada.Characters.Inside.Maps is
             Code : System.UTF_Conversions.UCS_4;
             I_Next : Natural;
             J_Next : Natural;
-            Error : Boolean; --  ignore
+            Error : Boolean; -- ignore
          begin
             --  get single unicode character
             System.UTF_Conversions.From_UTF_8 (
@@ -116,7 +116,7 @@ package body Ada.Characters.Inside.Maps is
             I_Next : Natural;
             J_Code : System.UTF_Conversions.UCS_4;
             J_Next : Natural;
-            Error : Boolean; --  ignore
+            Error : Boolean; -- ignore
          begin
             System.UTF_Conversions.From_UTF_8 (
                Left (I .. Left'Last),

@@ -1,4 +1,3 @@
-with System.Fore;
 with System.Formatting.Float;
 with System.Long_Long_Float_Divide;
 procedure System.Formatting.Fixed_Image (
@@ -59,7 +58,7 @@ begin
    Aft := abs Item;
    Item_Fore := Long_Long_Float'Truncation (Aft);
    Aft := Aft - Item_Fore;
-   Required_Fore_Width := Fore.Fore_Width (Item_Fore, Base => Base);
+   Required_Fore_Width := Float.Fore_Width (Item_Fore, Base => Base);
    for I in Required_Fore_Width + 1 .. Fore_Width loop
       Last := Last + 1;
       pragma Assert (Last <= To'Last);

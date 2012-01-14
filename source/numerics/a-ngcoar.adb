@@ -1,16 +1,18 @@
+with Ada.Float.Elementary_Functions;
 with Ada.Numerics.Generic_Arrays;
 with Ada.Numerics.Generic_Complex_Elementary_Functions;
-with Ada.Numerics.Generic_Elementary_Sqrt;
 package body Ada.Numerics.Generic_Complex_Arrays is
    pragma Suppress (All_Checks);
 
-   function Sqrt is new Generic_Elementary_Sqrt (Real'Base);
+   function Sqrt is new Float.Elementary_Functions.Sqrt (Real'Base);
    package Elementary_Functions is
       new Generic_Complex_Elementary_Functions (Complex_Types);
 
    function Minor is new Generic_Arrays.Minor (
       Complex,
       Complex_Matrix);
+
+   --  implementation
 
    function Argument_Body is new Generic_Arrays.Operator_Vector (
       Complex,

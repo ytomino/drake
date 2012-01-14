@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
-package body System.Arrays is
+with System;
+package body Ada.References is
    pragma Suppress (All_Checks);
 
    package body Generic_Slicing is
@@ -11,14 +12,14 @@ package body System.Arrays is
          return Constant_Reference_Type is
       begin
          return Result : aliased Constant_Reference_Type := (
-            Element => Item, --  dummy, be overwritten
+            Element => Item, -- dummy, be overwritten
             First => First,
             Last => Last)
          do
             declare
                type Repr is record
-                  Data : Address;
-                  Constraints : Address;
+                  Data : System.Address;
+                  Constraints : System.Address;
                end record;
                pragma Suppress_Initialization (Repr);
                R : Repr;
@@ -45,4 +46,4 @@ package body System.Arrays is
 
    end Generic_Slicing;
 
-end System.Arrays;
+end Ada.References;

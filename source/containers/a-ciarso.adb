@@ -98,7 +98,7 @@ package body Ada.Containers.Inside.Array_Sorting is
                      L := M;
                      exit when L >= H;
                   else
-                     H := M - 1; --  not includes equiv.
+                     H := M - 1; -- not includes equiv.
                      exit when H <= Middle;
                   end if;
                end loop;
@@ -115,7 +115,7 @@ package body Ada.Containers.Inside.Array_Sorting is
                      H := M;
                      exit when L >= H;
                   else
-                     L := M + 1; --  not includes equiv.
+                     L := M + 1; -- not includes equiv.
                      exit when L > Middle;
                   end if;
                end loop;

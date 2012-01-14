@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package
+--  implementation unit
 with C.sys.types;
 with C.unistd;
 package Ada.Permissions.Inside is

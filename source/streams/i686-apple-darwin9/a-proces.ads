@@ -33,11 +33,21 @@ package Ada.Processes is
    procedure Wait (Child : Process; Status : out Command_Line.Exit_Status);
    procedure Wait (Child : Process);
 
-   procedure Shell (Command : String; Status : out Command_Line.Exit_Status);
-   procedure Shell (Command : String);
+   procedure Shell (
+      Command_Line : String;
+      Status : out Ada.Command_Line.Exit_Status);
+   procedure Shell (
+      Command_Line : String);
 
-   Name_Error : exception renames IO_Exceptions.Name_Error;
-   Use_Error : exception renames IO_Exceptions.Use_Error;
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String);
+
+   Name_Error : exception
+      renames IO_Exceptions.Name_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
 
 private
 
