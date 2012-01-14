@@ -1,11 +1,8 @@
 -- This file is UTF-8.
 with Ada.Numerics.Elementary_Functions;
 with Ada.Numerics.Real_Arrays;
-with Ada.Numerics.Complex_Types;
-with Ada.Numerics.Complex_Elementary_Functions;
-with Ada.Numerics.Complex_Arrays;
 -- with Ada.Text_IO;
-procedure numerics is
+procedure num_real is
 --	procedure Dump (A : Ada.Numerics.Real_Arrays.Real_Matrix) is
 --	begin
 --		for I in A'Range (1) loop
@@ -51,31 +48,6 @@ procedure numerics is
 		null;
 	end Test_Power;
 	pragma Debug (Test_Power);
-	procedure Test_Complex is
-		use Ada.Numerics.Complex_Types;
-	begin
-		pragma Assert (i * i = -1.0);
-		pragma Assert (Argument (1.0 + i) = Ada.Numerics.Pi / 4.0);
-		pragma Assert (abs (1.0 + i) = Ada.Numerics.Elementary_Functions.Sqrt (2.0));
-		pragma Assert (Conjugate (1.0 + i) = 1.0 - i);
-		pragma Assert (abs (Compose_From_Polar (2.0, Ada.Numerics.Pi / 2.0) - (0.0 + 2.0 * i)) < 1.0e-5);
-		pragma Assert (abs ((1.0 + i) ** 2 - (0.0 + 2.0 * i)) < 1.0e-5);
-		pragma Assert (abs (i ** 4 - (1.0 + 0.0 * i)) < 1.0e-5);
-		null;
-	end Test_Complex;
-	pragma Debug (Test_Complex);
-	procedure Test_Complex_Sin is
-		use Ada.Numerics.Complex_Types;
-		use Ada.Numerics.Complex_Elementary_Functions;
-		Pi_div_4 : constant Complex := Ada.Numerics.Pi / 4.0 + 0.0 * i;
-	begin
-		pragma Assert (abs (Arcsin (Sin (Pi_div_4)) - Pi_div_4) < 1.0e-5);
-		pragma Assert (abs (Arccos (Cos (Pi_div_4)) - Pi_div_4) < 1.0e-5);
-		pragma Assert (abs (Arctan (Tan (Pi_div_4)) - Pi_div_4) < 1.0e-5);
-		pragma Assert (abs (Arccot (Cot (Pi_div_4)) - Pi_div_4) < 1.0e-5);
-		null;
-	end Test_Complex_Sin;
-	pragma Debug (Test_Complex_Sin);
 	procedure Test_Real_Arrays is
 		use Ada.Numerics.Real_Arrays;
 		Data1 : Real_Vector := (3.0, 4.0);
@@ -124,4 +96,4 @@ procedure numerics is
 	pragma Debug (Ada.Debug.Put ("OK"));
 begin
 	null;
-end numerics;
+end num_real;
