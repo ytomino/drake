@@ -118,31 +118,8 @@ package body Ada.Numerics.Generic_Complex_Types is
       return Real'Base (X);
    end Im;
 
-   function Modulus (X : Complex) return Real'Base is
-   begin
-      if Real'Digits <= Float'Digits then
-         declare
-            function cabsf (A1 : Complex) return Float;
-            pragma Import (Intrinsic, cabsf, "__builtin_cabsf");
-         begin
-            return Real'Base (cabsf (X));
-         end;
-      elsif Real'Digits <= Long_Float'Digits then
-         declare
-            function cabs (A1 : Complex) return Long_Float;
-            pragma Import (Intrinsic, cabs, "__builtin_cabs");
-         begin
-            return Real'Base (cabs (X));
-         end;
-      else
-         declare
-            function cabsl (A1 : Complex) return Long_Long_Float;
-            pragma Import (Intrinsic, cabsl, "__builtin_cabsl");
-         begin
-            return Real'Base (cabsl (X));
-         end;
-      end if;
-   end Modulus;
+   function Modulus (X : Complex) return Real'Base
+      renames Impl.Modulus;
 
    function Re (X : Complex) return Real'Base is
    begin
