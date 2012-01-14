@@ -1,9 +1,9 @@
+with Ada.Float.Elementary_Functions;
 with Ada.Numerics.Generic_Arrays;
-with Ada.Numerics.Generic_Elementary_Sqrt;
 package body Ada.Numerics.Generic_Real_Arrays is
    pragma Suppress (All_Checks);
 
-   function Sqrt is new Generic_Elementary_Sqrt (Real'Base);
+   function Sqrt is new Float.Elementary_Functions.Sqrt (Real'Base);
 
    function Minor is new Generic_Arrays.Minor (
       Real'Base,
@@ -29,6 +29,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
    begin
       return abs X < 1.0e-32;
    end Is_Small;
+
+   --  implementation
 
    procedure Eigensystem_Body is new Generic_Arrays.Eigensystem (
       Real'Base,

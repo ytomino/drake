@@ -1,13 +1,15 @@
-with Ada.Float;
+with Ada.Float.Elementary_Functions;
 with Ada.Numerics.Generic_Complex_Types.Inside;
-with Ada.Numerics.Generic_Elementary_Cos;
-with Ada.Numerics.Generic_Elementary_Sin;
 package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
 
    package Impl is new Inside;
    function Is_Infinity is new Float.Is_Infinity (Real'Base);
+   function Sin is new Float.Elementary_Functions.Sin (Real'Base);
+   function Cos is new Float.Elementary_Functions.Cos (Real'Base);
    subtype Float is Standard.Float; -- hiding "Float" package
+
+   --  implementation
 
    function Argument (X : Complex) return Real'Base
       renames Impl.Argument;
@@ -37,10 +39,7 @@ package body Ada.Numerics.Generic_Complex_Types is
    end Compose_From_Cartesian;
 
    function Compose_From_Polar (Modulus, Argument : Real'Base)
-      return Complex
-   is
-      function Sin is new Generic_Elementary_Sin (Real'Base);
-      function Cos is new Generic_Elementary_Cos (Real'Base);
+      return Complex is
    begin
       return (
          Re => Modulus * Cos (Argument),

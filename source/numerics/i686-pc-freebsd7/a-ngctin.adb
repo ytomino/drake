@@ -1,13 +1,14 @@
-with Ada.Numerics.Generic_Elementary_Arctan;
+with Ada.Float.Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Types.Inside is
    pragma Suppress (All_Checks);
 
-   --  FreeBSD does not have carg
+   function Arctan is new Float.Elementary_Functions.Arctan (Real'Base);
 
-   function Arctan is new Generic_Elementary_Arctan (Real'Base);
+   --  implementation
 
    function Argument (X : Complex) return Real'Base is
    begin
+      --  FreeBSD does not have carg
       return Arctan (X.Im, X.Re);
    end Argument;
 
