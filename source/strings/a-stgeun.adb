@@ -182,7 +182,7 @@ package body Ada.Strings.Generic_Unbounded is
       New_Data : constant not null Data_Access :=
          Allocate_Data (Length, Length);
    begin
-      New_Data.Items.all := Source;
+      New_Data.Items (1 .. Length) := Source;
       return (Finalization.Controlled with Data => New_Data, Length => Length);
    end To_Unbounded_String;
 
