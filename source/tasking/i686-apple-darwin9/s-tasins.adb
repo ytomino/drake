@@ -1886,18 +1886,15 @@ package body System.Tasking.Inside is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
+      Notified : out Boolean;
       Aborted : out Boolean) is
    begin
-      loop
+      Notified := False;
+      Aborted := Is_Aborted;
+      if not Aborted then
+         Wait (Object, Mutex, Abort_Checking_Span, Notified);
          Aborted := Is_Aborted;
-         exit when Aborted;
-         declare
-            Notified : Boolean;
-         begin
-            Wait (Object, Mutex, Abort_Checking_Span, Notified);
-            exit when Notified;
-         end;
-      end loop;
+      end if;
    end Wait;
 
    procedure Wait (
@@ -2154,10 +2151,15 @@ package body System.Tasking.Inside is
          Aborted := Is_Aborted;
       else
          loop
-            Wait (
-               Object.Condition_Variable,
-               Object.Mutex,
-               Aborted => Aborted);
+            declare
+               Notified : Boolean;
+            begin
+               Wait (
+                  Object.Condition_Variable,
+                  Object.Mutex,
+                  Notified => Notified,
+                  Aborted => Aborted);
+            end;
             exit when Object.Value or else Aborted;
          end loop;
       end if;
@@ -2215,10 +2217,20 @@ package body System.Tasking.Inside is
          Object.Blocked := 0;
          Aborted := Is_Aborted;
       else
-         Wait (
-            Object.Condition_Variable,
-            Object.Mutex,
-            Aborted => Aborted);
+         loop
+            declare
+               Threshold_Is_Satisfied : Boolean;
+            begin
+               Wait (
+                  Object.Condition_Variable,
+                  Object.Mutex,
+                  Notified => Threshold_Is_Satisfied,
+                  Aborted => Aborted);
+               exit when Threshold_Is_Satisfied
+                  or else Object.Blocked = Object.Release_Threshold -- ???
+                  or else Aborted;
+            end;
+         end loop;
       end if;
       Leave (Object.Mutex);
    end Wait;

@@ -176,6 +176,7 @@ package System.Tasking.Inside is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Inside.Mutex;
+      Notified : out Boolean;
       Aborted : out Boolean); -- with abort checking
    procedure Wait (
       Object : in out Condition_Variable;
