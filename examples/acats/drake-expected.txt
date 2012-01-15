@@ -215,7 +215,6 @@ cb20005 C unimplemented tasking features
 cb20006 C unimplemented tasking features
 cb20007 C unimplemented tasking features
 cc1225a C unimplemented tasking features
-cc1310a C unimplemented tasking features
 cc3019c C unimplemented tasking features
 cc3120b C unimplemented tasking features
 cc3207b C unimplemented tasking features (select)
