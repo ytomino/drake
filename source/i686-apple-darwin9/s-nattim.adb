@@ -37,6 +37,7 @@ package body System.Native_Time is
    end To_timespec_Duration;
 
    function To_Native_Time (T : Duration) return Native_Time is
+      pragma Suppress (Range_Check);
       function Cast is new Ada.Unchecked_Conversion (Duration, Time_Rep);
       Sub_Second : constant Time_Rep := Cast (T) mod 1000000000;
    begin
