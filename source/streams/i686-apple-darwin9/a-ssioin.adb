@@ -344,8 +344,8 @@ package body Ada.Streams.Stream_IO.Inside is
       File := new Stream_Type'(
          Name_Length => Name'Length + 1,
          Form_Length => Form'Length,
-         Root_Dispatcher => (Root_Stream_Type with Stream => null),
-         Seekable_Dispatcher => <>,
+         Root_Dispatcher => <>,
+         Seekable_Dispatcher => (Seekable_Stream_Type with Stream => null),
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,

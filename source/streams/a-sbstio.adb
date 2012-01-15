@@ -108,6 +108,8 @@ package body Ada.Streams.Buffer_Storage_IO is
       Length : constant Stream_Element_Count := Item'Length;
       New_Index : constant Stream_Element_Count := Stream.Index + Length;
       Copy_Last : constant Stream_Element_Offset := New_Index - 1;
+      New_Last : constant Stream_Element_Offset :=
+         Stream_Element_Offset'Max (Stream.Last, Copy_Last);
    begin
       if Copy_Last > Stream.Capacity then
          Reallocate (
@@ -117,15 +119,13 @@ package body Ada.Streams.Buffer_Storage_IO is
                Stream.Capacity * 2));
       end if;
       declare
-         Stream_Item : Stream_Element_Array (1 .. Stream.Last);
+         Stream_Item : Stream_Element_Array (1 .. New_Last);
          for Stream_Item'Address use Stream.Data;
       begin
          Stream_Item (Stream.Index .. Copy_Last) := Item;
       end;
       Stream.Index := New_Index;
-      if Stream.Last < Copy_Last then
-         Stream.Last := Copy_Last;
-      end if;
+      Stream.Last := New_Last;
    end Write;
 
    overriding procedure Set_Index (

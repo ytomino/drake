@@ -320,6 +320,7 @@ package body Ada.Strings.Generic_Fixed is
       return String_Type
    is
       Previous_Length : constant Integer := Low - Source'First;
+      Actual_High : Natural;
    begin
       if Previous_Length < 0
          or else Low > Source'Last + 1
@@ -328,16 +329,21 @@ package body Ada.Strings.Generic_Fixed is
       then
          raise Index_Error;
       end if;
+      if High < Low then
+         Actual_High := Low - 1;
+      else
+         Actual_High := High;
+      end if;
       return Result : String_Type (
          1 ..
-         Source'Length - (High - Low + 1) + By'Length)
+         Source'Length - (Actual_High - Low + 1) + By'Length)
       do
          Result (1 .. Previous_Length) :=
             Source (Source'First .. Low - 1);
          Result (Previous_Length + 1 .. Previous_Length + By'Length) :=
             By;
          Result (Previous_Length + By'Length + 1 .. Result'Last) :=
-            Source (High + 1 .. Source'Last);
+            Source (Actual_High + 1 .. Source'Last);
       end return;
    end Replace_Slice;
 
