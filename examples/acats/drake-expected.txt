@@ -24,7 +24,6 @@ c4a012b N Float'Machine_Overflows
 c59002c C unimplemented tasking features (select)
 c74401k C unimplemented tasking features (select)
 c750b01 C unimplemented tasking features (protected)
-c761001 A tasking bug: segmentation fault
 c761007 C unimplemented tasking features
 c85005a C unimplemented tasking features
 c85005b C unimplemented tasking features
@@ -45,12 +44,6 @@ c91004b C unimplemented tasking features
 c91004c C unimplemented tasking features
 c92003a C unimplemented tasking features
 c930001 C unimplemented tasking features
-c93001a F tasking bug: activation order
-c93004a U tasking bug: dead lock ???
-c93004b U tasking bug: dead lock ???
-c93004c U tasking bug: dead lock or segmentation fault ???
-c93004d U tasking bug: dead lock ???
-c93004f U tasking bug: dead lock ???
 c93005a C unimplemented tasking features
 c93005b C unimplemented tasking features
 c93005c C unimplemented tasking features
@@ -74,13 +67,8 @@ c940013 C unimplemented tasking features
 c940014 C unimplemented tasking features
 c940015 C unimplemented tasking features
 c940016 C unimplemented tasking features
-c94001a U I do not want to wait one hour !!! ;-)
-c94001b U I do not want to wait one hour !!! ;-)
-c94001c F tasking bug: ???
 c94001g C unimplemented tasking features
-c94002a F tasking bug: ???
 c94004c C unimplemented tasking features
-c94005b F tasking bug: ???
 c94006a C unimplemented tasking features
 c94007a C unimplemented tasking features
 c94007b C unimplemented tasking features
@@ -91,8 +79,6 @@ c94008d C unimplemented tasking features
 c94020a C unimplemented tasking features
 c940a03 C unimplemented tasking features
 c95008a C unimplemented tasking features
-c95022a U tasking bug: access check failed ???
-c95022b U tasking bug: access check failed ???
 c95065a C unimplemented tasking features
 c95065b C unimplemented tasking features
 c95065c C unimplemented tasking features
@@ -121,7 +107,6 @@ c95089a C unimplemented tasking features
 c95095a C unimplemented tasking features
 c95095b C unimplemented tasking features
 c95095c C unimplemented tasking features
-c95095d A tasking bug: segmentation fault ???
 c951001 C unimplemented tasking features
 c951002 C unimplemented tasking features
 c953001 C unimplemented tasking features
@@ -213,17 +198,10 @@ c974014 C unimplemented tasking features
 c980001 C unimplemented tasking features
 c980002 C unimplemented tasking features
 c980003 C unimplemented tasking features
-c990001 F tasking bug: segmentation fault ???
 c99005a C unimplemented tasking features
-c9a003a F tasking bug: ???
-c9a004a F tasking bug: ???
-c9a007a U tasking bug: segmentation fault ???
 c9a009a C unimplemented tasking features
-c9a009c U tasking bug: dead lock ???
 c9a009f C unimplemented tasking features
 c9a009g C unimplemented tasking features
-c9a009h F tasking bug: 'Callable
-c9a010a F tasking bug: access check failed
 c9a011a C unimplemented tasking features
 c9a011b C unimplemented tasking features (select)
 ca13001 C unimplemented tasking features (protected)
@@ -333,8 +311,6 @@ cxc3008 C unimplemented tasking features
 cxc3009 C unimplemented tasking features
 cxc6003 C unimplemented tasking features
 cxc7001 C unimplemented tasking features
-cxc7002 A tasking bug: an exception raised from finalize ???
-cxc7003 N tasking bug: task attribute ???
 cxc7004 C unimplemented tasking features
 cxc7005 C unimplemented tasking features
 cxd1001 C unimplemented tasking features
