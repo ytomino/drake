@@ -306,12 +306,13 @@ private
    pragma Suppress_Initialization (Attribute_Array);
    type Attribute_Array_Access is access Attribute_Array;
 
-   type Activation_State is range 0 .. 3;
+   type Activation_State is range 0 .. 4;
    for Activation_State'Size use 8;
    AS_Suspended : constant Activation_State := 0;
-   AS_Activating : constant Activation_State := 1;
-   AS_Active : constant Activation_State := 2;
-   AS_Error : constant Activation_State := 3;
+   AS_Created : constant Activation_State := 1;
+   AS_Active_Before_Activation : Activation_State := 2;
+   AS_Active : constant Activation_State := 3;
+   AS_Error : constant Activation_State := 4;
 
    type Termination_State is range 0 .. 2;
    for Termination_State'Size use 8;

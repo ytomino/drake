@@ -405,8 +405,10 @@ package body System.Tasking.Inside is
 
    --  registration
 
-   Registered : Boolean := False;
-   pragma Atomic (Registered);
+   type Registered_State_Type is (Single_Task, Registered, Unregistered);
+   pragma Discard_Names (Registered_State_Type);
+   Registered_State : Registered_State_Type := Single_Task;
+   pragma Atomic (Registered_State);
 
    procedure Unregister;
    procedure Unregister is
@@ -441,17 +443,17 @@ package body System.Tasking.Inside is
       --  signal handler
       Restore_SIGTERM_Handler;
       --  clear
-      Registered := False;
+      Registered_State := Unregistered;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unregister;
 
    procedure Register;
    procedure Register is
    begin
-      if not Registered then
+      if Registered_State /= Registered then
          pragma Check (Trace, Ada.Debug.Put ("enter"));
          --  still it is single thread
-         Registered := True;
+         Registered_State := Registered;
          Termination.Register_Exit (Unregister'Access);
          --  shared lock
          Shared_Lock.Handle := C.pthread.PTHREAD_MUTEX_INITIALIZER;
@@ -558,18 +560,18 @@ package body System.Tasking.Inside is
             Aborted : Boolean; -- ignored
          begin
             pragma Check (Trace, Ada.Debug.Put ("enter"));
-            if T.Activation_State <= AS_Activating then
+            if T.Activation_State < AS_Active then
                pragma Check (Trace, Ada.Debug.Put ("unactivated"));
+               pragma Assert (T.Abort_Locking = 1);
                --  an exception was raised until calling Accept_Activation
                T.Activation_Chain.Error := Any_Exception;
-               T.Abort_Locking := T.Abort_Locking - 1; -- cancel below +1
                Accept_Activation (Aborted => Aborted);
             end if;
             pragma Check (Trace, Ada.Debug.Put ("leave"));
          end On_Exception;
       begin
          if T.Activation_Chain /= null then
-            --  Abort_Underder will be called Accpet_Activation
+            --  Abort_Undefer will be called on activation
             T.Abort_Locking := T.Abort_Locking + 1;
          end if;
          T.Process (T.Params);
@@ -635,7 +637,7 @@ package body System.Tasking.Inside is
       if not sync_bool_compare_and_swap (
          T.Activation_State'Access,
          AS_Suspended,
-         AS_Activating)
+         AS_Created)
       then
          Error := Done;
       elsif T.Aborted then -- aborted before activation
@@ -741,14 +743,14 @@ package body System.Tasking.Inside is
       end if;
    end Release;
 
-   procedure Set_Active (T : not null Task_Id);
-   procedure Set_Active (T : not null Task_Id) is
+   procedure Set_Active (T : not null Task_Id; State : Activation_State);
+   procedure Set_Active (T : not null Task_Id; State : Activation_State) is
    begin
       if not Elaborated (T) then
          pragma Check (Trance, Ada.Debug.Put ("elab error in " & Name (T)));
          T.Activation_Chain.Error := Elaboration_Error;
       end if;
-      T.Activation_State := AS_Active;
+      T.Activation_State := State;
    end Set_Active;
 
    procedure Set_Active (C : not null Activation_Chain_Access);
@@ -756,8 +758,8 @@ package body System.Tasking.Inside is
       I : Task_Id := C.List;
    begin
       while I /= null loop
-         if I.Activation_State <= AS_Activating then
-            Set_Active (I);
+         if I.Activation_State < AS_Active then
+            Set_Active (I, AS_Active);
          end if;
          I := I.Next_Of_Activation_Chain;
       end loop;
@@ -839,7 +841,7 @@ package body System.Tasking.Inside is
                   Error := Elaboration_Error;
                end if;
             else
-               Set_Active (T);
+               Set_Active (T, AS_Active_Before_Activation);
                Notify_All (C.Condition_Variable);
             end if;
             Error := Activation_Error'Max (Error, C.Error);
@@ -1088,7 +1090,7 @@ package body System.Tasking.Inside is
    begin
       if T = null then
          raise Program_Error; -- RM C.7.1(15)
-      elsif not Registered then -- already terminated main program
+      elsif Registered_State = Unregistered then -- main has been terminated
          return True;
       else
          return T.Termination_State = TS_Terminated;
@@ -1099,10 +1101,10 @@ package body System.Tasking.Inside is
    begin
       if T = null then
          raise Program_Error; -- RM C.7.1(15)
-      elsif not Registered then -- already terminated main program
+      elsif Registered_State = Unregistered then -- main has been terminated
          return True;
       else
-         return T.Activation_State = AS_Active;
+         return T.Activation_State in AS_Active_Before_Activation .. AS_Active;
       end if;
    end Activated;
 
@@ -1200,21 +1202,31 @@ package body System.Tasking.Inside is
    end Disable_Abort;
 
    procedure Enter_Unabortable is
-      T : constant Task_Id := Current_Task_Id;
    begin
-      pragma Check (Trace, Ada.Debug.Put (Name (T)
-         & Natural'Image (T.Abort_Locking) & " =>"
-         & Natural'Image (T.Abort_Locking + 1)));
-      T.Abort_Locking := T.Abort_Locking + 1;
+      if Registered_State /= Unregistered then
+         declare
+            T : constant Task_Id := Current_Task_Id;
+         begin
+            pragma Check (Trace, Ada.Debug.Put (Name (T)
+               & Natural'Image (T.Abort_Locking) & " =>"
+               & Natural'Image (T.Abort_Locking + 1)));
+            T.Abort_Locking := T.Abort_Locking + 1;
+         end;
+      end if;
    end Enter_Unabortable;
 
    procedure Leave_Unabortable is
-      T : constant Task_Id := TLS_Current_Task_Id;
    begin
-      pragma Check (Trace, Ada.Debug.Put (Name (T)
-         & Natural'Image (T.Abort_Locking) & " =>"
-         & Natural'Image (T.Abort_Locking - 1)));
-      T.Abort_Locking := T.Abort_Locking - 1;
+      if Registered_State /= Unregistered then
+         declare
+            T : constant Task_Id := TLS_Current_Task_Id;
+         begin
+            pragma Check (Trace, Ada.Debug.Put (Name (T)
+               & Natural'Image (T.Abort_Locking) & " =>"
+               & Natural'Image (T.Abort_Locking - 1)));
+            T.Abort_Locking := T.Abort_Locking - 1;
+         end;
+      end if;
    end Leave_Unabortable;
 
    function Is_Aborted return Boolean is
@@ -1240,7 +1252,7 @@ package body System.Tasking.Inside is
          Set_Active (C);
          Notify_All (C.Condition_Variable);
       else
-         while T.Activation_State /= AS_Active and then not Aborted loop
+         while T.Activation_State <= AS_Created and then not Aborted loop
             Wait (C.Condition_Variable, C.Mutex);
             Aborted := T.Aborted; -- is this check worthwhile?
          end loop;
@@ -1401,9 +1413,8 @@ package body System.Tasking.Inside is
             elsif T.Aborted then
                Send_Abort_Signal (Taken); -- C9A007A
             end if;
-            pragma Assert (Current_Task_Id.Abort_Handler = null);
-            Current_Task_Id.Abort_Handler :=
-               Abort_Handler_On_Leave_Master'Access;
+            pragma Assert (T.Abort_Handler = null);
+            T.Abort_Handler := Abort_Handler_On_Leave_Master'Access;
             if T.Kind = Sub then
                Mask_SIGTERM (C.sys.signal.SIG_UNBLOCK);
             end if;
@@ -1411,7 +1422,7 @@ package body System.Tasking.Inside is
             if T.Kind = Sub then
                Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
             end if;
-            Current_Task_Id.Abort_Handler := null;
+            T.Abort_Handler := null;
             if Free_Task_Id /= null then
                Remove_From_Completion_List (Free_Task_Id);
                Free_Task_Id.Next_At_Same_Level := Free_List;
@@ -1634,7 +1645,7 @@ package body System.Tasking.Inside is
 
    procedure Free (Index : in out Attribute_Index) is
    begin
-      if Registered then -- if not, already terminated main program
+      if Registered_State /= Unregistered then
          Enter (Attribute_Indexes_Lock);
       end if;
       while Index.List /= null loop
@@ -1652,7 +1663,7 @@ package body System.Tasking.Inside is
             Index.List := Next;
          end;
       end loop;
-      if Registered then
+      if Registered_State /= Unregistered then
          declare
             P : constant Natural := Index.Index / Word'Size;
             B : constant Natural := Index.Index mod Word'Size;
@@ -1661,7 +1672,7 @@ package body System.Tasking.Inside is
          end;
       end if;
       Finalize (Index.Mutex);
-      if Registered then
+      if Registered_State /= Unregistered then
          Leave (Attribute_Indexes_Lock);
       end if;
    end Free;
