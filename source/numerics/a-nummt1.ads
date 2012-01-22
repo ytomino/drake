@@ -72,6 +72,7 @@ package Ada.Numerics.MT19937 is
 
    procedure Save (Gen : Generator; To_State : out State);
    procedure Reset (Gen : in out Generator; From_State : State);
+   function Reset (From_State : State) return Generator;
 
    Max_Image_Width : constant := (624 + 1) * (32 / 4 + 1) - 1;
 
@@ -88,7 +89,7 @@ package Ada.Numerics.MT19937 is
       return Uniformly_Distributed;
    function Random_Greater_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
-   function Random_53_0_To_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
 
    generic
