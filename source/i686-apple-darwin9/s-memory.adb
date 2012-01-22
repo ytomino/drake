@@ -1,5 +1,3 @@
-pragma License (Unrestricted);
-pragma Compiler_Unit;
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Debug;
