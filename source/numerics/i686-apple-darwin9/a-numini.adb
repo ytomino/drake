@@ -2,7 +2,7 @@ with Ada.IO_Exceptions;
 with C.sys.fcntl;
 with C.sys.types;
 with C.unistd;
-procedure Ada.Numerics.MT19937.Initiator (
+procedure Ada.Numerics.Initiator (
    Item : System.Address;
    Size : System.Storage_Elements.Storage_Count)
 is
@@ -27,4 +27,4 @@ begin
    if Read_Size /= C.sys.types.ssize_t (Size) or else Closed = -1 then
       raise IO_Exceptions.Use_Error;
    end if;
-end Ada.Numerics.MT19937.Initiator;
+end Ada.Numerics.Initiator;
