@@ -262,13 +262,13 @@ cxa3001 C unicode (latin-1)
 cxa3002 C unicode (To_Basic is unimplemented)
 cxa3003 C unicode (latin-1)
 cxa3004 F unicode (Is_String, To_Character, To_String)
-cxa4025 C extended parameters of Ada.Strings.Trim
-cxa4026 C extended parameters of Ada.Strings.Trim
+cxa4025 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
+cxa4026 A unicode (latin-1)
 cxa4027 C "use" and "use type" Ada.Strings.Bounded at the same time
 cxa4028 C "use" and "use type" Ada.Strings.Bounded at the same time
 cxa4029 C "use" and "use type" Ada.Strings.Wide_Bounded at the same time
 cxa4030 C "use" and "use type" Ada.Strings.Unbounded at the same time
-cxa4033 F unicode (translate Wide_String with Characters.To_Upper, To_Lower)
+cxa4033 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
 cxa5013 C unimplemented tasking features (select)
 cxaa006 F strict End_Of_Line
 cxaa019 C see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48002
