@@ -657,8 +657,7 @@ package body Ada.Strings.Generic_Unbounded is
       function Trim (
          Source : Unbounded_String;
          Side : Trim_End;
-         Left : Character_Type := Space;
-         Right : Character_Type := Space)
+         Blank : Character_Type := Space)
          return Unbounded_String
       is
          First : Positive;
@@ -667,8 +666,7 @@ package body Ada.Strings.Generic_Unbounded is
          Fixed_Trim (
             Constant_Reference (Source'Access).Element.all,
             Side,
-            Left,
-            Right,
+            Blank,
             First,
             Last);
          return Unbounded_Slice (Source, First, Last);
@@ -677,8 +675,7 @@ package body Ada.Strings.Generic_Unbounded is
       procedure Trim (
          Source : in out Unbounded_String;
          Side : Trim_End;
-         Left : Character_Type := Space;
-         Right : Character_Type := Space)
+         Blank : Character_Type := Space)
       is
          First : Positive;
          Last : Natural;
@@ -686,8 +683,7 @@ package body Ada.Strings.Generic_Unbounded is
          Fixed_Trim (
             Constant_Reference (Source'Access).Element.all,
             Side,
-            Left,
-            Right,
+            Blank,
             First,
             Last);
          Unbounded_Slice (Source, Source, First, Last);

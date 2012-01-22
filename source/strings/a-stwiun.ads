@@ -463,8 +463,7 @@ package Ada.Strings.Wide_Unbounded is
    function Trim (
       Source : Unbounded_Wide_String;
       Side : Trim_End;
-      Left : Wide_Character := Wide_Space; -- additional
-      Right : Wide_Character := Wide_Space) -- additional
+      Blank : Wide_Character := Wide_Space) -- additional
       return Unbounded_Wide_String
       renames Unbounded_Wide_Strings.Functions.Trim;
 
@@ -472,8 +471,7 @@ package Ada.Strings.Wide_Unbounded is
    procedure Trim (
       Source : in out Unbounded_Wide_String;
       Side : Trim_End;
-      Left : Wide_Character := Wide_Space; -- additional
-      Right : Wide_Character := Wide_Space) -- additional
+      Blank : Wide_Character := Wide_Space) -- additional
       renames Unbounded_Wide_Strings.Functions.Trim;
 
    function Trim (

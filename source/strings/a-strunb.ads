@@ -447,8 +447,7 @@ package Ada.Strings.Unbounded is
    function Trim (
       Source : Unbounded_String;
       Side : Trim_End;
-      Left : Character := Space; -- additional
-      Right : Character := Space) -- additional
+      Blank : Character := Space) -- additional
       return Unbounded_String
       renames Unbounded_Strings.Functions.Trim;
 
@@ -456,8 +455,7 @@ package Ada.Strings.Unbounded is
    procedure Trim (
       Source : in out Unbounded_String;
       Side : Trim_End;
-      Left : Character := Space; -- additional
-      Right : Character := Space) -- additional
+      Blank : Character := Space) -- additional
       renames Unbounded_Strings.Functions.Trim;
 
    function Trim (

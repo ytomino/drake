@@ -206,8 +206,7 @@ package Ada.Strings.Generic_Unbounded is
       with procedure Fixed_Trim (
          Source : String_Type;
          Side : Trim_End;
-         Left : Character_Type;
-         Right : Character_Type;
+         Blank : Character_Type;
          First : out Positive;
          Last : out Natural);
       with function Fixed_Head (
@@ -306,15 +305,13 @@ package Ada.Strings.Generic_Unbounded is
       function Trim (
          Source : Unbounded_String;
          Side : Trim_End;
-         Left : Character_Type := Space; -- extended
-         Right : Character_Type := Space) -- extended
+         Blank : Character_Type := Space) -- additional
          return Unbounded_String;
 
       procedure Trim (
          Source : in out Unbounded_String;
          Side : Trim_End;
-         Left : Character_Type := Space; -- extended
-         Right : Character_Type := Space); -- extended
+         Blank : Character_Type := Space); -- additional
 
       function Head (
          Source : Unbounded_String;

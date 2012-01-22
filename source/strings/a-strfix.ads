@@ -344,22 +344,22 @@ package Ada.Strings.Fixed is
    function Trim (
       Source : String;
       Side : Trim_End;
-      Left : Character := Space; -- additional
-      Right : Character := Space) -- additional
+      Blank : Character := Space) -- additional
       return String
       renames Functions.Trim;
 
-   --  modified
---  procedure Trim (
---    Source : in out String;
---    Side : Trim_End;
---    Justify : Alignment := Left;
---    Pad : Character := Space);
    procedure Trim (
       Source : in out String;
       Side : Trim_End;
-      Left : Character := Space; -- additional
-      Right : Character := Space; -- additional
+      Justify : Alignment := Left;
+      Pad : Character := Space)
+      renames Functions.Trim;
+
+   --  extended
+   procedure Trim (
+      Source : in out String;
+      Side : Trim_End;
+      Blank : Character;
       Justify : Alignment := Strings.Left;
       Pad : Character := Space)
       renames Functions.Trim;

@@ -56,7 +56,7 @@ package body Ada.Strings.Generic_Fixed is
       Target_First : Positive;
       Target_Last : Natural;
    begin
-      Trim (Source, Side (Justify), Pad, Pad, Source_First, Source_Last);
+      Trim (Source, Side (Justify), Pad, Source_First, Source_Last);
       if Source_Last - Source_First + 1 > Target'Length then
          case Drop is
             when Left =>
@@ -275,20 +275,26 @@ package body Ada.Strings.Generic_Fixed is
       end case;
    end Index_Non_Blank;
 
-   function Index_Non_Blank_Forward (Source : String_Type) return Natural is
+   function Index_Non_Blank_Forward (
+      Source : String_Type;
+      Blank : Character_Type := Space)
+      return Natural is
    begin
       for I in Source'Range loop
-         if Source (I) /= Space then
+         if Source (I) /= Blank then
             return I;
          end if;
       end loop;
       return 0;
    end Index_Non_Blank_Forward;
 
-   function Index_Non_Blank_Backward (Source : String_Type) return Natural is
+   function Index_Non_Blank_Backward (
+      Source : String_Type;
+      Blank : Character_Type := Space)
+      return Natural is
    begin
       for I in reverse Source'Range loop
-         if Source (I) /= Space then
+         if Source (I) /= Blank then
             return I;
          end if;
       end loop;
@@ -495,14 +501,13 @@ package body Ada.Strings.Generic_Fixed is
    function Trim (
       Source : String_Type;
       Side : Trim_End;
-      Left : Character_Type := Space;
-      Right : Character_Type := Space)
+      Blank : Character_Type := Space)
       return String_Type
    is
       First : Positive;
       Last : Natural;
    begin
-      Trim (Source, Side, Left, Right, First, Last);
+      Trim (Source, Side, Blank, First, Last);
       declare
          subtype T is String_Type (1 .. Last - First + 1);
       begin
@@ -513,15 +518,23 @@ package body Ada.Strings.Generic_Fixed is
    procedure Trim (
       Source : in out String_Type;
       Side : Trim_End;
-      Left : Character_Type := Space;
-      Right : Character_Type := Space;
+      Justify : Alignment := Strings.Left;
+      Pad : Character_Type := Space) is
+   begin
+      Trim (Source, Side, Space, Justify, Pad);
+   end Trim;
+
+   procedure Trim (
+      Source : in out String_Type;
+      Side : Trim_End;
+      Blank : Character_Type;
       Justify : Alignment := Strings.Left;
       Pad : Character_Type := Space)
    is
       First : Positive;
       Last : Natural;
    begin
-      Trim (Source, Side, Left, Right, First, Last);
+      Trim (Source, Side, Blank, First, Last);
       Move (
          Source (First .. Last),
          Source,
@@ -533,8 +546,7 @@ package body Ada.Strings.Generic_Fixed is
    procedure Trim (
       Source : String_Type;
       Side : Trim_End;
-      Left : Character_Type := Space;
-      Right : Character_Type := Space;
+      Blank : Character_Type := Space;
       First : out Positive;
       Last : out Natural) is
    begin
@@ -542,7 +554,7 @@ package body Ada.Strings.Generic_Fixed is
       Last := Source'Last;
       case Side is
          when Strings.Left | Both =>
-            while First <= Last and then Source (First) = Left loop
+            while First <= Last and then Source (First) = Blank loop
                First := First + 1;
             end loop;
          when Strings.Right =>
@@ -550,7 +562,7 @@ package body Ada.Strings.Generic_Fixed is
       end case;
       case Side is
          when Strings.Right | Both =>
-            while Last >= First and then Source (Last) = Right loop
+            while Last >= First and then Source (Last) = Blank loop
                Last := Last - 1;
             end loop;
          when Strings.Left =>

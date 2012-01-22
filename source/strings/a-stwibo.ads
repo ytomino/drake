@@ -566,18 +566,17 @@ package Ada.Strings.Wide_Bounded is
 
       --  Wide_String selector subprograms
 
+      --  modified
       function Trim (
          Source : Bounded_Wide_String;
          Side : Trim_End;
-         Left : Wide_Character := Wide_Space;
-         Right : Wide_Character := Wide_Space)
+         Blank : Wide_Character := Wide_Space) -- additional
          return Bounded_Wide_String
          renames Functions.Trim;
       procedure Trim (
          Source : in out Bounded_Wide_String;
          Side : Trim_End;
-         Left : Wide_Character := Wide_Space;
-         Right : Wide_Character := Wide_Space)
+         Blank : Wide_Character := Wide_Space) -- additional
          renames Functions.Trim;
 
       function Trim (

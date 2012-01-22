@@ -647,8 +647,7 @@ package body Ada.Strings.Generic_Bounded is
          function Trim (
             Source : Bounded_String;
             Side : Trim_End;
-            Left : Character_Type := Space;
-            Right : Character_Type := Space)
+            Blank : Character_Type := Space)
             return Bounded_String
          is
             First : Positive;
@@ -657,8 +656,7 @@ package body Ada.Strings.Generic_Bounded is
             Fixed_Trim (
                Source.Element (1 .. Source.Length),
                Side,
-               Left,
-               Right,
+               Blank,
                First,
                Last);
             return Bounded_Slice (Source, First, Last);
@@ -667,8 +665,7 @@ package body Ada.Strings.Generic_Bounded is
          procedure Trim (
             Source : in out Bounded_String;
             Side : Trim_End;
-            Left : Character_Type := Space;
-            Right : Character_Type := Space)
+            Blank : Character_Type := Space)
          is
             First : Positive;
             Last : Natural;
@@ -676,8 +673,7 @@ package body Ada.Strings.Generic_Bounded is
             Fixed_Trim (
                Source.Element (1 .. Source.Length),
                Side,
-               Left,
-               Right,
+               Blank,
                First,
                Last);
             Bounded_Slice (Source, Source, First, Last);

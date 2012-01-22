@@ -552,18 +552,17 @@ package Ada.Strings.Bounded is
 
       --  String selector subprograms
 
+      --  modified
       function Trim (
          Source : Bounded_String;
          Side : Trim_End;
-         Left : Character := Space;
-         Right : Character := Space)
+         Blank : Character := Space) -- additional
          return Bounded_String
          renames Functions.Trim;
       procedure Trim (
          Source : in out Bounded_String;
          Side : Trim_End;
-         Left : Character := Space;
-         Right : Character := Space)
+         Blank : Character := Space) -- additional
          renames Functions.Trim;
 
       function Trim (

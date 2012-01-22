@@ -348,8 +348,7 @@ package Ada.Strings.Generic_Bounded is
          with procedure Fixed_Trim (
             Source : String_Type;
             Side : Trim_End;
-            Left : Character_Type;
-            Right : Character_Type;
+            Blank : Character_Type;
             First : out Positive;
             Last : out Natural);
          with function Fixed_Head (
@@ -454,15 +453,13 @@ package Ada.Strings.Generic_Bounded is
          function Trim (
             Source : Bounded_String;
             Side : Trim_End;
-            Left : Character_Type := Space; -- extended
-            Right : Character_Type := Space) -- extended
+            Blank : Character_Type := Space) -- additional
             return Bounded_String;
 
          procedure Trim (
             Source : in out Bounded_String;
             Side : Trim_End;
-            Left : Character_Type := Space; -- extended
-            Right : Character_Type := Space); -- extended
+            Blank : Character_Type := Space); -- additional
 
          function Head (
             Source : Bounded_String;
