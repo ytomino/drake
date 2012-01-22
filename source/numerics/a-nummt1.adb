@@ -85,8 +85,8 @@ package body Ada.Numerics.MT19937 is
       return S : State do
          S.Vector (0) := V;
          for I in 1 .. (N - 1) loop
-            V := 1812433253 * (V xor Interfaces.Shift_Right (V, 30)) +
-               Cardinal (I);
+            V := 1812433253 * (V xor Interfaces.Shift_Right (V, 30))
+               + Cardinal (I);
             S.Vector (I) := V;
          end loop;
          S.Condition := N;
@@ -103,8 +103,8 @@ package body Ada.Numerics.MT19937 is
                P : constant Cardinal := S.Vector (i - 1);
             begin
                S.Vector (i) := (S.Vector (i) xor
-                  ((P xor Interfaces.Shift_Right (P, 30)) * 1664525)) +
-                  Initiator (Initiator'First + j) + Cardinal (j);
+                  ((P xor Interfaces.Shift_Right (P, 30)) * 1664525))
+                  + Initiator (Initiator'First + j) + Cardinal (j);
             end;
             i := i + 1;
             if i >= N then
@@ -227,15 +227,15 @@ package body Ada.Numerics.MT19937 is
    function Random_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return Uniformly_Distributed'Base (Random_32 (Gen)) *
-         (1.0 / 4294967296.0);
+      return Uniformly_Distributed'Base (Random_32 (Gen))
+         * (1.0 / 4294967296.0);
    end Random_0_To_Less_1;
 
    function Random_Greater_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return (Uniformly_Distributed'Base (Random_32 (Gen)) + 0.5) *
-         (1.0 / 4294967296.0);
+      return (Uniformly_Distributed'Base (Random_32 (Gen)) + 0.5)
+         * (1.0 / 4294967296.0);
    end Random_Greater_0_To_Less_1;
 
    function Random_53_0_To_Less_1 (Gen : not null access Generator)
@@ -259,8 +259,9 @@ package body Ada.Numerics.MT19937 is
          Random : constant Real :=
             MT19937.Random_0_To_Less_1 (Gen);
          Position : constant Integer :=
-            Result_Subtype'Pos (Result_Subtype'First) +
-            Integer (Real'Floor (Random * Real (Result_Subtype'Range_Length)));
+            Result_Subtype'Pos (Result_Subtype'First)
+            + Integer (Real'Floor (
+               Random * Real (Result_Subtype'Range_Length)));
       begin
          return Result_Subtype'Val (Position);
       end Random;
