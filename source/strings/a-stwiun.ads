@@ -10,6 +10,7 @@ package Ada.Strings.Wide_Unbounded is
 --  pragma Preelaborable_Initialization (Unbounded_Wide_String);
    subtype Unbounded_Wide_String is Unbounded_Wide_Strings.Unbounded_String;
 
+   --  modified
 --  Null_Unbounded_Wide_String : constant Unbounded_Wide_String;
    function Null_Unbounded_Wide_String return Unbounded_Wide_String
       renames Unbounded_Wide_Strings.Null_Unbounded_String;

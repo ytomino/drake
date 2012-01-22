@@ -10,6 +10,7 @@ package Ada.Strings.Unbounded is
 --  pragma Preelaborable_Initialization (Unbounded_String);
    subtype Unbounded_String is Unbounded_Strings.Unbounded_String;
 
+   --  modified
 --  Null_Unbounded_String : constant Unbounded_String;
    function Null_Unbounded_String return Unbounded_String
       renames Unbounded_Strings.Null_Unbounded_String;

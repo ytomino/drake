@@ -21,12 +21,14 @@ generic
 package Ada.Strings.Generic_Unbounded is
    pragma Preelaborate;
 
+   --  modified, tagged for dot notation
 --  type Unbounded_String is private;
-   type Unbounded_String is tagged private; -- extended for dot notation
+   type Unbounded_String is tagged private;
    pragma Preelaborable_Initialization (Unbounded_String);
 
+   --  modified
 --  Null_Unbounded_String : constant Unbounded_String;
-   function Null_Unbounded_String return Unbounded_String; -- extended
+   function Null_Unbounded_String return Unbounded_String;
 
    --  extended
    function Is_Null (Source : Unbounded_String) return Boolean;
