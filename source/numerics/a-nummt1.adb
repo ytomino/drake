@@ -1,7 +1,9 @@
-with Ada.Numerics.MT19937.Initiator;
+with Ada.Numerics.Initiator;
+with System.Storage_Elements;
 with System.Formatting;
 package body Ada.Numerics.MT19937 is
    pragma Suppress (All_Checks);
+   use type System.Storage_Elements.Storage_Count;
    use type Cardinal;
 
    MATRIX_A : constant Cardinal := 16#9908b0df#;
@@ -61,10 +63,8 @@ package body Ada.Numerics.MT19937 is
    end Initialize;
 
    procedure Reset (Gen : in out Generator) is
-      Init : Cardinal_Vector (N_Range);
    begin
-      Initiator (Init);
-      Gen.State := Initialize (Init);
+      Gen.State := Initialize;
    end Reset;
 
    procedure Reset (Gen : in out Generator; Initiator : Integer) is
@@ -75,7 +75,7 @@ package body Ada.Numerics.MT19937 is
    function Initialize return State is
       Init : Cardinal_Vector (N_Range);
    begin
-      Initiator (Init);
+      Initiator (Init'Address, Init'Size / Standard'Storage_Unit);
       return Initialize (Init);
    end Initialize;
 
@@ -85,8 +85,8 @@ package body Ada.Numerics.MT19937 is
       return S : State do
          S.Vector (0) := V;
          for I in 1 .. (N - 1) loop
-            V := 1812433253 * (V xor Interfaces.Shift_Right (V, 30)) +
-               Cardinal (I);
+            V := 1812433253 * (V xor Interfaces.Shift_Right (V, 30))
+               + Cardinal (I);
             S.Vector (I) := V;
          end loop;
          S.Condition := N;
@@ -103,8 +103,8 @@ package body Ada.Numerics.MT19937 is
                P : constant Cardinal := S.Vector (i - 1);
             begin
                S.Vector (i) := (S.Vector (i) xor
-                  ((P xor Interfaces.Shift_Right (P, 30)) * 1664525)) +
-                  Initiator (Initiator'First + j) + Cardinal (j);
+                  ((P xor Interfaces.Shift_Right (P, 30)) * 1664525))
+                  + Initiator (Initiator'First + j) + Cardinal (j);
             end;
             i := i + 1;
             if i >= N then
@@ -139,6 +139,11 @@ package body Ada.Numerics.MT19937 is
    procedure Reset (Gen : in out Generator; From_State : State) is
    begin
       Gen.State := From_State;
+   end Reset;
+
+   function Reset (From_State : State) return Generator is
+   begin
+      return (State => From_State);
    end Reset;
 
    function Image (Of_State : State) return String is
@@ -215,34 +220,34 @@ package body Ada.Numerics.MT19937 is
    function Random_0_To_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return Uniformly_Distributed'Base (Random_32 (Gen)) *
-         (1.0 / 4294967295.0);
+      return Uniformly_Distributed'Base (Random_32 (Gen))
+         * (1.0 / 4294967295.0);
    end Random_0_To_1;
 
    function Random_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return Uniformly_Distributed'Base (Random_32 (Gen)) *
-         (1.0 / 4294967296.0);
+      return Uniformly_Distributed'Base (Random_32 (Gen))
+         * (1.0 / 4294967296.0);
    end Random_0_To_Less_1;
 
    function Random_Greater_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return (Uniformly_Distributed'Base (Random_32 (Gen)) + 0.5) *
-         (1.0 / 4294967296.0);
+      return (Uniformly_Distributed'Base (Random_32 (Gen)) + 0.5)
+         * (1.0 / 4294967296.0);
    end Random_Greater_0_To_Less_1;
 
-   function Random_53_0_To_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed
    is
       A : constant Cardinal := Interfaces.Shift_Right (Random_32 (Gen), 5);
       B : constant Cardinal := Interfaces.Shift_Right (Random_32 (Gen), 6);
+      Float_A : constant Long_Long_Float := Uniformly_Distributed'Base (A);
+      Float_B : constant Long_Long_Float := Uniformly_Distributed'Base (B);
    begin
-      return (Uniformly_Distributed'Base (A) * 67108864.0 +
-         Uniformly_Distributed'Base (B)) *
-         (1.0 / 9007199254740992.0);
-   end Random_53_0_To_1;
+      return (Float_A * 67108864.0 + Float_B) * (1.0 / 9007199254740992.0);
+   end Random_53_0_To_Less_1;
 
    package body Discrete_Random is
       pragma Suppress (All_Checks);
@@ -254,8 +259,9 @@ package body Ada.Numerics.MT19937 is
          Random : constant Real :=
             MT19937.Random_0_To_Less_1 (Gen);
          Position : constant Integer :=
-            Result_Subtype'Pos (Result_Subtype'First) +
-            Integer (Real'Floor (Random * Real (Result_Subtype'Range_Length)));
+            Result_Subtype'Pos (Result_Subtype'First)
+            + Integer (Real'Floor (
+               Random * Real (Result_Subtype'Range_Length)));
       begin
          return Result_Subtype'Val (Position);
       end Random;

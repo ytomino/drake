@@ -11,6 +11,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
    subtype Unbounded_Wide_Wide_String is
       Unbounded_Wide_Wide_Strings.Unbounded_String;
 
+   --  modified
 --  Null_Unbounded_Wide_Wide_String : constant Unbounded_Wide_Wide_String;
    function Null_Unbounded_Wide_Wide_String return Unbounded_Wide_Wide_String
       renames Unbounded_Wide_Wide_Strings.Null_Unbounded_String;
@@ -438,8 +439,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
    function Trim (
       Source : Unbounded_Wide_Wide_String;
       Side : Trim_End;
-      Left : Wide_Wide_Character := Wide_Wide_Space; -- additional
-      Right : Wide_Wide_Character := Wide_Wide_Space) -- additional
+      Blank : Wide_Wide_Character := Wide_Wide_Space) -- additional
       return Unbounded_Wide_Wide_String
       renames Unbounded_Wide_Wide_Strings.Functions.Trim;
 
@@ -447,8 +447,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
    procedure Trim (
       Source : in out Unbounded_Wide_Wide_String;
       Side : Trim_End;
-      Left : Wide_Wide_Character := Wide_Wide_Space; -- additional
-      Right : Wide_Wide_Character := Wide_Wide_Space) -- additional
+      Blank : Wide_Wide_Character := Wide_Wide_Space) -- additional
       renames Unbounded_Wide_Wide_Strings.Functions.Trim;
 
    function Trim (

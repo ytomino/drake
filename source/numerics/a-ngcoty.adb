@@ -254,13 +254,13 @@ package body Ada.Numerics.Generic_Complex_Types is
          --  CXG2020
          if Is_Infinity (Re) then
             Re := 4.0 * (
-               Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Re / 2.0) -
-               Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Im / 2.0));
+               Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Re / 2.0)
+               - Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Im / 2.0));
          end if;
          if Is_Infinity (Im) then
             Im := 4.0 * (
-               Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Im / 2.0) +
-               Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Re / 2.0));
+               Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Im / 2.0)
+               + Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Re / 2.0));
          end if;
       end if;
       return (Re, Im);
@@ -283,14 +283,16 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    function "*" (Left : Complex; Right : Imaginary) return Complex is
    begin
-      return (Re => -(Left.Im * Real'Base (Right)),
-              Im => Left.Re * Real'Base (Right));
+      return (
+         Re => -(Left.Im * Real'Base (Right)),
+         Im => Left.Re * Real'Base (Right));
    end "*";
 
    function "*" (Left : Imaginary; Right : Complex) return Complex is
    begin
-      return (Re => -(Real'Base (Left) * Right.Im),
-              Im => Real'Base (Left) * Right.Re);
+      return (
+         Re => -(Real'Base (Left) * Right.Im),
+         Im => Real'Base (Left) * Right.Re);
    end "*";
 
    function "*" (Left : Imaginary; Right : Real'Base) return Imaginary is
@@ -305,10 +307,11 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    function "/" (Left, Right : Complex) return Complex is
    begin
-      return (Re => (Left.Re * Right.Re + Left.Im * Right.Im) /
-                    (Right.Re * Right.Re + Right.Im * Right.Im),
-              Im => (Left.Im * Right.Re - Left.Re * Right.Im) /
-                    (Right.Re * Right.Re + Right.Im * Right.Im));
+      return (
+         Re => (Left.Re * Right.Re + Left.Im * Right.Im)
+            / (Right.Re * Right.Re + Right.Im * Right.Im),
+         Im => (Left.Im * Right.Re - Left.Re * Right.Im)
+            / (Right.Re * Right.Re + Right.Im * Right.Im));
    end "/";
 
    function "/" (Left, Right : Imaginary) return Real'Base is
@@ -323,24 +326,27 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    function "/" (Left : Real'Base; Right : Complex) return Complex is
    begin
-      return (Re => (Left * Right.Re) /
-                    (Right.Re * Right.Re + Right.Im * Right.Im),
-              Im => -(Left * Right.Im) /
-                    (Right.Re * Right.Re + Right.Im * Right.Im));
+      return (
+         Re => (Left * Right.Re)
+            / (Right.Re * Right.Re + Right.Im * Right.Im),
+         Im => -(Left * Right.Im)
+            / (Right.Re * Right.Re + Right.Im * Right.Im));
    end "/";
 
    function "/" (Left : Complex; Right : Imaginary) return Complex is
    begin
-      return (Re => Left.Im / Real'Base (Right),
-              Im => -(Left.Re / Real'Base (Right)));
+      return (
+         Re => Left.Im / Real'Base (Right),
+         Im => -(Left.Re / Real'Base (Right)));
    end "/";
 
    function "/" (Left : Imaginary; Right : Complex) return Complex is
    begin
-      return (Re => (Real'Base (Left) * Right.Im) /
-                    (Right.Re * Right.Re + Right.Im * Right.Im),
-              Im => (Real'Base (Left) * Right.Re) /
-                    (Right.Re * Right.Re + Right.Im * Right.Im));
+      return (
+         Re => (Real'Base (Left) * Right.Im)
+            / (Right.Re * Right.Re + Right.Im * Right.Im),
+         Im => (Real'Base (Left) * Right.Re)
+            / (Right.Re * Right.Re + Right.Im * Right.Im));
    end "/";
 
    function "/" (Left : Imaginary; Right : Real'Base) return Imaginary is

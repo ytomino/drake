@@ -349,22 +349,22 @@ package Ada.Strings.Wide_Fixed is
    function Trim (
       Source : Wide_String;
       Side : Trim_End;
-      Left : Wide_Character := Wide_Space; -- additional
-      Right : Wide_Character := Wide_Space) -- additional
+      Blank : Wide_Character := Wide_Space) -- additional
       return Wide_String
       renames Wide_Functions.Trim;
 
-   --  modified
---  procedure Trim (
---    Source : in out Wide_String;
---    Side : Trim_End;
---    Justify : Alignment := Left;
---    Pad : Wide_Character := Wide_Space);
    procedure Trim (
       Source : in out Wide_String;
       Side : Trim_End;
-      Left : Wide_Character := Wide_Space; -- additional
-      Right : Wide_Character := Wide_Space; -- additional
+      Justify : Alignment := Left;
+      Pad : Wide_Character := Wide_Space)
+      renames Wide_Functions.Trim;
+
+   --  extended
+   procedure Trim (
+      Source : in out Wide_String;
+      Side : Trim_End;
+      Blank : Wide_Character;
       Justify : Alignment := Strings.Left;
       Pad : Wide_Character := Wide_Space)
       renames Wide_Functions.Trim;

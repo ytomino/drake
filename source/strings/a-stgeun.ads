@@ -21,12 +21,14 @@ generic
 package Ada.Strings.Generic_Unbounded is
    pragma Preelaborate;
 
+   --  modified, tagged for dot notation
 --  type Unbounded_String is private;
-   type Unbounded_String is tagged private; -- extended for dot notation
+   type Unbounded_String is tagged private;
    pragma Preelaborable_Initialization (Unbounded_String);
 
+   --  modified
 --  Null_Unbounded_String : constant Unbounded_String;
-   function Null_Unbounded_String return Unbounded_String; -- extended
+   function Null_Unbounded_String return Unbounded_String;
 
    --  extended
    function Is_Null (Source : Unbounded_String) return Boolean;
@@ -206,8 +208,7 @@ package Ada.Strings.Generic_Unbounded is
       with procedure Fixed_Trim (
          Source : String_Type;
          Side : Trim_End;
-         Left : Character_Type;
-         Right : Character_Type;
+         Blank : Character_Type;
          First : out Positive;
          Last : out Natural);
       with function Fixed_Head (
@@ -306,15 +307,13 @@ package Ada.Strings.Generic_Unbounded is
       function Trim (
          Source : Unbounded_String;
          Side : Trim_End;
-         Left : Character_Type := Space; -- extended
-         Right : Character_Type := Space) -- extended
+         Blank : Character_Type := Space) -- additional
          return Unbounded_String;
 
       procedure Trim (
          Source : in out Unbounded_String;
          Side : Trim_End;
-         Left : Character_Type := Space; -- extended
-         Right : Character_Type := Space); -- extended
+         Blank : Character_Type := Space); -- additional
 
       function Head (
          Source : Unbounded_String;

@@ -18,7 +18,7 @@ generic
 package Ada.Strings.Generic_Bounded is
    pragma Preelaborate;
 
-   --  extended
+   --  extended, tagged for dot notation
    type Bounded_String (Capacity : Positive) is record
       Length : Natural := 0;
       Element : aliased String_Type (1 .. Capacity);
@@ -120,10 +120,11 @@ package Ada.Strings.Generic_Bounded is
 
       Max_Length : constant Positive := Max;
 
+      --  modified
 --    type Bounded_String is private;
-      type Bounded_String is
-         new Generic_Bounded.Bounded_String (Max); -- extended
+      type Bounded_String is new Generic_Bounded.Bounded_String (Max);
 
+      --  modified
 --    Null_Bounded_String : constant Bounded_String;
       function Null_Bounded_String return Bounded_String;
       pragma Inline (Null_Bounded_String);
@@ -348,8 +349,7 @@ package Ada.Strings.Generic_Bounded is
          with procedure Fixed_Trim (
             Source : String_Type;
             Side : Trim_End;
-            Left : Character_Type;
-            Right : Character_Type;
+            Blank : Character_Type;
             First : out Positive;
             Last : out Natural);
          with function Fixed_Head (
@@ -454,15 +454,13 @@ package Ada.Strings.Generic_Bounded is
          function Trim (
             Source : Bounded_String;
             Side : Trim_End;
-            Left : Character_Type := Space; -- extended
-            Right : Character_Type := Space) -- extended
+            Blank : Character_Type := Space) -- additional
             return Bounded_String;
 
          procedure Trim (
             Source : in out Bounded_String;
             Side : Trim_End;
-            Left : Character_Type := Space; -- extended
-            Right : Character_Type := Space); -- extended
+            Blank : Character_Type := Space); -- additional
 
          function Head (
             Source : Bounded_String;
@@ -714,26 +712,26 @@ package Ada.Strings.Generic_Bounded is
             function Translate (
                Source : Bounded_String;
                Mapping : Character_Mapping;
-               Drop : Truncation := Error) -- extended
+               Drop : Truncation := Error) -- additional
                return Bounded_String;
 
             procedure Translate (
                Source : in out Bounded_String;
                Mapping : Character_Mapping;
-               Drop : Truncation := Error); -- extended
+               Drop : Truncation := Error); -- additional
 
             function Translate (
                Source : Bounded_String;
                Mapping : not null access function (From : Wide_Wide_Character)
                   return Wide_Wide_Character;
-               Drop : Truncation := Error) -- extended
+               Drop : Truncation := Error) -- additional
                return Bounded_String;
 
             procedure Translate (
                Source : in out Bounded_String;
                Mapping : not null access function (From : Wide_Wide_Character)
                   return Wide_Wide_Character;
-               Drop : Truncation := Error); -- extended
+               Drop : Truncation := Error); -- additional
 
             function Translate_Per_Element (
                Source : Bounded_String;

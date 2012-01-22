@@ -72,8 +72,14 @@ package Ada.Strings.Generic_Fixed is
    pragma Inline (Index_Non_Blank);
 
    --  extended, forward or backward only version
-   function Index_Non_Blank_Forward (Source : String_Type) return Natural;
-   function Index_Non_Blank_Backward (Source : String_Type) return Natural;
+   function Index_Non_Blank_Forward (
+      Source : String_Type;
+      Blank : Character_Type := Space)
+      return Natural;
+   function Index_Non_Blank_Backward (
+      Source : String_Type;
+      Blank : Character_Type := Space)
+      return Natural;
 
    function Count (
       Source : String_Type;
@@ -147,24 +153,28 @@ package Ada.Strings.Generic_Fixed is
    function Trim (
       Source : String_Type;
       Side : Trim_End;
-      Left : Character_Type := Space; -- extended
-      Right : Character_Type := Space) -- extended
+      Blank : Character_Type := Space) -- additional
       return String_Type;
 
    procedure Trim (
       Source : in out String_Type;
       Side : Trim_End;
-      Left : Character_Type := Space; -- extended
-      Right : Character_Type := Space; -- extended
-      Justify : Alignment := Strings.Left;
+      Justify : Alignment := Left;
+      Pad : Character_Type := Space);
+
+   --  extended, explicit blank (default parameter is wrong for CXA4025)
+   procedure Trim (
+      Source : in out String_Type;
+      Side : Trim_End;
+      Blank : Character_Type;
+      Justify : Alignment := Left;
       Pad : Character_Type := Space);
 
    --  extended, no copying
    procedure Trim (
       Source : String_Type;
       Side : Trim_End;
-      Left : Character_Type := Space;
-      Right : Character_Type := Space;
+      Blank : Character_Type := Space;
       First : out Positive;
       Last : out Natural);
 
@@ -416,9 +426,9 @@ package Ada.Strings.Generic_Fixed is
       procedure Translate (
          Source : in out String_Type;
          Mapping : Character_Mapping;
-         Drop : Truncation := Error; -- extended
-         Justify : Alignment := Left; -- extended
-         Pad : Character_Type := Space); -- extended
+         Drop : Truncation := Error; -- additional
+         Justify : Alignment := Left; -- additional
+         Pad : Character_Type := Space); -- additional
 
       function Translate (
          Source : String_Type;
@@ -430,9 +440,9 @@ package Ada.Strings.Generic_Fixed is
          Source : in out String_Type;
          Mapping : not null access function (From : Wide_Wide_Character)
             return Wide_Wide_Character;
-         Drop : Truncation := Error; -- extended
-         Justify : Alignment := Left; -- extended
-         Pad : Character_Type := Space); -- extended
+         Drop : Truncation := Error; -- additional
+         Justify : Alignment := Left; -- additional
+         Pad : Character_Type := Space); -- additional
 
       function Translate_Per_Element (
          Source : String_Type;
