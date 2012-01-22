@@ -1,7 +1,9 @@
 with Ada.Numerics.MT19937.Initiator;
+with System.Storage_Elements;
 with System.Formatting;
 package body Ada.Numerics.MT19937 is
    pragma Suppress (All_Checks);
+   use type System.Storage_Elements.Storage_Count;
    use type Cardinal;
 
    MATRIX_A : constant Cardinal := 16#9908b0df#;
@@ -61,10 +63,8 @@ package body Ada.Numerics.MT19937 is
    end Initialize;
 
    procedure Reset (Gen : in out Generator) is
-      Init : Cardinal_Vector (N_Range);
    begin
-      Initiator (Init);
-      Gen.State := Initialize (Init);
+      Gen.State := Initialize;
    end Reset;
 
    procedure Reset (Gen : in out Generator; Initiator : Integer) is
@@ -75,7 +75,7 @@ package body Ada.Numerics.MT19937 is
    function Initialize return State is
       Init : Cardinal_Vector (N_Range);
    begin
-      Initiator (Init);
+      Initiator (Init'Address, Init'Size / Standard'Storage_Unit);
       return Initialize (Init);
    end Initialize;
 
