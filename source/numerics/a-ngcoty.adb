@@ -21,7 +21,7 @@ package body Ada.Numerics.Generic_Complex_Types is
       if not Standard'Fast_Math and then Cycle <= 0.0 then
          raise Argument_Error; -- CXG2006
       else
-         return Argument (X) * Cycle / (Real'Base'(2.0) * Real'Base'(Pi));
+         return Argument (X) * Cycle / (2.0 * Real'Base'(Pi));
       end if;
    end Argument;
 
@@ -54,7 +54,7 @@ package body Ada.Numerics.Generic_Complex_Types is
       if Standard'Fast_Math then
          return Compose_From_Polar (
             Modulus,
-            Real'Base'(2.0) * Real'Base'(Pi) * Argument / Cycle);
+            (2.0 * Real'Base'(Pi)) * Argument / Cycle);
       else
          if Cycle <= 0.0 then
             raise Argument_Error; -- CXG2007
@@ -72,7 +72,7 @@ package body Ada.Numerics.Generic_Complex_Types is
                else
                   return Compose_From_Polar (
                      Modulus,
-                     Real'Base'(2.0) * Real'Base'(Pi) * R);
+                     (2.0 * Real'Base'(Pi)) * R);
                end if;
             end;
          end if;
