@@ -1,4 +1,4 @@
-with System.Long_Long_Float_Divide;
+with System.Long_Long_Float_Attributes;
 package body System.Fat_Lflt is
    pragma Suppress (All_Checks);
 
@@ -54,14 +54,10 @@ package body System.Fat_Lflt is
       end Pred;
 
       function Remainder (X, Y : Long_Float) return Long_Float is
-         Q, R : Long_Long_Float;
       begin
-         Long_Long_Float_Divide (
+         return Long_Float (Long_Long_Float_Attributes.Remainder (
             Long_Long_Float (X),
-            Long_Long_Float (Y),
-            Q,
-            R);
-         return Long_Float (R);
+            Long_Long_Float (Y)));
       end Remainder;
 
       function Succ (X : Long_Float) return Long_Float is
@@ -70,21 +66,9 @@ package body System.Fat_Lflt is
       end Succ;
 
       function Unbiased_Rounding (X : Long_Float) return Long_Float is
-         Result : Long_Float := Rounding (X);
-         Diff : constant Long_Float := Result - X;
       begin
-         if Diff = 0.5 then
-            --  1.5 -> 2.0, 2.5 -> 3.0, ...
-            if Truncation (Result / 2.0) * 2.0 /= Result then
-               Result := Result - 1.0;
-            end if;
-         elsif Diff = -0.5 then
-            --  -1.5 -> -2.0, -2.5 -> -3.0, ...
-            if Truncation (Result / 2.0) * 2.0 /= Result then
-               Result := Result + 1.0;
-            end if;
-         end if;
-         return Result;
+         return Long_Float (Long_Long_Float_Attributes.Unbiased_Rounding (
+            Long_Long_Float (X)));
       end Unbiased_Rounding;
 
       function Valid (X : not null access Long_Float) return Boolean is

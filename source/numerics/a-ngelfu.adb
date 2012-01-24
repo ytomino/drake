@@ -1,6 +1,11 @@
 package body Ada.Numerics.Generic_Elementary_Functions is
    pragma Suppress (All_Checks);
 
+   procedure Modulo_Divide_By_1 is new Float.Modulo_Divide_By_1 (
+      Float_Type'Base,
+      Float_Type'Base,
+      Float_Type'Base);
+
    --  implementation
 
    function Arccos (X, Cycle : Float_Type'Base) return Float_Type'Base is
@@ -92,9 +97,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             raise Argument_Error;
          else
             declare
-               R : constant Float_Type'Base :=
-                  Float_Type'Base'Remainder (X / Cycle, 1.0);
+               Q, R : Float_Type'Base;
             begin
+               Modulo_Divide_By_1 (X / Cycle, Q, R);
                if R = 2.0 / 12.0 then
                   return 0.5;
                elsif R = 0.25 then
@@ -132,9 +137,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          else
             --  CXG2013 requires just result that is 0.0
             declare
-               R : constant Float_Type'Base :=
-                  Float_Type'Base'Remainder (X / Cycle, 1.0);
+               Q, R : Float_Type'Base;
             begin
+               Modulo_Divide_By_1 (X / Cycle, Q, R);
                if R = 0.25 then
                   return 0.0;
                elsif R = 0.75 then
@@ -172,9 +177,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             raise Argument_Error;
          else
             declare
-               R : constant Float_Type'Base :=
-                  Float_Type'Base'Remainder (X / Cycle, 1.0);
+               Q, R : Float_Type'Base;
             begin
+               Modulo_Divide_By_1 (X / Cycle, Q, R);
                if R = 1.0 / 12.0 then
                   return 0.5;
                elsif R = 0.25 then
@@ -207,9 +212,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          else
             --  CXG2013 requires just result that is 0.0
             declare
-               R : constant Float_Type'Base :=
-                  Float_Type'Base'Remainder (X / Cycle, 1.0);
+               Q, R : Float_Type'Base;
             begin
+               Modulo_Divide_By_1 (X / Cycle, Q, R);
                if R = 0.5 then
                   return 0.0;
                else

@@ -1,5 +1,5 @@
-with System.Unwind.Raising;
-pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
+--  with System.Unwind.Raising;
+--  pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Exp_Uns is
    pragma Suppress (All_Checks);
    use type Unsigned_Types.Unsigned;
@@ -10,9 +10,9 @@ package body System.Exp_Uns is
       return Unsigned_Types.Unsigned is
    begin
       if Left = 2 then
-         if Right >= Unsigned_Types.Unsigned'Size then
-            Unwind.Raising.Overflow;
-         end if;
+--       if Right >= Unsigned_Types.Unsigned'Size then
+--          Unwind.Raising.Overflow;
+--       end if;
          return Unsigned_Types.Shift_Left (1, Right);
       else
          declare
@@ -22,16 +22,16 @@ package body System.Exp_Uns is
          begin
             loop
                if Exponent rem 2 /= 0 then
-                  if Unsigned_Types.Unsigned'Last / Factor < Result then
-                     Unwind.Raising.Overflow;
-                  end if;
+--                if Unsigned_Types.Unsigned'Last / Factor < Result then
+--                   Unwind.Raising.Overflow;
+--                end if;
                   Result := Result * Factor;
                end if;
                Exponent := Exponent / 2;
                exit when Exponent = 0;
-               if Unsigned_Types.Unsigned'Last / Factor < Factor then
-                  Unwind.Raising.Overflow;
-               end if;
+--             if Unsigned_Types.Unsigned'Last / Factor < Factor then
+--                Unwind.Raising.Overflow;
+--             end if;
                Factor := Factor * Factor;
             end loop;
             return Result;

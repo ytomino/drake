@@ -1,4 +1,3 @@
-with System.Long_Long_Float_Divide;
 package body System.Fat_LLF is
    pragma Suppress (All_Checks);
 
@@ -53,37 +52,10 @@ package body System.Fat_LLF is
          return Adjacent (X, -inf);
       end Pred;
 
-      function Remainder (X, Y : Long_Long_Float) return Long_Long_Float is
-         Q, R : Long_Long_Float;
-      begin
-         Long_Long_Float_Divide (X, Y, Q, R);
-         return R;
-      end Remainder;
-
       function Succ (X : Long_Long_Float) return Long_Long_Float is
       begin
          return Adjacent (X, inf);
       end Succ;
-
-      function Unbiased_Rounding (X : Long_Long_Float)
-         return Long_Long_Float
-      is
-         Result : Long_Long_Float := Rounding (X);
-         Diff : constant Long_Long_Float := Result - X;
-      begin
-         if Diff = 0.5 then
-            --  1.5 -> 2.0, 2.5 -> 3.0, ...
-            if Truncation (Result / 2.0) * 2.0 /= Result then
-               Result := Result - 1.0;
-            end if;
-         elsif Diff = -0.5 then
-            --  -1.5 -> -2.0, -2.5 -> -3.0, ...
-            if Truncation (Result / 2.0) * 2.0 /= Result then
-               Result := Result + 1.0;
-            end if;
-         end if;
-         return Result;
-      end Unbiased_Rounding;
 
       function Valid (X : not null access Long_Long_Float) return Boolean is
       begin
