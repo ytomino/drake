@@ -1,5 +1,5 @@
---- support/report.adb.orig	2010-11-07 18:04:01.000000000 +0900
-+++ support/report.adb	2010-11-07 18:13:37.000000000 +0900
+--- support/report.adb.orig	2012-01-24 18:46:10.000000000 +0900
++++ support/report.adb	2012-01-24 18:47:58.000000000 +0900
 @@ -61,6 +61,7 @@
  --      RLB  3/06/07  UPDATED ACATS VERSION STRING TO "2.6".
  --      RLB  3/22/07  UPDATED ACATS VERSION STRING TO "3.0".
@@ -26,3 +26,13 @@
            END CASE;
            TEST_STATUS := FAIL;
            TEST_NAME_LEN := NO_NAME'LENGTH;
+@@ -288,6 +292,9 @@
+      BEGIN
+           IF X < 0 THEN
+                IF Y < 0 THEN
++                    if X = Integer'First then
++                       return Y = Integer'First;
++                    end if;
+                     Z := EQUAL (-X, -Y);
+                ELSE Z := FALSE;
+                END IF;
