@@ -41,4 +41,24 @@ package Ada.Float is
       Remainder : out Remainder_Type);
    pragma Inline (Divide);
 
+   generic
+      type Dividend_Type is digits <>;
+      type Quotient_Type is digits <>;
+      type Remainder_Type is digits <>;
+   procedure Divide_By_1 (
+      Dividend : Dividend_Type;
+      Quotient : out Quotient_Type;
+      Remainder : out Remainder_Type); -- sign of Remainder = sign of Dividend
+   pragma Inline (Divide_By_1);
+
+   generic
+      type Dividend_Type is digits <>;
+      type Quotient_Type is digits <>;
+      type Remainder_Type is digits <>;
+   procedure Modulo_Divide_By_1 (
+      Dividend : Dividend_Type;
+      Quotient : out Quotient_Type;
+      Remainder : out Remainder_Type); -- Remainder >= 0
+   pragma Inline (Modulo_Divide_By_1);
+
 end Ada.Float;

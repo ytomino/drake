@@ -131,4 +131,71 @@ package body Ada.Float is
          Long_Long_Float (Remainder));
    end Divide;
 
+   procedure Divide_By_1 (
+      Dividend : Dividend_Type;
+      Quotient : out Quotient_Type;
+      Remainder : out Remainder_Type) is
+   begin
+      if Dividend_Type'Digits <= Standard.Float'Digits then
+         declare
+            function modff (
+               value : Standard.Float;
+               iptr : access Standard.Float)
+               return Standard.Float;
+            pragma Import (Intrinsic, modff, "__builtin_modff");
+            Q : aliased Standard.Float;
+         begin
+            Remainder := Remainder_Type (modff (
+               Standard.Float (Dividend),
+               Q'Access));
+            Quotient := Quotient_Type (Q);
+         end;
+      elsif Dividend_Type'Digits <= Long_Float'Digits then
+         declare
+            function modf (
+               value : Long_Float;
+               iptr : access Long_Float)
+               return Long_Float;
+            pragma Import (Intrinsic, modf, "__builtin_modf");
+            Q : aliased Long_Float;
+         begin
+            Remainder := Remainder_Type (modf (
+               Long_Float (Dividend),
+               Q'Access));
+            Quotient := Quotient_Type (Q);
+         end;
+      else
+         declare
+            function modfl (
+               value : Long_Long_Float;
+               iptr : access Long_Long_Float)
+               return Long_Long_Float;
+            pragma Import (Intrinsic, modfl, "__builtin_modfl");
+            Q : aliased Long_Long_Float;
+         begin
+            Remainder := Remainder_Type (modfl (
+               Long_Long_Float (Dividend),
+               Q'Access));
+            Quotient := Quotient_Type (Q);
+         end;
+      end if;
+   end Divide_By_1;
+
+   procedure Modulo_Divide_By_1 (
+      Dividend : Dividend_Type;
+      Quotient : out Quotient_Type;
+      Remainder : out Remainder_Type)
+   is
+      procedure Divide_By_1 is new Float.Divide_By_1 (
+         Dividend_Type,
+         Quotient_Type,
+         Remainder_Type);
+   begin
+      Divide_By_1 (Dividend, Quotient, Remainder);
+      if Remainder < 0.0 then
+         Quotient := Quotient - 1.0;
+         Remainder := Remainder + 1.0;
+      end if;
+   end Modulo_Divide_By_1;
+
 end Ada.Float;

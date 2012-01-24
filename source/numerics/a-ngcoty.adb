@@ -5,6 +5,8 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    package Impl is new Inside;
    function Is_Infinity is new Float.Is_Infinity (Real'Base);
+   procedure Modulo_Divide_By_1 is
+      new Float.Modulo_Divide_By_1 (Real'Base, Real'Base, Real'Base);
    function Sin is new Float.Elementary_Functions.Sin (Real'Base);
    function Cos is new Float.Elementary_Functions.Cos (Real'Base);
    subtype Float is Standard.Float; -- hiding "Float" package
@@ -58,9 +60,9 @@ package body Ada.Numerics.Generic_Complex_Types is
             raise Argument_Error; -- CXG2007
          else
             declare
-               R : constant Real'Base :=
-                  Real'Base'Remainder (Argument / Cycle, 1.0);
+               Q, R : Real'Base;
             begin
+               Modulo_Divide_By_1 (Argument / Cycle, Q, R);
                if R = 0.25 then
                   return (Re => 0.0, Im => Modulus);
                elsif R = 0.5 then

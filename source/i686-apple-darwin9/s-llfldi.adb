@@ -3,14 +3,11 @@ procedure System.Long_Long_Float_Divide (
    Quotient, Remainder : out Long_Long_Float)
 is
    pragma Suppress (All_Checks);
-   function remainderl (x, y : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, remainderl, "__builtin_remainderl");
+   function truncl (X : Long_Long_Float) return Long_Long_Float;
+   pragma Import (Intrinsic, truncl, "__builtin_truncl");
+   function fmodl (x, y : Long_Long_Float) return Long_Long_Float;
+   pragma Import (Intrinsic, fmodl, "__builtin_fmodl");
 begin
-   Quotient := Long_Long_Float'Truncation (Left / Right);
-   Remainder := remainderl (Left, Right);
-   if Remainder < 0.0 and then Left > 0.0 then
-      Remainder := Remainder + abs Right;
-   elsif Remainder > 0.0 and then Left < 0.0 then
-      Remainder := Remainder - abs Right;
-   end if;
+   Quotient := truncl (Left / Right);
+   Remainder := fmodl (Left, Right);
 end System.Long_Long_Float_Divide;

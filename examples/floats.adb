@@ -11,12 +11,12 @@ procedure floats is
 		function Is_NaN is new Ada.Float.Is_NaN (T);
 		function Is_Negative is new Ada.Float.Is_Negative (T);
 		X : T := T'Value ("2.0");
-		type R is record
+		type Unaligned is record
 			Padding : Character;
 			Value : T;
 		end record;
-		pragma Pack (R);
-		Y : R := (ASCII.NUL, T'Value ("3.5"));
+		pragma Pack (Unaligned);
+		Y : Unaligned := (ASCII.NUL, T'Value ("3.5"));
 	begin
 		pragma Assert (T'Image (Infinity) = " INF");
 		pragma Assert (T'Image (-Infinity) = "-INF");
@@ -42,10 +42,10 @@ procedure floats is
 		pragma Assert (T'Model (X) = X);
 		pragma Assert (T'Pred (X) < X);
 		pragma Assert (T'Ceiling (T'Pred (X)) = X);
-		pragma Assert (T'Remainder (Y.Value, 2.0) = 1.5);
-		pragma Assert (T'Remainder (-Y.Value, 2.0) = -1.5);
-		pragma Assert (T'Remainder (Y.Value, -2.0) = 1.5);
-		pragma Assert (T'Remainder (-Y.Value, -2.0) = -1.5);
+		pragma Assert (T'Remainder (Y.Value, 2.0) = -0.5);
+		pragma Assert (T'Remainder (-Y.Value, 2.0) = 0.5);
+		pragma Assert (T'Remainder (Y.Value, -2.0) = -0.5);
+		pragma Assert (T'Remainder (-Y.Value, -2.0) = 0.5);
 		pragma Assert (T'Rounding (X + 0.9) = 3.0);
 		pragma Assert (T'Succ (X) > X);
 		pragma Assert (T'Floor (T'Succ (X)) = X);
@@ -83,5 +83,22 @@ begin
 	begin
 		Custom_Float_Test;
 	end;
+	Dividing : declare
+		procedure Divide is new Ada.Float.Divide (
+			Long_Long_Float,
+			Long_Long_Float,
+			Long_Long_Float,
+			Long_Long_Float);
+		Q, R : Long_Long_Float;
+	begin
+		Divide (4.5, 2.0, Q, R);
+		pragma Assert (Q = 2.0 and then R = 0.5);
+		Divide (5.0, 0.5, Q, R);
+		pragma Assert (Q = 10.0 and then R = 0.0);
+		Divide (0.9, 1.0, Q, R);
+		pragma Assert (Q = 0.0 and then R = 0.9);
+		Divide (-0.9, 1.0, Q, R);
+		pragma Assert (Q = 0.0 and then R = -0.9);
+	end Dividing;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end floats;

@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
-with System.Long_Long_Float_Machine_Rounding;
+with System.Long_Long_Float_Attributes;
 package System.Fat_LLF is
    pragma Pure;
 
@@ -41,8 +41,7 @@ package System.Fat_LLF is
 
       --  required for LLF'Machine_Rounding by compiler (s-fatgen.ads)
       function Machine_Rounding (X : Long_Long_Float) return Long_Long_Float
-         renames Long_Long_Float_Machine_Rounding;
-      --  [gcc 4.6] compiler crushes on directly-renaming intrinsic function
+         renames Long_Long_Float_Attributes.Machine_Rounding;
 
       --  required for Long_Long_Float'Model by compiler (s-fatgen.ads)
       function Model (X : Long_Long_Float) return Long_Long_Float
@@ -56,7 +55,8 @@ package System.Fat_LLF is
       pragma Import (Intrinsic, Rounding, "__builtin_roundl");
 
       --  required for Long_Long_Float'Remainder by compiler (s-fatgen.ads)
-      function Remainder (X, Y : Long_Long_Float) return Long_Long_Float;
+      function Remainder (X, Y : Long_Long_Float) return Long_Long_Float
+         renames Long_Long_Float_Attributes.Remainder;
 
       --  required for Long_Long_Float'Scaling by compiler (s-fatgen.ads)
       function Scaling (X : Long_Long_Float; Adjustment : Integer)
@@ -71,7 +71,8 @@ package System.Fat_LLF is
       pragma Import (Intrinsic, Truncation, "__builtin_truncl");
 
       --  required for LLF'Unbiased_Rounding by compiler (s-fatgen.ads)
-      function Unbiased_Rounding (X : Long_Long_Float) return Long_Long_Float;
+      function Unbiased_Rounding (X : Long_Long_Float) return Long_Long_Float
+         renames Long_Long_Float_Attributes.Unbiased_Rounding;
 
       --  required for Long_Long_Float'Valid by compiler (s-fatgen.ads)
       function Valid (X : not null access Long_Long_Float) return Boolean;

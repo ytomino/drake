@@ -1,4 +1,4 @@
-with System.Long_Long_Float_Divide;
+with System.Long_Long_Float_Attributes;
 package body System.Fat_Flt is
    pragma Suppress (All_Checks);
 
@@ -52,14 +52,10 @@ package body System.Fat_Flt is
       end Machine;
 
       function Remainder (X, Y : Float) return Float is
-         Q, R : Long_Long_Float;
       begin
-         Long_Long_Float_Divide (
+         return Float (Long_Long_Float_Attributes.Remainder (
             Long_Long_Float (X),
-            Long_Long_Float (Y),
-            Q,
-            R);
-         return Float (R);
+            Long_Long_Float (Y)));
       end Remainder;
 
       function Succ (X : Float) return Float is
@@ -68,21 +64,9 @@ package body System.Fat_Flt is
       end Succ;
 
       function Unbiased_Rounding (X : Float) return Float is
-         Result : Float := Rounding (X);
-         Diff : constant Float := Result - X;
       begin
-         if Diff = 0.5 then
-            --  1.5 -> 2.0, 2.5 -> 3.0, ...
-            if Truncation (Result / 2.0) * 2.0 /= Result then
-               Result := Result - 1.0;
-            end if;
-         elsif Diff = -0.5 then
-            --  -1.5 -> -2.0, -2.5 -> -3.0, ...
-            if Truncation (Result / 2.0) * 2.0 /= Result then
-               Result := Result + 1.0;
-            end if;
-         end if;
-         return Result;
+         return Float (Long_Long_Float_Attributes.Unbiased_Rounding (
+            Long_Long_Float (X)));
       end Unbiased_Rounding;
 
       function Valid (X : not null access Float) return Boolean is
