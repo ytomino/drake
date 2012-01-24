@@ -13,10 +13,9 @@ begin
 	pragma Assert (Ada.Characters.Normalization.Combining_Class (WWC'Val (16#e0100#)) = 0); -- VARIATION SELECTOR
 	pragma Assert (Ada.Characters.Normalization.Combining_Class (WWC'Last) = 0);
 	declare
-		pragma Wide_Character_Encoding (UTF8);
 		S : constant Wide_Wide_String :=
 			"a" & WWC'Val (16#0323#) & WWC'Val (16#0308#)
-			& "か" & WWC'Val (16#3099#)
+			& WWC'Val (16#304b#) & WWC'Val (16#3099#) -- ka & dakuten
 			& "e" & WWC'Val (16#0323#) & WWC'Val (16#0304#) & WWC'Val (16#0301#);
 		Last : Natural;
 	begin

@@ -100,19 +100,32 @@ begin
 	Ada.Debug.Put (ADH.Relative_Name ("A/B", "C/../A")); -- "../A/B", it should be normalized to "B" ?
 	if Standard'Target_Name = "i686-apple-darwin9" then
 		Ada.Debug.Put ("test for comparing HFS+ filenames");
-		pragma Assert (AD.Equal_File_Names ("", ""));
-		pragma Assert (not AD.Equal_File_Names ("", "#"));
-		pragma Assert (not AD.Equal_File_Names ("#", ""));
-		pragma Assert (AD.Equal_File_Names ("#", "#"));
-		pragma Assert (AD.Equal_File_Names ("A", "A"));
-		pragma Assert (AD.Equal_File_Names ("a", "A"));
-		pragma Assert (AD.Equal_File_Names ("ａ", "Ａ"));
-		pragma Assert (not AD.Less_File_Names ("", ""));
-		pragma Assert (AD.Less_File_Names ("", "#"));
-		pragma Assert (not AD.Less_File_Names ("#", ""));
-		pragma Assert (not AD.Less_File_Names ("#", "#"));
-		pragma Assert (AD.Less_File_Names ("Ａ", "ｂ"));
-		pragma Assert (AD.Less_File_Names ("ａ", "Ｂ"));
+		declare
+			subtype C is Character;
+			Full_Width_Upper_A : constant String := (
+				C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a1#));
+			Full_Width_Lower_A : constant String := (
+				C'Val (16#ef#), C'Val (16#bd#), C'Val (16#81#));
+			Full_Width_Upper_B : constant String := (
+				C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a2#));
+			Full_Width_Lower_B : constant String := (
+				C'Val (16#ef#), C'Val (16#bd#), C'Val (16#82#));
+		begin
+			pragma Assert (AD.Equal_File_Names ("", ""));
+			pragma Assert (not AD.Equal_File_Names ("", "#"));
+			pragma Assert (not AD.Equal_File_Names ("#", ""));
+			pragma Assert (AD.Equal_File_Names ("#", "#"));
+			pragma Assert (AD.Equal_File_Names ("A", "A"));
+			pragma Assert (AD.Equal_File_Names ("a", "A"));
+			pragma Assert (AD.Equal_File_Names (Full_Width_Lower_A, Full_Width_Upper_A));
+			pragma Assert (not AD.Less_File_Names ("", ""));
+			pragma Assert (AD.Less_File_Names ("", "#"));
+			pragma Assert (not AD.Less_File_Names ("#", ""));
+			pragma Assert (not AD.Less_File_Names ("#", "#"));
+			pragma Assert (AD.Less_File_Names (Full_Width_Upper_A, Full_Width_Lower_B));
+			pragma Assert (AD.Less_File_Names (Full_Width_Lower_A, Full_Width_Upper_B));
+			null;
+		end;
 	end if;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end filename;

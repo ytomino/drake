@@ -1,4 +1,5 @@
 -- This file is UTF-8.
+pragma Wide_Character_Encoding (UTF8); -- for using π
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Generic_Real_Arrays;
 procedure num_real is
