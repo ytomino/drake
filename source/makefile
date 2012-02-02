@@ -87,20 +87,21 @@ else
 EH=sjlj
 endif
 
-SUBDIRS=ada83 containers directories image interfaces numerics primitives streams strings tasking textio $(EH)
+SUBDIRS=ada83 calendar containers directories image interfaces numerics primitives streams strings tasking textio $(EH)
 
 # relation of sub directoris
-# (root) + primitives + zcx or sjlj    -- minimum runtime
-# + tasking           :                -- syntax support for task and protected
-# + image             :                -- syntax support for 'Image and 'Value
-# + streams           :                -- all *_IO packages (including Text_IO)
-#   + text_io         : image streams  -- child packages of Text_IO
-#     + ada83         : stream text_io -- Ada 83 names
-# + strings           :                -- Ada.Characters and Ada.Strings
-#   + directories     : strings        -- Ada.Directories
-# + numerics          :                -- Ada.Numerics and Interfaces.Fortran
-# + interfaces        :                -- Interfaces.C and Interfaces.COBOL
-# + containers        :                -- Ada.Containers
+# (root) + primitives + zcx or sjlj -- minimum runtime
+# ada83       : calendar stream text_io # Ada 83 names
+# calendar    :                         # support for delay statement, Ada.Calendars, Ada.Execution_Time and Ada.Real_Time
+# containers  :                         # Ada.Containers
+# directories : calendar strings        # Ada.Directories
+# image       :                         # support for 'Image and 'Value attributes
+# interfaces  :                         # Interfaces.C and Interfaces.COBOL
+# numerics    :                         # support for float attributes, Ada.Numerics and Interfaces.Fortran
+# streams     :                         # all *_IO packages (including Text_IO)
+# strings     :                         # Ada.Characters and Ada.Strings
+# tasking     : calendar                # support for task and protected syntax and all tasking packages
+# text_io     : image streams           # child packages of Text_IO
 
 SRC=$(wildcard *.ad?) $(wildcard $(TARGET)/*.ad?) \
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad?) $(wildcard $(i)/$(TARGET)/*.ad?))
@@ -228,6 +229,17 @@ $(RTSDIR)/adainclude/%.ads: ada83/%.ads
 $(RTSDIR)/adainclude/%.adb: ada83/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+$(RTSDIR)/adainclude/%.ads: calendar/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: calendar/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: calendar/$(TARGET)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: calendar/$(TARGET)/%.adb
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: containers/%.ads
 	$(INSTALL) $(abspath $<) $@
