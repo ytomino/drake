@@ -134,6 +134,8 @@ package body Ada.Containers.Ordered_Maps is
          Free => Free_Data'Access);
    end Unique;
 
+   --  implementation
+
    overriding procedure Adjust (Object : in out Map) is
    begin
       Copy_On_Write.Adjust (Object.Super'Access);

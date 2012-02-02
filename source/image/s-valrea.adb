@@ -87,6 +87,8 @@ package body System.Val_Real is
       end loop;
    end Get_Unsigned_Real;
 
+   --  implementation
+
    function Value_Real (Str : String) return Long_Long_Float is
       Last : Natural := Str'First - 1;
       Result : Long_Long_Float;

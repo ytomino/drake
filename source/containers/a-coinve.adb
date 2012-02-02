@@ -135,6 +135,8 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 --
 
+   --  implementation
+
    procedure Adjust (Object : in out Vector) is
    begin
       System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);

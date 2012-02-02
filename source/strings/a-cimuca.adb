@@ -50,6 +50,8 @@ package body Ada.Characters.Inside.Maps.Upper_Case is
       Sort (Mapping.From, Mapping.To);
    end Mapping_Init;
 
+   --  implementation
+
    function Upper_Case_Map return not null access Character_Mapping is
    begin
       System.Once.Initialize (Mapping_Flag'Access, Mapping_Init'Access);

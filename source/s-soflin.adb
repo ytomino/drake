@@ -6,6 +6,8 @@ package body System.Soft_Links is
    --  I hope it will be zero-initialized...
    Main_Task_Local_Storage : aliased Task_Local_Storage;
 
+   --  implementation
+
    function Get_Main_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access
    is

@@ -41,6 +41,8 @@ package body Ada.Containers.Inside.Hash_Tables is
       return null;
    end Find_Node;
 
+   --  implementation
+
    procedure Insert_No_Rebuild (
       Container : Table_Access;
       Hash : Hash_Type;

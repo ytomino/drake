@@ -9,6 +9,8 @@ package body Ada.Locales.Inside is
 
    LANG : constant C.char_array := "LANG" & C.char'Val (0);
 
+   --  implementation
+
    function Language return ISO_639_Alpha_2 is
       P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
    begin

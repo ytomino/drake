@@ -145,6 +145,8 @@ package body System.Formatting is
       end if;
    end Take_Digits;
 
+   --  implementation
+
    function Width (Value : Unsigned; Base : Number_Base := 10)
       return Positive
    is

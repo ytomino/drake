@@ -152,6 +152,8 @@ package body Ada.Containers.Limited_Hashed_Maps is
       end if;
    end Find;
 
+   --  implementation
+
 --  diff (Adjust)
 --
 --

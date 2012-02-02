@@ -59,6 +59,8 @@ package body Ada.Containers.Input_Iterators is
       end if;
    end Get_Next;
 
+   --  implementation
+
    overriding procedure Adjust (Object : in out Cursor) is
    begin
       if Object.Node /= null then

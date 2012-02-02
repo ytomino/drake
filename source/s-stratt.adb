@@ -93,6 +93,8 @@ package body System.Stream_Attributes is
       1 ..
       Wide_Wide_Character'Stream_Size / Ada.Streams.Stream_Element'Size);
 
+   --  implementation
+
    function I_AD (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Fat_Pointer is
       function Cast is new Ada.Unchecked_Conversion (S_AD, Fat_Pointer);

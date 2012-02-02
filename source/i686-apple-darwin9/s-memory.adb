@@ -13,6 +13,8 @@ package body System.Memory is
 
    Heap_Exhausted : constant String := "heap exhausted";
 
+   --  implementation
+
    function Allocate (Size : Storage_Elements.Storage_Count)
       return Address
    is

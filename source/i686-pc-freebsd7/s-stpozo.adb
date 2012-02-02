@@ -6,6 +6,8 @@ package body System.Storage_Pools.Zones is
    package Conv is
       new Address_To_Named_Access_Conversions (Header, Header_Access);
 
+   --  implementation
+
    overriding procedure Finalize (Object : in out Zone_Pool) is
    begin
       while Object.List /= null loop

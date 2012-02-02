@@ -12,6 +12,8 @@ package body System.Generic_Packed_Arrays is
       or else Record_8_Units'Size rem Standard'Storage_Unit /= 0,
       "Is Storage_Unit not a mutiple of 8 ?");
 
+   --  implementation
+
    function Get (Arr : Address; N : Natural) return Bits_Type is
       Units : Record_8_Units;
       for Units'Address use Arr

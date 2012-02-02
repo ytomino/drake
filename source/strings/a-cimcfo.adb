@@ -61,6 +61,8 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
       end;
    end Mapping_Init;
 
+   --  implementation
+
    function Case_Folding_Map return not null access Character_Mapping is
    begin
       System.Once.Initialize (Mapping_Flag'Access, Mapping_Init'Access);

@@ -13,6 +13,8 @@ package body System.Initialization is
       Object,
       Object_Access);
 
+   --  implementation
+
    function New_Object (Storage : not null access Object_Storage)
       return Object_Pointer is
    begin

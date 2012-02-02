@@ -5,6 +5,8 @@ package body Ada.Calendar.Inside.Time_Zones is
 
    Time_Offset_Value : Time_Offset;
 
+   --  implementation
+
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
       pragma Unreferenced (Date);
    begin

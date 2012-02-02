@@ -9,6 +9,8 @@ package body System.Compare_Array_Unsigned_8 is
       return Integer;
    pragma Import (Intrinsic, memcmp, "__builtin_memcmp");
 
+   --  implementation
+
    function Compare_Array_U8_Unaligned (
       Left : Address;
       Right : Address;

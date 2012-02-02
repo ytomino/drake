@@ -117,6 +117,8 @@ package body Ada.Tags.Delegating is
 
    Delegating_Map : D_Node_Access := null;
 
+   --  implementation
+
    function Get_Delegation (Object : System.Address; Interface_Tag : Tag)
       return System.Address
    is

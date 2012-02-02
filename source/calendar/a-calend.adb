@@ -9,6 +9,8 @@ package body Ada.Calendar is
    --  [gcc 4.5/4.6] condition is always False/True
    pragma Suppress (All_Checks);
 
+   --  implementation
+
    function Clock return Time is
    begin
       return Time (System.Native_Time.To_Time (System.Native_Time.Clock));

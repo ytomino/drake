@@ -66,6 +66,8 @@ package body Ada.Text_IO.Fixed_IO is
          raise Data_Error;
    end Get_From_Field;
 
+   --  implementation
+
    procedure Get (
       File : File_Type;
       Item : out Num;

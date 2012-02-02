@@ -4,6 +4,8 @@ package body Ada.Environment_Variables.Inside is
    environ : C.char_ptr_ptr;
    pragma Import (C, environ);
 
+   --  implementation
+
    function Environment_Block return C.char_ptr_ptr is
    begin
       return environ;

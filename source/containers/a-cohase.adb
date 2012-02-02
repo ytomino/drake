@@ -159,6 +159,8 @@ package body Ada.Containers.Hashed_Sets is
       end if;
    end Find;
 
+   --  implementation
+
    procedure Adjust (Object : in out Set) is
    begin
       Copy_On_Write.Adjust (Object.Super'Access);

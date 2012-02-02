@@ -12,6 +12,8 @@ package body Ada.Command_Line is
       return System.Zero_Terminated_Strings.Value (argv (Index));
    end Argv;
 
+   --  implementation
+
    function Argument (Number : Positive) return String is
    begin
       if Number >= System.Standard_Library.gnat_argc then

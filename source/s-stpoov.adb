@@ -4,6 +4,8 @@ package body System.Storage_Pools.Overlaps is
    Overlaid_Allocation : Address;
    pragma Thread_Local_Storage (Overlaid_Allocation);
 
+   --  implementation
+
    procedure Set_Address (Storage_Address : Address) is
    begin
       Overlaid_Allocation := Storage_Address;

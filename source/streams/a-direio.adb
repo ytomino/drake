@@ -11,6 +11,8 @@ package body Ada.Direct_IO is
       Streams.Stream_IO.Out_File => Out_File,
       Streams.Stream_IO.Append_File => Inout_File);
 
+   --  implementation
+
    procedure Close (File : in out File_Type) is
    begin
       Streams.Stream_IO.Close (Streams.Stream_IO.File_Type (File));

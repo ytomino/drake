@@ -141,6 +141,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Free => Free_Data'Access);
    end Unique;
 
+   --  implementation
+
    overriding procedure Adjust (Object : in out Set) is
    begin
       Copy_On_Write.Adjust (Object.Super'Access);

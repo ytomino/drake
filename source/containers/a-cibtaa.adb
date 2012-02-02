@@ -103,6 +103,8 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
       null;
    end Split;
 
+   --  implementation
+
    procedure Insert (
       Container : in out Node_Access;
       Length : in out Count_Type;

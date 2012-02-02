@@ -5,6 +5,8 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
 
    function Downcast is new Unchecked_Conversion (Node_Access, AA_Node_Access);
 
+   --  implementation
+
    function Dump (
       Container : Node_Access;
       Marker : Node_Access;

@@ -152,6 +152,8 @@ package body Ada.Containers.Hashed_Maps is
       end if;
    end Find;
 
+   --  implementation
+
    procedure Adjust (Object : in out Map) is
    begin
       Copy_On_Write.Adjust (Object.Super'Access);

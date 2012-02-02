@@ -11,6 +11,8 @@ package body System.Assertions is
    Data : aliased constant Standard_Library.Exception_Data;
    pragma Import (Ada, Data, "assertion_error");
 
+   --  implementation
+
    procedure Raise_Assert_Failure (Msg : String) is
    begin
       Unwind.Raising.Raise_Exception (

@@ -13,6 +13,8 @@ package body System.Once is
    pragma Import (Intrinsic, sync_val_compare_and_swap,
       "__sync_val_compare_and_swap_1");
 
+   --  implementation
+
    procedure Initialize (
       Flag : not null access Once.Flag;
       Process : not null access procedure) is

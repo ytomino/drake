@@ -66,6 +66,8 @@ package body Ada.Characters.Inside.Maps.Lower_Case is
       end;
    end Mapping_Init;
 
+   --  implementation
+
    function Lower_Case_Map return not null access Character_Mapping is
    begin
       System.Once.Initialize (Mapping_Flag'Access, Mapping_Init'Access);

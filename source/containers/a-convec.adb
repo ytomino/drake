@@ -135,6 +135,8 @@ package body Ada.Containers.Vectors is
       return (Finalization.Controlled with Data => New_Data, Length => Length);
    end Array_To_Vector;
 
+   --  implementation
+
    procedure Adjust (Object : in out Vector) is
    begin
       System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
