@@ -63,7 +63,7 @@ package body System.Reference_Counting is
       return Count > 1; -- static is True
    end Shared;
 
-   --  not null (using sentinel)
+   --  not null because using sentinel (that means empty data block)
 
    procedure Adjust (Reference_Count : not null access Counter) is
    begin
