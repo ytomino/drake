@@ -135,6 +135,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
+   --  implementation
+
 --  diff (Adjust)
 --
 --

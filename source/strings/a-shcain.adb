@@ -3,7 +3,6 @@ with System.UTF_Conversions;
 function Ada.Strings.Hash_Case_Insensitive (Key : String)
    return Containers.Hash_Type
 is
-   pragma Suppress (All_Checks);
    use type Containers.Hash_Type;
    Result : Containers.Hash_Type := 0;
    I : Natural := Key'First;

@@ -8,6 +8,8 @@ package body Ada.Wide_Text_IO is
       Wide_String,
       Wide_String_Access);
 
+   --  implementation
+
    function Current_Error return File_Access is
    begin
       return File_Type (Text_IO.Current_Error.all)'Unrestricted_Access;

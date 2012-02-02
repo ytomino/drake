@@ -1,5 +1,4 @@
 package body Ada.Characters.Inside is
-   pragma Suppress (All_Checks);
 
    function To_Character (Item : Wide_Wide_Character)
       return Character is

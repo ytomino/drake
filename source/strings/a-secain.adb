@@ -1,8 +1,6 @@
 with Ada.Characters.Inside.Maps.Case_Folding;
 function Ada.Strings.Equal_Case_Insensitive (Left, Right : String)
-   return Boolean
-is
-   pragma Suppress (All_Checks);
+   return Boolean is
 begin
    return Left'Length = Right'Length
       and then

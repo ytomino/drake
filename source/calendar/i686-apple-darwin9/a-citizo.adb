@@ -1,9 +1,10 @@
 with C.time;
-package body Ada.Calendar.Time_Zones is
-   pragma Suppress (All_Checks);
+package body Ada.Calendar.Inside.Time_Zones is
    use type C.signed_long;
 
    Time_Offset_Value : Time_Offset;
+
+   --  implementation
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
       pragma Unreferenced (Date);
@@ -14,4 +15,4 @@ package body Ada.Calendar.Time_Zones is
 begin
    C.time.tzset;
    Time_Offset_Value := Time_Offset (C.time.timezone / (-60));
-end Ada.Calendar.Time_Zones;
+end Ada.Calendar.Inside.Time_Zones;

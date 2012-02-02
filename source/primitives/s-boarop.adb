@@ -9,6 +9,8 @@ package body System.Boolean_Array_Operations is
 
    pragma Compile_Time_Error (Word_Unit > 8, "should fix Vector_Not");
 
+   --  implementation
+
    procedure Vector_Not (
       R, X : Address;
       Length : Storage_Elements.Storage_Count)

@@ -13,6 +13,8 @@ package body Ada.Streams.Stream_IO.Standards is
       Finalization.Limited_Controlled with
       Stream => Inside.Standards.Standard_Error);
 
+   --  implementation
+
    function Standard_Input return not null access constant File_Type is
    begin
       return Standard_Input_Object'Access;

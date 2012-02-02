@@ -3,6 +3,8 @@ package body Ada.Strings.UTF_Encoding.Strings is
    function Add_Or_Remove_BOM is
       new Generic_Add_Or_Remove_BOM (Character, String, BOM_8);
 
+   --  implementation
+
    function Encode (
       Item : String;
       Output_Scheme : Encoding_Scheme;

@@ -6,6 +6,11 @@ package body System.Val_Real is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
 
+   function copysignl (X, Y : Long_Long_Float) return Long_Long_Float;
+   pragma Import (Intrinsic, copysignl, "__builtin_copysignl");
+   function truncl (X : Long_Long_Float) return Long_Long_Float;
+   pragma Import (Intrinsic, truncl, "__builtin_truncl");
+
    procedure Get_Aft (
       S : String;
       Last : in out Natural;
@@ -87,6 +92,8 @@ package body System.Val_Real is
       end loop;
    end Get_Unsigned_Real;
 
+   --  implementation
+
    function Value_Real (Str : String) return Long_Long_Float is
       Last : Natural := Str'First - 1;
       Result : Long_Long_Float;
@@ -123,7 +130,7 @@ package body System.Val_Real is
       then
          Mark := S (Last + 1);
          Last := Last + 1;
-         if Result /= Long_Long_Float'Truncation (Result)
+         if Result /= truncl (Result)
             or else Result < Long_Long_Float (Formatting.Number_Base'First)
             or else Result > Long_Long_Float (Formatting.Number_Base'Last)
          then
@@ -140,7 +147,7 @@ package body System.Val_Real is
       if Exponent /= 0 then
          Result := Result * Long_Long_Float (Base) ** Exponent;
       end if;
-      Result := Long_Long_Float'Copy_Sign (Result, Sign);
+      Result := copysignl (Result, Sign);
    end Get_Float_Literal;
 
 end System.Val_Real;

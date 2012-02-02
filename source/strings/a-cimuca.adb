@@ -2,7 +2,6 @@ with Ada.UCD.Simple_Case_Mapping;
 with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Maps.Upper_Case is
-   pragma Suppress (All_Checks);
 
    Mapping : access Character_Mapping;
    Mapping_Flag : aliased System.Once.Flag := 0;
@@ -49,6 +48,8 @@ package body Ada.Characters.Inside.Maps.Upper_Case is
       end;
       Sort (Mapping.From, Mapping.To);
    end Mapping_Init;
+
+   --  implementation
 
    function Upper_Case_Map return not null access Character_Mapping is
    begin

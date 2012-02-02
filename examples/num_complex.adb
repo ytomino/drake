@@ -2,6 +2,8 @@ with Ada.Numerics.Generic_Complex_Arrays;
 with Ada.Numerics.Generic_Complex_Elementary_Functions;
 with Ada.Numerics.Generic_Complex_Types;
 with Ada.Numerics.Generic_Real_Arrays;
+with Ada.Numerics.Long_Long_Complex_Types; -- linking check
+with Ada.Numerics.Long_Long_Complex_Elementary_Functions; -- linking check
 procedure num_complex is
 	generic
 		type T is digits <>;

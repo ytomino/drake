@@ -1,5 +1,4 @@
 package body Ada.Strings.Maps.Inside is
-   pragma Suppress (All_Checks);
 
    function To_Set return T is
    begin

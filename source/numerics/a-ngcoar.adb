@@ -1,12 +1,97 @@
-with Ada.Float.Elementary_Functions;
 with Ada.Numerics.Generic_Arrays;
-with Ada.Numerics.Generic_Complex_Elementary_Functions;
+with Ada.Unchecked_Conversion;
+with System.Long_Long_Complex_Types;
+with System.Long_Long_Complex_Elementary_Functions;
+with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Arrays is
    pragma Suppress (All_Checks);
 
-   function Sqrt is new Float.Elementary_Functions.Sqrt (Real'Base);
    package Elementary_Functions is
-      new Generic_Complex_Elementary_Functions (Complex_Types);
+
+      subtype Float_Type is Real_Arrays.Real;
+
+      function Sqrt (X : Float_Type'Base) return Float_Type'Base;
+
+   end Elementary_Functions;
+
+   package body Elementary_Functions is
+
+      function Sqrt (X : Float_Type'Base) return Float_Type'Base is
+      begin
+         if not Standard'Fast_Math and then X < 0.0 then
+            raise Argument_Error; -- CXA5A10
+         elsif Float_Type'Digits <= Float'Digits then
+            declare
+               function sqrtf (A1 : Float) return Float;
+               pragma Import (Intrinsic, sqrtf, "__builtin_sqrtf");
+            begin
+               return Float_Type'Base (sqrtf (Float (X)));
+            end;
+         elsif Float_Type'Digits <= Long_Float'Digits then
+            declare
+               function sqrt (A1 : Long_Float) return Long_Float;
+               pragma Import (Intrinsic, sqrt, "__builtin_sqrt");
+            begin
+               return Float_Type'Base (sqrt (Long_Float (X)));
+            end;
+         else
+            return Float_Type'Base (
+               System.Long_Long_Elementary_Functions.Fast_Sqrt (
+                  Long_Long_Float (X)));
+         end if;
+      end Sqrt;
+
+   end Elementary_Functions;
+
+   package Complex_Elementary_Functions is
+
+      subtype Real is Real_Arrays.Real;
+
+      function Sqrt (X : Complex) return Complex;
+
+   end Complex_Elementary_Functions;
+
+   package body Complex_Elementary_Functions is
+
+      pragma Warnings (Off);
+      function To_Complex is new Unchecked_Conversion (
+         Complex,
+         System.Long_Long_Complex_Types.Complex);
+      function To_Long_Complex is new Unchecked_Conversion (
+         Complex,
+         System.Long_Long_Complex_Types.Long_Complex);
+      function To_Long_Long_Complex is new Unchecked_Conversion (
+         Complex,
+         System.Long_Long_Complex_Types.Long_Long_Complex);
+      function From_Complex is new Unchecked_Conversion (
+         System.Long_Long_Complex_Types.Complex,
+         Complex);
+      function From_Long_Complex is new Unchecked_Conversion (
+         System.Long_Long_Complex_Types.Long_Complex,
+         Complex);
+      function From_Long_Long_Complex is new Unchecked_Conversion (
+         System.Long_Long_Complex_Types.Long_Long_Complex,
+         Complex);
+      pragma Warnings (On);
+
+      function Sqrt (X : Complex) return Complex is
+      begin
+         if Real'Digits <= Float'Digits then
+            return From_Complex (
+               System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
+                  To_Complex (X)));
+         elsif Real'Digits <= Long_Float'Digits then
+            return From_Long_Complex (
+               System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
+                  To_Long_Complex (X)));
+         else
+            return From_Long_Long_Complex (
+               System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
+                  To_Long_Long_Complex (X)));
+         end if;
+      end Sqrt;
+
+   end Complex_Elementary_Functions;
 
    function Minor is new Generic_Arrays.Minor (
       Complex,
@@ -209,7 +294,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       Zero => (Re => 0.0, Im => 0.0),
       One => (Re => 1.0, Im => 0.0),
       Two => (Re => 2.0, Im => 0.0),
-      Sqrt => Elementary_Functions.Sqrt,
+      Sqrt => Complex_Elementary_Functions.Sqrt,
       Is_Minus => Is_Minus,
       Is_Small => Is_Small,
       To_Real => Re);
@@ -383,7 +468,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       Complex_Vector,
       Real'Base,
       Zero => 0.0,
-      Sqrt => Sqrt);
+      Sqrt => Elementary_Functions.Sqrt);
 
    function "abs" (Right : Complex_Vector) return Real'Base
       renames abs_Body;

@@ -2,7 +2,6 @@ with Ada.Text_IO.Inside.Formatting;
 with System.Val_Int;
 with System.Val_LLI;
 package body Ada.Text_IO.Integer_IO is
-   pragma Suppress (All_Checks);
 
    procedure Put_To_Field (
       To : out String;
@@ -74,6 +73,8 @@ package body Ada.Text_IO.Integer_IO is
       when Constraint_Error =>
          raise Data_Error;
    end Get_From_Field;
+
+   --  implementation
 
    procedure Get (
       File : File_Type;

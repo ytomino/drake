@@ -1,7 +1,4 @@
 package body Ada.Real_Time is
-   pragma Suppress (All_Checks);
-
-   --  implementation
 
    function Clock return Time is
    begin

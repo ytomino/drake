@@ -1,7 +1,6 @@
 with Ada.Calendar.Inside;
 with System.Formatting;
 package body Ada.Calendar.Formatting is
-   pragma Suppress (All_Checks);
    use type Time_Zones.Time_Offset;
 
    procedure Image (

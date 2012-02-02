@@ -1,5 +1,4 @@
 package body Ada.Characters.Conversions is
-   pragma Suppress (All_Checks);
 
    function Is_Wide_Character (Item : Character) return Boolean is
    begin

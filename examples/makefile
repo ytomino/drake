@@ -19,6 +19,7 @@ endif
 
 export WITHA=0
 export WITHD=1
+export WITHI=0
 export WITHS=0
 
 ifneq ($(WITHA),0)

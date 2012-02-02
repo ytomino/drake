@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 package Interfaces is
    pragma Pure;
 
-   type Integer_8 is range -2 ** 7 .. 2 ** 7 - 1; -- 2's complement
+   type Integer_8 is range -2 ** 7 .. 2 ** 7 - 1; -- 2's complement
    for Integer_8'Size use 8;
    type Integer_16 is range -2 ** 15 .. 2 ** 15 - 1;
    for Integer_16'Size use 16;

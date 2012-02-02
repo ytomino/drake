@@ -2,7 +2,6 @@ with Ada.UCD.Case_Folding;
 with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Maps.Case_Folding is
-   pragma Suppress (All_Checks);
    use type UCD.UCS_4;
 
    Mapping : access Character_Mapping;
@@ -60,6 +59,8 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
          pragma Assert (I = Mapping.From'Last + 1);
       end;
    end Mapping_Init;
+
+   --  implementation
 
    function Case_Folding_Map return not null access Character_Mapping is
    begin

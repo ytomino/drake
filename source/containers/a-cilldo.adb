@@ -7,6 +7,8 @@ package body Ada.Containers.Inside.Linked_Lists.Doubly is
       Node_Access,
       Doubly_Node_Access);
 
+   --  implementation
+
    procedure Iterate (
       First : Node_Access;
       Process : not null access procedure (Position : not null Node_Access))

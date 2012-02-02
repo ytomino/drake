@@ -2,7 +2,6 @@ with Ada.Characters.Inside.Sets.General_Category;
 with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Sets.Constants is
-   pragma Suppress (All_Checks);
 
    function Total_Length (Source : Character_Ranges_Array) return Natural;
    function Total_Length (Source : Character_Ranges_Array) return Natural is

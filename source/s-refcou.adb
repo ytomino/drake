@@ -56,6 +56,8 @@ package body System.Reference_Counting is
       pragma Warnings (On, "condition is always True");
    end sync_bool_compare_and_swap;
 
+   --  implementation
+
    function Shared (Count : Counter) return Boolean is
    begin
       return Count > 1; -- static is True

@@ -1,9 +1,44 @@
-with Ada.Float.Elementary_Functions;
 with Ada.Numerics.Generic_Arrays;
+with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Real_Arrays is
    pragma Suppress (All_Checks);
 
-   function Sqrt is new Float.Elementary_Functions.Sqrt (Real'Base);
+   package Elementary_Functions is
+
+      subtype Float_Type is Real;
+
+      function Sqrt (X : Float_Type'Base) return Float_Type'Base;
+
+   end Elementary_Functions;
+
+   package body Elementary_Functions is
+
+      function Sqrt (X : Float_Type'Base) return Float_Type'Base is
+      begin
+         if not Standard'Fast_Math and then X < 0.0 then
+            raise Argument_Error; -- CXA5A10
+         elsif Float_Type'Digits <= Float'Digits then
+            declare
+               function sqrtf (A1 : Float) return Float;
+               pragma Import (Intrinsic, sqrtf, "__builtin_sqrtf");
+            begin
+               return Float_Type'Base (sqrtf (Float (X)));
+            end;
+         elsif Float_Type'Digits <= Long_Float'Digits then
+            declare
+               function sqrt (A1 : Long_Float) return Long_Float;
+               pragma Import (Intrinsic, sqrt, "__builtin_sqrt");
+            begin
+               return Float_Type'Base (sqrt (Long_Float (X)));
+            end;
+         else
+            return Float_Type'Base (
+               System.Long_Long_Elementary_Functions.Fast_Sqrt (
+                  Long_Long_Float (X)));
+         end if;
+      end Sqrt;
+
+   end Elementary_Functions;
 
    function Minor is new Generic_Arrays.Minor (
       Real'Base,
@@ -40,7 +75,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Zero => 0.0,
       One => 1.0,
       Two => 2.0,
-      Sqrt => Sqrt,
+      Sqrt => Elementary_Functions.Sqrt,
       Is_Minus => Is_Minus,
       Is_Small => Is_Small,
       To_Real => "+");
@@ -123,7 +158,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Real_Vector,
       Real'Base,
       Zero => 0.0,
-      Sqrt => Sqrt);
+      Sqrt => Elementary_Functions.Sqrt);
 
    function "abs" (Right : Real_Vector) return Real'Base
       renames abs_Body;

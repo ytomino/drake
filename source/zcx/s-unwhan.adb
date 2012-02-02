@@ -54,6 +54,8 @@ package body System.Unwind.Handling is
       return uchar_Conv.To_Address (Left) < uchar_Conv.To_Address (Right);
    end "<";
 
+   --  implementation
+
    procedure Begin_Handler (GCC_Exception : GNAT_GCC_Exception_Access) is
    begin
       null;

@@ -5,7 +5,6 @@ with Ada.Characters.Inside.Sets.General_Category;
 with Ada.Characters.Inside.Sets.Constants;
 with System.UTF_Conversions;
 package body Ada.Characters.Handling is
-   pragma Suppress (All_Checks);
 
    function Is_Control (Item : Character) return Boolean is
    begin

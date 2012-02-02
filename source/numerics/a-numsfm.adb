@@ -1,5 +1,6 @@
 with System.Formatting;
 package body Ada.Numerics.SFMT is
+   pragma Suppress (All_Checks);
 
    --  This function represents a function used in the initialization
    --  by init_by_array

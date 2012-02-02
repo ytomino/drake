@@ -159,6 +159,8 @@ package body Ada.Containers.Limited_Hashed_Sets is
       end if;
    end Find;
 
+   --  implementation
+
 --  diff (Adjust)
 --
 --

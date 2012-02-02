@@ -1,7 +1,6 @@
 function Ada.Strings.Generic_Hash (Key : String_Type)
    return Containers.Hash_Type
 is
-   pragma Suppress (All_Checks);
    use type Containers.Hash_Type;
    Result : Containers.Hash_Type := 0;
 begin

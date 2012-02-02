@@ -5,6 +5,8 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_Strings is
       Wide_Wide_String,
       BOM_32);
 
+   --  implementation
+
    function Encode (
       Item : Wide_Wide_String;
       Output_BOM : Boolean := False)

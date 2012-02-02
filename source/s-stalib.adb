@@ -7,6 +7,8 @@ package body System.Standard_Library is
       "__drake_ref_install_exception_handler");
    pragma Weak_External (Install_Exception_Handler);
 
+   --  implementation
+
    procedure Initialize (SEH : Address) is
    begin
       if Install_Exception_Handler'Address /= Null_Address then

@@ -32,6 +32,8 @@ package body System.Secondary_Stack is
       Address,
       Block_Access);
 
+   --  implementation
+
    procedure SS_Allocate (
       Addr : out Address;
       Storage_Size : Storage_Elements.Storage_Count)

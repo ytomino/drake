@@ -6,6 +6,8 @@ package body Interfaces.C.Pointers is
    subtype A is Element_Array;
    Storage_Unit : constant := Standard'Storage_Unit;
 
+   --  implementation
+
    procedure Decrement (Ref : in out Pointer) is
    begin
       Ref := Ref - 1;

@@ -71,6 +71,8 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Check_File_Open;
 
+   --  implementation
+
    procedure Close (
       File : in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is

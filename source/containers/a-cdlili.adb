@@ -131,6 +131,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
          Free => Free_Data'Access);
    end Unique;
 
+   --  implementation
+
    procedure Adjust (Object : in out List) is
    begin
       Copy_On_Write.Adjust (Object.Super'Access);
