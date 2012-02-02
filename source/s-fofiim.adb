@@ -17,7 +17,10 @@ is
    pragma Suppress (All_Checks);
    function signbit (X : Long_Long_Float) return Integer;
    pragma Import (Intrinsic, signbit, "__builtin_signbitl");
-   Item_Fore : Long_Long_Float;
+   function modfl (value : Long_Long_Float; iptr : access Long_Long_Float)
+      return Long_Long_Float;
+   pragma Import (Intrinsic, modfl, "__builtin_modfl");
+   Item_Fore : aliased Long_Long_Float;
    Aft : Long_Long_Float;
    Required_Fore_Width : Positive;
    Error : Boolean;
@@ -55,9 +58,7 @@ begin
       To (Last) := '#';
    end if;
    --  integer part
-   Aft := abs Item;
-   Item_Fore := Long_Long_Float'Truncation (Aft);
-   Aft := Aft - Item_Fore;
+   Aft := modfl (abs Item, Item_Fore'Access);
    Required_Fore_Width := Float.Fore_Width (Item_Fore, Base => Base);
    for I in Required_Fore_Width + 1 .. Fore_Width loop
       Last := Last + 1;

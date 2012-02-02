@@ -2,6 +2,13 @@ with System.Long_Long_Float_Divide;
 package body System.Formatting.Float is
    pragma Suppress (All_Checks);
 
+   function roundl (X : Long_Long_Float) return Long_Long_Float;
+   pragma Import (Intrinsic, roundl, "__builtin_roundl");
+   function truncl (X : Long_Long_Float) return Long_Long_Float;
+   pragma Import (Intrinsic, truncl, "__builtin_truncl");
+
+   --  implementation
+
    procedure Split (
       X : Longest_Unsigned_Float;
       Fore : out Unsigned;
@@ -28,7 +35,7 @@ package body System.Formatting.Float is
                declare
                   Scaled : constant Longest_Unsigned_Float := X / B;
                   Fore_Float : constant Longest_Unsigned_Float :=
-                     Longest_Unsigned_Float'Truncation (Scaled);
+                     truncl (Scaled);
                begin
                   Fore := Unsigned (Fore_Float);
                   Aft := X - Fore_Float * B;
@@ -47,7 +54,7 @@ package body System.Formatting.Float is
                end loop;
                declare
                   Fore_Float : constant Longest_Unsigned_Float :=
-                     Longest_Unsigned_Float'Truncation (Scaled);
+                     truncl (Scaled);
                begin
                   Fore := Unsigned (Fore_Float);
                   Aft := X - Fore_Float / B;
@@ -74,7 +81,7 @@ package body System.Formatting.Float is
    begin
       Last := Item'First + Width;
       Item (Item'First) := '.';
-      X := Longest_Unsigned_Float'Rounding (
+      X := roundl (
          Value * Longest_Unsigned_Float (Base) ** (Width - Exponent));
       for I in reverse Item'First + 1 .. Last loop
          declare
