@@ -2,7 +2,6 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Inside.Formatting is
-   pragma Suppress (All_Checks);
 
    type String_Access is access String;
    procedure Free is new Unchecked_Deallocation (String, String_Access);

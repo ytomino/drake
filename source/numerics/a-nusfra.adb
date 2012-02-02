@@ -3,6 +3,7 @@ with Ada.Numerics.SFMT.Random.Inside;
 with System.Formatting;
 with System.Storage_Elements;
 package body Ada.Numerics.SFMT.Random is
+   pragma Suppress (All_Checks);
    use type System.Bit_Order;
    use type System.Storage_Elements.Storage_Count;
 

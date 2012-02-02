@@ -5,7 +5,6 @@ with Ada.UCD.Normalization;
 with System.Once;
 with System.UTF_Conversions;
 package body Ada.Characters.Normalization is
-   pragma Suppress (All_Checks);
    use type UCD.UCS_4;
    use type System.UTF_Conversions.UCS_4;
 

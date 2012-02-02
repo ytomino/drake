@@ -1,6 +1,7 @@
 with System.Memory;
 with System.Address_To_Named_Access_Conversions;
 package body System.Storage_Pools.Zones is
+   pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
 
    package Conv is

@@ -1,5 +1,4 @@
 package body Ada.Characters.ASCII.Handling is
-   pragma Suppress (All_Checks);
 
    function Is_Control (Item : Character) return Boolean is
    begin

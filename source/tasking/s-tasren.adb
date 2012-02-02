@@ -4,6 +4,7 @@ with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
 with System.Tasking.Inside;
 package body System.Tasking.Rendezvous is
+   pragma Suppress (All_Checks);
    use type Ada.Exceptions.Exception_Id;
 
    package Task_Record_Conv is new Address_To_Named_Access_Conversions (

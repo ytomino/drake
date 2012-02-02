@@ -2,7 +2,6 @@ with Ada.UCD.Simple_Case_Mapping;
 with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Maps.Upper_Case is
-   pragma Suppress (All_Checks);
 
    Mapping : access Character_Mapping;
    Mapping_Flag : aliased System.Once.Flag := 0;

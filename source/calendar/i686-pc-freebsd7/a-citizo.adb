@@ -2,7 +2,6 @@ with System.Native_Time;
 with C.time;
 with C.sys.types;
 package body Ada.Calendar.Inside.Time_Zones is
-   pragma Suppress (All_Checks);
    use type C.sys.types.time_t;
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is

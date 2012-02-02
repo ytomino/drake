@@ -3,7 +3,6 @@ with System.Formatting;
 with System.Val_LLU;
 with System.Val_Uns;
 package body Ada.Text_IO.Modular_IO is
-   pragma Suppress (All_Checks);
    use type System.Formatting.Longest_Unsigned;
    use type System.Formatting.Unsigned;
 

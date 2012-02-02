@@ -1,7 +1,6 @@
 with Ada.Text_IO.Float_IO;
 with Ada.Text_IO.Inside.Formatting;
 package body Ada.Text_IO.Complex_IO is
-   pragma Suppress (All_Checks);
 
    package Real_IO is new Float_IO (Complex_Types.Real);
 

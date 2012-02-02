@@ -1,6 +1,5 @@
 with Ada.Text_IO.Inside.Formatting;
 package body Ada.Text_IO.Enumeration_IO is
-   pragma Suppress (All_Checks);
 
    procedure Put_To_Field (
       To : out String;

@@ -2,7 +2,6 @@ with Ada.UCD.Simple_Case_Mapping;
 with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Maps.Lower_Case is
-   pragma Suppress (All_Checks);
    use type UCD.UCS_4;
 
    Mapping : access Character_Mapping;

@@ -3,7 +3,6 @@ with System.Formatting.Fixed_Image;
 with System.Formatting.Float_Image;
 with System.Val_Real;
 package body Ada.Text_IO.Float_IO is
-   pragma Suppress (All_Checks);
 
    procedure Put_To_Field (
       To : out String;

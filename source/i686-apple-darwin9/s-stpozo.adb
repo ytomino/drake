@@ -1,4 +1,5 @@
 package body System.Storage_Pools.Zones is
+   pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
 
    overriding procedure Initialize (Object : in out Zone_Pool) is

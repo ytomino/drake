@@ -1,4 +1,5 @@
 package body System.Storage_Pools is
+   pragma Suppress (All_Checks);
 
    procedure Allocate_Any (
       Pool : in out Root_Storage_Pool'Class;

@@ -8,7 +8,6 @@ with System.UTF_Conversions.From_16_To_32;
 with System.UTF_Conversions.From_32_To_8;
 with System.UTF_Conversions.From_32_To_16;
 package body Ada.Strings.Maps is
-   pragma Suppress (All_Checks);
    use type Characters.Inside.Sets.Character_Ranges;
 
    --  sets

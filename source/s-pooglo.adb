@@ -1,5 +1,6 @@
 with System.Memory;
 package body System.Pool_Global is
+   pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
 
    overriding procedure Allocate (
