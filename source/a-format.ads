@@ -12,6 +12,7 @@ package Ada.Formatting is
 
    None : constant Character := Character'Val (0);
 
+   Plus_Sign_Marks : constant Sign_Marks := ('-', '+', '+');
    Spacing_Sign_Marks : constant Sign_Marks := ('-', ' ', ' ');
    Triming_Sign_Marks : constant Sign_Marks := ('-', None, None);
    Spacing_Unsign_Marks : constant Unsign_Marks := (' ', ' ');
@@ -52,9 +53,7 @@ package Ada.Formatting is
       Fore_Padding : Character := '0';
       Aft_Width : Positive := T'Digits - 1;
       Exponent_Mark : Character := 'E';
-      Exponent_Minus_Sign : Character := '-';
-      Exponent_Zero_Sign : Character := '+';
-      Exponent_Plus_Sign : Character := '+';
+      Exponent_Signs : Sign_Marks := Plus_Sign_Marks;
       Exponent_Width : Positive := 2;
       Exponent_Padding : Character := '0';
       NaN : String := "NAN";
@@ -72,9 +71,7 @@ package Ada.Formatting is
       Fore_Padding : Character := '0';
       Aft_Width : Positive := T'Aft;
       Exponent_Mark : Character := 'E';
-      Exponent_Minus_Sign : Character := '-';
-      Exponent_Zero_Sign : Character := '+';
-      Exponent_Plus_Sign : Character := '+';
+      Exponent_Signs : Sign_Marks := Plus_Sign_Marks;
       Exponent_Width : Positive := 2;
       Exponent_Padding : Character := '0';
    function Fixed_Image (Item : T) return String;
@@ -89,9 +86,7 @@ package Ada.Formatting is
       Fore_Padding : Character := '0';
       Aft_Width : Positive := T'Aft;
       Exponent_Mark : Character := 'E';
-      Exponent_Minus_Sign : Character := '-';
-      Exponent_Zero_Sign : Character := '+';
-      Exponent_Plus_Sign : Character := '+';
+      Exponent_Signs : Sign_Marks := Plus_Sign_Marks;
       Exponent_Width : Positive := 2;
       Exponent_Padding : Character := '0';
    function Decimal_Image (Item : T) return String;
