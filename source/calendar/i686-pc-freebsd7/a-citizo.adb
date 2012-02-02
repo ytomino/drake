@@ -5,6 +5,7 @@ package body Ada.Calendar.Inside.Time_Zones is
    use type C.sys.types.time_t;
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
+      --  FreeBSD does not have timezone variable
       GMT_Time : aliased constant System.Native_Time.Native_Time :=
          System.Native_Time.To_Native_Time (Duration (Date));
       Local_TM : aliased C.time.struct_tm;
@@ -17,4 +18,6 @@ package body Ada.Calendar.Inside.Time_Zones is
       return Time_Offset ((Local_Time - GMT_Time.tv_sec) / 60);
    end UTC_Time_Offset;
 
+begin
+   C.time.tzset;
 end Ada.Calendar.Inside.Time_Zones;
