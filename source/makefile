@@ -12,6 +12,7 @@
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
 #   WITHD=      debug info (default:if TARGET=HOST then 1 else 0)
 #   WITHF=      -ffast-math (default:0)
+#   WITHI=      if 0, symbolic link instead of install (default:1)
 #   WITHL=      link time optimization (default:0)
 #   WITHS=      assembly source (default:0)
 #   CFLAGS=     additional compiler options (default:empty)
@@ -48,6 +49,11 @@ endif
 # if WITHF=1, -ffast-math
 ifeq ($(WITHF),)
 WITHF=0
+endif
+
+# if WITHL=1, install
+ifeq ($(WITHI),)
+WITHI=1
 endif
 
 # if WITHL=1, link-time optimization be enabled
@@ -143,6 +149,12 @@ else
 IMPORT_HEADERS=$(IMPORTDIR)/c.ads
 endif
 
+ifneq ($(WITHI),0)
+INSTALL=install -m 444
+else
+INSTALL=ln -s
+endif
+
 ifneq ($(WITHD),0)
 CFLAGS_DEBUG=-g -gnata
 CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer
@@ -199,112 +211,113 @@ $(RTSDIR)/adainclude/system.ads:
 	ln -s $(GCCLIBDIR)/adainclude/system.ads $@
 
 $(RTSDIR)/adainclude/%.ads: %.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: %.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: $(TARGET)/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: $(TARGET)/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: ada83/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: ada83/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
+
 
 $(RTSDIR)/adainclude/%.ads: containers/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: containers/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: directories/$(TARGET)/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: directories/$(TARGET)/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: image/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: image/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: interfaces/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: interfaces/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: interfaces/$(TARGET)/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: interfaces/$(TARGET)/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: numerics/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: numerics/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: numerics/$(TARGET)/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: numerics/$(TARGET)/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: primitives/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: primitives/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: streams/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: streams/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: streams/$(TARGET)/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: streams/$(TARGET)/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: strings/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: strings/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: tasking/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: tasking/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: tasking/$(TARGET)/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: tasking/$(TARGET)/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: textio/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: textio/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: $(EH)/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
@@ -338,10 +351,10 @@ ifneq ($(IMPORTDIR),$(RTSDIR)/adainclude)
 IMPLIB_LINKS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(IMPLIB_SRC)))
 
 $(RTSDIR)/adainclude/%.ads: $(IMPORTDIR)/%.ads
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: $(IMPORTDIR)/%.adb
-	ln -s $(abspath $<) $@
+	$(INSTALL) $(abspath $<) $@
 
 else
 IMPLIB_LINKS=
