@@ -2,6 +2,7 @@
 pragma Wide_Character_Encoding (UTF8); -- for using π
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Generic_Real_Arrays;
+with Ada.Numerics.Long_Long_Elementary_Functions; -- linking check
 procedure num_real is
 	generic
 		type T is digits <>;

@@ -1,20 +1,101 @@
-with Ada.Float.Elementary_Functions;
-with Ada.Numerics.Generic_Complex_Types.Inside;
+with Ada.Unchecked_Conversion;
+with Ada.Float;
+with System.Long_Long_Complex_Types;
+with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
 
-   package Impl is new Inside;
    function Is_Infinity is new Float.Is_Infinity (Real'Base);
    procedure Modulo_Divide_By_1 is
       new Float.Modulo_Divide_By_1 (Real'Base, Real'Base, Real'Base);
-   function Sin is new Float.Elementary_Functions.Sin (Real'Base);
-   function Cos is new Float.Elementary_Functions.Cos (Real'Base);
    subtype Float is Standard.Float; -- hiding "Float" package
+
+   package Elementary_Functions is
+
+      subtype Float_Type is Real;
+
+      function Sin (X : Float_Type'Base) return Float_Type'Base;
+      function Cos (X : Float_Type'Base) return Float_Type'Base;
+
+   end Elementary_Functions;
+
+   package body Elementary_Functions is
+
+      function Sin (X : Float_Type'Base) return Float_Type'Base is
+      begin
+         if Float_Type'Digits <= Float'Digits then
+            declare
+               function sinf (A1 : Float) return Float;
+               pragma Import (Intrinsic, sinf, "__builtin_sinf");
+            begin
+               return Float_Type'Base (sinf (Float (X)));
+            end;
+         elsif Float_Type'Digits <= Long_Float'Digits then
+            declare
+               function sin (A1 : Long_Float) return Long_Float;
+               pragma Import (Intrinsic, sin, "__builtin_sin");
+            begin
+               return Float_Type'Base (sin (Long_Float (X)));
+            end;
+         else
+            return Float_Type'Base (
+               System.Long_Long_Elementary_Functions.Fast_Sin (
+                  Long_Long_Float (X)));
+         end if;
+      end Sin;
+
+      function Cos (X : Float_Type'Base) return Float_Type'Base is
+      begin
+         if Float_Type'Digits <= Float'Digits then
+            declare
+               function cosf (A1 : Float) return Float;
+               pragma Import (Intrinsic, cosf, "__builtin_cosf");
+            begin
+               return Float_Type'Base (cosf (Float (X)));
+            end;
+         elsif Float_Type'Digits <= Long_Float'Digits then
+            declare
+               function cos (A1 : Long_Float) return Long_Float;
+               pragma Import (Intrinsic, cos, "__builtin_cos");
+            begin
+               return Float_Type'Base (cos (Long_Float (X)));
+            end;
+         else
+            return Float_Type'Base (
+               System.Long_Long_Elementary_Functions.Fast_Cos (
+                  Long_Long_Float (X)));
+         end if;
+      end Cos;
+
+   end Elementary_Functions;
+
+   pragma Warnings (Off);
+   function To_Complex is new Unchecked_Conversion (
+      Complex,
+      System.Long_Long_Complex_Types.Complex);
+   function To_Long_Complex is new Unchecked_Conversion (
+      Complex,
+      System.Long_Long_Complex_Types.Long_Complex);
+   function To_Long_Long_Complex is new Unchecked_Conversion (
+      Complex,
+      System.Long_Long_Complex_Types.Long_Long_Complex);
+   pragma Warnings (On);
 
    --  implementation
 
-   function Argument (X : Complex) return Real'Base
-      renames Impl.Argument;
+   function Argument (X : Complex) return Real'Base is
+   begin
+      if Real'Digits <= Float'Digits then
+         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
+            To_Complex (X)));
+      elsif Real'Digits <= Long_Float'Digits then
+         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
+            To_Long_Complex (X)));
+      else
+         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
+            To_Long_Long_Complex (X)));
+      end if;
+   end Argument;
 
    function Argument (X : Complex; Cycle : Real'Base) return Real'Base is
    begin
@@ -44,8 +125,8 @@ package body Ada.Numerics.Generic_Complex_Types is
       return Complex is
    begin
       return (
-         Re => Modulus * Cos (Argument),
-         Im => Modulus * Sin (Argument));
+         Re => Modulus * Elementary_Functions.Cos (Argument),
+         Im => Modulus * Elementary_Functions.Sin (Argument));
    end Compose_From_Polar;
 
    function Compose_From_Polar (Modulus, Argument, Cycle : Real'Base)
@@ -120,8 +201,19 @@ package body Ada.Numerics.Generic_Complex_Types is
       return Real'Base (X);
    end Im;
 
-   function Modulus (X : Complex) return Real'Base
-      renames Impl.Modulus;
+   function Modulus (X : Complex) return Real'Base is
+   begin
+      if Real'Digits <= Float'Digits then
+         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
+            To_Complex (X)));
+      elsif Real'Digits <= Long_Float'Digits then
+         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
+            To_Long_Complex (X)));
+      else
+         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
+            To_Long_Long_Complex (X)));
+      end if;
+   end Modulus;
 
    function Re (X : Complex) return Real'Base is
    begin
