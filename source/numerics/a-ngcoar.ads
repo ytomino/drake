@@ -11,8 +11,8 @@ package Ada.Numerics.Generic_Complex_Arrays is
    --  Types
 
    type Complex_Vector is array (Integer range <>) of Complex;
-   type Complex_Matrix is array (Integer range <>,
-                                 Integer range <>) of Complex;
+   type Complex_Matrix is
+      array (Integer range <>, Integer range <>) of Complex;
 
    --  Subprograms for Complex_Vector types
 
@@ -88,9 +88,11 @@ package Ada.Numerics.Generic_Complex_Arrays is
 
    --  Other Complex_Vector operations
 
-   function Unit_Vector (Index : Integer;
-                         Order : Positive;
-                         First : Integer := 1) return Complex_Vector;
+   function Unit_Vector (
+      Index : Integer;
+      Order : Positive;
+      First : Integer := 1)
+      return Complex_Vector;
 
    --  Subprograms for Complex_Matrix types
 
