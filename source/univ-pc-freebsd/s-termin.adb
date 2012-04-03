@@ -1,0 +1,1 @@
+../univ-apple-darwin/s-termin.adb

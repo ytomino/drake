@@ -1,0 +1,1 @@
+../univ-apple-darwin/a-intnam.ads

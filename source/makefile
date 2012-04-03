@@ -89,6 +89,20 @@ endif
 
 SUBDIRS=ada83 calendar containers directories image interfaces numerics primitives streams strings tasking textio $(EH)
 
+ifneq ($(findstring darwin,$(TARGET)),)
+TARGETSUBDIR=univ-apple-darwin
+else
+ifneq ($(findstring freebsd,$(TARGET)),)
+TARGETSUBDIR=univ-pc-freebsd
+else
+ifneq ($(findstring mingw,$(TARGET)),)
+TARGETSUBDIR=univ-w64-mingw
+else
+TARGETSUBDIR=$(TARGET)
+endif
+endif
+endif
+
 # relation of sub directoris
 # (root) + primitives + zcx or sjlj -- minimum runtime
 # ada83       : calendar stream text_io # Ada 83 names
@@ -103,8 +117,8 @@ SUBDIRS=ada83 calendar containers directories image interfaces numerics primitiv
 # tasking     : calendar                # support for task and protected syntax and all tasking packages
 # text_io     : image streams           # child packages of Text_IO
 
-SRC=$(wildcard *.ad?) $(wildcard $(TARGET)/*.ad?) \
-	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad?) $(wildcard $(i)/$(TARGET)/*.ad?))
+SRC=$(wildcard *.ad?) $(wildcard $(TARGETSUBDIR)/*.ad?) \
+	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad?) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad?))
 
 SEPARATED=$(EH)/s-unrase.adb $(EH)/s-untrse.adb
 
@@ -217,10 +231,10 @@ $(RTSDIR)/adainclude/%.ads: %.ads
 $(RTSDIR)/adainclude/%.adb: %.adb
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: $(TARGET)/%.ads
+$(RTSDIR)/adainclude/%.ads: $(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.adb: $(TARGET)/%.adb
+$(RTSDIR)/adainclude/%.adb: $(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: ada83/%.ads
@@ -235,10 +249,10 @@ $(RTSDIR)/adainclude/%.ads: calendar/%.ads
 $(RTSDIR)/adainclude/%.adb: calendar/%.adb
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: calendar/$(TARGET)/%.ads
+$(RTSDIR)/adainclude/%.ads: calendar/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.adb: calendar/$(TARGET)/%.adb
+$(RTSDIR)/adainclude/%.adb: calendar/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: containers/%.ads
@@ -247,10 +261,10 @@ $(RTSDIR)/adainclude/%.ads: containers/%.ads
 $(RTSDIR)/adainclude/%.adb: containers/%.adb
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: directories/$(TARGET)/%.ads
+$(RTSDIR)/adainclude/%.ads: directories/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.adb: directories/$(TARGET)/%.adb
+$(RTSDIR)/adainclude/%.adb: directories/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: image/%.ads
@@ -265,10 +279,10 @@ $(RTSDIR)/adainclude/%.ads: interfaces/%.ads
 $(RTSDIR)/adainclude/%.adb: interfaces/%.adb
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: interfaces/$(TARGET)/%.ads
+$(RTSDIR)/adainclude/%.ads: interfaces/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.adb: interfaces/$(TARGET)/%.adb
+$(RTSDIR)/adainclude/%.adb: interfaces/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: numerics/%.ads
@@ -277,10 +291,10 @@ $(RTSDIR)/adainclude/%.ads: numerics/%.ads
 $(RTSDIR)/adainclude/%.adb: numerics/%.adb
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: numerics/$(TARGET)/%.ads
+$(RTSDIR)/adainclude/%.ads: numerics/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.adb: numerics/$(TARGET)/%.adb
+$(RTSDIR)/adainclude/%.adb: numerics/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: primitives/%.ads
@@ -295,10 +309,10 @@ $(RTSDIR)/adainclude/%.ads: streams/%.ads
 $(RTSDIR)/adainclude/%.adb: streams/%.adb
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: streams/$(TARGET)/%.ads
+$(RTSDIR)/adainclude/%.ads: streams/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.adb: streams/$(TARGET)/%.adb
+$(RTSDIR)/adainclude/%.adb: streams/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: strings/%.ads
@@ -313,10 +327,10 @@ $(RTSDIR)/adainclude/%.ads: tasking/%.ads
 $(RTSDIR)/adainclude/%.adb: tasking/%.adb
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: tasking/$(TARGET)/%.ads
+$(RTSDIR)/adainclude/%.ads: tasking/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.adb: tasking/$(TARGET)/%.adb
+$(RTSDIR)/adainclude/%.adb: tasking/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: textio/%.ads
