@@ -22,7 +22,7 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
          end if;
          Ada.Debug.Put ((1 .. Indent => ' ') &
                Mark (Current = Marker) &
-               " (level =" & Integer'Image (Downcast (Current).Level) &
+               " (level =" & Level_Type'Image (Downcast (Current).Level) &
                ")");
          if Current.Right /= null then
             Process (Current.Right, Indent + 1);

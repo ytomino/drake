@@ -94,7 +94,7 @@ package body Ada.Numerics.SFMT.Random.Inside is
    is
       i : Integer;
       r, r1, r2, mask : m128i;
-      sfmt_si : array (Natural) of aliased m128i;
+      sfmt_si : array (0 .. sfmt'Size / 128 - 1) of aliased m128i;
       for sfmt_si'Address use sfmt'Address;
    begin
       mask := mm_set_epi32 (MSK4, MSK3, MSK2, MSK1);
@@ -140,7 +140,7 @@ package body Ada.Numerics.SFMT.Random.Inside is
    is
       i, j : Integer;
       r, r1, r2, mask : m128i;
-      sfmt_si : array (Natural) of aliased m128i;
+      sfmt_si : array (0 .. sfmt'Size / 128 - 1) of aliased m128i;
       for sfmt_si'Address use sfmt'Address;
       array_si : array (Natural) of aliased m128i;
       for array_si'Address use Item'Address;

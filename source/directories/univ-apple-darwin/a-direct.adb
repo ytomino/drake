@@ -548,13 +548,6 @@ package body Ada.Directories is
    end Set_Directory;
 
    procedure Set_Modification_Time (Name : String; Time : Calendar.Time) is
-      function To_usec is new Ada.Unchecked_Conversion (
-         C.signed_long,
-         C.signed_int); -- OSX
-      function To_usec is new Ada.Unchecked_Conversion (
-         C.signed_long,
-         C.signed_long); -- FreeBSD
-      pragma Warnings (Off, To_usec);
       function Cast is new Unchecked_Conversion (Calendar.Time, Duration);
       function To_timeval (X : C.sys.time.struct_timespec)
          return C.sys.time.struct_timeval;
@@ -563,7 +556,7 @@ package body Ada.Directories is
       begin
          return (
             tv_sec => X.tv_sec,
-            tv_usec => To_usec (X.tv_nsec / 1000));
+            tv_usec => C.sys.types.suseconds_t (X.tv_nsec / 1000));
       end To_timeval;
       Z_Name : constant String := Name & Character'Val (0);
       C_Name : C.char_array (C.size_t);

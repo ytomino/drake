@@ -10,9 +10,18 @@ package Ada.Containers.Inside.Weak_Access_Holders is
    type Weak_Holder;
    type Weak_Holder_Access is access all Weak_Holder;
 
+   Data_Size : constant := Standard'Address_Size * 2;
+
    type Data is limited record
       Reference_Count : aliased System.Reference_Counting.Counter;
       Weak_List : Weak_Holder_Access;
+   end record;
+   for Data'Size use Data_Size;
+   for Data use record
+      Reference_Count at 0
+         range 0 .. System.Reference_Counting.Counter'Size - 1;
+      Weak_List at 0
+         range Standard'Address_Size .. Standard'Address_Size * 2 - 1;
    end record;
    pragma Suppress_Initialization (Data);
 
@@ -28,10 +37,6 @@ package Ada.Containers.Inside.Weak_Access_Holders is
    procedure Clear_Weaks (
       List : in out Data;
       Null_Data : not null Data_Access);
-
-   Data_Size : constant :=
-      System.Reference_Counting.Counter'Size
-      + Standard'Address_Size;
 
    pragma Compile_Time_Error (Data'Size /= Data_Size, "bad Data_Size");
 

@@ -215,12 +215,12 @@ package body Ada.Directories.Information is
       Holder.Assign (Buffer'Access);
       loop
          declare
-            function To_size is new Ada.Unchecked_Conversion (
-               C.size_t,
-               C.size_t); -- OSX
-            function To_size is new Ada.Unchecked_Conversion (
-               C.size_t,
-               C.signed_int); -- FreeBSD
+            function To_size (X : C.size_t) return C.size_t renames "+"; -- OSX
+            function To_size (X : C.size_t) return C.signed_int; -- FreeBSD
+            function To_size (X : C.size_t) return C.signed_int is
+            begin
+               return C.signed_int (X);
+            end To_size;
             pragma Warnings (Off, To_size);
             Result : constant C.sys.types.ssize_t := C.unistd.readlink (
                C_Name (0)'Access,
