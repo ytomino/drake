@@ -10,13 +10,13 @@ package Ada.Formatting is
    type Sign_Marks is array (-1 .. 1) of Character;
    type Unsign_Marks is array (0 .. 1) of Character;
 
-   None : constant Character := Character'Val (0);
+   None : constant Character := Character'Val (16#ff#);
 
    Plus_Sign_Marks : constant Sign_Marks := ('-', '+', '+');
    Spacing_Sign_Marks : constant Sign_Marks := ('-', ' ', ' ');
-   Triming_Sign_Marks : constant Sign_Marks := ('-', None, None);
+   Triming_Sign_Marks : constant Sign_Marks := ('-', '["ff"]', '["ff"]');
    Spacing_Unsign_Marks : constant Unsign_Marks := (' ', ' ');
-   Triming_Unsign_Marks : constant Unsign_Marks := (None, None);
+   Triming_Unsign_Marks : constant Unsign_Marks := ('["ff"]', '["ff"]');
 
    subtype Number_Base is Integer range 2 .. 16; -- same as Text_IO.Number_Base
 
