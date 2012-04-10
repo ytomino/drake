@@ -1,6 +1,7 @@
 with Ada.Streams.Stream_IO.Inside;
 with System.Formatting;
 with C.netinet.in_h;
+with C.sys.fcntl;
 with C.sys.socket;
 with C.unistd;
 package body Ada.Streams.Stream_IO.Sockets is
@@ -114,6 +115,15 @@ package body Ada.Streams.Stream_IO.Sockets is
       if Handle < 0 then
          raise Use_Error;
       else
+         declare
+            Dummy : C.signed_int;
+            pragma Unreferenced (Dummy);
+         begin
+            Dummy := C.sys.fcntl.fcntl (
+               Handle,
+               C.sys.fcntl.F_SETFD,
+               C.sys.fcntl.FD_CLOEXEC);
+         end;
          Inside.Open (
             File,
             Handle,
