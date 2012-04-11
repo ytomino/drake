@@ -13,6 +13,7 @@ package Ada.Processes is
       Child : in out Process;
       Command_Line : String;
       Directory : String := "";
+      Search_Path : Boolean := False;
       Input : Streams.Stream_IO.File_Type :=
          Streams.Stream_IO.Standards.Standard_Input.all;
       Output : Streams.Stream_IO.File_Type :=
@@ -22,6 +23,7 @@ package Ada.Processes is
    function Create (
       Command_Line : String;
       Directory : String := "";
+      Search_Path : Boolean := False;
       Input : Streams.Stream_IO.File_Type :=
          Streams.Stream_IO.Standards.Standard_Input.all;
       Output : Streams.Stream_IO.File_Type :=
@@ -52,5 +54,11 @@ package Ada.Processes is
 private
 
    type Process is new C.sys.types.pid_t;
+
+   subtype Arguments_Type is C.char_ptr_array (0 .. 255);
+
+   procedure Split_Argument (
+      Command_Line : in out C.char_array;
+      Arguments : in out Arguments_Type);
 
 end Ada.Processes;

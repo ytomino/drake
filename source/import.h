@@ -29,6 +29,7 @@
 #if defined(__APPLE__)
 #include <crt_externs.h> /* environment variable */
 #include <malloc/malloc.h> /* malloc_size */
+#include <spawn.h> /* spawn */
 #include <copyfile.h> /* copyfile */
 #elif defined(__FreeBSD__)
 #include <sys/param.h> /* PAGE_SIZE */
