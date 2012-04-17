@@ -1,16 +1,28 @@
 with Ada;
 with Interfaces;
+with System.Formatting;
 with System.Machine_Code;
 procedure fpu is
 	use type Interfaces.Unsigned_16;
 	CW : aliased Interfaces.Unsigned_16 := 0;
-	procedure printf (S : String; W : Interfaces.Unsigned_16);
-	pragma Import (C, printf);
 begin
 	System.Machine_Code.Asm ("fstcw (%0)",
 		Inputs => System.Address'Asm_Input ("r", CW'Address),
 		Volatile => True);
-	printf ("%.4hx" & ASCII.LF & ASCII.NUL, CW);
+	declare
+		S : String (1 .. 4);
+		Last : Natural;
+		Error : Boolean;
+	begin
+		System.Formatting.Image (
+			System.Formatting.Unsigned (CW),
+			S,
+			Last,
+			16,
+			Width => 4,
+			Error => Error);
+		Ada.Debug.Put (S);
+	end;
 	-- 0 : IM (Invalid-op Mask), 1 as masking exceptions
 	-- 1 : DM (Denormal Mask)
 	-- 2 : ZM (Zero-divide Mask)

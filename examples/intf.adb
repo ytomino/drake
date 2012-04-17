@@ -8,15 +8,17 @@ begin
 	-- pragma Import
 	declare
 		type Unsigned_Long_Long is mod 2 ** Long_Long_Integer'Size;
-		procedure sscanf (a1 : String; a2 : String; a3 : access Long_Long_Integer);
-		procedure sscanf (a1 : String; a2 : String; a3 : access Unsigned_Long_Long);
-		pragma Import (C, sscanf);
+		type P is access all Character;
+		function strtoll (str : String; endptr : access P; base : Integer) return Long_Long_Integer;
+		pragma Import (C, strtoll);
+		function strtoull (str : String; endptr : access P; base : Integer) return Unsigned_Long_Long;
+		pragma Import (C, strtoull);
 		N : aliased Long_Long_Integer := -1;
 		U : aliased Unsigned_Long_Long := -1;
 	begin
-		sscanf ("100", "%lld", N'Access);
+		N := strtoll ("100" & ASCII.NUL, null, 10);
 		pragma Assert (N = 100);
-		sscanf ("100", "%llu", U'Access);
+		U := strtoull ("100" & ASCII.NUL, null, 10);
 		pragma Assert (U = 100);
 	end;
 	-- Interfaces
