@@ -124,6 +124,7 @@ package body Separated is
       return C.unwind.URC_NO_REASON;
    end CleanupUnwind_Handler;
 
+   --  (a-exexpr-gcc.adb)
    procedure Propagate_Exception (
       E : not null Standard_Library.Exception_Data_Ptr;
       From_Signal_Handler : Boolean)

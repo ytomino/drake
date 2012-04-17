@@ -79,6 +79,7 @@ begin
 		function Image is new Ada.Formatting.Decimal_Image (T);
 	begin
 		pragma Assert (Image (1.25) = " 1.250");
+		pragma Assert (Image (-1.25) = "-1.250");
 		null;
 	end Decimal;
 	pragma Debug (Ada.Debug.Put ("OK"));

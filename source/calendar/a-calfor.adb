@@ -584,9 +584,17 @@ package body Ada.Calendar.Formatting is
          if Error then
             raise Constraint_Error;
          end if;
-         Sub_Second := Duration (Sub_Second_I);
+         declare
+            pragma Suppress (Range_Check); -- [gcc-4.6] suppress a buggy check
+         begin
+            Sub_Second := Duration (Sub_Second_I);
+         end;
          for I in P .. Last loop
-            Sub_Second := Sub_Second / 10;
+            declare
+               pragma Suppress (Range_Check); -- [gcc-4.5] same as above
+            begin
+               Sub_Second := Sub_Second / 10;
+            end;
          end loop;
       else
          Sub_Second := 0.0;

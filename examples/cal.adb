@@ -2,7 +2,18 @@ with Ada.Calendar;
 with Ada.Calendar.Arithmetic;
 with Ada.Calendar.Formatting;
 with Ada.Calendar.Time_Zones;
+with Ada.Text_IO;
+with Ada.Integer_Text_IO;
+with Ada.Unchecked_Conversion;
 procedure cal is
+	type Integer_Time is mod 2 ** Duration'Size;
+	pragma Warnings (Off, "representation of Time values may change between GNAT versions");
+	function To_Integer is new Ada.Unchecked_Conversion (Ada.Calendar.Time, Integer_Time);
+	pragma Warnings (On, "representation of Time values may change between GNAT versions");
+	package Integer_Time_IO is new Ada.Text_IO.Modular_IO (Integer_Time);
+	package Duration_IO is new Ada.Text_IO.Fixed_IO (Duration);
+	package Time_Offset_IO is new Ada.Text_IO.Integer_IO (Ada.Calendar.Time_Zones.Time_Offset);
+	use Ada.Text_IO, Ada.Integer_Text_IO, Integer_Time_IO, Duration_IO, Time_Offset_IO;
 	use type Ada.Calendar.Time;
 	use type Ada.Calendar.Time_Zones.Time_Offset;
 	Now : Ada.Calendar.Time := Ada.Calendar.Clock;
@@ -15,24 +26,28 @@ procedure cal is
 	S : Ada.Calendar.Formatting.Second_Number;
 	SS : Ada.Calendar.Formatting.Second_Duration;
 	LS : Boolean;
-	procedure printf (format : String; Time : Ada.Calendar.Time);
-	procedure printf (format : String; Y, M, D : Integer; S : Duration);
-	procedure printf (format : String; Y, Mo, D, H, Mi, S : Integer; SS : Duration);
-	procedure printf (format : String; Offset : Ada.Calendar.Time_Zones.Time_Offset);
-	procedure printf (format : String; WD : Integer);
-	pragma Import (C, printf);
+	Day_Name : Ada.Calendar.Formatting.Day_Name;
 	Remaked : Ada.Calendar.Time;
 begin
 	pragma Debug (Ada.Debug.Put ("assertion enabled"));
-	printf ("%16llx" & ASCII.LF & ASCII.NUL, Now);
+	Put (To_Integer (Now), Base => 16); New_Line;
 	Ada.Calendar.Split (Now, Year, Month, Day, Seconds);
 	Ada.Calendar.Formatting.Split (Seconds, H, M, S, SS);
-	printf ("GM %d-%d-%d %lld" & ASCII.LF & ASCII.NUL, Year, Month, Day, Seconds);
-	printf ("GM %d-%d-%d %d:%d:%d %lld" & ASCII.LF & ASCII.NUL, Year, Month, Day, H, M, S, SS);
+	Output_GM : begin
+		Put ("GM ");
+		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+		Put (Seconds, Fore => 1); New_Line;
+	end Output_GM;
+	Output_GM_Full : begin
+		Put ("GM ");
+		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+		Put (H, Width => 2); Put (':'); Put (M, Width => 2); Put (':'); Put (S, Width => 2); Put (' ');
+		Put (SS, Fore => 1); New_Line;
+	end Output_GM_Full;
 	pragma Assert (Ada.Calendar.Seconds (Now) = Seconds);
 	Remaked := Ada.Calendar.Time_Of (Year, Month, Day, Seconds);
 	pragma Assert (Remaked = Now);
-	printf ("TZ = %d" & ASCII.LF & ASCII.NUL, Ada.Calendar.Time_Zones.UTC_Time_Offset);
+	PUt ("TZ = "); Put (Ada.Calendar.Time_Zones.UTC_Time_Offset, Width => 1); New_Line;
 	Ada.Debug.Put (Ada.Calendar.Formatting.Image (Ada.Calendar.Time_Zones.UTC_Time_Offset));
 	pragma Assert (Ada.Calendar.Formatting.Value (
 		Ada.Calendar.Formatting.Image (Ada.Calendar.Time_Zones.UTC_Time_Offset)) =
@@ -40,13 +55,19 @@ begin
 	-- Time_Offset = 540 in Japan
 	Ada.Calendar.Formatting.Split (Now, Year, Month, Day, H, M, S, SS, LS,
 		Time_Zone => Ada.Calendar.Time_Zones.UTC_Time_Offset);
-	printf ("LT %d-%d-%d %d:%d:%d %lld" & ASCII.LF & ASCII.NUL, Year, Month, Day, H, M, S, SS);
+	Output_LT_Full : begin
+		Put ("LT ");
+		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+		Put (H, Width => 2); Put (':'); Put (M, Width => 2); Put (':'); Put (S, Width => 2); Put (' ');
+		Put (SS, Fore => 1); New_Line;
+	end Output_LT_Full;
 	Remaked := Ada.Calendar.Formatting.Time_Of (Year, Month, Day, H, M, S, SS, LS,
 		Time_Zone => Ada.Calendar.Time_Zones.UTC_Time_Offset);
 	pragma Assert (Remaked = Now);
-	printf ("%d" & ASCII.LF & ASCII.NUL, Integer'(Ada.Calendar.Formatting.Day_Name'Pos (
-		Ada.Calendar.Formatting.Day_of_Week (Now,
-		Time_Zone => Ada.Calendar.Time_Zones.UTC_Time_Offset))));
+	Day_Name := Ada.Calendar.Formatting.Day_of_Week (
+		Now,
+		Time_Zone => Ada.Calendar.Time_Zones.UTC_Time_Offset);
+	Put (Ada.Calendar.Formatting.Day_Name'Image (Day_Name)); New_Line;
 	declare
 		Img : String := Ada.Calendar.Formatting.Image (Now, Include_Time_Fraction => True);
 	begin
@@ -70,10 +91,20 @@ begin
 	begin
 		EF := Ada.Calendar.Time_Of (1901, 1, 1);
 		Ada.Calendar.Formatting.Split (EF, Year, Month, Day, H, M, S, SS, LS);
-		printf ("EF %d-%d-%d %d:%d:%d %lld" & ASCII.LF & ASCII.NUL, Year, Month, Day, H, M, S, SS);
+		Output_EF_Full : begin
+			Put ("EF ");
+			Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+			Put (H, Width => 2); Put (':'); Put (M, Width => 2); Put (':'); Put (S, Width => 2); Put (' ');
+			Put (SS, Fore => 1); New_Line;
+		end Output_EF_Full;
 		EL := Ada.Calendar.Time_Of (2099, 12, 31);
 		Ada.Calendar.Formatting.Split (EL, Year, Month, Day, H, M, S, SS, LS);
-		printf ("EL %d-%d-%d %d:%d:%d %lld" & ASCII.LF & ASCII.NUL, Year, Month, Day, H, M, S, SS);
+		Output_EL_Full : begin
+			Put ("EL ");
+			Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+			Put (H, Width => 2); Put (':'); Put (M, Width => 2); Put (':'); Put (S, Width => 2); Put (' ');
+			Put (SS, Fore => 1); New_Line;
+		end Output_EL_Full;
 	exception
 		when Ada.Calendar.Time_Error => Ada.Debug.Put ("Time_Error");
 	end;

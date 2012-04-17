@@ -24,17 +24,17 @@ begin
 		end;
 	end Global;
 	Sized_And_Fixed : declare
-		type T is access Integer;
-		for T'Storage_Size use (Integer'Size / Standard'Storage_Unit) * 25;
+		type T is access System.Address;
+		for T'Storage_Size use (System.Address'Size / Standard'Storage_Unit) * 25;
 		-- using System.Pool_Size
 		-- Pool_Size => 100
 		-- Elmt_Size => 4
 		-- Alignment => 4
-		procedure Free is new Ada.Unchecked_Deallocation (Integer, T);
+		procedure Free is new Ada.Unchecked_Deallocation (System.Address, T);
 		A : array (1 .. 25) of T;
 	begin
 		for I in A'Range loop
-			A (I) := new Integer'(I);
+			A (I) := new System.Address'(System'To_Address (I));
 --			Ada.Debug.Put (System.Address_Image (A(I).all'Address));
 			for J in A'First .. I - 1 loop
 				pragma Assert (A(I) /= A (J));
@@ -42,7 +42,7 @@ begin
 			end loop;
 		end loop;
 		begin
-			A (1) := new Integer; -- error
+			A (1) := new System.Address; -- error
 			raise Program_Error;
 		exception
 			when Storage_Error => null;

@@ -1,5 +1,6 @@
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
+with System.Formatting;
 with System.Memory.Allocated_Size;
 with System.Storage_Elements;
 procedure heap is
@@ -8,18 +9,41 @@ procedure heap is
 	package Conv is
 		new System.Address_To_Named_Access_Conversions (Integer, Integer_Access);
 	x, y : Integer_Access;
-	procedure printf (F : in String; P : Integer_Access);
-	procedure printf (F : in String; X : System.Storage_Elements.Storage_Count);
-	pragma Import (C, printf);
+	procedure Put (X : System.Storage_Elements.Integer_Address) is
+		S : String (1 .. Standard'Address_Size / 4);
+		Last : Natural;
+		Error : Boolean;
+	begin
+		System.Formatting.Image (
+			System.Formatting.Longest_Unsigned (X),
+			S,
+			Last,
+			16,
+			Width => S'Length,
+			Error => Error);
+		Ada.Debug.Put (S);
+	end Put;
+	procedure Put (X : System.Storage_Elements.Storage_Count) is
+		S : String (1 .. Standard'Address_Size / 4);
+		Last : Natural;
+		Error : Boolean;
+	begin
+		System.Formatting.Image (
+			System.Formatting.Longest_Unsigned (X),
+			S,
+			Last,
+			Padding => ' ',
+			Width => S'Length,
+			Error => Error);
+		Ada.Debug.Put (S);
+	end Put;
 begin
 	x := new Integer;
 	y := new Integer;
-	printf ("%p" & ASCII.LF & ASCII.NUL, x);
-	printf ("%d" & ASCII.LF & ASCII.NUL,
-		System.Memory.Allocated_Size (Conv.To_Address (x)));
-	printf ("%p" & ASCII.LF & ASCII.NUL, y);
-	printf ("%d" & ASCII.LF & ASCII.NUL,
-		System.Memory.Allocated_Size (Conv.To_Address (y)));
+	Put (System.Storage_Elements.To_Integer (Conv.To_Address (x)));
+	Put (System.Memory.Allocated_Size (Conv.To_Address (x)));
+	Put (System.Storage_Elements.To_Integer (Conv.To_Address (y)));
+	Put (System.Memory.Allocated_Size (Conv.To_Address (y)));
 	Free (x);
 	Free (y);
 end heap;

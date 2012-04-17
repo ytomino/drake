@@ -9,7 +9,7 @@ Drake is a runtime library written in 100% Ada to replace GNAT runtime.
 Environment
 -----------
 
-- MacOSX 10.5 (x86, 32bit only)
+- MacOSX 10.5/10.6 (x86, 32bit/64bit)
 - FreeBSD 7 (x86, 32bit only)
 
 Depending tools and libraries
@@ -18,14 +18,12 @@ Depending tools and libraries
 gcc
  http://gcc.gnu.org/
 
- | gcc should be configured with
- |  ``--enable-languages=c,ada``
- |  ``--target=i686-apple-darwin9`` or ``--target=i686-pc-freebsd7``
-
 headmaster (or pre-translated headers)
  headmaster
   http://github.com/ytomino/headmaster
  pre-translated headers
+  - `for MacOSX 10.6 (x86, 64bit)
+    <https://github.com/downloads/ytomino/drake/import-x86_64-apple-darwin10.zip>`_
   - `for MacOSX 10.5 (x86, 32bit)
     <https://github.com/downloads/ytomino/drake/import-i686-apple-darwin9.zip>`_
   - `for FreeBSD 7 (x86, 32bit)

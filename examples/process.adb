@@ -18,6 +18,7 @@ begin
 		Ada.Environment_Variables.Clear;
 		Ada.Environment_Variables.Set ("ahaha", "ufufu");
 		Ada.Processes.Create (C, "/usr/bin/env");
+		Ada.Processes.Create (C, "/bin/sh -c echo\ $ahaha");
 		Ada.Processes.Wait (C);
 	end;
 end process;

@@ -144,9 +144,9 @@ package body Ada.Formatting is
          Fore_Padding => Fore_Padding,
          Aft_Width => Aft_Width,
          Exponent_Mark => Exponent_Mark,
-         Exponent_Minus_Sign => Exponent_Minus_Sign,
-         Exponent_Zero_Sign => Exponent_Zero_Sign,
-         Exponent_Plus_Sign => Exponent_Plus_Sign,
+         Exponent_Minus_Sign => Exponent_Signs (-1),
+         Exponent_Zero_Sign => Exponent_Signs (0),
+         Exponent_Plus_Sign => Exponent_Signs (1),
          Exponent_Width => Exponent_Width,
          Exponent_Padding => Exponent_Padding,
          NaN => NaN,
@@ -177,9 +177,9 @@ package body Ada.Formatting is
             Fore_Padding => Fore_Padding,
             Aft_Width => Aft_Width,
             Exponent_Mark => Exponent_Mark,
-            Exponent_Minus_Sign => Exponent_Minus_Sign,
-            Exponent_Zero_Sign => Exponent_Zero_Sign,
-            Exponent_Plus_Sign => Exponent_Plus_Sign,
+            Exponent_Minus_Sign => Exponent_Signs (-1),
+            Exponent_Zero_Sign => Exponent_Signs (0),
+            Exponent_Plus_Sign => Exponent_Signs (1),
             Exponent_Width => Exponent_Width,
             Exponent_Padding => Exponent_Padding);
       else
@@ -220,9 +220,9 @@ package body Ada.Formatting is
             Fore_Padding => Fore_Padding,
             Aft_Width => Aft_Width,
             Exponent_Mark => Exponent_Mark,
-            Exponent_Minus_Sign => Exponent_Minus_Sign,
-            Exponent_Zero_Sign => Exponent_Zero_Sign,
-            Exponent_Plus_Sign => Exponent_Plus_Sign,
+            Exponent_Minus_Sign => Exponent_Signs (-1),
+            Exponent_Zero_Sign => Exponent_Signs (0),
+            Exponent_Plus_Sign => Exponent_Signs (1),
             Exponent_Width => Exponent_Width,
             Exponent_Padding => Exponent_Padding);
       else
