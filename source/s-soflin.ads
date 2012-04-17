@@ -8,6 +8,7 @@ package System.Soft_Links is
    --  equivalent to TSD (s-soflin.ads)
    type Task_Local_Storage is record
       Secondary_Stack : Address;
+      Overlaid_Allocation : Address; -- for System.Storage_Pools.Overlaps
       Current_Exception : aliased Unwind.Exception_Occurrence;
    end record;
    pragma Suppress_Initialization (Task_Local_Storage);

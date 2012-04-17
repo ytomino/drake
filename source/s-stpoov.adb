@@ -1,14 +1,14 @@
+with System.Soft_Links;
 package body System.Storage_Pools.Overlaps is
    pragma Suppress (All_Checks);
-
-   Overlaid_Allocation : Address;
-   pragma Thread_Local_Storage (Overlaid_Allocation);
 
    --  implementation
 
    procedure Set_Address (Storage_Address : Address) is
+      TLS : constant not null Soft_Links.Task_Local_Storage_Access :=
+         Soft_Links.Get_Task_Local_Storage.all;
    begin
-      Overlaid_Allocation := Storage_Address;
+      TLS.Overlaid_Allocation := Storage_Address;
    end Set_Address;
 
    overriding procedure Allocate (
@@ -20,8 +20,10 @@ package body System.Storage_Pools.Overlaps is
       pragma Unreferenced (Pool);
       pragma Unreferenced (Size_In_Storage_Elements);
       pragma Unreferenced (Alignment);
+      TLS : constant not null Soft_Links.Task_Local_Storage_Access :=
+         Soft_Links.Get_Task_Local_Storage.all;
    begin
-      Storage_Address := Overlaid_Allocation;
+      Storage_Address := TLS.Overlaid_Allocation;
    end Allocate;
 
    overriding function Storage_Size (Pool : Overlay_Pool)

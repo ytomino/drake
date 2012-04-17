@@ -549,6 +549,7 @@ package body System.Tasking.Inside is
       T.Abort_Locking := 1;
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
+      Local.Overlaid_Allocation := Null_Address;
       Local.Current_Exception.Private_Data := Null_Address;
       TLS_Stack := Local'Unchecked_Access;
       --  setup signal stack
