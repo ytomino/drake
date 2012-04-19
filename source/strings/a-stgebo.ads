@@ -18,7 +18,7 @@ generic
 package Ada.Strings.Generic_Bounded is
    pragma Preelaborate;
 
-   --  extended, tagged for dot notation
+   --  extended
    type Bounded_String (Capacity : Positive) is record
       Length : Natural := 0;
       Element : aliased String_Type (1 .. Capacity);
