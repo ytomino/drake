@@ -238,7 +238,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    function Handle (File : File_Type) return Handle_Type is
    begin
-      return Handle (Non_Controlled_File_Type (File.Stream));
+      return Handle (Reference (File).all);
    end Handle;
 
    function Handle (File : Non_Controlled_File_Type) return Handle_Type is
@@ -297,7 +297,7 @@ package body Ada.Streams.Stream_IO.Inside is
       To_Close : Boolean := False) is
    begin
       Open (
-         Non_Controlled_File_Type (File.Stream),
+         Reference (File).all,
          Handle,
          Mode,
          Name,
