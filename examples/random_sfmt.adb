@@ -318,10 +318,10 @@ begin
 				speed := True;
 			end if;
 			if argv_i = "-b32" then
-			    bit32 := True;
+				bit32 := True;
 			end if;
 			if argv_i = "-b64" then
-			    bit64 := True;
+				bit64 := True;
 			end if;
 		end;
 	end loop;
