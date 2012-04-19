@@ -302,9 +302,9 @@ package body Ada.Streams.Stream_IO.Inside is
          Reference (File).all,
          Handle,
          Mode,
-         Name,
-         Form,
-         To_Close);
+         Name => Name,
+         Form => Form,
+         To_Close => To_Close);
    end Open;
 
    procedure Open (
