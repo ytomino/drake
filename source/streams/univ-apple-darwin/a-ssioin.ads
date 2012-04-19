@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
+with Ada.Tags;
 with C;
 package Ada.Streams.Stream_IO.Inside is
    pragma Preelaborate;
@@ -109,6 +110,7 @@ private
       type Root_Dispatcher is new Root_Stream_Type with record
          Stream : Non_Controlled_File_Type;
       end record;
+      pragma Suppress_Initialization (Root_Dispatcher);
 
       overriding procedure Read (
          Stream : in out Root_Dispatcher;
@@ -122,6 +124,7 @@ private
       type Seekable_Dispatcher is new Seekable_Stream_Type with record
          Stream : Non_Controlled_File_Type;
       end record;
+      pragma Suppress_Initialization (Seekable_Dispatcher);
 
       overriding procedure Read (
          Stream : in out Seekable_Dispatcher;
@@ -141,6 +144,17 @@ private
       overriding function Size (Stream : Seekable_Dispatcher)
          return Stream_Element_Count;
 
+      type Dispatcher is record
+         Tag : Ada.Tags.Tag := Ada.Tags.No_Tag;
+         Stream : Non_Controlled_File_Type := null;
+      end record;
+      pragma Suppress_Initialization (Dispatcher);
+
+      pragma Compile_Time_Error (
+         Seekable_Dispatcher'Size /= Root_Dispatcher'Size
+         or else Dispatcher'Size /= Root_Dispatcher'Size,
+         "size mismatch");
+
    end Dispatchers;
 
    type Stream_Kind is (
@@ -155,10 +169,9 @@ private
       Name_Length : Natural;
       Form_Length : Natural) is limited
    record
-      Root_Dispatcher : aliased Dispatchers.Root_Dispatcher :=
-         (Root_Stream_Type with Stream => Stream_Type'Unchecked_Access);
-      Seekable_Dispatcher : aliased Dispatchers.Seekable_Dispatcher :=
-         (Seekable_Stream_Type with Stream => Stream_Type'Unchecked_Access);
+      Dispatcher : aliased Dispatchers.Dispatcher := (
+         Tag => Ada.Tags.No_Tag,
+         Stream => null);
       Handle : C.signed_int; -- file descripter
       Mode : File_Mode;
       Kind : Stream_Kind;
