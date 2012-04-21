@@ -17,19 +17,19 @@ is
 begin
    Last := To'First - 1;
    if Item < 0 then
-      if Minus_Sign /= Character'Val (0) then
+      if Minus_Sign /= No_Sign then
          Last := Last + 1;
          pragma Assert (Last <= To'Last);
          To (Last) := Minus_Sign;
       end if;
    elsif Item > 0 then
-      if Plus_Sign /= Character'Val (0) then
+      if Plus_Sign /= No_Sign then
          Last := Last + 1;
          pragma Assert (Last <= To'Last);
          To (Last) := Plus_Sign;
       end if;
    else
-      if Zero_Sign /= Character'Val (0) then
+      if Zero_Sign /= No_Sign then
          Last := Last + 1;
          pragma Assert (Last <= To'Last);
          To (Last) := Zero_Sign;

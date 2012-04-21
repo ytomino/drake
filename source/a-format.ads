@@ -10,7 +10,7 @@ package Ada.Formatting is
    type Sign_Marks is array (-1 .. 1) of Character;
    type Unsign_Marks is array (0 .. 1) of Character;
 
-   None : constant Character := Character'Val (16#ff#);
+   No_Sign : constant Character := Character'Val (16#ff#);
 
    Plus_Sign_Marks : constant Sign_Marks := ('-', '+', '+');
    Spacing_Sign_Marks : constant Sign_Marks := ('-', ' ', ' ');

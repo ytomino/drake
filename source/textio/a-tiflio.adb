@@ -24,8 +24,8 @@ package body Ada.Text_IO.Float_IO is
             To,
             Last,
             Long_Long_Float (Item),
-            Zero_Sign => Character'Val (0),
-            Plus_Sign => Character'Val (0),
+            Zero_Sign => System.Formatting.No_Sign,
+            Plus_Sign => System.Formatting.No_Sign,
             Aft_Width => Aft_Width,
             Exponent_Width => Exp - 1);
       else
@@ -33,8 +33,8 @@ package body Ada.Text_IO.Float_IO is
             To,
             Last,
             Long_Long_Float (Item),
-            Zero_Sign => Character'Val (0),
-            Plus_Sign => Character'Val (0),
+            Zero_Sign => System.Formatting.No_Sign,
+            Plus_Sign => System.Formatting.No_Sign,
             Aft_Width => Aft_Width);
       end if;
    end Put_To_Field;

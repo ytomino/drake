@@ -23,8 +23,8 @@ package body Ada.Text_IO.Decimal_IO is
             To,
             Last,
             Long_Long_Float (Item),
-            Zero_Sign => Character'Val (0),
-            Plus_Sign => Character'Val (0),
+            Zero_Sign => System.Formatting.No_Sign,
+            Plus_Sign => System.Formatting.No_Sign,
             Aft_Width => Field'Max (1, Aft),
             Exponent_Width => Exp - 1);
       else
@@ -33,8 +33,8 @@ package body Ada.Text_IO.Decimal_IO is
             Last,
             Long_Long_Integer'Integer_Value (Item),
             Num'Scale,
-            Zero_Sign => Character'Val (0),
-            Plus_Sign => Character'Val (0),
+            Zero_Sign => System.Formatting.No_Sign,
+            Plus_Sign => System.Formatting.No_Sign,
             Aft_Width => Aft);
       end if;
    end Put_To_Field;

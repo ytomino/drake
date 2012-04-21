@@ -63,4 +63,6 @@ package System.Formatting is
       Skip_Underscore : Boolean := False;
       Error : out Boolean);
 
+   No_Sign : constant Character := Character'Val (16#ff#);
+
 end System.Formatting;
