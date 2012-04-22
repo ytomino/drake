@@ -32,19 +32,6 @@ package System.Unwind.Handling is
       GNAT_GCC_Exception,
       GNAT_GCC_Exception_Access);
 
-   --  (a-exexpr-gcc.adb)
-   procedure Save_Occurrence_And_Private (
-      Target : out Exception_Occurrence;
-      Source : Exception_Occurrence);
-
-   --  hook for entering an exception handler (a-exexpr-gcc.adb)
-   procedure Begin_Handler (GCC_Exception : GNAT_GCC_Exception_Access);
-   pragma Export (C, Begin_Handler, "__gnat_begin_handler");
-
-   --  hook for leaving an exception handler (a-exexpr-gcc.adb)
-   procedure End_Handler (GCC_Exception : GNAT_GCC_Exception_Access);
-   pragma Export (C, End_Handler, "__gnat_end_handler");
-
    --  personality function (raise-gcc.c)
    function Personality (
       ABI_Version : C.signed_int;

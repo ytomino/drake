@@ -1,13 +1,30 @@
 pragma Check_Policy (Trace, Off);
+with System.Address_To_Named_Access_Conversions;
 with System.Unwind.Handling;
 with C.unwind;
 separate (System.Unwind.Raising)
 package body Separated is
    pragma Suppress (All_Checks);
+   use type Handling.GNAT_GCC_Exception_Access;
    use type C.unwind.Unwind_Ptr;
 
    --  (a-exexpr-gcc.adb)
    Setup_Key : constant := 16#DEAD#;
+
+   --  (a-exexpr-gcc.adb)
+   procedure Save_Occurrence_And_Private (
+      Target : out Exception_Occurrence;
+      Source : Exception_Occurrence);
+
+   --  hook for entering an exception handler (a-exexpr-gcc.adb)
+   procedure Begin_Handler (
+      GCC_Exception : Handling.GNAT_GCC_Exception_Access);
+   pragma Export (C, Begin_Handler, "__gnat_begin_handler");
+
+   --  hook for leaving an exception handler (a-exexpr-gcc.adb)
+   procedure End_Handler (
+      GCC_Exception : Handling.GNAT_GCC_Exception_Access);
+   pragma Export (C, End_Handler, "__gnat_end_handler");
 
    --  (a-exexpr-gcc.adb)
    function Is_Setup_And_Not_Propagated (
@@ -34,6 +51,72 @@ package body Separated is
    pragma Convention (C, CleanupUnwind_Handler);
 
    --  implementation
+
+   procedure Save_Occurrence_And_Private (
+      Target : out Exception_Occurrence;
+      Source : Exception_Occurrence) is
+   begin
+      Unwind.Save_Occurrence_No_Private (Target, Source);
+      Target.Private_Data := Source.Private_Data;
+   end Save_Occurrence_And_Private;
+
+   procedure Begin_Handler (
+      GCC_Exception : Handling.GNAT_GCC_Exception_Access) is
+   begin
+      null;
+   end Begin_Handler;
+
+   procedure End_Handler (
+      GCC_Exception : Handling.GNAT_GCC_Exception_Access)
+   is
+      Current : constant not null Exception_Occurrence_Access :=
+         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+      Prev : Handling.GNAT_GCC_Exception_Access := null;
+      Iter : Exception_Occurrence_Access := Current;
+   begin
+      pragma Check (Trace, Debug.Put ("enter"));
+      loop
+         pragma Debug (Debug.Runtime_Error (
+            Iter.Private_Data = Null_Address,
+            "Iter.Private_Data = null"));
+         declare
+            package GGE_Conv is new Address_To_Named_Access_Conversions (
+               Handling.GNAT_GCC_Exception,
+               Handling.GNAT_GCC_Exception_Access);
+            I_GCC_Exception : Handling.GNAT_GCC_Exception_Access :=
+               GGE_Conv.To_Pointer (Iter.Private_Data);
+         begin
+            if I_GCC_Exception = GCC_Exception then
+               if Prev = null then -- top(Current)
+                  pragma Check (Trace, Debug.Put ("Prev = null"));
+                  Iter := I_GCC_Exception.Next_Exception;
+                  if Iter = null then
+                     pragma Check (Trace, Debug.Put ("Iter = null"));
+                     Current.Private_Data := Null_Address;
+                  else
+                     pragma Check (Trace, Debug.Put ("Iter /= null"));
+                     Save_Occurrence_And_Private (Current.all, Iter.all);
+                     pragma Check (Trace, Debug.Put ("free eo"));
+                     Free (Iter);
+                  end if;
+               else
+                  Prev.Next_Exception := I_GCC_Exception.Next_Exception;
+                  pragma Check (Trace, Debug.Put ("free eo"));
+                  Free (Iter);
+               end if;
+               pragma Check (Trace, Debug.Put ("free obj"));
+               Handling.Free (I_GCC_Exception);
+               exit; -- ok
+            end if;
+            pragma Debug (Debug.Runtime_Error (
+               I_GCC_Exception.Next_Exception = null,
+               "I_GCC_Exception.Next_Exception = null"));
+            Prev := I_GCC_Exception;
+            Iter := I_GCC_Exception.Next_Exception;
+         end;
+      end loop;
+      pragma Check (Trace, Debug.Put ("leave"));
+   end End_Handler;
 
    function Is_Setup_And_Not_Propagated (
       E : not null Exception_Occurrence_Access)
@@ -87,7 +170,7 @@ package body Separated is
             if Current.Private_Data /= Null_Address then
                pragma Check (Trace, Debug.Put ("new eo"));
                Next := new Exception_Occurrence;
-               Handling.Save_Occurrence_And_Private (Next.all, Current.all);
+               Save_Occurrence_And_Private (Next.all, Current.all);
                GCC_Exception.Next_Exception := Next;
             end if;
             Current.Private_Data := GCC_Exception.all'Address;

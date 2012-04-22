@@ -1,9 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
-with System.Address_To_Named_Access_Conversions;
 with System.Debug;
-with System.Soft_Links;
 with C.unwind_pe;
 package body System.Unwind.Handling is
    pragma Suppress (All_Checks);
@@ -55,61 +53,6 @@ package body System.Unwind.Handling is
    end "<";
 
    --  implementation
-
-   procedure Begin_Handler (GCC_Exception : GNAT_GCC_Exception_Access) is
-   begin
-      null;
-   end Begin_Handler;
-
-   procedure End_Handler (GCC_Exception : GNAT_GCC_Exception_Access) is
-      Current : constant not null Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
-      Prev : GNAT_GCC_Exception_Access := null;
-      Iter : Exception_Occurrence_Access := Current;
-   begin
-      pragma Check (Trace, Debug.Put ("enter"));
-      loop
-         pragma Debug (Debug.Runtime_Error (
-            Iter.Private_Data = Null_Address,
-            "Iter.Private_Data = null"));
-         declare
-            package GGE_Conv is new Address_To_Named_Access_Conversions (
-               GNAT_GCC_Exception,
-               GNAT_GCC_Exception_Access);
-            I_GCC_Exception : GNAT_GCC_Exception_Access :=
-               GGE_Conv.To_Pointer (Iter.Private_Data);
-         begin
-            if I_GCC_Exception = GCC_Exception then
-               if Prev = null then -- top(Current)
-                  pragma Check (Trace, Debug.Put ("Prev = null"));
-                  Iter := I_GCC_Exception.Next_Exception;
-                  if Iter = null then
-                     pragma Check (Trace, Debug.Put ("Iter = null"));
-                     Current.Private_Data := Null_Address;
-                  else
-                     pragma Check (Trace, Debug.Put ("Iter /= null"));
-                     Save_Occurrence_And_Private (Current.all, Iter.all);
-                     pragma Check (Trace, Debug.Put ("free eo"));
-                     Free (Iter);
-                  end if;
-               else
-                  Prev.Next_Exception := I_GCC_Exception.Next_Exception;
-                  pragma Check (Trace, Debug.Put ("free eo"));
-                  Free (Iter);
-               end if;
-               pragma Check (Trace, Debug.Put ("free obj"));
-               Free (I_GCC_Exception);
-               exit; -- ok
-            end if;
-            pragma Debug (Debug.Runtime_Error (
-               I_GCC_Exception.Next_Exception = null,
-               "I_GCC_Exception.Next_Exception = null"));
-            Prev := I_GCC_Exception;
-            Iter := I_GCC_Exception.Next_Exception;
-         end;
-      end loop;
-      pragma Check (Trace, Debug.Put ("leave"));
-   end End_Handler;
 
    function Personality (
       ABI_Version : C.signed_int;
@@ -373,13 +316,5 @@ package body System.Unwind.Handling is
       pragma Check (Trace, Debug.Put ("leave"));
       return C.unwind.URC_INSTALL_CONTEXT;
    end Personality;
-
-   procedure Save_Occurrence_And_Private (
-      Target : out Exception_Occurrence;
-      Source : Exception_Occurrence) is
-   begin
-      Unwind.Save_Occurrence_No_Private (Target, Source);
-      Target.Private_Data := Source.Private_Data;
-   end Save_Occurrence_And_Private;
 
 end System.Unwind.Handling;
