@@ -13,6 +13,28 @@ package body Separated is
    function Is_Setup_And_Not_Propagated (
       E : not null Exception_Occurrence_Access)
       return Boolean;
+
+   --  (a-exexpr-gcc.adb)
+   procedure Set_Setup_And_Not_Propagated (
+      E : not null Exception_Occurrence_Access);
+
+   --  (a-exexpr-gcc.adb)
+   procedure Clear_Setup_And_Not_Propagated (
+      E : not null Exception_Occurrence_Access);
+
+   --  (a-exexpr-gcc.adb)
+   function CleanupUnwind_Handler (
+      ABI_Version : C.signed_int;
+      Phases : C.unwind.Unwind_Action;
+      Exception_Class : C.unwind.Unwind_Exception_Class;
+      Exception_Object : access C.unwind.struct_Unwind_Exception;
+      Context : access C.unwind.struct_Unwind_Context;
+      Argument : C.void_ptr)
+      return C.unwind.Unwind_Reason_Code;
+   pragma Convention (C, CleanupUnwind_Handler);
+
+   --  implementation
+
    function Is_Setup_And_Not_Propagated (
       E : not null Exception_Occurrence_Access)
       return Boolean is
@@ -29,9 +51,6 @@ package body Separated is
       end if;
    end Is_Setup_And_Not_Propagated;
 
-   --  (a-exexpr-gcc.adb)
-   procedure Set_Setup_And_Not_Propagated (
-      E : not null Exception_Occurrence_Access);
    procedure Set_Setup_And_Not_Propagated (
       E : not null Exception_Occurrence_Access)
    is
@@ -77,9 +96,6 @@ package body Separated is
       end if;
    end Setup_Exception;
 
-   --  (a-exexpr-gcc.adb)
-   procedure Clear_Setup_And_Not_Propagated (
-      E : not null Exception_Occurrence_Access);
    procedure Clear_Setup_And_Not_Propagated (
       E : not null Exception_Occurrence_Access)
    is
@@ -89,16 +105,6 @@ package body Separated is
       GCC_Exception.Header.private_1 := 0;
    end Clear_Setup_And_Not_Propagated;
 
-   --  (a-exexpr-gcc.adb)
-   function CleanupUnwind_Handler (
-      ABI_Version : C.signed_int;
-      Phases : C.unwind.Unwind_Action;
-      Exception_Class : C.unwind.Unwind_Exception_Class;
-      Exception_Object : access C.unwind.struct_Unwind_Exception;
-      Context : access C.unwind.struct_Unwind_Context;
-      Argument : C.void_ptr)
-      return C.unwind.Unwind_Reason_Code;
-   pragma Convention (C, CleanupUnwind_Handler);
    function CleanupUnwind_Handler (
       ABI_Version : C.signed_int;
       Phases : C.unwind.Unwind_Action;

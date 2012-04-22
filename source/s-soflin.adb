@@ -8,6 +8,12 @@ package body System.Soft_Links is
 
    --  implementation
 
+   function Get_Main_Task_Local_Storage
+      return not null Task_Local_Storage_Access is
+   begin
+      return Main_Task_Local_Storage'Access;
+   end Get_Main_Task_Local_Storage;
+
    function Get_Main_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access
    is
@@ -28,12 +34,6 @@ package body System.Soft_Links is
    begin
       return Cast (Cast (Get_Current_Excep.all).Id);
    end Get_GNAT_Exception;
-
-   function Get_Main_Task_Local_Storage
-      return not null Task_Local_Storage_Access is
-   begin
-      return Main_Task_Local_Storage'Access;
-   end Get_Main_Task_Local_Storage;
 
    function Zero return Integer is
    begin

@@ -14,11 +14,6 @@ package System.Storage_Elements is
       array (Storage_Offset range <>) of aliased Storage_Element;
    for Storage_Array'Component_Size use Storage_Unit;
 
-   --  extended
-   function Shift_Left (Left : Storage_Element; Right : Natural)
-      return Storage_Element;
-   pragma Import (Intrinsic, Shift_Left);
-
    --  Address Arithmetic:
 
    function "+" (Left : Address; Right : Storage_Offset) return Address;
@@ -53,6 +48,11 @@ package System.Storage_Elements is
 --  pragma Convention (Intrinsic, "+");
    --  ...and so on for all language-defined subprograms declared in this
    --  package.
+
+   --  extended
+   function Shift_Left (Left : Storage_Element; Right : Natural)
+      return Storage_Element;
+   pragma Import (Intrinsic, Shift_Left);
 
    --  extended
    subtype Address_Image is String (1 .. Standard'Address_Size / 4);
