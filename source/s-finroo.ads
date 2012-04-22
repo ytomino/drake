@@ -6,7 +6,7 @@ package System.Finalization_Root is
 
    --  required for controlled type by compiler (s-finroo.ads)
 
-   type Root_Controlled;
+   type Root_Controlled is tagged;
 
    type Finalizable_Ptr is access all Root_Controlled'Class;
    for Finalizable_Ptr'Storage_Size use 0;
