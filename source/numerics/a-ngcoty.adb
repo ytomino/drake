@@ -79,6 +79,15 @@ package body Ada.Numerics.Generic_Complex_Types is
    function To_Long_Long_Complex is new Unchecked_Conversion (
       Complex,
       System.Long_Long_Complex_Types.Long_Long_Complex);
+   function From_Complex is new Unchecked_Conversion (
+      System.Long_Long_Complex_Types.Complex,
+      Complex);
+   function From_Long_Complex is new Unchecked_Conversion (
+      System.Long_Long_Complex_Types.Long_Complex,
+      Complex);
+   function From_Long_Long_Complex is new Unchecked_Conversion (
+      System.Long_Long_Complex_Types.Long_Long_Complex,
+      Complex);
    pragma Warnings (On);
 
    --  implementation
@@ -163,26 +172,17 @@ package body Ada.Numerics.Generic_Complex_Types is
    function Conjugate (X : Complex) return Complex is
    begin
       if Real'Digits <= Float'Digits then
-         declare
-            function conjf (A1 : Complex) return Complex;
-            pragma Import (Intrinsic, conjf, "__builtin_conjf");
-         begin
-            return conjf (X);
-         end;
+         return From_Complex (
+            System.Long_Long_Complex_Types.Fast_Conjugate (
+               To_Complex (X)));
       elsif Real'Digits <= Long_Float'Digits then
-         declare
-            function conj (A1 : Complex) return Complex;
-            pragma Import (Intrinsic, conj, "__builtin_conj");
-         begin
-            return conj (X);
-         end;
+         return From_Long_Complex (
+            System.Long_Long_Complex_Types.Fast_Conjugate (
+               To_Long_Complex (X)));
       else
-         declare
-            function conjl (A1 : Complex) return Complex;
-            pragma Import (Intrinsic, conjl, "__builtin_conjl");
-         begin
-            return conjl (X);
-         end;
+         return From_Long_Long_Complex (
+            System.Long_Long_Complex_Types.Fast_Conjugate (
+               To_Long_Long_Complex (X)));
       end if;
    end Conjugate;
 

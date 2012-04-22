@@ -20,6 +20,11 @@ package System.Long_Long_Complex_Types is
    function Fast_Modulus (X : Complex) return Float
       renames cabsf;
 
+   function conjf (x : Complex) return Complex;
+   pragma Import (Intrinsic, conjf, "__builtin_conjf");
+   function Fast_Conjugate (X : Complex) return Complex
+      renames conjf;
+
    --  Long_Complex
 
    type Long_Imaginary is new Long_Float;
@@ -37,6 +42,11 @@ package System.Long_Long_Complex_Types is
    function Fast_Modulus (X : Long_Complex) return Long_Float
       renames cabs;
 
+   function conj (x : Long_Complex) return Long_Complex;
+   pragma Import (Intrinsic, conj, "__builtin_conj");
+   function Fast_Conjugate (X : Long_Complex) return Long_Complex
+      renames conj;
+
    --  Long_Long_Complex
 
    type Long_Long_Imaginary is new Long_Long_Float;
@@ -51,5 +61,10 @@ package System.Long_Long_Complex_Types is
 
    function Fast_Modulus (X : Long_Long_Complex) return Long_Long_Float;
    pragma Inline (Fast_Modulus);
+
+   function conjl (x : Long_Long_Complex) return Long_Long_Complex;
+   pragma Import (Intrinsic, conjl, "__builtin_conjl");
+   function Fast_Conjugate (X : Long_Long_Complex) return Long_Long_Complex
+      renames conjl;
 
 end System.Long_Long_Complex_Types;
