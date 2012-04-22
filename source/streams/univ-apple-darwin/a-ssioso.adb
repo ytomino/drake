@@ -95,14 +95,14 @@ package body Ada.Streams.Stream_IO.Sockets is
    begin
       while I /= null loop
          Handle := C.sys.socket.socket (
-            Host.Data.ai_family,
-            Host.Data.ai_socktype,
-            Host.Data.ai_protocol);
+            I.ai_family,
+            I.ai_socktype,
+            I.ai_protocol);
          if Handle >= 0 then
             exit when C.sys.socket.connect (
                Handle,
-               Host.Data.ai_addr,
-               Host.Data.ai_addrlen) = 0;
+               I.ai_addr,
+               I.ai_addrlen) = 0;
             declare
                Dummy : C.signed_int;
                pragma Unreferenced (Dummy);
