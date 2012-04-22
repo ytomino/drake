@@ -919,6 +919,11 @@ package body System.Tasking.Inside is
 
    --  implementation
 
+   procedure When_Abort_Signal is
+   begin
+      Leave_Unabortable;
+   end When_Abort_Signal;
+
    function Current_Task_Id return Task_Id is
    begin
       Register;

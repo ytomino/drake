@@ -1,6 +1,7 @@
 with Ada.Calendar;
 with Ada.Synchronous_Task_Control;
 with System.Soft_Links;
+with System.Tasking.Inside;
 with System.Tasking.Yield;
 procedure tasking7 is
 	use type Ada.Calendar.Time;
@@ -58,7 +59,7 @@ begin
 				raise Program_Error; -- it does not come here
 			exception
 				when Standard'Abort_Signal =>
-					System.Soft_Links.Abort_Undefer.all;
+					System.Tasking.Inside.When_Abort_Signal;
 					Ada.Debug.Put ("aborted in nested task");
 					raise;
 			end T3_Child;
@@ -69,7 +70,7 @@ begin
 			raise Program_Error; -- it does not come here
 		exception
 			when Standard'Abort_Signal =>
-				System.Soft_Links.Abort_Undefer.all;
+				System.Tasking.Inside.When_Abort_Signal;
 				Ada.Debug.Put ("aborted in task");
 				raise;
 		end T3;
@@ -94,7 +95,7 @@ begin
 					raise Program_Error; -- it does not come here
 				exception
 					when Standard'Abort_Signal =>
-						System.Soft_Links.Abort_Undefer.all;
+						System.Tasking.Inside.When_Abort_Signal;
 						Ada.Debug.Put ("aborted in nested task");
 						raise;
 				end T4_Child;
@@ -106,7 +107,7 @@ begin
 			raise Program_Error; -- it does not come here
 		exception
 			when Standard'Abort_Signal =>
-				System.Soft_Links.Abort_Undefer.all;
+				System.Tasking.Inside.When_Abort_Signal;
 				Ada.Debug.Put ("aborted in task");
 				raise;
 		end T4;

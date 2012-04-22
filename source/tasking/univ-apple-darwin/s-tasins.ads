@@ -6,6 +6,9 @@ private with C.pthread;
 package System.Tasking.Inside is
    pragma Preelaborate;
 
+   --  this shold be called when Standard'Abort_Signal
+   procedure When_Abort_Signal;
+
    type Task_Record (<>) is limited private;
    type Task_Id is access all Task_Record;
 
