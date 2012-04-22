@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 private with System.Finalization_Root;
 package Ada.Finalization is
-   pragma Preelaborate;
+   pragma Pure; -- AI05-0212-1
    pragma Remote_Types;
 
    type Controlled is abstract tagged private;
