@@ -7,6 +7,7 @@ package Ada.Text_IO is
 
    type File_Type is limited private;
    type File_Access is access constant File_Type; -- moved from below
+   for File_Access'Storage_Size use 0; -- modified
 
 --  type File_Mode is (In_File, Out_File, Append_File);
    type File_Mode is new IO_Modes.File_Mode; -- for conversion
@@ -273,6 +274,7 @@ private
 
       type File_Type is limited private;
       type File_Access is access constant File_Type;
+      for File_Access'Storage_Size use 0;
 
       function Standard_Input return File_Access;
       pragma Inline (Standard_Input);

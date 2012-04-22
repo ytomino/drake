@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 package body Ada.Strings.Generic_Fixed is
    use type System.Address;
@@ -883,8 +884,11 @@ package body Ada.Strings.Generic_Fixed is
       function By_Mapping (From : Wide_Wide_Character; Params : System.Address)
          return Wide_Wide_Character
       is
-         package Conv is
-            new System.Address_To_Access_Conversions (Character_Mapping);
+         type Character_Mapping_Access is access all Character_Mapping;
+         for Character_Mapping_Access'Storage_Size use 0;
+         package Conv is new System.Address_To_Named_Access_Conversions (
+            Character_Mapping,
+            Character_Mapping_Access);
       begin
          return Value (Conv.To_Pointer (Params).all, From);
       end By_Mapping;

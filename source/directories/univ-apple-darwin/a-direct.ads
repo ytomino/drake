@@ -207,6 +207,7 @@ private
    procedure End_Search (Search : in out Search_Type) renames Finalize;
 
    type Iterator is access Search_Type;
+   for Iterator'Storage_Size use 0;
 
    type Cursor is record
       Search : Iterator := null;

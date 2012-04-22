@@ -38,7 +38,7 @@ private
    --  full declaration
 
    type Tag is access all Dispatch_Table;
-   pragma No_Strict_Aliasing (Tag);
+   for Tag'Storage_Size use 0;
 
    No_Tag : constant Tag := null;
 
@@ -46,7 +46,7 @@ private
 
    subtype Fixed_String is String (Positive);
    type Cstring_Ptr is access all Fixed_String;
-   pragma No_Strict_Aliasing (Cstring_Ptr);
+   for Cstring_Ptr'Storage_Size use 0;
 
    --  required for tagged types by compiler (a-tags.ads)
 
@@ -71,6 +71,7 @@ private
    pragma Suppress_Initialization (Interface_Data);
 
    type Interface_Data_Ptr is access all Interface_Data;
+   for Interface_Data_Ptr'Storage_Size use 0;
 
    type Prim_Op_Kind is (
       POK_Function,
@@ -99,14 +100,16 @@ private
    pragma Suppress_Initialization (Select_Specific_Data);
 
    type Select_Specific_Data_Ptr is access all Select_Specific_Data;
+   for Select_Specific_Data_Ptr'Storage_Size use 0;
 
    type Interface_Tag is access all Dispatch_Table;
+   for Interface_Tag'Storage_Size use 0;
 
    type Tag_Ptr is access all Tag;
-   pragma No_Strict_Aliasing (Tag_Ptr);
+   for Tag_Ptr'Storage_Size use 0;
 
    type Offset_To_Top_Ptr is access all System.Storage_Elements.Storage_Offset;
-   pragma No_Strict_Aliasing (Offset_To_Top_Ptr);
+   for Offset_To_Top_Ptr'Storage_Size use 0;
 
    type Tag_Table is array (Natural range <>) of Tag;
    pragma Suppress_Initialization (Tag_Table);
@@ -130,7 +133,7 @@ private
    pragma Suppress_Initialization (Type_Specific_Data);
 
    type Type_Specific_Data_Ptr is access all Type_Specific_Data;
-   pragma No_Strict_Aliasing (Type_Specific_Data_Ptr);
+   for Type_Specific_Data_Ptr'Storage_Size use 0;
 
    type Signature_Kind is (
       Unknown,
@@ -158,7 +161,7 @@ private
    pragma Suppress_Initialization (Dispatch_Table_Wrapper);
 
    type Dispatch_Table_Ptr is access all Dispatch_Table_Wrapper;
-   pragma No_Strict_Aliasing (Dispatch_Table_Ptr);
+   for Dispatch_Table_Ptr'Storage_Size use 0;
 
    type No_Dispatch_Table_Wrapper is record
       NDT_TSD : System.Address;
@@ -190,16 +193,15 @@ private
    pragma Suppress_Initialization (Object_Specific_Data);
 
    type Object_Specific_Data_Ptr is access all Object_Specific_Data;
-   pragma No_Strict_Aliasing (Object_Specific_Data_Ptr);
+   for Object_Specific_Data_Ptr'Storage_Size use 0;
 
    Max_Predef_Prims : constant := 16;
 
    subtype Predef_Prims_Table is Address_Array (1 .. Max_Predef_Prims);
    type Predef_Prims_Table_Ptr is access Predef_Prims_Table;
-   pragma No_Strict_Aliasing (Predef_Prims_Table_Ptr);
 
    type Addr_Ptr is access System.Address;
-   pragma No_Strict_Aliasing (Addr_Ptr);
+   for Addr_Ptr'Storage_Size use 0;
 
    --  required for controlled types by compiler (a-tags.ads)
    function DT (T : Tag) return Dispatch_Table_Ptr;

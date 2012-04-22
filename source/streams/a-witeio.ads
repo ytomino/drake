@@ -86,6 +86,7 @@ package Ada.Wide_Text_IO is
 --  function Current_Error return File_Type;
 
    type File_Access is access constant File_Type;
+   for File_Access'Storage_Size use 0; -- modified
 
    function Standard_Input return File_Access;
    pragma Inline (Standard_Input);
