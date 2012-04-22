@@ -20,7 +20,7 @@ package System.Storage_Pools.Overlaps is
       Pool : in out Overlay_Pool;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
-      Alignment : Storage_Elements.Storage_Count) is null;
+      Alignment : Storage_Elements.Storage_Count);
    pragma Inline (Deallocate);
 
    overriding function Storage_Size (Pool : Overlay_Pool)

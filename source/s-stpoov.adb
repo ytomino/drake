@@ -24,7 +24,24 @@ package body System.Storage_Pools.Overlaps is
          Soft_Links.Get_Task_Local_Storage.all;
    begin
       Storage_Address := TLS.Overlaid_Allocation;
+      TLS.Overlaid_Allocation := Null_Address;
    end Allocate;
+
+   overriding procedure Deallocate (
+      Pool : in out Overlay_Pool;
+      Storage_Address : Address;
+      Size_In_Storage_Elements : Storage_Elements.Storage_Count;
+      Alignment : Storage_Elements.Storage_Count)
+   is
+      pragma Unreferenced (Pool);
+      pragma Unreferenced (Size_In_Storage_Elements);
+      pragma Unreferenced (Alignment);
+      TLS : constant not null Soft_Links.Task_Local_Storage_Access :=
+         Soft_Links.Get_Task_Local_Storage.all;
+   begin
+      pragma Assert (Storage_Address = TLS.Overlaid_Allocation);
+      TLS.Overlaid_Allocation := Null_Address;
+   end Deallocate;
 
    overriding function Storage_Size (Pool : Overlay_Pool)
       return Storage_Elements.Storage_Count

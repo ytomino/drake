@@ -76,6 +76,7 @@ package body System.Initialization is
                Object_Access);
             X : Object_Access := Cast (Storage_Access (Storage));
          begin
+            Storage_Pools.Overlaps.Set_Address (Storage.all'Address);
             Free (X);
          end;
       end if;
