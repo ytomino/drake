@@ -95,7 +95,9 @@ package body Separated is
                      Current.Private_Data := Null_Address;
                   else
                      pragma Check (Trace, Debug.Put ("Iter /= null"));
-                     Save_Occurrence_And_Private (Current.all, Iter.all);
+                     Save_Occurrence_And_Private (
+                        Current.all,
+                        Iter.all);
                      pragma Check (Trace, Debug.Put ("free eo"));
                      Free (Iter);
                   end if;
