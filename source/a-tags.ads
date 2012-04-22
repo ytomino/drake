@@ -44,7 +44,8 @@ private
 
    --  zero-terminated string required by compiler (a-tags.ads)
 
-   type Cstring_Ptr is access all String (Positive);
+   subtype Fixed_String is String (Positive);
+   type Cstring_Ptr is access all Fixed_String;
    pragma No_Strict_Aliasing (Cstring_Ptr);
 
    --  required for tagged types by compiler (a-tags.ads)

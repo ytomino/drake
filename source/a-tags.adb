@@ -1,5 +1,5 @@
 pragma Check_Policy (Trace, Off);
-with Ada.Unchecked_Conversion;
+with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
 with System.Shared_Locking;
 with System.UTF_Conversions.From_8_To_16;
@@ -12,15 +12,34 @@ package body Ada.Tags is
 
    Nested_Prefix : constant String := "Internal tag at 16#";
 
+   package Tag_Conv is new System.Address_To_Named_Access_Conversions (
+      Dispatch_Table,
+      Tag);
+   package Tag_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
+      Tag,
+      Tag_Ptr);
+
+   package DT_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
+      Dispatch_Table_Wrapper,
+      Dispatch_Table_Ptr);
+   package TSD_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
+      Type_Specific_Data,
+      Type_Specific_Data_Ptr);
+
+   package Cstring_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
+      Fixed_String,
+      Cstring_Ptr);
+   package OTT_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
+      System.Storage_Elements.Storage_Offset,
+      Offset_To_Top_Ptr);
+
    function External_Tag_Impl (DT : Dispatch_Table_Ptr) return String;
    function External_Tag_Impl (DT : Dispatch_Table_Ptr) return String is
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Type_Specific_Data_Ptr);
-      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
    begin
       return System.Zero_Terminated_Strings.Value (
-         TSD.External_Tag.all'Address);
+         Cstring_Ptr_Conv.To_Address (TSD.External_Tag));
    end External_Tag_Impl;
 
    type E_Node;
@@ -87,25 +106,18 @@ package body Ada.Tags is
       function Offset_To_Top (This : System.Address)
          return System.Storage_Elements.Storage_Offset
       is
-         function Cast is new Unchecked_Conversion (
-            System.Address,
-            Tag_Ptr);
-         T_DT : constant Dispatch_Table_Ptr := DT (Cast (This).all);
+         T_DT : constant Dispatch_Table_Ptr :=
+            DT (Tag_Ptr_Conv.To_Pointer (This).all);
       begin
          if T_DT.Offset_To_Top =
             System.Storage_Elements.Storage_Offset'Last
          then
             declare
-               type Storage_Offset_Ptr is
-                  access all System.Storage_Elements.Storage_Offset;
-               function Cast is new Unchecked_Conversion (
-                  System.Address,
-                  Storage_Offset_Ptr);
                Tag_Size : constant :=
                   Standard'Address_Size / Standard'Storage_Unit;
                Offset_To_Top : constant System.Address := This + Tag_Size;
             begin
-               return Cast (Offset_To_Top).all;
+               return OTT_Ptr_Conv.To_Pointer (Offset_To_Top).all;
             end;
          else
             return T_DT.Offset_To_Top;
@@ -136,17 +148,12 @@ package body Ada.Tags is
          return System.Null_Address;
       else
          declare
-            function Cast is new Unchecked_Conversion (
-               System.Address,
-               Tag_Ptr);
-            function Cast is new Unchecked_Conversion (
-               System.Address,
-               Type_Specific_Data_Ptr);
             Base_Object : constant System.Address := Base_Address (This);
-            Base_Tag : constant Tag := Cast (Base_Object).all;
+            Base_Tag : constant Tag :=
+               Tag_Ptr_Conv.To_Pointer (Base_Object).all;
             Obj_DT : constant Dispatch_Table_Ptr := DT (Base_Tag);
             Iface_Table : constant Interface_Data_Ptr :=
-               Cast (Obj_DT.TSD).Interfaces_Table;
+               TSD_Ptr_Conv.To_Pointer (Obj_DT.TSD).Interfaces_Table;
          begin
             if Iface_Table /= null then
                for Id in 1 .. Iface_Table.Nb_Ifaces loop
@@ -193,24 +200,20 @@ package body Ada.Tags is
    end Displace;
 
    function DT (T : Tag) return Dispatch_Table_Ptr is
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Dispatch_Table_Ptr);
       subtype Dispatch_Table_Wrapper_0 is Dispatch_Table_Wrapper (0);
    begin
-      return Cast (System.Address'(T.all'Address -
-         Dispatch_Table_Wrapper_0'Size / Standard'Storage_Unit));
+      return DT_Ptr_Conv.To_Pointer (
+         Tag_Conv.To_Address (T)
+         - Dispatch_Table_Wrapper_0'Size / Standard'Storage_Unit);
    end DT;
 
    function Expanded_Name (T : Tag) return String is
       DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Type_Specific_Data_Ptr);
-      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
    begin
       return System.Zero_Terminated_Strings.Value (
-         TSD.Expanded_Name.all'Address);
+         Cstring_Ptr_Conv.To_Address (TSD.Expanded_Name));
    end Expanded_Name;
 
    function External_Tag (T : Tag) return String is
@@ -234,20 +237,16 @@ package body Ada.Tags is
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind
    is
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Type_Specific_Data_Ptr);
-      TSD : constant Type_Specific_Data_Ptr := Cast (DT (T).TSD);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
    begin
       return TSD.SSD.SSD_Table (Position).Kind;
    end Get_Prim_Op_Kind;
 
    function Interface_Ancestor_Tags (T : Tag) return Tag_Array is
       DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Type_Specific_Data_Ptr);
-      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
       Intf_Table : constant Interface_Data_Ptr := TSD.Interfaces_Table;
       Length : Natural;
    begin
@@ -271,7 +270,6 @@ package body Ada.Tags is
             External'First - 1 + Nested_Prefix'Length) = Nested_Prefix
       then
          declare
-            function Cast is new Unchecked_Conversion (System.Address, Tag);
             Use_Longest : constant Boolean :=
                Standard'Address_Size > System.Formatting.Unsigned'Size;
             Result : System.Storage_Elements.Integer_Address;
@@ -303,7 +301,8 @@ package body Ada.Tags is
             then
                raise Tag_Error;
             end if;
-            return Cast (System.Storage_Elements.To_Address (Result));
+            return Tag_Conv.To_Pointer (
+               System.Storage_Elements.To_Address (Result));
          end;
       else
          declare
@@ -322,10 +321,8 @@ package body Ada.Tags is
 
    function Is_Abstract (T : Tag) return Boolean is
       DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Type_Specific_Data_Ptr);
-      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
    begin
       return TSD.Type_Is_Abstract;
    end Is_Abstract;
@@ -338,11 +335,10 @@ package body Ada.Tags is
    is
       D_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Descendant);
       A_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Ancestor);
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Type_Specific_Data_Ptr);
-      D_TSD : constant Type_Specific_Data_Ptr := Cast (D_DT.TSD);
-      A_TSD : constant Type_Specific_Data_Ptr := Cast (A_DT.TSD);
+      D_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (D_DT.TSD);
+      A_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (A_DT.TSD);
    begin
       if Same_Level and then D_TSD.Access_Level /= A_TSD.Access_Level then
          return False;
@@ -390,9 +386,8 @@ package body Ada.Tags is
    end Is_Descendant_At_Same_Level;
 
    function IW_Membership (This : System.Address; T : Tag) return Boolean is
-      function Cast is new Unchecked_Conversion (System.Address, Tag_Ptr);
       Base_Object : constant System.Address := Base_Address (This);
-      Base_Tag : constant Tag := Cast (Base_Object).all;
+      Base_Tag : constant Tag := Tag_Ptr_Conv.To_Pointer (Base_Object).all;
    begin
       if Is_Descendant (
          Base_Tag,
@@ -419,10 +414,8 @@ package body Ada.Tags is
 
    function Parent_Tag (T : Tag) return Tag is
       DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Type_Specific_Data_Ptr);
-      TSD : constant Type_Specific_Data_Ptr := Cast (DT.TSD);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
    begin
       if TSD.Idepth = 0 then
          return No_Tag;
@@ -438,15 +431,10 @@ package body Ada.Tags is
       Offset_Value : System.Storage_Elements.Storage_Offset;
       Offset_Func : Offset_To_Top_Function_Ptr)
    is
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Tag_Ptr);
-      function Cast is new Unchecked_Conversion (
-         System.Address,
-         Type_Specific_Data_Ptr);
-      DT : constant Dispatch_Table_Ptr := Tags.DT (Cast (This).all);
+      DT : constant Dispatch_Table_Ptr :=
+         Tags.DT (Tag_Ptr_Conv.To_Pointer (This).all);
       Iface_Table : constant Interface_Data_Ptr :=
-         Cast (DT.TSD).Interfaces_Table;
+         TSD_Ptr_Conv.To_Pointer (DT.TSD).Interfaces_Table;
    begin
       for I in 1 .. Iface_Table.Nb_Ifaces loop
          declare
