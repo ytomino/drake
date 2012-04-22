@@ -1209,7 +1209,7 @@ package body System.Tasking.Inside is
 
    procedure Enter_Unabortable is
    begin
-      if Registered_State /= Unregistered then
+      if Registered_State = Registered then
          declare
             T : constant Task_Id := Current_Task_Id;
          begin
@@ -1223,7 +1223,7 @@ package body System.Tasking.Inside is
 
    procedure Leave_Unabortable is
    begin
-      if Registered_State /= Unregistered then
+      if Registered_State = Registered then
          declare
             T : constant Task_Id := TLS_Current_Task_Id;
          begin
