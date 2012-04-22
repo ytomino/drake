@@ -593,7 +593,12 @@ package body Ada.Text_IO.Inside is
       Name : String := "";
       Form : String := "") is
    begin
-      Open (Non_Controlled_File_Type (File.Text), Stream, Mode, Name, Form);
+      Open (
+         File => Reference (File).all,
+         Stream => Stream,
+         Mode => Mode,
+         Name => Name,
+         Form => Form);
    end Open;
 
    procedure Open (
@@ -876,7 +881,7 @@ package body Ada.Text_IO.Inside is
 
    function Stream (File : File_Type) return Streams.Stream_IO.Stream_Access is
    begin
-      return Stream (Non_Controlled_File_Type (File.Text));
+      return Stream (Reference (File).all);
    end Stream;
 
    function Stream (File : Non_Controlled_File_Type)
@@ -890,7 +895,7 @@ package body Ada.Text_IO.Inside is
       return not null access
          Streams.Stream_IO.Inside.Non_Controlled_File_Type is
    begin
-      return Stream_IO (Non_Controlled_File_Type (File.Text));
+      return Stream_IO (Reference (File).all);
    end Stream_IO;
 
    function Stream_IO (File : Non_Controlled_File_Type)

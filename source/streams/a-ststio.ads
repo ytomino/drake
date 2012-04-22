@@ -116,12 +116,26 @@ package Ada.Streams.Stream_IO is
 
 private
 
-   type File_Type is
-      limited new Finalization.Limited_Controlled with
-   record
-      Stream : access Inside.Stream_Type;
-   end record;
+   package Controlled is
 
-   overriding procedure Finalize (Object : in out File_Type);
+      type File_Type is limited private;
+
+      function Reference (File : File_Type)
+         return access Inside.Non_Controlled_File_Type;
+      pragma Inline (Reference);
+
+   private
+
+      type File_Type is
+         limited new Finalization.Limited_Controlled with
+      record
+         Stream : access Inside.Stream_Type;
+      end record;
+
+      overriding procedure Finalize (Object : in out File_Type);
+
+   end Controlled;
+
+   type File_Type is new Controlled.File_Type;
 
 end Ada.Streams.Stream_IO;

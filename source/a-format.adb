@@ -4,6 +4,9 @@ with System.Formatting.Fixed_Image;
 package body Ada.Formatting is
    pragma Suppress (All_Checks);
 
+   pragma Compile_Time_Error (No_Sign /= System.Formatting.No_Sign,
+      "No_Sign mismatch");
+
    function Integer_Image (Item : T) return String is
       Result : String (
          1 ..
@@ -12,17 +15,17 @@ package body Ada.Formatting is
       Error : Boolean;
    begin
       if Item < 0 then
-         if Signs (-1) /= None then
+         if Signs (-1) /= No_Sign then
             Last := Last + 1;
             Result (Last) := Signs (-1);
          end if;
       elsif Item > 0 then
-         if Signs (1) /= None then
+         if Signs (1) /= No_Sign then
             Last := Last + 1;
             Result (Last) := Signs (1);
          end if;
       else
-         if Signs (0) /= None then
+         if Signs (0) /= No_Sign then
             Last := Last + 1;
             Result (Last) := Signs (0);
          end if;
@@ -74,12 +77,12 @@ package body Ada.Formatting is
       Error : Boolean;
    begin
       if Item > 0 then
-         if Signs (1) /= None then
+         if Signs (1) /= No_Sign then
             Last := Last + 1;
             Result (Last) := Signs (1);
          end if;
       else
-         if Signs (0) /= None then
+         if Signs (0) /= No_Sign then
             Last := Last + 1;
             Result (Last) := Signs (0);
          end if;

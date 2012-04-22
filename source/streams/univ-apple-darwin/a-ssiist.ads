@@ -11,8 +11,7 @@ private
    Standard_Input_Stream : aliased Stream_Type := (
       Name_Length => 6,
       Form_Length => 0,
-      Root_Dispatcher => <>,
-      Seekable_Dispatcher => (Seekable_Stream_Type with Stream => null),
+      Dispatcher => (others => <>),
       Handle => 0,
       Mode => In_File,
       Kind => Standard_Handle,
@@ -24,8 +23,7 @@ private
    Standard_Output_Stream : aliased Stream_Type := (
       Name_Length => 7,
       Form_Length => 0,
-      Root_Dispatcher => <>,
-      Seekable_Dispatcher => (Seekable_Stream_Type with Stream => null),
+      Dispatcher => (others => <>),
       Handle => 1,
       Mode => Out_File,
       Kind => Standard_Handle,
@@ -37,8 +35,7 @@ private
    Standard_Error_Stream : aliased Stream_Type := (
       Name_Length => 7,
       Form_Length => 0,
-      Root_Dispatcher => <>,
-      Seekable_Dispatcher => (Seekable_Stream_Type with Stream => null),
+      Dispatcher => (others => <>),
       Handle => 2,
       Mode => Out_File,
       Kind => Standard_Handle,

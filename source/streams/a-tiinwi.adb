@@ -26,14 +26,15 @@ package body Ada.Text_IO.Inside.Wide is
          declare
             Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
             Last : Natural;
+            Ref_Text : constant access Text_Type := Reference (File).all;
          begin
             System.UTF_Conversions.To_UTF_8 (
                Wide_Character'Pos (W_Buffer (2)),
                Buffer,
                Last,
                Error);
-            File.Text.Last := Last;
-            File.Text.Buffer (1 .. Last) := Buffer (1 .. Last);
+            Ref_Text.Last := Last;
+            Ref_Text.Buffer (1 .. Last) := Buffer (1 .. Last);
          end;
       end if;
    end Store_Second;
@@ -127,7 +128,7 @@ package body Ada.Text_IO.Inside.Wide is
       Error : Boolean; -- ingore
    begin
       Get_Immediate (
-         Non_Controlled_File_Type (File.Text),
+         Reference (File).all,
          S (1 .. 1),
          Read_Last,
          Wait);
@@ -139,7 +140,7 @@ package body Ada.Text_IO.Inside.Wide is
       begin
          if Length >= 2 then
             Get_Immediate (
-               Non_Controlled_File_Type (File.Text),
+               Reference (File).all,
                S (2 .. Length),
                Read_Last,
                Wait => True);
@@ -202,7 +203,7 @@ package body Ada.Text_IO.Inside.Wide is
                Conv_Last : Natural;
                Code : System.UTF_Conversions.UCS_4;
             begin
-               Look_Ahead (Non_Controlled_File_Type (File.Text), S, Last, EOL);
+               Look_Ahead (Reference (File).all, S, Last, EOL);
                System.UTF_Conversions.From_UTF_8 (
                   S (1 .. Last),
                   Conv_Last,
@@ -215,9 +216,10 @@ package body Ada.Text_IO.Inside.Wide is
    end Look_Ahead;
 
    procedure Put (File : File_Type; Item : Wide_Character) is
+      Ref_Text : constant access Text_Type := Reference (File).all;
       Error : Boolean; -- ignore
    begin
-      if File.Text.Last > 0 then
+      if Ref_Text.Last > 0 then
          declare
             First : System.UTF_Conversions.UCS_4;
             Code : System.UTF_Conversions.UCS_4;
@@ -228,7 +230,7 @@ package body Ada.Text_IO.Inside.Wide is
             begin
                --  restore first of surrogate pair
                System.UTF_Conversions.From_UTF_8 (
-                  File.Text.Buffer (1 .. File.Text.Last),
+                  Ref_Text.Buffer (1 .. Ref_Text.Last),
                   Last,
                   First,
                   Error);
@@ -238,7 +240,7 @@ package body Ada.Text_IO.Inside.Wide is
                   Error);
                if Length /= 2
                   or else First >= 16#ffff#
-                  or else Last /= File.Text.Last
+                  or else Last /= Ref_Text.Last
                then
                   raise Data_Error; -- previous data is wrong
                end if;
@@ -255,7 +257,7 @@ package body Ada.Text_IO.Inside.Wide is
                   Code,
                   Error);
             end;
-            File.Text.Last := 0;
+            Ref_Text.Last := 0;
             Put (File, Wide_Wide_Character'Val (Code));
          end;
       else
@@ -267,8 +269,8 @@ package body Ada.Text_IO.Inside.Wide is
                --  store first of surrogate pair
                System.UTF_Conversions.To_UTF_8 (
                   Wide_Character'Pos (Item),
-                  File.Text.Buffer,
-                  File.Text.Last,
+                  Ref_Text.Buffer,
+                  Ref_Text.Last,
                   Error);
             else
                --  single character
@@ -279,8 +281,9 @@ package body Ada.Text_IO.Inside.Wide is
    end Put;
 
    procedure Put (File : File_Type; Item : Wide_Wide_Character) is
+      Ref_Text : constant access Text_Type := Reference (File).all;
    begin
-      if File.Text.Last > 0 then
+      if Ref_Text.Last > 0 then
          raise Data_Error; -- previous data is rested
       else
          declare

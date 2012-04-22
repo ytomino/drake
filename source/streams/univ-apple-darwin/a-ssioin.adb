@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 with C.errno;
 with C.stdlib;
@@ -10,6 +11,7 @@ with C.sys.types;
 with C.sys.unistd;
 with C.unistd;
 package body Ada.Streams.Stream_IO.Inside is
+   use type Ada.Tags.Tag;
    use type System.Storage_Elements.Storage_Offset;
    use type C.char;
    use type C.char_array;
@@ -238,7 +240,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    function Handle (File : File_Type) return Handle_Type is
    begin
-      return Handle (Non_Controlled_File_Type (File.Stream));
+      return Handle (Reference (File).all);
    end Handle;
 
    function Handle (File : Non_Controlled_File_Type) return Handle_Type is
@@ -297,12 +299,12 @@ package body Ada.Streams.Stream_IO.Inside is
       To_Close : Boolean := False) is
    begin
       Open (
-         Non_Controlled_File_Type (File.Stream),
+         Reference (File).all,
          Handle,
          Mode,
-         Name,
-         Form,
-         To_Close);
+         Name => Name,
+         Form => Form,
+         To_Close => To_Close);
    end Open;
 
    procedure Open (
@@ -346,8 +348,7 @@ package body Ada.Streams.Stream_IO.Inside is
       File := new Stream_Type'(
          Name_Length => Name'Length + 1,
          Form_Length => Form'Length,
-         Root_Dispatcher => <>,
-         Seekable_Dispatcher => (Seekable_Stream_Type with Stream => null),
+         Dispatcher => (others => <>),
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,
@@ -505,8 +506,7 @@ package body Ada.Streams.Stream_IO.Inside is
          File := new Stream_Type'(
             Name_Length => Name_Length,
             Form_Length => Form'Length,
-            Root_Dispatcher => (Root_Stream_Type with Stream => null),
-            Seekable_Dispatcher => <>,
+            Dispatcher => (others => <>),
             Handle => Handle,
             Mode => Mode,
             Kind => Kind,
@@ -725,14 +725,20 @@ package body Ada.Streams.Stream_IO.Inside is
    end Size_Impl;
 
    function Stream (File : Non_Controlled_File_Type) return Stream_Access is
+      package Conv is new System.Address_To_Named_Access_Conversions (
+         Root_Stream_Type'Class,
+         Stream_Access);
    begin
       Check_File_Open (File);
-      case File.Kind is
-         when Normal | Temporary =>
-            return File.Seekable_Dispatcher'Access;
-         when External | External_No_Close | Standard_Handle =>
-            return File.Root_Dispatcher'Access;
-      end case;
+      if File.Dispatcher.Tag = Ada.Tags.No_Tag then
+         if C.unistd.lseek (File.Handle, 0, C.sys.unistd.SEEK_CUR) < 0 then
+            File.Dispatcher.Tag := Dispatchers.Root_Dispatcher'Tag;
+         else
+            File.Dispatcher.Tag := Dispatchers.Seekable_Dispatcher'Tag;
+         end if;
+         File.Dispatcher.Stream := File;
+      end if;
+      return Conv.To_Pointer (File.Dispatcher'Address);
    end Stream;
 
    procedure Write (

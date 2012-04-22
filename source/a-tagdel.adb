@@ -1,9 +1,17 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
+with System.Address_To_Named_Access_Conversions;
 with System.Shared_Locking;
 package body Ada.Tags.Delegating is
    pragma Suppress (All_Checks);
    use type System.Address;
+
+   package Tag_Conv is new System.Address_To_Named_Access_Conversions (
+      Dispatch_Table,
+      Tag);
+   package Tag_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
+      Tag,
+      Tag_Ptr);
 
    type Delegate is access function (Object : System.Address)
       return System.Address;
@@ -28,7 +36,8 @@ package body Ada.Tags.Delegating is
       Get : not null access function (Object : System.Address)
          return System.Address)
    is
-      function Cast is new Unchecked_Conversion (Tag, System.Address);
+      function "+" (X : Tag) return System.Address
+         renames Tag_Conv.To_Address;
    begin
       if Node = null then
          pragma Check (Trace, Debug.Put ("add"));
@@ -37,9 +46,9 @@ package body Ada.Tags.Delegating is
             Right => null,
             Interface_Tag => Interface_Tag,
             Get => Get);
-      elsif Cast (Node.Interface_Tag) > Cast (Interface_Tag) then
+      elsif +Node.Interface_Tag > +Interface_Tag then
          I_Insert (Node.Left, Interface_Tag, Get);
-      elsif Cast (Node.Interface_Tag) < Cast (Interface_Tag) then
+      elsif +Node.Interface_Tag < +Interface_Tag then
          I_Insert (Node.Right, Interface_Tag, Get);
       else
          null; -- already added
@@ -51,13 +60,14 @@ package body Ada.Tags.Delegating is
    function I_Find (Node : I_Node_Access; Interface_Tag : Tag)
       return I_Node_Access
    is
-      function Cast is new Unchecked_Conversion (Tag, System.Address);
+      function "+" (X : Tag) return System.Address
+         renames Tag_Conv.To_Address;
    begin
       if Node = null then
          return null;
-      elsif Cast (Node.Interface_Tag) > Cast (Interface_Tag) then
+      elsif +Node.Interface_Tag > +Interface_Tag then
          return I_Find (Node.Left, Interface_Tag);
-      elsif Cast (Node.Interface_Tag) < Cast (Interface_Tag) then
+      elsif +Node.Interface_Tag < +Interface_Tag then
          return I_Find (Node.Right, Interface_Tag);
       else
          return Node;
@@ -82,7 +92,8 @@ package body Ada.Tags.Delegating is
       T : Tag;
       Result : out D_Node_Access)
    is
-      function Cast is new Unchecked_Conversion (Tag, System.Address);
+      function "+" (X : Tag) return System.Address
+         renames Tag_Conv.To_Address;
    begin
       if Node = null then
          Node := new D_Node'(
@@ -91,9 +102,9 @@ package body Ada.Tags.Delegating is
             Object_Tag => T,
             Map => null);
          Result := Node;
-      elsif Cast (Node.Object_Tag) > Cast (T) then
+      elsif +Node.Object_Tag > +T then
          D_Insert (Node.Left, T, Result);
-      elsif Cast (Node.Object_Tag) < Cast (T) then
+      elsif +Node.Object_Tag < +T then
          D_Insert (Node.Right, T, Result);
       else
          Result := Node;
@@ -102,13 +113,14 @@ package body Ada.Tags.Delegating is
 
    function D_Find (Node : D_Node_Access; T : Tag) return D_Node_Access;
    function D_Find (Node : D_Node_Access; T : Tag) return D_Node_Access is
-      function Cast is new Unchecked_Conversion (Tag, System.Address);
+      function "+" (X : Tag) return System.Address
+         renames Tag_Conv.To_Address;
    begin
       if Node = null then
          return null;
-      elsif Cast (Node.Object_Tag) > Cast (T) then
+      elsif +Node.Object_Tag > +T then
          return D_Find (Node.Left, T);
-      elsif Cast (Node.Object_Tag) < Cast (T) then
+      elsif +Node.Object_Tag < +T then
          return D_Find (Node.Right, T);
       else
          return Node;
@@ -122,9 +134,8 @@ package body Ada.Tags.Delegating is
    function Get_Delegation (Object : System.Address; Interface_Tag : Tag)
       return System.Address
    is
-      function Cast is new Unchecked_Conversion (System.Address, Tag_Ptr);
       Result : System.Address := System.Null_Address;
-      T : Tag := Cast (Object).all;
+      T : Tag := Tag_Ptr_Conv.To_Pointer (Object).all;
    begin
       System.Shared_Locking.Enter;
       Search : loop

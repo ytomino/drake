@@ -269,12 +269,41 @@ package Ada.Text_IO is
 
 private
 
-   type File_Type is
-      limited new Finalization.Limited_Controlled with
-   record
-      Text : access Inside.Text_Type;
-   end record;
+   package Controlled is
 
-   overriding procedure Finalize (Object : in out File_Type);
+      type File_Type is limited private;
+      type File_Access is access constant File_Type;
+
+      function Standard_Input return File_Access;
+      pragma Inline (Standard_Input);
+      function Standard_Output return File_Access;
+      pragma Inline (Standard_Output);
+      function Standard_Error return File_Access;
+      pragma Inline (Standard_Error);
+
+      function Reference_Current_Input return access File_Access;
+      pragma Inline (Reference_Current_Input);
+      function Reference_Current_Output return access File_Access;
+      pragma Inline (Reference_Current_Output);
+      function Reference_Current_Error return access File_Access;
+      pragma Inline (Reference_Current_Error);
+
+      function Reference (File : File_Type)
+         return access Inside.Non_Controlled_File_Type;
+      pragma Inline (Reference);
+
+   private
+
+      type File_Type is
+         limited new Finalization.Limited_Controlled with
+      record
+         Text : access Inside.Text_Type;
+      end record;
+
+      overriding procedure Finalize (Object : in out File_Type);
+
+   end Controlled;
+
+   type File_Type is new Controlled.File_Type;
 
 end Ada.Text_IO;

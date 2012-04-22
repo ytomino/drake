@@ -8,6 +8,8 @@ begin
 				Ada.Streams.Stream_IO.Sockets.Get ("google.com", 80));
 	begin
 		pragma Assert (Ada.Streams.Stream_IO.Is_Open (File));
+		pragma Assert (Ada.Streams.Stream_IO.Stream (File).all
+			not in Ada.Streams.Seekable_Stream_Type);
 		String'Write (
 			Ada.Streams.Stream_IO.Stream (File),
 			"GET / HTTP/1.0" & ASCII.LF & ASCII.LF);
