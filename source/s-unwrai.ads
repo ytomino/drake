@@ -37,7 +37,7 @@ package System.Unwind.Raising is
    pragma No_Return (Reraise);
    pragma Export (Ada, Reraise, "ada__exceptions__reraise_occurrence_always");
 
-   --  for System.Finalization_Implementation (a-except-2005.adb)
+   --  implementation for raising from controlled objects (a-except-2005.adb)
    procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
    pragma No_Return (Raise_From_Controlled_Operation);
 

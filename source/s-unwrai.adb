@@ -327,7 +327,7 @@ package body System.Unwind.Raising is
             end if;
             Raise_Exception_No_Defer (
                Unwind.Standard.Program_Error'Access,
-               New_Message (New_Message'First .. Last));
+               Message => New_Message (New_Message'First .. Last));
          end;
       end if;
    end Raise_From_Controlled_Operation;

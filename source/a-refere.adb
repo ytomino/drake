@@ -11,7 +11,7 @@ package body Ada.References is
          Last : Index_Type'Base)
          return Constant_Reference_Type is
       begin
-         return Result : aliased Constant_Reference_Type := (
+         return Result : Constant_Reference_Type := (
             Element => Item, -- dummy, be overwritten
             First => First,
             Last => Last)

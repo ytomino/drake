@@ -176,13 +176,13 @@ package body Ada.Containers.Inside.Copy_On_Write is
          Capacity : Count_Type))
       return Container is
    begin
-      return Result : aliased Container := (null, null) do
+      return Result : Container := (null, null) do
          if Source.Data /= null then
             declare
                New_Data : Data_Access;
             begin
                Copy (New_Data, Source.Data, Capacity);
-               Follow (Result'Access, New_Data); -- no sync
+               Follow (Result'Unrestricted_Access, New_Data); -- no sync
             end;
          end if;
       end return;
