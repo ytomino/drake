@@ -309,6 +309,7 @@ private
 
    type Activation_State is range 0 .. 4;
    for Activation_State'Size use 8;
+   pragma Atomic (Activation_State);
    AS_Suspended : constant Activation_State := 0;
    AS_Created : constant Activation_State := 1;
    AS_Active_Before_Activation : Activation_State := 2;
@@ -317,6 +318,7 @@ private
 
    type Termination_State is range 0 .. 2;
    for Termination_State'Size use 8;
+   pragma Atomic (Termination_State);
    TS_Active : constant Termination_State := 0;
    TS_Detached : constant Termination_State := 1;
    TS_Terminated : constant Termination_State := 2;
