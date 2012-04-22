@@ -303,24 +303,27 @@ package body System.Unwind.Raising is
       Prefix : constant String := "adjust/finalize raised ";
    begin
       if X.Id = Unwind.Standard.Program_Error'Access
+         and then X.Msg_Length >= Prefix'Length
          and then X.Msg (1 .. Prefix'Length) = Prefix
       then
          Reraise_No_Defer (X);
       else
          declare
-            subtype Fixed_String is String (Positive);
-            Full_Name : Fixed_String;
+            Full_Name : String (1 .. X.Id.Name_Length - 1);
             for Full_Name'Address use X.Id.Full_Name;
-            New_Message : constant String := Prefix &
-               Full_Name (1 .. X.Id.Name_Length - 1) &
-               ": " &
-               X.Msg (1 .. X.Msg_Length);
-            Last : Natural;
+            New_Message : String (1 .. Default_Exception_Msg_Max_Length);
+            Last : Natural := New_Message'First - 1;
          begin
-            if X.Msg_Length = 0 then
-               Last := New_Message'Last - 2;
-            else
-               Last := New_Message'Last;
+            New_Message (Last + 1 .. Last + Prefix'Length) := Prefix;
+            Last := Prefix'Length;
+            New_Message (Last + 1 .. Last + Full_Name'Length) := Full_Name;
+            Last := Last + (X.Id.Name_Length - 1);
+            if X.Msg_Length > 0 then
+               New_Message (Last + 1 .. Last + 2) := ": ";
+               Last := Last + 2;
+               New_Message (Last + 1 .. Last + X.Msg_Length) :=
+                  X.Msg (1 .. X.Msg_Length);
+               Last := Last + X.Msg_Length;
             end if;
             Raise_Exception_No_Defer (
                Unwind.Standard.Program_Error'Access,

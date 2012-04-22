@@ -62,14 +62,17 @@ package body System.Unwind.Handling is
       Context : access C.unwind.struct_Unwind_Context)
       return C.unwind.Unwind_Reason_Code
    is
+      function To_GNAT is new Ada.Unchecked_Conversion (
+         C.unwind.struct_Unwind_Exception_ptr,
+         GNAT_GCC_Exception_Access);
       function Cast is new Ada.Unchecked_Conversion (
          C.unwind.struct_Unwind_Exception_ptr,
          C.unwind.Unwind_Word);
       function Cast is new Ada.Unchecked_Conversion (
          C.unwind.Unwind_Sword,
          C.unwind.Unwind_Word);
-      GCC_Exception : GNAT_GCC_Exception;
-      for GCC_Exception'Address use Exception_Object.all'Address;
+      GCC_Exception : constant GNAT_GCC_Exception_Access :=
+         To_GNAT (C.unwind.struct_Unwind_Exception_ptr (Exception_Object));
       landing_pad : C.unwind.Unwind_Ptr;
       ttype_filter : C.unwind.Unwind_Sword; -- 0 => finally, others => handler
    begin
@@ -304,6 +307,7 @@ package body System.Unwind.Handling is
          pragma Check (Trace, Debug.Put ("Adjust_N_Cleanups_For"));
       end if;
       pragma Check (Trace, Debug.Put ("unwind!"));
+      --  setup_to_install (raise-gcc.c)
       C.unwind.Unwind_SetGR (
          Context,
          builtin_eh_return_data_regno (0),
