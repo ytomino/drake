@@ -119,12 +119,13 @@ private
 
    type Type_Specific_Data (Idepth : Natural) is record
       Access_Level : Natural;
+      Alignment : Natural;
       Expanded_Name : Cstring_Ptr;
       External_Tag : Cstring_Ptr;
       HT_Link : Tag_Ptr;
       Transportable : Boolean;
       Type_Is_Abstract : Boolean;
-      RC_Offset : System.Storage_Elements.Storage_Offset;
+      Needs_Finalization : Boolean;
       Size_Func : Size_Ptr;
       Interfaces_Table : Interface_Data_Ptr;
       SSD : Select_Specific_Data_Ptr;
@@ -195,7 +196,7 @@ private
    type Object_Specific_Data_Ptr is access all Object_Specific_Data;
    for Object_Specific_Data_Ptr'Storage_Size use 0;
 
-   Max_Predef_Prims : constant := 16;
+   Max_Predef_Prims : constant := 15;
 
    subtype Predef_Prims_Table is Address_Array (1 .. Max_Predef_Prims);
    type Predef_Prims_Table_Ptr is access Predef_Prims_Table;
@@ -229,6 +230,9 @@ private
    --  required for Obj in Intf'Class by compiler (a-tags.ads)
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
 
+   --  required for non-controlled tagged'Class by compiler (a-tags.ads)
+   function Needs_Finalization (T : Tag) return Boolean;
+
    --  required (optional) for dynamic secondary dispatch table ???
 --   function Offset_To_Top (This : System.Address)
 --      return System.Storage_Elements.Storage_Offset;
@@ -244,6 +248,7 @@ private
 
    --  required for library-level tagged types by compiler (s-exctab.ads)
    procedure Register_Tag (T : Tag) is null; -- unimplemented
+   procedure Unregister_Tag (T : Tag) is null; -- unimplemented
 
 --   procedure Set_Dynamic_Offset_To_Top (
 --      This : System.Address;

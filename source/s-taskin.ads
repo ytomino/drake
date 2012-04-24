@@ -51,4 +51,10 @@ package System.Tasking is
    --  equivalent to String_Access (s-taskin.ads)
    type Entry_Name_Access is access all String;
 
+   --  dispatching domain (s-taskin.ads)
+   type Dispatching_Domain is array (
+--    System.Multiprocessors.CPU range <>)
+      Positive) of Boolean;
+   type Dispatching_Domain_Access is access Dispatching_Domain;
+
 end System.Tasking;

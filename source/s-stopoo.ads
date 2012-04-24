@@ -44,4 +44,8 @@ private
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count);
 
+   --  required for extra parameter of build-in-place (s-stopoo.ads)
+   type Root_Storage_Pool_Ptr is access all Root_Storage_Pool'Class;
+   for Root_Storage_Pool_Ptr'Storage_Size use 0;
+
 end System.Storage_Pools;

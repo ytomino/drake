@@ -40,6 +40,8 @@ package System.Unwind.Raising is
    --  implementation for raising from controlled objects (a-except-2005.adb)
    procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
    pragma No_Return (Raise_From_Controlled_Operation);
+   pragma Export (Ada, Raise_From_Controlled_Operation,
+      "__gnat_raise_from_controlled_operation");
 
    --  shortcut required by compiler (a-except-2005.adb)
 
@@ -153,5 +155,10 @@ package System.Unwind.Raising is
    --  excluding code range
    function AAA return Address;
    function ZZZ return Address;
+
+   --  implementation for tasking (a-except-2005.adb)
+   function Triggered_By_Abort return Boolean;
+   pragma Export (Ada, Triggered_By_Abort,
+      "ada__exceptions__triggered_by_abort");
 
 end System.Unwind.Raising;

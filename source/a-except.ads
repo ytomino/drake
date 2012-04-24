@@ -67,17 +67,20 @@ private
       Id => null,
       Msg_Length => 0,
       Msg => (others => ' '),
-      Cleanup_Flag => False,
       Exception_Raised => False,
       Pid => 0,
       Num_Tracebacks => 0,
-      Tracebacks => (others => System.Null_Address),
-      Private_Data => System.Null_Address);
+      Tracebacks => (others => System.Null_Address));
 
    --  required for reraising by compiler (a-except-2005.ads)
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
    pragma Import (Ada, Reraise_Occurrence_Always,
       "ada__exceptions__reraise_occurrence_always");
+
+   --  required for tasking by compiler (a-except-2005.ads)
+   function Triggered_By_Abort return Boolean;
+   pragma Import (Ada, Triggered_By_Abort,
+      "ada__exceptions__triggered_by_abort");
 
 end Ada.Exceptions;

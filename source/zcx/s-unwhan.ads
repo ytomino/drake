@@ -17,9 +17,7 @@ package System.Unwind.Handling is
    --  body of struct Unwind_Exception (a-exexpr-gcc.adb)
    type GNAT_GCC_Exception is record
       Header : aliased C.unwind.struct_Unwind_Exception;
-      Id : Standard_Library.Exception_Data_Ptr;
-      N_Cleanups_To_Trigger : Integer;
-      Next_Exception : Exception_Occurrence_Access;
+      Occurrence : Exception_Occurrence;
       --  shortcut for phase2 (see exception.c in libobjc)
       landing_pad : C.unwind.Unwind_Ptr;
       ttype_filter : C.unwind.Unwind_Sword;
@@ -61,7 +59,8 @@ package System.Unwind.Handling is
    --              {
    --                void * EXPTR = .builtin_eh_pointer (0);
    --                .gnat_begin_handler (EXPTR);
-   --                system.soft_links.abort_undefer ();
+   --                --  system.soft_links.abort_undefer ();
+   --                --  [gcc-4.7] abort_undefer is not called if zcx
    --                ... user code ...
    --              }
    --            finally

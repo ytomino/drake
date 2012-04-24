@@ -35,6 +35,19 @@ package body System.Soft_Links is
       return Cast (Cast (Get_Current_Excep.all).Id);
    end Get_GNAT_Exception;
 
+   procedure Save_Library_Occurrence (
+      E : Ada.Exceptions.Exception_Occurrence)
+   is
+      function Cast is new Ada.Unchecked_Conversion (
+         Ada.Exceptions.Exception_Occurrence,
+         Unwind.Exception_Occurrence);
+   begin
+      if not Library_Exception_Set then
+         Library_Exception_Set := True;
+         Unwind.Save_Occurrence (Library_Exception.X, Cast (E));
+      end if;
+   end Save_Library_Occurrence;
+
    function Zero return Integer is
    begin
       return 0;

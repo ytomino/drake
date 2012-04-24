@@ -550,7 +550,7 @@ package body System.Tasking.Inside is
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
       Local.Overlaid_Allocation := Null_Address;
-      Local.Current_Exception.Private_Data := Null_Address;
+      Local.Current_Exception.Id := null;
       TLS_Stack := Local'Unchecked_Access;
       --  setup signal stack
       Termination.Set_Signal_Stack (T.Signal_Stack'Access);
@@ -580,7 +580,9 @@ package body System.Tasking.Inside is
          when Standard'Abort_Signal =>
             pragma Check (Trace, Ada.Debug.Put ("Abort_Signal"));
             --  Abort_Undefer will not be called by compiler
-            T.Abort_Locking := T.Abort_Locking - 1;
+            if not ZCX_By_Default then
+               T.Abort_Locking := T.Abort_Locking - 1;
+            end if;
             On_Exception;
          when E : others =>
             Report (T, E);
@@ -921,7 +923,9 @@ package body System.Tasking.Inside is
 
    procedure When_Abort_Signal is
    begin
-      Leave_Unabortable;
+      if not ZCX_By_Default then
+         Leave_Unabortable;
+      end if;
    end When_Abort_Signal;
 
    function Current_Task_Id return Task_Id is

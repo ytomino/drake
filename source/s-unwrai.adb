@@ -13,15 +13,7 @@ package body System.Unwind.Raising is
    package Separated is
 
       --  (a-exexpr-gcc.adb)
-      procedure Setup_Exception (
-         Excep : not null Exception_Occurrence_Access;
-         Current : not null Exception_Occurrence_Access;
-         Reraised : Boolean);
-
-      --  (a-exexpr-gcc.adb)
-      procedure Propagate_Exception (
-         E : not null Standard_Library.Exception_Data_Ptr;
-         From_Signal_Handler : Boolean);
+      procedure Propagate_Exception;
       pragma No_Return (Propagate_Exception);
 
    end Separated;
@@ -125,7 +117,6 @@ package body System.Unwind.Raising is
       Current : constant not null Exception_Occurrence_Access :=
          Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
    begin
-      Separated.Setup_Exception (Current, Current, False);
       Current.Id := Id;
       declare
          Last : Natural := 0;
@@ -203,7 +194,6 @@ package body System.Unwind.Raising is
          end if;
          Current.Msg_Length := Last;
       end;
-      Current.Cleanup_Flag := False;
       Current.Exception_Raised := False;
       Current.Pid := Local_Partition_ID;
       Current.Num_Tracebacks := 0;
@@ -219,6 +209,9 @@ package body System.Unwind.Raising is
    --  (a-except-2005.adb)
    procedure Raise_Exception_No_Defer (
       E : not null Standard_Library.Exception_Data_Ptr;
+      File : access constant Character := null;
+      Line : Integer := 0;
+      Column : Integer := 0;
       Message : String := "");
    pragma No_Return (Raise_Exception_No_Defer);
 
@@ -243,14 +236,17 @@ package body System.Unwind.Raising is
    is
       pragma Inspection_Point (E);
    begin
-      Separated.Propagate_Exception (E, False);
+      Separated.Propagate_Exception;
    end Raise_Current_Exception;
 
    procedure Raise_Exception_No_Defer (
       E : not null Standard_Library.Exception_Data_Ptr;
+      File : access constant Character := null;
+      Line : Integer := 0;
+      Column : Integer := 0;
       Message : String := "") is
    begin
-      Set_Exception_Message (E, null, Message => Message);
+      Set_Exception_Message (E, File, Line, Column, Message);
       Raise_Current_Exception (E);
    end Raise_Exception_No_Defer;
 
@@ -258,11 +254,7 @@ package body System.Unwind.Raising is
       Current : constant not null Exception_Occurrence_Access :=
          Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
    begin
-      Separated.Setup_Exception (
-         X'Unrestricted_Access,
-         Current,
-         True);
-      Save_Occurrence_No_Private (Current.all, X);
+      Save_Occurrence (Current.all, X);
       pragma Check (Trace, Debug.Put ("reraising..."));
       Raise_Current_Exception (X.Id);
    end Reraise_No_Defer;
@@ -277,7 +269,9 @@ package body System.Unwind.Raising is
       Message : String := "") is
    begin
       Set_Exception_Message (E, File, Line, Column, Message);
-      Soft_Links.Abort_Defer.all;
+      if not ZCX_By_Default then
+         Soft_Links.Abort_Defer.all;
+      end if;
       Raise_Current_Exception (E);
    end Raise_Exception;
 
@@ -295,7 +289,9 @@ package body System.Unwind.Raising is
 
    procedure Reraise (X : Exception_Occurrence) is
    begin
-      Soft_Links.Abort_Defer.all;
+      if not ZCX_By_Default then
+         Soft_Links.Abort_Defer.all;
+      end if;
       Reraise_No_Defer (X);
    end Reraise;
 
@@ -475,7 +471,7 @@ package body System.Unwind.Raising is
    procedure rcheck_22 (File : not null access Character; Line : Integer) is
       Message : constant String := "finalize/adjust raised exception";
    begin
-      Raise_Exception (
+      Raise_Exception_No_Defer (
          Unwind.Standard.Program_Error'Access,
          File,
          Line,
@@ -568,5 +564,12 @@ package body System.Unwind.Raising is
       <<Code>>
       return Code'Address;
    end ZZZ;
+
+   function Triggered_By_Abort return Boolean is
+      X : constant not null Exception_Occurrence_Access :=
+         System.Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+   begin
+      return X.Id = Standard.Abort_Signal'Access;
+   end Triggered_By_Abort;
 
 end System.Unwind.Raising;

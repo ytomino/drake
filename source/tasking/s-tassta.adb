@@ -49,6 +49,7 @@ package body System.Tasking.Stages is
       Task_Info : System.Task_Info.Task_Info_Type;
       CPU : Integer;
       Relative_Deadline : Ada.Real_Time.Time_Span;
+      Domain : Dispatching_Domain_Access;
       Num_Entries : Task_Entry_Index;
       Master : Master_Level;
       State : Task_Procedure_Access;
@@ -64,6 +65,7 @@ package body System.Tasking.Stages is
       pragma Unreferenced (Task_Info);
       pragma Unreferenced (CPU);
       pragma Unreferenced (Relative_Deadline);
+      pragma Unreferenced (Domain);
       pragma Unreferenced (Build_Entry_Names);
       Master_Of_Parent : constant Inside.Master_Access :=
          Inside.Master_Of_Parent (Master);

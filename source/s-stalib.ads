@@ -71,6 +71,12 @@ package System.Standard_Library is
    procedure Finalize is null;
    pragma Export (C, Finalize, "__gnat_finalize");
 
+   --  finalize library-level controlled objects (s-soflin.ads)
+   Finalize_Library_Objects : access procedure;
+   pragma Suppress (Access_Check, Finalize_Library_Objects);
+   pragma Export (Ada, Finalize_Library_Objects,
+      "__gnat_finalize_library_objects");
+
    --  command status (exit.c)
    gnat_exit_status : Integer := 0;
    pragma Export (C, gnat_exit_status);

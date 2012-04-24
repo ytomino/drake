@@ -35,6 +35,18 @@ package System.Soft_Links is
    function Get_GNAT_Exception return Ada.Exceptions.Exception_Id;
    pragma Inline (Get_GNAT_Exception);
 
+   --  required for library-level controlled object by compiler (s-soflin.ads)
+   type Uninitialized_Exception_Occurrence is record
+      X : Unwind.Exception_Occurrence;
+   end record;
+   pragma Suppress_Initialization (Uninitialized_Exception_Occurrence);
+   Library_Exception : Uninitialized_Exception_Occurrence;
+   pragma Export (Ada, Library_Exception, "__gnat_library_exception");
+   Library_Exception_Set : Boolean;
+   pragma Export (Ada, Library_Exception_Set, "__gnat_library_exception_set");
+   procedure Save_Library_Occurrence (
+      E : Ada.Exceptions.Exception_Occurrence);
+
    --  no-operation
    function Zero return Integer; -- always return 0
    procedure Nop is null;

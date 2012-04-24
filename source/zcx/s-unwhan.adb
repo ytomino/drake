@@ -16,6 +16,10 @@ package body System.Unwind.Handling is
    use type C.void_ptr;
    use type C.unwind_pe.sleb128_t;
 
+   Foreign_Exception : aliased Standard_Library.Exception_Data;
+   pragma Import (Ada, Foreign_Exception,
+      "system__exceptions__foreign_exception");
+
    function builtin_eh_return_data_regno (A1 : C.signed_int)
       return C.signed_int;
    pragma Import (Intrinsic, builtin_eh_return_data_regno,
@@ -72,7 +76,7 @@ package body System.Unwind.Handling is
          C.unwind.Unwind_Sword,
          C.unwind.Unwind_Word);
       GCC_Exception : constant GNAT_GCC_Exception_Access :=
-         To_GNAT (C.unwind.struct_Unwind_Exception_ptr (Exception_Object));
+         To_GNAT (Exception_Object);
       landing_pad : C.unwind.Unwind_Ptr;
       ttype_filter : C.unwind.Unwind_Sword; -- 0 => finally, others => handler
    begin
@@ -229,8 +233,9 @@ package body System.Unwind.Handling is
                            pragma Check (Trace, Debug.Put ("finally"));
                            exit;
                         end if;
-                     elsif Exception_Class = GNAT_Exception_Class
-                        and then ar_filter > 0
+                     elsif ar_filter > 0
+                        and then (C.unsigned_int (Phases)
+                           and C.unwind.UA_FORCE_UNWIND) = 0
                      then
                         declare
                            function Cast is new Ada.Unchecked_Conversion (
@@ -253,11 +258,25 @@ package body System.Unwind.Handling is
                               ttype_base,
                               ttype_table + (-filter),
                               choice'Access);
-                           is_handled := choice = Cast (GCC_Exception.Id)
-                              or else (choice = Cast (Others_Value'Access)
-                                 and then not
-                                    GCC_Exception.Id.Not_Handled_By_Others)
-                              or else choice = Cast (All_Others_Value'Access);
+                           if Exception_Class = GNAT_Exception_Class then
+                              is_handled :=
+                                 choice = Cast (GCC_Exception.Occurrence.Id)
+                                 or else
+                                    (choice = Cast (Others_Value'Access)
+                                    and then not GCC_Exception.Occurrence.Id.
+                                       Not_Handled_By_Others)
+                                 or else
+                                    choice = Cast (All_Others_Value'Access);
+                           else
+                              pragma Check (Trace, Debug.Put (
+                                 "foreign exception"));
+                              is_handled :=
+                                 choice = Cast (Others_Value'Access)
+                                 or else
+                                    choice = Cast (All_Others_Value'Access)
+                                 or else
+                                    choice = Cast (Foreign_Exception'Access);
+                           end if;
                            if is_handled then
                               ttype_filter := C.unwind.Unwind_Sword (
                                  ar_filter);
@@ -281,14 +300,10 @@ package body System.Unwind.Handling is
             end if;
             if (C.unsigned_int (Phases) and C.unwind.UA_SEARCH_PHASE) /= 0 then
                if ttype_filter = 0 then -- cleanup
-                  if Exception_Class = GNAT_Exception_Class then
-                     GCC_Exception.N_Cleanups_To_Trigger :=
-                        GCC_Exception.N_Cleanups_To_Trigger + 1; -- increment
-                     pragma Check (Trace, Debug.Put ("Adjust_N_Cleanups_For"));
-                  end if;
                   pragma Check (Trace, Debug.Put ("UA_SEARCH_PHASE, cleanup"));
                   return C.unwind.URC_CONTINUE_UNWIND;
                else
+                  --  Setup_Current_Excep (GCC_Exception);
                   null; -- exception tracing (a-exextr.adb) is not implementd.
                   pragma Check (Trace, Debug.Put ("UA_SEARCH_PHASE, handler"));
                   --  shortcut for phase2
@@ -296,15 +311,11 @@ package body System.Unwind.Handling is
                   GCC_Exception.ttype_filter := ttype_filter;
                   return C.unwind.URC_HANDLER_FOUND;
                end if;
+            elsif Phases = C.unwind.UA_CLEANUP_PHASE then
+               pragma Check (Trace, Debug.Put ("without UA_HANDLER_FRAME"));
+               return C.unwind.URC_CONTINUE_UNWIND; -- [gcc-4.7] ???
             end if;
          end;
-      end if;
-      if Exception_Class = GNAT_Exception_Class
-         and then ttype_filter = 0
-      then
-         GCC_Exception.N_Cleanups_To_Trigger :=
-            GCC_Exception.N_Cleanups_To_Trigger - 1; -- decrement
-         pragma Check (Trace, Debug.Put ("Adjust_N_Cleanups_For"));
       end if;
       pragma Check (Trace, Debug.Put ("unwind!"));
       --  setup_to_install (raise-gcc.c)
@@ -317,6 +328,7 @@ package body System.Unwind.Handling is
          builtin_eh_return_data_regno (1),
          Cast (ttype_filter));
       C.unwind.Unwind_SetIP (Context, landing_pad);
+      --  Setup_Current_Excep (GCC_Exception); -- moved to Begin_Handler
       pragma Check (Trace, Debug.Put ("leave"));
       return C.unwind.URC_INSTALL_CONTEXT;
    end Personality;

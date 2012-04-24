@@ -15,6 +15,7 @@ package System.Tasking.Stages is
       Task_Info : System.Task_Info.Task_Info_Type;
       CPU : Integer;
       Relative_Deadline : Ada.Real_Time.Time_Span;
+      Domain : Dispatching_Domain_Access;
       Num_Entries : Task_Entry_Index;
       Master : Master_Level;
       State : Task_Procedure_Access;

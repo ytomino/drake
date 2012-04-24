@@ -72,7 +72,10 @@ package body System.Tasking.Rendezvous is
       Ada.Exceptions.Save_Occurrence (Current_Call.X, X);
       Inside.Set (Current_Call.Waiting);
       TLS_Current_Call := Current_Call.Previous;
-      Inside.Leave_Unabortable; -- Abort_Undefer will not be called by compiler
+      if not ZCX_By_Default then
+         Inside.Leave_Unabortable;
+         --  Abort_Undefer will not be called by compiler
+      end if;
       Ada.Exceptions.Reraise_Occurrence (X);
    end Exceptional_Complete_Rendezvous;
 

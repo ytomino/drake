@@ -22,12 +22,10 @@ package System.Unwind is
       Id : Standard_Library.Exception_Data_Ptr;
       Msg_Length : Natural := 0;
       Msg : String (1 .. Exception_Msg_Max_Length);
-      Cleanup_Flag : Boolean := False;
       Exception_Raised : Boolean := False;
       Pid : Natural := 0;
       Num_Tracebacks : Natural range 0 .. Max_Tracebacks := 0;
       Tracebacks : Tracebacks_Array;
-      Private_Data : Address := Null_Address;
    end record;
 
    type Exception_Occurrence_Access is access all Exception_Occurrence;
@@ -36,10 +34,10 @@ package System.Unwind is
       Exception_Occurrence_Access);
 
    --  implementation for catching object (a-except-2005.adb)
-   procedure Save_Occurrence_No_Private (
+   procedure Save_Occurrence (
       Target : out Exception_Occurrence;
       Source : Exception_Occurrence);
-   pragma Export (Ada, Save_Occurrence_No_Private,
+   pragma Export (Ada, Save_Occurrence,
       "ada__exceptions__save_occurrence");
 
    --  equivalent to Append_Info_Exception_Information (a-exexda.adb)
@@ -47,5 +45,10 @@ package System.Unwind is
       with procedure Put (S : String);
       with procedure New_Line;
    procedure Exception_Information (X : Exception_Occurrence);
+
+   --  (s-except.ads)
+   Foreign_Exception : exception;
+   pragma Export (Ada, Foreign_Exception,
+      "system__exceptions__foreign_exception");
 
 end System.Unwind;

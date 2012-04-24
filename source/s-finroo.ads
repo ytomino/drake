@@ -6,21 +6,11 @@ package System.Finalization_Root is
 
    --  required for controlled type by compiler (s-finroo.ads)
 
-   type Root_Controlled is tagged;
+   type Root_Controlled is abstract tagged null record;
 
-   type Finalizable_Ptr is access all Root_Controlled'Class;
-   for Finalizable_Ptr'Storage_Size use 0;
-
-   type Root_Controlled is tagged record
-      Prev, Next : Finalizable_Ptr;
-   end record;
-   --  not abstract for Ada.Finalization.List_Controller
-
+   procedure Adjust (Object : in out Root_Controlled) is null;
    procedure Initialize (Object : in out Root_Controlled) is null;
    procedure Finalize (Object : in out Root_Controlled) is null;
-   procedure Adjust (Object : in out Root_Controlled) is null;
-
-   function "=" (Left, Right : Root_Controlled) return Boolean;
 
    package No_Primitives is
       procedure Write (
@@ -33,8 +23,5 @@ package System.Finalization_Root is
 
    for Root_Controlled'Read use No_Primitives.Read;
    for Root_Controlled'Write use No_Primitives.Write;
-
-   --  required for controlled type by compiler (s-finroo.ads)
-   subtype Finalizable is Root_Controlled'Class;
 
 end System.Finalization_Root;

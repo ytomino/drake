@@ -412,6 +412,14 @@ package body Ada.Tags is
       end if;
    end IW_Membership;
 
+   function Needs_Finalization (T : Tag) return Boolean is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
+   begin
+      return TSD.Needs_Finalization;
+   end Needs_Finalization;
+
    function Parent_Tag (T : Tag) return Tag is
       DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
       TSD : constant Type_Specific_Data_Ptr :=

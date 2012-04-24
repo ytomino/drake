@@ -43,7 +43,7 @@ package Ada.Characters.Conversions is
       Item : String;
       Substitute : Wide_Character := ' ') -- additional
       return Wide_String;
-   pragma Inline_Always (To_Wide_String);
+--  pragma Inline_Always (To_Wide_String); -- [gcc-4.7] can not inline
 
    --  modified
    function To_Wide_Wide_Character (
@@ -54,7 +54,7 @@ package Ada.Characters.Conversions is
       Item : String;
       Substitute : Wide_Wide_Character := ' ') -- additional
       return Wide_Wide_String;
-   pragma Inline_Always (To_Wide_Wide_String);
+--  pragma Inline_Always (To_Wide_Wide_String); -- [gcc-4.7] can not inline
 
    --  modified
    function To_Wide_Wide_Character (
@@ -65,7 +65,7 @@ package Ada.Characters.Conversions is
       Item : Wide_String;
       Substitute : Wide_Wide_Character := ' ') -- additional
       return Wide_Wide_String;
-   pragma Inline_Always (To_Wide_Wide_String);
+--  pragma Inline_Always (To_Wide_Wide_String); -- [gcc-4.7] can not inline
 
    function To_Character (
       Item : Wide_Character;
@@ -75,7 +75,7 @@ package Ada.Characters.Conversions is
       Item : Wide_String;
       Substitute : Character := ' ')
       return String;
-   pragma Inline_Always (To_String);
+--  pragma Inline_Always (To_String); -- [gcc-4.7] can not inline
 
    function To_Character (
       Item : Wide_Wide_Character;
@@ -85,7 +85,7 @@ package Ada.Characters.Conversions is
       Item : Wide_Wide_String;
       Substitute : Character := ' ')
       return String;
-   pragma Inline_Always (To_String);
+--  pragma Inline_Always (To_String); -- [gcc-4.7] can not inline
 
    function To_Wide_Character (
       Item : Wide_Wide_Character;
@@ -95,7 +95,7 @@ package Ada.Characters.Conversions is
       Item : Wide_Wide_String;
       Substitute : Wide_Character := ' ')
       return Wide_String;
-   pragma Inline_Always (To_Wide_String);
+--  pragma Inline_Always (To_Wide_String); -- [gcc-4.7] can not inline
 
    --  extended
    --  There are functions for code-point based decoding iteration.
