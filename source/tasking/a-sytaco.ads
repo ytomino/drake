@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
---  Ada 2012
 private with Ada.Finalization;
 private with System.Tasking.Inside;
 package Ada.Synchronous_Task_Control is
