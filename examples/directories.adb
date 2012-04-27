@@ -1,4 +1,5 @@
 -- *** this line is for test ***
+pragma Ada_2012;
 with Ada.Calendar;
 with Ada.Command_Line;
 with Ada.Directories;
@@ -9,8 +10,10 @@ with Ada.Text_IO;
 procedure directories is
 	use type Ada.Calendar.Time;
 begin
+	Ada.Debug.Put ("**** user");
 	Ada.Debug.Put ("current user: " & Ada.Permissions.User_Name);
 	-- iteration (closure style)
+	Ada.Debug.Put ("**** iterate 1");
 	declare
 		First : Boolean := True;
 		procedure Process (Directory_Entry : Ada.Directories.Directory_Entry_Type) is
@@ -26,20 +29,25 @@ begin
 		Ada.Directories.Search (".", "*", Process => Process'Access);
 	end;
 	-- iteration (iterator style)
+	Ada.Debug.Put ("**** iterate 2");
 	declare
 		Search : aliased Ada.Directories.Search_Type := Ada.Directories.Start_Search (".");
-		Ite : Ada.Directories.Iterator := Ada.Directories.Iterate (Search);
-		Position : Ada.Directories.Cursor := Ada.Directories.First (Ite);
+		Ite : Ada.Directories.Search_Iterator_Interfaces.Forward_Iterator'Class :=
+		   Ada.Directories.Iterate (Search);
+		Position : Ada.Directories.Cursor := Ada.Directories.Search_Iterator_Interfaces.First (Ite);
 	begin
 		while Ada.Directories.Has_Element (Position) loop
-			Ada.Debug.Put (Ada.Directories.Simple_Name (Ada.Directories.Constant_Reference (Search, Position).Element.all));
-			Position := Ada.Directories.Next (Ite, Position);
+			Ada.Debug.Put (Ada.Directories.Simple_Name (Search.Constant_Reference (Position).Element.all));
+			Position := Ada.Directories.Search_Iterator_Interfaces.Next (Ite, Position);
 		end loop;
 	end;
---	for I of Ada.Directories.Start_Search (".") loop
---		Ada.Debug.Put (Ada.Directories.Simple_Name (I));
---	end loop;
+	-- iteration (Ada 2012)
+	Ada.Debug.Put ("**** iterate 3");
+	for I of Ada.Directories.Start_Search (".") loop
+		Ada.Debug.Put (Ada.Directories.Simple_Name (I));
+	end loop;
 	-- copy
+	Ada.Debug.Put ("**** copy");
 	begin
 		Ada.Directories.Copy_File ("%%%%NOTHING1%%%%", "%%%%NOTHING2%%%%");
 		raise Program_Error;
@@ -47,6 +55,7 @@ begin
 		when Ada.Directories.Name_Error => null;
 	end;
 	-- modification time
+	Ada.Debug.Put ("**** modification time");
 	declare
 		Name : String := Ada.Command_Line.Command_Name & "-test";
 		File : Ada.Text_IO.File_Type;
@@ -64,6 +73,7 @@ begin
 		Ada.Directories.Delete_File (Name);
 	end;
 	-- symbolic link
+	Ada.Debug.Put ("**** symbolic link");
 	declare
 		Source_Name : String := Ada.Directories.Full_Name ("directories.adb");
 		Linked_Name : String := Ada.Command_Line.Command_Name & "-link";

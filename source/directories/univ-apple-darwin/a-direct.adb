@@ -727,7 +727,9 @@ package body Ada.Directories is
       return Position.Search /= null;
    end Has_Element;
 
-   function Constant_Reference (Container : Search_Type; Position : Cursor)
+   function Constant_Reference (
+      Container : aliased Search_Type;
+      Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -735,36 +737,37 @@ package body Ada.Directories is
       return (Element => Position.Directory_Entry'Access);
    end Constant_Reference;
 
-   function Iterate (Container : Search_Type) return Iterator is
+   function Iterate (Container : Search_Type)
+      return Search_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Container'Unrestricted_Access;
+      return Search_Iterator'(Search => Container'Unrestricted_Access);
    end Iterate;
 
-   function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Search_Iterator) return Cursor is
    begin
-      if Object.Count /= 0 then
+      if Object.Search.Count /= 0 then
          raise Constraint_Error; -- Status_Error?
       end if;
       return Result : Cursor do
-         if More_Entries (Object.all) then
-            Result.Search := Object;
-            Get_Next_Entry (Object.all, Result.Directory_Entry);
-            Result.Index := Object.Count;
+         if More_Entries (Object.Search.all) then
+            Result.Search := Object.Search;
+            Get_Next_Entry (Object.Search.all, Result.Directory_Entry);
+            Result.Index := Object.Search.Count;
          end if;
       end return;
    end First;
 
-   function Next (Object : Iterator; Position : Cursor)
+   overriding function Next (Object : Search_Iterator; Position : Cursor)
       return Cursor is
    begin
-      if Object.Count /= Position.Index then
+      if Object.Search.Count /= Position.Index then
          raise Constraint_Error; -- Status_Error?
       end if;
       return Result : Cursor do
-         if More_Entries (Object.all) then
-            Result.Search := Object;
-            Get_Next_Entry (Object.all, Result.Directory_Entry);
-            Result.Index := Object.Count;
+         if More_Entries (Object.Search.all) then
+            Result.Search := Object.Search;
+            Get_Next_Entry (Object.Search.all, Result.Directory_Entry);
+            Result.Index := Object.Search.Count;
          end if;
       end return;
    end Next;
