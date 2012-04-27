@@ -14,6 +14,7 @@ package Ada.References is
       type Constant_Reference_Type (
          Element : not null access constant Array_Type) is
          limited private;
+--       with Implicit_Dereference => Element; -- [gcc 4.6]
 
       function Constant_Slice (
          Item : not null access constant Array_Type;
@@ -23,6 +24,7 @@ package Ada.References is
 
       type Reference_Type (Element : not null access Array_Type) is
          limited private;
+--       with Implicit_Dereference => Element; -- [gcc 4.6]
 
       function Slice (
          Item : not null access Array_Type;

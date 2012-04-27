@@ -6,10 +6,12 @@ package Ada.References.String is
 
    type Constant_Reference_Type (
       Element : not null access constant Standard.String) is null record;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
    pragma Suppress_Initialization (Constant_Reference_Type);
 
    type Reference_Type (
       Element : not null access Standard.String) is null record;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
    pragma Suppress_Initialization (Reference_Type);
 
    package Slicing is new Generic_Slicing (
