@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 with Ada.References.String;
-private with C;
+private with System;
 package Ada.Environment_Variables is
    pragma Preelaborate;
 
@@ -34,6 +34,6 @@ private
 
    type Iterator is null record;
    pragma Suppress_Initialization (Iterator);
-   type Cursor is new C.char_ptr_ptr;
+   type Cursor is new System.Address; -- C.char_ptr_ptr; -- [gcc-4.7] ???
 
 end Ada.Environment_Variables;
