@@ -145,17 +145,17 @@ package Ada.Directories is
 
    --  extended
    --  There is an iterator for AI12-0009-1 (?)
-   type Iterator is limited private;
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
-   function Iterate (Container : Search_Type) return Iterator;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
    type Constant_Reference_Type (
       Element : not null access constant Directory_Entry_Type) is null record;
    function Constant_Reference (Container : Search_Type; Position : Cursor)
       return Constant_Reference_Type;
+   type Iterator is limited private;
+   function Iterate (Container : Search_Type) return Iterator;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
 
    --  Operations on Directory Entries:
 

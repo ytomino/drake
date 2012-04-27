@@ -372,14 +372,6 @@ package body Ada.Directories is
       end if;
    end Full_Name;
 
-   function Full_Name (Directory_Entry : Directory_Entry_Type) return String is
-   begin
-      Check_Assigned (Directory_Entry);
-      return Compose (
-         Directory_Entry.Path.all,
-         Simple_Name (Directory_Entry));
-   end Full_Name;
-
    procedure Get_Attributes (
       Name : String;
       Attributes : out C.sys.stat.struct_stat)
@@ -395,58 +387,6 @@ package body Ada.Directories is
          raise Name_Error;
       end if;
    end Get_Attributes;
-
-   procedure Get_Next_Entry (
-      Search : in out Search_Type;
-      Directory_Entry : out Directory_Entry_Type) is
-   begin
-      if Search.Handle = null or else not Search.Has_Next then
-         raise Status_Error;
-      else
-         --  copy entry and get info
-         Directory_Entry.Path := Search.Path; -- overwrite
-         Directory_Entry.Entry_Data := Search.Data;
-         declare
-            Z_Name : String := Full_Name (Directory_Entry) & Character'Val (0);
-            C_Name : C.char_array (C.size_t);
-            for C_Name'Address use Z_Name'Address;
-         begin
-            if C.sys.stat.lstat (
-               C_Name (0)'Access,
-               Directory_Entry.State_Data'Access) < 0
-            then
-               raise Use_Error;
-            end if;
-         end;
-         --  counting
-         Search.Count := Search.Count + 1;
-         --  search next
-         loop
-            declare
-               Result : aliased C.sys.dirent.struct_dirent_ptr;
-            begin
-               if C.dirent.readdir_r (
-                  Search.Handle,
-                  Search.Data'Access,
-                  Result'Access) < 0
-                  or else Result = null
-               then
-                  Search.Has_Next := False; -- end
-                  exit;
-               end if;
-            end;
-            if Search.Filter (
-               To_File_Kind (
-                  C.Shift_Left (C.sys.types.mode_t (Search.Data.d_type), 12)))
-               and then C.fnmatch.fnmatch (
-                  Search.Pattern,
-                  Search.Data.d_name (0)'Access, 0) = 0
-            then
-               exit; -- found
-            end if;
-         end loop;
-      end if;
-   end Get_Next_Entry;
 
    procedure Include_Trailing_Path_Delimiter (
       S : in out String;
@@ -465,12 +405,6 @@ package body Ada.Directories is
       return To_File_Kind (Attributes.st_mode);
    end Kind;
 
-   function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
-   begin
-      Check_Assigned (Directory_Entry);
-      return To_File_Kind (Directory_Entry.State_Data.st_mode);
-   end Kind;
-
    function Modification_Time (Name : String) return Calendar.Time is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Attributes : C.sys.stat.struct_stat;
@@ -478,21 +412,6 @@ package body Ada.Directories is
       Get_Attributes (Name, Attributes);
       return Cast (System.Native_Time.To_Time (Attributes.st_mtimespec));
    end Modification_Time;
-
-   function Modification_Time (Directory_Entry : Directory_Entry_Type)
-      return Calendar.Time
-   is
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-   begin
-      Check_Assigned (Directory_Entry);
-      return Cast (
-         System.Native_Time.To_Time (Directory_Entry.State_Data.st_mtimespec));
-   end Modification_Time;
-
-   function More_Entries (Search : Search_Type) return Boolean is
-   begin
-      return Search.Handle /= null and then Search.Has_Next;
-   end More_Entries;
 
    procedure Rename (
       Old_Name : String;
@@ -518,24 +437,6 @@ package body Ada.Directories is
          end case;
       end if;
    end Rename;
-
-   procedure Search (
-      Directory : String;
-      Pattern : String := "*";
-      Filter : Filter_Type := (others => True);
-      Process : not null access procedure (
-         Directory_Entry : Directory_Entry_Type))
-   is
-      Srch : Search_Type;
-      Directory_Entry : Directory_Entry_Type;
-   begin
-      Start_Search (Srch, Directory, Pattern, Filter);
-      while More_Entries (Srch) loop
-         Get_Next_Entry (Srch, Directory_Entry);
-         Process (Directory_Entry);
-      end loop;
-      End_Search (Srch);
-   end Search;
 
    procedure Set_Directory (Directory : String) is
       Z_Directory : constant String := Directory & Character'Val (0);
@@ -601,21 +502,6 @@ package body Ada.Directories is
       return Name (First .. Last);
    end Simple_Name;
 
-   function Simple_Name (Directory_Entry : Directory_Entry_Type)
-      return String is
-   begin
-      Check_Assigned (Directory_Entry);
-      declare
-         subtype Result_String is String (
-            1 ..
-            Natural (Directory_Entry.Entry_Data.d_namlen));
-         Result : Result_String;
-         for Result'Address use Directory_Entry.Entry_Data.d_name'Address;
-      begin
-         return Result;
-      end;
-   end Simple_Name;
-
    function Size (Name : String) return File_Size is
       Attributes : C.sys.stat.struct_stat;
    begin
@@ -638,6 +524,42 @@ package body Ada.Directories is
          return File_Size (Directory_Entry.State_Data.st_size);
       end if;
    end Size;
+
+   procedure Symbolic_Link (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean := True)
+   is
+      Z_Source : constant String := Source_Name & Character'Val (0);
+      C_Source : C.char_array (C.size_t);
+      for C_Source'Address use Z_Source'Address;
+      Z_Target : constant String := Target_Name & Character'Val (0);
+      C_Target : C.char_array (C.size_t);
+      for C_Target'Address use Z_Target'Address;
+      path1 : constant not null access constant C.char := C_Source (0)'Access;
+      path2 : constant not null access constant C.char := C_Target (0)'Access;
+   begin
+      if C.unistd.symlink (path1, path2) < 0 then
+         if C.errno.errno = C.errno.EEXIST and then Overwrite then
+            --  try to overwrite
+            if C.unistd.unlink (path2) = 0
+               and then C.unistd.symlink (path1, path2) = 0
+            then
+               return; -- success
+            end if;
+         end if;
+         case C.errno.errno is
+            when C.errno.ENOENT
+               | C.errno.ENOTDIR
+               | C.errno.ENAMETOOLONG =>
+               raise Name_Error;
+            when others =>
+               raise Use_Error;
+         end case;
+      end if;
+   end Symbolic_Link;
+
+   --  directory searching
 
    procedure Start_Search (
       Search : in out Search_Type;
@@ -723,39 +645,80 @@ package body Ada.Directories is
       end return;
    end Start_Search;
 
-   procedure Symbolic_Link (
-      Source_Name : String;
-      Target_Name : String;
-      Overwrite : Boolean := True)
-   is
-      Z_Source : constant String := Source_Name & Character'Val (0);
-      C_Source : C.char_array (C.size_t);
-      for C_Source'Address use Z_Source'Address;
-      Z_Target : constant String := Target_Name & Character'Val (0);
-      C_Target : C.char_array (C.size_t);
-      for C_Target'Address use Z_Target'Address;
-      path1 : constant not null access constant C.char := C_Source (0)'Access;
-      path2 : constant not null access constant C.char := C_Target (0)'Access;
+   function More_Entries (Search : Search_Type) return Boolean is
    begin
-      if C.unistd.symlink (path1, path2) < 0 then
-         if C.errno.errno = C.errno.EEXIST and then Overwrite then
-            --  try to overwrite
-            if C.unistd.unlink (path2) = 0
-               and then C.unistd.symlink (path1, path2) = 0
+      return Search.Handle /= null and then Search.Has_Next;
+   end More_Entries;
+
+   procedure Get_Next_Entry (
+      Search : in out Search_Type;
+      Directory_Entry : out Directory_Entry_Type) is
+   begin
+      if Search.Handle = null or else not Search.Has_Next then
+         raise Status_Error;
+      else
+         --  copy entry and get info
+         Directory_Entry.Path := Search.Path; -- overwrite
+         Directory_Entry.Entry_Data := Search.Data;
+         declare
+            Z_Name : String := Full_Name (Directory_Entry) & Character'Val (0);
+            C_Name : C.char_array (C.size_t);
+            for C_Name'Address use Z_Name'Address;
+         begin
+            if C.sys.stat.lstat (
+               C_Name (0)'Access,
+               Directory_Entry.State_Data'Access) < 0
             then
-               return; -- success
-            end if;
-         end if;
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTDIR
-               | C.errno.ENAMETOOLONG =>
-               raise Name_Error;
-            when others =>
                raise Use_Error;
-         end case;
+            end if;
+         end;
+         --  counting
+         Search.Count := Search.Count + 1;
+         --  search next
+         loop
+            declare
+               Result : aliased C.sys.dirent.struct_dirent_ptr;
+            begin
+               if C.dirent.readdir_r (
+                  Search.Handle,
+                  Search.Data'Access,
+                  Result'Access) < 0
+                  or else Result = null
+               then
+                  Search.Has_Next := False; -- end
+                  exit;
+               end if;
+            end;
+            if Search.Filter (
+               To_File_Kind (
+                  C.Shift_Left (C.sys.types.mode_t (Search.Data.d_type), 12)))
+               and then C.fnmatch.fnmatch (
+                  Search.Pattern,
+                  Search.Data.d_name (0)'Access, 0) = 0
+            then
+               exit; -- found
+            end if;
+         end loop;
       end if;
-   end Symbolic_Link;
+   end Get_Next_Entry;
+
+   procedure Search (
+      Directory : String;
+      Pattern : String := "*";
+      Filter : Filter_Type := (others => True);
+      Process : not null access procedure (
+         Directory_Entry : Directory_Entry_Type))
+   is
+      Srch : Search_Type;
+      Directory_Entry : Directory_Entry_Type;
+   begin
+      Start_Search (Srch, Directory, Pattern, Filter);
+      while More_Entries (Srch) loop
+         Get_Next_Entry (Srch, Directory_Entry);
+         Process (Directory_Entry);
+      end loop;
+      End_Search (Srch);
+   end Search;
 
    --  iterator
 
@@ -763,6 +726,14 @@ package body Ada.Directories is
    begin
       return Position.Search /= null;
    end Has_Element;
+
+   function Constant_Reference (Container : Search_Type; Position : Cursor)
+      return Constant_Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Directory_Entry'Access);
+   end Constant_Reference;
 
    function Iterate (Container : Search_Type) return Iterator is
    begin
@@ -798,12 +769,45 @@ package body Ada.Directories is
       end return;
    end Next;
 
-   function Constant_Reference (Container : Search_Type; Position : Cursor)
-      return Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
+   --  operations on directory entries
+
+   function Simple_Name (Directory_Entry : Directory_Entry_Type)
+      return String is
    begin
-      return (Element => Position.Directory_Entry'Access);
-   end Constant_Reference;
+      Check_Assigned (Directory_Entry);
+      declare
+         subtype Result_String is String (
+            1 ..
+            Natural (Directory_Entry.Entry_Data.d_namlen));
+         Result : Result_String;
+         for Result'Address use Directory_Entry.Entry_Data.d_name'Address;
+      begin
+         return Result;
+      end;
+   end Simple_Name;
+
+   function Full_Name (Directory_Entry : Directory_Entry_Type) return String is
+   begin
+      Check_Assigned (Directory_Entry);
+      return Compose (
+         Directory_Entry.Path.all,
+         Simple_Name (Directory_Entry));
+   end Full_Name;
+
+   function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
+   begin
+      Check_Assigned (Directory_Entry);
+      return To_File_Kind (Directory_Entry.State_Data.st_mode);
+   end Kind;
+
+   function Modification_Time (Directory_Entry : Directory_Entry_Type)
+      return Calendar.Time
+   is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
+   begin
+      Check_Assigned (Directory_Entry);
+      return Cast (
+         System.Native_Time.To_Time (Directory_Entry.State_Data.st_mtimespec));
+   end Modification_Time;
 
 end Ada.Directories;
