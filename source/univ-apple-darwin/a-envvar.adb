@@ -128,26 +128,6 @@ package body Ada.Environment_Variables is
       return Position /= null;
    end Has_Element;
 
-   function First (Object : Iterator) return Cursor is
-      pragma Unreferenced (Object);
-      Result : Cursor := Cursor (Inside.Environment_Block);
-   begin
-      if Result.all = null then
-         Result := null;
-      end if;
-      return Result;
-   end First;
-
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-      Result : Cursor := Cursor (C.char_ptr_ptr (Position) + 1);
-   begin
-      if Result.all = null then
-         Result := null;
-      end if;
-      return Result;
-   end Next;
-
    function Name (Position : Cursor)
       return References.String.Slicing.Constant_Reference_Type
    is
@@ -193,5 +173,25 @@ package body Ada.Environment_Variables is
          First,
          Last);
    end Value;
+
+   function First (Object : Iterator) return Cursor is
+      pragma Unreferenced (Object);
+      Result : Cursor := Cursor (Inside.Environment_Block);
+   begin
+      if Result.all = null then
+         Result := null;
+      end if;
+      return Result;
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+      Result : Cursor := Cursor (C.char_ptr_ptr (Position) + 1);
+   begin
+      if Result.all = null then
+         Result := null;
+      end if;
+      return Result;
+   end Next;
 
 end Ada.Environment_Variables;

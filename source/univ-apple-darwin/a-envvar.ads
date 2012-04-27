@@ -18,17 +18,17 @@ package Ada.Environment_Variables is
 
    --  extended
    --  There is an iterator for AI12-0009-1 (?)
-   type Iterator is limited private;
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
-   function Iterate return Iterator;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
    function Name (Position : Cursor)
       return References.String.Slicing.Constant_Reference_Type;
    function Value (Position : Cursor)
       return References.String.Slicing.Constant_Reference_Type;
+   type Iterator is limited private;
+   function Iterate return Iterator;
+   function First (Object : Iterator) return Cursor;
+   function Next (Object : Iterator; Position : Cursor) return Cursor;
 
 private
 
