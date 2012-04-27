@@ -1,5 +1,6 @@
 with Ada.Environment_Variables.Inside;
 with Ada.Unchecked_Conversion;
+with System.Address_To_Named_Access_Conversions;
 with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.string;
@@ -9,6 +10,15 @@ package body Ada.Environment_Variables is
    use type C.char_ptr_ptr;
    use type C.signed_int;
    use type C.ptrdiff_t;
+
+   package char_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.char,
+         C.char_ptr);
+   package char_ptr_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.char_ptr,
+         C.char_ptr_ptr);
 
    function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
       return C.char_ptr_ptr;
@@ -44,7 +54,8 @@ package body Ada.Environment_Variables is
       if Result = null then
          raise Constraint_Error;
       else
-         return System.Zero_Terminated_Strings.Value (Result.all'Address);
+         return System.Zero_Terminated_Strings.Value (
+            char_ptr_Conv.To_Address (Result));
       end if;
    end Value;
 
@@ -101,7 +112,7 @@ package body Ada.Environment_Variables is
       end loop;
       while I /= Block loop
          I := I + (-1);
-         Clear (Name (Cursor (I)).Element.all);
+         Clear (Name (Cursor (char_ptr_ptr_Conv.To_Address (I))).Element.all);
       end loop;
    end Clear;
 
@@ -112,8 +123,8 @@ package body Ada.Environment_Variables is
    begin
       while I.all /= null loop
          Process (
-            Name (Cursor (I)).Element.all,
-            Value (Cursor (I)).Element.all);
+            Name (Cursor (char_ptr_ptr_Conv.To_Address (I))).Element.all,
+            Value (Cursor (char_ptr_ptr_Conv.To_Address (I))).Element.all);
          I := I + 1;
       end loop;
    end Iterate;
@@ -125,35 +136,17 @@ package body Ada.Environment_Variables is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Position /= null;
+      return char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all
+         /= null;
    end Has_Element;
-
-   function First (Object : Iterator) return Cursor is
-      pragma Unreferenced (Object);
-      Result : Cursor := Cursor (Inside.Environment_Block);
-   begin
-      if Result.all = null then
-         Result := null;
-      end if;
-      return Result;
-   end First;
-
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-      Result : Cursor := Cursor (C.char_ptr_ptr (Position) + 1);
-   begin
-      if Result.all = null then
-         Result := null;
-      end if;
-      return Result;
-   end Next;
 
    function Name (Position : Cursor)
       return References.String.Slicing.Constant_Reference_Type
    is
       subtype Fixed_String is String (Positive);
       S : Fixed_String;
-      for S'Address use Position.all.all'Address;
+      for S'Address use char_ptr_Conv.To_Address (
+         char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all);
       I : Positive := 1;
    begin
       while S (I) /= '=' and then S (I) /= Character'Val (0) loop
@@ -170,7 +163,8 @@ package body Ada.Environment_Variables is
    is
       subtype Fixed_String is String (Positive);
       S : Fixed_String;
-      for S'Address use Position.all.all'Address;
+      for S'Address use char_ptr_Conv.To_Address (
+         char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all);
       First : Positive;
       Last : Natural;
       I : Positive := 1;
@@ -193,5 +187,20 @@ package body Ada.Environment_Variables is
          First,
          Last);
    end Value;
+
+   overriding function First (Object : Iterator) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Cursor (char_ptr_ptr_Conv.To_Address (Inside.Environment_Block));
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Cursor (char_ptr_ptr_Conv.To_Address (
+         char_ptr_ptr_Conv.To_Pointer (System.Address (Position)) + 1));
+   end Next;
 
 end Ada.Environment_Variables;
