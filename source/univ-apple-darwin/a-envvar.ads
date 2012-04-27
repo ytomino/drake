@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+with Ada.Iterator_Interfaces;
 with Ada.References.String;
 private with System;
 package Ada.Environment_Variables is
@@ -25,15 +26,21 @@ package Ada.Environment_Variables is
       return References.String.Slicing.Constant_Reference_Type;
    function Value (Position : Cursor)
       return References.String.Slicing.Constant_Reference_Type;
-   type Iterator is limited private;
+   package Iterator_Interfaces is
+      new Ada.Iterator_Interfaces (Cursor, Has_Element);
+   type Iterator is new Iterator_Interfaces.Forward_Iterator
+      with private;
    function Iterate return Iterator;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
 
 private
 
-   type Iterator is null record;
-   pragma Suppress_Initialization (Iterator);
    type Cursor is new System.Address; -- C.char_ptr_ptr; -- [gcc-4.7] ???
+
+   type Iterator is new Iterator_Interfaces.Forward_Iterator
+      with null record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor;
 
 end Ada.Environment_Variables;

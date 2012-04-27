@@ -188,13 +188,13 @@ package body Ada.Environment_Variables is
          Last);
    end Value;
 
-   function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Iterator) return Cursor is
       pragma Unreferenced (Object);
    begin
       return Cursor (char_ptr_ptr_Conv.To_Address (Inside.Environment_Block));
    end First;
 
-   function Next (Object : Iterator; Position : Cursor)
+   overriding function Next (Object : Iterator; Position : Cursor)
       return Cursor
    is
       pragma Unreferenced (Object);
