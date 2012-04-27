@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.Calendar;
+--  with Ada.Iterator_Interfaces; -- [gcc 4.6] can not instantiate it
 with Ada.Streams;
 private with Ada.Finalization;
 private with C.dirent;
@@ -66,6 +67,11 @@ package Ada.Directories is
       Extension : String := "")
       return String;
 
+--  type Name_Case_Kind is
+--    (Unknown, Case_Sensitive, Case_Insensitive, Case_Preserving);
+
+--  function Name_Case_Equivalence (Name : in String) return Name_Case_Kind;
+
    --  extended
    --  There are procedure version.
    procedure Simple_Name (
@@ -111,7 +117,13 @@ package Ada.Directories is
 
    type Filter_Type is array (File_Kind) of Boolean;
 
-   type Search_Type is limited private;
+   --  modified
+--  type Search_Type is limited private;
+   type Search_Type is tagged limited private;
+--    with -- [gcc 4.6]
+--       Constant_Indexing => Constant_Reference,
+--       Default_Iterator => Iterate,
+--       Iterator_Element => Directory_Entry_Type;
 
    --  modified
    procedure Start_Search (
@@ -145,17 +157,26 @@ package Ada.Directories is
 
    --  extended
    --  There is an iterator for AI12-0009-1 (?)
-   type Iterator is limited private;
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
-   function Iterate (Container : Search_Type) return Iterator;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
    type Constant_Reference_Type (
       Element : not null access constant Directory_Entry_Type) is null record;
-   function Constant_Reference (Container : Search_Type; Position : Cursor)
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
+   function Constant_Reference (
+      Container : not null access constant Search_Type; -- [gcc 4.6] aliased
+      Position : Cursor)
       return Constant_Reference_Type;
+   package Search_Iterator_Interfaces is
+--    new Iterator_Interfaces (Cursor, Has_Element);
+      --  [gcc 4.6] Cursor is incomplete type
+      type Forward_Iterator is limited interface;
+      function First (Object : Forward_Iterator) return Cursor is abstract;
+      function Next (Object : Forward_Iterator; Position : Cursor)
+         return Cursor is abstract;
+   end Search_Iterator_Interfaces;
+   function Iterate (Container : Search_Type)
+      return Search_Iterator_Interfaces.Forward_Iterator'Class;
 
    --  Operations on Directory Entries:
 
@@ -206,14 +227,24 @@ private
    overriding procedure Finalize (Search : in out Search_Type);
    procedure End_Search (Search : in out Search_Type) renames Finalize;
 
-   type Iterator is access Search_Type;
-   for Iterator'Storage_Size use 0;
+   type Search_Access is access Search_Type;
+   for Search_Access'Storage_Size use 0;
 
    type Cursor is record
-      Search : Iterator := null;
+      Search : Search_Access := null;
       Directory_Entry : aliased Directory_Entry_Type;
       Index : Positive;
    end record;
+
+   type Search_Iterator is new Search_Iterator_Interfaces.Forward_Iterator
+      with
+   record
+      Search : Search_Access;
+   end record;
+
+   overriding function First (Object : Search_Iterator) return Cursor;
+   overriding function Next (Object : Search_Iterator; Position : Cursor)
+      return Cursor;
 
    --  for Information
    procedure Check_Assigned (Directory_Entry : Directory_Entry_Type);

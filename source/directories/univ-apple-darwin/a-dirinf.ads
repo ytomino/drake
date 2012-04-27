@@ -25,7 +25,7 @@ package Ada.Directories.Information is
    --  returning User_Id should also be defined.
 
    function Group (Name : String) return String;
-   --  Returns the image of the User_Id. If a definition of Group_Id
+   --  Returns the image of the Group_Id. If a definition of Group_Id
    --  is available, an implementation-defined version of Group
    --  returning Group_Id should also be defined.
 
