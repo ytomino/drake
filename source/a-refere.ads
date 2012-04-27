@@ -13,7 +13,8 @@ package Ada.References is
 
       type Constant_Reference_Type (
          Element : not null access constant Array_Type) is
-         limited private;
+         limited private
+         with Implicit_Dereference => Element;
 
       function Constant_Slice (
          Item : not null access constant Array_Type;
@@ -22,7 +23,8 @@ package Ada.References is
          return Constant_Reference_Type;
 
       type Reference_Type (Element : not null access Array_Type) is
-         limited private;
+         limited private
+         with Implicit_Dereference => Element;
 
       function Slice (
          Item : not null access Array_Type;
