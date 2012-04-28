@@ -76,7 +76,7 @@ private
    end record;
    pragma Suppress_Initialization (Interface_Data);
 
-   type Interface_Data_Ptr is access all Interface_Data;
+   type Interface_Data_Ptr is access all Interface_Data; -- not req
    for Interface_Data_Ptr'Storage_Size use 0;
 
    type Prim_Op_Kind is (
@@ -90,14 +90,14 @@ private
       POK_Task_Procedure);
    pragma Discard_Names (Prim_Op_Kind);
 
-   type Select_Specific_Data_Element is record
+   type Select_Specific_Data_Element is record -- not req
       Index : Positive;
       Kind : Prim_Op_Kind;
    end record;
    pragma Suppress_Initialization (Select_Specific_Data_Element);
 
    type Select_Specific_Data_Array is
-      array (Positive range <>) of Select_Specific_Data_Element;
+      array (Positive range <>) of Select_Specific_Data_Element; -- not req
    pragma Suppress_Initialization (Select_Specific_Data_Array);
 
    type Select_Specific_Data (Nb_Prim : Positive) is record
@@ -105,7 +105,7 @@ private
    end record;
    pragma Suppress_Initialization (Select_Specific_Data);
 
-   type Select_Specific_Data_Ptr is access all Select_Specific_Data;
+   type Select_Specific_Data_Ptr is access all Select_Specific_Data; -- not req
    for Select_Specific_Data_Ptr'Storage_Size use 0;
 
    type Interface_Tag is access all Dispatch_Table;
@@ -167,7 +167,7 @@ private
    end record;
    pragma Suppress_Initialization (Dispatch_Table_Wrapper);
 
-   type Dispatch_Table_Ptr is access all Dispatch_Table_Wrapper;
+   type Dispatch_Table_Ptr is access all Dispatch_Table_Wrapper; -- not req
    for Dispatch_Table_Ptr'Storage_Size use 0;
 
    type No_Dispatch_Table_Wrapper is record
@@ -177,10 +177,10 @@ private
    pragma Suppress_Initialization (No_Dispatch_Table_Wrapper);
 
    DT_Predef_Prims_Size : constant :=
-      Standard'Address_Size / Standard'Storage_Unit;
+      Standard'Address_Size / Standard'Storage_Unit; -- not req
 
    DT_Offset_To_Top_Size : constant :=
-      Standard'Address_Size / Standard'Storage_Unit;
+      Standard'Address_Size / Standard'Storage_Unit; -- not req
 
    DT_Typeinfo_Ptr_Size : constant :=
       Standard'Address_Size / Standard'Storage_Unit;
@@ -196,13 +196,9 @@ private
    end record;
    pragma Suppress_Initialization (Object_Specific_Data);
 
-   type Object_Specific_Data_Ptr is access all Object_Specific_Data;
-   for Object_Specific_Data_Ptr'Storage_Size use 0;
-
    Max_Predef_Prims : constant := 15;
 
-   subtype Predef_Prims_Table is Address_Array (1 .. Max_Predef_Prims);
-   type Predef_Prims_Table_Ptr is access Predef_Prims_Table;
+   type Predef_Prims_Table_Ptr is access Address_Array (1 .. Max_Predef_Prims);
    for Predef_Prims_Table_Ptr'Storage_Size use 0;
 
    type Addr_Ptr is access System.Address;
@@ -241,6 +237,7 @@ private
    procedure Unregister_Tag (T : Tag) is null; -- unimplemented
 
    --  required by compiler ??? (a-tags.ads)
+--  procedure Check_TSD (TSD : Type_Specific_Data_Ptr);
 --   function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
 --   function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
 --   function Get_Tagged_Kind (T : Tag) return Tagged_Kind;

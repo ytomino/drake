@@ -11,4 +11,8 @@ package System.Parameters is
    function Adjust_Storage_Size (Size : Size_Type) return Size_Type
       renames "+"; -- no effect
 
+   --  required by compiler ??? (s-parame.ads)
+--  function Default_Stack_Size return Size_Type;
+--  Garbage_Collected : constant Boolean := False;
+
 end System.Parameters;

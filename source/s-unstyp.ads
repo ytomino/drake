@@ -36,4 +36,9 @@ package System.Unsigned_Types is
    --  required for Is_Negative by compiler (s-unstyp.ads)
    type Float_Unsigned is mod 2 ** Float'Size;
 
+   --  required by compiler ??? (s-unstyp.ads)
+--  type Bits_1 is mod 2 ** 1;
+--  type Bits_2 is mod 2 ** 2;
+--  type Bits_4 is mod 2 ** 4;
+
 end System.Unsigned_Types;

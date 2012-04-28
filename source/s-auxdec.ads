@@ -20,4 +20,8 @@ private
    --  required for renaming 'Iamge attribute(?) by compiler (s-auxdec.ads)
    type AST_Handler is access procedure (Param : Long_Integer);
 
+   --  required by compiler ??? (s-auxdec.ads)
+--  No_AST_Handler : constant AST_Handler;
+--  function Import_Value (Symbol : String) return Unsigned_32;
+
 end System.Aux_Dec;

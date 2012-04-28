@@ -10,6 +10,9 @@ package Ada.Real_Time.Delays is
    procedure Delay_Until (T : Time);
    pragma Inline (Delay_Until);
 
+   --  required by compiler ??? (a-retide.ads)
+--  function To_Duration (T : Time) return Duration;
+
 private
 
    procedure Delay_Until_Body is
