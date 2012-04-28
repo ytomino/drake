@@ -80,4 +80,17 @@ private
    pragma Import (Ada, Reraise_Occurrence_Always,
       "ada__exceptions__reraise_occurrence_always");
 
+   --  optionally required by compiler (a-except-2005.ads)
+   procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
+   pragma Import (Ada, Raise_From_Controlled_Operation,
+      "__gnat_raise_from_controlled_operation");
+
+   --  required by compiler ??? (a-except-2005.ads)
+--  subtype Code_Loc is System.Address;
+--  function Exception_Name_Simple (X : Exception_Occurrence) return String;
+--  procedure Raise_Exception_Always (
+--    E : Exception_Id;
+--    Message : String := "");
+--  procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence);
+
 end Ada.Exceptions;

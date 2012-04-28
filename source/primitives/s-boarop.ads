@@ -24,4 +24,15 @@ package System.Boolean_Array_Operations is
       R, X, Y : Address;
       Length : Storage_Elements.Storage_Count);
 
+   --  required by compiler ??? (s-boarop.ads)
+--  procedure Vector_Nand (
+--    R, X, Y : Address;
+--    Length : Storage_Elements.Storage_Count);
+--  procedure Vector_Nor (
+--    R, X, Y : Address;
+--    Length : Storage_Elements.Storage_Count);
+--  procedure Vector_Nxor (
+--    R, X, Y : Address;
+--    Length : Storage_Elements.Storage_Count);
+
 end System.Boolean_Array_Operations;

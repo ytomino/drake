@@ -24,4 +24,7 @@ package System.Secondary_Stack is
    --  for Tasking.Inside
    procedure Clear;
 
+   --  required by compiler ??? (s-secsta.ads)
+--  Default_Secondary_Stack_Size : Natural;
+
 end System.Secondary_Stack;
