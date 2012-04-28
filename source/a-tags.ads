@@ -38,6 +38,7 @@ private
    --  required by compiler (a-tags.ads)
 
    type Prim_Ptr is access procedure;
+   for Prim_Ptr'Storage_Size use 0;
    type Address_Array is array (Positive range <>) of Prim_Ptr;
    pragma Suppress_Initialization (Address_Array);
    subtype Dispatch_Table is Address_Array (1 .. 1); -- gdb knows it ?
@@ -201,6 +202,7 @@ private
 
    subtype Predef_Prims_Table is Address_Array (1 .. Max_Predef_Prims);
    type Predef_Prims_Table_Ptr is access Predef_Prims_Table;
+   for Predef_Prims_Table_Ptr'Storage_Size use 0;
 
    type Addr_Ptr is access System.Address;
    for Addr_Ptr'Storage_Size use 0;
