@@ -30,12 +30,19 @@ package Ada.Tags is
 
 private
 
+   subtype Fixed_String is String (Positive);
+
+   type Object_Specific_Data_Array is array (Positive range <>) of Positive;
+   pragma Suppress_Initialization (Object_Specific_Data_Array);
+
+   --  required by compiler (a-tags.ads)
+
    type Prim_Ptr is access procedure;
    type Address_Array is array (Positive range <>) of Prim_Ptr;
    pragma Suppress_Initialization (Address_Array);
    subtype Dispatch_Table is Address_Array (1 .. 1); -- gdb knows it ?
 
-   --  full declaration
+   --  full declarations
 
    type Tag is access all Dispatch_Table;
    for Tag'Storage_Size use 0;
@@ -43,8 +50,6 @@ private
    No_Tag : constant Tag := null;
 
    --  zero-terminated string required by compiler (a-tags.ads)
-
-   subtype Fixed_String is String (Positive);
    type Cstring_Ptr is access all Fixed_String;
    for Cstring_Ptr'Storage_Size use 0;
 
@@ -185,9 +190,6 @@ private
    DT_Predef_Prims_Offset : constant :=
       DT_Typeinfo_Ptr_Size + DT_Offset_To_Top_Size + DT_Predef_Prims_Size;
 
-   type Object_Specific_Data_Array is array (Positive range <>) of Positive;
-   pragma Suppress_Initialization (Object_Specific_Data_Array);
-
    type Object_Specific_Data (OSD_Num_Prims : Positive) is record
       OSD_Table : Object_Specific_Data_Array (1 .. OSD_Num_Prims);
    end record;
@@ -213,29 +215,15 @@ private
    --  required for downcast to interface types by compiler (a-tags.ads)
    function Displace (This : System.Address; T : Tag) return System.Address;
 
-   --  required for Generic_Dispatching_Constructor with interface ???
---   function Secondary_Tag (T, Iface : Tag) return Tag;
-
---   function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
-
---   function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
-
    --  required for virtual subprograms by compiler (a-tags.ads)
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind;
-
-   --  required for select statement with synchronized interface ???
---   function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
 
    --  required for Obj in Intf'Class by compiler (a-tags.ads)
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
 
    --  required for non-controlled tagged'Class by compiler (a-tags.ads)
    function Needs_Finalization (T : Tag) return Boolean;
-
-   --  required (optional) for dynamic secondary dispatch table ???
---   function Offset_To_Top (This : System.Address)
---      return System.Storage_Elements.Storage_Offset;
 
    --  required for tagged types having two (or more) ancestors
    --    by compiler (s-exctab.ads)
@@ -250,14 +238,19 @@ private
    procedure Register_Tag (T : Tag) is null; -- unimplemented
    procedure Unregister_Tag (T : Tag) is null; -- unimplemented
 
+   --  required by compiler ??? (a-tags.ads)
+--   function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
+--   function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
+--   function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
+--   function Offset_To_Top (This : System.Address)
+--      return System.Storage_Elements.Storage_Offset;
+--   function Secondary_Tag (T, Iface : Tag) return Tag;
 --   procedure Set_Dynamic_Offset_To_Top (
 --      This : System.Address;
 --      Interface_T : Tag;
 --      Offset_Value : System.Storage_Elements.Storage_Offset;
 --      Offset_Func : Offset_To_Top_Function_Ptr);
-
 --  procedure Set_Entry_Index (T : Tag; Position : Positive; Value : Positive);
-
 --   procedure Set_Prim_Op_Kind (
 --      T : Tag;
 --      Position : Positive;
