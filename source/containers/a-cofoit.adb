@@ -1,6 +1,6 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
-package body Ada.Containers.Input_Iterators is
+package body Ada.Containers.Forward_Iterators is
 
    procedure Free is new Unchecked_Deallocation (Queue, Queue_Access);
    procedure Free is new Unchecked_Deallocation (Node, Node_Access);
@@ -132,4 +132,4 @@ package body Ada.Containers.Input_Iterators is
       return Position.Node /= null;
    end Has_Element;
 
-end Ada.Containers.Input_Iterators;
+end Ada.Containers.Forward_Iterators;

@@ -1,13 +1,13 @@
 with Ada.Containers.Composites;
-with Ada.Containers.Input_Iterators;
+with Ada.Containers.Forward_Iterators;
 with Ada.Directories;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO.Unbounded_IO;
-procedure input is
+procedure input2forward is
 	function End_Of_Entries is new Ada.Containers.Composites.XR_Not (
 		Ada.Directories.Search_Type,
 		Ada.Directories.More_Entries);
-	package DII is new Ada.Containers.Input_Iterators (
+	package DII is new Ada.Containers.Forward_Iterators (
 		Element_Type => Ada.Directories.Directory_Entry_Type,
 		File_Type => Ada.Directories.Search_Type,
 		End_Of_File => End_Of_Entries,
@@ -17,7 +17,7 @@ procedure input is
 		Ada.Text_IO.File_Type,
 		Ada.Strings.Unbounded.Unbounded_String,
 		Ada.Text_IO.Unbounded_IO.Get_Line);
-	package TII is new Ada.Containers.Input_Iterators (
+	package TII is new Ada.Containers.Forward_Iterators (
 		Element_Type => Ada.Strings.Unbounded.Unbounded_String,
 		File_Type => Ada.Text_IO.File_Type,
 		End_Of_File => Ada.Text_IO.End_Of_File,
@@ -62,4 +62,4 @@ begin
 		end loop;
 		Ada.Debug.Put ("<<<<");
 	end;
-end input;
+end input2forward;
