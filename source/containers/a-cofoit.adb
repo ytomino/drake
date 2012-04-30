@@ -1,8 +1,6 @@
-with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Forward_Iterators is
 
-   procedure Free is new Unchecked_Deallocation (Queue, Queue_Access);
    procedure Free is new Unchecked_Deallocation (Node, Node_Access);
 
    procedure Retain (Node : not null Node_Access);
@@ -23,113 +21,132 @@ package body Ada.Containers.Forward_Iterators is
       end if;
    end Release;
 
-   function Get_Next (Queue : not null Queue_Access) return Cursor;
-   function Get_Next (Queue : not null Queue_Access) return Cursor is
+   procedure Append (
+      Object : in out Iterator;
+      Result : out Cursor;
+      Original : Input_Cursor);
+   procedure Append (
+      Object : in out Iterator;
+      Result : out Cursor;
+      Original : Input_Cursor) is
    begin
-      if End_Of_File (Queue.File.all) then
-         return (Finalization.Controlled with Node => null); -- No_Element
+      if not Has_Element (Original) then
+         Object.State := No_Element;
+         pragma Assert (Reference (Result) = null);
       else
          declare
-            New_Node : aliased Node_Access := new Node'(
+            New_Node : constant Node_Access := new Node'(
                Reference_Count => 1,
                Next => null,
-               Element => <>);
-            procedure Finally (X : not null access Node_Access);
-            procedure Finally (X : not null access Node_Access) is
-            begin
-               Free (X.all);
-            end Finally;
-            package Holder is new Exceptions.Finally.Scoped_Holder (
-               Node_Access,
-               Finally);
+               Original => Original);
          begin
-            Holder.Assign (New_Node'Access);
-            Get (Queue.File.all, New_Node.Element);
-            if Queue.Last /= null then
-               pragma Assert (Queue.Last.Next = null);
-               Queue.Last.Next := New_Node;
+            if Object.Last /= null then
+               pragma Assert (Object.Last.Next = null);
+               Object.Last.Next := New_Node;
                Retain (New_Node);
             end if;
-            Release (Queue.Last);
-            Queue.Last := New_Node;
+            Release (Object.Last);
+            Object.Last := New_Node;
             Retain (New_Node);
-            Holder.Clear;
-            return (Finalization.Controlled with Node => New_Node);
+            Assign (Result, New_Node);
          end;
       end if;
-   end Get_Next;
+   end Append;
 
    --  implementation
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Position.Node /= null;
+      return Reference (Position) /= null;
    end Has_Element;
 
-   function Constant_Reference (
-      Container : File_Type;
-      Position : Cursor)
-      return Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
+   function To (Position : Cursor) return Input_Cursor_Ref is
    begin
-      return (Element => Position.Node.Element'Access);
-   end Constant_Reference;
+      return (Element => Reference (Position).Original'Access);
+   end To;
 
-   function Iterate (Container : not null access File_Type) return Iterator is
-      New_Queue : constant Queue_Access := new Queue'(
-         File => Container,
+   function Satisfy (
+      Iterator : aliased in out
+         Input_Iterator_Interfaces.Forward_Iterator'Class)
+      return Iterator_Interfaces.Forward_Iterator'Class is
+   begin
+      return Forward_Iterators.Iterator'(Finalization.Limited_Controlled with
+         Input_Iterator => Iterator'Unchecked_Access,
          Last => null,
-         Next_Called => False);
-   begin
-      return (Finalization.Limited_Controlled with New_Queue);
-   end Iterate;
+         State => First);
+   end Satisfy;
 
-   overriding procedure Adjust (Object : in out Cursor) is
-   begin
-      if Object.Node /= null then
-         Retain (Object.Node);
-      end if;
-   end Adjust;
+   package body Cursors is
 
-   overriding procedure Finalize (Object : in out Cursor) is
-   begin
-      Release (Object.Node);
-   end Finalize;
+      function Reference (Position : Cursor) return Node_Access is
+      begin
+         return Position.Node;
+      end Reference;
+
+      procedure Assign (Position : in out Cursor; Node : Node_Access) is
+      begin
+         Retain (Node);
+         Position.Node := Node;
+      end Assign;
+
+      overriding procedure Adjust (Object : in out Cursor) is
+      begin
+         if Object.Node /= null then
+            Retain (Object.Node);
+         end if;
+      end Adjust;
+
+      overriding procedure Finalize (Object : in out Cursor) is
+      begin
+         Release (Object.Node);
+      end Finalize;
+
+   end Cursors;
 
    overriding procedure Finalize (Object : in out Iterator) is
    begin
-      if Object.Queue /= null then
-         Release (Object.Queue.Last);
-         Free (Object.Queue);
-      end if;
+      Release (Object.Last);
    end Finalize;
 
-   function First (Object : Iterator'Class) return Cursor is
+   overriding function First (Object : Iterator) return Cursor is
+      Mutable_Object : Iterator renames Object'Unrestricted_Access.all;
    begin
-      if Object.Queue = null or else Object.Queue.Next_Called then
+      if Mutable_Object.State /= First then
          raise Status_Error;
       end if;
-      if Object.Queue.Last /= null then
-         Retain (Object.Queue.Last);
-         return (Finalization.Controlled with Node => Object.Queue.Last);
-      else
-         return Get_Next (Object.Queue);
-      end if;
+      return Result : Cursor do
+         if Mutable_Object.Last /= null then
+            Assign (Result, Mutable_Object.Last);
+         else
+            Append (
+               Mutable_Object,
+               Result,
+               Input_Iterator_Interfaces.First (
+                  Mutable_Object.Input_Iterator.all));
+         end if;
+      end return;
    end First;
 
-   function Next (Object : Iterator'Class; Position : Cursor) return Cursor is
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      Mutable_Object : Iterator renames Object'Unrestricted_Access.all;
    begin
-      if Position.Node.Next /= null then
-         Retain (Position.Node.Next);
-         return (Finalization.Controlled with Node => Position.Node.Next);
-      else
-         return Result : constant Cursor := Get_Next (Object.Queue) do
-            if Result.Node /= null then
-               Object.Queue.Next_Called := True;
+      return Result : Cursor do
+         if Reference (Position).Next /= null then
+            Assign (Result, Reference (Position).Next);
+         elsif Mutable_Object.State /= No_Element then
+            Append (
+               Mutable_Object,
+               Result,
+               Input_Iterator_Interfaces.Next (
+                  Mutable_Object.Input_Iterator.all,
+                  Reference (Position).Original));
+            if Reference (Result) /= null then
+               Mutable_Object.State := Next;
             end if;
-         end return;
-      end if;
+         end if;
+      end return;
    end Next;
 
 end Ada.Containers.Forward_Iterators;
