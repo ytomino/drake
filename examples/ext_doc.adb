@@ -4,7 +4,7 @@ with Ada.Directories;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
-procedure doc is
+procedure ext_doc is
 	use type Ada.Strings.Unbounded.Unbounded_String;
 	Prefix : constant String := "https://github.com/ytomino/drake/blob/master/";
 	function Start_With (S, Prefix : String) return Boolean is
@@ -505,4 +505,4 @@ begin
 			end loop;
 		end;
 	end;
-end doc;
+end ext_doc;

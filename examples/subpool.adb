@@ -8,7 +8,7 @@ with Ada.Finalization;
 -- with Ada.Unchecked_Deallocation;
 with System.Address_Image;
 procedure subpool is
-	--  RM 13-11-6
+	-- RM 13-11-6
 	package MR_Pool is
 		use System.Storage_Pools;
 			-- For uses of Subpools.
@@ -149,7 +149,8 @@ procedure subpool is
 			
 			-- Correct the alignment if necessary:
 			Pool.Next_Allocation := Pool.Next_Allocation +
-				((-Pool.Next_Allocation) mod Alignment);
+				((Pool.Storage'First - Pool.Next_Allocation) mod Alignment);
+				-- ((-Pool.Next_Allocation) mod Alignment); / bug of RM???
 			if Pool.Next_Allocation + Size_In_Storage_Elements >
 				Pool.Pool_Size then
 				raise Storage_Error; -- Out of space.

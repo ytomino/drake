@@ -25,16 +25,16 @@ procedure cmdline is
 		end if;
 	end Process;
 begin
-	--  iterate command line arguments
+	-- iterate command line arguments
 	Ada.Debug.Put (Ada.Command_Line.Command_Name);
 	for I in 1 .. Ada.Command_Line.Argument_Count loop
 		Ada.Debug.Put (Ada.Command_Line.Argument (I));
 	end loop;
-	--  iterate environment variables by closure
+	-- iterate environment variables by closure
 	Ada.Debug.Put ("*** env(1) ***");
 	Count := 0;
 	Ada.Environment_Variables.Iterate (Process'Access);
-	--  iterate environment variables by iterator
+	-- iterate environment variables by iterator
 	Ada.Debug.Put ("*** env(2) ***");
 	declare
 		Count_2 : Natural := 0;
@@ -51,7 +51,7 @@ begin
 		end loop;
 		pragma Assert (Count_2 = Count);
 	end;
-	--  iterate environment variables by user-defined loop of Ada 2012
+	-- iterate environment variables by user-defined loop of Ada 2012
 	Ada.Debug.Put ("*** env(3) ***");
 	declare
 		Count_3 : Natural := 0;
@@ -63,7 +63,7 @@ begin
 		end loop;
 		pragma Assert (Count_3 = Count);
 	end;
-	--  modify environment variables
+	-- modify environment variables
 	Ada.Debug.Put ("*** clear ***");
 	Ada.Environment_Variables.Clear;
 	Ada.Environment_Variables.Set ("A", "B");
