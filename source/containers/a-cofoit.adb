@@ -61,12 +61,10 @@ package body Ada.Containers.Forward_Iterators is
 
    --  implementation
 
-   overriding procedure Adjust (Object : in out Cursor) is
+   function Has_Element (Position : Cursor) return Boolean is
    begin
-      if Object.Node /= null then
-         Retain (Object.Node);
-      end if;
-   end Adjust;
+      return Position.Node /= null;
+   end Has_Element;
 
    function Constant_Reference (
       Container : File_Type;
@@ -78,17 +76,33 @@ package body Ada.Containers.Forward_Iterators is
       return (Element => Position.Node.Element'Access);
    end Constant_Reference;
 
+   function Iterate (Container : not null access File_Type) return Iterator is
+      New_Queue : constant Queue_Access := new Queue'(
+         File => Container,
+         Last => null,
+         Next_Called => False);
+   begin
+      return (Finalization.Limited_Controlled with New_Queue);
+   end Iterate;
+
+   overriding procedure Adjust (Object : in out Cursor) is
+   begin
+      if Object.Node /= null then
+         Retain (Object.Node);
+      end if;
+   end Adjust;
+
+   overriding procedure Finalize (Object : in out Cursor) is
+   begin
+      Release (Object.Node);
+   end Finalize;
+
    overriding procedure Finalize (Object : in out Iterator) is
    begin
       if Object.Queue /= null then
          Release (Object.Queue.Last);
          Free (Object.Queue);
       end if;
-   end Finalize;
-
-   overriding procedure Finalize (Object : in out Cursor) is
-   begin
-      Release (Object.Node);
    end Finalize;
 
    function First (Object : Iterator'Class) return Cursor is
@@ -104,15 +118,6 @@ package body Ada.Containers.Forward_Iterators is
       end if;
    end First;
 
-   function Iterate (Container : not null access File_Type) return Iterator is
-      New_Queue : constant Queue_Access := new Queue'(
-         File => Container,
-         Last => null,
-         Next_Called => False);
-   begin
-      return (Finalization.Limited_Controlled with New_Queue);
-   end Iterate;
-
    function Next (Object : Iterator'Class; Position : Cursor) return Cursor is
    begin
       if Position.Node.Next /= null then
@@ -126,10 +131,5 @@ package body Ada.Containers.Forward_Iterators is
          end return;
       end if;
    end Next;
-
-   function Has_Element (Position : Cursor) return Boolean is
-   begin
-      return Position.Node /= null;
-   end Has_Element;
 
 end Ada.Containers.Forward_Iterators;
