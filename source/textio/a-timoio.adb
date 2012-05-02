@@ -10,25 +10,33 @@ package body Ada.Text_IO.Modular_IO is
       To : out String;
       Last : out Natural;
       Item : Num;
-      Base : Number_Base);
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field);
    procedure Put_To_Field (
       To : out String;
       Last : out Natural;
       Item : Num;
-      Base : Number_Base) is
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field) is
    begin
       if Num'Size > System.Formatting.Unsigned'Size then
          Inside.Formatting.Modular_Image (
             To,
             Last,
             System.Formatting.Longest_Unsigned (Item),
-            Base);
+            Base,
+            Padding,
+            Padding_Width);
       else
          Inside.Formatting.Modular_Image (
             To,
             Last,
             System.Formatting.Unsigned (Item),
-            Base);
+            Base,
+            Padding,
+            Padding_Width);
       end if;
    end Put_To_Field;
 
@@ -117,21 +125,23 @@ package body Ada.Text_IO.Modular_IO is
       File : File_Type;
       Item : Num;
       Width : Field := Default_Width;
-      Base : Number_Base := Default_Base)
+      Base : Number_Base := Default_Base;
+      Padding : Character := Default_Padding)
    is
       S : String (1 .. 4 + Num'Width + Width); -- "16##"
       Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Base);
+      Put_To_Field (S, Last, Item, Base, Padding, Width);
       Inside.Formatting.Tail (File, S (1 .. Last), Width);
    end Put;
 
    procedure Put (
       Item : Num;
       Width : Field := Default_Width;
-      Base : Number_Base := Default_Base) is
+      Base : Number_Base := Default_Base;
+      Padding : Character := Default_Padding) is
    begin
-      Put (Current_Output.all, Item, Width, Base);
+      Put (Current_Output.all, Item, Width, Base, Padding);
    end Put;
 
    procedure Get (
@@ -146,12 +156,13 @@ package body Ada.Text_IO.Modular_IO is
    procedure Put (
       To : out String;
       Item : Num;
-      Base : Number_Base := Default_Base)
+      Base : Number_Base := Default_Base;
+      Padding : Character := Default_Padding)
    is
       S : String (1 .. To'Length);
       Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Base);
+      Put_To_Field (S, Last, Item, Base, Padding, To'Length);
       Inside.Formatting.Tail (To, S (1 .. Last));
    end Put;
 

@@ -8,24 +8,32 @@ package Ada.Text_IO.Inside.Formatting is
       To : out String;
       Last : out Natural;
       Item : Integer;
-      Base : Number_Base);
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field);
    procedure Integer_Image (
       To : out String;
       Last : out Natural;
       Item : Long_Long_Integer;
-      Base : Number_Base);
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field);
 
    --  for Modular_IO
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
       Item : System.Formatting.Unsigned;
-      Base : Number_Base);
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field);
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
       Item : System.Formatting.Longest_Unsigned;
-      Base : Number_Base);
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field);
 
    --  for Modular_IO
 

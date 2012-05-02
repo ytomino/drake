@@ -103,7 +103,9 @@ package body Ada.Text_IO.Inside.Formatting is
       To : out String;
       Last : out Natural;
       Item : Integer;
-      Base : Number_Base)
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field)
    is
       Unsigned_Item : System.Formatting.Unsigned;
    begin
@@ -119,14 +121,18 @@ package body Ada.Text_IO.Inside.Formatting is
          To (Last + 1 .. To'Last),
          Last,
          Unsigned_Item,
-         Base);
+         Base,
+         Padding,
+         Padding_Width);
    end Integer_Image;
 
    procedure Integer_Image (
       To : out String;
       Last : out Natural;
       Item : Long_Long_Integer;
-      Base : Number_Base)
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field)
    is
       Unsigned_Item : System.Formatting.Longest_Unsigned;
    begin
@@ -142,17 +148,27 @@ package body Ada.Text_IO.Inside.Formatting is
          To (Last + 1 .. To'Last),
          Last,
          Unsigned_Item,
-         Base);
+         Base,
+         Padding,
+         Padding_Width);
    end Integer_Image;
 
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
       Item : System.Formatting.Unsigned;
-      Base : Number_Base)
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field)
    is
+      Actual_Padding_Width : Field;
       Error : Boolean;
    begin
+      if Padding /= ' ' then
+         Actual_Padding_Width := Padding_Width;
+      else
+         Actual_Padding_Width := 1;
+      end if;
       Last := To'First - 1;
       if Base /= 10 then
          System.Formatting.Image (
@@ -168,12 +184,17 @@ package body Ada.Text_IO.Inside.Formatting is
             raise Layout_Error;
          end if;
          To (Last) := '#';
+         if Padding /= ' ' then
+            Actual_Padding_Width := Padding_Width - (Last - To'First + 2);
+         end if;
       end if;
       System.Formatting.Image (
          Item,
          To (Last + 1 .. To'Last),
          Last,
+         Width => Actual_Padding_Width,
          Base => Base,
+         Padding => Padding,
          Error => Error);
       if Error then
          raise Layout_Error;
@@ -191,10 +212,18 @@ package body Ada.Text_IO.Inside.Formatting is
       To : out String;
       Last : out Natural;
       Item : System.Formatting.Longest_Unsigned;
-      Base : Number_Base)
+      Base : Number_Base;
+      Padding : Character;
+      Padding_Width : Field)
    is
+      Actual_Padding_Width : Field;
       Error : Boolean;
    begin
+      if Padding /= ' ' then
+         Actual_Padding_Width := Padding_Width;
+      else
+         Actual_Padding_Width := 1;
+      end if;
       Last := To'First - 1;
       if Base /= 10 then
          System.Formatting.Image (
@@ -210,12 +239,17 @@ package body Ada.Text_IO.Inside.Formatting is
             raise Layout_Error;
          end if;
          To (Last) := '#';
+         if Padding /= ' ' then
+            Actual_Padding_Width := Padding_Width - (Last - To'First + 2);
+         end if;
       end if;
       System.Formatting.Image (
          Item,
          To (Last + 1 .. To'Last),
          Last,
+         Width => Actual_Padding_Width,
          Base => Base,
+         Padding => Padding,
          Error => Error);
       if Error then
          raise Layout_Error;
