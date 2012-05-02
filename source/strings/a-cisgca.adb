@@ -2,13 +2,60 @@ with Ada.UCD.General_Category;
 with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Sets.General_Category is
+   use type UCD.Difference_Base;
 
    procedure Fill (
       To : out Character_Ranges;
-      Table : UCD.General_Category.Table_Type_2x1);
+      Table : UCD.UCS_2_Array;
+      Offset : UCD.Difference_Base);
    procedure Fill (
       To : out Character_Ranges;
-      Table : UCD.General_Category.Table_Type_2x1) is
+      Table : UCD.UCS_2_Array;
+      Offset : UCD.Difference_Base) is
+   begin
+      pragma Assert (Table'Length = To'Length);
+      for I in Table'Range loop
+         declare
+            T : Character_Range
+               renames To (To'First - Table'First + I);
+            C : constant Wide_Wide_Character := Wide_Wide_Character'Val (
+               UCD.Difference_Base (Table (I)) + Offset);
+         begin
+            T.Low := C;
+            T.High := C;
+         end;
+      end loop;
+   end Fill;
+
+   procedure Fill (
+      To : out Character_Ranges;
+      Table : UCD.UCS_4_Array);
+   procedure Fill (
+      To : out Character_Ranges;
+      Table : UCD.UCS_4_Array) is
+   begin
+      pragma Assert (Table'Length = To'Length);
+      for I in Table'Range loop
+         declare
+            T : Character_Range
+               renames To (To'First - Table'First + I);
+            C : constant Wide_Wide_Character := Wide_Wide_Character'Val (
+               Table (I));
+         begin
+            T.Low := C;
+            T.High := C;
+         end;
+      end loop;
+   end Fill;
+
+   procedure Fill (
+      To : out Character_Ranges;
+      Table : UCD.Set_16_Type;
+      Offset : UCD.Difference_Base);
+   procedure Fill (
+      To : out Character_Ranges;
+      Table : UCD.Set_16_Type;
+      Offset : UCD.Difference_Base) is
    begin
       pragma Assert (Table'Length = To'Length);
       for I in Table'Range loop
@@ -16,37 +63,20 @@ package body Ada.Characters.Inside.Sets.General_Category is
             T : Character_Range
                renames To (To'First - Table'First + I);
          begin
-            T.Low := Wide_Wide_Character'Val (Table (I));
-            T.High := Wide_Wide_Character'Val (Table (I));
+            T.Low := Wide_Wide_Character'Val (
+               UCD.Difference_Base (Table (I).Low) + Offset);
+            T.High := Wide_Wide_Character'Val (
+               UCD.Difference_Base (Table (I).High) + Offset);
          end;
       end loop;
    end Fill;
 
    procedure Fill (
       To : out Character_Ranges;
-      Table : UCD.General_Category.Table_Type_4x1);
+      Table : UCD.Set_32_Type);
    procedure Fill (
       To : out Character_Ranges;
-      Table : UCD.General_Category.Table_Type_4x1) is
-   begin
-      pragma Assert (Table'Length = To'Length);
-      for I in Table'Range loop
-         declare
-            T : Character_Range
-               renames To (To'First - Table'First + I);
-         begin
-            T.Low := Wide_Wide_Character'Val (Table (I));
-            T.High := Wide_Wide_Character'Val (Table (I));
-         end;
-      end loop;
-   end Fill;
-
-   procedure Fill (
-      To : out Character_Ranges;
-      Table : UCD.General_Category.Table_Type_2x2);
-   procedure Fill (
-      To : out Character_Ranges;
-      Table : UCD.General_Category.Table_Type_2x2) is
+      Table : UCD.Set_32_Type) is
    begin
       pragma Assert (Table'Length = To'Length);
       for I in Table'Range loop
@@ -61,118 +91,49 @@ package body Ada.Characters.Inside.Sets.General_Category is
    end Fill;
 
    procedure Fill (
-      To : out Character_Ranges;
-      Table : UCD.General_Category.Table_Type_4x2);
-   procedure Fill (
-      To : out Character_Ranges;
-      Table : UCD.General_Category.Table_Type_4x2) is
-   begin
-      pragma Assert (Table'Length = To'Length);
-      for I in Table'Range loop
-         declare
-            T : Character_Range
-               renames To (To'First - Table'First + I);
-         begin
-            T.Low := Wide_Wide_Character'Val (Table (I).Low);
-            T.High := Wide_Wide_Character'Val (Table (I).High);
-         end;
-      end loop;
-   end Fill;
-
+      To : in out Character_Ranges;
+      Table_16x1 : UCD.UCS_2_Array;
+      Table_16x2 : UCD.Set_16_Type;
+      Table_17x1 : UCD.UCS_2_Array;
+      Table_17x2 : UCD.Set_16_Type;
+      Table_32x1 : UCD.UCS_4_Array;
+      Table_32x2 : UCD.Set_32_Type);
    procedure Fill (
       To : in out Character_Ranges;
-      Table_2x1 : UCD.General_Category.Table_Type_2x1;
-      Table_2x2 : UCD.General_Category.Table_Type_2x2);
-   procedure Fill (
-      To : in out Character_Ranges;
-      Table_2x1 : UCD.General_Category.Table_Type_2x1;
-      Table_2x2 : UCD.General_Category.Table_Type_2x2)
+      Table_16x1 : UCD.UCS_2_Array;
+      Table_16x2 : UCD.Set_16_Type;
+      Table_17x1 : UCD.UCS_2_Array;
+      Table_17x2 : UCD.Set_16_Type;
+      Table_32x1 : UCD.UCS_4_Array;
+      Table_32x2 : UCD.Set_32_Type)
    is
-      T2x1 : Character_Ranges (Table_2x1'Range);
-      T2x2 : Character_Ranges (Table_2x2'Range);
+      T_16x1 : Character_Ranges (Table_16x1'Range);
+      T_16x2 : Character_Ranges (Table_16x2'Range);
+      T_17x1 : Character_Ranges (Table_17x1'Range);
+      T_17x2 : Character_Ranges (Table_17x2'Range);
+      T_32x1 : Character_Ranges (Table_32x1'Range);
+      T_32x2 : Character_Ranges (Table_32x2'Range);
+      R_16_First : constant Positive := To'First;
+      R_17_First : constant Positive :=
+         R_16_First + Table_16x1'Length + Table_16x2'Length;
+      R_32_First : constant Positive :=
+         R_17_First + Table_17x1'Length + Table_17x2'Length;
+      R_32_Last : constant Natural :=
+         R_32_First + Table_32x1'Length + Table_32x2'Length - 1;
       Last : Natural;
    begin
-      Fill (T2x1, Table_2x1);
-      Fill (T2x2, Table_2x2);
-      Merge (To, Last, T2x1, T2x2);
-      pragma Assert (Last = To'Last);
-   end Fill;
-
-   procedure Fill (
-      To : in out Character_Ranges;
-      Table_2x2 : UCD.General_Category.Table_Type_2x2;
-      Table_4x2 : UCD.General_Category.Table_Type_4x2);
-   procedure Fill (
-      To : in out Character_Ranges;
-      Table_2x2 : UCD.General_Category.Table_Type_2x2;
-      Table_4x2 : UCD.General_Category.Table_Type_4x2)
-   is
-      T2x2 : Character_Ranges (Table_2x2'Range);
-      T4x2 : Character_Ranges (Table_4x2'Range);
-      Last : Natural;
-   begin
-      Fill (T2x2, Table_2x2);
-      Fill (T4x2, Table_4x2);
-      Merge (To, Last, T2x2, T4x2);
-      pragma Assert (Last = To'Last);
-   end Fill;
-
-   procedure Fill (
-      To : in out Character_Ranges;
-      Table_2x1 : UCD.General_Category.Table_Type_2x1;
-      Table_4x1 : UCD.General_Category.Table_Type_4x1;
-      Table_2x2 : UCD.General_Category.Table_Type_2x2);
-   procedure Fill (
-      To : in out Character_Ranges;
-      Table_2x1 : UCD.General_Category.Table_Type_2x1;
-      Table_4x1 : UCD.General_Category.Table_Type_4x1;
-      Table_2x2 : UCD.General_Category.Table_Type_2x2)
-   is
-      T2x1 : Character_Ranges (Table_2x1'Range);
-      T4x1 : Character_Ranges (Table_4x1'Range);
-      TAx1 : Character_Ranges (1 .. Table_2x1'Length + Table_4x1'Length);
-      T2x2 : Character_Ranges (Table_2x2'Range);
-      Last : Natural;
-   begin
-      Fill (T2x1, Table_2x1);
-      Fill (T4x1, Table_4x1);
-      Merge (TAx1, Last, T2x1, T4x1);
-      pragma Assert (Last = TAx1'Last);
-      Fill (T2x2, Table_2x2);
-      Merge (To, Last, TAx1, T2x2);
-      pragma Assert (Last = To'Last);
-   end Fill;
-
-   procedure Fill (
-      To : in out Character_Ranges;
-      Table_2x1 : UCD.General_Category.Table_Type_2x1;
-      Table_4x1 : UCD.General_Category.Table_Type_4x1;
-      Table_2x2 : UCD.General_Category.Table_Type_2x2;
-      Table_4x2 : UCD.General_Category.Table_Type_4x2);
-   procedure Fill (
-      To : in out Character_Ranges;
-      Table_2x1 : UCD.General_Category.Table_Type_2x1;
-      Table_4x1 : UCD.General_Category.Table_Type_4x1;
-      Table_2x2 : UCD.General_Category.Table_Type_2x2;
-      Table_4x2 : UCD.General_Category.Table_Type_4x2)
-   is
-      T2x1 : Character_Ranges (Table_2x1'Range);
-      T4x1 : Character_Ranges (Table_4x1'Range);
-      TAx1 : Character_Ranges (1 .. Table_2x1'Length + Table_4x1'Length);
-      T2x2 : Character_Ranges (Table_2x2'Range);
-      T4x2 : Character_Ranges (Table_4x2'Range);
-      TAx2 : Character_Ranges (1 .. Table_2x2'Length + Table_4x2'Length);
-      Last : Natural;
-   begin
-      Fill (T2x1, Table_2x1);
-      Fill (T4x1, Table_4x1);
-      Merge (TAx1, Last, T2x1, T4x1);
-      pragma Assert (Last = TAx1'Last);
-      Fill (T2x2, Table_2x2);
-      Fill (T4x2, Table_4x2);
-      Merge (TAx2, Last, T2x2, T4x2);
-      pragma Assert (Last = TAx2'Last);
-      Merge (To, Last, TAx1, TAx2);
+      Fill (T_16x1, Table_16x1, Offset => 0);
+      Fill (T_16x2, Table_16x2, Offset => 0);
+      Merge (To (R_16_First .. R_17_First - 1), Last, T_16x1, T_16x2);
+      pragma Assert (Last = R_17_First - 1);
+      Fill (T_17x1, Table_17x1, Offset => 16#10000#);
+      Fill (T_17x2, Table_17x2, Offset => 16#10000#);
+      Merge (To (R_17_First .. R_32_First - 1), Last, T_17x1, T_17x2);
+      pragma Assert (Last = R_32_First - 1);
+      Fill (T_32x1, Table_32x1);
+      Fill (T_32x2, Table_32x2);
+      Merge (To (R_32_First .. R_32_Last), Last, T_32x1, T_32x2);
+      pragma Assert (Last = R_32_Last);
       pragma Assert (Last = To'Last);
    end Fill;
 
@@ -187,19 +148,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Unassigned_Init is
    begin
       Unassigned_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Cn_Table_2x1'Length
-            + UCD.General_Category.Cn_Table_4x1'Length
-            + UCD.General_Category.Cn_Table_2x2'Length
-            + UCD.General_Category.Cn_Table_4x2'Length,
+         Length => UCD.General_Category.Cn_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Unassigned_Set.Items,
-         UCD.General_Category.Cn_Table_2x1,
-         UCD.General_Category.Cn_Table_4x1,
-         UCD.General_Category.Cn_Table_2x2,
-         UCD.General_Category.Cn_Table_4x2);
+         UCD.General_Category.Cn_Table_XXXXx1,
+         UCD.General_Category.Cn_Table_XXXXx2,
+         UCD.General_Category.Cn_Table_1XXXXx1,
+         UCD.General_Category.Cn_Table_1XXXXx2,
+         UCD.General_Category.Cn_Table_XXXXXXXXx1,
+         UCD.General_Category.Cn_Table_XXXXXXXXx2);
    end Unassigned_Init;
 
    function Unassigned return not null access Character_Set is
@@ -248,19 +207,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Uppercase_Letter_Init is
    begin
       Uppercase_Letter_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Lu_Table_2x1'Length
-            + UCD.General_Category.Lu_Table_4x1'Length
-            + UCD.General_Category.Lu_Table_2x2'Length
-            + UCD.General_Category.Lu_Table_4x2'Length,
+         Length => UCD.General_Category.Lu_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Uppercase_Letter_Set.Items,
-         UCD.General_Category.Lu_Table_2x1,
-         UCD.General_Category.Lu_Table_4x1,
-         UCD.General_Category.Lu_Table_2x2,
-         UCD.General_Category.Lu_Table_4x2);
+         UCD.General_Category.Lu_Table_XXXXx1,
+         UCD.General_Category.Lu_Table_XXXXx2,
+         UCD.General_Category.Lu_Table_1XXXXx1,
+         UCD.General_Category.Lu_Table_1XXXXx2,
+         UCD.General_Category.Lu_Table_XXXXXXXXx1,
+         UCD.General_Category.Lu_Table_XXXXXXXXx2);
    end Uppercase_Letter_Init;
 
    function Uppercase_Letter return not null access Character_Set is
@@ -280,19 +237,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Lowercase_Letter_Init is
    begin
       Lowercase_Letter_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Ll_Table_2x1'Length
-            + UCD.General_Category.Ll_Table_4x1'Length
-            + UCD.General_Category.Ll_Table_2x2'Length
-            + UCD.General_Category.Ll_Table_4x2'Length,
+         Length => UCD.General_Category.Ll_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Lowercase_Letter_Set.Items,
-         UCD.General_Category.Ll_Table_2x1,
-         UCD.General_Category.Ll_Table_4x1,
-         UCD.General_Category.Ll_Table_2x2,
-         UCD.General_Category.Ll_Table_4x2);
+         UCD.General_Category.Ll_Table_XXXXx1,
+         UCD.General_Category.Ll_Table_XXXXx2,
+         UCD.General_Category.Ll_Table_1XXXXx1,
+         UCD.General_Category.Ll_Table_1XXXXx2,
+         UCD.General_Category.Ll_Table_XXXXXXXXx1,
+         UCD.General_Category.Ll_Table_XXXXXXXXx2);
    end Lowercase_Letter_Init;
 
    function Lowercase_Letter return not null access Character_Set is
@@ -312,15 +267,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Titlecase_Letter_Init is
    begin
       Titlecase_Letter_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Lt_Table_2x1'Length
-            + UCD.General_Category.Lt_Table_2x2'Length,
+         Length => UCD.General_Category.Lt_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Titlecase_Letter_Set.Items,
-         UCD.General_Category.Lt_Table_2x1,
-         UCD.General_Category.Lt_Table_2x2);
+         UCD.General_Category.Lt_Table_XXXXx1,
+         UCD.General_Category.Lt_Table_XXXXx2,
+         UCD.General_Category.Lt_Table_1XXXXx1,
+         UCD.General_Category.Lt_Table_1XXXXx2,
+         UCD.General_Category.Lt_Table_XXXXXXXXx1,
+         UCD.General_Category.Lt_Table_XXXXXXXXx2);
    end Titlecase_Letter_Init;
 
    function Titlecase_Letter return not null access Character_Set is
@@ -340,15 +297,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Modifier_Letter_Init is
    begin
       Modifier_Letter_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Lm_Table_2x1'Length
-            + UCD.General_Category.Lm_Table_2x2'Length,
+         Length => UCD.General_Category.Lm_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Modifier_Letter_Set.Items,
-         UCD.General_Category.Lm_Table_2x1,
-         UCD.General_Category.Lm_Table_2x2);
+         UCD.General_Category.Lm_Table_XXXXx1,
+         UCD.General_Category.Lm_Table_XXXXx2,
+         UCD.General_Category.Lm_Table_1XXXXx1,
+         UCD.General_Category.Lm_Table_1XXXXx2,
+         UCD.General_Category.Lm_Table_XXXXXXXXx1,
+         UCD.General_Category.Lm_Table_XXXXXXXXx2);
    end Modifier_Letter_Init;
 
    function Modifier_Letter return not null access Character_Set is
@@ -368,19 +327,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Other_Letter_Init is
    begin
       Other_Letter_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Lo_Table_2x1'Length
-            + UCD.General_Category.Lo_Table_4x1'Length
-            + UCD.General_Category.Lo_Table_2x2'Length
-            + UCD.General_Category.Lo_Table_4x2'Length,
+         Length => UCD.General_Category.Lo_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Other_Letter_Set.Items,
-         UCD.General_Category.Lo_Table_2x1,
-         UCD.General_Category.Lo_Table_4x1,
-         UCD.General_Category.Lo_Table_2x2,
-         UCD.General_Category.Lo_Table_4x2);
+         UCD.General_Category.Lo_Table_XXXXx1,
+         UCD.General_Category.Lo_Table_XXXXx2,
+         UCD.General_Category.Lo_Table_1XXXXx1,
+         UCD.General_Category.Lo_Table_1XXXXx2,
+         UCD.General_Category.Lo_Table_XXXXXXXXx1,
+         UCD.General_Category.Lo_Table_XXXXXXXXx2);
    end Other_Letter_Init;
 
    function Other_Letter return not null access Character_Set is
@@ -400,19 +357,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Nonspacing_Mark_Init is
    begin
       Nonspacing_Mark_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Mn_Table_2x1'Length
-            + UCD.General_Category.Mn_Table_4x1'Length
-            + UCD.General_Category.Mn_Table_2x2'Length
-            + UCD.General_Category.Mn_Table_4x2'Length,
+         Length => UCD.General_Category.Mn_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Nonspacing_Mark_Set.Items,
-         UCD.General_Category.Mn_Table_2x1,
-         UCD.General_Category.Mn_Table_4x1,
-         UCD.General_Category.Mn_Table_2x2,
-         UCD.General_Category.Mn_Table_4x2);
+         UCD.General_Category.Mn_Table_XXXXx1,
+         UCD.General_Category.Mn_Table_XXXXx2,
+         UCD.General_Category.Mn_Table_1XXXXx1,
+         UCD.General_Category.Mn_Table_1XXXXx2,
+         UCD.General_Category.Mn_Table_XXXXXXXXx1,
+         UCD.General_Category.Mn_Table_XXXXXXXXx2);
    end Nonspacing_Mark_Init;
 
    function Nonspacing_Mark return not null access Character_Set is
@@ -432,15 +387,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Enclosing_Mark_Init is
    begin
       Enclosing_Mark_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Me_Table_2x1'Length
-            + UCD.General_Category.Me_Table_2x2'Length,
+         Length => UCD.General_Category.Me_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Enclosing_Mark_Set.Items,
-         UCD.General_Category.Me_Table_2x1,
-         UCD.General_Category.Me_Table_2x2);
+         UCD.General_Category.Me_Table_XXXXx1,
+         UCD.General_Category.Me_Table_XXXXx2,
+         UCD.General_Category.Me_Table_1XXXXx1,
+         UCD.General_Category.Me_Table_1XXXXx2,
+         UCD.General_Category.Me_Table_XXXXXXXXx1,
+         UCD.General_Category.Me_Table_XXXXXXXXx2);
    end Enclosing_Mark_Init;
 
    function Enclosing_Mark return not null access Character_Set is
@@ -460,19 +417,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Spacing_Mark_Init is
    begin
       Spacing_Mark_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Mc_Table_2x1'Length
-            + UCD.General_Category.Mc_Table_4x1'Length
-            + UCD.General_Category.Mc_Table_2x2'Length
-            + UCD.General_Category.Mc_Table_4x2'Length,
+         Length => UCD.General_Category.Mc_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Spacing_Mark_Set.Items,
-         UCD.General_Category.Mc_Table_2x1,
-         UCD.General_Category.Mc_Table_4x1,
-         UCD.General_Category.Mc_Table_2x2,
-         UCD.General_Category.Mc_Table_4x2);
+         UCD.General_Category.Mc_Table_XXXXx1,
+         UCD.General_Category.Mc_Table_XXXXx2,
+         UCD.General_Category.Mc_Table_1XXXXx1,
+         UCD.General_Category.Mc_Table_1XXXXx2,
+         UCD.General_Category.Mc_Table_XXXXXXXXx1,
+         UCD.General_Category.Mc_Table_XXXXXXXXx2);
    end Spacing_Mark_Init;
 
    function Spacing_Mark return not null access Character_Set is
@@ -492,15 +447,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Decimal_Number_Init is
    begin
       Decimal_Number_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Nd_Table_2x2'Length
-            + UCD.General_Category.Nd_Table_4x2'Length,
+         Length => UCD.General_Category.Nd_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Decimal_Number_Set.Items,
-         UCD.General_Category.Nd_Table_2x2,
-         UCD.General_Category.Nd_Table_4x2);
+         UCD.General_Category.Nd_Table_XXXXx1,
+         UCD.General_Category.Nd_Table_XXXXx2,
+         UCD.General_Category.Nd_Table_1XXXXx1,
+         UCD.General_Category.Nd_Table_1XXXXx2,
+         UCD.General_Category.Nd_Table_XXXXXXXXx1,
+         UCD.General_Category.Nd_Table_XXXXXXXXx2);
    end Decimal_Number_Init;
 
    function Decimal_Number return not null access Character_Set is
@@ -520,19 +477,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Letter_Number_Init is
    begin
       Letter_Number_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Nl_Table_2x1'Length
-            + UCD.General_Category.Nl_Table_4x1'Length
-            + UCD.General_Category.Nl_Table_2x2'Length
-            + UCD.General_Category.Nl_Table_4x2'Length,
+         Length => UCD.General_Category.Nl_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Letter_Number_Set.Items,
-         UCD.General_Category.Nl_Table_2x1,
-         UCD.General_Category.Nl_Table_4x1,
-         UCD.General_Category.Nl_Table_2x2,
-         UCD.General_Category.Nl_Table_4x2);
+         UCD.General_Category.Nl_Table_XXXXx1,
+         UCD.General_Category.Nl_Table_XXXXx2,
+         UCD.General_Category.Nl_Table_1XXXXx1,
+         UCD.General_Category.Nl_Table_1XXXXx2,
+         UCD.General_Category.Nl_Table_XXXXXXXXx1,
+         UCD.General_Category.Nl_Table_XXXXXXXXx2);
    end Letter_Number_Init;
 
    function Letter_Number return not null access Character_Set is
@@ -552,19 +507,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Other_Number_Init is
    begin
       Other_Number_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.No_Table_2x1'Length
-            + UCD.General_Category.No_Table_4x1'Length
-            + UCD.General_Category.No_Table_2x2'Length
-            + UCD.General_Category.No_Table_4x2'Length,
+         Length => UCD.General_Category.No_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Other_Number_Set.Items,
-         UCD.General_Category.No_Table_2x1,
-         UCD.General_Category.No_Table_4x1,
-         UCD.General_Category.No_Table_2x2,
-         UCD.General_Category.No_Table_4x2);
+         UCD.General_Category.No_Table_XXXXx1,
+         UCD.General_Category.No_Table_XXXXx2,
+         UCD.General_Category.No_Table_1XXXXx1,
+         UCD.General_Category.No_Table_1XXXXx2,
+         UCD.General_Category.No_Table_XXXXXXXXx1,
+         UCD.General_Category.No_Table_XXXXXXXXx2);
    end Other_Number_Init;
 
    function Other_Number return not null access Character_Set is
@@ -584,15 +537,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Space_Separator_Init is
    begin
       Space_Separator_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Zs_Table_2x1'Length
-            + UCD.General_Category.Zs_Table_2x2'Length,
+         Length => UCD.General_Category.Zs_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Space_Separator_Set.Items,
-         UCD.General_Category.Zs_Table_2x1,
-         UCD.General_Category.Zs_Table_2x2);
+         UCD.General_Category.Zs_Table_XXXXx1,
+         UCD.General_Category.Zs_Table_XXXXx2,
+         UCD.General_Category.Zs_Table_1XXXXx1,
+         UCD.General_Category.Zs_Table_1XXXXx2,
+         UCD.General_Category.Zs_Table_XXXXXXXXx1,
+         UCD.General_Category.Zs_Table_XXXXXXXXx2);
    end Space_Separator_Init;
 
    function Space_Separator return not null access Character_Set is
@@ -612,13 +567,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Line_Separator_Init is
    begin
       Line_Separator_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Zl_Table_2x1'Length,
+         Length => UCD.General_Category.Zl_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Line_Separator_Set.Items,
-         UCD.General_Category.Zl_Table_2x1);
+         UCD.General_Category.Zl_Table_XXXXx1,
+         UCD.General_Category.Zl_Table_XXXXx2,
+         UCD.General_Category.Zl_Table_1XXXXx1,
+         UCD.General_Category.Zl_Table_1XXXXx2,
+         UCD.General_Category.Zl_Table_XXXXXXXXx1,
+         UCD.General_Category.Zl_Table_XXXXXXXXx2);
    end Line_Separator_Init;
 
    function Line_Separator return not null access Character_Set is
@@ -638,13 +597,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Paragraph_Separator_Init is
    begin
       Paragraph_Separator_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Zp_Table_2x1'Length,
+         Length => UCD.General_Category.Zp_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Paragraph_Separator_Set.Items,
-         UCD.General_Category.Zp_Table_2x1);
+         UCD.General_Category.Zp_Table_XXXXx1,
+         UCD.General_Category.Zp_Table_XXXXx2,
+         UCD.General_Category.Zp_Table_1XXXXx1,
+         UCD.General_Category.Zp_Table_1XXXXx2,
+         UCD.General_Category.Zp_Table_XXXXXXXXx1,
+         UCD.General_Category.Zp_Table_XXXXXXXXx2);
    end Paragraph_Separator_Init;
 
    function Paragraph_Separator return not null access Character_Set is
@@ -664,13 +627,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Control_Init is
    begin
       Control_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Cc_Table_2x2'Length,
+         Length => UCD.General_Category.Cc_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Control_Set.Items,
-         UCD.General_Category.Cc_Table_2x2);
+         UCD.General_Category.Cc_Table_XXXXx1,
+         UCD.General_Category.Cc_Table_XXXXx2,
+         UCD.General_Category.Cc_Table_1XXXXx1,
+         UCD.General_Category.Cc_Table_1XXXXx2,
+         UCD.General_Category.Cc_Table_XXXXXXXXx1,
+         UCD.General_Category.Cc_Table_XXXXXXXXx2);
    end Control_Init;
 
    function Control return not null access Character_Set is
@@ -690,19 +657,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Format_Init is
    begin
       Format_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Cf_Table_2x1'Length
-            + UCD.General_Category.Cf_Table_4x1'Length
-            + UCD.General_Category.Cf_Table_2x2'Length
-            + UCD.General_Category.Cf_Table_4x2'Length,
+         Length => UCD.General_Category.Cf_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Format_Set.Items,
-         UCD.General_Category.Cf_Table_2x1,
-         UCD.General_Category.Cf_Table_4x1,
-         UCD.General_Category.Cf_Table_2x2,
-         UCD.General_Category.Cf_Table_4x2);
+         UCD.General_Category.Cf_Table_XXXXx1,
+         UCD.General_Category.Cf_Table_XXXXx2,
+         UCD.General_Category.Cf_Table_1XXXXx1,
+         UCD.General_Category.Cf_Table_1XXXXx2,
+         UCD.General_Category.Cf_Table_XXXXXXXXx1,
+         UCD.General_Category.Cf_Table_XXXXXXXXx2);
    end Format_Init;
 
    function Format return not null access Character_Set is
@@ -722,15 +687,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Private_Use_Init is
    begin
       Private_Use_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Co_Table_2x2'Length
-            + UCD.General_Category.Co_Table_4x2'Length,
+         Length => UCD.General_Category.Co_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Private_Use_Set.Items,
-         UCD.General_Category.Co_Table_2x2,
-         UCD.General_Category.Co_Table_4x2);
+         UCD.General_Category.Co_Table_XXXXx1,
+         UCD.General_Category.Co_Table_XXXXx2,
+         UCD.General_Category.Co_Table_1XXXXx1,
+         UCD.General_Category.Co_Table_1XXXXx2,
+         UCD.General_Category.Co_Table_XXXXXXXXx1,
+         UCD.General_Category.Co_Table_XXXXXXXXx2);
    end Private_Use_Init;
 
    function Private_Use return not null access Character_Set is
@@ -750,13 +717,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Surrogate_Init is
    begin
       Surrogate_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Cs_Table_2x2'Length,
+         Length => UCD.General_Category.Cs_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Surrogate_Set.Items,
-         UCD.General_Category.Cs_Table_2x2);
+         UCD.General_Category.Cs_Table_XXXXx1,
+         UCD.General_Category.Cs_Table_XXXXx2,
+         UCD.General_Category.Cs_Table_1XXXXx1,
+         UCD.General_Category.Cs_Table_1XXXXx2,
+         UCD.General_Category.Cs_Table_XXXXXXXXx1,
+         UCD.General_Category.Cs_Table_XXXXXXXXx2);
    end Surrogate_Init;
 
    function Surrogate return not null access Character_Set is
@@ -776,15 +747,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Dash_Punctuation_Init is
    begin
       Dash_Punctuation_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Pd_Table_2x1'Length
-            + UCD.General_Category.Pd_Table_2x2'Length,
+         Length => UCD.General_Category.Pd_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Dash_Punctuation_Set.Items,
-         UCD.General_Category.Pd_Table_2x1,
-         UCD.General_Category.Pd_Table_2x2);
+         UCD.General_Category.Pd_Table_XXXXx1,
+         UCD.General_Category.Pd_Table_XXXXx2,
+         UCD.General_Category.Pd_Table_1XXXXx1,
+         UCD.General_Category.Pd_Table_1XXXXx2,
+         UCD.General_Category.Pd_Table_XXXXXXXXx1,
+         UCD.General_Category.Pd_Table_XXXXXXXXx2);
    end Dash_Punctuation_Init;
 
    function Dash_Punctuation return not null access Character_Set is
@@ -804,13 +777,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Open_Punctuation_Init is
    begin
       Open_Punctuation_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Ps_Table_2x1'Length,
+         Length => UCD.General_Category.Ps_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Open_Punctuation_Set.Items,
-         UCD.General_Category.Ps_Table_2x1);
+         UCD.General_Category.Ps_Table_XXXXx1,
+         UCD.General_Category.Ps_Table_XXXXx2,
+         UCD.General_Category.Ps_Table_1XXXXx1,
+         UCD.General_Category.Ps_Table_1XXXXx2,
+         UCD.General_Category.Ps_Table_XXXXXXXXx1,
+         UCD.General_Category.Ps_Table_XXXXXXXXx2);
    end Open_Punctuation_Init;
 
    function Open_Punctuation return not null access Character_Set is
@@ -830,15 +807,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Close_Punctuation_Init is
    begin
       Close_Punctuation_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Pe_Table_2x1'Length
-            + UCD.General_Category.Pe_Table_2x2'Length,
+         Length => UCD.General_Category.Pe_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Close_Punctuation_Set.Items,
-         UCD.General_Category.Pe_Table_2x1,
-         UCD.General_Category.Pe_Table_2x2);
+         UCD.General_Category.Pe_Table_XXXXx1,
+         UCD.General_Category.Pe_Table_XXXXx2,
+         UCD.General_Category.Pe_Table_1XXXXx1,
+         UCD.General_Category.Pe_Table_1XXXXx2,
+         UCD.General_Category.Pe_Table_XXXXXXXXx1,
+         UCD.General_Category.Pe_Table_XXXXXXXXx2);
    end Close_Punctuation_Init;
 
    function Close_Punctuation return not null access Character_Set is
@@ -858,15 +837,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Connector_Punctuation_Init is
    begin
       Connector_Punctuation_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Pc_Table_2x1'Length
-            + UCD.General_Category.Pc_Table_2x2'Length,
+         Length => UCD.General_Category.Pc_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Connector_Punctuation_Set.Items,
-         UCD.General_Category.Pc_Table_2x1,
-         UCD.General_Category.Pc_Table_2x2);
+         UCD.General_Category.Pc_Table_XXXXx1,
+         UCD.General_Category.Pc_Table_XXXXx2,
+         UCD.General_Category.Pc_Table_1XXXXx1,
+         UCD.General_Category.Pc_Table_1XXXXx2,
+         UCD.General_Category.Pc_Table_XXXXXXXXx1,
+         UCD.General_Category.Pc_Table_XXXXXXXXx2);
    end Connector_Punctuation_Init;
 
    function Connector_Punctuation return not null access Character_Set is
@@ -886,19 +867,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Other_Punctuation_Init is
    begin
       Other_Punctuation_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Po_Table_2x1'Length
-            + UCD.General_Category.Po_Table_4x1'Length
-            + UCD.General_Category.Po_Table_2x2'Length
-            + UCD.General_Category.Po_Table_4x2'Length,
+         Length => UCD.General_Category.Po_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Other_Punctuation_Set.Items,
-         UCD.General_Category.Po_Table_2x1,
-         UCD.General_Category.Po_Table_4x1,
-         UCD.General_Category.Po_Table_2x2,
-         UCD.General_Category.Po_Table_4x2);
+         UCD.General_Category.Po_Table_XXXXx1,
+         UCD.General_Category.Po_Table_XXXXx2,
+         UCD.General_Category.Po_Table_1XXXXx1,
+         UCD.General_Category.Po_Table_1XXXXx2,
+         UCD.General_Category.Po_Table_XXXXXXXXx1,
+         UCD.General_Category.Po_Table_XXXXXXXXx2);
    end Other_Punctuation_Init;
 
    function Other_Punctuation return not null access Character_Set is
@@ -918,17 +897,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Math_Symbol_Init is
    begin
       Math_Symbol_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Sm_Table_2x1'Length
-            + UCD.General_Category.Sm_Table_4x1'Length
-            + UCD.General_Category.Sm_Table_2x2'Length,
+         Length => UCD.General_Category.Sm_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Math_Symbol_Set.Items,
-         UCD.General_Category.Sm_Table_2x1,
-         UCD.General_Category.Sm_Table_4x1,
-         UCD.General_Category.Sm_Table_2x2);
+         UCD.General_Category.Sm_Table_XXXXx1,
+         UCD.General_Category.Sm_Table_XXXXx2,
+         UCD.General_Category.Sm_Table_1XXXXx1,
+         UCD.General_Category.Sm_Table_1XXXXx2,
+         UCD.General_Category.Sm_Table_XXXXXXXXx1,
+         UCD.General_Category.Sm_Table_XXXXXXXXx2);
    end Math_Symbol_Init;
 
    function Math_Symbol return not null access Character_Set is
@@ -948,15 +927,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Currency_Symbol_Init is
    begin
       Currency_Symbol_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Sc_Table_2x1'Length
-            + UCD.General_Category.Sc_Table_2x2'Length,
+         Length => UCD.General_Category.Sc_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Currency_Symbol_Set.Items,
-         UCD.General_Category.Sc_Table_2x1,
-         UCD.General_Category.Sc_Table_2x2);
+         UCD.General_Category.Sc_Table_XXXXx1,
+         UCD.General_Category.Sc_Table_XXXXx2,
+         UCD.General_Category.Sc_Table_1XXXXx1,
+         UCD.General_Category.Sc_Table_1XXXXx2,
+         UCD.General_Category.Sc_Table_XXXXXXXXx1,
+         UCD.General_Category.Sc_Table_XXXXXXXXx2);
    end Currency_Symbol_Init;
 
    function Currency_Symbol return not null access Character_Set is
@@ -976,15 +957,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Modifier_Symbol_Init is
    begin
       Modifier_Symbol_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Sk_Table_2x1'Length
-            + UCD.General_Category.Sk_Table_2x2'Length,
+         Length => UCD.General_Category.Sk_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Modifier_Symbol_Set.Items,
-         UCD.General_Category.Sk_Table_2x1,
-         UCD.General_Category.Sk_Table_2x2);
+         UCD.General_Category.Sk_Table_XXXXx1,
+         UCD.General_Category.Sk_Table_XXXXx2,
+         UCD.General_Category.Sk_Table_1XXXXx1,
+         UCD.General_Category.Sk_Table_1XXXXx2,
+         UCD.General_Category.Sk_Table_XXXXXXXXx1,
+         UCD.General_Category.Sk_Table_XXXXXXXXx2);
    end Modifier_Symbol_Init;
 
    function Modifier_Symbol return not null access Character_Set is
@@ -1004,19 +987,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Other_Symbol_Init is
    begin
       Other_Symbol_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.So_Table_2x1'Length
-            + UCD.General_Category.So_Table_4x1'Length
-            + UCD.General_Category.So_Table_2x2'Length
-            + UCD.General_Category.So_Table_4x2'Length,
+         Length => UCD.General_Category.So_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Other_Symbol_Set.Items,
-         UCD.General_Category.So_Table_2x1,
-         UCD.General_Category.So_Table_4x1,
-         UCD.General_Category.So_Table_2x2,
-         UCD.General_Category.So_Table_4x2);
+         UCD.General_Category.So_Table_XXXXx1,
+         UCD.General_Category.So_Table_XXXXx2,
+         UCD.General_Category.So_Table_1XXXXx1,
+         UCD.General_Category.So_Table_1XXXXx2,
+         UCD.General_Category.So_Table_XXXXXXXXx1,
+         UCD.General_Category.So_Table_XXXXXXXXx2);
    end Other_Symbol_Init;
 
    function Other_Symbol return not null access Character_Set is
@@ -1036,15 +1017,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Initial_Punctuation_Init is
    begin
       Initial_Punctuation_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Pi_Table_2x1'Length
-            + UCD.General_Category.Pi_Table_2x2'Length,
+         Length => UCD.General_Category.Pi_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Initial_Punctuation_Set.Items,
-         UCD.General_Category.Pi_Table_2x1,
-         UCD.General_Category.Pi_Table_2x2);
+         UCD.General_Category.Pi_Table_XXXXx1,
+         UCD.General_Category.Pi_Table_XXXXx2,
+         UCD.General_Category.Pi_Table_1XXXXx1,
+         UCD.General_Category.Pi_Table_1XXXXx2,
+         UCD.General_Category.Pi_Table_XXXXXXXXx1,
+         UCD.General_Category.Pi_Table_XXXXXXXXx2);
    end Initial_Punctuation_Init;
 
    function Initial_Punctuation return not null access Character_Set is
@@ -1064,13 +1047,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Final_Punctuation_Init is
    begin
       Final_Punctuation_Set := new Character_Set'(
-         Length =>
-            UCD.General_Category.Pf_Table_2x1'Length,
+         Length => UCD.General_Category.Pf_Range_Length,
          Reference_Count => System.Reference_Counting.Static,
          Items => <>);
       Fill (
          Final_Punctuation_Set.Items,
-         UCD.General_Category.Pf_Table_2x1);
+         UCD.General_Category.Pf_Table_XXXXx1,
+         UCD.General_Category.Pf_Table_XXXXx2,
+         UCD.General_Category.Pf_Table_1XXXXx1,
+         UCD.General_Category.Pf_Table_1XXXXx2,
+         UCD.General_Category.Pf_Table_XXXXXXXXx1,
+         UCD.General_Category.Pf_Table_XXXXXXXXx2);
    end Final_Punctuation_Init;
 
    function Final_Punctuation return not null access Character_Set is

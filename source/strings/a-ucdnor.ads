@@ -3,12 +3,12 @@ pragma License (Unrestricted);
 package Ada.UCD.Normalization is
    pragma Pure;
 
-   subtype Table_Type_2x1 is Map_Type_2x1;
-   subtype Table_Type_4x1 is Map_Type_4x1;
-   subtype Table_Type_2x2 is Map_Type_2x2;
-   subtype Table_Type_4x2 is Map_Type_4x2;
+   --  excluding U+2000..U+2FFF, U+F900..U+FAFF, and U+2F800..U+2FAFF
 
-   NFD_Decomposition_Table_2 : constant Table_Type_2x2 := (
+   NFD_Total : constant := 999;
+   NFC_Total : constant := 889;
+
+   NFD_D_Table_XXXX : constant Map_16x2_Type (1 .. 884) := (
       (16#00C0#, (16#0041#, 16#0300#)),
       (16#00C1#, (16#0041#, 16#0301#)),
       (16#00C2#, (16#0041#, 16#0302#)),
@@ -894,12 +894,14 @@ package Ada.UCD.Normalization is
       (16#30FA#, (16#30F2#, 16#3099#)),
       (16#30FE#, (16#30FD#, 16#3099#)));
 
-   NFD_Decomposition_Table_4 : constant Table_Type_4x2 := (
+   NFD_D_Table_XXXXXXXX : constant Map_32x2_Type (1 .. 5) := (
       (16#1109A#, (16#11099#, 16#110BA#)),
       (16#1109C#, (16#1109B#, 16#110BA#)),
-      (16#110AB#, (16#110A5#, 16#110BA#)));
+      (16#110AB#, (16#110A5#, 16#110BA#)),
+      (16#1112E#, (16#11131#, 16#11127#)),
+      (16#1112F#, (16#11132#, 16#11127#)));
 
-   NFD_Excluded_Table_2 : constant Table_Type_2x2 := (
+   NFD_E_Table_XXXX : constant Map_16x2_Type (1 .. 71) := (
       (16#0344#, (16#0308#, 16#0301#)),
       (16#0958#, (16#0915#, 16#093C#)),
       (16#0959#, (16#0916#, 16#093C#)),
@@ -972,7 +974,7 @@ package Ada.UCD.Normalization is
       (16#FB4D#, (16#05DB#, 16#05BF#)),
       (16#FB4E#, (16#05E4#, 16#05BF#)));
 
-   NFD_Excluded_Table_4 : constant Table_Type_4x2 := (
+   NFD_E_Table_XXXXXXXX : constant Map_32x2_Type (1 .. 13) := (
       (16#1D15E#, (16#1D157#, 16#1D165#)),
       (16#1D15F#, (16#1D158#, 16#1D165#)),
       (16#1D160#, (16#1D15F#, 16#1D16E#)),
@@ -987,7 +989,7 @@ package Ada.UCD.Normalization is
       (16#1D1BF#, (16#1D1BB#, 16#1D16F#)),
       (16#1D1C0#, (16#1D1BC#, 16#1D16F#)));
 
-   NFD_Singleton_Table_2 : constant Table_Type_2x1 := (
+   NFD_S_Table_XXXX : constant Map_16x1_Type (1 .. 26) := (
       (16#0340#, 16#0300#),
       (16#0341#, 16#0301#),
       (16#0343#, 16#0313#),
@@ -1014,7 +1016,5 @@ package Ada.UCD.Normalization is
       (16#1FF9#, 16#038C#),
       (16#1FFB#, 16#038F#),
       (16#1FFD#, 16#00B4#));
-
-   --  NFD_Singleton_Table_4 is empty
 
 end Ada.UCD.Normalization;
