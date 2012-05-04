@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.Float is
-   --  There are helper functions for float-types.
+   --  There are helper subprograms for float-types.
    pragma Pure;
 
    generic

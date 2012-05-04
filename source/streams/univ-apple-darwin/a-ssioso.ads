@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 private with Ada.Finalization;
 private with C.netdb;
 package Ada.Streams.Stream_IO.Sockets is
-   --  There is a function to create socket.
+   --  There are subprograms to create socket.
    pragma Preelaborate;
 
    type Port_Number is range 0 .. 16#ffff#;

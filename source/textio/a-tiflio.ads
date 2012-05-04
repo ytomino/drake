@@ -49,7 +49,7 @@ package Ada.Text_IO.Float_IO is
       Exp : Field := Default_Exp);
 
    --  extended
-   --  This function is used in Complex_IO.
+   --  This subprogram is used in Complex_IO.
    procedure Put (
       To : out String;
       Last : out Natural;
