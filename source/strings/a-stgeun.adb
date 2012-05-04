@@ -424,14 +424,14 @@ package body Ada.Strings.Generic_Unbounded is
    end ">=";
 
    function Constant_Reference (
-      Source : not null access constant Unbounded_String)
+      Source : aliased Unbounded_String)
       return Slicing.Constant_Reference_Type is
    begin
       return Constant_Reference (Source, 1, Source.Length);
    end Constant_Reference;
 
    function Constant_Reference (
-      Source : not null access constant Unbounded_String;
+      Source : aliased Unbounded_String;
       First_Index : Positive;
       Last_Index : Natural)
       return Slicing.Constant_Reference_Type is
@@ -442,19 +442,20 @@ package body Ada.Strings.Generic_Unbounded is
          Last_Index);
    end Constant_Reference;
 
-   function Reference (Source : not null access Unbounded_String)
+   function Reference (
+      Source : aliased in out Unbounded_String)
       return Slicing.Reference_Type is
    begin
       return Reference (Source, 1, Source.Length);
    end Reference;
 
    function Reference (
-      Source : not null access Unbounded_String;
+      Source : aliased in out Unbounded_String;
       First_Index : Positive;
       Last_Index : Natural)
       return Slicing.Reference_Type is
    begin
-      Unique (Source.all);
+      Unique (Source);
       return Slicing.Slice (
          Source.Data.Items,
          First_Index,
@@ -486,7 +487,7 @@ package body Ada.Strings.Generic_Unbounded is
          return Natural is
       begin
          return Fixed_Index_From (
-            Constant_Reference (Source'Access).Element.all,
+            Source.Data.Items (1 .. Source.Length),
             Pattern,
             From,
             Going);
@@ -499,7 +500,7 @@ package body Ada.Strings.Generic_Unbounded is
          return Natural is
       begin
          return Fixed_Index (
-            Constant_Reference (Source'Access).Element.all,
+            Source.Data.Items (1 .. Source.Length),
             Pattern,
             Going);
       end Index;
@@ -511,7 +512,7 @@ package body Ada.Strings.Generic_Unbounded is
          return Natural is
       begin
          return Fixed_Index_Non_Blank_From (
-            Constant_Reference (Source'Access).Element.all,
+            Source.Data.Items (1 .. Source.Length),
             From,
             Going);
       end Index_Non_Blank;
@@ -522,7 +523,7 @@ package body Ada.Strings.Generic_Unbounded is
          return Natural is
       begin
          return Fixed_Index_Non_Blank (
-            Constant_Reference (Source'Access).Element.all,
+            Source.Data.Items (1 .. Source.Length),
             Going);
       end Index_Non_Blank;
 
@@ -532,7 +533,7 @@ package body Ada.Strings.Generic_Unbounded is
          return Natural is
       begin
          return Fixed_Count (
-            Constant_Reference (Source'Access).Element.all,
+            Source.Data.Items (1 .. Source.Length),
             Pattern);
       end Count;
 
@@ -545,7 +546,7 @@ package body Ada.Strings.Generic_Unbounded is
       begin
          return To_Unbounded_String (
             Fixed_Replace_Slice (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Low,
                High,
                By));
@@ -560,7 +561,7 @@ package body Ada.Strings.Generic_Unbounded is
          Set_Unbounded_String (
             Source,
             Fixed_Replace_Slice (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Low,
                High,
                By));
@@ -574,7 +575,7 @@ package body Ada.Strings.Generic_Unbounded is
       begin
          return To_Unbounded_String (
             Fixed_Insert (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Before,
                New_Item));
       end Insert;
@@ -587,7 +588,7 @@ package body Ada.Strings.Generic_Unbounded is
          Set_Unbounded_String (
             Source,
             Fixed_Insert (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Before,
                New_Item));
       end Insert;
@@ -600,7 +601,7 @@ package body Ada.Strings.Generic_Unbounded is
       begin
          return To_Unbounded_String (
             Fixed_Overwrite (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Position,
                New_Item));
       end Overwrite;
@@ -613,7 +614,7 @@ package body Ada.Strings.Generic_Unbounded is
          Set_Unbounded_String (
             Source,
             Fixed_Overwrite (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Position,
                New_Item));
       end Overwrite;
@@ -636,15 +637,16 @@ package body Ada.Strings.Generic_Unbounded is
       begin
          if From <= Through then
             declare
-               Old_Length : constant Natural := Length (Source);
+               Old_Length : constant Natural := Source.Length;
                New_Length : Natural;
             begin
                if Through >= Old_Length then
                   New_Length := From - 1;
                else
                   New_Length := Old_Length;
+                  Unique (Source); -- for overwriting
                   Fixed_Delete (
-                     Reference (Source'Access).Element.all,
+                     Source.Data.Items (1 .. Old_Length),
                      New_Length,
                      From,
                      Through);
@@ -664,7 +666,7 @@ package body Ada.Strings.Generic_Unbounded is
          Last : Natural;
       begin
          Fixed_Trim (
-            Constant_Reference (Source'Access).Element.all,
+            Source.Data.Items (1 .. Source.Length),
             Side,
             Blank,
             First,
@@ -681,7 +683,7 @@ package body Ada.Strings.Generic_Unbounded is
          Last : Natural;
       begin
          Fixed_Trim (
-            Constant_Reference (Source'Access).Element.all,
+            Source.Data.Items (1 .. Source.Length),
             Side,
             Blank,
             First,
@@ -697,7 +699,7 @@ package body Ada.Strings.Generic_Unbounded is
       begin
          return To_Unbounded_String (
             Fixed_Head (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Count,
                Pad));
       end Head;
@@ -710,7 +712,7 @@ package body Ada.Strings.Generic_Unbounded is
          Set_Unbounded_String (
             Source,
             Fixed_Head (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Count,
                Pad));
       end Head;
@@ -723,7 +725,7 @@ package body Ada.Strings.Generic_Unbounded is
       begin
          return To_Unbounded_String (
             Fixed_Tail (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Count,
                Pad));
       end Tail;
@@ -736,7 +738,7 @@ package body Ada.Strings.Generic_Unbounded is
          Set_Unbounded_String (
             Source,
             Fixed_Tail (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Count,
                Pad));
       end Tail;
@@ -772,7 +774,7 @@ package body Ada.Strings.Generic_Unbounded is
       function "*" (Left : Natural; Right : Unbounded_String)
          return Unbounded_String is
       begin
-         return Left * Constant_Reference (Right'Access).Element.all;
+         return Left * Right.Data.Items (1 .. Right.Length);
       end "*";
 
       package body Generic_Maps is
@@ -786,7 +788,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Index_Mapping_From (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                From,
                Going,
@@ -801,7 +803,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Index_Mapping (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                Going,
                Mapping);
@@ -817,7 +819,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Index_Mapping_Function_From (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                From,
                Going,
@@ -833,7 +835,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Index_Mapping_Function (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                Going,
                Mapping);
@@ -849,7 +851,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Index_Mapping_Function_Per_Element_From (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                From,
                Going,
@@ -865,7 +867,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Index_Mapping_Function_Per_Element (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                Going,
                Mapping);
@@ -880,7 +882,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Index_Set_From (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Set,
                From,
                Test,
@@ -895,7 +897,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Index_Set (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Set,
                Test,
                Going);
@@ -908,7 +910,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Count_Mapping (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                Mapping);
          end Count;
@@ -921,7 +923,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Count_Mapping_Function (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                Mapping);
          end Count;
@@ -934,7 +936,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Count_Mapping_Function_Per_Element (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Pattern,
                Mapping);
          end Count_Per_Element;
@@ -943,7 +945,7 @@ package body Ada.Strings.Generic_Unbounded is
             return Natural is
          begin
             return Fixed_Count_Set (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Set);
          end Count;
 
@@ -956,7 +958,7 @@ package body Ada.Strings.Generic_Unbounded is
             Last : out Natural) is
          begin
             Fixed_Find_Token_From (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Set,
                From,
                Test,
@@ -972,7 +974,7 @@ package body Ada.Strings.Generic_Unbounded is
             Last : out Natural) is
          begin
             Fixed_Find_Token (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Set,
                Test,
                First,
@@ -986,7 +988,7 @@ package body Ada.Strings.Generic_Unbounded is
          begin
             return To_Unbounded_String (
                Fixed_Translate_Mapping (
-                  Constant_Reference (Source'Access).Element.all,
+                  Source.Data.Items (1 .. Source.Length),
                   Mapping));
          end Translate;
 
@@ -997,7 +999,7 @@ package body Ada.Strings.Generic_Unbounded is
             Set_Unbounded_String (
                Source,
                Fixed_Translate_Mapping (
-                  Constant_Reference (Source'Access).Element.all,
+                  Source.Data.Items (1 .. Source.Length),
                   Mapping));
          end Translate;
 
@@ -1009,7 +1011,7 @@ package body Ada.Strings.Generic_Unbounded is
          begin
             return To_Unbounded_String (
                Fixed_Translate_Mapping_Function (
-                  Constant_Reference (Source'Access).Element.all,
+                  Source.Data.Items (1 .. Source.Length),
                   Mapping));
          end Translate;
 
@@ -1021,7 +1023,7 @@ package body Ada.Strings.Generic_Unbounded is
             Set_Unbounded_String (
                Source,
                Fixed_Translate_Mapping_Function (
-                  Constant_Reference (Source'Access).Element.all,
+                  Source.Data.Items (1 .. Source.Length),
                   Mapping));
          end Translate;
 
@@ -1033,7 +1035,7 @@ package body Ada.Strings.Generic_Unbounded is
          begin
             return To_Unbounded_String (
                Fixed_Translate_Mapping_Function_Per_Element (
-                  Constant_Reference (Source'Access).Element.all,
+                  Source.Data.Items (1 .. Source.Length),
                   Mapping));
          end Translate_Per_Element;
 
@@ -1045,7 +1047,7 @@ package body Ada.Strings.Generic_Unbounded is
             Set_Unbounded_String (
                Source,
                Fixed_Translate_Mapping_Function_Per_Element (
-                  Constant_Reference (Source'Access).Element.all,
+                  Source.Data.Items (1 .. Source.Length),
                   Mapping));
          end Translate_Per_Element;
 
@@ -1059,7 +1061,7 @@ package body Ada.Strings.Generic_Unbounded is
             Last : Natural;
          begin
             Fixed_Trim_Set (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Left,
                Right,
                First,
@@ -1076,7 +1078,7 @@ package body Ada.Strings.Generic_Unbounded is
             Last : Natural;
          begin
             Fixed_Trim_Set (
-               Constant_Reference (Source'Access).Element.all,
+               Source.Data.Items (1 .. Source.Length),
                Left,
                Right,
                First,
