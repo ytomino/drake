@@ -71,6 +71,7 @@ package Ada.Directories.Information is
    --  Additional implementation-defined subprograms allowed here.
 
    --  extended
+   --  Read a target path of a symbolic link.
    function Read_Symbolic_Link (Name : String) return String;
    function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
       return String;

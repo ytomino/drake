@@ -3,10 +3,12 @@ pragma License (Unrestricted);
 package Ada.UCD.Normalization.Unreversible is
    pragma Pure;
 
-   --  mapping for U+2000..U+2FFF, U+F900..U+FAFF, and U+2F800..U+2FAFF
-   --  these ranges are excluded by NFS+
+   --  including U+2000..U+2FFF, U+F900..U+FAFF, and U+2F800..U+2FAFF
 
-   NFD_Unreversible_Decomposition_Table_2 : constant Table_Type_2x2 := (
+   NFD_Unreversible_Total : constant := 1054;
+   NFC_Unreversible_Total : constant := 44;
+
+   NFD_Unreversible_D_Table_XXXX : constant Map_16x2_Type (1 .. 44) := (
       (16#219A#, (16#2190#, 16#0338#)),
       (16#219B#, (16#2192#, 16#0338#)),
       (16#21AE#, (16#2194#, 16#0338#)),
@@ -50,12 +52,12 @@ package Ada.UCD.Normalization.Unreversible is
       (16#22EA#, (16#22B2#, 16#0338#)),
       (16#22EB#, (16#22B3#, 16#0338#)),
       (16#22EC#, (16#22B4#, 16#0338#)),
-      (16#22ED#, (16#22B5#, 16#0338#)),
-      (16#2ADC#, (16#2ADD#, 16#0338#)));
+      (16#22ED#, (16#22B5#, 16#0338#)));
 
-   --  NFD_Unreversible_Decompositon_Table_4 is empty
+   NFD_Unreversible_E_Table_XXXX : constant Map_16x2_Type (1 .. 1) := (
+      1 => (16#2ADC#, (16#2ADD#, 16#0338#)));
 
-   NFD_Unreversible_Singleton_Table_2 : constant Table_Type_2x1 := (
+   NFD_Unreversible_S_Table_XXXX : constant Map_16x1_Type (1 .. 460) := (
       (16#2000#, 16#2002#),
       (16#2001#, 16#2003#),
       (16#2126#, 16#03A9#),
@@ -353,6 +355,8 @@ package Ada.UCD.Normalization.Unreversible is
       (16#FA2B#, 16#98FC#),
       (16#FA2C#, 16#9928#),
       (16#FA2D#, 16#9DB4#),
+      (16#FA2E#, 16#90DE#),
+      (16#FA2F#, 16#96B7#),
       (16#FA30#, 16#4FAE#),
       (16#FA31#, 16#50E7#),
       (16#FA32#, 16#514D#),
@@ -515,7 +519,7 @@ package Ada.UCD.Normalization.Unreversible is
       (16#FAD8#, 16#9F43#),
       (16#FAD9#, 16#9F8E#));
 
-   NFD_Unreversible_Singleton_Table_4 : constant Table_Type_4x1 := (
+   NFD_Unreversible_S_Table_XXXXXXXX : constant Map_32x1_Type (1 .. 549) := (
       (16#FA6C#, 16#242EE#),
       (16#FACF#, 16#2284A#),
       (16#FAD0#, 16#22844#),

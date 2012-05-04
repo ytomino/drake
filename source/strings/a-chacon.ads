@@ -98,7 +98,7 @@ package Ada.Characters.Conversions is
    pragma Inline_Always (To_Wide_String);
 
    --  extended
-   --  There are functions for code-point based decoding iteration.
+   --  There are subprograms for code-point based decoding iteration.
    procedure Get (
       Item : String;
       Last : out Natural;
@@ -161,7 +161,7 @@ package Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean);
 
    --  extended
-   --  There are encoding functions.
+   --  There are encoding subprograms.
    procedure Put (
       Value : Wide_Wide_Character;
       Item : out String;

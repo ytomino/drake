@@ -57,13 +57,8 @@ package body Ada.Characters.Normalization is
    end record;
    pragma Suppress_Initialization (D_Map_Element);
 
-   type D_Map_Array is array (
-      1 ..
-      UCD.Normalization.NFD_Decomposition_Table_2'Length
-      + UCD.Normalization.NFD_Decomposition_Table_4'Length
-      + UCD.Normalization.NFD_Excluded_Table_2'Length
-      + UCD.Normalization.NFD_Excluded_Table_4'Length
-      + UCD.Normalization.NFD_Singleton_Table_2'Length) of D_Map_Element;
+   type D_Map_Array is
+      array (1 .. UCD.Normalization.NFD_Total) of D_Map_Element;
    pragma Suppress_Initialization (D_Map_Array);
 
    D_Map : access D_Map_Array;
@@ -151,70 +146,82 @@ package body Ada.Characters.Normalization is
 
    procedure D_Init;
    procedure D_Init is
+      procedure Fill (
+         Map : in out D_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_16x1_Type);
+      procedure Fill (
+         Map : in out D_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_16x1_Type) is
+      begin
+         for J in Table'Range loop
+            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
+            Map (I).To (1) := Wide_Wide_Character'Val (Table (J).Mapping);
+            for K in 2 .. Expanding loop
+               Map (I).To (K) := Wide_Wide_Character'Val (0);
+            end loop;
+            I := I + 1;
+         end loop;
+      end Fill;
+      procedure Fill (
+         Map : in out D_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_16x2_Type);
+      procedure Fill (
+         Map : in out D_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_16x2_Type) is
+      begin
+         for J in Table'Range loop
+            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
+            for K in 1 .. 2 loop
+               Map (I).To (K) :=
+                  Wide_Wide_Character'Val (Table (J).Mapping (K));
+            end loop;
+            for K in 3 .. Expanding loop
+               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
+            end loop;
+            I := I + 1;
+         end loop;
+      end Fill;
+      procedure Fill (
+         Map : in out D_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_32x2_Type);
+      procedure Fill (
+         Map : in out D_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_32x2_Type) is
+      begin
+         for J in Table'Range loop
+            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
+            for K in 1 .. 2 loop
+               Map (I).To (K) :=
+                  Wide_Wide_Character'Val (Table (J).Mapping (K));
+            end loop;
+            for K in 3 .. Expanding loop
+               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
+            end loop;
+            I := I + 1;
+         end loop;
+      end Fill;
    begin
       --  make table
       D_Map := new D_Map_Array;
       declare
          I : Positive := D_Map'First;
       begin
-         for J in UCD.Normalization.NFD_Decomposition_Table_2'Range loop
-            D_Map (I).From := Wide_Wide_Character'Val (
-               UCD.Normalization.NFD_Decomposition_Table_2 (J).Code);
-            for K in 1 .. 2 loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (
-                  UCD.Normalization.NFD_Decomposition_Table_2 (J).Mapping (K));
-            end loop;
-            for K in 3 .. Expanding loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
-         end loop;
-         for J in UCD.Normalization.NFD_Decomposition_Table_4'Range loop
-            D_Map (I).From := Wide_Wide_Character'Val (
-               UCD.Normalization.NFD_Decomposition_Table_4 (J).Code);
-            for K in 1 .. 2 loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (
-                  UCD.Normalization.NFD_Decomposition_Table_4 (J).Mapping (K));
-            end loop;
-            for K in 3 .. Expanding loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
-         end loop;
-         for J in UCD.Normalization.NFD_Excluded_Table_2'Range loop
-            D_Map (I).From := Wide_Wide_Character'Val (
-               UCD.Normalization.NFD_Excluded_Table_2 (J).Code);
-            for K in 1 .. 2 loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (
-                  UCD.Normalization.NFD_Excluded_Table_2 (J).Mapping (K));
-            end loop;
-            for K in 3 .. Expanding loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
-         end loop;
-         for J in UCD.Normalization.NFD_Excluded_Table_4'Range loop
-            D_Map (I).From := Wide_Wide_Character'Val (
-               UCD.Normalization.NFD_Excluded_Table_4 (J).Code);
-            for K in 1 .. 2 loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (
-                  UCD.Normalization.NFD_Excluded_Table_4 (J).Mapping (K));
-            end loop;
-            for K in 3 .. Expanding loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
-         end loop;
-         for J in UCD.Normalization.NFD_Singleton_Table_2'Range loop
-            D_Map (I).From := Wide_Wide_Character'Val (
-               UCD.Normalization.NFD_Singleton_Table_2 (J).Code);
-            D_Map (I).To (1) := Wide_Wide_Character'Val (
-               UCD.Normalization.NFD_Singleton_Table_2 (J).Mapping);
-            for K in 2 .. Expanding loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
-         end loop;
+         --  16#00C0# ..
+         Fill (D_Map.all, I, UCD.Normalization.NFD_D_Table_XXXX);
+         --  16#0340#
+         Fill (D_Map.all, I, UCD.Normalization.NFD_S_Table_XXXX);
+         --  16#0344# ..
+         Fill (D_Map.all, I, UCD.Normalization.NFD_E_Table_XXXX);
+         --  16#1109A# ..
+         Fill (D_Map.all, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
+         --  16#1D15E#
+         Fill (D_Map.all, I, UCD.Normalization.NFD_E_Table_XXXXXXXX);
          pragma Assert (I = D_Map'Last + 1);
       end;
       --  sort
@@ -281,10 +288,8 @@ package body Ada.Characters.Normalization is
    end record;
    pragma Suppress_Initialization (C_Map_Element);
 
-   type C_Map_Array is array (
-      1 ..
-      UCD.Normalization.NFD_Decomposition_Table_2'Length
-      + UCD.Normalization.NFD_Decomposition_Table_4'Length) of C_Map_Element;
+   type C_Map_Array is
+      array (1 .. UCD.Normalization.NFC_Total) of C_Map_Element;
    pragma Suppress_Initialization (C_Map_Array);
 
    C_Map : access C_Map_Array;
@@ -384,6 +389,42 @@ package body Ada.Characters.Normalization is
 
    procedure C_Init;
    procedure C_Init is
+      procedure Fill (
+         Map : in out C_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_16x2_Type);
+      procedure Fill (
+         Map : in out C_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_16x2_Type) is
+      begin
+         for J in Table'Range loop
+            for K in 1 .. 2 loop
+               Map (I).From (K) :=
+                  Wide_Wide_Character'Val (Table (J).Mapping (K));
+            end loop;
+            Map (I).To := Wide_Wide_Character'Val (Table (J).Code);
+            I := I + 1;
+         end loop;
+      end Fill;
+      procedure Fill (
+         Map : in out C_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_32x2_Type);
+      procedure Fill (
+         Map : in out C_Map_Array;
+         I : in out Positive;
+         Table : UCD.Map_32x2_Type) is
+      begin
+         for J in Table'Range loop
+            for K in 1 .. 2 loop
+               Map (I).From (K) :=
+                  Wide_Wide_Character'Val (Table (J).Mapping (K));
+            end loop;
+            Map (I).To := Wide_Wide_Character'Val (Table (J).Code);
+            I := I + 1;
+         end loop;
+      end Fill;
    begin
       --  initialize D table, too
       System.Once.Initialize (D_Flag'Access, D_Init'Access);
@@ -392,24 +433,10 @@ package body Ada.Characters.Normalization is
       declare
          I : Positive := C_Map'First;
       begin
-         for J in UCD.Normalization.NFD_Decomposition_Table_2'Range loop
-            for K in 1 .. 2 loop
-               C_Map (I).From (K) := Wide_Wide_Character'Val (
-                  UCD.Normalization.NFD_Decomposition_Table_2 (J).Mapping (K));
-            end loop;
-            C_Map (I).To := Wide_Wide_Character'Val (
-               UCD.Normalization.NFD_Decomposition_Table_2 (J).Code);
-            I := I + 1;
-         end loop;
-         for J in UCD.Normalization.NFD_Decomposition_Table_4'Range loop
-            for K in 1 .. 2 loop
-               C_Map (I).From (K) := Wide_Wide_Character'Val (
-                  UCD.Normalization.NFD_Decomposition_Table_4 (J).Mapping (K));
-            end loop;
-            C_Map (I).To := Wide_Wide_Character'Val (
-               UCD.Normalization.NFD_Decomposition_Table_4 (J).Code);
-            I := I + 1;
-         end loop;
+         --  (16#0041#, 16#0300#) ..
+         Fill (C_Map.all, I, UCD.Normalization.NFD_D_Table_XXXX);
+         --  (16#11099#, 16#110BA#) ..
+         Fill (C_Map.all, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
          pragma Assert (I = C_Map'Last + 1);
       end;
       --  sort
@@ -1099,23 +1126,27 @@ package body Ada.Characters.Normalization is
    --  implementation
 
    function Combining_Class (Item : Wide_Wide_Character) return Class is
-      Code : constant UCD.UCS_4 := Wide_Wide_Character'Pos (Item);
+      Code : UCD.UCS_4 := Wide_Wide_Character'Pos (Item);
    begin
       if Code > 16#ffff# then
          declare
-            L : Positive := UCD.Combining_Class.Table_4'First;
-            H : Natural := UCD.Combining_Class.Table_4'Last;
+            L : Positive := UCD.Combining_Class.Table_1XXXX'First;
+            H : Natural := UCD.Combining_Class.Table_1XXXX'Last;
          begin
+            Code := Code - 16#10000#;
             loop
                declare
                   M : constant Positive := (L + H) / 2;
                begin
-                  if Code < UCD.Combining_Class.Table_4 (M).Low then
+                  if Code < UCD.Combining_Class.Table_1XXXX (M).Start then
                      H := M - 1;
-                  elsif Code > UCD.Combining_Class.Table_4 (M).High then
+                  elsif Code >= UCD.Combining_Class.Table_1XXXX (M).Start
+                     + UCD.UCS_4 (UCD.Combining_Class.Table_1XXXX (M).Length)
+                  then
                      L := M + 1;
                   else
-                     return Class (UCD.Combining_Class.Table_4 (M).Class);
+                     return Class (
+                        UCD.Combining_Class.Table_1XXXX (M).Combining_Class);
                   end if;
                end;
                if L > H then
@@ -1125,19 +1156,22 @@ package body Ada.Characters.Normalization is
          end;
       else
          declare
-            L : Positive := UCD.Combining_Class.Table_2'First;
-            H : Natural := UCD.Combining_Class.Table_2'Last;
+            L : Positive := UCD.Combining_Class.Table_XXXX'First;
+            H : Natural := UCD.Combining_Class.Table_XXXX'Last;
          begin
             loop
                declare
                   M : constant Positive := (L + H) / 2;
                begin
-                  if Code < UCD.Combining_Class.Table_2 (M).Low then
+                  if Code < UCD.Combining_Class.Table_XXXX (M).Start then
                      H := M - 1;
-                  elsif Code > UCD.Combining_Class.Table_2 (M).High then
+                  elsif Code >= UCD.Combining_Class.Table_XXXX (M).Start
+                     + UCD.UCS_4 (UCD.Combining_Class.Table_XXXX (M).Length)
+                  then
                      L := M + 1;
                   else
-                     return Class (UCD.Combining_Class.Table_2 (M).Class);
+                     return Class (
+                        UCD.Combining_Class.Table_XXXX (M).Combining_Class);
                   end if;
                end;
                if L > H then

@@ -61,8 +61,7 @@ package Ada.Text_IO is
    pragma Inline (Form);
 
    function Is_Open (File : File_Type) return Boolean;
-   --  extended
-   function Is_Open (File : not null File_Access) return Boolean;
+   function Is_Open (File : not null File_Access) return Boolean; -- alt
    pragma Inline (Is_Open);
 
    --  Control of default input and output files
@@ -70,10 +69,9 @@ package Ada.Text_IO is
    procedure Set_Input (File : File_Type);
    procedure Set_Output (File : File_Type);
    procedure Set_Error (File : File_Type);
-   --  extended
-   procedure Set_Input (File : not null File_Access);
-   procedure Set_Output (File : not null File_Access);
-   procedure Set_Error (File : not null File_Access);
+   procedure Set_Input (File : not null File_Access); -- alt
+   procedure Set_Output (File : not null File_Access); -- alt
+   procedure Set_Error (File : not null File_Access); -- alt
 
    --  Wait for Implicit_Dereference since File_Type is limited (marked "alt")
 --  function Standard_Input return File_Type;

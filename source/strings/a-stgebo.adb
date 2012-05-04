@@ -210,14 +210,14 @@ package body Ada.Strings.Generic_Bounded is
    end ">=";
 
    function Constant_Reference (
-      Source : not null access constant Bounded_String)
+      Source : not null access constant Bounded_String) -- [gcc 4.6] aliased
       return Slicing.Constant_Reference_Type is
    begin
       return Constant_Reference (Source, 1, Source.Length);
    end Constant_Reference;
 
    function Constant_Reference (
-      Source : not null access constant Bounded_String;
+      Source : not null access constant Bounded_String; -- [gcc 4.6] aliased
       First_Index : Positive;
       Last_Index : Natural)
       return Slicing.Constant_Reference_Type is
@@ -228,14 +228,15 @@ package body Ada.Strings.Generic_Bounded is
          Last_Index);
    end Constant_Reference;
 
-   function Reference (Source : not null access Bounded_String)
+   function Reference (
+      Source : not null access Bounded_String) -- [gcc 4.6] aliased in out
       return Slicing.Reference_Type is
    begin
       return Reference (Source, 1, Source.Length);
    end Reference;
 
    function Reference (
-      Source : not null access Bounded_String;
+      Source : not null access Bounded_String; -- [gcc 4.6] aliased in out
       First_Index : Positive;
       Last_Index : Natural)
       return Slicing.Reference_Type is
