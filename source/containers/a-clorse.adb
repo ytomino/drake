@@ -1,6 +1,7 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Containers.Composites;
+--  diff (Ada.Streams)
 with System;
 package body Ada.Containers.Limited_Ordered_Sets is
    use type Binary_Trees.Node_Access;

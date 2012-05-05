@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+--  diff (Ada.Streams)
 with System;
 package body Ada.Containers.Limited_Hashed_Sets is
    use type Hash_Tables.Table_Access;

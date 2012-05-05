@@ -12,7 +12,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Hashed_Maps is
    pragma Preelaborate;
---  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
+   pragma Remote_Types;
 
    type Map is tagged private;
    pragma Preelaborable_Initialization (Map);
@@ -229,6 +229,41 @@ private
       Element : not null access Element_Type) is null record;
 
    type Iterator is not null access constant Map;
+
+   --  dummy 'Read and 'Write
+
+   procedure Read (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : out Cursor);
+   procedure Write (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : Cursor);
+
+   for Cursor'Read use Read;
+   for Cursor'Write use Write;
+
+   procedure Read (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : out Constant_Reference_Type);
+   procedure Write (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+   for Constant_Reference_Type'Write use Write;
+
+   procedure Read (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : out Reference_Type);
+   procedure Write (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : Reference_Type);
+
+   for Reference_Type'Read use Read;
+   for Reference_Type'Write use Write;
+
+   pragma Import (Ada, Read, "__drake_program_error");
+   pragma Import (Ada, Write, "__drake_program_error");
 
    No_Element : constant Cursor := null;
 

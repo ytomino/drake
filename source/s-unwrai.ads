@@ -43,6 +43,10 @@ package System.Unwind.Raising is
    pragma Export (Ada, Raise_From_Controlled_Operation,
       "__gnat_raise_from_controlled_operation");
 
+   --  utility for implementing a dummy subprogram
+   procedure Raise_Program_Error;
+   pragma Export (Ada, Raise_Program_Error, "__drake_program_error");
+
    --  shortcut required by compiler (a-except-2005.adb)
 
    procedure rcheck_00 (File : not null access Character; Line : Integer);
