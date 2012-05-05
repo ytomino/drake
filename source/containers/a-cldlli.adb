@@ -162,7 +162,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Clear;
 
    function Constant_Reference (
-      Container : not null access constant List;
+      Container : aliased List;
       Position : Cursor)
       return Constant_Reference_Type
    is
@@ -470,7 +470,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Query_Element;
 
    function Reference (
-      Container : not null access List;
+      Container : aliased in out List;
       Position : Cursor)
       return Reference_Type
    is
@@ -638,8 +638,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (
-         Reference (Container'Unrestricted_Access, Position).Element.all);
+      Process (Container.Reference (Position).Element.all);
    end Update_Element;
 
 --  diff ("=")

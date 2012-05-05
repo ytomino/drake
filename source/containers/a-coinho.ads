@@ -45,17 +45,19 @@ package Ada.Containers.Indefinite_Holders is
       Process : not null access procedure (Element : in out Element_Type));
 
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is private;
+      Element : not null access constant Element_Type) is private
+      with Implicit_Dereference => Element;
 
    type Reference_Type (
-      Element : not null access Element_Type) is private;
+      Element : not null access Element_Type) is private
+      with Implicit_Dereference => Element;
 
    function Constant_Reference (
-      Container : not null access constant Holder) -- [gcc 4.5/4.6] aliased
+      Container : aliased Holder)
       return Constant_Reference_Type;
 
    function Reference (
-      Container : not null access Holder) -- [gcc 4.5/4.6] aliased
+      Container : aliased in out Holder)
       return Reference_Type;
 
    procedure Assign (Target : in out Holder; Source : Holder);
@@ -102,6 +104,7 @@ private
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
+
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 

@@ -212,7 +212,7 @@ package body Ada.Containers.Limited_Vectors is
    end Clear;
 
    function Constant_Reference (
-      Container : not null access constant Vector;
+      Container : aliased Vector;
       Index : Index_Type)
       return Constant_Reference_Type is
    begin
@@ -220,6 +220,7 @@ package body Ada.Containers.Limited_Vectors is
    end Constant_Reference;
 
 --  diff (Constant_Reference)
+--
 --
 --
 --
@@ -303,7 +304,6 @@ package body Ada.Containers.Limited_Vectors is
    end Delete_Last;
 
 --  diff (Element)
---
 --
 --
 --
@@ -583,13 +583,11 @@ package body Ada.Containers.Limited_Vectors is
       Index : Index_Type;
       Process  : not null access procedure (Element : Element_Type)) is
    begin
-      Process (
-         Constant_Reference (
-            Container'Unrestricted_Access, Index).Element.all);
+      Process (Container.Constant_Reference (Index).Element.all);
    end Query_Element;
 
    function Reference (
-      Container : not null access Vector;
+      Container : aliased in out Vector;
       Index : Index_Type)
       return Reference_Type is
    begin
@@ -598,6 +596,9 @@ package body Ada.Containers.Limited_Vectors is
    end Reference;
 
 --  diff (Reference)
+--
+--
+--
 --
 --
 --
@@ -760,7 +761,7 @@ package body Ada.Containers.Limited_Vectors is
       Index : Index_Type;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Reference (Container'Unrestricted_Access, Index).Element.all);
+      Process (Container.Reference (Index).Element.all);
    end Update_Element;
 
 --  diff ("=")

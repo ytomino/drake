@@ -193,7 +193,7 @@ package body Ada.Containers.Hashed_Sets is
    end Clear;
 
    function Constant_Reference (
-      Container : not null access constant Set;
+      Container : aliased Set;
       Position : Cursor)
       return Constant_Reference_Type
    is
@@ -719,11 +719,11 @@ package body Ada.Containers.Hashed_Sets is
       end Equivalent_Key;
 
       function Constant_Reference (
-         Container : not null access constant Set;
+         Container : aliased Set;
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container.all, Key).Element'Access);
+         return (Element => Find (Container, Key).Element'Access);
       end Constant_Reference;
 
       function Contains (Container : Set; Key : Key_Type) return Boolean is
@@ -774,22 +774,22 @@ package body Ada.Containers.Hashed_Sets is
       end Key;
 
       function Reference_Preserving_Key (
-         Container : not null access Set;
+         Container : aliased in out Set;
          Position : Cursor)
          return Reference_Type is
       begin
-         Unique (Container.all, True);
+         Unique (Container, True);
 --  diff
          return (Element => Position.Element'Access);
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key (
-         Container : not null access Set;
+         Container : aliased in out Set;
          Key : Key_Type)
          return Reference_Type is
       begin
-         Unique (Container.all, True);
-         return (Element => Find (Container.all, Key).Element'Access);
+         Unique (Container, True);
+         return (Element => Find (Container, Key).Element'Access);
       end Reference_Preserving_Key;
 
       procedure Replace (
@@ -808,7 +808,8 @@ package body Ada.Containers.Hashed_Sets is
       begin
          Process (
             Reference_Preserving_Key (
-               Container'Unrestricted_Access, Position).Element.all);
+               Container,
+               Position).Element.all);
       end Update_Element_Preserving_Key;
 
    end Generic_Keys;

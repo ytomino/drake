@@ -16,7 +16,10 @@ package Ada.Containers.Vectors is
       Index_Type'Min (Index_Type'Base'Last - 1, Index_Type'Last) + 1;
    No_Index : constant Extended_Index := Extended_Index'First;
 
-   type Vector is tagged private;
+   type Vector is tagged private
+      with
+         Constant_Indexing => Constant_Reference,
+         Variable_Indexing => Reference;
    pragma Preelaborable_Initialization (Vector);
 
    --  modified
@@ -116,23 +119,25 @@ package Ada.Containers.Vectors is
 --    Process : not null access procedure (Element : in out Element_Type));
 
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is private;
+      Element : not null access constant Element_Type) is private
+      with Implicit_Dereference => Element;
 
    type Reference_Type (
-      Element : not null access Element_Type) is private;
+      Element : not null access Element_Type) is private
+      with Implicit_Dereference => Element;
 
    function Constant_Reference (
-      Container : not null access constant Vector; -- [4.5/4.6] aliased
+      Container : aliased Vector;
       Index : Index_Type)
       return Constant_Reference_Type;
 
    function Reference (
-      Container : not null access Vector; -- [4.5/4.6] aliased
+      Container : aliased in out Vector;
       Index : Index_Type)
       return Reference_Type;
 
 --  function Constant_Reference (
---    Container : aliased in Vector;
+--    Container : aliased Vector;
 --    Position : Cursor)
 --    return Constant_Reference_Type;
 
@@ -341,17 +346,19 @@ package Ada.Containers.Vectors is
       Index_Type,
       Element_Type,
       Element_Array);
-   function Constant_Reference (Container : not null access constant Vector)
+   function Constant_Reference (
+      Container : aliased Vector)
       return Slicing.Constant_Reference_Type;
    function Constant_Reference (
-      Container : not null access constant Vector;
+      Container : aliased Vector;
       First_Index : Index_Type;
       Last_Index : Extended_Index)
       return Slicing.Constant_Reference_Type;
-   function Reference (Container : not null access Vector)
+   function Reference (
+      Container : aliased in out Vector)
       return Slicing.Reference_Type;
    function Reference (
-      Container : not null access Vector;
+      Container : aliased in out Vector;
       First_Index : Index_Type;
       Last_Index : Extended_Index)
       return Slicing.Reference_Type;

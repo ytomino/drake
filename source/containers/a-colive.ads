@@ -16,7 +16,10 @@ package Ada.Containers.Limited_Vectors is
          Index_Type'Min (Index_Type'Base'Last - 1, Index_Type'Last) + 1;
    No_Index : constant Extended_Index := Extended_Index'First;
 
-   type Vector is tagged limited private;
+   type Vector is tagged limited private
+      with
+         Constant_Indexing => Constant_Reference,
+         Variable_Indexing => Reference;
    pragma Preelaborable_Initialization (Vector);
 
 --  diff
@@ -116,18 +119,20 @@ package Ada.Containers.Limited_Vectors is
 --    Process : not null access procedure (Element : in out Element_Type));
 
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is private;
+      Element : not null access constant Element_Type) is private
+      with Implicit_Dereference => Element;
 
    type Reference_Type (
-      Element : not null access Element_Type) is private;
+      Element : not null access Element_Type) is private
+      with Implicit_Dereference => Element;
 
    function Constant_Reference (
-      Container : not null access constant Vector; -- [gcc 4.5/4.6] aliased
+      Container : aliased Vector;
       Index : Index_Type)
       return Constant_Reference_Type;
 
    function Reference (
-      Container : not null access Vector; -- [gcc 4.5/4.6] aliased
+      Container : aliased in out Vector;
       Index : Index_Type)
       return Reference_Type;
 
@@ -352,6 +357,8 @@ package Ada.Containers.Limited_Vectors is
       function Contains (Container : Vector; Item : Element_Type)
          return Boolean;
    end Equivalents;
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff

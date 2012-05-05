@@ -14,7 +14,10 @@ package Ada.Containers.Limited_Hashed_Maps is
    pragma Preelaborate;
    pragma Remote_Types;
 
-   type Map is tagged limited private;
+   type Map is tagged limited private
+      with
+         Constant_Indexing => Constant_Reference,
+         Variable_Indexing => Reference;
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -46,7 +49,10 @@ package Ada.Containers.Limited_Hashed_Maps is
 
    procedure Clear (Container : in out Map);
 
---  diff (Key)
+   type Key_Reference_Type (
+      Element : not null access constant Key_Type) is private
+      with Implicit_Dereference => Element;
+   function Key (Position : Cursor) return Key_Reference_Type;
 
 --  diff (Element)
 
@@ -70,28 +76,30 @@ package Ada.Containers.Limited_Hashed_Maps is
          Element : in out Element_Type));
 
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is private;
+      Element : not null access constant Element_Type) is private
+      with Implicit_Dereference => Element;
 
    type Reference_Type (
-      Element : not null access Element_Type) is private;
+      Element : not null access Element_Type) is private
+      with Implicit_Dereference => Element;
 
    function Constant_Reference (
-      Container : not null access constant Map; -- [gcc 4.5/4.6] aliased
+      Container : aliased Map;
       Position : Cursor)
       return Constant_Reference_Type;
 
    function Reference (
-      Container : not null access Map; -- [gcc 4.5/4.6] aliased
+      Container : aliased in out Map;
       Position : Cursor)
       return Reference_Type;
 
    function Constant_Reference (
-      Container : not null access constant Map; -- [gcc 4.5/4.6] aliased
+      Container : aliased Map;
       Key : Key_Type)
       return Constant_Reference_Type;
 
    function Reference (
-      Container : not null access Map; -- [gcc 4.5/4.6] aliased
+      Container : aliased in out Map;
       Key : Key_Type)
       return Reference_Type;
 
@@ -222,6 +230,9 @@ private
 
    type Cursor is access Node;
 
+   type Key_Reference_Type (
+      Element : not null access constant Key_Type) is null record;
+
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
@@ -241,6 +252,16 @@ private
 
    for Cursor'Read use Read;
    for Cursor'Write use Write;
+
+   procedure Read (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : out Key_Reference_Type);
+   procedure Write (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : Key_Reference_Type);
+
+   for Key_Reference_Type'Read use Read;
+   for Key_Reference_Type'Write use Write;
 
    procedure Read (
       Stream : access Streams.Root_Stream_Type'Class;

@@ -14,7 +14,9 @@ package Ada.Containers.Hashed_Sets is
    pragma Preelaborate;
    pragma Remote_Types;
 
-   type Set is tagged private;
+   type Set is tagged private
+      with
+         Constant_Indexing => Constant_Reference;
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
@@ -64,10 +66,11 @@ package Ada.Containers.Hashed_Sets is
       Process : not null access procedure (Element : Element_Type));
 
    type Constant_Reference_Type (
-      Element : not null access constant Element_Type) is private;
+      Element : not null access constant Element_Type) is private
+      with Implicit_Dereference => Element;
 
    function Constant_Reference (
-      Container : not null access constant Set; -- [gcc 4.5/4.6] aliased
+      Container : aliased Set;
       Position : Cursor)
       return Constant_Reference_Type;
 
@@ -187,20 +190,21 @@ package Ada.Containers.Hashed_Sets is
          Process : not null access procedure (Element : in out Element_Type));
 
       type Reference_Type (
-         Element : not null access Element_Type) is private;
+         Element : not null access Element_Type) is private
+         with Implicit_Dereference => Element;
 
       function Reference_Preserving_Key (
-         Container : not null access Set; -- [gcc 4.5/4.6] aliased
+         Container : aliased in out Set;
          Position : Cursor)
          return Reference_Type;
 
       function Constant_Reference (
-         Container : not null access constant Set; -- [gcc 4.5/4.6] aliased
+         Container : aliased Set;
          Key : Key_Type)
          return Constant_Reference_Type;
 
       function Reference_Preserving_Key (
-         Container : not null access Set; -- [gcc 4.5/4.6] aliased
+         Container : aliased in out Set;
          Key : Key_Type)
          return Reference_Type;
 

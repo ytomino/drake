@@ -183,7 +183,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Clear;
 
    function Constant_Reference (
-      Container : not null access constant Set;
+      Container : aliased Set;
       Position : Cursor)
       return Constant_Reference_Type
    is
@@ -805,11 +805,11 @@ package body Ada.Containers.Limited_Ordered_Sets is
       end Ceiling;
 
       function Constant_Reference (
-         Container : not null access constant Set;
+         Container : aliased Set;
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container.all, Key).Element);
+         return (Element => Find (Container, Key).Element);
       end Constant_Reference;
 
       function Contains (Container : Set; Key : Key_Type) return Boolean is
@@ -878,7 +878,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       end Floor;
 
       function Reference_Preserving_Key (
-         Container : not null access Set;
+         Container : aliased in out Set;
          Position : Cursor)
          return Reference_Type
       is
@@ -888,12 +888,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key (
-         Container : not null access Set;
+         Container : aliased in out Set;
          Key : Key_Type)
          return Reference_Type is
       begin
 --  diff
-         return (Element => Find (Container.all, Key).Element);
+         return (Element => Find (Container, Key).Element);
       end Reference_Preserving_Key;
 
 --  diff (Replace)
@@ -917,7 +917,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       begin
          Process (
             Reference_Preserving_Key (
-               Container'Unrestricted_Access,
+               Container,
                Position).Element.all);
       end Update_Element_Preserving_Key;
 

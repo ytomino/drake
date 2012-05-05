@@ -108,7 +108,8 @@ package body Ada.Containers.Indefinite_Holders is
       Container.Data := Empty_Data'Unrestricted_Access;
    end Clear;
 
-   function Constant_Reference (Container : not null access constant Holder)
+   function Constant_Reference (
+      Container : aliased Holder)
       return Constant_Reference_Type is
    begin
       return (Element => Container.Data.Element.all'Unrestricted_Access);
@@ -121,7 +122,7 @@ package body Ada.Containers.Indefinite_Holders is
 
    function Element (Container : Holder'Class) return Element_Type is
    begin
-      return Constant_Reference (Container'Unrestricted_Access).Element.all;
+      return Container.Constant_Reference.Element.all;
    end Element;
 
    function Empty_Holder return Holder is
@@ -149,13 +150,14 @@ package body Ada.Containers.Indefinite_Holders is
       Container : Holder'Class;
       Process : not null access procedure (Element : Element_Type)) is
    begin
-      Process (Constant_Reference (Container'Unrestricted_Access).Element.all);
+      Process (Container.Constant_Reference.Element.all);
    end Query_Element;
 
-   function Reference (Container : not null access Holder)
+   function Reference (
+      Container : aliased in out Holder)
       return Reference_Type is
    begin
-      Unique (Container.all);
+      Unique (Container);
       return (Element => Container.Data.Element.all'Unrestricted_Access);
    end Reference;
 
@@ -178,7 +180,7 @@ package body Ada.Containers.Indefinite_Holders is
       Container : in out Holder'Class;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Reference (Container'Unrestricted_Access).Element.all);
+      Process (Container.Reference.Element.all);
    end Update_Element;
 
    function "=" (Left, Right : Holder) return Boolean is

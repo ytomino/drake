@@ -185,7 +185,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Clear;
 
    function Constant_Reference (
-      Container : not null access constant Map;
+      Container : aliased Map;
       Position : Cursor)
       return Constant_Reference_Type
    is
@@ -195,11 +195,11 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Constant_Reference;
 
    function Constant_Reference (
-      Container : not null access constant Map;
+      Container : aliased Map;
       Key : Key_Type)
       return Constant_Reference_Type
    is
-      Position : constant not null Cursor := Find (Container.all, Key);
+      Position : constant not null Cursor := Find (Container, Key);
    begin
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
@@ -402,10 +402,10 @@ package body Ada.Containers.Limited_Hashed_Maps is
       return Container'Unrestricted_Access;
    end Iterate;
 
---  diff (Key)
---
---
---
+   function Key (Position : Cursor) return Key_Reference_Type is
+   begin
+      return (Element => Position.Key.all'Access);
+   end Key;
 
    function Length (Container : Map) return Count_Type is
    begin
@@ -451,7 +451,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Query_Element;
 
    function Reference (
-      Container : not null access Map;
+      Container : aliased in out Map;
       Position : Cursor)
       return Reference_Type
    is
@@ -461,11 +461,11 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Reference;
 
    function Reference (
-      Container : not null access Map;
+      Container : aliased in out Map;
       Key : Key_Type)
       return Reference_Type
    is
-      Position : constant not null Cursor := Find (Container.all, Key);
+      Position : constant not null Cursor := Find (Container, Key);
    begin
 --  diff
       return (Element => Position.Element.all'Access);
@@ -517,7 +517,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    begin
       Process (
          Position.Key.all,
-         Reference (Container'Unrestricted_Access, Position).Element.all);
+         Container.Reference (Position).Element.all);
    end Update_Element;
 
 --  diff ("=")
