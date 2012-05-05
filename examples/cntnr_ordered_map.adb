@@ -97,22 +97,24 @@ procedure cntnr_Ordered_Map is
 			end if;
 		end;
 		Maps.Clear (X);
+		-- forward iteration
 		declare
-			Ite : Maps.Iterator := X.Iterate;
-			Pos : Maps.Cursor := Maps.First (Ite);
+			Ite : Maps.Map_Iterator_Interfaces.Reversible_Iterator'Class := X.Iterate;
+			Pos : Maps.Cursor := Maps.Map_Iterator_Interfaces.First (Ite);
 		begin
 			while Pos /= Maps.No_Element loop
 				pragma Assert (False);
-				Pos := Maps.Next (Ite, Pos);
+				Pos := Maps.Map_Iterator_Interfaces.Next (Ite, Pos);
 			end loop;
 		end;
+		-- reverse iteration
 		declare
-			Ite : Maps.Iterator := X.Iterate;
-			Pos : Maps.Cursor := Maps.Last (Ite);
+			Ite : Maps.Map_Iterator_Interfaces.Reversible_Iterator'Class := X.Iterate;
+			Pos : Maps.Cursor := Maps.Map_Iterator_Interfaces.Last (Ite);
 		begin
 			while Pos /= Maps.No_Element loop
 				pragma Assert (False);
-				Pos := Maps.Previous (Ite, Pos);
+				Pos := Maps.Map_Iterator_Interfaces.Previous (Ite, Pos);
 			end loop;
 		end;
 	end Test_02;

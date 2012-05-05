@@ -46,23 +46,23 @@ procedure cntnr_d_Linked_List is
 		end loop;
 		C := 'A';
 		declare
-			Ite : Lists.Iterator := X.Iterate;
-			Pos : Lists.Cursor := Lists.First (Ite);
+			Ite : Lists.List_Iterator_Interfaces.Reversible_Iterator'Class := X.Iterate;
+			Pos : Lists.Cursor := Lists.List_Iterator_Interfaces.First (Ite);
 		begin
 			while Pos /= Lists.No_Element loop
 				pragma Assert (Lists.Element (Pos) = C);
 				C := Character'Succ (C);
-				Pos := Lists.Next (Ite, Pos);
+				Pos := Lists.List_Iterator_Interfaces.Next (Ite, Pos);
 			end loop;
 		end;
 		declare
-			Ite : Lists.Iterator := X.Iterate;
-			Pos : Lists.Cursor := Lists.Last (Ite);
+			Ite : Lists.List_Iterator_Interfaces.Reversible_Iterator'Class := X.Iterate;
+			Pos : Lists.Cursor := Lists.List_Iterator_Interfaces.Last (Ite);
 		begin
 			while Pos /= Lists.No_Element loop
 				C := Character'Pred (C);
 				pragma Assert (Lists.Element (Pos) = C);
-				Pos := Lists.Previous (Ite, Pos);
+				Pos := Lists.List_Iterator_Interfaces.Previous (Ite, Pos);
 			end loop;
 		end;
 		declare

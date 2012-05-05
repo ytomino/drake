@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
+with Ada.Iterator_Interfaces;
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Hash_Tables;
 private with Ada.Finalization;
@@ -17,7 +18,9 @@ package Ada.Containers.Limited_Hashed_Maps is
    type Map is tagged limited private
       with
          Constant_Indexing => Constant_Reference,
-         Variable_Indexing => Reference;
+         Variable_Indexing => Reference,
+         Default_Iterator => Iterate,
+         Iterator_Element => Element_Type;
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -31,11 +34,8 @@ package Ada.Containers.Limited_Hashed_Maps is
 
    function Has_Element (Position : Cursor) return Boolean;
 
---  package Map_Iterator_Interfaces is new
---    Ada.Iterator_Interfaces (Cursor, Has_Element);
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   package Map_Iterator_Interfaces is
+      new Ada.Iterator_Interfaces (Cursor, Has_Element);
 
 --  diff ("=")
 
@@ -169,10 +169,8 @@ package Ada.Containers.Limited_Hashed_Maps is
       Container : Map'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
---  function Iterate (Container : Map)
---    return Map_Iterator_Interfaces.Forward_Iterator'Class;
    function Iterate (Container : Map)
-      return Iterator;
+      return Map_Iterator_Interfaces.Forward_Iterator'Class;
 
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
@@ -239,7 +237,16 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   type Iterator is not null access constant Map;
+   type Map_Access is access constant Map;
+   for Map_Access'Storage_Size use 0;
+
+   type Iterator is new Map_Iterator_Interfaces.Forward_Iterator with record
+      Container : not null Map_Access;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor;
 
    --  dummy 'Read and 'Write
 

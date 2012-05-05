@@ -288,7 +288,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
 
    function First (Object : Iterator) return Cursor is
    begin
-      return First (Object.all);
+      return First (Object.Container.all);
    end First;
 
    function Floor (Container : Map; Key : Key_Type) return Cursor is
@@ -418,9 +418,9 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Iterate;
 
    function Iterate (Container : Map)
-      return Iterator is
+      return Map_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return Container'Unrestricted_Access;
+      return Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    function Key (Position : Cursor) return Key_Reference_Type is
@@ -441,7 +441,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
 
    function Last (Object : Iterator) return Cursor is
    begin
-      return Last (Object.all);
+      return Last (Object.Container.all);
    end Last;
 
    function Length (Container : Map) return Count_Type is

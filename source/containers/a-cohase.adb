@@ -338,7 +338,7 @@ package body Ada.Containers.Hashed_Sets is
 
    function First (Object : Iterator) return Cursor is
    begin
-      return First (Object.all);
+      return First (Object.Container.all);
    end First;
 
    function Generic_Array_To_Set (S : Element_Array) return Set is
@@ -484,9 +484,9 @@ package body Ada.Containers.Hashed_Sets is
    end Iterate;
 
    function Iterate (Container : Set)
-      return Iterator is
+      return Set_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Container'Unrestricted_Access;
+      return Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    function Length (Container : Set) return Count_Type is

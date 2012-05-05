@@ -504,20 +504,20 @@ package body Ada.Containers.Limited_Vectors is
    end Iterate;
 
    function Iterate (Container : Vector)
-      return Iterator is
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return (First => First (Container), Last => Last (Container));
+      return Iterator'(First => First (Container), Last => Last (Container));
    end Iterate;
 
    function Iterate (Container : Vector; First, Last : Cursor)
-      return Iterator
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Unreferenced (Container);
    begin
       if First > Last then
-         return (First => No_Element, Last => No_Element);
+         return Iterator'(First => No_Element, Last => No_Element);
       else
-         return (First => First, Last => Last);
+         return Iterator'(First => First, Last => Last);
       end if;
    end Iterate;
 

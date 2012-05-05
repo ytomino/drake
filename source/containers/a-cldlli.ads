@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
+with Ada.Iterator_Interfaces;
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Linked_Lists.Doubly;
 private with Ada.Finalization;
@@ -14,7 +15,9 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
    type List is tagged limited private
       with
          Constant_Indexing => Constant_Reference,
-         Variable_Indexing => Reference;
+         Variable_Indexing => Reference,
+         Default_Iterator => Iterate,
+         Iterator_Element => Element_Type;
    pragma Preelaborable_Initialization (List);
 
    type Cursor is private;
@@ -28,13 +31,8 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 
    function Has_Element (Position : Cursor) return Boolean;
 
---  package List_Iterator_Interfaces is new
---     Ada.Iterator_Interfaces (Cursor, Has_Element);
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
-   function Last (Object : Iterator) return Cursor;
-   function Previous (Object : Iterator; Position : Cursor) return Cursor;
+   package List_Iterator_Interfaces is
+      new Ada.Iterator_Interfaces (Cursor, Has_Element);
 
 --  diff ("=")
 
@@ -207,17 +205,15 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
       Container : List; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
---  function Iterate (Container : List)
---    return List_Iterator_Interfaces.Reversible_Iterator'Class;
    function Iterate (Container : List)
-      return Iterator;
+      return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
 --  function Iterate (Container : List; Start : Cursor)
 --    return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
    --  extended
    function Iterate (Container : List; First, Last : Cursor)
-      return Iterator;
+      return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
@@ -300,10 +296,19 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   type Iterator is record
+   type Iterator is new List_Iterator_Interfaces.Reversible_Iterator
+      with
+   record
       First : Cursor;
       Last : Cursor;
    end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor;
+   overriding function Last (Object : Iterator) return Cursor;
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor;
 
    --  dummy 'Read and 'Write
 
