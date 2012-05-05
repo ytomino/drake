@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
+--  with Ada.Iterator_Interfaces; -- [gcc 4.6] can not instantiate it
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Binary_Trees.Arne_Andersson;
 private with Ada.Finalization;
@@ -18,7 +19,9 @@ package Ada.Containers.Limited_Ordered_Maps is
    type Map is tagged limited private;
 --    with -- [gcc 4.6]
 --       Constant_Indexing => Constant_Reference,
---       Variable_Indexing => Reference;
+--       Variable_Indexing => Reference,
+--       Default_Iterator => Iterate,
+--       Iterator_Element => Element_Type;
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -32,13 +35,18 @@ package Ada.Containers.Limited_Ordered_Maps is
 
    function Has_Element (Position : Cursor) return Boolean;
 
---  package Map_Iterator_Interfaces is new
---    Ada.Iterator_Interfaces (Cursor, Has_Element);
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
-   function Last (Object : Iterator) return Cursor;
-   function Previous (Object : Iterator; Position : Cursor) return Cursor;
+   package Map_Iterator_Interfaces is
+--    new Ada.Iterator_Interfaces (Cursor, Has_Element);
+      --  [gcc 4.6] Cursor is incomplete type
+      type Forward_Iterator is limited interface;
+      function First (Object : Forward_Iterator) return Cursor is abstract;
+      function Next (Object : Forward_Iterator; Position : Cursor)
+         return Cursor is abstract;
+      type Reversible_Iterator is limited interface and Forward_Iterator;
+      function Last (Object : Reversible_Iterator) return Cursor is abstract;
+      function Previous (Object : Reversible_Iterator; Position : Cursor)
+         return Cursor is abstract;
+   end Map_Iterator_Interfaces;
 
 --  diff ("=")
 
@@ -202,10 +210,8 @@ package Ada.Containers.Limited_Ordered_Maps is
       Container : Map'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
---  function Iterate (Container : Map)
---    return Map_Iterator_Interfaces.Reversible_Iterator'Class;
    function Iterate (Container : Map)
-      return Iterator;
+      return Map_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
@@ -273,7 +279,19 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   type Iterator is not null access constant Map;
+   type Map_Access is access constant Map;
+   for Map_Access'Storage_Size use 0;
+
+   type Iterator is new Map_Iterator_Interfaces.Reversible_Iterator with record
+      Container : not null Map_Access;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor;
+   overriding function Last (Object : Iterator) return Cursor;
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor;
 
    --  dummy 'Read and 'Write
 

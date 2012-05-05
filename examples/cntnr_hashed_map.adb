@@ -74,15 +74,16 @@ procedure cntnr_Hashed_Map is
 		end;
 		X.Delete ('C');
 		pragma Assert (X.Length = 5);
+		-- iteration
 		declare
-			Ite : Maps.Iterator := X.Iterate;
-			Pos : Maps.Cursor := Maps.First (Ite);
+			Ite : Maps.Map_Iterator_Interfaces.Forward_Iterator'Class := X.Iterate;
+			Pos : Maps.Cursor := Maps.Map_Iterator_Interfaces.First (Ite);
 			type CA is array (Character range 'A' .. 'F') of Boolean;
 			Check : CA := (others => False);
 		begin
 			while Pos /= Maps.No_Element loop
 				Check (Maps.Key (Pos)) := True;
-				Pos := Maps.Next (Ite, Pos);
+				Pos := Maps.Map_Iterator_Interfaces.Next (Ite, Pos);
 			end loop;
 			pragma Assert (Check = CA'('C' => False, others => True));
 		end;

@@ -346,7 +346,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    function First (Object : Iterator) return Cursor is
    begin
-      return First (Object.all);
+      return First (Object.Container.all);
    end First;
 
    function Floor (Container : Set; Item : Element_Type) return Cursor is
@@ -509,9 +509,9 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    end Iterate;
 
    function Iterate (Container : Set)
-      return Iterator is
+      return Set_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return Container'Unrestricted_Access;
+      return Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    function Last (Container : Set) return Cursor is
@@ -527,7 +527,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    function Last (Object : Iterator) return Cursor is
    begin
-      return Last (Object.all);
+      return Last (Object.Container.all);
    end Last;
 
    function Length (Container : Set) return Count_Type is

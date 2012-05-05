@@ -287,7 +287,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
 
    function First (Object : Iterator) return Cursor is
    begin
-      return First (Object.all);
+      return First (Object.Container.all);
    end First;
 
    function Has_Element (Position : Cursor) return Boolean is
@@ -397,9 +397,9 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Iterate;
 
    function Iterate (Container : Map)
-      return Iterator is
+      return Map_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Container'Unrestricted_Access;
+      return Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    function Key (Position : Cursor) return Key_Reference_Type is

@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
+--  with Ada.Iterator_Interfaces; -- [gcc 4.6] can not instantiate it
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Hash_Tables;
 private with Ada.Finalization;
@@ -16,7 +17,9 @@ package Ada.Containers.Limited_Hashed_Sets is
 
    type Set is tagged limited private;
 --    with -- [gcc 4.6]
---       Constant_Indexing => Constant_Reference;
+--       Constant_Indexing => Constant_Reference,
+--       Default_Iterator => Iterate,
+--       Iterator_Element => Element_Type;
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
@@ -30,11 +33,13 @@ package Ada.Containers.Limited_Hashed_Sets is
 
    function Has_Element (Position : Cursor) return Boolean;
 
---  package Set_Iterator_Interfaces is new
---    Ada.Iterator_Interfaces (Cursor, Has_Element);
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
+   package Set_Iterator_Interfaces is
+      --  [gcc 4.6] Cursor is incomplete type
+      type Forward_Iterator is limited interface;
+      function First (Object : Forward_Iterator) return Cursor is abstract;
+      function Next (Object : Forward_Iterator; Position : Cursor)
+         return Cursor is abstract;
+   end Set_Iterator_Interfaces;
 
 --  diff ("=")
 
@@ -155,10 +160,8 @@ package Ada.Containers.Limited_Hashed_Sets is
       Container : Set'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
---  function Iterate (Container : Set)
---    return Map_Iterator_Interfaces.Forward_Iterator'Class;
    function Iterate (Container : Set)
-      return Iterator;
+      return Set_Iterator_Interfaces.Forward_Iterator'Class;
 
    generic
       type Key_Type (<>) is private;
@@ -287,7 +290,16 @@ private
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
-   type Iterator is not null access constant Set;
+   type Set_Access is access constant Set;
+   for Set_Access'Storage_Size use 0;
+
+   type Iterator is new Set_Iterator_Interfaces.Forward_Iterator with record
+      Container : not null Set_Access;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor;
 
    --  dummy 'Read and 'Write
 

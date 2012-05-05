@@ -1,5 +1,7 @@
 pragma License (Unrestricted);
---  diff (System.Arrays)
+--  Ada 2005
+--  with Ada.Iterator_Interfaces; -- [gcc 4.6] can not instantiate it
+--  diff (Ada.References)
 private with Ada.Finalization;
 private with Ada.Streams;
 private with System.Reference_Counting;
@@ -19,7 +21,9 @@ package Ada.Containers.Indefinite_Vectors is
    type Vector is tagged private;
 --    with -- [gcc 4.6]
 --       Constant_Indexing => Constant_Reference,
---       Variable_Indexing => Reference;
+--       Variable_Indexing => Reference,
+--       Default_Iterator => Iterate,
+--       Iterator_Element => Element_Type;
    pragma Preelaborable_Initialization (Vector);
 
    --  modified
@@ -36,13 +40,18 @@ package Ada.Containers.Indefinite_Vectors is
 
    function Has_Element (Position : Cursor) return Boolean;
 
---  package Vector_Iterator_Interfaces is
---     new Ada.Iterator_Interfaces (Cursor, Has_Element);
-   type Iterator is limited private;
-   function First (Object : Iterator) return Cursor;
-   function Next (Object : Iterator; Position : Cursor) return Cursor;
-   function Last (Object : Iterator) return Cursor;
-   function Previous (Object : Iterator; Position : Cursor) return Cursor;
+   package Vector_Iterator_Interfaces is
+--    new Ada.Iterator_Interfaces (Cursor, Has_Element);
+      --  [gcc 4.6] Cursor is incomplete type
+      type Forward_Iterator is limited interface;
+      function First (Object : Forward_Iterator) return Cursor is abstract;
+      function Next (Object : Forward_Iterator; Position : Cursor)
+         return Cursor is abstract;
+      type Reversible_Iterator is limited interface and Forward_Iterator;
+      function Last (Object : Reversible_Iterator) return Cursor is abstract;
+      function Previous (Object : Reversible_Iterator; Position : Cursor)
+         return Cursor is abstract;
+   end Vector_Iterator_Interfaces;
 
    function "=" (Left, Right : Vector) return Boolean;
 
@@ -198,14 +207,18 @@ package Ada.Containers.Indefinite_Vectors is
 --
 --
 
-   procedure Prepend (Container : in out Vector; New_Item : Vector);
+   procedure Prepend (
+      Container : in out Vector;
+      New_Item : Vector);
 
    procedure Prepend (
       Container : in out Vector;
       New_Item : Element_Type;
       Count : Count_Type := 1);
 
-   procedure Append (Container : in out Vector; New_Item : Vector);
+   procedure Append (
+      Container : in out Vector;
+      New_Item : Vector);
 
    procedure Append (
       Container : in out Vector;
@@ -320,17 +333,15 @@ package Ada.Containers.Indefinite_Vectors is
       Container : Vector'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
---  function Iterate (Container : Vector)
---    return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
    function Iterate (Container : Vector)
-      return Iterator;
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
 --  function Iterate (Container : Vector; Start : Cursor)
 --    return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    --  extended
    function Iterate (Container : Vector; First, Last : Cursor)
-      return Iterator;
+      return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
@@ -414,10 +425,19 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   type Iterator is record
+   type Iterator is new Vector_Iterator_Interfaces.Reversible_Iterator
+      with
+   record
       First : Extended_Index;
       Last : Extended_Index;
    end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor;
+   overriding function Last (Object : Iterator) return Cursor;
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor;
 
    --  dummy 'Read and 'Write
 
