@@ -227,6 +227,7 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 --
 --
+--
 
 --  diff (Constant_Reference)
 --
@@ -305,8 +306,7 @@ package body Ada.Containers.Indefinite_Vectors is
    function Element (Container : Vector'Class; Index : Index_Type)
       return Element_Type is
    begin
-      return
-         Constant_Reference (Container'Unrestricted_Access, Index).Element.all;
+      return Container.Constant_Reference (Index).Element.all;
    end Element;
 
    function Empty_Vector return Vector is
@@ -583,9 +583,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Index : Index_Type;
       Process  : not null access procedure (Element : Element_Type)) is
    begin
-      Process (
-         Constant_Reference (
-            Container'Unrestricted_Access, Index).Element.all);
+      Process (Container.Constant_Reference (Index).Element.all);
    end Query_Element;
 
    function Reference (
@@ -598,6 +596,9 @@ package body Ada.Containers.Indefinite_Vectors is
    end Reference;
 
 --  diff (Reference)
+--
+--
+--
 --
 --
 --
@@ -760,7 +761,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Index : Index_Type;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Reference (Container'Unrestricted_Access, Index).Element.all);
+      Process (Container.Reference (Index).Element.all);
    end Update_Element;
 
    function "=" (Left, Right : Vector) return Boolean is

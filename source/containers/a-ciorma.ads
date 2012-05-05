@@ -11,11 +11,14 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Indefinite_Ordered_Maps is
    pragma Preelaborate;
---  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
+--  pragma Remote_Types; -- it defends to define Reference_Type...
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
    type Map is tagged private;
+--    with -- [gcc 4.6]
+--       Constant_Indexing => Constant_Reference,
+--       Variable_Indexing => Reference;
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -48,6 +51,7 @@ package Ada.Containers.Indefinite_Ordered_Maps is
    function Key (Position : Cursor) return Key_Type;
 --  diff
 --  diff
+--  diff
 
    function Element (Position : Cursor) return Element_Type;
 
@@ -72,9 +76,11 @@ package Ada.Containers.Indefinite_Ordered_Maps is
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    type Reference_Type (
       Element : not null access Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    function Constant_Reference (
       Container : not null access constant Map; -- [gcc 4.5/4.6] aliased

@@ -402,10 +402,10 @@ package body Ada.Containers.Limited_Hashed_Maps is
       return Container'Unrestricted_Access;
    end Iterate;
 
---  diff (Key)
---
---
---
+   function Key (Position : Cursor) return Key_Reference_Type is
+   begin
+      return (Element => Position.Key.all'Access);
+   end Key;
 
    function Length (Container : Map) return Count_Type is
    begin
@@ -517,7 +517,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    begin
       Process (
          Position.Key.all,
-         Reference (Container'Unrestricted_Access, Position).Element.all);
+         Container.Reference (Position).Element.all);
    end Update_Element;
 
 --  diff ("=")

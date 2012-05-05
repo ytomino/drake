@@ -808,7 +808,8 @@ package body Ada.Containers.Hashed_Sets is
       begin
          Process (
             Reference_Preserving_Key (
-               Container'Unrestricted_Access, Position).Element.all);
+               Container'Unrestricted_Access,
+               Position).Element.all);
       end Update_Element_Preserving_Key;
 
    end Generic_Keys;

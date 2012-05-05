@@ -569,7 +569,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    begin
       Process (
          Position.Key.all,
-         Reference (Container'Unrestricted_Access, Position).Element.all);
+         Container.Reference (Position).Element.all);
    end Update_Element;
 
 --  diff ("=")

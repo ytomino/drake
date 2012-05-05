@@ -15,6 +15,8 @@ package Ada.Containers.Limited_Hashed_Sets is
 --  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
 
    type Set is tagged limited private;
+--    with -- [gcc 4.6]
+--       Constant_Indexing => Constant_Reference;
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
@@ -65,6 +67,7 @@ package Ada.Containers.Limited_Hashed_Sets is
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    function Constant_Reference (
       Container : not null access constant Set; -- [gcc 4.5/4.6] aliased
@@ -188,6 +191,7 @@ package Ada.Containers.Limited_Hashed_Sets is
 
       type Reference_Type (
          Element : not null access Element_Type) is private;
+--       with Implicit_Dereference => Element; -- [gcc 4.6]
 
       function Reference_Preserving_Key (
          Container : not null access Set; -- [gcc 4.5/4.6] aliased

@@ -17,6 +17,9 @@ package Ada.Containers.Indefinite_Vectors is
    No_Index : constant Extended_Index := Extended_Index'First;
 
    type Vector is tagged private;
+--    with -- [gcc 4.6]
+--       Constant_Indexing => Constant_Reference,
+--       Variable_Indexing => Reference;
    pragma Preelaborable_Initialization (Vector);
 
    --  modified
@@ -117,9 +120,11 @@ package Ada.Containers.Indefinite_Vectors is
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    type Reference_Type (
       Element : not null access Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    function Constant_Reference (
       Container : not null access constant Vector; -- [4.5/4.6] aliased
@@ -335,7 +340,9 @@ package Ada.Containers.Indefinite_Vectors is
       procedure Merge (Target : in out Vector; Source : in out Vector);
    end Generic_Sorting;
 
---  diff (Element_Array, Slicing, Reference)
+--  diff (Element_Array, Slicing, Constant_Reference, Reference)
+--
+--
 --
 --
 --
@@ -403,6 +410,7 @@ private
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
+
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 

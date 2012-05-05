@@ -12,6 +12,9 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
 --  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
 
    type List is tagged private;
+--    with -- [gcc 4.6]
+--       Constant_Indexing => Constant_Reference,
+--       Variable_Indexing => Reference;
    pragma Preelaborable_Initialization (List);
 
    type Cursor is private;
@@ -60,9 +63,11 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    type Reference_Type (
       Element : not null access Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    function Constant_Reference (
       Container : not null access constant List; -- [gcc 4.5/4.6] aliased

@@ -46,9 +46,11 @@ package Ada.Containers.Indefinite_Holders is
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    type Reference_Type (
       Element : not null access Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    function Constant_Reference (
       Container : not null access constant Holder) -- [gcc 4.5/4.6] aliased
@@ -102,6 +104,7 @@ private
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
+
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 

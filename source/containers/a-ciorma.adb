@@ -569,7 +569,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    begin
       Process (
          Position.Key.all,
-         Reference (Container'Unrestricted_Access, Position).Element.all);
+         Container.Reference (Position).Element.all);
    end Update_Element;
 
    function "=" (Left, Right : Map) return Boolean is

@@ -17,6 +17,9 @@ package Ada.Containers.Limited_Vectors is
    No_Index : constant Extended_Index := Extended_Index'First;
 
    type Vector is tagged limited private;
+--    with -- [gcc 4.6]
+--       Constant_Indexing => Constant_Reference,
+--       Variable_Indexing => Reference;
    pragma Preelaborable_Initialization (Vector);
 
 --  diff
@@ -117,9 +120,11 @@ package Ada.Containers.Limited_Vectors is
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    type Reference_Type (
       Element : not null access Element_Type) is private;
+--    with Implicit_Dereference => Element; -- [gcc 4.6]
 
    function Constant_Reference (
       Container : not null access constant Vector; -- [gcc 4.5/4.6] aliased
@@ -355,6 +360,8 @@ package Ada.Containers.Limited_Vectors is
 --  diff
 --  diff
 --  diff
+--  diff
+--  diff
 
 --  diff (Generic_Array_To_Vector)
 --
@@ -403,6 +410,7 @@ private
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
+
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
