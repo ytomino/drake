@@ -71,6 +71,9 @@ private
       procedure Read (
          Stream : not null access Root_Stream_Type'Class;
          Object : out Buffer);
+      pragma Import (Ada, Read, "__drake_program_error");
+      --  "out" parameter destructs size info
+
       procedure Write (
          Stream : not null access Root_Stream_Type'Class;
          Object : Buffer);

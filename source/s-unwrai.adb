@@ -332,6 +332,14 @@ package body System.Unwind.Raising is
       end if;
    end Raise_From_Controlled_Operation;
 
+   procedure Raise_Program_Error is
+      Message : constant String := "not supported";
+   begin
+      Raise_Exception (
+         Unwind.Standard.Program_Error'Access,
+         Message => Message);
+   end Raise_Program_Error;
+
    procedure rcheck_00 (File : not null access Character; Line : Integer) is
       Message : constant String := "access check failed";
    begin

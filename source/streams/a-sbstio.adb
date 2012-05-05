@@ -178,13 +178,6 @@ package body Ada.Streams.Buffer_Storage_IO is
 
    package body No_Primitives is
 
-      procedure Read (
-         Stream : not null access Root_Stream_Type'Class;
-         Object : out Buffer) is
-      begin
-         raise Program_Error; -- "out" parameter destructs size info
-      end Read;
-
       procedure Write (
          Stream : not null access Root_Stream_Type'Class;
          Object : Buffer)

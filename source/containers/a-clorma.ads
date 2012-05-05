@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 --  diff (Copy_On_Write)
 private with Ada.Containers.Inside.Binary_Trees.Arne_Andersson;
 private with Ada.Finalization;
---  diff (Streams)
+private with Ada.Streams;
 generic
    type Key_Type (<>) is limited private;
    type Element_Type (<>) is limited private;
@@ -11,7 +11,7 @@ generic
 --  diff ("=")
 package Ada.Containers.Limited_Ordered_Maps is
    pragma Preelaborate;
---  pragma Remote_Types; -- it defends to define Reference_Type...
+--  pragma Remote_Types; -- [gcc 4.5/4.6] it defends to define Reference_Type
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
@@ -258,7 +258,8 @@ private
 
    type Cursor is access Node;
 
-   No_Element : constant Cursor := null;
+   type Key_Reference_Type (
+      Element : not null access constant Key_Type) is null record;
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
@@ -266,9 +267,53 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   type Key_Reference_Type (
-      Element : not null access constant Key_Type) is null record;
-
    type Iterator is not null access constant Map;
+
+   --  dummy 'Read and 'Write
+
+   procedure Read (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : out Cursor);
+   procedure Write (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : Cursor);
+
+   for Cursor'Read use Read;
+   for Cursor'Write use Write;
+
+   procedure Read (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : out Key_Reference_Type);
+   procedure Write (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : Key_Reference_Type);
+
+   for Key_Reference_Type'Read use Read;
+   for Key_Reference_Type'Write use Write;
+
+   procedure Read (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : out Constant_Reference_Type);
+   procedure Write (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : Constant_Reference_Type);
+
+   for Constant_Reference_Type'Read use Read;
+   for Constant_Reference_Type'Write use Write;
+
+   procedure Read (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : out Reference_Type);
+   procedure Write (
+      Stream : access Streams.Root_Stream_Type'Class;
+      Item : Reference_Type);
+
+   for Reference_Type'Read use Read;
+   for Reference_Type'Write use Write;
+
+   pragma Import (Ada, Read, "__drake_program_error");
+   pragma Import (Ada, Write, "__drake_program_error");
+
+   No_Element : constant Cursor := null;
 
 end Ada.Containers.Limited_Ordered_Maps;

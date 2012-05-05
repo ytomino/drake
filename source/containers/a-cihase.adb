@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with Ada.Streams; -- [gcc-4.7] can not search in private with
 with System;
 package body Ada.Containers.Indefinite_Hashed_Sets is
    use type Hash_Tables.Table_Access;

@@ -1,6 +1,7 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Containers.Composites;
+with Ada.Streams; -- [gcc-4.7] can not search in private with
 with System.Address_To_Access_Conversions;
 package body Ada.Containers.Ordered_Sets is
    use type Binary_Trees.Node_Access;
