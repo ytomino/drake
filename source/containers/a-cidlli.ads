@@ -289,8 +289,6 @@ private
 
    type Cursor is access Node;
 
-   No_Element : constant Cursor := null;
-
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
@@ -301,5 +299,7 @@ private
       First : Cursor;
       Last : Cursor;
    end record;
+
+   No_Element : constant Cursor := null;
 
 end Ada.Containers.Indefinite_Doubly_Linked_Lists;

@@ -222,8 +222,6 @@ private
 
    type Cursor is access Node;
 
-   No_Element : constant Cursor := null;
-
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
@@ -231,5 +229,7 @@ private
       Element : not null access Element_Type) is null record;
 
    type Iterator is not null access constant Map;
+
+   No_Element : constant Cursor := null;
 
 end Ada.Containers.Hashed_Maps;

@@ -258,7 +258,8 @@ private
 
    type Cursor is access Node;
 
-   No_Element : constant Cursor := null;
+--  diff (Key_Reference_Type)
+--  diff
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
@@ -266,9 +267,8 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
---  diff (Key_Reference_Type)
---  diff
-
    type Iterator is not null access constant Map;
+
+   No_Element : constant Cursor := null;
 
 end Ada.Containers.Ordered_Maps;
