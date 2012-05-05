@@ -197,14 +197,18 @@ package Ada.Containers.Indefinite_Vectors is
 --
 --
 
-   procedure Prepend (Container : in out Vector; New_Item : Vector);
+   procedure Prepend (
+      Container : in out Vector;
+      New_Item : Vector);
 
    procedure Prepend (
       Container : in out Vector;
       New_Item : Element_Type;
       Count : Count_Type := 1);
 
-   procedure Append (Container : in out Vector; New_Item : Vector);
+   procedure Append (
+      Container : in out Vector;
+      New_Item : Vector);
 
    procedure Append (
       Container : in out Vector;
@@ -407,6 +411,7 @@ private
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
+
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 

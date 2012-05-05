@@ -198,6 +198,8 @@ package Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Prepend)
+--
+--
 
 --  diff (Prepend)
 --
@@ -205,6 +207,8 @@ package Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Append)
+--
+--
 
 --  diff (Append)
 --
@@ -407,6 +411,7 @@ private
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
+
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
