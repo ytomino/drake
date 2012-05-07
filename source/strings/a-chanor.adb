@@ -599,7 +599,7 @@ package body Ada.Characters.Normalization is
          Code : System.UTF_Conversions.UCS_4;
          Error : Boolean;
       begin
-         Last := State.Next_Last; -- skip first letter
+         Last := State.Next_Last; -- skip first code point
          if State.Next_Combining_Class = 0 then
             Code := Wide_Wide_Character'Pos (State.Next_Character);
             if Code in Hangle.LBase .. Hangle.LBase + Hangle.LCount - 1 then
@@ -735,7 +735,7 @@ package body Ada.Characters.Normalization is
          Out_Item : out String_Type;
          Out_Last : out Natural) is
       begin
-         --  get single combined letter
+         --  get one combining character sequence
          Get_Combined_No_Length_Check (State, Item, Last);
          --  normalization
          declare
@@ -842,7 +842,7 @@ package body Ada.Characters.Normalization is
          Out_Item : out String_Type;
          Out_Last : out Natural) is
       begin
-         --  get single combined letter
+         --  get one combining character sequence
          Get_Combined_No_Length_Check (State, Item, Last);
          --  normalization
          declare
@@ -974,7 +974,7 @@ package body Ada.Characters.Normalization is
             Start (Left, Left_State);
             Start (Right, Right_State);
             loop
-               --  get single combined letters
+               --  get one combining character sequence
                declare
                   Left_First : constant Positive := Left_Last + 1;
                   Right_First : constant Positive := Right_Last + 1;
@@ -1053,7 +1053,7 @@ package body Ada.Characters.Normalization is
             Start (Left, Left_State);
             Start (Right, Right_State);
             loop
-               --  get single combined letters
+               --  get one combining character sequence
                declare
                   Left_First : constant Positive := Left_Last + 1;
                   Right_First : constant Positive := Right_Last + 1;
