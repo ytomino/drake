@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  Ada 2005, this package defined by Ada 2005 AARM A.16 (124.b/2)
+private with Ada.Directories.Inside.File_Systems;
 package Ada.Directories.Information is
    --  System-specific directory information.
    --  Unix and similar systems version.
@@ -75,5 +76,20 @@ package Ada.Directories.Information is
    function Read_Symbolic_Link (Name : String) return String;
    function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
       return String;
+
+   --  extended
+   --  File system information.
+   type File_System is limited private;
+   function Where (Name : String) return File_System;
+   function Format_Name (FS : File_System) return String;
+
+private
+
+   type File_System is new Inside.File_Systems.File_System;
+
+   function Where (Name : String) return File_System
+      renames Get_Where; -- inherited
+   function Format_Name (FS : File_System) return String
+      renames Get_Format_Name; -- inherited
 
 end Ada.Directories.Information;

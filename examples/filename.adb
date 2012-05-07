@@ -1,5 +1,6 @@
 with Ada.Directories;
 with Ada.Directories.Hierarchical_File_Names;
+with Ada.Directories.Information;
 with Ada.Directories.Equal_File_Names;
 with Ada.Directories.Less_File_Names;
 procedure filename is
@@ -98,34 +99,41 @@ begin
 	end;
 	pragma Assert (ADH.Relative_Name ("A/B", "C/../D") = "../A/B");
 	Ada.Debug.Put (ADH.Relative_Name ("A/B", "C/../A")); -- "../A/B", it should be normalized to "B" ?
-	if Standard'Target_Name = "i686-apple-darwin9" then
-		Ada.Debug.Put ("test for comparing HFS+ filenames");
-		declare
-			subtype C is Character;
-			Full_Width_Upper_A : constant String := (
-				C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a1#));
-			Full_Width_Lower_A : constant String := (
-				C'Val (16#ef#), C'Val (16#bd#), C'Val (16#81#));
-			Full_Width_Upper_B : constant String := (
-				C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a2#));
-			Full_Width_Lower_B : constant String := (
-				C'Val (16#ef#), C'Val (16#bd#), C'Val (16#82#));
-		begin
-			pragma Assert (AD.Equal_File_Names ("", ""));
-			pragma Assert (not AD.Equal_File_Names ("", "#"));
-			pragma Assert (not AD.Equal_File_Names ("#", ""));
-			pragma Assert (AD.Equal_File_Names ("#", "#"));
-			pragma Assert (AD.Equal_File_Names ("A", "A"));
-			pragma Assert (AD.Equal_File_Names ("a", "A"));
-			pragma Assert (AD.Equal_File_Names (Full_Width_Lower_A, Full_Width_Upper_A));
-			pragma Assert (not AD.Less_File_Names ("", ""));
-			pragma Assert (AD.Less_File_Names ("", "#"));
-			pragma Assert (not AD.Less_File_Names ("#", ""));
-			pragma Assert (not AD.Less_File_Names ("#", "#"));
-			pragma Assert (AD.Less_File_Names (Full_Width_Upper_A, Full_Width_Lower_B));
-			pragma Assert (AD.Less_File_Names (Full_Width_Lower_A, Full_Width_Upper_B));
-			null;
-		end;
-	end if;
+	declare
+		FS : Ada.Directories.Information.File_System :=
+			Ada.Directories.Information.Where ("/");
+		FS_Name : constant String := Ada.Directories.Information.Format_Name (FS);
+	begin
+		Ada.Debug.Put (FS_Name);
+		if FS_Name = "hfs" then
+			Ada.Debug.Put ("test for comparing HFS+ filenames");
+			declare
+				subtype C is Character;
+				Full_Width_Upper_A : constant String := (
+					C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a1#));
+				Full_Width_Lower_A : constant String := (
+					C'Val (16#ef#), C'Val (16#bd#), C'Val (16#81#));
+				Full_Width_Upper_B : constant String := (
+					C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a2#));
+				Full_Width_Lower_B : constant String := (
+					C'Val (16#ef#), C'Val (16#bd#), C'Val (16#82#));
+			begin
+				pragma Assert (AD.Equal_File_Names (FS, "", ""));
+				pragma Assert (not AD.Equal_File_Names (FS, "", "#"));
+				pragma Assert (not AD.Equal_File_Names (FS, "#", ""));
+				pragma Assert (AD.Equal_File_Names (FS, "#", "#"));
+				pragma Assert (AD.Equal_File_Names (FS, "A", "A"));
+				pragma Assert (AD.Equal_File_Names (FS, "a", "A"));
+				pragma Assert (AD.Equal_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_A));
+				pragma Assert (not AD.Less_File_Names (FS, "", ""));
+				pragma Assert (AD.Less_File_Names (FS, "", "#"));
+				pragma Assert (not AD.Less_File_Names (FS, "#", ""));
+				pragma Assert (not AD.Less_File_Names (FS, "#", "#"));
+				pragma Assert (AD.Less_File_Names (FS, Full_Width_Upper_A, Full_Width_Lower_B));
+				pragma Assert (AD.Less_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_B));
+				null;
+			end;
+		end if;
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end filename;

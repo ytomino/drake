@@ -156,22 +156,36 @@ package body Ada.Directories.Inside.File_Names is
 
    --  implementation
 
-   function Equal_File_Names (Left, Right : String) return Boolean is
+   function Equal_File_Names (
+      FS : File_Systems.File_System;
+      Left, Right : String)
+      return Boolean is
    begin
-      System.Once.Initialize (Flag'Access, InitCompareTables'Access);
-      return Characters.Normalization.Equal (
-         Left,
-         Right,
-         Equal_Case_Insensitive'Access);
+      if File_Systems.Is_HFS (FS) then
+         System.Once.Initialize (Flag'Access, InitCompareTables'Access);
+         return Characters.Normalization.Equal (
+            Left,
+            Right,
+            Equal_Case_Insensitive'Access);
+      else
+         return Left = Right;
+      end if;
    end Equal_File_Names;
 
-   function Less_File_Names (Left, Right : String) return Boolean is
+   function Less_File_Names (
+      FS : File_Systems.File_System;
+      Left, Right : String)
+      return Boolean is
    begin
-      System.Once.Initialize (Flag'Access, InitCompareTables'Access);
-      return Characters.Normalization.Less (
-         Left,
-         Right,
-         Less_Case_Insensitive'Access);
+      if File_Systems.Is_HFS (FS) then
+         System.Once.Initialize (Flag'Access, InitCompareTables'Access);
+         return Characters.Normalization.Less (
+            Left,
+            Right,
+            Less_Case_Insensitive'Access);
+      else
+         return Left < Right;
+      end if;
    end Less_File_Names;
 
 end Ada.Directories.Inside.File_Names;

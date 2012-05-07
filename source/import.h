@@ -18,10 +18,11 @@
 #include <grp.h> /* group info */
 #include <sys/fcntl.h> /* low-level file op */
 #include <sys/stat.h> /* low-level file info */
+#include <sys/socket.h> /* socket, before sys/mount.h */
+#include <sys/mount.h> /* filesystem */
 #include <dirent.h> /* directory searching */
 #include <fnmatch.h> /* wildcard */
 #include <termios.h> /* terminal control */
-#include <sys/socket.h> /* socket */
 #include <netdb.h> /* getaddrinfo */
 #include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
