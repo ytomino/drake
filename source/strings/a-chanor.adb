@@ -740,7 +740,9 @@ package body Ada.Characters.Normalization is
          --  normalization
          declare
             Decomposed : Boolean;
-            Buffer : Wide_Wide_String (1 .. Last - Item'First + 1);
+            Buffer : Wide_Wide_String (
+               1 ..
+               Expanding * Max_Length * (Last - Item'First + 1));
             Buffer_Last : Natural;
          begin
             --  decoding
@@ -846,7 +848,9 @@ package body Ada.Characters.Normalization is
          declare
             Decomposed : Boolean;
             Composed : Boolean;
-            Buffer : Wide_Wide_String (1 .. Last - Item'First + 1);
+            Buffer : Wide_Wide_String (
+               1 ..
+               Expanding * Max_Length * (Last - Item'First + 1));
             Buffer_Last : Natural;
          begin
             --  decoding
@@ -986,11 +990,12 @@ package body Ada.Characters.Normalization is
                   declare
                      Left_Buffer : Wide_Wide_String (
                         1 ..
-                        Left_Last - Left_First + 1);
+                        Expanding * Max_Length * (Left_Last - Left_First + 1));
                      Left_Buffer_Last : Natural;
                      Right_Buffer : Wide_Wide_String (
                         1 ..
-                        Right_Last - Right_First + 1);
+                        Expanding * Max_Length
+                           * (Right_Last - Right_First + 1));
                      Right_Buffer_Last : Natural;
                   begin
                      Decode (
@@ -1064,11 +1069,12 @@ package body Ada.Characters.Normalization is
                   declare
                      Left_Buffer : Wide_Wide_String (
                         1 ..
-                        Left_Last - Left_First + 1);
+                        Expanding * Max_Length * (Left_Last - Left_First + 1));
                      Left_Buffer_Last : Natural;
                      Right_Buffer : Wide_Wide_String (
                         1 ..
-                        Right_Last - Right_First + 1);
+                        Expanding * Max_Length
+                           * (Right_Last - Right_First + 1));
                      Right_Buffer_Last : Natural;
                   begin
                      Decode (
