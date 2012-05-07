@@ -23,7 +23,8 @@ package Ada.Characters.Normalization is
    procedure Start (Item : Wide_String; State : out Normalization.State);
    procedure Start (Item : Wide_Wide_String; State : out Normalization.State);
 
-   --  get single letter with trailing variation selector
+   --  get one combining character sequence
+   --    including trailing variation selector
    procedure Get_Combined (
       Item : String;
       Last : out Natural);
@@ -46,11 +47,11 @@ package Ada.Characters.Normalization is
       Item : Wide_Wide_String;
       Last : out Natural);
 
-   Expanding : constant := 4; -- max decomposed length of single code point
+   Expanding : constant := 4; -- max decomposed length of one code point
 
    --  NFD (only reversible)
 
-   --  single letter
+   --  one combining character sequence
    procedure Decompose (
       Item : String;
       Last : out Natural;
@@ -85,7 +86,7 @@ package Ada.Characters.Normalization is
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural); -- UTF-32 with state
 
-   --  all letters
+   --  all sequences
    procedure Decompose (
       Item : String;
       Out_Item : out String;
@@ -110,7 +111,7 @@ package Ada.Characters.Normalization is
 
    --  NFC (only reversible)
 
-   --  single letter
+   --  one combining character sequence
    procedure Compose (
       Item : String;
       Last : out Natural;
@@ -145,7 +146,7 @@ package Ada.Characters.Normalization is
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural);
 
-   --  all letters
+   --  all sequences
    procedure Compose (
       Item : String;
       Out_Item : out String;

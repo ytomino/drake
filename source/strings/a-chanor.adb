@@ -599,7 +599,7 @@ package body Ada.Characters.Normalization is
          Code : System.UTF_Conversions.UCS_4;
          Error : Boolean;
       begin
-         Last := State.Next_Last; -- skip first letter
+         Last := State.Next_Last; -- skip first code point
          if State.Next_Combining_Class = 0 then
             Code := Wide_Wide_Character'Pos (State.Next_Character);
             if Code in Hangle.LBase .. Hangle.LBase + Hangle.LCount - 1 then
@@ -735,12 +735,14 @@ package body Ada.Characters.Normalization is
          Out_Item : out String_Type;
          Out_Last : out Natural) is
       begin
-         --  get single combined letter
+         --  get one combining character sequence
          Get_Combined_No_Length_Check (State, Item, Last);
          --  normalization
          declare
             Decomposed : Boolean;
-            Buffer : Wide_Wide_String (1 .. Last - Item'First + 1);
+            Buffer : Wide_Wide_String (
+               1 ..
+               Expanding * Max_Length * (Last - Item'First + 1));
             Buffer_Last : Natural;
          begin
             --  decoding
@@ -840,13 +842,15 @@ package body Ada.Characters.Normalization is
          Out_Item : out String_Type;
          Out_Last : out Natural) is
       begin
-         --  get single combined letter
+         --  get one combining character sequence
          Get_Combined_No_Length_Check (State, Item, Last);
          --  normalization
          declare
             Decomposed : Boolean;
             Composed : Boolean;
-            Buffer : Wide_Wide_String (1 .. Last - Item'First + 1);
+            Buffer : Wide_Wide_String (
+               1 ..
+               Expanding * Max_Length * (Last - Item'First + 1));
             Buffer_Last : Natural;
          begin
             --  decoding
@@ -970,7 +974,7 @@ package body Ada.Characters.Normalization is
             Start (Left, Left_State);
             Start (Right, Right_State);
             loop
-               --  get single combined letters
+               --  get one combining character sequence
                declare
                   Left_First : constant Positive := Left_Last + 1;
                   Right_First : constant Positive := Right_Last + 1;
@@ -986,11 +990,12 @@ package body Ada.Characters.Normalization is
                   declare
                      Left_Buffer : Wide_Wide_String (
                         1 ..
-                        Left_Last - Left_First + 1);
+                        Expanding * Max_Length * (Left_Last - Left_First + 1));
                      Left_Buffer_Last : Natural;
                      Right_Buffer : Wide_Wide_String (
                         1 ..
-                        Right_Last - Right_First + 1);
+                        Expanding * Max_Length
+                           * (Right_Last - Right_First + 1));
                      Right_Buffer_Last : Natural;
                   begin
                      Decode (
@@ -1048,7 +1053,7 @@ package body Ada.Characters.Normalization is
             Start (Left, Left_State);
             Start (Right, Right_State);
             loop
-               --  get single combined letters
+               --  get one combining character sequence
                declare
                   Left_First : constant Positive := Left_Last + 1;
                   Right_First : constant Positive := Right_Last + 1;
@@ -1064,11 +1069,12 @@ package body Ada.Characters.Normalization is
                   declare
                      Left_Buffer : Wide_Wide_String (
                         1 ..
-                        Left_Last - Left_First + 1);
+                        Expanding * Max_Length * (Left_Last - Left_First + 1));
                      Left_Buffer_Last : Natural;
                      Right_Buffer : Wide_Wide_String (
                         1 ..
-                        Right_Last - Right_First + 1);
+                        Expanding * Max_Length
+                           * (Right_Last - Right_First + 1));
                      Right_Buffer_Last : Natural;
                   begin
                      Decode (

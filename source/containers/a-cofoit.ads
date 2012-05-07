@@ -5,7 +5,7 @@ with Ada.IO_Exceptions;
 private with Ada.Finalization;
 generic
    type Input_Cursor is private;
-   with function Has_Element (Position : Input_Cursor) return Boolean;
+   with function Has_Element (Position : Input_Cursor) return Boolean is <>;
 --  with package Input_Iterator_Interfaces is
 --    new Iterator_Interfaces (Input_Cursor, Has_Element);
    --  [gcc 4.6] can not instantiate Ada.Iterator_Interfaces
