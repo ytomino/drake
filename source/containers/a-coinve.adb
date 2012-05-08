@@ -3,16 +3,17 @@ with Ada.Unchecked_Deallocation;
 with Ada.Containers.Inside.Array_Sorting;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Indefinite_Vectors is
+   use type Copy_On_Write.Data_Access;
 
    package Data_Cast is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
-   subtype Not_Null_Data_Access is not null Data_Access;
-   type Data_Access_Access is access all Not_Null_Data_Access;
-   type System_Address_Access is access all System.Address;
    function Upcast is new Unchecked_Conversion (
-      Data_Access_Access,
-      System_Address_Access);
+      Data_Access,
+      Copy_On_Write.Data_Access);
+   function Downcast is new Unchecked_Conversion (
+      Copy_On_Write.Data_Access,
+      Data_Access);
 
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
@@ -47,62 +48,107 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
    end Replace_Element;
 
-   procedure Free_Data (Data : System.Address);
-   procedure Free_Data (Data : System.Address) is
-      X : Data_Access := Data_Cast.To_Pointer (Data);
+   procedure Free_Data (Data : in out Copy_On_Write.Data_Access);
+   procedure Free_Data (Data : in out Copy_On_Write.Data_Access) is
+      X : Data_Access := Downcast (Data);
    begin
       for I in X.Items'Range loop
          Free (X.Items (I));
       end loop;
       Free (X);
+      Data := null;
    end Free_Data;
---  diff
 
-   procedure Copy_Data (
-      Target : out System.Address;
-      Source : System.Address;
+   procedure Allocate_Data (
+      Target : out Copy_On_Write.Data_Access;
+      Capacity : Count_Type);
+   procedure Allocate_Data (
+      Target : out Copy_On_Write.Data_Access;
+      Capacity : Count_Type)
+   is
+      New_Data : constant Data_Access := new Data'(
+         Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
+         Super => <>,
+         Items => <>);
+   begin
+      Target := Upcast (New_Data);
+   end Allocate_Data;
+
+   procedure Move_Data (
+      Target : out Copy_On_Write.Data_Access;
+      Source : not null Copy_On_Write.Data_Access;
       Length : Natural;
-      Max_Length : Natural;
       Capacity : Natural);
-   procedure Copy_Data (
-      Target : out System.Address;
-      Source : System.Address;
+   procedure Move_Data (
+      Target : out Copy_On_Write.Data_Access;
+      Source : not null Copy_On_Write.Data_Access;
       Length : Natural;
-      Max_Length : Natural;
       Capacity : Natural)
    is
-      S : constant not null Data_Access := Data_Cast.To_Pointer (Source);
+      S : constant not null Data_Access := Downcast (Source);
       T : not null Data_Access := new Data'(
          Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
-         Reference_Count => 1,
-         Max_Length => Max_Length,
+         Super => <>,
          Items => <>);
       subtype R is Extended_Index range
          Index_Type'First ..
          Index_Type'First - 1 + Index_Type'Base (Length);
    begin
-      if System.Reference_Counting.Shared (S.Reference_Count) then
-         for I in R loop
-            if S.Items (I) /= null then
-               T.Items (I) := new Element_Type'(S.Items (I).all);
-            end if;
-         end loop;
-      else
-         for I in R loop
-            T.Items (I) := S.Items (I);
-            S.Items (I) := null;
-         end loop;
-      end if;
-      Target := T.all'Address;
+      for I in R loop
+         T.Items (I) := S.Items (I);
+         S.Items (I) := null;
+      end loop;
+      T.Super.Max_Length := Length;
+      Target := Upcast (T);
+   end Move_Data;
+
+   procedure Copy_Data (
+      Target : out Copy_On_Write.Data_Access;
+      Source : not null Copy_On_Write.Data_Access;
+      Length : Natural;
+      Capacity : Natural);
+   procedure Copy_Data (
+      Target : out Copy_On_Write.Data_Access;
+      Source : not null Copy_On_Write.Data_Access;
+      Length : Natural;
+      Capacity : Natural)
+   is
+      S : constant not null Data_Access := Downcast (Source);
+      T : not null Data_Access := new Data'(
+         Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
+         Super => <>,
+         Items => <>);
+      subtype R is Extended_Index range
+         Index_Type'First ..
+         Index_Type'First - 1 + Index_Type'Base (Length);
+   begin
+      for I in R loop
+         if S.Items (I) /= null then
+            T.Items (I) := new Element_Type'(S.Items (I).all);
+         end if;
+      end loop;
+      T.Super.Max_Length := Length;
+      Target := Upcast (T);
    end Copy_Data;
 
-   procedure Unique (Container : in out Vector);
-   procedure Unique (Container : in out Vector) is
+   procedure Unique (Container : in out Vector; To_Update : Boolean);
+   procedure Unique (Container : in out Vector; To_Update : Boolean) is
    begin
-      Reserve_Capacity (Container, Capacity (Container));
+      Copy_On_Write.Unique (
+         Container.Super'Access,
+         To_Update,
+         Container.Length,
+         Capacity (Container),
+         Allocate => Allocate_Data'Access,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
    end Unique;
 
 --  diff (Array_To_Vector)
+--
+--
+--
+--
 --
 --
 --
@@ -139,16 +185,14 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Adjust (Object : in out Vector) is
    begin
-      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
+      Copy_On_Write.Adjust (Object.Super'Access);
    end Adjust;
 
    procedure Assign (Target : in out Vector; Source : Vector) is
    begin
-      System.Reference_Counting.Assign (
-         Upcast (Target.Data'Unchecked_Access),
-         Target.Data.Reference_Count'Access,
-         Upcast (Source.Data'Unrestricted_Access),
-         Source.Data.Reference_Count'Access,
+      Copy_On_Write.Assign (
+         Target.Super'Access,
+         Source.Super'Access,
          Free => Free_Data'Access);
       Target.Length := Source.Length;
    end Assign;
@@ -170,8 +214,9 @@ package body Ada.Containers.Indefinite_Vectors is
                   Last_Index (Container)
                loop
                   Replace_Element (
-                     Container.Data.Items (I),
-                     New_Item.Data.Items (I - Index_Type'Base (Old_Length)));
+                     Downcast (Container.Super.Data).Items (I),
+                     Downcast (New_Item.Super.Data).Items (
+                        I - Index_Type'Base (Old_Length)));
                end loop;
             end if;
          end;
@@ -191,23 +236,25 @@ package body Ada.Containers.Indefinite_Vectors is
          Last_Index (Container)
       loop
          Replace_Element (
-            Container.Data.Items (I),
+            Downcast (Container.Super.Data).Items (I),
             New_Item'Unrestricted_Access);
       end loop;
    end Append;
 
    function Capacity (Container : Vector) return Count_Type is
    begin
-      return Container.Data.Items'Length;
+      if Container.Super.Data = null then
+         return 0;
+      else
+         return Downcast (Container.Super.Data).Items'Length;
+      end if;
    end Capacity;
 
    procedure Clear (Container : in out Vector) is
    begin
-      System.Reference_Counting.Clear (
-         Upcast (Container.Data'Unchecked_Access),
-         Container.Data.Reference_Count'Access,
+      Copy_On_Write.Clear (
+         Container.Super'Access,
          Free => Free_Data'Access);
-      Container.Data := Empty_Data'Unrestricted_Access;
       Container.Length := 0;
    end Clear;
 
@@ -216,7 +263,13 @@ package body Ada.Containers.Indefinite_Vectors is
       Index : Index_Type)
       return Constant_Reference_Type is
    begin
-      return (Element => Container.Data.Items (Index).all'Access);
+      Unique (Container.all'Unrestricted_Access.all, False);
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Data.Super.Is_Aliased := True;
+         return (Element => Data.Items (Index).all'Access);
+      end;
    end Constant_Reference;
 
 --  diff (Constant_Reference)
@@ -230,6 +283,12 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 
 --  diff (Constant_Reference)
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -264,7 +323,7 @@ package body Ada.Containers.Indefinite_Vectors is
       then
          Delete_Last (Container, Count);
       else
-         Unique (Container);
+         Unique (Container, True);
          declare
             Old_Length : constant Count_Type := Container.Length;
             Moving : constant Index_Type'Base :=
@@ -273,17 +332,18 @@ package body Ada.Containers.Indefinite_Vectors is
             Before : constant Index_Type := Index + Index_Type'Base (Count);
             After : constant Index_Type := Index;
          begin
-            Container.Length := Container.Length - Count;
+            Set_Length (Container, Old_Length - Count);
             for I in After .. After + Index_Type'Base (Count) - 1 loop
-               Free (Container.Data.Items (I));
+               Free (Downcast (Container.Super.Data).Items (I));
             end loop;
-            Container.Data.Items (After .. After + Moving) :=
-               Container.Data.Items (Before .. Before + Moving);
+            Downcast (Container.Super.Data).Items (After .. After + Moving) :=
+               Downcast (Container.Super.Data).Items
+                  (Before .. Before + Moving);
             for I in
                Index_Type'First + Index_Type'Base (Container.Length) ..
                Index_Type'First - 1 + Index_Type'Base (Old_Length)
             loop
-               Container.Data.Items (I) := null;
+               Downcast (Container.Super.Data).Items (I) := null;
             end loop;
          end;
       end if;
@@ -300,7 +360,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Container : in out Vector;
       Count : Count_Type := 1) is
    begin
-      Container.Length := Container.Length - Count;
+      Set_Length (Container, Container.Length - Count);
    end Delete_Last;
 
    function Element (Container : Vector'Class; Index : Index_Type)
@@ -312,7 +372,7 @@ package body Ada.Containers.Indefinite_Vectors is
    function Empty_Vector return Vector is
    begin
       return (Finalization.Controlled with
-         Data => Empty_Data'Unrestricted_Access,
+         Super => <>,
          Length => 0);
    end Empty_Vector;
 
@@ -336,7 +396,10 @@ package body Ada.Containers.Indefinite_Vectors is
       return Extended_Index is
    begin
       for I in Index .. Last_Index (Container) loop
-         if Equivalent_Element (Container.Data.Items (I), Item) then
+         if Equivalent_Element (
+            Downcast (Container.Super.Data).Items (I),
+            Item)
+         then
             return I;
          end if;
       end loop;
@@ -396,8 +459,9 @@ package body Ada.Containers.Indefinite_Vectors is
          Insert_Space (Container, Before, Position, New_Item.Length);
          for I in Before .. Before + Index_Type'Base (New_Item.Length) - 1 loop
             Replace_Element (
-               Container.Data.Items (I),
-               New_Item.Data.Items (I - Before + Index_Type'First));
+               Downcast (Container.Super.Data).Items (I),
+               Downcast (New_Item.Super.Data).Items
+                  (I - Before + Index_Type'First));
          end loop;
       end if;
    end Insert;
@@ -423,7 +487,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Insert_Space (Container, Before, Position, Count);
       for I in Before .. Before + Index_Type'Base (Count) - 1 loop
          Replace_Element (
-            Container.Data.Items (I),
+            Downcast (Container.Super.Data).Items (I),
             New_Item'Unrestricted_Access);
       end loop;
    end Insert;
@@ -474,16 +538,18 @@ package body Ada.Containers.Indefinite_Vectors is
             After : constant Index_Type := Before + Index_Type'Base (Count);
          begin
             Set_Length (Container, Old_Length + Count);
+            Unique (Container, True);
             for I in
                Index_Type'First + Index_Type'Base (Old_Length) ..
                Last_Index (Container)
             loop
-               Free (Container.Data.Items (I));
+               Free (Downcast (Container.Super.Data).Items (I));
             end loop;
-            Container.Data.Items (After .. After + Moving) :=
-               Container.Data.Items (Before .. Before + Moving);
+            Downcast (Container.Super.Data).Items (After .. After + Moving) :=
+               Downcast (Container.Super.Data).Items
+                  (Before .. Before + Moving);
             for I in Before .. After - 1 loop
-               Container.Data.Items (I) := null;
+               Downcast (Container.Super.Data).Items (I) := null;
             end loop;
          end;
       end if;
@@ -538,11 +604,9 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Move (Target : in out Vector; Source : in out Vector) is
    begin
-      System.Reference_Counting.Move (
-         Upcast (Target.Data'Unchecked_Access),
-         Target.Data.Reference_Count'Access,
-         Upcast (Source.Data'Unrestricted_Access),
-         Sentinel => Empty_Data'Address,
+      Copy_On_Write.Move (
+         Target.Super'Access,
+         Source.Super'Access,
          Free => Free_Data'Access);
       Target.Length := Source.Length;
    end Move;
@@ -591,8 +655,13 @@ package body Ada.Containers.Indefinite_Vectors is
       Index : Index_Type)
       return Reference_Type is
    begin
-      Unique (Container.all);
-      return (Element => Container.Data.Items (Index).all'Access);
+      Unique (Container.all, True);
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Data.Super.Is_Aliased := True;
+         return (Element => Data.Items (Index).all'Access);
+      end;
    end Reference;
 
 --  diff (Reference)
@@ -619,35 +688,40 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 --
 --
+--
+--
+--
+--
+--
 
    procedure Replace_Element (
       Container : in out Vector;
       Index : Index_Type;
       New_Item : Element_Type) is
    begin
-      Unique (Container);
+      Unique (Container, True);
       Replace_Element (
-         Container.Data.Items (Index),
+         Downcast (Container.Super.Data).Items (Index),
          New_Item'Unrestricted_Access);
    end Replace_Element;
 
    procedure Reserve_Capacity (
       Container : in out Vector;
-      Capacity : Count_Type) is
+      Capacity : Count_Type)
+   is
+      New_Capacity : constant Count_Type :=
+         Count_Type'Max (Capacity, Container.Length);
    begin
-      System.Reference_Counting.Unique (
-         Target => Upcast (Container.Data'Unchecked_Access),
-         Target_Reference_Count => Container.Data.Reference_Count'Access,
-         Target_Length => Container.Length,
-         Target_Capacity => Indefinite_Vectors.Capacity (Container),
-         Max_Length => Container.Length,
-         Capacity => Capacity,
-         Sentinel => Empty_Data'Address,
+      Copy_On_Write.Reserve_Capacity (
+         Container.Super'Access,
+         True,
+         Container.Length,
+         New_Capacity,
+         New_Capacity /= Indefinite_Vectors.Capacity (Container),
+         Allocate => Allocate_Data'Access,
+         Move => Move_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
---  diff
---  diff
---  diff
 --  diff
 --  diff
 --  diff
@@ -660,11 +734,11 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Reverse_Elements (Container : in out Vector) is
    begin
-      Unique (Container);
+      Unique (Container, True);
       Inside.Array_Sorting.In_Place_Reverse (
          Index_Type'Pos (Index_Type'First),
          Index_Type'Pos (Last_Index (Container)),
-         Data_Cast.To_Address (Container.Data),
+         Data_Cast.To_Address (Downcast (Container.Super.Data)),
          Swap => Swap_Element'Access);
    end Reverse_Elements;
 
@@ -693,7 +767,10 @@ package body Ada.Containers.Indefinite_Vectors is
          Extended_Index'Min (Index, Last_Index (Container));
    begin
       for I in reverse Index_Type'First .. Start loop
-         if Equivalent_Element (Container.Data.Items (I), Item) then
+         if Equivalent_Element (
+            Downcast (Container.Super.Data).Items (I),
+            Item)
+         then
             return I;
          end if;
       end loop;
@@ -711,14 +788,13 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
    begin
-      System.Reference_Counting.Set_Length (
-         Target => Upcast (Container.Data'Unchecked_Access),
-         Target_Reference_Count => Container.Data.Reference_Count'Access,
-         Target_Length => Container.Length,
-         Target_Max_Length => Container.Data.Max_Length'Access,
-         Target_Capacity => Capacity (Container),
-         New_Length => Length,
-         Sentinel => Empty_Data'Address,
+      Copy_On_Write.Set_Length (
+         Container.Super'Access,
+         Container.Length,
+         Capacity (Container),
+         Length,
+         Allocate => Allocate_Data'Access,
+         Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
       Container.Length := Length;
@@ -726,11 +802,11 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Swap (Container : in out Vector; I, J : Index_Type) is
    begin
-      Unique (Container);
+      Unique (Container, True);
       Swap_Element (
          Index_Type'Pos (I),
          Index_Type'Pos (J),
-         Data_Cast.To_Address (Container.Data));
+         Data_Cast.To_Address (Downcast (Container.Super.Data)));
    end Swap;
 
    function To_Cursor (Container : Vector; Index : Extended_Index)
@@ -768,17 +844,17 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       if Left.Length /= Right.Length then
          return False;
-      elsif Left.Data = Right.Data then
+      elsif Left.Super.Data = Right.Super.Data then
          return True;
       else
          for I in Index_Type'First .. Last_Index (Left) loop
-            if Left.Data.Items (I) = null then
-               if Right.Data.Items (I) /= null then
+            if Downcast (Left.Super.Data).Items (I) = null then
+               if Downcast (Right.Super.Data).Items (I) /= null then
                   return False;
                end if;
             elsif not Equivalent_Element (
-               Right.Data.Items (I),
-               Left.Data.Items (I).all)
+               Downcast (Right.Super.Data).Items (I),
+               Downcast (Left.Super.Data).Items (I).all)
             then
                return False;
             end if;
@@ -837,17 +913,17 @@ package body Ada.Containers.Indefinite_Vectors is
          return Inside.Array_Sorting.Is_Sorted (
             Index_Type'Pos (Index_Type'First),
             Index_Type'Pos (Last_Index (Container)),
-            Data_Cast.To_Address (Container.Data),
+            Data_Cast.To_Address (Downcast (Container.Super.Data)),
             LT => LT'Access);
       end Is_Sorted;
 
       procedure Sort (Container : in out Vector) is
       begin
-         Unique (Container);
+         Unique (Container, True);
          Inside.Array_Sorting.In_Place_Merge_Sort (
             Index_Type'Pos (Index_Type'First),
             Index_Type'Pos (Last_Index (Container)),
-            Data_Cast.To_Address (Container.Data),
+            Data_Cast.To_Address (Downcast (Container.Super.Data)),
             LT => LT'Access,
             Swap => Swap_Element'Access);
       end Sort;
@@ -861,20 +937,21 @@ package body Ada.Containers.Indefinite_Vectors is
                if Old_Length = 0 then
                   Move (Target, Source);
                else
-                  Unique (Target);
                   Set_Length (Target, Old_Length + Source.Length);
-                  Unique (Source); -- splicing
+                  Unique (Target, True);
+                  Unique (Source, True); -- splicing
                   for I in Index_Type'First .. Last_Index (Source) loop
-                     Target.Data.Items (I + Index_Type'Base (Old_Length)) :=
-                        Source.Data.Items (I);
-                     Source.Data.Items (I) := null;
+                     Downcast (Target.Super.Data).Items
+                        (I + Index_Type'Base (Old_Length)) :=
+                        Downcast (Source.Super.Data).Items (I);
+                     Downcast (Source.Super.Data).Items (I) := null;
                   end loop;
-                  Source.Length := 0;
+                  Set_Length (Source, 0);
                   Inside.Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Index_Type'First),
                      Integer (Index_Type'First) - 1 + Integer (Old_Length),
                      Index_Type'Pos (Last_Index (Target)),
-                     Data_Cast.To_Address (Target.Data),
+                     Data_Cast.To_Address (Downcast (Target.Super.Data)),
                      LT => LT'Access,
                      Swap => Swap_Element'Access);
                end if;
@@ -896,10 +973,10 @@ package body Ada.Containers.Indefinite_Vectors is
          Count_Type'Base'Read (Stream, Length);
          if Length > 0 then
             Set_Length (Container, Length);
-            for I in Container.Data.Items'Range loop
-               pragma Assert (Container.Data.Items (I) = null);
-               Container.Data.Items (I) := new Element_Type'(
-                  Element_Type'Input (Stream));
+            for I in Index_Type'First .. Last_Index (Container) loop
+               Downcast (Container.Super.Data).Items (I) :=
+                  new Element_Type'(Element_Type'Input (Stream));
+--  diff
             end loop;
          end if;
       end Read;
@@ -912,10 +989,10 @@ package body Ada.Containers.Indefinite_Vectors is
       begin
          Count_Type'Base'Write (Stream, Length);
          if Length > 0 then
-            for I in Container.Data.Items'Range loop
+            for I in Index_Type'First .. Last_Index (Container) loop
                Element_Type'Output (
                   Stream,
-                  Container.Data.Items (I).all);
+                  Downcast (Container.Super.Data).Items (I).all);
             end loop;
          end if;
       end Write;

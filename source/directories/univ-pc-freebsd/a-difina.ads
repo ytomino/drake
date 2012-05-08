@@ -3,7 +3,6 @@ pragma License (Unrestricted);
 with Ada.Directories.Inside.File_Systems;
 package Ada.Directories.Inside.File_Names is
 
-   --  compare file names with normalization and case-insensitive, if HFS+
    function Equal_File_Names (
       FS : File_Systems.File_System;
       Left, Right : String)

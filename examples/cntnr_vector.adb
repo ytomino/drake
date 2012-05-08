@@ -110,7 +110,7 @@ procedure cntnr_Vector is
 		pragma Assert (Y.Element (Y.Last) = 'D');
 		pragma Assert (Z.Length = 4);
 		pragma Assert (Z.Element (Z.Last) = 'E');
-		pragma Assert (X.Constant_Reference (1).Element =
+		pragma Assert (X.Constant_Reference (1).Element /=
 			Y.Constant_Reference (1).Element);
 		pragma Assert (X.Constant_Reference (1).Element /=
 			Z.Constant_Reference (1).Element);
@@ -147,7 +147,7 @@ procedure cntnr_Vector is
 		pragma Assert (Y.Element (Y.Last) = 'D');
 		pragma Assert (Z.Length = 4);
 		pragma Assert (Z.Element (Z.Last) = 'E');
-		pragma Assert (X.Constant_Reference (1).Element =
+		pragma Assert (X.Constant_Reference (1).Element /=
 			Y.Constant_Reference (1).Element);
 		pragma Assert (X.Constant_Reference (1).Element /=
 			Z.Constant_Reference (1).Element);

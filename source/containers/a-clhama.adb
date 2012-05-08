@@ -81,8 +81,14 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
+--
+--
 
 --  diff (Copy_Data)
+--
+--
+--
 --
 --
 --
@@ -120,6 +126,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Free_Data;
 
 --  diff (Unique)
+--
 --
 --
 --
@@ -210,6 +217,8 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Contains;
 
 --  diff (Copy)
+--
+--
 --
 --
 --
@@ -496,6 +505,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
+--  diff
 --  diff
 --  diff
 --  diff

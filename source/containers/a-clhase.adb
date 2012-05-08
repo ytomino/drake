@@ -77,7 +77,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
       Object := null;
    end Free_Node;
 
---  diff (Allocation_Data)
+--  diff (Allocate_Data)
+--
+--
+--
 --
 --
 --
@@ -91,6 +94,9 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 
 --  diff (Copy_Data)
+--
+--
+--
 --
 --
 --
@@ -128,6 +134,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Free_Data;
 
 --  diff (Unique)
+--
 --
 --
 --
@@ -208,6 +215,8 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Contains;
 
 --  diff (Copy)
+--
+--
 --
 --
 --
@@ -564,6 +573,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
+--  diff
 --  diff
 --  diff
 --  diff
