@@ -58,65 +58,6 @@ package body Ada.Containers.Inside.Copy_On_Write is
 
    --  implementation
 
-   procedure Unique (
-      Target : not null access Container;
-      To_Update : Boolean;
-      Capacity : Count_Type;
-      Allocate : not null access procedure (Target : out Data_Access);
-      Copy : not null access procedure (
-         Target : out Data_Access;
-         Source : not null Data_Access;
-         Capacity : Count_Type);
-      Free : not null access procedure (Object : in out Data_Access)) is
-   begin
-      if Target.Data /= null then
-         System.Shared_Locking.Enter;
-         if Target.Data.Follower /= Target then
-            declare
-               New_Data : Data_Access;
-               To_Free : Data_Access;
-            begin
-               System.Shared_Locking.Leave;
-               Copy (New_Data, Target.Data, Capacity); -- *A*
-               System.Shared_Locking.Enter;
-               Unfollow (Target, To_Free);
-               if To_Free /= null then
-                  Free (To_Free); -- unfollowed by other task at *A*
-               end if;
-               Follow (Target, New_Data);
-            end;
-         elsif To_Update and then Target.Next_Follower /= null then
-            --  detach next-followers
-            declare
-               New_Data : Data_Access;
-            begin
-               System.Shared_Locking.Leave;
-               Copy (New_Data, Target.Data, Capacity); -- *B*
-               System.Shared_Locking.Enter;
-               --  target uses old data, other followers use new data
-               New_Data.Follower := Target.Next_Follower;
-               declare
-                  I : access Container := Target.Next_Follower;
-               begin
-                  while I /= null loop
-                     I.Data := New_Data;
-                     I := I.Next_Follower;
-                  end loop;
-               end;
-               Target.Next_Follower := null;
-            end;
-         end if;
-         System.Shared_Locking.Leave;
-      else
-         declare
-            New_Data : Data_Access;
-         begin
-            Allocate (New_Data);
-            Follow (Target, New_Data); -- no sync
-         end;
-      end if;
-   end Unique;
-
    procedure Adjust (
       Target : not null access Container)
    is
@@ -214,5 +155,64 @@ package body Ada.Containers.Inside.Copy_On_Write is
          end if;
       end if;
    end Move;
+
+   procedure Unique (
+      Target : not null access Container;
+      To_Update : Boolean;
+      Capacity : Count_Type;
+      Allocate : not null access procedure (Target : out Data_Access);
+      Copy : not null access procedure (
+         Target : out Data_Access;
+         Source : not null Data_Access;
+         Capacity : Count_Type);
+      Free : not null access procedure (Object : in out Data_Access)) is
+   begin
+      if Target.Data /= null then
+         System.Shared_Locking.Enter;
+         if Target.Data.Follower /= Target then
+            declare
+               New_Data : Data_Access;
+               To_Free : Data_Access;
+            begin
+               System.Shared_Locking.Leave;
+               Copy (New_Data, Target.Data, Capacity); -- *A*
+               System.Shared_Locking.Enter;
+               Unfollow (Target, To_Free);
+               if To_Free /= null then
+                  Free (To_Free); -- unfollowed by other task at *A*
+               end if;
+               Follow (Target, New_Data);
+            end;
+         elsif To_Update and then Target.Next_Follower /= null then
+            --  detach next-followers
+            declare
+               New_Data : Data_Access;
+            begin
+               System.Shared_Locking.Leave;
+               Copy (New_Data, Target.Data, Capacity); -- *B*
+               System.Shared_Locking.Enter;
+               --  target uses old data, other followers use new data
+               New_Data.Follower := Target.Next_Follower;
+               declare
+                  I : access Container := Target.Next_Follower;
+               begin
+                  while I /= null loop
+                     I.Data := New_Data;
+                     I := I.Next_Follower;
+                  end loop;
+               end;
+               Target.Next_Follower := null;
+            end;
+         end if;
+         System.Shared_Locking.Leave;
+      else
+         declare
+            New_Data : Data_Access;
+         begin
+            Allocate (New_Data);
+            Follow (Target, New_Data); -- no sync
+         end;
+      end if;
+   end Unique;
 
 end Ada.Containers.Inside.Copy_On_Write;
