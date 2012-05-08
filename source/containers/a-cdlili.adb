@@ -65,10 +65,13 @@ package body Ada.Containers.Doubly_Linked_Lists is
    end Free_Node;
 
    procedure Allocate_Data (
-      Target : out Copy_On_Write.Data_Access);
+      Target : out Copy_On_Write.Data_Access;
+      Capacity : Count_Type);
    procedure Allocate_Data (
-      Target : out Copy_On_Write.Data_Access)
+      Target : out Copy_On_Write.Data_Access;
+      Capacity : Count_Type)
    is
+      pragma Unreferenced (Capacity);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
          First => null,
@@ -81,12 +84,15 @@ package body Ada.Containers.Doubly_Linked_Lists is
    procedure Copy_Data (
       Target : out Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
+      Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
+      Length : Count_Type;
       Capacity : Count_Type)
    is
+      pragma Unreferenced (Length);
       pragma Unreferenced (Capacity);
       New_Data : Data_Access := new Data'(
          Super => <>,
@@ -125,7 +131,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Copy_On_Write.Unique (
          Container.Super'Access,
          To_Update,
-         0,
+         0, -- Length is unused
+         0, -- Capacity is unused
          Allocate => Allocate_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
@@ -181,7 +188,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
       return (Finalization.Controlled with
          Super => Copy_On_Write.Copy (
             Source.Super'Access,
-            0,
+            0, -- Length is unused
+            0, -- Capacity is unused
+            Allocate => Allocate_Data'Access,
             Copy => Copy_Data'Access));
    end Copy;
 

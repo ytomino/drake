@@ -2,9 +2,9 @@ pragma License (Unrestricted);
 --  Ada 2005
 with Ada.Iterator_Interfaces;
 with Ada.References;
+private with Ada.Containers.Inside.Copy_On_Write;
 private with Ada.Finalization;
 private with Ada.Streams;
-private with System.Reference_Counting;
 generic
    type Index_Type is range <>;
    type Element_Type is private;
@@ -371,25 +371,25 @@ package Ada.Containers.Vectors is
 
 private
 
+   package Copy_On_Write renames Containers.Inside.Copy_On_Write;
+
 --  diff (Element_Access)
 --  diff (Element_Array)
 
    type Data (Capacity_Last : Extended_Index) is limited record
-      Reference_Count : aliased System.Reference_Counting.Counter;
-      Max_Length : aliased Count_Type;
+      Super : aliased Copy_On_Write.Data_Ex;
       Items : aliased Element_Array (Index_Type'First .. Capacity_Last);
+   end record;
+
+   --  place Super at first
+   for Data use record
+      Super at 0 range 0 .. Copy_On_Write.Data_Ex_Size - 1;
    end record;
 
    type Data_Access is access all Data;
 
-   Empty_Data : aliased constant Data := (
-      Capacity_Last => Index_Type'First - 1,
-      Reference_Count => System.Reference_Counting.Static,
-      Max_Length => 0,
-      Items => <>);
-
    type Vector is new Finalization.Controlled with record
-      Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;
+      Super : aliased Copy_On_Write.Container;
       Length : Count_Type := 0;
    end record;
 

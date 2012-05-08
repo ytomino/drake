@@ -84,8 +84,14 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 --
+--
+--
+--
 
 --  diff (Copy_Data)
+--
+--
+--
 --
 --
 --
@@ -123,6 +129,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Free_Data;
 
 --  diff (Unique)
+--
 --
 --
 --
@@ -200,6 +207,8 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Contains;
 
 --  diff (Copy)
+--
+--
 --
 --
 --

@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  Ada 2012
+private with Ada.Containers.Inside.Copy_On_Write;
 private with Ada.Finalization;
 private with Ada.Streams;
-private with System.Reference_Counting;
 generic
    type Element_Type (<>) is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
@@ -68,22 +68,20 @@ package Ada.Containers.Indefinite_Holders is
 
 private
 
+   package Copy_On_Write renames Containers.Inside.Copy_On_Write;
+
    type Element_Access is access Element_Type;
 
    type Data is limited record
-      Reference_Count : aliased System.Reference_Counting.Counter;
+      Super : aliased Copy_On_Write.Data;
       Element : Element_Access;
    end record;
    pragma Suppress_Initialization (Data);
 
    type Data_Access is access all Data;
 
-   Empty_Data : aliased constant Data := (
-      Reference_Count => System.Reference_Counting.Static,
-      Element => null);
-
    type Holder is new Finalization.Controlled with record
-      Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;
+      Super : aliased Copy_On_Write.Container;
    end record;
 
    overriding procedure Adjust (Object : in out Holder);

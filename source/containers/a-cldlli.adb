@@ -77,8 +77,14 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+--
+--
+--
 
 --  diff (Copy_Data)
+--
+--
+--
 --
 --
 --
@@ -120,6 +126,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Free_Data;
 
 --  diff (Unique)
+--
 --
 --
 --
@@ -177,6 +184,8 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 
 --  diff (Copy)
+--
+--
 --
 --
 --

@@ -1,83 +1,82 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Indefinite_Holders is
+   use type Copy_On_Write.Data_Access;
 
-   package Data_Cast is
-      new System.Address_To_Named_Access_Conversions (Data, Data_Access);
-
-   subtype Not_Null_Data_Access is not null Data_Access;
-   type Data_Access_Access is access all Not_Null_Data_Access;
-   type System_Address_Access is access all System.Address;
    function Upcast is new Unchecked_Conversion (
-      Data_Access_Access,
-      System_Address_Access);
+      Data_Access,
+      Copy_On_Write.Data_Access);
+   function Downcast is new Unchecked_Conversion (
+      Copy_On_Write.Data_Access,
+      Data_Access);
 
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
 
-   function Hold (New_Item : Element_Access) return not null Data_Access;
-   function Hold (New_Item : Element_Access) return not null Data_Access is
-      Result : Data_Access;
-      New_Item_Var : aliased Element_Access := New_Item;
-      procedure Finally (X : not null access Element_Access);
-      procedure Finally (X : not null access Element_Access) is
-      begin
-         Free (X.all);
-      end Finally;
-      package Holder is new Exceptions.Finally.Scoped_Holder (
-         Element_Access,
-         Finally);
-   begin
-      Holder.Assign (New_Item_Var'Access);
-      Result := new Indefinite_Holders.Data'(
-         Reference_Count => 1,
-         Element => New_Item);
-      Holder.Clear;
-      return Result;
-   end Hold;
-
-   procedure Free_Data (Data : System.Address);
-   procedure Free_Data (Data : System.Address) is
-      X : Data_Access := Data_Cast.To_Pointer (Data);
+   procedure Free_Data (Data : in out Copy_On_Write.Data_Access);
+   procedure Free_Data (Data : in out Copy_On_Write.Data_Access) is
+      X : Data_Access := Downcast (Data);
    begin
       Free (X.Element);
       Free (X);
    end Free_Data;
 
-   procedure Copy_Data (
-      Target : out System.Address;
-      Source : System.Address;
-      Length : Natural;
-      Max_Length : Natural;
+   procedure Allocate_Data (
+      Target : out Copy_On_Write.Data_Access;
       Capacity : Count_Type);
-   procedure Copy_Data (
-      Target : out System.Address;
-      Source : System.Address;
-      Length : Natural;
-      Max_Length : Natural;
+   procedure Allocate_Data (
+      Target : out Copy_On_Write.Data_Access;
       Capacity : Count_Type)
    is
-      pragma Unreferenced (Length);
-      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
+      New_Data : constant Data_Access := new Data'(
+         Super => <>,
+         Element => null);
    begin
-      Target := Data_Cast.To_Address (Hold (
-         new Element_Type'(Data_Cast.To_Pointer (Source).Element.all)));
+      Target := Upcast (New_Data);
+   end Allocate_Data;
+
+   procedure Copy_Data (
+      Target : out Copy_On_Write.Data_Access;
+      Source : not null Copy_On_Write.Data_Access;
+      Length : Count_Type;
+      Capacity : Count_Type);
+   procedure Copy_Data (
+      Target : out Copy_On_Write.Data_Access;
+      Source : not null Copy_On_Write.Data_Access;
+      Length : Count_Type;
+      Capacity : Count_Type) is
+   begin
+      pragma Unreferenced (Length);
+      pragma Unreferenced (Capacity);
+      Allocate_Data (Target, 0);
+      declare
+         procedure Finally (X : not null access Copy_On_Write.Data_Access);
+         procedure Finally (X : not null access Copy_On_Write.Data_Access) is
+         begin
+            Free_Data (X.all);
+         end Finally;
+         package Holder is new Exceptions.Finally.Scoped_Holder (
+            Copy_On_Write.Data_Access,
+            Finally);
+      begin
+         Holder.Assign (Target'Unrestricted_Access);
+         Downcast (Target).Element :=
+            new Element_Type'(Downcast (Source).Element.all);
+         Holder.Clear;
+      end;
    end Copy_Data;
 
-   procedure Unique (Container : in out Holder);
-   procedure Unique (Container : in out Holder) is
+   procedure Unique (Container : in out Holder; To_Update : Boolean);
+   procedure Unique (Container : in out Holder; To_Update : Boolean) is
    begin
-      System.Reference_Counting.Unique (
-         Target => Upcast (Container.Data'Unchecked_Access),
-         Target_Reference_Count => Container.Data.Reference_Count'Access,
-         Target_Length => 0,
-         Target_Capacity => 0,
-         Max_Length => 0,
-         Capacity => 0,
-         Sentinel => Empty_Data'Address,
+      Copy_On_Write.Unique (
+         Container.Super'Access,
+         To_Update,
+         0, -- Length is unused
+         0, -- Capacity is unused
+         Allocate => Allocate_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
    end Unique;
@@ -86,38 +85,41 @@ package body Ada.Containers.Indefinite_Holders is
 
    overriding procedure Adjust (Object : in out Holder) is
    begin
-      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
+      Copy_On_Write.Adjust (Object.Super'Access);
    end Adjust;
 
    procedure Assign (Target : in out Holder; Source : Holder) is
    begin
-      System.Reference_Counting.Assign (
-         Target => Upcast (Target.Data'Unchecked_Access),
-         Target_Reference_Count => Target.Data.Reference_Count'Access,
-         Source => Upcast (Source.Data'Unrestricted_Access),
-         Source_Reference_Count => Source.Data.Reference_Count'Access,
+      Copy_On_Write.Assign (
+         Target.Super'Access,
+         Source.Super'Access,
          Free => Free_Data'Access);
    end Assign;
 
    procedure Clear (Container : in out Holder) is
    begin
-      System.Reference_Counting.Clear (
-         Target => Upcast (Container.Data'Unchecked_Access),
-         Reference_Count => Container.Data.Reference_Count'Access,
+      Copy_On_Write.Clear (
+         Container.Super'Access,
          Free => Free_Data'Access);
-      Container.Data := Empty_Data'Unrestricted_Access;
    end Clear;
 
    function Constant_Reference (
       Container : aliased Holder)
       return Constant_Reference_Type is
    begin
-      return (Element => Container.Data.Element.all'Unrestricted_Access);
+      Unique (Container'Unrestricted_Access.all, False);
+      return (Element =>
+         Downcast (Container.Super.Data).Element.all'Unrestricted_Access);
    end Constant_Reference;
 
    function Copy (Source : Holder) return Holder is
    begin
-      return Source; -- Adjust called by the auto
+      return (Finalization.Controlled with Super => Copy_On_Write.Copy (
+         Source.Super'Access,
+         0, -- Length is unused
+         0, -- Capacity is unused
+         Allocate => Allocate_Data'Access,
+         Copy => Copy_Data'Access));
    end Copy;
 
    function Element (Container : Holder'Class) return Element_Type is
@@ -127,23 +129,21 @@ package body Ada.Containers.Indefinite_Holders is
 
    function Empty_Holder return Holder is
    begin
-      return (Finalization.Controlled with
-         Data => Empty_Data'Unrestricted_Access);
+      return (Finalization.Controlled with Super => (null, null));
    end Empty_Holder;
 
    procedure Move (Target : in out Holder; Source : in out Holder) is
    begin
-      System.Reference_Counting.Move (
-         Target => Upcast (Target.Data'Unchecked_Access),
-         Target_Reference_Count => Target.Data.Reference_Count'Access,
-         Source => Upcast (Source.Data'Unchecked_Access),
-         Sentinel => Empty_Data'Address,
+      Copy_On_Write.Move (
+         Target.Super'Access,
+         Source.Super'Access,
          Free => Free_Data'Access);
    end Move;
 
    function Is_Empty (Container : Holder) return Boolean is
    begin
-      return Container.Data.Element = null;
+      return Container.Super.Data = null
+         or else Downcast (Container.Super.Data).Element = null;
    end Is_Empty;
 
    procedure Query_Element (
@@ -157,8 +157,9 @@ package body Ada.Containers.Indefinite_Holders is
       Container : aliased in out Holder)
       return Reference_Type is
    begin
-      Unique (Container);
-      return (Element => Container.Data.Element.all'Unrestricted_Access);
+      Unique (Container, True);
+      return (Element =>
+         Downcast (Container.Super.Data).Element.all'Unrestricted_Access);
    end Reference;
 
    procedure Replace_Element (
@@ -166,13 +167,15 @@ package body Ada.Containers.Indefinite_Holders is
       New_Item : Element_Type) is
    begin
       Clear (Container);
-      Container.Data := Hold (new Element_Type'(New_Item));
+      Unique (Container, True);
+      Downcast (Container.Super.Data).Element := new Element_Type'(New_Item);
    end Replace_Element;
 
    function To_Holder (New_Item : Element_Type) return Holder is
    begin
       return Result : Holder do
-         Result.Data := Hold (new Element_Type'(New_Item));
+         Unique (Result, True);
+         Downcast (Result.Super.Data).Element := new Element_Type'(New_Item);
       end return;
    end To_Holder;
 
@@ -185,12 +188,13 @@ package body Ada.Containers.Indefinite_Holders is
 
    function "=" (Left, Right : Holder) return Boolean is
    begin
-      if Left.Data = Right.Data then
+      if Left.Super.Data = Right.Super.Data then
          return True;
-      elsif Left.Data = null or else Right.Data = null then
-         return False;
+      elsif Is_Empty (Left) or else Is_Empty (Right) then
+         return Is_Empty (Left) and then Is_Empty (Right);
       else
-         return Left.Data.Element.all = Right.Data.Element.all;
+         return Downcast (Left.Super.Data).Element.all
+            = Downcast (Right.Super.Data).Element.all;
       end if;
    end "=";
 
@@ -201,15 +205,18 @@ package body Ada.Containers.Indefinite_Holders is
          Container : out Holder) is
       begin
          Clear (Container);
-         Container.Data := Hold (
-            new Element_Type'(Element_Type'Input (Stream)));
+         Unique (Container, True);
+         Downcast (Container.Super.Data).Element :=
+            new Element_Type'(Element_Type'Input (Stream));
       end Read;
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
          Container : Holder) is
       begin
-         Element_Type'Output (Stream, Container.Data.Element.all);
+         Element_Type'Output (
+            Stream,
+            Downcast (Container.Super.Data).Element.all);
       end Write;
 
    end No_Primitives;

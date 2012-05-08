@@ -2,9 +2,9 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.Iterator_Interfaces;
 --  diff (Ada.References)
+--  diff (Ada.Containers.Inside.Copy_On_Write)
 private with Ada.Finalization;
 private with Ada.Streams;
---  diff (System.Reference_Counting)
 generic
    type Index_Type is range <>;
    type Element_Type (<>) is limited private;
@@ -371,25 +371,25 @@ package Ada.Containers.Limited_Vectors is
 
 private
 
+--  diff (Copy_On_Write)
+
    type Element_Access is access Element_Type;
    type Element_Array is array (Index_Type range <>) of Element_Access;
 
    type Data (Capacity_Last : Extended_Index) is limited record
 --  diff
---  diff
       Items : aliased Element_Array (Index_Type'First .. Capacity_Last);
    end record;
 
+--  diff
+--  diff
+--  diff
+--  diff
+
    type Data_Access is access all Data;
 
-   Empty_Data : aliased constant Data := (
-      Capacity_Last => Index_Type'First - 1,
---  diff
---  diff
-      Items => <>);
-
    type Vector is new Finalization.Limited_Controlled with record
-      Data : not null Data_Access := Empty_Data'Unrestricted_Access;
+      Data : Data_Access := null;
       Length : Count_Type := 0;
    end record;
 

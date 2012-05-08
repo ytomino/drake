@@ -3,6 +3,7 @@ with Ada.Unchecked_Deallocation;
 with Ada.Containers.Inside.Array_Sorting;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Limited_Vectors is
+--  diff
 
    package Data_Cast is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
@@ -10,7 +11,7 @@ package body Ada.Containers.Limited_Vectors is
 --  diff (Upcast)
 --
 --
---
+--  diff (Downcast)
 --
 --
 
@@ -50,7 +51,7 @@ package body Ada.Containers.Limited_Vectors is
    procedure Release (Data : in out Data_Access);
    procedure Release (Data : in out Data_Access) is
    begin
-      if Data /= Empty_Data'Unrestricted_Access then
+      if Data /= null then
          for I in Data.Items'Range loop
             Free (Data.Items (I));
          end loop;
@@ -58,16 +59,50 @@ package body Ada.Containers.Limited_Vectors is
       end if;
    end Release;
 
+--  diff (Allocate_Data)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Move_Data)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
 --  diff (Copy_Data)
---
---
---
---
---
---
---
---
---
 --
 --
 --
@@ -101,8 +136,19 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
+--
+--
+--
 
 --  diff (Array_To_Vector)
+--
+--
+--
+--
 --
 --
 --
@@ -150,10 +196,9 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
---
---
 
 --  diff (Append)
+--
 --
 --
 --
@@ -198,16 +243,18 @@ package body Ada.Containers.Limited_Vectors is
 
    function Capacity (Container : Vector) return Count_Type is
    begin
-      return Container.Data.Items'Length;
+      if Container.Data = null then
+         return 0;
+      else
+         return Container.Data.Items'Length;
+      end if;
    end Capacity;
 
    procedure Clear (Container : in out Vector) is
    begin
       Release (Container.Data);
 --  diff
---  diff
---  diff
-      Container.Data := Empty_Data'Unrestricted_Access;
+      Container.Data := null;
       Container.Length := 0;
    end Clear;
 
@@ -216,7 +263,13 @@ package body Ada.Containers.Limited_Vectors is
       Index : Index_Type)
       return Constant_Reference_Type is
    begin
-      return (Element => Container.Data.Items (Index).all'Access);
+--  diff
+      declare
+         Data : constant Data_Access := Container.Data;
+      begin
+--  diff
+         return (Element => Data.Items (Index).all'Access);
+      end;
    end Constant_Reference;
 
 --  diff (Constant_Reference)
@@ -230,6 +283,12 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Constant_Reference)
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -279,6 +338,7 @@ package body Ada.Containers.Limited_Vectors is
             end loop;
             Container.Data.Items (After .. After + Moving) :=
                Container.Data.Items (Before .. Before + Moving);
+--  diff
             for I in
                Index_Type'First + Index_Type'Base (Container.Length) ..
                Index_Type'First - 1 + Index_Type'Base (Old_Length)
@@ -312,7 +372,7 @@ package body Ada.Containers.Limited_Vectors is
    function Empty_Vector return Vector is
    begin
       return (Finalization.Limited_Controlled with
-         Data => Empty_Data'Unrestricted_Access,
+         Data => null,
          Length => 0);
    end Empty_Vector;
 
@@ -330,6 +390,9 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Find_Index)
+--
+--
+--
 --
 --
 --
@@ -384,6 +447,7 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Insert)
+--
 --
 --
 --
@@ -474,6 +538,7 @@ package body Ada.Containers.Limited_Vectors is
             After : constant Index_Type := Before + Index_Type'Base (Count);
          begin
             Set_Length (Container, Old_Length + Count);
+--  diff
             for I in
                Index_Type'First + Index_Type'Base (Old_Length) ..
                Last_Index (Container)
@@ -482,6 +547,7 @@ package body Ada.Containers.Limited_Vectors is
             end loop;
             Container.Data.Items (After .. After + Moving) :=
                Container.Data.Items (Before .. Before + Moving);
+--  diff
             for I in Before .. After - 1 loop
                Container.Data.Items (I) := null;
             end loop;
@@ -541,10 +607,8 @@ package body Ada.Containers.Limited_Vectors is
       Release (Target.Data);
       Target.Data := Source.Data;
       Target.Length := Source.Length;
-      Source.Data := Empty_Data'Unrestricted_Access;
+      Source.Data := null;
       Source.Length := 0;
---  diff
---  diff
    end Move;
 
    function Next (Object : Iterator; Position : Cursor) return Cursor is
@@ -592,7 +656,12 @@ package body Ada.Containers.Limited_Vectors is
       return Reference_Type is
    begin
 --  diff
-      return (Element => Container.Data.Items (Index).all'Access);
+      declare
+         Data : constant Data_Access := Container.Data;
+      begin
+--  diff
+         return (Element => Data.Items (Index).all'Access);
+      end;
    end Reference;
 
 --  diff (Reference)
@@ -608,6 +677,11 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Reference)
+--
+--
+--
+--
+--
 --
 --
 --
@@ -642,7 +716,7 @@ package body Ada.Containers.Limited_Vectors is
             Old_Data : Data_Access := Container.Data;
          begin
             if New_Capacity = 0 then
-               Container.Data := Empty_Data'Unrestricted_Access;
+               Container.Data := null;
             else
                Container.Data := new Data'(
                   Capacity_Last =>
@@ -699,6 +773,9 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
 
    procedure Reverse_Iterate (
       Container : Vector'Class;
@@ -720,7 +797,6 @@ package body Ada.Containers.Limited_Vectors is
             Reserve_Capacity (Container, New_Capacity);
          end;
       end if;
---  diff
       Container.Length := Length;
    end Set_Length;
 
@@ -861,11 +937,12 @@ package body Ada.Containers.Limited_Vectors is
                if Old_Length = 0 then
                   Move (Target, Source);
                else
---  diff
                   Set_Length (Target, Old_Length + Source.Length);
 --  diff
+--  diff
                   for I in Index_Type'First .. Last_Index (Source) loop
-                     Target.Data.Items (I + Index_Type'Base (Old_Length)) :=
+                     Target.Data.Items
+                        (I + Index_Type'Base (Old_Length)) :=
                         Source.Data.Items (I);
                      Source.Data.Items (I) := null;
                   end loop;
