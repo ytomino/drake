@@ -10,6 +10,7 @@ package Ada.Streams.Stream_IO.Inside is
    subtype Handle_Type is C.signed_int;
 
    function Is_Terminal (Handle : Handle_Type) return Boolean;
+   procedure Set_Close_On_Exec (Handle : Handle_Type);
 
    procedure Open (
       File : in out File_Type;

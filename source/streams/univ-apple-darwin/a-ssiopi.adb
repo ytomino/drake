@@ -9,11 +9,13 @@ package body Ada.Streams.Stream_IO.Pipes is
       if C.unistd.pipe (Handles (0)'Access) = -1 then
          raise Use_Error;
       else
+         Inside.Set_Close_On_Exec (Handles (0));
          Inside.Open (
             Reading,
             Handles (0),
             In_File,
             To_Close => True);
+         Inside.Set_Close_On_Exec (Handles (1));
          Inside.Open (
             Writing,
             Handles (1),
