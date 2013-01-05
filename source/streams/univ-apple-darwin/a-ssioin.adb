@@ -73,6 +73,13 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Check_File_Open;
 
+   --  implementation of handle
+
+   function Is_Terminal (Handle : Handle_Type) return Boolean is
+   begin
+      return C.unistd.isatty (Handle) /= 0;
+   end Is_Terminal;
+
    --  implementation
 
    procedure Close (
@@ -271,12 +278,6 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       return File /= null;
    end Is_Open;
-
-   function Is_Terminal (File : Non_Controlled_File_Type) return Boolean is
-   begin
-      Check_File_Open (File);
-      return C.unistd.isatty (File.Handle) /= 0;
-   end Is_Terminal;
 
    function Mode (File : Non_Controlled_File_Type) return File_Mode is
    begin

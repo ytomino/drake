@@ -9,6 +9,8 @@ package Ada.Streams.Stream_IO.Inside is
 
    subtype Handle_Type is C.signed_int;
 
+   function Is_Terminal (Handle : Handle_Type) return Boolean;
+
    procedure Open (
       File : in out File_Type;
       Handle : Handle_Type;
@@ -89,8 +91,6 @@ package Ada.Streams.Stream_IO.Inside is
 
    function Handle (File : Non_Controlled_File_Type) return Handle_Type;
    pragma Inline (Handle);
-
-   function Is_Terminal (File : Non_Controlled_File_Type) return Boolean;
 
    --  parsing form parameter
 

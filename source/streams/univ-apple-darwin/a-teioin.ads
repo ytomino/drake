@@ -116,7 +116,9 @@ package Ada.Text_IO.Inside is
 
    --  parsing form parameter
 
-   type Encoding_Type is (Locale, Terminal);
+   type Encoding_Type is (
+      Locale, -- Is_Terminal = False
+      Terminal); -- Is_Terminal = True
    pragma Discard_Names (Encoding_Type);
 
    type Line_Mark_Type is (LF, CR, CRLF);
@@ -166,20 +168,15 @@ private
       Last : out Natural;
       Wait : Boolean);
 
-   Terminal_To_Encoding : constant array (Boolean) of Encoding_Type := (
-      False => Locale,
-      True => Terminal);
-
    Standard_Input_Text : aliased Text_Type := (
       Name_Length => 0,
       Form_Length => 0,
       Stream => Streams.Stream_IO.Inside.Stream (
          Streams.Stream_IO.Inside.Standards.Standard_Input),
       File => Streams.Stream_IO.Inside.Standards.Standard_Input,
-      Mode => File_Mode (Streams.Stream_IO.Inside.Mode (
-         Streams.Stream_IO.Inside.Standards.Standard_Input)),
-      Encoding => Terminal_To_Encoding (Streams.Stream_IO.Inside.Is_Terminal (
-         Streams.Stream_IO.Inside.Standards.Standard_Input)),
+      Mode => In_File,
+      Encoding => Encoding_Type'Val (Boolean'Pos (
+         Streams.Stream_IO.Inside.Is_Terminal (0))),
       Line_Mark => LF,
       Is_Standard => True,
       others => <>);
@@ -190,10 +187,9 @@ private
       Stream => Streams.Stream_IO.Inside.Stream (
          Streams.Stream_IO.Inside.Standards.Standard_Output),
       File => Streams.Stream_IO.Inside.Standards.Standard_Output,
-      Mode => File_Mode (Streams.Stream_IO.Inside.Mode (
-         Streams.Stream_IO.Inside.Standards.Standard_Output)),
-      Encoding => Terminal_To_Encoding (Streams.Stream_IO.Inside.Is_Terminal (
-         Streams.Stream_IO.Inside.Standards.Standard_Output)),
+      Mode => Out_File,
+      Encoding => Encoding_Type'Val (Boolean'Pos (
+         Streams.Stream_IO.Inside.Is_Terminal (1))),
       Line_Mark => LF,
       Is_Standard => True,
       others => <>);
@@ -204,10 +200,9 @@ private
       Stream => Streams.Stream_IO.Inside.Stream (
          Streams.Stream_IO.Inside.Standards.Standard_Error),
       File => Streams.Stream_IO.Inside.Standards.Standard_Error,
-      Mode => File_Mode (Streams.Stream_IO.Inside.Mode (
-         Streams.Stream_IO.Inside.Standards.Standard_Error)),
-      Encoding => Terminal_To_Encoding (Streams.Stream_IO.Inside.Is_Terminal (
-         Streams.Stream_IO.Inside.Standards.Standard_Error)),
+      Mode => Out_File,
+      Encoding => Encoding_Type'Val (Boolean'Pos (
+         Streams.Stream_IO.Inside.Is_Terminal (2))),
       Line_Mark => LF,
       Is_Standard => True,
       others => <>);
