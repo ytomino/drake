@@ -377,6 +377,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Name : String;
       Form : String)
    is
+      function Cast is new Unchecked_Conversion (C.char_ptr, C.void_ptr);
       Temp_Var : constant C.char_array := "TMPDIR" & C.char'Val (0);
       Temp_Template : constant String := "ADAXXXXXX";
       Temp_Dir : C.char_ptr;
@@ -457,7 +458,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Modes);
          if Handle < 0 then
             errno := C.errno.errno;
-            C.stdlib.free (C.void_ptr (Full_Name.all'Address));
+            C.stdlib.free (Cast (Full_Name));
             case errno is
                when C.errno.ENOTDIR
                   | C.errno.ENAMETOOLONG
@@ -494,7 +495,7 @@ package body Ada.Streams.Stream_IO.Inside is
          --  Open
          Handle := C.unistd.mkstemp (Full_Name);
          if Handle < 0 then
-            C.stdlib.free (C.void_ptr (Full_Name.all'Address));
+            C.stdlib.free (Cast (Full_Name));
             raise Use_Error;
          end if;
       end if;
@@ -517,7 +518,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Last => 0,
             Name => Name (1 .. Name_Length),
             Form => Form);
-         C.stdlib.free (C.void_ptr (Full_Name.all'Address));
+         C.stdlib.free (Cast (Full_Name));
       end;
    end Open_File;
 
