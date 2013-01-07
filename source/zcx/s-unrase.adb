@@ -94,9 +94,12 @@ package body Separated is
       GCC_Exception : Handling.GNAT_GCC_Exception_Access) is
    begin
       pragma Check (Trace, Debug.Put ("enter"));
-      --  if GCC_Exception /= null then
-      C.unwind.Unwind_DeleteException (GCC_Exception.Header'Access);
-      --  end if;
+      if GCC_Exception = null then
+         pragma Check (Trace, Debug.Put ("GCC_Exception = null, reraised"));
+         null;
+      else
+         C.unwind.Unwind_DeleteException (GCC_Exception.Header'Access);
+      end if;
       pragma Check (Trace, Debug.Put ("leave"));
    end End_Handler;
 

@@ -215,6 +215,7 @@ package body System.Unwind.Handling is
                   end;
                end loop;
             end;
+            --  landing_pad is found in here
             if table_entry = null then
                ttype_filter := 0;
             else
@@ -298,6 +299,7 @@ package body System.Unwind.Handling is
                   end loop;
                end;
             end if;
+            --  ttype_filter is found (or 0) in here
             if (C.unsigned_int (Phases) and C.unwind.UA_SEARCH_PHASE) /= 0 then
                if ttype_filter = 0 then -- cleanup
                   pragma Check (Trace, Debug.Put ("UA_SEARCH_PHASE, cleanup"));
@@ -312,8 +314,13 @@ package body System.Unwind.Handling is
                   return C.unwind.URC_HANDLER_FOUND;
                end if;
             elsif Phases = C.unwind.UA_CLEANUP_PHASE then
-               pragma Check (Trace, Debug.Put ("without UA_HANDLER_FRAME"));
-               return C.unwind.URC_CONTINUE_UNWIND; -- [gcc-4.7] ???
+               pragma Check (Trace,
+                  Debug.Put ("UA_CLEANUP_PHASE without UA_HANDLER_FRAME"));
+               null; -- ???
+            else
+               pragma Check (Trace,
+                  Debug.Put ("miscellany phase"));
+               null; -- ???
             end if;
          end;
       end if;
