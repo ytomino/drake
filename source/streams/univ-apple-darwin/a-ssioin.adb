@@ -73,6 +73,24 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Check_File_Open;
 
+   --  implementation of handle
+
+   function Is_Terminal (Handle : Handle_Type) return Boolean is
+   begin
+      return C.unistd.isatty (Handle) /= 0;
+   end Is_Terminal;
+
+   procedure Set_Close_On_Exec (Handle : Handle_Type) is
+   begin
+      if C.sys.fcntl.fcntl (
+         Handle,
+         C.sys.fcntl.F_SETFD,
+         C.sys.fcntl.FD_CLOEXEC) = -1
+      then
+         raise Use_Error;
+      end if;
+   end Set_Close_On_Exec;
+
    --  implementation
 
    procedure Close (
@@ -272,12 +290,6 @@ package body Ada.Streams.Stream_IO.Inside is
       return File /= null;
    end Is_Open;
 
-   function Is_Terminal (File : Non_Controlled_File_Type) return Boolean is
-   begin
-      Check_File_Open (File);
-      return C.unistd.isatty (File.Handle) /= 0;
-   end Is_Terminal;
-
    function Mode (File : Non_Controlled_File_Type) return File_Mode is
    begin
       Check_File_Open (File);
@@ -365,6 +377,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Name : String;
       Form : String)
    is
+      function Cast is new Unchecked_Conversion (C.char_ptr, C.void_ptr);
       Temp_Var : constant C.char_array := "TMPDIR" & C.char'Val (0);
       Temp_Template : constant String := "ADAXXXXXX";
       Temp_Dir : C.char_ptr;
@@ -445,7 +458,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Modes);
          if Handle < 0 then
             errno := C.errno.errno;
-            C.stdlib.free (C.void_ptr (Full_Name.all'Address));
+            C.stdlib.free (Cast (Full_Name));
             case errno is
                when C.errno.ENOTDIR
                   | C.errno.ENAMETOOLONG
@@ -457,16 +470,6 @@ package body Ada.Streams.Stream_IO.Inside is
                when others =>
                   raise Use_Error;
             end case;
-         else
-            declare
-               Dummy : C.signed_int;
-               pragma Unreferenced (Dummy);
-            begin
-               Dummy := C.sys.fcntl.fcntl (
-                  Handle,
-                  C.sys.fcntl.F_SETFD,
-                  C.sys.fcntl.FD_CLOEXEC);
-            end;
          end if;
       else
          Temp_Dir := C.stdlib.getenv (Temp_Var (0)'Access);
@@ -492,10 +495,11 @@ package body Ada.Streams.Stream_IO.Inside is
          --  Open
          Handle := C.unistd.mkstemp (Full_Name);
          if Handle < 0 then
-            C.stdlib.free (C.void_ptr (Full_Name.all'Address));
+            C.stdlib.free (Cast (Full_Name));
             raise Use_Error;
          end if;
       end if;
+      Set_Close_On_Exec (Handle);
       declare
          subtype Fixed_String is String (Positive);
          Name : Fixed_String;
@@ -514,7 +518,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Last => 0,
             Name => Name (1 .. Name_Length),
             Form => Form);
-         C.stdlib.free (C.void_ptr (Full_Name.all'Address));
+         C.stdlib.free (Cast (Full_Name));
       end;
    end Open_File;
 

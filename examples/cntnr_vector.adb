@@ -2,7 +2,6 @@ pragma Ada_2012;
 with Ada.Containers.Vectors;
 with Ada.Containers.Indefinite_Vectors;
 with Ada.Containers.Limited_Vectors;
-with Ada.Containers.Inside.Array_Sorting;
 with Ada.Characters.ASCII.Handling;
 with Ada.Streams.Buffer_Storage_IO;
 -- with Ada.Text_IO;
@@ -31,50 +30,6 @@ procedure cntnr_Vector is
 	package LVectors is new Ada.Containers.Limited_Vectors (
 		Positive,
 		Character);
-	procedure Test_01 is
-		type Data_Array is array (1 .. 10) of Integer;
-		Data : Data_Array := (345, 63, 423, 504, 513, 804, 346, 98, 915, 30);
-		function LT (Left, Right : Integer; Params : System.Address) return Boolean is
-		begin
-			return Data (Left) < Data (Right);
-		end LT;
-		procedure Swap (Left, Right : Integer; Params : System.Address) is
-			Temp : Integer := Data (Left);
-		begin
-			Data (Left) := Data (Right);
-			Data (Right) := Temp;
-		end Swap;
-	begin
-		Ada.Containers.Inside.Array_Sorting.Insertion_Sort (
-			Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
-		pragma Assert (Ada.Containers.Inside.Array_Sorting.Is_Sorted (
-			Data'First, Data'Last, System.Null_Address, LT'Access));
-	end Test_01;
-	pragma Debug (Test_01);
-	procedure Test_02 is
-		type Data_Array is array (1 .. 10) of Integer;
-		Data : Data_Array := (345, 63, 423, 504, 513, 804, 346, 98, 915, 30);
-		function LT (Left, Right : Integer; Params : System.Address) return Boolean is
-		begin
-			return Data (Left) < Data (Right);
-		end LT;
-		procedure Swap (Left, Right : Integer; Params : System.Address) is
-			Temp : Integer := Data (Left);
-		begin
-			Data (Left) := Data (Right);
-			Data (Right) := Temp;
-			--for I in Data'Range loop
-			--	Ada.Text_IO.Put (Integer'Image (Data (I)));
-			--end loop;
-			--Ada.Text_IO.New_Line;
-		end Swap;
-	begin
-		Ada.Containers.Inside.Array_Sorting.In_Place_Merge_Sort (
-			Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
-		pragma Assert (Ada.Containers.Inside.Array_Sorting.Is_Sorted (
-			Data'First, Data'Last, System.Null_Address, LT'Access));
-	end Test_02;
-	pragma Debug (Test_02);
 	procedure Test_03 is
 		function To_Vector is new Vectors.Generic_Array_To_Vector (String);
 		use type Vectors.Vector;
@@ -163,29 +118,6 @@ procedure cntnr_Vector is
 		pragma Assert (X.Element (3) = 'D');
 	end Test_06;
 	pragma Debug (Test_06);
-	procedure Test_07 is
-		Data : String := "asdfghjkl";
-		function LT (Left, Right : Integer; Params : System.Address) return Boolean is
-		begin
-			return Data (Left) < Data (Right);
-		end LT;
-		procedure Swap (Left, Right : Integer; Params : System.Address) is
-			Temp : Character := Data (Left);
-		begin
-			--Ada.Text_IO.Put (Data);
-			--Ada.Text_IO.Put (" => ");
-			Data (Left) := Data (Right);
-			Data (Right) := Temp;
-			--Ada.Text_IO.Put_Line (Data);
-		end Swap;
-	begin
-		--Ada.Text_IO.Put_Line ("**** Test_07 ****");
-		Ada.Containers.Inside.Array_Sorting.In_Place_Merge_Sort (
-			Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
-		pragma Assert (Ada.Containers.Inside.Array_Sorting.Is_Sorted (
-			Data'First, Data'Last, System.Null_Address, LT'Access));
-	end Test_07;
-	pragma Debug (Test_07);
 	procedure Test_08 is
 		use Vectors;
 		X : aliased Vectors.Vector;

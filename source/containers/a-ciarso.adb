@@ -3,6 +3,33 @@
 pragma Check_Policy (Trace, Off);
 package body Ada.Containers.Inside.Array_Sorting is
 
+   function GCD (X, Y : Positive) return Positive;
+   function GCD (X, Y : Positive) return Positive is
+      X2 : Integer := X;
+      Y2 : Integer := Y;
+   begin
+      if X2 < Y2 then
+         declare
+            T : constant Integer := X2;
+         begin
+            X2 := Y2;
+            Y2 := T;
+         end;
+      end if;
+      while Y2 /= 0 loop
+         pragma Assert (X2 >= Y2);
+         declare
+            R : constant Integer := X2 rem Y2;
+         begin
+            X2 := Y2;
+            Y2 := R;
+         end;
+      end loop;
+      return X2;
+   end GCD;
+
+   --  implementation
+
    function Is_Sorted (
       First, Last : Integer;
       Params : System.Address;
@@ -123,12 +150,8 @@ package body Ada.Containers.Inside.Array_Sorting is
             end if;
             pragma Check (Trace,
                Debug.Put ("MB " & First_Cut'Img & Second_Cut'Img));
-            if First_Cut <= Middle and then Middle < Second_Cut then
-               --  swap [First_Cut .. Middle] and [Middle + 1.. Second_Cut]
-               In_Place_Reverse (First_Cut, Middle, Params, Swap);
-               In_Place_Reverse (Middle + 1, Second_Cut, Params, Swap);
-               In_Place_Reverse (First_Cut, Second_Cut, Params, Swap);
-            end if;
+            --  swap with Reverse_Rotate or Juggling_Rotate
+            Juggling_Rotate (First_Cut, Middle, Second_Cut, Params, Swap);
             --  merge
             New_Middle := First_Cut + (Second_Cut - (Middle + 1));
             pragma Check (Trace, Debug.Put ("MC " & New_Middle'Img));
@@ -167,5 +190,52 @@ package body Ada.Containers.Inside.Array_Sorting is
          J := J - 1;
       end loop;
    end In_Place_Reverse;
+
+   procedure Reverse_Rotate (
+      First, Middle, Last : Integer;
+      Params : System.Address;
+      Swap : not null access procedure (
+         I, J : Integer;
+         Params : System.Address)) is
+   begin
+      if First <= Middle and then Middle < Last then
+         In_Place_Reverse (First, Middle, Params, Swap);
+         In_Place_Reverse (Middle + 1, Last, Params, Swap);
+         In_Place_Reverse (First, Last, Params, Swap);
+      end if;
+   end Reverse_Rotate;
+
+   procedure Juggling_Rotate (
+      First, Middle, Last : Integer;
+      Params : System.Address;
+      Swap : not null access procedure (
+         I, J : Integer;
+         Params : System.Address))
+   is
+      Left_Length : constant Integer := Middle - First + 1;
+      Length : constant Integer := Last - First + 1;
+   begin
+      if Left_Length > 0 and then Length > Left_Length then
+         declare
+            Cycles : constant Positive := GCD (Length, Left_Length);
+            P : Integer := First;
+         begin
+            loop
+               declare
+                  Q : Integer := P + Left_Length;
+               begin
+                  if Q > Last then
+                     Q := Q - Length;
+                  end if;
+                  exit when Q = First;
+                  for I in 0 .. Cycles - 1 loop
+                     Swap (P + I, Q + I, Params);
+                  end loop;
+                  P := Q;
+               end;
+            end loop;
+         end;
+      end if;
+   end Juggling_Rotate;
 
 end Ada.Containers.Inside.Array_Sorting;
