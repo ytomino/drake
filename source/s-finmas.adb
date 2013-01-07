@@ -2,8 +2,21 @@ with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Shared_Locking;
+with System.Standard_Library;
 package body System.Finalization_Masters is
    pragma Suppress (All_Checks);
+
+   procedure Finalize_Library_Objects;
+   pragma Linker_Destructor (Finalize_Library_Objects);
+   --  __attribute__((destructor)) is invoked after atexit.
+
+   procedure Finalize_Library_Objects is
+      use Standard_Library; -- operator is not visible ???
+   begin
+      if Standard_Library.Finalize_Library_Objects /= null then
+         Standard_Library.Finalize_Library_Objects.all;
+      end if;
+   end Finalize_Library_Objects;
 
    function sync_bool_compare_and_swap (
       A1 : not null access Finalization_State;
