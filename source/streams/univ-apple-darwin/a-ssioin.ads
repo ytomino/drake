@@ -5,12 +5,14 @@ with C;
 package Ada.Streams.Stream_IO.Inside is
    pragma Preelaborate;
 
-   --  handle of operating system
+   --  handle
 
    subtype Handle_Type is C.signed_int;
 
    function Is_Terminal (Handle : Handle_Type) return Boolean;
    procedure Set_Close_On_Exec (Handle : Handle_Type);
+
+   --  handle for controlled
 
    procedure Open (
       File : in out File_Type;
@@ -80,7 +82,7 @@ package Ada.Streams.Stream_IO.Inside is
 
    procedure Flush (File : Non_Controlled_File_Type);
 
-   --  handle of operating system for non-controlled
+   --  handle for non-controlled
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
@@ -105,6 +107,8 @@ package Ada.Streams.Stream_IO.Inside is
    --  The form "wcem=?" sets wide characters encoding method by Text_IO.
 
 private
+
+   --  private for non-controlled
 
    package Dispatchers is
 
