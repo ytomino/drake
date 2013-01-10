@@ -19,8 +19,8 @@ package Ada.Direct_IO is
       Name : String := "";
       Form : String := "");
 
-   procedure Open
-     (File : in out File_Type;
+   procedure Open (
+      File : in out File_Type;
       Mode : File_Mode;
       Name : String;
       Form : String := "");

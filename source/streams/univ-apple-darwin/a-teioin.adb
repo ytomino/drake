@@ -155,12 +155,14 @@ package body Ada.Text_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is
    begin
-      if Is_Open (File) and then not File.Is_Standard then
+      if Is_Open (File) then
          declare
             Internal : Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
                File.File;
          begin
-            Free (File);
+            if not File.Is_Standard then
+               Free (File);
+            end if;
             if Streams.Stream_IO.Inside.Is_Open (Internal) then
                Streams.Stream_IO.Inside.Close (
                   Internal,

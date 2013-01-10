@@ -2,15 +2,19 @@ pragma License (Unrestricted);
 --  implementation unit
 with Ada.Tags;
 with C;
+private with System;
 package Ada.Streams.Stream_IO.Inside is
    pragma Preelaborate;
 
-   --  handle of operating system
+   --  handle
 
    subtype Handle_Type is C.signed_int;
 
    function Is_Terminal (Handle : Handle_Type) return Boolean;
+   function Is_Seekable (Handle : Handle_Type) return Boolean;
    procedure Set_Close_On_Exec (Handle : Handle_Type);
+
+   --  handle for controlled
 
    procedure Open (
       File : in out File_Type;
@@ -80,7 +84,7 @@ package Ada.Streams.Stream_IO.Inside is
 
    procedure Flush (File : Non_Controlled_File_Type);
 
-   --  handle of operating system for non-controlled
+   --  handle for non-controlled
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
@@ -106,10 +110,12 @@ package Ada.Streams.Stream_IO.Inside is
 
 private
 
+   --  private for non-controlled
+
    package Dispatchers is
 
       type Root_Dispatcher is new Root_Stream_Type with record
-         Stream : Non_Controlled_File_Type;
+         File : Non_Controlled_File_Type;
       end record;
       pragma Suppress_Initialization (Root_Dispatcher);
 
@@ -123,7 +129,7 @@ private
          Item : Stream_Element_Array);
 
       type Seekable_Dispatcher is new Seekable_Stream_Type with record
-         Stream : Non_Controlled_File_Type;
+         File : Non_Controlled_File_Type;
       end record;
       pragma Suppress_Initialization (Seekable_Dispatcher);
 
@@ -147,7 +153,7 @@ private
 
       type Dispatcher is record
          Tag : Ada.Tags.Tag := Ada.Tags.No_Tag;
-         Stream : Non_Controlled_File_Type := null;
+         File : Non_Controlled_File_Type := null;
       end record;
       pragma Suppress_Initialization (Dispatcher);
 
@@ -166,20 +172,25 @@ private
       Standard_Handle);
    pragma Discard_Names (Stream_Kind);
 
-   type Stream_Type (
-      Name_Length : Natural;
-      Form_Length : Natural) is limited
-   record
-      Dispatcher : aliased Dispatchers.Dispatcher := (
-         Tag => Ada.Tags.No_Tag,
-         Stream => null);
+   Uninitialized_Buffer : constant := -1;
+
+   type Stream_Type is limited record
       Handle : C.signed_int; -- file descripter
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Buffer : aliased Stream_Element_Array (1 .. 1);
-      Last : Stream_Element_Count;
-      Name : String (1 .. Name_Length);
-      Form : String (1 .. Form_Length);
+      Buffer_Inline : aliased Character;
+      Name : System.Address;
+      Form : System.Address;
+      Name_Length : Natural;
+      Form_Length : Natural;
+      Buffer : System.Address;
+      Buffer_Length : Stream_Element_Offset;
+      Buffer_Index : Stream_Element_Offset; -- Index (File) mod Buffer_Length
+      Reading_Index : Stream_Element_Offset;
+      Writing_Index : Stream_Element_Offset;
+      Dispatcher : aliased Dispatchers.Dispatcher := (
+         Tag => Ada.Tags.No_Tag,
+         File => null);
    end record;
    pragma Suppress_Initialization (Stream_Type);
 
