@@ -137,7 +137,6 @@ c954a03 C unimplemented tasking features
 c960001 C unimplemented tasking features (protected)
 c960004 C unimplemented tasking features (select)
 c96005b N Duration'Base equals Duration
-c96006a A calendar (out of UNIX time)
 c96007a F calendar (exception not raised on feburary 30th)
 c97112a C unimplemented tasking features (select)
 c97113a C unimplemented tasking features (select)

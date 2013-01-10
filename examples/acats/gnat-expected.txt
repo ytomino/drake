@@ -42,6 +42,7 @@ cxc3006 A Annex C is not supported
 cxc3007 F Annex C is not supported
 cxc3008 F Annex C is not supported
 cxc3009 A Annex C is not supported
+cxc6003 C cannot pack atomic components
 cxd1003 F failed to rendezvous
 cxd1004 F failed to rendezvous
 cxd1005 F failed to rendezvous
@@ -53,6 +54,7 @@ cxd2007 C Asynchronous_Task_Control is not supported
 cxd2008 F failed to queue priority control
 cxd3001 F pragma Locking_Policy is not working
 cxd3002 F pragma Locking_Policy is not working
+cxd6001 F failed to abort
 cxd6002 F failed to abort
 cxda004 A Annex C is not supported
 cxdb001 C Asynchronous_Task_Control is not supported
