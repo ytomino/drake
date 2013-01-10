@@ -1,9 +1,10 @@
 a87b59a C unimplemented tasking features (select)
+a95001c C unimplemented tasking features (indexed entry)
 a97106a C unimplemented tasking features (select)
 ac3207a C unimplemented tasking features (select)
 c250002 C on GNAT, it can not use non-ASCII source filename
 c34007j C unimplemented tasking features (select)
-c34008a C this test requires Ada95 mode
+c34008a C unimplemented tasking features (indexed entry)
 c352001 F unicode ('Image of 16#80#..16#ff#)
 c380003 C unimplemented tasking features (protected)
 c380004 C unimplemented tasking features (select)
@@ -11,6 +12,7 @@ c394001 C unimplemented tasking features (synchronized interface)
 c3a1001 C unimplemented tasking features (protected)
 c3a1002 C unimplemented tasking features (select)
 c410001 C unimplemented tasking features (protected)
+c41307d C unimplemented tasking features (indexed entry)
 c431a01 C unimplemented tasking features
 c431a02 C unimplemented tasking features
 c431a03 C unimplemented tasking features
@@ -43,6 +45,8 @@ c85018b C unimplemented tasking features
 c910003 C unimplemented tasking features
 c91004b C unimplemented tasking features
 c91004c C unimplemented tasking features
+c91006a C unimplemented tasking features (indexed entry)
+c91007a C unimplemented tasking features (indexed entry)
 c92003a C unimplemented tasking features
 c930001 C unimplemented tasking features
 c93005a C unimplemented tasking features
@@ -80,6 +84,12 @@ c94008d C unimplemented tasking features
 c94020a C unimplemented tasking features
 c940a03 C unimplemented tasking features
 c95008a C unimplemented tasking features
+c95009a C unimplemented tasking features (indexed entry)
+c95010a C unimplemented tasking features (indexed entry)
+c95011a C unimplemented tasking features (indexed entry)
+c95033a C unimplemented tasking features (indexed entry)
+c95033b C unimplemented tasking features (indexed entry)
+c95041a C unimplemented tasking features (indexed entry)
 c95065a C unimplemented tasking features
 c95065b C unimplemented tasking features
 c95065c C unimplemented tasking features
@@ -87,6 +97,7 @@ c95065d C unimplemented tasking features
 c95065e C unimplemented tasking features
 c95065f C unimplemented tasking features
 c95067a C unimplemented tasking features
+c95080b C unimplemented tasking features (indexed entry)
 c95082g C unimplemented tasking features
 c95085a C unimplemented tasking features
 c95085b C unimplemented tasking features
@@ -137,7 +148,6 @@ c954a03 C unimplemented tasking features
 c960001 C unimplemented tasking features (protected)
 c960004 C unimplemented tasking features (select)
 c96005b N Duration'Base equals Duration
-c96006a A calendar (out of UNIX time)
 c96007a F calendar (exception not raised on feburary 30th)
 c97112a C unimplemented tasking features (select)
 c97113a C unimplemented tasking features (select)
@@ -199,6 +209,7 @@ c974014 C unimplemented tasking features
 c980001 C unimplemented tasking features
 c980002 C unimplemented tasking features
 c980003 C unimplemented tasking features
+c990001 C unimplemented tasking features (indexed entry)
 c99005a C unimplemented tasking features
 c9a009a C unimplemented tasking features
 c9a009f C unimplemented tasking features
@@ -209,6 +220,7 @@ ca13001 C unimplemented tasking features (protected)
 ca14028 F on GNAT, it can not use specialized body with generic package spec
 ca5004a C unimplemented tasking features (select)
 cb10002 N enough memory exists
+cb1010a A stack overflow could not be caught in 64bit Darwin
 cb20001 C unimplemented tasking features (select)
 cb20004 C unimplemented tasking features (protected)
 cb20005 C unimplemented tasking features
@@ -264,7 +276,6 @@ cxa3003 C unicode (latin-1)
 cxa3004 F unicode (Is_String, To_Character, To_String)
 cxa4025 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
 cxa4026 A unicode (latin-1)
-cxa4027 C "use" and "use type" Ada.Strings.Bounded at the same time
 cxa4028 C "use" and "use type" Ada.Strings.Bounded at the same time
 cxa4029 C "use" and "use type" Ada.Strings.Wide_Bounded at the same time
 cxa4030 C "use" and "use type" Ada.Strings.Unbounded at the same time

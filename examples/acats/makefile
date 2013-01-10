@@ -106,6 +106,7 @@ MARGS:=
 CARGS:=
 BARGS:=
 ifneq ($(RTSDIR),)
+LIBGNAT=$(BUILDDIR_REL)/adalib/libgnat.a
 MARGS:=-a
 CARGS:=--RTS=$(RTSDIR)
 BARGS:=
@@ -113,7 +114,7 @@ endif
 
 .PHONY: test
 
-test: $(BUILDDIR_REL)/adalib/libgnat.a $(ACATSDIR) $(SUPPORTDIR) $(SUPPORT_SOURCES) $(MACROSUB) $(RUN_ACATS)
+test: $(LIBGNAT) $(ACATSDIR) $(SUPPORTDIR) $(SUPPORT_SOURCES) $(MACROSUB) $(RUN_ACATS)
 	$(RUN_ACATS) $(OPTION)
 
 $(BUILDDIR_REL)/adalib/libgnat.a: $(SOURCES)

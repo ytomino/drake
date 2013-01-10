@@ -182,6 +182,9 @@ procedure run_acats is
 	begin
 		return Ada.Strings.Equal_Case_Insensitive (Name, "ba2001f")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "ba3001e")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "la5007a")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "la5007b")
+			or else Ada.Strings.Equal_Case_Insensitive (Name, "la5007c")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "la5007d")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "la5007e")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "la5007f")
