@@ -23,11 +23,11 @@ headmaster (or pre-translated headers)
   http://github.com/ytomino/headmaster
  pre-translated headers
   - `for MacOSX 10.6 (x86, 64bit)
-    <https://github.com/downloads/ytomino/drake/import-x86_64-apple-darwin10.zip>`_
+    <https://raw.github.com/wiki/ytomino/drake/import-x86_64-apple-darwin10.tar.bz2>`_
   - `for MacOSX 10.5 (x86, 32bit)
-    <https://github.com/downloads/ytomino/drake/import-i686-apple-darwin9.zip>`_
+    <https://raw.github.com/wiki/ytomino/drake/import-i686-apple-darwin9.tar.bz2>`_
   - `for FreeBSD 7 (x86, 32bit)
-    <https://github.com/downloads/ytomino/drake/import-i686-pc-freebsd7.zip>`_
+    <https://raw.github.com/wiki/ytomino/drake/import-i686-pc-freebsd7.tar.bz2>`_
 
 Downloads
 ---------
