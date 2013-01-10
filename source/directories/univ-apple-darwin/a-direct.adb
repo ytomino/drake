@@ -578,24 +578,23 @@ package body Ada.Directories is
       if Search.Handle = null then
          raise Name_Error;
       else
+         Search.Path := null;
+         Search.Pattern := null;
+         --  allocate Path and Pattern
          Search.Path := new String'(Full_Name (Directory));
          declare
-            Length : constant C.size_t := Pattern'Length;
-            Term : C.char_ptr;
-            Dummy : C.void_ptr;
-            pragma Unreferenced (Dummy);
+            Length : constant Natural := Pattern'Length;
          begin
             Search.Pattern := char_ptr_Conv.To_Pointer (
                System.Memory.Allocate (
                   System.Storage_Elements.Storage_Offset (Length + 1)));
-            Dummy := C.string.memcpy (
-               C.void_ptr (Search.Pattern.all'Address),
-               C.void_const_ptr (Pattern'Address),
-               Length);
-            Term := char_ptr_Conv.To_Pointer (
-               char_ptr_Conv.To_Address (Search.Pattern)
-               + System.Storage_Elements.Storage_Offset (Length));
-            Term.all := C.char'Val (0);
+            declare
+               Search_Pattern : String (Positive);
+               for Search_Pattern'Address use Search.Pattern.all'Address;
+            begin
+               Search_Pattern (1 .. Length) := Pattern;
+               Search_Pattern (Length + 1) := Character'Val (0);
+            end;
          end;
          Search.Filter := Filter;
          Search.Count := 0;
