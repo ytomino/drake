@@ -58,6 +58,7 @@ private
    private
 
       type Line_Cursor_Access is access all Line_Cursor;
+      for Line_Cursor_Access'Storage_Size use 0;
       type Line_Cursor is new Finalization.Controlled with record
          Line : String_Access;
          Owner : Line_Cursor_Access;

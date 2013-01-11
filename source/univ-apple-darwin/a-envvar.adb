@@ -33,16 +33,10 @@ package body Ada.Environment_Variables is
 
    function getenv (Name : String) return C.char_ptr;
    function getenv (Name : String) return C.char_ptr is
-      Name_Length : constant C.size_t := Name'Length;
-      C_Name : C.char_array (0 .. Name_Length);
-      Dummy : C.void_ptr;
-      pragma Unreferenced (Dummy);
+      Z_Name : String := Name & Character'Val (0);
+      C_Name : C.char_array (C.size_t);
+      for C_Name'Address use Z_Name'Address;
    begin
-      Dummy := C.string.memcpy (
-         C.void_ptr (C_Name'Address),
-         C.void_const_ptr (Name'Address),
-         Name_Length);
-      C_Name (Name_Length) := C.char'Val (0);
       return C.stdlib.getenv (C_Name (0)'Access);
    end getenv;
 
@@ -65,39 +59,23 @@ package body Ada.Environment_Variables is
    end Exists;
 
    procedure Set (Name : String; Value : String) is
-      Name_Length : constant C.size_t := Name'Length;
-      C_Name : C.char_array (0 .. Name_Length);
-      Value_Length : constant C.size_t := Value'Length;
-      C_Value : C.char_array (0 .. Value_Length);
-      Dummy : C.void_ptr;
-      pragma Unreferenced (Dummy);
+      Z_Name : String := Name & Character'Val (0);
+      C_Name : C.char_array (C.size_t);
+      for C_Name'Address use Z_Name'Address;
+      Z_Value : String := Value & Character'Val (0);
+      C_Value : C.char_array (C.size_t);
+      for C_Value'Address use Z_Value'Address;
    begin
-      Dummy := C.string.memcpy (
-         C.void_ptr (C_Name'Address),
-         C.void_const_ptr (Name'Address),
-         Name_Length);
-      C_Name (Name_Length) := C.char'Val (0);
-      Dummy := C.string.memcpy (
-         C.void_ptr (C_Value'Address),
-         C.void_const_ptr (Value'Address),
-         Value_Length);
-      C_Value (Value_Length) := C.char'Val (0);
       if C.stdlib.setenv (C_Name (0)'Access, C_Value (0)'Access, 1) /= 0 then
          raise Constraint_Error;
       end if;
    end Set;
 
    procedure Clear (Name : String) is
-      Name_Length : constant C.size_t := Name'Length;
-      C_Name : C.char_array (0 .. Name_Length);
-      Dummy : C.void_ptr;
-      pragma Unreferenced (Dummy);
+      Z_Name : String := Name & Character'Val (0);
+      C_Name : C.char_array (C.size_t);
+      for C_Name'Address use Z_Name'Address;
    begin
-      Dummy := C.string.memcpy (
-         C.void_ptr (C_Name'Address),
-         C.void_const_ptr (Name'Address),
-         Name_Length);
-      C_Name (Name_Length) := C.char'Val (0);
       if C.stdlib.unsetenv (C_Name (0)'Access) /= 0 then
          raise Constraint_Error;
       end if;

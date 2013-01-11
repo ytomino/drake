@@ -633,7 +633,7 @@ package Ada.Strings.Generic_Unbounded is
 
 private
 
-   type Data is limited record
+   type Data is record -- "limited" prevents No_Elaboration_Code
       Reference_Count : aliased System.Reference_Counting.Counter;
       Max_Length : aliased Natural;
       Items : not null String_Access;
@@ -643,7 +643,8 @@ private
 
    type Data_Access is access all Data;
 
-   Empty_String : aliased constant String_Type := (1 .. 0 => <>);
+   Empty_String : aliased constant String_Type :=
+      (1 .. 0 => Character_Type'Val (0));
    Empty_Data : aliased constant Data := (
       Reference_Count => System.Reference_Counting.Static,
       Max_Length => 0,

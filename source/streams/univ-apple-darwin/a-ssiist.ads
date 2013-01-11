@@ -22,12 +22,12 @@ private
       Form => Empty_Form'Address,
       Form_Length => 0,
       Buffer => System.Null_Address,
-      Buffer_Inline => <>,
+      Buffer_Inline => 0,
       Buffer_Length => Uninitialized_Buffer,
       Buffer_Index => 0,
       Reading_Index => 0,
       Writing_Index => 0,
-      Dispatcher => (others => <>));
+      Dispatcher => (Tags.No_Tag, null));
 
    Standard_Output_Name : aliased C.char_array := "*stdout" & C.char'Val (0);
 
@@ -40,12 +40,12 @@ private
       Form => Empty_Form'Address,
       Form_Length => 0,
       Buffer => System.Null_Address,
-      Buffer_Inline => <>,
+      Buffer_Inline => 0,
       Buffer_Length => Uninitialized_Buffer,
       Buffer_Index => 0,
       Reading_Index => 0,
       Writing_Index => 0,
-      Dispatcher => (others => <>));
+      Dispatcher => (Tags.No_Tag, null));
 
    Standard_Error_Name : aliased C.char_array := "*stderr" & C.char'Val (0);
 
@@ -58,12 +58,12 @@ private
       Form => Empty_Form'Address,
       Form_Length => 0,
       Buffer => System.Null_Address,
-      Buffer_Inline => <>,
+      Buffer_Inline => 0,
       Buffer_Length => Uninitialized_Buffer,
       Buffer_Index => 0,
       Reading_Index => 0,
       Writing_Index => 0,
-      Dispatcher => (others => <>));
+      Dispatcher => (Tags.No_Tag, null));
 
    Standard_Input : constant Non_Controlled_File_Type :=
       Standard_Input_Stream'Access;

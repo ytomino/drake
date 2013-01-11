@@ -98,7 +98,7 @@ package body Interfaces.C.Generic_Strings is
          System.Storage_Elements.Storage_Count (Length)
          * (Element'Size / Standard'Storage_Unit);
    begin
-      libc.memmove (Result, Item, C.size_t (Size));
+      libc.memcpy (Result, Item, C.size_t (Size));
       Conv.To_Pointer (Conv.To_Address (Result) + Size).all := Element'Val (0);
       return Result;
    end New_Chars_Ptr;
@@ -276,7 +276,7 @@ package body Interfaces.C.Generic_Strings is
          System.Storage_Elements.Storage_Count (Length)
          * (Element'Size / Standard'Storage_Unit);
    begin
-      libc.memcpy (Offsetted_Item, Source, C.size_t (Size));
+      libc.memmove (Offsetted_Item, Source, C.size_t (Size));
       Conv.To_Pointer (Conv.To_Address (Offsetted_Item) + Size).all :=
          Element'Val (0);
    end Update;

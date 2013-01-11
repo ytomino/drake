@@ -174,11 +174,11 @@ private
 
    Uninitialized_Buffer : constant := -1;
 
-   type Stream_Type is limited record
+   type Stream_Type is record -- "limited" prevents No_Elaboration_Code
       Handle : C.signed_int; -- file descripter
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Buffer_Inline : aliased Character;
+      Buffer_Inline : aliased Stream_Element;
       Name : System.Address;
       Form : System.Address;
       Name_Length : Natural;

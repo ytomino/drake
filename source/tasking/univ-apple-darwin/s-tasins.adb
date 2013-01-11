@@ -104,7 +104,15 @@ package body System.Tasking.Inside is
 
    --  shared lock
 
-   Shared_Lock : Mutex := (Handle => <>); -- uninitialized
+   type Mutex_Wrapper is record -- no default for No_Elaboration_Code
+      Handle : aliased C.pthread.pthread_mutex_t;
+   end record;
+   pragma Suppress_Initialization (Mutex_Wrapper);
+
+   Shared_Lock_Body : aliased Mutex_Wrapper; -- uninitialized
+   Shared_Lock : Mutex;
+   for Shared_Lock'Address use Shared_Lock_Body'Address;
+   pragma Import (Ada, Shared_Lock);
 
    procedure Shared_Lock_Enter;
    procedure Shared_Lock_Enter is
@@ -190,7 +198,10 @@ package body System.Tasking.Inside is
       Attribute_Vectors.Clear (Item.Attributes, Item.Attributes_Length);
    end Clear_Attributes;
 
-   Attribute_Indexes_Lock : Mutex := (Handle => <>); -- uninitialized
+   Attribute_Indexes_Lock_Body : aliased Mutex_Wrapper; -- uninitialized
+   Attribute_Indexes_Lock : Mutex;
+   for Attribute_Indexes_Lock'Address use Attribute_Indexes_Lock_Body'Address;
+   pragma Import (Ada, Attribute_Indexes_Lock);
 
    type Attribute_Index_Set is array (Natural) of Word;
    pragma Suppress_Initialization (Attribute_Index_Set);
@@ -333,8 +344,12 @@ package body System.Tasking.Inside is
 
    --  signal handler
 
-   Old_SIGTERM_Action : aliased C.sys.signal.struct_sigaction :=
-      (others => <>); -- uninitialized
+   type sigaction_Wrapper is record -- ??? for No_Elaboration_Code
+      Handle : aliased C.sys.signal.struct_sigaction;
+   end record;
+   pragma Suppress_Initialization (sigaction_Wrapper);
+
+   Old_SIGTERM_Action : aliased sigaction_Wrapper; -- uninitialized
 
    procedure Restore_SIGTERM_Handler;
    procedure Restore_SIGTERM_Handler is
@@ -343,7 +358,7 @@ package body System.Tasking.Inside is
    begin
       Dummy := C.signal.sigaction (
          C.sys.signal.SIGTERM,
-         Old_SIGTERM_Action'Access,
+         Old_SIGTERM_Action.Handle'Access,
          null);
    end Restore_SIGTERM_Handler;
 
@@ -389,7 +404,7 @@ package body System.Tasking.Inside is
       Dummy := C.signal.sigaction (
          C.sys.signal.SIGTERM,
          act'Access,
-         Old_SIGTERM_Action'Access);
+         Old_SIGTERM_Action.Handle'Access);
    end Set_SIGTERM_Handler;
 
    procedure Mask_SIGTERM (How : C.signed_int);
