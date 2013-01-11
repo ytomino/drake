@@ -64,12 +64,12 @@ package Ada.UCD.General_Category is
    Pf_Total : constant := 10;
    Pf_Range_Length : constant := 10;
 
-   Dummy_XXXXx1 : constant UCS_2_Array (1 .. 0) := (others => <>);
-   Dummy_XXXXx2 : constant Set_16_Type (1 .. 0) := (others => <>);
+   Dummy_XXXXx1 : constant UCS_2_Array (1 .. 0) := (others => 0);
+   Dummy_XXXXx2 : constant Set_16_Type (1 .. 0) := (others => (0, 0));
    Dummy_1XXXXx1 : UCS_2_Array renames Dummy_XXXXx1;
    Dummy_1XXXXx2 : Set_16_Type renames Dummy_XXXXx2;
-   Dummy_XXXXXXXXx1 : constant UCS_4_Array (1 .. 0) := (others => <>);
-   Dummy_XXXXXXXXx2 : constant Set_32_Type (1 .. 0) := (others => <>);
+   Dummy_XXXXXXXXx1 : constant UCS_4_Array (1 .. 0) := (others => 0);
+   Dummy_XXXXXXXXx2 : constant Set_32_Type (1 .. 0) := (others => (0, 0));
 
    Cn_Table_XXXXx1 : constant UCS_2_Array (1 .. 138) := (
       16#038B#,

@@ -201,12 +201,12 @@ begin
 		end loop;
 	end;
 	New_Line;
-	Put_Line ("   Dummy_XXXXx1 : constant UCS_2_Array (1 .. 0) := (others => <>);");
-	Put_Line ("   Dummy_XXXXx2 : constant Set_16_Type (1 .. 0) := (others => <>);");
+	Put_Line ("   Dummy_XXXXx1 : constant UCS_2_Array (1 .. 0) := (others => 0);");
+	Put_Line ("   Dummy_XXXXx2 : constant Set_16_Type (1 .. 0) := (others => (0, 0));");
 	Put_Line ("   Dummy_1XXXXx1 : UCS_2_Array renames Dummy_XXXXx1;");
 	Put_Line ("   Dummy_1XXXXx2 : Set_16_Type renames Dummy_XXXXx2;");
-	Put_Line ("   Dummy_XXXXXXXXx1 : constant UCS_4_Array (1 .. 0) := (others => <>);");
-	Put_Line ("   Dummy_XXXXXXXXx2 : constant Set_32_Type (1 .. 0) := (others => <>);");
+	Put_Line ("   Dummy_XXXXXXXXx1 : constant UCS_4_Array (1 .. 0) := (others => 0);");
+	Put_Line ("   Dummy_XXXXXXXXx2 : constant Set_32_Type (1 .. 0) := (others => (0, 0));");
 	New_Line;
 	declare
 		I : Category_Lists.Cursor := First (Table);

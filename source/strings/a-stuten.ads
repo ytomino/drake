@@ -33,7 +33,7 @@ package Ada.Strings.UTF_Encoding is
       Character'Val (16#FF#)
       & Character'Val (16#FE#);
 
-   BOM_16 : aliased constant Wide_String := -- "aliased" is extended
+   BOM_16 : constant Wide_String :=
        (1 => Wide_Character'Val (16#FEFF#));
 
    --  extended
@@ -97,5 +97,13 @@ private
       Item : String_Type;
       Output_BOM : Boolean := False)
       return String_Type;
+
+   BOM_Table : constant array (Encoding_Scheme) of
+      not null access constant UTF_String := (
+      UTF_8 => BOM_8'Access,
+      UTF_16BE => BOM_16BE'Access,
+      UTF_16LE => BOM_16LE'Access,
+      UTF_32BE => BOM_32BE'Access,
+      UTF_32LE => BOM_32LE'Access);
 
 end Ada.Strings.UTF_Encoding;

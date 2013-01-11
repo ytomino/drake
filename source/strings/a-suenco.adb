@@ -364,14 +364,6 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       UTF_32BE => From_UTF_32BE'Access,
       UTF_32LE => From_UTF_32LE'Access);
 
-   BOM : constant array (Encoding_Scheme) of
-      not null access constant UTF_String := (
-      UTF_8 => BOM_8'Access,
-      UTF_16BE => BOM_16BE'Access,
-      UTF_16LE => BOM_16LE'Access,
-      UTF_32BE => BOM_32BE'Access,
-      UTF_32LE => BOM_32LE'Access);
-
    --  conversions between various encoding schemes
 
    procedure Do_Convert (
@@ -389,20 +381,23 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Result : out UTF_String;
       Last : out Natural)
    is
+      In_BOM : constant not null access constant UTF_String :=
+         BOM_Table (Input_Scheme);
+      Out_BOM : constant not null access constant UTF_String :=
+         BOM_Table (Output_Scheme);
       I : Natural := Item'First;
       J : Natural := Result'First;
    begin
-      if Item'Length >= BOM (Input_Scheme).all'Length
-         and then Item (I .. I + BOM (Input_Scheme).all'Length - 1) =
-            BOM (Input_Scheme).all
+      if Item'Length >= In_BOM.all'Length
+         and then Item (I .. I + In_BOM.all'Length - 1) = In_BOM.all
       then
-         I := I + BOM (Input_Scheme).all'Length;
+         I := I + In_BOM.all'Length;
       end if;
       Last := J - 1;
       if Output_BOM then
-         J := J + BOM (Output_Scheme).all'Length;
+         J := J + Out_BOM.all'Length;
          Last := J - 1;
-         Result (Result'First .. Last) := BOM (Output_Scheme).all;
+         Result (Result'First .. Last) := Out_BOM.all;
       end if;
       while I <= Item'Last loop
          declare

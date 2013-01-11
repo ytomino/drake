@@ -11,7 +11,7 @@ package System.Finalization_Masters is
    type FM_Node is private;
    type FM_Node_Ptr is access all FM_Node;
 
-   Header_Size : constant Storage_Elements.Storage_Count;
+   Header_Size : constant Storage_Elements.Storage_Offset;
    Header_Offset : constant Storage_Elements.Storage_Offset;
 
    type Any_Storage_Pool_Ptr is access Storage_Pools.Root_Storage_Pool'Class;
@@ -60,7 +60,7 @@ private
    end record;
    pragma Suppress_Initialization (FM_Node);
 
-   Header_Size : constant Storage_Elements.Storage_Count :=
+   Header_Size : constant Storage_Elements.Storage_Offset :=
       FM_Node'Size / Storage_Unit;
    Header_Offset : constant Storage_Elements.Storage_Offset :=
       FM_Node'Size / Storage_Unit;
