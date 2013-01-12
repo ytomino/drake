@@ -30,6 +30,7 @@ package Ada.Directories is
    procedure Delete_File (Name : String);
 
    --  modified
+   --  These functions fail if Overwrite = False and New_Name already exists.
    procedure Rename (
       Old_Name : String;
       New_Name : String;
@@ -96,6 +97,7 @@ package Ada.Directories is
    type File_Kind is (Directory, Ordinary_File, Special_File);
 
    --  modified
+   --  File_Size is essentially same as Stream_Element_Count.
 --  type File_Size is range 0 .. implementation-defined;
    subtype File_Size is Streams.Stream_Element_Count;
 
