@@ -258,7 +258,7 @@ package body Ada.Characters.Normalization is
                               R_Length : constant Natural :=
                                  Decomposed_Length (D_Map (D).To);
                            begin
-                              To (J + R_Length .. To_Last + R_Length) :=
+                              To (J + R_Length .. To_Last + R_Length - 1) :=
                                  To (J + 1 .. To_Last);
                               To (J .. J + R_Length - 1) :=
                                  D_Map (D).To (1 .. R_Length);

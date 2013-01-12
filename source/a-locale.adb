@@ -578,7 +578,7 @@ package body Ada.Locales is
          for J in I + 1 .. Lang_Map_3'Last loop
             pragma Assert (
                Lang_Map_3 (I).Alpha_3 /= Lang_Map_3 (J).Alpha_3,
-               To_String (Lang_Map_3 (I).Alpha_3));
+               String (Lang_Map_3 (I).Alpha_3));
             null;
          end loop;
       end loop;
@@ -661,7 +661,7 @@ package body Ada.Locales is
          for J in I + 1 .. Lang_Map_2'Last loop
             pragma Assert (
                Lang_Map_2 (I).Alpha_2 /= Lang_Map_2 (J).Alpha_2,
-               To_String (Lang_Map_2 (I).Alpha_2));
+               String (Lang_Map_2 (I).Alpha_2));
             null;
          end loop;
       end loop;
@@ -702,21 +702,6 @@ package body Ada.Locales is
          return ISO_639_Alpha_3_Unknown;
       end;
    end To_Alpha_3;
-
-   function To_String (Item : ISO_639_Alpha_2) return String_2 is
-   begin
-      return (1 => Item (1), 2 => Item (2));
-   end To_String;
-
-   function To_String (Item : ISO_639_Alpha_3) return String_3 is
-   begin
-      return (1 => Item (1), 2 => Item (2), 3 => Item (3));
-   end To_String;
-
-   function To_String (Item : ISO_3166_1_Alpha_2) return String_2 is
-   begin
-      return (1 => Item (1), 2 => Item (2));
-   end To_String;
 
    function Language return ISO_639_Alpha_2
       renames Inside.Language;

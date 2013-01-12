@@ -5,11 +5,15 @@ package Ada.Locales is
    pragma Remote_Types;
 
    --  extended
-   --  These are for ISO 639-1.
+   --  These are language code for ISO 639-1.
    --  Ada RM requires alpha-3 in spite of that
    --    almost all the operating systems use alpha-2.
-   type ISO_639_Alpha_2 is array (1 .. 2) of Character range 'a' .. 'z';
-   type ISO_639_Alpha_3 is array (1 .. 3) of Character range 'a' .. 'z';
+   type ISO_639_Alpha_2 is new String (1 .. 2);
+--    with Dynamic_Predicate =>
+--       (for all E of ISO_639_Alpha_2 => E in 'a' .. 'z');
+   type ISO_639_Alpha_3 is new String (1 .. 3);
+--    with Dynamic_Predicate =>
+--       (for all E of ISO_639_Alpha_3 => E in 'a' .. 'z');
    ISO_639_Alpha_2_Unknown : constant ISO_639_Alpha_2 := "un"; -- ???
    ISO_639_Alpha_3_Unknown : constant ISO_639_Alpha_3 := "und";
    function To_Alpha_2 (Item : ISO_639_Alpha_3) return ISO_639_Alpha_2;
@@ -18,22 +22,23 @@ package Ada.Locales is
    function Language return ISO_639_Alpha_3;
 
    --  extended
-   --  These are for ISO 3166.
-   type ISO_3166_1_Alpha_2 is array (1 .. 2) of Character range 'A' .. 'Z';
+   --  These are country code for ISO 3166.
+   type ISO_3166_1_Alpha_2 is new String (1 .. 2);
+--    with Dynamic_Predicate =>
+--       (for all E of ISO_3166_1_Alpha_2 => E in 'A' .. 'Z');
    ISO_3166_1_Alpha_2_Unknown : constant ISO_3166_1_Alpha_2 := "ZZ";
    function Country return ISO_3166_1_Alpha_2;
 
-   --  extended
-   --  These functions are for ease to put.
-   subtype String_2 is String (1 .. 2);
-   subtype String_3 is String (1 .. 3);
-   function To_String (Item : ISO_639_Alpha_2) return String_2;
-   function To_String (Item : ISO_639_Alpha_3) return String_3;
-   function To_String (Item : ISO_3166_1_Alpha_2) return String_2;
-
---  type Language_Code is array (1 .. 3) of Character range 'a' .. 'z';
+   --  modified
+   --  Language_Code is ISO_639_Alpha_3, Country_Code is ISO_3166_1_Alpha_2
+   --    and predicates are added by AI12-0037-1.
+--  type Language_Code is new String (1 .. 3)
+--    with Dynamic_Predicate =>
+--       (for all E of Language_Code => E in 'a' .. 'z');
    subtype Language_Code is ISO_639_Alpha_3;
---  type Country_Code is array (1 .. 2) of Character range 'A' .. 'Z';
+--  type Country_Code is new String (1 .. 2)
+--    with Dynamic_Predicate =>
+--       (for all E of Country_Code => E in 'A' .. 'Z');
    subtype Country_Code is ISO_3166_1_Alpha_2;
 
 --  Language_Unknown : constant Language_Code := "und";
