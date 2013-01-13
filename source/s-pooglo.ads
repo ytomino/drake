@@ -24,6 +24,7 @@ package System.Pool_Global is
       return Storage_Elements.Storage_Count;
 
    --  required for default of 'Storage_Pool by compiler (s-pooglo.ads)
-   Global_Pool_Object : Unbounded_No_Reclaim_Pool;
+   Global_Pool_Object : Unbounded_No_Reclaim_Pool := (
+      Storage_Pools.Root_Storage_Pool with null record);
 
 end System.Pool_Global;

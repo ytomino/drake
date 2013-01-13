@@ -43,6 +43,7 @@ package Ada.Characters.Handling is
    pragma Inline (To_Upper);
 --  function To_Basic (Item : Character) return Character;
    --  extended
+   --  Unicode case folding for comparison.
    function To_Case_Folding (Item : Character) return Character;
    pragma Inline (To_Case_Folding);
 

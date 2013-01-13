@@ -14,6 +14,7 @@ package Ada.Streams.Stream_IO is
    type File_Mode is new IO_Modes.File_Mode; -- for conversion
 
    --  modified
+   --  Count is essentially same as Stream_Element_Count.
 --  type Count is range 0 .. implementation-defined;
    subtype Count is Stream_Element_Count;
    subtype Positive_Count is Count range 1 .. Count'Last;

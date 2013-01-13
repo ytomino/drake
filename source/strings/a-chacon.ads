@@ -9,6 +9,8 @@ package Ada.Characters.Conversions is
    pragma Pure;
 
    --  extended
+   --  This function returns False if Item is in UTF-8 multibyte sequence,
+   --    otherwise True.
    function Is_Wide_Character (Item : Character) return Boolean;
 
    --  extended
@@ -20,6 +22,8 @@ package Ada.Characters.Conversions is
    pragma Inline (Is_String);
 
    --  extended
+   --  This function returns False if Item is in UTF-16 surrogate pair,
+   --    otherwise True.
    function Is_Wide_Wide_Character (Item : Wide_Character) return Boolean;
 
    function Is_Character (Item : Wide_Wide_Character) return Boolean;
@@ -35,6 +39,7 @@ package Ada.Characters.Conversions is
    --  Is_String, Is_Wide_String return True always
 
    --  modified
+   --  These functions use Substitute if Item contains illegal byte sequence.
    function To_Wide_Character (
       Item : Character;
       Substitute : Wide_Character := ' ') -- additional

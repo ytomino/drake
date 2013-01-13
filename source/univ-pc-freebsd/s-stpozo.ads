@@ -4,7 +4,7 @@ package System.Storage_Pools.Zones is
    --  This package provides a separated stogae pool for local scope.
    pragma Preelaborate;
 
-   type Zone_Pool is new Storage_Pools.Root_Storage_Pool with private;
+   type Zone_Pool is new Root_Storage_Pool with private;
 
 private
 
@@ -16,7 +16,7 @@ private
    end record;
    pragma Suppress_Initialization (Header);
 
-   type Zone_Pool is new Storage_Pools.Root_Storage_Pool with record
+   type Zone_Pool is new Root_Storage_Pool with record
       List : Header_Access := null;
    end record;
 

@@ -6,6 +6,7 @@ package Ada.Assertions is
    pragma Export (Ada, Assertion_Error, "assertion_error");
 
    --  modified
+   --  Assert reports the source location if it's called without message.
 --  procedure Assert (Check : Boolean);
 --  procedure Assert (Check : Boolean; Message : String);
    procedure Assert (

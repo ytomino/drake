@@ -153,12 +153,14 @@ procedure ext_doc is
 		end if;
 		declare
 			procedure Skip_Formal_Parameters is
+				Closed : Boolean := False;
 			begin
 				loop
 					declare
 						Line : constant String := Ada.Text_IO.Get_Line (File);
 					begin
-						exit when Line (Line'Last) = ';';
+						Closed := Closed or else Ada.Strings.Fixed.Index (Line, ')') > 0;
+						exit when Closed and then Line (Line'Last) = ';';
 					end;
 				end loop;
 			exception
