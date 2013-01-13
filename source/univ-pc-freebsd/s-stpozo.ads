@@ -19,6 +19,7 @@ private
    type Zone_Pool is new Root_Storage_Pool with record
       List : Header_Access := null;
    end record;
+   pragma Finalize_Storage_Only (Zone_Pool);
 
    overriding procedure Finalize (Object : in out Zone_Pool);
 

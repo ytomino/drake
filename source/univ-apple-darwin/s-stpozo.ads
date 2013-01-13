@@ -12,6 +12,7 @@ private
    type Zone_Pool is new Root_Storage_Pool with record
       Zone : C.malloc.malloc.malloc_zone_t_ptr;
    end record;
+   pragma Finalize_Storage_Only (Zone_Pool);
 
    overriding procedure Initialize (Object : in out Zone_Pool);
    overriding procedure Finalize (Object : in out Zone_Pool);

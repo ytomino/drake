@@ -24,6 +24,7 @@ package System.Pool_Size is
             (Elmt_Size + Alignment - 1) / Alignment * Alignment);
       The_Pool : Storage_Elements.Storage_Array (1 .. Pool_Size);
    end record;
+   pragma Finalize_Storage_Only (Stack_Bounded_Pool);
 
    procedure Initialize (Pool : in out Stack_Bounded_Pool) is null;
 

@@ -5,6 +5,7 @@ package System.Storage_Pools.Overlaps is
 
    type Overlay_Pool is new Root_Storage_Pool with null record;
    --  actually, an allocation address is stored in TLS
+   pragma Finalize_Storage_Only (Overlay_Pool);
 
    procedure Set_Address (Storage_Address : Address);
    pragma Inline (Set_Address);
@@ -27,9 +28,9 @@ package System.Storage_Pools.Overlaps is
       return Storage_Elements.Storage_Count;
    pragma Inline (Storage_Size);
 
-   Pool : Overlay_Pool;
+   Pool : Overlay_Pool := (Root_Storage_Pool with null record);
    --  if a local pool is declared, all objects belongs to the local scope,
-   --  then there be finalized when the local pool is out of scope...
+   --  then those be finalized when the local pool is out of scope...
    --  therefore it should use global pool
 
 end System.Storage_Pools.Overlaps;

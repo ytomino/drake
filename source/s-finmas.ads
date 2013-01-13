@@ -14,8 +14,7 @@ package System.Finalization_Masters is
    Header_Size : constant Storage_Elements.Storage_Offset;
    Header_Offset : constant Storage_Elements.Storage_Offset;
 
-   type Any_Storage_Pool_Ptr is access Storage_Pools.Root_Storage_Pool'Class;
-   for Any_Storage_Pool_Ptr'Storage_Size use 0;
+   subtype Any_Storage_Pool_Ptr is Storage_Pools.Storage_Pool_Access;
 
    type Finalization_Master is
       new Ada.Finalization.Limited_Controlled with private;

@@ -23,6 +23,10 @@ package System.Storage_Pools is
    function Storage_Size (Pool : Root_Storage_Pool)
       return Storage_Elements.Storage_Count is abstract;
 
+   --  to use in System.Finalization_Masters
+   type Storage_Pool_Access is access all Root_Storage_Pool'Class;
+   for Storage_Pool_Access'Storage_Size use 0;
+
 private
 
    type Root_Storage_Pool is
@@ -45,7 +49,6 @@ private
       Alignment : Storage_Elements.Storage_Count);
 
    --  required for extra parameter of build-in-place (s-stopoo.ads)
-   type Root_Storage_Pool_Ptr is access all Root_Storage_Pool'Class;
-   for Root_Storage_Pool_Ptr'Storage_Size use 0;
+   subtype Root_Storage_Pool_Ptr is Storage_Pool_Access;
 
 end System.Storage_Pools;
