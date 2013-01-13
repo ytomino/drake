@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 package System.Storage_Pools.Overlaps is
    pragma Preelaborate;
 
-   type Overlay_Pool is new Storage_Pools.Root_Storage_Pool with null record;
+   type Overlay_Pool is new Root_Storage_Pool with null record;
    --  actually, an allocation address is stored in TLS
 
    procedure Set_Address (Storage_Address : Address);
