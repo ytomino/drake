@@ -5,7 +5,7 @@ begin
 	declare
 		File : Ada.Streams.Stream_IO.File_Type :=
 			Ada.Streams.Stream_IO.Sockets.Connect (
-				Ada.Streams.Stream_IO.Sockets.Get ("google.com", 80));
+				Ada.Streams.Stream_IO.Sockets.Resolve ("google.com", 80));
 	begin
 		pragma Assert (Ada.Streams.Stream_IO.Is_Open (File));
 		pragma Assert (Ada.Streams.Stream_IO.Stream (File).all
