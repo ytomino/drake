@@ -226,25 +226,48 @@ private
       Reference_Count => System.Reference_Counting.Static,
       Items => <>);
 
-   type Character_Set is new Finalization.Controlled with record
-      Data : aliased not null Set_Data_Access :=
-         Empty_Set_Data'Unrestricted_Access;
-   end record;
+   package Controlled_Sets is
 
-   overriding procedure Adjust (Object : in out Character_Set);
-   overriding procedure Finalize (Object : in out Character_Set);
+      type Character_Set is private;
 
-   package No_Primitives_For_Set is
-      procedure Read (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : out Character_Set);
-      procedure Write (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Character_Set);
-   end No_Primitives_For_Set;
+      procedure Assign (
+         Object : in out Character_Set;
+         Data : not null Set_Data_Access);
+      pragma Inline (Assign);
 
-   for Character_Set'Read use No_Primitives_For_Set.Read;
-   for Character_Set'Write use No_Primitives_For_Set.Write;
+      function Create (
+         Data : not null Set_Data_Access)
+         return Character_Set;
+      pragma Inline (Create);
+
+      function Reference (
+         Object : Character_Set)
+         return not null Set_Data_Access;
+      pragma Inline (Reference);
+
+   private
+
+      type Character_Set is new Finalization.Controlled with record
+         Data : aliased not null Set_Data_Access :=
+            Empty_Set_Data'Unrestricted_Access;
+      end record;
+
+      overriding procedure Adjust (Object : in out Character_Set);
+      overriding procedure Finalize (Object : in out Character_Set);
+
+   end Controlled_Sets;
+
+   type Character_Set is new Controlled_Sets.Character_Set;
+
+   procedure Read (
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : out Character_Set);
+   procedure Write (
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : Character_Set);
+
+   for Character_Set'Read use Read;
+   for Character_Set'Write use Write;
 
    subtype Map_Data is Characters.Inside.Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
@@ -255,24 +278,47 @@ private
       From => <>,
       To => <>);
 
-   type Character_Mapping is new Finalization.Controlled with record
-      Data : aliased not null Map_Data_Access :=
-         Empty_Map_Data'Unrestricted_Access;
-   end record;
+   package Controlled_Maps is
 
-   overriding procedure Adjust (Object : in out Character_Mapping);
-   overriding procedure Finalize (Object : in out Character_Mapping);
+      type Character_Mapping is private;
 
-   package No_Primitives_For_Map is
-      procedure Read (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : out Character_Mapping);
-      procedure Write (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Character_Mapping);
-   end No_Primitives_For_Map;
+      procedure Assign (
+         Object : in out Character_Mapping;
+         Data : not null Map_Data_Access);
+      pragma Inline (Assign);
 
-   for Character_Mapping'Read use No_Primitives_For_Map.Read;
-   for Character_Mapping'Write use No_Primitives_For_Map.Write;
+      function Create (
+         Data : not null Map_Data_Access)
+         return Character_Mapping;
+      pragma Inline (Create);
+
+      function Reference (
+         Object : Character_Mapping)
+         return not null Map_Data_Access;
+      pragma Inline (Reference);
+
+   private
+
+      type Character_Mapping is new Finalization.Controlled with record
+         Data : aliased not null Map_Data_Access :=
+            Empty_Map_Data'Unrestricted_Access;
+      end record;
+
+      overriding procedure Adjust (Object : in out Character_Mapping);
+      overriding procedure Finalize (Object : in out Character_Mapping);
+
+   end Controlled_Maps;
+
+   type Character_Mapping is new Controlled_Maps.Character_Mapping;
+
+   procedure Read (
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : out Character_Mapping);
+   procedure Write (
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : Character_Mapping);
+
+   for Character_Mapping'Read use Read;
+   for Character_Mapping'Write use Write;
 
 end Ada.Strings.Maps;
