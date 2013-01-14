@@ -86,44 +86,4 @@ package body Ada.Real_Time is
       return Time_Span (Duration (Left) / Right);
    end "/";
 
-   function "<" (Left, Right : Time) return Boolean is
-   begin
-      return Duration (Left) < Duration (Right);
-   end "<";
-
-   function "<" (Left, Right : Time_Span) return Boolean is
-   begin
-      return Duration (Left) < Duration (Right);
-   end "<";
-
-   function "<=" (Left, Right : Time) return Boolean is
-   begin
-      return Duration (Left) <= Duration (Right);
-   end "<=";
-
-   function "<=" (Left, Right : Time_Span) return Boolean is
-   begin
-      return Duration (Left) <= Duration (Right);
-   end "<=";
-
-   function ">" (Left, Right : Time) return Boolean is
-   begin
-      return Duration (Left) > Duration (Right);
-   end ">";
-
-   function ">" (Left, Right : Time_Span) return Boolean is
-   begin
-      return Duration (Left) > Duration (Right);
-   end ">";
-
-   function ">=" (Left, Right : Time) return Boolean is
-   begin
-      return Duration (Left) >= Duration (Right);
-   end ">=";
-
-   function ">=" (Left, Right : Time_Span) return Boolean is
-   begin
-      return Duration (Left) >= Duration (Right);
-   end ">=";
-
 end Ada.Real_Time;
