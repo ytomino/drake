@@ -50,12 +50,34 @@ package Ada.Memory_Mapped_IO is
 
 private
 
-   type Mapping is new Ada.Finalization.Limited_Controlled with record
+   type Non_Controlled_Mapping is limited record
       Address : System.Address := System.Null_Address;
       Size : System.Storage_Elements.Storage_Count;
       File : aliased Streams.Stream_IO.Inside.Non_Controlled_File_Type;
    end record;
+   pragma Suppress_Initialization (Non_Controlled_Mapping);
 
-   overriding procedure Finalize (Object : in out Mapping);
+   package Controlled is
+
+      type Mapping is limited private;
+
+      function Reference (Object : Mapping)
+         return not null access Non_Controlled_Mapping;
+      pragma Inline (Reference);
+
+   private
+
+      type Mapping is new Ada.Finalization.Limited_Controlled with record
+         Data : aliased Non_Controlled_Mapping := (
+            Address => System.Null_Address,
+            Size => 0,
+            File => null);
+      end record;
+
+      overriding procedure Finalize (Object : in out Mapping);
+
+   end Controlled;
+
+   type Mapping is new Controlled.Mapping;
 
 end Ada.Memory_Mapped_IO;

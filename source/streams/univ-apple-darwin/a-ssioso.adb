@@ -11,12 +11,12 @@ package body Ada.Streams.Stream_IO.Sockets is
       Host_Name : not null access constant C.char;
       Service : not null access constant C.char;
       Hints : not null access constant C.netdb.struct_addrinfo)
-      return Address_Information;
+      return End_Point;
    function Get (
       Host_Name : not null access constant C.char;
       Service : not null access constant C.char;
       Hints : not null access constant C.netdb.struct_addrinfo)
-      return Address_Information
+      return End_Point
    is
       Data : aliased C.netdb.struct_addrinfo_ptr;
       Result : C.signed_int;
@@ -29,14 +29,16 @@ package body Ada.Streams.Stream_IO.Sockets is
       if Result /= 0 then
          raise Use_Error;
       else
-         return (Finalization.Limited_Controlled with Data);
+         return Result : End_Point do
+            Assign (Result, Data);
+         end return;
       end if;
    end Get;
 
    --  implementation
 
-   function Get (Host_Name : String; Service : String)
-      return Address_Information
+   function Resolve (Host_Name : String; Service : String)
+      return End_Point
    is
       Hints : aliased constant C.netdb.struct_addrinfo := (
          ai_flags => 0,
@@ -55,10 +57,10 @@ package body Ada.Streams.Stream_IO.Sockets is
       for C_Service'Address use Z_Service'Address;
    begin
       return Get (C_Host_Name (0)'Access, C_Service (0)'Access, Hints'Access);
-   end Get;
+   end Resolve;
 
-   function Get (Host_Name : String; Port : Port_Number)
-      return Address_Information
+   function Resolve (Host_Name : String; Port : Port_Number)
+      return End_Point
    is
       Hints : aliased constant C.netdb.struct_addrinfo := (
          ai_flags => 0, -- darwin9 does not have AI_NUMERICSERV
@@ -86,11 +88,11 @@ package body Ada.Streams.Stream_IO.Sockets is
          Error => Error);
       Z_Service (Z_Service_Last + 1) := Character'Val (0);
       return Get (C_Host_Name (0)'Access, C_Service (0)'Access, Hints'Access);
-   end Get;
+   end Resolve;
 
-   procedure Connect (File : in out File_Type; Host : Address_Information) is
+   procedure Connect (File : in out File_Type; Peer : End_Point) is
       Handle : Inside.Handle_Type := -1;
-      I : C.netdb.struct_addrinfo_ptr := Host.Data;
+      I : C.netdb.struct_addrinfo_ptr := Reference (Peer);
    begin
       while I /= null loop
          Handle := C.sys.socket.socket (
@@ -123,16 +125,34 @@ package body Ada.Streams.Stream_IO.Sockets is
       end if;
    end Connect;
 
-   function Connect (Host : Address_Information) return File_Type is
+   function Connect (Peer : End_Point) return File_Type is
    begin
       return Result : File_Type do
-         Connect (Result, Host);
+         Connect (Result, Peer);
       end return;
    end Connect;
 
-   overriding procedure Finalize (Object : in out Address_Information) is
-   begin
-      C.netdb.freeaddrinfo (Object.Data);
-   end Finalize;
+   package body End_Points is
+
+      procedure Assign (
+         Object : in out End_Point;
+         Data : C.netdb.struct_addrinfo_ptr) is
+      begin
+         Object.Data := Data;
+      end Assign;
+
+      function Reference (
+         Object : End_Point)
+         return C.netdb.struct_addrinfo_ptr is
+      begin
+         return Object.Data;
+      end Reference;
+
+      overriding procedure Finalize (Object : in out End_Point) is
+      begin
+         C.netdb.freeaddrinfo (Object.Data);
+      end Finalize;
+
+   end End_Points;
 
 end Ada.Streams.Stream_IO.Sockets;

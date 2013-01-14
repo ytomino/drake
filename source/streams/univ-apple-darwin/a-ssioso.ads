@@ -8,22 +8,42 @@ package Ada.Streams.Stream_IO.Sockets is
 
    type Port_Number is range 0 .. 16#ffff#;
 
-   type Address_Information is limited private;
+   type End_Point is limited private;
 
-   function Get (Host_Name : String; Service : String)
-      return Address_Information;
-   function Get (Host_Name : String; Port : Port_Number)
-      return Address_Information;
+   function Resolve (Host_Name : String; Service : String)
+      return End_Point;
+   function Resolve (Host_Name : String; Port : Port_Number)
+      return End_Point;
 
-   procedure Connect (File : in out File_Type; Host : Address_Information);
-   function Connect (Host : Address_Information) return File_Type;
+   procedure Connect (File : in out File_Type; Peer : End_Point);
+   function Connect (Peer : End_Point) return File_Type;
 
 private
 
-   type Address_Information is new Finalization.Limited_Controlled with record
-      Data : C.netdb.struct_addrinfo_ptr := null;
-   end record;
+   package End_Points is
 
-   overriding procedure Finalize (Object : in out Address_Information);
+      type End_Point is limited private;
+
+      procedure Assign (
+         Object : in out End_Point;
+         Data : C.netdb.struct_addrinfo_ptr);
+      pragma Inline (Assign);
+
+      function Reference (
+         Object : End_Point)
+         return C.netdb.struct_addrinfo_ptr;
+      pragma Inline (Reference);
+
+   private
+
+      type End_Point is new Finalization.Limited_Controlled with record
+         Data : C.netdb.struct_addrinfo_ptr := null;
+      end record;
+
+      overriding procedure Finalize (Object : in out End_Point);
+
+   end End_Points;
+
+   type End_Point is new End_Points.End_Point;
 
 end Ada.Streams.Stream_IO.Sockets;

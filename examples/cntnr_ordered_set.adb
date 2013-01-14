@@ -199,24 +199,25 @@ procedure cntnr_Ordered_Set is
 	pragma Debug (Test_07);
 begin
 	Stream_Test : declare
+		package BSIO renames Ada.Streams.Buffer_Storage_IO;
 		X : Sets.Set;
 		IX : ISets.Set;
 		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
 	begin
 		-- Definite -> Inefinite (0)
-		Sets.Set'Write (Buffer.Stream, X); -- write empty
+		Sets.Set'Write (BSIO.Stream (Buffer), X); -- write empty
 		ISets.Insert (IX, 9);
 		pragma Assert (IX.Length = 1);
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
-		ISets.Set'Read (Buffer.Stream, IX);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
+		ISets.Set'Read (BSIO.Stream (Buffer), IX);
 		pragma Assert (IX.Length = 0);
 		-- Indefinite -> Definite (1)
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
 		ISets.Insert (IX, 10);
 		pragma Assert (IX.Length = 1);
-		ISets.Set'Write (Buffer.Stream, IX); -- write 'b'
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (Buffer.Stream.all), 1);
-		Sets.Set'Read (Buffer.Stream, X);
+		ISets.Set'Write (BSIO.Stream (Buffer), IX); -- write 'b'
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
+		Sets.Set'Read (BSIO.Stream (Buffer), X);
 		pragma Assert (X.Length = 1);
 		pragma Assert (Sets.Element (X.First) = 10);
 	end Stream_Test;
