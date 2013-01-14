@@ -1,4 +1,3 @@
-with Ada.Exceptions.Finally;
 with C.sys.mman;
 with C.sys.types;
 package body Ada.Memory_Mapped_IO is
@@ -8,13 +7,13 @@ package body Ada.Memory_Mapped_IO is
    use type C.sys.types.off_t;
 
    procedure Map (
-      Object : out Mapping;
+      Object : in out Non_Controlled_Mapping;
       Handle : Streams.Stream_IO.Inside.Handle_Type;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0;
       Writable : Boolean);
    procedure Map (
-      Object : out Mapping;
+      Object : in out Non_Controlled_Mapping;
       Handle : Streams.Stream_IO.Inside.Handle_Type;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0;
@@ -44,8 +43,12 @@ package body Ada.Memory_Mapped_IO is
       Object.Size := System.Storage_Elements.Storage_Count (Size);
    end Map;
 
-   procedure Unmap (Object : in out Mapping; Raise_On_Error : Boolean);
-   procedure Unmap (Object : in out Mapping; Raise_On_Error : Boolean) is
+   procedure Unmap (
+      Object : in out Non_Controlled_Mapping;
+      Raise_On_Error : Boolean);
+   procedure Unmap (
+      Object : in out Non_Controlled_Mapping;
+      Raise_On_Error : Boolean) is
    begin
       if C.sys.mman.munmap (
          C.void_ptr (Object.Address),
@@ -66,8 +69,10 @@ package body Ada.Memory_Mapped_IO is
    --  implementation
 
    function Is_Map (Object : Mapping) return Boolean is
+      NC_Mapping : constant not null access Non_Controlled_Mapping :=
+         Reference (Object);
    begin
-      return Object.Address /= System.Null_Address;
+      return NC_Mapping.Address /= System.Null_Address;
    end Is_Map;
 
    procedure Map (
@@ -76,13 +81,14 @@ package body Ada.Memory_Mapped_IO is
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
    is
+      pragma Unmodified (Object); -- modified via 'Unrestricted_Access
       Map_Size : Streams.Stream_IO.Count := Size;
    begin
       if Map_Size = 0 then
          Map_Size := Streams.Stream_IO.Size (File);
       end if;
       Map (
-         Object,
+         Reference (Object).all,
          Streams.Stream_IO.Inside.Handle (File),
          Offset,
          Map_Size,
@@ -95,67 +101,72 @@ package body Ada.Memory_Mapped_IO is
       Name : String;
       Form : String := "";
       Offset : Streams.Stream_IO.Positive_Count := 1;
-      Size : Streams.Stream_IO.Count := 0) is
+      Size : Streams.Stream_IO.Count := 0)
+   is
+      pragma Unmodified (Object); -- modified via 'Unrestricted_Access
+      NC_Mapping : constant not null access Non_Controlled_Mapping :=
+         Reference (Object);
    begin
-      Streams.Stream_IO.Inside.Open (Object.File, Mode, Name, Form);
+      Streams.Stream_IO.Inside.Open (NC_Mapping.File, Mode, Name, Form);
+      --  the file will be closed in Finalize if any exception is raised or not
       declare
-         procedure Finally (X : not null access
-            Streams.Stream_IO.Inside.Non_Controlled_File_Type);
-         procedure Finally (X : not null access
-            Streams.Stream_IO.Inside.Non_Controlled_File_Type) is
-         begin
-            Streams.Stream_IO.Inside.Close (
-               X.all,
-               Raise_On_Error => False);
-         end Finally;
-         package Holder is new Exceptions.Finally.Scoped_Holder (
-            Streams.Stream_IO.Inside.Non_Controlled_File_Type,
-            Finally);
+         Map_Size : Streams.Stream_IO.Count := Size;
       begin
-         Holder.Assign (Object.File'Access);
-         declare
-            Map_Size : Streams.Stream_IO.Count := Size;
-         begin
-            if Map_Size = 0 then
-               Map_Size := Streams.Stream_IO.Inside.Size (Object.File);
-            end if;
-            Map (
-               Object,
-               Streams.Stream_IO.Inside.Handle (Object.File),
-               Offset,
-               Map_Size,
-               Writable => Mode /= In_File);
-         end;
-         Holder.Clear;
+         if Map_Size = 0 then
+            Map_Size := Streams.Stream_IO.Inside.Size (NC_Mapping.File);
+         end if;
+         Map (
+            NC_Mapping.all,
+            Streams.Stream_IO.Inside.Handle (NC_Mapping.File),
+            Offset,
+            Map_Size,
+            Writable => Mode /= In_File);
       end;
    end Map;
 
    procedure Unmap (Object : in out Mapping) is
+      NC_Mapping : constant not null access Non_Controlled_Mapping :=
+         Reference (Object);
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
    begin
-      if Object.Address = System.Null_Address then
+      if NC_Mapping.Address = System.Null_Address then
          raise Status_Error;
       end if;
-      Unmap (Object, Raise_On_Error => True);
+      Unmap (NC_Mapping.all, Raise_On_Error => True);
    end Unmap;
 
    function Address (Object : Mapping) return System.Address is
+      NC_Mapping : constant not null access Non_Controlled_Mapping :=
+         Reference (Object);
    begin
-      return Object.Address;
+      return NC_Mapping.Address;
    end Address;
 
    function Size (Object : Mapping)
-      return System.Storage_Elements.Storage_Count is
+      return System.Storage_Elements.Storage_Count
+   is
+      NC_Mapping : constant not null access Non_Controlled_Mapping :=
+         Reference (Object);
    begin
-      return Object.Size;
+      return NC_Mapping.Size;
    end Size;
 
-   overriding procedure Finalize (Object : in out Mapping) is
-   begin
-      if Object.Address /= System.Null_Address then
-         Unmap (Object, Raise_On_Error => False);
-      end if;
-   end Finalize;
+   package body Controlled is
+
+      function Reference (Object : Mapping)
+         return not null access Non_Controlled_Mapping is
+      begin
+         return Object.Data'Unrestricted_Access;
+      end Reference;
+
+      overriding procedure Finalize (Object : in out Mapping) is
+      begin
+         if Object.Data.Address /= System.Null_Address then
+            Unmap (Object.Data, Raise_On_Error => False);
+         end if;
+      end Finalize;
+
+   end Controlled;
 
 end Ada.Memory_Mapped_IO;
