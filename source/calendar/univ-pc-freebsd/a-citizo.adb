@@ -16,6 +16,9 @@ package body Ada.Calendar.Inside.Time_Zones is
    begin
       Dummy := C.time.localtime_r (GMT_Time.tv_sec'Access, Local_TM'Access);
       Local_Time := C.time.timegm (Local_TM'Access);
+      if Local_Time = -1 then
+         raise Time_Error;
+      end if;
       return Time_Offset ((Local_Time - GMT_Time.tv_sec) / 60);
    end UTC_Time_Offset;
 
