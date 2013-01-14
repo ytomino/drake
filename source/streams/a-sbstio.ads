@@ -7,7 +7,7 @@ package Ada.Streams.Buffer_Storage_IO is
    --  This package provides temporary stream on memory.
    pragma Preelaborate;
 
-   type Buffer is tagged private;
+   type Buffer is private;
 
    function Size (Object : Buffer) return Stream_Element_Count;
    pragma Inline (Size);
