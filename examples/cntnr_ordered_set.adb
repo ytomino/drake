@@ -1,4 +1,5 @@
 with Ada.Containers.Ordered_Sets;
+with Ada.Containers.Ordered_Sets.Debug;
 with Ada.Containers.Indefinite_Ordered_Sets;
 with Ada.Containers.Limited_Ordered_Sets;
 with Ada.Streams.Buffer_Storage_IO;
@@ -8,15 +9,7 @@ procedure cntnr_Ordered_Set is
 	package Sets is new Ada.Containers.Ordered_Sets (Integer);
 	package ISets is new Ada.Containers.Indefinite_Ordered_Sets (Integer);
 	package LSets is new Ada.Containers.Limited_Ordered_Sets (Integer);
---	procedure Dump (X : Sets.Set) is
---		I : Sets.Cursor := X.First;
---	begin
---		while Sets.Has_Element (I) loop
---			Ada.Text_IO.Put (Sets.Element(I)'Img);
---			Sets.Next (I);
---		end loop;
---		Ada.Text_IO.New_Line;
---	end Dump;
+	package Sets_Debug is new Sets.Debug;
 	procedure Test_01 is
 		X : Sets.Set;
 	begin
@@ -198,6 +191,26 @@ procedure cntnr_Ordered_Set is
 	end Test_07;
 	pragma Debug (Test_07);
 begin
+	declare
+		X : Sets.Set;
+	begin
+		for I in 1 .. 5 loop
+			Sets.Insert (X, I);
+		end loop;
+		Sets_Debug.Dump (X);
+		for I in reverse 6 .. 10 loop
+			Sets.Insert (X, I);
+		end loop;
+		Sets_Debug.Dump (X);
+		for I in 11 .. 15 loop
+			Sets.Insert (X, I);
+		end loop;
+		Sets_Debug.Dump (X);
+		for I in reverse 16 .. 20 loop
+			Sets.Insert (X, I);
+		end loop;
+		Sets_Debug.Dump (X);
+	end;
 	Stream_Test : declare
 		package BSIO renames Ada.Streams.Buffer_Storage_IO;
 		X : Sets.Set;

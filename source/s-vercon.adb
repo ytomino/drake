@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with System.Formatting;
 package body System.Version_Control is
    pragma Suppress (All_Checks);
@@ -16,7 +17,7 @@ package body System.Version_Control is
             Base => 16,
             Width => Version_String'Length,
             Error => Error);
-         pragma Assert (not Error and then Last = Result'Last);
+         pragma Check (Validate, not Error and then Last = Result'Last);
       end return;
    end Get_Version_String;
 

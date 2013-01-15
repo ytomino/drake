@@ -1,5 +1,4 @@
-pragma Check_Policy (Deriving, Off);
-pragma Check_Policy (On_Subpool, Off);
+pragma Check_Policy (Validate, Off);
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Shared_Locking;
@@ -46,7 +45,7 @@ package body System.Storage_Pools.Subpools is
    is
       pragma Unreferenced (Pool);
       pragma Unreferenced (Fin_Address);
-      pragma Check (On_Subpool, Context_Subpool = null);
+      pragma Check (Validate, Context_Subpool = null);
    begin
       Subpool := null;
       Master := Context_Master;
@@ -68,8 +67,6 @@ package body System.Storage_Pools.Subpools is
       Master : out Finalization_Masters.Finalization_Master_Ptr) is
    begin
       if Pool in Root_Storage_Pool_With_Subpools'Class then
-         pragma Check (Deriving,
-            Pool in Root_Storage_Pool_With_Subpools'Class);
          if Context_Subpool = null then
             Subpool := Default_Subpool_For_Pool (
                Root_Storage_Pool_With_Subpools'Class (Pool));
@@ -85,8 +82,6 @@ package body System.Storage_Pools.Subpools is
             Master := Subpool.Master'Access;
          end if;
       else
-         pragma Check (Deriving,
-            Pool not in Root_Storage_Pool_With_Subpools'Class);
          Setup_Allocation (
             Pool,
             Context_Subpool,
@@ -121,7 +116,7 @@ package body System.Storage_Pools.Subpools is
       Owner : not null Root_Storage_Pool_With_Subpools_Access;
       Item : not null Subpool_Handle) is
    begin
-      pragma Assert (Item.Owner = null);
+      pragma Check (Validate, Item.Owner = null);
       Shared_Locking.Enter;
       Item.Owner := Owner;
       Item.Previous := Owner.Last;
@@ -135,7 +130,7 @@ package body System.Storage_Pools.Subpools is
 
    procedure Detach (Item : not null Subpool_Handle) is
    begin
-      pragma Assert (Item.Owner /= null);
+      pragma Check (Validate, Item.Owner /= null);
       Shared_Locking.Enter;
       if Item.Previous /= null then
          Item.Previous.Next := Item.Next;
@@ -287,7 +282,7 @@ package body System.Storage_Pools.Subpools is
          Fin_Address,
          Subpool,
          Master);
-      pragma Check (On_Subpool, On_Subpool <= (Subpool /= null));
+      pragma Check (Validate, On_Subpool <= (Subpool /= null));
       if Is_Controlled then
          if Master = null
             or else Finalization_Masters.Finalization_Started (Master.all)

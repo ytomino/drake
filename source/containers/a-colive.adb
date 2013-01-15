@@ -1,4 +1,4 @@
---  diff (Ada.Unchecked_Conversion)
+pragma Check_Policy (Validate, Off);
 with Ada.Unchecked_Deallocation;
 with Ada.Containers.Inside.Array_Sorting;
 with System.Address_To_Named_Access_Conversions;
@@ -486,7 +486,7 @@ package body Ada.Containers.Limited_Vectors is
    begin
       Insert_Space (Container, Before, Position, Count);
       for I in Before .. Before + Index_Type'Base (Count) - 1 loop
-         pragma Assert (Container.Data.Items (I) = null);
+         pragma Check (Validate, Container.Data.Items (I) = null);
          Container.Data.Items (I) := new Element_Type'(New_Item.all);
 --  diff
       end loop;

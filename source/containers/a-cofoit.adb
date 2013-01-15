@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Forward_Iterators is
 
@@ -32,7 +33,7 @@ package body Ada.Containers.Forward_Iterators is
    begin
       if not Has_Element (Original) then
          Object.State := No_Element;
-         pragma Assert (Reference (Result) = null);
+         pragma Check (Validate, Reference (Result) = null);
       else
          declare
             New_Node : constant Node_Access := new Node'(
@@ -41,7 +42,7 @@ package body Ada.Containers.Forward_Iterators is
                Original => Original);
          begin
             if Object.Last /= null then
-               pragma Assert (Object.Last.Next = null);
+               pragma Check (Validate, Object.Last.Next = null);
                Object.Last.Next := New_Node;
                Retain (New_Node);
             end if;

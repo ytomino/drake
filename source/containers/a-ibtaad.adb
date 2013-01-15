@@ -1,4 +1,6 @@
 with Ada.Unchecked_Conversion;
+with System.Secondary_Stack.Debug; -- Error_Put for System.Address
+with System.Termination;
 package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
 
    type AA_Node_Access is access Node;
@@ -13,25 +15,73 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
       Message : String := "")
       return Boolean
    is
+      function Probe (Current : Node_Access) return Integer;
+      function Probe (Current : Node_Access) return Integer is
+      begin
+         if Current = null then
+            return 0;
+         else
+            return Integer'Max (
+               Probe (Current.Left),
+               Probe (Current.Right)) + 1;
+         end if;
+      end Probe;
+      Deeper : constant Integer := Probe (Container);
+      Indent_S : String (1 .. 2 * Deeper) := (others => ' ');
       Mark : constant array (Boolean) of Character := "-*";
       procedure Process (Current : Node_Access; Indent : Integer);
       procedure Process (Current : Node_Access; Indent : Integer) is
+         B : Character;
+         C : Character;
       begin
          if Current.Left /= null then
-            Process (Current.Left, Indent + 1);
+            Process (Current.Left, Indent + 2);
+         else
+            Indent_S (Indent) := '|';
          end if;
-         Ada.Debug.Put ((1 .. Indent => ' ') &
-               Mark (Current = Marker) &
-               " (level =" & Level_Type'Image (Downcast (Current).Level) &
-               ")");
+         if Indent > 2 then
+            if Indent_S (Indent - 2) = ' ' then
+               C := '|';
+            else
+               C := ' ';
+            end if;
+            Indent_S (Indent - 2) := '+';
+         end if;
+         Indent_S (Indent - 1) := Mark (Current = Marker);
+         B := Indent_S (Indent);
+         if Current.Left = null and then Current.Right = null then
+            Indent_S (Indent) := '-';
+         else
+            Indent_S (Indent) := '+';
+         end if;
+         System.Termination.Error_Put (Indent_S);
+         System.Termination.Error_Put (" ");
+         System.Secondary_Stack.Debug.Error_Put (Current.all'Address);
+         System.Termination.Error_Put (" (level =");
+         System.Termination.Error_Put (
+            Level_Type'Image (Downcast (Current).Level));
+         System.Termination.Error_Put (")");
+         System.Termination.Error_New_Line;
+         Indent_S (Indent) := B;
+         Indent_S (Indent - 1) := ' ';
+         if Indent > 2 then
+            Indent_S (Indent - 2) := C;
+         end if;
          if Current.Right /= null then
-            Process (Current.Right, Indent + 1);
+            Process (Current.Right, Indent + 2);
+         else
+            Indent_S (Indent) := ' ';
          end if;
       end Process;
    begin
-      Ada.Debug.Put ("---- " & Message);
+      System.Termination.Error_Put ("Tree:");
+      if Message'Length > 0 then
+         System.Termination.Error_Put (" ");
+         System.Termination.Error_Put (Message);
+      end if;
+      System.Termination.Error_New_Line;
       if Container /= null then
-         Process (Container, 0);
+         Process (Container, 2);
       end if;
       return True;
    end Dump;

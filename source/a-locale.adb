@@ -1,5 +1,6 @@
 --  reference:
 --  http://www.loc.gov/standards/iso639-2/php/code_list.php
+pragma Check_Policy (Validate, Off);
 with Ada.Locales.Inside;
 with System.Once;
 package body Ada.Locales is
@@ -576,7 +577,7 @@ package body Ada.Locales is
       --  check duplicated?
       for I in Lang_Map_3'First .. Lang_Map_3'Last - 1 loop
          for J in I + 1 .. Lang_Map_3'Last loop
-            pragma Assert (
+            pragma Check (Validate,
                Lang_Map_3 (I).Alpha_3 /= Lang_Map_3 (J).Alpha_3,
                String (Lang_Map_3 (I).Alpha_3));
             null;
@@ -659,7 +660,7 @@ package body Ada.Locales is
       --  check duplicated?
       for I in Lang_Map_2'First .. Lang_Map_2'Last - 1 loop
          for J in I + 1 .. Lang_Map_2'Last loop
-            pragma Assert (
+            pragma Check (Validate,
                Lang_Map_2 (I).Alpha_2 /= Lang_Map_2 (J).Alpha_2,
                String (Lang_Map_2 (I).Alpha_2));
             null;
