@@ -1,4 +1,5 @@
 with System.Long_Long_Integer_Divide;
+with System.Unsigned_Types;
 with System.Unwind.Raising;
 pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Arith_64 is
@@ -6,6 +7,7 @@ package body System.Arith_64 is
    use type Interfaces.Integer_64;
    use type Interfaces.Unsigned_32;
    use type Interfaces.Unsigned_64;
+   use type Unsigned_Types.Unsigned;
 
    pragma Compile_Time_Error (
       Long_Long_Integer'Size /= 64,
@@ -113,17 +115,8 @@ package body System.Arith_64 is
          Long_Long_Integer (R));
    end Div;
 
-   function Bits (X : U64) return Natural;
-   function Bits (X : U64) return Natural is
-      T : U64 := X;
-   begin
-      return Result : Natural := 0 do
-         while T > 0 loop
-            Result := Result + 1;
-            T := T / 2;
-         end loop;
-      end return;
-   end Bits;
+   function clz (X : U64) return Unsigned_Types.Unsigned;
+   pragma Import (Intrinsic, clz, "__builtin_clzll");
 
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64);
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64) is
@@ -134,21 +127,22 @@ package body System.Arith_64 is
       Q := 0;
       while Temp_XH > 0 or else Temp_XL > U64 (Interfaces.Integer_64'Last) loop
          declare
-            XH_Bits : constant Natural := Bits (Temp_XH) + 1;
+            XH_W : constant Natural := Natural (clz (Temp_XH) xor 63) + 1;
+            Scaling_W : constant Natural := XH_W + 1;
             --  "+1" means not using sign bit
             --  since Long_Long_Integer_Divide is signed
             Scaled_X : constant U64 :=
-               Interfaces.Shift_Left (Temp_XH, 64 - XH_Bits) or
-               Interfaces.Shift_Right (Temp_XL, XH_Bits);
+               Interfaces.Shift_Left (Temp_XH, 64 - Scaling_W) or
+               Interfaces.Shift_Right (Temp_XL, Scaling_W);
             --  bits of Scaled_X = 63
          begin
             if Scaled_X < Y then
                --  bits of Y = 63 (original Y is signed)
                declare
-                  Shift : constant Natural := XH_Bits - 1;
-                  YL : constant U64 := Interfaces.Shift_Left (Y, Shift);
-                  YH : constant U64 := Interfaces.Shift_Right (Y, 64 - Shift);
+                  YL : constant U64 := Interfaces.Shift_Left (Y, XH_W);
+                  YH : constant U64 := Interfaces.Shift_Right (Y, 64 - XH_W);
                begin
+                  Q := Q + Interfaces.Shift_Left (1, XH_W);
                   if Temp_XL < YL then
                      Temp_XH := Temp_XH - 1; -- borrow
                   end if;
@@ -160,10 +154,10 @@ package body System.Arith_64 is
                   Temp_Q, Temp_R : U64;
                begin
                   Div (Scaled_X, Y, Temp_Q, Temp_R);
-                  Q := Q + Interfaces.Shift_Left (Temp_Q, XH_Bits);
-                  Temp_XH := Interfaces.Shift_Right (Temp_R, 64 - XH_Bits);
-                  Temp_XL := Interfaces.Shift_Left (Temp_R, XH_Bits) or
-                     (Temp_XL and (Interfaces.Shift_Left (1, XH_Bits) - 1));
+                  Q := Q + Interfaces.Shift_Left (Temp_Q, Scaling_W);
+                  Temp_XH := Interfaces.Shift_Right (Temp_R, 64 - Scaling_W);
+                  Temp_XL := Interfaces.Shift_Left (Temp_R, Scaling_W) or
+                     (Temp_XL and (Interfaces.Shift_Left (1, Scaling_W) - 1));
                end;
             end if;
          end;

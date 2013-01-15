@@ -61,5 +61,20 @@ begin
 		Ada.Text_IO.Put_Line ("T5'Small = " & Long_Long_Float'Image (T5'Small));
 		pragma Assert (T5'Image (-128.0) = "-128.0");
 	end;
+	-- over 64bit
+	declare -- X > Y
+		X : Duration := 16#1_ffff_ffff.0#;
+		Y : Duration := X / Duration'Value ("2.0");
+	begin
+		pragma Assert (Y = 16#0_ffff_ffff.8#);
+		null;
+	end;
+	declare -- X < X
+		X : Duration := 16#1_0000_0000.0#;
+		Y : Duration := X / Duration'Value ("16#2_0000_0000.0#");
+	begin
+		pragma Assert (Y = 0.5);
+		null;
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end fixed;
