@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with System.Formatting;
 package body Ada.Numerics.SFMT is
    pragma Suppress (All_Checks);
@@ -30,7 +31,7 @@ package body Ada.Numerics.SFMT is
          Base => 16,
          Width => 32 / 4,
          Error => Error);
-      pragma Assert (not Error and then Last = To'Last);
+      pragma Check (Validate, not Error and then Last = To'Last);
    end Hex_Put;
 
    procedure Hex_Get (From : String; Item : out Unsigned_32) is

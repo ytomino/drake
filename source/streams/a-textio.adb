@@ -18,7 +18,7 @@
 --     68cd50941308f5a9/5d2b3f163916189c#5d2b3f163916189c
 --
 --  ***************************************************************************
-pragma Check_Policy (Finalize, Off);
+pragma Check_Policy (Trace, Off);
 with Ada.Exceptions.Finally;
 with Ada.Text_IO.Inside; -- full view
 with Ada.Unchecked_Conversion;
@@ -702,9 +702,9 @@ package body Ada.Text_IO is
 
       overriding procedure Finalize (Object : in out File_Type) is
       begin
-         pragma Check (Finalize, Debug.Put ("enter"));
+         pragma Check (Trace, Debug.Put ("enter"));
          Inside.Close (Reference (Object).all, Raise_On_Error => False);
-         pragma Check (Finalize, Debug.Put ("leave"));
+         pragma Check (Trace, Debug.Put ("leave"));
       end Finalize;
 
    end Controlled;

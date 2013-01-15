@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with Ada.Unchecked_Deallocation;
 package body Ada.Text_IO.Iterators is
    use type Line_Cursors.String_Access;
@@ -67,7 +68,8 @@ package body Ada.Text_IO.Iterators is
 
       overriding procedure Finalize (Object : in out Line_Cursor) is
       begin
-         pragma Assert (Object.Line = null
+         pragma Check (Validate,
+            Object.Line = null
             or else Object.Owner = Object'Unrestricted_Access);
          Free (Object.Line);
       end Finalize;

@@ -27,4 +27,15 @@ package System.Secondary_Stack is
    --  required by compiler ??? (s-secsta.ads)
 --  Default_Secondary_Stack_Size : Natural;
 
+private
+
+   type Block is record
+      Previous : Address;
+      Limit : Address; -- Last + 1
+      Used : Address;
+   end record;
+   pragma Suppress_Initialization (Block);
+
+   type Block_Access is access all Block;
+
 end System.Secondary_Stack;

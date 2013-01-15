@@ -1,5 +1,4 @@
 pragma Check_Policy (Trace, Off);
-with Ada.Unchecked_Conversion;
 with System.Debug;
 with System.Unwind.Raising; -- raising exception in compiler unit
 with System.Unwind.Standard;
@@ -16,11 +15,9 @@ package body System.Memory is
    --  implementation
 
    function Allocate (Size : Storage_Elements.Storage_Count)
-      return Address
-   is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      return Address is
    begin
-      return Result : constant Address := Cast (C.stdlib.malloc (
+      return Result : constant Address := Address (C.stdlib.malloc (
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
@@ -39,11 +36,9 @@ package body System.Memory is
    function Reallocate (
       P : Address;
       Size : Storage_Elements.Storage_Count)
-      return Address
-   is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      return Address is
    begin
-      return Result : constant Address := Cast (C.stdlib.realloc (
+      return Result : constant Address := Address (C.stdlib.realloc (
          C.void_ptr (P),
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
@@ -62,8 +57,11 @@ package body System.Memory is
       return Storage_Elements.Storage_Count (C.unistd.getpagesize);
    end Page_Size;
 
-   function Map (Size : Storage_Elements.Storage_Count) return Address is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+   function Map (
+      Size : Storage_Elements.Storage_Count;
+      Raise_On_Error : Boolean := True)
+      return Address
+   is
       Mapped_Address : C.void_ptr;
    begin
       pragma Check (Trace, Debug.Put ("enter"));
@@ -74,12 +72,40 @@ package body System.Memory is
          C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE,
          -1,
          0);
-      if Mapped_Address = C.sys.mman.MAP_FAILED then
+      if Mapped_Address = C.sys.mman.MAP_FAILED
+         and then Raise_On_Error
+      then
          Unwind.Raising.Raise_Exception (
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;
-      return Cast (Mapped_Address);
+      return Address (Mapped_Address);
+   end Map;
+
+   function Map (
+      P : Address;
+      Size : Storage_Elements.Storage_Count;
+      Raise_On_Error : Boolean := True)
+      return Address
+   is
+      Mapped_Address : C.void_ptr;
+   begin
+      pragma Check (Trace, Debug.Put ("enter"));
+      Mapped_Address := C.sys.mman.mmap (
+         C.void_ptr (P),
+         C.size_t (Size),
+         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE,
+         C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE + C.sys.mman.MAP_FIXED,
+         -1,
+         0);
+      if Mapped_Address = C.sys.mman.MAP_FAILED
+         and then Raise_On_Error
+      then
+         Unwind.Raising.Raise_Exception (
+            Unwind.Standard.Storage_Error'Access,
+            Message => Page_Exhausted);
+      end if;
+      return Address (Mapped_Address);
    end Map;
 
    procedure Unmap (P : Address; Size : Storage_Elements.Storage_Count) is

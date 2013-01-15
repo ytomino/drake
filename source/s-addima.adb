@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with System.Formatting;
 function System.Address_Image (A : Address)
    return Storage_Elements.Address_Image
@@ -26,6 +27,6 @@ begin
             Width => Storage_Elements.Address_Image'Length,
             Error => Error);
       end if;
-      pragma Assert (not Error and then Last = Result'Last);
+      pragma Check (Validate, not Error and then Last = Result'Last);
    end return;
 end System.Address_Image;

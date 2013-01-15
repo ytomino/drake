@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with Ada.Numerics.Initiator;
 with System.Storage_Elements;
 with System.Formatting;
@@ -162,7 +163,7 @@ package body Ada.Numerics.MT19937 is
             Base => 16,
             Width => Cardinal'Size / 4,
             Error => Error);
-         pragma Assert (not Error and then Last = Result'Last);
+         pragma Check (Validate, not Error and then Last = Result'Last);
       end Hex;
       Result : String (1 .. Max_Image_Width);
       Position : Positive := Result'First;

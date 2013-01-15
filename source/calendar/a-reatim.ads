@@ -21,43 +21,42 @@ package Ada.Real_Time is
 
    function "+" (Left : Time; Right : Time_Span) return Time;
    function "+" (Left : Time_Span; Right : Time) return Time;
+   pragma Pure_Function ("+");
    pragma Inline ("+");
    function "-" (Left : Time; Right : Time_Span) return Time;
    function "-" (Left : Time; Right : Time) return Time_Span;
+   pragma Pure_Function ("-");
    pragma Inline ("-");
 
    function "<" (Left, Right : Time) return Boolean;
-   pragma Inline ("<");
    function "<=" (Left, Right : Time) return Boolean;
-   pragma Inline ("<=");
    function ">" (Left, Right : Time) return Boolean;
-   pragma Inline (">");
    function ">=" (Left, Right : Time) return Boolean;
-   pragma Inline (">=");
 
    function "+" (Left, Right : Time_Span) return Time_Span;
+   pragma Pure_Function ("+");
    pragma Inline ("+");
    function "-" (Left, Right : Time_Span) return Time_Span;
    function "-" (Right : Time_Span) return Time_Span;
+   pragma Pure_Function ("-");
    pragma Inline ("-");
    function "*" (Left : Time_Span; Right : Integer) return Time_Span;
    function "*" (Left : Integer; Right : Time_Span) return Time_Span;
+   pragma Pure_Function ("*");
    pragma Inline ("*");
    function "/" (Left, Right : Time_Span) return Integer;
    function "/" (Left : Time_Span; Right : Integer) return Time_Span;
+   pragma Pure_Function ("/");
    pragma Inline ("/");
 
    function "abs" (Right : Time_Span) return Time_Span;
+   pragma Pure_Function ("abs");
    pragma Inline ("abs");
 
    function "<" (Left, Right : Time_Span) return Boolean;
-   pragma Inline ("<");
    function "<=" (Left, Right : Time_Span) return Boolean;
-   pragma Inline ("<=");
    function ">" (Left, Right : Time_Span) return Boolean;
-   pragma Inline (">");
    function ">=" (Left, Right : Time_Span) return Boolean;
-   pragma Inline (">=");
 
    function To_Duration (TS : Time_Span) return Duration;
 --  pragma Inline_Always (To_Duration); -- ??
@@ -77,6 +76,11 @@ package Ada.Real_Time is
    --  what is Split meaning? because origin point of Time is unspecified...
 --  procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
 --  function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
+
+   pragma Import (Intrinsic, "<");
+   pragma Import (Intrinsic, "<=");
+   pragma Import (Intrinsic, ">");
+   pragma Import (Intrinsic, ">=");
 
 private
 

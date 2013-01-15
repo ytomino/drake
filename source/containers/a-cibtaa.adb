@@ -2,10 +2,10 @@
 --  http://www.geocities.jp/m_hiroi/light/pyalgo53.html
 --  http://www.softpedia.com/get/Others/Home-Education/AA-Visual-2007.shtml
 pragma Check_Policy (Dump, Off);
-pragma Check_Policy (Dump2, Off);
+pragma Check_Policy (Dump_On_Removing, Off);
 pragma Check_Policy (Validate, Off);
-with Ada.Unchecked_Conversion;
 with Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug;
+with Ada.Unchecked_Conversion;
 package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
 
    type AA_Node_Access is access Node;
@@ -234,29 +234,32 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
             (Current.Right /= null and then
                Downcast (Current).Level > Downcast (Current.Right).Level + 1)
          then
-            pragma Check (Dump2, Debug.Dump (Root.Left, Current, "removed a"));
+            pragma Check (Dump_On_Removing,
+               Debug.Dump (Root.Left, Current, "removed a"));
             Downcast (Current).Level := Downcast (Current).Level - 1;
             if Current.Right /= null and then
                Downcast (Current.Right).Level > Downcast (Current).Level
             then
                Downcast (Current.Right).Level := Downcast (Current).Level;
             end if;
-            pragma Check (Dump2, Debug.Dump (Root.Left, Current, "removed b"));
+            pragma Check (Dump_On_Removing,
+               Debug.Dump (Root.Left, Current, "removed b"));
             Current := Skew (Current);
             if Current.Right /= null then
-               pragma Check (Dump2,
+               pragma Check (Dump_On_Removing,
                   Debug.Dump (Root.Left, Current, "removed c"));
                Skew (Current.Right);
                if Current.Right.Right /= null then
-                  pragma Check (Dump2,
+                  pragma Check (Dump_On_Removing,
                      Debug.Dump (Root.Left, Current, "removed d"));
                   Skew (Current.Right.Right);
                end if;
             end if;
-            pragma Check (Dump2, Debug.Dump (Root.Left, Current, "removed e"));
+            pragma Check (Dump_On_Removing,
+               Debug.Dump (Root.Left, Current, "removed e"));
             Current := Split (Current);
             if Current.Right /= null then
-               pragma Check (Dump2,
+               pragma Check (Dump_On_Removing,
                   Debug.Dump (Root.Left, Current, "removed f"));
                Split (Current.Right);
             end if;

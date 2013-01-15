@@ -127,7 +127,6 @@ package body System.Arith_64 is
 
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64);
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64) is
-      --  pragma Assert (XH < Y);
       Temp_XL : U64 := XL;
       Temp_XH : U64 := XH;
       Rem_Q : U64;
