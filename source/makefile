@@ -1,7 +1,7 @@
 # targets:
 #   all         building drake runtime (default)
 #   import_objs compiling only translated headers for nesting
-#   c-archive   archiving translated headers to zip
+#   c-archive   archiving translated headers to tar.bz2
 # variables:
 #   HOST=       host platform (default:gcc -dumpmachine)
 #   TARGET=     target platform (default:HOST)
@@ -105,17 +105,17 @@ endif
 
 # relation of sub directoris
 # (root) + primitives + zcx or sjlj -- minimum runtime
-# ada83       : calendar stream text_io # Ada 83 names
-# calendar    :                         # support for delay statement, Ada.Calendars, Ada.Execution_Time and Ada.Real_Time
-# containers  :                         # Ada.Containers
-# directories : calendar strings        # Ada.Directories
-# image       :                         # support for 'Image and 'Value attributes
-# interfaces  :                         # Interfaces.C and Interfaces.COBOL
-# numerics    :                         # support for float attributes, Ada.Numerics and Interfaces.Fortran
-# streams     :                         # all *_IO packages (including Text_IO)
-# strings     :                         # Ada.Characters and Ada.Strings
-# tasking     : calendar                # support for task and protected syntax and all tasking packages
-# text_io     : image streams           # child packages of Text_IO
+# ada83       : calendar stream text_io        # Ada 83 names
+# calendar    :                                # support for delay statement, Ada.Calendars, Ada.Execution_Time and Ada.Real_Time
+# containers  :                                # Ada.Containers
+# directories : calendar strings               # Ada.Directories
+# image       :                                # support for 'Image and 'Value attributes
+# interfaces  :                                # Interfaces.C and Interfaces.COBOL
+# numerics    :                                # support for float attributes, Ada.Numerics and Interfaces.Fortran
+# streams     :                                # all *_IO packages (including Text_IO)
+# strings     :                                # Ada.Characters and Ada.Strings
+# tasking     : calendar                       # support for task and protected syntax and all tasking packages
+# text_io     : image numerics streams strings # child packages of Text_IO
 
 SRC=$(wildcard *.ad?) $(wildcard $(TARGETSUBDIR)/*.ad?) \
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad?) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad?))
@@ -210,7 +210,7 @@ $(RTSDIR)/adalib/libgnat.a: \
 		$(LIBRARY_SRCS) \
 		$(IMPORT_HEADERS) \
 		$(ALL_OBJS)
-	-rm $@
+	-rm $@ 2> /dev/null
 	$(AR) -q $@ $(BUILDDIR)/*.o
 
 $(RTSDIR)/adainclude:
@@ -360,8 +360,10 @@ endif
 $(RTSDIR)/adalib/%.ali: $(BUILDDIR)/%.o
 	install -m 444 $(basename $<).ali $@
 
+ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)
 $(IMPORTDIR)/c.ads: import.h
 	headmaster -t ada -p -D $(IMPORTDIR) -gcc="$(GCC)" $<
+endif
 
 # nested
 
@@ -372,7 +374,9 @@ IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables,$(sort $(basename $(notdi
 IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 
-ifneq ($(IMPORTDIR),$(RTSDIR)/adainclude)
+ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)
+IMPLIB_LINKS=
+else
 
 IMPLIB_LINKS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(IMPLIB_SRC)))
 
@@ -382,8 +386,6 @@ $(RTSDIR)/adainclude/%.ads: $(IMPORTDIR)/%.ads
 $(RTSDIR)/adainclude/%.adb: $(IMPORTDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
-else
-IMPLIB_LINKS=
 endif
 
 import_objs: $(IMPLIB_LINKS) $(IMPLIB_OBJS) $(IMPLIB_ALI)
@@ -401,8 +403,8 @@ endif
 
 c-archive: $(IMPORTDIR)/c.ads
 ifneq ($(DESTDIR),)
-	-rm $(DESTDIR)/import-$(TARGET).zip
-	cd $(IMPORTDIR) && 7za -tzip a $(abspath $(DESTDIR)/import-$(TARGET).zip) c.ads c-*
+	-rm $(DESTDIR)/import-$(TARGET).tar.bz2 2> /dev/null
+	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/import-$(TARGET).tar.bz2) c.ads c-*
 else
 	@echo please tell DESTDIR=[DIRECTORY]
 endif
