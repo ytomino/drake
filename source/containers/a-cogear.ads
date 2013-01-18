@@ -16,8 +16,6 @@ package Ada.Containers.Generic_Arrays is
       Index_Type'Base'Pred (Index_Type'First) ..
       Index_Type'Last;
 
-   function "&" (Left : Array_Access; Right : Element_Type) return New_Array;
-
    function Length (Container : Array_Access) return Count_Type;
 
    procedure Set_Length (Container : in out Array_Access; Length : Count_Type);
@@ -87,17 +85,74 @@ package Ada.Containers.Generic_Arrays is
       Container : in out Array_Access;
       Count : Count_Type := 1);
 
-   procedure Reverse_Elements (Container : in out Array_Access);
    procedure Swap (Container : in out Array_Access; I, J : Index_Type);
 
    generic
+   package Operators is
+
+      type New_Array_1 (<>) is limited private;
+      type New_Array_2 (<>) is limited private;
+
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array;
+      function "&" (Left : New_Array_1; Right : Element_Type)
+         return New_Array;
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array_1;
+      function "&" (Left : New_Array_2; Right : Element_Type)
+         return New_Array_1;
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array_2;
+
+   private
+
+      type New_Array_1 is record
+         Data : Array_Access;
+         Last : Extended_Index;
+      end record;
+      pragma Suppress_Initialization (New_Array_1);
+
+      type New_Array_2 is new New_Array_1;
+
+   end Operators;
+
+   generic
+      with procedure Swap (Container : in out Array_Access; I, J : Index_Type)
+         is Generic_Arrays.Swap;
+   package Generic_Reversing is
+
+      procedure Reverse_Elements (Container : in out Array_Access);
+
+      procedure Reverse_Rotate_Elements (
+         Container : in out Array_Access;
+         Before : Extended_Index);
+      procedure Juggling_Rotate_Elements (
+         Container : in out Array_Access;
+         Before : Extended_Index);
+      procedure Rotate_Elements (
+         Container : in out Array_Access;
+         Before : Extended_Index)
+         renames Juggling_Rotate_Elements;
+
+   end Generic_Reversing;
+
+   generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
+      with procedure Swap (Container : in out Array_Access; I, J : Index_Type)
+         is Generic_Arrays.Swap;
    package Generic_Sorting is
+
       function Is_Sorted (Container : Array_Access) return Boolean;
-      procedure Sort (Container : in out Array_Access);
+
+      procedure Insertion_Sort (Container : in out Array_Access);
+      procedure Merge_Sort (Container : in out Array_Access);
+      procedure Sort (Container : in out Array_Access)
+         renames Merge_Sort;
+
       procedure Merge (
          Target : in out Array_Access;
          Source : in out Array_Access);
+
    end Generic_Sorting;
 
 private
