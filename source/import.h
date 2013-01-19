@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <string.h> /* strsignal */
 #include <sys/syscall.h> /* sigreturn */
+#include <sys/ucontext.h>
 #include <sys/mman.h> /* low-level memory op */
 #include <unistd.h> /* low-level I/O */
 #include <stdlib.h> /* memory op, abort */
@@ -59,6 +60,7 @@
 #undef PDWORD
 #undef WINAPI
 
+#include <limits.h> /* UINT_MAX */
 #include <windows.h>
 #undef UNICODE
 #undef WIN32_LEAN_AND_MEAN
@@ -76,6 +78,7 @@
 #if defined(__APPLE__)
 #pragma for Ada "errno.h" include "sys/errno.h"
 #pragma for Ada "sys/signal.h" include "sys/_structs.h" /* stack_t */
+#pragma for Ada "sys/ucontext.h" include "sys/_structs.h" /* ucontext_t */
 #pragma for Ada "sys/time.h" include "sys/_structs.h"
 #pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
 #pragma for Ada "termios.h" include "sys/termios.h"

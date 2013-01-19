@@ -13,7 +13,7 @@ package body System.Unwind.Raising is
    package Separated is
 
       --  (a-exexpr-gcc.adb)
-      procedure Propagate_Exception;
+      procedure Propagate_Exception (Stack_Guard : Address);
       pragma No_Return (Propagate_Exception);
 
    end Separated;
@@ -236,7 +236,7 @@ package body System.Unwind.Raising is
    is
       pragma Inspection_Point (E);
    begin
-      Separated.Propagate_Exception;
+      Separated.Propagate_Exception (Stack_Guard => Null_Address);
    end Raise_Current_Exception;
 
    procedure Raise_Exception_No_Defer (
@@ -266,13 +266,15 @@ package body System.Unwind.Raising is
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
-      Message : String := "") is
+      Message : String := "";
+      Stack_Guard : Address := Null_Address) is
    begin
       Set_Exception_Message (E, File, Line, Column, Message);
       if not ZCX_By_Default then
          Soft_Links.Abort_Defer.all;
       end if;
-      Raise_Current_Exception (E);
+--    Raise_Current_Exception (E);
+      Separated.Propagate_Exception (Stack_Guard => Stack_Guard);
    end Raise_Exception;
 
    procedure Raise_E (

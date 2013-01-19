@@ -1,13 +1,11 @@
 pragma License (Unrestricted);
---  implementation unit
-with System.Storage_Elements;
+--  runtime unit
 with C.pthread;
 package System.Native_Stack is
    pragma Preelaborate;
 
    procedure Get (
-      Thread : C.pthread.pthread_t;
-      Addr : out Address;
-      Size : out Storage_Elements.Storage_Count);
+      Thread : C.pthread.pthread_t := C.pthread.pthread_self;
+      Top, Bottom : out Address);
 
 end System.Native_Stack;

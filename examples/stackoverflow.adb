@@ -1,5 +1,15 @@
 with Ada;
+with System.Address_Image;
+with System.Native_Stack;
 procedure stackoverflow is
+	procedure Put_Stack_Range is
+		Stack_Top, Stack_Bottom : System.Address;
+	begin
+		System.Native_Stack.Get (Top => Stack_Top, Bottom => Stack_Bottom);
+		Ada.Debug.Put ("top = " & System.Address_Image (Stack_Top));
+		Ada.Debug.Put ("here = " & System.Address_Image (Stack_Top'Address));
+		Ada.Debug.Put ("bottom = " & System.Address_Image (Stack_Bottom));
+	end Put_Stack_Range;
 	Count : Natural;
 	procedure Do_Overflow is
 		Big_Local : String (1 .. 1024 * 1024);
@@ -19,6 +29,7 @@ procedure stackoverflow is
 	end Do_Overflow;
 	Count_1, Count_2 : Natural;
 begin
+	Put_Stack_Range;
 	Ada.Debug.Put ("**** try 1 ****");
 	Try_1 : begin
 		Count := 0;
@@ -45,6 +56,7 @@ begin
 		task T;
 		task body T is
 		begin
+			Put_Stack_Range;
 			Ada.Debug.Put ("here is in task");
 			Do_Overflow;
 		exception

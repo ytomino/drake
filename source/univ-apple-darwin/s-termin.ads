@@ -28,7 +28,7 @@ package System.Termination is
 private
 
    Signal_Stack_Storage_Count : constant :=
-      C.size_t'Max (C.sys.signal.MINSIGSTKSZ, 32768);
+      C.size_t'Max (C.sys.signal.MINSIGSTKSZ, 16#1000#); -- 4096
 
    type Signal_Stack_Type is array (
      1 ..

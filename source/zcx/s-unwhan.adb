@@ -309,11 +309,29 @@ package body System.Unwind.Handling is
                   null; -- exception tracing (a-exextr.adb) is not implementd.
                   pragma Check (Trace, Debug.Put ("UA_SEARCH_PHASE, handler"));
                   --  shortcut for phase2
-                  GCC_Exception.landing_pad := landing_pad;
-                  GCC_Exception.ttype_filter := ttype_filter;
+                  if Exception_Class = GNAT_Exception_Class then
+                     GCC_Exception.landing_pad := landing_pad;
+                     GCC_Exception.ttype_filter := ttype_filter;
+                  end if;
                   return C.unwind.URC_HANDLER_FOUND;
                end if;
             elsif Phases = C.unwind.UA_CLEANUP_PHASE then
+               if ttype_filter = 0
+                  and then Exception_Class = GNAT_Exception_Class
+                  and then GCC_Exception.Stack_Guard /= Null_Address
+               then
+                  declare
+                     Stack_Pointer : constant C.unwind.Unwind_Word :=
+                        C.unwind.Unwind_GetCFA (Context);
+                  begin
+                     if Stack_Pointer <
+                        C.unwind.Unwind_Word (GCC_Exception.Stack_Guard)
+                     then
+                        pragma Check (Trace, Debug.Put ("skip cleanup"));
+                        return C.unwind.URC_CONTINUE_UNWIND;
+                     end if;
+                  end;
+               end if;
                pragma Check (Trace,
                   Debug.Put ("UA_CLEANUP_PHASE without UA_HANDLER_FRAME"));
                null; -- ???

@@ -12,7 +12,8 @@ package System.Unwind.Raising is
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
-      Message : String := "");
+      Message : String := "";
+      Stack_Guard : Address := Null_Address);
    pragma No_Return (Raise_Exception);
 
    --  equivalent to Raise_From_Signal_Handler (a-except-2005.adb)
@@ -21,9 +22,9 @@ package System.Unwind.Raising is
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
-      Message : String := "")
+      Message : String := "";
+      Stack_Guard : Address)
       renames Raise_Exception;
-   --  From_Signal_Handler should be True, but unused it, currently...
 
    --  implementation for raising (a-except-2005.adb)
    procedure Raise_E (

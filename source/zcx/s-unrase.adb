@@ -139,7 +139,7 @@ package body Separated is
    end GNAT_GCC_Exception_Cleanup;
 
    --  (a-exexpr-gcc.adb)
-   procedure Propagate_Exception is
+   procedure Propagate_Exception (Stack_Guard : Address) is
       Excep : constant Exception_Occurrence_Access :=
          Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
       GCC_Exception : Handling.GNAT_GCC_Exception_Access;
@@ -154,6 +154,7 @@ package body Separated is
             private_1 => 0,
             private_2 => 0),
          Occurrence => Excep.all,
+         Stack_Guard => Stack_Guard,
          landing_pad => <>,
          ttype_filter => <>);
       Propagate_GCC_Exception (GCC_Exception);
