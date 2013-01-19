@@ -17,6 +17,7 @@ with C.signal;
 with C.sys.signal;
 package body System.Tasking.Inside is
    pragma Suppress (All_Checks);
+   use type System.Storage_Elements.Storage_Offset;
    use type C.signed_int;
    use type C.signed_long;
    use type C.void_ptr;
@@ -1144,9 +1145,13 @@ package body System.Tasking.Inside is
    procedure Get_Stack (
       T : not null Task_Id;
       Addr : out Address;
-      Size : out Storage_Elements.Storage_Count) is
+      Size : out Storage_Elements.Storage_Count)
+   is
+      Top, Bottom : Address;
    begin
-      Native_Stack.Get (T.Handle, Addr, Size);
+      Native_Stack.Get (T.Handle, Top, Bottom);
+      Addr := Top;
+      Size := Bottom - Top;
    end Get_Stack;
 
    function Name (T : not null Task_Id) return String is
@@ -1638,7 +1643,7 @@ package body System.Tasking.Inside is
       --  search unused index
       for I in 0 .. Attribute_Indexes_Length - 1 loop
          if Attribute_Indexes (I) /= not 0 then
-            for B in 0 .. Word'Size - 1 loop
+            for B in Integer range 0 .. Word'Size - 1 loop
                if (Attribute_Indexes (I) and (2 ** B)) = 0 then
                   Attribute_Indexes (I) := Attribute_Indexes (I) or (2 ** B);
                   Index.Index := I * Word'Size + B;

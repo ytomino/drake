@@ -1,13 +1,15 @@
 with Ada.Unchecked_Conversion;
+with System.Native_Stack;
 with System.Standard_Library;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
 with C.signal;
 with C.stdlib;
 with C.string;
-with C.unistd;
 with C.sys.syscall;
 with C.sys.types;
+with C.sys.ucontext;
+with C.unistd;
 package body System.Termination is
    pragma Suppress (All_Checks);
    use type C.signed_int;
@@ -56,17 +58,30 @@ package body System.Termination is
       Context : C.void_ptr)
    is
       pragma Unreferenced (Info);
-      pragma Unreferenced (Context);
+--    pragma Unreferenced (Context);
+      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       C_Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
       subtype Fixed_String is String (Positive);
       Message : Fixed_String;
       for Message'Address use C_Message.all'Address;
       Eexception_Id : Standard_Library.Exception_Data_Ptr;
+      Stack_Guard : Address := Null_Address;
+      Dummy : Address;
    begin
       case Signal_Number is
          when C.sys.signal.SIGFPE =>
             Eexception_Id := Unwind.Standard.Constraint_Error'Access;
          when C.sys.signal.SIGBUS | C.sys.signal.SIGSEGV =>
+            Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
+            Stack_Guard := Stack_Guard + C.sys.signal.MINSIGSTKSZ;
+            declare
+               uc : C.sys.ucontext.ucontext_t;
+               pragma Import (C, uc);
+               for uc'Address use Cast (Context);
+               pragma Inspection_Point (uc);
+            begin
+               null; -- probe uc for debugging
+            end;
             declare
                UC_RESET_ALT_STACK : constant := 16#80000000#; -- ???
                Dummy : C.signed_int;
@@ -84,7 +99,8 @@ package body System.Termination is
       end case;
       Unwind.Raising.Raise_From_Signal_Handler (
          Eexception_Id,
-         Message => Message (1 .. Integer (C.string.strlen (C_Message))));
+         Message => Message (1 .. Integer (C.string.strlen (C_Message))),
+         Stack_Guard => Stack_Guard);
    end sigaction_Handler;
 
    Signal_Stack : aliased Signal_Stack_Type;

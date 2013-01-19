@@ -2,19 +2,6 @@ with Ada.Containers.Inside.Array_Sorting;
 with System;
 package body Ada.Containers.Generic_Arrays is
 
-   type Context_Type is limited record
-      Container : Array_Access;
-   end record;
-   pragma Suppress_Initialization (Context_Type);
-
-   procedure Swap (I, J : Integer; Params : System.Address);
-   procedure Swap (I, J : Integer; Params : System.Address) is
-      Context : Context_Type;
-      for Context'Address use Params;
-   begin
-      Swap (Context.Container, Index_Type'Val (I), Index_Type'Val (J));
-   end Swap;
-
    --  implementation
 
    procedure Append (
@@ -256,17 +243,6 @@ package body Ada.Containers.Generic_Arrays is
       Insert (Container, Container'First, Count);
    end Prepend;
 
-   procedure Reverse_Elements (Container : in out Array_Access) is
-      pragma Unmodified (Container);
-      Context : Context_Type := (Container => Container);
-   begin
-      Inside.Array_Sorting.In_Place_Reverse (
-         Index_Type'Pos (Container'First),
-         Index_Type'Pos (Container'Last),
-         Context'Address,
-         Swap => Swap'Access);
-   end Reverse_Elements;
-
    procedure Set_Length (
       Container : in out Array_Access;
       Length : Count_Type) is
@@ -313,16 +289,188 @@ package body Ada.Containers.Generic_Arrays is
       end if;
    end Swap;
 
-   function "&" (Left : Array_Access; Right : Element_Type) return New_Array is
-   begin
-      if Left = null then
-         return new Array_Type'(Index_Type'First => Right);
-      else
-         return new Array_Type'(Left.all & Right);
-      end if;
-   end "&";
+   package body Operators is
+
+      function Start (
+         Left : Array_Access;
+         Right : Element_Type;
+         Space : Count_Type)
+         return New_Array_1;
+      function Start (
+         Left : Array_Access;
+         Right : Element_Type;
+         Space : Count_Type)
+         return New_Array_1
+      is
+         subtype Space_Range is Index_Type range
+            Index_Type'First ..
+            Extended_Index'Val (Index_Type'Pos (Index_Type'First) + Space - 1);
+      begin
+         if Left = null then
+            return (
+               Data => new Array_Type'(
+                  Right
+                  & Array_Type'(Space_Range => <>)),
+               Last => Index_Type'First);
+         else
+            return (
+               Data => new Array_Type'(
+                  Left.all
+                  & Right
+                  & Array_Type'(Space_Range => <>)),
+               Last => Left'Last + 1);
+         end if;
+      end Start;
+
+      function Step (
+         Left : New_Array_1;
+         Right : Element_Type;
+         Space : Count_Type)
+         return New_Array_1;
+      function Step (
+         Left : New_Array_1;
+         Right : Element_Type;
+         Space : Count_Type)
+         return New_Array_1 is
+      begin
+         if Left.Last + 1 <= Left.Data'Last then
+            Left.Data (Left.Last + 1) := Right;
+            return (Data => Left.Data, Last => Left.Last + 1);
+         else
+            declare
+               subtype Space_Range is Index_Type range
+                  Index_Type'First ..
+                  Extended_Index'Val (
+                     Index_Type'Pos (Index_Type'First) + Space - 1);
+            begin
+               return Result : constant New_Array_1 := (
+                  Data => new Array_Type'(
+                     Left.Data (Left.Data'First .. Left.Last)
+                     & Right
+                     & Array_Type'(Space_Range => <>)),
+                  Last => Left.Last + 1)
+               do
+                  declare
+                     Data : Array_Access := Left.Data;
+                  begin
+                     Free (Data);
+                  end;
+               end return;
+            end;
+         end if;
+      end Step;
+
+      --  implementation
+
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array is
+      begin
+         return New_Array (Start (Left, Right, Space => 0).Data);
+      end "&";
+
+      function "&" (Left : New_Array_1; Right : Element_Type)
+         return New_Array
+      is
+         Data : Array_Access := Left.Data;
+      begin
+         if Left.Last + 1 = Data'Last then
+            Data (Data'Last) := Right;
+            return New_Array (Data);
+         else
+            return Result : constant New_Array :=
+               new Array_Type'(Data (Data'First .. Data'Last) & Right)
+            do
+               Free (Data);
+            end return;
+         end if;
+      end "&";
+
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array_1 is
+      begin
+         return Start (Left, Right, Space => 1);
+      end "&";
+
+      function "&" (Left : New_Array_2; Right : Element_Type)
+         return New_Array_1 is
+      begin
+         return Step (New_Array_1 (Left), Right, Space => 1);
+      end "&";
+
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array_2 is
+      begin
+         return New_Array_2 (Start (Left, Right, Space => 2));
+      end "&";
+
+   end Operators;
+
+   package body Generic_Reversing is
+
+      type Context_Type is limited record
+         Container : Array_Access;
+      end record;
+      pragma Suppress_Initialization (Context_Type);
+
+      procedure Swap (I, J : Integer; Params : System.Address);
+      procedure Swap (I, J : Integer; Params : System.Address) is
+         Context : Context_Type;
+         for Context'Address use Params;
+      begin
+         Swap (Context.Container, Index_Type'Val (I), Index_Type'Val (J));
+      end Swap;
+
+      --  implementation
+
+      procedure Reverse_Elements (Container : in out Array_Access) is
+         pragma Unmodified (Container);
+         Context : Context_Type := (Container => Container);
+      begin
+         Inside.Array_Sorting.In_Place_Reverse (
+            Index_Type'Pos (Container'First),
+            Index_Type'Pos (Container'Last),
+            Context'Address,
+            Swap => Swap'Access);
+      end Reverse_Elements;
+
+      procedure Reverse_Rotate_Elements (
+         Container : in out Array_Access;
+         Before : Extended_Index)
+      is
+         pragma Unmodified (Container);
+         Context : Context_Type := (Container => Container);
+      begin
+         Inside.Array_Sorting.Reverse_Rotate (
+            Index_Type'Pos (Container'First),
+            Index_Type'Pos (Before) - 1,
+            Index_Type'Pos (Container'Last),
+            Context'Address,
+            Swap => Swap'Access);
+      end Reverse_Rotate_Elements;
+
+      procedure Juggling_Rotate_Elements (
+         Container : in out Array_Access;
+         Before : Extended_Index)
+      is
+         pragma Unmodified (Container);
+         Context : Context_Type := (Container => Container);
+      begin
+         Inside.Array_Sorting.Juggling_Rotate (
+            Index_Type'Pos (Container'First),
+            Index_Type'Pos (Before) - 1,
+            Index_Type'Pos (Container'Last),
+            Context'Address,
+            Swap => Swap'Access);
+      end Juggling_Rotate_Elements;
+
+   end Generic_Reversing;
 
    package body Generic_Sorting is
+
+      type Context_Type is limited record
+         Container : Array_Access;
+      end record;
+      pragma Suppress_Initialization (Context_Type);
 
       function LT (Left, Right : Integer; Params : System.Address)
          return Boolean;
@@ -336,6 +484,16 @@ package body Ada.Containers.Generic_Arrays is
             Context.Container (Index_Type'Val (Right));
       end LT;
 
+      procedure Swap (I, J : Integer; Params : System.Address);
+      procedure Swap (I, J : Integer; Params : System.Address) is
+         Context : Context_Type;
+         for Context'Address use Params;
+      begin
+         Swap (Context.Container, Index_Type'Val (I), Index_Type'Val (J));
+      end Swap;
+
+      --  implementation
+
       function Is_Sorted (Container : Array_Access) return Boolean is
          Context : Context_Type := (Container => Container);
       begin
@@ -347,7 +505,21 @@ package body Ada.Containers.Generic_Arrays is
                LT => LT'Access);
       end Is_Sorted;
 
-      procedure Sort (Container : in out Array_Access) is
+      procedure Insertion_Sort (Container : in out Array_Access) is
+         pragma Unmodified (Container);
+         Context : Context_Type := (Container => Container);
+      begin
+         if Container /= null then
+            Inside.Array_Sorting.Insertion_Sort (
+               Index_Type'Pos (Container'First),
+               Index_Type'Pos (Container'Last),
+               Context'Address,
+               LT => LT'Access,
+               Swap => Swap'Access);
+         end if;
+      end Insertion_Sort;
+
+      procedure Merge_Sort (Container : in out Array_Access) is
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin
@@ -359,7 +531,7 @@ package body Ada.Containers.Generic_Arrays is
                LT => LT'Access,
                Swap => Swap'Access);
          end if;
-      end Sort;
+      end Merge_Sort;
 
       procedure Merge (
          Target : in out Array_Access;

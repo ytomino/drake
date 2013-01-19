@@ -2,13 +2,11 @@ with Ada.Unchecked_Conversion;
 with C.pthread_np;
 package body System.Native_Stack is
    pragma Suppress (All_Checks);
-   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
 
    procedure Get (
-      Thread : C.pthread.pthread_t;
-      Addr : out Address;
-      Size : out Storage_Elements.Storage_Count)
+      Thread : C.pthread.pthread_t := C.pthread.pthread_self;
+      Top, Bottom : out Address)
    is
       function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Attr : aliased C.pthread.pthread_attr_t;
@@ -20,20 +18,18 @@ package body System.Native_Stack is
    begin
       if C.pthread.pthread_attr_init (Attr'Access) = 0 then
          OK := C.pthread_np.pthread_attr_get_np (Thread, Attr'Access) = 0
-            and then C.pthread.pthread_attr_getstackaddr (
+            and then C.pthread.pthread_attr_getstack (
                Attr'Access,
-               C_Addr'Access) = 0
-            and then C.pthread.pthread_attr_getstacksize (
-               Attr'Access,
+               C_Addr'Access,
                C_Size'Access) = 0;
          Dummy := C.pthread.pthread_attr_destroy (Attr'Access);
       end if;
       if not OK then
-         Addr := Null_Address;
-         Size := 0;
+         Top := Null_Address;
+         Bottom := Null_Address;
       else
-         Addr := Cast (C_Addr);
-         Size := Storage_Elements.Storage_Count (C_Size);
+         Top := Cast (C_Addr);
+         Bottom := Top + Address (C_Size);
       end if;
    end Get;
 

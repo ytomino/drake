@@ -9,9 +9,8 @@ procedure cntnr_Array is
 	procedure Free is new Ada.Unchecked_Deallocation (String, String_Access);
 	package Arrays is new Ada.Containers.Generic_Arrays (
 		Positive, Character, String, String_Access);
-	function "&" (Left : String_Access; Right : Character)
-		return Arrays.New_Array
-		renames Arrays."&";
+	package Arrays_Operators is new Arrays.Operators;
+	use Arrays_Operators;
 	procedure Test_01 is
 		package Sorting is new Arrays.Generic_Sorting;
 		Data : String_Access := new String'("asdfghjkl");
@@ -31,6 +30,10 @@ procedure cntnr_Array is
 		Arrays.Assign (Y, X & 'D');
 		pragma Assert (Arrays.Length (Y) = 4);
 		pragma Assert (Y.all = "ABCD");
+		Arrays.Assign (Y, X & 'D' & 'E');
+		pragma Assert (Y.all = "ABCDE");
+		Arrays.Assign (Y, X & 'D' & 'E' & 'F');
+		pragma Assert (Y.all = "ABCDEF");
 		Free (X);
 		Free (Y);
 	end Test_02;

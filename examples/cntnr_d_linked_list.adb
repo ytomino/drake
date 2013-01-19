@@ -1,7 +1,6 @@
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Ada.Containers.Limited_Doubly_Linked_Lists;
-with Ada.Containers.Inside.Linked_Lists.Singly;
 with Ada.Streams.Buffer_Storage_IO;
 -- with Ada.Text_IO;
 procedure cntnr_d_Linked_List is

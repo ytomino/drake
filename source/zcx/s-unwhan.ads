@@ -20,6 +20,7 @@ package System.Unwind.Handling is
       Id : Standard_Library.Exception_Data_Ptr;
       N_Cleanups_To_Trigger : Integer;
       Next_Exception : Exception_Occurrence_Access;
+      Stack_Guard : Address; -- for skipping on stack overflow
       --  shortcut for phase2 (see exception.c in libobjc)
       landing_pad : C.unwind.Unwind_Ptr;
       ttype_filter : C.unwind.Unwind_Sword;

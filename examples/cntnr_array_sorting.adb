@@ -1,8 +1,6 @@
-with Ada.Containers.Inside.Array_Sorting;
+with Ada.Containers.Generic_Arrays;
 with Ada.Unchecked_Deallocation;
-with System;
 procedure cntnr_array_sorting is
-	package AS renames Ada.Containers.Inside.Array_Sorting;
 	type SA is access String;
 	procedure Free is new Ada.Unchecked_Deallocation (String, SA);
 	Data : SA := null;
@@ -29,50 +27,53 @@ procedure cntnr_array_sorting is
 	begin
 		X := X + 1;
 	end Increment;
-	function LT (Left, Right : Integer; Params : System.Address) return Boolean is
+	function LT (Left, Right : Character) return Boolean is
 		pragma Debug (Increment (Comp_Count));
 	begin
-		return Data (Left) < Data (Right);
+		return Left < Right;
 	end LT;
-	procedure Swap (Left, Right : Integer; Params : System.Address) is
+	procedure Swap (Data : in out SA; Left, Right : Integer) is
 		pragma Debug (Increment (Swap_Count));
 		Temp : Character := Data (Left);
 	begin
 		Data (Left) := Data (Right);
 		Data (Right) := Temp;
 	end Swap;
+	package SA_Op is new Ada.Containers.Generic_Arrays (Positive, Character, String, SA);
+	package SA_Reversing is new SA_Op.Generic_Reversing (Swap);
+	package SA_Sorting is new SA_Op.Generic_Sorting (LT, Swap);
 begin
 	-- Is_Sorted
 	begin
 		Setup ("");
-		pragma Assert (AS.Is_Sorted (Data'First, Data'Last, System.Null_Address, LT'Access));
+		pragma Assert (SA_Sorting.Is_Sorted (Data));
 		Setup ("ABCDEF");
-		pragma Assert (AS.Is_Sorted (Data'First, Data'Last, System.Null_Address, LT'Access));
+		pragma Assert (SA_Sorting.Is_Sorted (Data));
 		Setup ("ABCCDD");
-		pragma Assert (AS.Is_Sorted (Data'First, Data'Last, System.Null_Address, LT'Access));
+		pragma Assert (SA_Sorting.Is_Sorted (Data));
 		Setup ("ABCBA");
-		pragma Assert (not AS.Is_Sorted (Data'First, Data'Last, System.Null_Address, LT'Access));
+		pragma Assert (not SA_Sorting.Is_Sorted (Data));
 	end;
 	-- In_Place_Reverse
 	begin
 		Setup ("");
-		AS.In_Place_Reverse (Data'First, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Elements (Data);
 		pragma Assert (Data.all = "");
 		pragma Assert (Swap_Count = 0);
 		Setup ("A");
-		AS.In_Place_Reverse (Data'First, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Elements (Data);
 		pragma Assert (Data.all = "A");
 		pragma Assert (Swap_Count = 0);
 		Setup ("BA");
-		AS.In_Place_Reverse (Data'First, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Elements (Data);
 		pragma Assert (Data.all = "AB");
 		pragma Assert (Swap_Count = 1);
 		Setup ("CBA");
-		AS.In_Place_Reverse (Data'First, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Elements (Data);
 		pragma Assert (Data.all = "ABC");
 		pragma Assert (Swap_Count = 1);
 		Setup ("DCBA");
-		AS.In_Place_Reverse (Data'First, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Elements (Data);
 		pragma Assert (Data.all = "ABCD");
 		pragma Assert (Swap_Count = 2);
 	end;
@@ -82,11 +83,11 @@ begin
 		Middle : constant Integer := 1;
 	begin
 		Setup (Source);
-		AS.Reverse_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "");
 		pragma Assert (Swap_Count = 0);
 		Setup (Source);
-		AS.Juggling_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Juggling_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "");
 		pragma Assert (Swap_Count = 0);
 	end;
@@ -96,11 +97,11 @@ begin
 		Middle : constant Integer := 1;
 	begin
 		Setup (Source);
-		AS.Reverse_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "A");
 		pragma Assert (Swap_Count = 0);
 		Setup (Source);
-		AS.Juggling_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Juggling_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "A");
 		pragma Assert (Swap_Count = 0);
 	end;
@@ -110,11 +111,11 @@ begin
 		Middle : constant Integer := 1;
 	begin
 		Setup (Source);
-		AS.Reverse_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "AB");
 		pragma Assert (Swap_Count = 1);
 		Setup (Source);
-		AS.Juggling_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Juggling_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "AB");
 		pragma Assert (Swap_Count = 1);
 	end;
@@ -124,11 +125,11 @@ begin
 		Middle : constant Integer := 1;
 	begin
 		Setup (Source);
-		AS.Reverse_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABC");
 		pragma Debug (Report ("R3-1 rev"));
 		Setup (Source);
-		AS.Juggling_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Juggling_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABC");
 		pragma Debug (Report ("R3-1 jug"));
 	end;
@@ -138,11 +139,11 @@ begin
 		Middle : constant Integer := 2;
 	begin
 		Setup (Source);
-		AS.Reverse_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABC");
 		pragma Debug (Report ("R3-2 rev"));
 		Setup (Source);
-		AS.Juggling_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Juggling_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABC");
 		pragma Debug (Report ("R3-2 jug"));
 	end;
@@ -152,11 +153,11 @@ begin
 		Middle : constant Integer := 1;
 	begin
 		Setup (Source);
-		AS.Reverse_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABCD");
 		pragma Debug (Report ("R4-1 rev"));
 		Setup (Source);
-		AS.Juggling_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Juggling_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABCD");
 		pragma Debug (Report ("R4-1 jug"));
 	end;
@@ -166,11 +167,11 @@ begin
 		Middle : constant Integer := 2;
 	begin
 		Setup (Source);
-		AS.Reverse_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABCD");
 		pragma Debug (Report ("R4-2 rev"));
 		Setup (Source);
-		AS.Juggling_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Juggling_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABCD");
 		pragma Debug (Report ("R4-2 jug"));
 	end;
@@ -180,11 +181,11 @@ begin
 		Middle : constant Integer := 3;
 	begin
 		Setup (Source);
-		AS.Reverse_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABCD");
 		pragma Debug (Report ("R4-3 rev"));
 		Setup (Source);
-		AS.Juggling_Rotate (Data'First, Middle, Data'Last, System.Null_Address, Swap'Access);
+		SA_Reversing.Juggling_Rotate_Elements (Data, Before => Middle + 1);
 		pragma Assert (Data.all = "ABCD");
 		pragma Debug (Report ("R4-3 jug"));
 	end;
@@ -193,12 +194,12 @@ begin
 		Source : constant String := "ABBCDDEFFG";
 	begin
 		Setup (Source);
-		AS.Insertion_Sort (Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
+		SA_Sorting.Insertion_Sort (Data);
 		pragma Assert (Data.all = "ABBCDDEFFG");
 		pragma Assert (Swap_Count = 0);
 		pragma Debug (Report ("S1 ins"));
 		Setup (Source);
-		AS.In_Place_Merge_Sort (Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
+		SA_Sorting.Merge_Sort (Data);
 		pragma Assert (Data.all = "ABBCDDEFFG");
 		pragma Assert (Swap_Count = 0);
 		pragma Debug (Report ("S1 ipm"));
@@ -208,11 +209,11 @@ begin
 		Source : constant String := "DBFGHIECJA";
 	begin
 		Setup (Source);
-		AS.Insertion_Sort (Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
+		SA_Sorting.Insertion_Sort (Data);
 		pragma Assert (Data.all = "ABCDEFGHIJ");
 		pragma Debug (Report ("S2 ins"));
 		Setup (Source);
-		AS.In_Place_Merge_Sort (Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
+		SA_Sorting.Merge_Sort (Data);
 		pragma Assert (Data.all = "ABCDEFGHIJ");
 		pragma Debug (Report ("S2 ipm"));
 	end;
@@ -221,11 +222,11 @@ begin
 		Source : constant String := "LOOOOOOOOOONGDATA";
 	begin
 		Setup (Source);
-		AS.Insertion_Sort (Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
+		SA_Sorting.Insertion_Sort (Data);
 		pragma Assert (Data.all = "AADGLNOOOOOOOOOOT");
 		pragma Debug (Report ("S3 ins"));
 		Setup (Source);
-		AS.In_Place_Merge_Sort (Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
+		SA_Sorting.Merge_Sort (Data);
 		pragma Assert (Data.all = "AADGLNOOOOOOOOOOT");
 		pragma Debug (Report ("S3 ipm"));
 	end;
@@ -234,11 +235,11 @@ begin
 		Source : constant String := "ASDFGHJKL";
 	begin
 		Setup (Source);
-		AS.Insertion_Sort (Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
+		SA_Sorting.Insertion_Sort (Data);
 		pragma Assert (Data.all = "ADFGHJKLS");
 		pragma Debug (Report ("S4 ins"));
 		Setup (Source);
-		AS.In_Place_Merge_Sort (Data'First, Data'Last, System.Null_Address, LT'Access, Swap'Access);
+		SA_Sorting.Merge_Sort (Data);
 		pragma Assert (Data.all = "ADFGHJKLS");
 		pragma Debug (Report ("S4 ipm"));
 	end;

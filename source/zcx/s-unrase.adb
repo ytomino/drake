@@ -149,7 +149,8 @@ package body Separated is
    procedure Setup_Exception (
       Excep : not null Exception_Occurrence_Access;
       Current : not null Exception_Occurrence_Access;
-      Reraised : Boolean) is
+      Reraised : Boolean;
+      Stack_Guard : Address) is
    begin
       if Reraised or else not Is_Setup_And_Not_Propagated (Excep) then
          pragma Check (Trace, Debug.Put ("new obj"));
@@ -165,6 +166,7 @@ package body Separated is
                   Id => <>,
                   N_Cleanups_To_Trigger => <>,
                   Next_Exception => null, -- initialized here
+                  Stack_Guard => Stack_Guard,
                   landing_pad => <>,
                   ttype_filter => <>);
             Next : Exception_Occurrence_Access;

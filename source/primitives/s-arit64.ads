@@ -15,7 +15,7 @@ package System.Arith_64 is
       Q, R : out Interfaces.Integer_64;
       Round : Boolean);
 
-   --  required for fixed-decimal (X * Y) / (Y * Z) by compiler (s-arit64.ads)
+   --  required for fixed-decimal X / (Y * Z) by compiler (s-arit64.ads)
    procedure Double_Divide (
       X, Y, Z : Interfaces.Integer_64;
       Q, R : out Interfaces.Integer_64;

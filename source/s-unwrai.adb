@@ -16,7 +16,8 @@ package body System.Unwind.Raising is
       procedure Setup_Exception (
          Excep : not null Exception_Occurrence_Access;
          Current : not null Exception_Occurrence_Access;
-         Reraised : Boolean);
+         Reraised : Boolean;
+         Stack_Guard : Address);
 
       --  (a-exexpr-gcc.adb)
       procedure Propagate_Exception (
@@ -114,18 +115,24 @@ package body System.Unwind.Raising is
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
-      Message : String);
+      Message : String;
+      Stack_Guard : Address);
    procedure Set_Exception_Message (
       Id : Standard_Library.Exception_Data_Ptr;
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
-      Message : String)
+      Message : String;
+      Stack_Guard : Address)
    is
       Current : constant not null Exception_Occurrence_Access :=
          Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
    begin
-      Separated.Setup_Exception (Current, Current, False);
+      Separated.Setup_Exception (
+         Current,
+         Current,
+         False,
+         Stack_Guard => Null_Address);
       Current.Id := Id;
       declare
          Last : Natural := 0;
@@ -250,7 +257,10 @@ package body System.Unwind.Raising is
       E : not null Standard_Library.Exception_Data_Ptr;
       Message : String := "") is
    begin
-      Set_Exception_Message (E, null, Message => Message);
+      Set_Exception_Message (E,
+         null,
+         Message => Message,
+         Stack_Guard => Null_Address);
       Raise_Current_Exception (E);
    end Raise_Exception_No_Defer;
 
@@ -261,7 +271,8 @@ package body System.Unwind.Raising is
       Separated.Setup_Exception (
          X'Unrestricted_Access,
          Current,
-         True);
+         True,
+         Stack_Guard => Null_Address);
       Save_Occurrence_No_Private (Current.all, X);
       pragma Check (Trace, Debug.Put ("reraising..."));
       Raise_Current_Exception (X.Id);
@@ -274,9 +285,16 @@ package body System.Unwind.Raising is
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
-      Message : String := "") is
+      Message : String := "";
+      Stack_Guard : Address := Null_Address) is
    begin
-      Set_Exception_Message (E, File, Line, Column, Message);
+      Set_Exception_Message (
+         E,
+         File,
+         Line,
+         Column,
+         Message,
+         Stack_Guard => Stack_Guard);
       Soft_Links.Abort_Defer.all;
       Raise_Current_Exception (E);
    end Raise_Exception;
