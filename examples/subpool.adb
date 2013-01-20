@@ -21,7 +21,7 @@ procedure subpool is
 		
 		subtype Subpool_Handle is Subpools.Subpool_Handle;
 		
-		type Mark_Release_Pool_Type (Pool_Size : Storage_Count) is new
+		type Mark_Release_Pool_Type (Pool_Size_minus_1 : Storage_Count) is new
 			Subpools.Root_Storage_Pool_With_Subpools with private;
 		
 		function Mark (Pool : in out Mark_Release_Pool_Type)
@@ -38,9 +38,9 @@ procedure subpool is
 		subtype Subpool_Indexes is Positive range 1 .. 10;
 		type Subpool_Array is array (Subpool_Indexes) of aliased MR_Subpool;
 		
-		type Mark_Release_Pool_Type (Pool_Size : Storage_Count) is new
+		type Mark_Release_Pool_Type (Pool_Size_minus_1 : Storage_Count) is new
 			Subpools.Root_Storage_Pool_With_Subpools with record
-			Storage         : Storage_Array (1 .. Pool_Size);
+			Storage         : Storage_Array (0 .. Pool_Size_minus_1); -- Pool_Size-1
 			Next_Allocation : Storage_Count := 1;
 			Markers         : Subpool_Array;
 			Current_Pool    : Subpool_Indexes := 1;
@@ -78,7 +78,7 @@ procedure subpool is
 	end MR_Pool;
 	
 	package body MR_Pool is
-		use type System.Storage_Pools.Subpools.Subpool_Handle; -- bug of RM???
+		use type Subpool_Handle;
 		
 		procedure Initialize (Pool : in out Mark_Release_Pool_Type) is
 			-- Initialize the first default subpool.
@@ -86,8 +86,7 @@ procedure subpool is
 			Subpools.Initialize (Subpools.Root_Storage_Pool_With_Subpools (Pool)); -- drake
 			Pool.Markers(1).Start := 1;
 			Subpools.Set_Pool_of_Subpool
-				(Pool.Markers(1)'Unchecked_Access,
-				 Pool); -- Pool'Unchecked_Access); / bug of RM???
+				(Pool.Markers(1)'Unchecked_Access, Pool);
 		end Initialize;
 		
 		function Create_Subpool (Pool : in out Mark_Release_Pool_Type)
@@ -102,11 +101,8 @@ procedure subpool is
 			return Result : constant not null Subpool_Handle :=
 				Pool.Markers(Pool.Current_Pool)'Unchecked_Access
 			do
-				-- Result.Start := / bug of RM???
 				MR_Subpool (Result.all).Start := Pool.Next_Allocation;
-				Subpools.Set_Pool_of_Subpool (
-					Result,
-					Pool); -- Pool'Unchecked_Access); -- bug of RM???
+				Subpools.Set_Pool_of_Subpool (Result, Pool);
 			end return;
 		end Create_Subpool;
 		
@@ -118,14 +114,12 @@ procedure subpool is
 				raise Program_Error; -- Only the last marked subpool can be released.
 			end if;
 			if Pool.Current_Pool /= 1 then
-				Pool.Next_Allocation := Pool.Markers(Pool.Current_Pool)
-					.Start; -- ; / bug of RM???
+				Pool.Next_Allocation := Pool.Markers(Pool.Current_Pool).Start;
 				Pool.Current_Pool := Pool.Current_Pool - 1; -- Move to the previous subpool
 			else -- Reinitialize the default subpool:
 				Pool.Next_Allocation := 1;
 				Subpools.Set_Pool_of_Subpool
-					(Pool.Markers(1)'Unchecked_Access,
-					 Pool); -- Pool'Unchecked_Access); / bug of RM???
+					(Pool.Markers(1)'Unchecked_Access, Pool);
 			end if;
 		end Deallocate_Subpool;
 		
@@ -149,10 +143,9 @@ procedure subpool is
 			
 			-- Correct the alignment if necessary:
 			Pool.Next_Allocation := Pool.Next_Allocation +
-				((Pool.Storage'First - Pool.Next_Allocation) mod Alignment);
-				-- ((-Pool.Next_Allocation) mod Alignment); / bug of RM???
+				((-Pool.Next_Allocation) mod Alignment);
 			if Pool.Next_Allocation + Size_In_Storage_Elements >
-				Pool.Pool_Size then
+				Pool.Pool_Size_minus_1 + 1 then
 				raise Storage_Error; -- Out of space.
 			end if;
 			Storage_Address := Pool.Storage (Pool.Next_Allocation)'Address;
@@ -162,7 +155,8 @@ procedure subpool is
 		
 	end MR_Pool;
 	
-	Pool : MR_Pool.Mark_Release_Pool_Type (1024);
+	use type System.Storage_Elements.Storage_Offset;
+	Pool : MR_Pool.Mark_Release_Pool_Type (Pool_Size_minus_1 => 1024 - 1);
 	
 	package Dummy is
 		type Dummy is new Ada.Finalization.Controlled with null record;
