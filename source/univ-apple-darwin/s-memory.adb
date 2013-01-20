@@ -1,4 +1,5 @@
 pragma Check_Policy (Trace, Off);
+with Ada.Unchecked_Conversion;
 with System.Debug;
 with System.Unwind.Raising; -- raising exception in compiler unit
 with System.Unwind.Standard;
@@ -15,9 +16,11 @@ package body System.Memory is
    --  implementation
 
    function Allocate (Size : Storage_Elements.Storage_Count)
-      return Address is
+      return Address
+   is
+      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
    begin
-      return Result : constant Address := Address (C.stdlib.malloc (
+      return Result : constant Address := Cast (C.stdlib.malloc (
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
@@ -36,9 +39,11 @@ package body System.Memory is
    function Reallocate (
       P : Address;
       Size : Storage_Elements.Storage_Count)
-      return Address is
+      return Address
+   is
+      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
    begin
-      return Result : constant Address := Address (C.stdlib.realloc (
+      return Result : constant Address := Cast (C.stdlib.realloc (
          C.void_ptr (P),
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
@@ -62,6 +67,7 @@ package body System.Memory is
       Raise_On_Error : Boolean := True)
       return Address
    is
+      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Mapped_Address : C.void_ptr;
    begin
       pragma Check (Trace, Debug.Put ("enter"));
@@ -79,7 +85,7 @@ package body System.Memory is
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;
-      return Address (Mapped_Address);
+      return Cast (Mapped_Address);
    end Map;
 
    function Map (
@@ -88,6 +94,7 @@ package body System.Memory is
       Raise_On_Error : Boolean := True)
       return Address
    is
+      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Mapped_Address : C.void_ptr;
    begin
       pragma Check (Trace, Debug.Put ("enter"));
@@ -105,7 +112,7 @@ package body System.Memory is
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;
-      return Address (Mapped_Address);
+      return Cast (Mapped_Address);
    end Map;
 
    procedure Unmap (P : Address; Size : Storage_Elements.Storage_Count) is
