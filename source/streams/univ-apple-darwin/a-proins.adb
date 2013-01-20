@@ -103,7 +103,7 @@ package body Ada.Processes.Inside is
          if C.unistd.chdir (Old_Directory) < 0 then
             Exception_Id := Name_Error'Identity;
          end if;
-         C.stdlib.free (char_ptr_Conv.To_Address (Old_Directory));
+         C.stdlib.free (C.void_ptr (char_ptr_Conv.To_Address (Old_Directory)));
       end if;
       if Exception_Id /= Ada.Exceptions.Null_Id then
          Ada.Exceptions.Raise_Exception (Exception_Id);
