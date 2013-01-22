@@ -19,9 +19,9 @@ package body System.Secondary_Stack is
       Alignment : constant Storage_Elements.Integer_Address :=
          Storage_Elements.Integer_Address (Memory.Page_Size);
    begin
-      return Storage_Elements.Storage_Count (
-         (Storage_Elements.Integer_Address (Required) + (Alignment - 1))
-         / Alignment * Alignment);
+      return Storage_Elements.Storage_Offset (
+         Storage_Elements.Integer_Address'Mod (Required)
+         + Storage_Elements.Integer_Address'Mod (-Required) mod Alignment);
    end Ceiling_Page_Size;
 
    package Conv is new Address_To_Named_Access_Conversions (
