@@ -703,32 +703,31 @@ package body Ada.Text_IO.Inside is
    end Put;
 
    procedure Reset (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Mode : File_Mode)
    is
-      pragma Unmodified (File);
-      Current_Mode : constant File_Mode := Inside.Mode (File);
+      Current_Mode : constant File_Mode := Inside.Mode (File.all);
    begin
-      if Current_Mode /= Mode and then File.Is_Standard then
+      if Current_Mode /= Mode and then File.all.Is_Standard then
          raise Mode_Error;
-      elsif not Streams.Stream_IO.Inside.Is_Open (File.File) then
+      elsif not Streams.Stream_IO.Inside.Is_Open (File.all.File) then
          raise Status_Error; -- External stream mode
       else
          if Current_Mode /= In_File then
-            Flush (File);
+            Flush (File.all);
          end if;
          Streams.Stream_IO.Inside.Reset (
-            File.File,
+            File.all.File'Access,
             Streams.Stream_IO.File_Mode (Mode));
-         File.Stream := Streams.Stream_IO.Inside.Stream (File.File);
-         File.Page := 1;
-         File.Line := 1;
-         File.Col := 1;
-         File.Line_Length := 0;
-         File.Page_Length := 0;
-         File.End_Of_File := False;
-         File.Dummy_Mark := None;
-         File.Mode := Mode;
+         File.all.Stream := Streams.Stream_IO.Inside.Stream (File.all.File);
+         File.all.Page := 1;
+         File.all.Line := 1;
+         File.all.Col := 1;
+         File.all.Line_Length := 0;
+         File.all.Page_Length := 0;
+         File.all.End_Of_File := False;
+         File.all.Dummy_Mark := None;
+         File.all.Mode := Mode;
       end if;
    end Reset;
 

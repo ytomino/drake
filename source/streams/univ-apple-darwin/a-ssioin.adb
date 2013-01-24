@@ -1018,18 +1018,18 @@ package body Ada.Streams.Stream_IO.Inside is
    end Read;
 
    procedure Reset (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Mode : File_Mode) is
    begin
-      Check_File_Open (File);
-      case File.Kind is
+      Check_File_Open (File.all);
+      case File.all.Kind is
          when Normal =>
             declare
-               File2 : constant Non_Controlled_File_Type := File;
+               File2 : constant Non_Controlled_File_Type := File.all;
                Form : String (1 .. File2.Form_Length);
                for Form'Address use File2.Form;
             begin
-               File := null;
+               File.all := null;
                Close_File (File2, Raise_On_Error => True);
                File2.Buffer_Index := 0;
                File2.Reading_Index := File2.Buffer_Index;
@@ -1040,16 +1040,16 @@ package body Ada.Streams.Stream_IO.Inside is
                   Mode => Mode,
                   Name => char_ptr_Conv.To_Pointer (File2.Name),
                   Form => Form);
-               File := File2;
+               File.all := File2;
             end;
          when Temporary =>
-            File.Mode := Mode;
-            Set_Index_Impl (File, 1);
+            File.all.Mode := Mode;
+            Set_Index_Impl (File.all, 1);
          when External | External_No_Close | Standard_Handle =>
             raise Status_Error;
       end case;
       if Mode = Append_File then
-         Set_Index_To_Append (File);
+         Set_Index_To_Append (File.all);
       end if;
    end Reset;
 
@@ -1099,21 +1099,21 @@ package body Ada.Streams.Stream_IO.Inside is
    end Size;
 
    procedure Set_Mode (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Mode : File_Mode)
    is
       Current : Positive_Count;
    begin
-      Check_File_Open (File);
-      Current := Index_Impl (File);
-      case File.Kind is
+      Check_File_Open (File.all);
+      Current := Index_Impl (File.all);
+      case File.all.Kind is
          when Normal =>
             declare
-               File2 : constant Non_Controlled_File_Type := File;
+               File2 : constant Non_Controlled_File_Type := File.all;
                Form : String (1 .. File2.Form_Length);
                for Form'Address use File2.Form;
             begin
-               File := null;
+               File.all := null;
                Close_File (File2, Raise_On_Error => True);
                Open_Normal (
                   Method => Reset,
@@ -1121,18 +1121,18 @@ package body Ada.Streams.Stream_IO.Inside is
                   Mode => Mode,
                   Name => char_ptr_Conv.To_Pointer (File2.Name),
                   Form => Form);
-               File := File2;
+               File.all := File2;
             end;
          when Temporary =>
-            Flush_Writing_Buffer (File);
-            File.Mode := Mode;
+            Flush_Writing_Buffer (File.all);
+            File.all.Mode := Mode;
          when External | External_No_Close | Standard_Handle =>
             raise Status_Error;
       end case;
       if Mode = Append_File then
-         Set_Index_To_Append (File);
+         Set_Index_To_Append (File.all);
       else
-         Set_Index_Impl (File, Current);
+         Set_Index_Impl (File.all, Current);
       end if;
    end Set_Mode;
 

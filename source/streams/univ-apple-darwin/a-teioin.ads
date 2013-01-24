@@ -38,7 +38,9 @@ package Ada.Text_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True);
    procedure Delete (File : in out Non_Controlled_File_Type);
-   procedure Reset (File : in out Non_Controlled_File_Type; Mode : File_Mode);
+   procedure Reset (
+      File : not null access Non_Controlled_File_Type;
+      Mode : File_Mode);
 
    function Mode (File : Non_Controlled_File_Type) return File_Mode;
    function Name (File : Non_Controlled_File_Type) return String;
