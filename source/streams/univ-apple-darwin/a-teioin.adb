@@ -14,6 +14,12 @@ package body Ada.Text_IO.Inside is
       Text_Type,
       Non_Controlled_File_Type);
 
+   procedure Finally (X : not null access Non_Controlled_File_Type);
+   procedure Finally (X : not null access Non_Controlled_File_Type) is
+   begin
+      Free (X.all);
+   end Finally;
+
    procedure Check_File_Mode (
       File : Non_Controlled_File_Type;
       Expected : File_Mode);
@@ -661,11 +667,6 @@ package body Ada.Text_IO.Inside is
          Name => "",
          Form => "",
          others => <>);
-      procedure Finally (X : not null access Non_Controlled_File_Type);
-      procedure Finally (X : not null access Non_Controlled_File_Type) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is new Exceptions.Finally.Scoped_Holder (
          Non_Controlled_File_Type,
          Finally);
@@ -716,9 +717,17 @@ package body Ada.Text_IO.Inside is
          if Current_Mode /= In_File then
             Flush (File.all);
          end if;
-         Streams.Stream_IO.Inside.Reset (
-            File.all.File'Access,
-            Streams.Stream_IO.File_Mode (Mode));
+         declare
+            package Holder is new Exceptions.Finally.Scoped_Holder (
+               Non_Controlled_File_Type,
+               Finally);
+         begin
+            Holder.Assign (File);
+            Streams.Stream_IO.Inside.Reset (
+               File.all.File'Access,
+               Streams.Stream_IO.File_Mode (Mode));
+            Holder.Clear;
+         end;
          File.all.Stream := Streams.Stream_IO.Inside.Stream (File.all.File);
          File.all.Page := 1;
          File.all.Line := 1;

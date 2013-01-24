@@ -57,6 +57,15 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end stat;
 
+   procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean);
+   procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean) is
+   begin
+      Error := C.sys.fcntl.fcntl (
+         Handle,
+         C.sys.fcntl.F_SETFD,
+         C.sys.fcntl.FD_CLOEXEC) = -1;
+   end Set_Close_On_Exec;
+
    --  implementation of handle
 
    function Is_Terminal (Handle : Handle_Type) return Boolean is
@@ -70,12 +79,10 @@ package body Ada.Streams.Stream_IO.Inside is
    end Is_Seekable;
 
    procedure Set_Close_On_Exec (Handle : Handle_Type) is
+      Error : Boolean;
    begin
-      if C.sys.fcntl.fcntl (
-         Handle,
-         C.sys.fcntl.F_SETFD,
-         C.sys.fcntl.FD_CLOEXEC) = -1
-      then
+      Set_Close_On_Exec (Handle, Error);
+      if Error then
          raise Use_Error;
       end if;
    end Set_Close_On_Exec;
@@ -202,6 +209,7 @@ package body Ada.Streams.Stream_IO.Inside is
    is
       Temp_Template_Length : constant C.size_t := Temp_Template'Length - 1;
       Temp_Dir : C.char_ptr;
+      Error : Boolean;
    begin
       --  compose template
       Temp_Dir := C.stdlib.getenv (Temp_Variable (0)'Access);
@@ -256,7 +264,11 @@ package body Ada.Streams.Stream_IO.Inside is
          System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
          raise Use_Error;
       end if;
-      Set_Close_On_Exec (Handle);
+      Set_Close_On_Exec (Handle, Error);
+      if Error then
+         System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
+         raise Use_Error;
+      end if;
    end Open_Temporary_File;
 
    procedure Compose_File_Name (
@@ -356,6 +368,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Default_Lock_Flags : C.unsigned_int;
       Modes : constant := 8#644#;
       errno : C.signed_int;
+      Error : Boolean;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
       if Mode = In_File then
@@ -414,7 +427,11 @@ package body Ada.Streams.Stream_IO.Inside is
                raise Use_Error;
          end case;
       end if;
-      Set_Close_On_Exec (Handle);
+      Set_Close_On_Exec (Handle, Error);
+      if Error then
+         Free (File); -- free on error
+         raise Use_Error;
+      end if;
       --  set file
       File.Handle := Handle;
       File.Mode := Mode;
