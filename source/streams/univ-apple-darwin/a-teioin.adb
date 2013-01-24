@@ -166,7 +166,7 @@ package body Ada.Text_IO.Inside is
             Internal : Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
                File.File;
          begin
-            if not File.Is_Standard then
+            if not Streams.Stream_IO.Inside.Is_Standard (Internal) then
                Free (File);
             end if;
             if Streams.Stream_IO.Inside.Is_Open (Internal) then
@@ -643,7 +643,6 @@ package body Ada.Text_IO.Inside is
          Mode => Mode,
          Encoding => Form_Encoding (Form),
          Line_Mark => Form_Line_Mark (Form),
-         Is_Standard => False,
          Name => '*' & Name,
          Form => Form,
          others => <>);
@@ -663,7 +662,6 @@ package body Ada.Text_IO.Inside is
          Mode => Mode,
          Encoding => Form_Encoding (Form),
          Line_Mark => Form_Line_Mark (Form),
-         Is_Standard => False,
          Name => "",
          Form => "",
          others => <>);
@@ -709,7 +707,9 @@ package body Ada.Text_IO.Inside is
    is
       Current_Mode : constant File_Mode := Inside.Mode (File.all);
    begin
-      if Current_Mode /= Mode and then File.all.Is_Standard then
+      if Current_Mode /= Mode
+         and then Streams.Stream_IO.Inside.Is_Standard (File.all.File)
+      then
          raise Mode_Error;
       elsif not Streams.Stream_IO.Inside.Is_Open (File.all.File) then
          raise Status_Error; -- External stream mode

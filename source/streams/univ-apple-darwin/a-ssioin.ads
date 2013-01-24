@@ -102,6 +102,9 @@ package Ada.Streams.Stream_IO.Inside is
    function Handle (File : Non_Controlled_File_Type) return Handle_Type;
    pragma Inline (Handle);
 
+   function Is_Standard (File : Non_Controlled_File_Type) return Boolean;
+   pragma Inline (Is_Standard);
+
    --  parsing form parameter
 
    procedure Form_Parameter (

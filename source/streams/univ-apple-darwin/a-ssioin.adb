@@ -1268,6 +1268,11 @@ package body Ada.Streams.Stream_IO.Inside is
       return File.Handle;
    end Handle;
 
+   function Is_Standard (File : Non_Controlled_File_Type) return Boolean is
+   begin
+      return File /= null and then File.Kind = Standard_Handle;
+   end Is_Standard;
+
    --  parsing form parameter
 
    procedure Form_Parameter (
