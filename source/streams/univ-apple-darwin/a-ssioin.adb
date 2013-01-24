@@ -529,33 +529,30 @@ package body Ada.Streams.Stream_IO.Inside is
       Error : out Boolean);
    procedure Ready_Reading_Buffer (
       File : not null Non_Controlled_File_Type;
-      Error : out Boolean) is
+      Error : out Boolean)
+   is
+      Buffer_Length : constant Stream_Element_Count :=
+         Stream_Element_Offset'Max (1, File.Buffer_Length);
    begin
       --  reading buffer is from File.Reading_Index until File.Buffer_Index
-      if File.Reading_Index < File.Buffer_Index then
-         Error := False; -- unread data is in the buffer
-      else
-         declare
-            Buffer_Length : constant Stream_Element_Count :=
-               Stream_Element_Offset'Max (1, File.Buffer_Length);
-            Read_Size : C.sys.types.ssize_t;
-         begin
-            File.Buffer_Index := File.Buffer_Index rem Buffer_Length;
-            Read_Size := C.unistd.read (
-               File.Handle,
-               C.void_ptr (File.Buffer
-                  + System.Storage_Elements.Storage_Offset (
-                     File.Buffer_Index)),
-               C.size_t (Buffer_Length - File.Buffer_Index));
-            Error := Read_Size < 0;
-            File.Reading_Index := File.Buffer_Index;
-            if not Error then
-               File.Buffer_Index :=
-                  File.Buffer_Index + Stream_Element_Offset (Read_Size);
-            end if;
-         end;
-         File.Writing_Index := File.Buffer_Index;
-      end if;
+      File.Buffer_Index := File.Buffer_Index rem Buffer_Length;
+      File.Reading_Index := File.Buffer_Index;
+      declare
+         Read_Size : C.sys.types.ssize_t;
+      begin
+         Read_Size := C.unistd.read (
+            File.Handle,
+            C.void_ptr (File.Buffer
+               + System.Storage_Elements.Storage_Offset (
+                  File.Buffer_Index)),
+            C.size_t (Buffer_Length - File.Buffer_Index));
+         Error := Read_Size < 0;
+         if not Error then
+            File.Buffer_Index :=
+               File.Buffer_Index + Stream_Element_Offset (Read_Size);
+         end if;
+      end;
+      File.Writing_Index := File.Buffer_Index;
    end Ready_Reading_Buffer;
 
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type);
@@ -673,24 +670,19 @@ package body Ada.Streams.Stream_IO.Inside is
       First : Stream_Element_Offset := Item'First;
       procedure Read_From_Buffer;
       procedure Read_From_Buffer is
+         Taking_Length : constant Stream_Element_Offset :=
+            Stream_Element_Offset'Min (
+               Item'Last - First + 1,
+               File.Buffer_Index - File.Reading_Index);
+         Buffer : Stream_Element_Array (Stream_Element_Count);
+         for Buffer'Address use File.Buffer;
       begin
-         if File.Reading_Index < File.Buffer_Index then
-            declare
-               Taking_Length : constant Stream_Element_Offset :=
-                  Stream_Element_Offset'Min (
-                     Item'Last - First + 1,
-                     File.Buffer_Index - File.Reading_Index);
-               Buffer : Stream_Element_Array (Stream_Element_Count);
-               for Buffer'Address use File.Buffer;
-            begin
-               Last := First + Taking_Length - 1;
-               Item (First .. Last) := Buffer (
-                  File.Reading_Index ..
-                  File.Reading_Index + Taking_Length - 1);
-               First := Last + 1;
-               File.Reading_Index := File.Reading_Index + Taking_Length;
-            end;
-         end if;
+         Last := First + Taking_Length - 1;
+         Item (First .. Last) := Buffer (
+            File.Reading_Index ..
+            File.Reading_Index + Taking_Length - 1);
+         First := Last + 1;
+         File.Reading_Index := File.Reading_Index + Taking_Length;
       end Read_From_Buffer;
    begin
       if File.Mode = Out_File then
@@ -700,8 +692,11 @@ package body Ada.Streams.Stream_IO.Inside is
       if First > Item'Last then
          return;
       end if;
-      Flush_Writing_Buffer (File);
-      Read_From_Buffer;
+      if File.Reading_Index < File.Buffer_Index then
+         Read_From_Buffer;
+      elsif File.Writing_Index > File.Buffer_Index then
+         Flush_Writing_Buffer (File);
+      end if;
       if First <= Item'Last then
          Get_Buffer (File);
          declare
@@ -746,8 +741,10 @@ package body Ada.Streams.Stream_IO.Inside is
                and then First <= Item'Last
                and then File.Buffer_Length > 0
             then
-               Ready_Reading_Buffer (File, Error);
-               if not Error then
+               Ready_Reading_Buffer (File, Error); -- reading buffer is empty
+               if not Error
+                  and then File.Reading_Index < File.Buffer_Index
+               then
                   Read_From_Buffer;
                end if;
             end if;
@@ -953,15 +950,17 @@ package body Ada.Streams.Stream_IO.Inside is
       Check_File_Open (File);
       stat (File.Handle, Info'Access);
       if (Info.st_mode and C.sys.stat.S_IFMT) /= C.sys.stat.S_IFREG then
-         Get_Buffer (File);
-         declare
-            Error : Boolean;
-         begin
-            Ready_Reading_Buffer (File, Error);
-            if Error then
-               raise Use_Error;
-            end if;
-         end;
+         if File.Reading_Index = File.Buffer_Index then
+            Get_Buffer (File);
+            declare
+               Error : Boolean;
+            begin
+               Ready_Reading_Buffer (File, Error);
+               if Error then
+                  raise Use_Error;
+               end if;
+            end;
+         end if;
          return File.Reading_Index = File.Buffer_Index;
       else
          declare
