@@ -95,10 +95,15 @@ else
 ifneq ($(findstring freebsd,$(TARGET)),)
 TARGETSUBDIR=univ-pc-freebsd
 else
+ifneq ($(findstring linux-gnu,$(TARGET)),)
+TARGETSUBDIR=univ-pc-linux-gnu
+SUBDIRS:=$(filter-out ada83 calendar directories numerics streams tasking textio,$(SUBDIRS))
+else
 ifneq ($(findstring mingw,$(TARGET)),)
 TARGETSUBDIR=univ-w64-mingw
 else
 TARGETSUBDIR=$(TARGET)
+endif
 endif
 endif
 endif

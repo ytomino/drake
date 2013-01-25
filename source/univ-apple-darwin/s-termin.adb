@@ -13,6 +13,7 @@ with C.unistd;
 package body System.Termination is
    pragma Suppress (All_Checks);
    use type C.signed_int;
+   use type C.signed_long;
    use type C.size_t;
    use type C.unsigned_int;
    use type C.unsigned_long;
@@ -48,13 +49,13 @@ package body System.Termination is
 
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
-      Info : access C.sys.signal.struct_siginfo;
+      Info : access C.sys.signal.siginfo_t;
       Context : C.void_ptr);
    pragma Convention (C, sigaction_Handler);
    pragma No_Return (sigaction_Handler);
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
-      Info : access C.sys.signal.struct_siginfo;
+      Info : access C.sys.signal.siginfo_t;
       Context : C.void_ptr)
    is
       pragma Unreferenced (Info);
@@ -84,14 +85,15 @@ package body System.Termination is
             end;
             declare
                UC_RESET_ALT_STACK : constant := 16#80000000#; -- ???
-               Dummy : C.signed_int;
-               pragma Unreferenced (Dummy);
             begin
                --  emulate normal return
-               Dummy := C.unistd.syscall (
+               if C.unistd.syscall (
                   C.sys.syscall.SYS_sigreturn,
                   C.void_ptr (Null_Address),
-                  UC_RESET_ALT_STACK);
+                  UC_RESET_ALT_STACK) < 0
+               then
+                  null; -- no error handling
+               end if;
             end;
             Eexception_Id := Unwind.Standard.Storage_Error'Access;
          when others =>
@@ -107,12 +109,12 @@ package body System.Termination is
 
    procedure Install_Exception_Handler (SEH : Address) is
       pragma Unreferenced (SEH);
-      act : aliased C.sys.signal.struct_sigaction :=
-         (others => <>); -- uninitialized
+      act : aliased C.sys.signal.struct_sigaction := (
+         (Unchecked_Tag => 1, sa_sigaction => sigaction_Handler'Access),
+         others => <>);
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
    begin
-      act.sigaction_u.sa_sigaction := sigaction_Handler'Access;
       act.sa_flags := C.signed_int (C.unsigned_int'(
          C.sys.signal.SA_NODEFER
          or C.sys.signal.SA_RESTART
