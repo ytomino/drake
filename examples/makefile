@@ -7,9 +7,9 @@ else
 GNATMAKE=$(TARGET)-gnatmake
 endif
 
-EXAMPLES=$(addprefix $(BUILDDIR)/,$(patsubst %.adb,%,$(filter-out b~%,$(wildcard *.adb))))
+EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
 
-SOURCES=$(wildcard ../source/*.ad?) $(wildcard ../source/*/*.ad?) $(wildcard ../source/*/*/*.ad?)
+ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*)
 
 ifeq ($(TARGET),$(HOST))
 TARGETSUFFIX=
@@ -60,12 +60,14 @@ endif
 
 all: $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
 
-$(BUILDDIR)/adalib/libgnat.a: $(SOURCES) ../source/makefile
+$(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
 	make -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	-rm $(EXAMPLES) 2> /dev/null
 
 $(BUILDDIR)/%: %.adb $(BUILDDIR)/adalib/libgnat.a
 	cd $(BUILDDIR) && $(GNATMAKE) --RTS=. -D . $(MFLAGS) $(CFLAGS) -o ../$@ ../$< -bargs $(BFLAGS) -largs $(LFLAGS)
+
+$(EXAMPLES): %: $(BUILDDIR)/%
 
 clean:
 	-rm -rf build*
