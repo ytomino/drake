@@ -87,7 +87,7 @@ else
 EH=sjlj
 endif
 
-SUBDIRS=ada83 calendar containers directories image interfaces numerics primitives streams strings tasking textio $(EH)
+SUBDIRS=ada83 calendar containers directories environment image interfaces numerics primitives streams strings tasking textio $(EH)
 
 ifneq ($(findstring darwin,$(TARGET)),)
 TARGETSUBDIR=univ-apple-darwin
@@ -271,6 +271,18 @@ $(RTSDIR)/adainclude/%.ads: directories/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: directories/$(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: environment/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: environment/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: environment/$(TARGETSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: environment/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: image/%.ads
