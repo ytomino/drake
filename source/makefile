@@ -267,6 +267,12 @@ $(RTSDIR)/adainclude/%.ads: containers/%.ads
 $(RTSDIR)/adainclude/%.adb: containers/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+$(RTSDIR)/adainclude/%.ads: directories/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: directories/%.adb
+	$(INSTALL) $(abspath $<) $@
+
 $(RTSDIR)/adainclude/%.ads: directories/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
