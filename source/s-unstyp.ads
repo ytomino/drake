@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit for System.Formatting
+--  runtime unit required by compiler
 package System.Unsigned_Types is
    pragma Pure;
 
