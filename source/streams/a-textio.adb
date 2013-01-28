@@ -491,7 +491,7 @@ package body Ada.Text_IO is
       then
          raise Mode_Error;
       else
-         Inside.Reset (Reference (File).all, Mode);
+         Inside.Reset (Reference (File), Mode);
       end if;
    end Reset;
 

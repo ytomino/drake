@@ -106,7 +106,7 @@ package body Ada.Streams.Stream_IO is
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
    begin
-      Inside.Reset (Reference (File).all, Mode);
+      Inside.Reset (Reference (File), Mode);
    end Reset;
 
    procedure Reset (File : in out File_Type) is
@@ -121,7 +121,7 @@ package body Ada.Streams.Stream_IO is
 
    procedure Set_Mode (File : in out File_Type; Mode : File_Mode) is
    begin
-      Inside.Set_Mode (Reference (File).all, Mode);
+      Inside.Set_Mode (Reference (File), Mode);
    end Set_Mode;
 
    function Size (File : File_Type) return Count is

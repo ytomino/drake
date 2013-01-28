@@ -1,5 +1,4 @@
 with Ada.Unchecked_Conversion;
-with System.Standard_Library;
 package body System.Soft_Links is
    pragma Suppress (All_Checks);
 
@@ -29,7 +28,7 @@ package body System.Soft_Links is
          Ada.Exceptions.Exception_Occurrence_Access,
          Unwind.Exception_Occurrence_Access);
       function Cast is new Ada.Unchecked_Conversion (
-         Standard_Library.Exception_Data_Ptr,
+         Unwind.Exception_Data_Access,
          Ada.Exceptions.Exception_Id);
    begin
       return Cast (Cast (Get_Current_Excep.all).Id);

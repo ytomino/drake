@@ -235,7 +235,7 @@ package body System.Unwind.Handling is
                      then
                         declare
                            function Cast is new Ada.Unchecked_Conversion (
-                              Standard_Library.Exception_Data_Ptr,
+                              Exception_Data_Access,
                               C.unwind.Unwind_Ptr);
                            type Unwind_Ptr_Ptr is
                               access constant C.unwind.Unwind_Ptr;

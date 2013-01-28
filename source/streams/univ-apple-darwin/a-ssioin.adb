@@ -57,6 +57,15 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end stat;
 
+   procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean);
+   procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean) is
+   begin
+      Error := C.sys.fcntl.fcntl (
+         Handle,
+         C.sys.fcntl.F_SETFD,
+         C.sys.fcntl.FD_CLOEXEC) = -1;
+   end Set_Close_On_Exec;
+
    --  implementation of handle
 
    function Is_Terminal (Handle : Handle_Type) return Boolean is
@@ -70,12 +79,10 @@ package body Ada.Streams.Stream_IO.Inside is
    end Is_Seekable;
 
    procedure Set_Close_On_Exec (Handle : Handle_Type) is
+      Error : Boolean;
    begin
-      if C.sys.fcntl.fcntl (
-         Handle,
-         C.sys.fcntl.F_SETFD,
-         C.sys.fcntl.FD_CLOEXEC) = -1
-      then
+      Set_Close_On_Exec (Handle, Error);
+      if Error then
          raise Use_Error;
       end if;
    end Set_Close_On_Exec;
@@ -202,6 +209,7 @@ package body Ada.Streams.Stream_IO.Inside is
    is
       Temp_Template_Length : constant C.size_t := Temp_Template'Length - 1;
       Temp_Dir : C.char_ptr;
+      Error : Boolean;
    begin
       --  compose template
       Temp_Dir := C.stdlib.getenv (Temp_Variable (0)'Access);
@@ -256,7 +264,11 @@ package body Ada.Streams.Stream_IO.Inside is
          System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
          raise Use_Error;
       end if;
-      Set_Close_On_Exec (Handle);
+      Set_Close_On_Exec (Handle, Error);
+      if Error then
+         System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
+         raise Use_Error;
+      end if;
    end Open_Temporary_File;
 
    procedure Compose_File_Name (
@@ -356,6 +368,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Default_Lock_Flags : C.unsigned_int;
       Modes : constant := 8#644#;
       errno : C.signed_int;
+      Error : Boolean;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
       if Mode = In_File then
@@ -414,7 +427,11 @@ package body Ada.Streams.Stream_IO.Inside is
                raise Use_Error;
          end case;
       end if;
-      Set_Close_On_Exec (Handle);
+      Set_Close_On_Exec (Handle, Error);
+      if Error then
+         Free (File); -- free on error
+         raise Use_Error;
+      end if;
       --  set file
       File.Handle := Handle;
       File.Mode := Mode;
@@ -512,33 +529,30 @@ package body Ada.Streams.Stream_IO.Inside is
       Error : out Boolean);
    procedure Ready_Reading_Buffer (
       File : not null Non_Controlled_File_Type;
-      Error : out Boolean) is
+      Error : out Boolean)
+   is
+      Buffer_Length : constant Stream_Element_Count :=
+         Stream_Element_Offset'Max (1, File.Buffer_Length);
    begin
       --  reading buffer is from File.Reading_Index until File.Buffer_Index
-      if File.Reading_Index < File.Buffer_Index then
-         Error := False; -- unread data is in the buffer
-      else
-         declare
-            Buffer_Length : constant Stream_Element_Count :=
-               Stream_Element_Offset'Max (1, File.Buffer_Length);
-            Read_Size : C.sys.types.ssize_t;
-         begin
-            File.Buffer_Index := File.Buffer_Index rem Buffer_Length;
-            Read_Size := C.unistd.read (
-               File.Handle,
-               C.void_ptr (File.Buffer
-                  + System.Storage_Elements.Storage_Offset (
-                     File.Buffer_Index)),
-               C.size_t (Buffer_Length - File.Buffer_Index));
-            Error := Read_Size < 0;
-            File.Reading_Index := File.Buffer_Index;
-            if not Error then
-               File.Buffer_Index :=
-                  File.Buffer_Index + Stream_Element_Offset (Read_Size);
-            end if;
-         end;
-         File.Writing_Index := File.Buffer_Index;
-      end if;
+      File.Buffer_Index := File.Buffer_Index rem Buffer_Length;
+      File.Reading_Index := File.Buffer_Index;
+      declare
+         Read_Size : C.sys.types.ssize_t;
+      begin
+         Read_Size := C.unistd.read (
+            File.Handle,
+            C.void_ptr (File.Buffer
+               + System.Storage_Elements.Storage_Offset (
+                  File.Buffer_Index)),
+            C.size_t (Buffer_Length - File.Buffer_Index));
+         Error := Read_Size < 0;
+         if not Error then
+            File.Buffer_Index :=
+               File.Buffer_Index + Stream_Element_Offset (Read_Size);
+         end if;
+      end;
+      File.Writing_Index := File.Buffer_Index;
    end Ready_Reading_Buffer;
 
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type);
@@ -656,24 +670,19 @@ package body Ada.Streams.Stream_IO.Inside is
       First : Stream_Element_Offset := Item'First;
       procedure Read_From_Buffer;
       procedure Read_From_Buffer is
+         Taking_Length : constant Stream_Element_Offset :=
+            Stream_Element_Offset'Min (
+               Item'Last - First + 1,
+               File.Buffer_Index - File.Reading_Index);
+         Buffer : Stream_Element_Array (Stream_Element_Count);
+         for Buffer'Address use File.Buffer;
       begin
-         if File.Reading_Index < File.Buffer_Index then
-            declare
-               Taking_Length : constant Stream_Element_Offset :=
-                  Stream_Element_Offset'Min (
-                     Item'Last - First + 1,
-                     File.Buffer_Index - File.Reading_Index);
-               Buffer : Stream_Element_Array (Stream_Element_Count);
-               for Buffer'Address use File.Buffer;
-            begin
-               Last := First + Taking_Length - 1;
-               Item (First .. Last) := Buffer (
-                  File.Reading_Index ..
-                  File.Reading_Index + Taking_Length - 1);
-               First := Last + 1;
-               File.Reading_Index := File.Reading_Index + Taking_Length;
-            end;
-         end if;
+         Last := First + Taking_Length - 1;
+         Item (First .. Last) := Buffer (
+            File.Reading_Index ..
+            File.Reading_Index + Taking_Length - 1);
+         First := Last + 1;
+         File.Reading_Index := File.Reading_Index + Taking_Length;
       end Read_From_Buffer;
    begin
       if File.Mode = Out_File then
@@ -683,8 +692,11 @@ package body Ada.Streams.Stream_IO.Inside is
       if First > Item'Last then
          return;
       end if;
-      Flush_Writing_Buffer (File);
-      Read_From_Buffer;
+      if File.Reading_Index < File.Buffer_Index then
+         Read_From_Buffer;
+      elsif File.Writing_Index > File.Buffer_Index then
+         Flush_Writing_Buffer (File);
+      end if;
       if First <= Item'Last then
          Get_Buffer (File);
          declare
@@ -729,8 +741,10 @@ package body Ada.Streams.Stream_IO.Inside is
                and then First <= Item'Last
                and then File.Buffer_Length > 0
             then
-               Ready_Reading_Buffer (File, Error);
-               if not Error then
+               Ready_Reading_Buffer (File, Error); -- reading buffer is empty
+               if not Error
+                  and then File.Reading_Index < File.Buffer_Index
+               then
                   Read_From_Buffer;
                end if;
             end if;
@@ -936,15 +950,17 @@ package body Ada.Streams.Stream_IO.Inside is
       Check_File_Open (File);
       stat (File.Handle, Info'Access);
       if (Info.st_mode and C.sys.stat.S_IFMT) /= C.sys.stat.S_IFREG then
-         Get_Buffer (File);
-         declare
-            Error : Boolean;
-         begin
-            Ready_Reading_Buffer (File, Error);
-            if Error then
-               raise Use_Error;
-            end if;
-         end;
+         if File.Reading_Index = File.Buffer_Index then
+            Get_Buffer (File);
+            declare
+               Error : Boolean;
+            begin
+               Ready_Reading_Buffer (File, Error);
+               if Error then
+                  raise Use_Error;
+               end if;
+            end;
+         end if;
          return File.Reading_Index = File.Buffer_Index;
       else
          declare
@@ -1018,18 +1034,18 @@ package body Ada.Streams.Stream_IO.Inside is
    end Read;
 
    procedure Reset (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Mode : File_Mode) is
    begin
-      Check_File_Open (File);
-      case File.Kind is
+      Check_File_Open (File.all);
+      case File.all.Kind is
          when Normal =>
             declare
-               File2 : constant Non_Controlled_File_Type := File;
+               File2 : constant Non_Controlled_File_Type := File.all;
                Form : String (1 .. File2.Form_Length);
                for Form'Address use File2.Form;
             begin
-               File := null;
+               File.all := null;
                Close_File (File2, Raise_On_Error => True);
                File2.Buffer_Index := 0;
                File2.Reading_Index := File2.Buffer_Index;
@@ -1040,16 +1056,16 @@ package body Ada.Streams.Stream_IO.Inside is
                   Mode => Mode,
                   Name => char_ptr_Conv.To_Pointer (File2.Name),
                   Form => Form);
-               File := File2;
+               File.all := File2;
             end;
          when Temporary =>
-            File.Mode := Mode;
-            Set_Index_Impl (File, 1);
+            File.all.Mode := Mode;
+            Set_Index_Impl (File.all, 1);
          when External | External_No_Close | Standard_Handle =>
             raise Status_Error;
       end case;
       if Mode = Append_File then
-         Set_Index_To_Append (File);
+         Set_Index_To_Append (File.all);
       end if;
    end Reset;
 
@@ -1099,21 +1115,21 @@ package body Ada.Streams.Stream_IO.Inside is
    end Size;
 
    procedure Set_Mode (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Mode : File_Mode)
    is
       Current : Positive_Count;
    begin
-      Check_File_Open (File);
-      Current := Index_Impl (File);
-      case File.Kind is
+      Check_File_Open (File.all);
+      Current := Index_Impl (File.all);
+      case File.all.Kind is
          when Normal =>
             declare
-               File2 : constant Non_Controlled_File_Type := File;
+               File2 : constant Non_Controlled_File_Type := File.all;
                Form : String (1 .. File2.Form_Length);
                for Form'Address use File2.Form;
             begin
-               File := null;
+               File.all := null;
                Close_File (File2, Raise_On_Error => True);
                Open_Normal (
                   Method => Reset,
@@ -1121,18 +1137,18 @@ package body Ada.Streams.Stream_IO.Inside is
                   Mode => Mode,
                   Name => char_ptr_Conv.To_Pointer (File2.Name),
                   Form => Form);
-               File := File2;
+               File.all := File2;
             end;
          when Temporary =>
-            Flush_Writing_Buffer (File);
-            File.Mode := Mode;
+            Flush_Writing_Buffer (File.all);
+            File.all.Mode := Mode;
          when External | External_No_Close | Standard_Handle =>
             raise Status_Error;
       end case;
       if Mode = Append_File then
-         Set_Index_To_Append (File);
+         Set_Index_To_Append (File.all);
       else
-         Set_Index_Impl (File, Current);
+         Set_Index_Impl (File.all, Current);
       end if;
    end Set_Mode;
 
@@ -1250,6 +1266,11 @@ package body Ada.Streams.Stream_IO.Inside is
       Check_File_Open (File);
       return File.Handle;
    end Handle;
+
+   function Is_Standard (File : Non_Controlled_File_Type) return Boolean is
+   begin
+      return File /= null and then File.Kind = Standard_Handle;
+   end Is_Standard;
 
    --  parsing form parameter
 

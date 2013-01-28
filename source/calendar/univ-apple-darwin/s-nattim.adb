@@ -37,6 +37,8 @@ package body System.Native_Time is
             C.signed_long (Sub_Second));
    end To_timespec_Duration;
 
+   --  implementation
+
    function To_Native_Time (T : Duration) return Native_Time is
       function Cast is new Ada.Unchecked_Conversion (Duration, Time_Rep);
       Sub_Second : constant Time_Rep := Cast (T) mod 1000000000;
@@ -65,8 +67,6 @@ package body System.Native_Time is
    begin
       return To_Time (To_timespec (T));
    end To_Time;
-
-   --  implementation
 
    function Clock return Native_Time is
       Result : aliased C.sys.time.struct_timeval;

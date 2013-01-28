@@ -2,7 +2,7 @@ with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_8_To_32;
 package body Ada.Exceptions is
    pragma Suppress (All_Checks);
-   use type System.Standard_Library.Exception_Data_Ptr;
+   use type System.Unwind.Exception_Data_Access;
 
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id is

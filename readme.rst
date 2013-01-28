@@ -11,6 +11,7 @@ Environment
 
 - MacOSX 10.5/10.6 (x86, 32bit/64bit)
 - FreeBSD 7 (x86, 32bit only)
+- Linux (x86, 32bit only) [#]_
 
 Depending tools and libraries
 -----------------------------
@@ -28,6 +29,8 @@ headmaster (or pre-translated headers)
     <https://raw.github.com/wiki/ytomino/drake/import-i686-apple-darwin9.tar.bz2>`_
   - `for FreeBSD 7 (x86, 32bit)
     <https://raw.github.com/wiki/ytomino/drake/import-i686-pc-freebsd7.tar.bz2>`_
+  - **experimental** `for Linux (x86, 32bit)
+    <https://raw.github.com/wiki/ytomino/drake/import-i686-pc-linux-gnu.tar.bz2>`_
 
 Downloads
 ---------
@@ -78,3 +81,4 @@ And there are several intentional ACATS violations for usability.
 See incompatibility_.
 
 .. _incompatibility: https://github.com/ytomino/drake/wiki/Incompatibility
+.. [#] Linux support is under construction, limited and experimental.

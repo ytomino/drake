@@ -1,0 +1,1 @@
+../univ-apple-darwin/s-llindi.ads

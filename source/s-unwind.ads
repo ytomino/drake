@@ -5,6 +5,10 @@ with System.Standard_Library;
 package System.Unwind is
    pragma Preelaborate;
 
+   subtype Exception_Data is Standard_Library.Exception_Data;
+   subtype Exception_Data_Access is Standard_Library.Exception_Data_Ptr;
+   use type Unwind.Exception_Data_Access;
+
    --  RM 11.4.1(18) (s-parame.ads)
    Default_Exception_Msg_Max_Length : constant := 200;
 
@@ -19,7 +23,7 @@ package System.Unwind is
 
    --  (a-except-2005.ads)
    type Exception_Occurrence is record
-      Id : Standard_Library.Exception_Data_Ptr;
+      Id : Exception_Data_Access;
       Msg_Length : Natural := 0;
       Msg : String (1 .. Exception_Msg_Max_Length);
       Cleanup_Flag : Boolean := False;

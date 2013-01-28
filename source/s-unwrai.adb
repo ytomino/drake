@@ -2,12 +2,10 @@ pragma Check_Policy (Trace, Off);
 with System.Debug;
 with System.Formatting;
 with System.Soft_Links;
-with System.Standard_Library;
 with System.Termination;
 with System.Unwind.Standard;
 package body System.Unwind.Raising is
    pragma Suppress (All_Checks);
-   use type Standard_Library.Exception_Data_Ptr;
 
    --  package separated for depending on zcx / sjlj
    package Separated is
@@ -58,7 +56,7 @@ package body System.Unwind.Raising is
       Current : constant not null Exception_Occurrence_Access :=
          Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
    begin
---    Soft_Links.Task_Termination_Handler.all (Current.all);
+      --  in GNAT runtime, tasking will be shutdown here
       Notify_Exception (Current, True);
    end Notify_Unhandled_Exception;
 
@@ -74,8 +72,8 @@ package body System.Unwind.Raising is
       for Full_Name'Address use Current.Id.Full_Name;
    begin
       pragma Check (Trace, Debug.Put ("enter"));
---    Soft_Links.Task_Termination_Handler := Soft_Links.Nop'Access;
-      Standard_Library.AdaFinal;
+      --  in GNAT runtime, task termination handler will be unset
+      --  and Standard_Library.AdaFinal will be called here
       Termination.Error_New_Line;
       if Full_Name (1) = '_' then -- Standard'Abort_Signal
          Termination.Error_Put (
@@ -111,14 +109,14 @@ package body System.Unwind.Raising is
 
    --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
    procedure Set_Exception_Message (
-      Id : Standard_Library.Exception_Data_Ptr;
+      Id : Exception_Data_Access;
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
       Message : String;
       Stack_Guard : Address);
    procedure Set_Exception_Message (
-      Id : Standard_Library.Exception_Data_Ptr;
+      Id : Exception_Data_Access;
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
@@ -218,14 +216,14 @@ package body System.Unwind.Raising is
 
    --  equivalent to Raise_Current_Excep (a-except-2005.adb)
    procedure Raise_Current_Exception (
-      E : not null Standard_Library.Exception_Data_Ptr);
+      E : not null Exception_Data_Access);
    pragma No_Return (Raise_Current_Exception);
    --  gdb knows external name ???
    pragma Export (C, Raise_Current_Exception, "__gnat_raise_nodefer_with_msg");
 
    --  (a-except-2005.adb)
    procedure Raise_Exception_No_Defer (
-      E : not null Standard_Library.Exception_Data_Ptr;
+      E : not null Exception_Data_Access;
       Message : String := "");
    pragma No_Return (Raise_Exception_No_Defer);
 
@@ -246,7 +244,7 @@ package body System.Unwind.Raising is
    package body Separated is separate;
 
    procedure Raise_Current_Exception (
-      E : not null Standard_Library.Exception_Data_Ptr)
+      E : not null Exception_Data_Access)
    is
       pragma Inspection_Point (E);
    begin
@@ -254,7 +252,7 @@ package body System.Unwind.Raising is
    end Raise_Current_Exception;
 
    procedure Raise_Exception_No_Defer (
-      E : not null Standard_Library.Exception_Data_Ptr;
+      E : not null Exception_Data_Access;
       Message : String := "") is
    begin
       Set_Exception_Message (E,
@@ -281,7 +279,7 @@ package body System.Unwind.Raising is
    --  end private part in exclusion
 
    procedure Raise_Exception (
-      E : not null Standard_Library.Exception_Data_Ptr;
+      E : not null Exception_Data_Access;
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
@@ -300,10 +298,10 @@ package body System.Unwind.Raising is
    end Raise_Exception;
 
    procedure Raise_E (
-      E : Standard_Library.Exception_Data_Ptr;
+      E : Exception_Data_Access;
       Message : String)
    is
-      Actual_E : Standard_Library.Exception_Data_Ptr := E;
+      Actual_E : Exception_Data_Access := E;
    begin
       if Actual_E = null then
          Actual_E := Unwind.Standard.Constraint_Error'Access;

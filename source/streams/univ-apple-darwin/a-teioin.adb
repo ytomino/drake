@@ -14,6 +14,12 @@ package body Ada.Text_IO.Inside is
       Text_Type,
       Non_Controlled_File_Type);
 
+   procedure Finally (X : not null access Non_Controlled_File_Type);
+   procedure Finally (X : not null access Non_Controlled_File_Type) is
+   begin
+      Free (X.all);
+   end Finally;
+
    procedure Check_File_Mode (
       File : Non_Controlled_File_Type;
       Expected : File_Mode);
@@ -160,7 +166,7 @@ package body Ada.Text_IO.Inside is
             Internal : Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
                File.File;
          begin
-            if not File.Is_Standard then
+            if not Streams.Stream_IO.Inside.Is_Standard (Internal) then
                Free (File);
             end if;
             if Streams.Stream_IO.Inside.Is_Open (Internal) then
@@ -637,7 +643,6 @@ package body Ada.Text_IO.Inside is
          Mode => Mode,
          Encoding => Form_Encoding (Form),
          Line_Mark => Form_Line_Mark (Form),
-         Is_Standard => False,
          Name => '*' & Name,
          Form => Form,
          others => <>);
@@ -657,15 +662,9 @@ package body Ada.Text_IO.Inside is
          Mode => Mode,
          Encoding => Form_Encoding (Form),
          Line_Mark => Form_Line_Mark (Form),
-         Is_Standard => False,
          Name => "",
          Form => "",
          others => <>);
-      procedure Finally (X : not null access Non_Controlled_File_Type);
-      procedure Finally (X : not null access Non_Controlled_File_Type) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is new Exceptions.Finally.Scoped_Holder (
          Non_Controlled_File_Type,
          Finally);
@@ -703,32 +702,41 @@ package body Ada.Text_IO.Inside is
    end Put;
 
    procedure Reset (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Mode : File_Mode)
    is
-      pragma Unmodified (File);
-      Current_Mode : constant File_Mode := Inside.Mode (File);
+      Current_Mode : constant File_Mode := Inside.Mode (File.all);
    begin
-      if Current_Mode /= Mode and then File.Is_Standard then
+      if Current_Mode /= Mode
+         and then Streams.Stream_IO.Inside.Is_Standard (File.all.File)
+      then
          raise Mode_Error;
-      elsif not Streams.Stream_IO.Inside.Is_Open (File.File) then
+      elsif not Streams.Stream_IO.Inside.Is_Open (File.all.File) then
          raise Status_Error; -- External stream mode
       else
          if Current_Mode /= In_File then
-            Flush (File);
+            Flush (File.all);
          end if;
-         Streams.Stream_IO.Inside.Reset (
-            File.File,
-            Streams.Stream_IO.File_Mode (Mode));
-         File.Stream := Streams.Stream_IO.Inside.Stream (File.File);
-         File.Page := 1;
-         File.Line := 1;
-         File.Col := 1;
-         File.Line_Length := 0;
-         File.Page_Length := 0;
-         File.End_Of_File := False;
-         File.Dummy_Mark := None;
-         File.Mode := Mode;
+         declare
+            package Holder is new Exceptions.Finally.Scoped_Holder (
+               Non_Controlled_File_Type,
+               Finally);
+         begin
+            Holder.Assign (File);
+            Streams.Stream_IO.Inside.Reset (
+               File.all.File'Access,
+               Streams.Stream_IO.File_Mode (Mode));
+            Holder.Clear;
+         end;
+         File.all.Stream := Streams.Stream_IO.Inside.Stream (File.all.File);
+         File.all.Page := 1;
+         File.all.Line := 1;
+         File.all.Col := 1;
+         File.all.Line_Length := 0;
+         File.all.Page_Length := 0;
+         File.all.End_Of_File := False;
+         File.all.Dummy_Mark := None;
+         File.all.Mode := Mode;
       end if;
    end Reset;
 

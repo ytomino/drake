@@ -38,7 +38,9 @@ package Ada.Text_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True);
    procedure Delete (File : in out Non_Controlled_File_Type);
-   procedure Reset (File : in out Non_Controlled_File_Type; Mode : File_Mode);
+   procedure Reset (
+      File : not null access Non_Controlled_File_Type;
+      Mode : File_Mode);
 
    function Mode (File : Non_Controlled_File_Type) return File_Mode;
    function Name (File : Non_Controlled_File_Type) return String;
@@ -151,7 +153,6 @@ private
       Mode : File_Mode;
       Encoding : Encoding_Type;
       Line_Mark : Line_Mark_Type;
-      Is_Standard : Boolean;
       Name : String (1 .. Name_Length);
       Form : String (1 .. Form_Length);
    end record;
@@ -178,7 +179,6 @@ private
       Encoding => Encoding_Type'Val (Boolean'Pos (
          Streams.Stream_IO.Inside.Is_Terminal (0))),
       Line_Mark => LF,
-      Is_Standard => True,
       others => <>);
 
    Standard_Output_Text : aliased Text_Type := (
@@ -191,7 +191,6 @@ private
       Encoding => Encoding_Type'Val (Boolean'Pos (
          Streams.Stream_IO.Inside.Is_Terminal (1))),
       Line_Mark => LF,
-      Is_Standard => True,
       others => <>);
 
    Standard_Error_Text : aliased Text_Type := (
@@ -204,7 +203,6 @@ private
       Encoding => Encoding_Type'Val (Boolean'Pos (
          Streams.Stream_IO.Inside.Is_Terminal (2))),
       Line_Mark => LF,
-      Is_Standard => True,
       others => <>);
 
    Standard_Input : constant Non_Controlled_File_Type :=

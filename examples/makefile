@@ -7,9 +7,13 @@ else
 GNATMAKE=$(TARGET)-gnatmake
 endif
 
-EXAMPLES=$(addprefix $(BUILDDIR)/,$(patsubst %.adb,%,$(filter-out b~%,$(wildcard *.adb))))
+EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
 
-SOURCES=$(wildcard ../source/*.ad?) $(wildcard ../source/*/*.ad?) $(wildcard ../source/*/*/*.ad?)
+ifneq ($(findstring linux,$(TARGET)),)
+EXAMPLES:=$(filter-out cal charset cntnr_% cpu delays directories ext_check ext_doc filename fixed floats input2forward mappedio num_complex num_real pkgversion process random_mt19937 random_sfmt signal socket_client stackoverflow storagestream streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
+endif
+
+ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*)
 
 ifeq ($(TARGET),$(HOST))
 TARGETSUFFIX=
@@ -41,6 +45,9 @@ endif
 ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS=-lm -lpthread -lgcc_eh
 endif
+ifneq ($(findstring linux-gnu,$(TARGET)),)
+LFLAGS=-lm -lpthread
+endif
 
 ifneq ($(WITHD),0)
 CFLAGS=-gnatf -gnatwIj -g -gnata
@@ -60,12 +67,14 @@ endif
 
 all: $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
 
-$(BUILDDIR)/adalib/libgnat.a: $(SOURCES) ../source/makefile
+$(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
 	make -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	-rm $(EXAMPLES) 2> /dev/null
 
 $(BUILDDIR)/%: %.adb $(BUILDDIR)/adalib/libgnat.a
 	cd $(BUILDDIR) && $(GNATMAKE) --RTS=. -D . $(MFLAGS) $(CFLAGS) -o ../$@ ../$< -bargs $(BFLAGS) -largs $(LFLAGS)
+
+$(EXAMPLES): %: $(BUILDDIR)/%
 
 clean:
 	-rm -rf build*

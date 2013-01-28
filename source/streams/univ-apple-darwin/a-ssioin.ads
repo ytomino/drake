@@ -31,6 +31,9 @@ package Ada.Streams.Stream_IO.Inside is
 
    type Stream_Type (<>) is limited private;
    type Non_Controlled_File_Type is access all Stream_Type;
+   --  Non_Controlled_File_Type is a pass-by-value type whether in out or not,
+   --  and it's possible that Reset/Set_Mode may close the file.
+   --  So these functions have access mode.
 
    procedure Create (
       File : in out Non_Controlled_File_Type;
@@ -48,7 +51,9 @@ package Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True);
    procedure Delete (File : in out Non_Controlled_File_Type);
-   procedure Reset (File : in out Non_Controlled_File_Type; Mode : File_Mode);
+   procedure Reset (
+      File : not null access Non_Controlled_File_Type;
+      Mode : File_Mode);
 
    function Mode (File : Non_Controlled_File_Type) return File_Mode;
    pragma Inline (Mode);
@@ -79,7 +84,7 @@ package Ada.Streams.Stream_IO.Inside is
    function Size (File : Non_Controlled_File_Type) return Count;
 
    procedure Set_Mode (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Mode : File_Mode);
 
    procedure Flush (File : Non_Controlled_File_Type);
@@ -96,6 +101,9 @@ package Ada.Streams.Stream_IO.Inside is
 
    function Handle (File : Non_Controlled_File_Type) return Handle_Type;
    pragma Inline (Handle);
+
+   function Is_Standard (File : Non_Controlled_File_Type) return Boolean;
+   pragma Inline (Is_Standard);
 
    --  parsing form parameter
 

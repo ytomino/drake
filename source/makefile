@@ -87,7 +87,7 @@ else
 EH=sjlj
 endif
 
-SUBDIRS=ada83 calendar containers directories image interfaces numerics primitives streams strings tasking textio $(EH)
+SUBDIRS=ada83 calendar containers directories environment image interfaces numerics primitives streams strings tasking textio $(EH)
 
 ifneq ($(findstring darwin,$(TARGET)),)
 TARGETSUBDIR=univ-apple-darwin
@@ -95,10 +95,15 @@ else
 ifneq ($(findstring freebsd,$(TARGET)),)
 TARGETSUBDIR=univ-pc-freebsd
 else
+ifneq ($(findstring linux-gnu,$(TARGET)),)
+TARGETSUBDIR=univ-pc-linux-gnu
+SUBDIRS:=$(filter-out ada83 calendar directories numerics streams tasking textio,$(SUBDIRS))
+else
 ifneq ($(findstring mingw,$(TARGET)),)
 TARGETSUBDIR=univ-w64-mingw
 else
 TARGETSUBDIR=$(TARGET)
+endif
 endif
 endif
 endif
@@ -262,10 +267,28 @@ $(RTSDIR)/adainclude/%.ads: containers/%.ads
 $(RTSDIR)/adainclude/%.adb: containers/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+$(RTSDIR)/adainclude/%.ads: directories/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: directories/%.adb
+	$(INSTALL) $(abspath $<) $@
+
 $(RTSDIR)/adainclude/%.ads: directories/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: directories/$(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: environment/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: environment/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: environment/$(TARGETSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: environment/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: image/%.ads
