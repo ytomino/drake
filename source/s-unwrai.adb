@@ -35,31 +35,6 @@ package body System.Unwind.Raising is
    pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
    pragma Weak_External (Report_Traceback);
 
-   --  (a-exextr.adb)
-   procedure Notify_Exception (
-      Current : not null Exception_Occurrence_Access;
-      Is_Unhandled : Boolean);
-   procedure Notify_Exception (
-      Current : not null Exception_Occurrence_Access;
-      Is_Unhandled : Boolean)
-   is
-      pragma Unreferenced (Current);
-      pragma Unreferenced (Is_Unhandled);
-   begin
-      null; -- exception tracing (g-exctra.ads) is not implementd.
-      null; -- exception action handler (g-excact.ads) is not implemented.
-   end Notify_Exception;
-
-   --  (a-exextr.adb)
-   procedure Notify_Unhandled_Exception;
-   procedure Notify_Unhandled_Exception is
-      Current : constant not null Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
-   begin
-      --  in GNAT runtime, tasking will be shutdown here
-      Notify_Exception (Current, True);
-   end Notify_Unhandled_Exception;
-
    --  (a-elchha.ads)
    procedure Last_Chance_Handler (
       Current : Exception_Occurrence);
@@ -98,17 +73,18 @@ package body System.Unwind.Raising is
    end Last_Chance_Handler;
 
    --  (a-exextr.adb)
-   procedure Unhandled_Exception_Terminate;
+   procedure Unhandled_Exception_Terminate (
+      Current : not null Exception_Occurrence_Access);
    pragma No_Return (Unhandled_Exception_Terminate);
-   procedure Unhandled_Exception_Terminate is
-      Current : constant not null Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+   procedure Unhandled_Exception_Terminate (
+      Current : not null Exception_Occurrence_Access) is
    begin
       Last_Chance_Handler (Current.all);
    end Unhandled_Exception_Terminate;
 
    --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
    procedure Set_Exception_Message (
+      X : not null Exception_Occurrence_Access;
       Id : Exception_Data_Access;
       File : access constant Character := null;
       Line : Integer := 0;
@@ -116,22 +92,20 @@ package body System.Unwind.Raising is
       Message : String;
       Stack_Guard : Address);
    procedure Set_Exception_Message (
+      X : not null Exception_Occurrence_Access;
       Id : Exception_Data_Access;
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
       Message : String;
-      Stack_Guard : Address)
-   is
-      Current : constant not null Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+      Stack_Guard : Address) is
    begin
       Separated.Setup_Exception (
-         Current,
-         Current,
+         X,
+         X,
          False,
-         Stack_Guard => Null_Address);
-      Current.Id := Id;
+         Stack_Guard => Stack_Guard);
+      X.Id := Id;
       declare
          Last : Natural := 0;
       begin
@@ -143,16 +117,16 @@ package body System.Unwind.Raising is
                I : Positive := 1;
             begin
                loop
-                  if Last >= Current.Msg'Last then
+                  if Last >= X.Msg'Last then
                      exit;
                   end if;
                   if F (I) = Character'Val (0) then
                      Last := Last + 1;
-                     Current.Msg (Last) := ':';
+                     X.Msg (Last) := ':';
                      exit;
                   end if;
                   Last := Last + 1;
-                  Current.Msg (Last) := F (I);
+                  X.Msg (Last) := F (I);
                   I := I + 1;
                end loop;
             end;
@@ -163,12 +137,12 @@ package body System.Unwind.Raising is
             begin
                Formatting.Image (
                   Formatting.Unsigned (Line),
-                  Current.Msg (Last + 1 .. Current.Msg'Last),
+                  X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
-               if not Error and then Last < Current.Msg'Last then
+               if not Error and then Last < X.Msg'Last then
                   Last := Last + 1;
-                  Current.Msg (Last) := ':';
+                  X.Msg (Last) := ':';
                end if;
             end;
          end if;
@@ -178,40 +152,40 @@ package body System.Unwind.Raising is
             begin
                Formatting.Image (
                   Formatting.Unsigned (Column),
-                  Current.Msg (Last + 1 .. Current.Msg'Last),
+                  X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
-               if not Error and then Last < Current.Msg'Last then
+               if not Error and then Last < X.Msg'Last then
                   Last := Last + 1;
-                  Current.Msg (Last) := ':';
+                  X.Msg (Last) := ':';
                end if;
             end;
          end if;
          if (File /= null or else Line > 0 or else Column > 0)
-            and then Last < Current.Msg'Last
+            and then Last < X.Msg'Last
          then
             Last := Last + 1;
-            Current.Msg (Last) := ' ';
+            X.Msg (Last) := ' ';
          end if;
          declare
             Copy_Length : constant Natural := Integer'Min (
                Message'Length,
-               Current.Msg'Length - Last);
+               X.Msg'Length - Last);
          begin
-            Current.Msg (Last + 1 .. Last + Copy_Length) :=
+            X.Msg (Last + 1 .. Last + Copy_Length) :=
             Message (Message'First .. Message'First + Copy_Length - 1);
             Last := Last + Copy_Length;
          end;
-         if Last < Current.Msg'Last then
+         if Last < X.Msg'Last then
             --  no necessary
-            Current.Msg (Last + 1) := Character'Val (0);
+            X.Msg (Last + 1) := Character'Val (0);
          end if;
-         Current.Msg_Length := Last;
+         X.Msg_Length := Last;
       end;
-      Current.Cleanup_Flag := False;
-      Current.Exception_Raised := False;
-      Current.Pid := Local_Partition_ID;
-      Current.Num_Tracebacks := 0;
+      X.Cleanup_Flag := False;
+      X.Exception_Raised := False;
+      X.Pid := Local_Partition_ID;
+      X.Num_Tracebacks := 0;
    end Set_Exception_Message;
 
    --  equivalent to Raise_Current_Excep (a-except-2005.adb)
@@ -253,9 +227,14 @@ package body System.Unwind.Raising is
 
    procedure Raise_Exception_No_Defer (
       E : not null Exception_Data_Access;
-      Message : String := "") is
+      Message : String := "")
+   is
+      Current : constant not null Exception_Occurrence_Access :=
+         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
    begin
-      Set_Exception_Message (E,
+      Set_Exception_Message (
+         Current,
+         E,
          null,
          Message => Message,
          Stack_Guard => Null_Address);
@@ -284,9 +263,13 @@ package body System.Unwind.Raising is
       Line : Integer := 0;
       Column : Integer := 0;
       Message : String := "";
-      Stack_Guard : Address := Null_Address) is
+      Stack_Guard : Address := Null_Address)
+   is
+      Current : constant not null Exception_Occurrence_Access :=
+         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
    begin
       Set_Exception_Message (
+         Current,
          E,
          File,
          Line,

@@ -211,7 +211,12 @@ package body Separated is
    begin
       pragma Check (Trace, Debug.Put ("enter"));
       if GCC_Exception.N_Cleanups_To_Trigger = 0 then
-         Unhandled_Exception_Terminate;
+         declare
+            Current : constant not null Exception_Occurrence_Access :=
+               Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+         begin
+            Unhandled_Exception_Terminate (Current);
+         end;
       end if;
       pragma Check (Trace, Debug.Put ("leave"));
       return C.unwind.URC_NO_REASON;
@@ -238,11 +243,22 @@ package body Separated is
       GCC_Exception.N_Cleanups_To_Trigger := 0;
       if Call_Chain'Address /= Null_Address then
          Call_Chain (Current);
+         declare
+            function Report return Boolean;
+            function Report return Boolean is
+            begin
+               Report_Traceback (Current.all);
+               return True;
+            end Report;
+         begin
+            pragma Check (Trace, Debug.Put ("raising..."));
+            pragma Check (Trace, Report);
+         end;
       end if;
       Dummy := C.unwind.Unwind_RaiseException (
          GCC_Exception.Header'Unchecked_Access);
       --  it does not come here, if handler was found
-      Notify_Unhandled_Exception;
+      --  in GNAT runtime, calling Notify_Unhandled_Exception here
       if GCC_Exception.N_Cleanups_To_Trigger /= 0 then
          pragma Check (Trace, Debug.Put ("finally"));
          --  invoke finally handlers
@@ -251,7 +267,12 @@ package body Separated is
             CleanupUnwind_Handler'Access,
             C.void_ptr (Null_Address));
       end if;
-      Unhandled_Exception_Terminate;
+      declare
+         Current : constant not null Exception_Occurrence_Access :=
+            Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+      begin
+         Unhandled_Exception_Terminate (Current);
+      end;
    end Propagate_Exception;
 
 end Separated;
