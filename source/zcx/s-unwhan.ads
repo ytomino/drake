@@ -17,7 +17,7 @@ package System.Unwind.Handling is
    --  body of struct Unwind_Exception (a-exexpr-gcc.adb)
    type GNAT_GCC_Exception is record
       Header : aliased C.unwind.struct_Unwind_Exception;
-      Occurrence : Exception_Occurrence;
+      Occurrence : aliased Exception_Occurrence;
       Stack_Guard : Address; -- for skipping on stack overflow
       --  shortcut for phase2 (see exception.c in libobjc)
       landing_pad : C.unwind.Unwind_Ptr;

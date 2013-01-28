@@ -22,7 +22,8 @@ package body Separated is
    --  (a-exexpr-gcc.adb)
    --  set current occurrence or Foreign_Exception (a-exexpr-gcc.adb)
    procedure Setup_Current_Excep (
-      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access);
+      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
+      Current : out Exception_Occurrence_Access);
 
    --  hook for entering an exception handler (a-exexpr-gcc.adb)
    procedure Begin_Handler (
@@ -48,7 +49,7 @@ package body Separated is
    --  (a-exexpr-gcc.adb)
    procedure GNAT_GCC_Exception_Cleanup (
       Reason : C.unwind.Unwind_Reason_Code;
-      Excep : access C.unwind.struct_Unwind_Exception);
+      Exception_Object : access C.unwind.struct_Unwind_Exception);
    pragma Convention (C, GNAT_GCC_Exception_Cleanup);
 
    --  (a-exexpr-gcc.adb)
@@ -64,29 +65,32 @@ package body Separated is
    --  implementation
 
    procedure Setup_Current_Excep (
-      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access)
-   is
-      Excep : constant Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
+      Current : out Exception_Occurrence_Access) is
    begin
+      Current :=
+         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
       if GCC_Exception.Header.exception_class
          = Handling.GNAT_Exception_Class
       then
-         Excep.all := GCC_Exception.Occurrence;
+         Current.all := GCC_Exception.Occurrence;
       else
-         Excep.Id := Foreign_Exception'Access;
-         Excep.Msg_Length := 0;
-         Excep.Exception_Raised := True;
-         Excep.Pid := Local_Partition_ID;
-         Excep.Num_Tracebacks := 0;
+         Current.Id := Foreign_Exception'Access;
+         Current.Msg_Length := 0;
+         Current.Exception_Raised := True;
+         Current.Pid := Local_Partition_ID;
+         Current.Num_Tracebacks := 0;
       end if;
    end Setup_Current_Excep;
 
    procedure Begin_Handler (
-      GCC_Exception : Handling.GNAT_GCC_Exception_Access) is
+      GCC_Exception : Handling.GNAT_GCC_Exception_Access)
+   is
+      Current : Exception_Occurrence_Access;
+      pragma Unreferenced (Current);
    begin
       pragma Check (Trace, Debug.Put ("enter"));
-      Setup_Current_Excep (GCC_Exception);
+      Setup_Current_Excep (GCC_Exception, Current);
       pragma Check (Trace, Debug.Put ("leave"));
    end Begin_Handler;
 
@@ -119,8 +123,12 @@ package body Separated is
    begin
       pragma Check (Trace, Debug.Put ("enter"));
       if Phases >= C.unwind.UA_END_OF_STACK then
-         Setup_Current_Excep (To_GNAT (Exception_Object));
-         Unhandled_Exception_Terminate;
+         declare
+            Current : Exception_Occurrence_Access;
+         begin
+            Setup_Current_Excep (To_GNAT (Exception_Object), Current);
+            Unhandled_Exception_Terminate (Current);
+         end;
       end if;
       pragma Check (Trace, Debug.Put ("leave"));
       return C.unwind.URC_NO_REASON;
@@ -128,10 +136,10 @@ package body Separated is
 
    procedure GNAT_GCC_Exception_Cleanup (
       Reason : C.unwind.Unwind_Reason_Code;
-      Excep : access C.unwind.struct_Unwind_Exception)
+      Exception_Object : access C.unwind.struct_Unwind_Exception)
    is
       pragma Unreferenced (Reason);
-      Copy : Handling.GNAT_GCC_Exception_Access := To_GNAT (Excep);
+      Copy : Handling.GNAT_GCC_Exception_Access := To_GNAT (Exception_Object);
    begin
       pragma Check (Trace, Debug.Put ("enter"));
       Handling.Free (Copy);
@@ -139,24 +147,36 @@ package body Separated is
    end GNAT_GCC_Exception_Cleanup;
 
    --  (a-exexpr-gcc.adb)
-   procedure Propagate_Exception (Stack_Guard : Address) is
-      Excep : constant Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+   procedure Propagate_Exception (
+      X : Exception_Occurrence;
+      Stack_Guard : Address)
+   is
       GCC_Exception : Handling.GNAT_GCC_Exception_Access;
    begin
-      if Call_Chain'Address /= Null_Address then
-         Call_Chain (Excep);
-      end if;
       GCC_Exception := new Handling.GNAT_GCC_Exception'(
          Header => (
             exception_class => Handling.GNAT_Exception_Class,
             exception_cleanup => GNAT_GCC_Exception_Cleanup'Access,
             private_1 => 0,
             private_2 => 0),
-         Occurrence => Excep.all,
+         Occurrence => X,
          Stack_Guard => Stack_Guard,
          landing_pad => <>,
          ttype_filter => <>);
+      if Call_Chain'Address /= Null_Address then
+         Call_Chain (GCC_Exception.Occurrence'Access);
+         declare
+            function Report return Boolean;
+            function Report return Boolean is
+            begin
+               Report_Traceback (GCC_Exception.Occurrence);
+               return True;
+            end Report;
+         begin
+            pragma Check (Trace, Debug.Put ("raising..."));
+            pragma Check (Trace, Report);
+         end;
+      end if;
       Propagate_GCC_Exception (GCC_Exception);
    end Propagate_Exception;
 
@@ -167,14 +187,17 @@ package body Separated is
       pragma Unreferenced (Dummy);
    begin
       Dummy := C.unwind.Unwind_RaiseException (GCC_Exception.Header'Access);
-      Setup_Current_Excep (GCC_Exception);
-      Notify_Unhandled_Exception;
+      --  in GNAT runtime, calling Notify_Unhandled_Exception here
       Dummy := C.unwind.Unwind_ForcedUnwind (
          GCC_Exception.Header'Access,
          CleanupUnwind_Handler'Access,
          C.void_ptr (Null_Address));
-      Setup_Current_Excep (GCC_Exception);
-      Unhandled_Exception_Terminate;
+      declare
+         Current : Exception_Occurrence_Access;
+      begin
+         Setup_Current_Excep (GCC_Exception, Current);
+         Unhandled_Exception_Terminate (Current);
+      end;
    end Propagate_GCC_Exception;
 
    procedure Reraise_GCC_Exception (
