@@ -8,7 +8,7 @@ package System.Unwind.Raising is
 
    --  equivalent to Raise_With_Location_And_Msg (a-except-2005.adb)
    procedure Raise_Exception (
-      E : not null Standard_Library.Exception_Data_Ptr;
+      E : not null Exception_Data_Access;
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
@@ -18,7 +18,7 @@ package System.Unwind.Raising is
 
    --  equivalent to Raise_From_Signal_Handler (a-except-2005.adb)
    procedure Raise_From_Signal_Handler (
-      E : not null Standard_Library.Exception_Data_Ptr;
+      E : not null Exception_Data_Access;
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
@@ -28,7 +28,7 @@ package System.Unwind.Raising is
 
    --  implementation for raising (a-except-2005.adb)
    procedure Raise_E (
-      E : Standard_Library.Exception_Data_Ptr;
+      E : Exception_Data_Access;
       Message : String);
    pragma No_Return (Raise_E);
    pragma Export (Ada, Raise_E, "ada__exceptions__raise_exception");

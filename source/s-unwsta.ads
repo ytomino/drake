@@ -1,13 +1,12 @@
 pragma License (Unrestricted);
 --  runtime unit
-with System.Standard_Library;
 package System.Unwind.Standard is
    pragma Preelaborate;
 
    --  required to use Standard.Constraint_Error / Numeric_Error (s-stalib.ads)
    Constraint_Error_Name : aliased constant String :=
       "CONSTRAINT_ERROR" & Character'Val (0);
-   Constraint_Error : aliased constant Standard_Library.Exception_Data := (
+   Constraint_Error : aliased constant Exception_Data := (
       Not_Handled_By_Others => False,
       Lang => 'A',
       Name_Length => Constraint_Error_Name'Length,
@@ -20,7 +19,7 @@ package System.Unwind.Standard is
    --  required to use Standard.Program_Error (s-stalib.ads)
    Program_Error_Name : aliased constant String :=
       "PROGRAM_ERROR" & Character'Val (0);
-   Program_Error : aliased constant Standard_Library.Exception_Data := (
+   Program_Error : aliased constant Exception_Data := (
       Not_Handled_By_Others => False,
       Lang => 'A',
       Name_Length => Program_Error_Name'Length,
@@ -33,7 +32,7 @@ package System.Unwind.Standard is
    --  required to use Standard.Storage_Error (s-stalib.ads)
    Storage_Error_Name : aliased constant String :=
       "STORAGE_ERROR" & Character'Val (0);
-   Storage_Error : aliased constant Standard_Library.Exception_Data := (
+   Storage_Error : aliased constant Exception_Data := (
       Not_Handled_By_Others => False,
       Lang => 'A',
       Name_Length => Storage_Error_Name'Length,
@@ -46,7 +45,7 @@ package System.Unwind.Standard is
    --  required to use Standard.Tasking_Error (s-stalib.ads)
    Tasking_Error_Name : aliased constant String :=
       "TASKING_ERROR" & Character'Val (0);
-   Tasking_Error : aliased constant Standard_Library.Exception_Data := (
+   Tasking_Error : aliased constant Exception_Data := (
       Not_Handled_By_Others => False,
       Lang => 'A',
       Name_Length => Tasking_Error_Name'Length,
@@ -59,7 +58,7 @@ package System.Unwind.Standard is
    --  required to use Standard'Abort_Signal (s-stalib.ads)
    Abort_Signal_Name : aliased constant String :=
       "_ABORT_SIGNAL" & Character'Val (0);
-   Abort_Signal : aliased constant Standard_Library.Exception_Data := (
+   Abort_Signal : aliased constant Exception_Data := (
       Not_Handled_By_Others => True,
       Lang => 'A',
       Name_Length => Abort_Signal_Name'Length,

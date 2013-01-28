@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  with Ada.Streams;
-private with System.Standard_Library;
 private with System.Unwind;
 package Ada.Exceptions is
    pragma Preelaborate;
@@ -57,7 +56,7 @@ package Ada.Exceptions is
 
 private
 
-   type Exception_Id is new System.Standard_Library.Exception_Data_Ptr;
+   type Exception_Id is new System.Unwind.Exception_Data_Access;
 
    Null_Id : constant Exception_Id := null;
 

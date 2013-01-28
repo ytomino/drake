@@ -11,7 +11,7 @@ package body Separated is
    use type C.unsigned_long; -- Unwind_Ptr and Unwind_Exception_Class (64bit)
    use type C.unsigned_long_long; -- Unwind_Exception_Class (32bit)
 
-   Foreign_Exception : aliased Standard_Library.Exception_Data;
+   Foreign_Exception : aliased Exception_Data;
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
 

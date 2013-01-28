@@ -1,6 +1,5 @@
 with Ada.Unchecked_Conversion;
 with System.Native_Stack;
-with System.Standard_Library;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
 with C.signal;
@@ -65,7 +64,7 @@ package body System.Termination is
       subtype Fixed_String is String (Positive);
       Message : Fixed_String;
       for Message'Address use C_Message.all'Address;
-      Eexception_Id : Standard_Library.Exception_Data_Ptr;
+      Eexception_Id : Unwind.Exception_Data_Access;
       Stack_Guard : Address := Null_Address;
       Dummy : Address;
    begin
