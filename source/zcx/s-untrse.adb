@@ -62,7 +62,7 @@ package body Separated is
    end Unwind_Trace;
 
    procedure Get_Traceback (
-      Traceback : Tracebacks_Array;
+      Traceback : out Tracebacks_Array;
       Length : out Natural;
       Exclude_Min : Address;
       Exclude_Max : Address;
