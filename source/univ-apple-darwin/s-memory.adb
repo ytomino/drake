@@ -1,6 +1,5 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
-with System.Debug;
 with System.Unwind.Raising; -- raising exception in compiler unit
 with System.Unwind.Standard;
 with C.stdlib;
@@ -10,6 +9,13 @@ package body System.Memory is
    pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.void_ptr;
+
+   procedure Runtime_Error (
+      Condition : Boolean;
+      S : String;
+      Source_Location : String := Ada.Debug.Source_Location;
+      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity);
+   pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
 
    Heap_Exhausted : constant String := "heap exhausted";
 
@@ -70,7 +76,7 @@ package body System.Memory is
       function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Mapped_Address : C.void_ptr;
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Mapped_Address := C.sys.mman.mmap (
          C.void_ptr (Null_Address),
          C.size_t (Size),
@@ -85,6 +91,7 @@ package body System.Memory is
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
       return Cast (Mapped_Address);
    end Map;
 
@@ -97,7 +104,7 @@ package body System.Memory is
       function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Mapped_Address : C.void_ptr;
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Mapped_Address := C.sys.mman.mmap (
          C.void_ptr (P),
          C.size_t (Size),
@@ -112,15 +119,17 @@ package body System.Memory is
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
       return Cast (Mapped_Address);
    end Map;
 
    procedure Unmap (P : Address; Size : Storage_Elements.Storage_Count) is
       R : C.signed_int;
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       R := C.sys.mman.munmap (C.void_ptr (P), C.size_t (Size));
-      pragma Debug (Debug.Runtime_Error (R < 0, "failed to unmap"));
+      pragma Debug (Runtime_Error (R < 0, "failed to unmap"));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unmap;
 
 end System.Memory;

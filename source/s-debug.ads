@@ -22,6 +22,7 @@ package System.Debug is
       Source_Location : String;
       Enclosing_Entity : String)
       return Boolean;
+   pragma Export (Ada, Default_Put, "__drake_debug_default_put");
 
    type Put_Handler is access function (
       S : String;
@@ -31,6 +32,7 @@ package System.Debug is
 
    Put_Hook : not null Put_Handler := Default_Put'Access;
    pragma Suppress (Access_Check, Put_Hook);
+   pragma Export (Ada, Put_Hook, "__drake_debug_put_hook");
 
    procedure Put (
       S : String;
@@ -49,6 +51,7 @@ package System.Debug is
       S : String;
       Source_Location : String := Debug.Source_Location;
       Enclosing_Entity : String := Debug.Enclosing_Entity);
+   pragma Export (Ada, Runtime_Error, "__drake_runtime_error");
 
 private
 

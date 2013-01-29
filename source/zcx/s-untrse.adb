@@ -1,6 +1,5 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
-with System.Debug;
 with C.unwind;
 separate (System.Unwind.Traceback)
 package body Separated is
@@ -32,13 +31,13 @@ package body Separated is
       D : Data;
       for D'Address use Cast (Argument);
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       if D.Skip_Frames > 0 then
          D.Skip_Frames := D.Skip_Frames - 1;
-         pragma Check (Trace, Debug.Put ("skip"));
+         pragma Check (Trace, Ada.Debug.Put ("leave, skip"));
          return C.unwind.URC_NO_REASON;
       elsif D.Length.all > D.Traceback'Last then
-         pragma Check (Trace, Debug.Put ("over"));
+         pragma Check (Trace, Ada.Debug.Put ("leave, over"));
          return C.unwind.URC_NORMAL_STOP;
       else
          declare
@@ -49,14 +48,15 @@ package body Separated is
                Cast (C.unwind.Unwind_GetIP (Context));
          begin
             if IP >= D.Exclude_Min and then IP <= D.Exclude_Max then
-               pragma Check (Trace, Debug.Put ("exclude"));
+               pragma Check (Trace, Ada.Debug.Put ("exclude"));
                null;
             else
                D.Traceback (D.Traceback'First + D.Length.all) := IP;
                D.Length.all := D.Length.all + 1;
-               pragma Check (Trace, Debug.Put ("fill"));
+               pragma Check (Trace, Ada.Debug.Put ("fill"));
             end if;
          end;
+         pragma Check (Trace, Ada.Debug.Put ("leave"));
          return C.unwind.URC_NO_REASON;
       end if;
    end Unwind_Trace;

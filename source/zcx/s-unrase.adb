@@ -89,22 +89,23 @@ package body Separated is
       Current : Exception_Occurrence_Access;
       pragma Unreferenced (Current);
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Setup_Current_Excep (GCC_Exception, Current);
-      pragma Check (Trace, Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Begin_Handler;
 
    procedure End_Handler (
       GCC_Exception : Handling.GNAT_GCC_Exception_Access) is
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       if GCC_Exception = null then
-         pragma Check (Trace, Debug.Put ("GCC_Exception = null, reraised"));
+         pragma Check (Trace, Ada.Debug.Put (
+            "GCC_Exception = null, reraised"));
          null;
       else
          C.unwind.Unwind_DeleteException (GCC_Exception.Header'Access);
       end if;
-      pragma Check (Trace, Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end End_Handler;
 
    function CleanupUnwind_Handler (
@@ -121,7 +122,7 @@ package body Separated is
       pragma Unreferenced (Context);
       pragma Unreferenced (Argument);
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       if Phases >= C.unwind.UA_END_OF_STACK then
          declare
             Current : Exception_Occurrence_Access;
@@ -130,7 +131,7 @@ package body Separated is
             Unhandled_Exception_Terminate (Current);
          end;
       end if;
-      pragma Check (Trace, Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
       return C.unwind.URC_NO_REASON;
    end CleanupUnwind_Handler;
 
@@ -141,9 +142,9 @@ package body Separated is
       pragma Unreferenced (Reason);
       Copy : Handling.GNAT_GCC_Exception_Access := To_GNAT (Exception_Object);
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Handling.Free (Copy);
-      pragma Check (Trace, Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end GNAT_GCC_Exception_Cleanup;
 
    --  (a-exexpr-gcc.adb)
@@ -173,7 +174,7 @@ package body Separated is
                return True;
             end Report;
          begin
-            pragma Check (Trace, Debug.Put ("raising..."));
+            pragma Check (Trace, Ada.Debug.Put ("raising..."));
             pragma Check (Trace, Report);
          end;
       end if;
