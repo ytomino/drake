@@ -8,6 +8,13 @@ package body Separated is
    use type Handling.GNAT_GCC_Exception_Access;
    use type C.unwind.Unwind_Ptr;
 
+   procedure Runtime_Error (
+      Condition : Boolean;
+      S : String;
+      Source_Location : String := Ada.Debug.Source_Location;
+      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity);
+   pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
+
    --  (a-exexpr-gcc.adb)
    Setup_Key : constant := 16#DEAD#;
 
@@ -74,9 +81,9 @@ package body Separated is
       Prev : Handling.GNAT_GCC_Exception_Access := null;
       Iter : Exception_Occurrence_Access := Current;
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       loop
-         pragma Debug (Debug.Runtime_Error (
+         pragma Debug (Runtime_Error (
             Iter.Private_Data = Null_Address,
             "Iter.Private_Data = null"));
          declare
@@ -88,36 +95,36 @@ package body Separated is
          begin
             if I_GCC_Exception = GCC_Exception then
                if Prev = null then -- top(Current)
-                  pragma Check (Trace, Debug.Put ("Prev = null"));
+                  pragma Check (Trace, Ada.Debug.Put ("Prev = null"));
                   Iter := I_GCC_Exception.Next_Exception;
                   if Iter = null then
-                     pragma Check (Trace, Debug.Put ("Iter = null"));
+                     pragma Check (Trace, Ada.Debug.Put ("Iter = null"));
                      Current.Private_Data := Null_Address;
                   else
-                     pragma Check (Trace, Debug.Put ("Iter /= null"));
+                     pragma Check (Trace, Ada.Debug.Put ("Iter /= null"));
                      Save_Occurrence_And_Private (
                         Current.all,
                         Iter.all);
-                     pragma Check (Trace, Debug.Put ("free eo"));
+                     pragma Check (Trace, Ada.Debug.Put ("free eo"));
                      Free (Iter);
                   end if;
                else
                   Prev.Next_Exception := I_GCC_Exception.Next_Exception;
-                  pragma Check (Trace, Debug.Put ("free eo"));
+                  pragma Check (Trace, Ada.Debug.Put ("free eo"));
                   Free (Iter);
                end if;
-               pragma Check (Trace, Debug.Put ("free obj"));
+               pragma Check (Trace, Ada.Debug.Put ("free obj"));
                Handling.Free (I_GCC_Exception);
                exit; -- ok
             end if;
-            pragma Debug (Debug.Runtime_Error (
+            pragma Debug (Runtime_Error (
                I_GCC_Exception.Next_Exception = null,
                "I_GCC_Exception.Next_Exception = null"));
             Prev := I_GCC_Exception;
             Iter := I_GCC_Exception.Next_Exception;
          end;
       end loop;
-      pragma Check (Trace, Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end End_Handler;
 
    function Is_Setup_And_Not_Propagated (
@@ -153,7 +160,7 @@ package body Separated is
       Stack_Guard : Address) is
    begin
       if Reraised or else not Is_Setup_And_Not_Propagated (Excep) then
-         pragma Check (Trace, Debug.Put ("new obj"));
+         pragma Check (Trace, Ada.Debug.Put ("new obj"));
          declare
             GCC_Exception : constant
                not null Handling.GNAT_GCC_Exception_Access :=
@@ -172,7 +179,7 @@ package body Separated is
             Next : Exception_Occurrence_Access;
          begin
             if Current.Private_Data /= Null_Address then
-               pragma Check (Trace, Debug.Put ("new eo"));
+               pragma Check (Trace, Ada.Debug.Put ("new eo"));
                Next := new Exception_Occurrence;
                Save_Occurrence_And_Private (Next.all, Current.all);
                GCC_Exception.Next_Exception := Next;
@@ -209,7 +216,7 @@ package body Separated is
       GCC_Exception : aliased Handling.GNAT_GCC_Exception;
       for GCC_Exception'Address use Exception_Object.all'Address;
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       if GCC_Exception.N_Cleanups_To_Trigger = 0 then
          declare
             Current : constant not null Exception_Occurrence_Access :=
@@ -218,7 +225,7 @@ package body Separated is
             Unhandled_Exception_Terminate (Current);
          end;
       end if;
-      pragma Check (Trace, Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
       return C.unwind.URC_NO_REASON;
    end CleanupUnwind_Handler;
 
@@ -251,7 +258,7 @@ package body Separated is
                return True;
             end Report;
          begin
-            pragma Check (Trace, Debug.Put ("raising..."));
+            pragma Check (Trace, Ada.Debug.Put ("raising..."));
             pragma Check (Trace, Report);
          end;
       end if;
@@ -260,7 +267,7 @@ package body Separated is
       --  it does not come here, if handler was found
       --  in GNAT runtime, calling Notify_Unhandled_Exception here
       if GCC_Exception.N_Cleanups_To_Trigger /= 0 then
-         pragma Check (Trace, Debug.Put ("finally"));
+         pragma Check (Trace, Ada.Debug.Put ("finally"));
          --  invoke finally handlers
          Dummy := C.unwind.Unwind_ForcedUnwind (
             GCC_Exception.Header'Unchecked_Access,

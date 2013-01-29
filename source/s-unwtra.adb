@@ -7,7 +7,7 @@ package body System.Unwind.Traceback is
 
       --  equivalent to __gnat_backtrace (tracebak.c/tb-gcc.c)
       procedure Get_Traceback (
-         Traceback : Tracebacks_Array;
+         Traceback : out Tracebacks_Array;
          Length : out Natural;
          Exclude_Min : Address;
          Exclude_Max : Address;

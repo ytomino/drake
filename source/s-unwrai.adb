@@ -1,5 +1,4 @@
 pragma Check_Policy (Trace, Off);
-with System.Debug;
 with System.Formatting;
 with System.Soft_Links;
 with System.Termination;
@@ -46,7 +45,7 @@ package body System.Unwind.Raising is
       Full_Name : Fixed_String;
       for Full_Name'Address use Current.Id.Full_Name;
    begin
-      pragma Check (Trace, Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       --  in GNAT runtime, task termination handler will be unset
       --  and Standard_Library.AdaFinal will be called here
       Termination.Error_New_Line;
@@ -251,7 +250,7 @@ package body System.Unwind.Raising is
          True,
          Stack_Guard => Null_Address);
       Save_Occurrence_No_Private (Current.all, X);
-      pragma Check (Trace, Debug.Put ("reraising..."));
+      pragma Check (Trace, Ada.Debug.Put ("reraising..."));
       Raise_Current_Exception (X.Id);
    end Reraise_No_Defer;
 
