@@ -66,13 +66,6 @@ ifeq ($(WITHS),)
 WITHS=0
 endif
 
-# if the format is ELF, ld may accept --gc-sections
-ifneq ($(findstring freebsd,$(TARGET)),)
-ELF=1
-else
-ELF=0
-endif
-
 PHASE=
 
 RTSDIR=.
@@ -81,28 +74,37 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib/build
 
-ifneq ($(shell grep -i "ZCX_By_Default.*True" $(GCCLIBDIR)/adainclude/system.ads),)
+SUBDIRS=ada83 calendar containers directories environment image interfaces numerics primitives streams strings tasking textio $(EH)
+
+ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
+TARGETSUBDIR=univ-apple-darwin
+OBJFMT=MACHO
+else
+ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
+EH=zcx
+TARGETSUBDIR=univ-pc-freebsd
+OBJFMT=ELF
+else
+ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
+EH=zcx
+TARGETSUBDIR=univ-pc-linux-gnu
+SUBDIRS:=$(filter-out ada83 calendar directories numerics streams tasking textio,$(SUBDIRS))
+OBJFMT=ELF
+else
+ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
+ifneq ($(findstring x86_64,$(TARGET)),)
+EH=seh
 else
 EH=sjlj
 endif
-
-SUBDIRS=ada83 calendar containers directories environment image interfaces numerics primitives streams strings tasking textio $(EH)
-
-ifneq ($(findstring darwin,$(TARGET)),)
-TARGETSUBDIR=univ-apple-darwin
-else
-ifneq ($(findstring freebsd,$(TARGET)),)
-TARGETSUBDIR=univ-pc-freebsd
-else
-ifneq ($(findstring linux-gnu,$(TARGET)),)
-TARGETSUBDIR=univ-pc-linux-gnu
-SUBDIRS:=$(filter-out ada83 calendar directories numerics streams tasking textio,$(SUBDIRS))
-else
-ifneq ($(findstring mingw,$(TARGET)),)
-TARGETSUBDIR=univ-w64-mingw
-else
+TARGETSUBDIR=univ-w64-mingw32
+SUBDIRS:=$(filter-out ada83 calendar environment directories numerics streams tasking textio,$(SUBDIRS))
+OBJFMT=COFF
+else # others
+EH=zcx
 TARGETSUBDIR=$(TARGET)
+OBJFMT=
 endif
 endif
 endif
@@ -132,7 +134,11 @@ LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 ifeq ($(EH),zcx)
 EH_OBJS=c-unwind_pe.o
 else
+ifeq ($(EH),sjlj)
+EH_OBJS=c-unwind_pe.o
+else
 EH_OBJS=
+endif
 endif
 
 COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
@@ -141,11 +147,13 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-debug.o \
 	s-exctab.o \
 	s-format.o \
+	s-maccod.o \
 	s-memory.o \
 	s-natsta.o \
 	s-shaloc.o \
 	s-soflin.o \
 	s-stalib.o \
+	s-stoele.o \
 	s-termin.o \
 	s-unstyp.o \
 	s-unwhan.o \
@@ -153,6 +161,8 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-unwrai.o \
 	s-unwsta.o \
 	s-unwtra.o)
+
+# s-maccod.o and s-stoele.o are also standard library
 
 ifneq ($(WITHA),0)
 ALL_OBJS=$(addprefix $(BUILDDIR)/,\
@@ -181,7 +191,7 @@ CFLAGS_DEBUG=-g -gnata
 CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer
 else
 CFLAGS_DEBUG=
-ifneq ($(ELF),0)
+ifeq ($(OBJFMT),ELF)
 CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn -ffunction-sections -fdata-sections
 else
 CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn
@@ -229,7 +239,11 @@ $(BUILDDIR):
 	mkdir $@
 
 $(RTSDIR)/adainclude/system.ads:
+ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
+	sed -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := True;/' $(GCCLIBDIR)/adainclude/system.ads > $@
+else
 	ln -s $(GCCLIBDIR)/adainclude/system.ads $@
+endif
 
 $(RTSDIR)/adainclude/%.ads: %.ads
 	$(INSTALL) $(abspath $<) $@
@@ -388,6 +402,11 @@ ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)
 $(IMPORTDIR)/c.ads: import.h
 	headmaster -t ada -p -D $(IMPORTDIR) -gcc="$(GCC)" $<
 endif
+
+# separated
+
+$(BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
+$(BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
 
 # nested
 

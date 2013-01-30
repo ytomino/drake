@@ -264,14 +264,14 @@ package body Separated is
             pragma Check (Trace, Report);
          end;
       end if;
-      Dummy := C.unwind.Unwind_RaiseException (
+      Dummy := C.unwind.Unwind_SjLj_RaiseException (
          GCC_Exception.Header'Unchecked_Access);
       --  it does not come here, if handler was found
       --  in GNAT runtime, calling Notify_Unhandled_Exception here
       if GCC_Exception.N_Cleanups_To_Trigger /= 0 then
          pragma Check (Trace, Ada.Debug.Put ("finally"));
          --  invoke finally handlers
-         Dummy := C.unwind.Unwind_ForcedUnwind (
+         Dummy := C.unwind.Unwind_SjLj_ForcedUnwind (
             GCC_Exception.Header'Unchecked_Access,
             CleanupUnwind_Handler'Access,
             C.void_ptr (Null_Address));

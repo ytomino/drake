@@ -1,6 +1,5 @@
 -- stack trace must be shown with gnatbind -E
-with Ada;
-with Unchecked_Conversion; -- renamed ver
+with Ada.Unchecked_Conversion;
 with System.Formatting;
 with System.Machine_Code;
 with System.Storage_Elements;
@@ -10,7 +9,7 @@ procedure signal is
 	CW : aliased Interfaces.Unsigned_16 := 0;
 	type T is access Integer;
 	function Cast is
-		new Unchecked_Conversion (System.Storage_Elements.Integer_Address, T);
+		new Ada.Unchecked_Conversion (System.Storage_Elements.Integer_Address, T);
 	A : T := Cast (12345678);
 	X : Integer := 10;
 	Y : Integer := 20;

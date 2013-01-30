@@ -102,9 +102,14 @@ procedure ext_doc is
 							Kind := Extended_Unit;
 							Reference := +Line (Line'First + 25 .. Line'Last);
 							exit;
-						elsif Start_With (Line, "--  runtime") then
+						elsif Start_With (Line, "--  runtime")
+							or else Start_With (Line, "--  optional runtime")
+						then
 							Kind := Runtime_Unit;
-							if Line /= "--  runtime unit" and then not Start_With (Line, "--  runtime unit ") then
+							if Line /= "--  runtime unit"
+								and then not Start_With (Line, "--  runtime unit ")
+								and then Line /= "--  optional runtime unit"
+							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);
 							end if;
