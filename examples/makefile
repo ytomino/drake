@@ -10,7 +10,7 @@ endif
 EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
 
 ifneq ($(findstring linux,$(TARGET)),)
-EXAMPLES:=$(filter-out cal charset cntnr_% cpu delays directories ext_check ext_doc filename fixed floats input2forward mappedio num_complex num_real pkgversion process random_mt19937 random_sfmt signal socket_client stackoverflow storagestream streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
+EXAMPLES:=$(filter-out cal charset cntnr_% cpu delays directories ext_check ext_doc filename fixed floats input2forward mappedio num_complex num_real pkgversion process random_mt19937 random_sfmt socket_client stackoverflow storagestream streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
 endif
 
 ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*)
