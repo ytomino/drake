@@ -5,9 +5,10 @@
 #include <unwind.h> /* exception mechanism of gcc */
 #include <stdint.h> /* included by unwind-pe.h */
 
-#if defined(__linux__)
-#include <limits.h> /* before bits/posix1_lim.h */
+#if defined(__linux__) || defined (__WINNT__)
+#include <limits.h> /* before bits/posix1_lim.h / winuser.h */
 #endif
+
 #if defined(__unix__) || defined(__APPLE__)
 #include <stddef.h>
 #include <errno.h>
@@ -20,7 +21,7 @@
 #include <sys/ucontext.h>
 #include <sys/mman.h> /* low-level memory op */
 #include <unistd.h> /* low-level I/O */
-#include <stdlib.h> /* memory op, abort */
+#include <stdlib.h> /* abort, atexit, lldiv, getenv/setenv and memory op */
 #include <sys/resource.h> /* get CPU time */
 #include <sys/wait.h> /* waitpid */
 #include <pwd.h> /* user info */
@@ -54,26 +55,27 @@
 #if defined(__WINNT__)
 #define UNICODE
 #define WIN32_LEAN_AND_MEAN
-
+#include <basetsd.h>
 /* avoiding circular dependency between windef.h and winnt.h */
-#define CONST const
-#define UCHAR unsigned char
-#define BYTE uint8_t
-#define WORD uint16_t
-#define DWORD uint32_t
-#define PDWORD uint32_t *
-#define WINAPI __stdcall
+#define NT_INCLUDED
+#define SHORT short
+#define LONG long
+#define HANDLE void *
+#define DECLARE_HANDLE(name) \
+	struct name##__ { int unused; }; \
+	typedef struct name##__ *name
+#include <windef.h>
+#undef DECLARE_HANDLE
+#undef HANDLE
+#undef LONG
+#undef SHORT
+#undef NT_INCLUDED
 #include <winnt.h>
-#undef CONST
-#undef UCHAR
-#undef BYTE
-#undef WORD
-#undef DWORD
-#undef PDWORD
-#undef WINAPI
-
-#include <limits.h> /* UINT_MAX */
 #include <windows.h>
+#define RC_INVOKED /* headmaster can not translate some inline functions */
+#include <malloc.h>
+#undef RC_INVOKED
+#include <stdlib.h> /* abort, atexit, lldiv */
 #undef UNICODE
 #undef WIN32_LEAN_AND_MEAN
 #endif

@@ -189,9 +189,10 @@ package body Separated is
       Dummy : C.unwind.Unwind_Reason_Code;
       pragma Unreferenced (Dummy);
    begin
-      Dummy := C.unwind.Unwind_RaiseException (GCC_Exception.Header'Access);
+      Dummy := C.unwind.Unwind_SjLj_RaiseException (
+         GCC_Exception.Header'Access);
       --  in GNAT runtime, calling Notify_Unhandled_Exception here
-      Dummy := C.unwind.Unwind_ForcedUnwind (
+      Dummy := C.unwind.Unwind_SjLj_ForcedUnwind (
          GCC_Exception.Header'Access,
          CleanupUnwind_Handler'Access,
          C.void_ptr (Null_Address));
