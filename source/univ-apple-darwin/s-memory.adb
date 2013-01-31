@@ -30,7 +30,7 @@ package body System.Memory is
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
-            Unwind.Raising.Raise_Exception (
+            Unwind.Raising.Raise_Exception_From_Here_With (
                Unwind.Standard.Storage_Error'Access,
                Message => Heap_Exhausted);
          end if;
@@ -54,7 +54,7 @@ package body System.Memory is
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
-            Unwind.Raising.Raise_Exception (
+            Unwind.Raising.Raise_Exception_From_Here_With (
                Unwind.Standard.Storage_Error'Access,
                Message => Heap_Exhausted);
          end if;
@@ -87,7 +87,7 @@ package body System.Memory is
       if Mapped_Address = C.sys.mman.MAP_FAILED
          and then Raise_On_Error
       then
-         Unwind.Raising.Raise_Exception (
+         Unwind.Raising.Raise_Exception_From_Here_With (
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;
@@ -115,7 +115,7 @@ package body System.Memory is
       if Mapped_Address = C.sys.mman.MAP_FAILED
          and then Raise_On_Error
       then
-         Unwind.Raising.Raise_Exception (
+         Unwind.Raising.Raise_Exception_From_Here_With (
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;

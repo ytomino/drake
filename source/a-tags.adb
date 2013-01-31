@@ -1,4 +1,5 @@
 pragma Check_Policy (Trace, Off);
+with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
 with System.Shared_Locking;
@@ -193,7 +194,9 @@ package body Ada.Tags is
                      end if;
                   end;
                end if;
-               raise Constraint_Error with "invalid interface conversion";
+               Exceptions.Raise_Exception_From_Here (
+                  Constraint_Error'Identity,
+                  Message => "invalid interface conversion");
             end if;
          end;
       end if;

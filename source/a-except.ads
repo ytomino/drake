@@ -24,6 +24,32 @@ package Ada.Exceptions is
    function Exception_Message (X : Exception_Occurrence) return String;
    procedure Reraise_Occurrence (X : Exception_Occurrence);
 
+   procedure Raise_Exception_From_Here_With (
+      E : Exception_Id;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line;
+      Message : String);
+   pragma No_Return (Raise_Exception_From_Here_With);
+   pragma Import (Ada, Raise_Exception_From_Here_With,
+      "__drake_raise_exception_from_here_with");
+
+   --  extended
+   --  Raise_Exception_From_Here raises a new occurrence of the identified
+   --    exception with source location.
+   procedure Raise_Exception_From_Here (
+      E : Exception_Id;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line);
+   pragma No_Return (Raise_Exception_From_Here);
+   pragma Import (Ada, Raise_Exception_From_Here,
+      "__drake_raise_exception_from_here");
+   procedure Raise_Exception_From_Here (
+      E : Exception_Id;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line;
+      Message : String)
+      renames Raise_Exception_From_Here_With;
+
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id;
    function Exception_Name (X : Exception_Occurrence) return String;
