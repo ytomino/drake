@@ -204,16 +204,6 @@ package body System.Unwind.Raising is
 
    package body Separated is separate;
 
-   procedure Raise_Current_Exception (
-      E : not null Exception_Data_Access)
-   is
-      pragma Inspection_Point (E);
-      Current : constant not null Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
-   begin
-      Separated.Propagate_Exception (Current.all, Stack_Guard => Null_Address);
-   end Raise_Current_Exception;
-
    procedure Raise_Exception_No_Defer (
       E : not null Exception_Data_Access;
       File : access constant Character := null;
@@ -226,14 +216,6 @@ package body System.Unwind.Raising is
       Set_Exception_Message (X, E, File, Line, Column, Message);
       Separated.Propagate_Exception (X, Stack_Guard => Null_Address);
    end Raise_Exception_No_Defer;
-
-   procedure Reraise_No_Defer (X : Exception_Occurrence) is
-   begin
-      pragma Check (Trace, Ada.Debug.Put ("reraising..."));
-      Separated.Propagate_Exception (X, Stack_Guard => Null_Address);
-   end Reraise_No_Defer;
-
-   --  end private part in exclusion
 
    procedure Raise_Exception (
       E : not null Exception_Data_Access;
@@ -263,6 +245,22 @@ package body System.Unwind.Raising is
       end if;
       Raise_Exception (Actual_E, Message => Message);
    end Raise_E;
+
+   procedure Raise_Current_Exception (
+      E : not null Exception_Data_Access)
+   is
+      pragma Inspection_Point (E);
+      Current : constant not null Exception_Occurrence_Access :=
+         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+   begin
+      Separated.Propagate_Exception (Current.all, Stack_Guard => Null_Address);
+   end Raise_Current_Exception;
+
+   procedure Reraise_No_Defer (X : Exception_Occurrence) is
+   begin
+      pragma Check (Trace, Ada.Debug.Put ("reraising..."));
+      Separated.Propagate_Exception (X, Stack_Guard => Null_Address);
+   end Reraise_No_Defer;
 
    procedure Reraise (X : Exception_Occurrence) is
    begin
