@@ -1,3 +1,5 @@
+with Ada.Exceptions;
+pragma Warnings (Off, Ada.Exceptions); -- break "pure" rule
 package body Ada.Streams.Block_Transmission is
    pragma Suppress (All_Checks);
    use type Streams.Stream_Element_Offset;
@@ -26,7 +28,7 @@ package body Ada.Streams.Block_Transmission is
                   Item_As (Previous_Last + 1 .. Item_As'Last),
                   Last);
                if Last <= Previous_Last then
-                  raise End_Error;
+                  Exceptions.Raise_Exception_From_Here (End_Error'Identity);
                end if;
             end loop;
          end;
@@ -66,7 +68,7 @@ package body Ada.Streams.Block_Transmission is
       Index_Type'Read (Stream, First);
       Index_Type'Read (Stream, Last);
       if First < Index_Type'First or else Last < Index_Type'Pred (First) then
-         raise Data_Error;
+         Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
       end if;
       return Result : Array_Type (First .. Last) do
          Read (Stream, Result);

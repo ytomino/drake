@@ -1,3 +1,5 @@
+with Ada.Exceptions;
+pragma Warnings (Off, Ada.Exceptions); -- break "pure" rule
 with Ada.Strings;
 with System.UTF_Conversions;
 package body Ada.Characters.Inside.Maps is
@@ -11,7 +13,8 @@ package body Ada.Characters.Inside.Maps is
       From_Length : constant Natural := From'Length;
    begin
       if From_Length /= To'Length then
-         raise Strings.Translation_Error;
+         Exceptions.Raise_Exception_From_Here (
+            Strings.Translation_Error'Identity);
       else
          declare
             Sorted_From : Character_Sequence (1 .. From_Length) := From;
@@ -154,7 +157,8 @@ package body Ada.Characters.Inside.Maps is
                K : constant Positive := J + 1;
             begin
                if From (J) = From (K) then
-                  raise Strings.Translation_Error;
+                  Exceptions.Raise_Exception_From_Here (
+                     Strings.Translation_Error'Identity);
                end if;
                exit when From (J) <= From (K);
                Temp_F := From (J);

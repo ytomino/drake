@@ -1,3 +1,5 @@
+with Ada.Exceptions;
+pragma Warnings (Off, Ada.Exceptions); -- break "pure" rule
 with System.Storage_Elements;
 with System.UTF_Conversions;
 package body Ada.Strings.UTF_Encoding.Conversions is
@@ -407,12 +409,12 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          begin
             From_UTF (Input_Scheme) (Item (I .. Item'Last), Used, Code, E);
             if E then
-               raise Encoding_Error;
+               Exceptions.Raise_Exception_From_Here (Encoding_Error'Identity);
             end if;
             I := Used + 1;
             To_UTF (Output_Scheme) (Code, Result (J .. Result'Last), Last, E);
             if E then
-               raise Encoding_Error;
+               Exceptions.Raise_Exception_From_Here (Encoding_Error'Identity);
             end if;
             J := Last + 1;
          end;
