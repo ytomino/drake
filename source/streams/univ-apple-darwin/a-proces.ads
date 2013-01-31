@@ -50,6 +50,8 @@ package Ada.Processes is
       renames IO_Exceptions.Name_Error;
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames IO_Exceptions.Device_Error;
 
 private
 

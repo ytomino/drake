@@ -1,9 +1,10 @@
 with Ada.Environment_Variables.Inside;
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
-with C.unistd;
+with C.errno;
 with C.spawn;
 with C.stdlib;
+with C.unistd;
 package body Ada.Processes.Inside is
    use type Ada.Exceptions.Exception_Id;
    use type C.char_ptr;
@@ -51,7 +52,7 @@ package body Ada.Processes.Inside is
          New_Child : aliased C.sys.types.pid_t;
          Dummy : C.signed_int;
          pragma Unreferenced (Dummy);
-         Result : C.signed_int;
+         errno : C.signed_int;
       begin
          Split_Argument (C_Command_Line, Arguments);
          Dummy := C.spawn.posix_spawn_file_actions_init (Actions'Access);
@@ -75,7 +76,7 @@ package body Ada.Processes.Inside is
                Error);
          end if;
          if Search_Path then
-            Result := C.spawn.posix_spawnp (
+            errno := C.spawn.posix_spawnp (
                New_Child'Access,
                Arguments (0),
                Actions'Access,
@@ -83,7 +84,7 @@ package body Ada.Processes.Inside is
                Arguments (0)'Access,
                Environment_Block);
          else
-            Result := C.spawn.posix_spawn (
+            errno := C.spawn.posix_spawn (
                New_Child'Access,
                Arguments (0),
                Actions'Access,
@@ -91,11 +92,20 @@ package body Ada.Processes.Inside is
                Arguments (0)'Access,
                Environment_Block);
          end if;
-         if Result < 0 then
-            Exception_Id := Name_Error'Identity;
-         else
-            Child := New_Child;
-         end if;
+         case errno is
+            when 0 => -- success
+               Child := New_Child;
+            when C.errno.E2BIG => -- too long arguments
+               Exception_Id := Constraint_Error'Identity;
+            when C.errno.ENOMEM =>
+               Exception_Id := Storage_Error'Identity;
+            when C.errno.EINVAL => -- file descriptor
+               Exception_Id := Use_Error'Identity;
+            when C.errno.EIO =>
+               Exception_Id := Device_Error'Identity;
+            when others =>
+               Exception_Id := Name_Error'Identity;
+         end case;
       end;
    <<Cleanup>>
       --  restore current directory
