@@ -607,7 +607,7 @@ package body System.Unwind.Raising is
 
    function Triggered_By_Abort return Boolean is
       X : constant not null Exception_Occurrence_Access :=
-         System.Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
    begin
       return X.Id = Standard.Abort_Signal'Access;
    end Triggered_By_Abort;
