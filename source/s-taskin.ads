@@ -51,4 +51,13 @@ package System.Tasking is
    --  equivalent to String_Access (s-taskin.ads)
    type Entry_Name_Access is access all String;
 
+   --  gdb knows below names, but those could not be provided
+--  type Ada_Task_Control_Block;
+--  type Common_ATCB;
+--  type Entry_Call_Record;
+--  Debug.Known_Tasks : array (0 .. 999) of Task_Id;
+--  Debug.First_Task : ???
+--  procedure Restricted.Stages.Task_Wrapper (Self_ID : Task_Id);
+--  type System.Task_Primitives.Private_Data;
+
 end System.Tasking;
