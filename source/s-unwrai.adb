@@ -74,21 +74,26 @@ package body System.Unwind.Raising is
       Last_Chance_Handler (Current.all);
    end Unhandled_Exception_Terminate;
 
+   type Uninitialized_Exception_Occurrence is record
+      X : Exception_Occurrence;
+   end record;
+   pragma Suppress_Initialization (Uninitialized_Exception_Occurrence);
+
    --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
    procedure Set_Exception_Message (
-      X : in out Exception_Occurrence;
       Id : Exception_Data_Access;
       File : access constant Character := null;
-      Line : Integer := 0;
-      Column : Integer := 0;
-      Message : String);
+      Line : Integer;
+      Column : Integer;
+      Message : String;
+      X : in out Exception_Occurrence);
    procedure Set_Exception_Message (
-      X : in out Exception_Occurrence;
       Id : Exception_Data_Access;
       File : access constant Character := null;
-      Line : Integer := 0;
-      Column : Integer := 0;
-      Message : String) is
+      Line : Integer;
+      Column : Integer;
+      Message : String;
+      X : in out Exception_Occurrence) is
    begin
       X.Id := Id;
       declare
@@ -179,7 +184,9 @@ package body System.Unwind.Raising is
    --  gdb knows external name ???
    pragma Export (C, Raise_Current_Exception, "__gnat_raise_nodefer_with_msg");
 
-   --  (a-except-2005.adb)
+   --  not calling Abort_Defer
+
+   --  equivalent to Raise_Exception_No_Defer (a-except-2005.adb)
    procedure Raise_Exception_No_Defer (
       E : not null Exception_Data_Access;
       File : access constant Character := null;
@@ -190,6 +197,15 @@ package body System.Unwind.Raising is
 
    procedure Reraise_No_Defer (X : Exception_Occurrence);
    pragma No_Return (Reraise_No_Defer);
+
+   --  for rcheck
+
+   procedure Raise_From_rcheck (
+      File : access constant Character;
+      Line : Integer;
+      E : not null Exception_Data_Access;
+      Message : String);
+   pragma No_Return (Raise_From_rcheck);
 
    --  implementation
 
@@ -211,10 +227,10 @@ package body System.Unwind.Raising is
       Column : Integer := 0;
       Message : String := "")
    is
-      X : Exception_Occurrence;
+      X : Uninitialized_Exception_Occurrence;
    begin
-      Set_Exception_Message (X, E, File, Line, Column, Message);
-      Separated.Propagate_Exception (X, Stack_Guard => Null_Address);
+      Set_Exception_Message (E, File, Line, Column, Message, X.X);
+      Separated.Propagate_Exception (X.X, Stack_Guard => Null_Address);
    end Raise_Exception_No_Defer;
 
    procedure Raise_Exception (
@@ -225,13 +241,13 @@ package body System.Unwind.Raising is
       Message : String := "";
       Stack_Guard : Address := Null_Address)
    is
-      X : Exception_Occurrence;
+      X : Uninitialized_Exception_Occurrence;
    begin
-      Set_Exception_Message (X, E, File, Line, Column, Message);
+      Set_Exception_Message (E, File, Line, Column, Message, X.X);
       if not ZCX_By_Default then
          Soft_Links.Abort_Defer.all;
       end if;
-      Separated.Propagate_Exception (X, Stack_Guard => Stack_Guard);
+      Separated.Propagate_Exception (X.X, Stack_Guard => Stack_Guard);
    end Raise_Exception;
 
    procedure Raise_E (
@@ -270,7 +286,7 @@ package body System.Unwind.Raising is
       Reraise_No_Defer (X);
    end Reraise;
 
-   procedure Raise_From_Controlled_Operation (X : Exception_Occurrence) is
+   procedure Reraise_From_Controlled_Operation (X : Exception_Occurrence) is
       Prefix : constant String := "adjust/finalize raised ";
    begin
       if X.Id = Unwind.Standard.Program_Error'Access
@@ -301,7 +317,7 @@ package body System.Unwind.Raising is
                Message => New_Message (New_Message'First .. Last));
          end;
       end if;
-   end Raise_From_Controlled_Operation;
+   end Reraise_From_Controlled_Operation;
 
    procedure Raise_Program_Error is
       Message : constant String := "not supported";
@@ -311,144 +327,153 @@ package body System.Unwind.Raising is
          Message => Message);
    end Raise_Program_Error;
 
+   procedure Raise_From_rcheck (
+      File : access constant Character;
+      Line : Integer;
+      E : not null Exception_Data_Access;
+      Message : String) is
+   begin
+      Raise_Exception (E, File, Line, Message => Message);
+   end Raise_From_rcheck;
+
    procedure rcheck_00 (File : not null access Character; Line : Integer) is
       Message : constant String := "access check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_00;
 
    procedure rcheck_02 (File : not null access Character; Line : Integer) is
       Message : constant String := "discriminant check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_02;
 
    procedure rcheck_03 (File : access Character; Line : Integer) is
       Message : constant String := "divide by zero";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_03;
 
    procedure rcheck_04 (File : not null access Character; Line : Integer) is
       Message : constant String := "explicit raise";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
+         Unwind.Standard.Constraint_Error'Access,
          Message => Message);
    end rcheck_04;
 
    procedure rcheck_05 (File : not null access Character; Line : Integer) is
       Message : constant String := "index check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_05;
 
    procedure rcheck_06 (File : not null access Character; Line : Integer) is
       Message : constant String := "invalid data";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_06;
 
    procedure rcheck_07 (File : access Character; Line : Integer) is
       Message : constant String := "length check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_07;
 
    procedure rcheck_09 (File : not null access Character; Line : Integer) is
       Message : constant String := "null-exclusion check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_09;
 
    procedure rcheck_10 (File : access constant Character; Line : Integer) is
       Message : constant String := "overflow check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
+         Unwind.Standard.Constraint_Error'Access,
          Message => Message);
    end rcheck_10;
 
    procedure rcheck_12 (File : not null access Character; Line : Integer) is
       Message : constant String := "range check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_12;
 
    procedure rcheck_13 (File : not null access Character; Line : Integer) is
       Message : constant String := "tag check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Constraint_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Constraint_Error'Access,
+         Message);
    end rcheck_13;
 
    procedure rcheck_14 (File : not null access Character; Line : Integer) is
       Message : constant String := "access before elaboration";
    begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
+         Unwind.Standard.Program_Error'Access,
          Message => Message);
    end rcheck_14;
 
    procedure rcheck_15 (File : not null access Character; Line : Integer) is
       Message : constant String := "accessibility check failed";
    begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Program_Error'Access,
+         Message);
    end rcheck_15;
 
    procedure rcheck_21 (File : not null access Character; Line : Integer) is
       Message : constant String := "explicit raise";
    begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Program_Error'Access,
+         Message);
    end rcheck_21;
 
    procedure rcheck_22 (File : not null access Character; Line : Integer) is
@@ -464,81 +489,81 @@ package body System.Unwind.Raising is
    procedure rcheck_23 (File : not null access Character; Line : Integer) is
       Message : constant String := "implicit return with No_Return";
    begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Program_Error'Access,
+         Message);
    end rcheck_23;
 
    procedure rcheck_24 (File : not null access Character; Line : Integer) is
       Message : constant String := "misaligned address value";
    begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Program_Error'Access,
+         Message);
    end rcheck_24;
 
    procedure rcheck_25 (File : not null access Character; Line : Integer) is
       Message : constant String := "missing return";
    begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Program_Error'Access,
+         Message);
    end rcheck_25;
 
    procedure rcheck_26 (File : not null access Character; Line : Integer) is
       Message : constant String := "overlaid controlled object";
    begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Program_Error'Access,
+         Message);
    end rcheck_26;
 
    procedure rcheck_29 (File : not null access Character; Line : Integer) is
       Message : constant String := "unchecked union restriction";
    begin
-      Raise_Exception (
-         Unwind.Standard.Program_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Program_Error'Access,
+         Message);
    end rcheck_29;
 
    procedure rcheck_31 (File : not null access Character; Line : Integer) is
       Message : constant String := "empty storage pool";
    begin
-      Raise_Exception (
-         Unwind.Standard.Storage_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Storage_Error'Access,
+         Message);
    end rcheck_31;
 
    procedure rcheck_32 (File : not null access Character; Line : Integer) is
       Message : constant String := "explicit raise";
    begin
-      Raise_Exception (
-         Unwind.Standard.Storage_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Storage_Error'Access,
+         Message);
    end rcheck_32;
 
    procedure rcheck_34 (File : not null access Character; Line : Integer) is
       Message : constant String := "object too large";
    begin
-      Raise_Exception (
-         Unwind.Standard.Storage_Error'Access,
+      Raise_From_rcheck (
          File,
          Line,
-         Message => Message);
+         Unwind.Standard.Storage_Error'Access,
+         Message);
    end rcheck_34;
 
    --  at last of exclusion
