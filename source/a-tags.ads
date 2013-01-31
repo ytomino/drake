@@ -41,7 +41,7 @@ private
    for Prim_Ptr'Storage_Size use 0;
    type Address_Array is array (Positive range <>) of Prim_Ptr;
    pragma Suppress_Initialization (Address_Array);
-   subtype Dispatch_Table is Address_Array (1 .. 1); -- gdb knows it ?
+   subtype Dispatch_Table is Address_Array (1 .. 1); -- gdb knows
 
    --  full declarations
 
@@ -108,7 +108,7 @@ private
    type Select_Specific_Data_Ptr is access all Select_Specific_Data; -- not req
    for Select_Specific_Data_Ptr'Storage_Size use 0;
 
-   type Interface_Tag is access all Dispatch_Table;
+   type Interface_Tag is access all Dispatch_Table; -- gdb knows
    for Interface_Tag'Storage_Size use 0;
 
    type Tag_Ptr is access all Tag;
@@ -123,7 +123,7 @@ private
    type Size_Ptr is access function (A : System.Address)
       return Long_Long_Integer;
 
-   type Type_Specific_Data (Idepth : Natural) is record
+   type Type_Specific_Data (Idepth : Natural) is record -- gdb knows
       Access_Level : Natural;
       Alignment : Natural;
       Expanded_Name : Cstring_Ptr;

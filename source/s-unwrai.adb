@@ -166,13 +166,6 @@ package body System.Unwind.Raising is
       X.Num_Tracebacks := 0;
    end Set_Exception_Message;
 
-   --  equivalent to Raise_Current_Excep (a-except-2005.adb)
-   procedure Raise_Current_Exception (
-      E : not null Exception_Data_Access);
-   pragma No_Return (Raise_Current_Exception);
-   --  gdb knows external name ???
-   pragma Export (C, Raise_Current_Exception, "__gnat_raise_nodefer_with_msg");
-
    --  not calling Abort_Defer
 
    --  equivalent to Raise_Exception_No_Defer (a-except-2005.adb)
@@ -271,16 +264,6 @@ package body System.Unwind.Raising is
    begin
       Raise_Exception (E, File, Line, Message => Message);
    end Raise_Exception_From_Here_With;
-
-   procedure Raise_Current_Exception (
-      E : not null Exception_Data_Access)
-   is
-      pragma Inspection_Point (E);
-      Current : constant not null Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
-   begin
-      Separated.Propagate_Exception (Current.all, Stack_Guard => Null_Address);
-   end Raise_Current_Exception;
 
    procedure Reraise_No_Defer (X : Exception_Occurrence) is
    begin
