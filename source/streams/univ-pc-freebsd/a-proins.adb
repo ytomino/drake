@@ -3,10 +3,6 @@ with C.sys.fcntl;
 package body Ada.Processes.Inside is
    use type C.signed_int;
 
-   --  the imported name of _exit differs versions of the translated header
-   procedure C_qexit (status : C.signed_int);
-   pragma Import (C, C_qexit, "_exit");
-
    procedure Spawn (
       Child : out C.sys.types.pid_t;
       Command_Line : String;
@@ -28,7 +24,7 @@ package body Ada.Processes.Inside is
                for C_Directory'Address use Z_Directory'Address;
             begin
                if C.unistd.chdir (C_Directory (0)'Access) = -1 then
-                  C_qexit (127);
+                  C.unistd.C_qexit (127);
                end if;
             end;
          end if;
@@ -71,7 +67,7 @@ package body Ada.Processes.Inside is
             else
                Dummy := C.unistd.execv (Arguments (0), Arguments (0)'Access);
             end if;
-            C_qexit (127);
+            C.unistd.C_qexit (127);
          end;
       end if;
    end Spawn;

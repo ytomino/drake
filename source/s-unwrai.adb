@@ -216,14 +216,6 @@ package body System.Unwind.Raising is
 
    package body Separated is separate;
 
-   procedure Raise_Current_Exception (
-      E : not null Exception_Data_Access)
-   is
-      pragma Inspection_Point (E);
-   begin
-      Separated.Propagate_Exception (E, False);
-   end Raise_Current_Exception;
-
    procedure Raise_Exception_No_Defer (
       E : not null Exception_Data_Access;
       Message : String := "")
@@ -239,22 +231,6 @@ package body System.Unwind.Raising is
          Stack_Guard => Null_Address);
       Raise_Current_Exception (E);
    end Raise_Exception_No_Defer;
-
-   procedure Reraise_No_Defer (X : Exception_Occurrence) is
-      Current : constant not null Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
-   begin
-      Separated.Setup_Exception (
-         X'Unrestricted_Access,
-         Current,
-         True,
-         Stack_Guard => Null_Address);
-      Save_Occurrence_No_Private (Current.all, X);
-      pragma Check (Trace, Ada.Debug.Put ("reraising..."));
-      Raise_Current_Exception (X.Id);
-   end Reraise_No_Defer;
-
-   --  end private part in exclusion
 
    procedure Raise_Exception (
       E : not null Exception_Data_Access;
@@ -290,6 +266,28 @@ package body System.Unwind.Raising is
       end if;
       Raise_Exception (Actual_E, Message => Message);
    end Raise_E;
+
+   procedure Raise_Current_Exception (
+      E : not null Exception_Data_Access)
+   is
+      pragma Inspection_Point (E);
+   begin
+      Separated.Propagate_Exception (E, False);
+   end Raise_Current_Exception;
+
+   procedure Reraise_No_Defer (X : Exception_Occurrence) is
+      Current : constant not null Exception_Occurrence_Access :=
+         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+   begin
+      Separated.Setup_Exception (
+         X'Unrestricted_Access,
+         Current,
+         True,
+         Stack_Guard => Null_Address);
+      Save_Occurrence_No_Private (Current.all, X);
+      pragma Check (Trace, Ada.Debug.Put ("reraising..."));
+      Raise_Current_Exception (X.Id);
+   end Reraise_No_Defer;
 
    procedure Reraise (X : Exception_Occurrence) is
    begin

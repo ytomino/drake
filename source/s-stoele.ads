@@ -62,6 +62,6 @@ package System.Storage_Elements is
    pragma Import (Intrinsic, Shift_Right);
 
    --  extended
-   subtype Address_Image is String (1 .. Standard'Address_Size / 4);
+   subtype Address_Image is String (1 .. (Standard'Address_Size + 3) / 4);
 
 end System.Storage_Elements;

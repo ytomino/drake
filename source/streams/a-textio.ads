@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+with Ada.Formatting;
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
 private with Ada.Finalization;
@@ -19,7 +20,8 @@ package Ada.Text_IO is
    subtype Field is Integer range 0 .. 255; -- implementation-defined
    subtype Number_Base is Integer range 2 .. 16;
 
-   type Type_Set is (Lower_Case, Upper_Case);
+--  type Type_Set is (Lower_Case, Upper_Case);
+   type Type_Set is new Ada.Formatting.Type_Set;
 
    --  File Management
 

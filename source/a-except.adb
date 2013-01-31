@@ -16,9 +16,10 @@ package body Ada.Exceptions is
          raise Constraint_Error;
       else
          declare
-            Max_Length : constant := 256 +
-               System.Unwind.Exception_Msg_Max_Length +
-               System.Unwind.Max_Tracebacks * (3 + Standard'Address_Size / 4);
+            Max_Length : constant := 256
+               + System.Unwind.Exception_Msg_Max_Length
+               + System.Unwind.Max_Tracebacks
+                  * (3 + (Standard'Address_Size + 3) / 4);
             Result : String (1 .. Max_Length);
             Last : Natural := 0;
             procedure Put (S : String);

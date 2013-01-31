@@ -33,14 +33,14 @@ procedure random_sfmt is
 		Form => Ada.Formatting.Simple,
 		Signs => Ada.Formatting.Triming_Unsign_Marks,
 		Base => 16,
-		Casing => Ada.Formatting.Lower,
+		Set => Ada.Formatting.Lower_Case,
 		Width => 8);
 	function Hex_Image is new Ada.Formatting.Modular_Image (
 		Unsigned_64,
 		Form => Ada.Formatting.Simple,
 		Signs => Ada.Formatting.Triming_Unsign_Marks,
 		Base => 16,
-		Casing => Ada.Formatting.Lower,
+		Set => Ada.Formatting.Lower_Case,
 		Width => 8);
 	
 	Gen : aliased Generator;

@@ -8,7 +8,7 @@ procedure System.Formatting.Float_Image (
    Plus_Sign : Character := ' ';
    Base : Number_Base := 10;
    Base_Form : Boolean := False;
-   Casing : Casing_Type := Upper;
+   Set : Type_Set := Upper_Case;
    Fore_Width : Positive := 1;
    Fore_Padding : Character := '0';
    Aft_Width : Positive;
@@ -101,7 +101,7 @@ begin
          Image (
             Fore,
             To (Last),
-            Casing => Casing);
+            Set => Set);
          --  '.' and decimal part
          pragma Assert (Last + 1 + Aft_Width <= To'Last);
          Float.Aft_Image (

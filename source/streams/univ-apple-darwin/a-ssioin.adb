@@ -185,14 +185,30 @@ package body Ada.Streams.Stream_IO.Inside is
       System.Memory.Free (Non_Controlled_File_Type_Conv.To_Address (File));
    end Free;
 
+   procedure Set_Buffer_Index (
+      File : not null Non_Controlled_File_Type;
+      Buffer_Index : Stream_Element_Offset);
+   procedure Set_Buffer_Index (
+      File : not null Non_Controlled_File_Type;
+      Buffer_Index : Stream_Element_Offset) is
+   begin
+      if File.Buffer_Length < Uninitialized_Buffer then
+         File.Buffer_Index := Buffer_Index;
+      elsif File.Buffer_Length = 0 then
+         File.Buffer_Index := 0;
+      else
+         File.Buffer_Index := Buffer_Index rem File.Buffer_Length;
+      end if;
+      File.Reading_Index := File.Buffer_Index;
+      File.Writing_Index := File.Buffer_Index;
+   end Set_Buffer_Index;
+
    procedure Set_Index_To_Append (File : not null Non_Controlled_File_Type);
    procedure Set_Index_To_Append (File : not null Non_Controlled_File_Type) is
       Z_Index : constant Stream_Element_Offset :=
          Stream_Element_Offset (lseek (File.Handle, 0, C.sys.unistd.SEEK_END));
    begin
-      File.Buffer_Index := Z_Index;
-      File.Reading_Index := File.Buffer_Index;
-      File.Writing_Index := File.Buffer_Index;
+      Set_Buffer_Index (File, Z_Index);
    end Set_Index_To_Append;
 
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
@@ -517,10 +533,14 @@ package body Ada.Streams.Stream_IO.Inside is
          end if;
          if File.Buffer_Length = 0 then
             File.Buffer := File.Buffer_Inline'Address;
+            File.Buffer_Index := 0;
          else
             File.Buffer := System.Memory.Allocate (
                System.Storage_Elements.Storage_Count (File.Buffer_Length));
+            File.Buffer_Index := File.Buffer_Index rem File.Buffer_Length;
          end if;
+         File.Reading_Index := File.Buffer_Index;
+         File.Writing_Index := File.Buffer_Index;
       end if;
    end Get_Buffer;
 
@@ -864,9 +884,7 @@ package body Ada.Streams.Stream_IO.Inside is
          File.Handle,
          C.sys.types.off_t (Z_Index),
          C.sys.unistd.SEEK_SET);
-      File.Buffer_Index := Z_Index;
-      File.Reading_Index := File.Buffer_Index;
-      File.Writing_Index := File.Buffer_Index;
+      Set_Buffer_Index (File, Z_Index);
    end Set_Index_Impl;
 
    function Index_Impl (File : not null Non_Controlled_File_Type)

@@ -1,4 +1,4 @@
-with System.Formatting;
+with System.Formatting.Address_Image;
 package body System.Unwind is
    pragma Suppress (All_Checks);
 
@@ -21,36 +21,19 @@ package body System.Unwind is
          Put ("Call stack traceback locations:");
          New_Line;
          for I in 1 .. X.Num_Tracebacks loop
+            Put ("0x");
             declare
-               Use_Longest : constant Boolean :=
-                  Standard'Address_Size > Formatting.Unsigned'Size;
                Item : constant Address := X.Tracebacks (I);
                Width : constant Natural := (Standard'Address_Size + 3) / 4;
                S : String (1 .. Width);
                Last : Natural;
-               Error : Boolean;
             begin
-               Put ("0x");
-               if Use_Longest then
-                  Formatting.Image (
-                     Formatting.Longest_Unsigned (Item),
-                     S,
-                     Last,
-                     Base => 16,
-                     Casing => Formatting.Lower,
-                     Width => Width,
-                     Error => Error);
-               else
-                  Formatting.Image (
-                     Formatting.Unsigned (Item),
-                     S,
-                     Last,
-                     Base => 16,
-                     Casing => Formatting.Lower,
-                     Width => Width,
-                     Error => Error);
-               end if;
-               Put (S (1 .. Last));
+               Formatting.Address_Image (
+                  S,
+                  Last,
+                  Item,
+                  Set => Formatting.Lower_Case);
+               Put (S);
             end;
             if I < X.Num_Tracebacks then
                Put (" ");

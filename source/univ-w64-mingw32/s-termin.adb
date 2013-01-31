@@ -1,7 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
-with System.Formatting;
+with System.Formatting.Address_Image;
 with System.Native_Stack;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
@@ -189,7 +189,6 @@ package body System.Termination is
             Message_Last : Natural;
             C_Wide_Buf : aliased C.winnt.LPWSTR;
             R : C.windef.DWORD;
-            Error : Boolean;
             Dummy : C.windef.HLOCAL;
             pragma Unreferenced (Dummy);
          begin
@@ -219,28 +218,22 @@ package body System.Termination is
                   --  'The instruction at %p referenced memory at %p.'
                   Message (1 .. 21) := "The instruction at 0x";
                   Message_Last := 21;
-                  Formatting.Image (
-                     Formatting.Unsigned (
---                      Exception_Record.ExceptionInformation (0)),
-                        Exception_Record.ExceptionAddress),
+                  Formatting.Address_Image (
                      Message (Message_Last + 1 .. Message'Last),
                      Message_Last,
-                     Base => 16,
-                     Casing => Formatting.Lower,
-                     Width => Standard'Address_Size / 4,
-                     Error => Error);
+                     Address (
+--                      Exception_Record.ExceptionInformation (0)),
+                        Exception_Record.ExceptionAddress),
+                     Set => Formatting.Lower_Case);
                   Message (Message_Last + 1 .. Message_Last + 24) :=
                      " referenced memory at 0x";
                   Message_Last := Message_Last + 24;
-                  Formatting.Image (
-                     Formatting.Unsigned (
-                        Exception_Record.ExceptionInformation (1)),
+                  Formatting.Address_Image (
                      Message (Message_Last + 1 .. Message'Last),
                      Message_Last,
-                     Base => 16,
-                     Casing => Formatting.Lower,
-                     Width => Standard'Address_Size / 4,
-                     Error => Error);
+                     Address (
+                        Exception_Record.ExceptionInformation (1)),
+                     Set => Formatting.Lower_Case);
                   Message (Message_Last + 1) := '.';
                   Message_Last := Message_Last + 1;
                else
