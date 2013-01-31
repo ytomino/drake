@@ -32,7 +32,7 @@ package body System.Unwind is
                   S,
                   Last,
                   Item,
-                  Casing => Formatting.Lower);
+                  Set => Formatting.Lower_Case);
                Put (S);
             end;
             if I < X.Num_Tracebacks then

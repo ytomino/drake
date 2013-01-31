@@ -22,7 +22,7 @@ package System.Formatting.Float is
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Width : Positive := Standard.Float'Digits - 1);
    --  Aft_Image puts '.', Item is required Width + 1
 

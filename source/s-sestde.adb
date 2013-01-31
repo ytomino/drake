@@ -22,7 +22,7 @@ package body System.Secondary_Stack.Debug is
          S,
          Last,
          Item,
-         Casing => Formatting.Lower);
+         Set => Formatting.Lower_Case);
       Termination.Error_Put (S);
    end Error_Put;
 

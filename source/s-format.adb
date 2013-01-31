@@ -15,17 +15,17 @@ package body System.Formatting is
       Value : Unsigned;
       Item : out String;
       Base : Number_Base;
-      Casing : Casing_Type);
+      Set : Type_Set);
    procedure Fill_Digits (
       Value : Unsigned;
       Item : out String;
       Base : Number_Base;
-      Casing : Casing_Type)
+      Set : Type_Set)
    is
       V : Unsigned := Value;
    begin
       for I in reverse Item'Range loop
-         Image (Digit (V rem Unsigned (Base)), Item (I), Casing);
+         Image (Digit (V rem Unsigned (Base)), Item (I), Set);
          V := V / Unsigned (Base);
       end loop;
    end Fill_Digits;
@@ -34,22 +34,22 @@ package body System.Formatting is
       Value : Longest_Unsigned;
       Item : out String;
       Base : Number_Base;
-      Casing : Casing_Type);
+      Set : Type_Set);
    procedure Fill_Digits (
       Value : Longest_Unsigned;
       Item : out String;
       Base : Number_Base;
-      Casing : Casing_Type)
+      Set : Type_Set)
    is
       V : Longest_Unsigned := Value;
       I : Positive := Item'Last;
    begin
       while V > Longest_Unsigned (Unsigned'Last) loop
-         Image (Digit (V rem Longest_Unsigned (Base)), Item (I), Casing);
+         Image (Digit (V rem Longest_Unsigned (Base)), Item (I), Set);
          V := V / Longest_Unsigned (Base);
          I := I - 1;
       end loop;
-      Fill_Digits (Unsigned (V), Item (Item'First .. I), Base, Casing);
+      Fill_Digits (Unsigned (V), Item (Item'First .. I), Base, Set);
    end Fill_Digits;
 
    procedure Take_Digits (
@@ -176,18 +176,18 @@ package body System.Formatting is
    procedure Image (
       Value : Digit;
       Item : out Character;
-      Casing : Casing_Type := Upper) is
+      Set : Type_Set := Upper_Case) is
    begin
       case Value is
          when 0 .. 9 =>
             Item := Character'Val (Character'Pos ('0') + Value);
          when 10 .. 15 =>
-            case Casing is
-               when Upper =>
-                  Item := Character'Val (Character'Pos ('A') - 10 + Value);
-               when Lower =>
-                  Item := Character'Val (Character'Pos ('a') - 10 + Value);
-            end case;
+            Item := Character'Val (
+               Character'Pos ('a')
+               - 10
+               - (Character'Pos ('a') - Character'Pos ('A'))
+                  * Type_Set'Pos (Set)
+               + Value);
       end case;
    end Image;
 
@@ -196,7 +196,7 @@ package body System.Formatting is
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Width : Positive := 1;
       Padding : Character := '0';
       Error : out Boolean)
@@ -217,7 +217,7 @@ package body System.Formatting is
             Value,
             Item (Item'First + Padding_Length .. Last),
             Base,
-            Casing);
+            Set);
       end if;
    end Image;
 
@@ -226,7 +226,7 @@ package body System.Formatting is
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Width : Positive := 1;
       Padding : Character := '0';
       Error : out Boolean)
@@ -247,7 +247,7 @@ package body System.Formatting is
             Value,
             Item (Item'First + Padding_Length .. Last),
             Base,
-            Casing);
+            Set);
       end if;
    end Image;
 

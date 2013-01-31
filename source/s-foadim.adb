@@ -3,7 +3,7 @@ procedure System.Formatting.Address_Image (
    To : out String;
    Last : out Natural;
    Item : Address;
-   Casing : Casing_Type := Upper)
+   Set : Type_Set := Upper_Case)
 is
    procedure Runtime_Error (
       Condition : Boolean;
@@ -22,7 +22,7 @@ begin
          To,
          Last,
          Base => 16,
-         Casing => Casing,
+         Set => Set,
          Width => Width,
          Error => Error);
    else
@@ -31,7 +31,7 @@ begin
          To,
          Last,
          Base => 16,
-         Casing => Casing,
+         Set => Set,
          Width => Width,
          Error => Error);
    end if;

@@ -74,7 +74,7 @@ package body System.Formatting.Float is
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Width : Positive := Standard.Float'Digits - 1)
    is
       X : Longest_Unsigned_Float;
@@ -92,7 +92,7 @@ package body System.Formatting.Float is
             Image (
                Digit (R),
                Item (I),
-               Casing => Casing);
+               Set => Set);
             X := Q;
          end;
       end loop;

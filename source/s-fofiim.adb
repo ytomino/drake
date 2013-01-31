@@ -9,7 +9,7 @@ procedure System.Formatting.Fixed_Image (
    Plus_Sign : Character := ' ';
    Base : Number_Base := 10;
    Base_Form : Boolean := False;
-   Casing : Casing_Type := Upper;
+   Set : Type_Set := Upper_Case;
    Fore_Width : Positive := 1;
    Fore_Padding : Character := '0';
    Aft_Width : Positive)
@@ -75,7 +75,7 @@ begin
          Image (
             Digit (R),
             To (I),
-            Casing => Casing);
+            Set => Set);
          Item_Fore := Q;
       end;
    end loop;
@@ -88,7 +88,7 @@ begin
       To (Last + 1 .. To'Last),
       Last,
       Base => Base,
-      Casing => Casing,
+      Set => Set,
       Width => Aft_Width);
    --  closing '#'
    if Base_Form then

@@ -10,6 +10,6 @@ begin
          Result,
          Last,
          A,
-         Casing => Formatting.Upper);
+         Set => Formatting.Upper_Case);
    end return;
 end System.Address_Image;

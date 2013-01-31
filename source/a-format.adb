@@ -45,8 +45,8 @@ package body Ada.Formatting is
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,
-            Casing => System.Formatting.Casing_Type'Enum_Val (
-               Casing_Type'Enum_Rep (Casing)),
+            Set => System.Formatting.Type_Set'Enum_Val (
+               Type_Set'Enum_Rep (Set)),
             Width => Width,
             Padding => Padding,
             Error => Error);
@@ -56,8 +56,8 @@ package body Ada.Formatting is
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,
-            Casing => System.Formatting.Casing_Type'Enum_Val (
-               Casing_Type'Enum_Rep (Casing)),
+            Set => System.Formatting.Type_Set'Enum_Val (
+               Type_Set'Enum_Rep (Set)),
             Width => Width,
             Padding => Padding,
             Error => Error);
@@ -102,8 +102,8 @@ package body Ada.Formatting is
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,
-            Casing => System.Formatting.Casing_Type'Enum_Val (
-               Casing_Type'Enum_Rep (Casing)),
+            Set => System.Formatting.Type_Set'Enum_Val (
+               Type_Set'Enum_Rep (Set)),
             Width => Width,
             Padding => Padding,
             Error => Error);
@@ -113,8 +113,8 @@ package body Ada.Formatting is
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,
-            Casing => System.Formatting.Casing_Type'Enum_Val (
-               Casing_Type'Enum_Rep (Casing)),
+            Set => System.Formatting.Type_Set'Enum_Val (
+               Type_Set'Enum_Rep (Set)),
             Width => Width,
             Padding => Padding,
             Error => Error);
@@ -141,8 +141,8 @@ package body Ada.Formatting is
          Plus_Sign => Signs (1),
          Base => Base,
          Base_Form => Form = Ada and then Base /= 10,
-         Casing => System.Formatting.Casing_Type'Enum_Val (
-            Casing_Type'Enum_Rep (Casing)),
+         Set => System.Formatting.Type_Set'Enum_Val (
+            Type_Set'Enum_Rep (Set)),
          Fore_Width => Fore_Width,
          Fore_Padding => Fore_Padding,
          Aft_Width => Aft_Width,
@@ -174,8 +174,8 @@ package body Ada.Formatting is
             Plus_Sign => Signs (1),
             Base => Base,
             Base_Form => Form = Ada and then Base /= 10,
-            Casing => System.Formatting.Casing_Type'Enum_Val (
-               Casing_Type'Enum_Rep (Casing)),
+            Set => System.Formatting.Type_Set'Enum_Val (
+               Type_Set'Enum_Rep (Set)),
             Fore_Width => Fore_Width,
             Fore_Padding => Fore_Padding,
             Aft_Width => Aft_Width,
@@ -195,8 +195,8 @@ package body Ada.Formatting is
             Plus_Sign => Signs (1),
             Base => Base,
             Base_Form => Form = Ada and then Base /= 10,
-            Casing => System.Formatting.Casing_Type'Enum_Val (
-               Casing_Type'Enum_Rep (Casing)),
+            Set => System.Formatting.Type_Set'Enum_Val (
+               Type_Set'Enum_Rep (Set)),
             Fore_Width => Fore_Width,
             Fore_Padding => Fore_Padding,
             Aft_Width => Aft_Width);

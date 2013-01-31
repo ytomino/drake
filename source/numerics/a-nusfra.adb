@@ -121,7 +121,7 @@ package body Ada.Numerics.SFMT.Random is
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
-         Casing => System.Formatting.Lower,
+         Set => System.Formatting.Lower_Case,
          Width => 8,
          Error => Error);
       Result (Last + 1) := '-';
@@ -131,7 +131,7 @@ package body Ada.Numerics.SFMT.Random is
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
-         Casing => System.Formatting.Lower,
+         Set => System.Formatting.Lower_Case,
          Width => 8,
          Error => Error);
       Result (Last + 1) := '-';
@@ -141,7 +141,7 @@ package body Ada.Numerics.SFMT.Random is
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
-         Casing => System.Formatting.Lower,
+         Set => System.Formatting.Lower_Case,
          Width => 8,
          Error => Error);
       Result (Last + 1) := '-';
@@ -151,7 +151,7 @@ package body Ada.Numerics.SFMT.Random is
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
-         Casing => System.Formatting.Lower,
+         Set => System.Formatting.Lower_Case,
          Width => 8,
          Error => Error);
       return Result (1 .. Last);

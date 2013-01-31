@@ -224,7 +224,7 @@ package body System.Termination is
                      Address (
 --                      Exception_Record.ExceptionInformation (0)),
                         Exception_Record.ExceptionAddress),
-                     Casing => Formatting.Lower);
+                     Set => Formatting.Lower_Case);
                   Message (Message_Last + 1 .. Message_Last + 24) :=
                      " referenced memory at 0x";
                   Message_Last := Message_Last + 24;
@@ -233,7 +233,7 @@ package body System.Termination is
                      Message_Last,
                      Address (
                         Exception_Record.ExceptionInformation (1)),
-                     Casing => Formatting.Lower);
+                     Set => Formatting.Lower_Case);
                   Message (Message_Last + 1) := '.';
                   Message_Last := Message_Last + 1;
                else

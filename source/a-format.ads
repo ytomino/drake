@@ -3,6 +3,7 @@ pragma License (Unrestricted);
 package Ada.Formatting is
    --  There are generic formatting functions more powerful than
    --    Ada.Text_IO.*_IO.
+   --  This package also provides the root type of Type_Set.
    pragma Pure;
 
    type Form_Type is (Simple, Ada);
@@ -20,15 +21,14 @@ package Ada.Formatting is
 
    subtype Number_Base is Integer range 2 .. 16; -- same as Text_IO.Number_Base
 
-   type Casing_Type is (Upper, Lower);
-   --  same as System.Formating.Casing_Type
+   type Type_Set is (Lower_Case, Upper_Case);
 
    generic
       type T is range <>;
       Form : Form_Type := Ada;
       Signs : Sign_Marks := Spacing_Sign_Marks;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Width : Positive := 1;
       Padding : Character := '0';
    function Integer_Image (Item : T) return String;
@@ -38,7 +38,7 @@ package Ada.Formatting is
       Form : Form_Type := Ada;
       Signs : Unsign_Marks := Spacing_Unsign_Marks;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Width : Positive := 1;
       Padding : Character := '0';
    function Modular_Image (Item : T) return String;
@@ -48,7 +48,7 @@ package Ada.Formatting is
       Form : Form_Type := Ada;
       Signs : Sign_Marks := Spacing_Sign_Marks;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Fore_Width : Positive := 1;
       Fore_Padding : Character := '0';
       Aft_Width : Positive := T'Digits - 1;
@@ -66,7 +66,7 @@ package Ada.Formatting is
       Exponent : Boolean := False;
       Signs : Sign_Marks := Spacing_Sign_Marks;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Fore_Width : Positive := 1;
       Fore_Padding : Character := '0';
       Aft_Width : Positive := T'Aft;

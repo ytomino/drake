@@ -10,8 +10,8 @@ package System.Formatting is
    subtype Longest_Unsigned is Unsigned_Types.Long_Long_Unsigned;
    subtype Digit is Unsigned_Types.Unsigned range 0 .. 15;
 
-   type Casing_Type is (Upper, Lower);
-   pragma Discard_Names (Casing_Type);
+   type Type_Set is (Lower_Case, Upper_Case); -- same as Text_IO.Type_Set
+   pragma Discard_Names (Type_Set);
 
    function Width (Value : Unsigned; Base : Number_Base := 10) return Positive;
    function Width (Value : Longest_Unsigned; Base : Number_Base := 10)
@@ -20,14 +20,14 @@ package System.Formatting is
    procedure Image (
       Value : Digit;
       Item : out Character;
-      Casing : Casing_Type := Upper);
+      Set : Type_Set := Upper_Case);
 
    procedure Image (
       Value : Unsigned;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Width : Positive := 1;
       Padding : Character := '0';
       Error : out Boolean);
@@ -37,7 +37,7 @@ package System.Formatting is
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
-      Casing : Casing_Type := Upper;
+      Set : Type_Set := Upper_Case;
       Width : Positive := 1;
       Padding : Character := '0';
       Error : out Boolean);
