@@ -146,6 +146,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	system.o \
 	s-debug.o \
 	s-exctab.o \
+	s-foadim.o \
 	s-format.o \
 	s-maccod.o \
 	s-memory.o \

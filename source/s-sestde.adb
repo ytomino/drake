@@ -1,5 +1,5 @@
 with System.Address_To_Named_Access_Conversions;
-with System.Formatting;
+with System.Formatting.Address_Image;
 with System.Soft_Links;
 with System.Termination;
 with System.Unsigned_Types;
@@ -13,34 +13,17 @@ package body System.Secondary_Stack.Debug is
       Block_Access);
 
    procedure Error_Put (Item : Address) is
-      Use_Longest : constant Boolean :=
-         Standard'Address_Size > Formatting.Unsigned'Size;
       Width : constant Natural := (Standard'Address_Size + 3) / 4;
       S : String (1 .. Width);
       Last : Natural;
-      Error : Boolean;
    begin
       Termination.Error_Put ("0x");
-      if Use_Longest then
-         Formatting.Image (
-            Formatting.Longest_Unsigned (Item),
-            S,
-            Last,
-            Base => 16,
-            Casing => Formatting.Lower,
-            Width => Width,
-            Error => Error);
-      else
-         Formatting.Image (
-            Formatting.Unsigned (Item),
-            S,
-            Last,
-            Base => 16,
-            Casing => Formatting.Lower,
-            Width => Width,
-            Error => Error);
-      end if;
-      Termination.Error_Put (S (1 .. Last));
+      Formatting.Address_Image (
+         S,
+         Last,
+         Item,
+         Casing => Formatting.Lower);
+      Termination.Error_Put (S);
    end Error_Put;
 
    procedure Dump is
