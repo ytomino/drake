@@ -63,7 +63,7 @@ package body System.Finalization_Implementation is
          end;
       end loop;
       if not From_Abort then
-         Unwind.Raising.Raise_From_Controlled_Operation (E_Occ);
+         Unwind.Raising.Reraise_From_Controlled_Operation (E_Occ);
       end if;
    end Raise_From_Finalize;
 
@@ -210,7 +210,7 @@ package body System.Finalization_Implementation is
             E : Unwind.Exception_Occurrence;
          begin
             Unwind.Save_Occurrence_No_Private (E, TLS.Current_Exception);
-            Unwind.Raising.Raise_From_Controlled_Operation (E);
+            Unwind.Raising.Reraise_From_Controlled_Operation (E);
          end;
    end Finalize_One;
 

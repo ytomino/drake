@@ -22,7 +22,7 @@ package System.Unwind.Raising is
       File : access constant Character := null;
       Line : Integer := 0;
       Column : Integer := 0;
-      Message : String := "";
+      Message : String;
       Stack_Guard : Address)
       renames Raise_Exception;
 
@@ -39,9 +39,9 @@ package System.Unwind.Raising is
    pragma Export (Ada, Reraise, "ada__exceptions__reraise_occurrence_always");
 
    --  implementation for raising from controlled objects (a-except-2005.adb)
-   procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
-   pragma No_Return (Raise_From_Controlled_Operation);
-   pragma Export (Ada, Raise_From_Controlled_Operation,
+   procedure Reraise_From_Controlled_Operation (X : Exception_Occurrence);
+   pragma No_Return (Reraise_From_Controlled_Operation);
+   pragma Export (Ada, Reraise_From_Controlled_Operation,
       "__gnat_raise_from_controlled_operation");
 
    --  utility for implementing a dummy subprogram
