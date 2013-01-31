@@ -1,6 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with System.Formatting;
 with System.Soft_Links;
+with System.Storage_Elements;
 with System.Termination;
 with System.Unwind.Standard;
 package body System.Unwind.Raising is
@@ -16,6 +17,10 @@ package body System.Unwind.Raising is
       pragma No_Return (Propagate_Exception);
 
    end Separated;
+
+   function strlen (s : not null access Character)
+      return Storage_Elements.Storage_Count;
+   pragma Import (Intrinsic, strlen, "__builtin_strlen");
 
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
    Call_Chain : access procedure (
@@ -82,14 +87,14 @@ package body System.Unwind.Raising is
    --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
    procedure Set_Exception_Message (
       Id : Exception_Data_Access;
-      File : access constant Character := null;
+      File : String;
       Line : Integer;
       Column : Integer;
       Message : String;
       X : in out Exception_Occurrence);
    procedure Set_Exception_Message (
       Id : Exception_Data_Access;
-      File : access constant Character := null;
+      File : String;
       Line : Integer;
       Column : Integer;
       Message : String;
@@ -97,29 +102,13 @@ package body System.Unwind.Raising is
    begin
       X.Id := Id;
       declare
+         File_Length : constant Natural := File'Length;
          Last : Natural := 0;
       begin
-         if File /= null then
-            declare
-               subtype Fixed_String is String (Positive);
-               F : Fixed_String;
-               for F'Address use File.all'Address;
-               I : Positive := 1;
-            begin
-               loop
-                  if Last >= X.Msg'Last then
-                     exit;
-                  end if;
-                  if F (I) = Character'Val (0) then
-                     Last := Last + 1;
-                     X.Msg (Last) := ':';
-                     exit;
-                  end if;
-                  Last := Last + 1;
-                  X.Msg (Last) := F (I);
-                  I := I + 1;
-               end loop;
-            end;
+         if File_Length > 0 then
+            X.Msg (1 .. File_Length) := File;
+            Last := File_Length + 1;
+            X.Msg (Last) := ':';
          end if;
          if Line > 0 then
             declare
@@ -151,7 +140,7 @@ package body System.Unwind.Raising is
                end if;
             end;
          end if;
-         if (File /= null or else Line > 0 or else Column > 0)
+         if (File_Length > 0 or else Line > 0 or else Column > 0)
             and then Last < X.Msg'Last
          then
             Last := Last + 1;
@@ -189,7 +178,7 @@ package body System.Unwind.Raising is
    --  equivalent to Raise_Exception_No_Defer (a-except-2005.adb)
    procedure Raise_Exception_No_Defer (
       E : not null Exception_Data_Access;
-      File : access constant Character := null;
+      File : String := "";
       Line : Integer := 0;
       Column : Integer := 0;
       Message : String := "");
@@ -201,11 +190,15 @@ package body System.Unwind.Raising is
    --  for rcheck
 
    procedure Raise_From_rcheck (
-      File : access constant Character;
+      File : not null access Character;
       Line : Integer;
       E : not null Exception_Data_Access;
       Message : String);
    pragma No_Return (Raise_From_rcheck);
+
+   Explicit_Raise : constant String := "explicit raise";
+   Divide_By_Zero : constant String := "divide by zero";
+   Overflow_Check_Failed : constant String := "overflow check failed";
 
    --  implementation
 
@@ -222,7 +215,7 @@ package body System.Unwind.Raising is
 
    procedure Raise_Exception_No_Defer (
       E : not null Exception_Data_Access;
-      File : access constant Character := null;
+      File : String := "";
       Line : Integer := 0;
       Column : Integer := 0;
       Message : String := "")
@@ -235,7 +228,7 @@ package body System.Unwind.Raising is
 
    procedure Raise_Exception (
       E : not null Exception_Data_Access;
-      File : access constant Character := null;
+      File : String := "";
       Line : Integer := 0;
       Column : Integer := 0;
       Message : String := "";
@@ -261,6 +254,23 @@ package body System.Unwind.Raising is
       end if;
       Raise_Exception (Actual_E, Message => Message);
    end Raise_E;
+
+   procedure Raise_Exception_From_Here (
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line) is
+   begin
+      Raise_Exception (E, File, Line, Message => Explicit_Raise);
+   end Raise_Exception_From_Here;
+
+   procedure Raise_Exception_From_Here_With (
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line;
+      Message : String) is
+   begin
+      Raise_Exception (E, File, Line, Message => Message);
+   end Raise_Exception_From_Here_With;
 
    procedure Raise_Current_Exception (
       E : not null Exception_Data_Access)
@@ -328,12 +338,15 @@ package body System.Unwind.Raising is
    end Raise_Program_Error;
 
    procedure Raise_From_rcheck (
-      File : access constant Character;
+      File : not null access Character;
       Line : Integer;
       E : not null Exception_Data_Access;
-      Message : String) is
+      Message : String)
+   is
+      File_S : String (1 .. Natural (strlen (File)));
+      for File_S'Address use File.all'Address;
    begin
-      Raise_Exception (E, File, Line, Message => Message);
+      Raise_Exception (E, File_S, Line, Message => Message);
    end Raise_From_rcheck;
 
    procedure rcheck_00 (File : not null access Character; Line : Integer) is
@@ -356,24 +369,33 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_02;
 
-   procedure rcheck_03 (File : access Character; Line : Integer) is
-      Message : constant String := "divide by zero";
+   procedure rcheck_03 (File : not null access Character; Line : Integer) is
    begin
       Raise_From_rcheck (
          File,
          Line,
          Unwind.Standard.Constraint_Error'Access,
-         Message);
+         Divide_By_Zero);
    end rcheck_03;
 
+   procedure Zero_Division (
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line) is
+   begin
+      Raise_Exception (
+         Unwind.Standard.Constraint_Error'Access,
+         File,
+         Line,
+         Message => Divide_By_Zero);
+   end Zero_Division;
+
    procedure rcheck_04 (File : not null access Character; Line : Integer) is
-      Message : constant String := "explicit raise";
    begin
       Raise_From_rcheck (
          File,
          Line,
          Unwind.Standard.Constraint_Error'Access,
-         Message => Message);
+         Explicit_Raise);
    end rcheck_04;
 
    procedure rcheck_05 (File : not null access Character; Line : Integer) is
@@ -396,7 +418,7 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_06;
 
-   procedure rcheck_07 (File : access Character; Line : Integer) is
+   procedure rcheck_07 (File : not null access Character; Line : Integer) is
       Message : constant String := "length check failed";
    begin
       Raise_From_rcheck (
@@ -416,15 +438,25 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_09;
 
-   procedure rcheck_10 (File : access constant Character; Line : Integer) is
-      Message : constant String := "overflow check failed";
+   procedure rcheck_10 (File : not null access Character; Line : Integer) is
    begin
       Raise_From_rcheck (
          File,
          Line,
          Unwind.Standard.Constraint_Error'Access,
-         Message => Message);
+         Overflow_Check_Failed);
    end rcheck_10;
+
+   procedure Overflow (
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line) is
+   begin
+      Raise_Exception (
+         Unwind.Standard.Constraint_Error'Access,
+         File,
+         Line,
+         Message => Overflow_Check_Failed);
+   end Overflow;
 
    procedure rcheck_12 (File : not null access Character; Line : Integer) is
       Message : constant String := "range check failed";
@@ -467,21 +499,22 @@ package body System.Unwind.Raising is
    end rcheck_15;
 
    procedure rcheck_21 (File : not null access Character; Line : Integer) is
-      Message : constant String := "explicit raise";
    begin
       Raise_From_rcheck (
          File,
          Line,
          Unwind.Standard.Program_Error'Access,
-         Message);
+         Explicit_Raise);
    end rcheck_21;
 
    procedure rcheck_22 (File : not null access Character; Line : Integer) is
       Message : constant String := "finalize/adjust raised exception";
+      File_S : String (1 .. Natural (strlen (File)));
+      for File_S'Address use File.all'Address;
    begin
       Raise_Exception_No_Defer (
          Unwind.Standard.Program_Error'Access,
-         File,
+         File_S,
          Line,
          Message => Message);
    end rcheck_22;
@@ -547,13 +580,12 @@ package body System.Unwind.Raising is
    end rcheck_31;
 
    procedure rcheck_32 (File : not null access Character; Line : Integer) is
-      Message : constant String := "explicit raise";
    begin
       Raise_From_rcheck (
          File,
          Line,
          Unwind.Standard.Storage_Error'Access,
-         Message);
+         Explicit_Raise);
    end rcheck_32;
 
    procedure rcheck_34 (File : not null access Character; Line : Integer) is

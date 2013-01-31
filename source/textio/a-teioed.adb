@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Ada.Text_IO.Inside.Formatting;
 with System.Formatting.Decimal_Image;
 with System.Val_Uns;
@@ -85,8 +86,15 @@ package body Ada.Text_IO.Editing is
                   loop
                      exit when Item_Image (I) = ' ';
                      if Result_Index < Result'First then
-                        raise Layout_Error with Item'Img & Pic_String (Pic)
-                           & Result;
+                        Exceptions.Raise_Exception_From_Here (
+                           Layout_Error'Identity,
+                           Message =>
+                              "width of"
+                              & Long_Long_Integer'Image (Item)
+                              & "* 10**"
+                              & Integer'Image (-Scale)
+                              & " is too longer for "
+                              & Pic_String (Pic));
                      end if;
                      loop
                         pragma Assert (Pic_Index >= Pic.Expanded'First);

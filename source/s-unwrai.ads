@@ -9,7 +9,7 @@ package System.Unwind.Raising is
    --  equivalent to Raise_With_Location_And_Msg (a-except-2005.adb)
    procedure Raise_Exception (
       E : not null Exception_Data_Access;
-      File : access constant Character := null;
+      File : String := "";
       Line : Integer := 0;
       Column : Integer := 0;
       Message : String := "";
@@ -19,7 +19,7 @@ package System.Unwind.Raising is
    --  equivalent to Raise_From_Signal_Handler (a-except-2005.adb)
    procedure Raise_From_Signal_Handler (
       E : not null Exception_Data_Access;
-      File : access constant Character := null;
+      File : String := "";
       Line : Integer := 0;
       Column : Integer := 0;
       Message : String;
@@ -32,6 +32,23 @@ package System.Unwind.Raising is
       Message : String);
    pragma No_Return (Raise_E);
    pragma Export (Ada, Raise_E, "ada__exceptions__raise_exception");
+
+   procedure Raise_Exception_From_Here (
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line);
+   pragma No_Return (Raise_Exception_From_Here);
+   pragma Export (Ada, Raise_Exception_From_Here,
+      "__drake_raise_exception_from_here");
+
+   procedure Raise_Exception_From_Here_With (
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line;
+      Message : String);
+   pragma No_Return (Raise_Exception_From_Here_With);
+   pragma Export (Ada, Raise_Exception_From_Here_With,
+      "__drake_raise_exception_from_here_with");
 
    --  implementation for reraising (a-except-2005.adb)
    procedure Reraise (X : Exception_Occurrence);
@@ -58,14 +75,15 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_02);
    pragma Export (C, rcheck_02, "__gnat_rcheck_02");
 
-   procedure rcheck_03 (File : access Character; Line : Integer);
+   procedure rcheck_03 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_03);
    pragma Export (C, rcheck_03, "__gnat_rcheck_03");
 
+   --  equivalent to rcheck_03
    procedure Zero_Division (
-      File : access constant Character := null;
-      Line : Integer := 0)
-      renames rcheck_03;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line);
+   pragma No_Return (Zero_Division);
 
    procedure rcheck_04 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_04);
@@ -79,27 +97,23 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_06);
    pragma Export (C, rcheck_06, "__gnat_rcheck_06");
 
-   procedure rcheck_07 (File : access Character; Line : Integer);
+   procedure rcheck_07 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_07);
    pragma Export (C, rcheck_07, "__gnat_rcheck_07");
-
-   procedure Length_Check_Failed (
-      File : access constant Character := null;
-      Line : Integer := 0)
-      renames rcheck_07;
 
    procedure rcheck_09 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_09);
    pragma Export (C, rcheck_09, "__gnat_rcheck_09");
 
-   procedure rcheck_10 (File : access constant Character; Line : Integer);
+   procedure rcheck_10 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_10);
    pragma Export (C, rcheck_10, "__gnat_rcheck_10");
 
+   --  equivalent to rcheck_10
    procedure Overflow (
-      File : access constant Character := null;
-      Line : Integer := 0)
-      renames rcheck_10;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line);
+   pragma No_Return (Overflow);
 
    procedure rcheck_12 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_12);

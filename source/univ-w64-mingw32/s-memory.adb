@@ -41,7 +41,7 @@ package body System.Memory is
          Actual_Size))
       do
          if Result = Null_Address then
-            Unwind.Raising.Raise_Exception (
+            Unwind.Raising.Raise_Exception_From_Here_With (
                Unwind.Standard.Storage_Error'Access,
                Message => Heap_Exhausted);
          end if;
@@ -72,7 +72,7 @@ package body System.Memory is
          C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
-            Unwind.Raising.Raise_Exception (
+            Unwind.Raising.Raise_Exception_From_Here_With (
                Unwind.Standard.Storage_Error'Access,
                Message => Heap_Exhausted);
          end if;
@@ -104,7 +104,7 @@ package body System.Memory is
       if Mapped_Address = C.windef.LPVOID (Null_Address)
          and then Raise_On_Error
       then
-         Unwind.Raising.Raise_Exception (
+         Unwind.Raising.Raise_Exception_From_Here_With (
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;
@@ -122,7 +122,7 @@ package body System.Memory is
    begin
       --  VirtualAlloc and VirtualFree should be one-to-one correspondence
       if Raise_On_Error then
-         Unwind.Raising.Raise_Exception (
+         Unwind.Raising.Raise_Exception_From_Here_With (
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;

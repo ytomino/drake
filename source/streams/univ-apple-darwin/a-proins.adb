@@ -116,7 +116,7 @@ package body Ada.Processes.Inside is
          C.stdlib.free (C.void_ptr (char_ptr_Conv.To_Address (Old_Directory)));
       end if;
       if Exception_Id /= Ada.Exceptions.Null_Id then
-         Ada.Exceptions.Raise_Exception (Exception_Id);
+         Exceptions.Raise_Exception_From_Here (Exception_Id);
       end if;
    end Spawn;
 
