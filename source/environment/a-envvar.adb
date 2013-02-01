@@ -1,49 +1,27 @@
-with Ada.Unchecked_Conversion;
+with Ada.Environment_Variables.Inside;
 with System.Address_To_Named_Access_Conversions;
-with System.Environment_Block;
+with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
-with C.stdlib;
-with C.string;
 package body Ada.Environment_Variables is
    pragma Suppress (All_Checks);
-   use type C.char_ptr;
-   use type C.char_ptr_ptr;
-   use type C.signed_int;
-   use type C.ptrdiff_t;
+   use type Inside.Character_Access;
 
    package char_ptr_Conv is
       new System.Address_To_Named_Access_Conversions (
-         C.char,
-         C.char_ptr);
-   package char_ptr_ptr_Conv is
-      new System.Address_To_Named_Access_Conversions (
-         C.char_ptr,
-         C.char_ptr_ptr);
+         Character,
+         Inside.Character_Access);
 
-   function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
-      return C.char_ptr_ptr;
-   function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
-      return C.char_ptr_ptr
-   is
-      function I is new Unchecked_Conversion (C.char_ptr_ptr, C.ptrdiff_t);
-      function P is new Unchecked_Conversion (C.ptrdiff_t, C.char_ptr_ptr);
-   begin
-      return P (I (Left) + Right * (C.char_ptr'Size / Standard'Storage_Unit));
-   end "+";
+   function "+" (Left : Cursor; Right : Integer) return Cursor
+      renames Inside."+";
 
-   function getenv (Name : String) return C.char_ptr;
-   function getenv (Name : String) return C.char_ptr is
-      Z_Name : String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
-   begin
-      return C.stdlib.getenv (C_Name (0)'Access);
-   end getenv;
+   function strlen (s : not null access Character)
+      return System.Storage_Elements.Storage_Count;
+   pragma Import (Intrinsic, strlen, "__builtin_strlen");
 
    --  implementation
 
    function Value (Name : String) return String is
-      Result : constant C.char_ptr := getenv (Name);
+      Result : constant Inside.Character_Access := Inside.Reference (Name);
    begin
       if Result = null then
          raise Constraint_Error;
@@ -55,54 +33,49 @@ package body Ada.Environment_Variables is
 
    function Exists (Name : String) return Boolean is
    begin
-      return getenv (Name) /= null;
+      return Inside.Reference (Name) /= null;
    end Exists;
 
    procedure Set (Name : String; Value : String) is
-      Z_Name : String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
-      Z_Value : String := Value & Character'Val (0);
-      C_Value : C.char_array (C.size_t);
-      for C_Value'Address use Z_Value'Address;
+      Error : Boolean;
    begin
-      if C.stdlib.setenv (C_Name (0)'Access, C_Value (0)'Access, 1) /= 0 then
+      Inside.Set (Name, Value, Error => Error);
+      if Error then
          raise Constraint_Error;
       end if;
    end Set;
 
    procedure Clear (Name : String) is
-      Z_Name : String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+      Error : Boolean;
    begin
-      if C.stdlib.unsetenv (C_Name (0)'Access) /= 0 then
+      Inside.Clear (Name, Error => Error);
+      if Error then
          raise Constraint_Error;
       end if;
    end Clear;
 
    procedure Clear is
-      Block : constant C.char_ptr_ptr := System.Environment_Block;
-      I : C.char_ptr_ptr := Block;
+      Block : constant Cursor := Inside.First;
+      I : Cursor := Block;
    begin
-      while I.all /= null loop
+      while Inside.Reference (I) /= null loop
          I := I + 1;
       end loop;
       while I /= Block loop
          I := I + (-1);
-         Clear (Name (Cursor (char_ptr_ptr_Conv.To_Address (I))).Element.all);
+         Clear (Name (I).Element.all);
       end loop;
    end Clear;
 
    procedure Iterate (
       Process : not null access procedure (Name, Value : String))
    is
-      I : C.char_ptr_ptr := System.Environment_Block;
+      I : Cursor := Inside.First;
    begin
-      while I.all /= null loop
+      while Inside.Reference (I) /= null loop
          Process (
-            Name (Cursor (char_ptr_ptr_Conv.To_Address (I))).Element.all,
-            Value (Cursor (char_ptr_ptr_Conv.To_Address (I))).Element.all);
+            Name (I).Element.all,
+            Value (I).Element.all);
          I := I + 1;
       end loop;
    end Iterate;
@@ -114,7 +87,7 @@ package body Ada.Environment_Variables is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all
+      return Inside.Reference (Position)
          /= null;
    end Has_Element;
 
@@ -124,7 +97,7 @@ package body Ada.Environment_Variables is
       subtype Fixed_String is String (Positive);
       S : Fixed_String;
       for S'Address use char_ptr_Conv.To_Address (
-         char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all);
+         Inside.Reference (Position));
       I : Positive := 1;
    begin
       while S (I) /= '=' and then S (I) /= Character'Val (0) loop
@@ -142,7 +115,7 @@ package body Ada.Environment_Variables is
       subtype Fixed_String is String (Positive);
       S : Fixed_String;
       for S'Address use char_ptr_Conv.To_Address (
-         char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all);
+         Inside.Reference (Position));
       First : Positive;
       Last : Natural;
       I : Positive := 1;
@@ -151,7 +124,7 @@ package body Ada.Environment_Variables is
          if S (I) = '=' then
             First := I + 1;
             Last := I + Natural (
-               C.string.strlen ((C.char (S (I + 1))'Unrestricted_Access)));
+               strlen (S (I + 1)'Unrestricted_Access));
             exit;
          elsif S (I) = Character'Val (0) then
             First := I;
@@ -169,7 +142,7 @@ package body Ada.Environment_Variables is
    overriding function First (Object : Iterator) return Cursor is
       pragma Unreferenced (Object);
    begin
-      return Cursor (char_ptr_ptr_Conv.To_Address (System.Environment_Block));
+      return Inside.First;
    end First;
 
    overriding function Next (Object : Iterator; Position : Cursor)
@@ -177,8 +150,7 @@ package body Ada.Environment_Variables is
    is
       pragma Unreferenced (Object);
    begin
-      return Cursor (char_ptr_ptr_Conv.To_Address (
-         char_ptr_ptr_Conv.To_Pointer (System.Address (Position)) + 1));
+      return Position + 1;
    end Next;
 
 end Ada.Environment_Variables;

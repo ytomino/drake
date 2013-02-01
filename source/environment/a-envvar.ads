@@ -34,7 +34,7 @@ package Ada.Environment_Variables is
 
 private
 
-   type Cursor is new System.Address; -- C.char_ptr_ptr; -- [gcc-4.7] ???
+   type Cursor is new System.Address;
 
    type Iterator is new Iterator_Interfaces.Forward_Iterator
       with null record;
