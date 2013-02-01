@@ -82,8 +82,7 @@ package body Ada.Environment_Variables is
    end Clear;
 
    procedure Clear is
-      Block : constant C.char_ptr_ptr :=
-         System.Environment_Block.Environment_Block;
+      Block : constant C.char_ptr_ptr := System.Environment_Block;
       I : C.char_ptr_ptr := Block;
    begin
       while I.all /= null loop
@@ -98,7 +97,7 @@ package body Ada.Environment_Variables is
    procedure Iterate (
       Process : not null access procedure (Name, Value : String))
    is
-      I : C.char_ptr_ptr := System.Environment_Block.Environment_Block;
+      I : C.char_ptr_ptr := System.Environment_Block;
    begin
       while I.all /= null loop
          Process (
@@ -170,8 +169,7 @@ package body Ada.Environment_Variables is
    overriding function First (Object : Iterator) return Cursor is
       pragma Unreferenced (Object);
    begin
-      return Cursor (char_ptr_ptr_Conv.To_Address (
-         System.Environment_Block.Environment_Block));
+      return Cursor (char_ptr_ptr_Conv.To_Address (System.Environment_Block));
    end First;
 
    overriding function Next (Object : Iterator; Position : Cursor)

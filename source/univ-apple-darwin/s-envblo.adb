@@ -1,10 +1,6 @@
 with C.crt_externs;
-package body System.Environment_Block is
+function System.Environment_Block return C.char_ptr_ptr is
    pragma Suppress (All_Checks);
-
-   function Environment_Block return C.char_ptr_ptr is
-   begin
-      return C.crt_externs.NSGetEnviron.all;
-   end Environment_Block;
-
+begin
+   return C.crt_externs.NSGetEnviron.all;
 end System.Environment_Block;

@@ -1,9 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Darwin
 with C;
-package System.Environment_Block is
-   pragma Preelaborate;
-
-   function Environment_Block return C.char_ptr_ptr;
-
-end System.Environment_Block;
+function System.Environment_Block return C.char_ptr_ptr;
+pragma Preelaborate (System.Environment_Block);
+pragma Inline (System.Environment_Block);
