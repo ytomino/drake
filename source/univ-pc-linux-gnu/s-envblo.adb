@@ -1,5 +1,5 @@
 with C.unistd;
-package body Ada.Environment_Variables.Inside is
+package body System.Environment_Block is
    pragma Suppress (All_Checks);
 
    --  implementation
@@ -9,4 +9,4 @@ package body Ada.Environment_Variables.Inside is
       return C.unistd.environ;
    end Environment_Block;
 
-end Ada.Environment_Variables.Inside;
+end System.Environment_Block;

@@ -1,5 +1,5 @@
 with C.crt_externs;
-package body Ada.Environment_Variables.Inside is
+package body System.Environment_Block is
    pragma Suppress (All_Checks);
 
    function Environment_Block return C.char_ptr_ptr is
@@ -7,4 +7,4 @@ package body Ada.Environment_Variables.Inside is
       return C.crt_externs.NSGetEnviron.all;
    end Environment_Block;
 
-end Ada.Environment_Variables.Inside;
+end System.Environment_Block;

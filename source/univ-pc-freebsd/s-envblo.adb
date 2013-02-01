@@ -1,4 +1,4 @@
-package body Ada.Environment_Variables.Inside is
+package body System.Environment_Block is
    pragma Suppress (All_Checks);
 
    environ : C.char_ptr_ptr;
@@ -11,4 +11,4 @@ package body Ada.Environment_Variables.Inside is
       return environ;
    end Environment_Block;
 
-end Ada.Environment_Variables.Inside;
+end System.Environment_Block;

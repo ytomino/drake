@@ -1,6 +1,6 @@
-with Ada.Environment_Variables.Inside;
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
+with System.Environment_Block;
 with C.errno;
 with C.spawn;
 with C.stdlib;
@@ -46,7 +46,7 @@ package body Ada.Processes.Inside is
          for C_Command_Line'Address use Z_Command_Line'Address;
          Arguments : C.char_ptr_array (0 .. 255);
          Environment_Block : constant C.char_ptr_ptr :=
-            Ada.Environment_Variables.Inside.Environment_Block;
+            System.Environment_Block.Environment_Block;
          Actions : aliased C.spawn.posix_spawn_file_actions_t;
          Attrs : aliased C.spawn.posix_spawnattr_t;
          New_Child : aliased C.sys.types.pid_t;
