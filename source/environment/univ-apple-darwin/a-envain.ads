@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Darwin
 with C;
 package Ada.Environment_Variables.Inside is
    pragma Preelaborate;
