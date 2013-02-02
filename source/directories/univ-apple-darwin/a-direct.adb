@@ -9,6 +9,7 @@ with C.errno;
 with C.fnmatch;
 with C.stdlib;
 with C.string;
+with C.time;
 with C.unistd;
 with C.sys.time;
 with C.sys.types;
@@ -450,9 +451,9 @@ package body Ada.Directories is
 
    procedure Set_Modification_Time (Name : String; Time : Calendar.Time) is
       function Cast is new Unchecked_Conversion (Calendar.Time, Duration);
-      function To_timeval (X : C.sys.time.struct_timespec)
+      function To_timeval (X : C.time.struct_timespec)
          return C.sys.time.struct_timeval;
-      function To_timeval (X : C.sys.time.struct_timespec)
+      function To_timeval (X : C.time.struct_timespec)
          return C.sys.time.struct_timeval is
       begin
          return (

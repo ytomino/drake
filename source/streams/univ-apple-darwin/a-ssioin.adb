@@ -2,9 +2,9 @@ with System.Address_To_Named_Access_Conversions;
 with System.Memory;
 with System.Storage_Elements;
 with C.errno;
+with C.fcntl;
 with C.stdlib;
 with C.string;
-with C.sys.fcntl;
 with C.sys.stat;
 with C.sys.types;
 with C.sys.unistd;
@@ -60,10 +60,10 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean);
    procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean) is
    begin
-      Error := C.sys.fcntl.fcntl (
+      Error := C.fcntl.fcntl (
          Handle,
-         C.sys.fcntl.F_SETFD,
-         C.sys.fcntl.FD_CLOEXEC) = -1;
+         C.fcntl.F_SETFD,
+         C.fcntl.FD_CLOEXEC) = -1;
    end Set_Close_On_Exec;
 
    --  implementation of handle
@@ -355,9 +355,9 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Form_Parameter (Form, "shared", First, Last);
       if First <= Last and then Form (First) = 'y' then
-         return C.sys.fcntl.O_SHLOCK;
+         return C.fcntl.O_SHLOCK;
       elsif First <= Last and then Form (First) = 'n' then
-         return C.sys.fcntl.O_EXLOCK;
+         return C.fcntl.O_EXLOCK;
       else
          return Default;
       end if;
@@ -388,14 +388,14 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       --  Flags, Append_File always has read and write access for Inout_File
       if Mode = In_File then
-         Default_Lock_Flags := C.sys.fcntl.O_SHLOCK;
+         Default_Lock_Flags := C.fcntl.O_SHLOCK;
       else
-         Default_Lock_Flags := C.sys.fcntl.O_EXLOCK;
+         Default_Lock_Flags := C.fcntl.O_EXLOCK;
       end if;
       case Method is
          when Create =>
             declare
-               use C.sys.fcntl;
+               use C.fcntl;
                Table : constant array (File_Mode) of C.unsigned_int := (
                   In_File => O_RDWR or O_CREAT or O_TRUNC,
                   Out_File => O_WRONLY or O_CREAT or O_TRUNC,
@@ -406,7 +406,7 @@ package body Ada.Streams.Stream_IO.Inside is
             end;
          when Open =>
             declare
-               use C.sys.fcntl;
+               use C.fcntl;
                Table : constant array (File_Mode) of C.unsigned_int := (
                   In_File => O_RDONLY,
                   Out_File => O_WRONLY or O_TRUNC,
@@ -416,7 +416,7 @@ package body Ada.Streams.Stream_IO.Inside is
             end;
          when Reset =>
             declare
-               use C.sys.fcntl;
+               use C.fcntl;
                Table : constant array (File_Mode) of C.unsigned_int := (
                   In_File => O_RDONLY,
                   Out_File => O_WRONLY,
@@ -427,7 +427,7 @@ package body Ada.Streams.Stream_IO.Inside is
       end case;
       Flags := Flags or Form_Share_Mode (Form, Default_Lock_Flags);
       --  open
-      Handle := C.sys.fcntl.open (Name, C.signed_int (Flags), Modes);
+      Handle := C.fcntl.open (Name, C.signed_int (Flags), Modes);
       if Handle < 0 then
          errno := C.errno.errno;
          Free (File); -- free on error

@@ -1,5 +1,4 @@
 with Ada.Unchecked_Conversion;
-with C.time;
 package body System.Native_Time is
    pragma Suppress (All_Checks);
    use type C.signed_long;
@@ -13,9 +12,9 @@ package body System.Native_Time is
    --  seconds from 1971-01-01 (0 of POSIX time) to 2150-01-01 (0 of Ada time)
 
    function To_timespec (X : C.sys.time.struct_timeval)
-      return C.sys.time.struct_timespec;
+      return C.time.struct_timespec;
    function To_timespec (X : C.sys.time.struct_timeval)
-      return C.sys.time.struct_timespec is
+      return C.time.struct_timespec is
    begin
       return (
          tv_sec => X.tv_sec,
@@ -23,9 +22,9 @@ package body System.Native_Time is
    end To_timespec;
 
    function To_timespec_Duration (D : Duration)
-      return C.sys.time.struct_timespec;
+      return C.time.struct_timespec;
    function To_timespec_Duration (D : Duration)
-      return C.sys.time.struct_timespec
+      return C.time.struct_timespec
    is
       function Cast is new Ada.Unchecked_Conversion (Duration, Time_Rep);
       Sub_Second : constant Time_Rep := Cast (D) mod 1000000000;
@@ -81,7 +80,7 @@ package body System.Native_Time is
    begin
       if D > 0.0 then
          declare
-            T : aliased C.sys.time.struct_timespec := To_timespec_Duration (D);
+            T : aliased C.time.struct_timespec := To_timespec_Duration (D);
             Dummy : C.signed_int;
             pragma Unreferenced (Dummy);
          begin

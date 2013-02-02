@@ -26,7 +26,7 @@
 #include <sys/wait.h> /* waitpid */
 #include <pwd.h> /* user info */
 #include <grp.h> /* group info */
-#include <sys/fcntl.h> /* low-level file op */
+#include <fcntl.h> /* low-level file op */
 #include <sys/stat.h> /* low-level file info */
 #include <sys/socket.h> /* socket, before sys/mount.h */
 #include <sys/mount.h> /* filesystem */
@@ -72,6 +72,7 @@
 #undef NT_INCLUDED
 #include <winnt.h>
 #include <windows.h>
+#include <wincrypt.h> /* random */
 #define RC_INVOKED /* headmaster can not translate some inline functions */
 #include <malloc.h>
 #undef RC_INVOKED
@@ -92,35 +93,42 @@
 #endif
 #endif
 #if defined(__APPLE__)
+#pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
 #pragma for Ada "errno.h" include "sys/errno.h"
+#pragma for Ada "fcntl.h" include "sys/fcntl.h"
 #pragma for Ada "pthread.h" include "signal.h" /* pthread_kill */
 #pragma for Ada "pthread.h" include "sys/types.h"
-#pragma for Ada "sys/signal.h" include "sys/_structs.h" /* stack_t */
+#pragma for Ada "signal.h" include "sys/_structs.h" /* stack_t */
+#pragma for Ada "signal.h" include "sys/signal.h"
 #pragma for Ada "sys/stat.h" include "sys/fcntl.h" /* S_IF* */
-#pragma for Ada "sys/time.h" include "sys/_structs.h"
-#pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
+#pragma for Ada "sys/time.h" include "sys/_structs.h" /* timeval */
 #pragma for Ada "sys/ucontext.h" include "sys/_structs.h" /* ucontext_t */
 #pragma for Ada "termios.h" include "sys/termios.h"
+#pragma for Ada "time.h" include "sys/_structs.h" /* timespec */
 #elif defined(__FreeBSD__)
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
+#pragma for Ada "signal.h" include "sys/select.h" /* sigset_t */
+#pragma for Ada "signal.h" include "sys/signal.h"
 #pragma for Ada "sys/mman.h" include "sys/types.h" /* mmap */
-#pragma for Ada "sys/signal.h" include "sys/select.h" /* sigset_t */
-#pragma for Ada "sys/time.h" include "sys/_timeval.h"
-#pragma for Ada "sys/time.h" include "sys/timespec.h"
+#pragma for Ada "sys/time.h" include "sys/_timeval.h" /* timeval */
+#pragma for Ada "time.h" include "sys/timespec.h" /* timespec */
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
 #elif defined(__linux__)
 #undef si_value /* cannot inline returning unchecked union */
 #pragma for Ada overload int open(const char *, int, __mode_t)
 #pragma for Ada overload long syscall(long, void *, unsigned int)
 #pragma for Ada "bits/time.h" monolithic_include "bits/timex.h"
+#pragma for Ada "fcntl.h" include "bits/fcntl.h"
 #pragma for Ada "pthread.h" include "bits/pthreadtypes.h"
+#pragma for Ada "signal.h" include "bits/siginfo.h"
+#pragma for Ada "signal.h" include "bits/sigstack.h" /* MINSIGSTKSZ */
 #pragma for Ada "signal.h" monolithic_include "bits/sigaction.h"
+#pragma for Ada "signal.h" monolithic_include "bits/signum.h"
 #pragma for Ada "sys/mman.h" include "bits/mman.h"
-#pragma for Ada "sys/signal.h" include "bits/signum.h"
-#pragma for Ada "sys/signal.h" include "bits/siginfo.h"
-#pragma for Ada "sys/signal.h" include "bits/sigstack.h" /* MINSIGSTKSZ */
-#pragma for Ada "sys/signal.h" include "signal.h" /* SA_ */
+#pragma for Ada "sys/resource.h" include "bits/resource.h"
 #pragma for Ada "sys/syscall.h" include "bits/syscall.h"
+#pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */
+#pragma for Ada "sys/types.h" include "bits/types.h" /* time_t */
 #endif
 
 #if defined(__WINNT__)

@@ -2,7 +2,6 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with C.termios;
 with C.time;
-with C.sys.time;
 package body Ada.Text_IO.Inside is
    use type Streams.Stream_Element_Offset;
    use type Streams.Stream_IO.Inside.Handle_Type;
@@ -122,7 +121,7 @@ package body Ada.Text_IO.Inside is
    end Take_Buffer;
 
    procedure Wait is
-      Time : aliased constant C.sys.time.struct_timespec := (
+      Time : aliased constant C.time.struct_timespec := (
          tv_sec => 0,
          tv_nsec => 1);
       Dummy : C.signed_int;
