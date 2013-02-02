@@ -72,6 +72,7 @@
 #undef NT_INCLUDED
 #include <winnt.h>
 #include <windows.h>
+#include <wincrypt.h> /* random */
 #define RC_INVOKED /* headmaster can not translate some inline functions */
 #include <malloc.h>
 #undef RC_INVOKED
