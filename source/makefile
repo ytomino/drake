@@ -99,7 +99,7 @@ else
 EH=sjlj
 endif
 TARGETSUBDIR=univ-w64-mingw32
-SUBDIRS:=$(filter-out ada83 calendar environment directories numerics streams tasking textio,$(SUBDIRS))
+SUBDIRS:=$(filter-out ada83 calendar directories numerics streams tasking textio,$(SUBDIRS))
 OBJFMT=COFF
 else # others
 EH=zcx

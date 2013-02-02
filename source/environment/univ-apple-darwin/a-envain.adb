@@ -1,4 +1,3 @@
-with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Environment_Block;
@@ -23,17 +22,6 @@ package body Ada.Environment_Variables.Inside is
       new System.Address_To_Named_Access_Conversions (
          C.char_ptr,
          C.char_ptr_ptr);
-
-   function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
-      return C.char_ptr_ptr;
-   function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
-      return C.char_ptr_ptr
-   is
-      function I is new Unchecked_Conversion (C.char_ptr_ptr, C.ptrdiff_t);
-      function P is new Unchecked_Conversion (C.ptrdiff_t, C.char_ptr_ptr);
-   begin
-      return P (I (Left) + Right * (C.char_ptr'Size / Standard'Storage_Unit));
-   end "+";
 
    procedure Do_Separate (
       Item : not null access constant C.char;
@@ -85,7 +73,7 @@ package body Ada.Environment_Variables.Inside is
       return C.stdlib.getenv (C_Name (0)'Access) /= null;
    end Exists;
 
-   procedure Set (Name : String; Value : String; Error : out Boolean) is
+   procedure Set (Name : String; Value : String) is
       Z_Name : String := Name & Character'Val (0);
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
@@ -93,15 +81,47 @@ package body Ada.Environment_Variables.Inside is
       C_Value : C.char_array (C.size_t);
       for C_Value'Address use Z_Value'Address;
    begin
-      Error := C.stdlib.setenv (C_Name (0)'Access, C_Value (0)'Access, 1) < 0;
+      if C.stdlib.setenv (C_Name (0)'Access, C_Value (0)'Access, 1) < 0 then
+         raise Constraint_Error;
+      end if;
    end Set;
 
-   procedure Clear (Name : String; Error : out Boolean) is
+   procedure Clear (Name : String) is
       Z_Name : String := Name & Character'Val (0);
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
    begin
-      Error := C.stdlib.unsetenv (C_Name (0)'Access) < 0;
+      if C.stdlib.unsetenv (C_Name (0)'Access) < 0 then
+         raise Constraint_Error;
+      end if;
+   end Clear;
+
+   procedure Clear is
+      Block : constant C.char_ptr_ptr := System.Environment_Block;
+      I : C.char_ptr_ptr := Block;
+   begin
+      while I.all /= null loop
+         I := char_ptr_ptr_Conv.To_Pointer (
+            char_ptr_ptr_Conv.To_Address (I)
+            + C.char_ptr'Size / Standard'Storage_Unit);
+      end loop;
+      while I /= Block loop
+         I := char_ptr_ptr_Conv.To_Pointer (
+            char_ptr_ptr_Conv.To_Address (I)
+            - C.char_ptr'Size / Standard'Storage_Unit);
+         declare
+            Item : constant C.char_ptr := I.all;
+            subtype Fixed_String is String (Positive);
+            Name : Fixed_String;
+            for Name'Address use
+               char_const_ptr_Conv.To_Address (C.char_const_ptr (Item));
+            Name_Length : C.size_t;
+            Value : C.char_const_ptr;
+         begin
+            Do_Separate (Item, Name_Length, Value);
+            Clear (Name (1 .. Natural (Name_Length)));
+         end;
+      end loop;
    end Clear;
 
    function Has_Element (Position : Cursor) return Boolean is
@@ -135,16 +155,23 @@ package body Ada.Environment_Variables.Inside is
          char_const_ptr_Conv.To_Address (Value));
    end Value;
 
-   function First return Cursor is
+   function Get_Block return System.Address is
+   begin
+      return System.Null_Address;
+   end Get_Block;
+
+   function First (Block : System.Address) return Cursor is
+      pragma Unreferenced (Block);
    begin
       return Cursor (char_ptr_ptr_Conv.To_Address (System.Environment_Block));
    end First;
 
-   function "+" (Left : Cursor; Right : Integer) return Cursor is
+   function Next (Block : System.Address; Position : Cursor) return Cursor is
+      pragma Unreferenced (Block);
    begin
-      return Cursor (char_ptr_ptr_Conv.To_Address (
-         char_ptr_ptr_Conv.To_Pointer (System.Address (Left))
-         + C.ptrdiff_t (Right)));
-   end "+";
+      return Cursor (
+         System.Address (Position)
+         + C.char_ptr'Size / Standard'Storage_Unit);
+   end Next;
 
 end Ada.Environment_Variables.Inside;
