@@ -80,11 +80,6 @@ package body Ada.Environment_Variables is
       end loop;
    end Iterate;
 
-   function Iterate return Iterator is
-   begin
-      return (null record);
-   end Iterate;
-
    function Has_Element (Position : Cursor) return Boolean is
    begin
       return Inside.Reference (Position)
@@ -138,6 +133,11 @@ package body Ada.Environment_Variables is
          First,
          Last);
    end Value;
+
+   function Iterate return Iterator is
+   begin
+      return (null record);
+   end Iterate;
 
    overriding function First (Object : Iterator) return Cursor is
       pragma Unreferenced (Object);
