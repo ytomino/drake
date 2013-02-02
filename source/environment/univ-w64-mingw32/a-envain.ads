@@ -18,8 +18,7 @@ package Ada.Environment_Variables.Inside is
    function Value (Position : Cursor) return String;
 
    function Get_Block return System.Address;
-   pragma Inline (Get_Block);
-   procedure Release_Block (Block : System.Address) is null;
+   procedure Release_Block (Block : System.Address);
 
    function First (Block : System.Address) return Cursor;
    pragma Inline (First);

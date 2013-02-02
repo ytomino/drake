@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 with Ada.Iterator_Interfaces;
+private with Ada.Finalization;
 private with System;
 package Ada.Environment_Variables is
    pragma Preelaborate;
@@ -25,16 +26,19 @@ package Ada.Environment_Variables is
    function Value (Position : Cursor) return String;
    package Iterator_Interfaces is
       new Ada.Iterator_Interfaces (Cursor, Has_Element);
-   type Iterator is new Iterator_Interfaces.Forward_Iterator
-      with private;
-   function Iterate return Iterator;
+   function Iterate return Iterator_Interfaces.Forward_Iterator'Class;
 
 private
 
    type Cursor is new System.Address;
 
-   type Iterator is new Iterator_Interfaces.Forward_Iterator
-      with null record;
+   type Iterator is new Finalization.Limited_Controlled
+      and Iterator_Interfaces.Forward_Iterator with
+   record
+      Block : System.Address := System.Null_Address;
+   end record;
+
+   overriding procedure Finalize (Object : in out Iterator);
 
    overriding function First (Object : Iterator) return Cursor;
    overriding function Next (Object : Iterator; Position : Cursor)

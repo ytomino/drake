@@ -65,14 +65,29 @@ begin
 	end;
 	-- modify environment variables
 	Ada.Debug.Put ("*** clear ***");
-	Ada.Environment_Variables.Clear;
-	Ada.Environment_Variables.Set ("A", "B");
-	Ada.Environment_Variables.Set ("C", "");
-	Count := 0;
-	Value_Test := True;
-	Ada.Environment_Variables.Iterate (Process'Access);
-	pragma Assert (Count = 2);
-	pragma Assert (Ada.Environment_Variables.Value ("A") = "B");
-	pragma Assert (Ada.Environment_Variables.Value ("C") = "");
+	declare
+		Is_Windows : constant Boolean :=
+			Ada.Environment_Variables.Exists ("OS")
+			and then Ada.Environment_Variables.Value ("OS") = "Windows_NT";
+		Old_Count : constant Natural := Count;
+		Cleared_Count : Natural;
+	begin
+		Ada.Environment_Variables.Clear;
+		Count := 0;
+		Ada.Environment_Variables.Iterate (Process'Access);
+		Cleared_Count := Count;
+		pragma Assert (Cleared_Count = 0
+			or else (
+				Is_Windows -- it could not clear some environment variables in Windows
+				and then Cleared_Count in 2 .. Old_Count));
+		Ada.Environment_Variables.Set ("A", "B");
+		Ada.Environment_Variables.Set ("C", "");
+		Count := 0;
+		Value_Test := True;
+		Ada.Environment_Variables.Iterate (Process'Access);
+		pragma Assert (Count = Cleared_Count + 2);
+		pragma Assert (Ada.Environment_Variables.Value ("A") = "B");
+		pragma Assert (Ada.Environment_Variables.Value ("C") = "");
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end cmdline;
