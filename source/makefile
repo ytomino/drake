@@ -176,7 +176,11 @@ endif
 ALL_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(basename $(notdir $(ALL_OBJS)))))
 
 ifneq ($(WITHC),0)
+ifneq ($(wildcard $(BUILDDIR)/c.o),)
+IMPORT_HEADERS=
+else
 IMPORT_HEADERS=import_objs
+endif
 else
 IMPORT_HEADERS=$(IMPORTDIR)/c.ads
 endif

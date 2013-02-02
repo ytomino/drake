@@ -45,8 +45,8 @@ begin
 	begin
 		while Ada.Environment_Variables.Has_Element (Pos) loop
 			Count_2 := Count_2 + 1;
-			pragma Assert (Ada.Environment_Variables.Name (Pos).Element.all = Rec (Count_2).Name.all);
-			pragma Assert (Ada.Environment_Variables.Value (Pos).Element.all = Rec (Count_2).Value.all);
+			pragma Assert (Ada.Environment_Variables.Name (Pos) = Rec (Count_2).Name.all);
+			pragma Assert (Ada.Environment_Variables.Value (Pos) = Rec (Count_2).Value.all);
 			Pos := Ada.Environment_Variables.Iterator_Interfaces.Next (Ite, Pos);
 		end loop;
 		pragma Assert (Count_2 = Count);

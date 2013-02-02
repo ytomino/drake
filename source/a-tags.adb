@@ -93,7 +93,7 @@ package body Ada.Tags is
    function DT_With_Checking (T : Tag) return Dispatch_Table_Ptr is
    begin
       if T = No_Tag then
-         raise Tag_Error;
+         Exceptions.Raise_Exception_From_Here (Tag_Error'Identity);
       else
          return DT (T);
       end if;
@@ -137,7 +137,7 @@ package body Ada.Tags is
          Primary_Only => False,
          Same_Level => False)
       then
-         raise Tag_Error;
+         Exceptions.Raise_Exception_From_Here (Tag_Error'Identity);
       else
          return Result;
       end if;
@@ -302,7 +302,7 @@ package body Ada.Tags is
                or else Last >= External'Last
                or else External (Last + 1) /= '#'
             then
-               raise Tag_Error;
+               Exceptions.Raise_Exception_From_Here (Tag_Error'Identity);
             end if;
             return Tag_Conv.To_Pointer (
                System.Storage_Elements.To_Address (Result));
@@ -315,7 +315,7 @@ package body Ada.Tags is
             Node := E_Find (External_Map, External);
             System.Shared_Locking.Leave;
             if Node = null then
-               raise Tag_Error;
+               Exceptions.Raise_Exception_From_Here (Tag_Error'Identity);
             end if;
             return Node.Tag;
          end;

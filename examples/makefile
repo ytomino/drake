@@ -78,6 +78,7 @@ all: $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
 
 $(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
 	make -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
+	touch $@
 	-rm $(EXAMPLES) 2> /dev/null
 
 $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a

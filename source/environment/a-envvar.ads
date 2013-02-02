@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  with Ada.Iterator_Interfaces; -- [gcc 4.6] can not instantiate it
-with Ada.References.String;
 private with System;
 package Ada.Environment_Variables is
    pragma Preelaborate;
@@ -22,10 +21,8 @@ package Ada.Environment_Variables is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
-   function Name (Position : Cursor)
-      return References.String.Slicing.Constant_Reference_Type;
-   function Value (Position : Cursor)
-      return References.String.Slicing.Constant_Reference_Type;
+   function Name (Position : Cursor) return String;
+   function Value (Position : Cursor) return String;
    package Iterator_Interfaces is
 --    new Ada.Iterator_Interfaces (Cursor, Has_Element);
       --  [gcc 4.6] Cursor is incomplete type
@@ -40,7 +37,7 @@ package Ada.Environment_Variables is
 
 private
 
-   type Cursor is new System.Address; -- C.char_ptr_ptr; -- [gcc-4.7] ???
+   type Cursor is new System.Address;
 
    type Iterator is new Iterator_Interfaces.Forward_Iterator
       with null record;

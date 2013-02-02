@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Ada.IO_Exceptions;
 with C.sys.fcntl;
 with C.sys.types;
@@ -20,11 +21,11 @@ begin
       Random_File_Name (0)'Access,
       C.sys.fcntl.O_RDONLY);
    if F = -1 then
-      raise IO_Exceptions.Use_Error;
+      Exceptions.Raise_Exception_From_Here (IO_Exceptions.Use_Error'Identity);
    end if;
    Read_Size := C.unistd.read (F, C.void_ptr (Item), C.size_t (Size));
    Closed := C.unistd.close (F);
    if Read_Size /= C.sys.types.ssize_t (Size) or else Closed = -1 then
-      raise IO_Exceptions.Use_Error;
+      Exceptions.Raise_Exception_From_Here (IO_Exceptions.Use_Error'Identity);
    end if;
 end Ada.Numerics.Initiator;

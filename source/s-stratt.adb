@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 package body System.Stream_Attributes is
    pragma Suppress (All_Checks);
@@ -93,20 +94,34 @@ package body System.Stream_Attributes is
       1 ..
       Wide_Wide_Character'Stream_Size / Ada.Streams.Stream_Element'Size);
 
+   procedure Read_Just (
+      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item : out Ada.Streams.Stream_Element_Array;
+      Line : Natural := Ada.Debug.Line);
+   procedure Read_Just (
+      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item : out Ada.Streams.Stream_Element_Array;
+      Line : Natural := Ada.Debug.Line)
+   is
+      Last : Ada.Streams.Stream_Element_Offset;
+   begin
+      Ada.Streams.Read (Stream.all, Item, Last);
+      if Last < Item'Last then
+         Ada.Exceptions.Raise_Exception_From_Here (
+            End_Error'Identity,
+            Line => Line);
+      end if;
+   end Read_Just;
+
    --  implementation
 
    function I_AD (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Fat_Pointer is
       function Cast is new Ada.Unchecked_Conversion (S_AD, Fat_Pointer);
       Buffer : S_AD;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_AD;
 
    function I_AS (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -114,14 +129,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_AS, Thin_Pointer);
       Buffer : S_AS;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_AS;
 
    function I_B (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -129,14 +139,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_B, IO_Boolean);
       Buffer : S_B;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Boolean (Cast (Buffer));
-      end if;
+      Read_Just (Stream, Buffer);
+      return Boolean (Cast (Buffer));
    end I_B;
 
    function I_C (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -144,14 +149,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_C, Character);
       Buffer : S_C;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_C;
 
    function I_F (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -159,14 +159,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_F, Float);
       Buffer : S_F;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_F;
 
    function I_I (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -174,14 +169,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_I, Integer);
       Buffer : S_I;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_I;
 
    function I_LF (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -189,14 +179,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_LF, Long_Float);
       Buffer : S_LF;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_LF;
 
    function I_LI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -204,14 +189,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_LI, Long_Integer);
       Buffer : S_LI;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_LI;
 
    function I_LLF (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -219,14 +199,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_LLF, Long_Long_Float);
       Buffer : S_LLF;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_LLF;
 
    function I_LLI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -234,14 +209,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_LLI, Long_Long_Integer);
       Buffer : S_LLI;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_LLI;
 
    function I_LLU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -251,14 +221,9 @@ package body System.Stream_Attributes is
          S_LLU,
          Unsigned_Types.Long_Long_Unsigned);
       Buffer : S_LLU;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_LLU;
 
    function I_LU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -268,14 +233,9 @@ package body System.Stream_Attributes is
          S_LU,
          Unsigned_Types.Long_Unsigned);
       Buffer : S_LU;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_LU;
 
    function I_SF (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -283,14 +243,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_SF, Short_Float);
       Buffer : S_SF;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_SF;
 
    function I_SI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -298,14 +253,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_SI, Short_Integer);
       Buffer : S_SI;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_SI;
 
    function I_SSI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -315,14 +265,9 @@ package body System.Stream_Attributes is
          S_SSI,
          Short_Short_Integer);
       Buffer : S_SSI;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_SSI;
 
    function I_SSU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -332,14 +277,9 @@ package body System.Stream_Attributes is
          S_SSU,
          Unsigned_Types.Short_Short_Unsigned);
       Buffer : S_SSU;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_SSU;
 
    function I_SU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -349,14 +289,9 @@ package body System.Stream_Attributes is
          S_SU,
          Unsigned_Types.Short_Unsigned);
       Buffer : S_SU;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_SU;
 
    function I_U (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -366,14 +301,9 @@ package body System.Stream_Attributes is
          S_U,
          Unsigned_Types.Unsigned);
       Buffer : S_U;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_U;
 
    function I_WC (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -381,14 +311,9 @@ package body System.Stream_Attributes is
    is
       function Cast is new Ada.Unchecked_Conversion (S_WC, Wide_Character);
       Buffer : S_WC;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_WC;
 
    function I_WWC (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -398,14 +323,9 @@ package body System.Stream_Attributes is
          S_WWC,
          Wide_Wide_Character);
       Buffer : S_WWC;
-      Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Ada.Streams.Read (Stream.all, Buffer, Last);
-      if Last < Buffer'Last then
-         raise End_Error;
-      else
-         return Cast (Buffer);
-      end if;
+      Read_Just (Stream, Buffer);
+      return Cast (Buffer);
    end I_WWC;
 
    procedure W_AD (
