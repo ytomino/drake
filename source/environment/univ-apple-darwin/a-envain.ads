@@ -3,14 +3,16 @@ pragma License (Unrestricted);
 package Ada.Environment_Variables.Inside is
    pragma Preelaborate;
 
-   type Character_Access is access all Character;
-
-   function Reference (Name : String) return Character_Access;
+   function Value (Name : String) return String;
+   function Exists (Name : String) return Boolean;
 
    procedure Set (Name : String; Value : String; Error : out Boolean);
    procedure Clear (Name : String; Error : out Boolean);
 
-   function Reference (Position : Cursor) return Character_Access;
+   function Has_Element (Position : Cursor) return Boolean;
+   pragma Inline (Has_Element);
+   function Name (Position : Cursor) return String;
+   function Value (Position : Cursor) return String;
 
    function First return Cursor;
    function "+" (Left : Cursor; Right : Integer) return Cursor;

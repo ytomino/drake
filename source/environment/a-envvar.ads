@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 with Ada.Iterator_Interfaces;
-with Ada.References.String;
 private with System;
 package Ada.Environment_Variables is
    pragma Preelaborate;
@@ -22,10 +21,8 @@ package Ada.Environment_Variables is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
-   function Name (Position : Cursor)
-      return References.String.Slicing.Constant_Reference_Type;
-   function Value (Position : Cursor)
-      return References.String.Slicing.Constant_Reference_Type;
+   function Name (Position : Cursor) return String;
+   function Value (Position : Cursor) return String;
    package Iterator_Interfaces is
       new Ada.Iterator_Interfaces (Cursor, Has_Element);
    type Iterator is new Iterator_Interfaces.Forward_Iterator
