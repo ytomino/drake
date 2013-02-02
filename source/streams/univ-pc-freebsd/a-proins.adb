@@ -1,5 +1,5 @@
+with C.fcntl;
 with C.unistd;
-with C.sys.fcntl;
 package body Ada.Processes.Inside is
    use type C.signed_int;
 
@@ -59,9 +59,9 @@ package body Ada.Processes.Inside is
                Dummy := C.unistd.close (Duplicated_Error);
             end if;
             --  clear FD_CLOEXEC
-            Dummy := C.sys.fcntl.fcntl (0, C.sys.fcntl.F_SETFD, 0);
-            Dummy := C.sys.fcntl.fcntl (1, C.sys.fcntl.F_SETFD, 0);
-            Dummy := C.sys.fcntl.fcntl (2, C.sys.fcntl.F_SETFD, 0);
+            Dummy := C.fcntl.fcntl (0, C.fcntl.F_SETFD, 0);
+            Dummy := C.fcntl.fcntl (1, C.fcntl.F_SETFD, 0);
+            Dummy := C.fcntl.fcntl (2, C.fcntl.F_SETFD, 0);
             if Search_Path then
                Dummy := C.unistd.execvp (Arguments (0), Arguments (0)'Access);
             else

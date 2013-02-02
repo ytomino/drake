@@ -1,11 +1,12 @@
 pragma License (Unrestricted);
 --  implementation unit
-with C.sys.time;
-with C.sys.types;
+with C.sys.time; -- struct timeval
+with C.sys.types; -- time_t
+with C.time; -- struct timespec
 package System.Native_Time is
    pragma Preelaborate;
 
-   subtype Native_Time is C.sys.time.struct_timespec;
+   subtype Native_Time is C.time.struct_timespec;
 
    function To_Native_Time (T : Duration) return Native_Time;
    function To_Time (T : Native_Time) return Duration;

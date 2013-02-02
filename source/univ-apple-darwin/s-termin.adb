@@ -2,7 +2,6 @@ with Ada.Unchecked_Conversion;
 with System.Native_Stack;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
-with C.signal;
 with C.stdlib;
 with C.string;
 with C.sys.syscall;
@@ -48,13 +47,13 @@ package body System.Termination is
 
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
-      Info : access C.sys.signal.siginfo_t;
+      Info : access C.signal.siginfo_t;
       Context : C.void_ptr);
    pragma Convention (C, sigaction_Handler);
    pragma No_Return (sigaction_Handler);
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
-      Info : access C.sys.signal.siginfo_t;
+      Info : access C.signal.siginfo_t;
       Context : C.void_ptr)
    is
       pragma Unreferenced (Info);
@@ -69,11 +68,11 @@ package body System.Termination is
       Dummy : Address;
    begin
       case Signal_Number is
-         when C.sys.signal.SIGFPE =>
+         when C.signal.SIGFPE =>
             Eexception_Id := Unwind.Standard.Constraint_Error'Access;
-         when C.sys.signal.SIGBUS | C.sys.signal.SIGSEGV =>
+         when C.signal.SIGBUS | C.signal.SIGSEGV =>
             Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
-            Stack_Guard := Stack_Guard + C.sys.signal.MINSIGSTKSZ;
+            Stack_Guard := Stack_Guard + C.signal.MINSIGSTKSZ;
             declare
                uc : C.sys.ucontext.ucontext_t;
                pragma Import (C, uc);
@@ -108,28 +107,28 @@ package body System.Termination is
 
    procedure Install_Exception_Handler (SEH : Address) is
       pragma Unreferenced (SEH);
-      act : aliased C.sys.signal.struct_sigaction := (
+      act : aliased C.signal.struct_sigaction := (
          (Unchecked_Tag => 1, sa_sigaction => sigaction_Handler'Access),
          others => <>);
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
    begin
       act.sa_flags := C.signed_int (C.unsigned_int'(
-         C.sys.signal.SA_NODEFER
-         or C.sys.signal.SA_RESTART
-         or C.sys.signal.SA_SIGINFO));
+         C.signal.SA_NODEFER
+         or C.signal.SA_RESTART
+         or C.signal.SA_SIGINFO));
       Dummy := C.signal.sigemptyset (act.sa_mask'Access);
       --  illegal instruction
-      Dummy := C.signal.sigaction (C.sys.signal.SIGILL, act'Access, null);
+      Dummy := C.signal.sigaction (C.signal.SIGILL, act'Access, null);
       --  floating-point exception
-      Dummy := C.signal.sigaction (C.sys.signal.SIGFPE, act'Access, null);
+      Dummy := C.signal.sigaction (C.signal.SIGFPE, act'Access, null);
       --  bus error
       Set_Signal_Stack (Signal_Stack'Access);
       act.sa_flags := C.signed_int (C.unsigned_int (act.sa_flags)
-         or C.sys.signal.SA_ONSTACK);
-      Dummy := C.signal.sigaction (C.sys.signal.SIGBUS, act'Access, null);
+         or C.signal.SA_ONSTACK);
+      Dummy := C.signal.sigaction (C.signal.SIGBUS, act'Access, null);
       --  segmentation violation
-      Dummy := C.signal.sigaction (C.sys.signal.SIGSEGV, act'Access, null);
+      Dummy := C.signal.sigaction (C.signal.SIGSEGV, act'Access, null);
    end Install_Exception_Handler;
 
    procedure Set_Signal_Stack (S : access Signal_Stack_Type) is
@@ -138,7 +137,7 @@ package body System.Termination is
       function Cast is
          new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); -- FreeBSD
       pragma Warnings (Off, Cast);
-      stack : aliased C.sys.signal.stack_t := (
+      stack : aliased C.signal.stack_t := (
          ss_sp => Cast (S (S'First)'Access),
          ss_size => Signal_Stack_Type'Size / Standard'Storage_Unit,
          ss_flags => 0);

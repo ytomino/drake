@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Ada.IO_Exceptions;
-with C.sys.fcntl;
+with C.fcntl;
 with C.sys.types;
 with C.unistd;
 procedure Ada.Numerics.Initiator (
@@ -17,9 +17,9 @@ is
    Read_Size : C.sys.types.ssize_t;
    Closed : C.signed_int;
 begin
-   F := C.sys.fcntl.open (
+   F := C.fcntl.open (
       Random_File_Name (0)'Access,
-      C.sys.fcntl.O_RDONLY);
+      C.fcntl.O_RDONLY);
    if F = -1 then
       Exceptions.Raise_Exception_From_Here (IO_Exceptions.Use_Error'Identity);
    end if;

@@ -1,8 +1,8 @@
 with System;
-with C.unistd;
-with C.sys.fcntl;
+with C.fcntl;
 with C.sys.mman;
 with C.sys.types;
+with C.unistd;
 package body Ada.Directories.Inside is
    use type C.signed_int;
    use type C.unsigned_int;
@@ -23,18 +23,18 @@ package body Ada.Directories.Inside is
       for C_Target'Address use Z_Target'Address;
       Target : C.signed_int;
       Flag : C.unsigned_int :=
-         C.sys.fcntl.O_WRONLY or
-         C.sys.fcntl.O_CREAT or
-         C.sys.fcntl.O_EXLOCK;
+         C.fcntl.O_WRONLY or
+         C.fcntl.O_CREAT or
+         C.fcntl.O_EXLOCK;
       Data : aliased C.sys.stat.struct_stat;
       Map : C.void_ptr;
       Written : C.sys.types.ssize_t;
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
    begin
-      Source := C.sys.fcntl.open (
+      Source := C.fcntl.open (
          C_Source (0)'Access,
-         C.sys.fcntl.O_RDONLY);
+         C.fcntl.O_RDONLY);
       if Source < 0 then
          raise Name_Error;
       end if;
@@ -43,9 +43,9 @@ package body Ada.Directories.Inside is
          raise Use_Error;
       end if;
       if not Overwrite then
-         Flag := Flag or C.sys.fcntl.O_EXCL;
+         Flag := Flag or C.fcntl.O_EXCL;
       end if;
-      Target := C.sys.fcntl.open (
+      Target := C.fcntl.open (
          C_Target (0)'Access,
          C.signed_int (Flag),
          Data.st_mode);

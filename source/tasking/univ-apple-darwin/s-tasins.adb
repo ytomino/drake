@@ -14,7 +14,6 @@ with System.Tasking.Yield;
 with System.Unwind;
 with C.errno;
 with C.signal;
-with C.sys.signal;
 package body System.Tasking.Inside is
    pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Offset;
@@ -346,7 +345,7 @@ package body System.Tasking.Inside is
    --  signal handler
 
    type sigaction_Wrapper is record -- ??? for No_Elaboration_Code
-      Handle : aliased C.sys.signal.struct_sigaction;
+      Handle : aliased C.signal.struct_sigaction;
    end record;
    pragma Suppress_Initialization (sigaction_Wrapper);
 
@@ -358,19 +357,19 @@ package body System.Tasking.Inside is
       pragma Unreferenced (Dummy);
    begin
       Dummy := C.signal.sigaction (
-         C.sys.signal.SIGTERM,
+         C.signal.SIGTERM,
          Old_SIGTERM_Action.Handle'Access,
          null);
    end Restore_SIGTERM_Handler;
 
    procedure SIGTERM_Handler (
       Signal_Number : C.signed_int;
-      Info : access C.sys.signal.struct_siginfo;
+      Info : access C.signal.struct_siginfo;
       Context : C.void_ptr);
    pragma Convention (C, SIGTERM_Handler);
    procedure SIGTERM_Handler (
       Signal_Number : C.signed_int;
-      Info : access C.sys.signal.struct_siginfo;
+      Info : access C.signal.struct_siginfo;
       Context : C.void_ptr)
    is
       pragma Unreferenced (Info);
@@ -394,16 +393,16 @@ package body System.Tasking.Inside is
    procedure Set_SIGTERM_Handler is
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
-      act : aliased C.sys.signal.struct_sigaction :=
+      act : aliased C.signal.struct_sigaction :=
          (others => <>); -- uninitialized
    begin
       act.sigaction_u.sa_sigaction := SIGTERM_Handler'Access;
-      act.sa_flags := -- C.sys.signal.SA_NODEFER +
-         C.sys.signal.SA_RESTART +
-         C.sys.signal.SA_SIGINFO;
+      act.sa_flags := -- C.signal.SA_NODEFER +
+         C.signal.SA_RESTART +
+         C.signal.SA_SIGINFO;
       Dummy := C.signal.sigemptyset (act.sa_mask'Access);
       Dummy := C.signal.sigaction (
-         C.sys.signal.SIGTERM,
+         C.signal.SIGTERM,
          act'Access,
          Old_SIGTERM_Action.Handle'Access);
    end Set_SIGTERM_Handler;
@@ -412,10 +411,10 @@ package body System.Tasking.Inside is
    procedure Mask_SIGTERM (How : C.signed_int) is
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
-      Mask : aliased C.sys.signal.sigset_t;
+      Mask : aliased C.signal.sigset_t;
    begin
       Dummy := C.signal.sigemptyset (Mask'Access);
-      Dummy := C.signal.sigaddset (Mask'Access, C.sys.signal.SIGTERM);
+      Dummy := C.signal.sigaddset (Mask'Access, C.signal.SIGTERM);
       Dummy := C.pthread.pthread_sigmask (How, Mask'Access, null);
    end Mask_SIGTERM;
 
@@ -561,7 +560,7 @@ package body System.Tasking.Inside is
    begin
       TLS_Current_Task_Id := T;
       --  block SIGTERM
-      Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
+      Mask_SIGTERM (C.signal.SIG_BLOCK);
       T.Abort_Locking := 1;
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
@@ -696,7 +695,7 @@ package body System.Tasking.Inside is
    procedure Send_Abort_Signal (T : Task_Id) is
    begin
       --  pragma Check (Trace, Ada.Debug.Put ("abort " & Name (T)));
-      case C.pthread.pthread_kill (T.Handle, C.sys.signal.SIGTERM) is
+      case C.pthread.pthread_kill (T.Handle, C.signal.SIGTERM) is
          when 0 =>
             Yield;
          when C.errno.ESRCH =>
@@ -1207,7 +1206,7 @@ package body System.Tasking.Inside is
          T.Abort_Locking := T.Abort_Locking - 1;
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
-            Mask_SIGTERM (C.sys.signal.SIG_UNBLOCK);
+            Mask_SIGTERM (C.signal.SIG_UNBLOCK);
          end if;
       end if;
    end Enable_Abort;
@@ -1222,7 +1221,7 @@ package body System.Tasking.Inside is
             & Natural'Image (T.Abort_Locking + 1)));
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
-            Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
+            Mask_SIGTERM (C.signal.SIG_BLOCK);
          end if;
          T.Abort_Locking := T.Abort_Locking + 1;
          if T.Aborted and then T.Abort_Locking = 1 then
@@ -1446,11 +1445,11 @@ package body System.Tasking.Inside is
             pragma Assert (T.Abort_Handler = null);
             T.Abort_Handler := Abort_Handler_On_Leave_Master'Access;
             if T.Kind = Sub then
-               Mask_SIGTERM (C.sys.signal.SIG_UNBLOCK);
+               Mask_SIGTERM (C.signal.SIG_UNBLOCK);
             end if;
             Wait (Taken, Free_Task_Id);
             if T.Kind = Sub then
-               Mask_SIGTERM (C.sys.signal.SIG_BLOCK);
+               Mask_SIGTERM (C.signal.SIG_BLOCK);
             end if;
             T.Abort_Handler := null;
             if Free_Task_Id /= null then
