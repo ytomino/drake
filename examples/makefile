@@ -42,6 +42,7 @@ endif
 
 export WITHA=0
 export WITHD=1
+export WITHF=0
 export WITHI=0
 export WITHS=0
 
@@ -70,6 +71,10 @@ endif
 ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS+=-Wl,--gc-sections
 endif
+endif
+
+ifneq ($(WITHF),0)
+CFLAGS+=-ffast-math -gnatec=$(abspath ../source/fastmath.adc)
 endif
 
 .PHONY: all clean
