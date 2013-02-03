@@ -16,8 +16,11 @@ procedure num_complex is
 		use CT, CEF, CA;
 		Pi_div_4 : constant Complex := Ada.Numerics.Pi / 4.0 + 0.0 * i;
 	begin
-		-- primitives
+		-- primitives of imaginary
 		pragma Assert (i * i = -1.0);
+		pragma Assert (i > -i and then -i < i);
+		pragma Assert (i >= j and then j <= i);
+		-- primitives of complex
 		pragma Assert (Argument (1.0 + i) = Ada.Numerics.Pi / 4.0);
 		pragma Assert (abs (1.0 + i) + 0.0 * i = Sqrt (2.0 + 0.0 * i));
 		pragma Assert (Complex'(Conjugate (1.0 + i)) = 1.0 - i);

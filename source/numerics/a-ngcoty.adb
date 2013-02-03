@@ -467,24 +467,4 @@ package body Ada.Numerics.Generic_Complex_Types is
          (Real'Base'(Pi) / Real'Base'(2.0)) * Real'Base (Right));
    end "**";
 
-   function "<" (Left, Right : Imaginary) return Boolean is
-   begin
-      return Real'Base (Left) < Real'Base (Right);
-   end "<";
-
-   function "<=" (Left, Right : Imaginary) return Boolean is
-   begin
-      return not (Right < Left);
-   end "<=";
-
-   function ">" (Left, Right : Imaginary) return Boolean is
-   begin
-      return Right < Left;
-   end ">";
-
-   function ">=" (Left, Right : Imaginary) return Boolean is
-   begin
-      return not (Left < Right);
-   end ">=";
-
 end Ada.Numerics.Generic_Complex_Types;
