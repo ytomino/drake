@@ -85,7 +85,20 @@ begin
 		Ada.Debug.Put (Ada.Calendar.Formatting.Image (RX, Include_Time_Fraction => True));
 		pragma Assert (RX = X);
 	end;
-	declare
+	declare -- elapsed time
+		Max : constant Duration := (99.0 * 60.0 + 59.0) * 60.0 + 59.99;
+		Max_S : constant String := Ada.Calendar.Formatting.Image (Max, Include_Time_Fraction => True);
+		Neg : constant Duration := -((50.0 * 60.0 + 30.0) * 60.0 + 30.0);
+		Neg_S : constant String := Ada.Calendar.Formatting.Image (Neg, Include_Time_Fraction => False);
+	begin
+		Ada.Debug.Put (Max_S);
+		pragma Assert (Max_S = "99:59:59.99");
+		pragma Assert (Ada.Calendar.Formatting.Value (Max_S) = Max);
+		Ada.Debug.Put (Neg_S);
+		pragma Assert (Neg_S = "-50:30:30");
+		pragma Assert (Ada.Calendar.Formatting.Value (Neg_S) = Neg);
+	end;
+	declare -- first / last
 		EF : Ada.Calendar.Time;
 		EL : Ada.Calendar.Time;
 	begin
@@ -108,7 +121,7 @@ begin
 	exception
 		when Ada.Calendar.Time_Error => Ada.Debug.Put ("Time_Error");
 	end;
-	declare
+	declare -- overflow
 		D : Ada.Calendar.Time;
 	begin
 		D := Now - Duration'First + Duration'Last; -- out of range

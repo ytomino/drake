@@ -544,33 +544,40 @@ package body Ada.Calendar.Formatting is
       Include_Time_Fraction : Boolean := False)
       return String
    is
+      Abs_Elapsed_Time : Duration := Elapsed_Time;
       Hour : Natural;
       Minute : Minute_Number;
       Second : Second_Number;
       Sub_Second : Second_Duration;
-      Result : String (1 .. 11 + Integer'Width); -- hh:mm:ss.ss
-      Last : Natural;
+      Result : String (1 .. 12 + Integer'Width); -- [-]hh:mm:ss.ss
+      Last : Natural := 0;
    begin
+      if Abs_Elapsed_Time < 0.0 then
+         Result (1) := '-';
+         Last := 1;
+         Abs_Elapsed_Time := -Abs_Elapsed_Time;
+      end if;
       Split_Base (
-         Elapsed_Time,
+         Abs_Elapsed_Time,
          Hour => Hour,
          Minute => Minute,
          Second => Second,
          Sub_Second => Sub_Second);
       Image (
-         Hour,
+         Hour rem 100,
          Minute,
          Second,
          Sub_Second,
          Include_Time_Fraction,
-         Result,
+         Result (Last + 1 .. Result'Last),
          Last);
       return Result (1 .. Last);
    end Image;
 
    function Value (Elapsed_Time : String) return Duration is
-      Last : Natural;
+      Last : Natural := Elapsed_Time'First - 1;
       P : Natural;
+      Sign : Duration := 1.0;
       Hour : System.Formatting.Unsigned;
       Minute : System.Formatting.Unsigned;
       Second : System.Formatting.Unsigned;
@@ -578,8 +585,14 @@ package body Ada.Calendar.Formatting is
       Sub_Second : Second_Duration;
       Error : Boolean;
    begin
+      if Elapsed_Time'First <= Elapsed_Time'Last
+         and then Elapsed_Time (Elapsed_Time'First) = '-'
+      then
+         Sign := -1.0;
+         Last := Elapsed_Time'First;
+      end if;
       System.Formatting.Value (
-         Elapsed_Time,
+         Elapsed_Time (Last + 1 .. Elapsed_Time'Last),
          Last,
          Hour,
          Error => Error);
@@ -635,7 +648,7 @@ package body Ada.Calendar.Formatting is
       if Last /= Elapsed_Time'Last then
          raise Constraint_Error;
       end if;
-      return Seconds_Of (
+      return Sign * Seconds_Of (
          Hour_Number (Hour),
          Minute_Number (Minute),
          Second_Number (Second),
