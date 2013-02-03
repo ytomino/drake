@@ -6,6 +6,15 @@ with C.time; -- struct timespec
 package System.Native_Time is
    pragma Preelaborate;
 
+   --  representation
+
+   type Nanosecond_Number is range
+      -(2 ** (Duration'Size - 1)) ..
+      +(2 ** (Duration'Size - 1)) - 1;
+   for Nanosecond_Number'Size use Duration'Size;
+
+   --  convert absolute time
+
    subtype Native_Time is C.time.struct_timespec;
 
    function To_Native_Time (T : Duration) return Native_Time;

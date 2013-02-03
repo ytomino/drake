@@ -11,16 +11,6 @@ package Ada.Calendar.Inside is
    subtype Second_Number is Natural range 0 .. 59;
    subtype Second_Duration is Day_Duration range 0.0 .. 1.0;
 
-   function Seconds (Date : Time; Time_Zone : Time_Offset)
-      return Day_Duration;
-
-   procedure Split (
-      Seconds : Duration;
-      Hour : out Natural;
-      Minute : out Minute_Number;
-      Second : out Second_Number;
-      Sub_Second : out Second_Duration);
-
    procedure Split (
       Date : Time;
       Year : out Year_Number;
@@ -39,7 +29,7 @@ package Ada.Calendar.Inside is
       Month : Month_Number;
       Day : Day_Number;
       Seconds : Day_Duration;
-      Leap_Second : Boolean := False;
+      Leap_Second : Boolean;
       Time_Zone : Time_Offset)
       return Time;
 

@@ -1,9 +1,40 @@
 pragma Check_Policy (Validate, Off);
 with Ada.Calendar.Inside;
 with System.Formatting;
+with System.Native_Time;
 package body Ada.Calendar.Formatting is
 --  pragma Suppress (All_Checks);
    use type Time_Zones.Time_Offset;
+   use type System.Native_Time.Nanosecond_Number;
+
+   procedure Split_Base (
+      Seconds : Duration; -- Seconds >= 0.0
+      Hour : out Natural;
+      Minute : out Minute_Number;
+      Second : out Second_Number;
+      Sub_Second : out Second_Duration);
+   procedure Split_Base (
+      Seconds : Duration;
+      Hour : out Natural;
+      Minute : out Minute_Number;
+      Second : out Second_Number;
+      Sub_Second : out Second_Duration)
+   is
+      X : System.Native_Time.Nanosecond_Number
+         := System.Native_Time.Nanosecond_Number'Integer_Value (Seconds);
+      Sub : System.Native_Time.Nanosecond_Number;
+   begin
+      Sub := X rem 1000000000;
+      Sub_Second := Duration'Fixed_Value (Sub);
+      X := (X - Sub) / 1000000000; -- unit is 1-second
+      Sub := X rem 60;
+      Second := Second_Number (Sub);
+      X := (X - Sub) / 60; -- unit is 1-minute
+      Sub := X rem 60;
+      Minute := Minute_Number (Sub);
+      X := (X - Sub) / 60; -- unit is 1-hour
+      Hour := Integer (X);
+   end Split_Base;
 
    procedure Image (
       Hour : Natural;
@@ -239,7 +270,11 @@ package body Ada.Calendar.Formatting is
    function Seconds (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Day_Duration is
    begin
-      return Inside.Seconds (Date, Inside.Time_Offset (Time_Zone));
+      return Duration'Fixed_Value (
+         (System.Native_Time.Nanosecond_Number'Integer_Value (Date)
+            + System.Native_Time.Nanosecond_Number (Time_Zone)
+               * (60 * 1000000000))
+         mod (24 * 60 * 60 * 1000000000));
    end Seconds;
 
    function Seconds_Of (
@@ -259,7 +294,7 @@ package body Ada.Calendar.Formatting is
       Second : out Second_Number;
       Sub_Second : out Second_Duration) is
    begin
-      Inside.Split (
+      Split_Base (
          Seconds,
          Hour => Hour,
          Minute => Minute,
@@ -516,7 +551,7 @@ package body Ada.Calendar.Formatting is
       Result : String (1 .. 11 + Integer'Width); -- hh:mm:ss.ss
       Last : Natural;
    begin
-      Inside.Split (
+      Split_Base (
          Elapsed_Time,
          Hour => Hour,
          Minute => Minute,

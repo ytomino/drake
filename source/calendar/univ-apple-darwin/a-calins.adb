@@ -1,4 +1,3 @@
-with Ada.Unchecked_Conversion;
 with System.Native_Time;
 with C.time;
 with C.sys.types;
@@ -7,42 +6,7 @@ package body Ada.Calendar.Inside is
    use type C.signed_int; -- time_t is signed int or signed long
    use type C.signed_long;
 
-   type Time_Rep is range
-      -(2 ** (Time'Size - 1)) ..
-      +(2 ** (Time'Size - 1)) - 1;
-   for Time_Rep'Size use Time'Size;
-
    --  implementation
-
-   function Seconds (Date : Time; Time_Zone : Time_Offset)
-      return Day_Duration
-   is
-      function Cast is new Unchecked_Conversion (Time, Time_Rep);
-      function Cast is new Unchecked_Conversion (Time_Rep, Duration);
-   begin
-      return Cast ((Cast (Date) + Time_Rep (Time_Zone) * (60 * 1000000000)) mod
-         (24 * 60 * 60 * 1000000000));
-   end Seconds;
-
-   procedure Split (
-      Seconds : Duration;
-      Hour : out Natural;
-      Minute : out Minute_Number;
-      Second : out Second_Number;
-      Sub_Second : out Second_Duration)
-   is
-      function Cast is new Unchecked_Conversion (Duration, Time_Rep);
-      function Cast is new Unchecked_Conversion (Time_Rep, Duration);
-      X : Time_Rep := Cast (Seconds); -- unit is 1-nanoscond
-   begin
-      Sub_Second := Cast (X rem 1000000000);
-      X := (X - Cast (Sub_Second)) / 1000000000; -- unit is 1-second
-      Second := Second_Number (X rem 60);
-      X := (X - Time_Rep (Second)) / 60; -- unit is 1-minute
-      Minute := Minute_Number (X rem 60);
-      X := (X - Time_Rep (Minute)) / 60;
-      Hour := Integer (X);
-   end Split;
 
    procedure Split (
       Date : Time;
@@ -57,13 +21,13 @@ package body Ada.Calendar.Inside is
       Day_of_Week : out Day_Name;
       Time_Zone : Time_Offset)
    is
-      function Cast is new Unchecked_Conversion (Time_Rep, Duration);
       timespec : aliased System.Native_Time.Native_Time :=
          System.Native_Time.To_Native_Time (Duration (Date));
       Buffer : aliased C.time.struct_tm := (others => <>); -- uninitialized
       tm : access C.time.struct_tm;
    begin
-      Sub_Second := Cast (Time_Rep (timespec.tv_nsec));
+      Sub_Second := Duration'Fixed_Value (
+         System.Native_Time.Nanosecond_Number (timespec.tv_nsec));
       timespec.tv_sec := timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
       tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
       --  does gmtime_r return no error ?
@@ -82,7 +46,7 @@ package body Ada.Calendar.Inside is
       Month : Month_Number;
       Day : Day_Number;
       Seconds : Day_Duration;
-      Leap_Second : Boolean := False;
+      Leap_Second : Boolean;
       Time_Zone : Time_Offset)
       return Time
    is
