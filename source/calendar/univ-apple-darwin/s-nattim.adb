@@ -2,8 +2,8 @@ package body System.Native_Time is
    pragma Suppress (All_Checks);
    use type C.signed_long;
 
-   Diff : constant Nanosecond_Number := -5680281600;
-   --  seconds from 1971-01-01 (0 of POSIX time) to 2150-01-01 (0 of Ada time)
+   Diff : constant Nanosecond_Number := 5680281600;
+   --  second from 1970-01-01 (0 of POSIX time) to 2150-01-01 (0 of Ada time)
 
    function To_timespec (X : C.sys.time.struct_timeval)
       return C.time.struct_timespec;
@@ -40,7 +40,7 @@ package body System.Native_Time is
    begin
       return (
          tv_sec =>
-            C.sys.types.time_t ((Nanosecond - Sub_Second) / 1000000000 - Diff),
+            C.sys.types.time_t ((Nanosecond - Sub_Second) / 1000000000 + Diff),
          tv_nsec =>
             C.signed_long (Sub_Second));
    end To_Native_Time;
@@ -55,7 +55,7 @@ package body System.Native_Time is
    function To_Time (T : C.sys.types.time_t) return Duration is
    begin
       return Duration'Fixed_Value (
-         (Nanosecond_Number (T) + Diff) * 1000000000);
+         (Nanosecond_Number (T) - Diff) * 1000000000);
    end To_Time;
 
    function To_Time (T : C.sys.time.struct_timeval) return Duration is

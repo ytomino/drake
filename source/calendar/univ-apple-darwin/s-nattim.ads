@@ -27,7 +27,7 @@ package System.Native_Time is
 
    function Clock return Native_Time;
 
-   Tick : constant := 1.0 / 100_000; -- gettimeofday returns timeval
+   Tick : constant := 1.0 / 1000_000; -- gettimeofday returns timeval
 
    --  for delay
 
