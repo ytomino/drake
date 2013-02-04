@@ -1,8 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with C.sys.time; -- struct timeval
-with C.sys.types; -- time_t
-with C.time; -- struct timespec
+with C.windef;
 package System.Native_Time is
    pragma Preelaborate;
 
@@ -15,19 +13,16 @@ package System.Native_Time is
 
    --  convert absolute time
 
-   subtype Native_Time is C.time.struct_timespec;
+   subtype Native_Time is C.windef.FILETIME;
 
    function To_Native_Time (T : Duration) return Native_Time;
    function To_Time (T : Native_Time) return Duration;
-
-   function To_Time (T : C.sys.types.time_t) return Duration;
-   function To_Time (T : C.sys.time.struct_timeval) return Duration;
 
    --  current absolute time
 
    function Clock return Native_Time;
 
-   Tick : constant := 1.0 / 1000_000; -- gettimeofday returns timeval
+   Tick : constant := 1.0 / 1000; -- GetSystemTime returns SYSTEMTIME
 
    --  for delay
 

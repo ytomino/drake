@@ -1,9 +1,40 @@
 pragma Check_Policy (Validate, Off);
 with Ada.Calendar.Inside;
 with System.Formatting;
+with System.Native_Time;
 package body Ada.Calendar.Formatting is
 --  pragma Suppress (All_Checks);
    use type Time_Zones.Time_Offset;
+   use type System.Native_Time.Nanosecond_Number;
+
+   procedure Split_Base (
+      Seconds : Duration; -- Seconds >= 0.0
+      Hour : out Natural;
+      Minute : out Minute_Number;
+      Second : out Second_Number;
+      Sub_Second : out Second_Duration);
+   procedure Split_Base (
+      Seconds : Duration;
+      Hour : out Natural;
+      Minute : out Minute_Number;
+      Second : out Second_Number;
+      Sub_Second : out Second_Duration)
+   is
+      X : System.Native_Time.Nanosecond_Number
+         := System.Native_Time.Nanosecond_Number'Integer_Value (Seconds);
+      Sub : System.Native_Time.Nanosecond_Number;
+   begin
+      Sub := X rem 1000000000;
+      Sub_Second := Duration'Fixed_Value (Sub);
+      X := (X - Sub) / 1000000000; -- unit is 1-second
+      Sub := X rem 60;
+      Second := Second_Number (Sub);
+      X := (X - Sub) / 60; -- unit is 1-minute
+      Sub := X rem 60;
+      Minute := Minute_Number (Sub);
+      X := (X - Sub) / 60; -- unit is 1-hour
+      Hour := Integer (X);
+   end Split_Base;
 
    procedure Image (
       Hour : Natural;
@@ -239,7 +270,11 @@ package body Ada.Calendar.Formatting is
    function Seconds (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Day_Duration is
    begin
-      return Inside.Seconds (Date, Inside.Time_Offset (Time_Zone));
+      return Duration'Fixed_Value (
+         (System.Native_Time.Nanosecond_Number'Integer_Value (Date)
+            + System.Native_Time.Nanosecond_Number (Time_Zone)
+               * (60 * 1000000000))
+         mod (24 * 60 * 60 * 1000000000));
    end Seconds;
 
    function Seconds_Of (
@@ -259,7 +294,7 @@ package body Ada.Calendar.Formatting is
       Second : out Second_Number;
       Sub_Second : out Second_Duration) is
    begin
-      Inside.Split (
+      Split_Base (
          Seconds,
          Hour => Hour,
          Minute => Minute,
@@ -509,33 +544,40 @@ package body Ada.Calendar.Formatting is
       Include_Time_Fraction : Boolean := False)
       return String
    is
+      Abs_Elapsed_Time : Duration := Elapsed_Time;
       Hour : Natural;
       Minute : Minute_Number;
       Second : Second_Number;
       Sub_Second : Second_Duration;
-      Result : String (1 .. 11 + Integer'Width); -- hh:mm:ss.ss
-      Last : Natural;
+      Result : String (1 .. 12 + Integer'Width); -- [-]hh:mm:ss.ss
+      Last : Natural := 0;
    begin
-      Inside.Split (
-         Elapsed_Time,
+      if Abs_Elapsed_Time < 0.0 then
+         Result (1) := '-';
+         Last := 1;
+         Abs_Elapsed_Time := -Abs_Elapsed_Time;
+      end if;
+      Split_Base (
+         Abs_Elapsed_Time,
          Hour => Hour,
          Minute => Minute,
          Second => Second,
          Sub_Second => Sub_Second);
       Image (
-         Hour,
+         Hour rem 100,
          Minute,
          Second,
          Sub_Second,
          Include_Time_Fraction,
-         Result,
+         Result (Last + 1 .. Result'Last),
          Last);
       return Result (1 .. Last);
    end Image;
 
    function Value (Elapsed_Time : String) return Duration is
-      Last : Natural;
+      Last : Natural := Elapsed_Time'First - 1;
       P : Natural;
+      Sign : Duration := 1.0;
       Hour : System.Formatting.Unsigned;
       Minute : System.Formatting.Unsigned;
       Second : System.Formatting.Unsigned;
@@ -543,8 +585,14 @@ package body Ada.Calendar.Formatting is
       Sub_Second : Second_Duration;
       Error : Boolean;
    begin
+      if Elapsed_Time'First <= Elapsed_Time'Last
+         and then Elapsed_Time (Elapsed_Time'First) = '-'
+      then
+         Sign := -1.0;
+         Last := Elapsed_Time'First;
+      end if;
       System.Formatting.Value (
-         Elapsed_Time,
+         Elapsed_Time (Last + 1 .. Elapsed_Time'Last),
          Last,
          Hour,
          Error => Error);
@@ -600,7 +648,7 @@ package body Ada.Calendar.Formatting is
       if Last /= Elapsed_Time'Last then
          raise Constraint_Error;
       end if;
-      return Seconds_Of (
+      return Sign * Seconds_Of (
          Hour_Number (Hour),
          Minute_Number (Minute),
          Second_Number (Second),

@@ -8,6 +8,7 @@ package body Ada.Calendar is
    pragma Warnings (Off, RM_9_6_26_Overflow_Check);
    --  [gcc 4.5/4.6] condition is always False/True
    pragma Suppress (All_Checks);
+   use type System.Native_Time.Nanosecond_Number;
 
    --  implementation
 
@@ -48,7 +49,9 @@ package body Ada.Calendar is
 
    function Seconds (Date : Time) return Day_Duration is
    begin
-      return Inside.Seconds (Date, Time_Zone => 0);
+      return Duration'Fixed_Value (
+         System.Native_Time.Nanosecond_Number'Integer_Value (Date)
+         mod (24 * 60 * 60 * 1000000000));
    end Seconds;
 
    procedure Split (

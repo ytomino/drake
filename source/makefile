@@ -89,7 +89,7 @@ else
 ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=univ-pc-linux-gnu
-SUBDIRS:=$(filter-out ada83 calendar directories streams tasking textio,$(SUBDIRS))
+SUBDIRS:=$(filter-out ada83 directories streams tasking textio,$(SUBDIRS))
 OBJFMT=ELF
 else
 ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
@@ -99,7 +99,7 @@ else
 EH=sjlj
 endif
 TARGETSUBDIR=univ-w64-mingw32
-SUBDIRS:=$(filter-out ada83 calendar directories streams tasking textio,$(SUBDIRS))
+SUBDIRS:=$(filter-out ada83 directories streams tasking textio,$(SUBDIRS))
 OBJFMT=COFF
 else # others
 EH=zcx
@@ -124,8 +124,8 @@ endif
 # tasking     : calendar                       # support for task and protected syntax and all tasking packages
 # text_io     : image numerics streams strings # child packages of Text_IO
 
-SRC=$(wildcard *.ad?) $(wildcard $(TARGETSUBDIR)/*.ad?) \
-	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad?) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad?))
+SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) \
+	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]))
 
 SEPARATED=$(EH)/s-unrase.adb $(EH)/s-untrse.adb
 
@@ -204,7 +204,7 @@ endif
 endif
 
 ifneq ($(WITHF),0)
-CFLAGS_MATH=-ffast-math
+CFLAGS_MATH=-ffast-math -gnatec=fastmath.adc
 else
 CFLAGS_MATH=
 endif
@@ -417,7 +417,7 @@ $(BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
 
 ifeq ($(PHASE),2)
 
-IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad?) $(IMPORTDIR)/c.ads
+IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad[sb]) $(IMPORTDIR)/c.ads
 IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
 IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))

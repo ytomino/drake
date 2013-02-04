@@ -16,10 +16,10 @@ endif
 EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
 
 ifneq ($(findstring linux,$(TARGET)),)
-EXAMPLES:=$(filter-out cal charset cntnr_% cpu delays directories ext_check ext_doc filename fixed input2forward mappedio pkgversion process random_mt19937 random_sfmt socket_client stackoverflow storagestream streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
+EXAMPLES:=$(filter-out cal charset cntnr_% cpu directories ext_check ext_doc filename fixed input2forward mappedio pkgversion process random_mt19937 random_sfmt socket_client stackoverflow storagestream streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
 endif
 ifneq ($(findstring mingw,$(TARGET)),)
-EXAMPLES:=$(filter-out cal charset cntnr_% cpu delays directories ext_check ext_doc filename fixed input2forward mappedio pkgversion process random_mt19937 random_sfmt socket_client stackoverflow storagestream storagepool streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
+EXAMPLES:=$(filter-out cal charset cntnr_% cpu directories ext_check ext_doc filename fixed input2forward mappedio pkgversion process random_mt19937 random_sfmt socket_client stackoverflow storagestream storagepool streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
 endif
 
 ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*)
@@ -42,6 +42,7 @@ endif
 
 export WITHA=0
 export WITHD=1
+export WITHF=0
 export WITHI=0
 export WITHS=0
 
@@ -70,6 +71,10 @@ endif
 ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS+=-Wl,--gc-sections
 endif
+endif
+
+ifneq ($(WITHF),0)
+CFLAGS+=-ffast-math -gnatec=$(abspath ../source/fastmath.adc)
 endif
 
 .PHONY: all clean
