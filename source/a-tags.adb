@@ -167,8 +167,8 @@ package body Ada.Tags is
                            if E.Static_Offset_To_Top then
                               Result := Base_Object + E.Offset_To_Top_Value;
                            else
-                              Result := Base_Object +
-                                 E.Offset_To_Top_Func.all (Base_Object);
+                              Result := Base_Object
+                                 + E.Offset_To_Top_Func.all (Base_Object);
                            end if;
                         end return;
                      end if;

@@ -48,19 +48,19 @@ package body Ada.Strings.Generic_Unbounded is
                   R : Repr;
                   for R'Address use Result.Items'Address;
                   First : Integer;
-                  for First'Address use M
-                     + Data'Size / Standard'Storage_Unit;
+                  for First'Address use
+                     M + Data'Size / Standard'Storage_Unit;
                   Last : Integer;
-                  for Last'Address use First'Address
-                     + Integer'Size / Standard'Storage_Unit;
+                  for Last'Address use
+                     First'Address + Integer'Size / Standard'Storage_Unit;
                   Data : Character_Type;
-                  for Data'Address use Last'Address
-                     + Integer'Size / Standard'Storage_Unit;
+                  for Data'Address use
+                     Last'Address + Integer'Size / Standard'Storage_Unit;
                begin
                   First := 1;
                   Last := Integer (
                      (System.Memory.Allocated_Size (M) - Header_Size)
-                     / (Character_Type'Size / Standard'Storage_Unit));
+                        / (Character_Type'Size / Standard'Storage_Unit));
                   R.Constraints := First'Address;
                   R.Data := Data'Address;
                end;

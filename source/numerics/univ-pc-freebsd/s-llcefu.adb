@@ -266,8 +266,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
          declare
             A : constant Long_Long_Float :=
                Long_Long_Elementary_Functions.Fast_Sqrt (
-                  0.5
-                  * (abs X.Re
+                  0.5 * (abs X.Re
                      + Long_Long_Elementary_Functions.Fast_Sqrt (
                         Long_Long_Complex_Types.Fast_Modulus (X))));
             B : constant Long_Long_Float := X.Im / (2.0 * A);
@@ -344,7 +343,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       else
          return Fast_Exp (From_Numerics_Complex (
             To_Numerics_Complex (Right)
-            * To_Numerics_Complex (Fast_Log (Left))));
+               * To_Numerics_Complex (Fast_Log (Left))));
       end if;
    end Fast_Pow;
 
@@ -385,7 +384,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       else
          return From_Numerics_Complex (
             To_Numerics_Complex (Fast_Sin (X))
-            / To_Numerics_Complex (Fast_Cos (X)));
+               / To_Numerics_Complex (Fast_Cos (X)));
       end if;
    end Fast_Tan;
 
@@ -423,8 +422,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
          declare
             iX : constant Long_Long_Complex := (Re => -X.Im, Im => X.Re);
             X_X : constant Long_Long_Complex := From_Numerics_Complex (
-               To_Numerics_Complex (X)
-               * To_Numerics_Complex (X));
+               To_Numerics_Complex (X) * To_Numerics_Complex (X));
             A : constant Long_Long_Complex := ( -- 1.0 - X_X
                Re => 1.0 - X_X.Re,
                Im => -X_X.Im);
@@ -490,8 +488,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       else
          declare
             X_X : constant Long_Long_Complex := From_Numerics_Complex (
-               To_Numerics_Complex (X)
-               * To_Numerics_Complex (X));
+               To_Numerics_Complex (X) * To_Numerics_Complex (X));
             A : constant Long_Long_Complex := ( -- 1.0 - X_X
                Re => 1.0 - X_X.Re,
                Im => -X_X.Im);
@@ -584,7 +581,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       else
          return From_Numerics_Complex (
             To_Numerics_Complex (Fast_Sinh (X))
-            / To_Numerics_Complex (Fast_Cosh (X)));
+               / To_Numerics_Complex (Fast_Cosh (X)));
       end if;
    end Fast_Tanh;
 
@@ -614,8 +611,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       else
          declare
             X_X : constant Long_Long_Complex := From_Numerics_Complex (
-               To_Numerics_Complex (X)
-               * To_Numerics_Complex (X));
+               To_Numerics_Complex (X) * To_Numerics_Complex (X));
             A : constant Long_Long_Complex := ( -- 1.0 + X_X
                Re => 1.0 + X_X.Re,
                Im => X_X.Im);

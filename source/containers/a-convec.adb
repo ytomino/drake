@@ -327,8 +327,9 @@ package body Ada.Containers.Vectors is
          declare
             Old_Length : constant Count_Type := Container.Length;
             Moving : constant Index_Type'Base :=
-               (Index_Type'First + Index_Type'Base (Old_Length)) -
-               (Index + Index_Type'Base (Count)) - 1;
+               (Index_Type'First + Index_Type'Base (Old_Length))
+               - (Index + Index_Type'Base (Count))
+               - 1;
             Before : constant Index_Type := Index + Index_Type'Base (Count);
             After : constant Index_Type := Index;
          begin
@@ -848,8 +849,8 @@ package body Ada.Containers.Vectors is
          return True;
       else
          for I in Index_Type'First .. Last_Index (Left) loop
-            if Downcast (Left.Super.Data).Items (I)
-               /= Downcast (Right.Super.Data).Items (I)
+            if Downcast (Left.Super.Data).Items (I) /=
+               Downcast (Right.Super.Data).Items (I)
             then
                return False;
             end if;

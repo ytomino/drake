@@ -76,8 +76,8 @@ package body Ada.Containers.Generic_Arrays is
                Container := new Array_Type'(
                   Container (
                      Container'First ..
-                     Index_Type'Base'Pred (Index)) &
-                  Container (
+                     Index_Type'Base'Pred (Index))
+                  & Container (
                      Index + Index_Type'Base (Count) ..
                      Container'Last));
             end if;
@@ -115,17 +115,17 @@ package body Ada.Containers.Generic_Arrays is
          begin
             if Before = Container'First then
                Container := new Array_Type'(
-                  New_Item &
-                  S (Before .. S'Last));
+                  New_Item
+                  & S (Before .. S'Last));
             elsif Before > Container'Last then
                Container := new Array_Type'(
-                  S (S'First .. Before - 1) &
-                  New_Item);
+                  S (S'First .. Before - 1)
+                  & New_Item);
             else
                Container := new Array_Type'(
-                  S (S'First .. Before - 1) &
-                  New_Item &
-                  S (Before .. S'Last));
+                  S (S'First .. Before - 1)
+                  & New_Item
+                  & S (Before .. S'Last));
             end if;
             Free (S);
          end;
@@ -173,21 +173,21 @@ package body Ada.Containers.Generic_Arrays is
                Container := new Array_Type'(
                   Array_Type'(
                      Index_Type'First ..
-                     Index_Type'First + Index_Type'Base (Count) - 1 => <>) &
-                  S (Before .. S'Last));
+                     Index_Type'First + Index_Type'Base (Count) - 1 => <>)
+                  & S (Before .. S'Last));
             elsif Before > Container'Last then
                Container := new Array_Type'(
-                  S (S'First .. Before - 1) &
-                  Array_Type'(
+                  S (S'First .. Before - 1)
+                  & Array_Type'(
                      Index_Type'First ..
                      Index_Type'First + Index_Type'Base (Count) - 1 => <>));
             else
                Container := new Array_Type'(
-                  S (S'First .. Before - 1) &
-                  Array_Type'(
+                  S (S'First .. Before - 1)
+                  & Array_Type'(
                      Index_Type'First ..
-                     Index_Type'First + Index_Type'Base (Count) - 1 => <>) &
-                  S (Before .. S'Last));
+                     Index_Type'First + Index_Type'Base (Count) - 1 => <>)
+                  & S (Before .. S'Last));
             end if;
             Free (S);
          end;
@@ -270,8 +270,8 @@ package body Ada.Containers.Generic_Arrays is
          begin
             Container := new Array_Type'(Container.all & Array_Type'(
                Index_Type'First ..
-               Index_Type'First +
-               Index_Type'Base (Length - Container'Length) - 1 => <>));
+               Index_Type'First
+               + Index_Type'Base (Length - Container'Length) - 1 => <>));
             Free (S);
          end;
       end if;
@@ -497,12 +497,13 @@ package body Ada.Containers.Generic_Arrays is
       function Is_Sorted (Container : Array_Access) return Boolean is
          Context : Context_Type := (Container => Container);
       begin
-         return Container = null or else
-            Inside.Array_Sorting.Is_Sorted (
-               Index_Type'Pos (Container'First),
-               Index_Type'Pos (Container'Last),
-               Context'Address,
-               LT => LT'Access);
+         return Container = null
+            or else
+               Inside.Array_Sorting.Is_Sorted (
+                  Index_Type'Pos (Container'First),
+                  Index_Type'Pos (Container'Last),
+                  Context'Address,
+                  LT => LT'Access);
       end Is_Sorted;
 
       procedure Insertion_Sort (Container : in out Array_Access) is

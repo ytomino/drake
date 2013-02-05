@@ -10,8 +10,8 @@ package body Ada.Calendar.Inside.Time_Zones is
    procedure Initialize is
       Info : aliased C.winbase.TIME_ZONE_INFORMATION;
    begin
-      if C.winbase.GetTimeZoneInformation (Info'Access)
-         /= C.winbase.TIME_ZONE_ID_INVALID
+      if C.winbase.GetTimeZoneInformation (Info'Access) /=
+         C.winbase.TIME_ZONE_ID_INVALID
       then
          Time_Offset_Value := -Time_Offset (Info.Bias); -- reverse sign
       end if;

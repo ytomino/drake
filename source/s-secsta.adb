@@ -79,11 +79,11 @@ package body System.Secondary_Stack is
                Previous : constant Address := Cast (Top).Previous;
                Aligned_Previous_Used : constant Address := Address (
                   (Storage_Elements.Integer_Address (Cast (Previous).Used)
-                  + Mask)
+                     + Mask)
                   and not Mask);
             begin
-               if Aligned_Previous_Used + Storage_Size
-                  <= Cast (Previous).Limit
+               if Aligned_Previous_Used + Storage_Size <=
+                  Cast (Previous).Limit
                then
                   TLS.Secondary_Stack := Previous;
                   Memory.Unmap (Top, Cast (Top).Limit - Top);

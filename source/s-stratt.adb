@@ -6,9 +6,9 @@ package body System.Stream_Attributes is
 
    type IO_Boolean is new Boolean;
    for IO_Boolean'Size use
-      ((Boolean'Stream_Size + Ada.Streams.Stream_Element'Size - 1) /
-      Ada.Streams.Stream_Element'Size) *
-      Standard'Storage_Unit;
+      ((Boolean'Stream_Size + Ada.Streams.Stream_Element'Size - 1)
+         / Ada.Streams.Stream_Element'Size)
+         * Standard'Storage_Unit;
 
    subtype S_AD is Ada.Streams.Stream_Element_Array (
       1 ..
@@ -52,13 +52,13 @@ package body System.Stream_Attributes is
 
    subtype S_LLU is Ada.Streams.Stream_Element_Array (
       1 ..
-      Unsigned_Types.Long_Long_Unsigned'Stream_Size /
-      Ada.Streams.Stream_Element'Size);
+      Unsigned_Types.Long_Long_Unsigned'Stream_Size
+         / Ada.Streams.Stream_Element'Size);
 
    subtype S_LU is Ada.Streams.Stream_Element_Array (
       1 ..
-      Unsigned_Types.Long_Unsigned'Stream_Size /
-      Ada.Streams.Stream_Element'Size);
+      Unsigned_Types.Long_Unsigned'Stream_Size
+         / Ada.Streams.Stream_Element'Size);
 
    subtype S_SF is Ada.Streams.Stream_Element_Array (
       1 ..
@@ -74,13 +74,13 @@ package body System.Stream_Attributes is
 
    subtype S_SSU is Ada.Streams.Stream_Element_Array (
       1 ..
-      Unsigned_Types.Short_Short_Unsigned'Stream_Size /
-      Ada.Streams.Stream_Element'Size);
+      Unsigned_Types.Short_Short_Unsigned'Stream_Size
+         / Ada.Streams.Stream_Element'Size);
 
    subtype S_SU is Ada.Streams.Stream_Element_Array (
       1 ..
-      Unsigned_Types.Short_Unsigned'Stream_Size /
-      Ada.Streams.Stream_Element'Size);
+      Unsigned_Types.Short_Unsigned'Stream_Size
+         / Ada.Streams.Stream_Element'Size);
 
    subtype S_U is Ada.Streams.Stream_Element_Array (
       1 ..

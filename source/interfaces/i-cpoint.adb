@@ -83,8 +83,8 @@ package body Interfaces.C.Pointers is
    is
       function I is new C (Constant_Pointer, ptrdiff_t);
    begin
-      return (I (Left) - I (Constant_Pointer (Right))) /
-         (A'Component_Size / Storage_Unit);
+      return (I (Left) - I (Constant_Pointer (Right)))
+         / (A'Component_Size / Storage_Unit);
    end "-";
 
 end Interfaces.C.Pointers;

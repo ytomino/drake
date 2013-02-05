@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  extended unit
-with Ada.Directories.Information;
+with Ada.Directories.Volumes;
 function Ada.Directories.Equal_File_Names (
-   FS : Information.File_System;
+   FS : Volumes.File_System;
    Left, Right : String)
    return Boolean;
 --  This function compare two file names by the method of the file system.

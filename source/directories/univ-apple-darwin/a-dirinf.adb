@@ -1,4 +1,5 @@
 with Ada.Exceptions.Finally;
+with Ada.Directories.Inside;
 with Ada.Permissions.Inside;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
@@ -36,23 +37,24 @@ package body Ada.Directories.Information is
    --  implementation
 
    function Group (Name : String) return String is
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return Permissions.Inside.Group_Name (Attributes.st_gid);
+      Inside.Get_Information (Name, Information'Access);
+      return Permissions.Inside.Group_Name (Information.st_gid);
    end Group;
 
    function Group (Directory_Entry : Directory_Entry_Type) return String is
    begin
       Check_Assigned (Directory_Entry);
-      return Permissions.Inside.Group_Name (Directory_Entry.State_Data.st_gid);
+      return Permissions.Inside.Group_Name (
+         Directory_Entry.Information.st_gid);
    end Group;
 
    function Is_Block_Special_File (Name : String) return Boolean is
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return (Attributes.st_mode and C.sys.stat.S_IFMT) =
+      Inside.Get_Information (Name, Information'Access);
+      return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
 
@@ -60,15 +62,15 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       Check_Assigned (Directory_Entry);
-      return (Directory_Entry.State_Data.st_mode and C.sys.stat.S_IFMT) =
+      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
 
    function Is_Character_Special_File (Name : String) return Boolean is
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return (Attributes.st_mode and C.sys.stat.S_IFMT) =
+      Inside.Get_Information (Name, Information'Access);
+      return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
 
@@ -76,15 +78,15 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       Check_Assigned (Directory_Entry);
-      return (Directory_Entry.State_Data.st_mode and C.sys.stat.S_IFMT) =
+      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
 
    function Is_FIFO (Name : String) return Boolean is
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return (Attributes.st_mode and C.sys.stat.S_IFMT) =
+      Inside.Get_Information (Name, Information'Access);
+      return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFIFO;
    end Is_FIFO;
 
@@ -92,15 +94,15 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       Check_Assigned (Directory_Entry);
-      return (Directory_Entry.State_Data.st_mode and C.sys.stat.S_IFMT) =
+      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFIFO;
    end Is_FIFO;
 
    function Is_Socket (Name : String) return Boolean is
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return (Attributes.st_mode and C.sys.stat.S_IFMT) =
+      Inside.Get_Information (Name, Information'Access);
+      return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFSOCK;
    end Is_Socket;
 
@@ -108,15 +110,15 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       Check_Assigned (Directory_Entry);
-      return (Directory_Entry.State_Data.st_mode and C.sys.stat.S_IFMT) =
+      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFSOCK;
    end Is_Socket;
 
    function Is_Symbolic_Link (Name : String) return Boolean is
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return (Attributes.st_mode and C.sys.stat.S_IFMT) =
+      Inside.Get_Information (Name, Information'Access);
+      return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
 
@@ -124,16 +126,16 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       Check_Assigned (Directory_Entry);
-      return (Directory_Entry.State_Data.st_mode and C.sys.stat.S_IFMT) =
+      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
 
    function Last_Access_Time (Name : String) return Calendar.Time is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return Cast (System.Native_Time.To_Time (Attributes.st_atimespec));
+      Inside.Get_Information (Name, Information'Access);
+      return Cast (System.Native_Time.To_Time (Information.st_atimespec));
    end Last_Access_Time;
 
    function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
@@ -142,18 +144,18 @@ package body Ada.Directories.Information is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
       Check_Assigned (Directory_Entry);
-      return Cast (
-         System.Native_Time.To_Time (Directory_Entry.State_Data.st_atimespec));
+      return Cast (System.Native_Time.To_Time (
+         Directory_Entry.Information.st_atimespec));
    end Last_Access_Time;
 
    function Last_Status_Change_Time (Name : String)
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return Cast (System.Native_Time.To_Time (Attributes.st_ctimespec));
+      Inside.Get_Information (Name, Information'Access);
+      return Cast (System.Native_Time.To_Time (Information.st_ctimespec));
    end Last_Status_Change_Time;
 
    function Last_Status_Change_Time (Directory_Entry : Directory_Entry_Type)
@@ -162,35 +164,35 @@ package body Ada.Directories.Information is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
       Check_Assigned (Directory_Entry);
-      return Cast (
-         System.Native_Time.To_Time (Directory_Entry.State_Data.st_ctimespec));
+      return Cast (System.Native_Time.To_Time (
+         Directory_Entry.Information.st_ctimespec));
    end Last_Status_Change_Time;
 
    function Owner (Name : String) return String is
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return Permissions.Inside.User_Name (Attributes.st_uid);
+      Inside.Get_Information (Name, Information'Access);
+      return Permissions.Inside.User_Name (Information.st_uid);
    end Owner;
 
    function Owner (Directory_Entry : Directory_Entry_Type) return String is
    begin
       Check_Assigned (Directory_Entry);
-      return Permissions.Inside.User_Name (Directory_Entry.State_Data.st_uid);
+      return Permissions.Inside.User_Name (Directory_Entry.Information.st_uid);
    end Owner;
 
    function Permission_Set (Name : String) return Permission_Set_Type is
-      Attributes : C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return To_Permission_Set (Attributes.st_mode);
+      Inside.Get_Information (Name, Information'Access);
+      return To_Permission_Set (Information.st_mode);
    end Permission_Set;
 
    function Permission_Set (Directory_Entry : Directory_Entry_Type)
       return Permission_Set_Type is
    begin
       Check_Assigned (Directory_Entry);
-      return To_Permission_Set (Directory_Entry.State_Data.st_mode);
+      return To_Permission_Set (Directory_Entry.Information.st_mode);
    end Permission_Set;
 
    function Read_Symbolic_Link (Name : String) return String is
@@ -233,9 +235,11 @@ package body Ada.Directories.Information is
                      | C.errno.ENOENT
                      | C.errno.ENOTDIR
                   =>
-                     raise Name_Error;
+                     Exceptions.Raise_Exception_From_Here (
+                        Name_Error'Identity);
                   when others =>
-                     raise Use_Error;
+                     Exceptions.Raise_Exception_From_Here (
+                        Use_Error'Identity);
                end case;
             end if;
             if C.size_t (Result) < Buffer_Length then

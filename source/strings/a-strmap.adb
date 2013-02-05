@@ -293,7 +293,8 @@ package body Ada.Strings.Maps is
       for I in Set_Data.Items'Range loop
          Length := Length + (
             Wide_Wide_Character'Pos (Set_Data.Items (I).High)
-            - Wide_Wide_Character'Pos (Set_Data.Items (I).Low) + 1);
+            - Wide_Wide_Character'Pos (Set_Data.Items (I).Low)
+            + 1);
       end loop;
       return Result : Wide_Wide_String (1 .. Length) do
          Position := 1;

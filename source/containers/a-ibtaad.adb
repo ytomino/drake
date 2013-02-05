@@ -108,14 +108,14 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
             end if;
             if Position.Left /= null then
                pragma Assert (Downcast (Position).Level =
-                              Downcast (Position.Left).Level + 1);
+                  Downcast (Position.Left).Level + 1);
                null;
             end if;
             if Position.Right /= null then
                pragma Assert (Downcast (Position).Level >=
-                              Downcast (Position.Right).Level);
-               pragma Assert (Downcast (Position).Level -
-                              Downcast (Position.Right).Level <= 1);
+                  Downcast (Position.Right).Level);
+               pragma Assert (Downcast (Position).Level
+                  - Downcast (Position.Right).Level <= 1);
                if Position.Right.Right /= null then
                   pragma Assert (Downcast (Position).Level >
                                  Downcast (Position.Right.Right).Level);

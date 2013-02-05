@@ -152,8 +152,8 @@ package body Ada.Streams.Stream_IO.Inside is
                Non_Controlled_File_Type_Conv.To_Pointer (Result_Addr);
             --  Form is into same memory block
             Result_Form : String (1 .. Form'Length);
-            for Result_Form'Address
-               use Result_Addr + Stream_Type'Size / Standard'Storage_Unit;
+            for Result_Form'Address use
+               Result_Addr + Stream_Type'Size / Standard'Storage_Unit;
          begin
             Result.Handle := Handle;
             Result.Mode := Mode;

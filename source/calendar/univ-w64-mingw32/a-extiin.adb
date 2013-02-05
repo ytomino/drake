@@ -28,8 +28,8 @@ package body Ada.Execution_Time.Inside is
             else
                return Cast (Duration'Fixed_Value (
                   Nanosecond_Number (Count.QuadPart)
-                  * 1000_000_000
-                  / Nanosecond_Number (Frequency.QuadPart)));
+                     * 1000_000_000
+                     / Nanosecond_Number (Frequency.QuadPart)));
             end if;
          end;
       else

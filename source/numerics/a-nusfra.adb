@@ -323,9 +323,10 @@ package body Ada.Numerics.SFMT.Random is
       do
          Result.psfmt32 (idxof (0)) := Initiator;
          for i in 1 .. N32 - 1 loop
-            Result.psfmt32 (idxof (i)) := 1812433253
-               * (Result.psfmt32 (idxof (i - 1))
-                  xor (Shift_Right (Result.psfmt32 (idxof (i - 1)), 30)))
+            Result.psfmt32 (idxof (i)) :=
+               1812433253
+                  * (Result.psfmt32 (idxof (i - 1))
+                     xor (Shift_Right (Result.psfmt32 (idxof (i - 1)), 30)))
                + Unsigned_32 (i);
          end loop;
          period_certification (Result.psfmt32);

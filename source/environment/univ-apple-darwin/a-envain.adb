@@ -126,8 +126,8 @@ package body Ada.Environment_Variables.Inside is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all
-         /= null;
+      return char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all /=
+         null;
    end Has_Element;
 
    function Name (Position : Cursor) return String is

@@ -398,8 +398,8 @@ package body System.Tasking.Inside is
    begin
       act.sigaction_u.sa_sigaction := SIGTERM_Handler'Access;
       act.sa_flags := -- C.signal.SA_NODEFER +
-         C.signal.SA_RESTART +
-         C.signal.SA_SIGINFO;
+         C.signal.SA_RESTART
+         + C.signal.SA_SIGINFO;
       Dummy := C.signal.sigemptyset (act.sa_mask'Access);
       Dummy := C.signal.sigaction (
          C.signal.SIGTERM,
@@ -1287,7 +1287,8 @@ package body System.Tasking.Inside is
       Leave (C.Mutex);
       --  cleanup
       Release (C);
-      pragma Check (Trace, Ada.Debug.Put ("aborted = " & Aborted'Img));
+      pragma Check (Trace,
+         Ada.Debug.Put ("aborted = " & Boolean'Image (Aborted)));
    end Accept_Activation;
 
    procedure Activate (
@@ -1937,8 +1938,8 @@ package body System.Tasking.Inside is
          begin
             loop
                N := Native_Time.Clock + Abort_Checking_Span;
-               exit when Native_Time.To_Time (N)
-                  >= Native_Time.To_Time (Timeout);
+               exit when Native_Time.To_Time (N) >=
+                  Native_Time.To_Time (Timeout);
                Wait (Object, Mutex, N, Notified);
                Aborted := Is_Aborted;
                if Notified or else Aborted then

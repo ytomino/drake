@@ -5,6 +5,7 @@ with Ada.Command_Line;
 with Ada.Directories;
 with Ada.Directories.Information;
 with Ada.Directories.Temporary;
+with Ada.Directories.Volumes;
 with Ada.Permissions;
 with Ada.Text_IO;
 procedure directories is
@@ -89,6 +90,18 @@ begin
 			raise Program_Error;
 		end if;
 		Ada.Directories.Delete_File (Linked_Name);
+	end;
+	-- filesystem
+	Ada.Debug.Put ("**** file system");
+	declare
+		FS : Ada.Directories.Volumes.File_System := Ada.Directories.Volumes.Where ("directories.adb");
+	begin
+		Ada.Debug.Put (Ada.Directories.File_Size'Image (Ada.Directories.Volumes.Size (FS)));
+		Ada.Debug.Put (Ada.Directories.File_Size'Image (Ada.Directories.Volumes.Free_Space (FS)));
+		Ada.Debug.Put (Ada.Directories.Volumes.Owner (FS));
+		Ada.Debug.Put (Ada.Directories.Volumes.Format_Name (FS));
+		Ada.Debug.Put (Ada.Directories.Volumes.Directory (FS));
+		Ada.Debug.Put (Ada.Directories.Volumes.Device (FS));
 	end;
 	Ada.Debug.Put ("OK");
 end directories;

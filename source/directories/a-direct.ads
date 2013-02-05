@@ -3,10 +3,8 @@ with Ada.IO_Exceptions;
 with Ada.Calendar;
 --  with Ada.Iterator_Interfaces; -- [gcc 4.6] can not instantiate it
 with Ada.Streams;
+private with Ada.Directory_Searching;
 private with Ada.Finalization;
-private with C.dirent;
-private with C.sys.dirent;
-private with C.sys.stat;
 package Ada.Directories is
 
    --  Directory and file operations:
@@ -118,6 +116,7 @@ package Ada.Directories is
    type Directory_Entry_Type is limited private;
 
    type Filter_Type is array (File_Kind) of Boolean;
+   pragma Pack (Filter_Type);
 
    --  modified
 --  type Search_Type is limited private;
@@ -211,19 +210,20 @@ private
    type String_Access is access String;
 
    type Directory_Entry_Type is record -- not limited in full view
+      Data : aliased Directory_Searching.Directory_Entry_Type;
+      Information : aliased
+         Directory_Searching.Directory_Entry_Information_Type;
       Path : String_Access := null;
-      Entry_Data : aliased C.sys.dirent.struct_dirent;
-      State_Data : aliased C.sys.stat.struct_stat;
    end record;
 
    type Search_Type is new Finalization.Limited_Controlled with record
-      Handle : C.dirent.DIR_ptr := null;
+      Search : Directory_Searching.Search_Type := (
+         Handle => null,
+         others => <>);
       Path : String_Access;
-      Pattern : C.char_ptr;
-      Filter : Filter_Type;
-      Count : Natural;
+      Next_Data : aliased Directory_Searching.Directory_Entry_Type;
       Has_Next : Boolean;
-      Data : aliased C.sys.dirent.struct_dirent;
+      Count : Natural;
    end record;
 
    overriding procedure Finalize (Search : in out Search_Type);
@@ -233,8 +233,8 @@ private
    for Search_Access'Storage_Size use 0;
 
    type Cursor is record
-      Search : Search_Access := null;
       Directory_Entry : aliased Directory_Entry_Type;
+      Search : Search_Access := null;
       Index : Positive;
    end record;
 
@@ -250,9 +250,6 @@ private
 
    --  for Information
    procedure Check_Assigned (Directory_Entry : Directory_Entry_Type);
-   procedure Get_Attributes (
-      Name : String;
-      Attributes : out C.sys.stat.struct_stat);
 
    --  for Temporary
    procedure Include_Trailing_Path_Delimiter (

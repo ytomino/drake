@@ -73,8 +73,8 @@ package body Ada.Strings.Generic_Fixed is
             Target_First := Target'First;
             Target_Last := Target_First + (Source_Last - Source_First);
          when Center =>
-            Target_First := (Target'First + Target'Last -
-               (Source_Last - Source_First)) / 2;
+            Target_First :=
+               (Target'First + Target'Last - (Source_Last - Source_First)) / 2;
             Target_Last := Target_First + (Source_Last - Source_First);
          when Right =>
             Target_Last := Target'Last;

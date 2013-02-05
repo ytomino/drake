@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 package body Ada.Directories.Hierarchical_File_Names is
 
    function Is_Simple_Name (Name : String) return Boolean is
@@ -208,7 +209,8 @@ package body Ada.Directories.Hierarchical_File_Names is
       return String is
    begin
       if Is_Full_Name (Name) /= Is_Full_Name (From) then
-         raise Name_Error; -- Relative_Name ("A", "/B") or reverse
+         --  Relative_Name ("A", "/B") or reverse
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       else
          declare
             R_N_First : Positive := Name'First;
@@ -318,7 +320,9 @@ package body Ada.Directories.Hierarchical_File_Names is
                      if Parent_Count > 0 then
                         Parent_Count := Parent_Count - 1;
                      else
-                        raise Name_Error; -- Relative_Name ("A", "..")
+                        --  Relative_Name ("A", "..")
+                        Exceptions.Raise_Exception_From_Here (
+                           Name_Error'Identity);
                      end if;
                   else
                      Parent_Count := Parent_Count + 1;

@@ -131,14 +131,14 @@ package body System.Formatting is
                Value (Item (Next), X, Is_Invalid);
                exit when Is_Invalid or else X >= Unsigned (Base);
                if Result >
-                  (Longest_Unsigned'Last - Longest_Unsigned (X)) /
-                  Longest_Unsigned (Base)
+                  (Longest_Unsigned'Last - Longest_Unsigned (X))
+                     / Longest_Unsigned (Base)
                then
                   Overflow := True;
                   exit;
                end if;
-               Result := Result * Longest_Unsigned (Base) +
-                  Longest_Unsigned (X);
+               Result := Result * Longest_Unsigned (Base)
+                  + Longest_Unsigned (X);
                Last := Next;
             end;
          end loop;

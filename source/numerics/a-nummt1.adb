@@ -118,8 +118,9 @@ package body Ada.Numerics.MT19937 is
             declare
                P : constant Cardinal := S.Vector (i - 1);
             begin
-               S.Vector (i) := (S.Vector (i) xor
-                  ((P xor Interfaces.Shift_Right (P, 30)) * 1566083941))
+               S.Vector (i) :=
+                  (S.Vector (i) xor
+                     ((P xor Interfaces.Shift_Right (P, 30)) * 1566083941))
                   - Cardinal (i);
             end;
             i := i + 1;

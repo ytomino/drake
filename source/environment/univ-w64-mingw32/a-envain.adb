@@ -162,8 +162,8 @@ package body Ada.Environment_Variables.Inside is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return LPCWCH_Conv.To_Pointer (System.Address (Position)).all
-         /= C.winnt.WCHAR'Val (0);
+      return LPCWCH_Conv.To_Pointer (System.Address (Position)).all /=
+         C.winnt.WCHAR'Val (0);
    end Has_Element;
 
    function Name (Position : Cursor) return String is

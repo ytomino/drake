@@ -208,8 +208,8 @@ package body System.Termination is
                for Wide_Message'Address use C_Wide_Buf.all'Address;
                Wide_Message_Last : constant Natural := Natural (R);
             begin
-               if Wide_Message (Wide_Message_Last - 2 .. Wide_Message_Last)
-                  = """0x"
+               if Wide_Message (Wide_Message_Last - 2 .. Wide_Message_Last) =
+                  """0x"
                   and then Code = C.winbase.EXCEPTION_ACCESS_VIOLATION
                then
                   --  bug of FormatString ???
