@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with C.errno;
 with C.stdlib;
 with C.string;
@@ -59,7 +60,7 @@ package body Ada.Directories.Inside is
       for C_Directory'Address use Z_Directory'Address;
    begin
       if C.unistd.chdir (C_Directory (0)'Access) /= 0 then
-         raise Name_Error;
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
    end Set_Directory;
 
@@ -73,9 +74,9 @@ package body Ada.Directories.Inside is
             when C.errno.ENOENT
                | C.errno.ENOTDIR
                | C.errno.ENAMETOOLONG =>
-               raise Name_Error;
+               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
             when others =>
-               raise Use_Error;
+               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
       end if;
    end Create_Directory;
@@ -86,7 +87,7 @@ package body Ada.Directories.Inside is
       for C_Directory'Address use Z_Directory'Address;
    begin
       if C.unistd.rmdir (C_Directory (0)'Access) < 0 then
-         raise Name_Error;
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
    end Delete_Directory;
 
@@ -96,7 +97,7 @@ package body Ada.Directories.Inside is
       for C_Name'Address use Z_Name'Address;
    begin
       if C.unistd.unlink (C_Name (0)'Access) < 0 then
-         raise Name_Error;
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
    end Delete_File;
 
@@ -118,9 +119,9 @@ package body Ada.Directories.Inside is
                | C.errno.ENOTDIR
                | C.errno.EISDIR
                | C.errno.ENAMETOOLONG =>
-               raise Name_Error;
+               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
             when others =>
-               raise Use_Error;
+               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
       end if;
    end Rename;
@@ -152,9 +153,9 @@ package body Ada.Directories.Inside is
             when C.errno.ENOENT
                | C.errno.ENOTDIR
                | C.errno.ENAMETOOLONG =>
-               raise Name_Error;
+               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
             when others =>
-               raise Use_Error;
+               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
       end if;
    end Symbolic_Link;
@@ -218,12 +219,12 @@ package body Ada.Directories.Inside is
       Times : aliased array (0 .. 1) of aliased C.sys.time.struct_timeval;
    begin
       if C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) < 0 then
-         raise Name_Error;
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
       Times (0) := To_timeval (Attributes.st_atimespec);
       Times (1) := To_timeval (Time);
       if C.sys.time.lutimes (C_Name (0)'Access, Times (0)'Access) < 0 then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end Set_Modification_Time;
 

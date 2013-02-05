@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with System;
 with C.fcntl;
 with C.sys.mman;
@@ -35,11 +36,11 @@ begin
       C_Source (0)'Access,
       C.fcntl.O_RDONLY);
    if Source < 0 then
-      raise Name_Error;
+      Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
    end if;
    if C.sys.stat.fstat (Source, Data'Access) < 0 then
       Dummy := C.unistd.close (Source);
-      raise Use_Error;
+      Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
    end if;
    if not Overwrite then
       Flag := Flag or C.fcntl.O_EXCL;
@@ -50,7 +51,7 @@ begin
       Data.st_mode);
    if Target < 0 then
       Dummy := C.unistd.close (Source);
-      raise Name_Error;
+      Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
    end if;
    Map := C.sys.mman.mmap (
       C.void_ptr (System.Null_Address),
@@ -67,6 +68,6 @@ begin
    Dummy := C.unistd.close (Source);
    Dummy := C.unistd.close (Target);
    if Written < C.sys.types.ssize_t (Data.st_size) then
-      raise Use_Error;
+      Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
    end if;
 end Ada.Directories.Inside.Do_Copy_File;

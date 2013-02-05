@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.unistd;
@@ -36,7 +37,7 @@ package body Ada.Directories.Temporary is
          C_Name (C_Name'First)'Access,
          1) /= 0
       then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end Set_Temporary_Directory;
 
@@ -60,7 +61,7 @@ package body Ada.Directories.Temporary is
       begin
          Handle := C.unistd.mkstemp (C_Template (0)'Access);
          if Handle < 0 then
-            raise Use_Error;
+            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end if;
          Dummy := C.unistd.close (Handle);
       end;
@@ -83,7 +84,7 @@ package body Ada.Directories.Temporary is
          for C_Template'Address use Template'Address;
       begin
          if C.unistd.mkdtemp (C_Template (0)'Access) = null then
-            raise Use_Error;
+            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end if;
       end;
       return Template (1 .. Last);

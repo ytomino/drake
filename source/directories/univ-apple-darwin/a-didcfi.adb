@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with C.copyfile;
 with C.errno;
 procedure Ada.Directories.Inside.Do_Copy_File (
@@ -29,9 +30,9 @@ begin
       case C.errno.errno is
          when C.errno.ENOENT
             | C.errno.ENOTSUP =>
-            raise Name_Error;
+            Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
          when others =>
-            raise Use_Error;
+            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end case;
    end if;
 end Ada.Directories.Inside.Do_Copy_File;

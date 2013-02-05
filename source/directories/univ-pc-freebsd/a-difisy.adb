@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with System.Zero_Terminated_Strings;
 package body Ada.Directories.Inside.File_Systems is
    use type C.signed_int;
@@ -9,7 +10,7 @@ package body Ada.Directories.Inside.File_Systems is
    begin
       return Result : File_System do
          if statfs (C_Name (0)'Access, Result'Unrestricted_Access) < 0 then
-            raise Name_Error;
+            Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
          end if;
       end return;
    end Get_Where;

@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with System.Zero_Terminated_Strings;
 with C.stdint;
 package body Ada.Directories.Inside.File_Systems is
@@ -11,7 +12,7 @@ package body Ada.Directories.Inside.File_Systems is
    begin
       return Result : File_System do
          if statfs64 (C_Name (0)'Access, Result'Unrestricted_Access) < 0 then
-            raise Name_Error;
+            Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
          end if;
       end return;
    end Get_Where;

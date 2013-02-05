@@ -1,5 +1,6 @@
 with Ada.Directories.Inside;
 with Ada.Directories.Inside.Do_Copy_File;
+with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Native_Time;
@@ -64,7 +65,8 @@ package body Ada.Directories is
                begin
                   case Kind (Step_Dir) is
                      when Ordinary_File | Special_File =>
-                        raise Use_Error;
+                        Exceptions.Raise_Exception_From_Here (
+                           Use_Error'Identity);
                      when Directory =>
                         null;
                   end case;
@@ -333,7 +335,7 @@ package body Ada.Directories is
    begin
       Get_Attributes (Name, Attributes);
       if Inside.Kind (Attributes) /= Ordinary_File then
-         raise Name_Error;
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       else
          return Inside.Size (Attributes);
       end if;
@@ -410,7 +412,7 @@ package body Ada.Directories is
       Directory_Entry : out Directory_Entry_Type) is
    begin
       if Search.Search.Handle = null or else not Search.Has_Next then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else
          --  copy entry and get info
          Directory_Entry.Path := Search.Path; -- overwrite
@@ -504,7 +506,7 @@ package body Ada.Directories is
    procedure Check_Assigned (Directory_Entry : Directory_Entry_Type) is
    begin
       if Directory_Entry.Path = null then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
    end Check_Assigned;
 
@@ -547,7 +549,7 @@ package body Ada.Directories is
          or else Inside.Kind (Directory_Entry.State_Data) /=
             Ordinary_File
       then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else
          return Inside.Size (Directory_Entry.State_Data);
       end if;

@@ -233,9 +233,11 @@ package body Ada.Directories.Information is
                      | C.errno.ENOENT
                      | C.errno.ENOTDIR
                   =>
-                     raise Name_Error;
+                     Exceptions.Raise_Exception_From_Here (
+                        Name_Error'Identity);
                   when others =>
-                     raise Use_Error;
+                     Exceptions.Raise_Exception_From_Here (
+                        Use_Error'Identity);
                end case;
             end if;
             if C.size_t (Result) < Buffer_Length then
