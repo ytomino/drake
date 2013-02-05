@@ -2,15 +2,17 @@ with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 with System.Memory;
+with System.Zero_Terminated_Strings;
+with C.bits.dirent;
 with C.fnmatch;
-with C.sys.dirent;
+with C.string;
 package body Ada.Directory_Searching is
    use type C.char;
    use type C.signed_int;
    use type C.unsigned_char; -- d_namelen in FreeBSD
    use type C.dirent.DIR_ptr;
    use type C.stdint.uint16_t;
-   use type C.sys.dirent.struct_dirent_ptr;
+   use type C.bits.dirent.struct_dirent64_ptr;
 
    package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
       C.char,
@@ -21,16 +23,20 @@ package body Ada.Directory_Searching is
       Result : C.stdint.uint16_t := 0;
    begin
       if Filter (Directory) then
-         Result := Result or C.Shift_Left (1, C.dirent.DT_DIR);
+         Result := Result or C.Shift_Left (1, Natural (
+            C.Shift_Right (C.unsigned_long'(C.sys.stat.S_IFDIR), 12)));
       end if;
       if Filter (Ordinary_File) then
-         Result := Result or C.Shift_Left (1, C.dirent.DT_REG);
+         Result := Result or C.Shift_Left (1, Natural (
+            C.Shift_Right (C.unsigned_long'(C.sys.stat.S_IFREG), 12)));
       end if;
       if Filter (Special_File) then
          Result := Result or (
             16#ffff#
-            and not C.Shift_Left (1, C.dirent.DT_DIR)
-            and not C.Shift_Left (1, C.dirent.DT_REG));
+            and not C.Shift_Left (1, Natural (
+               C.Shift_Right (C.unsigned_long'(C.sys.stat.S_IFDIR), 12)))
+            and not C.Shift_Left (1, Natural (
+               C.Shift_Right (C.unsigned_long'(C.sys.stat.S_IFREG), 12))));
       end if;
       return Result;
    end To_Filter;
@@ -105,9 +111,9 @@ package body Ada.Directory_Searching is
    begin
       loop
          declare
-            Result : aliased C.sys.dirent.struct_dirent_ptr;
+            Result : aliased C.bits.dirent.struct_dirent64_ptr;
          begin
-            if C.dirent.readdir_r (
+            if C.dirent.readdir64_r (
                Search.Handle,
                Directory_Entry,
                Result'Access) < 0
@@ -124,10 +130,10 @@ package body Ada.Directory_Searching is
             and then (
                Directory_Entry.d_name (0) /= '.'
                or else (
-                  Directory_Entry.d_namlen > 1
+                  Directory_Entry.d_name (1) /= C.char'Val (0)
                   and then (
                      Directory_Entry.d_name (1) /= '.'
-                     or else Directory_Entry.d_namlen > 2)))
+                     or else Directory_Entry.d_name (2) /= C.char'Val (0))))
          then
             Has_Next_Entry := True;
             exit; -- found
@@ -136,15 +142,10 @@ package body Ada.Directory_Searching is
    end Get_Next_Entry;
 
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
-      return String
-   is
-      subtype Simple_Name_String is String (
-         1 ..
-         Natural (Directory_Entry.d_namlen));
-      Result : Simple_Name_String;
-      for Result'Address use Directory_Entry.d_name'Address;
+      return String is
    begin
-      return Result;
+      return System.Zero_Terminated_Strings.Value (
+         Directory_Entry.d_name'Address);
    end Simple_Name;
 
    procedure Get_Information (
@@ -154,14 +155,14 @@ package body Ada.Directory_Searching is
    is
       subtype Simple_Name_String is String (
          1 ..
-         Natural (Directory_Entry.d_namlen));
+         Natural (C.string.strlen (Directory_Entry.d_name (0)'Access)));
       Simple_Name : Simple_Name_String;
       for Simple_Name'Address use Directory_Entry.d_name'Address;
       Z_Name : String := Directory & "/" & Simple_Name & Character'Val (0);
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
    begin
-      if C.sys.stat.lstat (
+      if C.sys.stat.lstat64 (
          C_Name (0)'Access,
          Information) < 0
       then

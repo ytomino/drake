@@ -37,7 +37,7 @@ package body Ada.Directories.Information is
    --  implementation
 
    function Group (Name : String) return String is
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return Permissions.Inside.Group_Name (Information.st_gid);
@@ -51,7 +51,7 @@ package body Ada.Directories.Information is
    end Group;
 
    function Is_Block_Special_File (Name : String) return Boolean is
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
@@ -67,7 +67,7 @@ package body Ada.Directories.Information is
    end Is_Block_Special_File;
 
    function Is_Character_Special_File (Name : String) return Boolean is
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
@@ -83,7 +83,7 @@ package body Ada.Directories.Information is
    end Is_Character_Special_File;
 
    function Is_FIFO (Name : String) return Boolean is
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
@@ -99,7 +99,7 @@ package body Ada.Directories.Information is
    end Is_FIFO;
 
    function Is_Socket (Name : String) return Boolean is
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
@@ -115,7 +115,7 @@ package body Ada.Directories.Information is
    end Is_Socket;
 
    function Is_Symbolic_Link (Name : String) return Boolean is
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
@@ -132,7 +132,7 @@ package body Ada.Directories.Information is
 
    function Last_Access_Time (Name : String) return Calendar.Time is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return Cast (System.Native_Time.To_Time (Information.st_atimespec));
@@ -152,7 +152,7 @@ package body Ada.Directories.Information is
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return Cast (System.Native_Time.To_Time (Information.st_ctimespec));
@@ -169,7 +169,7 @@ package body Ada.Directories.Information is
    end Last_Status_Change_Time;
 
    function Owner (Name : String) return String is
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return Permissions.Inside.User_Name (Information.st_uid);
@@ -182,7 +182,7 @@ package body Ada.Directories.Information is
    end Owner;
 
    function Permission_Set (Name : String) return Permission_Set_Type is
-      Information : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
       return To_Permission_Set (Information.st_mode);

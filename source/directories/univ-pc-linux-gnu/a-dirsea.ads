@@ -2,14 +2,13 @@ pragma License (Unrestricted);
 --  implementation unit for Ada.Directories
 with Ada.IO_Exceptions;
 with C.dirent;
-with C.fcntl;
 with C.stdint;
 with C.sys.stat;
 package Ada.Directory_Searching is
 
-   subtype Directory_Entry_Information_Type is C.sys.stat.struct_stat;
+   subtype Directory_Entry_Information_Type is C.sys.stat.struct_stat64;
 
-   subtype Directory_Entry_Type is C.dirent.struct_dirent;
+   subtype Directory_Entry_Type is C.dirent.struct_dirent64;
 
    --  same as Directories.File_Kind
    type File_Kind is (Directory, Ordinary_File, Special_File);
@@ -58,10 +57,10 @@ package Ada.Directory_Searching is
 
    function lstat (
       path : access constant C.char;
-      buf : access C.sys.stat.struct_stat)
+      buf : access C.sys.stat.struct_stat64)
       return C.signed_int
-      renames C.sys.stat.lstat;
+      renames C.sys.stat.lstat64;
 
-   O_EXLOCK : constant := C.fcntl.O_EXLOCK;
+   O_EXLOCK : constant := 0;
 
 end Ada.Directory_Searching;

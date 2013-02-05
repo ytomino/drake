@@ -59,7 +59,12 @@ package body Ada.Directories.Temporary is
          Dummy : C.signed_int;
          pragma Unreferenced (Dummy);
       begin
-         Handle := C.unistd.mkstemp (C_Template (0)'Access);
+         declare -- mkstemp where
+            use C.stdlib; -- Linux, POSIX.1-2008
+            use C.unistd; -- Darwin, FreeBSD
+         begin
+            Handle := mkstemp (C_Template (0)'Access);
+         end;
          if Handle < 0 then
             Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end if;
@@ -82,8 +87,15 @@ package body Ada.Directories.Temporary is
       declare
          C_Template : aliased C.char_array (0 .. Template'Length);
          for C_Template'Address use Template'Address;
+         R : C.char_ptr;
       begin
-         if C.unistd.mkdtemp (C_Template (0)'Access) = null then
+         declare -- mkdtemp where
+            use C.stdlib; -- Linux, POSIX.1-2008
+            use C.unistd; -- Darwin, FreeBSD
+         begin
+            R := mkdtemp (C_Template (0)'Access);
+         end;
+         if R = null then
             Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end if;
       end;

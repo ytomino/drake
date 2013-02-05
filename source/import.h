@@ -1,5 +1,8 @@
 #if defined(__linux__)
 #define _GNU_SOURCE /* use GNU extension */
+#define st_atim st_atimespec
+#define st_mtim st_mtimespec
+#define st_ctim st_ctimespec
 #endif
 
 #include <unwind.h> /* exception mechanism of gcc */
@@ -26,8 +29,13 @@
 #include <sys/wait.h> /* waitpid */
 #include <pwd.h> /* user info */
 #include <grp.h> /* group info */
+#if defined(__linux__)
+#include <sys/stat.h> /* low-level file info, before fcntl.h */
 #include <fcntl.h> /* low-level file op */
+#else
+#include <fcntl.h> /* low-level file op, before sys/stat.h */
 #include <sys/stat.h> /* low-level file info */
+#endif
 #include <sys/socket.h> /* socket, before sys/mount.h */
 #include <sys/mount.h> /* filesystem */
 #include <dirent.h> /* directory searching */
@@ -47,8 +55,15 @@
 #include <malloc_np.h> /* malloc_usable_size */
 #include <pthread_np.h> /* pthread_attr_get_np */
 #elif defined(__linux__)
+#include <sys/statvfs.h> /* filesystem */
 #undef _GNU_SOURCE
 #undef __USE_GNU /* avoiding circular dependency between libio.h and stdio.h */
+#undef st_atim
+#undef st_mtim
+#undef st_ctim
+#undef st_atime
+#undef st_mtime
+#undef st_ctime
 #include <malloc.h> /* malloc_usable_size */
 #endif
 
@@ -94,6 +109,7 @@
 #endif
 #if defined(__APPLE__)
 #pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
+#pragma for Ada "dirent.h" include "sys/dirent.h"
 #pragma for Ada "errno.h" include "sys/errno.h"
 #pragma for Ada "fcntl.h" include "sys/fcntl.h"
 #pragma for Ada "pthread.h" include "signal.h" /* pthread_kill */
@@ -106,6 +122,7 @@
 #pragma for Ada "termios.h" include "sys/termios.h"
 #pragma for Ada "time.h" include "sys/_structs.h" /* timespec */
 #elif defined(__FreeBSD__)
+#pragma for Ada "dirent.h" include "sys/dirent.h"
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
 #pragma for Ada "signal.h" include "sys/select.h" /* sigset_t */
 #pragma for Ada "signal.h" include "sys/signal.h"
@@ -118,6 +135,10 @@
 #pragma for Ada overload int open(const char *, int, __mode_t)
 #pragma for Ada overload long syscall(long, void *, unsigned int)
 #pragma for Ada "bits/time.h" monolithic_include "bits/timex.h"
+#pragma for Ada "dirent.h" include "bits/dirent.h"
+#pragma for Ada "errno.h" include "asm-generic/errno.h"
+#pragma for Ada "errno.h" include "asm-generic/errno-base.h"
+#pragma for Ada "errno.h" include "bits/errno.h"
 #pragma for Ada "fcntl.h" include "bits/fcntl.h"
 #pragma for Ada "pthread.h" include "bits/pthreadtypes.h"
 #pragma for Ada "signal.h" include "bits/siginfo.h"
@@ -126,6 +147,8 @@
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
 #pragma for Ada "sys/mman.h" include "bits/mman.h"
 #pragma for Ada "sys/resource.h" include "bits/resource.h"
+#pragma for Ada "sys/stat.h" include "bits/stat.h"
+#pragma for Ada "sys/statvfs.h" include "bits/statvfs.h"
 #pragma for Ada "sys/syscall.h" include "bits/syscall.h"
 #pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */
 #pragma for Ada "sys/types.h" include "bits/types.h" /* time_t */
