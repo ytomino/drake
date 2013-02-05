@@ -193,8 +193,8 @@ package body Ada.Containers.Indefinite_Holders is
       elsif Is_Empty (Left) or else Is_Empty (Right) then
          return Is_Empty (Left) and then Is_Empty (Right);
       else
-         return Downcast (Left.Super.Data).Element.all
-            = Downcast (Right.Super.Data).Element.all;
+         return Downcast (Left.Super.Data).Element.all =
+            Downcast (Right.Super.Data).Element.all;
       end if;
    end "=";
 

@@ -724,8 +724,8 @@ package body Ada.Calendar.Formatting is
       if Error or else Last /= Time_Zone'Last then
          raise Constraint_Error;
       end if;
-      Result := Time_Zones.Time_Offset'Base (Hour) * 60 +
-         Time_Zones.Time_Offset'Base (Minute);
+      Result := Time_Zones.Time_Offset'Base (Hour) * 60
+         + Time_Zones.Time_Offset'Base (Minute);
       if Minus then
          Result := -Result;
       end if;

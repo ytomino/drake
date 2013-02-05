@@ -81,8 +81,9 @@ package body System.Val_Real is
             end if;
             Formatting.Value (S (Last + 1), X, Is_Invalid);
             exit when Is_Invalid or else X >= Formatting.Unsigned (Base);
-            if Result > (Long_Long_Float'Last - Long_Long_Float (X)) /
-               Long_Long_Float (Base)
+            if Result >
+               (Long_Long_Float'Last - Long_Long_Float (X))
+                  / Long_Long_Float (Base)
             then
                Unwind.Raising.Overflow;
             end if;

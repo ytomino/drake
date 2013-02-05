@@ -144,16 +144,17 @@ package body Ada.Numerics.Generic_Arrays is
          when 1 =>
             return A (A'First (1), A'First (2));
          when 2 =>
-            return A (A'First (1), A'First (2)) * A (A'Last (1), A'Last (2)) -
-                   A (A'First (1), A'Last (2)) * A (A'Last (1), A'First (2));
+            return A (A'First (1), A'First (2)) * A (A'Last (1), A'Last (2))
+               - A (A'First (1), A'Last (2)) * A (A'Last (1), A'First (2));
          when others =>
             declare
                Result : Number := Zero;
                Sign : Number := One;
             begin
                for X in A'Range (1) loop
-                  Result := Result + Sign * A (X, A'First (2)) *
-                                     Determinant (Minor (A, X, A'First (2)));
+                  Result := Result
+                     + Sign * A (X, A'First (2))
+                        * Determinant (Minor (A, X, A'First (2)));
                   Sign := -Sign;
                end loop;
                return Result;
@@ -348,8 +349,9 @@ package body Ada.Numerics.Generic_Arrays is
                   Z : Result_Type := Zero;
                begin
                   for K in Left'Range (2) loop
-                     Z := Z + Left (I, K) *
-                          Right (Right'First (1) - Left'First (2) + K, J);
+                     Z := Z
+                        + Left (I, K) *
+                           Right (Right'First (1) - Left'First (2) + K, J);
                   end loop;
                   Result (I, J) := Z;
                end;
@@ -379,8 +381,8 @@ package body Ada.Numerics.Generic_Arrays is
                Z : Result_Type := Zero;
             begin
                for K in Left'Range loop
-                  Z := Z + Left (K) *
-                       Right (Right'First (1) - Left'First + K, J);
+                  Z := Z
+                     + Left (K) * Right (Right'First (1) - Left'First + K, J);
                end loop;
                Result (J) := Z;
             end;
@@ -397,8 +399,8 @@ package body Ada.Numerics.Generic_Arrays is
                Z : Result_Type := Zero;
             begin
                for K in Left'Range (2) loop
-                  Z := Z + Left (I, K) *
-                       Right (Right'First - Left'First (2) + K);
+                  Z := Z
+                     + Left (I, K) * Right (Right'First - Left'First (2) + K);
                end loop;
                Result (I) := Z;
             end;

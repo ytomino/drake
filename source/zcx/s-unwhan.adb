@@ -205,8 +205,8 @@ package body System.Unwind.Handling is
                            return C.unwind.URC_CONTINUE_UNWIND;
                         end if;
                         if cs_action /= 0 then
-                           table_entry := action_table +
-                              C.ptrdiff_t (cs_action - 1);
+                           table_entry := action_table
+                              + C.ptrdiff_t (cs_action - 1);
                         else
                            table_entry := null;
                         end if;
@@ -248,9 +248,10 @@ package body System.Unwind.Handling is
                               Unwind_Ptr_Ptr,
                               C.unwind.Unwind_Ptr);
                            filter : constant C.ptrdiff_t :=
-                              C.ptrdiff_t (ar_filter) *
-                              C.ptrdiff_t (C.unwind_pe.size_of_encoded_value (
-                                 ttype_encoding));
+                              C.ptrdiff_t (ar_filter)
+                                 * C.ptrdiff_t (
+                                    C.unwind_pe.size_of_encoded_value (
+                                       ttype_encoding));
                            choice : aliased C.unwind.Unwind_Ptr;
                            is_handled : Boolean;
                         begin

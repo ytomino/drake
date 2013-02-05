@@ -160,8 +160,8 @@ package body Ada.Formatting is
    function Fixed_Image (Item : T) return String is
       Result : String (
          1 ..
-         Integer'Max (T'Fore, Fore_Width + 1) +
-            Aft_Width + Exponent_Width + 7); -- (16#.#/16#.#E-)
+         Integer'Max (T'Fore, Fore_Width + 1)
+         + Aft_Width + Exponent_Width + 7); -- (16#.#/16#.#E-)
       Last : Natural;
    begin
       if Exponent then
@@ -207,8 +207,8 @@ package body Ada.Formatting is
    function Decimal_Image (Item : T) return String is
       Result : String (
          1 ..
-         Integer'Max (T'Fore, Fore_Width + 1) +
-            Aft_Width + Exponent_Width + 7); -- (./16#.#E+)
+         Integer'Max (T'Fore, Fore_Width + 1)
+         + Aft_Width + Exponent_Width + 7); -- (./16#.#E+)
       Last : Natural;
    begin
       if Exponent then

@@ -34,8 +34,8 @@ package body Ada.Memory_Mapped_IO is
          C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
          Handle,
          C.sys.types.off_t (Offset) - 1);
-      if System.Address (Mapped_Address)
-         = System.Address (C.sys.mman.MAP_FAILED)
+      if System.Address (Mapped_Address) =
+         System.Address (C.sys.mman.MAP_FAILED)
       then
          raise Use_Error;
       end if;

@@ -174,8 +174,8 @@ package body System.Tasking.Rendezvous is
             end;
          end if;
          Inside.Disable_Abort (Aborted); -- if aborted, raise here
-         if Ada.Exceptions.Exception_Identity (The_Node.X)
-            /= Ada.Exceptions.Null_Id
+         if Ada.Exceptions.Exception_Identity (The_Node.X) /=
+            Ada.Exceptions.Null_Id
          then
             Ada.Exceptions.Reraise_Occurrence (The_Node.X);
          end if;

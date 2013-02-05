@@ -24,7 +24,8 @@ package body System.Storage_Pools.Subpools is
       Alignment : Storage_Elements.Storage_Count)
       return Storage_Elements.Storage_Count is
       ((Finalization_Masters.Header_Size + Alignment - 1)
-         / Alignment * Alignment);
+         / Alignment
+         * Alignment);
 
    --  hooks for smart linking, making code of subpool as removable
 
@@ -73,8 +74,8 @@ package body System.Storage_Pools.Subpools is
          else
             Subpool := Context_Subpool;
          end if;
-         if Subpool.Owner
-            /= Root_Storage_Pool_With_Subpools'Class (Pool)'Unchecked_Access
+         if Subpool.Owner /=
+            Root_Storage_Pool_With_Subpools'Class (Pool)'Unchecked_Access
          then
             raise Program_Error;
          end if;

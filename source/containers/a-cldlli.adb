@@ -827,11 +827,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
             return Downcast (Left).Element.all = Downcast (Right).Element.all;
          end Equivalent;
       begin
-         return Left.Length = Right.Length and then
-            Linked_Lists.Equivalent (
-               Left.Last,
-               Right.Last,
-               Equivalent'Access);
+         return Left.Length = Right.Length
+            and then
+               Linked_Lists.Equivalent (
+                  Left.Last,
+                  Right.Last,
+                  Equivalent'Access);
       end "=";
 
    end Equivalents;

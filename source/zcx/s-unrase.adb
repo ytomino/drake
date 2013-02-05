@@ -70,8 +70,8 @@ package body Separated is
    begin
       Current :=
          Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
-      if GCC_Exception.Header.exception_class
-         = Handling.GNAT_Exception_Class
+      if GCC_Exception.Header.exception_class =
+         Handling.GNAT_Exception_Class
       then
          Current.all := GCC_Exception.Occurrence;
       else

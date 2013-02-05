@@ -122,8 +122,9 @@ package body System.Val_Enum is
    begin
       for I in S'Range loop
          if S (I) in 'a' .. 'z' then
-            S (I) := Character'Val (Character'Pos (S (I)) -
-               (Character'Pos ('a') - Character'Pos ('A')));
+            S (I) := Character'Val (
+               Character'Pos (S (I))
+               - (Character'Pos ('a') - Character'Pos ('A')));
          end if;
       end loop;
    end To_Upper;

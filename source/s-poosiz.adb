@@ -18,9 +18,10 @@ package body System.Pool_Size is
             Pool.Pool_Size - Size_In_Storage_Elements + 1
          then
             Storage_Address := Pool.The_Pool (Pool.First_Empty)'Address;
-            Pool.First_Empty := Pool.First_Empty +
-               (Size_In_Storage_Elements + Pool.Alignment - 1) /
-               Pool.Alignment * Pool.Alignment;
+            Pool.First_Empty := Pool.First_Empty
+               + (Size_In_Storage_Elements + Pool.Alignment - 1)
+                  / Pool.Alignment
+                  * Pool.Alignment;
          else
             Error := True;
          end if;

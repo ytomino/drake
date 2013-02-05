@@ -327,8 +327,9 @@ package body Ada.Containers.Limited_Vectors is
          declare
             Old_Length : constant Count_Type := Container.Length;
             Moving : constant Index_Type'Base :=
-               (Index_Type'First + Index_Type'Base (Old_Length)) -
-               (Index + Index_Type'Base (Count)) - 1;
+               (Index_Type'First + Index_Type'Base (Old_Length))
+               - (Index + Index_Type'Base (Count))
+               - 1;
             Before : constant Index_Type := Index + Index_Type'Base (Count);
             After : constant Index_Type := Index;
          begin

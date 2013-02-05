@@ -73,8 +73,9 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
       pragma Assert (T.Parent /= null); -- not root
       R : constant Node_Access := T.Right;
    begin
-      if R /= null and then R.Right /= null and then
-         Downcast (T).Level = Downcast (R.Right).Level
+      if R /= null
+         and then R.Right /= null
+         and then Downcast (T).Level = Downcast (R.Right).Level
       then
          if T.Parent.Left = T then
             T.Parent.Left := R;
@@ -225,20 +226,21 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
       --  rebalance
       while Current /= Root loop
          if (Current.Left = null and then Downcast (Current).Level > 0)
-            or else
-            (Current.Left /= null and then
-               Downcast (Current).Level > Downcast (Current.Left).Level + 1)
-            or else
-            (Current.Right = null and then Downcast (Current).Level > 0)
-            or else
-            (Current.Right /= null and then
-               Downcast (Current).Level > Downcast (Current.Right).Level + 1)
+            or else (Current.Left /= null
+               and then
+                  Downcast (Current).Level > Downcast (Current.Left).Level + 1)
+            or else (Current.Right = null
+               and then Downcast (Current).Level > 0)
+            or else (Current.Right /= null
+               and then Downcast (Current).Level >
+                  Downcast (Current.Right).Level + 1)
          then
             pragma Check (Dump_On_Removing,
                Debug.Dump (Root.Left, Current, "removed a"));
             Downcast (Current).Level := Downcast (Current).Level - 1;
-            if Current.Right /= null and then
-               Downcast (Current.Right).Level > Downcast (Current).Level
+            if Current.Right /= null
+               and then
+                  Downcast (Current.Right).Level > Downcast (Current).Level
             then
                Downcast (Current.Right).Level := Downcast (Current).Level;
             end if;
