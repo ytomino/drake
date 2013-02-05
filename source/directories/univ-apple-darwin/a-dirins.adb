@@ -1,3 +1,4 @@
+with Ada.Directories.Inside.Do_Copy_File;
 with Ada.Exceptions;
 with C.errno;
 with C.stdlib;
@@ -39,6 +40,22 @@ package body Ada.Directories.Inside is
       return C.unistd.unlink (zfrom);
    end C_rename;
 
+   procedure Get_Information (
+      Name : String;
+      Information : not null access Directory_Entry_Information_Type;
+      Error : out Boolean);
+   procedure Get_Information (
+      Name : String;
+      Information : not null access Directory_Entry_Information_Type;
+      Error : out Boolean)
+   is
+      Z_Name : constant String := Name & Character'Val (0);
+      C_Name : C.char_array (C.size_t);
+      for C_Name'Address use Z_Name'Address;
+   begin
+      Error := C.sys.stat.lstat (C_Name (0)'Access, Information) < 0;
+   end Get_Information;
+
    --  implementation
 
    function Current_Directory return String is
@@ -64,7 +81,11 @@ package body Ada.Directories.Inside is
       end if;
    end Set_Directory;
 
-   procedure Create_Directory (New_Directory : String) is
+   procedure Create_Directory (
+      New_Directory : String;
+      Form : String)
+   is
+      pragma Unreferenced (Form);
       Z_New_Directory : constant String := New_Directory & Character'Val (0);
       C_New_Directory : C.char_array (C.size_t);
       for C_New_Directory'Address use Z_New_Directory'Address;
@@ -100,6 +121,13 @@ package body Ada.Directories.Inside is
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
    end Delete_File;
+
+   procedure Copy_File (
+      Source_Name : String;
+      Target_Name : String;
+      Form : String;
+      Overwrite : Boolean)
+      renames Inside.Do_Copy_File;
 
    procedure Rename (
       Old_Name : String;
@@ -160,16 +188,24 @@ package body Ada.Directories.Inside is
       end if;
    end Symbolic_Link;
 
+   function Exists (Name : String) return Boolean is
+      Information : aliased Directory_Entry_Information_Type;
+      Error : Boolean;
+   begin
+      Get_Information (Name, Information'Access, Error);
+      return not Error;
+   end Exists;
+
    procedure Get_Information (
       Name : String;
-      Information : not null access Directory_Entry_Information_Type;
-      Error : out Boolean)
+      Information : not null access Directory_Entry_Information_Type)
    is
-      Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+      Error : Boolean;
    begin
-      Error := C.sys.stat.lstat (C_Name (0)'Access, Information) < 0;
+      Get_Information (Name, Information, Error);
+      if Error then
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+      end if;
    end Get_Information;
 
    function Kind (Information : Directory_Entry_Information_Type)

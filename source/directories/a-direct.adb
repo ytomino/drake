@@ -1,5 +1,4 @@
 with Ada.Directories.Inside;
-with Ada.Directories.Inside.Do_Copy_File;
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -13,26 +12,17 @@ package body Ada.Directories is
 
    --  directory and file operations
 
-   function Current_Directory return String is
-   begin
-      return Inside.Current_Directory;
-   end Current_Directory;
+   function Current_Directory return String
+      renames Inside.Current_Directory;
 
-   procedure Set_Directory (Directory : String) is
-   begin
-      Inside.Set_Directory (Directory);
-   end Set_Directory;
+   procedure Set_Directory (Directory : String)
+      renames Inside.Set_Directory;
 
-   procedure Create_Directory (New_Directory : String; Form : String := "") is
-      pragma Unreferenced (Form);
-   begin
-      Inside.Create_Directory (New_Directory);
-   end Create_Directory;
+   procedure Create_Directory (New_Directory : String; Form : String := "")
+      renames Inside.Create_Directory;
 
-   procedure Delete_Directory (Directory : String) is
-   begin
-      Inside.Delete_Directory (Directory);
-   end Delete_Directory;
+   procedure Delete_Directory (Directory : String)
+      renames Inside.Delete_Directory;
 
    procedure Create_Path (New_Directory : String; Form : String := "") is
       pragma Unreferenced (Form);
@@ -120,25 +110,21 @@ package body Ada.Directories is
    procedure Rename (
       Old_Name : String;
       New_Name : String;
-      Overwrite : Boolean := True) is
-   begin
-      Inside.Rename (Old_Name, New_Name, Overwrite);
-   end Rename;
+      Overwrite : Boolean := True)
+      renames  Inside.Rename;
 
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
       Form : String := "";
       Overwrite : Boolean := True)
-      renames Inside.Do_Copy_File;
+      renames Inside.Copy_File;
 
    procedure Symbolic_Link (
       Source_Name : String;
       Target_Name : String;
-      Overwrite : Boolean := True) is
-   begin
-      Inside.Symbolic_Link (Source_Name, Target_Name, Overwrite);
-   end Symbolic_Link;
+      Overwrite : Boolean := True)
+      renames Inside.Symbolic_Link;
 
    --  file and directory name operations
 
@@ -315,39 +301,34 @@ package body Ada.Directories is
 
    --  file and directory queries
 
-   function Exists (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
-      Error : Boolean;
-   begin
-      Inside.Get_Information (Name, Information'Access, Error);
-      return not Error;
-   end Exists;
+   function Exists (Name : String) return Boolean
+      renames Inside.Exists;
 
    function Kind (Name : String) return File_Kind is
-      Attributes : Inside.Directory_Entry_Information_Type;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      return Inside.Kind (Attributes);
+      Inside.Get_Information (Name, Information'Access);
+      return Inside.Kind (Information);
    end Kind;
 
    function Size (Name : String) return File_Size is
-      Attributes : Inside.Directory_Entry_Information_Type;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
-      if Inside.Kind (Attributes) /= Ordinary_File then
+      Inside.Get_Information (Name, Information'Access);
+      if Inside.Kind (Information) /= Ordinary_File then
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       else
-         return Inside.Size (Attributes);
+         return Inside.Size (Information);
       end if;
    end Size;
 
    function Modification_Time (Name : String) return Calendar.Time is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Attributes : Inside.Directory_Entry_Information_Type;
+      Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Get_Attributes (Name, Attributes);
+      Inside.Get_Information (Name, Information'Access);
       return Cast (System.Native_Time.To_Time (
-         Inside.Modification_Time (Attributes)));
+         Inside.Modification_Time (Information)));
    end Modification_Time;
 
    procedure Set_Modification_Time (Name : String; Time : Calendar.Time) is
@@ -379,7 +360,7 @@ package body Ada.Directories is
       Search.Count := 0;
       Directory_Searching.Get_Next_Entry (
          Search.Search,
-         Search.Data'Access,
+         Search.Next_Data'Access,
          Search.Has_Next);
    end Start_Search;
 
@@ -416,17 +397,17 @@ package body Ada.Directories is
       else
          --  copy entry and get info
          Directory_Entry.Path := Search.Path; -- overwrite
-         Directory_Entry.Entry_Data := Search.Data;
+         Directory_Entry.Data := Search.Next_Data;
          Directory_Searching.Get_Information (
             Directory_Entry.Path.all,
-            Directory_Entry.Entry_Data,
-            Directory_Entry.State_Data'Access);
+            Directory_Entry.Data,
+            Directory_Entry.Information'Access);
          --  counting
          Search.Count := Search.Count + 1;
          --  search next
          Directory_Searching.Get_Next_Entry (
             Search.Search,
-            Search.Data'Access,
+            Search.Next_Data'Access,
             Search.Has_Next);
       end if;
    end Get_Next_Entry;
@@ -510,23 +491,11 @@ package body Ada.Directories is
       end if;
    end Check_Assigned;
 
-   procedure Get_Attributes (
-      Name : String;
-      Attributes : out Directory_Searching.Directory_Entry_Information_Type)
-   is
-      Error : Boolean;
-   begin
-      Inside.Get_Information (Name, Attributes'Unrestricted_Access, Error);
-      if Error then
-         raise Name_Error;
-      end if;
-   end Get_Attributes;
-
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
       return String is
    begin
       Check_Assigned (Directory_Entry);
-      return Directory_Searching.Simple_Name (Directory_Entry.Entry_Data);
+      return Directory_Searching.Simple_Name (Directory_Entry.Data);
    end Simple_Name;
 
    function Full_Name (Directory_Entry : Directory_Entry_Type) return String is
@@ -540,18 +509,18 @@ package body Ada.Directories is
    function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
    begin
       Check_Assigned (Directory_Entry);
-      return Inside.Kind (Directory_Entry.State_Data);
+      return Inside.Kind (Directory_Entry.Information);
    end Kind;
 
    function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
    begin
       if Directory_Entry.Path = null
-         or else Inside.Kind (Directory_Entry.State_Data) /=
+         or else Inside.Kind (Directory_Entry.Information) /=
             Ordinary_File
       then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else
-         return Inside.Size (Directory_Entry.State_Data);
+         return Inside.Size (Directory_Entry.Information);
       end if;
    end Size;
 

@@ -8,11 +8,19 @@ package Ada.Directories.Inside is
 
    procedure Set_Directory (Directory : String);
 
-   procedure Create_Directory (New_Directory : String);
+   procedure Create_Directory (
+      New_Directory : String;
+      Form : String);
 
    procedure Delete_Directory (Directory : String);
 
    procedure Delete_File (Name : String);
+
+   procedure Copy_File (
+      Source_Name : String;
+      Target_Name : String;
+      Form : String;
+      Overwrite : Boolean);
 
    procedure Rename (
       Old_Name : String;
@@ -24,13 +32,14 @@ package Ada.Directories.Inside is
       Target_Name : String;
       Overwrite : Boolean);
 
+   function Exists (Name : String) return Boolean;
+
    --  same as Directory_Searching.Directory_Entry_Information_Type
    subtype Directory_Entry_Information_Type is C.sys.stat.struct_stat;
 
    procedure Get_Information (
       Name : String;
-      Information : not null access Directory_Entry_Information_Type;
-      Error : out Boolean);
+      Information : not null access Directory_Entry_Information_Type);
 
    function Kind (Information : Directory_Entry_Information_Type)
       return File_Kind;
