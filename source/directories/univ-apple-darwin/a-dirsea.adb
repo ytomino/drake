@@ -27,9 +27,9 @@ package body Ada.Directory_Searching is
       end if;
       if Filter (Special_File) then
          Result := Result or (
-               16#ffff#
-               and not C.Shift_Left (1, C.sys.dirent.DT_DIR)
-               and not C.Shift_Left (1, C.sys.dirent.DT_REG));
+            16#ffff#
+            and not C.Shift_Left (1, C.sys.dirent.DT_DIR)
+            and not C.Shift_Left (1, C.sys.dirent.DT_REG));
       end if;
       return Result;
    end To_Filter;

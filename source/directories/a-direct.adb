@@ -561,9 +561,8 @@ package body Ada.Directories is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
       Check_Assigned (Directory_Entry);
-      return Cast (
-         System.Native_Time.To_Time (
-            Inside.Modification_Time (Directory_Entry.State_Data)));
+      return Cast (System.Native_Time.To_Time (
+            Inside.Modification_Time (Directory_Entry.Information)));
    end Modification_Time;
 
 end Ada.Directories;
