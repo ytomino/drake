@@ -1,4 +1,4 @@
-with Ada.Directories.Inside;
+with Ada.Directories.Inside.Do_Copy_File;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
@@ -171,7 +171,7 @@ package body Ada.Directories is
       Target_Name : String;
       Form : String := "";
       Overwrite : Boolean := True)
-      renames Inside.Copy_File;
+      renames Inside.Do_Copy_File.Copy_File;
 
    procedure Create_Directory (New_Directory : String; Form : String := "") is
       pragma Unreferenced (Form);

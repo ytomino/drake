@@ -3,7 +3,7 @@ with C.fcntl;
 with C.sys.mman;
 with C.sys.types;
 with C.unistd;
-package body Ada.Directories.Inside is
+package body Ada.Directories.Inside.Do_Copy_File is
    use type C.signed_int;
    use type C.unsigned_int;
 
@@ -72,4 +72,4 @@ package body Ada.Directories.Inside is
       end if;
    end Copy_File;
 
-end Ada.Directories.Inside;
+end Ada.Directories.Inside.Do_Copy_File;
