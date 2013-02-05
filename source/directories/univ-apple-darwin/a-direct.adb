@@ -171,7 +171,7 @@ package body Ada.Directories is
       Target_Name : String;
       Form : String := "";
       Overwrite : Boolean := True)
-      renames Inside.Do_Copy_File.Copy_File;
+      renames Inside.Do_Copy_File;
 
    procedure Create_Directory (New_Directory : String; Form : String := "") is
       pragma Unreferenced (Form);
