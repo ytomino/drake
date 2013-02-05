@@ -49,6 +49,7 @@ procedure ext_doc is
 					or else Line (F .. L) = "procedure"
 					or else Line (F .. L) = "function"
 					or else Line (F .. L) = "generic"
+					or else Line (F .. L) = "private"
 				then
 					F := Ada.Strings.Fixed.Index_Non_Blank (Line, From => L + 1);
 				else
@@ -126,6 +127,7 @@ procedure ext_doc is
 						or else Start_With (Line, "procedure")
 						or else Start_With (Line, "function")
 						or else Start_With (Line, "generic")
+						or else Start_With (Line, "private package")
 					then
 						Kind := Standard_Unit;
 						if Line /= "generic" then
@@ -147,7 +149,8 @@ procedure ext_doc is
 					if (Start_With (Line, "package")
 						or else Start_With (Line, "procedure")
 						or else Start_With (Line, "function")
-						or else Start_With (Line, "generic"))
+						or else Start_With (Line, "generic")
+						or else Start_With (Line, "private package"))
 						and then Line /= "generic"
 					then
 						Get_Unit_Name (Line, Unit_Name, Rest_Of_Name_Line);
@@ -217,6 +220,10 @@ procedure ext_doc is
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "end")
 					or else Ada.Strings.Unbounded.Index (Rest_Of_Name_Line, " : ") > 0
 				then
+					exit;
+				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, " return ") then
+					Renamed := +Get_Base (Rest_Of_Name_Line.Slice (1 + 8, Rest_Of_Name_Line.Length));
+					Rest_Of_Name_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
 					exit;
 				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, " renames ") then
 					Renamed := +Get_Base (Rest_Of_Name_Line.Slice (1 + 9, Rest_Of_Name_Line.Length));

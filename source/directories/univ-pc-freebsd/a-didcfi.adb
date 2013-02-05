@@ -1,6 +1,7 @@
 with System;
 with C.fcntl;
 with C.sys.mman;
+with C.sys.stat;
 with C.sys.types;
 with C.unistd;
 procedure Ada.Directories.Inside.Do_Copy_File (

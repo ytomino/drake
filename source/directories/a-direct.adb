@@ -1,77 +1,14 @@
+with Ada.Directories.Inside;
 with Ada.Directories.Inside.Do_Copy_File;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System.Address_To_Named_Access_Conversions;
-with System.Memory;
 with System.Native_Time;
 with System.Storage_Elements;
-with C.errno;
-with C.fnmatch;
-with C.stdlib;
-with C.string;
-with C.time;
-with C.unistd;
-with C.sys.time;
-with C.sys.types;
 package body Ada.Directories is
+   use type Directory_Searching.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
-   use type C.char;
-   use type C.signed_int; -- ssize_t is signed int or signed long
-   use type C.signed_long;
-   use type C.size_t;
-   use type C.unsigned_char;
-   use type C.unsigned_int;
-   use type C.dirent.DIR_ptr;
-   use type C.sys.dirent.struct_dirent_ptr;
-   use type C.sys.types.mode_t;
-
-   --  reference:
-   --  http://www.opensource.apple.com/source/gcc/gcc-5664/libiberty/rename.c
-   function C_rename (
-      zfrom : access constant C.char;
-      zto : access constant C.char;
-      Overwrite : Boolean)
-      return C.signed_int;
-   pragma Convention (C, C_rename);
-   function C_rename (
-      zfrom : access constant C.char;
-      zto : access constant C.char;
-      Overwrite : Boolean)
-      return C.signed_int is
-   begin
-      if C.unistd.link (zfrom, zto) < 0 then
-         if C.errno.errno /= C.errno.EEXIST or else not Overwrite then
-            return -1;
-         end if;
-         --  try to overwrite
-         if C.unistd.unlink (zto) < 0
-            or else C.unistd.link (zfrom, zto) < 0
-         then
-            return -1;
-         end if;
-      end if;
-      return C.unistd.unlink (zfrom);
-   end C_rename;
-
-   package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      C.char,
-      C.char_ptr);
 
    procedure Free is new Unchecked_Deallocation (String, String_Access);
-
-   function To_File_Kind (Attribute : C.sys.types.mode_t) return File_Kind;
-   function To_File_Kind (Attribute : C.sys.types.mode_t) return File_Kind is
-      Kind_Attr : constant C.sys.types.mode_t :=
-         Attribute and C.sys.stat.S_IFMT;
-   begin
-      if Kind_Attr = C.sys.stat.S_IFDIR then
-         return Directory;
-      elsif Kind_Attr /= C.sys.stat.S_IFREG then
-         return Special_File;
-      else
-         return Ordinary_File;
-      end if;
-   end To_File_Kind;
 
    --  implementation
 
@@ -175,20 +112,8 @@ package body Ada.Directories is
 
    procedure Create_Directory (New_Directory : String; Form : String := "") is
       pragma Unreferenced (Form);
-      Z_New_Directory : constant String := New_Directory & Character'Val (0);
-      C_New_Directory : C.char_array (C.size_t);
-      for C_New_Directory'Address use Z_New_Directory'Address;
    begin
-      if C.sys.stat.mkdir (C_New_Directory (0)'Access, 8#755#) /= 0 then
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTDIR
-               | C.errno.ENAMETOOLONG =>
-               raise Name_Error;
-            when others =>
-               raise Use_Error;
-         end case;
-      end if;
+      Inside.Create_Directory (New_Directory);
    end Create_Directory;
 
    procedure Create_Path (New_Directory : String; Form : String := "") is
@@ -237,36 +162,18 @@ package body Ada.Directories is
    end Create_Path;
 
    function Current_Directory return String is
-      Path : constant C.char_ptr := C.unistd.getcwd (null, 0);
-      Path_Length : constant C.size_t := C.string.strlen (Path);
-      Path_String : String (1 .. Natural (Path_Length));
-      for Path_String'Address use Path.all'Address;
    begin
-      return Result : String := Path_String do -- copy
-         pragma Unmodified (Result);
-         pragma Unreferenced (Result);
-         C.stdlib.free (C.void_ptr (Path.all'Address));
-      end return;
+      return Inside.Current_Directory;
    end Current_Directory;
 
    procedure Delete_Directory (Directory : String) is
-      Z_Directory : constant String := Directory & Character'Val (0);
-      C_Directory : C.char_array (C.size_t);
-      for C_Directory'Address use Z_Directory'Address;
    begin
-      if C.unistd.rmdir (C_Directory (0)'Access) < 0 then
-         raise Name_Error;
-      end if;
+      Inside.Delete_Directory (Directory);
    end Delete_Directory;
 
    procedure Delete_File (Name : String) is
-      Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
    begin
-      if C.unistd.unlink (C_Name (0)'Access) < 0 then
-         raise Name_Error;
-      end if;
+      Inside.Delete_File (Name);
    end Delete_File;
 
    procedure Delete_Tree (Directory : String) is
@@ -313,12 +220,11 @@ package body Ada.Directories is
    end Exclude_Trailing_Path_Delimiter;
 
    function Exists (Name : String) return Boolean is
-      Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
-      Attributes : aliased C.sys.stat.struct_stat;
+      Information : aliased Inside.Directory_Entry_Information_Type;
+      Error : Boolean;
    begin
-      return C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) = 0;
+      Inside.Get_Information (Name, Information'Access, Error);
+      return not Error;
    end Exists;
 
    procedure Extension (
@@ -353,14 +259,10 @@ package body Ada.Directories is
    end Extension;
 
    procedure Finalize (Search : in out Search_Type) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
-      if Search.Handle /= null then
-         Dummy := C.dirent.closedir (Search.Handle);
-         Search.Handle := null;
+      if Search.Search.Handle /= null then
+         Directory_Searching.End_Search (Search.Search);
          Free (Search.Path);
-         System.Memory.Free (char_ptr_Conv.To_Address (Search.Pattern));
       end if;
    end Finalize;
 
@@ -375,16 +277,12 @@ package body Ada.Directories is
 
    procedure Get_Attributes (
       Name : String;
-      Attributes : out C.sys.stat.struct_stat)
+      Attributes : out Directory_Searching.Directory_Entry_Information_Type)
    is
-      Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+      Error : Boolean;
    begin
-      if C.sys.stat.lstat (
-         C_Name (0)'Access,
-         Attributes'Unrestricted_Access) < 0
-      then
+      Inside.Get_Information (Name, Attributes'Unrestricted_Access, Error);
+      if Error then
          raise Name_Error;
       end if;
    end Get_Attributes;
@@ -400,81 +298,40 @@ package body Ada.Directories is
    end Include_Trailing_Path_Delimiter;
 
    function Kind (Name : String) return File_Kind is
-      Attributes : C.sys.stat.struct_stat;
+      Attributes : Inside.Directory_Entry_Information_Type;
    begin
       Get_Attributes (Name, Attributes);
-      return To_File_Kind (Attributes.st_mode);
+      return Inside.Kind (Attributes);
    end Kind;
 
    function Modification_Time (Name : String) return Calendar.Time is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Attributes : C.sys.stat.struct_stat;
+      Attributes : Inside.Directory_Entry_Information_Type;
    begin
       Get_Attributes (Name, Attributes);
-      return Cast (System.Native_Time.To_Time (Attributes.st_mtimespec));
+      return Cast (System.Native_Time.To_Time (
+         Inside.Modification_Time (Attributes)));
    end Modification_Time;
 
    procedure Rename (
       Old_Name : String;
       New_Name : String;
-      Overwrite : Boolean := True)
-   is
-      Z_Old : constant String := Old_Name & Character'Val (0);
-      C_Old : C.char_array (C.size_t);
-      for C_Old'Address use Z_Old'Address;
-      Z_New : constant String := New_Name & Character'Val (0);
-      C_New : C.char_array (C.size_t);
-      for C_New'Address use Z_New'Address;
+      Overwrite : Boolean := True) is
    begin
-      if C_rename (C_Old (0)'Access, C_New (0)'Access, Overwrite) < 0 then
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTDIR
-               | C.errno.EISDIR
-               | C.errno.ENAMETOOLONG =>
-               raise Name_Error;
-            when others =>
-               raise Use_Error;
-         end case;
-      end if;
+      Inside.Rename (Old_Name, New_Name, Overwrite);
    end Rename;
 
    procedure Set_Directory (Directory : String) is
-      Z_Directory : constant String := Directory & Character'Val (0);
-      C_Directory : C.char_array (C.size_t);
-      for C_Directory'Address use Z_Directory'Address;
    begin
-      if C.unistd.chdir (C_Directory (0)'Access) /= 0 then
-         raise Name_Error;
-      end if;
+      Inside.Set_Directory (Directory);
    end Set_Directory;
 
    procedure Set_Modification_Time (Name : String; Time : Calendar.Time) is
       function Cast is new Unchecked_Conversion (Calendar.Time, Duration);
-      function To_timeval (X : C.time.struct_timespec)
-         return C.sys.time.struct_timeval;
-      function To_timeval (X : C.time.struct_timespec)
-         return C.sys.time.struct_timeval is
-      begin
-         return (
-            tv_sec => X.tv_sec,
-            tv_usec => C.sys.types.suseconds_t (X.tv_nsec / 1000));
-      end To_timeval;
-      Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
-      Attributes : aliased C.sys.stat.struct_stat;
-      Times : aliased array (0 .. 1) of aliased C.sys.time.struct_timeval;
    begin
-      if C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) < 0 then
-         raise Name_Error;
-      end if;
-      Times (0) := To_timeval (Attributes.st_atimespec);
-      Times (1) := To_timeval (
+      Inside.Set_Modification_Time (
+         Name,
          System.Native_Time.To_Native_Time (Cast (Time)));
-      if C.sys.time.lutimes (C_Name (0)'Access, Times (0)'Access) < 0 then
-         raise Use_Error;
-      end if;
    end Set_Modification_Time;
 
    procedure Simple_Name (
@@ -504,60 +361,34 @@ package body Ada.Directories is
    end Simple_Name;
 
    function Size (Name : String) return File_Size is
-      Attributes : C.sys.stat.struct_stat;
+      Attributes : Inside.Directory_Entry_Information_Type;
    begin
       Get_Attributes (Name, Attributes);
-      if To_File_Kind (Attributes.st_mode) /= Ordinary_File then
+      if Inside.Kind (Attributes) /= Ordinary_File then
          raise Name_Error;
       else
-         return File_Size (Attributes.st_size);
+         return Inside.Size (Attributes);
       end if;
    end Size;
 
    function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
    begin
       if Directory_Entry.Path = null
-         or else To_File_Kind (Directory_Entry.State_Data.st_mode) /=
+         or else Inside.Kind (Directory_Entry.State_Data) /=
             Ordinary_File
       then
          raise Status_Error;
       else
-         return File_Size (Directory_Entry.State_Data.st_size);
+         return Inside.Size (Directory_Entry.State_Data);
       end if;
    end Size;
 
    procedure Symbolic_Link (
       Source_Name : String;
       Target_Name : String;
-      Overwrite : Boolean := True)
-   is
-      Z_Source : constant String := Source_Name & Character'Val (0);
-      C_Source : C.char_array (C.size_t);
-      for C_Source'Address use Z_Source'Address;
-      Z_Target : constant String := Target_Name & Character'Val (0);
-      C_Target : C.char_array (C.size_t);
-      for C_Target'Address use Z_Target'Address;
-      path1 : constant not null access constant C.char := C_Source (0)'Access;
-      path2 : constant not null access constant C.char := C_Target (0)'Access;
+      Overwrite : Boolean := True) is
    begin
-      if C.unistd.symlink (path1, path2) < 0 then
-         if C.errno.errno = C.errno.EEXIST and then Overwrite then
-            --  try to overwrite
-            if C.unistd.unlink (path2) = 0
-               and then C.unistd.symlink (path1, path2) = 0
-            then
-               return; -- success
-            end if;
-         end if;
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTDIR
-               | C.errno.ENAMETOOLONG =>
-               raise Name_Error;
-            when others =>
-               raise Use_Error;
-         end case;
-      end if;
+      Inside.Symbolic_Link (Source_Name, Target_Name, Overwrite);
    end Symbolic_Link;
 
    --  directory searching
@@ -566,72 +397,23 @@ package body Ada.Directories is
       Search : in out Search_Type;
       Directory : String;
       Pattern : String := "*";
-      Filter : Filter_Type := (others => True)) is
+      Filter : Filter_Type := (others => True))
+   is
+      function Cast is new
+         Unchecked_Conversion (Filter_Type, Directory_Searching.Filter_Type);
    begin
       Finalize (Search); -- cleanup
-      declare
-         Z_Directory : constant String := Directory & Character'Val (0);
-         C_Directory : C.char_array (C.size_t);
-         for C_Directory'Address use Z_Directory'Address;
-      begin
-         Search.Handle := C.dirent.opendir (C_Directory (0)'Access);
-      end;
-      if Search.Handle = null then
-         raise Name_Error;
-      else
-         Search.Path := null;
-         Search.Pattern := null;
-         --  allocate Path and Pattern
-         Search.Path := new String'(Full_Name (Directory));
-         declare
-            Length : constant Natural := Pattern'Length;
-         begin
-            Search.Pattern := char_ptr_Conv.To_Pointer (
-               System.Memory.Allocate (
-                  System.Storage_Elements.Storage_Offset (Length + 1)));
-            declare
-               Search_Pattern : String (Positive);
-               for Search_Pattern'Address use Search.Pattern.all'Address;
-            begin
-               Search_Pattern (1 .. Length) := Pattern;
-               Search_Pattern (Length + 1) := Character'Val (0);
-            end;
-         end;
-         Search.Filter := Filter;
-         Search.Count := 0;
-         Search.Has_Next := True;
-         loop
-            declare
-               Result : aliased C.sys.dirent.struct_dirent_ptr;
-            begin
-               if C.dirent.readdir_r (
-                  Search.Handle,
-                  Search.Data'Access,
-                  Result'Access) < 0
-                  or else Result = null
-               then
-                  Search.Has_Next := False; -- end
-                  exit;
-               end if;
-            end;
-            if Search.Filter (
-               To_File_Kind (C.Shift_Left (
-                  C.sys.types.mode_t (Search.Data.d_type), 12)))
-               and then C.fnmatch.fnmatch (
-                  Search.Pattern,
-                  Search.Data.d_name (0)'Access, 0) = 0
-               and then (
-                  Search.Data.d_name (0) /= '.'
-                  or else (
-                     Search.Data.d_namlen > 1
-                     and then (
-                        Search.Data.d_name (1) /= '.'
-                        or else Search.Data.d_namlen > 2)))
-            then
-               exit; -- found
-            end if;
-         end loop;
-      end if;
+      Directory_Searching.Start_Search (
+         Search.Search,
+         Directory,
+         Pattern,
+         Cast (Filter));
+      Search.Path := new String'(Full_Name (Directory));
+      Search.Count := 0;
+      Directory_Searching.Get_Next_Entry (
+         Search.Search,
+         Search.Data'Access,
+         Search.Has_Next);
    end Start_Search;
 
    function Start_Search (
@@ -647,58 +429,30 @@ package body Ada.Directories is
 
    function More_Entries (Search : Search_Type) return Boolean is
    begin
-      return Search.Handle /= null and then Search.Has_Next;
+      return Search.Search.Handle /= null and then Search.Has_Next;
    end More_Entries;
 
    procedure Get_Next_Entry (
       Search : in out Search_Type;
       Directory_Entry : out Directory_Entry_Type) is
    begin
-      if Search.Handle = null or else not Search.Has_Next then
+      if Search.Search.Handle = null or else not Search.Has_Next then
          raise Status_Error;
       else
          --  copy entry and get info
          Directory_Entry.Path := Search.Path; -- overwrite
          Directory_Entry.Entry_Data := Search.Data;
-         declare
-            Z_Name : String := Full_Name (Directory_Entry) & Character'Val (0);
-            C_Name : C.char_array (C.size_t);
-            for C_Name'Address use Z_Name'Address;
-         begin
-            if C.sys.stat.lstat (
-               C_Name (0)'Access,
-               Directory_Entry.State_Data'Access) < 0
-            then
-               raise Use_Error;
-            end if;
-         end;
+         Directory_Searching.Get_Information (
+            Directory_Entry.Path.all,
+            Directory_Entry.Entry_Data,
+            Directory_Entry.State_Data'Access);
          --  counting
          Search.Count := Search.Count + 1;
          --  search next
-         loop
-            declare
-               Result : aliased C.sys.dirent.struct_dirent_ptr;
-            begin
-               if C.dirent.readdir_r (
-                  Search.Handle,
-                  Search.Data'Access,
-                  Result'Access) < 0
-                  or else Result = null
-               then
-                  Search.Has_Next := False; -- end
-                  exit;
-               end if;
-            end;
-            if Search.Filter (
-               To_File_Kind (
-                  C.Shift_Left (C.sys.types.mode_t (Search.Data.d_type), 12)))
-               and then C.fnmatch.fnmatch (
-                  Search.Pattern,
-                  Search.Data.d_name (0)'Access, 0) = 0
-            then
-               exit; -- found
-            end if;
-         end loop;
+         Directory_Searching.Get_Next_Entry (
+            Search.Search,
+            Search.Data'Access,
+            Search.Has_Next);
       end if;
    end Get_Next_Entry;
 
@@ -778,15 +532,7 @@ package body Ada.Directories is
       return String is
    begin
       Check_Assigned (Directory_Entry);
-      declare
-         subtype Result_String is String (
-            1 ..
-            Natural (Directory_Entry.Entry_Data.d_namlen));
-         Result : Result_String;
-         for Result'Address use Directory_Entry.Entry_Data.d_name'Address;
-      begin
-         return Result;
-      end;
+      return Directory_Searching.Simple_Name (Directory_Entry.Entry_Data);
    end Simple_Name;
 
    function Full_Name (Directory_Entry : Directory_Entry_Type) return String is
@@ -800,7 +546,7 @@ package body Ada.Directories is
    function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
    begin
       Check_Assigned (Directory_Entry);
-      return To_File_Kind (Directory_Entry.State_Data.st_mode);
+      return Inside.Kind (Directory_Entry.State_Data);
    end Kind;
 
    function Modification_Time (Directory_Entry : Directory_Entry_Type)
@@ -810,7 +556,8 @@ package body Ada.Directories is
    begin
       Check_Assigned (Directory_Entry);
       return Cast (
-         System.Native_Time.To_Time (Directory_Entry.State_Data.st_mtimespec));
+         System.Native_Time.To_Time (
+            Inside.Modification_Time (Directory_Entry.State_Data)));
    end Modification_Time;
 
 end Ada.Directories;
