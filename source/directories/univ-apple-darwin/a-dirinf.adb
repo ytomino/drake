@@ -1,4 +1,5 @@
 with Ada.Exceptions.Finally;
+with Ada.Directories.Inside;
 with Ada.Permissions.Inside;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;

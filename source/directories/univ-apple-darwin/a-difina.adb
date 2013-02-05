@@ -157,11 +157,11 @@ package body Ada.Directories.Inside.File_Names is
    --  implementation
 
    function Equal_File_Names (
-      FS : File_Systems.File_System;
+      FS : Volumes.File_System;
       Left, Right : String)
       return Boolean is
    begin
-      if File_Systems.Is_HFS (FS) then
+      if Volumes.Is_HFS (FS) then
          System.Once.Initialize (Flag'Access, InitCompareTables'Access);
          return Characters.Normalization.Equal (
             Left,
@@ -173,11 +173,11 @@ package body Ada.Directories.Inside.File_Names is
    end Equal_File_Names;
 
    function Less_File_Names (
-      FS : File_Systems.File_System;
+      FS : Volumes.File_System;
       Left, Right : String)
       return Boolean is
    begin
-      if File_Systems.Is_HFS (FS) then
+      if Volumes.Is_HFS (FS) then
          System.Once.Initialize (Flag'Access, InitCompareTables'Access);
          return Characters.Normalization.Less (
             Left,

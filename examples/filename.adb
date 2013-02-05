@@ -1,6 +1,6 @@
 with Ada.Directories;
 with Ada.Directories.Hierarchical_File_Names;
-with Ada.Directories.Information;
+with Ada.Directories.Volumes;
 with Ada.Directories.Equal_File_Names;
 with Ada.Directories.Less_File_Names;
 procedure filename is
@@ -100,9 +100,9 @@ begin
 	pragma Assert (ADH.Relative_Name ("A/B", "C/../D") = "../A/B");
 	Ada.Debug.Put (ADH.Relative_Name ("A/B", "C/../A")); -- "../A/B", it should be normalized to "B" ?
 	declare
-		FS : Ada.Directories.Information.File_System :=
-			Ada.Directories.Information.Where ("/");
-		FS_Name : constant String := Ada.Directories.Information.Format_Name (FS);
+		FS : Ada.Directories.Volumes.File_System :=
+			Ada.Directories.Volumes.Get_Where ("/");
+		FS_Name : constant String := Ada.Directories.Volumes.Get_Format_Name (FS);
 	begin
 		Ada.Debug.Put (FS_Name);
 		if FS_Name = "hfs" then

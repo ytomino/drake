@@ -3,7 +3,7 @@ package body Ada.Directories.Inside.File_Names is
    --  implementation
 
    function Equal_File_Names (
-      FS : File_Systems.File_System;
+      FS : Volumes.File_System;
       Left, Right : String)
       return Boolean
    is
@@ -13,7 +13,7 @@ package body Ada.Directories.Inside.File_Names is
    end Equal_File_Names;
 
    function Less_File_Names (
-      FS : File_Systems.File_System;
+      FS : Volumes.File_System;
       Left, Right : String)
       return Boolean
    is
