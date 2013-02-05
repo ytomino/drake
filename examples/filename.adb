@@ -101,8 +101,8 @@ begin
 	Ada.Debug.Put (ADH.Relative_Name ("A/B", "C/../A")); -- "../A/B", it should be normalized to "B" ?
 	declare
 		FS : Ada.Directories.Volumes.File_System :=
-			Ada.Directories.Volumes.Get_Where ("/");
-		FS_Name : constant String := Ada.Directories.Volumes.Get_Format_Name (FS);
+			Ada.Directories.Volumes.Where ("/");
+		FS_Name : constant String := Ada.Directories.Volumes.Format_Name (FS);
 	begin
 		Ada.Debug.Put (FS_Name);
 		if FS_Name = "hfs" then

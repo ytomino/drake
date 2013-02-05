@@ -1,11 +1,13 @@
 with Ada.Exceptions;
+with Ada.Permissions.Inside;
 with System.Zero_Terminated_Strings;
 with C.stdint;
 package body Ada.Directories.Volumes is
+   use type File_Size;
    use type C.signed_int;
    use type C.stdint.uint32_t;
 
-   function Get_Where (Name : String) return File_System is
+   function Where (Name : String) return File_System is
       Z_Name : constant String := Name & Character'Val (0);
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
@@ -15,12 +17,37 @@ package body Ada.Directories.Volumes is
             Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
          end if;
       end return;
-   end Get_Where;
+   end Where;
 
-   function Get_Format_Name (FS : File_System) return String is
+   function Size (FS : File_System) return File_Size is
+   begin
+      return File_Size (FS.f_blocks) * File_Size (FS.f_bsize);
+   end Size;
+
+   function Free_Space (FS : File_System) return File_Size is
+   begin
+      return File_Size (FS.f_bfree) * File_Size (FS.f_bsize);
+   end Free_Space;
+
+   function Owner (FS : File_System) return String is
+   begin
+      return Permissions.Inside.User_Name (FS.f_owner);
+   end Owner;
+
+   function Format_Name (FS : File_System) return String is
    begin
       return System.Zero_Terminated_Strings.Value (FS.f_fstypename'Address);
-   end Get_Format_Name;
+   end Format_Name;
+
+   function Directory (FS : File_System) return String is
+   begin
+      return System.Zero_Terminated_Strings.Value (FS.f_mntonname'Address);
+   end Directory;
+
+   function Device (FS : File_System) return String is
+   begin
+      return System.Zero_Terminated_Strings.Value (FS.f_mntfromname'Address);
+   end Device;
 
    function Is_HFS (FS : File_System) return Boolean is
    begin
