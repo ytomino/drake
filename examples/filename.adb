@@ -117,6 +117,10 @@ begin
 					C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a2#));
 				Full_Width_Lower_B : constant String := (
 					C'Val (16#ef#), C'Val (16#bd#), C'Val (16#82#));
+				KA_Dakuten : constant String := (
+					C'Val (16#e3#), C'Val (16#81#), C'Val (16#8b#), C'Val (16#e3#), C'Val (16#82#), C'Val (16#99#));
+				GA : constant String := (
+					C'Val (16#e3#), C'Val (16#81#), C'Val (16#8c#));
 			begin
 				pragma Assert (AD.Equal_File_Names (FS, "", ""));
 				pragma Assert (not AD.Equal_File_Names (FS, "", "#"));
@@ -131,6 +135,8 @@ begin
 				pragma Assert (not AD.Less_File_Names (FS, "#", "#"));
 				pragma Assert (AD.Less_File_Names (FS, Full_Width_Upper_A, Full_Width_Lower_B));
 				pragma Assert (AD.Less_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_B));
+				pragma Assert (AD.Equal_File_Names (FS, (1 => C'Val (16#80#)), "%80"));
+				pragma Assert (AD.Equal_File_Names (FS, KA_Dakuten, GA));
 				null;
 			end;
 		end if;
