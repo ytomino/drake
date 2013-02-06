@@ -121,6 +121,12 @@ begin
 					C'Val (16#e3#), C'Val (16#81#), C'Val (16#8b#), C'Val (16#e3#), C'Val (16#82#), C'Val (16#99#));
 				GA : constant String := (
 					C'Val (16#e3#), C'Val (16#81#), C'Val (16#8c#));
+				A_DIAERESIS_DOTBELOW : constant String := ('A',
+					C'Val (16#cc#), C'Val (16#88#),
+					C'Val (16#cc#), C'Val (16#a3#));
+				A_DOTBELOW_DIAERESIS : constant String := ('A',
+					C'Val (16#cc#), C'Val (16#a3#),
+					C'Val (16#cc#), C'Val (16#88#));
 			begin
 				pragma Assert (AD.Equal_File_Names (FS, "", ""));
 				pragma Assert (not AD.Equal_File_Names (FS, "", "#"));
@@ -137,6 +143,7 @@ begin
 				pragma Assert (AD.Less_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_B));
 				pragma Assert (AD.Equal_File_Names (FS, (1 => C'Val (16#80#)), "%80"));
 				pragma Assert (AD.Equal_File_Names (FS, KA_Dakuten, GA));
+				pragma Assert (AD.Equal_File_Names (FS, A_DIAERESIS_DOTBELOW, A_DOTBELOW_DIAERESIS));
 				null;
 			end;
 		end if;

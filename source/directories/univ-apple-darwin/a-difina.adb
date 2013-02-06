@@ -113,6 +113,25 @@ package body Ada.Directories.Inside.File_Names is
       end if;
    end To_Lower;
 
+   --  equivalent to get_combining_class (vfs_utfconv.c)
+   function get_combining_class (character : C.vfs_utfconvdata.u_int16_t)
+      return C.vfs_utfconvdata.u_int8_t;
+   function get_combining_class (character : C.vfs_utfconvdata.u_int16_t)
+      return C.vfs_utfconvdata.u_int8_t
+   is
+      bitmap : C.vfs_utfconvdata.u_int8_t_array
+         renames C.vfs_utfconvdata.CFUniCharCombiningPropertyBitmap;
+      value : constant C.vfs_utfconvdata.u_int8_t :=
+         bitmap (C.size_t (C.Shift_Right (character, 8)));
+   begin
+      if value /= 0 then
+         return bitmap (
+            C.size_t (value) * 256
+            + C.size_t (character and 16#00FF#));
+      end if;
+      return 0;
+   end get_combining_class;
+
    --  equivalent to unicode_decomposeable (vfs_utfconv.c)
    function unicode_decomposeable (character : C.vfs_utfconvdata.u_int16_t)
       return Boolean;
@@ -307,7 +326,7 @@ package body Ada.Directories.Inside.File_Names is
    end unicode_decompose;
 
    type Stack_Type is
-      array (1 .. Integer'Max (3, Expanding)) of System.UTF_Conversions.UCS_4;
+      array (Positive range <>) of System.UTF_Conversions.UCS_4;
 
    --  a part of utf8_decodestr (vfs_utfconv.c)
    procedure Push (
@@ -352,6 +371,43 @@ package body Ada.Directories.Inside.File_Names is
          end;
          Index := Index + 1;
       else
+         Top := 0;
+         --  push trailing composable characters
+         while Last < S'Last loop
+            declare
+               Trailing_Last : Natural;
+               Trailing_Code : System.UTF_Conversions.UCS_4;
+               Trailing_Error : Boolean;
+            begin
+               System.UTF_Conversions.From_UTF_8 (
+                  S (Last + 1 .. S'Last),
+                  Trailing_Last,
+                  Trailing_Code,
+                  Trailing_Error);
+               if not Trailing_Error
+                  and then Trailing_Code < 16#FFFF#
+                  and then get_combining_class (
+                     C.vfs_utfconvdata.u_int16_t (Trailing_Code)) /= 0
+               then
+                  Top := Top + 1;
+                  Stack (Top) := Trailing_Code;
+                  Last := Trailing_Last;
+               else
+                  --  reverse
+                  for I in 0 .. Top / 2 - 1 loop
+                     declare
+                        Temp : constant System.UTF_Conversions.UCS_4 :=
+                           Stack (Stack'First + I);
+                     begin
+                        Stack (Stack'First + I) := Stack (Top - I);
+                        Stack (Top - 1) := Temp;
+                     end;
+                  end loop;
+                  exit;
+               end if;
+            end;
+         end loop;
+         --  push taken code
          if Code < 16#FFFF#
             and then unicode_decomposeable (C.vfs_utfconvdata.u_int16_t (Code))
          then
@@ -364,25 +420,42 @@ package body Ada.Directories.Inside.File_Names is
                   C.vfs_utfconvdata.u_int16_t (Code),
                   sequence,
                   count);
-               for i in 0 .. count - 1 loop
+               --  push decomposed sequence
+               for i in reverse 0 .. count - 1 loop
                   ucs_ch := sequence (i);
-                  Stack (Positive (count - i)) :=
-                     System.UTF_Conversions.UCS_4 (ucs_ch);
+                  Top := Top + 1;
+                  Stack (Top) := System.UTF_Conversions.UCS_4 (ucs_ch);
                end loop;
-               Top := Natural (count);
             end;
          else
-            Stack (1) := Code;
-            Top := 1;
+            Top := Top + 1;
+            Stack (Top) := Code;
          end if;
+         --  sort combining characters in Stack (1 .. Top - 1)
+         --  equivalent to priortysort (vfs_utfconv.c) except reverse order
+         for I in reverse 1 .. Top - 2 loop
+            declare
+               Item : constant System.UTF_Conversions.UCS_4 := Stack (I);
+               Item_Class : constant C.vfs_utfconvdata.u_int8_t :=
+                  get_combining_class (
+                     C.vfs_utfconvdata.u_int16_t (Stack (I)));
+            begin
+               for J in I + 1 .. Top - 1 loop
+                  exit when get_combining_class (
+                     C.vfs_utfconvdata.u_int16_t (Stack (J))) <= Item_Class;
+                  Stack (J - 1) := Stack (J);
+                  Stack (J) := Item;
+               end loop;
+            end;
+         end loop;
          Index := Last + 1;
       end if;
    end Push;
 
    function HFS_Compare (Left, Right : String) return Integer;
    function HFS_Compare (Left, Right : String) return Integer is
-      L_Stack : Stack_Type;
-      R_Stack : Stack_Type;
+      L_Stack : Stack_Type (1 .. Left'Length + Expanding - 1);
+      R_Stack : Stack_Type (1 .. Right'Length + Expanding - 1);
       L_Top : Natural := 0;
       R_Top : Natural := 0;
       L_Index : Positive := Left'First;
