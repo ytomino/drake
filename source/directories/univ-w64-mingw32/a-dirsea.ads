@@ -1,15 +1,15 @@
 pragma License (Unrestricted);
 --  implementation unit for Ada.Directories
 with Ada.IO_Exceptions;
-with C.dirent;
-with C.fcntl;
-with C.stdint;
-with C.sys.stat;
+with System;
+with C.winbase;
+with C.winnt;
 package Ada.Directory_Searching is
 
-   subtype Directory_Entry_Information_Type is C.sys.stat.struct_stat;
+   subtype Directory_Entry_Information_Type is
+      C.winbase.WIN32_FILE_ATTRIBUTE_DATA;
 
-   subtype Directory_Entry_Type is C.dirent.struct_dirent;
+   subtype Directory_Entry_Type is C.winbase.WIN32_FIND_DATA;
 
    --  same as Directories.File_Kind
    type File_Kind is (Directory, Ordinary_File, Special_File);
@@ -19,14 +19,13 @@ package Ada.Directory_Searching is
    pragma Pack (Filter_Type);
    pragma Suppress_Initialization (Filter_Type);
 
-   subtype Handle_Type is C.dirent.DIR_ptr;
+   subtype Handle_Type is C.winnt.HANDLE;
 
-   Null_Handle : constant Handle_Type := null;
+   Null_Handle : constant Handle_Type := Handle_Type (System.Null_Address);
 
    type Search_Type is record
-      Handle : C.dirent.DIR_ptr;
-      Pattern : C.char_ptr;
-      Filter : C.stdint.uint16_t; -- bit set of DT_xxx
+      Handle : C.winnt.HANDLE;
+      Filter : Filter_Type;
    end record;
    pragma Suppress_Initialization (Search_Type);
 
@@ -60,15 +59,5 @@ package Ada.Directory_Searching is
       renames IO_Exceptions.Name_Error;
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
-
-   --  for Ada.Directories
-
-   function lstat (
-      path : access constant C.char;
-      buf : access C.sys.stat.struct_stat)
-      return C.signed_int
-      renames C.sys.stat.lstat;
-
-   O_EXLOCK : constant := C.fcntl.O_EXLOCK;
 
 end Ada.Directory_Searching;

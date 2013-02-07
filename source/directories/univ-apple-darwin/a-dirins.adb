@@ -209,21 +209,6 @@ package body Ada.Directories.Inside is
       end if;
    end Get_Information;
 
-   function Kind (Information : Directory_Entry_Information_Type)
-      return File_Kind
-   is
-      Kind_Attr : constant C.sys.types.mode_t :=
-         Information.st_mode and C.sys.stat.S_IFMT;
-   begin
-      if Kind_Attr = C.sys.stat.S_IFDIR then
-         return Directory;
-      elsif Kind_Attr = C.sys.stat.S_IFREG then
-         return Ordinary_File;
-      else
-         return Special_File;
-      end if;
-   end Kind;
-
    function Size (Information : Directory_Entry_Information_Type)
       return File_Size is
    begin

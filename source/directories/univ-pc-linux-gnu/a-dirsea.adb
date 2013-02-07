@@ -6,6 +6,7 @@ with System.Zero_Terminated_Strings;
 with C.bits.dirent;
 with C.fnmatch;
 with C.string;
+with C.sys.types;
 package body Ada.Directory_Searching is
    use type C.char;
    use type C.signed_int;
@@ -13,6 +14,7 @@ package body Ada.Directory_Searching is
    use type C.dirent.DIR_ptr;
    use type C.stdint.uint16_t;
    use type C.bits.dirent.struct_dirent64_ptr;
+   use type C.sys.types.mode_t;
 
    package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
       C.char,
@@ -62,7 +64,9 @@ package body Ada.Directory_Searching is
       Search : in out Search_Type;
       Directory : String;
       Pattern : String;
-      Filter : Filter_Type) is
+      Filter : Filter_Type;
+      Directory_Entry : not null access Directory_Entry_Type;
+      Has_Next_Entry : out Boolean) is
    begin
       if Directory'Length = 0 then -- reject
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
@@ -92,6 +96,7 @@ package body Ada.Directory_Searching is
             Search_Pattern (Pattern_Length + 1) := Character'Val (0);
          end;
       end;
+      Get_Next_Entry (Search, Directory_Entry, Has_Next_Entry);
    end Start_Search;
 
    procedure End_Search (Search : in out Search_Type) is
@@ -169,5 +174,20 @@ package body Ada.Directory_Searching is
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end Get_Information;
+
+   function Kind (Information : Directory_Entry_Information_Type)
+      return File_Kind
+   is
+      Kind_Attr : constant C.sys.types.mode_t :=
+         Information.st_mode and C.sys.stat.S_IFMT;
+   begin
+      if Kind_Attr = C.sys.stat.S_IFDIR then
+         return Directory;
+      elsif Kind_Attr = C.sys.stat.S_IFREG then
+         return Ordinary_File;
+      else
+         return Special_File;
+      end if;
+   end Kind;
 
 end Ada.Directory_Searching;

@@ -99,7 +99,7 @@ else
 EH=sjlj
 endif
 TARGETSUBDIR=univ-w64-mingw32
-SUBDIRS:=$(filter-out ada83 directories streams tasking textio,$(SUBDIRS))
+SUBDIRS:=$(filter-out ada83 streams tasking textio,$(SUBDIRS))
 OBJFMT=COFF
 else # others
 EH=zcx
@@ -115,7 +115,7 @@ endif
 # ada83       : calendar stream text_io        # Ada 83 names
 # calendar    :                                # support for delay statement, Ada.Calendars, Ada.Execution_Time and Ada.Real_Time
 # containers  :                                # Ada.Containers
-# directories : calendar strings               # Ada.Directories
+# directories : calendar                       # Ada.Directories
 # image       :                                # support for 'Image and 'Value attributes
 # interfaces  :                                # Interfaces.C and Interfaces.COBOL
 # numerics    :                                # support for float attributes, Ada.Numerics and Interfaces.Fortran
@@ -418,7 +418,7 @@ $(BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
 ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad[sb]) $(IMPORTDIR)/c.ads
-IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
+IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
 IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 

@@ -45,8 +45,18 @@ package body System.Zero_Terminated_WStrings is
       Source : String;
       Result : not null access C.winnt.WCHAR)
    is
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      Convert (Source, Result, Dummy);
+   end Convert;
+
+   procedure Convert (
+      Source : String;
+      Result : not null access C.winnt.WCHAR;
+      Result_Length : out C.signed_int)
+   is
       Source_Length : constant Natural := Source'Length;
-      Result_Length : C.signed_int;
       Result_End : C.winnt.LPWSTR;
    begin
       Result_Length := C.winnls.MultiByteToWideChar (

@@ -218,7 +218,7 @@ private
 
    type Search_Type is new Finalization.Limited_Controlled with record
       Search : Directory_Searching.Search_Type := (
-         Handle => null,
+         Handle => Directory_Searching.Null_Handle,
          others => <>);
       Path : String_Access;
       Next_Data : aliased Directory_Searching.Directory_Entry_Type;

@@ -6,7 +6,7 @@ package body Ada.Permissions.Inside is
    use type C.pwd.struct_passwd_ptr;
    use type C.grp.struct_group_ptr;
 
-   function User_Name (Id : User_Id) return String is
+   function User_Name (Id : User_Id := Current_User) return String is
       Info : C.pwd.struct_passwd_ptr;
    begin
       Info := C.pwd.getpwuid (Id);
@@ -18,7 +18,7 @@ package body Ada.Permissions.Inside is
       end if;
    end User_Name;
 
-   function Group_Name (Id : Group_Id) return String is
+   function Group_Name (Id : Group_Id := Current_User) return String is
       Info : C.grp.struct_group_ptr;
    begin
       Info := C.grp.getgrgid (Id);

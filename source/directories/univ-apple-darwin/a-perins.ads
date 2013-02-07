@@ -8,10 +8,10 @@ package Ada.Permissions.Inside is
    subtype User_Id is C.sys.types.uid_t;
    subtype Group_Id is C.sys.types.gid_t;
 
-   function User_Name (Id : User_Id) return String;
-   function Group_Name (Id : Group_Id) return String;
-
    function Current_User return User_Id
       renames C.unistd.getuid;
+
+   function User_Name (Id : User_Id := Current_User) return String;
+   function Group_Name (Id : Group_Id := Current_User) return String;
 
 end Ada.Permissions.Inside;
