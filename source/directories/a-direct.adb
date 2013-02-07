@@ -5,6 +5,7 @@ with Ada.Unchecked_Deallocation;
 with System.Native_Time;
 with System.Storage_Elements;
 package body Ada.Directories is
+   use type Directory_Searching.File_Kind;
    use type Directory_Searching.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
 
@@ -308,14 +309,17 @@ package body Ada.Directories is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
-      return Inside.Kind (Information);
+      return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
+         Directory_Searching.Kind (Information)));
    end Kind;
 
    function Size (Name : String) return File_Size is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
-      if Inside.Kind (Information) /= Ordinary_File then
+      if Directory_Searching.Kind (Information) /=
+         Directory_Searching.Ordinary_File
+      then
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       else
          return Inside.Size (Information);
@@ -355,13 +359,11 @@ package body Ada.Directories is
          Search.Search,
          Directory,
          Pattern,
-         Cast (Filter));
-      Search.Path := new String'(Full_Name (Directory));
-      Search.Count := 0;
-      Directory_Searching.Get_Next_Entry (
-         Search.Search,
+         Cast (Filter),
          Search.Next_Data'Access,
          Search.Has_Next);
+      Search.Path := new String'(Full_Name (Directory));
+      Search.Count := 0;
    end Start_Search;
 
    function Start_Search (
@@ -377,7 +379,7 @@ package body Ada.Directories is
 
    procedure Finalize (Search : in out Search_Type) is
    begin
-      if Search.Search.Handle /= null then
+      if Search.Search.Handle /= Directory_Searching.Null_Handle then
          Directory_Searching.End_Search (Search.Search);
          Free (Search.Path);
       end if;
@@ -385,14 +387,17 @@ package body Ada.Directories is
 
    function More_Entries (Search : Search_Type) return Boolean is
    begin
-      return Search.Search.Handle /= null and then Search.Has_Next;
+      return Search.Search.Handle /= Directory_Searching.Null_Handle
+         and then Search.Has_Next;
    end More_Entries;
 
    procedure Get_Next_Entry (
       Search : in out Search_Type;
       Directory_Entry : out Directory_Entry_Type) is
    begin
-      if Search.Search.Handle = null or else not Search.Has_Next then
+      if Search.Search.Handle = Directory_Searching.Null_Handle
+         or else not Search.Has_Next
+      then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else
          --  copy entry and get info
@@ -509,14 +514,15 @@ package body Ada.Directories is
    function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
    begin
       Check_Assigned (Directory_Entry);
-      return Inside.Kind (Directory_Entry.Information);
+      return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
+         Directory_Searching.Kind (Directory_Entry.Information)));
    end Kind;
 
    function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
    begin
       if Directory_Entry.Path = null
-         or else Inside.Kind (Directory_Entry.Information) /=
-            Ordinary_File
+         or else Directory_Searching.Kind (Directory_Entry.Information) /=
+            Directory_Searching.Ordinary_File
       then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else

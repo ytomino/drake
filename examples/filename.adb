@@ -103,49 +103,61 @@ begin
 		FS : Ada.Directories.Volumes.File_System :=
 			Ada.Directories.Volumes.Where ("/");
 		FS_Name : constant String := Ada.Directories.Volumes.Format_Name (FS);
+		subtype C is Character;
+		Full_Width_Upper_A : constant String := (
+			C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a1#));
+		Full_Width_Lower_A : constant String := (
+			C'Val (16#ef#), C'Val (16#bd#), C'Val (16#81#));
+		Full_Width_Upper_B : constant String := (
+			C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a2#));
+		Full_Width_Lower_B : constant String := (
+			C'Val (16#ef#), C'Val (16#bd#), C'Val (16#82#));
+		KA_Dakuten : constant String := (
+			C'Val (16#e3#), C'Val (16#81#), C'Val (16#8b#), C'Val (16#e3#), C'Val (16#82#), C'Val (16#99#));
+		GA : constant String := (
+			C'Val (16#e3#), C'Val (16#81#), C'Val (16#8c#));
+		A_DIAERESIS_DOTBELOW : constant String := (
+			'A', C'Val (16#cc#), C'Val (16#88#), C'Val (16#cc#), C'Val (16#a3#));
+		A_DOTBELOW_DIAERESIS : constant String := (
+			'A', C'Val (16#cc#), C'Val (16#a3#), C'Val (16#cc#), C'Val (16#88#));
 	begin
 		Ada.Debug.Put (FS_Name);
 		if FS_Name = "hfs" then
 			Ada.Debug.Put ("test for comparing HFS+ filenames");
-			declare
-				subtype C is Character;
-				Full_Width_Upper_A : constant String := (
-					C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a1#));
-				Full_Width_Lower_A : constant String := (
-					C'Val (16#ef#), C'Val (16#bd#), C'Val (16#81#));
-				Full_Width_Upper_B : constant String := (
-					C'Val (16#ef#), C'Val (16#bc#), C'Val (16#a2#));
-				Full_Width_Lower_B : constant String := (
-					C'Val (16#ef#), C'Val (16#bd#), C'Val (16#82#));
-				KA_Dakuten : constant String := (
-					C'Val (16#e3#), C'Val (16#81#), C'Val (16#8b#), C'Val (16#e3#), C'Val (16#82#), C'Val (16#99#));
-				GA : constant String := (
-					C'Val (16#e3#), C'Val (16#81#), C'Val (16#8c#));
-				A_DIAERESIS_DOTBELOW : constant String := ('A',
-					C'Val (16#cc#), C'Val (16#88#),
-					C'Val (16#cc#), C'Val (16#a3#));
-				A_DOTBELOW_DIAERESIS : constant String := ('A',
-					C'Val (16#cc#), C'Val (16#a3#),
-					C'Val (16#cc#), C'Val (16#88#));
-			begin
-				pragma Assert (AD.Equal_File_Names (FS, "", ""));
-				pragma Assert (not AD.Equal_File_Names (FS, "", "#"));
-				pragma Assert (not AD.Equal_File_Names (FS, "#", ""));
-				pragma Assert (AD.Equal_File_Names (FS, "#", "#"));
-				pragma Assert (AD.Equal_File_Names (FS, "A", "A"));
-				pragma Assert (AD.Equal_File_Names (FS, "a", "A"));
-				pragma Assert (AD.Equal_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_A));
-				pragma Assert (not AD.Less_File_Names (FS, "", ""));
-				pragma Assert (AD.Less_File_Names (FS, "", "#"));
-				pragma Assert (not AD.Less_File_Names (FS, "#", ""));
-				pragma Assert (not AD.Less_File_Names (FS, "#", "#"));
-				pragma Assert (AD.Less_File_Names (FS, Full_Width_Upper_A, Full_Width_Lower_B));
-				pragma Assert (AD.Less_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_B));
-				pragma Assert (AD.Equal_File_Names (FS, (1 => C'Val (16#80#)), "%80"));
-				pragma Assert (AD.Equal_File_Names (FS, KA_Dakuten, GA));
-				pragma Assert (AD.Equal_File_Names (FS, A_DIAERESIS_DOTBELOW, A_DOTBELOW_DIAERESIS));
-				null;
-			end;
+			pragma Assert (AD.Equal_File_Names (FS, "", ""));
+			pragma Assert (not AD.Equal_File_Names (FS, "", "#"));
+			pragma Assert (not AD.Equal_File_Names (FS, "#", ""));
+			pragma Assert (AD.Equal_File_Names (FS, "#", "#"));
+			pragma Assert (AD.Equal_File_Names (FS, "A", "A"));
+			pragma Assert (AD.Equal_File_Names (FS, "a", "A"));
+			pragma Assert (AD.Equal_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_A));
+			pragma Assert (not AD.Less_File_Names (FS, "", ""));
+			pragma Assert (AD.Less_File_Names (FS, "", "#"));
+			pragma Assert (not AD.Less_File_Names (FS, "#", ""));
+			pragma Assert (not AD.Less_File_Names (FS, "#", "#"));
+			pragma Assert (AD.Less_File_Names (FS, Full_Width_Upper_A, Full_Width_Lower_B));
+			pragma Assert (AD.Less_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_B));
+			pragma Assert (AD.Equal_File_Names (FS, (1 => C'Val (16#80#)), "%80"));
+			pragma Assert (AD.Equal_File_Names (FS, KA_Dakuten, GA));
+			pragma Assert (AD.Equal_File_Names (FS, A_DIAERESIS_DOTBELOW, A_DOTBELOW_DIAERESIS));
+		elsif FS_Name = "NTFS" then
+			Ada.Debug.Put ("test for comparing NTFS filenames");
+			pragma Assert (AD.Equal_File_Names (FS, "", ""));
+			pragma Assert (not AD.Equal_File_Names (FS, "", "#"));
+			pragma Assert (not AD.Equal_File_Names (FS, "#", ""));
+			pragma Assert (AD.Equal_File_Names (FS, "#", "#"));
+			pragma Assert (AD.Equal_File_Names (FS, "A", "A"));
+			pragma Assert (AD.Equal_File_Names (FS, "a", "A"));
+			pragma Assert (AD.Equal_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_A));
+			pragma Assert (not AD.Less_File_Names (FS, "", ""));
+			pragma Assert (AD.Less_File_Names (FS, "", "#"));
+			pragma Assert (not AD.Less_File_Names (FS, "#", ""));
+			pragma Assert (not AD.Less_File_Names (FS, "#", "#"));
+			pragma Assert (AD.Less_File_Names (FS, Full_Width_Upper_A, Full_Width_Lower_B));
+			pragma Assert (AD.Less_File_Names (FS, Full_Width_Lower_A, Full_Width_Upper_B));
+			pragma Assert (not AD.Equal_File_Names (FS, (1 => C'Val (16#80#)), "%80"));
+			pragma Assert (not AD.Equal_File_Names (FS, KA_Dakuten, GA));
+			pragma Assert (not AD.Equal_File_Names (FS, A_DIAERESIS_DOTBELOW, A_DOTBELOW_DIAERESIS));
 		end if;
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));

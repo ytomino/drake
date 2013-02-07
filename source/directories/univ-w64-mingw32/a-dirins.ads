@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
-with Ada.Directory_Searching;
 with System.Native_Time;
+with C.winbase;
 package Ada.Directories.Inside is
 
    function Current_Directory return String;
@@ -35,7 +35,7 @@ package Ada.Directories.Inside is
    function Exists (Name : String) return Boolean;
 
    subtype Directory_Entry_Information_Type is
-      Directory_Searching.Directory_Entry_Information_Type;
+      C.winbase.WIN32_FILE_ATTRIBUTE_DATA;
 
    procedure Get_Information (
       Name : String;

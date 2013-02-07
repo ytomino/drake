@@ -20,6 +20,8 @@ package Ada.Directory_Searching is
 
    subtype Handle_Type is C.dirent.DIR_ptr;
 
+   Null_Handle : constant Handle_Type := null;
+
    type Search_Type is record
       Handle : C.dirent.DIR_ptr;
       Pattern : C.char_ptr;
@@ -31,7 +33,9 @@ package Ada.Directory_Searching is
       Search : in out Search_Type;
       Directory : String;
       Pattern : String;
-      Filter : Filter_Type);
+      Filter : Filter_Type;
+      Directory_Entry : not null access Directory_Entry_Type;
+      Has_Next_Entry : out Boolean);
 
    procedure End_Search (Search : in out Search_Type);
 
@@ -47,6 +51,9 @@ package Ada.Directory_Searching is
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
       Information : not null access Directory_Entry_Information_Type);
+
+   function Kind (Information : Directory_Entry_Information_Type)
+      return File_Kind;
 
    Name_Error : exception
       renames IO_Exceptions.Name_Error;

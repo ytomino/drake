@@ -4,7 +4,7 @@ package body Ada.Permissions is
 
    function User_Name return String is
    begin
-      return Inside.User_Name (Inside.Current_User);
+      return Inside.User_Name;
    end User_Name;
 
 end Ada.Permissions;

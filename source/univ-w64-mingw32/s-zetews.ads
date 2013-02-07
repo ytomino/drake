@@ -19,5 +19,9 @@ package System.Zero_Terminated_WStrings is
    procedure Convert (
       Source : String;
       Result : not null access C.winnt.WCHAR);
+   procedure Convert (
+      Source : String;
+      Result : not null access C.winnt.WCHAR;
+      Result_Length : out C.signed_int);
 
 end System.Zero_Terminated_WStrings;
