@@ -30,7 +30,7 @@ package body Ada.Processes.Inside is
          Old_Directory := C.unistd.getcwd (null, 0);
          declare
             Z_Directory : String := Directory & Character'Val (0);
-            C_Directory : C.char_array (0 .. Directory'Length);
+            C_Directory : C.char_array (C.size_t);
             for C_Directory'Address use Z_Directory'Address;
          begin
             if C.unistd.chdir (C_Directory (0)'Access) < 0 then

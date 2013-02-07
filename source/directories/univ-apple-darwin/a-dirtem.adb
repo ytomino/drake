@@ -53,7 +53,7 @@ package body Ada.Directories.Temporary is
       Last := Last + Temp_Template'Length;
       Template (Last + 1) := Character'Val (0);
       declare
-         C_Template : aliased C.char_array (0 .. Template'Length);
+         C_Template : aliased C.char_array (C.size_t);
          for C_Template'Address use Template'Address;
          Handle : C.signed_int;
          Dummy : C.signed_int;
@@ -85,7 +85,7 @@ package body Ada.Directories.Temporary is
       Last := Last + Temp_Template'Length;
       Template (Last + 1) := Character'Val (0);
       declare
-         C_Template : aliased C.char_array (0 .. Template'Length);
+         C_Template : aliased C.char_array (C.size_t);
          for C_Template'Address use Template'Address;
          R : C.char_ptr;
       begin
