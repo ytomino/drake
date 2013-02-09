@@ -72,6 +72,7 @@ package System.Fat_Flt is
       function Valid (X : not null access Float) return Boolean;
       function Unaligned_Valid (A : Address) return Boolean;
       pragma Import (Ada, Unaligned_Valid);
+      pragma Pure_Function (Unaligned_Valid);
       for Unaligned_Valid'Address use Valid'Address;
 
    end Attr_Float;

@@ -10,6 +10,7 @@ package System.Bit_Ops is
       Right : Address;
       Rlen : Natural)
       return Boolean;
+   pragma Pure_Function (Bit_Eq);
 
    --  required by compiler ??? (s-bitop.ads)
 --  procedure Bit_Not (
