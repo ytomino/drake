@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  Ada 2005, this package defined by Ada 2005 AARM A.16 (124.b/2)
+private with C.windef;
 package Ada.Directories.Information is
    --  System-specific directory information.
    --  Version for the Microsoft(R) Windows(R) operating system.
@@ -70,6 +71,12 @@ package Ada.Directories.Information is
 
    --  Additional implementation-defined subprograms allowed here.
 
+   --  extended
+   --  Unique file identifier.
+   type File_Id is private;
+   function Identity (Name : String) return File_Id;
+   function Identity (Directory_Entry : Directory_Entry_Type) return File_Id;
+
    --  unimplemented, source-level compatibility with POSIX
    function Owner (Name : String) return String;
    function Owner (Directory_Entry : Directory_Entry_Type) return String;
@@ -81,5 +88,14 @@ package Ada.Directories.Information is
    pragma Import (Ada, Owner, "__drake_program_error");
    pragma Import (Ada, Group, "__drake_program_error");
    pragma Import (Ada, Read_Symbolic_Link, "__drake_program_error");
+
+private
+
+   type File_Id is record
+      FileIndexLow : C.windef.DWORD;
+      FileIndexHigh : C.windef.DWORD;
+      VolumeSerialNumber : C.windef.DWORD;
+   end record;
+   --  it should be extend to 128bit for ReFS
 
 end Ada.Directories.Information;

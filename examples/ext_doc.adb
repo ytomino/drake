@@ -399,13 +399,14 @@ procedure ext_doc is
 			Check : declare
 				Position : Doc_Maps.Cursor := Extendeds.Find (Unit_Name.Constant_Reference.Element.all);
 			begin
-				if Unit_Name /= "Interfaces.C" -- wchar_t is different
-					and then (Extendeds.Constant_Reference (Position).Element.File_Name /= Ada.Directories.Simple_Name (Name)
-						or else Extendeds.Constant_Reference (Position).Element.Kind /= Kind
-						or else Extendeds.Constant_Reference (Position).Element.Renamed /= Renamed
-						or else Extendeds.Constant_Reference (Position).Element.Instantiation /= Instantiation
-						or else Extendeds.Constant_Reference (Position).Element.Reference /= Reference
-						or else Extendeds.Constant_Reference (Position).Element.Document /= Document)
+				if Extendeds.Constant_Reference (Position).Element.File_Name /= Ada.Directories.Simple_Name (Name)
+					or else Extendeds.Constant_Reference (Position).Element.Kind /= Kind
+					or else Extendeds.Constant_Reference (Position).Element.Renamed /= Renamed
+					or else Extendeds.Constant_Reference (Position).Element.Instantiation /= Instantiation
+					or else Extendeds.Constant_Reference (Position).Element.Reference /= Reference
+					or else (Extendeds.Constant_Reference (Position).Element.Document /= Document
+						and then Unit_Name /= "Interfaces.C" -- wchar_t is different
+						and then Unit_Name /= "Ada.Directories.Information")
 				then
 					raise Mismatch_Error with Name;
 				end if;

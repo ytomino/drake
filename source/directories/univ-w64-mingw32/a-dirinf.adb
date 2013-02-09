@@ -1,10 +1,14 @@
 with Ada.Directories.Inside;
+with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with System.Native_Time;
-with C.windef;
+with System.Zero_Terminated_WStrings;
+with C.winbase;
 with C.winnt;
 package body Ada.Directories.Information is
    use type C.windef.DWORD;
+   use type C.windef.WINBOOL;
+   use type C.winnt.HANDLE;
 
    function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
 
@@ -201,5 +205,44 @@ package body Ada.Directories.Information is
       return (Directory_Entry.Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) /= 0;
    end Is_Not_Indexed;
+
+   function Identity (Name : String) return File_Id is
+      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      Handle : C.winnt.HANDLE;
+      Info : aliased C.winbase.BY_HANDLE_FILE_INFORMATION;
+      Result : C.windef.WINBOOL;
+      Dummy : C.windef.WINBOOL;
+      pragma Unreferenced (Dummy);
+   begin
+      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      Handle := C.winbase.CreateFile (
+         W_Name (0)'Access,
+         dwDesiredAccess => 0,
+         dwShareMode => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE
+            or C.winnt.FILE_SHARE_DELETE, -- only for query
+         lpSecurityAttributes => null,
+         dwCreationDisposition => C.winbase.OPEN_EXISTING,
+         dwFlagsAndAttributes => C.winbase.FILE_FLAG_BACKUP_SEMANTICS
+            or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
+         hTemplateFile => C.windef.LPVOID (System.Null_Address));
+      if Handle = C.winbase.INVALID_HANDLE_VALUE then
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+      end if;
+      Result := C.winbase.GetFileInformationByHandle (Handle, Info'Access);
+      Dummy := C.winbase.CloseHandle (Handle);
+      if Result = 0 then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+      end if;
+      return (
+         FileIndexLow => Info.nFileIndexLow,
+         FileIndexHigh => Info.nFileIndexHigh,
+         VolumeSerialNumber => Info.dwVolumeSerialNumber);
+   end Identity;
+
+   function Identity (Directory_Entry : Directory_Entry_Type) return File_Id is
+   begin
+      --  WIN32_FILE_ATTRIBUTE_DATA does not contain the file index
+      return Identity (Full_Name (Directory_Entry));
+   end Identity;
 
 end Ada.Directories.Information;
