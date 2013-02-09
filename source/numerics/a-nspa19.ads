@@ -16,3 +16,4 @@ package Ada.Numerics.SFMT.Params_19937 is new Random (
    PARITY2 => 16#00000000#,
    PARITY3 => 16#00000000#,
    PARITY4 => 16#13c9e684#);
+pragma Preelaborate (Ada.Numerics.SFMT.Params_19937);

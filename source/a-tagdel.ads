@@ -3,6 +3,7 @@ pragma License (Unrestricted);
 private with System;
 package Ada.Tags.Delegating is
    --  This package provides Delphi-like interface delegation.
+   pragma Preelaborate;
 
    generic
       type T (<>) is abstract tagged limited private;
