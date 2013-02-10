@@ -37,9 +37,6 @@ package Interfaces.C.Pointers is
    pragma Pure_Function ("-");
    pragma Inline_Always ("-");
 --  function "-" (Left : Pointer; Right : Pointer) return ptrdiff_t;
---  pragma Convention (Intrinsic, "-");
---  pragma Pure_Function ("-");
---  pragma Inline_Always ("-");
 
    --  extended
    function "-" (Left : Pointer; Right : not null access constant Element)

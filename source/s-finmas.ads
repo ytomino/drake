@@ -32,6 +32,7 @@ package System.Finalization_Masters is
 
    function Finalization_Started (Master : Finalization_Master'Class)
       return Boolean;
+   pragma Inline (Finalization_Started);
 
    procedure Set_Finalize_Address_Unprotected (
       Master : in out Finalization_Master'Class;
@@ -94,9 +95,11 @@ private
    --  required by compiler (s-finmas.ads)
    function Base_Pool (Master : Finalization_Master'Class)
       return Any_Storage_Pool_Ptr;
+   pragma Inline (Base_Pool);
    procedure Set_Base_Pool (
       Master : in out Finalization_Master'Class;
       Pool_Ptr : Any_Storage_Pool_Ptr);
+   pragma Inline (Set_Base_Pool);
 
    --  required by compiler (s-finmas.ads)
    function Add_Offset_To_Address (

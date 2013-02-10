@@ -24,13 +24,44 @@ package Ada.Exceptions is
    function Exception_Message (X : Exception_Occurrence) return String;
    procedure Reraise_Occurrence (X : Exception_Occurrence);
 
-   procedure Raise_Exception_From_Here_With (
+   --  [gcc-4.7] compiler lose sight of System if this has a nested package
+
+--  package Implementation is
+--
+--    procedure Raise_Exception_From_Here (
+--       E : Exception_Id;
+--       File : String := Ada.Debug.File;
+--       Line : Integer := Ada.Debug.Line);
+--    pragma No_Return (Raise_Exception_From_Here);
+--    pragma Import (Ada, Raise_Exception_From_Here,
+--       "__drake_raise_exception_from_here");
+--
+--    procedure Raise_Exception_From_Here_With (
+--       E : Exception_Id;
+--       File : String := Ada.Debug.File;
+--       Line : Integer := Ada.Debug.Line;
+--       Message : String);
+--    pragma No_Return (Raise_Exception_From_Here_With);
+--    pragma Import (Ada, Raise_Exception_From_Here_With,
+--       "__drake_raise_exception_from_here_with");
+--
+--  end Implementation;
+
+   procedure Implementation_Raise_Exception_From_Here (
+      E : Exception_Id;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line);
+   pragma No_Return (Implementation_Raise_Exception_From_Here);
+   pragma Import (Ada, Implementation_Raise_Exception_From_Here,
+      "__drake_raise_exception_from_here");
+
+   procedure Implementation_Raise_Exception_From_Here_With (
       E : Exception_Id;
       File : String := Ada.Debug.File;
       Line : Integer := Ada.Debug.Line;
       Message : String);
-   pragma No_Return (Raise_Exception_From_Here_With);
-   pragma Import (Ada, Raise_Exception_From_Here_With,
+   pragma No_Return (Implementation_Raise_Exception_From_Here_With);
+   pragma Import (Ada, Implementation_Raise_Exception_From_Here_With,
       "__drake_raise_exception_from_here_with");
 
    --  extended
@@ -39,16 +70,14 @@ package Ada.Exceptions is
    procedure Raise_Exception_From_Here (
       E : Exception_Id;
       File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line);
-   pragma No_Return (Raise_Exception_From_Here);
-   pragma Import (Ada, Raise_Exception_From_Here,
-      "__drake_raise_exception_from_here");
+      Line : Integer := Ada.Debug.Line)
+      renames Implementation_Raise_Exception_From_Here;
    procedure Raise_Exception_From_Here (
       E : Exception_Id;
       File : String := Ada.Debug.File;
       Line : Integer := Ada.Debug.Line;
       Message : String)
-      renames Raise_Exception_From_Here_With;
+      renames Implementation_Raise_Exception_From_Here_With;
 
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id;

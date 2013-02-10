@@ -19,6 +19,8 @@ package Ada.Calendar.Formatting is
       Date : Time;
       Time_Zone : Time_Zones.Time_Offset := 0)
       return Day_Name;
+   pragma Pure_Function (Day_Of_Week);
+   pragma Inline (Day_Of_Week);
 
    --  Hours:Minutes:Seconds access:
 
@@ -29,28 +31,44 @@ package Ada.Calendar.Formatting is
 
    function Year (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Year_Number;
+   pragma Pure_Function (Year);
+   pragma Inline (Year);
 
    function Month (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Month_Number;
+   pragma Pure_Function (Month);
+   pragma Inline (Month);
 
    function Day (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Day_Number;
+   pragma Pure_Function (Day);
+   pragma Inline (Day);
 
    function Hour (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Hour_Number;
+   pragma Pure_Function (Hour);
+   pragma Inline (Hour);
 
    function Minute (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Minute_Number;
+   pragma Pure_Function (Minute);
+   pragma Inline (Minute);
 
    function Second (Date : Time) return Second_Number;
+   pragma Pure_Function (Second);
+   pragma Inline (Second);
 
    function Sub_Second (Date : Time) return Second_Duration;
+   pragma Pure_Function (Sub_Second);
+   pragma Inline (Sub_Second);
 
    --  extended
    --  This function returns seconds in a day
    --    including the offset of the time zone.
    function Seconds (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Day_Duration;
+   pragma Pure_Function (Seconds);
+   pragma Inline (Seconds);
 
    function Seconds_Of (
       Hour : Hour_Number;

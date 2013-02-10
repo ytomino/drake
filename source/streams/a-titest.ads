@@ -7,7 +7,7 @@ package Ada.Text_IO.Text_Streams is
    subtype Stream_Access is Streams.Stream_IO.Stream_Access;
 
    function Stream (File : File_Type) return Stream_Access;
-   pragma Inline_Always (Stream);
+   pragma Inline (Stream);
 
    --  extended
    procedure Open (
@@ -16,7 +16,7 @@ package Ada.Text_IO.Text_Streams is
       Mode : File_Mode;
       Name : String := "";
       Form : String := "");
-   pragma Inline_Always (Open);
+   pragma Inline (Open);
 
 private
 

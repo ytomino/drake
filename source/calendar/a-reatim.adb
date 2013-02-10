@@ -86,4 +86,14 @@ package body Ada.Real_Time is
       return Time_Span (Duration (Left) / Right);
    end "/";
 
+   function To_Duration (TS : Time_Span) return Duration is
+   begin
+      return Duration (TS);
+   end To_Duration;
+
+   function To_Time_Span (D : Duration) return Time_Span is
+   begin
+      return Time_Span (D);
+   end To_Time_Span;
+
 end Ada.Real_Time;

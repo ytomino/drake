@@ -7,6 +7,75 @@ package body Ada.Calendar.Formatting is
    use type Time_Zones.Time_Offset;
    use type System.Native_Time.Nanosecond_Number;
 
+   --  for Year, Month, Day
+
+   type Packed_Split_Time is mod 2 ** 64;
+--  for Packed_Split_Time use record
+--    Day at 0 range 0 .. 7; -- 2 ** 5 = 32 > 31
+--    Month at 0 range 8 .. 15; -- 2 ** 4 = 16 > 12
+--    Year at 0 range 16 .. 31; -- 2 ** 9 = 512 > 2399 - 1901 + 1 = 499
+--    Day_of_Week at 0 range 32 .. 38; -- 2 ** 3 = 8 > 7
+--    Leap_Second at 0 range 39 .. 39;
+--    Second at 0 range 40 .. 47; -- 2 ** 6 = 64 > 60
+--    Minute at 0 range 48 .. 55; -- 2 ** 6 = 64 > 60
+--    Hour at 0 range 56 .. 63; -- 2 ** 5 = 32 > 24
+--  end record;
+
+   function Shift_Left (Value : Packed_Split_Time; Amount : Natural)
+      return Packed_Split_Time;
+   pragma Import (Intrinsic, Shift_Left);
+   function Shift_Right (Value : Packed_Split_Time; Amount : Natural)
+      return Packed_Split_Time;
+   pragma Import (Intrinsic, Shift_Right);
+
+   function Packed_Split (
+      Date : Time;
+      Time_Zone : Time_Zones.Time_Offset)
+      return Packed_Split_Time;
+   pragma Pure_Function (Packed_Split);
+   pragma Machine_Attribute (Packed_Split, "pure");
+   --  The callings of this function will be unified since pure attribute
+   --    when Year, Month and Day are inlined
+
+   function Packed_Split (
+      Date : Time;
+      Time_Zone : Time_Zones.Time_Offset)
+      return Packed_Split_Time
+   is
+      Year : Year_Number;
+      Month : Month_Number;
+      Day : Day_Number;
+      Hour : Hour_Number;
+      Minute : Minute_Number;
+      Second : Second_Number;
+      Sub_Second : Second_Duration;
+      Leap_Second : Boolean;
+      Day_of_Week : Inside.Day_Name;
+   begin
+      Inside.Split (
+         Date,
+         Year => Year,
+         Month => Month,
+         Day => Day,
+         Hour => Hour,
+         Minute => Minute,
+         Second => Second,
+         Sub_Second => Sub_Second,
+         Leap_Second => Leap_Second,
+         Day_of_Week => Day_of_Week,
+         Time_Zone => Inside.Time_Offset (Time_Zone));
+      return Packed_Split_Time (Day)
+         or Shift_Left (Packed_Split_Time (Month), 8)
+         or Shift_Left (Packed_Split_Time (Year), 16)
+         or Shift_Left (Packed_Split_Time (Day_of_Week), 32)
+         or Shift_Left (Packed_Split_Time (Boolean'Pos (Leap_Second)), 39)
+         or Shift_Left (Packed_Split_Time (Second), 40)
+         or Shift_Left (Packed_Split_Time (Minute), 48)
+         or Shift_Left (Packed_Split_Time (Hour), 56);
+   end Packed_Split;
+
+   --  99 hours
+
    procedure Split_Base (
       Seconds : Duration; -- Seconds >= 0.0
       Hour : out Natural;
@@ -98,173 +167,64 @@ package body Ada.Calendar.Formatting is
    function Day_Of_Week (
       Date : Time;
       Time_Zone : Time_Zones.Time_Offset := 0)
-      return Day_Name
-   is
-      Year : Year_Number;
-      Month : Month_Number;
-      Day : Day_Number;
-      Hour : Hour_Number;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
-      Leap_Second : Boolean;
-      Result : Inside.Day_Name;
+      return Day_Name is
    begin
-      Inside.Split (
-         Date,
-         Year => Year,
-         Month => Month,
-         Day => Day,
-         Hour => Hour,
-         Minute => Minute,
-         Second => Second,
-         Sub_Second => Sub_Second,
-         Leap_Second => Leap_Second,
-         Day_of_Week => Result,
-         Time_Zone => Inside.Time_Offset (Time_Zone));
-      return Day_Name'Val (Result);
+      return Day_Name'Val (
+         Shift_Right (Packed_Split (Date, Time_Zone), 32) and 16#7f#);
    end Day_Of_Week;
 
    function Year (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Year_Number
-   is
-      Year : Year_Number;
-      Month : Month_Number;
-      Day : Day_Number;
-      Hour : Hour_Number;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
-      Leap_Second : Boolean;
+      return Year_Number is
    begin
-      Split (
-         Date,
-         Year => Year,
-         Month => Month,
-         Day => Day,
-         Hour => Hour,
-         Minute => Minute,
-         Second => Second,
-         Sub_Second => Sub_Second,
-         Leap_Second => Leap_Second,
-         Time_Zone => Time_Zone);
-      return Year;
+      return Year_Number (
+         Shift_Right (Packed_Split (Date, Time_Zone), 16) and 16#ffff#);
    end Year;
 
    function Month (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Month_Number
-   is
-      Year : Year_Number;
-      Month : Month_Number;
-      Day : Day_Number;
-      Hour : Hour_Number;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
-      Leap_Second : Boolean;
+      return Month_Number is
    begin
-      Split (
-         Date,
-         Year => Year,
-         Month => Month,
-         Day => Day,
-         Hour => Hour,
-         Minute => Minute,
-         Second => Second,
-         Sub_Second => Sub_Second,
-         Leap_Second => Leap_Second,
-         Time_Zone => Time_Zone);
-      return Month;
+      return Month_Number (
+         Shift_Right (Packed_Split (Date, Time_Zone), 8) and 16#ff#);
    end Month;
 
    function Day (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Day_Number
-   is
-      Year : Year_Number;
-      Month : Month_Number;
-      Day : Day_Number;
-      Hour : Hour_Number;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
-      Leap_Second : Boolean;
+      return Day_Number is
    begin
-      Split (
-         Date,
-         Year => Year,
-         Month => Month,
-         Day => Day,
-         Hour => Hour,
-         Minute => Minute,
-         Second => Second,
-         Sub_Second => Sub_Second,
-         Leap_Second => Leap_Second,
-         Time_Zone => Time_Zone);
-      return Day;
+      return Day_Number (
+         Packed_Split (Date, Time_Zone) and 16#ff#);
    end Day;
 
    function Hour (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Hour_Number
-   is
-      Hour : Hour_Number;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
+      return Hour_Number is
    begin
-      Split (
-         Seconds (Date, Time_Zone),
-         Hour,
-         Minute,
-         Second,
-         Sub_Second);
-      return Hour;
+      return Hour_Number (
+         Shift_Right (Packed_Split (Date, Time_Zone), 56));
    end Hour;
 
    function Minute (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Minute_Number
-   is
-      Hour : Hour_Number;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
+      return Minute_Number is
    begin
-      Split (
-         Seconds (Date, Time_Zone),
-         Hour,
-         Minute,
-         Second,
-         Sub_Second);
-      return Minute;
+      return Minute_Number (
+         Shift_Right (Packed_Split (Date, Time_Zone), 48) and 16#ff#);
    end Minute;
 
    function Second (Date : Time) return Second_Number is
-      Hour : Hour_Number;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
+      Time_Zone : constant Time_Zones.Time_Offset := 0;
+      --  unit of Time_Zone is minute
    begin
-      Split (
-         Seconds (Date, Time_Zone => 0), -- unit of Time_Zone is minute
-         Hour,
-         Minute,
-         Second,
-         Sub_Second);
-      return Second;
+      return Minute_Number (
+         Shift_Right (Packed_Split (Date, Time_Zone), 40) and 16#ff#);
    end Second;
 
    function Sub_Second (Date : Time) return Second_Duration is
-      Hour : Hour_Number;
-      Minute : Minute_Number;
-      Second : Second_Number;
-      Sub_Second : Second_Duration;
+      Time_Zone : constant Time_Zones.Time_Offset := 0;
+      --  unit of Time_Zone is minute
    begin
-      Split (
-         Seconds (Date, Time_Zone => 0), -- unit of Time_Zone is minute
-         Hour,
-         Minute,
-         Second,
-         Sub_Second);
-      return Sub_Second;
+      return Duration'Fixed_Value (
+         (System.Native_Time.Nanosecond_Number'Integer_Value (Date)
+            + System.Native_Time.Nanosecond_Number (Time_Zone)
+               * (60 * 1000000000))
+         mod 1000000000);
    end Sub_Second;
 
    function Seconds (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
