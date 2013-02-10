@@ -5,7 +5,6 @@ with Ada.Unchecked_Deallocation;
 with System.Native_Time;
 with System.Storage_Elements;
 package body Ada.Directories is
-   use type Directory_Searching.File_Kind;
    use type Directory_Searching.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
 
@@ -309,18 +308,15 @@ package body Ada.Directories is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
-      return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
-         Directory_Searching.Kind (Information)));
+      return Inside.Kind (Information);
    end Kind;
 
    function Size (Name : String) return File_Size is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
-      if Directory_Searching.Kind (Information) /=
-         Directory_Searching.Ordinary_File
-      then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+      if Inside.Kind (Information) /= Ordinary_File then
+         raise Constraint_Error; -- implementation-defined
       else
          return Inside.Size (Information);
       end if;
@@ -401,12 +397,9 @@ package body Ada.Directories is
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else
          --  copy entry and get info
-         Directory_Entry.Path := Search.Path; -- overwrite
+         Directory_Entry.Search := Search'Unrestricted_Access; -- overwrite
          Directory_Entry.Data := Search.Next_Data;
-         Directory_Searching.Get_Information (
-            Directory_Entry.Path.all,
-            Directory_Entry.Data,
-            Directory_Entry.Information'Access);
+         Directory_Entry.Additional.Filled := False;
          --  counting
          Search.Count := Search.Count + 1;
          --  search next
@@ -439,7 +432,7 @@ package body Ada.Directories is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Position.Search /= null;
+      return Position.Directory_Entry.Search /= null;
    end Has_Element;
 
    function Constant_Reference (
@@ -465,7 +458,6 @@ package body Ada.Directories is
       end if;
       return Result : Cursor do
          if More_Entries (Object.Search.all) then
-            Result.Search := Object.Search;
             Get_Next_Entry (Object.Search.all, Result.Directory_Entry);
             Result.Index := Object.Search.Count;
          end if;
@@ -480,7 +472,6 @@ package body Ada.Directories is
       end if;
       return Result : Cursor do
          if More_Entries (Object.Search.all) then
-            Result.Search := Object.Search;
             Get_Next_Entry (Object.Search.all, Result.Directory_Entry);
             Result.Index := Object.Search.Count;
          end if;
@@ -489,44 +480,41 @@ package body Ada.Directories is
 
    --  operations on directory entries
 
-   procedure Check_Assigned (Directory_Entry : Directory_Entry_Type) is
-   begin
-      if Directory_Entry.Path = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
-      end if;
-   end Check_Assigned;
-
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
       return String is
    begin
-      Check_Assigned (Directory_Entry);
+      if Directory_Entry.Search = null then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
       return Directory_Searching.Simple_Name (Directory_Entry.Data);
    end Simple_Name;
 
    function Full_Name (Directory_Entry : Directory_Entry_Type) return String is
+      Name : constant String := Simple_Name (Directory_Entry);
    begin
-      Check_Assigned (Directory_Entry);
       return Compose (
-         Directory_Entry.Path.all,
-         Simple_Name (Directory_Entry));
+         Directory_Entry.Search.Path.all,
+         Name);
    end Full_Name;
 
    function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
    begin
-      Check_Assigned (Directory_Entry);
+      if Directory_Entry.Search = null then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
       return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
-         Directory_Searching.Kind (Directory_Entry.Information)));
+         Directory_Searching.Kind (Directory_Entry.Data)));
    end Kind;
 
    function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
    begin
-      if Directory_Entry.Path = null
-         or else Directory_Searching.Kind (Directory_Entry.Information) /=
-            Directory_Searching.Ordinary_File
-      then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      if Kind (Directory_Entry) /= Ordinary_File then
+         raise Constraint_Error; -- implementation-defined
       else
-         return Inside.Size (Directory_Entry.Information);
+         return Directory_Searching.Size (
+            Directory_Entry.Search.Path.all,
+            Directory_Entry.Data,
+            Directory_Entry.Additional'Unrestricted_Access);
       end if;
    end Size;
 
@@ -535,9 +523,14 @@ package body Ada.Directories is
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
-      Check_Assigned (Directory_Entry);
+      if Directory_Entry.Search = null then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
       return Cast (System.Native_Time.To_Time (
-            Inside.Modification_Time (Directory_Entry.Information)));
+         Directory_Searching.Modification_Time (
+            Directory_Entry.Search.Path.all,
+            Directory_Entry.Data,
+            Directory_Entry.Additional'Unrestricted_Access)));
    end Modification_Time;
 
 end Ada.Directories;

@@ -209,6 +209,13 @@ package body Ada.Directories.Inside is
       end if;
    end Get_Information;
 
+   function Kind (Information : Directory_Entry_Information_Type)
+      return File_Kind is
+   begin
+      return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
+         Directory_Searching.To_File_Kind (Information.st_mode)));
+   end Kind;
+
    function Size (Information : Directory_Entry_Information_Type)
       return File_Size is
    begin

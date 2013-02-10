@@ -1,14 +1,21 @@
 pragma License (Unrestricted);
 --  implementation unit for Ada.Directories
 with Ada.IO_Exceptions;
+with Ada.Streams;
+with System.Native_Time;
 with C.dirent;
-with C.stdint;
 with C.sys.stat;
+with C.sys.types;
 package Ada.Directory_Searching is
-
-   subtype Directory_Entry_Information_Type is C.sys.stat.struct_stat64;
+   pragma Preelaborate;
 
    subtype Directory_Entry_Type is C.dirent.struct_dirent64;
+
+   type Directory_Entry_Additional_Type is record
+      Filled : Boolean;
+      Information : aliased C.sys.stat.struct_stat64;
+   end record;
+   pragma Suppress_Initialization (Directory_Entry_Additional_Type);
 
    --  same as Directories.File_Kind
    type File_Kind is (Directory, Ordinary_File, Special_File);
@@ -25,7 +32,7 @@ package Ada.Directory_Searching is
    type Search_Type is record
       Handle : C.dirent.DIR_ptr;
       Pattern : C.char_ptr;
-      Filter : C.stdint.uint16_t; -- bit set of DT_xxx
+      Filter : Filter_Type;
    end record;
    pragma Suppress_Initialization (Search_Type);
 
@@ -47,13 +54,20 @@ package Ada.Directory_Searching is
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
       return String;
 
-   procedure Get_Information (
+   function Kind (Directory_Entry : Directory_Entry_Type)
+      return File_Kind;
+
+   function Size (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Information : not null access Directory_Entry_Information_Type);
+      Additional : not null access Directory_Entry_Additional_Type)
+      return Streams.Stream_Element_Count;
 
-   function Kind (Information : Directory_Entry_Information_Type)
-      return File_Kind;
+   function Modification_Time (
+      Directory : String;
+      Directory_Entry : Directory_Entry_Type;
+      Additional : not null access Directory_Entry_Additional_Type)
+      return System.Native_Time.Native_Time;
 
    Name_Error : exception
       renames IO_Exceptions.Name_Error;
@@ -62,11 +76,20 @@ package Ada.Directory_Searching is
 
    --  for Ada.Directories
 
+   function To_File_Kind (mode : C.sys.types.mode_t) return File_Kind;
+
    function lstat (
       path : access constant C.char;
       buf : access C.sys.stat.struct_stat64)
       return C.signed_int
       renames C.sys.stat.lstat64;
+
+   subtype struct_stat is C.sys.stat.struct_stat64;
+
+   procedure Get_Information (
+      Directory : String;
+      Directory_Entry : Directory_Entry_Type;
+      Information : not null access struct_stat);
 
    O_EXLOCK : constant := 0;
 

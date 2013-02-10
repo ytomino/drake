@@ -15,6 +15,21 @@ package body Ada.Directories.Information is
    use type C.sys.types.mode_t;
    use type C.sys.types.ssize_t;
 
+   procedure Fill (Directory_Entry : not null access Directory_Entry_Type);
+   procedure Fill (Directory_Entry : not null access Directory_Entry_Type) is
+   begin
+      if Directory_Entry.Search = null then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      if not Directory_Entry.Additional.Filled then
+         Directory_Searching.Get_Information (
+            Directory_Entry.Search.Path.all,
+            Directory_Entry.Data,
+            Directory_Entry.Additional.Information'Access);
+         Directory_Entry.Additional.Filled := True;
+      end if;
+   end Fill;
+
    function To_Permission_Set (Mode : C.sys.types.mode_t)
       return Permission_Set_Type;
    function To_Permission_Set (Mode : C.sys.types.mode_t)
@@ -45,9 +60,9 @@ package body Ada.Directories.Information is
 
    function Group (Directory_Entry : Directory_Entry_Type) return String is
    begin
-      Check_Assigned (Directory_Entry);
+      Fill (Directory_Entry'Unrestricted_Access);
       return Permissions.Inside.Group_Name (
-         Directory_Entry.Information.st_gid);
+         Directory_Entry.Additional.Information.st_gid);
    end Group;
 
    function Is_Block_Special_File (Name : String) return Boolean is
@@ -61,9 +76,9 @@ package body Ada.Directories.Information is
    function Is_Block_Special_File (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Check_Assigned (Directory_Entry);
-      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
-         C.sys.stat.S_IFBLK;
+      Fill (Directory_Entry'Unrestricted_Access);
+      return (Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
 
    function Is_Character_Special_File (Name : String) return Boolean is
@@ -77,9 +92,9 @@ package body Ada.Directories.Information is
    function Is_Character_Special_File (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Check_Assigned (Directory_Entry);
-      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
-         C.sys.stat.S_IFCHR;
+      Fill (Directory_Entry'Unrestricted_Access);
+      return (Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
 
    function Is_FIFO (Name : String) return Boolean is
@@ -93,9 +108,9 @@ package body Ada.Directories.Information is
    function Is_FIFO (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Check_Assigned (Directory_Entry);
-      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
-         C.sys.stat.S_IFIFO;
+      Fill (Directory_Entry'Unrestricted_Access);
+      return (Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFIFO;
    end Is_FIFO;
 
    function Is_Socket (Name : String) return Boolean is
@@ -109,9 +124,9 @@ package body Ada.Directories.Information is
    function Is_Socket (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Check_Assigned (Directory_Entry);
-      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
-         C.sys.stat.S_IFSOCK;
+      Fill (Directory_Entry'Unrestricted_Access);
+      return (Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFSOCK;
    end Is_Socket;
 
    function Is_Symbolic_Link (Name : String) return Boolean is
@@ -125,9 +140,9 @@ package body Ada.Directories.Information is
    function Is_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Check_Assigned (Directory_Entry);
-      return (Directory_Entry.Information.st_mode and C.sys.stat.S_IFMT) =
-         C.sys.stat.S_IFLNK;
+      Fill (Directory_Entry'Unrestricted_Access);
+      return (Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
 
    function Last_Access_Time (Name : String) return Calendar.Time is
@@ -143,9 +158,9 @@ package body Ada.Directories.Information is
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
-      Check_Assigned (Directory_Entry);
+      Fill (Directory_Entry'Unrestricted_Access);
       return Cast (System.Native_Time.To_Time (
-         Directory_Entry.Information.st_atimespec));
+         Directory_Entry.Additional.Information.st_atimespec));
    end Last_Access_Time;
 
    function Last_Status_Change_Time (Name : String)
@@ -163,9 +178,9 @@ package body Ada.Directories.Information is
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
-      Check_Assigned (Directory_Entry);
+      Fill (Directory_Entry'Unrestricted_Access);
       return Cast (System.Native_Time.To_Time (
-         Directory_Entry.Information.st_ctimespec));
+         Directory_Entry.Additional.Information.st_ctimespec));
    end Last_Status_Change_Time;
 
    function Owner (Name : String) return String is
@@ -177,8 +192,9 @@ package body Ada.Directories.Information is
 
    function Owner (Directory_Entry : Directory_Entry_Type) return String is
    begin
-      Check_Assigned (Directory_Entry);
-      return Permissions.Inside.User_Name (Directory_Entry.Information.st_uid);
+      Fill (Directory_Entry'Unrestricted_Access);
+      return Permissions.Inside.User_Name (
+         Directory_Entry.Additional.Information.st_uid);
    end Owner;
 
    function Permission_Set (Name : String) return Permission_Set_Type is
@@ -191,8 +207,9 @@ package body Ada.Directories.Information is
    function Permission_Set (Directory_Entry : Directory_Entry_Type)
       return Permission_Set_Type is
    begin
-      Check_Assigned (Directory_Entry);
-      return To_Permission_Set (Directory_Entry.Information.st_mode);
+      Fill (Directory_Entry'Unrestricted_Access);
+      return To_Permission_Set (
+         Directory_Entry.Additional.Information.st_mode);
    end Permission_Set;
 
    function Read_Symbolic_Link (Name : String) return String is
@@ -273,6 +290,9 @@ package body Ada.Directories.Information is
 
    function Identity (Directory_Entry : Directory_Entry_Type) return File_Id is
    begin
+      if Directory_Entry.Search = null then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
       return File_Id (Directory_Entry.Data.d_ino);
    end Identity;
 

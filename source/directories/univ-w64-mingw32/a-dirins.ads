@@ -41,6 +41,9 @@ package Ada.Directories.Inside is
       Name : String;
       Information : not null access Directory_Entry_Information_Type);
 
+   function Kind (Information : Directory_Entry_Information_Type)
+      return File_Kind;
+
    function Size (Information : Directory_Entry_Information_Type)
       return File_Size;
 

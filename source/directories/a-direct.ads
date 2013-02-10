@@ -203,11 +203,13 @@ private
 
    type String_Access is access String;
 
+   type Search_Access is access Search_Type;
+   for Search_Access'Storage_Size use 0;
+
    type Directory_Entry_Type is record -- not limited in full view
+      Search : Search_Access := null;
       Data : aliased Directory_Searching.Directory_Entry_Type;
-      Information : aliased
-         Directory_Searching.Directory_Entry_Information_Type;
-      Path : String_Access := null;
+      Additional : aliased Directory_Searching.Directory_Entry_Additional_Type;
    end record;
 
    type Search_Type is new Finalization.Limited_Controlled with record
@@ -223,12 +225,8 @@ private
    overriding procedure Finalize (Search : in out Search_Type);
    procedure End_Search (Search : in out Search_Type) renames Finalize;
 
-   type Search_Access is access Search_Type;
-   for Search_Access'Storage_Size use 0;
-
    type Cursor is record
       Directory_Entry : aliased Directory_Entry_Type;
-      Search : Search_Access := null;
       Index : Positive;
    end record;
 
@@ -241,9 +239,6 @@ private
    overriding function First (Object : Search_Iterator) return Cursor;
    overriding function Next (Object : Search_Iterator; Position : Cursor)
       return Cursor;
-
-   --  for Information
-   procedure Check_Assigned (Directory_Entry : Directory_Entry_Type);
 
    --  for Temporary
    procedure Include_Trailing_Path_Delimiter (

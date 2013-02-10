@@ -1,28 +1,11 @@
 with Ada.Exceptions;
 with System.Zero_Terminated_WStrings;
-with C.windef;
 with C.winerror;
 package body Ada.Directory_Searching is
    use type C.signed_int;
    use type C.windef.DWORD;
    use type C.winnt.HANDLE;
    use type C.winnt.WCHAR;
-
-   function To_File_Kind (Attributes : C.windef.DWORD) return File_Kind;
-   function To_File_Kind (Attributes : C.windef.DWORD) return File_Kind is
-   begin
-      if (Attributes and C.winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0 then
-         return Directory;
-      elsif (Attributes and (
-         C.winnt.FILE_ATTRIBUTE_DEVICE
-         or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
-         or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
-      then
-         return Special_File;
-      else
-         return Ordinary_File;
-      end if;
-   end To_File_Kind;
 
    function Match_Filter (
       Filter : Filter_Type;
@@ -147,25 +130,53 @@ package body Ada.Directory_Searching is
          Directory_Entry.cFileName (0)'Access);
    end Simple_Name;
 
-   procedure Get_Information (
-      Directory : String;
-      Directory_Entry : Directory_Entry_Type;
-      Information : not null access Directory_Entry_Information_Type)
-   is
-      pragma Unreferenced (Directory);
-   begin
-      Information.dwFileAttributes := Directory_Entry.dwFileAttributes;
-      Information.ftCreationTime := Directory_Entry.ftCreationTime;
-      Information.ftLastAccessTime := Directory_Entry.ftLastAccessTime;
-      Information.ftLastWriteTime := Directory_Entry.ftLastWriteTime;
-      Information.nFileSizeHigh := Directory_Entry.nFileSizeHigh;
-      Information.nFileSizeLow := Directory_Entry.nFileSizeLow;
-   end Get_Information;
-
-   function Kind (Information : Directory_Entry_Information_Type)
+   function Kind (Directory_Entry : Directory_Entry_Type)
       return File_Kind is
    begin
-      return To_File_Kind (Information.dwFileAttributes);
+      return To_File_Kind (Directory_Entry.dwFileAttributes);
    end Kind;
+
+   function Size (
+      Directory : String;
+      Directory_Entry : Directory_Entry_Type;
+      Additional : not null access Directory_Entry_Additional_Type)
+      return Streams.Stream_Element_Count
+   is
+      pragma Unreferenced (Directory);
+      pragma Unreferenced (Additional);
+      U : constant C.winnt.ULARGE_INTEGER := (
+         Unchecked_Tag => 0,
+         LowPart => Directory_Entry.nFileSizeLow,
+         HighPart => Directory_Entry.nFileSizeHigh);
+   begin
+      return Streams.Stream_Element_Count (U.QuadPart);
+   end Size;
+
+   function Modification_Time (
+      Directory : String;
+      Directory_Entry : Directory_Entry_Type;
+      Additional : not null access Directory_Entry_Additional_Type)
+      return System.Native_Time.Native_Time
+   is
+      pragma Unreferenced (Directory);
+      pragma Unreferenced (Additional);
+   begin
+      return Directory_Entry.ftLastWriteTime;
+   end Modification_Time;
+
+   function To_File_Kind (Attributes : C.windef.DWORD) return File_Kind is
+   begin
+      if (Attributes and C.winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0 then
+         return Directory;
+      elsif (Attributes and (
+         C.winnt.FILE_ATTRIBUTE_DEVICE
+         or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
+         or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
+      then
+         return Special_File;
+      else
+         return Ordinary_File;
+      end if;
+   end To_File_Kind;
 
 end Ada.Directory_Searching;
