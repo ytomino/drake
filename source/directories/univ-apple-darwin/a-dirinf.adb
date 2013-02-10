@@ -264,4 +264,16 @@ package body Ada.Directories.Information is
       return Read_Symbolic_Link (Full_Name (Directory_Entry));
    end Read_Symbolic_Link;
 
+   function Identity (Name : String) return File_Id is
+      Information : aliased Inside.Directory_Entry_Information_Type;
+   begin
+      Inside.Get_Information (Name, Information'Access);
+      return File_Id (Information.st_ino);
+   end Identity;
+
+   function Identity (Directory_Entry : Directory_Entry_Type) return File_Id is
+   begin
+      return File_Id (Directory_Entry.Data.d_ino);
+   end Identity;
+
 end Ada.Directories.Information;

@@ -15,11 +15,11 @@ is
    use type C.signed_int;
    use type C.unsigned_int;
    Z_Source : String := Source_Name & Character'Val (0);
-   C_Source : C.char_array (0 .. Z_Source'Length);
+   C_Source : C.char_array (C.size_t);
    for C_Source'Address use Z_Source'Address;
    Source : C.signed_int;
    Z_Target : String := Target_Name & Character'Val (0);
-   C_Target : C.char_array (0 .. Z_Target'Length);
+   C_Target : C.char_array (C.size_t);
    for C_Target'Address use Z_Target'Address;
    Target : C.signed_int;
    Flag : C.unsigned_int :=

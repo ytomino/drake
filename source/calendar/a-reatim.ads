@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
-private with Ada.Unchecked_Conversion;
 private with System.Native_Time;
 package Ada.Real_Time is
 
@@ -59,14 +58,24 @@ package Ada.Real_Time is
    function ">=" (Left, Right : Time_Span) return Boolean;
 
    function To_Duration (TS : Time_Span) return Duration;
---  pragma Inline_Always (To_Duration); -- ??
+   pragma Pure_Function (To_Duration);
+   pragma Inline (To_Duration);
    function To_Time_Span (D : Duration) return Time_Span;
-   pragma Inline_Always (To_Time_Span);
+   pragma Pure_Function (To_Time_Span);
+   pragma Inline (To_Time_Span);
 
    function Nanoseconds (NS : Integer) return Time_Span;
+   pragma Pure_Function (Nanoseconds);
+   pragma Inline (Nanoseconds);
    function Microseconds (US : Integer) return Time_Span;
+   pragma Pure_Function (Microseconds);
+   pragma Inline (Microseconds);
    function Milliseconds (MS : Integer) return Time_Span;
+   pragma Pure_Function (Milliseconds);
+   pragma Inline (Milliseconds);
    function Seconds (S : Integer) return Time_Span;
+   pragma Pure_Function (Seconds);
+   pragma Inline (Seconds);
 --  function Minutes (M : Integer) return Time_Span;
 
    type Seconds_Count is range
@@ -97,14 +106,5 @@ private
    Time_Span_Unit : constant Time_Span := Time_Span'Delta;
 
    Tick : constant Time_Span := System.Native_Time.Tick;
-
-   function Cast is new Unchecked_Conversion (Time_Span, Duration);
-   function Cast is new Unchecked_Conversion (Duration, Time_Span);
-
-   function To_Duration (TS : Time_Span) return Duration
-      renames Cast;
-
-   function To_Time_Span (D : Duration) return Time_Span
-      renames Cast;
 
 end Ada.Real_Time;

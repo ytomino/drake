@@ -76,4 +76,10 @@ package Ada.Directories.Information is
    function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
       return String;
 
+   --  extended
+   --  Unique file identifier.
+   type File_Id is mod 2 ** 64; -- 64bit inode
+   function Identity (Name : String) return File_Id;
+   function Identity (Directory_Entry : Directory_Entry_Type) return File_Id;
+
 end Ada.Directories.Information;

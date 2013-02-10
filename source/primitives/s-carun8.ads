@@ -10,6 +10,7 @@ package System.Compare_Array_Unsigned_8 is
       Left_Len : Natural;
       Right_Len : Natural)
       return Integer;
+   pragma Pure_Function (Compare_Array_U8_Unaligned);
 
    --  required to compare arrays by compiler (s-carun8.ads)
    function Compare_Array_U8 (

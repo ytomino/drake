@@ -8,5 +8,7 @@ package Ada.Calendar.Time_Zones is
    Unknown_Zone_Error : exception;
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset;
+   pragma Pure_Function (UTC_Time_Offset);
+   pragma Inline (UTC_Time_Offset);
 
 end Ada.Calendar.Time_Zones;

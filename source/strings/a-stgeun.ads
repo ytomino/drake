@@ -94,6 +94,7 @@ package Ada.Strings.Generic_Unbounded is
 
    function Element (Source : Unbounded_String; Index : Positive)
       return Character_Type;
+   pragma Inline (Element);
 
    procedure Replace_Element (
       Source : in out Unbounded_String;

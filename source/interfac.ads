@@ -70,192 +70,149 @@ package Interfaces is
       return Unsigned_64;
    pragma Import (Intrinsic, Rotate_Right);
 
+   package Implementation is
+
+      procedure sync_add_and_fetch_8 (
+         A1 : not null access Integer_8;
+         A2 : Integer_8);
+      pragma Import (Intrinsic, sync_add_and_fetch_8,
+         "__sync_add_and_fetch_1");
+      procedure sync_add_and_fetch_16 (
+         A1 : not null access Integer_16;
+         A2 : Integer_16);
+      pragma Import (Intrinsic, sync_add_and_fetch_16,
+         "__sync_add_and_fetch_2");
+      procedure sync_add_and_fetch_32 (
+         A1 : not null access Integer_32;
+         A2 : Integer_32);
+      pragma Import (Intrinsic, sync_add_and_fetch_32,
+         "__sync_add_and_fetch_4");
+      procedure sync_add_and_fetch_64 (
+         A1 : not null access Integer_64;
+         A2 : Integer_64);
+      pragma Import (Intrinsic, sync_add_and_fetch_64,
+         "__sync_add_and_fetch_8");
+
+      function sync_sub_and_fetch_8 (
+         A1 : not null access Integer_8;
+         A2 : Integer_8)
+         return Integer_8;
+      pragma Import (Intrinsic, sync_sub_and_fetch_8,
+         "__sync_sub_and_fetch_1");
+      function sync_sub_and_fetch_16 (
+         A1 : not null access Integer_16;
+         A2 : Integer_16)
+         return Integer_16;
+      pragma Import (Intrinsic, sync_sub_and_fetch_16,
+         "__sync_sub_and_fetch_2");
+      function sync_sub_and_fetch_32 (
+         A1 : not null access Integer_32;
+         A2 : Integer_32)
+         return Integer_32;
+      pragma Import (Intrinsic, sync_sub_and_fetch_32,
+         "__sync_sub_and_fetch_4");
+      function sync_sub_and_fetch_64 (
+         A1 : not null access Integer_64;
+         A2 : Integer_64)
+         return Integer_64;
+      pragma Import (Intrinsic, sync_sub_and_fetch_64,
+         "__sync_sub_and_fetch_8");
+
+      function sync_bool_compare_and_swap_8 (
+         A1 : not null access Integer_8;
+         A2 : Integer_8;
+         A3 : Integer_8)
+         return Boolean;
+      pragma Import (Intrinsic, sync_bool_compare_and_swap_8,
+         "__sync_bool_compare_and_swap_1");
+      function sync_bool_compare_and_swap_16 (
+         A1 : not null access Integer_16;
+         A2 : Integer_16;
+         A3 : Integer_16)
+         return Boolean;
+      pragma Import (Intrinsic, sync_bool_compare_and_swap_16,
+         "__sync_bool_compare_and_swap_2");
+      function sync_bool_compare_and_swap_32 (
+         A1 : not null access Integer_32;
+         A2 : Integer_32;
+         A3 : Integer_32)
+         return Boolean;
+      pragma Import (Intrinsic, sync_bool_compare_and_swap_32,
+         "__sync_bool_compare_and_swap_4");
+      function sync_bool_compare_and_swap_64 (
+         A1 : not null access Integer_64;
+         A2 : Integer_64;
+         A3 : Integer_64)
+         return Boolean;
+      pragma Import (Intrinsic, sync_bool_compare_and_swap_64,
+         "__sync_bool_compare_and_swap_8");
+
+   end Implementation;
+
    --  extended from here
    --  Builtin-functions of gcc.
 
    procedure sync_add_and_fetch (
       A1 : not null access Integer_8;
-      A2 : Integer_8);
-   procedure sync_add_and_fetch (
-      A1 : not null access Integer_16;
-      A2 : Integer_16);
-   procedure sync_add_and_fetch (
-      A1 : not null access Integer_32;
-      A2 : Integer_32);
-   procedure sync_add_and_fetch (
-      A1 : not null access Integer_64;
-      A2 : Integer_64);
---  pragma Inline_Always (sync_add_and_fetch); -- [gcc 4.6] compiler crushes
-
-   function sync_sub_and_fetch (
-      A1 : not null access Integer_8;
       A2 : Integer_8)
-      return Integer_8;
-   function sync_sub_and_fetch (
-      A1 : not null access Integer_16;
-      A2 : Integer_16)
-      return Integer_16;
-   function sync_sub_and_fetch (
-      A1 : not null access Integer_32;
-      A2 : Integer_32)
-      return Integer_32;
-   function sync_sub_and_fetch (
-      A1 : not null access Integer_64;
-      A2 : Integer_64)
-      return Integer_64;
---  pragma Inline_Always (sync_sub_and_fetch); -- [gcc 4.6] compiler crushes
-
-   function sync_bool_compare_and_swap (
-      A1 : not null access Integer_8;
-      A2 : Integer_8;
-      A3 : Integer_8)
-      return Boolean;
-   function sync_bool_compare_and_swap (
-      A1 : not null access Integer_16;
-      A2 : Integer_16;
-      A3 : Integer_16)
-      return Boolean;
-   function sync_bool_compare_and_swap (
-      A1 : not null access Integer_32;
-      A2 : Integer_32;
-      A3 : Integer_32)
-      return Boolean;
-   function sync_bool_compare_and_swap (
-      A1 : not null access Integer_64;
-      A2 : Integer_64;
-      A3 : Integer_64)
-      return Boolean;
---  pragma Inline_Always (sync_bool_compare_and_swap); -- [gcc 4.6] crushes
-
-private
-
-   procedure sync_add_and_fetch_8 (
-      A1 : not null access Integer_8;
-      A2 : Integer_8);
-   pragma Import (Intrinsic, sync_add_and_fetch_8, "__sync_add_and_fetch_1");
-   procedure sync_add_and_fetch_16 (
-      A1 : not null access Integer_16;
-      A2 : Integer_16);
-   pragma Import (Intrinsic, sync_add_and_fetch_16, "__sync_add_and_fetch_2");
-   procedure sync_add_and_fetch_32 (
-      A1 : not null access Integer_32;
-      A2 : Integer_32);
-   pragma Import (Intrinsic, sync_add_and_fetch_32, "__sync_add_and_fetch_4");
-   procedure sync_add_and_fetch_64 (
-      A1 : not null access Integer_64;
-      A2 : Integer_64);
-   pragma Import (Intrinsic, sync_add_and_fetch_64, "__sync_add_and_fetch_8");
-
-   procedure sync_add_and_fetch (
-      A1 : not null access Integer_8;
-      A2 : Integer_8)
-      renames sync_add_and_fetch_8;
+      renames Implementation.sync_add_and_fetch_8;
    procedure sync_add_and_fetch (
       A1 : not null access Integer_16;
       A2 : Integer_16)
-      renames sync_add_and_fetch_16;
+      renames Implementation.sync_add_and_fetch_16;
    procedure sync_add_and_fetch (
       A1 : not null access Integer_32;
       A2 : Integer_32)
-      renames sync_add_and_fetch_32;
+      renames Implementation.sync_add_and_fetch_32;
    procedure sync_add_and_fetch (
       A1 : not null access Integer_64;
       A2 : Integer_64)
-      renames sync_add_and_fetch_64;
+      renames Implementation.sync_add_and_fetch_64;
 
-   function sync_sub_and_fetch_8 (
-      A1 : not null access Integer_8;
-      A2 : Integer_8)
-      return Integer_8;
-   pragma Import (Intrinsic, sync_sub_and_fetch_8, "__sync_sub_and_fetch_1");
-   function sync_sub_and_fetch_16 (
-      A1 : not null access Integer_16;
-      A2 : Integer_16)
-      return Integer_16;
-   pragma Import (Intrinsic, sync_sub_and_fetch_16, "__sync_sub_and_fetch_2");
-   function sync_sub_and_fetch_32 (
-      A1 : not null access Integer_32;
-      A2 : Integer_32)
-      return Integer_32;
-   pragma Import (Intrinsic, sync_sub_and_fetch_32, "__sync_sub_and_fetch_4");
-   function sync_sub_and_fetch_64 (
-      A1 : not null access Integer_64;
-      A2 : Integer_64)
-      return Integer_64;
-   pragma Import (Intrinsic, sync_sub_and_fetch_64, "__sync_sub_and_fetch_8");
    function sync_sub_and_fetch (
       A1 : not null access Integer_8;
       A2 : Integer_8)
       return Integer_8
-      renames sync_sub_and_fetch_8;
+      renames Implementation.sync_sub_and_fetch_8;
    function sync_sub_and_fetch (
       A1 : not null access Integer_16;
       A2 : Integer_16)
       return Integer_16
-      renames sync_sub_and_fetch_16;
+      renames Implementation.sync_sub_and_fetch_16;
    function sync_sub_and_fetch (
       A1 : not null access Integer_32;
       A2 : Integer_32)
       return Integer_32
-      renames sync_sub_and_fetch_32;
+      renames Implementation.sync_sub_and_fetch_32;
    function sync_sub_and_fetch (
       A1 : not null access Integer_64;
       A2 : Integer_64)
       return Integer_64
-      renames sync_sub_and_fetch_64;
-
-   function sync_bool_compare_and_swap_8 (
-      A1 : not null access Integer_8;
-      A2 : Integer_8;
-      A3 : Integer_8)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap_8,
-      "__sync_bool_compare_and_swap_1");
-   function sync_bool_compare_and_swap_16 (
-      A1 : not null access Integer_16;
-      A2 : Integer_16;
-      A3 : Integer_16)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap_16,
-      "__sync_bool_compare_and_swap_2");
-   function sync_bool_compare_and_swap_32 (
-      A1 : not null access Integer_32;
-      A2 : Integer_32;
-      A3 : Integer_32)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap_32,
-      "__sync_bool_compare_and_swap_4");
-   function sync_bool_compare_and_swap_64 (
-      A1 : not null access Integer_64;
-      A2 : Integer_64;
-      A3 : Integer_64)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap_64,
-      "__sync_bool_compare_and_swap_8");
+      renames Implementation.sync_sub_and_fetch_64;
 
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_8;
       A2 : Integer_8;
       A3 : Integer_8)
       return Boolean
-      renames sync_bool_compare_and_swap_8;
+      renames Implementation.sync_bool_compare_and_swap_8;
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_16;
       A2 : Integer_16;
       A3 : Integer_16)
       return Boolean
-      renames sync_bool_compare_and_swap_16;
+      renames Implementation.sync_bool_compare_and_swap_16;
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_32;
       A2 : Integer_32;
       A3 : Integer_32)
       return Boolean
-      renames sync_bool_compare_and_swap_32;
+      renames Implementation.sync_bool_compare_and_swap_32;
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_64;
       A2 : Integer_64;
       A3 : Integer_64)
       return Boolean
-      renames sync_bool_compare_and_swap_64;
+      renames Implementation.sync_bool_compare_and_swap_64;
 
 end Interfaces;

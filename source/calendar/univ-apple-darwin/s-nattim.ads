@@ -23,6 +23,9 @@ package System.Native_Time is
    function To_Time (T : C.sys.types.time_t) return Duration;
    function To_Time (T : C.sys.time.struct_timeval) return Duration;
 
+   pragma Pure_Function (To_Native_Time);
+   pragma Pure_Function (To_Time);
+
    --  current absolute time
 
    function Clock return Native_Time;

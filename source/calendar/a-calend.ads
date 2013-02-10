@@ -9,11 +9,20 @@ package Ada.Calendar is
    subtype Day_Duration is Duration range 0.0 .. 86_400.0;
 
    function Clock return Time;
+   pragma Inline (Clock);
 
    function Year (Date : Time) return Year_Number;
+   pragma Pure_Function (Year);
+   pragma Inline (Year);
    function Month (Date : Time) return Month_Number;
+   pragma Pure_Function (Month);
+   pragma Inline (Month);
    function Day (Date : Time) return Day_Number;
+   pragma Pure_Function (Day);
+   pragma Inline (Day);
    function Seconds (Date : Time) return Day_Duration;
+   pragma Pure_Function (Seconds);
+   pragma Inline (Seconds);
 
    procedure Split (
       Date : Time;

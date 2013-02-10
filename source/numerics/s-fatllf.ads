@@ -78,6 +78,7 @@ package System.Fat_LLF is
       function Valid (X : not null access Long_Long_Float) return Boolean;
       function Unaligned_Valid (A : Address) return Boolean;
       pragma Import (Ada, Unaligned_Valid);
+      pragma Pure_Function (Unaligned_Valid);
       for Unaligned_Valid'Address use Valid'Address;
 
    end Attr_Long_Long_Float;

@@ -10,6 +10,7 @@ package System.Val_Enum is
       Num : Natural;
       Str : String)
       return Natural;
+   pragma Pure_Function (Value_Enumeration_8);
 
    function Value_Enumeration_16 (
       Names : String;
@@ -17,6 +18,7 @@ package System.Val_Enum is
       Num : Natural;
       Str : String)
       return Natural;
+   pragma Pure_Function (Value_Enumeration_16);
 
    function Value_Enumeration_32 (
       Names : String;
@@ -24,6 +26,7 @@ package System.Val_Enum is
       Num : Natural;
       Str : String)
       return Natural;
+   pragma Pure_Function (Value_Enumeration_32);
 
    --  helper
    procedure Trim (S : String; First : out Positive; Last : out Natural);

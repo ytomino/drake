@@ -230,7 +230,8 @@ package body Ada.Directories.Inside is
          dwShareMode => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE,
          lpSecurityAttributes => null,
          dwCreationDisposition => C.winbase.OPEN_EXISTING,
-         dwFlagsAndAttributes => C.winbase.FILE_FLAG_BACKUP_SEMANTICS,
+         dwFlagsAndAttributes => C.winbase.FILE_FLAG_BACKUP_SEMANTICS
+            or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
          hTemplateFile => C.windef.LPVOID (System.Null_Address));
       if Handle = C.winbase.INVALID_HANDLE_VALUE then
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);

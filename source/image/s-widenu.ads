@@ -9,17 +9,20 @@ package System.Wid_Enum is
       Indexes : Address;
       Lo, Hi : Natural)
       return Natural;
+   pragma Pure_Function (Width_Enumeration_8);
 
    function Width_Enumeration_16 (
       Names : String;
       Indexes : Address;
       Lo, Hi : Natural)
       return Natural;
+   pragma Pure_Function (Width_Enumeration_16);
 
    function Width_Enumeration_32 (
       Names : String;
       Indexes : Address;
       Lo, Hi : Natural)
       return Natural;
+   pragma Pure_Function (Width_Enumeration_32);
 
 end System.Wid_Enum;

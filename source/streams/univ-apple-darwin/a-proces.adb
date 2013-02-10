@@ -110,7 +110,7 @@ package body Ada.Processes is
       Status : out Ada.Command_Line.Exit_Status)
    is
       Z_Command : String := Command_Line & Character'Val (0);
-      C_Command : C.char_array (0 .. Z_Command'Length);
+      C_Command : C.char_array (C.size_t);
       for C_Command'Address use Z_Command'Address;
       Code : C.signed_int;
    begin

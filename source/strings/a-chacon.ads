@@ -19,7 +19,6 @@ package Ada.Characters.Conversions is
 
    function Is_Character (Item : Wide_Character) return Boolean;
    function Is_String (Item : Wide_String) return Boolean;
-   pragma Inline (Is_String);
 
    --  extended
    --  This function returns False if Item is in UTF-16 surrogate pair,
@@ -28,11 +27,15 @@ package Ada.Characters.Conversions is
 
    function Is_Character (Item : Wide_Wide_Character) return Boolean;
    function Is_String (Item : Wide_Wide_String) return Boolean;
-   pragma Inline (Is_String);
 
    function Is_Wide_Character (Item : Wide_Wide_Character) return Boolean;
    function Is_Wide_String (Item : Wide_Wide_String) return Boolean
       renames Is_String;
+
+   pragma Inline (Is_Character);
+   pragma Inline (Is_Wide_Character);
+   pragma Inline (Is_Wide_Wide_Character);
+   pragma Inline (Is_String);
 
    --  Is_Character return False when 16#7F# .. 16#FF# and greater
    --  Is_Wide_Character return False when surrogate pair and greater
@@ -48,7 +51,6 @@ package Ada.Characters.Conversions is
       Item : String;
       Substitute : Wide_Character := ' ') -- additional
       return Wide_String;
-   pragma Inline_Always (To_Wide_String);
 
    --  modified
    function To_Wide_Wide_Character (
@@ -59,7 +61,6 @@ package Ada.Characters.Conversions is
       Item : String;
       Substitute : Wide_Wide_Character := ' ') -- additional
       return Wide_Wide_String;
-   pragma Inline_Always (To_Wide_Wide_String);
 
    --  modified
    function To_Wide_Wide_Character (
@@ -70,7 +71,6 @@ package Ada.Characters.Conversions is
       Item : Wide_String;
       Substitute : Wide_Wide_Character := ' ') -- additional
       return Wide_Wide_String;
-   pragma Inline_Always (To_Wide_Wide_String);
 
    function To_Character (
       Item : Wide_Character;
@@ -80,7 +80,6 @@ package Ada.Characters.Conversions is
       Item : Wide_String;
       Substitute : Character := ' ')
       return String;
-   pragma Inline_Always (To_String);
 
    function To_Character (
       Item : Wide_Wide_Character;
@@ -90,7 +89,6 @@ package Ada.Characters.Conversions is
       Item : Wide_Wide_String;
       Substitute : Character := ' ')
       return String;
-   pragma Inline_Always (To_String);
 
    function To_Wide_Character (
       Item : Wide_Wide_Character;
@@ -100,7 +98,10 @@ package Ada.Characters.Conversions is
       Item : Wide_Wide_String;
       Substitute : Wide_Character := ' ')
       return Wide_String;
-   pragma Inline_Always (To_Wide_String);
+
+   pragma Inline (To_String);
+   pragma Inline (To_Wide_String);
+   pragma Inline (To_Wide_Wide_String);
 
    --  extended
    --  There are subprograms for code-point based decoding iteration.

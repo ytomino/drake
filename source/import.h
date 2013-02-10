@@ -1,4 +1,6 @@
-#if defined(__linux__)
+#if defined(__FreeBSD__)
+#define d_fileno d_ino
+#elif defined(__linux__)
 #define _GNU_SOURCE /* use GNU extension */
 #define st_atim st_atimespec
 #define st_mtim st_mtimespec
@@ -51,6 +53,7 @@
 #include <spawn.h> /* spawn */
 #include <copyfile.h> /* copyfile */
 #elif defined(__FreeBSD__)
+#undef d_fileno
 #include <sys/param.h> /* PAGE_SIZE */
 #include <malloc_np.h> /* malloc_usable_size */
 #include <pthread_np.h> /* pthread_attr_get_np */

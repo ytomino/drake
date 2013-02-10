@@ -238,7 +238,6 @@ private
       function Create (
          Data : not null Set_Data_Access)
          return Character_Set;
-      pragma Inline (Create);
 
       function Reference (
          Object : Character_Set)
@@ -290,7 +289,6 @@ private
       function Create (
          Data : not null Map_Data_Access)
          return Character_Mapping;
-      pragma Inline (Create);
 
       function Reference (
          Object : Character_Mapping)

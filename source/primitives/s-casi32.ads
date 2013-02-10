@@ -10,5 +10,6 @@ package System.Compare_Array_Signed_32 is
       Left_Len : Natural;
       Right_Len : Natural)
       return Integer;
+   pragma Pure_Function (Compare_Array_S32);
 
 end System.Compare_Array_Signed_32;
