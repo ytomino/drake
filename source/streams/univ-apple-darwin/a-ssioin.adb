@@ -45,17 +45,17 @@ package body Ada.Streams.Stream_IO.Inside is
       return Result;
    end lseek;
 
-   procedure stat (
+   procedure fstat (
       Handle : Handle_Type;
       buf : not null access C.sys.stat.struct_stat);
-   procedure stat (
+   procedure fstat (
       Handle : Handle_Type;
       buf : not null access C.sys.stat.struct_stat) is
    begin
       if C.sys.stat.fstat (Handle, buf) < 0 then
          raise Use_Error;
       end if;
-   end stat;
+   end fstat;
 
    procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean);
    procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean) is
@@ -249,14 +249,20 @@ package body Ada.Streams.Stream_IO.Inside is
          --  current directory
          Full_Name := C.unistd.getcwd (null, 0);
          Full_Name_Length := C.string.strlen (Full_Name);
-         --  reuse the memory from malloc
-         Full_Name := char_ptr_Conv.To_Pointer (System.Address (
-            C.stdlib.reallocf (
-               C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
-               Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
-         if Full_Name = null then
-            raise Storage_Error;
-         end if;
+         --  reuse the memory from malloc (similar to reallocf)
+         declare
+            New_Full_Name : constant C.char_ptr :=
+               char_ptr_Conv.To_Pointer (System.Address (C.stdlib.realloc (
+                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
+                  Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
+         begin
+            if New_Full_Name = null then
+               C.stdlib.free (
+                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)));
+               raise Storage_Error;
+            end if;
+            Full_Name := New_Full_Name;
+         end;
       end if;
       declare
          subtype Fixed_char_array is C.char_array (C.size_t);
@@ -309,14 +315,20 @@ package body Ada.Streams.Stream_IO.Inside is
          --  current directory
          Full_Name := C.unistd.getcwd (null, 0);
          Full_Name_Length := C.string.strlen (Full_Name);
-         --  reuse the memory from malloc
-         Full_Name := char_ptr_Conv.To_Pointer (System.Address (
-            C.stdlib.reallocf (
-               C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
-               Full_Name_Length + Name_Length + 2))); -- '/' & NUL
-         if Full_Name = null then
-            raise Storage_Error;
-         end if;
+         --  reuse the memory from malloc (similar to reallocf)
+         declare
+            New_Full_Name : constant C.char_ptr :=
+               char_ptr_Conv.To_Pointer (System.Address (C.stdlib.realloc (
+                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
+                  Full_Name_Length + Name_Length + 2))); -- '/' & NUL
+         begin
+            if New_Full_Name = null then
+               C.stdlib.free (
+                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)));
+               raise Storage_Error;
+            end if;
+            Full_Name := New_Full_Name;
+         end;
          --  append slash
          declare
             subtype Fixed_char_array is C.char_array (C.size_t);
@@ -519,7 +531,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Info : aliased C.sys.stat.struct_stat;
                File_Type : C.sys.types.mode_t;
             begin
-               stat (File.Handle, Info'Access);
+               fstat (File.Handle, Info'Access);
                File_Type := Info.st_mode and C.sys.stat.S_IFMT;
                if File_Type = C.sys.stat.S_IFIFO
                   or else File_Type = C.sys.stat.S_IFSOCK
@@ -907,7 +919,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Info : aliased C.sys.stat.struct_stat;
    begin
       Flush_Writing_Buffer (File);
-      stat (File.Handle, Info'Access);
+      fstat (File.Handle, Info'Access);
       return Count (Info.st_size);
    end Size_Impl;
 
@@ -966,7 +978,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Info : aliased C.sys.stat.struct_stat;
    begin
       Check_File_Open (File);
-      stat (File.Handle, Info'Access);
+      fstat (File.Handle, Info'Access);
       if (Info.st_mode and C.sys.stat.S_IFMT) /= C.sys.stat.S_IFREG then
          if File.Reading_Index = File.Buffer_Index then
             Get_Buffer (File);
