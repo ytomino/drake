@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.Calendar;
+with Ada.Hierarchical_File_Names;
 with Ada.Iterator_Interfaces;
 with Ada.Streams;
 private with Ada.Directory_Searching;
@@ -52,38 +53,51 @@ package Ada.Directories is
 
    function Full_Name (Name : String) return String;
 
-   function Simple_Name (Name : String) return String;
+   function Simple_Name (Name : String) return String
+      renames Hierarchical_File_Names.Simple_Name;
 
-   function Containing_Directory (Name : String) return String;
+   --  modified
+   function Containing_Directory (
+      Name : String;
+      Raise_On_Error : Boolean := True) -- additional
+      return String
+      renames Hierarchical_File_Names.Containing_Directory;
 
-   function Extension (Name : String) return String;
+   function Extension (Name : String) return String
+      renames Hierarchical_File_Names.Extension;
 
-   function Base_Name (Name : String) return String;
+   function Base_Name (Name : String) return String
+      renames Hierarchical_File_Names.Base_Name;
 
    --  extended
    --  There are procedure version.
    procedure Simple_Name (
       Name : String;
       First : out Positive;
-      Last : out Natural);
+      Last : out Natural)
+      renames Hierarchical_File_Names.Simple_Name;
    procedure Containing_Directory (
       Name : String;
       First : out Positive;
-      Last : out Natural);
+      Last : out Natural)
+      renames Hierarchical_File_Names.Containing_Directory;
    procedure Extension (
       Name : String;
       First : out Positive;
-      Last : out Natural);
+      Last : out Natural)
+      renames Hierarchical_File_Names.Extension;
    procedure Base_Name (
       Name : String;
       First : out Positive;
-      Last : out Natural);
+      Last : out Natural)
+      renames Hierarchical_File_Names.Base_Name;
 
    function Compose (
       Containing_Directory : String := "";
       Name : String;
       Extension : String := "")
-      return String;
+      return String
+      renames Hierarchical_File_Names.Compose_No_Folding;
 
 --  type Name_Case_Kind is
 --    (Unknown, Case_Sensitive, Case_Insensitive, Case_Preserving);
@@ -239,15 +253,5 @@ private
    overriding function First (Object : Search_Iterator) return Cursor;
    overriding function Next (Object : Search_Iterator; Position : Cursor)
       return Cursor;
-
-   --  for Temporary
-   procedure Include_Trailing_Path_Delimiter (
-      S : in out String;
-      Last : in out Natural);
-
-   --  for Hierarchical_File_Names
-   procedure Exclude_Trailing_Path_Delimiter (
-      S : String;
-      Last : in out Natural);
 
 end Ada.Directories;

@@ -48,7 +48,7 @@ package body Ada.Directories.Temporary is
       Last : Integer := Directory'Length;
    begin
       Template (1 .. Last) := Directory;
-      Include_Trailing_Path_Delimiter (Template, Last);
+      Hierarchical_File_Names.Include_Trailing_Path_Delimiter (Template, Last);
       Template (Last + 1 .. Last + Temp_Template'Length) := Temp_Template;
       Last := Last + Temp_Template'Length;
       Template (Last + 1) := Character'Val (0);
@@ -80,7 +80,7 @@ package body Ada.Directories.Temporary is
       Last : Integer := Directory'Length;
    begin
       Template (1 .. Last) := Directory;
-      Include_Trailing_Path_Delimiter (Template, Last);
+      Hierarchical_File_Names.Include_Trailing_Path_Delimiter (Template, Last);
       Template (Last + 1 .. Last + Temp_Template'Length) := Temp_Template;
       Last := Last + Temp_Template'Length;
       Template (Last + 1) := Character'Val (0);
