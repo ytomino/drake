@@ -4,7 +4,6 @@ with Ada.IO_Exceptions;
 with Ada.Streams;
 with System.Native_Time;
 with C.dirent;
-with C.fcntl;
 with C.sys.stat;
 with C.sys.types;
 package Ada.Directory_Searching is
@@ -79,19 +78,9 @@ package Ada.Directory_Searching is
 
    function To_File_Kind (mode : C.sys.types.mode_t) return File_Kind;
 
-   function lstat (
-      path : access constant C.char;
-      buf : access C.sys.stat.struct_stat)
-      return C.signed_int
-      renames C.sys.stat.lstat;
-
-   subtype struct_stat is C.sys.stat.struct_stat;
-
    procedure Get_Information (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Information : not null access struct_stat);
-
-   O_EXLOCK : constant := C.fcntl.O_EXLOCK;
+      Information : not null access C.sys.stat.struct_stat);
 
 end Ada.Directory_Searching;

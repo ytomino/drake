@@ -168,7 +168,7 @@ package body Ada.Directory_Searching is
    procedure Get_Information (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Information : not null access struct_stat)
+      Information : not null access C.sys.stat.struct_stat64)
    is
       subtype Simple_Name_String is String (
          1 ..

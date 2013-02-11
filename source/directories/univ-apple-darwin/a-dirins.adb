@@ -54,7 +54,7 @@ package body Ada.Directories.Inside is
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
    begin
-      Error := Directory_Searching.lstat (C_Name (0)'Access, Information) < 0;
+      Error := System.File_Control.lstat (C_Name (0)'Access, Information) < 0;
    end Get_Information;
 
    --  implementation

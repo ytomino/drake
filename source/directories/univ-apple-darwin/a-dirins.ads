@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with Ada.Directory_Searching;
+with System.File_Control;
 with System.Native_Time;
 package Ada.Directories.Inside is
 
@@ -34,7 +34,7 @@ package Ada.Directories.Inside is
 
    function Exists (Name : String) return Boolean;
 
-   subtype Directory_Entry_Information_Type is Directory_Searching.struct_stat;
+   subtype Directory_Entry_Information_Type is System.File_Control.struct_stat;
 
    procedure Get_Information (
       Name : String;

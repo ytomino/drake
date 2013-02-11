@@ -78,19 +78,9 @@ package Ada.Directory_Searching is
 
    function To_File_Kind (mode : C.sys.types.mode_t) return File_Kind;
 
-   function lstat (
-      path : access constant C.char;
-      buf : access C.sys.stat.struct_stat64)
-      return C.signed_int
-      renames C.sys.stat.lstat64;
-
-   subtype struct_stat is C.sys.stat.struct_stat64;
-
    procedure Get_Information (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Information : not null access struct_stat);
-
-   O_EXLOCK : constant := 0;
+      Information : not null access C.sys.stat.struct_stat64);
 
 end Ada.Directory_Searching;
