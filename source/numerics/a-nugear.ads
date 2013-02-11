@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit for Generic_Real_Arrays and Generic_Complex_Arrays
-package Ada.Numerics.Generic_Arrays is
+private package Ada.Numerics.Generic_Arrays is
    pragma Pure;
 
    generic

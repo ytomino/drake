@@ -6,7 +6,7 @@ with System.Native_Time;
 with C.dirent;
 with C.sys.stat;
 with C.sys.types;
-package Ada.Directory_Searching is
+private package Ada.Directory_Searching is
    pragma Preelaborate;
 
    subtype Directory_Entry_Type is C.dirent.struct_dirent64;

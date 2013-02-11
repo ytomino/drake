@@ -6,7 +6,7 @@ with System.Native_Time;
 with C.winbase;
 with C.windef;
 with C.winnt;
-package Ada.Directory_Searching is
+private package Ada.Directory_Searching is
 
    subtype Directory_Entry_Type is C.winbase.WIN32_FIND_DATA;
 

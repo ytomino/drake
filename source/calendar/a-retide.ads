@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
 with System.Native_Time;
-package Ada.Real_Time.Delays is
+private package Ada.Real_Time.Delays is
 
    --  required for delay until statement by compiler (a-retide.ads)
    --  the error message is
