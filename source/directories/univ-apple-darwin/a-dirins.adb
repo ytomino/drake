@@ -189,6 +189,15 @@ package body Ada.Directories.Inside is
       end if;
    end Symbolic_Link;
 
+   function Full_Name (Name : String) return String is
+   begin
+      if Hierarchical_File_Names.Is_Relative_Name (Name) then
+         return Compose (Current_Directory, Name);
+      else
+         return Name;
+      end if;
+   end Full_Name;
+
    function Exists (Name : String) return Boolean is
       Information : aliased Directory_Entry_Information_Type;
       Error : Boolean;

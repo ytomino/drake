@@ -161,6 +161,49 @@ package body Ada.Directories.Inside is
       raise Program_Error; -- try to create junction point ???
    end Symbolic_Link;
 
+   function Full_Name (Name : String) return String is
+      Name_Length : constant C.size_t := Name'Length;
+      Buffer_Length : constant C.size_t := Name_Length + C.windef.MAX_PATH;
+      W_Name : C.winnt.WCHAR_array (0 .. Name_Length);
+      Long : C.winnt.WCHAR_array (0 .. Buffer_Length - 1);
+      Long_Last : C.size_t;
+      Full : C.winnt.WCHAR_array (0 .. Buffer_Length - 1);
+      Full_Last : C.size_t;
+   begin
+      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      --  expand short filename to long filename
+      Long_Last := C.size_t (C.winbase.GetLongPathName (
+         W_Name (0)'Access,
+         Long (0)'Access,
+         Long'Length));
+      if Long_Last = 0 or else Long_Last > Long'Last then
+         Long (0 .. Name_Length) := W_Name (0 .. Name_Length);
+         Long_Last := Name_Length;
+      end if;
+      --  expand directories
+      Full_Last := C.size_t (C.winbase.GetFullPathName (
+         Long (0)'Access,
+         Full'Length,
+         Full (0)'Access,
+         null));
+      if Full_Last = 0 or else Full_Last > Full'Last then
+         Full (0 .. Long_Last) := Long (0 .. Long_Last);
+         Full_Last := Long_Last;
+      end if;
+      --  drive letter to upper case
+      if Full_Last >= 2
+         and then Wide_Character'Val (Full (1)) = ':'
+         and then Wide_Character'Val (Full (0)) in 'a' .. 'z'
+      then
+         Full (0) := C.winnt.WCHAR'Val (
+            C.winnt.WCHAR'Pos (Full (0))
+            - (Wide_Character'Pos ('a') - Wide_Character'Pos ('A')));
+      end if;
+      return System.Zero_Terminated_WStrings.Value (
+         Full (0)'Access,
+         C.signed_int (Full_Last));
+   end Full_Name;
+
    function Exists (Name : String) return Boolean is
       W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
       Information : aliased Directory_Entry_Information_Type;

@@ -90,14 +90,8 @@ package body Ada.Directories is
 
    --  file and directory name operations
 
-   function Full_Name (Name : String) return String is
-   begin
-      if Hierarchical_File_Names.Is_Relative_Name (Name) then
-         return Compose (Current_Directory, Name);
-      else
-         return Name;
-      end if;
-   end Full_Name;
+   function Full_Name (Name : String) return String
+      renames Inside.Full_Name;
 
    --  file and directory queries
 

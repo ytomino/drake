@@ -32,6 +32,8 @@ package Ada.Directories.Inside is
       Target_Name : String;
       Overwrite : Boolean);
 
+   function Full_Name (Name : String) return String;
+
    function Exists (Name : String) return Boolean;
 
    subtype Directory_Entry_Information_Type is System.File_Control.struct_stat;
