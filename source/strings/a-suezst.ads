@@ -25,6 +25,7 @@ package Ada.Strings.UTF_Encoding.Wide_Wide_Strings is
       return UTF_16_Wide_String
       renames Conversions.Convert;
 
+   --  extended
    function Encode (
       Item : Wide_Wide_String;
       Output_BOM : Boolean := False)

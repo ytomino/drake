@@ -24,6 +24,7 @@ package Ada.Directories.Hierarchical_File_Names is
       renames Directories.Simple_Name;
 
    --  modified
+   --  See Ada.Directories.Containing_Directory.
    function Containing_Directory (
       Name : String;
       Raise_On_Error : Boolean := True) -- additional
