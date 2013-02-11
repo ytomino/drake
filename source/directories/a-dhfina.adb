@@ -1,6 +1,19 @@
 with Ada.Exceptions;
 package body Ada.Directories.Hierarchical_File_Names is
 
+   function Parent_Directory_Name (Level : Positive) return String is
+   begin
+      return Result : String (1 .. 3 * Level - 1) do
+         Result (1) := '.';
+         Result (2) := '.';
+         for I in 2 .. Level loop
+            Result (I * 3 - 3) := '/';
+            Result (I * 3 - 2) := '.';
+            Result (I * 3 - 1) := '.';
+         end loop;
+      end return;
+   end Parent_Directory_Name;
+
    function Is_Simple_Name (Name : String) return Boolean is
    begin
       for I in Name'Range loop
@@ -36,6 +49,22 @@ package body Ada.Directories.Hierarchical_File_Names is
       return not Is_Full_Name (Name);
    end Is_Relative_Name;
 
+   function Initial_Directory (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+   begin
+      Initial_Directory (Name, First, Last);
+      return Name (First .. Last);
+   end Initial_Directory;
+
+   function Relative_Name (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+   begin
+      Relative_Name (Name, First, Last);
+      return Name (First .. Last);
+   end Relative_Name;
+
    procedure Initial_Directory (
       Name : String;
       First : out Positive;
@@ -53,14 +82,6 @@ package body Ada.Directories.Hierarchical_File_Names is
             end if;
          end loop;
       end if;
-   end Initial_Directory;
-
-   function Initial_Directory (Name : String) return String is
-      First : Positive;
-      Last : Natural;
-   begin
-      Initial_Directory (Name, First, Last);
-      return Name (First .. Last);
    end Initial_Directory;
 
    procedure Relative_Name (
@@ -85,27 +106,6 @@ package body Ada.Directories.Hierarchical_File_Names is
          end loop;
       end if;
    end Relative_Name;
-
-   function Relative_Name (Name : String) return String is
-      First : Positive;
-      Last : Natural;
-   begin
-      Relative_Name (Name, First, Last);
-      return Name (First .. Last);
-   end Relative_Name;
-
-   function Parent_Directory_Name (Level : Positive) return String is
-   begin
-      return Result : String (1 .. 3 * Level - 1) do
-         Result (1) := '.';
-         Result (2) := '.';
-         for I in 2 .. Level loop
-            Result (I * 3 - 3) := '/';
-            Result (I * 3 - 2) := '.';
-            Result (I * 3 - 1) := '.';
-         end loop;
-      end return;
-   end Parent_Directory_Name;
 
    function Compose (
       Directory : String := "";

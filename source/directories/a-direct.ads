@@ -60,17 +60,6 @@ package Ada.Directories is
 
    function Base_Name (Name : String) return String;
 
-   function Compose (
-      Containing_Directory : String := "";
-      Name : String;
-      Extension : String := "")
-      return String;
-
---  type Name_Case_Kind is
---    (Unknown, Case_Sensitive, Case_Insensitive, Case_Preserving);
-
---  function Name_Case_Equivalence (Name : in String) return Name_Case_Kind;
-
    --  extended
    --  There are procedure version.
    procedure Simple_Name (
@@ -89,6 +78,17 @@ package Ada.Directories is
       Name : String;
       First : out Positive;
       Last : out Natural);
+
+   function Compose (
+      Containing_Directory : String := "";
+      Name : String;
+      Extension : String := "")
+      return String;
+
+--  type Name_Case_Kind is
+--    (Unknown, Case_Sensitive, Case_Insensitive, Case_Preserving);
+
+--  function Name_Case_Equivalence (Name : in String) return Name_Case_Kind;
 
    --  File and directory queries:
 
