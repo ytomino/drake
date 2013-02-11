@@ -5,7 +5,6 @@ with Ada.Unchecked_Deallocation;
 with System.Native_Time;
 with System.Storage_Elements;
 package body Ada.Directories is
-   use type Directory_Searching.File_Kind;
    use type Directory_Searching.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
 
@@ -129,176 +128,14 @@ package body Ada.Directories is
 
    --  file and directory name operations
 
-   procedure Include_Trailing_Path_Delimiter (
-      S : in out String;
-      Last : in out Natural) is
-   begin
-      if S (Last) /= '/' then
-         Last := Last + 1;
-         S (Last) := '/';
-      end if;
-   end Include_Trailing_Path_Delimiter;
-
-   procedure Exclude_Trailing_Path_Delimiter (
-      S : String;
-      Last : in out Natural) is
-   begin
-      while Last > S'First -- no removing root '/'
-         and then S (Last) = '/'
-      loop
-         Last := Last - 1;
-      end loop;
-   end Exclude_Trailing_Path_Delimiter;
-
    function Full_Name (Name : String) return String is
    begin
-      if Name (Name'First) /= '/' then
+      if Hierarchical_File_Names.Is_Relative_Name (Name) then
          return Compose (Current_Directory, Name);
       else
          return Name;
       end if;
    end Full_Name;
-
-   procedure Simple_Name (
-      Name : String;
-      First : out Positive;
-      Last : out Natural) is
-   begin
-      First := Name'First;
-      Last := Name'Last;
-      for I in reverse Name'Range loop
-         case Name (I) is
-            when '/' =>
-               First := I + 1;
-               exit; -- found
-            when others =>
-               null;
-         end case;
-      end loop;
-   end Simple_Name;
-
-   function Simple_Name (Name : String) return String is
-      First : Positive;
-      Last : Natural;
-   begin
-      Simple_Name (Name, First, Last);
-      return Name (First .. Last);
-   end Simple_Name;
-
-   procedure Containing_Directory (
-      Name : String;
-      First : out Positive;
-      Last : out Natural) is
-   begin
-      First := Name'First;
-      Last := Name'First - 1;
-      for I in reverse Name'Range loop
-         case Name (I) is
-            when '/' =>
-               Last := I; -- no removing root '/'
-               Exclude_Trailing_Path_Delimiter (Name, Last);
-               exit; -- found
-            when others =>
-               null;
-         end case;
-      end loop;
-   end Containing_Directory;
-
-   function Containing_Directory (Name : String) return String is
-      First : Positive;
-      Last : Natural;
-   begin
-      Containing_Directory (Name, First, Last);
-      return Name (First .. Last);
-   end Containing_Directory;
-
-   procedure Extension (
-      Name : String;
-      First : out Positive;
-      Last : out Natural) is
-   begin
-      First := Name'Last + 1;
-      Last := Name'Last;
-      for I in reverse Name'Range loop
-         case Name (I) is
-            when '/' =>
-               exit; -- not found
-            when '.' =>
-               --  Extension (".DOTFILE") = ""
-               if I > Name'First and then Name (I - 1) /= '/' then
-                  First := I + 1;
-               end if;
-               exit; -- found
-            when others =>
-               null;
-         end case;
-      end loop;
-   end Extension;
-
-   function Extension (Name : String) return String is
-      First : Positive;
-      Last : Natural;
-   begin
-      Extension (Name, First, Last);
-      return Name (First .. Last);
-   end Extension;
-
-   procedure Base_Name (
-      Name : String;
-      First : out Positive;
-      Last : out Natural) is
-   begin
-      Simple_Name (Name, First, Last);
-      if First > Last or else Name (Last) /= '.' then -- AA-A-16 79.a/2
-         for I in reverse First .. Last - 1 loop
-            if Name (I) = '.' then
-               --  Base_Name (".DOTFILE") = ".DOTFILE"
-               if I > First then
-                  Last := I - 1;
-               end if;
-               exit;
-            end if;
-         end loop;
-      end if;
-   end Base_Name;
-
-   function Base_Name (Name : String) return String is
-      First : Positive;
-      Last : Natural;
-   begin
-      Base_Name (Name, First, Last);
-      return Name (First .. Last);
-   end Base_Name;
-
-   function Compose (
-      Containing_Directory : String := "";
-      Name : String;
-      Extension : String := "") return String
-   is
-      --  if you want to fold '.' or '..', use Hierarchical_File_Names.Compose
-      Result : String (
-         1 ..
-         Containing_Directory'Length + Name'Length + Extension'Length + 2);
-      Last : Natural;
-   begin
-      --  append directory
-      Last := Containing_Directory'Length;
-      if Last > 0 then
-         Result (1 .. Last) := Containing_Directory;
-         Include_Trailing_Path_Delimiter (Result, Last);
-      end if;
-      --  append name
-      Result (Last + 1 .. Last + Name'Length) := Name;
-      Last := Last + Name'Length;
-      --  append extension
-      if Extension'Length /= 0 then
-         Last := Last + 1;
-         Result (Last) := '.';
-         Result (Last + 1 .. Last + Extension'Length) := Extension;
-         Last := Last + Extension'Length;
-      end if;
-      return Result (1 .. Last);
-   end Compose;
 
    --  file and directory queries
 
@@ -309,18 +146,15 @@ package body Ada.Directories is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
-      return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
-         Directory_Searching.Kind (Information)));
+      return Inside.Kind (Information);
    end Kind;
 
    function Size (Name : String) return File_Size is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
-      if Directory_Searching.Kind (Information) /=
-         Directory_Searching.Ordinary_File
-      then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+      if Inside.Kind (Information) /= Ordinary_File then
+         raise Constraint_Error; -- implementation-defined
       else
          return Inside.Size (Information);
       end if;
@@ -401,12 +235,9 @@ package body Ada.Directories is
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else
          --  copy entry and get info
-         Directory_Entry.Path := Search.Path; -- overwrite
+         Directory_Entry.Search := Search'Unrestricted_Access; -- overwrite
          Directory_Entry.Data := Search.Next_Data;
-         Directory_Searching.Get_Information (
-            Directory_Entry.Path.all,
-            Directory_Entry.Data,
-            Directory_Entry.Information'Access);
+         Directory_Entry.Additional.Filled := False;
          --  counting
          Search.Count := Search.Count + 1;
          --  search next
@@ -439,7 +270,7 @@ package body Ada.Directories is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Position.Search /= null;
+      return Position.Directory_Entry.Search /= null;
    end Has_Element;
 
    function Constant_Reference (
@@ -465,7 +296,6 @@ package body Ada.Directories is
       end if;
       return Result : Cursor do
          if More_Entries (Object.Search.all) then
-            Result.Search := Object.Search;
             Get_Next_Entry (Object.Search.all, Result.Directory_Entry);
             Result.Index := Object.Search.Count;
          end if;
@@ -480,7 +310,6 @@ package body Ada.Directories is
       end if;
       return Result : Cursor do
          if More_Entries (Object.Search.all) then
-            Result.Search := Object.Search;
             Get_Next_Entry (Object.Search.all, Result.Directory_Entry);
             Result.Index := Object.Search.Count;
          end if;
@@ -489,44 +318,41 @@ package body Ada.Directories is
 
    --  operations on directory entries
 
-   procedure Check_Assigned (Directory_Entry : Directory_Entry_Type) is
-   begin
-      if Directory_Entry.Path = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
-      end if;
-   end Check_Assigned;
-
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
       return String is
    begin
-      Check_Assigned (Directory_Entry);
+      if Directory_Entry.Search = null then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
       return Directory_Searching.Simple_Name (Directory_Entry.Data);
    end Simple_Name;
 
    function Full_Name (Directory_Entry : Directory_Entry_Type) return String is
+      Name : constant String := Simple_Name (Directory_Entry);
    begin
-      Check_Assigned (Directory_Entry);
       return Compose (
-         Directory_Entry.Path.all,
-         Simple_Name (Directory_Entry));
+         Directory_Entry.Search.Path.all,
+         Name);
    end Full_Name;
 
    function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
    begin
-      Check_Assigned (Directory_Entry);
+      if Directory_Entry.Search = null then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
       return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
-         Directory_Searching.Kind (Directory_Entry.Information)));
+         Directory_Searching.Kind (Directory_Entry.Data)));
    end Kind;
 
    function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
    begin
-      if Directory_Entry.Path = null
-         or else Directory_Searching.Kind (Directory_Entry.Information) /=
-            Directory_Searching.Ordinary_File
-      then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      if Kind (Directory_Entry) /= Ordinary_File then
+         raise Constraint_Error; -- implementation-defined
       else
-         return Inside.Size (Directory_Entry.Information);
+         return Directory_Searching.Size (
+            Directory_Entry.Search.Path.all,
+            Directory_Entry.Data,
+            Directory_Entry.Additional'Unrestricted_Access);
       end if;
    end Size;
 
@@ -535,9 +361,14 @@ package body Ada.Directories is
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
-      Check_Assigned (Directory_Entry);
+      if Directory_Entry.Search = null then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
       return Cast (System.Native_Time.To_Time (
-            Inside.Modification_Time (Directory_Entry.Information)));
+         Directory_Searching.Modification_Time (
+            Directory_Entry.Search.Path.all,
+            Directory_Entry.Data,
+            Directory_Entry.Additional'Unrestricted_Access)));
    end Modification_Time;
 
 end Ada.Directories;

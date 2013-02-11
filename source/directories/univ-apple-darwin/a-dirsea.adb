@@ -4,7 +4,6 @@ with System.Storage_Elements;
 with System.Memory;
 with C.fnmatch;
 with C.sys.dirent;
-with C.sys.types;
 package body Ada.Directory_Searching is
    use type C.char;
    use type C.signed_int;
@@ -16,40 +15,6 @@ package body Ada.Directory_Searching is
    package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
       C.char,
       C.char_ptr);
-
-   function To_Filter (Filter : Filter_Type) return C.stdint.uint16_t;
-   function To_Filter (Filter : Filter_Type) return C.stdint.uint16_t is
-      Result : C.stdint.uint16_t := 0;
-   begin
-      if Filter (Directory) then
-         Result := Result or C.Shift_Left (1, C.dirent.DT_DIR);
-      end if;
-      if Filter (Ordinary_File) then
-         Result := Result or C.Shift_Left (1, C.dirent.DT_REG);
-      end if;
-      if Filter (Special_File) then
-         Result := Result or (
-            16#ffff#
-            and not C.Shift_Left (1, C.dirent.DT_DIR)
-            and not C.Shift_Left (1, C.dirent.DT_REG));
-      end if;
-      return Result;
-   end To_Filter;
-
-   function Match_Filter (
-      Filter : C.stdint.uint16_t;
-      Directory_Entry : not null access Directory_Entry_Type)
-      return Boolean;
-   function Match_Filter (
-      Filter : C.stdint.uint16_t;
-      Directory_Entry : not null access Directory_Entry_Type)
-      return Boolean
-   is
-      Bit : constant Natural :=
-         Natural'Min (15, Natural (Directory_Entry.d_type));
-   begin
-      return (Filter and C.Shift_Left (1, Bit)) /= 0;
-   end Match_Filter;
 
    --  implementation
 
@@ -74,7 +39,7 @@ package body Ada.Directory_Searching is
       if Search.Handle = null then
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
-      Search.Filter := To_Filter (Filter);
+      Search.Filter := Filter;
       declare
          Pattern_Length : constant Natural := Pattern'Length;
       begin
@@ -121,7 +86,7 @@ package body Ada.Directory_Searching is
                exit;
             end if;
          end;
-         if Directory_Searching.Match_Filter (Search.Filter, Directory_Entry)
+         if Search.Filter (Kind (Directory_Entry.all))
             and then C.fnmatch.fnmatch (
                Search.Pattern,
                Directory_Entry.d_name (0)'Access, 0) = 0
@@ -151,10 +116,62 @@ package body Ada.Directory_Searching is
       return Result;
    end Simple_Name;
 
+   function Kind (Directory_Entry : Directory_Entry_Type)
+      return File_Kind is
+   begin
+      --  DTTOIF
+      return To_File_Kind (
+         C.Shift_Left (C.sys.types.mode_t (Directory_Entry.d_type), 12));
+   end Kind;
+
+   function Size (
+      Directory : String;
+      Directory_Entry : Directory_Entry_Type;
+      Additional : not null access Directory_Entry_Additional_Type)
+      return Streams.Stream_Element_Count is
+   begin
+      if not Additional.Filled then
+         Get_Information (
+            Directory,
+            Directory_Entry,
+            Additional.Information'Access);
+         Additional.Filled := True;
+      end if;
+      return Streams.Stream_Element_Offset (Additional.Information.st_size);
+   end Size;
+
+   function Modification_Time (
+      Directory : String;
+      Directory_Entry : Directory_Entry_Type;
+      Additional : not null access Directory_Entry_Additional_Type)
+      return System.Native_Time.Native_Time is
+   begin
+      if not Additional.Filled then
+         Get_Information (
+            Directory,
+            Directory_Entry,
+            Additional.Information'Access);
+         Additional.Filled := True;
+      end if;
+      return Additional.Information.st_mtimespec;
+   end Modification_Time;
+
+   function To_File_Kind (mode : C.sys.types.mode_t) return File_Kind is
+      Masked_Type : constant C.sys.types.mode_t := mode and C.sys.stat.S_IFMT;
+   begin
+      if Masked_Type = C.sys.stat.S_IFDIR then
+         return Directory;
+      elsif Masked_Type = C.sys.stat.S_IFREG then
+         return Ordinary_File;
+      else
+         return Special_File;
+      end if;
+   end To_File_Kind;
+
    procedure Get_Information (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Information : not null access Directory_Entry_Information_Type)
+      Information : not null access C.sys.stat.struct_stat)
    is
       subtype Simple_Name_String is String (
          1 ..
@@ -172,20 +189,5 @@ package body Ada.Directory_Searching is
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end Get_Information;
-
-   function Kind (Information : Directory_Entry_Information_Type)
-      return File_Kind
-   is
-      Kind_Attr : constant C.sys.types.mode_t :=
-         Information.st_mode and C.sys.stat.S_IFMT;
-   begin
-      if Kind_Attr = C.sys.stat.S_IFDIR then
-         return Directory;
-      elsif Kind_Attr = C.sys.stat.S_IFREG then
-         return Ordinary_File;
-      else
-         return Special_File;
-      end if;
-   end Kind;
 
 end Ada.Directory_Searching;

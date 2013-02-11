@@ -54,7 +54,7 @@ package body Ada.Directories.Inside is
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
    begin
-      Error := Directory_Searching.lstat (C_Name (0)'Access, Information) < 0;
+      Error := System.File_Control.lstat (C_Name (0)'Access, Information) < 0;
    end Get_Information;
 
    --  implementation
@@ -208,6 +208,13 @@ package body Ada.Directories.Inside is
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
    end Get_Information;
+
+   function Kind (Information : Directory_Entry_Information_Type)
+      return File_Kind is
+   begin
+      return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
+         Directory_Searching.To_File_Kind (Information.st_mode)));
+   end Kind;
 
    function Size (Information : Directory_Entry_Information_Type)
       return File_Size is

@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
 with System.Native_Time;
-package Ada.Calendar.Delays is
+private package Ada.Calendar.Delays is
 
    --  required for delay statement by compiler (a-caldel.ads)
    --  the error is "entity "Ada.Calendar.Delays.Ca_Delay_For" not defined",

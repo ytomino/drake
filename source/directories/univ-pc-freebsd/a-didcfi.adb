@@ -25,7 +25,7 @@ is
    Flag : C.unsigned_int :=
       C.fcntl.O_WRONLY or
       C.fcntl.O_CREAT or
-      Directory_Searching.O_EXLOCK;
+      System.File_Control.O_EXLOCK;
    Data : aliased C.sys.stat.struct_stat;
    Map : C.void_ptr;
    Written : C.sys.types.ssize_t;
