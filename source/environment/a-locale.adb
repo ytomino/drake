@@ -6,17 +6,49 @@ with System.Once;
 package body Ada.Locales is
    pragma Suppress (All_Checks);
 
+   type Alpha_2_NP is new String (1 .. 2); -- no predicate
+   type Alpha_3_NP is new String (1 .. 3);
+
+   function Compare (Left, Right : Alpha_2_NP) return Integer;
+   function Compare (Left, Right : Alpha_2_NP) return Integer is
+      type Compare_Integer is mod 16#10000#;
+   begin
+      return
+         Integer (Compare_Integer'(
+            Character'Pos (Left (1)) * 16#100#
+            or Character'Pos (Left (2))))
+         - Integer (Compare_Integer'(
+            Character'Pos (Right (1)) * 16#100#
+            or Character'Pos (Right (2))));
+   end Compare;
+
+   function Compare (Left, Right : Alpha_3_NP) return Integer;
+   function Compare (Left, Right : Alpha_3_NP) return Integer is
+      type Compare_Integer is mod 16#1000000#;
+   begin
+      return
+         Integer (Compare_Integer'(
+            Character'Pos (Left (1)) * 16#10000#
+            or Character'Pos (Left (2)) * 16#100#
+            or Character'Pos (Left (3))))
+         - Integer (Compare_Integer'(
+            Character'Pos (Right (1)) * 16#10000#
+            or Character'Pos (Right (2)) * 16#100#
+            or Character'Pos (Right (3))));
+   end Compare;
+
    type Language_Table_Element is record
-      Alpha_3 : ISO_639_Alpha_3;
-      Alpha_2 : ISO_639_Alpha_2;
+      Alpha_3 : Alpha_3_NP;
+      Alpha_2 : Alpha_2_NP;
    end record;
    pragma Suppress_Initialization (Language_Table_Element);
    type Language_Table_Array is
       array (Positive range <>) of Language_Table_Element;
    pragma Suppress_Initialization (Language_Table_Array);
 
-   unde : ISO_639_Alpha_2
-      renames ISO_639_Alpha_2_Unknown;
+   unde : constant Alpha_2_NP := (
+      1 => ISO_639_Alpha_2_Unknown (1),
+      2 => ISO_639_Alpha_2_Unknown (2));
 
    Language_Table : constant Language_Table_Array := (
       ("aar", "aa"), --  "Afar", "afar"
@@ -586,7 +618,9 @@ package body Ada.Locales is
       --  sort
       for I in Lang_Map_3'First + 1 .. Lang_Map_3'Last loop
          for J in reverse Lang_Map_3'First .. I - 1 loop
-            exit when Lang_Map_3 (J + 1).Alpha_3 >= Lang_Map_3 (J).Alpha_3;
+            exit when Compare (
+               Lang_Map_3 (J + 1).Alpha_3,
+               Lang_Map_3 (J).Alpha_3) >= 0;
             declare
                Temp : constant Language_Table_Element := Lang_Map_3 (J);
             begin
@@ -607,13 +641,20 @@ package body Ada.Locales is
          while First <= Last loop
             declare
                Middle : constant Positive := (First + Last) / 2;
+               Middle_Item : Language_Table_Element
+                  renames Lang_Map_3 (Middle);
+               Compared : constant Integer := Compare (
+                  Middle_Item.Alpha_3,
+                  Alpha_3_NP (Item));
             begin
-               if Lang_Map_3 (Middle).Alpha_3 > Item then
+               if Compared > 0 then
                   Last := Middle - 1;
-               elsif Lang_Map_3 (Middle).Alpha_3 < Item then
+               elsif Compared < 0 then
                   First := Middle + 1;
                else
-                  return Lang_Map_3 (Middle).Alpha_2;
+                  return (
+                     1 => Middle_Item.Alpha_2 (1),
+                     2 => Middle_Item.Alpha_2 (2));
                end if;
             end;
          end loop;
@@ -669,7 +710,9 @@ package body Ada.Locales is
       --  sort
       for I in Lang_Map_2'First + 1 .. Lang_Map_2'Last loop
          for J in reverse Lang_Map_2'First .. I - 1 loop
-            exit when Lang_Map_2 (J + 1).Alpha_2 >= Lang_Map_2 (J).Alpha_2;
+            exit when Compare (
+               Lang_Map_2 (J + 1).Alpha_2,
+               Lang_Map_2 (J).Alpha_2) >= 0;
             declare
                Temp : constant Language_Table_Element := Lang_Map_2 (J);
             begin
@@ -690,13 +733,21 @@ package body Ada.Locales is
          while First <= Last loop
             declare
                Middle : constant Positive := (First + Last) / 2;
+               Middle_Item : Language_Table_Element
+                  renames Lang_Map_2 (Middle);
+               Compared : constant Integer := Compare (
+                  Middle_Item.Alpha_2,
+                  Alpha_2_NP (Item));
             begin
-               if Lang_Map_2 (Middle).Alpha_2 > Item then
+               if Compared > 0 then
                   Last := Middle - 1;
-               elsif Lang_Map_2 (Middle).Alpha_2 < Item then
+               elsif Compared < 0 then
                   First := Middle + 1;
                else
-                  return Lang_Map_2 (Middle).Alpha_3;
+                  return (
+                     1 => Middle_Item.Alpha_3 (1),
+                     2 => Middle_Item.Alpha_3 (2),
+                     3 => Middle_Item.Alpha_3 (3));
                end if;
             end;
          end loop;
