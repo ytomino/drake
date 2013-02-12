@@ -1,5 +1,5 @@
-with Ada.Streams.Stream_IO.Inside.Standards;
-package body Ada.Streams.Stream_IO.Standards is
+with Ada.Streams.Stream_IO.Inside.Standard_Files;
+package body Ada.Streams.Stream_IO.Standard_Files is
 
    Standard_Input_Object : aliased File_Type;
    Standard_Output_Object : aliased File_Type;
@@ -12,7 +12,7 @@ package body Ada.Streams.Stream_IO.Standards is
          Reference (Standard_Input_Object);
    begin
       if not Inside.Is_Open (Ref.all) then
-         Ref.all := Inside.Standards.Standard_Input;
+         Ref.all := Inside.Standard_Files.Standard_Input;
       end if;
       return Standard_Input_Object'Access;
    end Standard_Input;
@@ -22,7 +22,7 @@ package body Ada.Streams.Stream_IO.Standards is
          Reference (Standard_Output_Object);
    begin
       if not Inside.Is_Open (Ref.all) then
-         Ref.all := Inside.Standards.Standard_Output;
+         Ref.all := Inside.Standard_Files.Standard_Output;
       end if;
       return Standard_Output_Object'Access;
    end Standard_Output;
@@ -32,9 +32,9 @@ package body Ada.Streams.Stream_IO.Standards is
          Reference (Standard_Error_Object);
    begin
       if not Inside.Is_Open (Ref.all) then
-         Ref.all := Inside.Standards.Standard_Error;
+         Ref.all := Inside.Standard_Files.Standard_Error;
       end if;
       return Standard_Error_Object'Access;
    end Standard_Error;
 
-end Ada.Streams.Stream_IO.Standards;
+end Ada.Streams.Stream_IO.Standard_Files;

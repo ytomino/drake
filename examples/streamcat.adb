@@ -1,6 +1,6 @@
 with Ada.Streams; use Ada.Streams;
 with Ada.Streams.Stream_IO; use Ada.Streams.Stream_IO;
-with Ada.Streams.Stream_IO.Standards; use Ada.Streams.Stream_IO.Standards;
+with Ada.Streams.Stream_IO.Standard_Files; use Ada.Streams.Stream_IO.Standard_Files;
 procedure streamcat is
 	E : Stream_Element_Array (1 .. 1);
 	Last : Stream_Element_Offset;

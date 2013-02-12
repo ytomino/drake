@@ -31,11 +31,11 @@ package body Ada.Processes is
       Directory : String := "";
       Search_Path : Boolean := False;
       Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Input.all;
+         Streams.Stream_IO.Standard_Files.Standard_Input.all;
       Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Output.all;
+         Streams.Stream_IO.Standard_Files.Standard_Output.all;
       Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Error.all) is
+         Streams.Stream_IO.Standard_Files.Standard_Error.all) is
    begin
       Inside.Spawn (
          C.sys.types.pid_t (Child),
@@ -52,11 +52,11 @@ package body Ada.Processes is
       Directory : String := "";
       Search_Path : Boolean := False;
       Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Input.all;
+         Streams.Stream_IO.Standard_Files.Standard_Input.all;
       Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Output.all;
+         Streams.Stream_IO.Standard_Files.Standard_Output.all;
       Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Error.all)
+         Streams.Stream_IO.Standard_Files.Standard_Error.all)
       return Process is
    begin
       return Result : Process := 0 do -- dummy initial value

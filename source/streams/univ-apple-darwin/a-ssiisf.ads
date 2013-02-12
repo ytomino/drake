@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Streams.Stream_IO.Inside.Standards is
+package Ada.Streams.Stream_IO.Inside.Standard_Files is
 
    Standard_Input : constant Non_Controlled_File_Type;
    Standard_Output : constant Non_Controlled_File_Type;
@@ -72,4 +72,4 @@ private
    Standard_Error : constant Non_Controlled_File_Type :=
       Standard_Error_Stream'Access;
 
-end Ada.Streams.Stream_IO.Inside.Standards;
+end Ada.Streams.Stream_IO.Inside.Standard_Files;

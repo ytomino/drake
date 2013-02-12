@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with Ada.Streams.Stream_IO.Inside.Standards;
+with Ada.Streams.Stream_IO.Inside.Standard_Files;
 package Ada.Text_IO.Inside is
 
    --  handle of stream
@@ -173,8 +173,8 @@ private
       Name_Length => 0,
       Form_Length => 0,
       Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standards.Standard_Input),
-      File => Streams.Stream_IO.Inside.Standards.Standard_Input,
+         Streams.Stream_IO.Inside.Standard_Files.Standard_Input),
+      File => Streams.Stream_IO.Inside.Standard_Files.Standard_Input,
       Mode => In_File,
       Encoding => Encoding_Type'Val (Boolean'Pos (
          Streams.Stream_IO.Inside.Is_Terminal (0))),
@@ -185,8 +185,8 @@ private
       Name_Length => 0,
       Form_Length => 0,
       Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standards.Standard_Output),
-      File => Streams.Stream_IO.Inside.Standards.Standard_Output,
+         Streams.Stream_IO.Inside.Standard_Files.Standard_Output),
+      File => Streams.Stream_IO.Inside.Standard_Files.Standard_Output,
       Mode => Out_File,
       Encoding => Encoding_Type'Val (Boolean'Pos (
          Streams.Stream_IO.Inside.Is_Terminal (1))),
@@ -197,8 +197,8 @@ private
       Name_Length => 0,
       Form_Length => 0,
       Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standards.Standard_Error),
-      File => Streams.Stream_IO.Inside.Standards.Standard_Error,
+         Streams.Stream_IO.Inside.Standard_Files.Standard_Error),
+      File => Streams.Stream_IO.Inside.Standard_Files.Standard_Error,
       Mode => Out_File,
       Encoding => Encoding_Type'Val (Boolean'Pos (
          Streams.Stream_IO.Inside.Is_Terminal (2))),

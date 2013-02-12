@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.Command_Line;
 with Ada.IO_Exceptions;
-with Ada.Streams.Stream_IO.Standards;
+with Ada.Streams.Stream_IO.Standard_Files;
 private with C.sys.types;
 package Ada.Processes is
    --  This package provides the way to execute new child process.
@@ -15,21 +15,21 @@ package Ada.Processes is
       Directory : String := "";
       Search_Path : Boolean := False;
       Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Input.all;
+         Streams.Stream_IO.Standard_Files.Standard_Input.all;
       Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Output.all;
+         Streams.Stream_IO.Standard_Files.Standard_Output.all;
       Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Error.all);
+         Streams.Stream_IO.Standard_Files.Standard_Error.all);
    function Create (
       Command_Line : String;
       Directory : String := "";
       Search_Path : Boolean := False;
       Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Input.all;
+         Streams.Stream_IO.Standard_Files.Standard_Input.all;
       Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Output.all;
+         Streams.Stream_IO.Standard_Files.Standard_Output.all;
       Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standards.Standard_Error.all)
+         Streams.Stream_IO.Standard_Files.Standard_Error.all)
       return Process;
 
    procedure Wait (Child : Process; Status : out Command_Line.Exit_Status);
