@@ -604,7 +604,7 @@ package body Ada.Locales is
          First : Positive := Lang_Map_3'First;
          Last : Natural := Lang_Map_3'Last;
       begin
-         while First < Last loop
+         while First <= Last loop
             declare
                Middle : constant Positive := (First + Last) / 2;
             begin
@@ -687,7 +687,7 @@ package body Ada.Locales is
          First : Positive := Lang_Map_2'First;
          Last : Natural := Lang_Map_2'Last;
       begin
-         while First < Last loop
+         while First <= Last loop
             declare
                Middle : constant Positive := (First + Last) / 2;
             begin
