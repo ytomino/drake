@@ -8,33 +8,25 @@ package body Ada.Streams.Stream_IO.Standard_Files is
    --  implementation
 
    function Standard_Input return not null access constant File_Type is
-      Ref : constant not null access Inside.Non_Controlled_File_Type :=
-         Reference (Standard_Input_Object);
    begin
-      if not Inside.Is_Open (Ref.all) then
-         Ref.all := Inside.Standard_Files.Standard_Input;
-      end if;
       return Standard_Input_Object'Access;
    end Standard_Input;
 
    function Standard_Output return not null access constant File_Type is
-      Ref : constant not null access Inside.Non_Controlled_File_Type :=
-         Reference (Standard_Output_Object);
    begin
-      if not Inside.Is_Open (Ref.all) then
-         Ref.all := Inside.Standard_Files.Standard_Output;
-      end if;
       return Standard_Output_Object'Access;
    end Standard_Output;
 
    function Standard_Error return not null access constant File_Type is
-      Ref : constant not null access Inside.Non_Controlled_File_Type :=
-         Reference (Standard_Error_Object);
    begin
-      if not Inside.Is_Open (Ref.all) then
-         Ref.all := Inside.Standard_Files.Standard_Error;
-      end if;
       return Standard_Error_Object'Access;
    end Standard_Error;
 
+begin
+   Reference (Standard_Input_Object).all :=
+      Inside.Standard_Files.Standard_Input;
+   Reference (Standard_Output_Object).all :=
+      Inside.Standard_Files.Standard_Output;
+   Reference (Standard_Error_Object).all :=
+      Inside.Standard_Files.Standard_Error;
 end Ada.Streams.Stream_IO.Standard_Files;
