@@ -109,17 +109,6 @@ package Ada.Streams.Stream_IO.Inside is
    function Is_Standard (File : Non_Controlled_File_Type) return Boolean;
    pragma Inline (Is_Standard);
 
-   --  parsing form parameter
-
-   procedure Form_Parameter (
-      Form : String;
-      Keyword : String;
-      First : out Positive;
-      Last : out Natural);
-
-   --  The form "shared=yes" or "shared=no" sets shared mode.
-   --  The form "wcem=?" sets wide characters encoding method by Text_IO.
-
 private
 
    type Stream_Kind is (

@@ -1,5 +1,6 @@
 with System.Address_To_Named_Access_Conversions;
 with System.File_Control;
+with System.IO_Options;
 with System.Memory;
 with System.Storage_Elements;
 with C.errno;
@@ -373,7 +374,7 @@ package body Ada.Streams.Stream_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      Form_Parameter (Form, "shared", First, Last);
+      System.IO_Options.Form_Parameter (Form, "shared", First, Last);
       if First <= Last and then Form (First) = 'y' then
          return System.File_Control.O_SHLOCK;
       elsif First <= Last and then Form (First) = 'n' then
@@ -1231,29 +1232,5 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       return File /= null and then File.Kind = Standard_Handle;
    end Is_Standard;
-
-   --  parsing form parameter
-
-   procedure Form_Parameter (
-      Form : String;
-      Keyword : String;
-      First : out Positive;
-      Last : out Natural) is
-   begin
-      for J in Form'First + Keyword'Length .. Form'Last - 1 loop
-         if Form (J) = '='
-           and then Form (J - Keyword'Length .. J - 1) = Keyword
-         then
-            First := J + 1;
-            Last := First - 1;
-            while Last < Form'Last and then Form (Last + 1) /= ',' loop
-               Last := Last + 1;
-            end loop;
-            return;
-         end if;
-      end loop;
-      First := Form'First;
-      Last := First - 1;
-   end Form_Parameter;
 
 end Ada.Streams.Stream_IO.Inside;

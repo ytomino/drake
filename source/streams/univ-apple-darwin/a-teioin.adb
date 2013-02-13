@@ -1,5 +1,6 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
+with System.IO_Options;
 with C.termios;
 with C.time;
 package body Ada.Text_IO.Inside is
@@ -810,7 +811,7 @@ package body Ada.Text_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      Streams.Stream_IO.Inside.Form_Parameter (Form, "lm", First, Last);
+      System.IO_Options.Form_Parameter (Form, "lm", First, Last);
       if First <= Last and then Form (First) = 'm' then
          return CRLF;
       elsif First <= Last and then Form (First) = 'c' then
