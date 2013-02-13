@@ -722,94 +722,6 @@ package body Ada.Streams.Stream_IO.Inside is
       File.Reading_Index := File.Reading_Index + Taking_Length;
    end Read_From_Buffer;
 
-   procedure Read_Impl (
-      File : not null Non_Controlled_File_Type;
-      Item : out Stream_Element_Array;
-      Last : out Stream_Element_Offset);
-   procedure Read_Impl (
-      File : not null Non_Controlled_File_Type;
-      Item : out Stream_Element_Array;
-      Last : out Stream_Element_Offset) is
-   begin
-      if File.Mode = Out_File then
-         raise Mode_Error;
-      end if;
-      Last := Item'First - 1;
-      if Item'First > Item'Last then
-         return;
-      end if;
-      if File.Reading_Index < File.Buffer_Index then
-         Read_From_Buffer (File, Item, Last);
-      elsif File.Writing_Index > File.Buffer_Index then
-         Flush_Writing_Buffer (File);
-      end if;
-      if Last < Item'Last then
-         Get_Buffer (File);
-         declare
-            Error : Boolean := False;
-            Buffer_Length : constant Stream_Element_Count :=
-               File.Buffer_Length;
-         begin
-            declare
-               Taking_Length : Stream_Element_Count;
-               Read_Size : C.sys.types.ssize_t;
-            begin
-               Taking_Length := Item'Last - Last;
-               if Buffer_Length > 0 then
-                  declare
-                     Misaligned : constant Stream_Element_Count :=
-                        (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
-                  begin
-                     if Taking_Length < Misaligned then
-                        Taking_Length := 0; -- to use reading buffer
-                     else
-                        Taking_Length := Taking_Length - Misaligned;
-                        Taking_Length := Taking_Length
-                           - Taking_Length rem Buffer_Length;
-                        Taking_Length := Taking_Length + Misaligned;
-                     end if;
-                  end;
-               end if;
-               if Taking_Length > 0 then
-                  Read_Size := C.unistd.read (
-                     File.Handle,
-                     C.void_ptr (Item (Last + 1)'Address),
-                     C.size_t (Taking_Length));
-                  Error := Read_Size < 0;
-                  if not Error then
-                     Last := Last + Stream_Element_Offset (Read_Size);
-                     --  update indexes
-                     if Buffer_Length > 0 then
-                        File.Buffer_Index :=
-                           (File.Buffer_Index
-                              + Stream_Element_Offset (Read_Size))
-                           rem Buffer_Length;
-                     else
-                        File.Buffer_Index := 0;
-                     end if;
-                     File.Reading_Index := File.Buffer_Index;
-                     File.Writing_Index := File.Buffer_Index;
-                  end if;
-               end if;
-            end;
-            if not Error
-               and then Last < Item'Last
-               and then File.Buffer_Length > 0
-            then
-               Ready_Reading_Buffer (File, Error); -- reading buffer is empty
-               if not Error
-                  and then File.Reading_Index < File.Buffer_Index
-               then
-                  Read_From_Buffer (File, Item (Last + 1 .. Item'Last), Last);
-               end if;
-            end if;
-            if Last < Item'First and then Error then
-               raise End_Error;
-            end if;
-         end;
-      end if;
-   end Read_Impl;
-
    procedure Write_To_Buffer (
       File : not null Non_Controlled_File_Type;
       Item : Stream_Element_Array;
@@ -834,128 +746,6 @@ package body Ada.Streams.Stream_IO.Inside is
          File.Writing_Index + Taking_Length - 1) := Item (Item'First .. Last);
       File.Writing_Index := File.Writing_Index + Taking_Length;
    end Write_To_Buffer;
-
-   procedure Write_Impl (
-      File : not null Non_Controlled_File_Type;
-      Item : Stream_Element_Array);
-   procedure Write_Impl (
-      File : not null Non_Controlled_File_Type;
-      Item : Stream_Element_Array)
-   is
-      First : Stream_Element_Offset;
-   begin
-      if File.Mode = In_File then
-         raise Mode_Error;
-      end if;
-      First := Item'First;
-      if File.Writing_Index > File.Buffer_Index then
-         --  append to writing buffer
-         Write_To_Buffer (File, Item, First);
-         if File.Writing_Index = File.Buffer_Length then
-            Flush_Writing_Buffer (File);
-         end if;
-      elsif File.Reading_Index < File.Buffer_Index then
-         --  reset reading buffer
-         Reset_Reading_Buffer (File);
-      end if;
-      if First <= Item'Last then
-         Get_Buffer (File);
-         declare
-            Buffer_Length : constant Stream_Element_Count :=
-               File.Buffer_Length;
-         begin
-            declare
-               Taking_Length : Stream_Element_Count;
-            begin
-               Taking_Length := Item'Last - First + 1;
-               if Buffer_Length > 0 then
-                  declare
-                     Misaligned : constant Stream_Element_Count :=
-                        (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
-                  begin
-                     if Taking_Length < Misaligned then
-                        Taking_Length := 0; -- to use writing buffer
-                     else
-                        Taking_Length := Taking_Length - Misaligned;
-                        Taking_Length := Taking_Length
-                           - Taking_Length rem Buffer_Length;
-                        Taking_Length := Taking_Length + Misaligned;
-                     end if;
-                  end;
-               end if;
-               if Taking_Length > 0 then
-                  if C.unistd.write (
-                     File.Handle,
-                     C.void_const_ptr (Item (First)'Address),
-                     C.size_t (Taking_Length)) < 0
-                  then
-                     case C.errno.errno is
-                        when C.errno.EPIPE =>
-                           null;
-                        when others =>
-                           raise Use_Error;
-                     end case;
-                  end if;
-                  First := First + Taking_Length;
-                  --  update indexes
-                  if Buffer_Length > 0 then
-                     File.Buffer_Index :=
-                        (File.Buffer_Index + Taking_Length) rem Buffer_Length;
-                     File.Reading_Index := File.Buffer_Index;
-                     File.Writing_Index := File.Buffer_Index;
-                  end if;
-               end if;
-            end;
-            if First <= Item'Last and then Buffer_Length > 0 then
-               Ready_Writing_Buffer (File);
-               Write_To_Buffer (File, Item (First .. Item'Last), First);
-            end if;
-         end;
-      end if;
-   end Write_Impl;
-
-   procedure Set_Index_Impl (
-      File : not null Non_Controlled_File_Type;
-      To : Stream_Element_Positive_Count);
-   procedure Set_Index_Impl (
-      File : not null Non_Controlled_File_Type;
-      To : Stream_Element_Positive_Count)
-   is
-      Dummy : System.File_Control.off_t;
-      pragma Unreferenced (Dummy);
-      Z_Index : constant Stream_Element_Offset := To - 1; -- zero based
-   begin
-      Flush_Writing_Buffer (File);
-      Dummy := lseek (
-         File.Handle,
-         System.File_Control.off_t (Z_Index),
-         C.unistd.SEEK_SET);
-      Set_Buffer_Index (File, Z_Index);
-   end Set_Index_Impl;
-
-   function Index_Impl (File : not null Non_Controlled_File_Type)
-      return Stream_Element_Positive_Count;
-   function Index_Impl (File : not null Non_Controlled_File_Type)
-      return Stream_Element_Positive_Count
-   is
-      Result : constant System.File_Control.off_t :=
-         lseek (File.Handle, 0, C.unistd.SEEK_CUR);
-   begin
-      return Stream_Element_Positive_Count (Result + 1)
-         + Offset_Of_Buffer (File);
-   end Index_Impl;
-
-   function Size_Impl (File : not null Non_Controlled_File_Type)
-      return Stream_Element_Count;
-   function Size_Impl (File : not null Non_Controlled_File_Type)
-      return Stream_Element_Count
-   is
-      Info : aliased System.File_Control.struct_stat;
-   begin
-      Flush_Writing_Buffer (File);
-      fstat (File.Handle, Info'Access);
-      return Count (Info.st_size);
-   end Size_Impl;
 
    --  implementation
 
@@ -1089,12 +879,87 @@ package body Ada.Streams.Stream_IO.Inside is
    end Open;
 
    procedure Read (
-      File : Non_Controlled_File_Type;
+      File : not null Non_Controlled_File_Type;
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset) is
    begin
-      Check_File_Open (File);
-      Read_Impl (File, Item, Last);
+      if File.Mode = Out_File then
+         raise Mode_Error;
+      end if;
+      Last := Item'First - 1;
+      if Item'First > Item'Last then
+         return;
+      end if;
+      if File.Reading_Index < File.Buffer_Index then
+         Read_From_Buffer (File, Item, Last);
+      elsif File.Writing_Index > File.Buffer_Index then
+         Flush_Writing_Buffer (File);
+      end if;
+      if Last < Item'Last then
+         Get_Buffer (File);
+         declare
+            Error : Boolean := False;
+            Buffer_Length : constant Stream_Element_Count :=
+               File.Buffer_Length;
+         begin
+            declare
+               Taking_Length : Stream_Element_Count;
+               Read_Size : C.sys.types.ssize_t;
+            begin
+               Taking_Length := Item'Last - Last;
+               if Buffer_Length > 0 then
+                  declare
+                     Misaligned : constant Stream_Element_Count :=
+                        (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
+                  begin
+                     if Taking_Length < Misaligned then
+                        Taking_Length := 0; -- to use reading buffer
+                     else
+                        Taking_Length := Taking_Length - Misaligned;
+                        Taking_Length := Taking_Length
+                           - Taking_Length rem Buffer_Length;
+                        Taking_Length := Taking_Length + Misaligned;
+                     end if;
+                  end;
+               end if;
+               if Taking_Length > 0 then
+                  Read_Size := C.unistd.read (
+                     File.Handle,
+                     C.void_ptr (Item (Last + 1)'Address),
+                     C.size_t (Taking_Length));
+                  Error := Read_Size < 0;
+                  if not Error then
+                     Last := Last + Stream_Element_Offset (Read_Size);
+                     --  update indexes
+                     if Buffer_Length > 0 then
+                        File.Buffer_Index :=
+                           (File.Buffer_Index
+                              + Stream_Element_Offset (Read_Size))
+                           rem Buffer_Length;
+                     else
+                        File.Buffer_Index := 0;
+                     end if;
+                     File.Reading_Index := File.Buffer_Index;
+                     File.Writing_Index := File.Buffer_Index;
+                  end if;
+               end if;
+            end;
+            if not Error
+               and then Last < Item'Last
+               and then File.Buffer_Length > 0
+            then
+               Ready_Reading_Buffer (File, Error); -- reading buffer is empty
+               if not Error
+                  and then File.Reading_Index < File.Buffer_Index
+               then
+                  Read_From_Buffer (File, Item (Last + 1 .. Item'Last), Last);
+               end if;
+            end if;
+            if Last < Item'First and then Error then
+               raise End_Error;
+            end if;
+         end;
+      end if;
    end Read;
 
    procedure Reset (
@@ -1124,7 +989,7 @@ package body Ada.Streams.Stream_IO.Inside is
             end;
          when Temporary =>
             File.all.Mode := Mode;
-            Set_Index_Impl (File.all, 1);
+            Set_Index (File.all, 1);
          when External | External_No_Close | Standard_Handle =>
             raise Status_Error;
       end case;
@@ -1151,31 +1016,115 @@ package body Ada.Streams.Stream_IO.Inside is
    end Stream;
 
    procedure Write (
-      File : Non_Controlled_File_Type;
-      Item : Stream_Element_Array) is
+      File : not null Non_Controlled_File_Type;
+      Item : Stream_Element_Array)
+   is
+      First : Stream_Element_Offset;
    begin
-      Check_File_Open (File);
-      Write_Impl (File, Item);
+      if File.Mode = In_File then
+         raise Mode_Error;
+      end if;
+      First := Item'First;
+      if File.Writing_Index > File.Buffer_Index then
+         --  append to writing buffer
+         Write_To_Buffer (File, Item, First);
+         if File.Writing_Index = File.Buffer_Length then
+            Flush_Writing_Buffer (File);
+         end if;
+      elsif File.Reading_Index < File.Buffer_Index then
+         --  reset reading buffer
+         Reset_Reading_Buffer (File);
+      end if;
+      if First <= Item'Last then
+         Get_Buffer (File);
+         declare
+            Buffer_Length : constant Stream_Element_Count :=
+               File.Buffer_Length;
+         begin
+            declare
+               Taking_Length : Stream_Element_Count;
+            begin
+               Taking_Length := Item'Last - First + 1;
+               if Buffer_Length > 0 then
+                  declare
+                     Misaligned : constant Stream_Element_Count :=
+                        (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
+                  begin
+                     if Taking_Length < Misaligned then
+                        Taking_Length := 0; -- to use writing buffer
+                     else
+                        Taking_Length := Taking_Length - Misaligned;
+                        Taking_Length := Taking_Length
+                           - Taking_Length rem Buffer_Length;
+                        Taking_Length := Taking_Length + Misaligned;
+                     end if;
+                  end;
+               end if;
+               if Taking_Length > 0 then
+                  if C.unistd.write (
+                     File.Handle,
+                     C.void_const_ptr (Item (First)'Address),
+                     C.size_t (Taking_Length)) < 0
+                  then
+                     case C.errno.errno is
+                        when C.errno.EPIPE =>
+                           null;
+                        when others =>
+                           raise Use_Error;
+                     end case;
+                  end if;
+                  First := First + Taking_Length;
+                  --  update indexes
+                  if Buffer_Length > 0 then
+                     File.Buffer_Index :=
+                        (File.Buffer_Index + Taking_Length) rem Buffer_Length;
+                     File.Reading_Index := File.Buffer_Index;
+                     File.Writing_Index := File.Buffer_Index;
+                  end if;
+               end if;
+            end;
+            if First <= Item'Last and then Buffer_Length > 0 then
+               Ready_Writing_Buffer (File);
+               Write_To_Buffer (File, Item (First .. Item'Last), First);
+            end if;
+         end;
+      end if;
    end Write;
 
    procedure Set_Index (
-      File : Non_Controlled_File_Type;
-      To : Positive_Count) is
+      File : not null Non_Controlled_File_Type;
+      To : Stream_Element_Positive_Count)
+   is
+      Dummy : System.File_Control.off_t;
+      pragma Unreferenced (Dummy);
+      Z_Index : constant Stream_Element_Offset := To - 1; -- zero based
    begin
-      Check_File_Open (File);
-      Set_Index_Impl (File, To);
+      Flush_Writing_Buffer (File);
+      Dummy := lseek (
+         File.Handle,
+         System.File_Control.off_t (Z_Index),
+         C.unistd.SEEK_SET);
+      Set_Buffer_Index (File, Z_Index);
    end Set_Index;
 
-   function Index (File : Non_Controlled_File_Type) return Positive_Count is
+   function Index (File : not null Non_Controlled_File_Type)
+      return Stream_Element_Positive_Count
+   is
+      Result : constant System.File_Control.off_t :=
+         lseek (File.Handle, 0, C.unistd.SEEK_CUR);
    begin
-      Check_File_Open (File);
-      return Index_Impl (File);
+      return Stream_Element_Positive_Count (Result + 1)
+         + Offset_Of_Buffer (File);
    end Index;
 
-   function Size (File : Non_Controlled_File_Type) return Count is
+   function Size (File : not null Non_Controlled_File_Type)
+      return Stream_Element_Count
+   is
+      Info : aliased System.File_Control.struct_stat;
    begin
-      Check_File_Open (File);
-      return Size_Impl (File);
+      Flush_Writing_Buffer (File);
+      fstat (File.Handle, Info'Access);
+      return Count (Info.st_size);
    end Size;
 
    procedure Set_Mode (
@@ -1185,7 +1134,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Current : Positive_Count;
    begin
       Check_File_Open (File.all);
-      Current := Index_Impl (File.all);
+      Current := Index (File.all);
       case File.all.Kind is
          when Normal =>
             declare
@@ -1212,7 +1161,7 @@ package body Ada.Streams.Stream_IO.Inside is
       if Mode = Append_File then
          Set_Index_To_Append (File.all);
       else
-         Set_Index_Impl (File.all, Current);
+         Set_Index (File.all, Current);
       end if;
    end Set_Mode;
 
@@ -1227,59 +1176,6 @@ package body Ada.Streams.Stream_IO.Inside is
          end if;
       end if;
    end Flush;
-
-   package body Dispatchers is
-
-      overriding procedure Read (
-         Stream : in out Root_Dispatcher;
-         Item : out Stream_Element_Array;
-         Last : out Stream_Element_Offset) is
-      begin
-         Read_Impl (Stream.File, Item, Last);
-      end Read;
-
-      overriding procedure Write (
-         Stream : in out Root_Dispatcher;
-         Item : Stream_Element_Array) is
-      begin
-         Write_Impl (Stream.File, Item);
-      end Write;
-
-      overriding procedure Read (
-         Stream : in out Seekable_Dispatcher;
-         Item : out Stream_Element_Array;
-         Last : out Stream_Element_Offset) is
-      begin
-         Read_Impl (Stream.File, Item, Last);
-      end Read;
-
-      overriding procedure Write (
-         Stream : in out Seekable_Dispatcher;
-         Item : Stream_Element_Array) is
-      begin
-         Write_Impl (Stream.File, Item);
-      end Write;
-
-      overriding procedure Set_Index (
-         Stream : in out Seekable_Dispatcher;
-         To : Stream_Element_Positive_Count) is
-      begin
-         Set_Index_Impl (Stream.File, To);
-      end Set_Index;
-
-      overriding function Index (Stream : Seekable_Dispatcher)
-         return Stream_Element_Positive_Count is
-      begin
-         return Index_Impl (Stream.File);
-      end Index;
-
-      overriding function Size (Stream : Seekable_Dispatcher)
-         return Stream_Element_Count is
-      begin
-         return Size_Impl (Stream.File);
-      end Size;
-
-   end Dispatchers;
 
    --  handle for non-controlled
 

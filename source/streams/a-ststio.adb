@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Ada.Streams.Stream_IO.Inside; -- full view
 package body Ada.Streams.Stream_IO is
 
@@ -47,8 +48,13 @@ package body Ada.Streams.Stream_IO is
    end Form;
 
    function Index (File : File_Type) return Positive_Count is
+      Non_Controlled_File : constant Inside.Non_Controlled_File_Type :=
+         Reference (File).all;
    begin
-      return Inside.Index (Reference (File).all);
+      if not Inside.Is_Open (Non_Controlled_File) then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      return Inside.Index (Non_Controlled_File);
    end Index;
 
    function Is_Open (File : File_Type) return Boolean is
@@ -99,9 +105,15 @@ package body Ada.Streams.Stream_IO is
    procedure Read (
       File : File_Type;
       Item : out Stream_Element_Array;
-      Last : out Stream_Element_Offset) is
+      Last : out Stream_Element_Offset)
+   is
+      Non_Controlled_File : constant Inside.Non_Controlled_File_Type :=
+         Reference (File).all;
    begin
-      Inside.Read (Reference (File).all, Item, Last);
+      if not Inside.Is_Open (Non_Controlled_File) then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Inside.Read (Non_Controlled_File, Item, Last);
    end Read;
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
@@ -115,8 +127,13 @@ package body Ada.Streams.Stream_IO is
    end Reset;
 
    procedure Set_Index (File : File_Type; To : Positive_Count) is
+      Non_Controlled_File : constant Inside.Non_Controlled_File_Type :=
+         Reference (File).all;
    begin
-      Inside.Set_Index (Reference (File).all, To);
+      if not Inside.Is_Open (Non_Controlled_File) then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Inside.Set_Index (Non_Controlled_File, To);
    end Set_Index;
 
    procedure Set_Mode (File : in out File_Type; Mode : File_Mode) is
@@ -125,8 +142,13 @@ package body Ada.Streams.Stream_IO is
    end Set_Mode;
 
    function Size (File : File_Type) return Count is
+      Non_Controlled_File : constant Inside.Non_Controlled_File_Type :=
+         Reference (File).all;
    begin
-      return Inside.Size (Reference (File).all);
+      if not Inside.Is_Open (Non_Controlled_File) then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      return Inside.Size (Non_Controlled_File);
    end Size;
 
    function Stream (File : File_Type) return Stream_Access is
@@ -145,9 +167,15 @@ package body Ada.Streams.Stream_IO is
 
    procedure Write (
       File : File_Type;
-      Item : Stream_Element_Array) is
+      Item : Stream_Element_Array)
+   is
+      Non_Controlled_File : constant Inside.Non_Controlled_File_Type :=
+         Reference (File).all;
    begin
-      Inside.Write (Reference (File).all, Item);
+      if not Inside.Is_Open (Non_Controlled_File) then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Inside.Write (Non_Controlled_File, Item);
    end Write;
 
    package body Controlled is
@@ -167,5 +195,64 @@ package body Ada.Streams.Stream_IO is
       end Finalize;
 
    end Controlled;
+
+   package body Dispatchers is
+
+      overriding procedure Read (
+         Stream : in out Root_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset) is
+      begin
+         Inside.Read (
+            Inside.Non_Controlled_File_Type (Stream.File),
+            Item,
+            Last);
+      end Read;
+
+      overriding procedure Write (
+         Stream : in out Root_Dispatcher;
+         Item : Stream_Element_Array) is
+      begin
+         Inside.Write (Inside.Non_Controlled_File_Type (Stream.File), Item);
+      end Write;
+
+      overriding procedure Read (
+         Stream : in out Seekable_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset) is
+      begin
+         Inside.Read (
+            Inside.Non_Controlled_File_Type (Stream.File),
+            Item,
+            Last);
+      end Read;
+
+      overriding procedure Write (
+         Stream : in out Seekable_Dispatcher;
+         Item : Stream_Element_Array) is
+      begin
+         Inside.Write (Inside.Non_Controlled_File_Type (Stream.File), Item);
+      end Write;
+
+      overriding procedure Set_Index (
+         Stream : in out Seekable_Dispatcher;
+         To : Stream_Element_Positive_Count) is
+      begin
+         Inside.Set_Index (Inside.Non_Controlled_File_Type (Stream.File), To);
+      end Set_Index;
+
+      overriding function Index (Stream : Seekable_Dispatcher)
+         return Stream_Element_Positive_Count is
+      begin
+         return Inside.Index (Inside.Non_Controlled_File_Type (Stream.File));
+      end Index;
+
+      overriding function Size (Stream : Seekable_Dispatcher)
+         return Stream_Element_Count is
+      begin
+         return Inside.Size (Inside.Non_Controlled_File_Type (Stream.File));
+      end Size;
+
+   end Dispatchers;
 
 end Ada.Streams.Stream_IO;

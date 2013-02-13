@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
 private with Ada.Finalization;
+private with Ada.Tags;
 limited private with Ada.Streams.Stream_IO.Inside;
 package Ada.Streams.Stream_IO is
    pragma Preelaborate; -- AI12-0010-1
@@ -138,5 +139,59 @@ private
    end Controlled;
 
    type File_Type is new Controlled.File_Type;
+
+   --  for non-controlled
+
+   package Dispatchers is
+
+      type Root_Dispatcher is new Root_Stream_Type with record
+         File : access Inside.Stream_Type;
+      end record;
+      pragma Suppress_Initialization (Root_Dispatcher);
+
+      overriding procedure Read (
+         Stream : in out Root_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset);
+
+      overriding procedure Write (
+         Stream : in out Root_Dispatcher;
+         Item : Stream_Element_Array);
+
+      type Seekable_Dispatcher is new Seekable_Stream_Type with record
+         File : access Inside.Stream_Type;
+      end record;
+      pragma Suppress_Initialization (Seekable_Dispatcher);
+
+      overriding procedure Read (
+         Stream : in out Seekable_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset);
+
+      overriding procedure Write (
+         Stream : in out Seekable_Dispatcher;
+         Item : Stream_Element_Array);
+
+      overriding procedure Set_Index (
+         Stream : in out Seekable_Dispatcher;
+         To : Stream_Element_Positive_Count);
+
+      overriding function Index (Stream : Seekable_Dispatcher)
+         return Stream_Element_Positive_Count;
+      overriding function Size (Stream : Seekable_Dispatcher)
+         return Stream_Element_Count;
+
+      type Dispatcher is record
+         Tag : Ada.Tags.Tag := Ada.Tags.No_Tag;
+         File : access Inside.Stream_Type := null;
+      end record;
+      pragma Suppress_Initialization (Dispatcher);
+
+      pragma Compile_Time_Error (
+         Seekable_Dispatcher'Size /= Root_Dispatcher'Size
+         or else Dispatcher'Size /= Root_Dispatcher'Size,
+         "size mismatch");
+
+   end Dispatchers;
 
 end Ada.Streams.Stream_IO;

@@ -70,18 +70,22 @@ package Ada.Streams.Stream_IO.Inside is
    pragma Inline (Stream);
 
    procedure Read (
-      File : Non_Controlled_File_Type;
+      File : not null Non_Controlled_File_Type;
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset);
 
    procedure Write (
-      File : Non_Controlled_File_Type;
+      File : not null Non_Controlled_File_Type;
       Item : Stream_Element_Array);
 
-   procedure Set_Index (File : Non_Controlled_File_Type; To : Positive_Count);
+   procedure Set_Index (
+      File : not null Non_Controlled_File_Type;
+      To : Positive_Count);
 
-   function Index (File : Non_Controlled_File_Type) return Positive_Count;
-   function Size (File : Non_Controlled_File_Type) return Count;
+   function Index (File : not null Non_Controlled_File_Type)
+      return Positive_Count;
+   function Size (File : not null Non_Controlled_File_Type)
+      return Count;
 
    procedure Set_Mode (
       File : not null access Non_Controlled_File_Type;
@@ -117,60 +121,6 @@ package Ada.Streams.Stream_IO.Inside is
    --  The form "wcem=?" sets wide characters encoding method by Text_IO.
 
 private
-
-   --  private for non-controlled
-
-   package Dispatchers is
-
-      type Root_Dispatcher is new Root_Stream_Type with record
-         File : Non_Controlled_File_Type;
-      end record;
-      pragma Suppress_Initialization (Root_Dispatcher);
-
-      overriding procedure Read (
-         Stream : in out Root_Dispatcher;
-         Item : out Stream_Element_Array;
-         Last : out Stream_Element_Offset);
-
-      overriding procedure Write (
-         Stream : in out Root_Dispatcher;
-         Item : Stream_Element_Array);
-
-      type Seekable_Dispatcher is new Seekable_Stream_Type with record
-         File : Non_Controlled_File_Type;
-      end record;
-      pragma Suppress_Initialization (Seekable_Dispatcher);
-
-      overriding procedure Read (
-         Stream : in out Seekable_Dispatcher;
-         Item : out Stream_Element_Array;
-         Last : out Stream_Element_Offset);
-
-      overriding procedure Write (
-         Stream : in out Seekable_Dispatcher;
-         Item : Stream_Element_Array);
-
-      overriding procedure Set_Index (
-         Stream : in out Seekable_Dispatcher;
-         To : Stream_Element_Positive_Count);
-
-      overriding function Index (Stream : Seekable_Dispatcher)
-         return Stream_Element_Positive_Count;
-      overriding function Size (Stream : Seekable_Dispatcher)
-         return Stream_Element_Count;
-
-      type Dispatcher is record
-         Tag : Ada.Tags.Tag := Ada.Tags.No_Tag;
-         File : Non_Controlled_File_Type := null;
-      end record;
-      pragma Suppress_Initialization (Dispatcher);
-
-      pragma Compile_Time_Error (
-         Seekable_Dispatcher'Size /= Root_Dispatcher'Size
-         or else Dispatcher'Size /= Root_Dispatcher'Size,
-         "size mismatch");
-
-   end Dispatchers;
 
    type Stream_Kind is (
       Normal,
