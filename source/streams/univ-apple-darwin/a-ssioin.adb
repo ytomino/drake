@@ -546,8 +546,9 @@ package body Ada.Streams.Stream_IO.Inside is
                then
                   File.Buffer_Length := 0; -- no buffering for pipe and socket
                else
-                  File.Buffer_Length :=
-                     Stream_Element_Offset (Info.st_blksize);
+                  File.Buffer_Length := Stream_Element_Offset'Max (
+                     2, -- Buffer_Length /= 1
+                     Stream_Element_Offset (Info.st_blksize));
                end if;
             end;
          end if;
@@ -707,9 +708,9 @@ package body Ada.Streams.Stream_IO.Inside is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset)
    is
-      First : Stream_Element_Offset := Item'First;
       procedure Read_From_Buffer;
       procedure Read_From_Buffer is
+         First : constant Stream_Element_Offset := Last + 1;
          Taking_Length : constant Stream_Element_Offset :=
             Stream_Element_Offset'Min (
                Item'Last - First + 1,
@@ -721,15 +722,14 @@ package body Ada.Streams.Stream_IO.Inside is
          Item (First .. Last) := Buffer (
             File.Reading_Index ..
             File.Reading_Index + Taking_Length - 1);
-         First := Last + 1;
          File.Reading_Index := File.Reading_Index + Taking_Length;
       end Read_From_Buffer;
    begin
       if File.Mode = Out_File then
          raise Mode_Error;
       end if;
-      Last := First - 1;
-      if First > Item'Last then
+      Last := Item'First - 1;
+      if Item'First > Item'Last then
          return;
       end if;
       if File.Reading_Index < File.Buffer_Index then
@@ -737,48 +737,55 @@ package body Ada.Streams.Stream_IO.Inside is
       elsif File.Writing_Index > File.Buffer_Index then
          Flush_Writing_Buffer (File);
       end if;
-      if First <= Item'Last then
+      if Last < Item'Last then
          Get_Buffer (File);
          declare
-            Error : Boolean;
+            Error : Boolean := False;
             Buffer_Length : constant Stream_Element_Count :=
-               Stream_Element_Offset'Max (1, File.Buffer_Length);
+               File.Buffer_Length;
          begin
             declare
-               Misaligned : constant Stream_Element_Count :=
-                  (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
+               Misaligned : Stream_Element_Count;
                Taking_Length : Stream_Element_Count;
                Read_Size : C.sys.types.ssize_t;
             begin
-               Taking_Length := Item'Last - First + 1;
-               if Taking_Length < Misaligned then
-                  Taking_Length := 0; -- to use reading buffer
-               else
-                  Taking_Length := Taking_Length - Misaligned;
-                  Taking_Length := Taking_Length
-                     - Taking_Length rem Buffer_Length;
-                  Taking_Length := Taking_Length + Misaligned;
+               Taking_Length := Item'Last - Last;
+               if Buffer_Length > 0 then
+                  Misaligned :=
+                     (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
+                  if Taking_Length < Misaligned then
+                     Taking_Length := 0; -- to use reading buffer
+                  else
+                     Taking_Length := Taking_Length - Misaligned;
+                     Taking_Length := Taking_Length
+                        - Taking_Length rem Buffer_Length;
+                     Taking_Length := Taking_Length + Misaligned;
+                  end if;
                end if;
                if Taking_Length > 0 then
                   Read_Size := C.unistd.read (
                      File.Handle,
-                     C.void_ptr (Item (First)'Address),
+                     C.void_ptr (Item (Last + 1)'Address),
                      C.size_t (Taking_Length));
                   Error := Read_Size < 0;
                   if not Error then
-                     First := First + Stream_Element_Offset (Read_Size);
-                     Last := First - 1;
+                     Last := Last + Stream_Element_Offset (Read_Size);
                      --  update indexes
-                     File.Buffer_Index :=
-                        (File.Buffer_Index + Stream_Element_Offset (Read_Size))
-                        rem Buffer_Length;
+                     if Buffer_Length > 0 then
+                        File.Buffer_Index :=
+                           (File.Buffer_Index
+                              + Stream_Element_Offset (Read_Size))
+                           rem Buffer_Length;
+                     else
+                        File.Buffer_Index := 0;
+                     end if;
                      File.Reading_Index := File.Buffer_Index;
                      File.Writing_Index := File.Buffer_Index;
                   end if;
                end if;
             end;
             if not Error
-               and then First <= Item'Last
+               and then Last < Item'Last
                and then File.Buffer_Length > 0
             then
                Ready_Reading_Buffer (File, Error); -- reading buffer is empty
@@ -788,7 +795,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Read_From_Buffer;
                end if;
             end if;
-            if First <= Item'First and then Error then
+            if Last < Item'First and then Error then
                raise End_Error;
             end if;
          end;
@@ -845,7 +852,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Taking_Length : Stream_Element_Count;
             begin
                Taking_Length := Item'Last - First + 1;
-               if Buffer_Length > 1 then
+               if Buffer_Length > 0 then
                   Misaligned :=
                      (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
                   if Taking_Length < Misaligned then
@@ -872,7 +879,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   end if;
                   First := First + Taking_Length;
                   --  update indexes
-                  if Buffer_Length > 1 then
+                  if Buffer_Length > 0 then
                      File.Buffer_Index :=
                         (File.Buffer_Index + Taking_Length) rem Buffer_Length;
                      File.Reading_Index := File.Buffer_Index;
@@ -880,7 +887,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   end if;
                end if;
             end;
-            if First <= Item'Last and then Buffer_Length > 1 then
+            if First <= Item'Last and then Buffer_Length > 0 then
                Ready_Writing_Buffer (File);
                Write_To_Buffer;
             end if;
