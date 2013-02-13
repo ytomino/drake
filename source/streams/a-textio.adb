@@ -45,27 +45,7 @@ package body Ada.Text_IO is
       end if;
    end Check_File_Mode;
 
-   --  implementation
-
-   procedure Close (File : in out File_Type) is
-   begin
-      Inside.Close (Reference (File).all, Raise_On_Error => True);
-   end Close;
-
-   function Col (File : File_Type) return Positive_Count is
-   begin
-      return Inside.Col (Reference (File).all);
-   end Col;
-
-   function Col return Positive_Count is
-   begin
-      return Col (Current_Output.all);
-   end Col;
-
-   function Col (File : not null File_Access) return Positive_Count is
-   begin
-      return Col (File.all);
-   end Col;
+   --  implementation of File Management
 
    procedure Create (
       File : in out File_Type;
@@ -87,10 +67,136 @@ package body Ada.Text_IO is
       end return;
    end Create;
 
-   function Current_Error return File_Access is
+   procedure Open (
+      File : in out File_Type;
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "") is
    begin
-      return To_File_Access (Controlled.Reference_Current_Error.all);
-   end Current_Error;
+      Inside.Open (Reference (File).all, Mode, Name => Name, Form => Form);
+   end Open;
+
+   function Open (
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "")
+      return File_Type is
+   begin
+      return Result : File_Type do
+         Open (Result, Mode, Name => Name, Form => Form);
+      end return;
+   end Open;
+
+   procedure Close (File : in out File_Type) is
+   begin
+      Inside.Close (Reference (File).all, Raise_On_Error => True);
+   end Close;
+
+   procedure Delete (File : in out File_Type) is
+   begin
+      Inside.Delete (Reference (File).all);
+   end Delete;
+
+   procedure Reset (File : in out File_Type; Mode : File_Mode) is
+   begin
+      if (File'Unrestricted_Access = Current_Input
+         or else File'Unrestricted_Access = Current_Output
+         or else File'Unrestricted_Access = Current_Error)
+         and then Text_IO.Mode (File) /= Mode
+      then
+         raise Mode_Error;
+      else
+         Inside.Reset (Reference (File), Mode);
+      end if;
+   end Reset;
+
+   procedure Reset (File : in out File_Type) is
+   begin
+      Reset (File, Mode (File));
+   end Reset;
+
+   function Mode (File : File_Type) return File_Mode is
+   begin
+      return Inside.Mode (Reference (File).all);
+   end Mode;
+
+   function Name (File : File_Type) return String is
+   begin
+      return Inside.Name (Reference (File).all);
+   end Name;
+
+   function Name (File : not null File_Access) return String is
+   begin
+      return Name (File.all);
+   end Name;
+
+   function Form (File : File_Type) return String is
+   begin
+      return Inside.Form (Reference (File).all);
+   end Form;
+
+   function Is_Open (File : File_Type) return Boolean is
+   begin
+      return Inside.Is_Open (Reference (File).all);
+   end Is_Open;
+
+   function Is_Open (File : not null File_Access) return Boolean is
+   begin
+      return Is_Open (File.all);
+   end Is_Open;
+
+   --  implementation of Control of default input and output files
+
+   procedure Set_Input (File : File_Type) is
+   begin
+      Set_Input (File'Unrestricted_Access);
+   end Set_Input;
+
+   procedure Set_Input (File : not null File_Access) is
+   begin
+      Check_File_Mode (File.all, In_File);
+      Controlled.Reference_Current_Input.all :=
+         To_Controlled_File_Access (File);
+   end Set_Input;
+
+   procedure Set_Output (File : File_Type) is
+   begin
+      Set_Output (File'Unrestricted_Access);
+   end Set_Output;
+
+   procedure Set_Output (File : not null File_Access) is
+   begin
+      Check_File_Mode (File.all, Out_File);
+      Controlled.Reference_Current_Output.all :=
+         To_Controlled_File_Access (File);
+   end Set_Output;
+
+   procedure Set_Error (File : File_Type) is
+   begin
+      Set_Error (File'Unrestricted_Access);
+   end Set_Error;
+
+   procedure Set_Error (File : not null File_Access) is
+   begin
+      Check_File_Mode (File.all, Out_File);
+      Controlled.Reference_Current_Error.all :=
+         To_Controlled_File_Access (File);
+   end Set_Error;
+
+   function Standard_Input return File_Access is
+   begin
+      return To_File_Access (Controlled.Standard_Input);
+   end Standard_Input;
+
+   function Standard_Output return File_Access is
+   begin
+      return To_File_Access (Controlled.Standard_Output);
+   end Standard_Output;
+
+   function Standard_Error return File_Access is
+   begin
+      return To_File_Access (Controlled.Standard_Error);
+   end Standard_Error;
 
    function Current_Input return File_Access is
    begin
@@ -102,25 +208,110 @@ package body Ada.Text_IO is
       return To_File_Access (Controlled.Reference_Current_Output.all);
    end Current_Output;
 
-   procedure Delete (File : in out File_Type) is
+   function Current_Error return File_Access is
    begin
-      Inside.Delete (Reference (File).all);
-   end Delete;
+      return To_File_Access (Controlled.Reference_Current_Error.all);
+   end Current_Error;
 
-   function End_Of_File (File : File_Type) return Boolean is
-   begin
-      return Inside.End_Of_File (Reference (File).all);
-   end End_Of_File;
+   --  implementation of Buffer control
 
-   function End_Of_File return Boolean is
+   procedure Flush (File : File_Type) is
    begin
-      return End_Of_File (Current_Input.all);
-   end End_Of_File;
+      Inside.Flush (Reference (File).all);
+   end Flush;
 
-   function End_Of_File (File : not null File_Access) return Boolean is
+   procedure Flush is
    begin
-      return End_Of_File (File.all);
-   end End_Of_File;
+      Flush (Current_Output.all);
+   end Flush;
+
+   --  implementation of Specification of line and page lengths
+
+   procedure Set_Line_Length (File : File_Type; To : Count) is
+   begin
+      Inside.Set_Line_Length (Reference (File).all, To);
+   end Set_Line_Length;
+
+   procedure Set_Line_Length (To : Count) is
+   begin
+      Set_Line_Length (Current_Output.all, To);
+   end Set_Line_Length;
+
+   procedure Set_Line_Length (File : not null File_Access; To : Count) is
+   begin
+      Set_Line_Length (File.all, To);
+   end Set_Line_Length;
+
+   procedure Set_Page_Length (File : File_Type; To : Count) is
+   begin
+      Inside.Set_Page_Length (Reference (File).all, To);
+   end Set_Page_Length;
+
+   procedure Set_Page_Length (To : Count) is
+   begin
+      Set_Page_Length (Current_Output.all, To);
+   end Set_Page_Length;
+
+   procedure Set_Page_Length (File : not null File_Access; To : Count) is
+   begin
+      Set_Page_Length (File.all, To);
+   end Set_Page_Length;
+
+   function Line_Length (File : File_Type) return Count is
+   begin
+      return Inside.Line_Length (Reference (File).all);
+   end Line_Length;
+
+   function Line_Length return Count is
+   begin
+      return Line_Length (Current_Output.all);
+   end Line_Length;
+
+   function Page_Length (File : File_Type) return Count is
+   begin
+      return Inside.Page_Length (Reference (File).all);
+   end Page_Length;
+
+   function Page_Length return Count is
+   begin
+      return Page_Length (Current_Output.all);
+   end Page_Length;
+
+   --  implementation of Column, Line, and Page Control
+
+   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1) is
+   begin
+      Inside.New_Line (Reference (File).all, Spacing);
+   end New_Line;
+
+   procedure New_Line (Spacing : Positive_Count := 1) is
+   begin
+      New_Line (Current_Output.all, Spacing);
+   end New_Line;
+
+   procedure New_Line (
+      File : not null File_Access;
+      Spacing : Positive_Count := 1) is
+   begin
+      New_Line (File.all, Spacing);
+   end New_Line;
+
+   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1) is
+   begin
+      Inside.Skip_Line (Reference (File).all, Spacing);
+   end Skip_Line;
+
+   procedure Skip_Line (Spacing : Positive_Count := 1) is
+   begin
+      Skip_Line (Current_Input.all, Spacing);
+   end Skip_Line;
+
+   procedure Skip_Line (
+      File : not null File_Access;
+      Spacing : Positive_Count := 1) is
+   begin
+      Skip_Line (File.all, Spacing);
+   end Skip_Line;
 
    function End_Of_Line (File : File_Type) return Boolean is
    begin
@@ -131,6 +322,36 @@ package body Ada.Text_IO is
    begin
       return End_Of_Line (Current_Input.all);
    end End_Of_Line;
+
+   procedure New_Page (File : File_Type) is
+   begin
+      Inside.New_Page (Reference (File).all);
+   end New_Page;
+
+   procedure New_Page is
+   begin
+      New_Page (Current_Output.all);
+   end New_Page;
+
+   procedure New_Page (File : not null File_Access) is
+   begin
+      New_Page (File.all);
+   end New_Page;
+
+   procedure Skip_Page (File : File_Type) is
+   begin
+      Inside.Skip_Page (Reference (File).all);
+   end Skip_Page;
+
+   procedure Skip_Page is
+   begin
+      Skip_Page (Current_Input.all);
+   end Skip_Page;
+
+   procedure Skip_Page (File : not null File_Access) is
+   begin
+      Skip_Page (File.all);
+   end Skip_Page;
 
    function End_Of_Page (File : File_Type) return Boolean is
    begin
@@ -147,20 +368,97 @@ package body Ada.Text_IO is
       return End_Of_Page (File.all);
    end End_Of_Page;
 
-   procedure Flush (File : File_Type) is
+   function End_Of_File (File : File_Type) return Boolean is
    begin
-      Inside.Flush (Reference (File).all);
-   end Flush;
+      return Inside.End_Of_File (Reference (File).all);
+   end End_Of_File;
 
-   procedure Flush is
+   function End_Of_File return Boolean is
    begin
-      Flush (Current_Output.all);
-   end Flush;
+      return End_Of_File (Current_Input.all);
+   end End_Of_File;
 
-   function Form (File : File_Type) return String is
+   function End_Of_File (File : not null File_Access) return Boolean is
    begin
-      return Inside.Form (Reference (File).all);
-   end Form;
+      return End_Of_File (File.all);
+   end End_Of_File;
+
+   procedure Set_Col (File : File_Type; To : Positive_Count) is
+   begin
+      Inside.Set_Col (Reference (File).all, To);
+   end Set_Col;
+
+   procedure Set_Col (To : Positive_Count) is
+   begin
+      Set_Col (Current_Output.all, To);
+   end Set_Col;
+
+   procedure Set_Col (File : not null File_Access; To : Positive_Count) is
+   begin
+      Set_Col (File.all, To);
+   end Set_Col;
+
+   procedure Set_Line (File : File_Type; To : Positive_Count) is
+   begin
+      Inside.Set_Line (Reference (File).all, To);
+   end Set_Line;
+
+   procedure Set_Line (To : Positive_Count) is
+   begin
+      Set_Line (Current_Output.all, To);
+   end Set_Line;
+
+   procedure Set_Line (File : not null File_Access; To : Positive_Count) is
+   begin
+      Set_Line (File.all, To);
+   end Set_Line;
+
+   function Col (File : File_Type) return Positive_Count is
+   begin
+      return Inside.Col (Reference (File).all);
+   end Col;
+
+   function Col return Positive_Count is
+   begin
+      return Col (Current_Output.all);
+   end Col;
+
+   function Col (File : not null File_Access) return Positive_Count is
+   begin
+      return Col (File.all);
+   end Col;
+
+   function Line (File : File_Type) return Positive_Count is
+   begin
+      return Inside.Line (Reference (File).all);
+   end Line;
+
+   function Line return Positive_Count is
+   begin
+      return Line (Current_Output.all);
+   end Line;
+
+   function Line (File : not null File_Access) return Positive_Count is
+   begin
+      return Line (File.all);
+   end Line;
+
+   function Page (File : File_Type) return Positive_Count is
+   begin
+      return Inside.Page (Reference (File).all);
+   end Page;
+
+   function Page return Positive_Count is
+   begin
+      return Page (Current_Output.all);
+   end Page;
+
+   function Page (File : not null File_Access) return Positive_Count is
+   begin
+      return Page (File.all);
+   end Page;
+
+   --  implementation of Character Input-Output
 
    procedure Get (File : File_Type; Item : out Character) is
    begin
@@ -177,22 +475,35 @@ package body Ada.Text_IO is
       Get (File.all, Item);
    end Get;
 
-   procedure Get (File : File_Type; Item : out String) is
+   procedure Put (File : File_Type; Item : Character) is
    begin
-      for I in Item'Range loop
-         Get (File, Item (I));
-      end loop;
-   end Get;
+      Inside.Put (Reference (File).all, Item);
+   end Put;
 
-   procedure Get (Item : out String) is
+   procedure Put (Item : Character) is
    begin
-      Get (Current_Input.all, Item);
-   end Get;
+      Put (Current_Output.all, Item);
+   end Put;
 
-   procedure Get (File : not null File_Access; Item : out String) is
+   procedure Put (File : not null File_Access; Item : Character) is
    begin
-      Get (File.all, Item);
-   end Get;
+      Put (File.all, Item);
+   end Put;
+
+   procedure Look_Ahead (
+      File : File_Type;
+      Item : out Character;
+      End_Of_Line : out Boolean) is
+   begin
+      Inside.Look_Ahead (Reference (File).all, Item, End_Of_Line);
+   end Look_Ahead;
+
+   procedure Look_Ahead (
+      Item : out Character;
+      End_Of_Line : out Boolean) is
+   begin
+      Look_Ahead (Current_Input.all, Item, End_Of_Line);
+   end Look_Ahead;
 
    procedure Get_Immediate (File : File_Type; Item : out Character) is
    begin
@@ -218,6 +529,42 @@ package body Ada.Text_IO is
    begin
       Get_Immediate (Current_Input.all, Item, Available);
    end Get_Immediate;
+
+   --  implementation of String Input-Output
+
+   procedure Get (File : File_Type; Item : out String) is
+   begin
+      for I in Item'Range loop
+         Get (File, Item (I));
+      end loop;
+   end Get;
+
+   procedure Get (Item : out String) is
+   begin
+      Get (Current_Input.all, Item);
+   end Get;
+
+   procedure Get (File : not null File_Access; Item : out String) is
+   begin
+      Get (File.all, Item);
+   end Get;
+
+   procedure Put (File : File_Type; Item : String) is
+   begin
+      for I in Item'Range loop
+         Put (File, Item (I));
+      end loop;
+   end Put;
+
+   procedure Put (Item : String) is
+   begin
+      Put (Current_Output.all, Item);
+   end Put;
+
+   procedure Put (File : not null File_Access; Item : String) is
+   begin
+      Put (File.all, Item);
+   end Put;
 
    procedure Get_Line (
       File : File_Type;
@@ -292,180 +639,6 @@ package body Ada.Text_IO is
       return Get_Line (Current_Input.all);
    end Get_Line;
 
-   function Is_Open (File : File_Type) return Boolean is
-   begin
-      return Inside.Is_Open (Reference (File).all);
-   end Is_Open;
-
-   function Is_Open (File : not null File_Access) return Boolean is
-   begin
-      return Is_Open (File.all);
-   end Is_Open;
-
-   function Line (File : File_Type) return Positive_Count is
-   begin
-      return Inside.Line (Reference (File).all);
-   end Line;
-
-   function Line return Positive_Count is
-   begin
-      return Line (Current_Output.all);
-   end Line;
-
-   function Line (File : not null File_Access) return Positive_Count is
-   begin
-      return Line (File.all);
-   end Line;
-
-   function Line_Length (File : File_Type) return Count is
-   begin
-      return Inside.Line_Length (Reference (File).all);
-   end Line_Length;
-
-   function Line_Length return Count is
-   begin
-      return Line_Length (Current_Output.all);
-   end Line_Length;
-
-   procedure Look_Ahead (
-      File : File_Type;
-      Item : out Character;
-      End_Of_Line : out Boolean) is
-   begin
-      Inside.Look_Ahead (Reference (File).all, Item, End_Of_Line);
-   end Look_Ahead;
-
-   procedure Look_Ahead (
-      Item : out Character;
-      End_Of_Line : out Boolean) is
-   begin
-      Look_Ahead (Current_Input.all, Item, End_Of_Line);
-   end Look_Ahead;
-
-   function Mode (File : File_Type) return File_Mode is
-   begin
-      return Inside.Mode (Reference (File).all);
-   end Mode;
-
-   function Name (File : File_Type) return String is
-   begin
-      return Inside.Name (Reference (File).all);
-   end Name;
-
-   function Name (File : not null File_Access) return String is
-   begin
-      return Name (File.all);
-   end Name;
-
-   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1) is
-   begin
-      Inside.New_Line (Reference (File).all, Spacing);
-   end New_Line;
-
-   procedure New_Line (Spacing : Positive_Count := 1) is
-   begin
-      New_Line (Current_Output.all, Spacing);
-   end New_Line;
-
-   procedure New_Line (
-      File : not null File_Access;
-      Spacing : Positive_Count := 1) is
-   begin
-      New_Line (File.all, Spacing);
-   end New_Line;
-
-   procedure New_Page (File : File_Type) is
-   begin
-      Inside.New_Page (Reference (File).all);
-   end New_Page;
-
-   procedure New_Page is
-   begin
-      New_Page (Current_Output.all);
-   end New_Page;
-
-   procedure New_Page (File : not null File_Access) is
-   begin
-      New_Page (File.all);
-   end New_Page;
-
-   procedure Open (
-      File : in out File_Type;
-      Mode : File_Mode;
-      Name : String;
-      Form : String := "") is
-   begin
-      Inside.Open (Reference (File).all, Mode, Name => Name, Form => Form);
-   end Open;
-
-   function Open (
-      Mode : File_Mode;
-      Name : String;
-      Form : String := "")
-      return File_Type is
-   begin
-      return Result : File_Type do
-         Open (Result, Mode, Name => Name, Form => Form);
-      end return;
-   end Open;
-
-   function Page (File : File_Type) return Positive_Count is
-   begin
-      return Inside.Page (Reference (File).all);
-   end Page;
-
-   function Page return Positive_Count is
-   begin
-      return Page (Current_Output.all);
-   end Page;
-
-   function Page (File : not null File_Access) return Positive_Count is
-   begin
-      return Page (File.all);
-   end Page;
-
-   function Page_Length (File : File_Type) return Count is
-   begin
-      return Inside.Page_Length (Reference (File).all);
-   end Page_Length;
-
-   function Page_Length return Count is
-   begin
-      return Page_Length (Current_Output.all);
-   end Page_Length;
-
-   procedure Put (File : File_Type; Item : Character) is
-   begin
-      Inside.Put (Reference (File).all, Item);
-   end Put;
-
-   procedure Put (Item : Character) is
-   begin
-      Put (Current_Output.all, Item);
-   end Put;
-
-   procedure Put (File : not null File_Access; Item : Character) is
-   begin
-      Put (File.all, Item);
-   end Put;
-
-   procedure Put (File : File_Type; Item : String) is
-   begin
-      for I in Item'Range loop
-         Put (File, Item (I));
-      end loop;
-   end Put;
-
-   procedure Put (Item : String) is
-   begin
-      Put (Current_Output.all, Item);
-   end Put;
-
-   procedure Put (File : not null File_Access; Item : String) is
-   begin
-      Put (File.all, Item);
-   end Put;
-
    procedure Put_Line (File : File_Type; Item : String) is
    begin
       Put (File, Item);
@@ -481,167 +654,6 @@ package body Ada.Text_IO is
    begin
       Put_Line (File.all, Item);
    end Put_Line;
-
-   procedure Reset (File : in out File_Type; Mode : File_Mode) is
-   begin
-      if (File'Unrestricted_Access = Current_Input
-         or else File'Unrestricted_Access = Current_Output
-         or else File'Unrestricted_Access = Current_Error)
-         and then Text_IO.Mode (File) /= Mode
-      then
-         raise Mode_Error;
-      else
-         Inside.Reset (Reference (File), Mode);
-      end if;
-   end Reset;
-
-   procedure Reset (File : in out File_Type) is
-   begin
-      Reset (File, Mode (File));
-   end Reset;
-
-   procedure Set_Col (File : File_Type; To : Positive_Count) is
-   begin
-      Inside.Set_Col (Reference (File).all, To);
-   end Set_Col;
-
-   procedure Set_Col (To : Positive_Count) is
-   begin
-      Set_Col (Current_Output.all, To);
-   end Set_Col;
-
-   procedure Set_Col (File : not null File_Access; To : Positive_Count) is
-   begin
-      Set_Col (File.all, To);
-   end Set_Col;
-
-   procedure Set_Error (File : File_Type) is
-   begin
-      Set_Error (File'Unrestricted_Access);
-   end Set_Error;
-
-   procedure Set_Error (File : not null File_Access) is
-   begin
-      Check_File_Mode (File.all, Out_File);
-      Controlled.Reference_Current_Error.all :=
-         To_Controlled_File_Access (File);
-   end Set_Error;
-
-   procedure Set_Input (File : File_Type) is
-   begin
-      Set_Input (File'Unrestricted_Access);
-   end Set_Input;
-
-   procedure Set_Input (File : not null File_Access) is
-   begin
-      Check_File_Mode (File.all, In_File);
-      Controlled.Reference_Current_Input.all :=
-         To_Controlled_File_Access (File);
-   end Set_Input;
-
-   procedure Set_Line (File : File_Type; To : Positive_Count) is
-   begin
-      Inside.Set_Line (Reference (File).all, To);
-   end Set_Line;
-
-   procedure Set_Line (To : Positive_Count) is
-   begin
-      Set_Line (Current_Output.all, To);
-   end Set_Line;
-
-   procedure Set_Line (File : not null File_Access; To : Positive_Count) is
-   begin
-      Set_Line (File.all, To);
-   end Set_Line;
-
-   procedure Set_Line_Length (File : File_Type; To : Count) is
-   begin
-      Inside.Set_Line_Length (Reference (File).all, To);
-   end Set_Line_Length;
-
-   procedure Set_Line_Length (To : Count) is
-   begin
-      Set_Line_Length (Current_Output.all, To);
-   end Set_Line_Length;
-
-   procedure Set_Line_Length (File : not null File_Access; To : Count) is
-   begin
-      Set_Line_Length (File.all, To);
-   end Set_Line_Length;
-
-   procedure Set_Output (File : File_Type) is
-   begin
-      Set_Output (File'Unrestricted_Access);
-   end Set_Output;
-
-   procedure Set_Output (File : not null File_Access) is
-   begin
-      Check_File_Mode (File.all, Out_File);
-      Controlled.Reference_Current_Output.all :=
-         To_Controlled_File_Access (File);
-   end Set_Output;
-
-   procedure Set_Page_Length (File : File_Type; To : Count) is
-   begin
-      Inside.Set_Page_Length (Reference (File).all, To);
-   end Set_Page_Length;
-
-   procedure Set_Page_Length (To : Count) is
-   begin
-      Set_Page_Length (Current_Output.all, To);
-   end Set_Page_Length;
-
-   procedure Set_Page_Length (File : not null File_Access; To : Count) is
-   begin
-      Set_Page_Length (File.all, To);
-   end Set_Page_Length;
-
-   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1) is
-   begin
-      Inside.Skip_Line (Reference (File).all, Spacing);
-   end Skip_Line;
-
-   procedure Skip_Line (Spacing : Positive_Count := 1) is
-   begin
-      Skip_Line (Current_Input.all, Spacing);
-   end Skip_Line;
-
-   procedure Skip_Line (
-      File : not null File_Access;
-      Spacing : Positive_Count := 1) is
-   begin
-      Skip_Line (File.all, Spacing);
-   end Skip_Line;
-
-   procedure Skip_Page (File : File_Type) is
-   begin
-      Inside.Skip_Page (Reference (File).all);
-   end Skip_Page;
-
-   procedure Skip_Page is
-   begin
-      Skip_Page (Current_Input.all);
-   end Skip_Page;
-
-   procedure Skip_Page (File : not null File_Access) is
-   begin
-      Skip_Page (File.all);
-   end Skip_Page;
-
-   function Standard_Error return File_Access is
-   begin
-      return To_File_Access (Controlled.Standard_Error);
-   end Standard_Error;
-
-   function Standard_Input return File_Access is
-   begin
-      return To_File_Access (Controlled.Standard_Input);
-   end Standard_Input;
-
-   function Standard_Output return File_Access is
-   begin
-      return To_File_Access (Controlled.Standard_Output);
-   end Standard_Output;
 
    package body Controlled is
 

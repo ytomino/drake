@@ -116,7 +116,7 @@ package Ada.Text_IO.Inside is
    Standard_Output : constant Non_Controlled_File_Type;
    Standard_Error : constant Non_Controlled_File_Type;
 
-   --  parsing form parameter
+   --  form parameter
 
    type Encoding_Type is (
       Locale, -- Is_Terminal = False
@@ -157,17 +157,6 @@ private
       Form : String (1 .. Form_Length);
    end record;
    pragma Suppress_Initialization (Text_Type);
-
-   procedure Look_Ahead (
-      File : Non_Controlled_File_Type;
-      Item : out String; -- 1 .. 6
-      Last : out Natural;
-      End_Of_Line : out Boolean);
-   procedure Get_Immediate (
-      File : Non_Controlled_File_Type;
-      Item : out String; -- 1 .. 6
-      Last : out Natural;
-      Wait : Boolean);
 
    Standard_Input_Text : aliased Text_Type := (
       Name_Length => 0,
@@ -211,5 +200,18 @@ private
       Standard_Output_Text'Access;
    Standard_Error : constant Non_Controlled_File_Type :=
       Standard_Error_Text'Access;
+
+   --  for Wide_Text_IO/Wide_Wide_Text_IO
+
+   procedure Look_Ahead (
+      File : Non_Controlled_File_Type;
+      Item : out String; -- 1 .. 6
+      Last : out Natural;
+      End_Of_Line : out Boolean);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out String; -- 1 .. 6
+      Last : out Natural;
+      Wait : Boolean);
 
 end Ada.Text_IO.Inside;

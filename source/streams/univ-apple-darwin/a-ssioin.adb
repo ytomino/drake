@@ -747,7 +747,41 @@ package body Ada.Streams.Stream_IO.Inside is
       File.Writing_Index := File.Writing_Index + Taking_Length;
    end Write_To_Buffer;
 
-   --  implementation
+   --  implementation of non-controlled
+
+   procedure Create (
+      File : in out Non_Controlled_File_Type;
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Form : String := "") is
+   begin
+      if File /= null then
+         raise Status_Error;
+      end if;
+      Allocate_And_Open (
+         Method => Create,
+         File => File,
+         Mode => Mode,
+         Name => Name,
+         Form => Form);
+   end Create;
+
+   procedure Open (
+      File : in out Non_Controlled_File_Type;
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "") is
+   begin
+      if File /= null then
+         raise Status_Error;
+      end if;
+      Allocate_And_Open (
+         Method => Open,
+         File => File,
+         Mode => Mode,
+         Name => Name,
+         Form => Form);
+   end Open;
 
    procedure Close (
       File : in out Non_Controlled_File_Type;
@@ -769,23 +803,6 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Close;
 
-   procedure Create (
-      File : in out Non_Controlled_File_Type;
-      Mode : File_Mode := Out_File;
-      Name : String := "";
-      Form : String := "") is
-   begin
-      if File /= null then
-         raise Status_Error;
-      end if;
-      Allocate_And_Open (
-         Method => Create,
-         File => File,
-         Mode => Mode,
-         Name => Name,
-         Form => Form);
-   end Create;
-
    procedure Delete (File : in out Non_Controlled_File_Type) is
    begin
       Check_File_Open (File);
@@ -797,6 +814,75 @@ package body Ada.Streams.Stream_IO.Inside is
             raise Status_Error;
       end case;
    end Delete;
+
+   procedure Reset (
+      File : not null access Non_Controlled_File_Type;
+      Mode : File_Mode) is
+   begin
+      Check_File_Open (File.all);
+      case File.all.Kind is
+         when Normal =>
+            declare
+               File2 : constant Non_Controlled_File_Type := File.all;
+               Form : String (1 .. File2.Form_Length);
+               for Form'Address use File2.Form;
+            begin
+               File.all := null;
+               Close_File (File2, Raise_On_Error => True);
+               File2.Buffer_Index := 0;
+               File2.Reading_Index := File2.Buffer_Index;
+               File2.Writing_Index := File2.Buffer_Index;
+               Open_Normal (
+                  Method => Reset,
+                  File => File2,
+                  Mode => Mode,
+                  Name => char_ptr_Conv.To_Pointer (File2.Name),
+                  Form => Form);
+               File.all := File2;
+            end;
+         when Temporary =>
+            File.all.Mode := Mode;
+            Set_Index (File.all, 1);
+         when External | External_No_Close | Standard_Handle =>
+            raise Status_Error;
+      end case;
+      if Mode = Append_File then
+         Set_Index_To_Append (File.all);
+      end if;
+   end Reset;
+
+   function Mode (File : Non_Controlled_File_Type) return File_Mode is
+   begin
+      Check_File_Open (File);
+      return File.Mode;
+   end Mode;
+
+   function Name (File : Non_Controlled_File_Type) return String is
+   begin
+      Check_File_Open (File);
+      declare
+         A_Name : String (1 .. File.Name_Length);
+         for A_Name'Address use File.Name;
+      begin
+         return A_Name;
+      end;
+   end Name;
+
+   function Form (File : Non_Controlled_File_Type) return String is
+   begin
+      Check_File_Open (File);
+      declare
+         A_Form : String (1 .. File.Form_Length);
+         for A_Form'Address use File.Form;
+      begin
+         return A_Form;
+      end;
+   end Form;
+
+   function Is_Open (File : Non_Controlled_File_Type) return Boolean is
+   begin
+      return File /= null;
+   end Is_Open;
 
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
       Info : aliased System.File_Control.struct_stat;
@@ -828,55 +914,22 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end End_Of_File;
 
-   function Form (File : Non_Controlled_File_Type) return String is
+   function Stream (File : Non_Controlled_File_Type) return Stream_Access is
+      package Conv is new System.Address_To_Named_Access_Conversions (
+         Root_Stream_Type'Class,
+         Stream_Access);
    begin
       Check_File_Open (File);
-      declare
-         A_Form : String (1 .. File.Form_Length);
-         for A_Form'Address use File.Form;
-      begin
-         return A_Form;
-      end;
-   end Form;
-
-   function Is_Open (File : Non_Controlled_File_Type) return Boolean is
-   begin
-      return File /= null;
-   end Is_Open;
-
-   function Mode (File : Non_Controlled_File_Type) return File_Mode is
-   begin
-      Check_File_Open (File);
-      return File.Mode;
-   end Mode;
-
-   function Name (File : Non_Controlled_File_Type) return String is
-   begin
-      Check_File_Open (File);
-      declare
-         A_Name : String (1 .. File.Name_Length);
-         for A_Name'Address use File.Name;
-      begin
-         return A_Name;
-      end;
-   end Name;
-
-   procedure Open (
-      File : in out Non_Controlled_File_Type;
-      Mode : File_Mode;
-      Name : String;
-      Form : String := "") is
-   begin
-      if File /= null then
-         raise Status_Error;
+      if File.Dispatcher.Tag = Tags.No_Tag then
+         if not Is_Seekable (File.Handle) then
+            File.Dispatcher.Tag := Dispatchers.Root_Dispatcher'Tag;
+         else
+            File.Dispatcher.Tag := Dispatchers.Seekable_Dispatcher'Tag;
+         end if;
+         File.Dispatcher.File := File;
       end if;
-      Allocate_And_Open (
-         Method => Open,
-         File => File,
-         Mode => Mode,
-         Name => Name,
-         Form => Form);
-   end Open;
+      return Conv.To_Pointer (File.Dispatcher'Address);
+   end Stream;
 
    procedure Read (
       File : not null Non_Controlled_File_Type;
@@ -961,59 +1014,6 @@ package body Ada.Streams.Stream_IO.Inside is
          end;
       end if;
    end Read;
-
-   procedure Reset (
-      File : not null access Non_Controlled_File_Type;
-      Mode : File_Mode) is
-   begin
-      Check_File_Open (File.all);
-      case File.all.Kind is
-         when Normal =>
-            declare
-               File2 : constant Non_Controlled_File_Type := File.all;
-               Form : String (1 .. File2.Form_Length);
-               for Form'Address use File2.Form;
-            begin
-               File.all := null;
-               Close_File (File2, Raise_On_Error => True);
-               File2.Buffer_Index := 0;
-               File2.Reading_Index := File2.Buffer_Index;
-               File2.Writing_Index := File2.Buffer_Index;
-               Open_Normal (
-                  Method => Reset,
-                  File => File2,
-                  Mode => Mode,
-                  Name => char_ptr_Conv.To_Pointer (File2.Name),
-                  Form => Form);
-               File.all := File2;
-            end;
-         when Temporary =>
-            File.all.Mode := Mode;
-            Set_Index (File.all, 1);
-         when External | External_No_Close | Standard_Handle =>
-            raise Status_Error;
-      end case;
-      if Mode = Append_File then
-         Set_Index_To_Append (File.all);
-      end if;
-   end Reset;
-
-   function Stream (File : Non_Controlled_File_Type) return Stream_Access is
-      package Conv is new System.Address_To_Named_Access_Conversions (
-         Root_Stream_Type'Class,
-         Stream_Access);
-   begin
-      Check_File_Open (File);
-      if File.Dispatcher.Tag = Tags.No_Tag then
-         if not Is_Seekable (File.Handle) then
-            File.Dispatcher.Tag := Dispatchers.Root_Dispatcher'Tag;
-         else
-            File.Dispatcher.Tag := Dispatchers.Seekable_Dispatcher'Tag;
-         end if;
-         File.Dispatcher.File := File;
-      end if;
-      return Conv.To_Pointer (File.Dispatcher'Address);
-   end Stream;
 
    procedure Write (
       File : not null Non_Controlled_File_Type;
