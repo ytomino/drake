@@ -375,11 +375,13 @@ package body Ada.Streams.Stream_IO.Inside is
       Last : Natural;
    begin
       System.IO_Options.Form_Parameter (Form, "shared", First, Last);
-      if First <= Last and then Form (First) = 'y' then
+      if First <= Last and then Form (First) = 'r' then -- read
          return System.File_Control.O_SHLOCK;
-      elsif First <= Last and then Form (First) = 'n' then
+      elsif First <= Last and then Form (First) = 'w' then -- write
          return System.File_Control.O_EXLOCK;
-      else
+      elsif First <= Last and then Form (First) = 'y' then -- yes
+         return 0;
+      else -- no
          return Default;
       end if;
    end Form_Share_Mode;
