@@ -13,7 +13,6 @@ with C.unistd;
 package body Ada.Streams.Stream_IO.Inside is
    use type Tags.Tag;
    use type System.Address;
-   use type System.File_Control.off_t; -- 64bit off_t
    use type System.Storage_Elements.Storage_Offset;
    use type C.char;
    use type C.char_array;
@@ -23,22 +22,26 @@ package body Ada.Streams.Stream_IO.Inside is
    use type C.size_t;
    use type C.unsigned_short;
    use type C.unsigned_int;
+   use type C.sys.types.off_t; -- 64bit off_t
+
+   pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
+      "off_t is not 64bit");
 
    --  handle
 
    function lseek (
       Handle : Handle_Type;
-      offset : System.File_Control.off_t;
+      offset : C.sys.types.off_t;
       whence : C.signed_int)
-      return System.File_Control.off_t;
+      return C.sys.types.off_t;
    function lseek (
       Handle : Handle_Type;
-      offset : System.File_Control.off_t;
+      offset : C.sys.types.off_t;
       whence : C.signed_int)
-      return System.File_Control.off_t
+      return C.sys.types.off_t
    is
-      Result : constant System.File_Control.off_t :=
-         System.File_Control.lseek (Handle, offset, whence);
+      Result : constant C.sys.types.off_t :=
+         C.unistd.lseek (Handle, offset, whence);
    begin
       if Result < 0 then
          raise Use_Error;
@@ -48,12 +51,12 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure fstat (
       Handle : Handle_Type;
-      buf : not null access System.File_Control.struct_stat);
+      buf : not null access C.sys.stat.struct_stat);
    procedure fstat (
       Handle : Handle_Type;
-      buf : not null access System.File_Control.struct_stat) is
+      buf : not null access C.sys.stat.struct_stat) is
    begin
-      if System.File_Control.fstat (Handle, buf) < 0 then
+      if C.sys.stat.fstat (Handle, buf) < 0 then
          raise Use_Error;
       end if;
    end fstat;
@@ -76,7 +79,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    function Is_Seekable (Handle : Handle_Type) return Boolean is
    begin
-      return System.File_Control.lseek (
+      return C.unistd.lseek (
          Handle,
          0,
          C.unistd.SEEK_CUR) >= 0;
@@ -539,7 +542,7 @@ package body Ada.Streams.Stream_IO.Inside is
             File.Buffer_Length := 0; -- no buffering for terminal
          else
             declare
-               Info : aliased System.File_Control.struct_stat;
+               Info : aliased C.sys.stat.struct_stat;
                File_Type : C.sys.types.mode_t;
             begin
                fstat (File.Handle, Info'Access);
@@ -601,12 +604,12 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type);
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type) is
-      Dummy : System.File_Control.off_t;
+      Dummy : C.sys.types.off_t;
       pragma Unreferenced (Dummy);
    begin
       Dummy := lseek (
          File.Handle,
-         System.File_Control.off_t (File.Reading_Index - File.Buffer_Index),
+         C.sys.types.off_t (File.Reading_Index - File.Buffer_Index),
          C.unistd.SEEK_CUR);
       File.Buffer_Index := File.Reading_Index;
       File.Writing_Index := File.Buffer_Index;
@@ -888,7 +891,7 @@ package body Ada.Streams.Stream_IO.Inside is
    end Is_Open;
 
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
-      Info : aliased System.File_Control.struct_stat;
+      Info : aliased C.sys.stat.struct_stat;
    begin
       Check_File_Open (File);
       fstat (File.Handle, Info'Access);
@@ -907,9 +910,9 @@ package body Ada.Streams.Stream_IO.Inside is
          return File.Reading_Index = File.Buffer_Index;
       else
          declare
-            Z_Index : constant System.File_Control.off_t :=
+            Z_Index : constant C.sys.types.off_t :=
                lseek (File.Handle, 0, C.unistd.SEEK_CUR)
-               + System.File_Control.off_t (Offset_Of_Buffer (File));
+               + C.sys.types.off_t (Offset_Of_Buffer (File));
          begin
             return Z_Index >= Info.st_size;
             --  whether writing buffer will expand the file size or not
@@ -1098,14 +1101,14 @@ package body Ada.Streams.Stream_IO.Inside is
       File : not null Non_Controlled_File_Type;
       To : Stream_Element_Positive_Count)
    is
-      Dummy : System.File_Control.off_t;
+      Dummy : C.sys.types.off_t;
       pragma Unreferenced (Dummy);
       Z_Index : constant Stream_Element_Offset := To - 1; -- zero based
    begin
       Flush_Writing_Buffer (File);
       Dummy := lseek (
          File.Handle,
-         System.File_Control.off_t (Z_Index),
+         C.sys.types.off_t (Z_Index),
          C.unistd.SEEK_SET);
       Set_Buffer_Index (File, Z_Index);
    end Set_Index;
@@ -1113,7 +1116,7 @@ package body Ada.Streams.Stream_IO.Inside is
    function Index (File : not null Non_Controlled_File_Type)
       return Stream_Element_Positive_Count
    is
-      Result : constant System.File_Control.off_t :=
+      Result : constant C.sys.types.off_t :=
          lseek (File.Handle, 0, C.unistd.SEEK_CUR);
    begin
       return Stream_Element_Positive_Count (Result + 1)
@@ -1123,7 +1126,7 @@ package body Ada.Streams.Stream_IO.Inside is
    function Size (File : not null Non_Controlled_File_Type)
       return Stream_Element_Count
    is
-      Info : aliased System.File_Control.struct_stat;
+      Info : aliased C.sys.stat.struct_stat;
    begin
       Flush_Writing_Buffer (File);
       fstat (File.Handle, Info'Access);

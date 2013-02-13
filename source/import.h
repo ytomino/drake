@@ -2,6 +2,7 @@
 #define d_fileno d_ino
 #elif defined(__linux__)
 #define _GNU_SOURCE /* use GNU extension */
+#define _FILE_OFFSET_BITS 64
 #define st_atim st_atimespec
 #define st_mtim st_mtimespec
 #define st_ctim st_ctimespec
@@ -69,6 +70,7 @@
 #undef st_mtime
 #undef st_ctime
 #include <malloc.h> /* malloc_usable_size */
+#undef _FILE_OFFSET_BITS
 #endif
 
 #if defined(__WINNT__)
