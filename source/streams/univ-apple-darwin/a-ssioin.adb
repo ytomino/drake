@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.File_Control;
 with System.IO_Options;
@@ -44,7 +45,7 @@ package body Ada.Streams.Stream_IO.Inside is
          C.unistd.lseek (Handle, offset, whence);
    begin
       if Result < 0 then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       return Result;
    end lseek;
@@ -57,7 +58,7 @@ package body Ada.Streams.Stream_IO.Inside is
       buf : not null access C.sys.stat.struct_stat) is
    begin
       if C.sys.stat.fstat (Handle, buf) < 0 then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end fstat;
 
@@ -90,7 +91,7 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Set_Close_On_Exec (Handle, Error);
       if Error then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end Set_Close_On_Exec;
 
@@ -296,12 +297,12 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
       if Handle < 0 then
          System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       Set_Close_On_Exec (Handle, Error);
       if Error then
          System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end Open_Temporary_File;
 
@@ -464,15 +465,15 @@ package body Ada.Streams.Stream_IO.Inside is
                | C.errno.EACCES
                | C.errno.EISDIR
                | C.errno.EROFS =>
-               raise Name_Error;
+               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
             when others =>
-               raise Use_Error;
+               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
       end if;
       Set_Close_On_Exec (Handle, Error);
       if Error then
          Free (File); -- free on error
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       --  set file
       File.Handle := Handle;
@@ -530,7 +531,7 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Check_File_Open (File : Non_Controlled_File_Type) is
    begin
       if File = null then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
    end Check_File_Open;
 
@@ -660,7 +661,7 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Flush_Writing_Buffer (File, Error);
       if Error then
-         raise Device_Error;
+         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
       end if;
    end Flush_Writing_Buffer;
 
@@ -686,7 +687,7 @@ package body Ada.Streams.Stream_IO.Inside is
          Flush_Writing_Buffer (File, Error);
          if Error and then Raise_On_Error then
             Free (File); -- free on error
-            raise Device_Error;
+            Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
          end if;
       end if;
       case File.Kind is
@@ -698,7 +699,7 @@ package body Ada.Streams.Stream_IO.Inside is
             end if;
             if Error and then Raise_On_Error then
                Free (File); -- free on error
-               raise Use_Error;
+               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
             end if;
          when External_No_Close | Standard_Handle =>
             null;
@@ -762,7 +763,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Form : String := "") is
    begin
       if File /= null then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       Allocate_And_Open (
          Method => Create,
@@ -779,7 +780,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Form : String := "") is
    begin
       if File /= null then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       Allocate_And_Open (
          Method => Open,
@@ -817,7 +818,7 @@ package body Ada.Streams.Stream_IO.Inside is
             File.Kind := Temporary;
             Close (File, Raise_On_Error => True);
          when External | External_No_Close | Standard_Handle =>
-            raise Status_Error;
+            Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end case;
    end Delete;
 
@@ -850,7 +851,7 @@ package body Ada.Streams.Stream_IO.Inside is
             File.all.Mode := Mode;
             Set_Index (File.all, 1);
          when External | External_No_Close | Standard_Handle =>
-            raise Status_Error;
+            Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end case;
       if Mode = Append_File then
          Set_Index_To_Append (File.all);
@@ -903,7 +904,7 @@ package body Ada.Streams.Stream_IO.Inside is
             begin
                Ready_Reading_Buffer (File, Error);
                if Error then
-                  raise Use_Error;
+                  Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
                end if;
             end;
          end if;
@@ -943,7 +944,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Last : out Stream_Element_Offset) is
    begin
       if File.Mode = Out_File then
-         raise Mode_Error;
+         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
       end if;
       Last := Item'First - 1;
       if Item'First > Item'Last then
@@ -1015,7 +1016,7 @@ package body Ada.Streams.Stream_IO.Inside is
                end if;
             end if;
             if Last < Item'First and then Error then
-               raise End_Error;
+               Exceptions.Raise_Exception_From_Here (End_Error'Identity);
             end if;
          end;
       end if;
@@ -1028,7 +1029,7 @@ package body Ada.Streams.Stream_IO.Inside is
       First : Stream_Element_Offset;
    begin
       if File.Mode = In_File then
-         raise Mode_Error;
+         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
       end if;
       First := Item'First;
       if File.Writing_Index > File.Buffer_Index then
@@ -1076,7 +1077,8 @@ package body Ada.Streams.Stream_IO.Inside is
                         when C.errno.EPIPE =>
                            null;
                         when others =>
-                           raise Use_Error;
+                           Exceptions.Raise_Exception_From_Here (
+                              Use_Error'Identity);
                      end case;
                   end if;
                   First := First + Taking_Length;
@@ -1162,7 +1164,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Flush_Writing_Buffer (File.all);
             File.all.Mode := Mode;
          when External | External_No_Close | Standard_Handle =>
-            raise Status_Error;
+            Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end case;
       if Mode = Append_File then
          Set_Index_To_Append (File.all);
@@ -1178,7 +1180,7 @@ package body Ada.Streams.Stream_IO.Inside is
       if C.unistd.fsync (File.Handle) < 0 then
          --  EINVAL means fd is not file but FIFO, etc.
          if C.errno.errno /= C.errno.EINVAL then
-            raise Device_Error;
+            Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
          end if;
       end if;
    end Flush;
@@ -1198,7 +1200,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Full_Name_Length : C.size_t;
    begin
       if File /= null then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       if To_Close then
          Kind := External;
