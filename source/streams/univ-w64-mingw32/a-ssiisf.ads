@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Streams.Stream_IO.Inside.Standards is
+private with C.winbase;
+package Ada.Streams.Stream_IO.Inside.Standard_Files is
 
    Standard_Input : constant Non_Controlled_File_Type;
    Standard_Output : constant Non_Controlled_File_Type;
@@ -11,13 +12,20 @@ private
 
    Empty_Form : aliased C.char_array (0 .. 0) := (0 => C.char'Val (0));
 
-   Standard_Input_Name : aliased C.char_array := "*stdin" & C.char'Val (0);
+   Standard_Input_Name : aliased C.winnt.WCHAR_array := (
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('d')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('i')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('n')),
+      C.winnt.WCHAR'Val (0));
 
    Standard_Input_Stream : aliased Stream_Type := (
-      Handle => 0,
+      Handle => C.winbase.GetStdHandle (C.winbase.STD_INPUT_HANDLE),
       Mode => In_File,
       Kind => Standard_Handle,
-      Name => Standard_Input_Name'Address,
+      Name => Standard_Input_Name (0)'Access,
       Name_Length => 6,
       Form => Empty_Form'Address,
       Form_Length => 0,
@@ -29,13 +37,21 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Output_Name : aliased C.char_array := "*stdout" & C.char'Val (0);
+   Standard_Output_Name : aliased C.winnt.WCHAR_array := (
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('d')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('o')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('u')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
+      C.winnt.WCHAR'Val (0));
 
    Standard_Output_Stream : aliased Stream_Type := (
-      Handle => 1,
+      Handle => C.winbase.GetStdHandle (C.winbase.STD_OUTPUT_HANDLE),
       Mode => Out_File,
       Kind => Standard_Handle,
-      Name => Standard_Output_Name'Address,
+      Name => Standard_Output_Name (0)'Access,
       Name_Length => 7,
       Form => Empty_Form'Address,
       Form_Length => 0,
@@ -47,13 +63,21 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Error_Name : aliased C.char_array := "*stderr" & C.char'Val (0);
+   Standard_Error_Name : aliased C.winnt.WCHAR_array := (
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('d')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('e')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('r')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('r')),
+      C.winnt.WCHAR'Val (0));
 
    Standard_Error_Stream : aliased Stream_Type := (
-      Handle => 2,
+      Handle => C.winbase.GetStdHandle (C.winbase.STD_ERROR_HANDLE),
       Mode => Out_File,
       Kind => Standard_Handle,
-      Name => Standard_Error_Name'Address,
+      Name => Standard_Error_Name (0)'Access,
       Name_Length => 7,
       Form => Empty_Form'Address,
       Form_Length => 0,
@@ -72,4 +96,4 @@ private
    Standard_Error : constant Non_Controlled_File_Type :=
       Standard_Error_Stream'Access;
 
-end Ada.Streams.Stream_IO.Inside.Standards;
+end Ada.Streams.Stream_IO.Inside.Standard_Files;

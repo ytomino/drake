@@ -18,10 +18,10 @@ EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
 ifeq ($(findstring darwin,$(TARGET)),)
 EXAMPLES:=$(filter-out diff_ucd_hfs,$(EXAMPLES))
 ifneq ($(findstring linux,$(TARGET)),)
-EXAMPLES:=$(filter-out cal charset cntnr_% cpu directories ext_check ext_doc fixed input2forward mappedio pkgversion process random_mt19937 random_sfmt socket_client stackoverflow storagestream streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
+EXAMPLES:=$(filter-out cpu stackoverflow tasking%,$(EXAMPLES))
 endif
 ifneq ($(findstring mingw,$(TARGET)),)
-EXAMPLES:=$(filter-out cal charset cntnr_% cpu directories ext_check ext_doc fixed input2forward mappedio pkgversion process random_mt19937 random_sfmt socket_client stackoverflow storagestream storagepool streamcat tasking% textio textionum times tty typedio ucd_%,$(EXAMPLES))
+EXAMPLES:=$(filter-out cpu directories mappedio process socket_client stackoverflow storagepool tasking%,$(EXAMPLES))
 endif
 endif
 

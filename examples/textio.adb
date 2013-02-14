@@ -1,9 +1,11 @@
+with Ada.Command_Line;
 with Ada.Text_IO;
 with Ada.Text_IO.Text_Streams;
 with Ada.Wide_Text_IO;
 with Ada.Wide_Text_IO.Text_Streams;
 with Ada.Wide_Wide_Text_IO;
 with Ada.Wide_Wide_Text_IO.Text_Streams;
+with System.IO_Options;
 procedure textio is
 	subtype C is Character;
 	subtype WC is Wide_Character;
@@ -42,10 +44,41 @@ begin
 		Ada.Wide_Wide_Text_IO.Col (Ada.Wide_Wide_Text_IO.Current_Output.all));
 	-- check sharing mode
 	declare
+		Test_File_Name : constant String := Ada.Command_Line.Command_Name & "-test";
 		File_1, File_2 : Ada.Text_IO.File_Type;
 	begin
-		Ada.Text_IO.Open (File_1, Ada.Text_IO.In_File, "textio.adb"); -- shared lock
---		Ada.Text_IO.Open (File_1, Ada.Text_IO.Append_File, "textio.adb"); -- exclusive lock
-		Ada.Text_IO.Open (File_2, Ada.Text_IO.In_File, "textio.adb"); -- dead lock when File_1 opened as Append_File
+		Ada.Text_IO.Create (File_1, Ada.Text_IO.Out_File, Test_File_Name, "shared=read"); -- shared lock (default is exclusive lock)
+		Ada.Text_IO.Open (File_2, Ada.Text_IO.In_File, Test_File_Name, "shared=yes"); -- dead lock when File_1 acquired exclusive lock
+		Ada.Text_IO.Close (File_2);
+		Ada.Text_IO.Delete (File_1);
 	end;
+	-- test form parameter
+	declare
+		First : Positive;
+		Last : Natural;
+		Form_1 : constant String := "abc=def";
+		Form_2 : constant String := "abc=def,ghi";
+		Form_3 : constant String := "ghi";
+		Form_4 : constant String := "ghi,abc=def";
+	begin
+		System.IO_Options.Form_Parameter (Form_1, "abc", First, Last);
+		pragma Assert (Form_1 (First .. Last) = "def");
+		System.IO_Options.Form_Parameter (Form_1, "a", First, Last);
+		pragma Assert (Form_1 (First .. Last) = "" and then First = 1);
+		System.IO_Options.Form_Parameter (Form_1, "c", First, Last);
+		pragma Assert (Form_1 (First .. Last) = "" and then First = 1);
+		System.IO_Options.Form_Parameter (Form_1, "def", First, Last);
+		pragma Assert (Form_1 (First .. Last) = "" and then First = 1);
+		System.IO_Options.Form_Parameter (Form_2, "abc", First, Last);
+		pragma Assert (Form_2 (First .. Last) = "def");
+		System.IO_Options.Form_Parameter (Form_2, "ghi", First, Last);
+		pragma Assert (Form_2 (First .. Last) = "" and then First > 1);
+		System.IO_Options.Form_Parameter (Form_3, "ghi", First, Last);
+		pragma Assert (Form_3 (First .. Last) = "" and then First > 1);
+		System.IO_Options.Form_Parameter (Form_4, "ghi", First, Last);
+		pragma Assert (Form_4 (First .. Last) = "" and then First > 1);
+		System.IO_Options.Form_Parameter (Form_4, "abc", First, Last);
+		pragma Assert (Form_4 (First .. Last) = "def");
+	end;
+	pragma Debug (Ada.Debug.Put ("OK"));
 end textio;

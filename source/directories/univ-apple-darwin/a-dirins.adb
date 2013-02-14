@@ -3,7 +3,6 @@ with Ada.Exceptions;
 with C.errno;
 with C.stdlib;
 with C.string;
-with C.sys.stat;
 with C.sys.time;
 with C.sys.types;
 with C.time;
@@ -54,7 +53,7 @@ package body Ada.Directories.Inside is
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
    begin
-      Error := System.File_Control.lstat (C_Name (0)'Access, Information) < 0;
+      Error := C.sys.stat.lstat (C_Name (0)'Access, Information) < 0;
    end Get_Information;
 
    --  implementation
@@ -188,6 +187,15 @@ package body Ada.Directories.Inside is
          end case;
       end if;
    end Symbolic_Link;
+
+   function Full_Name (Name : String) return String is
+   begin
+      if Hierarchical_File_Names.Is_Relative_Name (Name) then
+         return Compose (Current_Directory, Name);
+      else
+         return Name;
+      end if;
+   end Full_Name;
 
    function Exists (Name : String) return Boolean is
       Information : aliased Directory_Entry_Information_Type;

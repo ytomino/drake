@@ -120,7 +120,8 @@ package Ada.Text_IO.Inside is
 
    type Encoding_Type is (
       Locale, -- Is_Terminal = False
-      Terminal); -- Is_Terminal = True
+      Terminal, -- Is_Terminal = True
+      UTF_8);
    pragma Discard_Names (Encoding_Type);
 
    type Line_Mark_Type is (LF, CR, CRLF);
@@ -145,9 +146,10 @@ private
       Col : Count := 1;
       Line_Length : Count := 0;
       Page_Length : Count := 0;
-      Buffer_Col : Count := 0;
+      Buffer_Col : Count := 0; -- converted length
       Last : Natural := 0;
-      Buffer : String (1 .. 6);
+      Buffer : String (1 .. 12); -- 2 code-points of UTF-8
+      Converted : Boolean := False;
       End_Of_File : Boolean := False;
       Dummy_Mark : Dummy_Mark_Type := None;
       Mode : File_Mode;
@@ -166,8 +168,10 @@ private
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Input,
       Mode => In_File,
       Encoding => Encoding_Type'Val (Boolean'Pos (
-         Streams.Stream_IO.Inside.Is_Terminal (0))),
-      Line_Mark => LF,
+         Streams.Stream_IO.Inside.Is_Terminal (
+            Streams.Stream_IO.Inside.Handle (
+               Streams.Stream_IO.Inside.Standard_Files.Standard_Input)))),
+      Line_Mark => CRLF,
       others => <>);
 
    Standard_Output_Text : aliased Text_Type := (
@@ -178,8 +182,10 @@ private
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Output,
       Mode => Out_File,
       Encoding => Encoding_Type'Val (Boolean'Pos (
-         Streams.Stream_IO.Inside.Is_Terminal (1))),
-      Line_Mark => LF,
+         Streams.Stream_IO.Inside.Is_Terminal (
+            Streams.Stream_IO.Inside.Handle (
+               Streams.Stream_IO.Inside.Standard_Files.Standard_Output)))),
+      Line_Mark => CRLF,
       others => <>);
 
    Standard_Error_Text : aliased Text_Type := (
@@ -190,8 +196,10 @@ private
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Error,
       Mode => Out_File,
       Encoding => Encoding_Type'Val (Boolean'Pos (
-         Streams.Stream_IO.Inside.Is_Terminal (2))),
-      Line_Mark => LF,
+         Streams.Stream_IO.Inside.Is_Terminal (
+            Streams.Stream_IO.Inside.Handle (
+               Streams.Stream_IO.Inside.Standard_Files.Standard_Error)))),
+      Line_Mark => CRLF,
       others => <>);
 
    Standard_Input : constant Non_Controlled_File_Type :=

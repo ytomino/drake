@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-package Ada.Streams.Stream_IO.Standards is
+package Ada.Streams.Stream_IO.Standard_Files is
    --  There are Stream_IO version file objects of
    --    Standard_Input, Standard_Output and Standard_Error.
 
@@ -11,4 +11,4 @@ package Ada.Streams.Stream_IO.Standards is
    function Standard_Error return not null access constant File_Type;
    pragma Inline (Standard_Error);
 
-end Ada.Streams.Stream_IO.Standards;
+end Ada.Streams.Stream_IO.Standard_Files;

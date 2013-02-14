@@ -1,99 +1,67 @@
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
-with System.File_Control;
 with System.IO_Options;
 with System.Memory;
 with System.Storage_Elements;
-with C.errno;
-with C.fcntl;
-with C.stdlib;
+with System.Zero_Terminated_WStrings;
 with C.string;
-with C.sys.stat;
-with C.sys.types;
-with C.unistd;
+with C.winbase;
+with C.wincon;
+with C.windef;
+with C.winerror;
 package body Ada.Streams.Stream_IO.Inside is
    use type Tags.Tag;
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
-   use type C.char;
-   use type C.char_array;
-   use type C.char_ptr;
-   use type C.signed_int; -- ssize_t is signed int or signed long
-   use type C.signed_long;
    use type C.size_t;
-   use type C.unsigned_short;
-   use type C.unsigned_int;
-   use type C.sys.types.off_t; -- 64bit off_t
+   use type C.windef.DWORD;
+   use type C.windef.UINT;
+   use type C.windef.WINBOOL;
+   use type C.winnt.LONGLONG;
 
-   pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
-      "off_t is not 64bit");
-
-   --  handle
-
-   function lseek (
-      Handle : Handle_Type;
-      offset : C.sys.types.off_t;
-      whence : C.signed_int)
-      return C.sys.types.off_t;
-   function lseek (
-      Handle : Handle_Type;
-      offset : C.sys.types.off_t;
-      whence : C.signed_int)
-      return C.sys.types.off_t
+   procedure SetFilePointerEx (
+      Handle : C.winnt.HANDLE;
+      DistanceToMove : C.winnt.LONGLONG;
+      NewFilePointer : out C.winnt.LONGLONG;
+      MoveMethod : C.windef.DWORD);
+   procedure SetFilePointerEx (
+      Handle : C.winnt.HANDLE;
+      DistanceToMove : C.winnt.LONGLONG;
+      NewFilePointer : out C.winnt.LONGLONG;
+      MoveMethod : C.windef.DWORD)
    is
-      Result : constant C.sys.types.off_t :=
-         C.unistd.lseek (Handle, offset, whence);
+      liDistanceToMove : C.winnt.LARGE_INTEGER;
+      liNewFilePointer : aliased C.winnt.LARGE_INTEGER;
    begin
-      if Result < 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
-      end if;
-      return Result;
-   end lseek;
-
-   procedure fstat (
-      Handle : Handle_Type;
-      buf : not null access C.sys.stat.struct_stat);
-   procedure fstat (
-      Handle : Handle_Type;
-      buf : not null access C.sys.stat.struct_stat) is
-   begin
-      if C.sys.stat.fstat (Handle, buf) < 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
-      end if;
-   end fstat;
-
-   procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean);
-   procedure Set_Close_On_Exec (Handle : Handle_Type; Error : out Boolean) is
-   begin
-      Error := C.fcntl.fcntl (
+      liDistanceToMove.QuadPart := DistanceToMove;
+      if C.winbase.SetFilePointerEx (
          Handle,
-         C.fcntl.F_SETFD,
-         C.fcntl.FD_CLOEXEC) = -1;
-   end Set_Close_On_Exec;
+         liDistanceToMove,
+         liNewFilePointer'Access,
+         MoveMethod) = 0
+      then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+      end if;
+      NewFilePointer := liNewFilePointer.QuadPart;
+   end SetFilePointerEx;
 
    --  implementation of handle
 
    function Is_Terminal (Handle : Handle_Type) return Boolean is
+      Mode : aliased C.windef.DWORD;
    begin
-      return C.unistd.isatty (Handle) /= 0;
+      return C.winbase.GetFileType (Handle) = C.winbase.FILE_TYPE_CHAR
+         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0;
    end Is_Terminal;
 
    function Is_Seekable (Handle : Handle_Type) return Boolean is
    begin
-      return C.unistd.lseek (
+      return C.winbase.SetFilePointerEx (
          Handle,
-         0,
-         C.unistd.SEEK_CUR) >= 0;
+         (Unchecked_Tag => 2, QuadPart => 0),
+         null,
+         C.winbase.FILE_CURRENT) /= 0;
    end Is_Seekable;
-
-   procedure Set_Close_On_Exec (Handle : Handle_Type) is
-      Error : Boolean;
-   begin
-      Set_Close_On_Exec (Handle, Error);
-      if Error then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
-      end if;
-   end Set_Close_On_Exec;
 
    --  implementation of handle for controlled
 
@@ -121,9 +89,10 @@ package body Ada.Streams.Stream_IO.Inside is
 
    --  non-controlled
 
-   package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      C.char,
-      C.char_ptr);
+   package LPWSTR_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.winnt.WCHAR,
+         C.winnt.LPWSTR);
 
    package Non_Controlled_File_Type_Conv is
       new System.Address_To_Named_Access_Conversions (
@@ -134,25 +103,27 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle : Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Name : System.Address; -- be freeing on error
-      Name_Length : Natural;
+      Name : C.winnt.LPWSTR; -- be freeing on error
+      Name_Length : C.signed_int;
       Form : String)
       return Non_Controlled_File_Type;
    function Allocate (
       Handle : Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Name : System.Address;
-      Name_Length : Natural;
+      Name : C.winnt.LPWSTR;
+      Name_Length : C.signed_int;
       Form : String)
       return Non_Controlled_File_Type
    is
-      Result_Addr : constant System.Address :=
-         System.Address (C.stdlib.malloc (
+      Result_Addr : constant System.Address := System.Address (
+         C.winbase.HeapAlloc (
+            C.winbase.GetProcessHeap,
+            0,
             Stream_Type'Size / Standard'Storage_Unit + Form'Length));
    begin
       if Result_Addr = System.Null_Address then
-         System.Memory.Free (Name);
+         System.Memory.Free (LPWSTR_Conv.To_Address (Name));
          raise Storage_Error;
       else
          declare
@@ -189,7 +160,7 @@ package body Ada.Streams.Stream_IO.Inside is
       if File.Buffer /= File.Buffer_Inline'Address then
          System.Memory.Free (File.Buffer);
       end if;
-      System.Memory.Free (File.Name);
+      System.Memory.Free (LPWSTR_Conv.To_Address (File.Name));
       System.Memory.Free (Non_Controlled_File_Type_Conv.To_Address (File));
    end Free;
 
@@ -213,178 +184,130 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Set_Index_To_Append (File : not null Non_Controlled_File_Type);
    procedure Set_Index_To_Append (File : not null Non_Controlled_File_Type) is
-      Z_Index : constant Stream_Element_Offset := Stream_Element_Offset (
-         lseek (File.Handle, 0, C.unistd.SEEK_END));
+      Z_Index : C.winnt.LONGLONG;
    begin
-      Set_Buffer_Index (File, Z_Index);
+      SetFilePointerEx (File.Handle, 0, Z_Index, C.winbase.FILE_END);
+      Set_Buffer_Index (File, Stream_Element_Offset (Z_Index));
    end Set_Index_To_Append;
 
-   Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
-   Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
+   Temp_Prefix : constant C.winnt.WCHAR_array (0 .. 3) := (
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('A')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('D')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('A')),
+      C.winnt.WCHAR'Val (0));
 
    procedure Open_Temporary_File (
       Handle : out Handle_Type;
-      Full_Name : out C.char_ptr;
-      Full_Name_Length : out C.size_t);
+      Full_Name : out C.winnt.LPWSTR;
+      Full_Name_Length : out C.signed_int);
    procedure Open_Temporary_File (
       Handle : out Handle_Type;
-      Full_Name : out C.char_ptr;
-      Full_Name_Length : out C.size_t)
+      Full_Name : out C.winnt.LPWSTR;
+      Full_Name_Length : out C.signed_int)
    is
-      Temp_Template_Length : constant C.size_t := Temp_Template'Length - 1;
-      Temp_Dir : C.char_ptr;
-      Error : Boolean;
+      Temp_Dir : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
+      Temp_Name : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       --  compose template
-      Temp_Dir := C.stdlib.getenv (Temp_Variable (0)'Access);
-      if Temp_Dir /= null then
-         --  environment variable TMPDIR
-         Full_Name_Length := C.string.strlen (Temp_Dir);
-         Full_Name := char_ptr_Conv.To_Pointer (System.Memory.Allocate (
-            System.Storage_Elements.Storage_Count (
-               Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
-         declare
-            subtype Fixed_char_array is C.char_array (C.size_t);
-            Temp_Dir_A : Fixed_char_array;
-            for Temp_Dir_A'Address use Temp_Dir.all'Address;
-            Full_Name_A : Fixed_char_array;
-            for Full_Name_A'Address use Full_Name.all'Address;
-         begin
-            Full_Name_A (0 .. Full_Name_Length - 1) :=
-               Temp_Dir_A (0 .. Full_Name_Length - 1);
-         end;
-      else
-         --  current directory
-         Full_Name := C.unistd.getcwd (null, 0);
-         Full_Name_Length := C.string.strlen (Full_Name);
-         --  reuse the memory from malloc (similar to reallocf)
-         declare
-            New_Full_Name : constant C.char_ptr :=
-               char_ptr_Conv.To_Pointer (System.Address (C.stdlib.realloc (
-                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
-                  Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
-         begin
-            if New_Full_Name = null then
-               C.stdlib.free (
-                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)));
-               raise Storage_Error;
-            end if;
-            Full_Name := New_Full_Name;
-         end;
+      if C.winbase.GetTempPath (Temp_Dir'Length, Temp_Dir (0)'Access) = 0
+         or else C.winbase.GetTempFileName (
+            Temp_Dir (0)'Access,
+            Temp_Prefix (0)'Access,
+            0,
+            Temp_Name (0)'Access) = 0
+      then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
-      declare
-         subtype Fixed_char_array is C.char_array (C.size_t);
-         Full_Name_A : Fixed_char_array;
-         for Full_Name_A'Address use Full_Name.all'Address;
-      begin
-         --  append slash
-         if Full_Name_A (Full_Name_Length - 1) /= '/' then
-            Full_Name_A (Full_Name_Length) := '/';
-            Full_Name_Length := Full_Name_Length + 1;
-         end if;
-         --  append template
-         Full_Name_A (
-            Full_Name_Length ..
-            Full_Name_Length + Temp_Template_Length) := Temp_Template; -- NUL
-         Full_Name_Length := Full_Name_Length + Temp_Template_Length;
-      end;
       --  open
+      Handle := C.winbase.CreateFile (
+         lpFileName => Temp_Name (0)'Access,
+         dwDesiredAccess =>
+            C.windef.DWORD'Mod (C.winnt.GENERIC_READ)
+            or C.winnt.GENERIC_WRITE, -- full access for Reset/Set_Mode
+         dwShareMode =>
+            C.winnt.FILE_SHARE_READ
+            or C.winnt.FILE_SHARE_WRITE,
+         lpSecurityAttributes => null,
+         dwCreationDisposition =>
+            C.winbase.OPEN_EXISTING
+            or C.winbase.TRUNCATE_EXISTING,
+         dwFlagsAndAttributes =>
+            C.winnt.FILE_ATTRIBUTE_TEMPORARY
+            or C.winbase.FILE_FLAG_DELETE_ON_CLOSE,
+         hTemplateFile => C.winnt.HANDLE (System.Null_Address));
+      if Handle = C.winbase.INVALID_HANDLE_VALUE then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+      end if;
+      --  allocate filename
+      Full_Name_Length := C.signed_int (
+         C.string.wcslen (Temp_Name (0)'Access));
+      Full_Name := LPWSTR_Conv.To_Pointer (System.Memory.Allocate (
+         System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
+            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
-         use C.stdlib; -- Linux, POSIX.1-2008
-         use C.unistd; -- Darwin, FreeBSD
+         W_Full_Name : C.winnt.WCHAR_array (0 .. C.size_t (Full_Name_Length));
+         for W_Full_Name'Address use LPWSTR_Conv.To_Address (Full_Name);
       begin
-         Handle := mkstemp (Full_Name);
+         W_Full_Name := Temp_Name (0 .. C.size_t (Full_Name_Length));
       end;
-      if Handle < 0 then
-         System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
-      end if;
-      Set_Close_On_Exec (Handle, Error);
-      if Error then
-         System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
-      end if;
    end Open_Temporary_File;
 
    procedure Compose_File_Name (
       Name : String;
-      Full_Name : out C.char_ptr;
-      Full_Name_Length : out C.size_t);
+      Full_Name : out C.winnt.LPWSTR;
+      Full_Name_Length : out C.signed_int);
    procedure Compose_File_Name (
       Name : String;
-      Full_Name : out C.char_ptr;
-      Full_Name_Length : out C.size_t)
+      Full_Name : out C.winnt.LPWSTR;
+      Full_Name_Length : out C.signed_int)
    is
-      Name_Length : constant C.size_t := Name'Length;
+      W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name_Length : C.signed_int;
+      W_Full_Path : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
+      W_Full_Path_Length : C.windef.DWORD;
    begin
-      if Name (Name'First) = '/' then
-         --  absolute path
-         Full_Name := char_ptr_Conv.To_Pointer (
-            System.Memory.Allocate (
-               System.Storage_Elements.Storage_Count (
-                  Name_Length + 1))); -- NUL
-         Full_Name_Length := 0;
-      else
-         --  current directory
-         Full_Name := C.unistd.getcwd (null, 0);
-         Full_Name_Length := C.string.strlen (Full_Name);
-         --  reuse the memory from malloc (similar to reallocf)
-         declare
-            New_Full_Name : constant C.char_ptr :=
-               char_ptr_Conv.To_Pointer (System.Address (C.stdlib.realloc (
-                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
-                  Full_Name_Length + Name_Length + 2))); -- '/' & NUL
-         begin
-            if New_Full_Name = null then
-               C.stdlib.free (
-                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)));
-               raise Storage_Error;
-            end if;
-            Full_Name := New_Full_Name;
-         end;
-         --  append slash
-         declare
-            subtype Fixed_char_array is C.char_array (C.size_t);
-            Full_Name_A : Fixed_char_array;
-            for Full_Name_A'Address use Full_Name.all'Address;
-         begin
-            if Full_Name_A (Full_Name_Length - 1) /= '/' then
-               Full_Name_A (Full_Name_Length) := '/';
-               Full_Name_Length := Full_Name_Length + 1;
-            end if;
-         end;
+      System.Zero_Terminated_WStrings.Convert (
+         Name,
+         W_Name (0)'Access,
+         W_Name_Length);
+      W_Full_Path_Length := C.winbase.GetFullPathName (
+         W_Name (0)'Access,
+         W_Full_Path'Length,
+         W_Full_Path (0)'Access,
+         null);
+      if W_Full_Path_Length = 0 then
+         W_Full_Path_Length := C.windef.DWORD (W_Name_Length);
+         W_Full_Path (0 .. C.size_t (W_Full_Path_Length)) :=
+            W_Name (0 .. C.size_t (W_Name_Length));
       end if;
-      --  append name
+      --  allocate filename
+      Full_Name_Length := C.signed_int (W_Full_Path_Length);
+      Full_Name := LPWSTR_Conv.To_Pointer (System.Memory.Allocate (
+         System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
+            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
-         subtype Fixed_char_array is C.char_array (C.size_t);
-         Full_Name_A : Fixed_char_array;
-         for Full_Name_A'Address use Full_Name.all'Address;
-         C_Name : C.char_array (0 .. Name_Length - 1);
-         for C_Name'Address use Name'Address;
+         W_Full_Name : C.winnt.WCHAR_array (0 .. C.size_t (Full_Name_Length));
+         for W_Full_Name'Address use LPWSTR_Conv.To_Address (Full_Name);
       begin
-         Full_Name_A (
-            Full_Name_Length ..
-            Full_Name_Length + Name_Length - 1) := C_Name;
-         Full_Name_Length := Full_Name_Length + Name_Length;
-         Full_Name_A (Full_Name_Length) := C.char'Val (0);
+         W_Full_Name := W_Full_Path (0 .. C.size_t (Full_Name_Length));
       end;
    end Compose_File_Name;
 
-   function Form_Share_Mode (Form : String; Default : C.unsigned_int)
-      return C.unsigned_int;
-   function Form_Share_Mode (Form : String; Default : C.unsigned_int)
-      return C.unsigned_int
+   function Form_Share_Mode (Form : String; Default : C.windef.DWORD)
+      return C.windef.DWORD;
+   function Form_Share_Mode (Form : String; Default : C.windef.DWORD)
+      return C.windef.DWORD
    is
       First : Positive;
       Last : Natural;
    begin
       System.IO_Options.Form_Parameter (Form, "shared", First, Last);
       if First <= Last and then Form (First) = 'r' then -- read
-         return System.File_Control.O_SHLOCK;
+         return C.winnt.FILE_SHARE_READ;
       elsif First <= Last and then Form (First) = 'w' then -- write
-         return System.File_Control.O_EXLOCK;
-      elsif First <= Last and then Form (First) = 'y' then -- yes
          return 0;
+      elsif First <= Last and then Form (First) = 'y' then -- yes
+         return C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
       else -- no
          return Default;
       end if;
@@ -397,83 +320,96 @@ package body Ada.Streams.Stream_IO.Inside is
       Method : Open_Method;
       File : not null Non_Controlled_File_Type;
       Mode : File_Mode;
-      Name : not null C.char_ptr;
+      Name : not null C.winnt.LPWSTR;
       Form : String);
    procedure Open_Normal (
       Method : Open_Method;
       File : not null Non_Controlled_File_Type;
       Mode : File_Mode;
-      Name : not null C.char_ptr;
+      Name : not null C.winnt.LPWSTR;
       Form : String)
    is
       Handle : Handle_Type;
-      Flags : C.unsigned_int;
-      Default_Lock_Flags : C.unsigned_int;
-      Modes : constant := 8#644#;
-      errno : C.signed_int;
-      Error : Boolean;
+      DesiredAccess : C.windef.DWORD;
+      ShareMode : C.windef.DWORD;
+      CreationDisposition : C.windef.DWORD;
+      Error : C.windef.DWORD;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
       if Mode = In_File then
-         Default_Lock_Flags := System.File_Control.O_SHLOCK;
+         ShareMode := C.winnt.FILE_SHARE_READ;
       else
-         Default_Lock_Flags := System.File_Control.O_EXLOCK;
+         ShareMode := 0;
       end if;
+      ShareMode := Form_Share_Mode (Form, ShareMode);
       case Method is
          when Create =>
             declare
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDWR or O_CREAT or O_TRUNC,
-                  Out_File => O_WRONLY or O_CREAT or O_TRUNC,
-                  Append_File => O_RDWR or O_CREAT); -- no truncation
+               use C.winbase, C.winnt;
+               Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
+                  In_File =>
+                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE,
+                  Out_File => GENERIC_WRITE,
+                  Append_File =>
+                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
             begin
-               Flags := Table (Mode);
-               Default_Lock_Flags := System.File_Control.O_EXLOCK;
+               DesiredAccess := Access_Modes (Mode);
+               CreationDisposition := CREATE_ALWAYS; -- no truncation
             end;
          when Open =>
             declare
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDONLY,
-                  Out_File => O_WRONLY or O_TRUNC,
-                  Append_File => O_RDWR); -- O_APPEND ignores lseek
+               use C.winbase, C.winnt;
+               Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
+                  In_File => C.windef.DWORD'Mod (GENERIC_READ),
+                  Out_File => GENERIC_WRITE,
+                  Append_File =>
+                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
+               Creations : constant array (File_Mode) of C.windef.DWORD := (
+                  In_File => OPEN_EXISTING,
+                  Out_File => TRUNCATE_EXISTING,
+                  Append_File => OPEN_ALWAYS);
             begin
-               Flags := Table (Mode);
+               DesiredAccess := Access_Modes (Mode);
+               CreationDisposition := Creations (Mode);
             end;
          when Reset =>
             declare
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDONLY,
-                  Out_File => O_WRONLY,
-                  Append_File => O_RDWR); -- O_APPEND ignores lseek
+               use C.winbase, C.winnt;
+               Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
+                  In_File => C.windef.DWORD'Mod (GENERIC_READ),
+                  Out_File => GENERIC_WRITE,
+                  Append_File =>
+                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
+               Creations : constant array (File_Mode) of C.windef.DWORD := (
+                  In_File => OPEN_EXISTING,
+                  Out_File => OPEN_EXISTING, -- no truncation
+                  Append_File => OPEN_ALWAYS);
             begin
-               Flags := Table (Mode);
+               DesiredAccess := Access_Modes (Mode);
+               CreationDisposition := Creations (Mode);
             end;
       end case;
-      Flags := Flags or Form_Share_Mode (Form, Default_Lock_Flags);
       --  open
-      Handle := C.fcntl.open (Name, C.signed_int (Flags), Modes);
-      if Handle < 0 then
-         errno := C.errno.errno;
+      Handle := C.winbase.CreateFile (
+         lpFileName => Name,
+         dwDesiredAccess => DesiredAccess,
+         dwShareMode => ShareMode,
+         lpSecurityAttributes => null,
+         dwCreationDisposition => CreationDisposition,
+         dwFlagsAndAttributes => C.winnt.FILE_ATTRIBUTE_NORMAL,
+         hTemplateFile => C.winnt.HANDLE (System.Null_Address));
+      if Handle = C.winbase.INVALID_HANDLE_VALUE then
+         Error := C.winbase.GetLastError;
          Free (File); -- free on error
-         case errno is
-            when C.errno.ENOTDIR
-               | C.errno.ENAMETOOLONG
-               | C.errno.ENOENT
-               | C.errno.EACCES
-               | C.errno.EISDIR
-               | C.errno.EROFS =>
+         case Error is
+            when C.winerror.ERROR_FILE_NOT_FOUND
+               | C.winerror.ERROR_PATH_NOT_FOUND
+               | C.winerror.ERROR_INVALID_NAME
+               | C.winerror.ERROR_ALREADY_EXISTS =>
                Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
             when others =>
                Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
-      end if;
-      Set_Close_On_Exec (Handle, Error);
-      if Error then
-         Free (File); -- free on error
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       --  set file
       File.Handle := Handle;
@@ -494,8 +430,8 @@ package body Ada.Streams.Stream_IO.Inside is
       Form : String)
    is
       Handle : Handle_Type;
-      Full_Name : C.char_ptr;
-      Full_Name_Length : C.size_t;
+      Full_Name : C.winnt.LPWSTR;
+      Full_Name_Length : C.signed_int;
    begin
       if Name /= "" then
          Compose_File_Name (Name, Full_Name, Full_Name_Length);
@@ -503,11 +439,11 @@ package body Ada.Streams.Stream_IO.Inside is
             New_File : aliased Non_Controlled_File_Type;
          begin
             New_File := Allocate (
-               Handle => -1,
+               Handle => C.winbase.INVALID_HANDLE_VALUE,
                Mode => Mode,
                Kind => Normal,
-               Name => char_ptr_Conv.To_Address (Full_Name),
-               Name_Length => Natural (Full_Name_Length),
+               Name => Full_Name,
+               Name_Length => Full_Name_Length,
                Form => Form);
             Open_Normal (Method, New_File, Mode, Full_Name, Form);
             File := New_File;
@@ -521,8 +457,8 @@ package body Ada.Streams.Stream_IO.Inside is
             Handle => Handle,
             Mode => Mode,
             Kind => Temporary,
-            Name => char_ptr_Conv.To_Address (Full_Name),
-            Name_Length => Natural (Full_Name_Length),
+            Name => Full_Name,
+            Name_Length => Full_Name_Length,
             Form => Form);
       end if;
    end Allocate_And_Open;
@@ -539,26 +475,19 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Get_Buffer (File : not null Non_Controlled_File_Type) is
    begin
       if File.Buffer_Length = Uninitialized_Buffer then
-         if Is_Terminal (File.Handle) then
-            File.Buffer_Length := 0; -- no buffering for terminal
-         else
-            declare
-               Info : aliased C.sys.stat.struct_stat;
-               File_Type : C.sys.types.mode_t;
-            begin
-               fstat (File.Handle, Info'Access);
-               File_Type := Info.st_mode and C.sys.stat.S_IFMT;
-               if File_Type = C.sys.stat.S_IFIFO
-                  or else File_Type = C.sys.stat.S_IFSOCK
-               then
-                  File.Buffer_Length := 0; -- no buffering for pipe and socket
-               else
-                  File.Buffer_Length := Stream_Element_Offset'Max (
-                     2, -- Buffer_Length /= 1
-                     Stream_Element_Offset (Info.st_blksize));
-               end if;
-            end;
-         end if;
+         declare
+            File_Type : C.windef.DWORD;
+         begin
+            File_Type := C.winbase.GetFileType (File.Handle);
+            if File_Type /= C.winbase.FILE_TYPE_DISK then
+               --  no buffering for terminal, pipe and unknown device
+               File.Buffer_Length := 0;
+            else
+               --  disk file
+               File.Buffer_Length :=
+                  Stream_Element_Offset (System.Memory.Page_Size);
+            end if;
+         end;
          if File.Buffer_Length = 0 then
             File.Buffer := File.Buffer_Inline'Address;
             File.Buffer_Index := 0;
@@ -586,16 +515,28 @@ package body Ada.Streams.Stream_IO.Inside is
       File.Buffer_Index := File.Buffer_Index rem Buffer_Length;
       File.Reading_Index := File.Buffer_Index;
       declare
-         Read_Size : C.sys.types.ssize_t;
+         Read_Size : aliased C.windef.DWORD;
       begin
-         Read_Size := C.unistd.read (
+         Error := C.winbase.ReadFile (
             File.Handle,
-            C.void_ptr (File.Buffer
+            C.windef.LPVOID (File.Buffer
                + System.Storage_Elements.Storage_Offset (
                   File.Buffer_Index)),
-            C.size_t (Buffer_Length - File.Buffer_Index));
-         Error := Read_Size < 0;
-         if not Error then
+            C.windef.DWORD (Buffer_Length - File.Buffer_Index),
+            Read_Size'Access,
+            lpOverlapped => null) = 0;
+         if Error then
+            case C.winbase.GetLastError is
+               when C.winerror.ERROR_BROKEN_PIPE
+                  | C.winerror.ERROR_NO_DATA =>
+                  --  closed pipe
+                  --  this subprogram is called from End_Of_File
+                  --  because no buffering on pipe
+                  Error := False;
+               when others =>
+                  null;
+            end case;
+         else
             File.Buffer_Index :=
                File.Buffer_Index + Stream_Element_Offset (Read_Size);
          end if;
@@ -605,13 +546,14 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type);
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type) is
-      Dummy : C.sys.types.off_t;
+      Dummy : C.winnt.LONGLONG;
       pragma Unreferenced (Dummy);
    begin
-      Dummy := lseek (
+      SetFilePointerEx (
          File.Handle,
-         C.sys.types.off_t (File.Reading_Index - File.Buffer_Index),
-         C.unistd.SEEK_CUR);
+         C.winnt.LONGLONG (File.Reading_Index - File.Buffer_Index),
+         Dummy,
+         C.winbase.FILE_CURRENT);
       File.Buffer_Index := File.Reading_Index;
       File.Writing_Index := File.Buffer_Index;
    end Reset_Reading_Buffer;
@@ -634,19 +576,27 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Error := False;
       if File.Writing_Index > File.Buffer_Index then
-         if C.unistd.write (
-            File.Handle,
-            C.void_const_ptr (File.Buffer
-               + System.Storage_Elements.Storage_Offset (File.Buffer_Index)),
-            C.size_t (File.Writing_Index - File.Buffer_Index)) < 0
-         then
-            case C.errno.errno is
-               when C.errno.EPIPE =>
-                  null;
-               when others =>
-                  Error := True; -- Device_Error
-            end case;
-         end if;
+         declare
+            Written : aliased C.windef.DWORD;
+         begin
+            if C.winbase.WriteFile (
+               File.Handle,
+               C.windef.LPCVOID (File.Buffer
+                  + System.Storage_Elements.Storage_Offset (
+                     File.Buffer_Index)),
+               C.windef.DWORD (File.Writing_Index - File.Buffer_Index),
+               Written'Access,
+               lpOverlapped => null) = 0
+            then
+               case C.winbase.GetLastError is
+                  when C.winerror.ERROR_BROKEN_PIPE
+                     | C.winerror.ERROR_NO_DATA =>
+                     null;
+                  when others =>
+                     Error := True; -- Device_Error
+               end case;
+            end if;
+         end;
          if not Error then
             File.Buffer_Index := File.Writing_Index rem File.Buffer_Length;
             File.Writing_Index := File.Buffer_Index;
@@ -692,11 +642,8 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
       case File.Kind is
          when Normal | Temporary | External =>
-            Error := C.unistd.close (File.Handle) < 0;
-            if not Error and then File.Kind = Temporary then
-               Error := C.unistd.unlink (
-                  char_ptr_Conv.To_Pointer (File.Name)) < 0;
-            end if;
+            Error := C.winbase.CloseHandle (File.Handle) = 0;
+            --  CloseHandle remove the temporary file
             if Error and then Raise_On_Error then
                Free (File); -- free on error
                Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
@@ -814,8 +761,26 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File);
       case File.Kind is
-         when Normal | Temporary =>
-            File.Kind := Temporary;
+         when Normal =>
+            declare
+               Deleting_File_Name : C.winnt.WCHAR_array (
+                  0 ..
+                  C.size_t (File.Name_Length));
+            begin
+               declare
+                  File_Name : C.winnt.WCHAR_array (
+                     0 ..
+                     C.size_t (File.Name_Length));
+                  for File_Name'Address use LPWSTR_Conv.To_Address (File.Name);
+               begin
+                  Deleting_File_Name := File_Name;
+               end;
+               Close (File, Raise_On_Error => True);
+               if C.winbase.DeleteFile (Deleting_File_Name (0)'Access) = 0 then
+                  Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               end if;
+            end;
+         when Temporary =>
             Close (File, Raise_On_Error => True);
          when External | External_No_Close | Standard_Handle =>
             Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -843,7 +808,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Method => Reset,
                   File => File2,
                   Mode => Mode,
-                  Name => char_ptr_Conv.To_Pointer (File2.Name),
+                  Name => File2.Name,
                   Form => Form);
                File.all := File2;
             end;
@@ -867,12 +832,9 @@ package body Ada.Streams.Stream_IO.Inside is
    function Name (File : Non_Controlled_File_Type) return String is
    begin
       Check_File_Open (File);
-      declare
-         A_Name : String (1 .. File.Name_Length);
-         for A_Name'Address use File.Name;
-      begin
-         return A_Name;
-      end;
+      return System.Zero_Terminated_WStrings.Value (
+         File.Name,
+         File.Name_Length);
    end Name;
 
    function Form (File : Non_Controlled_File_Type) return String is
@@ -892,13 +854,11 @@ package body Ada.Streams.Stream_IO.Inside is
    end Is_Open;
 
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
-      Info : aliased C.sys.stat.struct_stat;
    begin
       Check_File_Open (File);
-      fstat (File.Handle, Info'Access);
-      if (Info.st_mode and C.sys.stat.S_IFMT) /= C.sys.stat.S_IFREG then
+      Get_Buffer (File); -- call GetFileType
+      if File.Buffer_Length = 0 then -- not disk file
          if File.Reading_Index = File.Buffer_Index then
-            Get_Buffer (File);
             declare
                Error : Boolean;
             begin
@@ -911,11 +871,15 @@ package body Ada.Streams.Stream_IO.Inside is
          return File.Reading_Index = File.Buffer_Index;
       else
          declare
-            Z_Index : constant C.sys.types.off_t :=
-               lseek (File.Handle, 0, C.unistd.SEEK_CUR)
-               + C.sys.types.off_t (Offset_Of_Buffer (File));
+            Size : aliased C.winnt.LARGE_INTEGER;
+            Z_Index : C.winnt.LONGLONG;
          begin
-            return Z_Index >= Info.st_size;
+            if C.winbase.GetFileSizeEx (File.Handle, Size'Access) = 0 then
+               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            end if;
+            SetFilePointerEx (File.Handle, 0, Z_Index, C.winbase.FILE_CURRENT);
+            Z_Index := Z_Index + C.winnt.LONGLONG (Offset_Of_Buffer (File));
+            return Z_Index >= Size.QuadPart;
             --  whether writing buffer will expand the file size or not
          end;
       end if;
@@ -964,7 +928,7 @@ package body Ada.Streams.Stream_IO.Inside is
          begin
             declare
                Taking_Length : Stream_Element_Count;
-               Read_Size : C.sys.types.ssize_t;
+               Read_Size : aliased C.windef.DWORD;
             begin
                Taking_Length := Item'Last - Last;
                if Buffer_Length > 0 then
@@ -983,11 +947,12 @@ package body Ada.Streams.Stream_IO.Inside is
                   end;
                end if;
                if Taking_Length > 0 then
-                  Read_Size := C.unistd.read (
+                  Error := C.winbase.ReadFile (
                      File.Handle,
-                     C.void_ptr (Item (Last + 1)'Address),
-                     C.size_t (Taking_Length));
-                  Error := Read_Size < 0;
+                     C.windef.LPVOID (Item (Last + 1)'Address),
+                     C.windef.DWORD (Taking_Length),
+                     Read_Size'Access,
+                     lpOverlapped => null) = 0;
                   if not Error then
                      Last := Last + Stream_Element_Offset (Read_Size);
                      --  update indexes
@@ -1050,6 +1015,7 @@ package body Ada.Streams.Stream_IO.Inside is
          begin
             declare
                Taking_Length : Stream_Element_Count;
+               Written : aliased C.windef.DWORD;
             begin
                Taking_Length := Item'Last - First + 1;
                if Buffer_Length > 0 then
@@ -1068,13 +1034,16 @@ package body Ada.Streams.Stream_IO.Inside is
                   end;
                end if;
                if Taking_Length > 0 then
-                  if C.unistd.write (
+                  if C.winbase.WriteFile (
                      File.Handle,
-                     C.void_const_ptr (Item (First)'Address),
-                     C.size_t (Taking_Length)) < 0
+                     C.windef.LPCVOID (Item (First)'Address),
+                     C.windef.DWORD (Taking_Length),
+                     Written'Access,
+                     lpOverlapped => null) = 0
                   then
-                     case C.errno.errno is
-                        when C.errno.EPIPE =>
+                     case C.winbase.GetLastError is
+                        when C.winerror.ERROR_BROKEN_PIPE
+                           | C.winerror.ERROR_NO_DATA =>
                            null;
                         when others =>
                            Exceptions.Raise_Exception_From_Here (
@@ -1103,24 +1072,25 @@ package body Ada.Streams.Stream_IO.Inside is
       File : not null Non_Controlled_File_Type;
       To : Stream_Element_Positive_Count)
    is
-      Dummy : C.sys.types.off_t;
+      Dummy : C.winnt.LONGLONG;
       pragma Unreferenced (Dummy);
       Z_Index : constant Stream_Element_Offset := To - 1; -- zero based
    begin
       Flush_Writing_Buffer (File);
-      Dummy := lseek (
+      SetFilePointerEx (
          File.Handle,
-         C.sys.types.off_t (Z_Index),
-         C.unistd.SEEK_SET);
+         C.winnt.LONGLONG (Z_Index),
+         Dummy,
+         C.winbase.FILE_BEGIN);
       Set_Buffer_Index (File, Z_Index);
    end Set_Index;
 
    function Index (File : not null Non_Controlled_File_Type)
       return Stream_Element_Positive_Count
    is
-      Result : constant C.sys.types.off_t :=
-         lseek (File.Handle, 0, C.unistd.SEEK_CUR);
+      Result : C.winnt.LONGLONG;
    begin
+      SetFilePointerEx (File.Handle, 0, Result, C.winbase.FILE_CURRENT);
       return Stream_Element_Positive_Count (Result + 1)
          + Offset_Of_Buffer (File);
    end Index;
@@ -1128,11 +1098,13 @@ package body Ada.Streams.Stream_IO.Inside is
    function Size (File : not null Non_Controlled_File_Type)
       return Stream_Element_Count
    is
-      Info : aliased C.sys.stat.struct_stat;
+      Size : aliased C.winnt.LARGE_INTEGER;
    begin
       Flush_Writing_Buffer (File);
-      fstat (File.Handle, Info'Access);
-      return Count (Info.st_size);
+      if C.winbase.GetFileSizeEx (File.Handle, Size'Access) = 0 then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+      end if;
+      return Count (Size.QuadPart);
    end Size;
 
    procedure Set_Mode (
@@ -1156,7 +1128,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Method => Reset,
                   File => File2,
                   Mode => Mode,
-                  Name => char_ptr_Conv.To_Pointer (File2.Name),
+                  Name => File2.Name,
                   Form => Form);
                File.all := File2;
             end;
@@ -1177,9 +1149,9 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File);
       Flush_Writing_Buffer (File);
-      if C.unistd.fsync (File.Handle) < 0 then
-         --  EINVAL means fd is not file but FIFO, etc.
-         if C.errno.errno /= C.errno.EINVAL then
+      if C.winbase.FlushFileBuffers (File.Handle) = 0 then
+         --  ERROR_INVALID_HANDLE means fd is not file but terminal, pipe, etc
+         if C.winbase.GetLastError /= C.winerror.ERROR_INVALID_HANDLE then
             Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
          end if;
       end if;
@@ -1196,8 +1168,8 @@ package body Ada.Streams.Stream_IO.Inside is
       To_Close : Boolean := False)
    is
       Kind : Stream_Kind;
-      Full_Name : C.char_ptr;
-      Full_Name_Length : C.size_t;
+      Full_Name : C.winnt.LPWSTR;
+      Full_Name_Length : C.signed_int;
    begin
       if File /= null then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -1207,25 +1179,25 @@ package body Ada.Streams.Stream_IO.Inside is
       else
          Kind := External_No_Close;
       end if;
-      Full_Name := char_ptr_Conv.To_Pointer (
-         System.Memory.Allocate (Name'Length + 2));
+      Full_Name := LPWSTR_Conv.To_Pointer (
+         System.Memory.Allocate (
+            (Name'Length + 2) * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       Full_Name_Length := Name'Length + 1;
       declare
-         C_Name : C.char_array (0 .. Name'Length - 1);
-         for C_Name'Address use Name'Address;
-         Full_Name_A : C.char_array (C.size_t);
-         for Full_Name_A'Address use Full_Name.all'Address;
+         Full_Name_A : C.winnt.WCHAR_array (C.size_t);
+         for Full_Name_A'Address use LPWSTR_Conv.To_Address (Full_Name);
       begin
-         Full_Name_A (0) := '*';
-         Full_Name_A (1 .. Full_Name_Length - 1) := C_Name;
-         Full_Name_A (Full_Name_Length) := C.char'Val (0);
+         Full_Name_A (0) := C.winnt.WCHAR'Val (Wide_Character'Pos ('*'));
+         System.Zero_Terminated_WStrings.Convert (
+            Name,
+            Full_Name_A (1)'Access);
       end;
       File := Allocate (
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,
-         Name => char_ptr_Conv.To_Address (Full_Name),
-         Name_Length => Natural (Full_Name_Length),
+         Name => Full_Name,
+         Name_Length => Full_Name_Length,
          Form => Form);
    end Open;
 

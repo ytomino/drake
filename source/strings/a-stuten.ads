@@ -6,6 +6,7 @@ package Ada.Strings.UTF_Encoding is
 
    --  Declarations common to the string encoding packages
    --  modified
+   --  UTF-32 support is added.
    type Encoding_Scheme is (UTF_8, UTF_16BE, UTF_16LE,
       UTF_32BE, UTF_32LE); -- additional
 

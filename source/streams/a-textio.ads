@@ -69,10 +69,10 @@ package Ada.Text_IO is
    --  Control of default input and output files
 
    procedure Set_Input (File : File_Type);
-   procedure Set_Output (File : File_Type);
-   procedure Set_Error (File : File_Type);
    procedure Set_Input (File : not null File_Access); -- alt
+   procedure Set_Output (File : File_Type);
    procedure Set_Output (File : not null File_Access); -- alt
+   procedure Set_Error (File : File_Type);
    procedure Set_Error (File : not null File_Access); -- alt
 
    --  Wait for Implicit_Dereference since File_Type is limited (marked "alt")

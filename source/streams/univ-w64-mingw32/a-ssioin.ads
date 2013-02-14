@@ -1,18 +1,17 @@
 pragma License (Unrestricted);
 --  implementation unit
 with Ada.Tags;
-with C;
+with C.winnt;
 private with System;
 package Ada.Streams.Stream_IO.Inside is
    pragma Preelaborate;
 
    --  handle
 
-   subtype Handle_Type is C.signed_int;
+   subtype Handle_Type is C.winnt.HANDLE;
 
    function Is_Terminal (Handle : Handle_Type) return Boolean;
    function Is_Seekable (Handle : Handle_Type) return Boolean;
-   procedure Set_Close_On_Exec (Handle : Handle_Type);
 
    --  handle for controlled
 
@@ -122,13 +121,13 @@ private
    Uninitialized_Buffer : constant := -1;
 
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
-      Handle : C.signed_int; -- file descripter
+      Handle : C.winnt.HANDLE;
       Mode : File_Mode;
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
-      Name : System.Address;
-      Form : System.Address;
-      Name_Length : Natural;
+      Name : C.winnt.LPWSTR;
+      Form : System.Address; -- Ada String
+      Name_Length : C.signed_int;
       Form_Length : Natural;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;

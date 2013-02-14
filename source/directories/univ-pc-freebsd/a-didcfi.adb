@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with System;
+with System.File_Control;
 with C.fcntl;
 with C.sys.mman;
 with C.sys.stat;

@@ -2,6 +2,7 @@
 #define d_fileno d_ino
 #elif defined(__linux__)
 #define _GNU_SOURCE /* use GNU extension */
+#define _FILE_OFFSET_BITS 64
 #define st_atim st_atimespec
 #define st_mtim st_mtimespec
 #define st_ctim st_ctimespec
@@ -59,6 +60,7 @@
 #include <pthread_np.h> /* pthread_attr_get_np */
 #elif defined(__linux__)
 #include <sys/statvfs.h> /* filesystem */
+#include <spawn.h> /* spawn */
 #undef _GNU_SOURCE
 #undef __USE_GNU /* avoiding circular dependency between libio.h and stdio.h */
 #undef st_atim
@@ -68,6 +70,7 @@
 #undef st_mtime
 #undef st_ctime
 #include <malloc.h> /* malloc_usable_size */
+#undef _FILE_OFFSET_BITS
 #endif
 
 #if defined(__WINNT__)
@@ -124,6 +127,7 @@
 #pragma for Ada "sys/ucontext.h" include "sys/_structs.h" /* ucontext_t */
 #pragma for Ada "termios.h" include "sys/termios.h"
 #pragma for Ada "time.h" include "sys/_structs.h" /* timespec */
+#pragma for Ada "unistd.h" include "sys/unistd.h"
 #elif defined(__FreeBSD__)
 #pragma for Ada "dirent.h" include "sys/dirent.h"
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
@@ -133,6 +137,7 @@
 #pragma for Ada "sys/time.h" include "sys/_timeval.h" /* timeval */
 #pragma for Ada "time.h" include "sys/timespec.h" /* timespec */
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
+#pragma for Ada "unistd.h" include "sys/unistd.h"
 #elif defined(__linux__)
 #undef si_value /* cannot inline returning unchecked union */
 #pragma for Ada overload int open(const char *, int, __mode_t)
@@ -150,11 +155,14 @@
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
 #pragma for Ada "sys/mman.h" include "bits/mman.h"
 #pragma for Ada "sys/resource.h" include "bits/resource.h"
+#pragma for Ada "sys/socket.h" include "bits/socket.h"
+#pragma for Ada "sys/socket.h" include "bits/socket_type.h"
 #pragma for Ada "sys/stat.h" include "bits/stat.h"
 #pragma for Ada "sys/statvfs.h" include "bits/statvfs.h"
 #pragma for Ada "sys/syscall.h" include "bits/syscall.h"
 #pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */
 #pragma for Ada "sys/types.h" include "bits/types.h" /* time_t */
+#pragma for Ada "termios.h" include "bits/termios.h"
 #endif
 
 #if defined(__WINNT__)

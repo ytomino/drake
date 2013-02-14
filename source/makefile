@@ -89,7 +89,7 @@ else
 ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=univ-pc-linux-gnu
-SUBDIRS:=$(filter-out ada83 streams tasking textio,$(SUBDIRS))
+SUBDIRS:=$(filter-out tasking,$(SUBDIRS))
 OBJFMT=ELF
 else
 ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
@@ -99,7 +99,7 @@ else
 EH=sjlj
 endif
 TARGETSUBDIR=univ-w64-mingw32
-SUBDIRS:=$(filter-out ada83 streams tasking textio,$(SUBDIRS))
+SUBDIRS:=$(filter-out tasking,$(SUBDIRS))
 OBJFMT=COFF
 else # others
 EH=zcx

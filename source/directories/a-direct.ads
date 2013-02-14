@@ -57,6 +57,10 @@ package Ada.Directories is
       renames Hierarchical_File_Names.Simple_Name;
 
    --  modified
+   --  It's specified that Containing_Directory raises Use_Error
+   --    when Name is a simple name.
+   --  If the additional parameter Raise_On_Error = False,
+   --    Containing_Directory returns null string when Name is a simple name.
    function Containing_Directory (
       Name : String;
       Raise_On_Error : Boolean := True) -- additional
@@ -133,6 +137,7 @@ package Ada.Directories is
    pragma Pack (Filter_Type);
 
    --  modified
+   --  Search_Type has its iterator. See below.
 --  type Search_Type is limited private;
    type Search_Type is tagged limited private;
 --    with -- [gcc 4.6]
@@ -148,6 +153,8 @@ package Ada.Directories is
       Filter : Filter_Type := (others => True));
 
    --  extended
+   --  This function version Start_Search enables to write
+   --    "for E of Start_Search (...) loop".
    function Start_Search (
       Directory : String;
       Pattern : String := "*";

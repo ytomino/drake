@@ -26,48 +26,19 @@ package body Ada.Directories is
 
    procedure Create_Path (New_Directory : String; Form : String := "") is
       pragma Unreferenced (Form);
-      First : Positive;
-      Created : Natural;
-      Last : Positive;
-      Step : Boolean;
    begin
-      First := New_Directory'First;
-      if First <= New_Directory'Last
-         and then New_Directory (First) = '/'
-      then
-         First := First + 1;
-      end if;
-      Created := First - 1;
-      for J in First .. New_Directory'Last loop
-         case New_Directory (J) is
-            when '/' =>
-               Step := True;
-               Last := J - 1;
-            when others =>
-               Step := J = New_Directory'Last;
-               Last := J;
-         end case;
-         if Step then
-            if Created < J then
-               declare
-                  Step_Dir : constant String :=
-                     New_Directory (New_Directory'First .. Last);
-               begin
-                  case Kind (Step_Dir) is
-                     when Ordinary_File | Special_File =>
-                        Exceptions.Raise_Exception_From_Here (
-                           Use_Error'Identity);
-                     when Directory =>
-                        null;
-                  end case;
-               exception
-                  when Name_Error =>
-                     Create_Directory (Step_Dir);
-               end;
+      if not Exists (New_Directory) then
+         declare
+            D_First : Positive;
+            D_Last : Natural;
+         begin
+            Containing_Directory (New_Directory, D_First, D_Last);
+            if D_First <= D_Last then
+               Create_Path (New_Directory (D_First .. D_Last)); -- recursive
             end if;
-            Created := J;
-         end if;
-      end loop;
+         end;
+         Create_Directory (New_Directory);
+      end if;
    end Create_Path;
 
    procedure Delete_Tree (Directory : String) is
@@ -84,16 +55,9 @@ package body Ada.Directories is
             begin
                case Kind (Directory_Entry) is
                   when Ordinary_File | Special_File =>
-                     Delete_File (Name);
+                     Delete_File (Full_Name (Name));
                   when Directories.Directory =>
-                     declare
-                        Simple : constant String :=
-                           Simple_Name (Directory_Entry);
-                     begin
-                        if Simple /= "." and then Simple /= ".." then
-                           Delete_Tree (Name);
-                        end if;
-                     end;
+                     Delete_Tree (Name); -- recursive
                end case;
             end;
          end;
@@ -102,10 +66,8 @@ package body Ada.Directories is
       Delete_Directory (Directory);
    end Delete_Tree;
 
-   procedure Delete_File (Name : String) is
-   begin
-      Inside.Delete_File (Name);
-   end Delete_File;
+   procedure Delete_File (Name : String)
+      renames Inside.Delete_File;
 
    procedure Rename (
       Old_Name : String;
@@ -128,14 +90,8 @@ package body Ada.Directories is
 
    --  file and directory name operations
 
-   function Full_Name (Name : String) return String is
-   begin
-      if Hierarchical_File_Names.Is_Relative_Name (Name) then
-         return Compose (Current_Directory, Name);
-      else
-         return Name;
-      end if;
-   end Full_Name;
+   function Full_Name (Name : String) return String
+      renames Inside.Full_Name;
 
    --  file and directory queries
 

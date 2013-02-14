@@ -127,7 +127,6 @@ procedure ext_doc is
 						or else Start_With (Line, "procedure")
 						or else Start_With (Line, "function")
 						or else Start_With (Line, "generic")
-						or else Start_With (Line, "private package")
 					then
 						Kind := Standard_Unit;
 						if Line /= "generic" then
@@ -146,12 +145,14 @@ procedure ext_doc is
 				declare
 					Line : constant String := Ada.Text_IO.Get_Line (File);
 				begin
-					if (Start_With (Line, "package")
+					if Start_With (Line, "package")
 						or else Start_With (Line, "procedure")
 						or else Start_With (Line, "function")
-						or else Start_With (Line, "generic")
-						or else Start_With (Line, "private package"))
-						and then Line /= "generic"
+						or else Start_With (Line, "private package")
+						or else Start_With (Line, "private procedure")
+						or else Start_With (Line, "private function")
+						or else (Start_With (Line, "generic")
+							and then Line /= "generic")
 					then
 						Get_Unit_Name (Line, Unit_Name, Rest_Of_Name_Line);
 						exit;
