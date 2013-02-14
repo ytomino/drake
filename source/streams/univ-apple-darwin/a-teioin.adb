@@ -316,6 +316,8 @@ package body Ada.Text_IO.Inside is
          File.all.Col := 1;
          File.all.Line_Length := 0;
          File.all.Page_Length := 0;
+         File.all.Buffer_Col := 0;
+         File.all.Last := 0;
          File.all.End_Of_File := False;
          File.all.Dummy_Mark := None;
          File.all.Mode := Mode;
@@ -831,6 +833,7 @@ package body Ada.Text_IO.Inside is
       End_Of_Line : out Boolean)
    is
       Wanted_Length : constant Natural := Item'Length;
+      Buffer_Last : Natural;
    begin
       Check_File_Open (File);
       loop
@@ -842,7 +845,7 @@ package body Ada.Text_IO.Inside is
          Last := Item'First - 1;
          End_Of_Line := True;
       else
-         Last := File.Last;
+         Buffer_Last := File.Last;
          End_Of_Line := False;
          for I in 1 .. File.Last loop
             case File.Buffer (I) is
@@ -850,15 +853,15 @@ package body Ada.Text_IO.Inside is
                   | Character'Val (16#0c#)
                   | Character'Val (16#0d#)
                   | Character'Val (16#1a#) =>
-                  Last := I - 1;
+                  Buffer_Last := I - 1;
                   End_Of_Line := True;
                   exit;
                when others =>
                   null;
             end case;
          end loop;
-         Item (Item'First .. Item'First + Last - 1) :=
-            File.Buffer (1 .. Last);
+         Last := Item'First + Last - 1;
+         Item (Item'First .. Last) := File.Buffer (1 .. Buffer_Last);
       end if;
    end Look_Ahead;
 
