@@ -47,8 +47,8 @@ begin
 		Test_File_Name : constant String := Ada.Command_Line.Command_Name & "-test";
 		File_1, File_2 : Ada.Text_IO.File_Type;
 	begin
-		Ada.Text_IO.Create (File_1, Ada.Text_IO.Out_File, Test_File_Name, "shared=yes"); -- shared lock (default is exclusive lock)
-		Ada.Text_IO.Open (File_2, Ada.Text_IO.In_File, Test_File_Name); -- dead lock when File_1 acquired exclusive lock
+		Ada.Text_IO.Create (File_1, Ada.Text_IO.Out_File, Test_File_Name, "shared=read"); -- shared lock (default is exclusive lock)
+		Ada.Text_IO.Open (File_2, Ada.Text_IO.In_File, Test_File_Name, "shared=yes"); -- dead lock when File_1 acquired exclusive lock
 		Ada.Text_IO.Close (File_2);
 		Ada.Text_IO.Delete (File_1);
 	end;
