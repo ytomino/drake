@@ -99,43 +99,20 @@ package body Ada.Directories.Volumes is
       end return;
    end Where;
 
---  function Size (FS : File_System) return File_Size is
---    Disk_Geometry : aliased C.winioctl.DISK_GEOMETRY;
---    Device : C.winnt.HANDLE;
---    Returned : aliased C.windef.DWORD;
---    Result : C.windef.WINBOOL;
---    Dummy : C.windef.WINBOOL;
---  begin
---    Device := C.winbase.CreateFile (
---       FS.Root_Path,
---       0,
---       C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE,
---       null,
---       C.winbase.OPEN_EXISTING,
---       0,
---       C.windef.LPVOID (System.Null_Address));
---    if Device = C.winbase.INVALID_HANDLE_VALUE then
---       Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
---    end if;
---    Result := C.winbase.DeviceIoControl (
---       Device,
---       C.winioctl.IOCTL_DISK_GET_DRIVE_GEOMETRY,
---       C.windef.LPVOID (System.Null_Address),
---       0,
---       Disk_Geometry'Access,
---       C.winioctl.DISK_GEOMETRY'Size / Standard'Storage_Unit,
---       Returned'Access,
---       null);
---    Dummy := C.winbase.CloseHandle (Device);
---    if Result = 0 then
---       Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
---    end if;
---    return File_Size (
---       Disk_Geometry.Cylinders.QuadPart
---          * Disk_Geometry.TracksPerCylinder
---          * Disk_Geometry.SectorsPerTrack
---          * Disk_Geometry.BytesPerSector);
---  end Size;
+   function Size (FS : File_System) return File_Size is
+      FreeBytesAvailable : aliased C.winnt.ULARGE_INTEGER;
+      TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
+   begin
+      if C.winbase.GetDiskFreeSpaceEx (
+         FS.Root_Path,
+         FreeBytesAvailable'Access,
+         TotalNumberOfBytes'Access,
+         null) = 0
+      then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+      end if;
+      return File_Size (TotalNumberOfBytes.QuadPart);
+   end Size;
 
    function Free_Space (FS : File_System) return File_Size is
       FreeBytesAvailable : aliased C.winnt.ULARGE_INTEGER;
