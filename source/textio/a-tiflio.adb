@@ -49,20 +49,21 @@ package body Ada.Text_IO.Float_IO is
       Last : out Positive)
    is
       Result : Long_Long_Float;
+      Error : Boolean;
    begin
       System.Val_Real.Get_Float_Literal (
          From,
          Last,
-         Result);
-      if Result < Long_Long_Float (Num'First)
-         or else Result > Long_Long_Float (Num'Last)
+         Result,
+         Error => Error);
+      if Error
+         or else Result not in
+            Long_Long_Float (Num'First) ..
+            Long_Long_Float (Num'Last)
       then
          raise Data_Error;
       end if;
       Item := Num (Result);
-   exception
-      when Constraint_Error =>
-         raise Data_Error;
    end Get_From_Field;
 
    --  implementation

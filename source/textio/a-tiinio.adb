@@ -49,13 +49,17 @@ package body Ada.Text_IO.Integer_IO is
       if Num'Size > Integer'Size then
          declare
             Result : Long_Long_Integer;
+            Error : Boolean;
          begin
             System.Val_LLI.Get_Long_Long_Integer_Literal (
                From,
                Last,
-               Result);
-            if Result < Long_Long_Integer (Num'First)
-               or else Result > Long_Long_Integer (Num'Last)
+               Result,
+               Error => Error);
+            if Error
+               or else Result not in
+                  Long_Long_Integer (Num'First) ..
+                  Long_Long_Integer (Num'Last)
             then
                raise Data_Error;
             end if;
@@ -64,22 +68,23 @@ package body Ada.Text_IO.Integer_IO is
       else
          declare
             Result : Integer;
+            Error : Boolean;
          begin
             System.Val_Int.Get_Integer_Literal (
                From,
                Last,
-               Result);
-            if Result < Integer (Num'First)
-               or else Result > Integer (Num'Last)
+               Result,
+               Error => Error);
+            if Error
+               or else Result not in
+                  Integer (Num'First) ..
+                  Integer (Num'Last)
             then
                raise Data_Error;
             end if;
             Item := Num (Result);
          end;
       end if;
-   exception
-      when Constraint_Error =>
-         raise Data_Error;
    end Get_From_Field;
 
    --  implementation

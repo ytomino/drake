@@ -10,6 +10,7 @@ package System.Val_LLI is
    procedure Get_Long_Long_Integer_Literal (
       S : String;
       Last : out Natural;
-      Result : out Long_Long_Integer);
+      Result : out Long_Long_Integer;
+      Error : out Boolean);
 
 end System.Val_LLI;

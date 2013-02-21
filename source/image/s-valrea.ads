@@ -10,6 +10,7 @@ package System.Val_Real is
    procedure Get_Float_Literal (
       S : String;
       Last : out Natural;
-      Result : out Long_Long_Float);
+      Result : out Long_Long_Float;
+      Error : out Boolean);
 
 end System.Val_Real;

@@ -1,4 +1,5 @@
 with System.Val_Enum;
+with System.Value_Error;
 package body System.Val_Bool is
    pragma Suppress (All_Checks);
 
@@ -7,18 +8,24 @@ package body System.Val_Bool is
       Last : Natural;
    begin
       Val_Enum.Trim (Str, First, Last);
-      declare
-         S : String := Str (First .. Last);
-      begin
-         Val_Enum.To_Upper (S);
-         if S = "FALSE" then
-            return False;
-         elsif S = "TRUE" then
-            return True;
-         else
-            raise Constraint_Error;
-         end if;
-      end;
+      if First <= Last then
+         declare
+            S : String := Str (First .. Last);
+         begin
+            Val_Enum.To_Upper (S);
+            if S'Length = 5
+               and then S (S'First .. S'First + 3) = "FALS"
+               and then S (S'First + 4) = 'E'
+            then
+               return False;
+            elsif S'Length = 4
+               and then S (S'First .. S'First + 3) = "TRUE"
+            then
+               return True;
+            end if;
+         end;
+      end if;
+      Value_Error ("Boolean", Str);
    end Value_Boolean;
 
 end System.Val_Bool;

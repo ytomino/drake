@@ -1,5 +1,6 @@
 with System.Formatting;
 with System.Val_Uns;
+with System.Value_Error;
 package body System.Val_Int is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
@@ -7,16 +8,23 @@ package body System.Val_Int is
    function Value_Integer (Str : String) return Integer is
       Last : Natural;
       Result : Integer;
+      Error : Boolean;
    begin
-      Get_Integer_Literal (Str, Last, Result);
-      Val_Uns.Check_Last (Str, Last);
-      return Result;
+      Get_Integer_Literal (Str, Last, Result, Error);
+      if not Error then
+         Val_Uns.Check_Last (Str, Last, Error);
+         if not Error then
+            return Result;
+         end if;
+      end if;
+      Value_Error ("Integer", Str);
    end Value_Integer;
 
    procedure Get_Integer_Literal (
       S : String;
       Last : out Natural;
-      Result : out Integer)
+      Result : out Integer;
+      Error : out Boolean)
    is
       Unsigned_Result : Formatting.Unsigned;
    begin
@@ -27,11 +35,15 @@ package body System.Val_Int is
          Val_Uns.Get_Unsigned_Literal_Without_Sign (
             S,
             Last,
-            Unsigned_Result);
-         if Unsigned_Result > Formatting.Unsigned (-Integer'First) then
-            raise Constraint_Error;
+            Unsigned_Result,
+            Error => Error);
+         if not Error then
+            if Unsigned_Result <= Formatting.Unsigned'Mod (-Integer'First) then
+               Result := -Integer (Unsigned_Result);
+            else
+               Error := True;
+            end if;
          end if;
-         Result := -Integer (Unsigned_Result);
       else
          if Last < S'Last and then S (Last + 1) = '+' then
             Last := Last + 1;
@@ -39,11 +51,15 @@ package body System.Val_Int is
          Val_Uns.Get_Unsigned_Literal_Without_Sign (
             S,
             Last,
-            Unsigned_Result);
-         if Unsigned_Result > Formatting.Unsigned (Integer'Last) then
-            raise Constraint_Error;
+            Unsigned_Result,
+            Error => Error);
+         if not Error then
+            if Unsigned_Result <= Formatting.Unsigned (Integer'Last) then
+               Result := Integer (Unsigned_Result);
+            else
+               Error := True;
+            end if;
          end if;
-         Result := Integer (Unsigned_Result);
       end if;
    end Get_Integer_Literal;
 

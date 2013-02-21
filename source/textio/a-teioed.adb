@@ -396,15 +396,18 @@ package body Ada.Text_IO.Editing is
                      Inside.Formatting.Get_Tail (
                         Pic_String (I + 1 .. Pic_String'Last),
                         First => Count_First);
+                     declare
+                        Error : Boolean;
                      begin
                         System.Val_Uns.Get_Unsigned_Literal (
                            Pic_String (Count_First .. Pic_String'Last),
                            Count_Last,
-                           Count);
-                     exception
-                        when Constraint_Error =>
+                           Count,
+                           Error => Error);
+                        if Error then
                            Exceptions.Raise_Exception_From_Here (
                               Picture_Error'Identity);
+                        end if;
                      end;
                      if Count = 0
                         or else I = Pic_String'First

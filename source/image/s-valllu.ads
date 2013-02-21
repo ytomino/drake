@@ -14,14 +14,17 @@ package System.Val_LLU is
       S : String;
       Last : in out Natural;
       Result : out Formatting.Longest_Unsigned;
-      Base : Formatting.Number_Base);
+      Base : Formatting.Number_Base;
+      Error : out Boolean);
    procedure Get_Longest_Unsigned_Literal_Without_Sign (
       S : String;
       Last : in out Natural;
-      Result : out Formatting.Longest_Unsigned);
+      Result : out Formatting.Longest_Unsigned;
+      Error : out Boolean);
    procedure Get_Longest_Unsigned_Literal (
       S : String;
       Last : out Natural;
-      Result : out Formatting.Longest_Unsigned);
+      Result : out Formatting.Longest_Unsigned;
+      Error : out Boolean);
 
 end System.Val_LLU;

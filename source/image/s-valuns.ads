@@ -10,24 +10,28 @@ package System.Val_Uns is
 
    --  helper
    procedure Skip_Spaces (S : String; Last : in out Natural);
-   procedure Check_Last (S : String; Last : Natural);
+   procedure Check_Last (S : String; Last : Natural; Error : out Boolean);
    procedure Get_Unsigned (
       S : String;
       Last : in out Natural;
       Result : out Formatting.Unsigned;
-      Base : Formatting.Number_Base);
+      Base : Formatting.Number_Base;
+      Error : out Boolean);
    procedure Get_Exponent (
       S : String;
       Last : in out Natural;
       Result : out Integer;
-      Positive_Only : Boolean);
+      Positive_Only : Boolean;
+      Error : out Boolean);
    procedure Get_Unsigned_Literal_Without_Sign (
       S : String;
       Last : in out Natural;
-      Result : out Formatting.Unsigned);
+      Result : out Formatting.Unsigned;
+      Error : out Boolean);
    procedure Get_Unsigned_Literal (
       S : String;
       Last : out Natural;
-      Result : out Formatting.Unsigned);
+      Result : out Formatting.Unsigned;
+      Error : out Boolean);
 
 end System.Val_Uns;

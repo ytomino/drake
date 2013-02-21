@@ -1,4 +1,4 @@
-with Ada;
+with Ada.Exceptions;
 procedure image is
 	type Ordinal_Fixed is delta 0.1 range -99.9 .. 99.9;
 	type Short_Fixed is delta 0.1 digits 2;
@@ -17,9 +17,17 @@ begin
 		function Image (X : Enum8) return String renames Enum8'Image;
 		function Image (X : Enum16) return String renames Enum16'Image;
 		function Image (X : Enum32) return String renames Enum32'Image;
+		V : Integer;
 	begin
 		pragma Assert (Boolean'Image (Boolean'First) = "FALSE");
 		pragma Assert (Image (Boolean'Last) = "TRUE");
+		begin
+			V := Boolean'Pos (Boolean'Value ("XYZ"));
+		exception
+			when E : Constraint_Error =>
+				pragma Assert (Ada.Exceptions.Exception_Message (E) = "Boolean'Value (""XYZ"")");
+				null;
+		end;
 		pragma Assert (Enum8'Image (Enum8'First) = "AAA");
 		pragma Assert (Image (Enum8'Last) = "CCC");
 		pragma Assert (Enum16'Image (Enum16'First) = "AAA");
