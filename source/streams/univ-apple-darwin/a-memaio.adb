@@ -51,6 +51,7 @@ package body Ada.Memory_Mapped_IO is
       Object : in out Non_Controlled_Mapping;
       Raise_On_Error : Boolean) is
    begin
+      --  unmap
       if C.sys.mman.munmap (
          C.void_ptr (Object.Address),
          C.size_t (Object.Size)) /= 0
@@ -59,11 +60,13 @@ package body Ada.Memory_Mapped_IO is
             Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end if;
       end if;
+      --  close file
       if Streams.Stream_IO.Inside.Is_Open (Object.File) then
          Streams.Stream_IO.Inside.Close (
             Object.File,
             Raise_On_Error => Raise_On_Error);
       end if;
+      --  reset
       Object.Address := System.Null_Address;
    end Unmap;
 
@@ -128,8 +131,6 @@ package body Ada.Memory_Mapped_IO is
    procedure Unmap (Object : in out Mapping) is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       if NC_Mapping.Address = System.Null_Address then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);

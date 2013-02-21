@@ -24,20 +24,15 @@ private
 
       type End_Point is limited private;
 
-      procedure Assign (
-         Object : in out End_Point;
-         Data : C.netdb.struct_addrinfo_ptr);
-      pragma Inline (Assign);
-
       function Reference (
          Object : End_Point)
-         return C.netdb.struct_addrinfo_ptr;
+         return not null access C.netdb.struct_addrinfo_ptr;
       pragma Inline (Reference);
 
    private
 
       type End_Point is new Finalization.Limited_Controlled with record
-         Data : C.netdb.struct_addrinfo_ptr := null;
+         Data : aliased C.netdb.struct_addrinfo_ptr := null;
       end record;
 
       overriding procedure Finalize (Object : in out End_Point);
