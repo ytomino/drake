@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with C.sys.mman;
 with C.sys.types;
 package body Ada.Memory_Mapped_IO is
@@ -25,7 +26,7 @@ package body Ada.Memory_Mapped_IO is
       Mapped_Address : C.void_ptr;
    begin
       if Object.Address /= System.Null_Address then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       Mapped_Address := C.sys.mman.mmap (
          C.void_ptr (System.Null_Address),
@@ -37,7 +38,7 @@ package body Ada.Memory_Mapped_IO is
       if System.Address (Mapped_Address) =
          System.Address (C.sys.mman.MAP_FAILED)
       then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       Object.Address := System.Address (Mapped_Address);
       Object.Size := System.Storage_Elements.Storage_Count (Size);
@@ -55,7 +56,7 @@ package body Ada.Memory_Mapped_IO is
          C.size_t (Object.Size)) /= 0
       then
          if Raise_On_Error then
-            raise Use_Error;
+            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end if;
       end if;
       if Streams.Stream_IO.Inside.Is_Open (Object.File) then
@@ -131,7 +132,7 @@ package body Ada.Memory_Mapped_IO is
       pragma Unreferenced (Dummy);
    begin
       if NC_Mapping.Address = System.Null_Address then
-         raise Status_Error;
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       Unmap (NC_Mapping.all, Raise_On_Error => True);
    end Unmap;

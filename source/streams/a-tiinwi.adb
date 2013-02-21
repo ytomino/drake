@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Inside.Wide is
    use type System.UTF_Conversions.UCS_4;
@@ -242,7 +243,8 @@ package body Ada.Text_IO.Inside.Wide is
                   or else First >= 16#ffff#
                   or else Last /= Ref_Text.Last
                then
-                  raise Data_Error; -- previous data is wrong
+                  --  previous data is wrong
+                  Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
                end if;
             end;
             declare
@@ -284,7 +286,8 @@ package body Ada.Text_IO.Inside.Wide is
       Ref_Text : constant access Text_Type := Reference (File).all;
    begin
       if Ref_Text.Last > 0 then
-         raise Data_Error; -- previous data is rested
+         --  previous data is rested
+         Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
       else
          declare
             Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
