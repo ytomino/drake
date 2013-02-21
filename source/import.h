@@ -92,8 +92,13 @@
 #undef SHORT
 #undef NT_INCLUDED
 #include <winnt.h>
+#include <winsock2.h> /* before windows.h */
+#undef h_errno /* headmaster can not translate it */
 #include <windows.h>
 #include <wincrypt.h> /* random */
+#include <ws2tcpip.h>
+#undef _S6_un /* false positive warning of gcc */
+#undef s6_addr /* use _S6_un */
 #define RC_INVOKED /* headmaster can not translate some inline functions */
 #include <malloc.h>
 #undef RC_INVOKED
