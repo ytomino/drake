@@ -2,18 +2,11 @@ with System.Formatting;
 with System.Img_WChar;
 with System.Val_Char;
 with System.Val_Enum;
+with System.Value_Error;
 with System.UTF_Conversions;
 package body System.Val_WChar is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
-
-   function Value_Named (S : String) return Wide_Character is
-   begin
-      if S = Img_WChar.Image_ad then
-         return Wide_Character'Val (16#ad#);
-      end if;
-      return Wide_Character'Val (Character'Pos (Val_Char.Value_Named (S)));
-   end Value_Named;
 
    function Value_Wide_Character (Str : String; EM : WC_Encoding_Method)
       return Wide_Character
@@ -38,18 +31,16 @@ package body System.Val_WChar is
                Used_Last,
                Code,
                Error);
-            if Error or else Used_Last + 1 /= Last then
-               raise Constraint_Error;
+            if not Error and then Used_Last + 1 = Last then
+               UTF_Conversions.To_UTF_16 (
+                  Code,
+                  Result,
+                  Used_Last,
+                  Error);
+               if not Error and then Used_Last = 1 then
+                  return Result (1);
+               end if;
             end if;
-            UTF_Conversions.To_UTF_16 (
-               Code,
-               Result,
-               Used_Last,
-               Error);
-            if Error or else Used_Last /= 1 then
-               raise Constraint_Error;
-            end if;
-            return Result (1);
          end;
       else
          declare
@@ -73,19 +64,28 @@ package body System.Val_WChar is
                      Result,
                      Base => 16,
                      Error => Error);
-                  if Error
-                     or else Used_Last /= Last
-                     or else Result > Wide_Character'Pos (Wide_Character'Last)
+                  if not Error
+                     and then Used_Last = Last
+                     and then Result <=
+                        Wide_Character'Pos (Wide_Character'Last)
                   then
-                     raise Constraint_Error;
+                     return Wide_Character'Val (Result);
                   end if;
-                  return Wide_Character'Val (Result);
                end;
             else
-               return Value_Named (S);
+               declare
+                  Result : Wide_Character;
+                  Error : Boolean;
+               begin
+                  Get_Named (S, Result, Error);
+                  if not Error then
+                     return Result;
+                  end if;
+               end;
             end if;
          end;
       end if;
+      Value_Error ("Wide_Character", Str);
    end Value_Wide_Character;
 
    function Value_Wide_Wide_Character (Str : String; EM : WC_Encoding_Method)
@@ -110,10 +110,9 @@ package body System.Val_WChar is
                Used_Last,
                Code,
                Error);
-            if Error or else Used_Last + 1 /= Last then
-               raise Constraint_Error;
+            if not Error and then Used_Last + 1 = Last then
+               return Wide_Wide_Character'Val (Code);
             end if;
-            return Wide_Wide_Character'Val (Code);
          end;
       else
          declare
@@ -137,21 +136,47 @@ package body System.Val_WChar is
                      Result,
                      Base => 16,
                      Error => Error);
-                  if Error
-                     or else Used_Last /= Last
-                     or else Result >
+                  if not Error
+                     and then Used_Last = Last
+                     and then Result <=
                         Wide_Wide_Character'Pos (Wide_Wide_Character'Last)
                   then
-                     raise Constraint_Error;
+                     return Wide_Wide_Character'Val (Result);
                   end if;
-                  return Wide_Wide_Character'Val (Result);
                end;
             else
-               return Wide_Wide_Character'Val (Wide_Character'Pos (
-                  Value_Named (S)));
+               declare
+                  Result : Wide_Character;
+                  Error : Boolean;
+               begin
+                  Get_Named (S, Result, Error);
+                  if not Error then
+                     return Wide_Wide_Character'Val (Wide_Character'Pos (
+                        Result));
+                  end if;
+               end;
             end if;
          end;
       end if;
+      Value_Error ("Wide_Wide_Character", Str);
    end Value_Wide_Wide_Character;
+
+   procedure Get_Named (
+      S : String;
+      Value : out Wide_Character;
+      Error : out Boolean) is
+   begin
+      if S = Img_WChar.Image_ad then
+         Value := Wide_Character'Val (16#ad#);
+         Error := False;
+      else
+         declare
+            C : Character;
+         begin
+            Val_Char.Get_Named (S, C, Error);
+            Value := Wide_Character'Val (Character'Pos (C));
+         end;
+      end if;
+   end Get_Named;
 
 end System.Val_WChar;

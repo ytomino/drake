@@ -8,6 +8,9 @@ package System.Val_Char is
 
    --  helper
    HEX_Prefix : constant String := "HEX_"; -- upper case
-   function Value_Named (S : String) return Character;
+   procedure Get_Named (
+      S : String;
+      Value : out Character;
+      Error : out Boolean);
 
 end System.Val_Char;

@@ -1,6 +1,7 @@
 with System.Formatting;
 with System.Img_Char;
 with System.Val_Enum;
+with System.Value_Error;
 package body System.Val_Char is
    pragma Suppress (All_Checks);
 
@@ -34,29 +35,44 @@ package body System.Val_Char is
                      Result,
                      Base => 16,
                      Error => Error);
-                  if Error or else Used_Last /= Last then
-                     raise Constraint_Error;
+                  if not Error and then Used_Last = Last then
+                     return Character'Val (Result);
                   end if;
-                  return Character'Val (Result);
                end;
             else
-               return Value_Named (S);
+               declare
+                  Result : Character;
+                  Error : Boolean;
+               begin
+                  Get_Named (S, Result, Error);
+                  if not Error then
+                     return Result;
+                  end if;
+               end;
             end if;
          end;
       end if;
+      Value_Error ("Character", Str);
    end Value_Character;
 
-   function Value_Named (S : String) return Character is
+   procedure Get_Named (
+      S : String;
+      Value : out Character;
+      Error : out Boolean) is
    begin
       for I in Img_Char.Images_1f'Range loop
          if S = Img_Char.Images_1f (I).all then
-            return I;
+            Value := I;
+            Error := False;
+            return;
          end if;
       end loop;
       if S = Img_Char.Image_7f then
-         return Character'Val (16#7f#);
+         Value := Character'Val (16#7f#);
+         Error := False;
+      else
+         Error := True;
       end if;
-      raise Constraint_Error;
-   end Value_Named;
+   end Get_Named;
 
 end System.Val_Char;

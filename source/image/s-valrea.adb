@@ -1,7 +1,6 @@
 with System.Formatting;
 with System.Val_Uns;
-with System.Unwind.Raising;
-pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
+with System.Value_Error;
 package body System.Val_Real is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
@@ -52,12 +51,14 @@ package body System.Val_Real is
       S : String;
       Last : in out Natural;
       Result : out Long_Long_Float;
-      Base : Formatting.Number_Base);
+      Base : Formatting.Number_Base;
+      Error : out Boolean);
    procedure Get_Unsigned_Real (
       S : String;
       Last : in out Natural;
       Result : out Long_Long_Float;
-      Base : Formatting.Number_Base)
+      Base : Formatting.Number_Base;
+      Error : out Boolean)
    is
       Old_Last : constant Natural := Last;
    begin
@@ -85,12 +86,14 @@ package body System.Val_Real is
                (Long_Long_Float'Last - Long_Long_Float (X))
                   / Long_Long_Float (Base)
             then
-               Unwind.Raising.Overflow;
+               Error := True;
+               return;
             end if;
             Result := Result * Long_Long_Float (Base) + Long_Long_Float (X);
             Last := Last + 1;
          end;
       end loop;
+      Error := False;
    end Get_Unsigned_Real;
 
    --  implementation
@@ -98,16 +101,23 @@ package body System.Val_Real is
    function Value_Real (Str : String) return Long_Long_Float is
       Last : Natural := Str'First - 1;
       Result : Long_Long_Float;
+      Error : Boolean;
    begin
-      Get_Float_Literal (Str, Last, Result);
-      Val_Uns.Check_Last (Str, Last);
-      return Result;
+      Get_Float_Literal (Str, Last, Result, Error);
+      if not Error then
+         Val_Uns.Check_Last (Str, Last, Error);
+         if not Error then
+            return Result;
+         end if;
+      end if;
+      Value_Error ("Float", Str);
    end Value_Real;
 
    procedure Get_Float_Literal (
       S : String;
       Last : out Natural;
-      Result : out Long_Long_Float)
+      Result : out Long_Long_Float;
+      Error : out Boolean)
    is
       Sign : Long_Long_Float;
       Base : Formatting.Number_Base := 10;
@@ -125,30 +135,47 @@ package body System.Val_Real is
          end if;
          Sign := 1.0;
       end if;
-      Get_Unsigned_Real (S, Last, Result, Base => Base);
-      if Last < S'Last
-         and then (S (Last + 1) = '#' or else S (Last + 1) = ':')
-      then
-         Mark := S (Last + 1);
-         Last := Last + 1;
-         if Result /= truncl (Result)
-            or else Result < Long_Long_Float (Formatting.Number_Base'First)
-            or else Result > Long_Long_Float (Formatting.Number_Base'Last)
+      Get_Unsigned_Real (S, Last, Result, Base => Base, Error => Error);
+      if not Error then
+         if Last < S'Last
+            and then (S (Last + 1) = '#' or else S (Last + 1) = ':')
          then
-            raise Constraint_Error;
+            Mark := S (Last + 1);
+            Last := Last + 1;
+            if Result = truncl (Result)
+               and then Result in
+                  Long_Long_Float (Formatting.Number_Base'First) ..
+                  Long_Long_Float (Formatting.Number_Base'Last)
+            then
+               Base := Formatting.Number_Base (Result);
+               Get_Unsigned_Real (S, Last, Result,
+                  Base => Base,
+                  Error => Error);
+               if not Error then
+                  if Last < S'Last and then S (Last + 1) = Mark then
+                     Last := Last + 1;
+                  else
+                     Error := True;
+                     return;
+                  end if;
+               else
+                  return;
+               end if;
+            else
+               Error := True;
+               return;
+            end if;
          end if;
-         Base := Formatting.Number_Base (Result);
-         Get_Unsigned_Real (S, Last, Result, Base => Base);
-         if Last >= S'Last or else S (Last + 1) /= Mark then
-            raise Constraint_Error;
+         Val_Uns.Get_Exponent (S, Last, Exponent,
+            Positive_Only => False,
+            Error => Error);
+         if not Error then
+            if Exponent /= 0 then
+               Result := Result * Long_Long_Float (Base) ** Exponent;
+            end if;
+            Result := copysignl (Result, Sign);
          end if;
-         Last := Last + 1;
       end if;
-      Val_Uns.Get_Exponent (S, Last, Exponent, Positive_Only => False);
-      if Exponent /= 0 then
-         Result := Result * Long_Long_Float (Base) ** Exponent;
-      end if;
-      Result := copysignl (Result, Sign);
    end Get_Float_Literal;
 
 end System.Val_Real;

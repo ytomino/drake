@@ -10,6 +10,7 @@ package System.Val_Int is
    procedure Get_Integer_Literal (
       S : String;
       Last : out Natural;
-      Result : out Integer);
+      Result : out Integer;
+      Error : out Boolean);
 
 end System.Val_Int;

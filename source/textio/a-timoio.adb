@@ -52,12 +52,16 @@ package body Ada.Text_IO.Modular_IO is
       if Num'Size > System.Formatting.Unsigned'Size then
          declare
             Result : System.Formatting.Longest_Unsigned;
+            Error : Boolean;
          begin
             System.Val_LLU.Get_Longest_Unsigned_Literal (
                From,
                Last,
-               Result);
-            if Result > System.Formatting.Longest_Unsigned (Num'Last) then
+               Result,
+               Error => Error);
+            if Error
+               or else Result > System.Formatting.Longest_Unsigned (Num'Last)
+            then
                raise Data_Error;
             end if;
             Item := Num (Result);
@@ -65,20 +69,21 @@ package body Ada.Text_IO.Modular_IO is
       else
          declare
             Result : System.Formatting.Unsigned;
+            Error : Boolean;
          begin
             System.Val_Uns.Get_Unsigned_Literal (
                From,
                Last,
-               Result);
-            if Result > System.Formatting.Unsigned (Num'Last) then
+               Result,
+               Error => Error);
+            if Error
+               or else Result > System.Formatting.Unsigned (Num'Last)
+            then
                raise Data_Error;
             end if;
             Item := Num (Result);
          end;
       end if;
-   exception
-      when Constraint_Error =>
-         raise Data_Error;
    end Get_From_Field;
 
    --  implementation

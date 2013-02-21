@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Ada.Streams.Stream_IO.Inside;
 with System.Formatting;
 with C.netinet.in_h;
@@ -27,10 +28,10 @@ package body Ada.Streams.Stream_IO.Sockets is
          Hints,
          Data'Access);
       if Result /= 0 then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       else
          return Result : End_Point do
-            Assign (Result, Data);
+            Reference (Result).all := Data;
          end return;
       end if;
    end Get;
@@ -92,7 +93,7 @@ package body Ada.Streams.Stream_IO.Sockets is
 
    procedure Connect (File : in out File_Type; Peer : End_Point) is
       Handle : Inside.Handle_Type := -1;
-      I : C.netdb.struct_addrinfo_ptr := Reference (Peer);
+      I : C.netdb.struct_addrinfo_ptr := Reference (Peer).all;
    begin
       while I /= null loop
          Handle := C.sys.socket.socket (
@@ -110,11 +111,12 @@ package body Ada.Streams.Stream_IO.Sockets is
             begin
                Dummy := C.unistd.close (Handle);
             end;
+            Handle := -1;
          end if;
          I := I.ai_next;
       end loop;
       if Handle < 0 then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       else
          Inside.Set_Close_On_Exec (Handle);
          Inside.Open (
@@ -134,18 +136,11 @@ package body Ada.Streams.Stream_IO.Sockets is
 
    package body End_Points is
 
-      procedure Assign (
-         Object : in out End_Point;
-         Data : C.netdb.struct_addrinfo_ptr) is
-      begin
-         Object.Data := Data;
-      end Assign;
-
       function Reference (
          Object : End_Point)
-         return C.netdb.struct_addrinfo_ptr is
+         return not null access C.netdb.struct_addrinfo_ptr is
       begin
-         return Object.Data;
+         return Object.Data'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out End_Point) is

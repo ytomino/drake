@@ -41,7 +41,7 @@ package body Ada.Text_IO is
       Expected : File_Mode) is
    begin
       if (Mode (File) = In_File) /= (Expected = In_File) then
-         raise Mode_Error;
+         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
       end if;
    end Check_File_Mode;
 
@@ -104,7 +104,7 @@ package body Ada.Text_IO is
          or else File'Unrestricted_Access = Current_Error)
          and then Text_IO.Mode (File) /= Mode
       then
-         raise Mode_Error;
+         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
       else
          Inside.Reset (Reference (File), Mode);
       end if;
@@ -573,7 +573,7 @@ package body Ada.Text_IO is
    begin
       if Item'Length > 0 then
          if End_Of_File (File) then
-            raise End_Error;
+            Exceptions.Raise_Exception_From_Here (End_Error'Identity);
          end if;
          Last := Item'First - 1;
          while Last < Item'Last loop

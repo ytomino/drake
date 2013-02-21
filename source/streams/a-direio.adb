@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 package body Ada.Direct_IO is
    use type Streams.Stream_Element_Offset;
 
@@ -39,7 +40,7 @@ package body Ada.Direct_IO is
    function End_Of_File (File : File_Type) return Boolean is
    begin
       if Mode (File) = Out_File then
-         raise Mode_Error;
+         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
       end if;
       return Streams.Stream_IO.End_Of_File (
          Streams.Stream_IO.File_Type (File));
@@ -56,7 +57,7 @@ package body Ada.Direct_IO is
       Index_From_0 : constant Count := Raw_Index - 1;
    begin
       if Index_From_0 rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       return Index_From_0 / Element_Type'Max_Size_In_Storage_Elements + 1;
    end Index;
@@ -127,7 +128,7 @@ package body Ada.Direct_IO is
                Buffer,
                Last);
             if Last < Buffer'Last then
-               raise End_Error;
+               Exceptions.Raise_Exception_From_Here (End_Error'Identity);
             end if;
             Item := Buffer_Item;
          end;
@@ -144,7 +145,7 @@ package body Ada.Direct_IO is
                Buffer,
                Last);
             if Last < Buffer'Last then
-               raise End_Error;
+               Exceptions.Raise_Exception_From_Here (End_Error'Identity);
             end if;
          end;
       end if;
@@ -179,7 +180,7 @@ package body Ada.Direct_IO is
          Streams.Stream_IO.Size (Streams.Stream_IO.File_Type (File)));
    begin
       if Raw_Size rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       return Raw_Size / Element_Type'Max_Size_In_Storage_Elements;
    end Size;

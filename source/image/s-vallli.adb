@@ -1,6 +1,7 @@
 with System.Formatting;
 with System.Val_Uns;
 with System.Val_LLU;
+with System.Value_Error;
 package body System.Val_LLI is
    pragma Suppress (All_Checks);
    use type Formatting.Longest_Unsigned;
@@ -8,16 +9,23 @@ package body System.Val_LLI is
    function Value_Long_Long_Integer (Str : String) return Long_Long_Integer is
       Last : Natural;
       Result : Long_Long_Integer;
+      Error : Boolean;
    begin
-      Get_Long_Long_Integer_Literal (Str, Last, Result);
-      Val_Uns.Check_Last (Str, Last);
-      return Result;
+      Get_Long_Long_Integer_Literal (Str, Last, Result, Error);
+      if not Error then
+         Val_Uns.Check_Last (Str, Last, Error);
+         if not Error then
+            return Result;
+         end if;
+      end if;
+      Value_Error ("Long_Long_Integer", Str);
    end Value_Long_Long_Integer;
 
    procedure Get_Long_Long_Integer_Literal (
       S : String;
       Last : out Natural;
-      Result : out Long_Long_Integer)
+      Result : out Long_Long_Integer;
+      Error : out Boolean)
    is
       Unsigned_Result : Formatting.Longest_Unsigned;
    begin
@@ -28,13 +36,17 @@ package body System.Val_LLI is
          Val_LLU.Get_Longest_Unsigned_Literal_Without_Sign (
             S,
             Last,
-            Unsigned_Result);
-         if Unsigned_Result >
-            Formatting.Longest_Unsigned (-Long_Long_Integer'First)
-         then
-            raise Constraint_Error;
+            Unsigned_Result,
+            Error => Error);
+         if not Error then
+            if Unsigned_Result <=
+               Formatting.Longest_Unsigned'Mod (-Long_Long_Integer'First)
+            then
+               Result := -Long_Long_Integer (Unsigned_Result);
+            else
+               Error := True;
+            end if;
          end if;
-         Result := -Long_Long_Integer (Unsigned_Result);
       else
          if Last < S'Last and then S (Last + 1) = '+' then
             Last := Last + 1;
@@ -42,13 +54,17 @@ package body System.Val_LLI is
          Val_LLU.Get_Longest_Unsigned_Literal_Without_Sign (
             S,
             Last,
-            Unsigned_Result);
-         if Unsigned_Result >
-            Formatting.Longest_Unsigned (Long_Long_Integer'Last)
-         then
-            raise Constraint_Error;
+            Unsigned_Result,
+            Error => Error);
+         if not Error then
+            if Unsigned_Result <=
+               Formatting.Longest_Unsigned (Long_Long_Integer'Last)
+            then
+               Result := Long_Long_Integer (Unsigned_Result);
+            else
+               Error := True;
+            end if;
          end if;
-         Result := Long_Long_Integer (Unsigned_Result);
       end if;
    end Get_Long_Long_Integer_Literal;
 

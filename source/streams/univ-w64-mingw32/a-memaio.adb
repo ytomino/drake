@@ -1,11 +1,10 @@
 with Ada.Exceptions;
-with C.sys.mman;
-with C.sys.types;
+with C.basetsd;
+with C.windef;
 package body Ada.Memory_Mapped_IO is
-   use type Streams.Stream_IO.Count;
+   use type Ada.Streams.Stream_Element_Offset;
    use type System.Address;
-   use type C.signed_int;
-   use type C.sys.types.off_t;
+   use type C.windef.WINBOOL;
 
    procedure Map (
       Object : in out Non_Controlled_Mapping;
@@ -20,28 +19,47 @@ package body Ada.Memory_Mapped_IO is
       Size : Streams.Stream_IO.Count := 0;
       Writable : Boolean)
    is
-      Protects : constant array (Boolean) of C.signed_int := (
-         C.sys.mman.PROT_READ,
-         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
-      Mapped_Address : C.void_ptr;
+      Large_Size, Large_Offset : C.winnt.ULARGE_INTEGER;
+      Protects : constant array (Boolean) of C.windef.DWORD := (
+         C.winnt.PAGE_READONLY,
+         C.winnt.PAGE_READWRITE);
+      Accesses : constant array (Boolean) of C.windef.DWORD := (
+         C.winbase.FILE_MAP_READ,
+         C.winbase.FILE_MAP_WRITE);
+      Mapped_Address : C.windef.LPVOID;
+      File_Mapping : C.winnt.HANDLE;
    begin
       if Object.Address /= System.Null_Address then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      Mapped_Address := C.sys.mman.mmap (
-         C.void_ptr (System.Null_Address),
-         C.size_t (Size),
-         Protects (Writable),
-         C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
+      Large_Size.QuadPart := C.winnt.ULONGLONG (Size);
+      File_Mapping := C.winbase.CreateFileMapping (
          Handle,
-         C.sys.types.off_t (Offset) - 1);
-      if System.Address (Mapped_Address) =
-         System.Address (C.sys.mman.MAP_FAILED)
-      then
+         null,
+         Protects (Writable),
+         Large_Size.HighPart,
+         Large_Size.LowPart,
+         null);
+      if File_Mapping = C.winbase.INVALID_HANDLE_VALUE then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+      end if;
+      Large_Offset.QuadPart := C.winnt.ULONGLONG (Offset - 1);
+      Mapped_Address := C.winbase.MapViewOfFileEx (
+         File_Mapping,
+         Accesses (Writable),
+         Large_Offset.HighPart,
+         Large_Offset.LowPart,
+         C.basetsd.SIZE_T (Size),
+         C.windef.LPVOID (System.Null_Address));
+      if Mapped_Address = C.windef.LPVOID (System.Null_Address) then
+         if C.winbase.CloseHandle (File_Mapping) = 0 then
+            null; -- raise Use_Error;
+         end if;
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       Object.Address := System.Address (Mapped_Address);
       Object.Size := System.Storage_Elements.Storage_Count (Size);
+      Object.File_Mapping := File_Mapping;
    end Map;
 
    procedure Unmap (
@@ -52,9 +70,8 @@ package body Ada.Memory_Mapped_IO is
       Raise_On_Error : Boolean) is
    begin
       --  unmap
-      if C.sys.mman.munmap (
-         C.void_ptr (Object.Address),
-         C.size_t (Object.Size)) /= 0
+      if C.winbase.UnmapViewOfFile (Object.Address) = 0
+         or else C.winbase.CloseHandle (Object.File_Mapping) = 0
       then
          if Raise_On_Error then
             Exceptions.Raise_Exception_From_Here (Use_Error'Identity);

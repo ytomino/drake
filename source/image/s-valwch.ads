@@ -15,6 +15,9 @@ package System.Val_WChar is
       return Wide_Wide_Character;
 
    --  helper
-   function Value_Named (S : String) return Wide_Character;
+   procedure Get_Named (
+      S : String;
+      Value : out Wide_Character;
+      Error : out Boolean);
 
 end System.Val_WChar;

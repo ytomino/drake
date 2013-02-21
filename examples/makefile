@@ -21,7 +21,7 @@ ifneq ($(findstring linux,$(TARGET)),)
 EXAMPLES:=$(filter-out cpu stackoverflow tasking%,$(EXAMPLES))
 endif
 ifneq ($(findstring mingw,$(TARGET)),)
-EXAMPLES:=$(filter-out cpu mappedio process socket_client stackoverflow storagepool tasking%,$(EXAMPLES))
+EXAMPLES:=$(filter-out cpu stackoverflow storagepool tasking%,$(EXAMPLES))
 endif
 endif
 

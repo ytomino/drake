@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 package body Ada.Sequential_IO is
    use type Streams.Stream_Element_Offset;
 
@@ -27,7 +28,7 @@ package body Ada.Sequential_IO is
    function End_Of_File (File : File_Type) return Boolean is
    begin
       if Mode (File) /= In_File then
-         raise Mode_Error;
+         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
       end if;
       return Streams.Stream_IO.End_Of_File (
          Streams.Stream_IO.File_Type (File));
@@ -91,7 +92,7 @@ package body Ada.Sequential_IO is
                   Image,
                   Last);
                if Last < Image'Last then
-                  raise Data_Error;
+                  Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
                end if;
             end;
          end;
@@ -106,7 +107,7 @@ package body Ada.Sequential_IO is
                Image,
                Last);
             if Last < Image'Last then
-               raise End_Error;
+               Exceptions.Raise_Exception_From_Here (End_Error'Identity);
             end if;
          end;
       end if;

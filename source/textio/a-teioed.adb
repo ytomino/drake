@@ -1,3 +1,4 @@
+pragma Check_Policy (Trace, Off);
 with Ada.Exceptions;
 with Ada.Text_IO.Inside.Formatting;
 with System.Formatting.Decimal_Image;
@@ -86,15 +87,15 @@ package body Ada.Text_IO.Editing is
                   loop
                      exit when Item_Image (I) = ' ';
                      if Result_Index < Result'First then
+                        pragma Check (Trace, Debug.Put (
+                           "width of"
+                           & Long_Long_Integer'Image (Item)
+                           & "* 10**"
+                           & Integer'Image (-Scale)
+                           & " is too longer for "
+                           & Pic_String (Pic)));
                         Exceptions.Raise_Exception_From_Here (
-                           Layout_Error'Identity,
-                           Message =>
-                              "width of"
-                              & Long_Long_Integer'Image (Item)
-                              & "* 10**"
-                              & Integer'Image (-Scale)
-                              & " is too longer for "
-                              & Pic_String (Pic));
+                           Layout_Error'Identity);
                      end if;
                      loop
                         pragma Assert (Pic_Index >= Pic.Expanded'First);
@@ -396,15 +397,18 @@ package body Ada.Text_IO.Editing is
                      Inside.Formatting.Get_Tail (
                         Pic_String (I + 1 .. Pic_String'Last),
                         First => Count_First);
+                     declare
+                        Error : Boolean;
                      begin
                         System.Val_Uns.Get_Unsigned_Literal (
                            Pic_String (Count_First .. Pic_String'Last),
                            Count_Last,
-                           Count);
-                     exception
-                        when Constraint_Error =>
+                           Count,
+                           Error => Error);
+                        if Error then
                            Exceptions.Raise_Exception_From_Here (
                               Picture_Error'Identity);
+                        end if;
                      end;
                      if Count = 0
                         or else I = Pic_String'First

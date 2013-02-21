@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with C.fcntl;
 with C.unistd;
 package body Ada.Processes.Inside is
@@ -14,7 +15,7 @@ package body Ada.Processes.Inside is
    begin
       Child := C.unistd.fork;
       if Child < 0 then
-         raise Use_Error;
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       elsif Child = 0 then
          --  child process
          if Directory /= "" then

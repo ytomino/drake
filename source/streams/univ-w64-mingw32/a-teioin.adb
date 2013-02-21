@@ -5,7 +5,6 @@ with System.IO_Options;
 with System.UTF_Conversions;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_16_To_8;
-with C.winbase;
 with C.windef;
 with C.wincon;
 with C.winnls;
@@ -143,12 +142,6 @@ package body Ada.Text_IO.Inside is
       Holder.Clear;
       File := New_File;
    end Open_File;
-
-   procedure Wait;
-   procedure Wait is
-   begin
-      C.winbase.Sleep (0);
-   end Wait;
 
    procedure Read_Buffer (File : Non_Controlled_File_Type);
    procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type);
@@ -672,8 +665,6 @@ package body Ada.Text_IO.Inside is
                         Take_Buffer (File);
                   end case;
                end;
-            else
-               Wait;
             end if;
          end loop;
       end loop;
@@ -979,8 +970,6 @@ package body Ada.Text_IO.Inside is
                      exit;
                end case;
             end;
-         else
-            Wait;
          end if;
       end loop;
    end Get;
@@ -1010,8 +999,6 @@ package body Ada.Text_IO.Inside is
             End_Of_Line := False;
             Item := File.Buffer (1);
             exit;
-         else
-            Wait;
          end if;
       end loop;
    end Look_Ahead;
@@ -1139,7 +1126,6 @@ package body Ada.Text_IO.Inside is
          Read_Buffer (File);
          exit when (File.Last > 0 and then File.Converted)
             or else File.End_Of_File;
-         Wait;
       end loop;
       if not (File.Last > 0 and then File.Converted) then
          Last := Item'First - 1;
@@ -1205,9 +1191,7 @@ package body Ada.Text_IO.Inside is
                exit Single_Character; -- next character
             elsif File.End_Of_File then
                Exceptions.Raise_Exception_From_Here (End_Error'Identity);
-            elsif Wait then
-               Inside.Wait; -- wait and retry
-            else
+            elsif not Wait then
                exit Multi_Character;
             end if;
          end loop Single_Character;
