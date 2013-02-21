@@ -194,9 +194,7 @@ package body Ada.Tags is
                      end if;
                   end;
                end if;
-               Exceptions.Raise_Exception_From_Here (
-                  Constraint_Error'Identity,
-                  Message => "invalid interface conversion");
+               raise Constraint_Error; -- invalid interface conversion
             end if;
          end;
       end if;
