@@ -8,7 +8,7 @@ package body System.IO_Options is
       First : out Positive;
       Last : out Natural)
    is
-      Max_Last : constant Natural := Form'Last - (Keyword'Length - 1);
+      Max_Last : constant Integer := Form'Last - (Keyword'Length - 1);
       I : Positive := Form'First;
    begin
       while I <= Max_Last loop

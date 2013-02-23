@@ -327,6 +327,7 @@ package body Ada.Directories.Inside.File_Names is
 
    type Stack_Type is
       array (Positive range <>) of System.UTF_Conversions.UCS_4;
+   pragma Suppress_Initialization (Stack_Type);
 
    --  a part of utf8_decodestr (vfs_utfconv.c)
    procedure Push (

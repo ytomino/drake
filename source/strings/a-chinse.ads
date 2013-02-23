@@ -45,6 +45,7 @@ package Ada.Characters.Inside.Sets is
 
    type Character_Ranges_Array is array (Positive range <>) of
       not null access constant Character_Ranges;
+   pragma Suppress_Initialization (Character_Ranges_Array);
 
    procedure Merge (
       Target : out Character_Ranges;
