@@ -44,7 +44,7 @@ package body Ada.Processes.Inside is
          Z_Command_Line : String := Command_Line & Character'Val (0);
          C_Command_Line : C.char_array (C.size_t);
          for C_Command_Line'Address use Z_Command_Line'Address;
-         Arguments : C.char_ptr_array (0 .. 255);
+         Arguments : C.char_ptr_array (0 .. 255) := (others => <>);
          Environment_Block : constant C.char_ptr_ptr :=
             System.Environment_Block;
          Actions : aliased C.spawn.posix_spawn_file_actions_t;

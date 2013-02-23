@@ -55,6 +55,7 @@ package System.Tasking is
    type Dispatching_Domain is array (
 --    System.Multiprocessors.CPU range <>)
       Positive) of Boolean;
+   pragma Suppress_Initialization (Dispatching_Domain);
    type Dispatching_Domain_Access is access Dispatching_Domain;
 
    --  gdb knows below names, but those could not be provided
