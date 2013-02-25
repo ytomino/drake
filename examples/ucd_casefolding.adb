@@ -1,14 +1,15 @@
 -- convert UCD/CaseFolding.txt
--- build/ucd_casefolding UCD/CaseFolding.txt > ../source/strings/a-uccafo.ads
+-- build/ucd_casefolding $UCD/CaseFolding.txt > ../source/strings/a-uccafo.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Ordered_Maps;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
+with Ada.Strings.Maps; use Ada.Strings.Maps;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 procedure ucd_casefolding is
+	Hexadecimal_Digit_Set : constant Character_Set := To_Set ("0123456789ABCDEF");
 	function Value (S : String) return Wide_Wide_Character is
 		Img : constant String := "Hex_" & (1 .. 8 - S'Length => '0') & S;
 	begin
@@ -178,10 +179,12 @@ begin
 		New_Line;
 	end loop;
 	New_Line;
+	Put_Line ("   type Run_Length_8 is mod 2 ** 8;");
+	New_Line;
 	Put_Line ("   type Compressed_Item_Type is record");
 	Put_Line ("      Start : UCS_2;");
-	Put_Line ("      Length : Run_Length;");
-	Put_Line ("      Diff : Difference;");
+	Put_Line ("      Length : Run_Length_8;");
+	Put_Line ("      Diff : Difference_8;");
 	Put_Line ("   end record;");
 	Put_Line ("   pragma Suppress_Initialization (Compressed_Item_Type);");
 	Put_Line ("   pragma Pack (Compressed_Item_Type);");

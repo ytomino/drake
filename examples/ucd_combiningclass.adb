@@ -1,5 +1,5 @@
 -- convert UCD/extracted/DerivedCombiningClass.txt
--- build/ucd_combiningclass UCD/extracted/DerivedCombiningClass.txt > ../source/strings/a-uccocl.ads
+-- build/ucd_combiningclass $UCD/extracted/DerivedCombiningClass.txt > ../source/strings/a-uccocl.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Ordered_Maps;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
@@ -128,9 +128,11 @@ begin
 	Put_Line ("package Ada.UCD.Combining_Class is");
 	Put_Line ("   pragma Pure;");
 	New_Line;
+	Put_Line ("   type Run_Length_8 is mod 2 ** 8;");
+	New_Line;
 	Put_Line ("   type Table_16_Item_Type is record");
 	Put_Line ("      Start : UCS_2;");
-	Put_Line ("      Length : Run_Length;");
+	Put_Line ("      Length : Run_Length_8;");
 	Put_Line ("      Combining_Class : Combining_Class_Type;");
 	Put_Line ("   end record;");
 	Put_Line ("   pragma Suppress_Initialization (Table_16_Item_Type);");

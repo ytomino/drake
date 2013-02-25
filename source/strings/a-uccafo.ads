@@ -8,10 +8,12 @@ package Ada.UCD.Case_Folding is
    S_Total : constant := 28;
    T_Total : constant := 2;
 
+   type Run_Length_8 is mod 2 ** 8;
+
    type Compressed_Item_Type is record
       Start : UCS_2;
-      Length : Run_Length;
-      Diff : Difference;
+      Length : Run_Length_8;
+      Diff : Difference_8;
    end record;
    pragma Suppress_Initialization (Compressed_Item_Type);
    pragma Pack (Compressed_Item_Type);

@@ -150,15 +150,14 @@ begin
 	end;
 	-- make combining class map from UCD
 	declare
-		use type Ada.UCD.Run_Length;
 		package C renames Ada.UCD.Combining_Class;
 		Target : Combining_Class_Maps.Map renames UCD_Combining_Class_Map;
 	begin
 		for I in C.Table_XXXX'Range loop
-			for J in 0 .. C.Table_XXXX (I).Length - 1 loop
+			for J in 0 .. Integer (C.Table_XXXX (I).Length) - 1 loop
 				Combining_Class_Maps.Insert (
 					Target,
-					WC'Val (Integer (C.Table_XXXX (I).Start) + Integer (J)),
+					WC'Val (Integer (C.Table_XXXX (I).Start) + J),
 					Integer (C.Table_XXXX (I).Combining_Class));
 			end loop;
 		end loop;

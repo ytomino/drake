@@ -1,5 +1,5 @@
 -- convert UCD/UnicodeData.txt (13, 14)
--- build/ucd_simplecasemapping UCD/UnicodeData.txt > ../source/strings/a-uscama.ads
+-- build/ucd_simplecasemapping $UCD/UnicodeData.txt > ../source/strings/a-uscama.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Ordered_Maps;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
@@ -149,10 +149,12 @@ begin
 	Put (";");
 	New_Line;
 	New_Line;
+	Put_Line ("   type Run_Length_8 is mod 2 ** 8;");
+	New_Line;
 	Put_Line ("   type Compressed_Item_Type is record");
 	Put_Line ("      Start : UCS_2;");
-	Put_Line ("      Length : Run_Length;");
-	Put_Line ("      Diff : Difference;");
+	Put_Line ("      Length : Run_Length_8;");
+	Put_Line ("      Diff : Difference_8;");
 	Put_Line ("   end record;");
 	Put_Line ("   pragma Suppress_Initialization (Compressed_Item_Type);");
 	Put_Line ("   pragma Pack (Compressed_Item_Type);");

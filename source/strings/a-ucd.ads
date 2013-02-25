@@ -4,13 +4,12 @@ package Ada.UCD is
    --  This is the parent package of Unicode Character Database.
    pragma Pure;
 
-   --  num of run length encoding
-   type Run_Length is mod 2 ** 8;
-
-   --  step of sequence of differences
+   --  difference between two code points
    type Difference_Base is range -(2 ** 31) .. 2 ** 31 - 1;
    for Difference_Base'Size use 32;
-   subtype Difference is Difference_Base range -(2 ** 7) .. 2 ** 7 - 1;
+   subtype Difference_8 is Difference_Base range -(2 ** 7) .. 2 ** 7 - 1;
+   subtype Difference_16 is Difference_Base range -(2 ** 15) .. 2 ** 15 - 1;
+   subtype Difference_32 is Difference_Base;
 
    --  code point types
 

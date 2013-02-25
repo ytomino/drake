@@ -3,9 +3,11 @@ pragma License (Unrestricted);
 package Ada.UCD.Combining_Class is
    pragma Pure;
 
+   type Run_Length_8 is mod 2 ** 8;
+
    type Table_16_Item_Type is record
       Start : UCS_2;
-      Length : Run_Length;
+      Length : Run_Length_8;
       Combining_Class : Combining_Class_Type;
    end record;
    pragma Suppress_Initialization (Table_16_Item_Type);
