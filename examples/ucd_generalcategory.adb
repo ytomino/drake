@@ -1,14 +1,16 @@
 -- convert UCD/extracted/DerivedGeneralCategory.txt
--- build/ucd_generalcategory UCD/extracted/DerivedGeneralCategory.txt > ../source/strings/a-ucgeca.ads
+-- build/ucd_generalcategory $UCD/extracted/DerivedGeneralCategory.txt > ../source/strings/a-ucgeca.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
+with Ada.Strings.Maps; use Ada.Strings.Maps;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 procedure ucd_generalcategory is
+	Hexadecimal_Digit_Set : constant Character_Set := To_Set ("0123456789ABCDEF");
+	Letter_Set : constant Character_Set := To_Set (Character_Ranges'(('A', 'Z'), ('a', 'z')));
 	function Value (S : String) return Wide_Wide_Character is
 		Img : constant String := "Hex_" & (1 .. 8 - S'Length => '0') & S;
 	begin

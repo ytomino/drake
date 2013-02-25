@@ -1,4 +1,5 @@
 with Ada.Characters.Normalization;
+with Ada.UCD.Normalization.Unreversible; -- check
 procedure normalize is
 	use type Ada.Characters.Normalization.Class;
 	subtype C is Character;

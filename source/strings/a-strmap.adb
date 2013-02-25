@@ -329,7 +329,7 @@ package body Ada.Strings.Maps is
          Data := new Set_Data'(
             Length => Last,
             Reference_Count => 1,
-            Items => Data.Items (1 .. Last));
+            Items => Items (1 .. Last));
          pragma Assert (Valid (Data));
       end if;
       return Create (Data);
@@ -357,7 +357,7 @@ package body Ada.Strings.Maps is
          Data := new Set_Data'(
             Length => Last,
             Reference_Count => 1,
-            Items => Data.Items (1 .. Last));
+            Items => Items (1 .. Last));
          pragma Assert (Valid (Data));
       end if;
       return Create (Data);
@@ -385,7 +385,7 @@ package body Ada.Strings.Maps is
          Data := new Set_Data'(
             Length => Last,
             Reference_Count => 1,
-            Items => Data.Items (1 .. Last));
+            Items => Items (1 .. Last));
          pragma Assert (Valid (Data));
       end if;
       return Create (Data);
