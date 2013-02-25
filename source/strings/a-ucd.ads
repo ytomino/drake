@@ -27,6 +27,9 @@ package Ada.UCD is
 
    type Combining_Class_Type is mod 2 ** 8;
 
+   type East_Asian_Width_Type is (N, Na, H, A, W, F);
+   pragma Discard_Names (East_Asian_Width_Type);
+
    --  set
 
    type Set_16_Item_Type is record
