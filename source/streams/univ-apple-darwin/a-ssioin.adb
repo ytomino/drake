@@ -119,6 +119,12 @@ package body Ada.Streams.Stream_IO.Inside is
       return Handle (Reference (File).all);
    end Handle;
 
+   function Non_Controlled (File : File_Type)
+      return not null access Non_Controlled_File_Type is
+   begin
+      return Reference (File);
+   end Non_Controlled;
+
    --  non-controlled
 
    package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (

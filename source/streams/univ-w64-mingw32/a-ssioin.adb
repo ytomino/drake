@@ -87,6 +87,12 @@ package body Ada.Streams.Stream_IO.Inside is
       return Handle (Reference (File).all);
    end Handle;
 
+   function Non_Controlled (File : File_Type)
+      return not null access Non_Controlled_File_Type is
+   begin
+      return Reference (File);
+   end Non_Controlled;
+
    --  non-controlled
 
    package LPWSTR_Conv is

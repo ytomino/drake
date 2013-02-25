@@ -5,43 +5,48 @@ package body Ada.Memory_Mapped_IO is
    use type Streams.Stream_IO.Count;
    use type System.Address;
    use type C.signed_int;
+   use type C.size_t;
    use type C.sys.types.off_t;
 
    procedure Map (
       Object : in out Non_Controlled_Mapping;
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
-      Offset : Streams.Stream_IO.Positive_Count := 1;
-      Size : Streams.Stream_IO.Count := 0;
+      File : Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      Offset : Streams.Stream_IO.Positive_Count;
+      Size : Streams.Stream_IO.Count;
       Writable : Boolean);
    procedure Map (
       Object : in out Non_Controlled_Mapping;
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
-      Offset : Streams.Stream_IO.Positive_Count := 1;
-      Size : Streams.Stream_IO.Count := 0;
+      File : Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      Offset : Streams.Stream_IO.Positive_Count;
+      Size : Streams.Stream_IO.Count;
       Writable : Boolean)
    is
       Protects : constant array (Boolean) of C.signed_int := (
          C.sys.mman.PROT_READ,
          C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
+      Mapped_Offset : constant C.sys.types.off_t :=
+         C.sys.types.off_t (Offset) - 1;
+      Mapped_Size : C.size_t := C.size_t (Size);
       Mapped_Address : C.void_ptr;
    begin
-      if Object.Address /= System.Null_Address then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      if Mapped_Size = 0 then
+         Mapped_Size := C.size_t (Streams.Stream_IO.Inside.Size (File))
+            - C.size_t (Mapped_Offset);
       end if;
       Mapped_Address := C.sys.mman.mmap (
          C.void_ptr (System.Null_Address),
-         C.size_t (Size),
+         Mapped_Size,
          Protects (Writable),
          C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
-         Handle,
-         C.sys.types.off_t (Offset) - 1);
+         Streams.Stream_IO.Inside.Handle (File),
+         Mapped_Offset);
       if System.Address (Mapped_Address) =
          System.Address (C.sys.mman.MAP_FAILED)
       then
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       Object.Address := System.Address (Mapped_Address);
-      Object.Size := System.Storage_Elements.Storage_Count (Size);
+      Object.Size := System.Storage_Elements.Storage_Count (Mapped_Size);
    end Map;
 
    procedure Unmap (
@@ -60,14 +65,14 @@ package body Ada.Memory_Mapped_IO is
             Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end if;
       end if;
+      --  reset
+      Object.Address := System.Null_Address;
       --  close file
       if Streams.Stream_IO.Inside.Is_Open (Object.File) then
          Streams.Stream_IO.Inside.Close (
             Object.File,
             Raise_On_Error => Raise_On_Error);
       end if;
-      --  reset
-      Object.Address := System.Null_Address;
    end Unmap;
 
    --  implementation
@@ -86,16 +91,19 @@ package body Ada.Memory_Mapped_IO is
       Size : Streams.Stream_IO.Count := 0)
    is
       pragma Unmodified (Object); -- modified via 'Unrestricted_Access
-      Map_Size : Streams.Stream_IO.Count := Size;
+      NC_Mapping : constant not null access Non_Controlled_Mapping :=
+         Reference (Object);
    begin
-      if Map_Size = 0 then
-         Map_Size := Streams.Stream_IO.Size (File);
+      --  check already opened
+      if NC_Mapping.Address /= System.Null_Address then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
+      --  map
       Map (
-         Reference (Object).all,
-         Streams.Stream_IO.Inside.Handle (File),
+         NC_Mapping.all,
+         Streams.Stream_IO.Inside.Non_Controlled (File).all,
          Offset,
-         Map_Size,
+         Size,
          Writable => Streams.Stream_IO.Mode (File) /= In_File);
    end Map;
 
@@ -111,21 +119,20 @@ package body Ada.Memory_Mapped_IO is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
+      --  check already opened
+      if NC_Mapping.Address /= System.Null_Address then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      --  open file
+      --  this file will be closed in Finalize even if any exception is raised
       Streams.Stream_IO.Inside.Open (NC_Mapping.File, Mode, Name, Form);
-      --  the file will be closed in Finalize if any exception is raised or not
-      declare
-         Map_Size : Streams.Stream_IO.Count := Size;
-      begin
-         if Map_Size = 0 then
-            Map_Size := Streams.Stream_IO.Inside.Size (NC_Mapping.File);
-         end if;
-         Map (
-            NC_Mapping.all,
-            Streams.Stream_IO.Inside.Handle (NC_Mapping.File),
-            Offset,
-            Map_Size,
-            Writable => Mode /= In_File);
-      end;
+      --  map
+      Map (
+         NC_Mapping.all,
+         NC_Mapping.File,
+         Offset,
+         Size,
+         Writable => Mode /= In_File);
    end Map;
 
    procedure Unmap (Object : in out Mapping) is

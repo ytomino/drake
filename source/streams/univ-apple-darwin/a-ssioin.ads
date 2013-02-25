@@ -27,6 +27,12 @@ package Ada.Streams.Stream_IO.Inside is
    function Handle (File : File_Type) return Handle_Type;
    pragma Inline (Handle);
 
+   type Non_Controlled_File_Type; -- forward
+
+   function Non_Controlled (File : File_Type)
+      return not null access Non_Controlled_File_Type;
+   pragma Inline (Non_Controlled);
+
    --  non-controlled
 
    type Stream_Type (<>) is limited private;
