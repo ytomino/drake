@@ -47,6 +47,7 @@
 #include <netdb.h> /* getaddrinfo */
 #include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
+#include <iconv.h>
 #endif
 #if defined(__APPLE__)
 #include <crt_externs.h> /* environment variable */
@@ -120,6 +121,9 @@
 #endif
 #if defined(__APPLE__)
 #pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
+#pragma for Ada overload size_t iconv (iconv_t cd, \
+	char const **inbuf, size_t *inbytesleft, \
+	char **outbuf, size_t *outbytesleft)
 #pragma for Ada "dirent.h" include "sys/dirent.h"
 #pragma for Ada "errno.h" include "sys/errno.h"
 #pragma for Ada "fcntl.h" include "sys/fcntl.h"
@@ -147,6 +151,9 @@
 #undef si_value /* cannot inline returning unchecked union */
 #pragma for Ada overload int open(const char *, int, __mode_t)
 #pragma for Ada overload long syscall(long, void *, unsigned int)
+#pragma for Ada overload size_t iconv (iconv_t __cd, \
+	char const ** restrict __inbuf, size_t * restrict __inbytesleft, \
+	char ** restrict __outbuf, size_t * restrict __outbytesleft)
 #pragma for Ada "bits/time.h" monolithic_include "bits/timex.h"
 #pragma for Ada "dirent.h" include "bits/dirent.h"
 #pragma for Ada "errno.h" include "asm-generic/errno.h"
