@@ -23,6 +23,15 @@ package body Ada.Environment_Variables.Inside is
          C.char_ptr,
          C.char_ptr_ptr);
 
+   function getenv (Name : String) return C.char_ptr;
+   function getenv (Name : String) return C.char_ptr is
+      Z_Name : String := Name & Character'Val (0);
+      C_Name : C.char_array (C.size_t);
+      for C_Name'Address use Z_Name'Address;
+   begin
+      return C.stdlib.getenv (C_Name (0)'Access);
+   end getenv;
+
    procedure Do_Separate (
       Item : not null access constant C.char;
       Name_Length : out C.size_t;
@@ -52,10 +61,7 @@ package body Ada.Environment_Variables.Inside is
    --  implementation
 
    function Value (Name : String) return String is
-      Z_Name : String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
-      Result : constant C.char_ptr := C.stdlib.getenv (C_Name (0)'Access);
+      Result : constant C.char_ptr := getenv (Name);
    begin
       if Result = null then
          raise Constraint_Error;
@@ -65,12 +71,21 @@ package body Ada.Environment_Variables.Inside is
       end if;
    end Value;
 
-   function Exists (Name : String) return Boolean is
-      Z_Name : String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+   function Value (Name : String; Default : String) return String is
+      Result : constant C.char_ptr := getenv (Name);
    begin
-      return C.stdlib.getenv (C_Name (0)'Access) /= null;
+      if Result = null then
+         return Default;
+      else
+         return System.Zero_Terminated_Strings.Value (
+            char_const_ptr_Conv.To_Address (C.char_const_ptr (Result)));
+      end if;
+   end Value;
+
+   function Exists (Name : String) return Boolean is
+      Item : constant C.char_ptr := getenv (Name);
+   begin
+      return Item /= null;
    end Exists;
 
    procedure Set (Name : String; Value : String) is

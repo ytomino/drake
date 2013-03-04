@@ -6,6 +6,7 @@ package Ada.Environment_Variables is
    pragma Preelaborate;
 
    function Value (Name : String) return String;
+   function Value (Name : String; Default : String) return String;
 
    function Exists (Name : String) return Boolean;
 
