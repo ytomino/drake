@@ -1,3 +1,5 @@
+with System.Tasking.Inside;
+with System.Tasking.Synchronous_Objects.Abortable;
 package body Ada.Synchronous_Barriers is
    pragma Suppress (All_Checks);
 
@@ -8,7 +10,7 @@ package body Ada.Synchronous_Barriers is
       Aborted : Boolean;
    begin
       System.Tasking.Inside.Enable_Abort;
-      System.Tasking.Inside.Wait (
+      System.Tasking.Synchronous_Objects.Abortable.Wait (
          The_Barrier.Object,
          Notified,
          Aborted => Aborted);
@@ -17,14 +19,14 @@ package body Ada.Synchronous_Barriers is
 
    overriding procedure Initialize (Object : in out Synchronous_Barrier) is
    begin
-      System.Tasking.Inside.Initialize (
+      System.Tasking.Synchronous_Objects.Initialize (
          Object.Object,
          Object.Release_Threshold);
    end Initialize;
 
    overriding procedure Finalize (Object : in out Synchronous_Barrier) is
    begin
-      System.Tasking.Inside.Finalize (Object.Object);
+      System.Tasking.Synchronous_Objects.Finalize (Object.Object);
    end Finalize;
 
 end Ada.Synchronous_Barriers;

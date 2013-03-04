@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with System.Native_Time;
+with System.Tasking.Synchronous_Objects;
 private with System.Termination;
 private with C.pthread;
 package System.Tasking.Inside is
@@ -85,31 +85,28 @@ package System.Tasking.Inside is
       Index : Task_Entry_Index;
       Name : Entry_Name_Access);
    procedure Set_Entry_Names_To_Deallocate (T : not null Task_Id);
-   type Queue_Node is limited private;
-   type Queue_Node_Access is access all Queue_Node;
-   type Queue_Filter is access function (
-      Item : not null Queue_Node_Access;
-      Params : Address)
-      return Boolean;
    procedure Cancel_Calls; -- for System.Tasking.Stages.Complete_Task
-   procedure Call (T : not null Task_Id; Item : not null Queue_Node_Access);
+   procedure Call (
+      T : not null Task_Id;
+      Item : not null Synchronous_Objects.Queue_Node_Access);
    procedure Uncall (
       T : not null Task_Id;
-      Item : not null Queue_Node_Access;
+      Item : not null Synchronous_Objects.Queue_Node_Access;
       Already_Taken : out Boolean);
    procedure Accept_Call (
-      Item : out Queue_Node_Access;
+      Item : out Synchronous_Objects.Queue_Node_Access;
       Params : Address;
-      Filter : Queue_Filter;
+      Filter : Synchronous_Objects.Queue_Filter;
       Aborted : out Boolean);
    function Call_Count (
       T : not null Task_Id;
       Params : Address;
-      Filter : Queue_Filter)
+      Filter : Synchronous_Objects.Queue_Filter)
       return Natural;
    function Callable (T : not null Task_Id) return Boolean;
 
-   Cancel_Call_Hook : access procedure (X : in out Queue_Node_Access) := null;
+   Cancel_Call_Hook : access
+      procedure (X : in out Synchronous_Objects.Queue_Node_Access) := null;
 
    --  thread local storage
    --  note, use pragma Thread_Local_Storage instead of pthead TLS functions
@@ -146,130 +143,6 @@ package System.Tasking.Inside is
       T : not null Task_Id;
       Index : in out Attribute_Index);
 
-   --  mutex
-
-   type Mutex is limited private;
-
-   procedure Initialize (Object : in out Mutex) is null;
-   procedure Finalize (Object : in out Mutex);
-   procedure Enter (Object : in out Mutex);
-   procedure Leave (Object : in out Mutex);
-
-   --  condition variable (pthread only)
-
-   type Condition_Variable is limited private;
-
-   procedure Initialize (Object : in out Condition_Variable) is null;
-   procedure Finalize (Object : in out Condition_Variable);
-   procedure Notify_One (Object : in out Condition_Variable);
-   procedure Notify_All (Object : in out Condition_Variable);
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex);
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Timeout : Native_Time.Native_Time;
-      Notified : out Boolean);
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Timeout : Duration;
-      Notified : out Boolean);
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Notified : out Boolean;
-      Aborted : out Boolean); -- with abort checking
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Timeout : Native_Time.Native_Time;
-      Notified : out Boolean;
-      Aborted : out Boolean); -- with abort checking
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Timeout : Duration;
-      Notified : out Boolean;
-      Aborted : out Boolean); -- with abort checking
-
-   --  queue
-
-   type Queue is limited private;
---  type Queue_Node is limited private;
---  type Queue_Node_Access is access all Queue_Node;
---  type Queue_Filter is access function (
---    Item : not null Queue_Node_Access;
---    Params : Address)
---    return Boolean;
-   procedure Initialize (Object : in out Queue) is null;
-   procedure Finalize (Object : in out Queue);
-   procedure Cancel (
-      Object : in out Queue;
-      Cancel_Node : access procedure (X : in out Queue_Node_Access));
-   procedure Add (
-      Object : in out Queue;
-      Item : not null Queue_Node_Access);
-   procedure Take ( -- no waiting
-      Object : in out Queue;
-      Item : out Queue_Node_Access;
-      Params : Address;
-      Filter : Queue_Filter);
-   procedure Take ( -- waiting
-      Object : in out Queue;
-      Item : out Queue_Node_Access;
-      Params : Address;
-      Filter : Queue_Filter;
-      Aborted : out Boolean);
-   function Count (
-      Object : not null access Queue;
-      Params : Address;
-      Filter : Queue_Filter)
-      return Natural;
-   function Canceled (Object : Queue) return Boolean;
-
-   --  event for Ada.Synchronous_Task_Control
-
-   type Event is limited private;
-
-   procedure Initialize (Object : in out Event) is null;
-   procedure Finalize (Object : in out Event);
-   procedure Set (Object : in out Event);
-   procedure Reset (Object : in out Event);
-   function Get (Object : Event) return Boolean;
-   procedure Wait (Object : in out Event); -- without abort checking
-   procedure Wait (
-      Object : in out Event;
-      Aborted : out Boolean);
-   procedure Wait (
-      Object : in out Event;
-      Timeout : Duration;
-      Value : out Boolean;
-      Aborted : out Boolean);
-
-   --  group-synchronization for Ada.Synchronous_Barriers
-
-   type Barrier is limited private;
-
-   procedure Initialize (Object : in out Barrier; Release_Threshold : Natural);
-   procedure Finalize (Object : in out Barrier);
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean;
-      Aborted : out Boolean);
-
-   --  multi-read/exclusive-write lock for protected
-
-   type RW_Lock is limited private;
-
-   procedure Initialize (Object : in out RW_Lock) is null;
-   procedure Finalize (Object : in out RW_Lock);
-   procedure Enter_Reading (Object : in out RW_Lock);
-   procedure Leave_Reading (Object : in out RW_Lock);
-   procedure Enter_Writing (Object : in out RW_Lock);
-   procedure Leave_Writing (Object : in out RW_Lock) renames Leave_Reading;
-
 private
 
    type String_Access is access String;
@@ -287,8 +160,8 @@ private
       Task_Count : Counter;
       Activated_Count : aliased Counter;
       Release_Count : aliased Counter;
-      Mutex : Inside.Mutex;
-      Condition_Variable : Inside.Condition_Variable;
+      Mutex : Synchronous_Objects.Mutex;
+      Condition_Variable : Synchronous_Objects.Condition_Variable;
       Error : Activation_Error;
       Merged : Activation_Chain_Access;
       Self : access Activation_Chain;
@@ -331,7 +204,7 @@ private
    pragma Suppress_Initialization (Entry_Name_Array);
 
    type Rendezvous_Record (Last_Index : Task_Entry_Index) is limited record
-      Calling : aliased Queue;
+      Calling : aliased Synchronous_Objects.Queue;
       To_Deallocate_Names : Boolean;
       Names : Entry_Name_Array (1 .. Last_Index);
    end record;
@@ -390,7 +263,7 @@ private
       Parent : Task_Id;
       Within : Tasking.Master_Level; -- level of stack
       List : Task_Id; -- ringed list
-      Mutex : aliased Inside.Mutex;
+      Mutex : aliased Synchronous_Objects.Mutex;
    end record;
    pragma Suppress_Initialization (Master_Record);
 
@@ -399,52 +272,8 @@ private
    type Attribute_Index is limited record
       Index : Integer range -1 .. Integer'Last;
       List : aliased Task_Id;
-      Mutex : aliased Inside.Mutex;
+      Mutex : aliased Synchronous_Objects.Mutex;
    end record;
    pragma Suppress_Initialization (Attribute_Index);
-
-   type Mutex is limited record
-      Handle : aliased C.pthread.pthread_mutex_t :=
-         C.pthread.PTHREAD_MUTEX_INITIALIZER;
-   end record;
-
-   type Condition_Variable is limited record
-      Handle : aliased C.pthread.pthread_cond_t :=
-         C.pthread.PTHREAD_COND_INITIALIZER;
-   end record;
-
-   type Queue is limited record
-      Mutex : Inside.Mutex;
-      Condition_Variable : Inside.Condition_Variable;
-      Head : aliased Queue_Node_Access := null;
-      Tail : Queue_Node_Access := null;
-      Waiting : Boolean := False;
-      Params : Address;
-      Filter : Queue_Filter := null;
-      Canceled : Boolean := False;
-   end record;
-
-   type Queue_Node is limited record
-      Next : aliased Queue_Node_Access;
-   end record;
-
-   type Event is limited record
-      Mutex : Inside.Mutex;
-      Condition_Variable : Inside.Condition_Variable;
-      Value : Boolean := False;
-      pragma Atomic (Value);
-   end record;
-
-   type Barrier is limited record
-      Mutex : Inside.Mutex;
-      Condition_Variable : Inside.Condition_Variable;
-      Release_Threshold : Natural;
-      Blocked : Natural;
-   end record;
-
-   type RW_Lock is limited record
-      Handle : aliased C.pthread.pthread_rwlock_t :=
-         C.pthread.PTHREAD_RWLOCK_INITIALIZER;
-   end record;
 
 end System.Tasking.Inside;

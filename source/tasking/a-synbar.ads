@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  Ada 2012
 private with Ada.Finalization;
-private with System.Tasking.Inside;
+private with System.Tasking.Synchronous_Objects;
 package Ada.Synchronous_Barriers is
    pragma Preelaborate;
 
@@ -20,7 +20,7 @@ private
    type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
       new Finalization.Limited_Controlled with
    record
-      Object : System.Tasking.Inside.Barrier;
+      Object : System.Tasking.Synchronous_Objects.Barrier;
    end record;
 
    overriding procedure Initialize (Object : in out Synchronous_Barrier);

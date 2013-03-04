@@ -1,3 +1,5 @@
+with System.Tasking.Inside;
+with System.Tasking.Synchronous_Objects.Abortable;
 package body Ada.Synchronous_Task_Control.EDF is
    pragma Suppress (All_Checks);
 
@@ -18,7 +20,7 @@ package body Ada.Synchronous_Task_Control.EDF is
       Aborted : Boolean;
    begin
       System.Tasking.Inside.Enable_Abort;
-      System.Tasking.Inside.Wait (
+      System.Tasking.Synchronous_Objects.Abortable.Wait (
          S.Object,
          Real_Time.To_Duration (TS),
          State,
