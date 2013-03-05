@@ -1,5 +1,5 @@
-with System.Soft_Links;
 with System.Address_To_Named_Access_Conversions;
+with System.Soft_Links;
 with System.Tasking.Inside;
 with System.Termination;
 package body System.Tasking.Stages is
