@@ -14,15 +14,10 @@ with System.Storage_Elements;
 with System.Tasking.Synchronous_Objects.Abortable;
 with System.Tasking.Yield;
 with System.Unwind;
-with C.errno;
-with C.signal;
-package body System.Tasking.Inside is
+package body System.Tasking.Tasks is
    pragma Suppress (All_Checks);
    use type Synchronous_Objects.Queue_Node_Access;
    use type Storage_Elements.Storage_Offset;
-   use type C.signed_int;
-   use type C.signed_long;
-   use type C.void_ptr;
 
    type Word is mod 2 ** Standard'Word_Size;
 
@@ -167,8 +162,6 @@ package body System.Tasking.Inside is
       Attribute,
       Attribute_Array,
       Attribute_Array_Access);
-
-   function To_Address is new Ada.Unchecked_Conversion (C.void_ptr, Address);
 
    procedure Clear_Attributes (Item : Task_Id);
    procedure Clear_Attributes (Item : Task_Id) is
@@ -329,39 +322,10 @@ package body System.Tasking.Inside is
 
    --  signal handler
 
-   type sigaction_Wrapper is record -- ??? for No_Elaboration_Code
-      Handle : aliased C.signal.struct_sigaction;
-   end record;
-   pragma Suppress_Initialization (sigaction_Wrapper);
-
-   Old_SIGTERM_Action : aliased sigaction_Wrapper; -- uninitialized
-
-   procedure Restore_SIGTERM_Handler;
-   procedure Restore_SIGTERM_Handler is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-   begin
-      Dummy := C.signal.sigaction (
-         C.signal.SIGTERM,
-         Old_SIGTERM_Action.Handle'Access,
-         null);
-   end Restore_SIGTERM_Handler;
-
-   procedure SIGTERM_Handler (
-      Signal_Number : C.signed_int;
-      Info : access C.signal.struct_siginfo;
-      Context : C.void_ptr);
-   pragma Convention (C, SIGTERM_Handler);
-   procedure SIGTERM_Handler (
-      Signal_Number : C.signed_int;
-      Info : access C.signal.struct_siginfo;
-      Context : C.void_ptr)
-   is
-      pragma Unreferenced (Info);
-      pragma Unreferenced (Context);
+   procedure Abort_Signal_Handler;
+   procedure Abort_Signal_Handler is
       T : constant Task_Id := TLS_Current_Task_Id;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      Error : Boolean;
    begin
       --  pragma Check (Trance, Ada.Debug.Put (Name (T)));
       T.Aborted := True;
@@ -369,39 +333,10 @@ package body System.Tasking.Inside is
          T.Abort_Handler (T);
       end if;
       if T.Kind = Main then
-         Restore_SIGTERM_Handler;
-         Dummy := C.pthread.pthread_kill (T.Handle, Signal_Number);
+         Native_Tasks.Uninstall_Abort_Handler;
+         Native_Tasks.Send_Abort_Signal (T.Handle, Error); -- ignore error
       end if;
-   end SIGTERM_Handler;
-
-   procedure Set_SIGTERM_Handler;
-   procedure Set_SIGTERM_Handler is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-      act : aliased C.signal.struct_sigaction :=
-         (others => <>); -- uninitialized
-   begin
-      act.sigaction_u.sa_sigaction := SIGTERM_Handler'Access;
-      act.sa_flags := -- C.signal.SA_NODEFER +
-         C.signal.SA_RESTART
-         + C.signal.SA_SIGINFO;
-      Dummy := C.signal.sigemptyset (act.sa_mask'Access);
-      Dummy := C.signal.sigaction (
-         C.signal.SIGTERM,
-         act'Access,
-         Old_SIGTERM_Action.Handle'Access);
-   end Set_SIGTERM_Handler;
-
-   procedure Mask_SIGTERM (How : C.signed_int);
-   procedure Mask_SIGTERM (How : C.signed_int) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-      Mask : aliased C.signal.sigset_t;
-   begin
-      Dummy := C.signal.sigemptyset (Mask'Access);
-      Dummy := C.signal.sigaddset (Mask'Access, C.signal.SIGTERM);
-      Dummy := C.pthread.pthread_sigmask (How, Mask'Access, null);
-   end Mask_SIGTERM;
+   end Abort_Signal_Handler;
 
    --  registration
 
@@ -441,7 +376,7 @@ package body System.Tasking.Inside is
          Soft_Links.Get_Main_Task_Local_Storage'Access;
       Soft_Links.Get_Current_Excep := Soft_Links.Get_Main_Current_Excep'Access;
       --  signal handler
-      Restore_SIGTERM_Handler;
+      Native_Tasks.Uninstall_Abort_Handler;
       --  clear
       Registered_State := Unregistered;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
@@ -472,7 +407,7 @@ package body System.Tasking.Inside is
          Soft_Links.Get_Current_Excep := Get_CE'Access;
          --  main thread id
          TLS_Current_Task_Id := Main_Task_Record'Access;
-         Main_Task_Record.Handle := C.pthread.pthread_self;
+         Main_Task_Record.Handle := Native_Tasks.Current;
          Main_Task_Record.Aborted := False;
          Main_Task_Record.Abort_Handler := null;
          Main_Task_Record.Abort_Locking := 2;
@@ -483,7 +418,7 @@ package body System.Tasking.Inside is
          Main_Task_Record.Master_Level := Environment_Task_Level;
          Main_Task_Record.Master_Top := null; -- start from Library_Task_Level
          --  signal handler
-         Set_SIGTERM_Handler;
+         Native_Tasks.Install_Abort_Handler (Abort_Signal_Handler'Access);
          pragma Check (Trace, Ada.Debug.Put ("leave"));
       end if;
    end Register;
@@ -535,17 +470,26 @@ package body System.Tasking.Inside is
       end if;
    end Report;
 
-   function Thread (Rec : C.void_ptr) return C.void_ptr;
+   function Thread (Rec : Native_Tasks.Parameter_Type)
+      return Native_Tasks.Result_Type;
    pragma Convention (C, Thread);
-   function Thread (Rec : C.void_ptr) return C.void_ptr is
-      Result : C.void_ptr;
+   function Thread (Rec : Native_Tasks.Parameter_Type)
+      return Native_Tasks.Result_Type
+   is
+      function To_Address is new Ada.Unchecked_Conversion (
+         Native_Tasks.Parameter_Type,
+         Address);
+      function To_Result is new Ada.Unchecked_Conversion (
+         Address,
+         Native_Tasks.Result_Type);
+      Result : Native_Tasks.Result_Type;
       Local : aliased Soft_Links.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
       No_Detached : Boolean;
    begin
       TLS_Current_Task_Id := T;
-      --  block SIGTERM
-      Mask_SIGTERM (C.signal.SIG_BLOCK);
+      --  block abort signal
+      Native_Tasks.Block_Abort_Signal;
       T.Abort_Locking := 1;
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
@@ -609,9 +553,12 @@ package body System.Tasking.Inside is
                Synchronous_Objects.Enter (Mutex_Ref.all);
                if T.Auto_Detach then
                   Remove_From_Completion_List_No_Sync (T);
-                  if C.pthread.pthread_detach (T.Handle) /= 0 then
-                     null; -- should be report ?
-                  end if;
+                  declare
+                     Error : Boolean;
+                  begin
+                     Native_Tasks.Detach (T.Handle, Error);
+                     --  error should be reported?
+                  end;
                end if;
                Synchronous_Objects.Leave (Mutex_Ref.all);
             end;
@@ -619,11 +566,11 @@ package body System.Tasking.Inside is
                Result := Rec; -- master already has been waiting
             else
                Free (T);
-               Result := C.void_ptr (Null_Address);
+               Result := To_Result (Null_Address);
             end if;
          else
             Free (T);
-            Result := C.void_ptr (Null_Address);
+            Result := To_Result (Null_Address);
          end if;
       end if;
       --  cleanup secondary stack
@@ -637,6 +584,10 @@ package body System.Tasking.Inside is
 
    procedure Execute (T : Task_Id; Error : out Execution_Error);
    procedure Execute (T : Task_Id; Error : out Execution_Error) is
+      function To_Parameter is new Ada.Unchecked_Conversion (
+         Address,
+         Native_Tasks.Parameter_Type);
+      Creation_Error : Boolean;
    begin
       if not sync_bool_compare_and_swap (
          T.Activation_State'Access,
@@ -649,12 +600,12 @@ package body System.Tasking.Inside is
          T.Activation_State := AS_Error;
          T.Termination_State := TS_Terminated; -- C9A004A
       else
-         if C.pthread.pthread_create (
+         Native_Tasks.Create (
             T.Handle'Access,
-            null,
+            To_Parameter (Task_Record_Conv.To_Address (T)),
             Thread'Access,
-            C.void_ptr (Task_Record_Conv.To_Address (T))) /= 0
-         then
+            Error => Creation_Error);
+         if Creation_Error then
             Error := Elaboration_Error;
             T.Activation_State := AS_Error;
          else
@@ -665,39 +616,33 @@ package body System.Tasking.Inside is
 
    procedure Wait (T : Task_Id; Free_Task_Id : out Task_Id);
    procedure Wait (T : Task_Id; Free_Task_Id : out Task_Id) is
-      Rec : aliased C.void_ptr;
+      function To_Address is new Ada.Unchecked_Conversion (
+         Native_Tasks.Result_Type,
+         Address);
+      Rec : aliased Native_Tasks.Result_Type;
+      Error : Boolean;
    begin
       if T.Activation_State = AS_Error then
          Free_Task_Id := T;
       else
-         if C.pthread.pthread_join (T.Handle, Rec'Access) /= 0 then
+         Native_Tasks.Join (T.Handle, Rec'Access, Error);
+         if Error then
             raise Tasking_Error;
          end if;
          Free_Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
       end if;
    end Wait;
 
-   procedure Send_Abort_Signal (T : Task_Id);
-   procedure Send_Abort_Signal (T : Task_Id) is
-   begin
-      --  pragma Check (Trace, Ada.Debug.Put ("abort " & Name (T)));
-      case C.pthread.pthread_kill (T.Handle, C.signal.SIGTERM) is
-         when 0 =>
-            Yield;
-         when C.errno.ESRCH =>
-            pragma Assert (Terminated (T));
-            null; -- no exception when it is already terminated, C9A003A
-         when others =>
-            raise Tasking_Error;
-      end case;
-   end Send_Abort_Signal;
-
    procedure Abort_Handler_On_Leave_Master (T : Task_Id);
    procedure Abort_Handler_On_Leave_Master (T : Task_Id) is
       M : constant Master_Access := T.Master_Top;
+      Error : Boolean;
    begin
       --  Enter (M.Mutex);
-      Send_Abort_Signal (M.List);
+      Native_Tasks.Send_Abort_Signal (M.List.Handle, Error);
+      if Error then
+         raise Tasking_Error;
+      end if;
       --  Leave (M.Mutex);
    end Abort_Handler_On_Leave_Master;
 
@@ -1048,10 +993,12 @@ package body System.Tasking.Inside is
                Synchronous_Objects.Leave (T.Master_Of_Parent.Mutex);
             else
                declare
-                  Handle : constant C.pthread.pthread_t := T.Handle;
+                  Handle : constant Native_Tasks.Handle_Type := T.Handle;
+                  Error : Boolean;
                begin
                   T := null;
-                  if C.pthread.pthread_detach (Handle) /= 0 then
+                  Native_Tasks.Detach (Handle, Error);
+                  if Error then
                      raise Tasking_Error;
                   end if;
                end;
@@ -1125,6 +1072,7 @@ package body System.Tasking.Inside is
 
    procedure Send_Abort (T : not null Task_Id) is
       Current_Task_Id : constant Task_Id := TLS_Current_Task_Id;
+      Error : Boolean;
    begin
       if T = Current_Task_Id then
          T.Aborted := True;
@@ -1132,7 +1080,10 @@ package body System.Tasking.Inside is
       elsif T.Activation_State = AS_Suspended then
          T.Aborted := True;
       else
-         Send_Abort_Signal (T);
+         Native_Tasks.Send_Abort_Signal (T.Handle, Error);
+         if Error then
+            raise Tasking_Error;
+         end if;
          T.Aborted := True; -- set 'Callable to false, C9A009H
          --  abort myself if parent task is aborted, C9A007A
          declare
@@ -1161,7 +1112,7 @@ package body System.Tasking.Inside is
          T.Abort_Locking := T.Abort_Locking - 1;
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
-            Mask_SIGTERM (C.signal.SIG_UNBLOCK);
+            Native_Tasks.Unblock_Abort_Signal;
          end if;
       end if;
    end Enable_Abort;
@@ -1176,7 +1127,7 @@ package body System.Tasking.Inside is
             & Natural'Image (T.Abort_Locking + 1)));
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
-            Mask_SIGTERM (C.signal.SIG_BLOCK);
+            Native_Tasks.Block_Abort_Signal;
          end if;
          T.Abort_Locking := T.Abort_Locking + 1;
          if T.Aborted and then T.Abort_Locking = 1 then
@@ -1381,7 +1332,8 @@ package body System.Tasking.Inside is
          declare
             Taken : constant Task_Id := M.List;
             Free_Task_Id : Task_Id;
-            Error : Activation_Error; -- ignored
+            A_Error : Activation_Error; -- ignored
+            S_Error : Boolean; -- ignored
             Aborted : Boolean; -- ignored
          begin
             Taken.Auto_Detach := False; -- mark inside mutex
@@ -1393,20 +1345,21 @@ package body System.Tasking.Inside is
                if Taken.Activation_Chain_Living then
                   Activate (
                      Taken.Activation_Chain.Self,
-                     Error,
+                     Error => A_Error,
                      Aborted => Aborted);
                end if;
             elsif T.Aborted then
-               Send_Abort_Signal (Taken); -- C9A007A
+               --  C9A007A
+               Native_Tasks.Send_Abort_Signal (Taken.Handle, Error => S_Error);
             end if;
             pragma Assert (T.Abort_Handler = null);
             T.Abort_Handler := Abort_Handler_On_Leave_Master'Access;
             if T.Kind = Sub then
-               Mask_SIGTERM (C.signal.SIG_UNBLOCK);
+               Native_Tasks.Unblock_Abort_Signal;
             end if;
             Wait (Taken, Free_Task_Id);
             if T.Kind = Sub then
-               Mask_SIGTERM (C.signal.SIG_BLOCK);
+               Native_Tasks.Block_Abort_Signal;
             end if;
             T.Abort_Handler := null;
             if Free_Task_Id /= null then
@@ -1561,43 +1514,6 @@ package body System.Tasking.Inside is
             T.Rendezvous = null
             or else not Synchronous_Objects.Canceled (T.Rendezvous.Calling));
    end Callable;
-
-   --  thread local storage
-
---  procedure Allocate (Index : out TLS_Index) is
---    Key : aliased C.pthread.pthread_key_t;
---  begin
---    if C.pthread.pthread_key_create (Key'Access, null) = 0 then
---       Index := TLS_Index (Key);
---    else
---       raise Tasking_Error;
---    end if;
---  end Allocate;
-
---  procedure Free (Index : in out TLS_Index) is
---  begin
---    if C.pthread.pthread_key_delete (
---       C.pthread.pthread_key_t (Index)) /= 0
---    then
---       null; -- raise Tasking_Error;
---    end if;
---  end Free;
-
---  function Get (Index : TLS_Index) return Address is
---  begin
---    return To_Address (C.pthread.pthread_getspecific (
---       C.pthread.pthread_key_t (Index)));
---  end Get;
-
---  procedure Set (Index : TLS_Index; Item : Address) is
---  begin
---    if C.pthread.pthread_setspecific (
---       C.pthread.pthread_key_t (Index),
---       C.void_const_ptr (Item)) /= 0
---    then
---       raise Tasking_Error;
---    end if;
---  end Set;
 
    --  attribute
 
@@ -1786,4 +1702,4 @@ package body System.Tasking.Inside is
       Synchronous_Objects.Leave (Index.Mutex);
    end Clear;
 
-end System.Tasking.Inside;
+end System.Tasking.Tasks;

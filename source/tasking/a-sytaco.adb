@@ -1,5 +1,5 @@
-with System.Tasking.Inside;
 with System.Tasking.Synchronous_Objects.Abortable;
+with System.Tasking.Tasks;
 package body Ada.Synchronous_Task_Control is
    pragma Suppress (All_Checks);
 
@@ -21,11 +21,11 @@ package body Ada.Synchronous_Task_Control is
    procedure Suspend_Until_True (S : in out Suspension_Object) is
       Aborted : Boolean;
    begin
-      System.Tasking.Inside.Enable_Abort;
+      System.Tasking.Tasks.Enable_Abort;
       System.Tasking.Synchronous_Objects.Abortable.Wait (
          S.Object,
          Aborted => Aborted);
-      System.Tasking.Inside.Disable_Abort (Aborted);
+      System.Tasking.Tasks.Disable_Abort (Aborted);
    end Suspend_Until_True;
 
    overriding procedure Initialize (Object : in out Suspension_Object) is

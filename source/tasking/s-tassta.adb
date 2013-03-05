@@ -1,13 +1,13 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
-with System.Tasking.Inside;
+with System.Tasking.Tasks;
 with System.Termination;
 package body System.Tasking.Stages is
    pragma Suppress (All_Checks);
 
    package Task_Record_Conv is new Address_To_Named_Access_Conversions (
-      Inside.Task_Record,
-      Inside.Task_Id);
+      Tasks.Task_Record,
+      Tasks.Task_Id);
 
    procedure Unregister;
    procedure Unregister is
@@ -18,26 +18,26 @@ package body System.Tasking.Stages is
    end Unregister;
 
    function Current_Master return Master_Level
-      renames Inside.Master_Within;
+      renames Tasks.Master_Within;
 
    procedure Enter_Master
-      renames Inside.Enter_Master;
+      renames Tasks.Enter_Master;
 
    procedure Complete_Master
-      renames Inside.Leave_Master;
+      renames Tasks.Leave_Master;
 
    procedure Abort_Defer
-      renames Inside.Enter_Unabortable;
+      renames Tasks.Enter_Unabortable;
 
    procedure Abort_Undefer
-      renames Inside.Leave_Unabortable;
+      renames Tasks.Leave_Unabortable;
 
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count;
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count is
       Addr : Address;
       Size : Storage_Elements.Storage_Count;
    begin
-      Inside.Get_Stack (Task_Record_Conv.To_Pointer (T), Addr, Size);
+      Tasks.Get_Stack (Task_Record_Conv.To_Pointer (T), Addr, Size);
       return Size;
    end Storage_Size;
 
@@ -67,11 +67,11 @@ package body System.Tasking.Stages is
       pragma Unreferenced (Relative_Deadline);
       pragma Unreferenced (Domain);
       pragma Unreferenced (Build_Entry_Names);
-      Master_Of_Parent : constant Inside.Master_Access :=
-         Inside.Master_Of_Parent (Master);
-      New_Task_Id : Inside.Task_Id;
+      Master_Of_Parent : constant Tasks.Master_Access :=
+         Tasks.Master_Of_Parent (Master);
+      New_Task_Id : Tasks.Task_Id;
    begin
-      Inside.Create (
+      Tasks.Create (
          New_Task_Id,
          Discriminants,
          State,
@@ -86,7 +86,7 @@ package body System.Tasking.Stages is
    procedure Complete_Activation is
       Aborted : Boolean; -- abort or elaboration error
    begin
-      Inside.Accept_Activation (Aborted);
+      Tasks.Accept_Activation (Aborted);
       if Aborted then
          raise Standard'Abort_Signal;
       end if;
@@ -94,12 +94,12 @@ package body System.Tasking.Stages is
 
    procedure Complete_Task is
    begin
-      Inside.Cancel_Calls;
+      Tasks.Cancel_Calls;
       --  compiler omits final one calling Complete_Master, so do it here
       --  do it before returning task body, since descriptors and discriminants
       --  of child tasks are placed on the stack of task body
       --  do it before set 'Terminated to False required by C94001A
-      Inside.Leave_All_Masters;
+      Tasks.Leave_All_Masters;
    end Complete_Task;
 
    procedure Activate_Tasks (
@@ -108,22 +108,22 @@ package body System.Tasking.Stages is
       Aborted : Boolean; -- ignore abort
       pragma Unreferenced (Aborted);
    begin
-      Inside.Activate (Chain_Access, Aborted => Aborted);
+      Tasks.Activate (Chain_Access, Aborted => Aborted);
    end Activate_Tasks;
 
    procedure Free_Task (T : Task_Id) is
-      Id : Inside.Task_Id := Task_Record_Conv.To_Pointer (T);
+      Id : Tasks.Task_Id := Task_Record_Conv.To_Pointer (T);
    begin
-      Inside.Set_Entry_Names_To_Deallocate (Id);
-      case Inside.Preferred_Free_Mode (Id) is
-         when Inside.Wait =>
+      Tasks.Set_Entry_Names_To_Deallocate (Id);
+      case Tasks.Preferred_Free_Mode (Id) is
+         when Tasks.Wait =>
             declare
                Aborted : Boolean; -- ignored
             begin
-               Inside.Wait (Id, Aborted => Aborted);
+               Tasks.Wait (Id, Aborted => Aborted);
             end;
-         when Inside.Detach =>
-            Inside.Detach (Id);
+         when Tasks.Detach =>
+            Tasks.Detach (Id);
       end case;
    end Free_Task;
 
@@ -131,10 +131,10 @@ package body System.Tasking.Stages is
       From, To : Activation_Chain_Access;
       New_Master : Master_ID)
    is
-      New_Master_Of_Parent : constant Inside.Master_Access :=
-         Inside.Master_Of_Parent (New_Master);
+      New_Master_Of_Parent : constant Tasks.Master_Access :=
+         Tasks.Master_Of_Parent (New_Master);
    begin
-      Inside.Move (From, To, New_Master_Of_Parent);
+      Tasks.Move (From, To, New_Master_Of_Parent);
    end Move_Activation_Chain;
 
    procedure Set_Entry_Name (
@@ -142,19 +142,19 @@ package body System.Tasking.Stages is
       Pos : Task_Entry_Index;
       Val : Entry_Name_Access) is
    begin
-      Inside.Set_Entry_Name (Task_Record_Conv.To_Pointer (T), Pos, Val);
+      Tasks.Set_Entry_Name (Task_Record_Conv.To_Pointer (T), Pos, Val);
    end Set_Entry_Name;
 
    procedure Abort_Tasks (Tasks : Task_List) is
    begin
       for I in Tasks'Range loop
-         Inside.Send_Abort (Task_Record_Conv.To_Pointer (Tasks (I)));
+         Tasking.Tasks.Send_Abort (Task_Record_Conv.To_Pointer (Tasks (I)));
       end loop;
    end Abort_Tasks;
 
    function Terminated (T : Task_Id) return Boolean is
    begin
-      return Inside.Terminated (Task_Record_Conv.To_Pointer (T));
+      return Tasks.Terminated (Task_Record_Conv.To_Pointer (T));
    end Terminated;
 
 begin

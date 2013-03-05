@@ -2,16 +2,16 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
-with System.Tasking.Inside;
 with System.Tasking.Synchronous_Objects;
 with System.Tasking.Synchronous_Objects.Abortable;
+with System.Tasking.Tasks;
 package body System.Tasking.Rendezvous is
    pragma Suppress (All_Checks);
    use type Ada.Exceptions.Exception_Id;
 
    package Task_Record_Conv is new Address_To_Named_Access_Conversions (
-      Inside.Task_Record,
-      Inside.Task_Id);
+      Tasks.Task_Record,
+      Tasks.Task_Id);
 
    type Node;
    type Node_Access is access all Node;
@@ -75,7 +75,7 @@ package body System.Tasking.Rendezvous is
       Synchronous_Objects.Set (Current_Call.Waiting);
       TLS_Current_Call := Current_Call.Previous;
       if not ZCX_By_Default then
-         Inside.Leave_Unabortable;
+         Tasks.Leave_Unabortable;
          --  Abort_Undefer will not be called by compiler
       end if;
       Ada.Exceptions.Reraise_Occurrence (X);
@@ -90,13 +90,13 @@ package body System.Tasking.Rendezvous is
       The_Node : Synchronous_Objects.Queue_Node_Access;
       Aborted : Boolean;
    begin
-      Inside.Enable_Abort;
-      Inside.Accept_Call (
+      Tasks.Enable_Abort;
+      Tasks.Accept_Call (
          The_Node,
          Address (E),
          Filter'Access,
          Aborted => Aborted);
-      Inside.Disable_Abort (Aborted); -- if aborted, raise here
+      Tasks.Disable_Abort (Aborted); -- if aborted, raise here
       Downcast (The_Node).Previous := TLS_Current_Call;
       TLS_Current_Call := Downcast (The_Node);
       Uninterpreted_Data := Downcast (The_Node).Uninterpreted_Data;
@@ -132,11 +132,11 @@ package body System.Tasking.Rendezvous is
       E : Task_Entry_Index;
       Uninterpreted_Data : Address) is
    begin
-      if Inside.Elaborated (Task_Record_Conv.To_Pointer (Acceptor))
-         and then not Inside.Activated (Task_Record_Conv.To_Pointer (Acceptor))
+      if Tasks.Elaborated (Task_Record_Conv.To_Pointer (Acceptor))
+         and then not Tasks.Activated (Task_Record_Conv.To_Pointer (Acceptor))
       then
          --  in extended return statement
-         Inside.Activate (Task_Record_Conv.To_Pointer (Acceptor));
+         Tasks.Activate (Task_Record_Conv.To_Pointer (Acceptor));
       end if;
       declare
          procedure Finally (X : not null access Synchronous_Objects.Event);
@@ -158,10 +158,10 @@ package body System.Tasking.Rendezvous is
       begin
          Synchronous_Objects.Initialize (The_Node.Waiting);
          Holder.Assign (The_Node.Waiting'Access);
-         Inside.Call (
+         Tasks.Call (
             Task_Record_Conv.To_Pointer (Acceptor),
             The_Node.Super'Unchecked_Access);
-         Inside.Enable_Abort;
+         Tasks.Enable_Abort;
          Synchronous_Objects.Abortable.Wait (
             The_Node.Waiting,
             Aborted => Aborted);
@@ -169,7 +169,7 @@ package body System.Tasking.Rendezvous is
             declare
                Already_Taken : Boolean;
             begin
-               Inside.Uncall (
+               Tasks.Uncall (
                   Task_Record_Conv.To_Pointer (Acceptor),
                   The_Node.Super'Unchecked_Access,
                   Already_Taken => Already_Taken);
@@ -179,7 +179,7 @@ package body System.Tasking.Rendezvous is
                end if;
             end;
          end if;
-         Inside.Disable_Abort (Aborted); -- if aborted, raise here
+         Tasks.Disable_Abort (Aborted); -- if aborted, raise here
          if Ada.Exceptions.Exception_Identity (The_Node.X) /=
             Ada.Exceptions.Null_Id
          then
@@ -190,17 +190,17 @@ package body System.Tasking.Rendezvous is
 
    function Callable (T : Task_Id) return Boolean is
    begin
-      return Inside.Callable (Task_Record_Conv.To_Pointer (T));
+      return Tasks.Callable (Task_Record_Conv.To_Pointer (T));
    end Callable;
 
    function Task_Count (E : Task_Entry_Index) return Natural is
    begin
-      return Inside.Call_Count (
-         Inside.Current_Task_Id,
+      return Tasks.Call_Count (
+         Tasks.Current_Task_Id,
          Address (E),
          Filter'Access);
    end Task_Count;
 
 begin
-   Inside.Cancel_Call_Hook := Cancel_Call'Access;
+   Tasks.Cancel_Call_Hook := Cancel_Call'Access;
 end System.Tasking.Rendezvous;

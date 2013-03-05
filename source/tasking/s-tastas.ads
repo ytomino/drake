@@ -1,9 +1,9 @@
 pragma License (Unrestricted);
 --  implementation unit
 with System.Tasking.Synchronous_Objects;
+private with System.Tasking.Native_Tasks;
 private with System.Termination;
-private with C.pthread;
-package System.Tasking.Inside is
+package System.Tasking.Tasks is
    pragma Preelaborate;
 
    --  this shold be called when Standard'Abort_Signal
@@ -108,16 +108,6 @@ package System.Tasking.Inside is
    Cancel_Call_Hook : access
       procedure (X : in out Synchronous_Objects.Queue_Node_Access) := null;
 
-   --  thread local storage
-   --  note, use pragma Thread_Local_Storage instead of pthead TLS functions
-
---  type TLS_Index is limited private;
-
---  procedure Allocate (Index : out TLS_Index);
---  procedure Free (Index : in out TLS_Index);
---  function Get (Index : TLS_Index) return Address;
---  procedure Set (Index : TLS_Index; Item : Address);
-
    --  attribute for Ada.Task_Attributes
 
    type Attribute_Index is limited private;
@@ -215,17 +205,17 @@ private
    type Abort_Handler is access procedure (T : Task_Id);
 
    type Task_Record (Kind : Task_Kind) is limited record
-      Handle : aliased C.pthread.pthread_t;
+      Handle : aliased Native_Tasks.Handle_Type;
       Aborted : Boolean;
       pragma Atomic (Aborted);
-      Abort_Handler : Inside.Abort_Handler;
+      Abort_Handler : Tasks.Abort_Handler;
       Abort_Locking : Natural;
       Attributes : Attribute_Array_Access;
       Attributes_Length : Natural;
       --  activation / completion
-      Activation_State : aliased Inside.Activation_State;
+      Activation_State : aliased Tasks.Activation_State;
       pragma Atomic (Activation_State);
-      Termination_State : aliased Inside.Termination_State;
+      Termination_State : aliased Tasks.Termination_State;
       pragma Atomic (Termination_State);
       Master_Level : Tasking.Master_Level; -- level of self
       Master_Top : Master_Access; -- stack
@@ -276,4 +266,4 @@ private
    end record;
    pragma Suppress_Initialization (Attribute_Index);
 
-end System.Tasking.Inside;
+end System.Tasking.Tasks;

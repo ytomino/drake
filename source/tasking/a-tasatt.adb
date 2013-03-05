@@ -1,16 +1,16 @@
 with Ada.Finalization;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System.Tasking.Inside;
+with System.Tasking.Tasks;
 package body Ada.Task_Attributes is
    pragma Suppress (All_Checks);
    use type System.Address;
 
-   Index : System.Tasking.Inside.Attribute_Index;
+   Index : System.Tasking.Tasks.Attribute_Index;
 
    function Cast is new Unchecked_Conversion (
       Task_Identification.Task_Id,
-      System.Tasking.Inside.Task_Id);
+      System.Tasking.Tasks.Task_Id);
    function Cast is new Unchecked_Conversion (
       System.Address,
       Attribute_Handle);
@@ -33,7 +33,7 @@ package body Ada.Task_Attributes is
    overriding procedure Finalize (Object : in out Finalizer_Type) is
       pragma Unreferenced (Object);
    begin
-      System.Tasking.Inside.Free (Index);
+      System.Tasking.Tasks.Free (Index);
    end Finalize;
 
    Finalizer : Finalizer_Type;
@@ -65,7 +65,7 @@ package body Ada.Task_Attributes is
                end if;
             end Process;
          begin
-            System.Tasking.Inside.Query (Cast (T), Index, Process'Access);
+            System.Tasking.Tasks.Query (Cast (T), Index, Process'Access);
          end;
       end return;
    end Value;
@@ -82,7 +82,7 @@ package body Ada.Task_Attributes is
       Result : System.Address;
    begin
       Check (T);
-      System.Tasking.Inside.Reference (
+      System.Tasking.Tasks.Reference (
          Cast (T),
          Index,
          New_Item'Access,
@@ -102,7 +102,7 @@ package body Ada.Task_Attributes is
       end New_Item;
    begin
       Check (T);
-      System.Tasking.Inside.Set (
+      System.Tasking.Tasks.Set (
          Cast (T),
          Index,
          New_Item'Access,
@@ -113,9 +113,9 @@ package body Ada.Task_Attributes is
       T : Task_Identification.Task_Id := Task_Identification.Current_Task) is
    begin
       Check (T);
-      System.Tasking.Inside.Clear (Cast (T), Index);
+      System.Tasking.Tasks.Clear (Cast (T), Index);
    end Reinitialize;
 
 begin
-   System.Tasking.Inside.Allocate (Index);
+   System.Tasking.Tasks.Allocate (Index);
 end Ada.Task_Attributes;

@@ -1,6 +1,6 @@
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Unchecked_Deallocation;
-with System.Tasking.Inside;
+with System.Tasking.Tasks;
 procedure tasking4 is
 	package Lists is new Ada.Containers.Doubly_Linked_Lists (Character);
 	procedure Display (C : Lists.List) is
@@ -33,18 +33,18 @@ procedure tasking4 is
 		end loop;
 		Display (Y);
 	end Process;
-	T : System.Tasking.Inside.Task_Id;
+	T : System.Tasking.Tasks.Task_Id;
 	Aborted : Boolean;
 begin
 	for I in Character'('A') .. 'C' loop
 		Lists.Append (X, I);
 	end loop;
 	Y := X; -- sharing
-	System.Tasking.Inside.Create (T, System.Null_Address, Process'Access);
+	System.Tasking.Tasks.Create (T, System.Null_Address, Process'Access);
 	for I in Character'('D') .. 'Z' loop
 		Lists.Append (X, I); -- break sharing
 	end loop;
 	Display (X);
-	System.Tasking.Inside.Wait (T, Aborted => Aborted);
+	System.Tasking.Tasks.Wait (T, Aborted => Aborted);
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking4;

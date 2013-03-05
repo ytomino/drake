@@ -1,4 +1,4 @@
-with System.Tasking.Inside;
+with System.Tasking.Tasks;
 package body System.Tasking.Synchronous_Objects.Abortable is
 
    Abort_Checking_Span : constant Duration := 1.0;
@@ -12,10 +12,10 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       Aborted : out Boolean) is
    begin
       Notified := False;
-      Aborted := Inside.Is_Aborted;
+      Aborted := Tasks.Is_Aborted;
       if not Aborted then
          Wait (Object, Mutex, Abort_Checking_Span, Notified);
-         Aborted := Inside.Is_Aborted;
+         Aborted := Tasks.Is_Aborted;
       end if;
    end Wait;
 
@@ -27,7 +27,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       Aborted : out Boolean) is
    begin
       Notified := False;
-      Aborted := Inside.Is_Aborted;
+      Aborted := Tasks.Is_Aborted;
       if not Aborted then
          declare
             N : Native_Time.Native_Time;
@@ -37,13 +37,13 @@ package body System.Tasking.Synchronous_Objects.Abortable is
                exit when Native_Time.To_Time (N) >=
                   Native_Time.To_Time (Timeout);
                Wait (Object, Mutex, N, Notified);
-               Aborted := Inside.Is_Aborted;
+               Aborted := Tasks.Is_Aborted;
                if Notified or else Aborted then
                   return;
                end if;
             end loop;
             Wait (Object, Mutex, Timeout, Notified);
-            Aborted := Inside.Is_Aborted;
+            Aborted := Tasks.Is_Aborted;
          end;
       end if;
    end Wait;
@@ -56,21 +56,21 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       Aborted : out Boolean) is
    begin
       Notified := False;
-      Aborted := Inside.Is_Aborted;
+      Aborted := Tasks.Is_Aborted;
       if not Aborted then
          declare
             R : Duration := Timeout;
          begin
             while R > Abort_Checking_Span loop
                Wait (Object, Mutex, Abort_Checking_Span, Notified);
-               Aborted := Inside.Is_Aborted;
+               Aborted := Tasks.Is_Aborted;
                if Notified or else Aborted then
                   return;
                end if;
                R := R - Abort_Checking_Span;
             end loop;
             Wait (Object, Mutex, R, Notified);
-            Aborted := Inside.Is_Aborted;
+            Aborted := Tasks.Is_Aborted;
          end;
       end if;
    end Wait;
@@ -84,7 +84,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       Filter : Queue_Filter;
       Aborted : out Boolean) is
    begin
-      Aborted := Inside.Is_Aborted;
+      Aborted := Tasks.Is_Aborted;
       Enter (Object.Mutex);
       declare
          Previous : Queue_Node_Access := null;
@@ -132,7 +132,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
    begin
       Enter (Object.Mutex);
       if Object.Value then
-         Aborted := Inside.Is_Aborted;
+         Aborted := Tasks.Is_Aborted;
       else
          loop
             declare
@@ -159,7 +159,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       Enter (Object.Mutex);
       if Object.Value then
          Value := True;
-         Aborted := Inside.Is_Aborted;
+         Aborted := Tasks.Is_Aborted;
       else
          Wait (
             Object.Condition_Variable,
@@ -185,7 +185,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       if Object.Blocked = Object.Release_Threshold then
          Notify_All (Object.Condition_Variable);
          Object.Blocked := 0;
-         Aborted := Inside.Is_Aborted;
+         Aborted := Tasks.Is_Aborted;
       else
          loop
             declare
