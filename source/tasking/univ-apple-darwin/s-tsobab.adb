@@ -14,8 +14,11 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       Notified := False;
       Aborted := Tasks.Is_Aborted;
       if not Aborted then
-         Wait (Object, Mutex, Abort_Checking_Span, Notified);
-         Aborted := Tasks.Is_Aborted;
+         loop
+            Wait (Object, Mutex, Abort_Checking_Span, Notified);
+            Aborted := Tasks.Is_Aborted;
+            exit when Notified or else Aborted;
+         end loop;
       end if;
    end Wait;
 
@@ -187,20 +190,15 @@ package body System.Tasking.Synchronous_Objects.Abortable is
          Object.Blocked := 0;
          Aborted := Tasks.Is_Aborted;
       else
-         loop
-            declare
-               Threshold_Is_Satisfied : Boolean;
-            begin
-               Wait (
-                  Object.Condition_Variable,
-                  Object.Mutex,
-                  Notified => Threshold_Is_Satisfied,
-                  Aborted => Aborted);
-               exit when Threshold_Is_Satisfied
-                  or else Object.Blocked = Object.Release_Threshold -- ???
-                  or else Aborted;
-            end;
-         end loop;
+         declare
+            Threshold_Is_Satisfied : Boolean;
+         begin
+            Wait (
+               Object.Condition_Variable,
+               Object.Mutex,
+               Notified => Threshold_Is_Satisfied,
+               Aborted => Aborted);
+         end;
       end if;
       Leave (Object.Mutex);
    end Wait;
