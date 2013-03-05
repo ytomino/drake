@@ -13,6 +13,9 @@ package body Ada.Environment_Variables is
    function Value (Name : String) return String
       renames Inside.Value;
 
+   function Value (Name : String; Default : String) return String
+      renames Inside.Value;
+
    function Exists (Name : String) return Boolean
       renames Inside.Exists;
 

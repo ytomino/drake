@@ -2,7 +2,7 @@ with Ada.Real_Time;
 with Ada.Synchronous_Barriers;
 with Ada.Synchronous_Task_Control;
 with Ada.Synchronous_Task_Control.EDF;
-with System.Tasking.Inside;
+with System.Tasking.Tasks;
 procedure tasking2 is
 begin
 	declare
@@ -47,10 +47,10 @@ begin
 		for I in Ns'Range loop
 			Ns (I) := I;
 			declare
-				Id : System.Tasking.Inside.Task_Id;
+				Id : System.Tasking.Tasks.Task_Id;
 			begin
-				System.Tasking.Inside.Create (Id, Ns (I)'Address, Process'Access);
-				System.Tasking.Inside.Detach (Id);
+				System.Tasking.Tasks.Create (Id, Ns (I)'Address, Process'Access);
+				System.Tasking.Tasks.Detach (Id);
 			end;
 		end loop;
 		Ada.Synchronous_Task_Control.Set_True (Start);

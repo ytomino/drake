@@ -21,6 +21,42 @@ package body Ada.Environment_Variables.Inside is
          C.winnt.WCHAR,
          C.winnt.LPCWCH);
 
+   procedure Get_1 (
+      Name : not null access constant C.winnt.WCHAR;
+      Length : out C.windef.DWORD;
+      Found : out Boolean);
+   procedure Get_1 (
+      Name : not null access constant C.winnt.WCHAR;
+      Length : out C.windef.DWORD;
+      Found : out Boolean) is
+   begin
+      Length := C.winbase.GetEnvironmentVariable (Name, null, 0);
+      Found := Length > 0
+         or else C.winbase.GetLastError /= C.winerror.ERROR_ENVVAR_NOT_FOUND;
+   end Get_1;
+
+   function Get_2 (
+      Name : not null access constant C.winnt.WCHAR;
+      Length : C.windef.DWORD)
+      return String;
+
+   function Get_2 (
+      Name : not null access constant C.winnt.WCHAR;
+      Length : C.windef.DWORD)
+      return String
+   is
+      Result : C.winnt.WCHAR_array (0 .. C.size_t (Length));
+      Result_Length : C.windef.DWORD;
+   begin
+      Result_Length := C.winbase.GetEnvironmentVariable (
+         Name,
+         Result (0)'Access,
+         Result'Length);
+      return System.Zero_Terminated_WStrings.Value (
+         Result (0)'Access,
+         C.signed_int (Result_Length));
+   end Get_2;
+
    procedure Do_Separate (
       Item : not null access constant C.winnt.WCHAR;
       Name_Length : out C.size_t;
@@ -57,38 +93,41 @@ package body Ada.Environment_Variables.Inside is
    --  implementation
 
    function Value (Name : String) return String is
-      W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
-      R : C.windef.DWORD;
+      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      Length : C.windef.DWORD;
+      Found : Boolean;
    begin
       System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
-      R := C.winbase.GetEnvironmentVariable (W_Name (0)'Access, null, 0);
-      if R = 0
-         and then C.winbase.GetLastError = C.winerror.ERROR_ENVVAR_NOT_FOUND
-      then
+      Get_1 (W_Name (0)'Access, Length, Found => Found);
+      if not Found then
          raise Constraint_Error;
       else
-         declare
-            Buffer_Size : constant C.windef.DWORD := R + 1;
-            Result : C.winnt.WCHAR_array (0 .. C.size_t (Buffer_Size - 1));
-            Result_Length : C.windef.DWORD;
-         begin
-            Result_Length := C.winbase.GetEnvironmentVariable (
-               W_Name (0)'Access,
-               Result (0)'Access,
-               Buffer_Size);
-            return System.Zero_Terminated_WStrings.Value (
-               Result (0)'Access,
-               C.signed_int (Result_Length));
-         end;
+         return Get_2 (W_Name (0)'Access, Length);
+      end if;
+   end Value;
+
+   function Value (Name : String; Default : String) return String is
+      W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
+      Length : C.windef.DWORD;
+      Found : Boolean;
+   begin
+      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      Get_1 (W_Name (0)'Access, Length, Found => Found);
+      if not Found then
+         return Default;
+      else
+         return Get_2 (W_Name (0)'Access, Length);
       end if;
    end Value;
 
    function Exists (Name : String) return Boolean is
       W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
+      Length : C.windef.DWORD;
+      Found : Boolean;
    begin
       System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
-      return C.winbase.GetEnvironmentVariable (W_Name (0)'Access, null, 0) > 0
-         or else C.winbase.GetLastError /= C.winerror.ERROR_ENVVAR_NOT_FOUND;
+      Get_1 (W_Name (0)'Access, Length, Found => Found);
+      return Found;
    end Exists;
 
    procedure Set (Name : String; Value : String) is

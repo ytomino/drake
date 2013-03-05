@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 private with Ada.Finalization;
-private with System.Tasking.Inside;
+private with System.Tasking.Synchronous_Objects;
 package Ada.Synchronous_Task_Control is
    pragma Preelaborate;
 
@@ -14,7 +14,7 @@ package Ada.Synchronous_Task_Control is
 private
 
    type Suspension_Object is new Finalization.Limited_Controlled with record
-      Object : System.Tasking.Inside.Event;
+      Object : System.Tasking.Synchronous_Objects.Event;
    end record;
 
    overriding procedure Initialize (Object : in out Suspension_Object);

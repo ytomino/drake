@@ -5,23 +5,19 @@ with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Memory;
 with System.Native_Stack;
+with System.Native_Time;
 with System.Once;
 with System.Secondary_Stack;
 with System.Shared_Locking;
 with System.Soft_Links;
 with System.Storage_Elements;
+with System.Tasking.Synchronous_Objects.Abortable;
 with System.Tasking.Yield;
 with System.Unwind;
-with C.errno;
-with C.signal;
-package body System.Tasking.Inside is
+package body System.Tasking.Tasks is
    pragma Suppress (All_Checks);
-   use type System.Storage_Elements.Storage_Offset;
-   use type C.signed_int;
-   use type C.signed_long;
-   use type C.void_ptr;
-
-   Abort_Checking_Span : constant Duration := 1.0;
+   use type Synchronous_Objects.Queue_Node_Access;
+   use type Storage_Elements.Storage_Offset;
 
    type Word is mod 2 ** Standard'Word_Size;
 
@@ -51,79 +47,66 @@ package body System.Tasking.Inside is
 
    --  delay statement
 
-   function "+" (Left : Native_Time.Native_Time; Right : Duration)
-      return Native_Time.Native_Time;
-   function "+" (Left : Native_Time.Native_Time; Right : Duration)
-      return Native_Time.Native_Time is
-   begin
-      return Native_Time.To_Native_Time (
-         Native_Time.To_Time (Left) + Right);
-   end "+";
-
    procedure Delay_For (D : Duration);
    procedure Delay_For (D : Duration) is
-      M : Mutex;
-      C : Condition_Variable;
+      M : Synchronous_Objects.Mutex;
+      C : Synchronous_Objects.Condition_Variable;
       Notified : Boolean;
       Aborted : Boolean;
    begin
       Enable_Abort;
-      Initialize (M);
-      Enter (M);
-      Wait (
+      Synchronous_Objects.Initialize (M);
+      Synchronous_Objects.Initialize (C);
+      Synchronous_Objects.Enter (M);
+      Synchronous_Objects.Abortable.Wait (
          C,
          M,
          Timeout => Duration'Max (D, 0.0),
          Notified => Notified,
          Aborted => Aborted);
-      Leave (M);
-      Finalize (M);
+      Synchronous_Objects.Leave (M);
+      Synchronous_Objects.Finalize (C);
+      Synchronous_Objects.Finalize (M);
       Disable_Abort (Aborted);
    end Delay_For;
 
    procedure Delay_Until (T : Native_Time.Native_Time);
    procedure Delay_Until (T : Native_Time.Native_Time) is
-      M : Mutex;
-      C : Condition_Variable;
+      M : Synchronous_Objects.Mutex;
+      C : Synchronous_Objects.Condition_Variable;
       Notified : Boolean;
       Aborted : Boolean;
    begin
       Enable_Abort;
-      Initialize (M);
-      Enter (M);
-      Wait (
+      Synchronous_Objects.Initialize (M);
+      Synchronous_Objects.Initialize (C);
+      Synchronous_Objects.Enter (M);
+      Synchronous_Objects.Abortable.Wait (
          C,
          M,
          Timeout => T,
          Notified => Notified,
          Aborted => Aborted);
-      Leave (M);
-      Finalize (M);
+      Synchronous_Objects.Leave (M);
+      Synchronous_Objects.Finalize (C);
+      Synchronous_Objects.Finalize (M);
       Disable_Abort (Aborted);
    end Delay_Until;
 
    --  shared lock
 
-   type Mutex_Wrapper is record -- no default for No_Elaboration_Code
-      Handle : aliased C.pthread.pthread_mutex_t;
-   end record;
-   pragma Suppress_Initialization (Mutex_Wrapper);
-
-   Shared_Lock_Body : aliased Mutex_Wrapper; -- uninitialized
-   Shared_Lock : Mutex;
-   for Shared_Lock'Address use Shared_Lock_Body'Address;
-   pragma Import (Ada, Shared_Lock);
+   Shared_Lock : Synchronous_Objects.Mutex; -- uninitialized
 
    procedure Shared_Lock_Enter;
    procedure Shared_Lock_Enter is
    begin
-      Enter (Shared_Lock);
+      Synchronous_Objects.Enter (Shared_Lock);
    end Shared_Lock_Enter;
 
    procedure Shared_Lock_Leave;
    procedure Shared_Lock_Leave is
    begin
-      Leave (Shared_Lock);
+      Synchronous_Objects.Leave (Shared_Lock);
    end Shared_Lock_Leave;
 
    --  attributes
@@ -180,8 +163,6 @@ package body System.Tasking.Inside is
       Attribute_Array,
       Attribute_Array_Access);
 
-   function To_Address is new Ada.Unchecked_Conversion (C.void_ptr, Address);
-
    procedure Clear_Attributes (Item : Task_Id);
    procedure Clear_Attributes (Item : Task_Id) is
    begin
@@ -198,10 +179,7 @@ package body System.Tasking.Inside is
       Attribute_Vectors.Clear (Item.Attributes, Item.Attributes_Length);
    end Clear_Attributes;
 
-   Attribute_Indexes_Lock_Body : aliased Mutex_Wrapper; -- uninitialized
-   Attribute_Indexes_Lock : Mutex;
-   for Attribute_Indexes_Lock'Address use Attribute_Indexes_Lock_Body'Address;
-   pragma Import (Ada, Attribute_Indexes_Lock);
+   Attribute_Indexes_Lock : Synchronous_Objects.Mutex; -- uninitialized
 
    type Attribute_Index_Set is array (Natural) of Word;
    pragma Suppress_Initialization (Attribute_Index_Set);
@@ -228,7 +206,7 @@ package body System.Tasking.Inside is
       Master : Master_Access;
       Item : Task_Id) is
    begin
-      Enter (Master.Mutex);
+      Synchronous_Objects.Enter (Master.Mutex);
       if Master.List = null then
          --  making a ringed list
          Item.Previous_At_Same_Level := Item;
@@ -242,7 +220,7 @@ package body System.Tasking.Inside is
          Item.Next_At_Same_Level.Previous_At_Same_Level := Item;
       end if;
       Item.Master_Of_Parent := Master;
-      Leave (Master.Mutex);
+      Synchronous_Objects.Leave (Master.Mutex);
    end Append_To_Completion_List;
 
    procedure Remove_From_Completion_List_No_Sync (Item : Task_Id);
@@ -272,12 +250,12 @@ package body System.Tasking.Inside is
    begin
       if Item.Master_Of_Parent /= null then
          declare
-            Mutex_Ref : constant not null access Mutex :=
+            Mutex_Ref : constant not null access Synchronous_Objects.Mutex :=
                Item.Master_Of_Parent.Mutex'Access;
          begin
-            Enter (Mutex_Ref.all);
+            Synchronous_Objects.Enter (Mutex_Ref.all);
             Remove_From_Completion_List_No_Sync (Item);
-            Leave (Mutex_Ref.all);
+            Synchronous_Objects.Leave (Mutex_Ref.all);
          end;
       end if;
    end Remove_From_Completion_List;
@@ -303,7 +281,7 @@ package body System.Tasking.Inside is
       Clear_Attributes (Item);
       --  free task record
       if Item.Rendezvous /= null then
-         Finalize (Item.Rendezvous.Calling);
+         Synchronous_Objects.Finalize (Item.Rendezvous.Calling);
          if Item.Rendezvous.To_Deallocate_Names then
             for I in Item.Rendezvous.Names'Range loop
                Unchecked_Free (Item.Rendezvous.Names (I));
@@ -344,39 +322,10 @@ package body System.Tasking.Inside is
 
    --  signal handler
 
-   type sigaction_Wrapper is record -- ??? for No_Elaboration_Code
-      Handle : aliased C.signal.struct_sigaction;
-   end record;
-   pragma Suppress_Initialization (sigaction_Wrapper);
-
-   Old_SIGTERM_Action : aliased sigaction_Wrapper; -- uninitialized
-
-   procedure Restore_SIGTERM_Handler;
-   procedure Restore_SIGTERM_Handler is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-   begin
-      Dummy := C.signal.sigaction (
-         C.signal.SIGTERM,
-         Old_SIGTERM_Action.Handle'Access,
-         null);
-   end Restore_SIGTERM_Handler;
-
-   procedure SIGTERM_Handler (
-      Signal_Number : C.signed_int;
-      Info : access C.signal.struct_siginfo;
-      Context : C.void_ptr);
-   pragma Convention (C, SIGTERM_Handler);
-   procedure SIGTERM_Handler (
-      Signal_Number : C.signed_int;
-      Info : access C.signal.struct_siginfo;
-      Context : C.void_ptr)
-   is
-      pragma Unreferenced (Info);
-      pragma Unreferenced (Context);
+   procedure Abort_Signal_Handler;
+   procedure Abort_Signal_Handler is
       T : constant Task_Id := TLS_Current_Task_Id;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      Error : Boolean;
    begin
       --  pragma Check (Trance, Ada.Debug.Put (Name (T)));
       T.Aborted := True;
@@ -384,39 +333,10 @@ package body System.Tasking.Inside is
          T.Abort_Handler (T);
       end if;
       if T.Kind = Main then
-         Restore_SIGTERM_Handler;
-         Dummy := C.pthread.pthread_kill (T.Handle, Signal_Number);
+         Native_Tasks.Uninstall_Abort_Handler;
+         Native_Tasks.Send_Abort_Signal (T.Handle, Error); -- ignore error
       end if;
-   end SIGTERM_Handler;
-
-   procedure Set_SIGTERM_Handler;
-   procedure Set_SIGTERM_Handler is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-      act : aliased C.signal.struct_sigaction :=
-         (others => <>); -- uninitialized
-   begin
-      act.sigaction_u.sa_sigaction := SIGTERM_Handler'Access;
-      act.sa_flags := -- C.signal.SA_NODEFER +
-         C.signal.SA_RESTART
-         + C.signal.SA_SIGINFO;
-      Dummy := C.signal.sigemptyset (act.sa_mask'Access);
-      Dummy := C.signal.sigaction (
-         C.signal.SIGTERM,
-         act'Access,
-         Old_SIGTERM_Action.Handle'Access);
-   end Set_SIGTERM_Handler;
-
-   procedure Mask_SIGTERM (How : C.signed_int);
-   procedure Mask_SIGTERM (How : C.signed_int) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-      Mask : aliased C.signal.sigset_t;
-   begin
-      Dummy := C.signal.sigemptyset (Mask'Access);
-      Dummy := C.signal.sigaddset (Mask'Access, C.signal.SIGTERM);
-      Dummy := C.pthread.pthread_sigmask (How, Mask'Access, null);
-   end Mask_SIGTERM;
+   end Abort_Signal_Handler;
 
    --  registration
 
@@ -440,7 +360,7 @@ package body System.Tasking.Inside is
       pragma Assert (Main_Task_Record.Abort_Locking = 2);
       TLS_Current_Task_Id := null;
       --  shared lock
-      Finalize (Shared_Lock);
+      Synchronous_Objects.Finalize (Shared_Lock);
       Shared_Locking.Enter_Hook := Shared_Locking.Nop'Access;
       Shared_Locking.Leave_Hook := Shared_Locking.Nop'Access;
       --  once
@@ -449,14 +369,14 @@ package body System.Tasking.Inside is
       Native_Time.Delay_For_Hook := Native_Time.Simple_Delay_For'Access;
       Native_Time.Delay_Until_Hook := Native_Time.Simple_Delay_Until'Access;
       --  attribute indexes
-      Finalize (Attribute_Indexes_Lock);
+      Synchronous_Objects.Finalize (Attribute_Indexes_Lock);
       Attribute_Index_Sets.Clear (Attribute_Indexes, Attribute_Indexes_Length);
       --  secondary stack and exception occurrenc
       Soft_Links.Get_Task_Local_Storage :=
          Soft_Links.Get_Main_Task_Local_Storage'Access;
       Soft_Links.Get_Current_Excep := Soft_Links.Get_Main_Current_Excep'Access;
       --  signal handler
-      Restore_SIGTERM_Handler;
+      Native_Tasks.Uninstall_Abort_Handler;
       --  clear
       Registered_State := Unregistered;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
@@ -471,7 +391,7 @@ package body System.Tasking.Inside is
          Registered_State := Registered;
          Termination.Register_Exit (Unregister'Access);
          --  shared lock
-         Shared_Lock.Handle := C.pthread.PTHREAD_MUTEX_INITIALIZER;
+         Synchronous_Objects.Initialize (Shared_Lock);
          Shared_Locking.Enter_Hook := Shared_Lock_Enter'Access;
          Shared_Locking.Leave_Hook := Shared_Lock_Leave'Access;
          --  once
@@ -480,14 +400,14 @@ package body System.Tasking.Inside is
          Native_Time.Delay_For_Hook := Delay_For'Access;
          Native_Time.Delay_Until_Hook := Delay_Until'Access;
          --  attribute indexes
-         Attribute_Indexes_Lock.Handle := C.pthread.PTHREAD_MUTEX_INITIALIZER;
+         Synchronous_Objects.Initialize (Attribute_Indexes_Lock);
          --  secondary stack and exception occurrence
          TLS_Stack := Soft_Links.Get_Main_Task_Local_Storage;
          Soft_Links.Get_Task_Local_Storage := Get_SS'Access;
          Soft_Links.Get_Current_Excep := Get_CE'Access;
          --  main thread id
          TLS_Current_Task_Id := Main_Task_Record'Access;
-         Main_Task_Record.Handle := C.pthread.pthread_self;
+         Main_Task_Record.Handle := Native_Tasks.Current;
          Main_Task_Record.Aborted := False;
          Main_Task_Record.Abort_Handler := null;
          Main_Task_Record.Abort_Locking := 2;
@@ -498,7 +418,7 @@ package body System.Tasking.Inside is
          Main_Task_Record.Master_Level := Environment_Task_Level;
          Main_Task_Record.Master_Top := null; -- start from Library_Task_Level
          --  signal handler
-         Set_SIGTERM_Handler;
+         Native_Tasks.Install_Abort_Handler (Abort_Signal_Handler'Access);
          pragma Check (Trace, Ada.Debug.Put ("leave"));
       end if;
    end Register;
@@ -550,17 +470,26 @@ package body System.Tasking.Inside is
       end if;
    end Report;
 
-   function Thread (Rec : C.void_ptr) return C.void_ptr;
+   function Thread (Rec : Native_Tasks.Parameter_Type)
+      return Native_Tasks.Result_Type;
    pragma Convention (C, Thread);
-   function Thread (Rec : C.void_ptr) return C.void_ptr is
-      Result : C.void_ptr;
+   function Thread (Rec : Native_Tasks.Parameter_Type)
+      return Native_Tasks.Result_Type
+   is
+      function To_Address is new Ada.Unchecked_Conversion (
+         Native_Tasks.Parameter_Type,
+         Address);
+      function To_Result is new Ada.Unchecked_Conversion (
+         Address,
+         Native_Tasks.Result_Type);
+      Result : Native_Tasks.Result_Type;
       Local : aliased Soft_Links.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
       No_Detached : Boolean;
    begin
       TLS_Current_Task_Id := T;
-      --  block SIGTERM
-      Mask_SIGTERM (C.signal.SIG_BLOCK);
+      --  block abort signal
+      Native_Tasks.Block_Abort_Signal;
       T.Abort_Locking := 1;
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
@@ -615,27 +544,31 @@ package body System.Tasking.Inside is
       else -- detached
          if T.Master_Of_Parent /= null then
             declare
-               Mutex_Ref : constant not null access Mutex :=
+               Mutex_Ref : constant
+                  not null access Synchronous_Objects.Mutex :=
                   T.Master_Of_Parent.Mutex'Access;
             begin
-               Enter (Mutex_Ref.all);
+               Synchronous_Objects.Enter (Mutex_Ref.all);
                if T.Auto_Detach then
                   Remove_From_Completion_List_No_Sync (T);
-                  if C.pthread.pthread_detach (T.Handle) /= 0 then
-                     null; -- should be report ?
-                  end if;
+                  declare
+                     Error : Boolean;
+                  begin
+                     Native_Tasks.Detach (T.Handle, Error);
+                     --  error should be reported?
+                  end;
                end if;
-               Leave (Mutex_Ref.all);
+               Synchronous_Objects.Leave (Mutex_Ref.all);
             end;
             if not T.Auto_Detach then
                Result := Rec; -- master already has been waiting
             else
                Free (T);
-               Result := C.void_ptr (Null_Address);
+               Result := To_Result (Null_Address);
             end if;
          else
             Free (T);
-            Result := C.void_ptr (Null_Address);
+            Result := To_Result (Null_Address);
          end if;
       end if;
       --  cleanup secondary stack
@@ -649,6 +582,10 @@ package body System.Tasking.Inside is
 
    procedure Execute (T : Task_Id; Error : out Execution_Error);
    procedure Execute (T : Task_Id; Error : out Execution_Error) is
+      function To_Parameter is new Ada.Unchecked_Conversion (
+         Address,
+         Native_Tasks.Parameter_Type);
+      Creation_Error : Boolean;
    begin
       if not sync_bool_compare_and_swap (
          T.Activation_State'Access,
@@ -661,12 +598,12 @@ package body System.Tasking.Inside is
          T.Activation_State := AS_Error;
          T.Termination_State := TS_Terminated; -- C9A004A
       else
-         if C.pthread.pthread_create (
+         Native_Tasks.Create (
             T.Handle'Access,
-            null,
+            To_Parameter (Task_Record_Conv.To_Address (T)),
             Thread'Access,
-            C.void_ptr (Task_Record_Conv.To_Address (T))) /= 0
-         then
+            Error => Creation_Error);
+         if Creation_Error then
             Error := Elaboration_Error;
             T.Activation_State := AS_Error;
          else
@@ -677,39 +614,33 @@ package body System.Tasking.Inside is
 
    procedure Wait (T : Task_Id; Free_Task_Id : out Task_Id);
    procedure Wait (T : Task_Id; Free_Task_Id : out Task_Id) is
-      Rec : aliased C.void_ptr;
+      function To_Address is new Ada.Unchecked_Conversion (
+         Native_Tasks.Result_Type,
+         Address);
+      Rec : aliased Native_Tasks.Result_Type;
+      Error : Boolean;
    begin
       if T.Activation_State = AS_Error then
          Free_Task_Id := T;
       else
-         if C.pthread.pthread_join (T.Handle, Rec'Access) /= 0 then
+         Native_Tasks.Join (T.Handle, Rec'Access, Error);
+         if Error then
             raise Tasking_Error;
          end if;
          Free_Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
       end if;
    end Wait;
 
-   procedure Send_Abort_Signal (T : Task_Id);
-   procedure Send_Abort_Signal (T : Task_Id) is
-   begin
-      --  pragma Check (Trace, Ada.Debug.Put ("abort " & Name (T)));
-      case C.pthread.pthread_kill (T.Handle, C.signal.SIGTERM) is
-         when 0 =>
-            Yield;
-         when C.errno.ESRCH =>
-            pragma Assert (Terminated (T));
-            null; -- no exception when it is already terminated, C9A003A
-         when others =>
-            raise Tasking_Error;
-      end case;
-   end Send_Abort_Signal;
-
    procedure Abort_Handler_On_Leave_Master (T : Task_Id);
    procedure Abort_Handler_On_Leave_Master (T : Task_Id) is
       M : constant Master_Access := T.Master_Top;
+      Error : Boolean;
    begin
       --  Enter (M.Mutex);
-      Send_Abort_Signal (M.List);
+      Native_Tasks.Send_Abort_Signal (M.List.Handle, Error);
+      if Error then
+         raise Tasking_Error;
+      end if;
       --  Leave (M.Mutex);
    end Abort_Handler_On_Leave_Master;
 
@@ -749,8 +680,8 @@ package body System.Tasking.Inside is
             Activation_Chain_Data,
             Activation_Chain_Access);
       begin
-         Finalize (Item.Mutex);
-         Finalize (Item.Condition_Variable);
+         Synchronous_Objects.Finalize (Item.Mutex);
+         Synchronous_Objects.Finalize (Item.Condition_Variable);
          Unchecked_Free (Item);
       end Free;
    begin
@@ -797,7 +728,7 @@ package body System.Tasking.Inside is
       Aborted := False;
       while C /= null loop
          pragma Assert (C.Self = Chain);
-         Enter (C.Mutex);
+         Synchronous_Objects.Enter (C.Mutex);
          declare
             I : Task_Id := C.List;
             Error_On_Execute : Execution_Error;
@@ -819,17 +750,17 @@ package body System.Tasking.Inside is
          C.Activated_Count := C.Activated_Count + 1;
          if C.Activated_Count > C.Task_Count then
             Set_Active (C);
-            Notify_All (C.Condition_Variable);
+            Synchronous_Objects.Notify_All (C.Condition_Variable);
          else
             loop
-               Wait (C.Condition_Variable, C.Mutex);
+               Synchronous_Objects.Wait (C.Condition_Variable, C.Mutex);
                Aborted := Is_Aborted; -- is this check worthwhile?
                exit when C.Activated_Count > C.Task_Count or else Aborted;
             end loop;
          end if;
          Error := Activation_Error'Max (Error, C.Error);
          Remove_From_Merged_Activation_Chain_List (C);
-         Leave (C.Mutex);
+         Synchronous_Objects.Leave (C.Mutex);
          --  cleanup
          declare
             Merged : constant Activation_Chain_Access := C.Merged;
@@ -850,7 +781,7 @@ package body System.Tasking.Inside is
          declare
             C : constant Activation_Chain_Access := T.Activation_Chain;
          begin
-            Enter (C.Mutex);
+            Synchronous_Objects.Enter (C.Mutex);
             if Error_On_Execute /= None then
                C.Task_Count := C.Task_Count - 1;
                if Error_On_Execute = Elaboration_Error then
@@ -858,10 +789,10 @@ package body System.Tasking.Inside is
                end if;
             else
                Set_Active (T, AS_Active_Before_Activation);
-               Notify_All (C.Condition_Variable);
+               Synchronous_Objects.Notify_All (C.Condition_Variable);
             end if;
             Error := Activation_Error'Max (Error, C.Error);
-            Leave (C.Mutex);
+            Synchronous_Objects.Leave (C.Mutex);
          end;
       end if;
       --  note, this procedure does not free activation chain
@@ -876,61 +807,27 @@ package body System.Tasking.Inside is
          Master_Record,
          Master_Access);
    begin
-      Finalize (Item.Mutex);
+      Synchronous_Objects.Finalize (Item.Mutex);
       Unchecked_Free (Item);
    end Free;
 
    --  queue
 
    package Queue_Node_Conv is new Address_To_Named_Access_Conversions (
-      Queue_Node,
-      Queue_Node_Access);
+      Synchronous_Objects.Queue_Node,
+      Synchronous_Objects.Queue_Node_Access);
 
    function Uncall_Filter (
-      The_Node : not null Queue_Node_Access;
+      The_Node : not null Synchronous_Objects.Queue_Node_Access;
       Params : Address)
       return Boolean;
    function Uncall_Filter (
-      The_Node : not null Queue_Node_Access;
+      The_Node : not null Synchronous_Objects.Queue_Node_Access;
       Params : Address)
       return Boolean is
    begin
       return The_Node = Queue_Node_Conv.To_Pointer (Params);
    end Uncall_Filter;
-
-   procedure Peek_No_Sync (
-      Object : in out Queue;
-      Item : out Queue_Node_Access;
-      Params : Address;
-      Filter : Queue_Filter;
-      Previous : in out Queue_Node_Access;
-      Current : in out Queue_Node_Access);
-   procedure Peek_No_Sync (
-      Object : in out Queue;
-      Item : out Queue_Node_Access;
-      Params : Address;
-      Filter : Queue_Filter;
-      Previous : in out Queue_Node_Access;
-      Current : in out Queue_Node_Access) is
-   begin
-      Item := null;
-      Search : while Current /= null loop
-         if Filter = null or else Filter (Current, Params) then
-            if Previous /= null then
-               Previous.Next := Current.Next;
-            else
-               Object.Head := Current.Next;
-            end if;
-            if Current = Object.Tail then
-               Object.Tail := Previous;
-            end if;
-            Item := Current;
-            exit Search;
-         end if;
-         Previous := Current;
-         Current := Current.Next;
-      end loop Search;
-   end Peek_No_Sync;
 
    --  implementation
 
@@ -981,11 +878,13 @@ package body System.Tasking.Inside is
                Task_Count => 0,
                Activated_Count => 0,
                Release_Count => 0,
-               Mutex => <>, -- default initializer
-               Condition_Variable => <>, -- default initializer
+               Mutex => <>, -- uninitialized
+               Condition_Variable => <>, -- uninitialized
                Error => None,
                Merged => null,
                Self => Chain);
+            Synchronous_Objects.Initialize (Chain_Data.Mutex);
+            Synchronous_Objects.Initialize (Chain_Data.Condition_Variable);
             Chain.Data := Activation_Chain_Conv.To_Address (Chain_Data);
          end if;
       end if;
@@ -998,9 +897,10 @@ package body System.Tasking.Inside is
       if Entry_Last_Index > 0 then
          Rendezvous := new Rendezvous_Record'(
             Last_Index => Entry_Last_Index,
-            Calling => <>, -- default initializer
+            Calling => <>, -- uninitialized
             To_Deallocate_Names => False,
             Names => (others => null));
+         Synchronous_Objects.Initialize (Rendezvous.Calling);
       end if;
       --  task record
       T := new Task_Record'(
@@ -1084,15 +984,17 @@ package body System.Tasking.Inside is
             TS_Detached)
          then
             if T.Master_Of_Parent /= null then
-               Enter (T.Master_Of_Parent.Mutex);
+               Synchronous_Objects.Enter (T.Master_Of_Parent.Mutex);
                T.Auto_Detach := True;
-               Leave (T.Master_Of_Parent.Mutex);
+               Synchronous_Objects.Leave (T.Master_Of_Parent.Mutex);
             else
                declare
-                  Handle : constant C.pthread.pthread_t := T.Handle;
+                  Handle : constant Native_Tasks.Handle_Type := T.Handle;
+                  Error : Boolean;
                begin
                   T := null;
-                  if C.pthread.pthread_detach (Handle) /= 0 then
+                  Native_Tasks.Detach (Handle, Error);
+                  if Error then
                      raise Tasking_Error;
                   end if;
                end;
@@ -1166,6 +1068,7 @@ package body System.Tasking.Inside is
 
    procedure Send_Abort (T : not null Task_Id) is
       Current_Task_Id : constant Task_Id := TLS_Current_Task_Id;
+      Error : Boolean;
    begin
       if T = Current_Task_Id then
          T.Aborted := True;
@@ -1173,7 +1076,10 @@ package body System.Tasking.Inside is
       elsif T.Activation_State = AS_Suspended then
          T.Aborted := True;
       else
-         Send_Abort_Signal (T);
+         Native_Tasks.Send_Abort_Signal (T.Handle, Error);
+         if Error then
+            raise Tasking_Error;
+         end if;
          T.Aborted := True; -- set 'Callable to false, C9A009H
          --  abort myself if parent task is aborted, C9A007A
          declare
@@ -1202,7 +1108,7 @@ package body System.Tasking.Inside is
          T.Abort_Locking := T.Abort_Locking - 1;
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
-            Mask_SIGTERM (C.signal.SIG_UNBLOCK);
+            Native_Tasks.Unblock_Abort_Signal;
          end if;
       end if;
    end Enable_Abort;
@@ -1217,7 +1123,7 @@ package body System.Tasking.Inside is
             & Natural'Image (T.Abort_Locking + 1)));
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
-            Mask_SIGTERM (C.signal.SIG_BLOCK);
+            Native_Tasks.Block_Abort_Signal;
          end if;
          T.Abort_Locking := T.Abort_Locking + 1;
          if T.Aborted and then T.Abort_Locking = 1 then
@@ -1270,21 +1176,21 @@ package body System.Tasking.Inside is
       C : Activation_Chain_Access := T.Activation_Chain;
    begin
       pragma Assert (C /= null);
-      Enter (C.Mutex);
+      Synchronous_Objects.Enter (C.Mutex);
       Aborted := T.Aborted;
       C.Activated_Count := C.Activated_Count + 1;
       if C.Activated_Count > C.Task_Count then
          Set_Active (C);
-         Notify_All (C.Condition_Variable);
+         Synchronous_Objects.Notify_All (C.Condition_Variable);
       else
          while T.Activation_State <= AS_Created and then not Aborted loop
-            Wait (C.Condition_Variable, C.Mutex);
+            Synchronous_Objects.Wait (C.Condition_Variable, C.Mutex);
             Aborted := T.Aborted; -- is this check worthwhile?
          end loop;
       end if;
       --  elaboration error shold be delivered, but other exceptions should not
       Aborted := Aborted or else C.Error = Elaboration_Error;
-      Leave (C.Mutex);
+      Synchronous_Objects.Leave (C.Mutex);
       --  cleanup
       Release (C);
       pragma Check (Trace,
@@ -1403,8 +1309,9 @@ package body System.Tasking.Inside is
             Parent => T,
             Within => Master_Level'Max (Master_Within, Library_Task_Level) + 1,
             List => null,
-            Mutex => <>); -- default initializer
+            Mutex => <>); -- uninitialized
       begin
+         Synchronous_Objects.Initialize (New_Master.Mutex);
          T.Master_Top := New_Master;
       end;
       pragma Check (Trace, Ada.Debug.Put ("leave in " & Name (T)));
@@ -1416,16 +1323,17 @@ package body System.Tasking.Inside is
       M : Master_Access := T.Master_Top;
       Free_List : Task_Id := null;
    begin
-      Enter (M.Mutex);
+      Synchronous_Objects.Enter (M.Mutex);
       while M.List /= null loop
          declare
             Taken : constant Task_Id := M.List;
             Free_Task_Id : Task_Id;
-            Error : Activation_Error; -- ignored
+            A_Error : Activation_Error; -- ignored
+            S_Error : Boolean; -- ignored
             Aborted : Boolean; -- ignored
          begin
             Taken.Auto_Detach := False; -- mark inside mutex
-            Leave (M.Mutex);
+            Synchronous_Objects.Leave (M.Mutex);
             if Taken.Activation_State = AS_Suspended then
                pragma Assert (Taken.Activation_Chain /= null);
                --  the task has not been activated
@@ -1433,20 +1341,21 @@ package body System.Tasking.Inside is
                if Taken.Activation_Chain_Living then
                   Activate (
                      Taken.Activation_Chain.Self,
-                     Error,
+                     Error => A_Error,
                      Aborted => Aborted);
                end if;
             elsif T.Aborted then
-               Send_Abort_Signal (Taken); -- C9A007A
+               --  C9A007A
+               Native_Tasks.Send_Abort_Signal (Taken.Handle, Error => S_Error);
             end if;
             pragma Assert (T.Abort_Handler = null);
             T.Abort_Handler := Abort_Handler_On_Leave_Master'Access;
             if T.Kind = Sub then
-               Mask_SIGTERM (C.signal.SIG_UNBLOCK);
+               Native_Tasks.Unblock_Abort_Signal;
             end if;
             Wait (Taken, Free_Task_Id);
             if T.Kind = Sub then
-               Mask_SIGTERM (C.signal.SIG_BLOCK);
+               Native_Tasks.Block_Abort_Signal;
             end if;
             T.Abort_Handler := null;
             if Free_Task_Id /= null then
@@ -1454,10 +1363,10 @@ package body System.Tasking.Inside is
                Free_Task_Id.Next_At_Same_Level := Free_List;
                Free_List := Free_Task_Id;
             end if;
-            Enter (M.Mutex);
+            Synchronous_Objects.Enter (M.Mutex);
          end;
       end loop;
-      Leave (M.Mutex);
+      Synchronous_Objects.Leave (M.Mutex);
       while Free_List /= null loop
          declare
             Next : constant Task_Id := Free_List.Next_At_Same_Level;
@@ -1531,23 +1440,27 @@ package body System.Tasking.Inside is
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
       if T.Rendezvous /= null then
-         Cancel (T.Rendezvous.Calling, Cancel_Node => Cancel_Call_Hook);
+         Synchronous_Objects.Cancel (
+            T.Rendezvous.Calling,
+            Cancel_Node => Cancel_Call_Hook);
       end if;
    end Cancel_Calls;
 
-   procedure Call (T : not null Task_Id; Item : not null Queue_Node_Access) is
+   procedure Call (
+      T : not null Task_Id;
+      Item : not null Synchronous_Objects.Queue_Node_Access) is
    begin
-      Add (T.Rendezvous.Calling, Item);
+      Synchronous_Objects.Add (T.Rendezvous.Calling, Item);
    end Call;
 
    procedure Uncall (
       T : not null Task_Id;
-      Item : not null Queue_Node_Access;
+      Item : not null Synchronous_Objects.Queue_Node_Access;
       Already_Taken : out Boolean)
    is
-      Taken : Queue_Node_Access;
+      Taken : Synchronous_Objects.Queue_Node_Access;
    begin
-      Take (
+      Synchronous_Objects.Take (
          T.Rendezvous.Calling,
          Taken,
          Queue_Node_Conv.To_Address (Item),
@@ -1557,14 +1470,14 @@ package body System.Tasking.Inside is
    end Uncall;
 
    procedure Accept_Call (
-      Item : out Queue_Node_Access;
+      Item : out Synchronous_Objects.Queue_Node_Access;
       Params : Address;
-      Filter : Queue_Filter;
+      Filter : Synchronous_Objects.Queue_Filter;
       Aborted : out Boolean)
    is
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
-      Take (
+      Synchronous_Objects.Abortable.Take (
          T.Rendezvous.Calling,
          Item,
          Params,
@@ -1575,13 +1488,16 @@ package body System.Tasking.Inside is
    function Call_Count (
       T : not null Task_Id;
       Params : Address;
-      Filter : Queue_Filter)
+      Filter : Synchronous_Objects.Queue_Filter)
       return Natural is
    begin
       if not Callable (T) or else T.Rendezvous = null then
          return 0;
       else
-         return Count (T.Rendezvous.Calling'Access, Params, Filter);
+         return Synchronous_Objects.Count (
+            T.Rendezvous.Calling'Access,
+            Params,
+            Filter);
       end if;
    end Call_Count;
 
@@ -1592,54 +1508,18 @@ package body System.Tasking.Inside is
          and then not T.Aborted
          and then (
             T.Rendezvous = null
-            or else not Canceled (T.Rendezvous.Calling));
+            or else not Synchronous_Objects.Canceled (T.Rendezvous.Calling));
    end Callable;
-
-   --  thread local storage
-
---  procedure Allocate (Index : out TLS_Index) is
---    Key : aliased C.pthread.pthread_key_t;
---  begin
---    if C.pthread.pthread_key_create (Key'Access, null) = 0 then
---       Index := TLS_Index (Key);
---    else
---       raise Tasking_Error;
---    end if;
---  end Allocate;
-
---  procedure Free (Index : in out TLS_Index) is
---  begin
---    if C.pthread.pthread_key_delete (
---       C.pthread.pthread_key_t (Index)) /= 0
---    then
---       null; -- raise Tasking_Error;
---    end if;
---  end Free;
-
---  function Get (Index : TLS_Index) return Address is
---  begin
---    return To_Address (C.pthread.pthread_getspecific (
---       C.pthread.pthread_key_t (Index)));
---  end Get;
-
---  procedure Set (Index : TLS_Index; Item : Address) is
---  begin
---    if C.pthread.pthread_setspecific (
---       C.pthread.pthread_key_t (Index),
---       C.void_const_ptr (Item)) /= 0
---    then
---       raise Tasking_Error;
---    end if;
---  end Set;
 
    --  attribute
 
    procedure Allocate (Index : in out Attribute_Index) is
    begin
-      Enter (Attribute_Indexes_Lock);
+      Register; -- Ada.Task_Attributes can be instantiated before tasks
+      Synchronous_Objects.Enter (Attribute_Indexes_Lock);
       --  initialization because Suppress_Initialization
       Index.List := null;
-      Index.Mutex.Handle := C.pthread.PTHREAD_MUTEX_INITIALIZER;
+      Synchronous_Objects.Initialize (Index.Mutex);
       --  search unused index
       for I in 0 .. Attribute_Indexes_Length - 1 loop
          if Attribute_Indexes (I) /= not 0 then
@@ -1666,13 +1546,13 @@ package body System.Tasking.Inside is
          Attribute_Indexes (P) := Attribute_Indexes (P) or (2 ** B);
       end;
    <<Found>>
-      Leave (Attribute_Indexes_Lock);
+      Synchronous_Objects.Leave (Attribute_Indexes_Lock);
    end Allocate;
 
    procedure Free (Index : in out Attribute_Index) is
    begin
       if Registered_State /= Unregistered then
-         Enter (Attribute_Indexes_Lock);
+         Synchronous_Objects.Enter (Attribute_Indexes_Lock);
       end if;
       while Index.List /= null loop
          declare
@@ -1697,9 +1577,9 @@ package body System.Tasking.Inside is
             Attribute_Indexes (P) := Attribute_Indexes (P) and not (2 ** B);
          end;
       end if;
-      Finalize (Index.Mutex);
+      Synchronous_Objects.Finalize (Index.Mutex);
       if Registered_State /= Unregistered then
-         Leave (Attribute_Indexes_Lock);
+         Synchronous_Objects.Leave (Attribute_Indexes_Lock);
       end if;
    end Free;
 
@@ -1710,7 +1590,7 @@ package body System.Tasking.Inside is
    is
       Value : Address;
    begin
-      Enter (Index.Mutex);
+      Synchronous_Objects.Enter (Index.Mutex);
       if T.Attributes_Length > Index.Index
          and then T.Attributes (Index.Index).Index = Index'Unrestricted_Access
       then
@@ -1719,7 +1599,7 @@ package body System.Tasking.Inside is
          Value := Null_Address;
       end if;
       Process (Value);
-      Leave (Index.Mutex);
+      Synchronous_Objects.Leave (Index.Mutex);
    end Query;
 
    procedure Set (
@@ -1728,7 +1608,7 @@ package body System.Tasking.Inside is
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address)) is
    begin
-      Enter (Index.Mutex);
+      Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
          T.Attributes,
          T.Attributes_Length,
@@ -1753,7 +1633,7 @@ package body System.Tasking.Inside is
             Index.List := T;
          end if;
       end;
-      Leave (Index.Mutex);
+      Synchronous_Objects.Leave (Index.Mutex);
    end Set;
 
    procedure Reference (
@@ -1763,7 +1643,7 @@ package body System.Tasking.Inside is
       Finalize : not null access procedure (Item : Address);
       Result : out Address) is
    begin
-      Enter (Index.Mutex);
+      Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
          T.Attributes,
          T.Attributes_Length,
@@ -1788,14 +1668,14 @@ package body System.Tasking.Inside is
          end if;
          Result := A.Item;
       end;
-      Leave (Index.Mutex);
+      Synchronous_Objects.Leave (Index.Mutex);
    end Reference;
 
    procedure Clear (
       T : not null Task_Id;
       Index : in out Attribute_Index) is
    begin
-      Enter (Index.Mutex);
+      Synchronous_Objects.Enter (Index.Mutex);
       if T.Attributes_Length > Index.Index
          and then T.Attributes (Index.Index).Index = Index'Unrestricted_Access
       then
@@ -1815,480 +1695,7 @@ package body System.Tasking.Inside is
             A.Index := null;
          end;
       end if;
-      Leave (Index.Mutex);
+      Synchronous_Objects.Leave (Index.Mutex);
    end Clear;
 
-   --  mutex
-
-   procedure Finalize (Object : in out Mutex) is
-   begin
-      if C.pthread.pthread_mutex_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
-   end Finalize;
-
-   procedure Enter (Object : in out Mutex) is
-   begin
-      if C.pthread.pthread_mutex_lock (Object.Handle'Access) /= 0 then
-         raise Tasking_Error;
-      end if;
-   end Enter;
-
-   procedure Leave (Object : in out Mutex) is
-   begin
-      if C.pthread.pthread_mutex_unlock (Object.Handle'Access) /= 0 then
-         raise Tasking_Error;
-      end if;
-   end Leave;
-
-   --  condition variable
-
-   procedure Finalize (Object : in out Condition_Variable) is
-   begin
-      if C.pthread.pthread_cond_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
-   end Finalize;
-
-   procedure Notify_One (Object : in out Condition_Variable) is
-   begin
-      if C.pthread.pthread_cond_signal (Object.Handle'Access) /= 0 then
-         raise Tasking_Error;
-      end if;
-   end Notify_One;
-
-   procedure Notify_All (Object : in out Condition_Variable) is
-   begin
-      if C.pthread.pthread_cond_broadcast (Object.Handle'Access) /= 0 then
-         raise Tasking_Error;
-      end if;
-   end Notify_All;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex) is
-   begin
-      if C.pthread.pthread_cond_wait (
-         Object.Handle'Access,
-         Mutex.Handle'Access) /= 0
-      then
-         raise Tasking_Error;
-      end if;
-   end Wait;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Timeout : Native_Time.Native_Time;
-      Notified : out Boolean) is
-   begin
-      case C.pthread.pthread_cond_timedwait (
-         Object.Handle'Access,
-         Mutex.Handle'Access,
-         Timeout'Unrestricted_Access)
-      is
-         when 0 =>
-            Notified := True;
-         when C.errno.ETIMEDOUT =>
-            Notified := False;
-         when others =>
-            raise Tasking_Error;
-      end case;
-   end Wait;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Timeout : Duration;
-      Notified : out Boolean) is
-   begin
-      Wait (
-         Object,
-         Mutex,
-         Native_Time.Clock + Timeout,
-         Notified);
-   end Wait;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Notified : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Notified := False;
-      Aborted := Is_Aborted;
-      if not Aborted then
-         Wait (Object, Mutex, Abort_Checking_Span, Notified);
-         Aborted := Is_Aborted;
-      end if;
-   end Wait;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Timeout : Native_Time.Native_Time;
-      Notified : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Notified := False;
-      Aborted := Is_Aborted;
-      if not Aborted then
-         declare
-            N : Native_Time.Native_Time;
-         begin
-            loop
-               N := Native_Time.Clock + Abort_Checking_Span;
-               exit when Native_Time.To_Time (N) >=
-                  Native_Time.To_Time (Timeout);
-               Wait (Object, Mutex, N, Notified);
-               Aborted := Is_Aborted;
-               if Notified or else Aborted then
-                  return;
-               end if;
-            end loop;
-            Wait (Object, Mutex, Timeout, Notified);
-            Aborted := Is_Aborted;
-         end;
-      end if;
-   end Wait;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Inside.Mutex;
-      Timeout : Duration;
-      Notified : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Notified := False;
-      Aborted := Is_Aborted;
-      if not Aborted then
-         declare
-            R : Duration := Timeout;
-         begin
-            while R > Abort_Checking_Span loop
-               Wait (Object, Mutex, Abort_Checking_Span, Notified);
-               Aborted := Is_Aborted;
-               if Notified or else Aborted then
-                  return;
-               end if;
-               R := R - Abort_Checking_Span;
-            end loop;
-            Wait (Object, Mutex, R, Notified);
-            Aborted := Is_Aborted;
-         end;
-      end if;
-   end Wait;
-
-   --  queue
-
-   procedure Finalize (Object : in out Queue) is
-   begin
-      Finalize (Object.Mutex);
-      Finalize (Object.Condition_Variable);
-   end Finalize;
-
-   procedure Cancel (
-      Object : in out Queue;
-      Cancel_Node : access procedure (X : in out Queue_Node_Access)) is
-   begin
-      Enter (Object.Mutex);
-      Object.Canceled := True;
-      if Cancel_Node /= null then
-         while Object.Head /= null loop
-            declare
-               Next : constant Queue_Node_Access := Object.Head.Next;
-            begin
-               Cancel_Node (Object.Head);
-               Object.Head := Next;
-            end;
-         end loop;
-      end if;
-      Leave (Object.Mutex);
-   end Cancel;
-
-   procedure Add (
-      Object : in out Queue;
-      Item : not null Queue_Node_Access)
-   is
-      Error : Boolean;
-   begin
-      Enter (Object.Mutex);
-      Error := Object.Canceled;
-      if not Error then
-         if Object.Head = null then
-            Object.Head := Item;
-         else
-            Object.Tail.Next := Item;
-         end if;
-         Object.Tail := Item;
-         Item.Next := null;
-         if Object.Waiting
-            and then (Object.Filter = null
-               or else Object.Filter (Item, Object.Params))
-         then
-            Notify_All (Object.Condition_Variable);
-         end if;
-      end if;
-      Leave (Object.Mutex);
-      if Error then
-         raise Tasking_Error;
-      end if;
-   end Add;
-
-   procedure Take (
-      Object : in out Queue;
-      Item : out Queue_Node_Access;
-      Params : Address;
-      Filter : Queue_Filter) is
-   begin
-      Enter (Object.Mutex);
-      declare
-         Previous : Queue_Node_Access := null;
-         I : Queue_Node_Access := Object.Head;
-      begin
-         Peek_No_Sync (Object, Item, Params, Filter, Previous, I);
-      end;
-      Leave (Object.Mutex);
-   end Take;
-
-   procedure Take (
-      Object : in out Queue;
-      Item : out Queue_Node_Access;
-      Params : Address;
-      Filter : Queue_Filter;
-      Aborted : out Boolean) is
-   begin
-      Aborted := Is_Aborted;
-      Enter (Object.Mutex);
-      declare
-         Previous : Queue_Node_Access := null;
-         I : Queue_Node_Access := Object.Head;
-      begin
-         Taking : loop
-            Peek_No_Sync (Object, Item, Params, Filter, Previous, I);
-            exit Taking when Item /= null;
-            Not_Found : declare
-               Tail_On_Waiting : constant Queue_Node_Access := Object.Tail;
-               Notified : Boolean; -- ignored
-            begin
-               Object.Params := Params;
-               Object.Filter := Filter;
-               loop
-                  Object.Waiting := True;
-                  Wait (
-                     Object.Condition_Variable,
-                     Object.Mutex,
-                     Timeout => Abort_Checking_Span,
-                     Notified => Notified,
-                     Aborted => Aborted);
-                  Object.Waiting := False;
-                  exit Taking when Aborted;
-                  exit when Object.Tail /= Tail_On_Waiting;
-               end loop;
-               if Tail_On_Waiting /= null then
-                  Previous := Tail_On_Waiting;
-                  I := Tail_On_Waiting.Next;
-               else
-                  Previous := null;
-                  I := Object.Head;
-               end if;
-            end Not_Found;
-         end loop Taking;
-      end;
-      Leave (Object.Mutex);
-   end Take;
-
-   function Count (
-      Object : not null access Queue;
-      Params : Address;
-      Filter : Queue_Filter)
-      return Natural
-   is
-      Result : Natural := 0;
-   begin
-      Enter (Object.Mutex);
-      declare
-         I : Queue_Node_Access := Object.Head;
-      begin
-         while I /= null loop
-            if Filter = null or else Filter (I, Params) then
-               Result := Result + 1;
-            end if;
-            I := I.Next;
-         end loop;
-      end;
-      Leave (Object.Mutex);
-      return Result;
-   end Count;
-
-   function Canceled (Object : Queue) return Boolean is
-   begin
-      return Object.Canceled;
-   end Canceled;
-
-   --  event
-
-   procedure Finalize (Object : in out Event) is
-   begin
-      Finalize (Object.Mutex);
-      Finalize (Object.Condition_Variable);
-   end Finalize;
-
-   procedure Set (Object : in out Event) is
-   begin
-      Enter (Object.Mutex);
-      Object.Value := True;
-      Notify_All (Object.Condition_Variable);
-      Leave (Object.Mutex);
-   end Set;
-
-   procedure Reset (Object : in out Event) is
-   begin
-      Enter (Object.Mutex);
-      Object.Value := False;
-      Leave (Object.Mutex);
-   end Reset;
-
-   function Get (Object : Event) return Boolean is
-   begin
-      return Object.Value; -- atomic, is it ok?
-   end Get;
-
-   procedure Wait (Object : in out Event) is
-   begin
-      Enter (Object.Mutex);
-      if not Object.Value then
-         loop
-            Wait (
-               Object.Condition_Variable,
-               Object.Mutex);
-            exit when Object.Value;
-         end loop;
-      end if;
-      Leave (Object.Mutex);
-   end Wait;
-
-   procedure Wait (
-      Object : in out Event;
-      Aborted : out Boolean) is
-   begin
-      Enter (Object.Mutex);
-      if Object.Value then
-         Aborted := Is_Aborted;
-      else
-         loop
-            declare
-               Notified : Boolean;
-            begin
-               Wait (
-                  Object.Condition_Variable,
-                  Object.Mutex,
-                  Notified => Notified,
-                  Aborted => Aborted);
-            end;
-            exit when Object.Value or else Aborted;
-         end loop;
-      end if;
-      Leave (Object.Mutex);
-   end Wait;
-
-   procedure Wait (
-      Object : in out Event;
-      Timeout : Duration;
-      Value : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Enter (Object.Mutex);
-      if Object.Value then
-         Value := True;
-         Aborted := Is_Aborted;
-      else
-         Wait (
-            Object.Condition_Variable,
-            Object.Mutex,
-            Timeout => Timeout,
-            Notified => Value,
-            Aborted => Aborted);
-         pragma Assert (Object.Value >= Value);
-      end if;
-      Leave (Object.Mutex);
-   end Wait;
-
-   --  barrier
-
-   procedure Initialize (
-      Object : in out Barrier;
-      Release_Threshold : Natural) is
-   begin
-      Object.Release_Threshold := Release_Threshold;
-      Object.Blocked := 0;
-   end Initialize;
-
-   procedure Finalize (Object : in out Barrier) is
-   begin
-      Finalize (Object.Mutex);
-      Finalize (Object.Condition_Variable);
-   end Finalize;
-
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Enter (Object.Mutex);
-      Notified := Object.Blocked = 0;
-      Object.Blocked := Object.Blocked + 1;
-      if Object.Blocked = Object.Release_Threshold then
-         Notify_All (Object.Condition_Variable);
-         Object.Blocked := 0;
-         Aborted := Is_Aborted;
-      else
-         loop
-            declare
-               Threshold_Is_Satisfied : Boolean;
-            begin
-               Wait (
-                  Object.Condition_Variable,
-                  Object.Mutex,
-                  Notified => Threshold_Is_Satisfied,
-                  Aborted => Aborted);
-               exit when Threshold_Is_Satisfied
-                  or else Object.Blocked = Object.Release_Threshold -- ???
-                  or else Aborted;
-            end;
-         end loop;
-      end if;
-      Leave (Object.Mutex);
-   end Wait;
-
-   --  multi-read/exclusive-write lock
-
-   procedure Finalize (Object : in out RW_Lock) is
-   begin
-      if C.pthread.pthread_rwlock_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
-   end Finalize;
-
-   procedure Enter_Reading (Object : in out RW_Lock) is
-   begin
-      if C.pthread.pthread_rwlock_rdlock (Object.Handle'Access) /= 0 then
-         raise Tasking_Error;
-      end if;
-   end Enter_Reading;
-
-   procedure Leave_Reading (Object : in out RW_Lock) is
-   begin
-      if C.pthread.pthread_rwlock_unlock (Object.Handle'Access) /= 0 then
-         raise Tasking_Error;
-      end if;
-   end Leave_Reading;
-
-   procedure Enter_Writing (Object : in out RW_Lock) is
-   begin
-      if C.pthread.pthread_rwlock_wrlock (Object.Handle'Access) /= 0 then
-         raise Tasking_Error;
-      end if;
-   end Enter_Writing;
-
-end System.Tasking.Inside;
+end System.Tasking.Tasks;
