@@ -362,17 +362,18 @@ package body System.Tasking.Synchronous_Objects is
 
    procedure Enter_Reading (Object : in out RW_Lock) is
    begin
-      if C.pthread.pthread_rwlock_rdlock (Object.Handle'Access) /= 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
-      end if;
+      Again_Loop : loop
+         case C.pthread.pthread_rwlock_rdlock (Object.Handle'Access) is
+            when 0 =>
+               exit Again_Loop;
+            when C.errno.EAGAIN =>
+               null; -- loop
+            when others =>
+               Ada.Exceptions.Raise_Exception_From_Here (
+                  Tasking_Error'Identity);
+         end case;
+      end loop Again_Loop;
    end Enter_Reading;
-
-   procedure Leave_Reading (Object : in out RW_Lock) is
-   begin
-      if C.pthread.pthread_rwlock_unlock (Object.Handle'Access) /= 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
-      end if;
-   end Leave_Reading;
 
    procedure Enter_Writing (Object : in out RW_Lock) is
    begin
@@ -380,6 +381,13 @@ package body System.Tasking.Synchronous_Objects is
          Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
       end if;
    end Enter_Writing;
+
+   procedure Leave (Object : in out RW_Lock) is
+   begin
+      if C.pthread.pthread_rwlock_unlock (Object.Handle'Access) /= 0 then
+         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+      end if;
+   end Leave;
 
    --  for Abortable
 

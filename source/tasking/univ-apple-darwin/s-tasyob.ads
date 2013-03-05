@@ -100,10 +100,8 @@ package System.Tasking.Synchronous_Objects is
    procedure Initialize (Object : in out RW_Lock);
    procedure Finalize (Object : in out RW_Lock);
    procedure Enter_Reading (Object : in out RW_Lock);
-   procedure Leave_Reading (Object : in out RW_Lock);
    procedure Enter_Writing (Object : in out RW_Lock);
-   procedure Leave_Writing (Object : in out RW_Lock)
-      renames Leave_Reading;
+   procedure Leave (Object : in out RW_Lock); -- leave reading or writing
 
 private
 

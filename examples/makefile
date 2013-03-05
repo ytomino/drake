@@ -18,10 +18,10 @@ EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
 ifeq ($(findstring darwin,$(TARGET)),)
 EXAMPLES:=$(filter-out diff_ucd_hfs,$(EXAMPLES))
 ifneq ($(findstring linux,$(TARGET)),)
-EXAMPLES:=$(filter-out cpu stackoverflow tasking%,$(EXAMPLES))
+EXAMPLES:=$(filter-out cpu protected% stackoverflow tasking%,$(EXAMPLES))
 endif
 ifneq ($(findstring mingw,$(TARGET)),)
-EXAMPLES:=$(filter-out cpu stackoverflow tasking%,$(EXAMPLES))
+EXAMPLES:=$(filter-out cpu protected% stackoverflow tasking%,$(EXAMPLES))
 endif
 endif
 
