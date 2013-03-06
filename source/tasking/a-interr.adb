@@ -36,4 +36,7 @@ package body Ada.Interrupts is
       Exchange_Handler (Old_Handler, null, Interrupt);
    end Detach_Handler;
 
+   procedure Raise_Interrupt (Interrupt : Interrupt_Id)
+      renames Inside.Raise_Interrupt;
+
 end Ada.Interrupts;

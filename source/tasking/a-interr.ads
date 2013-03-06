@@ -29,4 +29,8 @@ package Ada.Interrupts is
 --  function Get_CPU (Interrupt : Interrupt_Id)
 --     return System.Multiprocessors.CPU_Range;
 
+   --  extended
+   --  Raise a interrupt from/to itself.
+   procedure Raise_Interrupt (Interrupt : Interrupt_Id);
+
 end Ada.Interrupts;

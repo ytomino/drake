@@ -12,4 +12,6 @@ package Ada.Interrupts.Inside is
       New_Handler : Parameterless_Handler;
       Interrupt : Interrupt_Id);
 
+   procedure Raise_Interrupt (Interrupt : Interrupt_Id);
+
 end Ada.Interrupts.Inside;

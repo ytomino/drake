@@ -96,4 +96,11 @@ package body Ada.Interrupts.Inside is
       end;
    end Exchange_Handler;
 
+   procedure Raise_Interrupt (Interrupt : Interrupt_Id) is
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      Dummy := C.signal.C_raise (C.signed_int (Interrupt));
+   end Raise_Interrupt;
+
 end Ada.Interrupts.Inside;
