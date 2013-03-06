@@ -1,5 +1,6 @@
 package body System.Native_Time is
    pragma Suppress (All_Checks);
+   use type C.signed_int;
    use type C.signed_long;
 
    Diff : constant Nanosecond_Number := 5680281600;
@@ -73,21 +74,18 @@ package body System.Native_Time is
    end Clock;
 
    procedure Simple_Delay_For (D : Duration) is
+      T : aliased C.time.struct_timespec := To_timespec_Duration (D);
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
    begin
-      if D > 0.0 then
-         declare
-            T : aliased C.time.struct_timespec := To_timespec_Duration (D);
-            Dummy : C.signed_int;
-            pragma Unreferenced (Dummy);
-         begin
-            Dummy := C.time.nanosleep (T'Access, null);
-         end;
-      end if;
+      Dummy := C.time.nanosleep (T'Access, null);
    end Simple_Delay_For;
 
    procedure Delay_For (D : Duration) is
    begin
-      Delay_For_Hook.all (D);
+      if D >= 0.0 then
+         Delay_For_Hook.all (D);
+      end if;
    end Delay_For;
 
    procedure Simple_Delay_Until (T : Native_Time) is
@@ -97,7 +95,9 @@ package body System.Native_Time is
 
    procedure Delay_Until (T : Native_Time) is
    begin
-      Delay_Until_Hook.all (T);
+      if T.tv_sec >= 0 then
+         Delay_Until_Hook.all (T);
+      end if;
    end Delay_Until;
 
    procedure Generic_Delay_Until (T : Ada_Time) is
