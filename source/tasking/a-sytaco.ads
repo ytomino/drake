@@ -13,8 +13,12 @@ package Ada.Synchronous_Task_Control is
 
 private
 
+   type Flag is mod 2;
+   pragma Atomic (Flag);
+
    type Suspension_Object is new Finalization.Limited_Controlled with record
       Object : System.Tasking.Synchronous_Objects.Event;
+      Waiting : aliased Flag; -- for CXDA002
    end record;
 
    overriding procedure Initialize (Object : in out Suspension_Object);
