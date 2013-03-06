@@ -3,6 +3,25 @@ pragma License (Unrestricted);
 with System.Tasking.Synchronous_Objects;
 package System.Tasking.Protected_Objects is
 
+   --  required by compiler
+   subtype Protected_Entry_Index is Entry_Index range Null_Entry .. Max_Entry;
+
+   type Barrier_Function_Pointer is access function (
+      O : Address;
+      E : Protected_Entry_Index)
+      return Boolean;
+   type Entry_Action_Pointer is access procedure (
+      O : Address;
+      P : Address;
+      E : Protected_Entry_Index);
+
+   --  required by compiler
+   type Entry_Body is record
+      Barrier : Barrier_Function_Pointer;
+      Action  : Entry_Action_Pointer;
+   end record;
+   pragma Suppress_Initialization (Entry_Body);
+
    --  required for protected object by compiler
    type Protection is limited record
       Lock : Synchronous_Objects.RW_Lock;
