@@ -39,14 +39,14 @@ package body System.Native_Time is
 
    procedure Simple_Delay_For (D : Duration) is
    begin
-      if D > 0.0 then
-         C.winbase.Sleep (C.windef.DWORD (D * 1000.0));
-      end if;
+      C.winbase.Sleep (C.windef.DWORD (D * 1000.0));
    end Simple_Delay_For;
 
    procedure Delay_For (D : Duration) is
    begin
-      Delay_For_Hook.all (D);
+      if D >= 0.0 then
+         Delay_For_Hook.all (D);
+      end if;
    end Delay_For;
 
    procedure Simple_Delay_Until (T : Native_Time) is

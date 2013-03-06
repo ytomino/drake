@@ -181,6 +181,8 @@ $(SUPPORTDIR)/impdef.adb: gcc_support/impdef.a $(SUPPORTDIR)/report.ads
 
 $(SUPPORTDIR)/impdef-annex_c.adb: $(ACATSDIR)/support/impdefc.a
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	patch -p0 < impdef-annex_c.ads.patch
+	patch -p0 < impdef-annex_c.adb.patch
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
 $(SUPPORTDIR)/impdef-annex_d.ads: gcc_support/impdefd.a
