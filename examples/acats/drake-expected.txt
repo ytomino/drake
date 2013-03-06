@@ -45,8 +45,6 @@ c85018b C unimplemented tasking features
 c910003 C unimplemented tasking features
 c91004b C unimplemented tasking features
 c91004c C unimplemented tasking features
-c91006a C unimplemented tasking features (indexed entry)
-c91007a C unimplemented tasking features (indexed entry)
 c92003a C unimplemented tasking features
 c930001 C unimplemented tasking features
 c93005a C unimplemented tasking features
@@ -63,14 +61,10 @@ c940001 C unimplemented tasking features
 c940002 C unimplemented tasking features
 c940004 C unimplemented tasking features
 c940005 C unimplemented tasking features
-c940006 C unimplemented tasking features
 c940007 C unimplemented tasking features
 c940010 C unimplemented tasking features
-c940011 C unimplemented tasking features
-c940012 C unimplemented tasking features
 c940013 C unimplemented tasking features
 c940014 C unimplemented tasking features
-c940015 C unimplemented tasking features
 c940016 C unimplemented tasking features
 c94001g C unimplemented tasking features
 c94004c C unimplemented tasking features
@@ -84,12 +78,6 @@ c94008d C unimplemented tasking features
 c94020a C unimplemented tasking features
 c940a03 C unimplemented tasking features
 c95008a C unimplemented tasking features
-c95009a C unimplemented tasking features (indexed entry)
-c95010a C unimplemented tasking features (indexed entry)
-c95011a C unimplemented tasking features (indexed entry)
-c95033a C unimplemented tasking features (indexed entry)
-c95033b C unimplemented tasking features (indexed entry)
-c95041a C unimplemented tasking features (indexed entry)
 c95065a C unimplemented tasking features
 c95065b C unimplemented tasking features
 c95065c C unimplemented tasking features
@@ -97,7 +85,6 @@ c95065d C unimplemented tasking features
 c95065e C unimplemented tasking features
 c95065f C unimplemented tasking features
 c95067a C unimplemented tasking features
-c95080b C unimplemented tasking features (indexed entry)
 c95082g C unimplemented tasking features
 c95085a C unimplemented tasking features
 c95085b C unimplemented tasking features
@@ -119,7 +106,6 @@ c95089a C unimplemented tasking features
 c95095a C unimplemented tasking features
 c95095b C unimplemented tasking features
 c95095c C unimplemented tasking features
-c951001 C unimplemented tasking features
 c951002 C unimplemented tasking features
 c953001 C unimplemented tasking features
 c953002 C unimplemented tasking features
@@ -145,7 +131,6 @@ c954026 C unimplemented tasking features
 c954a01 C unimplemented tasking features
 c954a02 C unimplemented tasking features
 c954a03 C unimplemented tasking features
-c960001 C unimplemented tasking features (protected)
 c960004 C unimplemented tasking features (select)
 c96005b N Duration'Base equals Duration
 c96007a F calendar (exception not raised on feburary 30th)
@@ -209,30 +194,23 @@ c974014 C unimplemented tasking features
 c980001 C unimplemented tasking features
 c980002 C unimplemented tasking features
 c980003 C unimplemented tasking features
-c990001 C unimplemented tasking features (indexed entry)
 c99005a C unimplemented tasking features
 c9a009a C unimplemented tasking features
 c9a009f C unimplemented tasking features
 c9a009g C unimplemented tasking features
 c9a011a C unimplemented tasking features
 c9a011b C unimplemented tasking features (select)
-ca13001 C unimplemented tasking features (protected)
 ca14028 F on GNAT, it can not use specialized body with generic package spec
 ca5004a C unimplemented tasking features (select)
 cb10002 N enough memory exists
-cb1010a A stack overflow could not be caught in 64bit Darwin
 cb20001 C unimplemented tasking features (select)
 cb20004 C unimplemented tasking features (protected)
-cb20005 C unimplemented tasking features
-cb20006 C unimplemented tasking features
-cb20007 C unimplemented tasking features
 cc1225a C unimplemented tasking features
 cc3019c C unimplemented tasking features
 cc3120b C unimplemented tasking features
 cc3207b C unimplemented tasking features (select)
 cc3602a C unimplemented tasking features (select)
 cc51007 A calendar (out of UNIX time)
-cd10002 C unimplemented tasking features (protected)
 cd2a91c C unimplemented tasking features (select)
 cd72a02 C unimplemented tasking features (select)
 ce2102d N In_File is supported in Sequencial_IO
@@ -314,9 +292,7 @@ cxb5003 C some Interfaces.Fortran features are unimplemented
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
 cxc3001 C unimplemented tasking features (protected)
-cxc3002 C unimplemented tasking features (System.Interrupts)
 cxc3003 C unimplemented tasking features
-cxc3004 C unimplemented tasking features
 cxc3005 C unimplemented tasking features
 cxc3006 C unimplemented tasking features
 cxc3007 C unimplemented tasking features
@@ -328,21 +304,21 @@ cxc7004 C unimplemented tasking features
 cxc7005 C unimplemented tasking features
 cxd1001 C unimplemented tasking features
 cxd1002 C unimplemented tasking features
-cxd1003 C unimplemented tasking features
+cxd1003 F unimplemented tasking features (priority)
 cxd1004 C unimplemented tasking features
 cxd1005 C unimplemented tasking features
 cxd1006 C unimplemented tasking features
 cxd1007 C unimplemented tasking features
 cxd1008 C unimplemented tasking features
 cxd2001 C unimplemented tasking features
-cxd2002 C unimplemented tasking features
+cxd2002 F unimplemented tasking features (priority)
 cxd2003 C unimplemented tasking features
 cxd2004 C unimplemented tasking features
 cxd2006 C unimplemented tasking features
 cxd2007 C unimplemented tasking features
 cxd2008 C unimplemented tasking features
 cxd3001 C unimplemented tasking features
-cxd3002 C unimplemented tasking features
+cxd3002 F unimplemented tasking features (priority)
 cxd3003 C unimplemented tasking features
 cxd4001 C unimplemented tasking features
 cxd4002 C unimplemented tasking features
@@ -360,9 +336,7 @@ cxd6002 C unimplemented tasking features
 cxd6003 C unimplemented tasking features (protected)
 cxd8003 C Ada.Real_Time.Split/Time_Of are unimplemented
 cxd9001 C unimplemented tasking features (protected)
-cxda002 C unimplemented tasking features (protected)
 cxda003 C unimplemented tasking features (protected)
-cxda004 C unimplemented tasking features (protected)
 cxdb001 C unimplemented tasking features (protected)
 cxdb002 C unimplemented tasking features (Ada.Dynamic_Priorities)
 cxdb003 C unimplemented tasking features (protected)

@@ -1,0 +1,11 @@
+--- support/impdef-annex_c.adb.orig	2013-03-07 03:10:23.000000000 +0900
++++ support/impdef-annex_c.adb	2013-03-07 03:11:26.000000000 +0900
+@@ -43,7 +43,7 @@
+ 
+    procedure Generate_Interrupt is
+    begin
+-      Report.Comment (". >>>>> GENERATE THE INTERRUPT NOW <<<<< ");
++      Ada.Interrupts.Raise_Interrupt (Interrupt_To_Generate);
+ 
+    -- ^^^^^^^^^^^^^^^^^^^^  MODIFY THIS BODY AS NEEDED  ^^^^^^^^^^^^^^^^^^^^
+ 
