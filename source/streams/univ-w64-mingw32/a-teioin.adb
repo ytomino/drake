@@ -125,6 +125,7 @@ package body Ada.Text_IO.Inside is
          Mode => Mode,
          Encoding => <>,
          Line_Mark => <>,
+         SUB => <>,
          Name => "",
          Form => "",
          others => <>);
@@ -146,9 +147,11 @@ package body Ada.Text_IO.Inside is
       then
          New_File.Encoding := Terminal;
          New_File.Line_Mark := CRLF;
+         New_File.SUB := False;
       else
          New_File.Encoding := Form_Encoding (Form);
          New_File.Line_Mark := Form_Line_Mark (Form);
+         New_File.SUB := Form_SUB (Form);
       end if;
       --  complete
       Holder.Clear;
@@ -253,6 +256,9 @@ package body Ada.Text_IO.Inside is
       File : Non_Controlled_File_Type;
       Leading : C.winnt.WCHAR);
    procedure Take_Buffer (File : Non_Controlled_File_Type);
+   procedure Take_Page (File : Non_Controlled_File_Type);
+   procedure Take_Line (File : Non_Controlled_File_Type);
+
    procedure Write_Buffer (
       File : Non_Controlled_File_Type;
       Sequence_Length : Natural);
@@ -420,6 +426,29 @@ package body Ada.Text_IO.Inside is
       File.Buffer_Col := 0;
       File.Dummy_Mark := None;
    end Take_Buffer;
+
+   procedure Take_Page (File : Non_Controlled_File_Type) is
+   begin
+      Take_Buffer (File);
+      File.Dummy_Mark := EOP;
+      File.Page := File.Page + 1;
+      File.Line := 1;
+      File.Col := 1;
+   end Take_Page;
+
+   procedure Take_Line (File : Non_Controlled_File_Type) is
+      C : constant Character := File.Buffer (1);
+   begin
+      File.Line := File.Line + 1;
+      File.Col := 1;
+      Take_Buffer (File);
+      if C = Character'Val (16#0d#) then
+         Read_Buffer (File);
+         if File.Buffer (1) = Character'Val (16#0a#) then
+            Take_Buffer (File);
+         end if;
+      end if;
+   end Take_Line;
 
    procedure Write_Buffer (
       File : Non_Controlled_File_Type;
@@ -721,26 +750,19 @@ package body Ada.Text_IO.Inside is
                begin
                   case C is
                      when Character'Val (16#0d#) | Character'Val (16#0a#) =>
-                        File.Line := File.Line + 1;
-                        File.Col := 1;
-                        Take_Buffer (File);
-                        if C = Character'Val (16#0d#) then
-                           Read_Buffer (File);
-                           if File.Buffer (1) = Character'Val (16#0a#) then
-                              Take_Buffer (File);
-                           end if;
-                        end if;
+                        Take_Line (File);
                         exit;
                      when Character'Val (16#0c#) =>
-                        Take_Buffer (File);
-                        File.Dummy_Mark := EOP;
-                        File.Page := File.Page + 1;
-                        File.Line := 1;
-                        File.Col := 1;
+                        Take_Page (File);
                         exit;
                      when Character'Val (16#1a#) =>
-                        File.End_Of_File := True; -- for next loop
-                        File.Last := 0;
+                        if File.SUB then
+                           File.End_Of_File := True; -- for next loop
+                           File.Last := 0;
+                        else
+                           File.Col := File.Col + File.Buffer_Col;
+                           Take_Buffer (File);
+                        end if;
                      when others =>
                         File.Col := File.Col + File.Buffer_Col;
                         Take_Buffer (File);
@@ -761,7 +783,8 @@ package body Ada.Text_IO.Inside is
             File.Buffer (1) = Character'Val (16#0d#)
             or else File.Buffer (1) = Character'Val (16#0a#)
             or else File.Buffer (1) = Character'Val (16#0c#)
-            or else File.Buffer (1) = Character'Val (16#1a#));
+            or else (
+               File.SUB and then File.Buffer (1) = Character'Val (16#1a#)));
       end if;
    end End_Of_Line;
 
@@ -972,23 +995,19 @@ package body Ada.Text_IO.Inside is
             begin
                case C is
                   when Character'Val (16#0d#) | Character'Val (16#0a#) =>
-                     File.Line := File.Line + 1;
-                     File.Col := 1;
-                     Take_Buffer (File);
-                     if C = Character'Val (16#0d#) then
-                        Read_Buffer (File);
-                        if File.Buffer (1) = Character'Val (16#0a#) then
-                           Take_Buffer (File);
-                        end if;
-                     end if;
+                     Take_Line (File);
                   when Character'Val (16#0c#) =>
-                     File.Page := File.Page + 1;
-                     File.Line := 1;
-                     File.Col := 1;
-                     Take_Buffer (File);
+                     Take_Page (File);
                   when Character'Val (16#1a#) =>
-                     File.End_Of_File := True; -- for next loop
-                     File.Last := 0;
+                     if File.SUB then
+                        File.End_Of_File := True; -- for next loop
+                        File.Last := 0;
+                     else
+                        Item := C;
+                        File.Col := File.Col + File.Buffer_Col;
+                        Take_Buffer (File);
+                        exit;
+                     end if;
                   when others =>
                      Item := C;
                      File.Col := File.Col + File.Buffer_Col;
@@ -1092,6 +1111,7 @@ package body Ada.Text_IO.Inside is
          Mode => Mode,
          Encoding => Form_Encoding (Form),
          Line_Mark => Form_Line_Mark (Form),
+         SUB => Form_SUB (Form),
          Name => '*' & Name,
          Form => Form,
          others => <>);
@@ -1153,6 +1173,18 @@ package body Ada.Text_IO.Inside is
       end if;
    end Form_Line_Mark;
 
+   function Form_SUB (Form : String) return Boolean is
+      First : Positive;
+      Last : Natural;
+   begin
+      System.IO_Options.Form_Parameter (Form, "sub", First, Last);
+      if First <= Last and then Form (First) = 'e' then
+         return True;
+      else
+         return False;
+      end if;
+   end Form_SUB;
+
    --  implementation for Wide_Text_IO/Wide_Wide_Text_IO
 
    procedure Look_Ahead (
@@ -1176,17 +1208,16 @@ package body Ada.Text_IO.Inside is
          Buffer_Last := File.Last;
          End_Of_Line := False;
          for I in 1 .. File.Last loop
-            case File.Buffer (I) is
-               when Character'Val (16#0a#)
-                  | Character'Val (16#0c#)
-                  | Character'Val (16#0d#)
-                  | Character'Val (16#1a#) =>
-                  Buffer_Last := I - 1;
-                  End_Of_Line := True;
-                  exit;
-               when others =>
-                  null;
-            end case;
+            if File.Buffer (I) = Character'Val (16#0d#)
+               or else File.Buffer (I) = Character'Val (16#0a#)
+               or else File.Buffer (I) = Character'Val (16#0c#)
+               or else (
+                  File.SUB and then File.Buffer (I) = Character'Val (16#1a#))
+            then
+               Buffer_Last := I - 1;
+               End_Of_Line := True;
+               exit;
+            end if;
          end loop;
          Last := Item'First + Last - 1;
          Item (Item'First .. Last) := File.Buffer (1 .. Buffer_Last);

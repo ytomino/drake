@@ -129,6 +129,7 @@ package Ada.Text_IO.Inside is
 
    function Form_Encoding (Form : String) return Encoding_Type;
    function Form_Line_Mark (Form : String) return Line_Mark_Type;
+   function Form_SUB (Form : String) return Boolean;
 
 private
 
@@ -155,6 +156,7 @@ private
       Mode : File_Mode;
       Encoding : Encoding_Type;
       Line_Mark : Line_Mark_Type;
+      SUB : Boolean; -- ASCII.SUB = 16#1A#
       Name : String (1 .. Name_Length);
       Form : String (1 .. Form_Length);
    end record;
