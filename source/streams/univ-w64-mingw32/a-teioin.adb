@@ -123,8 +123,8 @@ package body Ada.Text_IO.Inside is
          Form_Length => 0,
          Stream => <>,
          Mode => Mode,
-         Encoding => Form_Encoding (Form),
-         Line_Mark => Form_Line_Mark (Form),
+         Encoding => <>,
+         Line_Mark => <>,
          Name => "",
          Form => "",
          others => <>);
@@ -133,15 +133,119 @@ package body Ada.Text_IO.Inside is
          Finally);
    begin
       Holder.Assign (New_File'Access);
+      --  open
       Open_Proc.all (
          File => New_File.File,
          Mode => Streams.Stream_IO.File_Mode (Mode),
          Name => Name,
          Form => Form);
       New_File.Stream := Streams.Stream_IO.Inside.Stream (New_File.File);
+      --  select encoding
+      if Streams.Stream_IO.Inside.Is_Terminal (
+         Streams.Stream_IO.Inside.Handle (New_File.File))
+      then
+         New_File.Encoding := Terminal;
+         New_File.Line_Mark := CRLF;
+      else
+         New_File.Encoding := Form_Encoding (Form);
+         New_File.Line_Mark := Form_Line_Mark (Form);
+      end if;
+      --  complete
       Holder.Clear;
       File := New_File;
    end Open_File;
+
+   procedure Raw_New_Page (File : Non_Controlled_File_Type);
+   procedure Raw_New_Page (File : Non_Controlled_File_Type) is
+   begin
+      if File.Encoding = Terminal then
+         declare -- clear screen
+            Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+            Handle : constant Streams.Stream_IO.Inside.Handle_Type :=
+               Streams.Stream_IO.Inside.Handle (File.File);
+         begin
+            if C.wincon.GetConsoleScreenBufferInfo (
+               Handle,
+               Info'Access) = 0
+            then
+               Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+            end if;
+            declare
+               Clear_Char_Info : constant C.wincon.CHAR_INFO := (
+                  Char => (
+                     Unchecked_Tag => 0,
+                     UnicodeChar => C.winnt.WCHAR'Val (16#20#)),
+                  Attributes => Info.wAttributes);
+               Buffer : aliased constant array (
+                  0 .. Info.dwSize.Y - 1,
+                  0 .. Info.dwSize.X - 1) of aliased C.wincon.CHAR_INFO := (
+                     others => (others => Clear_Char_Info));
+               Region : aliased C.wincon.SMALL_RECT;
+            begin
+               Region.Left := 0;
+               Region.Top := 0;
+               Region.Right := Info.dwSize.X - 1;
+               Region.Bottom := Info.dwSize.Y - 1;
+               if C.wincon.WriteConsoleOutputW (
+                  hConsoleOutput => Handle,
+                  lpBuffer => Buffer (0, 0)'Access,
+                  dwBufferSize => Info.dwSize,
+                  dwBufferCoord => (X => 0, Y => 0),
+                  lpWriteRegion => Region'Access) = 0
+               then
+                  Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+               end if;
+            end;
+            if C.wincon.SetConsoleCursorPosition (
+               Handle,
+               (X => 0, Y => 0)) = 0
+            then
+               Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+            end if;
+         end;
+      else
+         declare
+            Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
+         begin
+            Streams.Write (File.Stream.all, Code);
+         end;
+      end if;
+      File.Page := File.Page + 1;
+      File.Line := 1;
+      File.Col := 1;
+   end Raw_New_Page;
+
+   procedure Raw_New_Line (File : Non_Controlled_File_Type);
+   procedure Raw_New_Line (File : Non_Controlled_File_Type) is
+   begin
+      if File.Page_Length /= 0 and then File.Line >= File.Page_Length then
+         Raw_New_Page (File);
+      else
+         declare
+            Line_Mark : constant Streams.Stream_Element_Array (0 .. 1) :=
+               (16#0d#, 16#0a#);
+            F, L : Streams.Stream_Element_Offset;
+         begin
+            F := Boolean'Pos (File.Line_Mark = LF);
+            L := Boolean'Pos (File.Line_Mark /= CR);
+            Streams.Write (File.Stream.all, Line_Mark (F .. L));
+         end;
+         File.Line := File.Line + 1;
+         File.Col := 1;
+      end if;
+   end Raw_New_Line;
+
+   procedure Raw_New_Line (
+      File : Non_Controlled_File_Type;
+      Spacing : Positive_Count);
+   procedure Raw_New_Line (
+      File : Non_Controlled_File_Type;
+      Spacing : Positive_Count) is
+   begin
+      for I in 1 .. Spacing loop
+         Raw_New_Line (File);
+      end loop;
+   end Raw_New_Line;
 
    procedure Read_Buffer (File : Non_Controlled_File_Type);
    procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type);
@@ -149,14 +253,16 @@ package body Ada.Text_IO.Inside is
       File : Non_Controlled_File_Type;
       Leading : C.winnt.WCHAR);
    procedure Take_Buffer (File : Non_Controlled_File_Type);
-   procedure Write_Buffer (File : Non_Controlled_File_Type);
+   procedure Write_Buffer (
+      File : Non_Controlled_File_Type;
+      Sequence_Length : Natural);
 
    --  Input
    --  * Read_Buffer sets (or keep) Buffer_Col.
    --  * Get adds Buffer_Col to current Col.
    --  * Take_Buffer clear Buffer_Col.
    --  Output
-   --  * Write_Buffer sets (or clear) Buffer_Col to Add Col.
+   --  * Write_Buffer sets Buffer_Col to written width.
    --  * Put adds Buffer_Col to current Col.
 
    procedure Read_Buffer (File : Non_Controlled_File_Type) is
@@ -315,92 +421,87 @@ package body Ada.Text_IO.Inside is
       File.Dummy_Mark := None;
    end Take_Buffer;
 
-   procedure Write_Buffer (File : Non_Controlled_File_Type) is
+   procedure Write_Buffer (
+      File : Non_Controlled_File_Type;
+      Sequence_Length : Natural)
+   is
       Ada_Buffer : Wide_String (1 .. 2);
       Ada_Buffer_Last : Natural;
       W_Buffer : C.winnt.WCHAR_array (0 .. 1);
       for W_Buffer'Address use Ada_Buffer'Address;
       Written : aliased C.windef.DWORD;
-      Sequence_Length : Natural;
-      Length : constant Natural := File.Last;
-      Error : Boolean;
+      Length : constant Natural := File.Last; -- >= Sequence_Length
    begin
-      System.UTF_Conversions.UTF_8_Sequence (
-         File.Buffer (1),
-         Sequence_Length,
-         Error);
-      if Length >= Sequence_Length then
-         File.Last := Length - Sequence_Length; --  before New_Line
-         System.UTF_Conversions.From_8_To_16.Convert (
-            File.Buffer (1 .. Sequence_Length),
-            Ada_Buffer,
-            Ada_Buffer_Last);
-         if File.Encoding = Terminal
-            and then C.wincon.WriteConsoleW (
-               hConsoleOutput => Streams.Stream_IO.Inside.Handle (File.File),
-               lpBuffer => C.windef.LPVOID (Ada_Buffer (1)'Address),
-               nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
-               lpNumberOfCharsWritten => Written'Access,
-               lpReserved => C.windef.LPVOID (System.Null_Address)) /= 0
-            and then Written = C.windef.DWORD (Ada_Buffer_Last)
+      System.UTF_Conversions.From_8_To_16.Convert (
+         File.Buffer (1 .. Sequence_Length),
+         Ada_Buffer,
+         Ada_Buffer_Last);
+      if File.Encoding = Terminal
+         and then C.wincon.WriteConsoleW (
+            hConsoleOutput => Streams.Stream_IO.Inside.Handle (File.File),
+            lpBuffer => C.windef.LPVOID (Ada_Buffer (1)'Address),
+            nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
+            lpNumberOfCharsWritten => Written'Access,
+            lpReserved => C.windef.LPVOID (System.Null_Address)) /= 0
+         and then Written = C.windef.DWORD (Ada_Buffer_Last)
+      then
+         File.Buffer_Col := 0; -- unused
+      elsif File.Encoding = UTF_8
+         or else (
+            Sequence_Length = 1
+            and then File.Buffer (1) < Character'Val (16#80#))
+      then
+         if File.Line_Length /= 0
+            and then File.Col + Count (Sequence_Length - 1) > File.Line_Length
          then
-            File.Buffer_Col := 0; -- unused
-         elsif File.Encoding = UTF_8
-            or else (
-               Sequence_Length = 1
-               and then File.Buffer (1) < Character'Val (16#80#))
-         then
+            Raw_New_Line (File);
+         end if;
+         declare
+            Buffer : Streams.Stream_Element_Array (
+               1 ..
+               Streams.Stream_Element_Offset (Sequence_Length));
+            for Buffer'Address use File.Buffer'Address;
+         begin
+            Streams.Write (File.Stream.all, Buffer);
+         end;
+         File.Buffer_Col := Count (Sequence_Length);
+      else
+         declare
+            DBCS_Buffer : String (1 .. 2);
+            DBCS_Last : Natural;
+         begin
+            DBCS_Last := Natural (C.winnls.WideCharToMultiByte (
+               C.winnls.CP_ACP,
+               0,
+               W_Buffer (0)'Access,
+               C.signed_int (Ada_Buffer_Last),
+               LPSTR_Conv.To_Pointer (DBCS_Buffer (1)'Address),
+               DBCS_Buffer'Length,
+               null,
+               null));
+            if DBCS_Last = 0 then
+               DBCS_Buffer (1) := '?';
+               DBCS_Last := 1;
+            end if;
             if File.Line_Length /= 0
-               and then File.Col > File.Line_Length
+               and then File.Col + Count (DBCS_Last - 1) > File.Line_Length
             then
-               New_Line (File);
+               Raw_New_Line (File);
             end if;
             declare
                Buffer : Streams.Stream_Element_Array (
-                  1 .. Streams.Stream_Element_Offset (Sequence_Length));
-               for Buffer'Address use File.Buffer'Address;
+                  1 ..
+                  Streams.Stream_Element_Offset (DBCS_Last));
+               for Buffer'Address use DBCS_Buffer'Address;
             begin
                Streams.Write (File.Stream.all, Buffer);
             end;
-            File.Buffer_Col := Count (Sequence_Length);
-         else
-            declare
-               DBCS_Buffer : String (1 .. 2);
-               DBCS_Last : Natural;
-            begin
-               DBCS_Last := Natural (C.winnls.WideCharToMultiByte (
-                  C.winnls.CP_ACP,
-                  0,
-                  W_Buffer (0)'Access,
-                  C.signed_int (Ada_Buffer_Last),
-                  LPSTR_Conv.To_Pointer (DBCS_Buffer (1)'Address),
-                  DBCS_Buffer'Length,
-                  null,
-                  null));
-               if DBCS_Last = 0 then
-                  DBCS_Buffer (1) := '?';
-                  DBCS_Last := 1;
-               end if;
-               if File.Line_Length /= 0
-                  and then File.Col + Count (DBCS_Last - 1) > File.Line_Length
-               then
-                  New_Line (File);
-               end if;
-               declare
-                  Buffer : Streams.Stream_Element_Array (
-                     1 .. Streams.Stream_Element_Offset (DBCS_Last));
-                  for Buffer'Address use DBCS_Buffer'Address;
-               begin
-                  Streams.Write (File.Stream.all, Buffer);
-               end;
-               File.Buffer_Col := Count (DBCS_Last);
-            end;
-         end if;
-         File.Buffer (1 .. File.Last) :=
-            File.Buffer (Sequence_Length + 1 .. Length);
-      else
-         File.Buffer_Col := 0; --  No filled
+            File.Buffer_Col := Count (DBCS_Last);
+         end;
       end if;
+      File.Last := Length - Sequence_Length;
+      File.Buffer (1 .. File.Last) :=
+         File.Buffer (Sequence_Length + 1 .. Length);
    end Write_Buffer;
 
    --  implementation of non-controlled
@@ -551,14 +652,8 @@ package body Ada.Text_IO.Inside is
    begin
       Check_File_Mode (File, Out_File);
       if File.Last > 0 then
-         declare
-            Buffer : Streams.Stream_Element_Array (
-               1 .. Streams.Stream_Element_Offset (File.Last));
-            for Buffer'Address use File.Buffer'Address;
-         begin
-            Streams.Write (File.Stream.all, Buffer);
-         end;
-         File.Last := 0;
+         Write_Buffer (File, File.Last);
+         File.Col := File.Col + File.Buffer_Col;
       end if;
       if Streams.Stream_IO.Inside.Is_Open (File.File)
          and then File.Encoding /= Terminal -- console can not flush
@@ -593,27 +688,13 @@ package body Ada.Text_IO.Inside is
 
    procedure New_Line (
       File : Non_Controlled_File_Type;
-      Spacing : Positive_Count := 1)
-   is
-      Line_Mark : constant Streams.
-         Stream_Element_Array (0 .. 1) := (16#0d#, 16#0a#);
-      F, L : Streams.Stream_Element_Offset;
+      Spacing : Positive_Count := 1) is
    begin
       Check_File_Mode (File, Out_File);
       if File.Last > 0 then
-         Flush (File);
+         Write_Buffer (File, File.Last);
       end if;
-      F := Boolean'Pos (File.Line_Mark = LF);
-      L := Boolean'Pos (File.Line_Mark /= CR);
-      for I in 1 .. Spacing loop
-         if File.Page_Length /= 0 and then File.Line >= File.Page_Length then
-            New_Page (File);
-         else
-            Streams.Write (File.Stream.all, Line_Mark (F .. L));
-            File.Line := File.Line + 1;
-            File.Col := 1;
-         end if;
-      end loop;
+      Raw_New_Line (File, Spacing);
    end New_Line;
 
    procedure Skip_Line (
@@ -687,64 +768,10 @@ package body Ada.Text_IO.Inside is
    procedure New_Page (File : Non_Controlled_File_Type) is
    begin
       Check_File_Mode (File, Out_File);
-      if File.Encoding = Terminal then
-         declare
-            Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
-            Handle : constant Streams.Stream_IO.Inside.Handle_Type :=
-               Streams.Stream_IO.Inside.Handle (File.File);
-         begin
-            if C.wincon.GetConsoleScreenBufferInfo (
-               Handle,
-               Info'Access) = 0
-            then
-               Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
-            end if;
-            declare
-               Clear_Char_Info : constant C.wincon.CHAR_INFO := (
-                  Char => (
-                     Unchecked_Tag => 0,
-                     UnicodeChar => C.winnt.WCHAR'Val (16#20#)),
-                  Attributes => Info.wAttributes);
-               Buffer : aliased constant array (
-                  0 .. Info.dwSize.Y - 1,
-                  0 .. Info.dwSize.X - 1) of aliased C.wincon.CHAR_INFO := (
-                     others => (others => Clear_Char_Info));
-               Region : aliased C.wincon.SMALL_RECT;
-            begin
-               Region.Left := 0;
-               Region.Top := 0;
-               Region.Right := Info.dwSize.X - 1;
-               Region.Bottom := Info.dwSize.Y - 1;
-               if C.wincon.WriteConsoleOutputW (
-                  hConsoleOutput => Handle,
-                  lpBuffer => Buffer (0, 0)'Access,
-                  dwBufferSize => Info.dwSize,
-                  dwBufferCoord => (X => 0, Y => 0),
-                  lpWriteRegion => Region'Access) = 0
-               then
-                  Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
-               end if;
-            end;
-            if C.wincon.SetConsoleCursorPosition (
-               Handle,
-               (X => 0, Y => 0)) = 0
-            then
-               Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
-            end if;
-         end;
-      else
-         if File.Last > 0 then
-            Flush (File);
-         end if;
-         declare
-            Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
-         begin
-            Streams.Write (File.Stream.all, Code);
-         end;
+      if File.Last > 0 then
+         Write_Buffer (File, File.Last);
       end if;
-      File.Page := File.Page + 1;
-      File.Line := 1;
-      File.Col := 1;
+      Raw_New_Page (File);
    end New_Page;
 
    procedure Skip_Page (File : Non_Controlled_File_Type) is
@@ -846,7 +873,7 @@ package body Ada.Text_IO.Inside is
                Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
             end if;
             if File.Col > To then
-               New_Line (File);
+               Raw_New_Line (File);
             end if;
             while File.Col < To loop
                Put (File, ' ');
@@ -887,11 +914,10 @@ package body Ada.Text_IO.Inside is
                Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
             end if;
             if File.Line > To then
-               New_Page (File);
-            else
-               while File.Line < To loop
-                  New_Line (File);
-               end loop;
+               Raw_New_Page (File);
+            end if;
+            if File.Line < To then
+               Raw_New_Line (File, To - File.Line);
             end if;
          end if;
       end if;
@@ -975,12 +1001,28 @@ package body Ada.Text_IO.Inside is
    end Get;
 
    procedure Put (File : Non_Controlled_File_Type; Item : Character) is
+      Sequence_Length : Natural;
+      Error : Boolean;
    begin
       Check_File_Open (File);
+      --  if Item is not trailing byte, flush the buffer
+      if File.Last > 0
+         and then Character'Pos (Item) not in 2#10000000# .. 2#10111111#
+      then
+         Write_Buffer (File, File.Last);
+         File.Col := File.Col + File.Buffer_Col;
+      end if;
+      --  write to the buffer
       File.Last := File.Last + 1;
       File.Buffer (File.Last) := Item;
-      Write_Buffer (File);
-      File.Col := File.Col + File.Buffer_Col;
+      System.UTF_Conversions.UTF_8_Sequence (
+         File.Buffer (1),
+         Sequence_Length,
+         Error);
+      if File.Last >= Sequence_Length then
+         Write_Buffer (File, Sequence_Length);
+         File.Col := File.Col + File.Buffer_Col;
+      end if;
    end Put;
 
    procedure Look_Ahead (
