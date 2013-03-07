@@ -1138,7 +1138,7 @@ package body Ada.Text_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "encode", First, Last);
+      System.IO_Options.Form_Parameter (Form, "external", First, Last);
       if First > Form'First then
          if First <= Last
             and then Form (First) = 'u'
