@@ -1,14 +1,119 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.IO_Options;
+with System.Formatting;
 with System.UTF_Conversions;
+with C.sys.types;
 with C.termios;
+with C.unistd;
 package body Ada.Text_IO.Inside is
+   use type Streams.Stream_Element;
    use type Streams.Stream_Element_Offset;
    use type Streams.Stream_IO.Inside.Handle_Type;
    use type Streams.Stream_IO.Stream_Access;
    use type C.unsigned_int;
    use type C.unsigned_long;
+   pragma Warnings (Off); -- ssize_t = Handle_Type = int in some platforms
+   use type C.sys.types.ssize_t;
+   pragma Warnings (On);
+
+   procedure tcgetsetattr (
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Mask : C.termios.tcflag_t;
+      Min : C.termios.cc_t;
+      Saved_Settings : not null access C.termios.struct_termios);
+   procedure tcgetsetattr (
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Mask : C.termios.tcflag_t;
+      Min : C.termios.cc_t;
+      Saved_Settings : not null access C.termios.struct_termios)
+   is
+      Settings : aliased C.termios.struct_termios;
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      --  get current terminal mode
+      Dummy := C.termios.tcgetattr (Handle, Saved_Settings);
+      --  set non-canonical mode
+      Settings := Saved_Settings.all;
+      Settings.c_lflag := Settings.c_lflag and Mask;
+      Settings.c_cc (C.termios.VTIME) := 0; -- wait 0.0 sec
+      Settings.c_cc (C.termios.VMIN) := Min; -- wait Min bytes
+      Dummy := C.termios.tcsetattr (
+         Handle,
+         C.termios.TCSAFLUSH,
+         Settings'Access);
+   end tcgetsetattr;
+
+   procedure read_Escape_Sequence (
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Item : out String;
+      Last : out Natural;
+      Read_Until : Character);
+   procedure read_Escape_Sequence (
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Item : out String;
+      Last : out Natural;
+      Read_Until : Character) is
+   begin
+      Last := Item'First - 1;
+      while C.unistd.read (
+         Handle,
+         C.void_ptr (Item (Last + 1)'Address),
+         1) = 1
+      loop
+         if Last < Item'First then
+            if Item (Last + 1) = Character'Val (16#1b#) then
+               Last := Last + 1;
+            end if;
+         else
+            Last := Last + 1;
+            exit when Item (Last) = Read_Until or else Last >= Item'Last;
+         end if;
+      end loop;
+   end read_Escape_Sequence;
+
+   procedure Parse_Escape_Sequence (
+      Item : String;
+      Prefix : String;
+      Postfix : Character;
+      X1, X2 : out System.Formatting.Unsigned);
+   procedure Parse_Escape_Sequence (
+      Item : String;
+      Prefix : String;
+      Postfix : Character;
+      X1, X2 : out System.Formatting.Unsigned)
+   is
+      P : Natural;
+      Error : Boolean;
+   begin
+      if Item'Length >= Prefix'Length
+         and then Item (Item'First .. Item'First + Prefix'Length - 1) = Prefix
+      then
+         System.Formatting.Value (
+            Item (Item'First + Prefix'Length .. Item'Last),
+            P,
+            X1,
+            Error => Error);
+         if not Error
+            and then P < Item'Last
+            and then Item (P + 1) = ';'
+         then
+            System.Formatting.Value (
+               Item (P + 2 .. Item'Last),
+               P,
+               X2,
+               Error => Error);
+            if not Error
+               and then P + 1 = Item'Last
+               and then Item (P + 1) = Postfix
+            then
+               return;
+            end if;
+         end if;
+      end if;
+      Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
+   end Parse_Escape_Sequence;
 
    --  implementation of handle of stream
 
@@ -450,6 +555,12 @@ package body Ada.Text_IO.Inside is
       end if;
    end Form;
 
+   function Encoding (File : Non_Controlled_File_Type) return Encoding_Type is
+   begin
+      Check_File_Open (File);
+      return File.Encoding;
+   end Encoding;
+
    function Is_Open (File : Non_Controlled_File_Type) return Boolean is
    begin
       return File /= null;
@@ -467,28 +578,121 @@ package body Ada.Text_IO.Inside is
       end if;
    end Flush;
 
-   procedure Set_Line_Length (File : Non_Controlled_File_Type; To : Count) is
+   procedure Set_Size (
+      File : Non_Controlled_File_Type;
+      Line_Length, Page_Length : Count) is
    begin
       Check_File_Mode (File, Out_File);
-      File.Line_Length := To;
+      if File.Encoding = Terminal then
+         declare
+            Seq : String (1 .. 256);
+            Last : Natural := 0;
+            Error : Boolean;
+         begin
+            Seq (1) := Character'Val (16#1b#);
+            Seq (2) := '[';
+            Seq (3) := '8';
+            Seq (4) := ';';
+            Last := 4;
+            System.Formatting.Image (
+               System.Formatting.Unsigned (Page_Length),
+               Seq (Last + 1 .. Seq'Last),
+               Last,
+               Error => Error);
+            Last := Last + 1;
+            Seq (Last) := ';';
+            System.Formatting.Image (
+               System.Formatting.Unsigned (Line_Length),
+               Seq (Last + 1 .. Seq'Last),
+               Last,
+               Error => Error);
+            Last := Last + 1;
+            Seq (Last) := 't';
+            declare
+               Item : Ada.Streams.Stream_Element_Array (
+                  1 ..
+                  Ada.Streams.Stream_Element_Offset (Last));
+               for Item'Address use Seq'Address;
+            begin
+               Streams.Write (File.Stream.all, Item);
+            end;
+         end;
+      else
+         File.Line_Length := Line_Length;
+         File.Page_Length := Page_Length;
+      end if;
+   end Set_Size;
+
+   procedure Set_Line_Length (File : Non_Controlled_File_Type; To : Count) is
+   begin
+      Set_Size (File, To, Page_Length (File));
    end Set_Line_Length;
 
    procedure Set_Page_Length (File : Non_Controlled_File_Type; To : Count) is
    begin
-      Check_File_Mode (File, Out_File);
-      File.Page_Length := To;
+      Set_Size (File, Line_Length (File), To);
    end Set_Page_Length;
 
-   function Line_Length (File : Non_Controlled_File_Type) return Count is
+   procedure Size (
+      File : Non_Controlled_File_Type;
+      Line_Length, Page_Length : out Count)
+   is
+      Seq : constant Streams.Stream_Element_Array (0 .. 4) := (
+         16#1b#,
+         Character'Pos ('['),
+         Character'Pos ('1'),
+         Character'Pos ('8'),
+         Character'Pos ('t'));
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Old_Settings : aliased C.termios.struct_termios;
+      Buffer : String (1 .. 256);
+      Last : Natural;
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
    begin
       Check_File_Mode (File, Out_File);
-      return File.Line_Length;
+      if File.Encoding = Terminal then
+         --  non-canonical mode and disable echo
+         Handle := Streams.Stream_IO.Inside.Handle (File.File);
+         tcgetsetattr (
+            Handle,
+            not (C.termios.ECHO or C.termios.ICANON),
+            1,
+            Old_Settings'Access);
+         --  output
+         Streams.Write (File.Stream.all, Seq);
+         --  input
+         read_Escape_Sequence (Handle, Buffer, Last, 't');
+         --  restore terminal mode
+         Dummy := C.termios.tcsetattr (
+            Streams.Stream_IO.Inside.Handle (File.File),
+            C.termios.TCSANOW,
+            Old_Settings'Access);
+         --  parse
+         Parse_Escape_Sequence (
+            Buffer (1 .. Last),
+            Character'Val (16#1b#) & "[8;",
+            't',
+            System.Formatting.Unsigned (Page_Length),
+            System.Formatting.Unsigned (Line_Length));
+      else
+         Line_Length := File.Line_Length;
+         Page_Length := File.Page_Length;
+      end if;
+   end Size;
+
+   function Line_Length (File : Non_Controlled_File_Type) return Count is
+      Line_Length, Page_Length : Count;
+   begin
+      Size (File, Line_Length, Page_Length);
+      return Line_Length;
    end Line_Length;
 
    function Page_Length (File : Non_Controlled_File_Type) return Count is
+      Line_Length, Page_Length : Count;
    begin
-      Check_File_Mode (File, Out_File);
-      return File.Page_Length;
+      Size (File, Line_Length, Page_Length);
+      return Page_Length;
    end Page_Length;
 
    procedure New_Line (
@@ -627,6 +831,83 @@ package body Ada.Text_IO.Inside is
       end if;
    end End_Of_File;
 
+   procedure Set_Position_Within_Terminal (
+      File : Non_Controlled_File_Type;
+      Col, Line : Positive_Count) is
+   begin
+      Check_File_Mode (File, Out_File);
+      if File.Encoding = Terminal then
+         declare
+            Seq : String (1 .. 256);
+            Last : Natural := 0;
+            Error : Boolean;
+         begin
+            Seq (1) := Character'Val (16#1b#);
+            Seq (2) := '[';
+            Last := 2;
+            System.Formatting.Image (
+               System.Formatting.Unsigned (Line),
+               Seq (Last + 1 .. Seq'Last),
+               Last,
+               Error => Error);
+            Last := Last + 1;
+            Seq (Last) := ';';
+            System.Formatting.Image (
+               System.Formatting.Unsigned (Col),
+               Seq (Last + 1 .. Seq'Last),
+               Last,
+               Error => Error);
+            Last := Last + 1;
+            Seq (Last) := 'H';
+            declare
+               Item : Ada.Streams.Stream_Element_Array (
+                  1 ..
+                  Ada.Streams.Stream_Element_Offset (Last));
+               for Item'Address use Seq'Address;
+            begin
+               Streams.Write (File.Stream.all, Item);
+            end;
+         end;
+      else
+         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+      end if;
+   end Set_Position_Within_Terminal;
+
+   procedure Set_Col_Within_Terminal (
+      File : Non_Controlled_File_Type;
+      To : Positive_Count) is
+   begin
+      Check_File_Mode (File, Out_File);
+      if File.Encoding = Terminal then
+         declare
+            Seq : String (1 .. 256);
+            Last : Natural := 0;
+            Error : Boolean;
+         begin
+            Seq (1) := Character'Val (16#1b#);
+            Seq (2) := '[';
+            Last := 2;
+            System.Formatting.Image (
+               System.Formatting.Unsigned (To),
+               Seq (Last + 1 .. Seq'Last),
+               Last,
+               Error => Error);
+            Last := Last + 1;
+            Seq (Last) := 'G';
+            declare
+               Item : Ada.Streams.Stream_Element_Array (
+                  1 ..
+                  Ada.Streams.Stream_Element_Offset (Last));
+               for Item'Address use Seq'Address;
+            begin
+               Streams.Write (File.Stream.all, Item);
+            end;
+         end;
+      else
+         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+      end if;
+   end Set_Col_Within_Terminal;
+
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive_Count) is
    begin
       if Mode (File) = In_File then
@@ -647,16 +928,19 @@ package body Ada.Text_IO.Inside is
          end loop;
       else
          --  Out_File (or Append_File)
-         --  tty mode is unimplemented
-         if File.Line_Length /= 0 and then To > File.Line_Length then
-            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+         if File.Encoding = Terminal then
+            Set_Col_Within_Terminal (File, To);
+         else
+            if File.Line_Length /= 0 and then To > File.Line_Length then
+               Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+            end if;
+            if File.Col > To then
+               Raw_New_Line (File);
+            end if;
+            while File.Col < To loop
+               Put (File, ' ');
+            end loop;
          end if;
-         if File.Col > To then
-            Raw_New_Line (File);
-         end if;
-         while File.Col < To loop
-            Put (File, ' ');
-         end loop;
       end if;
    end Set_Col;
 
@@ -669,31 +953,81 @@ package body Ada.Text_IO.Inside is
          end loop;
       else
          --  Out_File (or Append_File)
-         --  tty mode is unimplemented
-         if File.Page_Length /= 0 and then To > File.Page_Length then
-            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
-         end if;
-         if File.Line > To then
-            Raw_New_Page (File);
-         end if;
-         if File.Line < To then
-            Raw_New_Line (File, To - File.Line);
+         if File.Encoding = Terminal then
+            Set_Position_Within_Terminal (File, 1, To);
+         else
+            if File.Page_Length /= 0 and then To > File.Page_Length then
+               Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+            end if;
+            if File.Line > To then
+               Raw_New_Page (File);
+            end if;
+            if File.Line < To then
+               Raw_New_Line (File, To - File.Line);
+            end if;
          end if;
       end if;
    end Set_Line;
 
-   function Col (File : Non_Controlled_File_Type) return Positive_Count is
+   procedure Position (
+      File : Non_Controlled_File_Type;
+      Col, Line : out Positive_Count)
+   is
+      Seq : constant Streams.Stream_Element_Array (0 .. 3) := (
+         16#1b#,
+         Character'Pos ('['),
+         Character'Pos ('6'),
+         Character'Pos ('n'));
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Old_Settings : aliased C.termios.struct_termios;
+      Buffer : String (1 .. 256);
+      Last : Natural;
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
    begin
-      --  tty mode is unimplemented
       Check_File_Open (File);
-      return File.Col;
+      if File.Encoding = Terminal then
+         --  non-canonical mode and disable echo
+         Handle := Streams.Stream_IO.Inside.Handle (File.File);
+         tcgetsetattr (
+            Handle,
+            not (C.termios.ECHO or C.termios.ICANON),
+            1,
+            Old_Settings'Access);
+         --  output
+         Streams.Write (File.Stream.all, Seq);
+         --  input
+         read_Escape_Sequence (Handle, Buffer, Last, 'R');
+         --  restore terminal mode
+         Dummy := C.termios.tcsetattr (
+            Streams.Stream_IO.Inside.Handle (File.File),
+            C.termios.TCSANOW,
+            Old_Settings'Access);
+         --  parse
+         Parse_Escape_Sequence (
+            Buffer (1 .. Last),
+            Character'Val (16#1b#) & "[",
+            'R',
+            System.Formatting.Unsigned (Line),
+            System.Formatting.Unsigned (Col));
+      else
+         Col := File.Col;
+         Line := File.Line;
+      end if;
+   end Position;
+
+   function Col (File : Non_Controlled_File_Type) return Positive_Count is
+      Col, Line : Positive_Count;
+   begin
+      Position (File, Col, Line);
+      return Col;
    end Col;
 
    function Line (File : Non_Controlled_File_Type) return Positive_Count is
+      Col, Line : Positive_Count;
    begin
-      --  tty mode is unimplemented
-      Check_File_Open (File);
-      return File.Line;
+      Position (File, Col, Line);
+      return Line;
    end Line;
 
    function Page (File : Non_Controlled_File_Type) return Positive_Count is
@@ -818,6 +1152,16 @@ package body Ada.Text_IO.Inside is
       end if;
    end Get_Immediate;
 
+   procedure View (
+      File : Non_Controlled_File_Type;
+      Left, Top : out Positive_Count;
+      Right, Bottom : out Count) is
+   begin
+      Size (File, Right, Bottom);
+      Left := 1;
+      Top := 1;
+   end View;
+
    --  implementation of handle of stream for non-controlled
 
    procedure Open (
@@ -939,33 +1283,20 @@ package body Ada.Text_IO.Inside is
    is
       Wanted : Natural := 1;
       Old_Settings : aliased C.termios.struct_termios;
-      Settings : aliased C.termios.struct_termios;
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
    begin
       Check_File_Mode (File, In_File);
       if File.Encoding = Terminal then
-         --  get current terminal mode
-         Dummy := C.termios.tcgetattr (
-            Streams.Stream_IO.Inside.Handle (File.File),
-            Old_Settings'Access);
-         --  set non-canonical mode
-         Settings := Old_Settings;
-         Settings.c_lflag := Settings.c_lflag and not C.termios.ICANON;
-         if Wait then
-            --  wait single byte
-            Settings.c_cc (C.termios.VTIME) := 0;
-            Settings.c_cc (C.termios.VMIN) := 1;
-         else
-            --  wait 0.1 sec
-            Settings.c_cc (C.termios.VTIME) := 1;
-            Settings.c_cc (C.termios.VMIN) := 0;
+         if not Wait then
             Wanted := 0;
          end if;
-         Dummy := C.termios.tcsetattr (
+         --  non-canonical mode
+         tcgetsetattr (
             Streams.Stream_IO.Inside.Handle (File.File),
-            C.termios.TCSANOW,
-            Settings'Access);
+            not C.termios.ICANON,
+            C.termios.cc_t (Wanted),
+            Old_Settings'Access);
       end if;
       Last := Item'First - 1;
       Multi_Character : for I in Item'Range loop

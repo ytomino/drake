@@ -1,5 +1,5 @@
 with Ada.Text_IO;
-procedure tty is
+procedure tty1 is
 	C, D : Character;
 	Avail : Boolean;
 begin
@@ -11,4 +11,4 @@ begin
 		exit when Avail and then C = D;
 		Ada.Text_IO.Put (C);
 	end loop;
-end tty;
+end tty1;

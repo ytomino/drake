@@ -52,16 +52,29 @@ package Ada.Text_IO.Inside is
    function Name (File : Non_Controlled_File_Type) return String;
    function Form (File : Non_Controlled_File_Type) return String;
 
+   function Encoding (File : Non_Controlled_File_Type) return Encoding_Type;
+   pragma Inline (Encoding);
+
    function Is_Open (File : Non_Controlled_File_Type) return Boolean;
    pragma Inline (Is_Open);
 
    procedure Flush (File : Non_Controlled_File_Type);
 
+   procedure Set_Size (
+      File : Non_Controlled_File_Type;
+      Line_Length, Page_Length : Count);
+
    procedure Set_Line_Length (File : Non_Controlled_File_Type; To : Count);
    procedure Set_Page_Length (File : Non_Controlled_File_Type; To : Count);
 
+   procedure Size (
+      File : Non_Controlled_File_Type;
+      Line_Length, Page_Length : out Count);
+
    function Line_Length (File : Non_Controlled_File_Type) return Count;
+   pragma Inline (Line_Length);
    function Page_Length (File : Non_Controlled_File_Type) return Count;
+   pragma Inline (Page_Length);
 
    procedure New_Line (
       File : Non_Controlled_File_Type;
@@ -78,12 +91,26 @@ package Ada.Text_IO.Inside is
    function End_Of_Page (File : Non_Controlled_File_Type) return Boolean;
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean;
 
+   procedure Set_Position_Within_Terminal (
+      File : Non_Controlled_File_Type;
+      Col, Line : Count);
+   procedure Set_Col_Within_Terminal (
+      File : Non_Controlled_File_Type;
+      To : Count);
+
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive_Count);
    procedure Set_Line (File : Non_Controlled_File_Type; To : Positive_Count);
 
+   procedure Position (
+      File : Non_Controlled_File_Type;
+      Col, Line : out Positive_Count);
+
    function Col (File : Non_Controlled_File_Type) return Positive_Count;
+   pragma Inline (Col);
    function Line (File : Non_Controlled_File_Type) return Positive_Count;
+   pragma Inline (Line);
    function Page (File : Non_Controlled_File_Type) return Positive_Count;
+   pragma Inline (Page);
 
    procedure Get (File : Non_Controlled_File_Type; Item : out Character);
    procedure Put (File : Non_Controlled_File_Type; Item : Character);
@@ -101,6 +128,11 @@ package Ada.Text_IO.Inside is
       File : Non_Controlled_File_Type;
       Item : out Character;
       Available : out Boolean);
+
+   procedure View (
+      File : Non_Controlled_File_Type;
+      Left, Top : out Positive_Count;
+      Right, Bottom : out Count);
 
    --  handle of stream for non-controlled
 

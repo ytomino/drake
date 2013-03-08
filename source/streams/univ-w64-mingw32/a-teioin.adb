@@ -27,6 +27,70 @@ package body Ada.Text_IO.Inside is
       C.winnt.CCHAR,
       C.winnt.LPSTR);
 
+   procedure GetConsoleScreenBufferInfo (
+      ConsoleOutput : C.winnt.HANDLE;
+      ConsoleScreenBufferInfo : access C.wincon.CONSOLE_SCREEN_BUFFER_INFO);
+   procedure GetConsoleScreenBufferInfo (
+      ConsoleOutput : C.winnt.HANDLE;
+      ConsoleScreenBufferInfo : access C.wincon.CONSOLE_SCREEN_BUFFER_INFO) is
+   begin
+      if C.wincon.GetConsoleScreenBufferInfo (
+         ConsoleOutput,
+         ConsoleScreenBufferInfo) = 0
+      then
+         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+      end if;
+   end GetConsoleScreenBufferInfo;
+
+   procedure SetConsoleScreenBufferSize_With_Adjusting (
+      ConsoleOutput : C.winnt.HANDLE;
+      Size : C.wincon.COORD;
+      Current : C.winnt.HANDLE);
+   procedure SetConsoleScreenBufferSize_With_Adjusting (
+      ConsoleOutput : C.winnt.HANDLE;
+      Size : C.wincon.COORD;
+      Current : C.winnt.HANDLE)
+   is
+      Info, Old_Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+      Old_Size : C.wincon.COORD;
+      Rect : aliased C.wincon.SMALL_RECT;
+   begin
+      --  resize viewport to smaller than current window
+      GetConsoleScreenBufferInfo (Current, Old_Info'Access);
+      Old_Size.X := Old_Info.srWindow.Right - Old_Info.srWindow.Left + 1;
+      Old_Size.Y := Old_Info.srWindow.Bottom - Old_Info.srWindow.Top + 1;
+      if Size.X < Old_Size.X or else Size.Y < Old_Size.Y then
+         Rect.Left := 0;
+         Rect.Top := 0;
+         Rect.Right := C.winnt.SHORT'Min (Size.X, Old_Size.X) - 1;
+         Rect.Bottom := C.winnt.SHORT'Min (Size.Y, Old_Size.Y) - 1;
+         if C.wincon.SetConsoleWindowInfo (
+            ConsoleOutput,
+            1,
+            Rect'Access) = 0
+         then
+            Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+         end if;
+      end if;
+      --  resize screen buffer
+      if C.wincon.SetConsoleScreenBufferSize (ConsoleOutput, Size) = 0 then
+         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+      end if;
+      --  maximize viewport
+      GetConsoleScreenBufferInfo (ConsoleOutput, Info'Access);
+      Rect.Left := 0;
+      Rect.Top := 0;
+      Rect.Right := Info.dwMaximumWindowSize.X - 1;
+      Rect.Bottom := Info.dwMaximumWindowSize.Y - 1;
+      if C.wincon.SetConsoleWindowInfo (
+         ConsoleOutput,
+         1,
+         Rect'Access) = 0
+      then
+         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+      end if;
+   end SetConsoleScreenBufferSize_With_Adjusting;
+
    --  implementation of handle of stream
 
    procedure Open (
@@ -167,12 +231,9 @@ package body Ada.Text_IO.Inside is
             Handle : constant Streams.Stream_IO.Inside.Handle_Type :=
                Streams.Stream_IO.Inside.Handle (File.File);
          begin
-            if C.wincon.GetConsoleScreenBufferInfo (
+            GetConsoleScreenBufferInfo (
                Handle,
-               Info'Access) = 0
-            then
-               Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
-            end if;
+               Info'Access);
             declare
                Clear_Char_Info : constant C.wincon.CHAR_INFO := (
                   Char => (
@@ -672,6 +733,12 @@ package body Ada.Text_IO.Inside is
       end if;
    end Form;
 
+   function Encoding (File : Non_Controlled_File_Type) return Encoding_Type is
+   begin
+      Check_File_Open (File);
+      return File.Encoding;
+   end Encoding;
+
    function Is_Open (File : Non_Controlled_File_Type) return Boolean is
    begin
       return File /= null;
@@ -691,28 +758,68 @@ package body Ada.Text_IO.Inside is
       end if;
    end Flush;
 
-   procedure Set_Line_Length (File : Non_Controlled_File_Type; To : Count) is
+   procedure Set_Size (
+      File : Non_Controlled_File_Type;
+      Line_Length, Page_Length : Count)
+   is
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
    begin
       Check_File_Mode (File, Out_File);
-      File.Line_Length := To;
+      if File.Encoding = Terminal then
+         Handle := Streams.Stream_IO.Inside.Handle (File.File);
+         SetConsoleScreenBufferSize_With_Adjusting (
+            Handle,
+            C.wincon.COORD'(
+               X => C.winnt.SHORT (Line_Length),
+               Y => C.winnt.SHORT (Page_Length)),
+            Handle);
+      else
+         File.Line_Length := Line_Length;
+         File.Page_Length := Page_Length;
+      end if;
+   end Set_Size;
+
+   procedure Set_Line_Length (File : Non_Controlled_File_Type; To : Count) is
+   begin
+      Set_Size (File, To, Page_Length (File));
    end Set_Line_Length;
 
    procedure Set_Page_Length (File : Non_Controlled_File_Type; To : Count) is
    begin
-      Check_File_Mode (File, Out_File);
-      File.Page_Length := To;
+      Set_Size (File, Line_Length (File), To);
    end Set_Page_Length;
 
-   function Line_Length (File : Non_Controlled_File_Type) return Count is
+   procedure Size (
+      File : Non_Controlled_File_Type;
+      Line_Length, Page_Length : out Count)
+   is
+      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
       Check_File_Mode (File, Out_File);
-      return File.Line_Length;
+      if File.Encoding = Terminal then
+         GetConsoleScreenBufferInfo (
+            Streams.Stream_IO.Inside.Handle (File.File),
+            Info'Access);
+         Line_Length := Count (Info.dwSize.X);
+         Page_Length := Count (Info.dwSize.Y);
+      else
+         Line_Length := File.Line_Length;
+         Page_Length := File.Page_Length;
+      end if;
+   end Size;
+
+   function Line_Length (File : Non_Controlled_File_Type) return Count is
+      Line_Length, Page_Length : Count;
+   begin
+      Size (File, Line_Length, Page_Length);
+      return Line_Length;
    end Line_Length;
 
    function Page_Length (File : Non_Controlled_File_Type) return Count is
+      Line_Length, Page_Length : Count;
    begin
-      Check_File_Mode (File, Out_File);
-      return File.Page_Length;
+      Size (File, Line_Length, Page_Length);
+      return Page_Length;
    end Page_Length;
 
    procedure New_Line (
@@ -853,9 +960,40 @@ package body Ada.Text_IO.Inside is
       end if;
    end End_Of_File;
 
-   procedure Set_Col (File : Non_Controlled_File_Type; To : Positive_Count) is
+   procedure Set_Position_Within_Terminal (
+      File : Non_Controlled_File_Type;
+      Col, Line : Count)
+   is
       Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
       Handle : Streams.Stream_IO.Inside.Handle_Type;
+   begin
+      Check_File_Mode (File, Out_File);
+      if File.Encoding = Terminal then
+         Handle := Streams.Stream_IO.Inside.Handle (File.File);
+         GetConsoleScreenBufferInfo (
+            Handle,
+            Info'Access);
+         if C.wincon.SetConsoleCursorPosition (
+            Handle,
+            C.wincon.COORD'(
+               X => C.winnt.SHORT (Col) - 1,
+               Y => C.winnt.SHORT (Line) - 1)) = 0
+         then
+            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+         end if;
+      else
+         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+      end if;
+   end Set_Position_Within_Terminal;
+
+   procedure Set_Col_Within_Terminal (
+      File : Non_Controlled_File_Type;
+      To : Count) is
+   begin
+      Set_Position_Within_Terminal (File, To, Line (File));
+   end Set_Col_Within_Terminal;
+
+   procedure Set_Col (File : Non_Controlled_File_Type; To : Positive_Count) is
    begin
       if Mode (File) = In_File then
          --  In_File
@@ -876,21 +1014,7 @@ package body Ada.Text_IO.Inside is
       else
          --  Out_File (or Append_File)
          if File.Encoding = Terminal then
-            Handle := Streams.Stream_IO.Inside.Handle (File.File);
-            if C.wincon.GetConsoleScreenBufferInfo (
-               Handle,
-               Info'Access) = 0
-            then
-               Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
-            end if;
-            if C.wincon.SetConsoleCursorPosition (
-               Handle,
-               C.wincon.COORD'(
-                  X => C.winnt.SHORT (To) - 1,
-                  Y => Info.dwCursorPosition.Y)) = 0
-            then
-               Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
-            end if;
+            Set_Col_Within_Terminal (File, To);
          else
             if File.Line_Length /= 0 and then To > File.Line_Length then
                Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
@@ -906,8 +1030,6 @@ package body Ada.Text_IO.Inside is
    end Set_Col;
 
    procedure Set_Line (File : Non_Controlled_File_Type; To : Positive_Count) is
-      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
    begin
       if Mode (File) = In_File then
          --  In_File
@@ -917,21 +1039,7 @@ package body Ada.Text_IO.Inside is
       else
          --  Out_File (or Append_File)
          if File.Encoding = Terminal then
-            Handle := Streams.Stream_IO.Inside.Handle (File.File);
-            if C.wincon.GetConsoleScreenBufferInfo (
-               Handle,
-               Info'Access) = 0
-            then
-               Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
-            end if;
-            if C.wincon.SetConsoleCursorPosition (
-               Handle,
-               C.wincon.COORD'(
-                  X => Info.dwCursorPosition.X,
-                  Y => C.winnt.SHORT (To) - 1)) = 0
-            then
-               Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
-            end if;
+            Set_Position_Within_Terminal (File, 1, To);
          else
             if File.Page_Length /= 0 and then To > File.Page_Length then
                Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
@@ -946,34 +1054,37 @@ package body Ada.Text_IO.Inside is
       end if;
    end Set_Line;
 
-   function Col (File : Non_Controlled_File_Type) return Positive_Count is
+   procedure Position (
+      File : Non_Controlled_File_Type;
+      Col, Line : out Positive_Count)
+   is
       Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
       Check_File_Open (File);
-      if File.Encoding = Terminal
-         and then C.wincon.GetConsoleScreenBufferInfo (
+      if File.Encoding = Terminal then
+         GetConsoleScreenBufferInfo (
             Streams.Stream_IO.Inside.Handle (File.File),
-            Info'Access) /= 0
-      then
-         return Positive_Count (Info.dwCursorPosition.X + 1);
+            Info'Access);
+         Col := Positive_Count (Info.dwCursorPosition.X + 1);
+         Line := Positive_Count (Info.dwCursorPosition.Y + 1);
       else
-         return File.Col;
+         Col := File.Col;
+         Line := File.Line;
       end if;
+   end Position;
+
+   function Col (File : Non_Controlled_File_Type) return Positive_Count is
+      Col, Line : Positive_Count;
+   begin
+      Position (File, Col, Line);
+      return Col;
    end Col;
 
    function Line (File : Non_Controlled_File_Type) return Positive_Count is
-      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+      Col, Line : Positive_Count;
    begin
-      Check_File_Open (File);
-      if File.Encoding = Terminal
-         and then C.wincon.GetConsoleScreenBufferInfo (
-            Streams.Stream_IO.Inside.Handle (File.File),
-            Info'Access) /= 0
-      then
-         return Positive_Count (Info.dwCursorPosition.Y + 1);
-      else
-         return File.Line;
-      end if;
+      Position (File, Col, Line);
+      return Line;
    end Line;
 
    function Page (File : Non_Controlled_File_Type) return Positive_Count is
@@ -1091,6 +1202,27 @@ package body Ada.Text_IO.Inside is
          Item := Character'Val (0);
       end if;
    end Get_Immediate;
+
+   procedure View (
+      File : Non_Controlled_File_Type;
+      Left, Top : out Positive_Count;
+      Right, Bottom : out Count)
+   is
+      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+   begin
+      Check_File_Mode (File, Out_File);
+      if File.Encoding = Terminal then
+         GetConsoleScreenBufferInfo (
+            Streams.Stream_IO.Inside.Handle (File.File),
+            Info'Access);
+         Left := Positive_Count (Info.srWindow.Left + 1);
+         Top := Positive_Count (Info.srWindow.Top + 1);
+         Right := Count (Info.srWindow.Right + 1);
+         Bottom := Count (Info.srWindow.Bottom + 1);
+      else
+         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+      end if;
+   end View;
 
    --  implementation of handle of stream for non-controlled
 
