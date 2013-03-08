@@ -23,6 +23,11 @@ package Ada.Text_IO.Inside is
    type Text_Type (<>) is limited private;
    type Non_Controlled_File_Type is access all Text_Type;
 
+   type Encoding_Type is (
+      Locale, -- Is_Terminal = False
+      Terminal); -- Is_Terminal = True
+   pragma Discard_Names (Encoding_Type);
+
    procedure Create (
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode := Out_File;
@@ -117,11 +122,6 @@ package Ada.Text_IO.Inside is
    Standard_Error : constant Non_Controlled_File_Type;
 
    --  form parameter
-
-   type Encoding_Type is (
-      Locale, -- Is_Terminal = False
-      Terminal); -- Is_Terminal = True
-   pragma Discard_Names (Encoding_Type);
 
    type Line_Mark_Type is (LF, CR, CRLF);
    pragma Discard_Names (Line_Mark_Type);
