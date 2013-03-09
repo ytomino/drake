@@ -7,11 +7,6 @@ package body Ada.Processes is
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE;
 
-   Inheritable_Security_Attributes : aliased C.winbase.SECURITY_ATTRIBUTES := (
-      nLength => C.winbase.SECURITY_ATTRIBUTES'Size / Standard'Storage_Unit,
-      lpSecurityDescriptor => C.windef.LPCVOID (System.Null_Address),
-      bInheritHandle => 1);
-
    --  implementation
 
    procedure Create (
@@ -26,6 +21,12 @@ package body Ada.Processes is
       Error : Streams.Stream_IO.File_Type :=
          Streams.Stream_IO.Standard_Files.Standard_Error.all)
    is
+      Inheritable_Security_Attributes : aliased constant
+         C.winbase.SECURITY_ATTRIBUTES := (
+            nLength =>
+               C.winbase.SECURITY_ATTRIBUTES'Size / Standard'Storage_Unit,
+            lpSecurityDescriptor => C.windef.LPCVOID (System.Null_Address),
+            bInheritHandle => 1);
       pragma Unreferenced (Search_Path);
       W_Command_Line : aliased C.winnt.WCHAR_array (0 .. Command_Line'Length);
       W_Directory : aliased C.winnt.WCHAR_array (0 .. Directory'Length);
@@ -53,7 +54,8 @@ package body Ada.Processes is
       if C.winbase.CreateProcess (
          lpApplicationName => null,
          lpCommandLine => W_Command_Line (0)'Access,
-         lpProcessAttributes => Inheritable_Security_Attributes'Access,
+         lpProcessAttributes =>
+            Inheritable_Security_Attributes'Unrestricted_Access,
          lpThreadAttributes => null,
          bInheritHandles => 1,
          dwCreationFlags => 0,

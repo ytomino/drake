@@ -16,7 +16,7 @@ package body Ada.Streams.Stream_IO.Sockets is
 
    Flag : aliased System.Once.Flag := 0;
    Failed_To_Initialize : Boolean;
-   Data : aliased C.psdk_inc.qwsadata.WSADATA;
+   Data : aliased C.psdk_inc.qwsadata.WSADATA := (others => <>);
 
    procedure Finalize;
    procedure Finalize is
