@@ -170,7 +170,7 @@ private
 
    type Text_Type (
       Name_Length : Natural;
-      Form_Length : Natural) is limited
+      Form_Length : Natural) is -- "limited" prevents No_Elaboration_Code
    record
       Stream : Streams.Stream_IO.Stream_Access; -- internal stream
       File : aliased Streams.Stream_IO.Inside.Non_Controlled_File_Type;
@@ -197,44 +197,71 @@ private
    Standard_Input_Text : aliased Text_Type := (
       Name_Length => 0,
       Form_Length => 0,
-      Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standard_Files.Standard_Input),
+      Stream => null, -- overwrite when initialization
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Input,
+      Page => 1,
+      Line => 1,
+      Col => 1,
+      Line_Length => 0,
+      Page_Length => 0,
+      Buffer_Col => 0,
+      Last => 0,
+      Buffer => (others => Character'Val (0)),
+      Converted => False,
+      End_Of_File => False,
+      Dummy_Mark => None,
       Mode => In_File,
-      Encoding => Encoding_Type'Val (Boolean'Pos (
-         Streams.Stream_IO.Inside.Is_Terminal (
-            Streams.Stream_IO.Inside.Handle (
-               Streams.Stream_IO.Inside.Standard_Files.Standard_Input)))),
+      Encoding => Locale, -- overwrite when initialization
       Line_Mark => CRLF,
-      others => <>);
+      SUB => False,
+      Name => "",
+      Form => "");
 
    Standard_Output_Text : aliased Text_Type := (
       Name_Length => 0,
       Form_Length => 0,
-      Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standard_Files.Standard_Output),
+      Stream => null, -- overwrite when initialization
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Output,
+      Page => 1,
+      Line => 1,
+      Col => 1,
+      Line_Length => 0,
+      Page_Length => 0,
+      Buffer_Col => 0,
+      Last => 0,
+      Buffer => (others => Character'Val (0)),
+      Converted => False,
+      End_Of_File => False,
+      Dummy_Mark => None,
       Mode => Out_File,
-      Encoding => Encoding_Type'Val (Boolean'Pos (
-         Streams.Stream_IO.Inside.Is_Terminal (
-            Streams.Stream_IO.Inside.Handle (
-               Streams.Stream_IO.Inside.Standard_Files.Standard_Output)))),
+      Encoding => Locale, -- overwrite when initialization
       Line_Mark => CRLF,
-      others => <>);
+      SUB => False,
+      Name => "",
+      Form => "");
 
    Standard_Error_Text : aliased Text_Type := (
       Name_Length => 0,
       Form_Length => 0,
-      Stream => Streams.Stream_IO.Inside.Stream (
-         Streams.Stream_IO.Inside.Standard_Files.Standard_Error),
+      Stream => null, -- overwrite when initialization
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Error,
+      Page => 1,
+      Line => 1,
+      Col => 1,
+      Line_Length => 0,
+      Page_Length => 0,
+      Buffer_Col => 0,
+      Last => 0,
+      Buffer => (others => Character'Val (0)),
+      Converted => False,
+      End_Of_File => False,
+      Dummy_Mark => None,
       Mode => Out_File,
-      Encoding => Encoding_Type'Val (Boolean'Pos (
-         Streams.Stream_IO.Inside.Is_Terminal (
-            Streams.Stream_IO.Inside.Handle (
-               Streams.Stream_IO.Inside.Standard_Files.Standard_Error)))),
+      Encoding => Locale, -- overwrite when initialization
       Line_Mark => CRLF,
-      others => <>);
+      SUB => False,
+      Name => "",
+      Form => "");
 
    Standard_Input : constant Non_Controlled_File_Type :=
       Standard_Input_Text'Access;

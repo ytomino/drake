@@ -1412,4 +1412,19 @@ package body Ada.Text_IO.Inside is
       end if;
    end Get_Immediate;
 
+   --  initialization
+
+   procedure Init_Standard_File (File : not null Non_Controlled_File_Type);
+   procedure Init_Standard_File (File : not null Non_Controlled_File_Type) is
+   begin
+      File.Stream := Streams.Stream_IO.Inside.Stream (File.File);
+      File.Encoding := Encoding_Type'Val (Boolean'Pos (
+         Streams.Stream_IO.Inside.Is_Terminal (
+            Streams.Stream_IO.Inside.Handle (File.File))));
+   end Init_Standard_File;
+
+begin
+   Init_Standard_File (Standard_Input_Text'Access);
+   Init_Standard_File (Standard_Output_Text'Access);
+   Init_Standard_File (Standard_Error_Text'Access);
 end Ada.Text_IO.Inside;
