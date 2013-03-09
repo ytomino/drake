@@ -12,7 +12,7 @@ private
 
    Empty_Form : aliased C.char_array (0 .. 0) := (0 => C.char'Val (0));
 
-   Standard_Input_Name : aliased C.winnt.WCHAR_array := (
+   Standard_Input_Name : aliased C.winnt.WCHAR_array (0 .. 6) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
@@ -37,7 +37,7 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Output_Name : aliased C.winnt.WCHAR_array := (
+   Standard_Output_Name : aliased C.winnt.WCHAR_array (0 .. 7) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
@@ -63,7 +63,7 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Error_Name : aliased C.winnt.WCHAR_array := (
+   Standard_Error_Name : aliased C.winnt.WCHAR_array (0 .. 7) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),

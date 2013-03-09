@@ -1018,7 +1018,7 @@ package C.vfs_utfconvdata is
 --    16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#FF#, 16#FF#, 16#FF#,
 --    16#07#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#);
 
-   CFUniCharCombiningPropertyBitmap : aliased constant u_int8_t_array := (
+   CFUniCharCombiningPropertyBitmap : constant u_int8_t_array := (
       16#00#, 16#00#, 16#00#, 16#01#, 16#02#, 16#03#, 16#04#, 16#05#,
       16#00#, 16#06#, 16#07#, 16#08#, 16#09#, 16#0A#, 16#0B#, 16#0C#,
       16#0D#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#0E#,
