@@ -192,6 +192,7 @@ package body System.Unwind.Raising is
    Explicit_Raise : constant String := "explicit raise";
    Divide_By_Zero : constant String := "divide by zero";
    Overflow_Check_Failed : constant String := "overflow check failed";
+   From_Finalize : constant String := "finalize/adjust raised exception";
 
    --  implementation
 
@@ -491,7 +492,6 @@ package body System.Unwind.Raising is
    end rcheck_21;
 
    procedure rcheck_22 (File : not null access Character; Line : Integer) is
-      Message : constant String := "finalize/adjust raised exception";
       File_S : String (1 .. Natural (strlen (File)));
       for File_S'Address use File.all'Address;
    begin
@@ -499,7 +499,7 @@ package body System.Unwind.Raising is
          Unwind.Standard.Program_Error'Access,
          File_S,
          Line,
-         Message => Message);
+         Message => From_Finalize);
    end rcheck_22;
 
    procedure rcheck_23 (File : not null access Character; Line : Integer) is

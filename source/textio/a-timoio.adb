@@ -77,7 +77,7 @@ package body Ada.Text_IO.Modular_IO is
                Result,
                Error => Error);
             if Error
-               or else Result > System.Formatting.Unsigned (Num'Last)
+               or else Result > System.Formatting.Unsigned'Mod (Num'Last)
             then
                raise Data_Error;
             end if;

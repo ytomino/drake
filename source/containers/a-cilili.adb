@@ -134,7 +134,6 @@ package body Ada.Containers.Inside.Linked_Lists is
          Remove (Source_First, Source_Last, Source_Length, Position, null);
          Insert (Target_First, Target_Last, Length, null, Position);
       end loop;
-      pragma Assert (Length = Length'Old);
    end Reverse_Elements;
 
    function Is_Sorted (

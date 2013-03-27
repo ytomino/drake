@@ -20,13 +20,6 @@ package body System.Storage_Pools.Subpools is
       Finalization_Masters.FM_Node,
       Finalization_Masters.FM_Node_Ptr);
 
-   function Header_Size_With_Padding (
-      Alignment : Storage_Elements.Storage_Count)
-      return Storage_Elements.Storage_Count is
-      ((Finalization_Masters.Header_Size + Alignment - 1)
-         / Alignment
-         * Alignment);
-
    --  hooks for smart linking, making code of subpool as removable
 
    procedure Setup_Allocation (
@@ -374,5 +367,14 @@ package body System.Storage_Pools.Subpools is
       --  deallocation
       Deallocate (Pool, Actual_Storage_Address, Actual_Size, Alignment);
    end Deallocate_Any_Controlled;
+
+   function Header_Size_With_Padding (
+      Alignment : Storage_Elements.Storage_Count)
+      return Storage_Elements.Storage_Count is
+   begin
+      return (Finalization_Masters.Header_Size + Alignment - 1)
+         / Alignment
+         * Alignment;
+   end Header_Size_With_Padding;
 
 end System.Storage_Pools.Subpools;
