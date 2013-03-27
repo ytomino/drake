@@ -72,24 +72,73 @@ package Interfaces is
 
    package Implementation is
 
+      function atomic_load_8 (
+         A1 : not null access Integer_8;
+         A2 : Natural)
+         return Integer_8;
+      function atomic_load_8 (
+         A1 : not null access Unsigned_8;
+         A2 : Natural)
+         return Unsigned_8;
+      pragma Import (Intrinsic, atomic_load_8, "__atomic_load_1");
+      function atomic_load_16 (
+         A1 : not null access Integer_16;
+         A2 : Natural)
+         return Integer_16;
+      function atomic_load_16 (
+         A1 : not null access Unsigned_16;
+         A2 : Natural)
+         return Unsigned_16;
+      pragma Import (Intrinsic, atomic_load_16, "__atomic_load_2");
+      function atomic_load_32 (
+         A1 : not null access Integer_32;
+         A2 : Natural)
+         return Integer_32;
+      function atomic_load_32 (
+         A1 : not null access Unsigned_32;
+         A2 : Natural)
+         return Unsigned_32;
+      pragma Import (Intrinsic, atomic_load_32, "__atomic_load_4");
+      function atomic_load_64 (
+         A1 : not null access Integer_64;
+         A2 : Natural)
+         return Integer_64;
+      function atomic_load_64 (
+         A1 : not null access Unsigned_64;
+         A2 : Natural)
+         return Unsigned_64;
+      pragma Import (Intrinsic, atomic_load_64, "__atomic_load_8");
+
       procedure sync_add_and_fetch_8 (
          A1 : not null access Integer_8;
          A2 : Integer_8);
+      procedure sync_add_and_fetch_8 (
+         A1 : not null access Unsigned_8;
+         A2 : Unsigned_8);
       pragma Import (Intrinsic, sync_add_and_fetch_8,
          "__sync_add_and_fetch_1");
       procedure sync_add_and_fetch_16 (
          A1 : not null access Integer_16;
          A2 : Integer_16);
+      procedure sync_add_and_fetch_16 (
+         A1 : not null access Unsigned_16;
+         A2 : Unsigned_16);
       pragma Import (Intrinsic, sync_add_and_fetch_16,
          "__sync_add_and_fetch_2");
       procedure sync_add_and_fetch_32 (
          A1 : not null access Integer_32;
          A2 : Integer_32);
+      procedure sync_add_and_fetch_32 (
+         A1 : not null access Unsigned_32;
+         A2 : Unsigned_32);
       pragma Import (Intrinsic, sync_add_and_fetch_32,
          "__sync_add_and_fetch_4");
       procedure sync_add_and_fetch_64 (
          A1 : not null access Integer_64;
          A2 : Integer_64);
+      procedure sync_add_and_fetch_64 (
+         A1 : not null access Unsigned_64;
+         A2 : Unsigned_64);
       pragma Import (Intrinsic, sync_add_and_fetch_64,
          "__sync_add_and_fetch_8");
 
@@ -97,24 +146,40 @@ package Interfaces is
          A1 : not null access Integer_8;
          A2 : Integer_8)
          return Integer_8;
+      function sync_sub_and_fetch_8 (
+         A1 : not null access Unsigned_8;
+         A2 : Unsigned_8)
+         return Unsigned_8;
       pragma Import (Intrinsic, sync_sub_and_fetch_8,
          "__sync_sub_and_fetch_1");
       function sync_sub_and_fetch_16 (
          A1 : not null access Integer_16;
          A2 : Integer_16)
          return Integer_16;
+      function sync_sub_and_fetch_16 (
+         A1 : not null access Unsigned_16;
+         A2 : Unsigned_16)
+         return Unsigned_16;
       pragma Import (Intrinsic, sync_sub_and_fetch_16,
          "__sync_sub_and_fetch_2");
       function sync_sub_and_fetch_32 (
          A1 : not null access Integer_32;
          A2 : Integer_32)
          return Integer_32;
+      function sync_sub_and_fetch_32 (
+         A1 : not null access Unsigned_32;
+         A2 : Unsigned_32)
+         return Unsigned_32;
       pragma Import (Intrinsic, sync_sub_and_fetch_32,
          "__sync_sub_and_fetch_4");
       function sync_sub_and_fetch_64 (
          A1 : not null access Integer_64;
          A2 : Integer_64)
          return Integer_64;
+      function sync_sub_and_fetch_64 (
+         A1 : not null access Unsigned_64;
+         A2 : Unsigned_64)
+         return Unsigned_64;
       pragma Import (Intrinsic, sync_sub_and_fetch_64,
          "__sync_sub_and_fetch_8");
 
@@ -123,12 +188,22 @@ package Interfaces is
          A2 : Integer_8;
          A3 : Integer_8)
          return Boolean;
+      function sync_bool_compare_and_swap_8 (
+         A1 : not null access Unsigned_8;
+         A2 : Unsigned_8;
+         A3 : Unsigned_8)
+         return Boolean;
       pragma Import (Intrinsic, sync_bool_compare_and_swap_8,
          "__sync_bool_compare_and_swap_1");
       function sync_bool_compare_and_swap_16 (
          A1 : not null access Integer_16;
          A2 : Integer_16;
          A3 : Integer_16)
+         return Boolean;
+      function sync_bool_compare_and_swap_16 (
+         A1 : not null access Unsigned_16;
+         A2 : Unsigned_16;
+         A3 : Unsigned_16)
          return Boolean;
       pragma Import (Intrinsic, sync_bool_compare_and_swap_16,
          "__sync_bool_compare_and_swap_2");
@@ -137,6 +212,11 @@ package Interfaces is
          A2 : Integer_32;
          A3 : Integer_32)
          return Boolean;
+      function sync_bool_compare_and_swap_32 (
+         A1 : not null access Unsigned_32;
+         A2 : Unsigned_32;
+         A3 : Unsigned_32)
+         return Boolean;
       pragma Import (Intrinsic, sync_bool_compare_and_swap_32,
          "__sync_bool_compare_and_swap_4");
       function sync_bool_compare_and_swap_64 (
@@ -144,13 +224,109 @@ package Interfaces is
          A2 : Integer_64;
          A3 : Integer_64)
          return Boolean;
+      function sync_bool_compare_and_swap_64 (
+         A1 : not null access Unsigned_64;
+         A2 : Unsigned_64;
+         A3 : Unsigned_64)
+         return Boolean;
       pragma Import (Intrinsic, sync_bool_compare_and_swap_64,
          "__sync_bool_compare_and_swap_8");
+
+      function sync_val_compare_and_swap_8 (
+         A1 : not null access Integer_8;
+         A2 : Integer_8;
+         A3 : Integer_8)
+         return Integer_8;
+      function sync_val_compare_and_swap_8 (
+         A1 : not null access Unsigned_8;
+         A2 : Unsigned_8;
+         A3 : Unsigned_8)
+         return Unsigned_8;
+      pragma Import (Intrinsic, sync_val_compare_and_swap_8,
+         "__sync_val_compare_and_swap_1");
+      function sync_val_compare_and_swap_16 (
+         A1 : not null access Integer_16;
+         A2 : Integer_16;
+         A3 : Integer_16)
+         return Integer_16;
+      function sync_val_compare_and_swap_16 (
+         A1 : not null access Unsigned_16;
+         A2 : Unsigned_16;
+         A3 : Unsigned_16)
+         return Unsigned_16;
+      pragma Import (Intrinsic, sync_val_compare_and_swap_16,
+         "__sync_val_compare_and_swap_2");
+      function sync_val_compare_and_swap_32 (
+         A1 : not null access Integer_32;
+         A2 : Integer_32;
+         A3 : Integer_32)
+         return Integer_32;
+      function sync_val_compare_and_swap_32 (
+         A1 : not null access Unsigned_32;
+         A2 : Unsigned_32;
+         A3 : Unsigned_32)
+         return Unsigned_32;
+      pragma Import (Intrinsic, sync_val_compare_and_swap_32,
+         "__sync_val_compare_and_swap_4");
+      function sync_val_compare_and_swap_64 (
+         A1 : not null access Integer_64;
+         A2 : Integer_64;
+         A3 : Integer_64)
+         return Integer_64;
+      function sync_val_compare_and_swap_64 (
+         A1 : not null access Unsigned_64;
+         A2 : Unsigned_64;
+         A3 : Unsigned_64)
+         return Unsigned_64;
+      pragma Import (Intrinsic, sync_val_compare_and_swap_64,
+         "__sync_val_compare_and_swap_8");
 
    end Implementation;
 
    --  extended from here
    --  Builtin-functions of gcc.
+
+   function atomic_load (
+      A1 : not null access Integer_8;
+      Model : Natural)
+      return Integer_8
+      renames Implementation.atomic_load_8;
+   function atomic_load (
+      A1 : not null access Integer_16;
+      Model : Natural)
+      return Integer_16
+      renames Implementation.atomic_load_16;
+   function atomic_load (
+      A1 : not null access Integer_32;
+      Model : Natural)
+      return Integer_32
+      renames Implementation.atomic_load_32;
+   function atomic_load (
+      A1 : not null access Integer_64;
+      Model : Natural)
+      return Integer_64
+      renames Implementation.atomic_load_64;
+
+   function atomic_load (
+      A1 : not null access Unsigned_8;
+      Model : Natural)
+      return Unsigned_8
+      renames Implementation.atomic_load_8;
+   function atomic_load (
+      A1 : not null access Unsigned_16;
+      Model : Natural)
+      return Unsigned_16
+      renames Implementation.atomic_load_16;
+   function atomic_load (
+      A1 : not null access Unsigned_32;
+      Model : Natural)
+      return Unsigned_32
+      renames Implementation.atomic_load_32;
+   function atomic_load (
+      A1 : not null access Unsigned_64;
+      Model : Natural)
+      return Unsigned_64
+      renames Implementation.atomic_load_64;
 
    procedure sync_add_and_fetch (
       A1 : not null access Integer_8;
@@ -167,6 +343,23 @@ package Interfaces is
    procedure sync_add_and_fetch (
       A1 : not null access Integer_64;
       A2 : Integer_64)
+      renames Implementation.sync_add_and_fetch_64;
+
+   procedure sync_add_and_fetch (
+      A1 : not null access Unsigned_8;
+      A2 : Unsigned_8)
+      renames Implementation.sync_add_and_fetch_8;
+   procedure sync_add_and_fetch (
+      A1 : not null access Unsigned_16;
+      A2 : Unsigned_16)
+      renames Implementation.sync_add_and_fetch_16;
+   procedure sync_add_and_fetch (
+      A1 : not null access Unsigned_32;
+      A2 : Unsigned_32)
+      renames Implementation.sync_add_and_fetch_32;
+   procedure sync_add_and_fetch (
+      A1 : not null access Unsigned_64;
+      A2 : Unsigned_64)
       renames Implementation.sync_add_and_fetch_64;
 
    function sync_sub_and_fetch (
@@ -188,6 +381,27 @@ package Interfaces is
       A1 : not null access Integer_64;
       A2 : Integer_64)
       return Integer_64
+      renames Implementation.sync_sub_and_fetch_64;
+
+   function sync_sub_and_fetch (
+      A1 : not null access Unsigned_8;
+      A2 : Unsigned_8)
+      return Unsigned_8
+      renames Implementation.sync_sub_and_fetch_8;
+   function sync_sub_and_fetch (
+      A1 : not null access Unsigned_16;
+      A2 : Unsigned_16)
+      return Unsigned_16
+      renames Implementation.sync_sub_and_fetch_16;
+   function sync_sub_and_fetch (
+      A1 : not null access Unsigned_32;
+      A2 : Unsigned_32)
+      return Unsigned_32
+      renames Implementation.sync_sub_and_fetch_32;
+   function sync_sub_and_fetch (
+      A1 : not null access Unsigned_64;
+      A2 : Unsigned_64)
+      return Unsigned_64
       renames Implementation.sync_sub_and_fetch_64;
 
    function sync_bool_compare_and_swap (
@@ -214,5 +428,80 @@ package Interfaces is
       A3 : Integer_64)
       return Boolean
       renames Implementation.sync_bool_compare_and_swap_64;
+
+   function sync_bool_compare_and_swap (
+      A1 : not null access Unsigned_8;
+      A2 : Unsigned_8;
+      A3 : Unsigned_8)
+      return Boolean
+      renames Implementation.sync_bool_compare_and_swap_8;
+   function sync_bool_compare_and_swap (
+      A1 : not null access Unsigned_16;
+      A2 : Unsigned_16;
+      A3 : Unsigned_16)
+      return Boolean
+      renames Implementation.sync_bool_compare_and_swap_16;
+   function sync_bool_compare_and_swap (
+      A1 : not null access Unsigned_32;
+      A2 : Unsigned_32;
+      A3 : Unsigned_32)
+      return Boolean
+      renames Implementation.sync_bool_compare_and_swap_32;
+   function sync_bool_compare_and_swap (
+      A1 : not null access Unsigned_64;
+      A2 : Unsigned_64;
+      A3 : Unsigned_64)
+      return Boolean
+      renames Implementation.sync_bool_compare_and_swap_64;
+
+   function sync_val_compare_and_swap (
+      A1 : not null access Integer_8;
+      A2 : Integer_8;
+      A3 : Integer_8)
+      return Integer_8
+      renames Implementation.sync_val_compare_and_swap_8;
+   function sync_val_compare_and_swap (
+      A1 : not null access Integer_16;
+      A2 : Integer_16;
+      A3 : Integer_16)
+      return Integer_16
+      renames Implementation.sync_val_compare_and_swap_16;
+   function sync_val_compare_and_swap (
+      A1 : not null access Integer_32;
+      A2 : Integer_32;
+      A3 : Integer_32)
+      return Integer_32
+      renames Implementation.sync_val_compare_and_swap_32;
+   function sync_val_compare_and_swap (
+      A1 : not null access Integer_64;
+      A2 : Integer_64;
+      A3 : Integer_64)
+      return Integer_64
+      renames Implementation.sync_val_compare_and_swap_64;
+
+   function sync_val_compare_and_swap (
+      A1 : not null access Unsigned_8;
+      A2 : Unsigned_8;
+      A3 : Unsigned_8)
+      return Unsigned_8
+      renames Implementation.sync_val_compare_and_swap_8;
+   function sync_val_compare_and_swap (
+      A1 : not null access Unsigned_16;
+      A2 : Unsigned_16;
+      A3 : Unsigned_16)
+      return Unsigned_16
+      renames Implementation.sync_val_compare_and_swap_16;
+   function sync_val_compare_and_swap (
+      A1 : not null access Unsigned_32;
+      A2 : Unsigned_32;
+      A3 : Unsigned_32)
+      return Unsigned_32
+      renames Implementation.sync_val_compare_and_swap_32;
+   function sync_val_compare_and_swap (
+      A1 : not null access Unsigned_64;
+      A2 : Unsigned_64;
+      A3 : Unsigned_64)
+      return Unsigned_64
+      renames Implementation.sync_val_compare_and_swap_64;
 
 end Interfaces;
