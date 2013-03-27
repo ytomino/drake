@@ -47,7 +47,7 @@ procedure subpool is
 		end record;
 		
 		overriding
-		function Create_Subpool (Pool : aliased in out Mark_Release_Pool_Type)
+		function Create_Subpool (Pool : in out Mark_Release_Pool_Type)
 			return not null Subpool_Handle;
 		
 		function Mark (Pool : in out Mark_Release_Pool_Type)
