@@ -9,7 +9,10 @@ package Ada.Synchronous_Task_Control is
    procedure Set_True (S : in out Suspension_Object);
    procedure Set_False (S : in out Suspension_Object);
    function Current_State (S : Suspension_Object) return Boolean;
-   procedure Suspend_Until_True (S : in out Suspension_Object);
+   --  modified
+   procedure Suspend_Until_True (
+      S : in out Suspension_Object;
+      Multi : Boolean := False); -- additional
 
 private
 

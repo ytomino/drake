@@ -4,7 +4,8 @@ with System.Tasking.Protected_Objects.Entries;
 package System.Tasking.Protected_Objects.Operations is
 
    --  required by compiler
-   procedure Service_Entries (Object : Entries.Protection_Entries_Access) is
+   procedure Service_Entries (
+      Object : not null access Entries.Protection_Entries'Class) is
       null;
 
    --  unimplemented subprograms required by compiler

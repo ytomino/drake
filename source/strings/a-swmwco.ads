@@ -1,8 +1,7 @@
 pragma License (Unrestricted);
 private with Ada.Characters.Inside.Maps;
 private with Ada.Characters.Inside.Maps.Case_Folding;
-private with Ada.Characters.Inside.Maps.Lower_Case;
-private with Ada.Characters.Inside.Maps.Upper_Case;
+private with Ada.Characters.Inside.Maps.Case_Mapping;
 private with Ada.Characters.Inside.Sets;
 private with Ada.Characters.Inside.Sets.Constants;
 private with Ada.Characters.Inside.Sets.General_Category;
@@ -236,13 +235,13 @@ private
 
    function Lower_Case_Map_Body is new Maps.Inside.To_Derived_Mapping (
       Wide_Character_Mapping,
-      Characters.Inside.Maps.Lower_Case.Lower_Case_Map);
+      Characters.Inside.Maps.Case_Mapping.Lower_Case_Map);
    function Lower_Case_Map return Wide_Character_Mapping
       renames Lower_Case_Map_Body;
 
    function Upper_Case_Map_Body is new Maps.Inside.To_Derived_Mapping (
       Wide_Character_Mapping,
-      Characters.Inside.Maps.Upper_Case.Upper_Case_Map);
+      Characters.Inside.Maps.Case_Mapping.Upper_Case_Map);
    function Upper_Case_Map return Wide_Character_Mapping
       renames Upper_Case_Map_Body;
 

@@ -28,11 +28,16 @@ package body Ada.Synchronous_Task_Control is
       return System.Tasking.Synchronous_Objects.Get (S.Object);
    end Current_State;
 
-   procedure Suspend_Until_True (S : in out Suspension_Object) is
+   procedure Suspend_Until_True (
+      S : in out Suspension_Object;
+      Multi : Boolean := False)
+   is
       Aborted : Boolean;
    begin
       if not sync_bool_compare_and_swap (S.Waiting'Access, 0, 1) then
-         raise Program_Error; -- CXDA002, the waiter is limited to one
+         if not Multi then
+            raise Program_Error; -- CXDA002, the waiter is limited to one
+         end if;
       end if;
       System.Tasking.Tasks.Enable_Abort;
       System.Tasking.Synchronous_Objects.Abortable.Wait (

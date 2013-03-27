@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  implementation unit
 private with C.winbase;
 package Ada.Streams.Stream_IO.Inside.Standard_Files is
+   pragma Elaborate_Body;
 
    Standard_Input : constant Non_Controlled_File_Type;
    Standard_Output : constant Non_Controlled_File_Type;
@@ -12,7 +13,7 @@ private
 
    Empty_Form : aliased C.char_array (0 .. 0) := (0 => C.char'Val (0));
 
-   Standard_Input_Name : aliased C.winnt.WCHAR_array := (
+   Standard_Input_Name : aliased C.winnt.WCHAR_array (0 .. 6) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
@@ -22,7 +23,7 @@ private
       C.winnt.WCHAR'Val (0));
 
    Standard_Input_Stream : aliased Stream_Type := (
-      Handle => C.winbase.GetStdHandle (C.winbase.STD_INPUT_HANDLE),
+      Handle => C.winbase.INVALID_HANDLE_VALUE, -- overwrite when init
       Mode => In_File,
       Kind => Standard_Handle,
       Name => Standard_Input_Name (0)'Access,
@@ -37,7 +38,7 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Output_Name : aliased C.winnt.WCHAR_array := (
+   Standard_Output_Name : aliased C.winnt.WCHAR_array (0 .. 7) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
@@ -48,7 +49,7 @@ private
       C.winnt.WCHAR'Val (0));
 
    Standard_Output_Stream : aliased Stream_Type := (
-      Handle => C.winbase.GetStdHandle (C.winbase.STD_OUTPUT_HANDLE),
+      Handle => C.winbase.INVALID_HANDLE_VALUE, -- overwrite when init
       Mode => Out_File,
       Kind => Standard_Handle,
       Name => Standard_Output_Name (0)'Access,
@@ -63,7 +64,7 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Error_Name : aliased C.winnt.WCHAR_array := (
+   Standard_Error_Name : aliased C.winnt.WCHAR_array (0 .. 7) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('t')),
@@ -74,7 +75,7 @@ private
       C.winnt.WCHAR'Val (0));
 
    Standard_Error_Stream : aliased Stream_Type := (
-      Handle => C.winbase.GetStdHandle (C.winbase.STD_ERROR_HANDLE),
+      Handle => C.winbase.INVALID_HANDLE_VALUE, -- overwrite when init
       Mode => Out_File,
       Kind => Standard_Handle,
       Name => Standard_Error_Name (0)'Access,

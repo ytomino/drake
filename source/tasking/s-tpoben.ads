@@ -20,12 +20,12 @@ package System.Tasking.Protected_Objects.Entries is
       new Ada.Finalization.Limited_Controlled with null record;
 
    --  required by compiler
-   type Protection_Entries_Access is access all Protection_Entries'Class;
-   for Protection_Entries_Access'Storage_Size use 0;
+--  type Protection_Entries_Access is access all Protection_Entries'Class;
+--  for Protection_Entries_Access'Storage_Size use 0;
 
    --  required by compiler
    procedure Initialize_Protection_Entries (
-      Object : Protection_Entries_Access;
+      Object : not null access Protection_Entries'Class;
       Ceiling_Priority : Integer;
       Compiler_Info : Address;
       Entry_Bodies : Protected_Entry_Body_Access;
@@ -41,8 +41,12 @@ package System.Tasking.Protected_Objects.Entries is
       null;
 
    --  required by compiler
-   procedure Lock_Entries (Object : Protection_Entries_Access) is null;
-   procedure Unlock_Entries (Object : Protection_Entries_Access) is null;
+   procedure Lock_Entries (
+      Object : not null access Protection_Entries'Class) is
+      null;
+   procedure Unlock_Entries (
+      Object : not null access Protection_Entries'Class) is
+      null;
 
    --  unimplemented subprograms required by compiler
    --  Get_Ceiling

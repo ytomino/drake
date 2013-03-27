@@ -11,7 +11,8 @@ private
 
    Empty_Form : aliased C.char_array (0 .. 0) := (0 => C.char'Val (0));
 
-   Standard_Input_Name : aliased C.char_array := "*stdin" & C.char'Val (0);
+   Standard_Input_Name : aliased C.char_array (0 .. 6) :=
+      "*stdin" & C.char'Val (0);
 
    Standard_Input_Stream : aliased Stream_Type := (
       Handle => 0,
@@ -29,7 +30,8 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Output_Name : aliased C.char_array := "*stdout" & C.char'Val (0);
+   Standard_Output_Name : aliased C.char_array (0 .. 7) :=
+      "*stdout" & C.char'Val (0);
 
    Standard_Output_Stream : aliased Stream_Type := (
       Handle => 1,
@@ -47,7 +49,8 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Error_Name : aliased C.char_array := "*stderr" & C.char'Val (0);
+   Standard_Error_Name : aliased C.char_array (0 .. 7) :=
+      "*stderr" & C.char'Val (0);
 
    Standard_Error_Stream : aliased Stream_Type := (
       Handle => 2,

@@ -1,6 +1,5 @@
 with Ada.Characters.Inside.Maps.Case_Folding;
-with Ada.Characters.Inside.Maps.Lower_Case;
-with Ada.Characters.Inside.Maps.Upper_Case;
+with Ada.Characters.Inside.Maps.Case_Mapping;
 with Ada.Characters.Inside.Sets.General_Category;
 with Ada.Characters.Inside.Sets.Constants;
 with System.UTF_Conversions;
@@ -72,14 +71,14 @@ package body Ada.Characters.Handling is
    function To_Lower (Item : Character) return Character is
    begin
       return Inside.Maps.Value (
-         Inside.Maps.Lower_Case.Lower_Case_Map,
+         Inside.Maps.Case_Mapping.Lower_Case_Map,
          Item);
    end To_Lower;
 
    function To_Upper (Item : Character) return Character is
    begin
       return Inside.Maps.Value (
-         Inside.Maps.Upper_Case.Upper_Case_Map,
+         Inside.Maps.Case_Mapping.Upper_Case_Map,
          Item);
    end To_Upper;
 
@@ -98,7 +97,7 @@ package body Ada.Characters.Handling is
    begin
       Inside.Maps.Translate (
          Item,
-         Inside.Maps.Lower_Case.Lower_Case_Map,
+         Inside.Maps.Case_Mapping.Lower_Case_Map,
          Result,
          Last);
       return Result (1 .. Last);
@@ -112,7 +111,7 @@ package body Ada.Characters.Handling is
    begin
       Inside.Maps.Translate (
          Item,
-         Inside.Maps.Upper_Case.Upper_Case_Map,
+         Inside.Maps.Case_Mapping.Upper_Case_Map,
          Result,
          Last);
       return Result (1 .. Last);
