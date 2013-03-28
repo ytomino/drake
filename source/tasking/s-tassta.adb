@@ -57,8 +57,7 @@ package body System.Tasking.Stages is
       Elaborated : not null access Boolean;
       Chain : in out Activation_Chain;
       Task_Image : String;
-      Created_Task : out Task_Id;
-      Build_Entry_Names : Boolean)
+      Created_Task : out Task_Id)
    is
       pragma Unreferenced (Priority);
       pragma Unreferenced (Size);
@@ -66,7 +65,6 @@ package body System.Tasking.Stages is
       pragma Unreferenced (CPU);
       pragma Unreferenced (Relative_Deadline);
       pragma Unreferenced (Domain);
-      pragma Unreferenced (Build_Entry_Names);
       Master_Of_Parent : constant Tasks.Master_Access :=
          Tasks.Master_Of_Parent (Master);
       New_Task_Id : Tasks.Task_Id;
@@ -114,7 +112,6 @@ package body System.Tasking.Stages is
    procedure Free_Task (T : Task_Id) is
       Id : Tasks.Task_Id := Task_Record_Conv.To_Pointer (T);
    begin
-      Tasks.Set_Entry_Names_To_Deallocate (Id);
       case Tasks.Preferred_Free_Mode (Id) is
          when Tasks.Wait =>
             declare
@@ -136,14 +133,6 @@ package body System.Tasking.Stages is
    begin
       Tasks.Move (From, To, New_Master_Of_Parent);
    end Move_Activation_Chain;
-
-   procedure Set_Entry_Name (
-      T : Task_Id;
-      Pos : Task_Entry_Index;
-      Val : Entry_Name_Access) is
-   begin
-      Tasks.Set_Entry_Name (Task_Record_Conv.To_Pointer (T), Pos, Val);
-   end Set_Entry_Name;
 
    procedure Abort_Tasks (Tasks : Task_List) is
    begin

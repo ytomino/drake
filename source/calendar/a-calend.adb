@@ -2,8 +2,7 @@ with Ada.Calendar.Inside;
 with System.Native_Time;
 package body Ada.Calendar is
    --  please use -gnato for overflow checking
-   RM_9_6_26_Overflow_Check : constant := Boolean'Pos (
-      Overflow_Check'Enabled /= False);
+   RM_9_6_26_Overflow_Check : constant Boolean := Overflow_Check'Enabled;
    --  it could not use 'Enabled in "+", "-" since Inline_Always.
    pragma Warnings (Off, RM_9_6_26_Overflow_Check);
    --  [gcc 4.5/4.6] condition is always False/True
@@ -136,7 +135,7 @@ package body Ada.Calendar is
 
    function "+" (Left : Time; Right : Duration) return Time is
    begin
-      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check /= 0 then
+      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
          if (Right > 0.0 and then Duration (Left) > Duration'Last - Right)
             or else (Right < 0.0
                and then Duration (Left) < Duration'First - Right)
@@ -149,7 +148,7 @@ package body Ada.Calendar is
 
    function "+" (Left : Duration; Right : Time) return Time is
    begin
-      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check /= 0 then
+      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
          if (Right > 0.0 and then Left > Duration'Last - Duration (Right))
             or else (Right < 0.0
                and then Left < Duration'First - Duration (Right))
@@ -162,7 +161,7 @@ package body Ada.Calendar is
 
    function "-" (Left : Time; Right : Duration) return Time is
    begin
-      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check /= 0 then
+      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
          if (Right > 0.0 and then Duration (Left) < Duration'First + Right)
             or else (Right < 0.0
                and then Duration (Left) > Duration'Last + Right)
@@ -175,7 +174,7 @@ package body Ada.Calendar is
 
    function "-" (Left : Time; Right : Time) return Duration is
    begin
-      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check /= 0 then
+      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
          if (Right > 0.0
             and then Duration (Left) < Duration'First + Duration (Right))
             or else (Right < 0.0

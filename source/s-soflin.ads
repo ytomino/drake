@@ -41,11 +41,9 @@ package System.Soft_Links is
    end record;
    pragma Suppress_Initialization (Uninitialized_Exception_Occurrence);
    Library_Exception : Uninitialized_Exception_Occurrence;
-   pragma Export (Ada, Library_Exception, "__gnat_library_exception");
    Library_Exception_Set : Boolean;
-   pragma Export (Ada, Library_Exception_Set, "__gnat_library_exception_set");
    procedure Save_Library_Occurrence (
-      E : Ada.Exceptions.Exception_Occurrence);
+      E : Ada.Exceptions.Exception_Occurrence_Access);
 
    --  no-operation
    function Zero return Integer; -- always return 0

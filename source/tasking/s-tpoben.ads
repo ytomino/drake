@@ -15,6 +15,11 @@ package System.Tasking.Protected_Objects.Entries is
    type Protected_Entry_Body_Access is access all Protected_Entry_Body_Array;
 
    --  required by compiler
+   type Protected_Entry_Names_Array is
+      array (Entry_Index range <>) of Entry_Name_Access;
+   pragma Suppress_Initialization (Protected_Entry_Names_Array);
+
+   --  required by compiler
    --  (if it is not controlled type, compiler may be crashed!)
    type Protection_Entries (Num_Entries : Protected_Entry_Index) is
       new Ada.Finalization.Limited_Controlled with null record;
@@ -29,15 +34,13 @@ package System.Tasking.Protected_Objects.Entries is
       Ceiling_Priority : Integer;
       Compiler_Info : Address;
       Entry_Bodies : Protected_Entry_Body_Access;
-      Find_Body_Index : Find_Body_Index_Access;
-      Build_Entry_Names : Boolean) is
+      Find_Body_Index : Find_Body_Index_Access) is
       null;
 
    --  required by compiler
-   procedure Set_Entry_Name (
-      Object : Protection_Entries'Class;
-      Pos : Protected_Entry_Index;
-      Val : Entry_Name_Access) is
+   procedure Set_Entry_Names (
+      Object : not null access Protection_Entries'Class;
+      Names : access Protected_Entry_Names_Array) is
       null;
 
    --  required by compiler

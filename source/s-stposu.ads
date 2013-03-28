@@ -128,10 +128,16 @@ private
       Alignment : Storage_Elements.Storage_Count;
       Is_Controlled : Boolean);
 
-   --  (s-stposu.ads)
+   --  required by compiler (s-stposu.ads)
    function Header_Size_With_Padding (
       Alignment : Storage_Elements.Storage_Count)
       return Storage_Elements.Storage_Count;
    pragma Inline (Header_Size_With_Padding);
+
+   --  required for checked pool by compiler (s-stposu.ads)
+--  procedure Adjust_Controlled_Dereference (
+--    Addr : in out Address;
+--    Storage_Size : in out Storage_Elements.Storage_Count;
+--    Alignment : Storage_Elements.Storage_Count);
 
 end System.Storage_Pools.Subpools;

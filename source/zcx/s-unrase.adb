@@ -76,6 +76,7 @@ package body Separated is
          Current.all := GCC_Exception.Occurrence;
       else
          Current.Id := Foreign_Exception'Access;
+         Current.Machine_Occurrence := GCC_Exception.all'Address;
          Current.Msg_Length := 0;
          Current.Exception_Raised := True;
          Current.Pid := Local_Partition_ID;

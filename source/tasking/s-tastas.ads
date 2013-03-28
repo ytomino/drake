@@ -80,11 +80,6 @@ package System.Tasking.Tasks is
    function Master_Of_Parent (Level : Master_Level) return Master_Access;
 
    --  for rendezvous
-   procedure Set_Entry_Name (
-      T : not null Task_Id;
-      Index : Task_Entry_Index;
-      Name : Entry_Name_Access);
-   procedure Set_Entry_Names_To_Deallocate (T : not null Task_Id);
    procedure Cancel_Calls; -- for System.Tasking.Stages.Complete_Task
    procedure Call (
       T : not null Task_Id;
@@ -193,10 +188,8 @@ private
       array (Task_Entry_Index range <>) of Entry_Name_Access;
    pragma Suppress_Initialization (Entry_Name_Array);
 
-   type Rendezvous_Record (Last_Index : Task_Entry_Index) is limited record
+   type Rendezvous_Record is limited record
       Calling : aliased Synchronous_Objects.Queue;
-      To_Deallocate_Names : Boolean;
-      Names : Entry_Name_Array (1 .. Last_Index);
    end record;
    pragma Suppress_Initialization (Rendezvous_Record);
 

@@ -23,8 +23,7 @@ package System.Tasking.Stages is
       Elaborated : not null access Boolean;
       Chain : in out Activation_Chain;
       Task_Image : String;
-      Created_Task : out Task_Id;
-      Build_Entry_Names : Boolean);
+      Created_Task : out Task_Id);
 
    --  required (optional?) for task by compiler (s-tassta.ads)
    procedure Complete_Activation;
@@ -44,12 +43,6 @@ package System.Tasking.Stages is
    procedure Move_Activation_Chain (
       From, To : Activation_Chain_Access;
       New_Master : Master_ID);
-
-   --  required for entry of task by compiler (s-tassta.ads)
-   procedure Set_Entry_Name (
-      T : Task_Id;
-      Pos : Task_Entry_Index;
-      Val : Entry_Name_Access);
 
    --  required for abort statement by compiler (s-tassta.ads)
    procedure Abort_Tasks (Tasks : Task_List);

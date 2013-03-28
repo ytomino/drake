@@ -161,6 +161,7 @@ package body System.Unwind.Raising is
          end if;
          X.Msg_Length := Last;
       end;
+      X.Machine_Occurrence := Null_Address;
       X.Exception_Raised := False;
       X.Pid := Local_Partition_ID;
       X.Num_Tracebacks := 0;
@@ -312,6 +313,24 @@ package body System.Unwind.Raising is
          end;
       end if;
    end Reraise_From_Controlled_Operation;
+
+   procedure Reraise_Library_Exception_If_Any is
+   begin
+      if Soft_Links.Library_Exception_Set then
+         declare
+            X : Exception_Occurrence
+               renames Soft_Links.Library_Exception.X;
+         begin
+            if X.Id = null then
+               Raise_Exception_No_Defer (
+                  Unwind.Standard.Program_Error'Access,
+                  Message => From_Finalize);
+            else
+               Reraise_From_Controlled_Operation (X);
+            end if;
+         end;
+      end if;
+   end Reraise_Library_Exception_If_Any;
 
    procedure Raise_Program_Error is
       Message : constant String := "not supported";

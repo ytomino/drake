@@ -1,6 +1,7 @@
 with Ada.Unchecked_Conversion;
 package body System.Soft_Links is
    pragma Suppress (All_Checks);
+   use type Ada.Exceptions.Exception_Occurrence_Access;
 
    --  I hope it will be zero-initialized...
    Main_Task_Local_Storage : aliased Task_Local_Storage;
@@ -35,15 +36,17 @@ package body System.Soft_Links is
    end Get_GNAT_Exception;
 
    procedure Save_Library_Occurrence (
-      E : Ada.Exceptions.Exception_Occurrence)
+      E : Ada.Exceptions.Exception_Occurrence_Access)
    is
       function Cast is new Ada.Unchecked_Conversion (
-         Ada.Exceptions.Exception_Occurrence,
-         Unwind.Exception_Occurrence);
+         Ada.Exceptions.Exception_Occurrence_Access,
+         Unwind.Exception_Occurrence_Access);
    begin
       if not Library_Exception_Set then
          Library_Exception_Set := True;
-         Unwind.Save_Occurrence (Library_Exception.X, Cast (E));
+         if E /= null then
+            Unwind.Save_Occurrence (Library_Exception.X, Cast (E).all);
+         end if;
       end if;
    end Save_Library_Occurrence;
 

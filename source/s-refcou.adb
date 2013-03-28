@@ -27,7 +27,6 @@ package body System.Reference_Counting is
          Integer'Size /= 32 and then Integer'Size /= 64,
          "Integer'Size is neither 32 nor 64");
    begin
-      pragma Warnings (Off, "condition is always True");
       if Integer'Size = 32 then
          declare
             function sync_bool_compare_and_swap_32 (
@@ -53,7 +52,6 @@ package body System.Reference_Counting is
             return sync_bool_compare_and_swap_64 (A1, A2, A3);
          end;
       end if;
-      pragma Warnings (On, "condition is always True");
    end sync_bool_compare_and_swap;
 
    --  implementation

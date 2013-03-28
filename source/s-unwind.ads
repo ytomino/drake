@@ -24,6 +24,7 @@ package System.Unwind is
    --  (a-except-2005.ads)
    type Exception_Occurrence is record
       Id : Exception_Data_Access;
+      Machine_Occurrence : Address := Null_Address;
       Msg_Length : Natural := 0;
       Msg : String (1 .. Exception_Msg_Max_Length);
       Exception_Raised : Boolean := False;

@@ -266,9 +266,6 @@ package body System.Tasking.Tasks is
          String,
          String_Access);
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-         String,
-         Entry_Name_Access);
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
          Rendezvous_Record,
          Rendezvous_Access);
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
@@ -282,11 +279,6 @@ package body System.Tasking.Tasks is
       --  free task record
       if Item.Rendezvous /= null then
          Synchronous_Objects.Finalize (Item.Rendezvous.Calling);
-         if Item.Rendezvous.To_Deallocate_Names then
-            for I in Item.Rendezvous.Names'Range loop
-               Unchecked_Free (Item.Rendezvous.Names (I));
-            end loop;
-         end if;
          Unchecked_Free (Item.Rendezvous);
       end if;
       Unchecked_Free (Item.Name);
@@ -900,10 +892,7 @@ package body System.Tasking.Tasks is
       --  rendezvous
       if Entry_Last_Index > 0 then
          Rendezvous := new Rendezvous_Record'(
-            Last_Index => Entry_Last_Index,
-            Calling => <>, -- uninitialized
-            To_Deallocate_Names => False,
-            Names => (others => null));
+            Calling => <>); -- uninitialized
          Synchronous_Objects.Initialize (Rendezvous.Calling);
       end if;
       --  task record
@@ -1424,21 +1413,6 @@ package body System.Tasking.Tasks is
       end if;
       return Result;
    end Master_Of_Parent;
-
-   procedure Set_Entry_Name (
-      T : not null Task_Id;
-      Index : Task_Entry_Index;
-      Name : Entry_Name_Access) is
-   begin
-      T.Rendezvous.Names (Index) := Name;
-   end Set_Entry_Name;
-
-   procedure Set_Entry_Names_To_Deallocate (T : not null Task_Id) is
-   begin
-      if T.Rendezvous /= null then
-         T.Rendezvous.To_Deallocate_Names := True;
-      end if;
-   end Set_Entry_Names_To_Deallocate;
 
    procedure Cancel_Calls is
       T : constant Task_Id := TLS_Current_Task_Id;

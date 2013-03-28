@@ -193,7 +193,7 @@ endif
 
 ifneq ($(WITHD),0)
 CFLAGS_DEBUG=-g -gnata
-CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer
+CFLAGS_OPTIMIZE=-Og
 else
 CFLAGS_DEBUG=
 ifeq ($(OBJFMT),ELF)
