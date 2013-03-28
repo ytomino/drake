@@ -38,8 +38,11 @@ headmaster (or pre-translated headers)
 Downloads
 ---------
 
-for gcc-4.7
+for gcc-4.8
  ``git clone git://github.com/ytomino/drake.git``
+
+for gcc-4.7
+ ``git clone git://github.com/ytomino/drake.git -b gcc-4.7``
 
 for gcc-4.6
  ``git clone git://github.com/ytomino/drake.git -b gcc-4.6``
