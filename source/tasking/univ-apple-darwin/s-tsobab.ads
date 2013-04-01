@@ -50,4 +50,13 @@ package System.Tasking.Synchronous_Objects.Abortable is
       Notified : out Boolean;
       Aborted : out Boolean);
 
+   --  delay
+
+   procedure Delay_For (
+      D : Duration;
+      Aborted : out Boolean);
+   procedure Delay_Until (
+      T : Native_Time.Native_Time;
+      Aborted : out Boolean);
+
 end System.Tasking.Synchronous_Objects.Abortable;

@@ -203,4 +203,50 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       Leave (Object.Mutex);
    end Wait;
 
+   --  delay
+
+   procedure Delay_For (
+      D : Duration;
+      Aborted : out Boolean)
+   is
+      M : Mutex;
+      C : Condition_Variable;
+      Notified : Boolean;
+   begin
+      Initialize (M);
+      Initialize (C);
+      Enter (M);
+      Wait (
+         C,
+         M,
+         Timeout => Duration'Max (D, 0.0),
+         Notified => Notified,
+         Aborted => Aborted);
+      Leave (M);
+      Finalize (C);
+      Finalize (M);
+   end Delay_For;
+
+   procedure Delay_Until (
+      T : Native_Time.Native_Time;
+      Aborted : out Boolean)
+   is
+      M : Mutex;
+      C : Condition_Variable;
+      Notified : Boolean;
+   begin
+      Initialize (M);
+      Initialize (C);
+      Enter (M);
+      Wait (
+         C,
+         M,
+         Timeout => T,
+         Notified => Notified,
+         Aborted => Aborted);
+      Leave (M);
+      Finalize (C);
+      Finalize (M);
+   end Delay_Until;
+
 end System.Tasking.Synchronous_Objects.Abortable;

@@ -49,47 +49,23 @@ package body System.Tasking.Tasks is
 
    procedure Delay_For (D : Duration);
    procedure Delay_For (D : Duration) is
-      M : Synchronous_Objects.Mutex;
-      C : Synchronous_Objects.Condition_Variable;
-      Notified : Boolean;
       Aborted : Boolean;
    begin
       Enable_Abort;
-      Synchronous_Objects.Initialize (M);
-      Synchronous_Objects.Initialize (C);
-      Synchronous_Objects.Enter (M);
-      Synchronous_Objects.Abortable.Wait (
-         C,
-         M,
-         Timeout => Duration'Max (D, 0.0),
-         Notified => Notified,
+      Synchronous_Objects.Abortable.Delay_For (
+         D,
          Aborted => Aborted);
-      Synchronous_Objects.Leave (M);
-      Synchronous_Objects.Finalize (C);
-      Synchronous_Objects.Finalize (M);
       Disable_Abort (Aborted);
    end Delay_For;
 
    procedure Delay_Until (T : Native_Time.Native_Time);
    procedure Delay_Until (T : Native_Time.Native_Time) is
-      M : Synchronous_Objects.Mutex;
-      C : Synchronous_Objects.Condition_Variable;
-      Notified : Boolean;
       Aborted : Boolean;
    begin
       Enable_Abort;
-      Synchronous_Objects.Initialize (M);
-      Synchronous_Objects.Initialize (C);
-      Synchronous_Objects.Enter (M);
-      Synchronous_Objects.Abortable.Wait (
-         C,
-         M,
-         Timeout => T,
-         Notified => Notified,
+      Synchronous_Objects.Abortable.Delay_Until (
+         T,
          Aborted => Aborted);
-      Synchronous_Objects.Leave (M);
-      Synchronous_Objects.Finalize (C);
-      Synchronous_Objects.Finalize (M);
       Disable_Abort (Aborted);
    end Delay_Until;
 
