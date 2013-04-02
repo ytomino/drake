@@ -11,7 +11,7 @@
 #include <unwind.h> /* exception mechanism of gcc */
 #include <stdint.h> /* included by unwind-pe.h */
 
-#if defined(__linux__) || defined (__WINNT__)
+#if defined(__linux__) || defined(__WINNT__)
 #include <limits.h> /* before bits/posix1_lim.h / winuser.h */
 #endif
 
@@ -122,7 +122,7 @@
 #endif
 #if defined(__APPLE__)
 #pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
-#pragma for Ada overload size_t iconv (iconv_t cd, \
+#pragma for Ada overload size_t iconv(iconv_t cd, \
 	char const **inbuf, size_t *inbytesleft, \
 	char **outbuf, size_t *outbytesleft)
 #pragma for Ada "dirent.h" include "sys/dirent.h"
@@ -153,7 +153,7 @@
 #pragma for Ada overload int open(const char *, int, __mode_t)
 #pragma for Ada overload long syscall(long, void *, unsigned int)
 #pragma for Ada overload void pthread_yield(void)
-#pragma for Ada overload size_t iconv (iconv_t __cd, \
+#pragma for Ada overload size_t iconv(iconv_t __cd, \
 	char const ** restrict __inbuf, size_t * restrict __inbytesleft, \
 	char ** restrict __outbuf, size_t * restrict __outbytesleft)
 #pragma for Ada "bits/time.h" monolithic_include "bits/timex.h"
