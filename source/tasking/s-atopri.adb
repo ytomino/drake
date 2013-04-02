@@ -11,8 +11,8 @@ package body System.Atomic_Primitives is
       "uint16 is not atomic");
    pragma Compile_Time_Warning (not uint32'Atomic_Always_Lock_Free,
       "uint32 is not atomic");
-   pragma Compile_Time_Warning (not uint64'Atomic_Always_Lock_Free,
-      "uint64 is not atomic");
+--  pragma Compile_Time_Warning (not uint64'Atomic_Always_Lock_Free,
+--    "uint64 is not atomic");
 
    package uint8_Conv is new Address_To_Access_Conversions (uint8);
    package uint16_Conv is new Address_To_Access_Conversions (uint16);
