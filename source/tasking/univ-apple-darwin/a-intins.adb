@@ -8,6 +8,7 @@ with C.signal;
 package body Ada.Interrupts.Inside is
    use type System.Address;
    use type C.signed_int;
+   use type C.unsigned_int;
 
    Report_Traceback : access procedure (
       Current : Ada.Exceptions.Exception_Occurrence);
@@ -75,12 +76,12 @@ package body Ada.Interrupts.Inside is
 
    procedure Handler (
       Signal_Number : C.signed_int;
-      Info : access C.signal.struct_siginfo;
+      Info : access C.signal.siginfo_t;
       Context : C.void_ptr);
    pragma Convention (C, Handler);
    procedure Handler (
       Signal_Number : C.signed_int;
-      Info : access C.signal.struct_siginfo;
+      Info : access C.signal.siginfo_t;
       Context : C.void_ptr)
    is
       pragma Unreferenced (Info);
@@ -127,12 +128,13 @@ package body Ada.Interrupts.Inside is
             declare
                Dummy : C.signed_int;
                pragma Unreferenced (Dummy);
-               Action : aliased C.signal.struct_sigaction :=
-                  (others => <>); -- uninitialized
+               Action : aliased C.signal.struct_sigaction := (
+                  (Unchecked_Tag => 1, sa_sigaction => Handler'Access),
+                  others => <>); -- uninitialized
             begin
-               Action.sigaction_u.sa_sigaction := Handler'Access;
-               Action.sa_flags := C.signal.SA_SIGINFO
-                  + C.signal.SA_RESTART;
+               Action.sa_flags := C.signed_int (C.unsigned_int'(
+                  C.signal.SA_SIGINFO
+                  or C.signal.SA_RESTART));
                Dummy := C.signal.sigemptyset (Action.sa_mask'Access);
                Dummy := C.signal.sigaction (
                   C.signed_int (Interrupt),

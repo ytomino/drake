@@ -11,7 +11,7 @@
 #include <unwind.h> /* exception mechanism of gcc */
 #include <stdint.h> /* included by unwind-pe.h */
 
-#if defined(__linux__) || defined (__WINNT__)
+#if defined(__linux__) || defined(__WINNT__)
 #include <limits.h> /* before bits/posix1_lim.h / winuser.h */
 #endif
 
@@ -70,6 +70,7 @@
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
+#undef _SC_NPROCESSORS_ONLN
 #include <malloc.h> /* malloc_usable_size */
 #undef _FILE_OFFSET_BITS
 #endif
@@ -121,7 +122,7 @@
 #endif
 #if defined(__APPLE__)
 #pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
-#pragma for Ada overload size_t iconv (iconv_t cd, \
+#pragma for Ada overload size_t iconv(iconv_t cd, \
 	char const **inbuf, size_t *inbytesleft, \
 	char **outbuf, size_t *outbytesleft)
 #pragma for Ada "dirent.h" include "sys/dirent.h"
@@ -151,7 +152,8 @@
 #undef si_value /* cannot inline returning unchecked union */
 #pragma for Ada overload int open(const char *, int, __mode_t)
 #pragma for Ada overload long syscall(long, void *, unsigned int)
-#pragma for Ada overload size_t iconv (iconv_t __cd, \
+#pragma for Ada overload void pthread_yield(void)
+#pragma for Ada overload size_t iconv(iconv_t __cd, \
 	char const ** restrict __inbuf, size_t * restrict __inbytesleft, \
 	char ** restrict __outbuf, size_t * restrict __outbytesleft)
 #pragma for Ada "bits/time.h" monolithic_include "bits/timex.h"
@@ -161,7 +163,9 @@
 #pragma for Ada "errno.h" include "bits/errno.h"
 #pragma for Ada "fcntl.h" include "bits/fcntl.h"
 #pragma for Ada "pthread.h" include "bits/pthreadtypes.h"
+#pragma for Ada "pthread.h" include "bits/sigthread.h"
 #pragma for Ada "signal.h" include "bits/siginfo.h"
+#pragma for Ada "signal.h" include "bits/sigset.h"
 #pragma for Ada "signal.h" include "bits/sigstack.h" /* MINSIGSTKSZ */
 #pragma for Ada "signal.h" monolithic_include "bits/sigaction.h"
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
@@ -175,6 +179,7 @@
 #pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */
 #pragma for Ada "sys/types.h" include "bits/types.h" /* time_t */
 #pragma for Ada "termios.h" include "bits/termios.h"
+#pragma for Ada "unistd.h" include "bits/confname.h" /* _SC_NPROCESSORS_ONLN */
 #endif
 
 #if defined(__WINNT__)
