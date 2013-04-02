@@ -3,6 +3,7 @@ with C.errno;
 with C.signal;
 package body System.Tasking.Native_Tasks is
    use type C.signed_int;
+   use type C.unsigned_int;
 
    type sigaction_Wrapper is record -- ??? for No_Elaboration_Code
       Handle : aliased C.signal.struct_sigaction;
@@ -14,12 +15,12 @@ package body System.Tasking.Native_Tasks is
 
    procedure SIGTERM_Handler (
       Signal_Number : C.signed_int;
-      Info : access C.signal.struct_siginfo;
+      Info : access C.signal.siginfo_t;
       Context : C.void_ptr);
    pragma Convention (C, SIGTERM_Handler);
    procedure SIGTERM_Handler (
       Signal_Number : C.signed_int;
-      Info : access C.signal.struct_siginfo;
+      Info : access C.signal.siginfo_t;
       Context : C.void_ptr)
    is
       pragma Unreferenced (Signal_Number);
@@ -75,14 +76,15 @@ package body System.Tasking.Native_Tasks is
    procedure Install_Abort_Handler (Handler : Abort_Handler) is
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
-      act : aliased C.signal.struct_sigaction :=
-         (others => <>); -- uninitialized
+      act : aliased C.signal.struct_sigaction := (
+         (Unchecked_Tag => 1, sa_sigaction => SIGTERM_Handler'Access),
+         others => <>); -- uninitialized
    begin
       Installed_Abort_Handler := Handler;
-      act.sigaction_u.sa_sigaction := SIGTERM_Handler'Access;
-      act.sa_flags := -- C.signal.SA_NODEFER +
+      act.sa_flags := C.signed_int (C.unsigned_int'(
          C.signal.SA_RESTART
-         + C.signal.SA_SIGINFO;
+--       or C.signal.SA_NODEFER
+         or C.signal.SA_SIGINFO));
       Dummy := C.signal.sigemptyset (act.sa_mask'Access);
       Dummy := C.signal.sigaction (
          C.signal.SIGTERM,

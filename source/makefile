@@ -89,7 +89,6 @@ else
 ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=univ-pc-linux-gnu
-SUBDIRS:=$(filter-out tasking,$(SUBDIRS))
 OBJFMT=ELF
 else
 ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
