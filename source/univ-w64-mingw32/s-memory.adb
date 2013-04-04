@@ -65,16 +65,20 @@ package body System.Memory is
    is
       function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
    begin
-      return Result : constant Address := Cast (C.winbase.HeapReAlloc (
+      return Result : Address := Cast (C.winbase.HeapReAlloc (
          C.winbase.GetProcessHeap,
          0,
          C.windef.LPVOID (P),
          C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
-            Unwind.Raising.Raise_Exception_From_Here_With (
-               Unwind.Standard.Storage_Error'Access,
-               Message => Heap_Exhausted);
+            if P = Null_Address then
+               Result := Allocate (Size); -- Reallocate (null, ...)
+            else
+               Unwind.Raising.Raise_Exception_From_Here_With (
+                  Unwind.Standard.Storage_Error'Access,
+                  Message => Heap_Exhausted);
+            end if;
          end if;
       end return;
    end Reallocate;
