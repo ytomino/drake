@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
+with System.Tasking.Native_Tasks;
 with System.Tasking.Synchronous_Objects;
-private with System.Tasking.Native_Tasks;
 private with System.Termination;
 package System.Tasking.Tasks is
    pragma Preelaborate;
@@ -58,6 +58,8 @@ package System.Tasking.Tasks is
    procedure Enter_Unabortable;
    procedure Leave_Unabortable;
    function Is_Aborted return Boolean;
+   function Abort_Attribute
+      return access Native_Tasks.Task_Attribute_Of_Abort;
 
    --  for manual activation (Chain /= null)
    function Elaborated (T : not null Task_Id) return Boolean;
@@ -203,6 +205,7 @@ private
       pragma Atomic (Aborted);
       Abort_Handler : Tasks.Abort_Handler;
       Abort_Locking : Natural;
+      Abort_Attribute : aliased Native_Tasks.Task_Attribute_Of_Abort;
       Attributes : Attribute_Array_Access;
       Attributes_Length : Natural;
       --  activation / completion
@@ -235,6 +238,8 @@ private
             Auto_Detach : Boolean;
             --  rendezvous
             Rendezvous : Rendezvous_Access;
+            --  stack
+            Stack_Attribute : Native_Tasks.Task_Attribute_Of_Stack;
             --  signal alt stack
             Signal_Stack : aliased Termination.Signal_Stack_Type;
       end case;

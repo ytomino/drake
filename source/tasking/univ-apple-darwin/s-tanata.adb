@@ -57,9 +57,12 @@ package body System.Tasking.Native_Tasks is
    end Create;
 
    procedure Join (
-      Handle : Handle_Type;
+      Handle : Handle_Type; -- of target thread
+      Abort_Current : access Task_Attribute_Of_Abort; -- of current thread
       Result : not null access Result_Type;
-      Error : out Boolean) is
+      Error : out Boolean)
+   is
+      pragma Unreferenced (Abort_Current);
    begin
       Error := C.pthread.pthread_join (Handle, Result) /= 0;
    end Join;
@@ -70,6 +73,18 @@ package body System.Tasking.Native_Tasks is
    begin
       Error := C.pthread.pthread_detach (Handle) /= 0;
    end Detach;
+
+   --  implementation of stack
+
+   function Info_Block (
+      Handle : Handle_Type;
+      Attr : Task_Attribute_Of_Stack)
+      return Info_Block_Type
+   is
+      pragma Unreferenced (Attr);
+   begin
+      return Handle;
+   end Info_Block;
 
    --  implementation of signals
 
@@ -102,7 +117,12 @@ package body System.Tasking.Native_Tasks is
          null);
    end Uninstall_Abort_Handler;
 
-   procedure Send_Abort_Signal (Handle : Handle_Type; Error : out Boolean) is
+   procedure Send_Abort_Signal (
+      Handle : Handle_Type;
+      Attr : Task_Attribute_Of_Abort;
+      Error : out Boolean)
+   is
+      pragma Unreferenced (Attr);
    begin
 --    pragma Check (Trace, Ada.Debug.Put ("abort " & Name (T)));
       case C.pthread.pthread_kill (Handle, C.signal.SIGTERM) is
@@ -117,12 +137,14 @@ package body System.Tasking.Native_Tasks is
       end case;
    end Send_Abort_Signal;
 
-   procedure Block_Abort_Signal is
+   procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
+      pragma Unreferenced (Attr);
    begin
       Mask_SIGTERM (C.signal.SIG_BLOCK);
    end Block_Abort_Signal;
 
-   procedure Unblock_Abort_Signal is
+   procedure Unblock_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
+      pragma Unreferenced (Attr);
    begin
       Mask_SIGTERM (C.signal.SIG_UNBLOCK);
    end Unblock_Abort_Signal;

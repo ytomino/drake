@@ -105,6 +105,7 @@
 #include <malloc.h>
 #undef RC_INVOKED
 #include <stdlib.h> /* abort, atexit, lldiv */
+#include <signal.h>
 #undef UNICODE
 #undef WIN32_LEAN_AND_MEAN
 #endif
