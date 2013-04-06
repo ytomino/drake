@@ -45,6 +45,18 @@ package body Ada.Text_IO.Inside is
          Settings'Access);
    end tcgetsetattr;
 
+   procedure write (
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Item : String);
+   procedure write (
+      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Item : String) is
+   begin
+      if C.unistd.write (Handle, Item'Address, Item'Length) < 0 then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+      end if;
+   end write;
+
    procedure read_Escape_Sequence (
       Handle : Streams.Stream_IO.Inside.Handle_Type;
       Item : out String;
@@ -637,12 +649,8 @@ package body Ada.Text_IO.Inside is
       File : Non_Controlled_File_Type;
       Line_Length, Page_Length : out Count)
    is
-      Seq : constant Streams.Stream_Element_Array (0 .. 4) := (
-         16#1b#,
-         Character'Pos ('['),
-         Character'Pos ('1'),
-         Character'Pos ('8'),
-         Character'Pos ('t'));
+      Seq : constant String (1 .. 5) := (
+         Character'Val (16#1b#), '[', '1', '8', 't');
       Handle : Streams.Stream_IO.Inside.Handle_Type;
       Old_Settings : aliased C.termios.struct_termios;
       Buffer : String (1 .. 256);
@@ -660,7 +668,7 @@ package body Ada.Text_IO.Inside is
             1,
             Old_Settings'Access);
          --  output
-         Streams.Write (File.Stream.all, Seq);
+         write (Handle, Seq);
          --  input
          read_Escape_Sequence (Handle, Buffer, Last, 't');
          --  restore terminal mode
@@ -973,11 +981,8 @@ package body Ada.Text_IO.Inside is
       File : Non_Controlled_File_Type;
       Col, Line : out Positive_Count)
    is
-      Seq : constant Streams.Stream_Element_Array (0 .. 3) := (
-         16#1b#,
-         Character'Pos ('['),
-         Character'Pos ('6'),
-         Character'Pos ('n'));
+      Seq : constant String (1 .. 4) := (
+         Character'Val (16#1b#), '[', '6', 'n');
       Handle : Streams.Stream_IO.Inside.Handle_Type;
       Old_Settings : aliased C.termios.struct_termios;
       Buffer : String (1 .. 256);
@@ -995,7 +1000,7 @@ package body Ada.Text_IO.Inside is
             1,
             Old_Settings'Access);
          --  output
-         Streams.Write (File.Stream.all, Seq);
+         write (Handle, Seq);
          --  input
          read_Escape_Sequence (Handle, Buffer, Last, 'R');
          --  restore terminal mode
