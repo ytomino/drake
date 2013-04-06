@@ -36,13 +36,6 @@ ce3413b N Text_IO.Count'Last is too large for test
 cxb4009 C it requites COBOL compiler
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
-cxc3001 F Annex C is not supported
-cxc3003 A Annex C is not supported
-cxc3004 A Annex C is not supported
-cxc3006 A Annex C is not supported
-cxc3007 F Annex C is not supported
-cxc3008 F Annex C is not supported
-cxc3009 A Annex C is not supported
 cxc6003 C cannot pack atomic components
 cxd1003 F failed to rendezvous
 cxd1004 F failed to rendezvous
@@ -57,7 +50,6 @@ cxd3001 F pragma Locking_Policy is not working
 cxd3002 F pragma Locking_Policy is not working
 cxd6001 F failed to abort
 cxd6002 F failed to abort
-cxda004 A Annex C is not supported
 cxdb001 C Asynchronous_Task_Control is not supported
 cxdb002 C Asynchronous_Task_Control is not supported
 cxdb003 C Asynchronous_Task_Control is not supported
