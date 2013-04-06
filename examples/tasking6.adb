@@ -118,5 +118,21 @@ begin
 	exception
 		when Tasking_Error => null;
 	end;
+	declare
+		task T5 is
+			entry E (Positive range 1 .. 2);
+		end T5;
+		task body T5 is
+		begin
+			Ada.Debug.Put ("begin T4");
+			accept E (1);
+			Ada.Debug.Put ("end T4");
+		end T5;
+	begin
+		Ada.Debug.Put ("*** indexed entries ***");
+		Ada.Debug.Put ("before");
+		T5.E (1);
+		Ada.Debug.Put ("after");
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking6;
