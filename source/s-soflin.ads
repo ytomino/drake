@@ -48,7 +48,6 @@ package System.Soft_Links is
    --  no-operation
    function Zero return Integer; -- always return 0
    procedure Nop is null;
-   procedure Nop (Current : Unwind.Exception_Occurrence) is null;
 
    --  required for controlled types and task by compiler (s-soflin.ads)
    Current_Master : not null access function return Integer := Zero'Access;
