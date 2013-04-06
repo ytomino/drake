@@ -253,6 +253,8 @@ package body System.Tasking.Tasks is
    begin
       --  detach from master
       Remove_From_Completion_List (Item);
+      --  finalize abort
+      Native_Tasks.Finalize (Item.Abort_Attribute);
       --  free attributes
       Clear_Attributes (Item);
       --  free task record
@@ -303,14 +305,17 @@ package body System.Tasking.Tasks is
       T : constant Task_Id := TLS_Current_Task_Id;
       Error : Boolean;
    begin
-      --  pragma Check (Trance, Ada.Debug.Put (Name (T)));
+      pragma Check (Trace, Ada.Debug.Put (Name (T)));
       T.Aborted := True;
       if T.Abort_Handler /= null then
          T.Abort_Handler (T);
       end if;
       if T.Kind = Main then
          Native_Tasks.Uninstall_Abort_Handler;
-         Native_Tasks.Send_Abort_Signal (T.Handle, Error); -- ignore error
+         Native_Tasks.Send_Abort_Signal (
+            T.Handle,
+            T.Abort_Attribute,
+            Error); -- ignore error
       end if;
    end Abort_Signal_Handler;
 
@@ -351,6 +356,8 @@ package body System.Tasking.Tasks is
       Soft_Links.Get_Task_Local_Storage :=
          Soft_Links.Get_Main_Task_Local_Storage'Access;
       Soft_Links.Get_Current_Excep := Soft_Links.Get_Main_Current_Excep'Access;
+      --  main thread id
+      Native_Tasks.Finalize (Main_Task_Record.Abort_Attribute);
       --  signal handler
       Native_Tasks.Uninstall_Abort_Handler;
       --  clear
@@ -393,6 +400,7 @@ package body System.Tasking.Tasks is
          Main_Task_Record.Termination_State := TS_Active;
          Main_Task_Record.Master_Level := Environment_Task_Level;
          Main_Task_Record.Master_Top := null; -- start from Library_Task_Level
+         Native_Tasks.Initialize (Main_Task_Record.Abort_Attribute);
          --  signal handler
          Native_Tasks.Install_Abort_Handler (Abort_Signal_Handler'Access);
          pragma Check (Trace, Ada.Debug.Put ("leave"));
@@ -448,7 +456,7 @@ package body System.Tasking.Tasks is
 
    function Thread (Rec : Native_Tasks.Parameter_Type)
       return Native_Tasks.Result_Type;
-   pragma Convention (C, Thread);
+   pragma Convention (Thread_Body_CC, Thread);
    function Thread (Rec : Native_Tasks.Parameter_Type)
       return Native_Tasks.Result_Type
    is
@@ -465,7 +473,8 @@ package body System.Tasking.Tasks is
    begin
       TLS_Current_Task_Id := T;
       --  block abort signal
-      Native_Tasks.Block_Abort_Signal;
+      Native_Tasks.Initialize (T.Abort_Attribute);
+      Native_Tasks.Block_Abort_Signal (T.Abort_Attribute);
       T.Abort_Locking := 1;
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
@@ -474,6 +483,8 @@ package body System.Tasking.Tasks is
       TLS_Stack := Local'Unchecked_Access;
       --  setup signal stack
       Termination.Set_Signal_Stack (T.Signal_Stack'Access);
+      --  setup native stack
+      Native_Tasks.Initialize (T.Stack_Attribute);
       --  execute
       declare
          procedure On_Exception;
@@ -516,9 +527,11 @@ package body System.Tasking.Tasks is
          T.Termination_State'Access,
          TS_Active,
          TS_Terminated);
+      --  cleanup native stack info
+      Native_Tasks.Finalize (T.Stack_Attribute);
       --  free
       if No_Detached then
-         Result := Rec; -- caller or master may wait
+         Result := To_Result (Rec); -- caller or master may wait
       else -- detached
          if T.Master_Of_Parent /= null then
             declare
@@ -539,7 +552,7 @@ package body System.Tasking.Tasks is
                Synchronous_Objects.Leave (Mutex_Ref.all);
             end;
             if not T.Auto_Detach then
-               Result := Rec; -- master already has been waiting
+               Result := To_Result (Rec); -- master already has been waiting
             else
                Free (T);
                Result := To_Result (Null_Address);
@@ -601,7 +614,11 @@ package body System.Tasking.Tasks is
       if T.Activation_State = AS_Error then
          Free_Task_Id := T;
       else
-         Native_Tasks.Join (T.Handle, Rec'Access, Error);
+         Native_Tasks.Join (
+            T.Handle,
+            Abort_Attribute,
+            Rec'Access,
+            Error);
          if Error then
             raise Tasking_Error;
          end if;
@@ -613,9 +630,14 @@ package body System.Tasking.Tasks is
    procedure Abort_Handler_On_Leave_Master (T : Task_Id) is
       M : constant Master_Access := T.Master_Top;
       Error : Boolean;
+      Top_Child : Task_Id;
    begin
       --  Enter (M.Mutex);
-      Native_Tasks.Send_Abort_Signal (M.List.Handle, Error);
+      Top_Child := M.List;
+      Native_Tasks.Send_Abort_Signal (
+         Top_Child.Handle,
+         Top_Child.Abort_Attribute,
+         Error);
       if Error then
          raise Tasking_Error;
       end if;
@@ -908,6 +930,8 @@ package body System.Tasking.Tasks is
          Next_At_Same_Level => null,
          Auto_Detach => False,
          Rendezvous => Rendezvous,
+         Stack_Attribute => <>, -- uninitialized
+         Abort_Attribute => <>, -- uninitialized
          Signal_Stack => <>); -- uninitialized
       --  for master
       if Master /= null then
@@ -969,11 +993,11 @@ package body System.Tasking.Tasks is
                Synchronous_Objects.Leave (T.Master_Of_Parent.Mutex);
             else
                declare
-                  Handle : constant Native_Tasks.Handle_Type := T.Handle;
+                  Orig_T : constant Task_Id := T;
                   Error : Boolean;
                begin
                   T := null;
-                  Native_Tasks.Detach (Handle, Error);
+                  Native_Tasks.Detach (Orig_T.Handle, Error);
                   if Error then
                      raise Tasking_Error;
                   end if;
@@ -1030,7 +1054,10 @@ package body System.Tasking.Tasks is
    is
       Top, Bottom : Address;
    begin
-      Native_Stack.Get (T.Handle, Top, Bottom);
+      Native_Stack.Get (
+         Native_Tasks.Info_Block (T.Handle, T.Stack_Attribute),
+         Top,
+         Bottom);
       Addr := Top;
       Size := Bottom - Top;
    end Get_Stack;
@@ -1056,7 +1083,7 @@ package body System.Tasking.Tasks is
       elsif T.Activation_State = AS_Suspended then
          T.Aborted := True;
       else
-         Native_Tasks.Send_Abort_Signal (T.Handle, Error);
+         Native_Tasks.Send_Abort_Signal (T.Handle, T.Abort_Attribute, Error);
          if Error then
             raise Tasking_Error;
          end if;
@@ -1088,7 +1115,7 @@ package body System.Tasking.Tasks is
          T.Abort_Locking := T.Abort_Locking - 1;
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
-            Native_Tasks.Unblock_Abort_Signal;
+            Native_Tasks.Unblock_Abort_Signal (T.Abort_Attribute);
          end if;
       end if;
    end Enable_Abort;
@@ -1103,7 +1130,7 @@ package body System.Tasking.Tasks is
             & Natural'Image (T.Abort_Locking + 1)));
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
-            Native_Tasks.Block_Abort_Signal;
+            Native_Tasks.Block_Abort_Signal (T.Abort_Attribute);
          end if;
          T.Abort_Locking := T.Abort_Locking + 1;
          if T.Aborted and then T.Abort_Locking = 1 then
@@ -1145,6 +1172,18 @@ package body System.Tasking.Tasks is
    begin
       return T /= null and then T.Aborted;
    end Is_Aborted;
+
+   function Abort_Attribute
+      return access Native_Tasks.Task_Attribute_Of_Abort
+   is
+      T : constant Task_Id := TLS_Current_Task_Id;
+   begin
+      if T /= null and then Registered_State = Registered then
+         return T.Abort_Attribute'Access;
+      else
+         return null;
+      end if;
+   end Abort_Attribute;
 
    function Elaborated (T : not null Task_Id) return Boolean is
    begin
@@ -1326,16 +1365,19 @@ package body System.Tasking.Tasks is
                end if;
             elsif T.Aborted then
                --  C9A007A
-               Native_Tasks.Send_Abort_Signal (Taken.Handle, Error => S_Error);
+               Native_Tasks.Send_Abort_Signal (
+                  Taken.Handle,
+                  Taken.Abort_Attribute,
+                  Error => S_Error);
             end if;
             pragma Assert (T.Abort_Handler = null);
             T.Abort_Handler := Abort_Handler_On_Leave_Master'Access;
             if T.Kind = Sub then
-               Native_Tasks.Unblock_Abort_Signal;
+               Native_Tasks.Unblock_Abort_Signal (T.Abort_Attribute);
             end if;
             Wait (Taken, Free_Task_Id);
             if T.Kind = Sub then
-               Native_Tasks.Block_Abort_Signal;
+               Native_Tasks.Block_Abort_Signal (T.Abort_Attribute);
             end if;
             T.Abort_Handler := null;
             if Free_Task_Id /= null then

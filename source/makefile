@@ -98,7 +98,6 @@ else
 EH=sjlj
 endif
 TARGETSUBDIR=univ-w64-mingw32
-SUBDIRS:=$(filter-out tasking,$(SUBDIRS))
 OBJFMT=COFF
 else # others
 EH=zcx

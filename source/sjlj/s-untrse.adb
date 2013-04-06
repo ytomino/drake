@@ -62,6 +62,7 @@ package body Separated is
          exit when IP >= main'Code_Address
             and then IP < main'Code_Address + Caller_In_main;
          BP := Conv.To_Pointer (BP).all + Parent_Offset;
+         exit when BP = 0; -- dirty handling in thread
       end loop;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Get_Traceback;

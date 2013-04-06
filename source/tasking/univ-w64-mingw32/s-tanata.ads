@@ -1,6 +1,8 @@
 pragma License (Unrestricted);
 --  implementation unit
-with C.pthread;
+with C.winbase;
+with C.windef;
+with C.winnt;
 package System.Tasking.Native_Tasks is
    pragma Preelaborate;
 
@@ -8,18 +10,16 @@ package System.Tasking.Native_Tasks is
 
    --  thread
 
-   subtype Handle_Type is C.pthread.pthread_t;
+   subtype Handle_Type is C.winnt.HANDLE;
 
    function Current return Handle_Type
-      renames C.pthread.pthread_self;
+      renames C.winbase.GetCurrentThread;
 
-   subtype Parameter_Type is C.void_ptr;
-   subtype Result_Type is C.void_ptr;
+   subtype Parameter_Type is C.windef.LPVOID;
+   subtype Result_Type is C.windef.DWORD;
 
-   type Thread_Body_Type is access
-      function (Parameter : Parameter_Type) return Result_Type;
-   pragma Convention (C, Thread_Body_Type);
-   pragma Convention_Identifier (Thread_Body_CC, C);
+   subtype Thread_Body_Type is C.winbase.PTHREAD_START_ROUTINE;
+   pragma Convention_Identifier (Thread_Body_CC, stdcall);
 
    procedure Create (
       Handle : not null access Handle_Type;
@@ -33,17 +33,16 @@ package System.Tasking.Native_Tasks is
       Result : not null access Result_Type;
       Error : out Boolean);
    procedure Detach (
-      Handle : Handle_Type;
+      Handle : in out Handle_Type;
       Error : out Boolean);
 
    --  stack
 
-   subtype Info_Block_Type is Handle_Type;
+   subtype Info_Block_Type is C.winnt.struct_TEB_ptr;
 
-   type Task_Attribute_Of_Stack is null record;
-   pragma Suppress_Initialization (Task_Attribute_Of_Stack);
+   subtype Task_Attribute_Of_Stack is Info_Block_Type;
 
-   procedure Initialize (Attr : in out Task_Attribute_Of_Stack) is null;
+   procedure Initialize (Attr : in out Task_Attribute_Of_Stack);
    procedure Finalize (Attr : in out Task_Attribute_Of_Stack) is null;
 
    function Info_Block (
@@ -57,13 +56,18 @@ package System.Tasking.Native_Tasks is
    type Abort_Handler is access procedure;
 
    procedure Install_Abort_Handler (Handler : Abort_Handler);
+   pragma Inline (Install_Abort_Handler);
    procedure Uninstall_Abort_Handler;
+   pragma Inline (Uninstall_Abort_Handler);
 
-   type Task_Attribute_Of_Abort is null record;
+   type Task_Attribute_Of_Abort is record
+      Event : C.winnt.HANDLE;
+      Blocked : Boolean;
+   end record;
    pragma Suppress_Initialization (Task_Attribute_Of_Abort);
 
-   procedure Initialize (Attr : in out Task_Attribute_Of_Abort) is null;
-   procedure Finalize (Attr : in out Task_Attribute_Of_Abort) is null;
+   procedure Initialize (Attr : in out Task_Attribute_Of_Abort);
+   procedure Finalize (Attr : in out Task_Attribute_Of_Abort);
 
    procedure Send_Abort_Signal (
       Handle : Handle_Type;
@@ -71,6 +75,8 @@ package System.Tasking.Native_Tasks is
       Error : out Boolean);
 
    procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort);
+   pragma Inline (Block_Abort_Signal);
    procedure Unblock_Abort_Signal (Attr : in out Task_Attribute_Of_Abort);
+   pragma Inline (Unblock_Abort_Signal);
 
 end System.Tasking.Native_Tasks;
