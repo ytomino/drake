@@ -1,18 +1,13 @@
 a87b59a C unimplemented tasking features (select)
-a95001c C unimplemented tasking features (indexed entry)
 a97106a C unimplemented tasking features (select)
 ac3207a C unimplemented tasking features (select)
 c250002 C on GNAT, it can not use non-ASCII source filename
 c34007j C unimplemented tasking features (select)
-c34008a C unimplemented tasking features (indexed entry)
+c34008a C it requires Ada95 mode
 c352001 F unicode ('Image of 16#80#..16#ff#)
-c380003 C unimplemented tasking features (protected)
 c380004 C unimplemented tasking features (select)
 c394001 C unimplemented tasking features (synchronized interface)
-c3a1001 C unimplemented tasking features (protected)
 c3a1002 C unimplemented tasking features (select)
-c410001 C unimplemented tasking features (protected)
-c41307d C unimplemented tasking features (indexed entry)
 c431a01 C unimplemented tasking features
 c431a02 C unimplemented tasking features
 c431a03 C unimplemented tasking features
@@ -26,7 +21,6 @@ c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows
 c59002c C unimplemented tasking features (select)
 c74401k C unimplemented tasking features (select)
-c750b01 C unimplemented tasking features (protected)
 c761007 C unimplemented tasking features
 c85005a C unimplemented tasking features
 c85005b C unimplemented tasking features
@@ -244,7 +238,7 @@ ce3402c F strict End_Of_Line
 ce3405a F strict End_Of_Line
 ce3405d F strict End_Of_Line
 ce3406c A strict End_Of_Line
-ce3410c A strict End_Of_Line
+ce3410c F strict End_Of_Line
 ce3413b N Text_IO.Count'Last is too large for test
 ce3606a F strict End_Of_Line
 ce3606b F strict End_Of_Line
@@ -256,7 +250,7 @@ cxa4025 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
 cxa4026 A unicode (latin-1)
 cxa4028 C "use" and "use type" Ada.Strings.Bounded at the same time
 cxa4029 C "use" and "use type" Ada.Strings.Wide_Bounded at the same time
-cxa4030 C "use" and "use type" Ada.Strings.Unbounded at the same time
+cxa4030 F unicode (translate latin-1)
 cxa4033 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
 cxa5013 C unimplemented tasking features (select)
 cxaa006 F strict End_Of_Line
@@ -292,7 +286,9 @@ cxb5003 C some Interfaces.Fortran features are unimplemented
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
 cxc3001 C unimplemented tasking features (protected)
+cxc3002 C unimplemented tasking features (protected)
 cxc3003 C unimplemented tasking features
+cxc3004 C unimplemented tasking features (protected)
 cxc3005 C unimplemented tasking features
 cxc3006 C unimplemented tasking features
 cxc3007 C unimplemented tasking features
@@ -337,6 +333,7 @@ cxd6003 C unimplemented tasking features (protected)
 cxd8003 C Ada.Real_Time.Split/Time_Of are unimplemented
 cxd9001 C unimplemented tasking features (protected)
 cxda003 C unimplemented tasking features (protected)
+cxda004 C unimplemented tasking features (protected)
 cxdb001 C unimplemented tasking features (protected)
 cxdb002 C unimplemented tasking features (Ada.Dynamic_Priorities)
 cxdb003 C unimplemented tasking features (protected)
