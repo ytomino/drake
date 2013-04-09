@@ -47,8 +47,11 @@ package System.Tasking.Synchronous_Objects is
 
    type Queue is limited private;
 
-   procedure Initialize (Object : in out Queue);
-   procedure Finalize (Object : in out Queue);
+   procedure Initialize (
+      Object : in out Queue;
+      Mutex : not null access Synchronous_Objects.Mutex);
+   procedure Finalize (
+      Object : in out Queue);
    function Count (
       Object : not null access Queue;
       Params : Address;
@@ -146,7 +149,7 @@ private
    pragma Suppress_Initialization (Condition_Variable);
 
    type Queue is limited record
-      Mutex : Synchronous_Objects.Mutex;
+      Mutex : not null access Synchronous_Objects.Mutex;
       Event : Synchronous_Objects.Event; -- auto
       Head : aliased Queue_Node_Access;
       Tail : Queue_Node_Access;

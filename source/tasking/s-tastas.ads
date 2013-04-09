@@ -196,6 +196,7 @@ private
    pragma Suppress_Initialization (Entry_Name_Array);
 
    type Rendezvous_Record (Last_Index : Task_Entry_Index) is limited record
+      Mutex : aliased Synchronous_Objects.Mutex;
       Calling : aliased Synchronous_Objects.Queue;
       To_Deallocate_Names : Boolean;
       Names : Entry_Name_Array (1 .. Last_Index);

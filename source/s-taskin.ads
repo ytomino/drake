@@ -39,8 +39,15 @@ package System.Tasking is
    type Entry_Index is range Interrupt_Entry .. Max_Entry;
    type Task_Entry_Index is new Entry_Index range Null_Entry .. Max_Entry;
 
+   --  required for protected entry by compiler (s-taskin.ads)
+   Simple_Call : constant := 0;
+   Conditional_Call : constant := 1;
+   Asynchronous_Call : constant := 2;
+   subtype Call_Modes is Integer range Simple_Call .. Asynchronous_Call;
+
    --  required for abort statement by compiler (s-taskin.ads)
    type Task_List is array (Positive range <>) of Task_Id;
+   pragma Suppress_Initialization (Task_List);
 
    --  required for 'Storage_Size by compiler (s-taskin.ads)
    Storage_Size : access function (T : Task_Id)

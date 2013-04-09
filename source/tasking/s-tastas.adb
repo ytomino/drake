@@ -265,6 +265,7 @@ package body System.Tasking.Tasks is
                Unchecked_Free (Item.Rendezvous.Names (I));
             end loop;
          end if;
+         Synchronous_Objects.Finalize (Item.Rendezvous.Mutex);
          Unchecked_Free (Item.Rendezvous);
       end if;
       Unchecked_Free (Item.Name);
@@ -899,10 +900,14 @@ package body System.Tasking.Tasks is
       if Entry_Last_Index > 0 then
          Rendezvous := new Rendezvous_Record'(
             Last_Index => Entry_Last_Index,
+            Mutex => <>, -- uninitialized
             Calling => <>, -- uninitialized
             To_Deallocate_Names => False,
             Names => (others => null));
-         Synchronous_Objects.Initialize (Rendezvous.Calling);
+         Synchronous_Objects.Initialize (Rendezvous.Mutex);
+         Synchronous_Objects.Initialize (
+            Rendezvous.Calling,
+            Rendezvous.Mutex'Access);
       end if;
       --  task record
       T := new Task_Record'(
