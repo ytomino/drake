@@ -159,6 +159,11 @@ procedure run_acats is
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "lxh40142.a");
 	end Is_Only_Pragmas;
 	
+	function Clear_Screen_Before_Run (Name : String) return Boolean is
+	begin
+		return Ada.Strings.Equal_Case_Insensitive (Name, "ee3412c");
+	end Clear_Screen_Before_Run;
+	
 	--  test info (error class)
 	
 	function Is_Error_Class (Name : String) return Boolean is
@@ -840,6 +845,9 @@ procedure run_acats is
 				if Expected.Result = Untested then
 					raise Test_Failure;
 				else
+					if Clear_Screen_Before_Run (Name) then
+						Ada.Text_IO.New_Page;
+					end if;
 					Invoke (
 						Ada.Directories.Base_Name (+Main),
 						Expected => Expected.Result,
