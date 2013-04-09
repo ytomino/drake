@@ -8,20 +8,12 @@ c352001 F unicode ('Image of 16#80#..16#ff#)
 c380004 C unimplemented tasking features (select)
 c394001 C unimplemented tasking features (synchronized interface)
 c3a1002 C unimplemented tasking features (select)
-c431a01 C unimplemented tasking features
-c431a02 C unimplemented tasking features
-c431a03 C unimplemented tasking features
-c432005 C unimplemented tasking features
-c433a01 C unimplemented tasking features
-c433a02 C unimplemented tasking features
-c433a03 C unimplemented tasking features (protected)
-c433a04 C unimplemented tasking features (protected)
 c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows
 c59002c C unimplemented tasking features (select)
 c74401k C unimplemented tasking features (select)
-c761007 C unimplemented tasking features
+c761007 C unimplemented tasking features (select)
 c85005a C unimplemented tasking features
 c85005b C unimplemented tasking features
 c85005c C unimplemented tasking features
@@ -33,10 +25,9 @@ c85006c C unimplemented tasking features
 c85006d C unimplemented tasking features
 c85006e C unimplemented tasking features
 c85014a C unimplemented tasking features
-c85014b C unimplemented tasking features
+c85014b C unimplemented tasking features (select)
 c85018a C unimplemented tasking features
 c85018b C unimplemented tasking features
-c910003 C unimplemented tasking features
 c91004b C unimplemented tasking features
 c91004c C unimplemented tasking features
 c92003a C unimplemented tasking features
@@ -51,15 +42,9 @@ c93005g C unimplemented tasking features
 c93005h C unimplemented tasking features
 c93006a C unimplemented tasking features
 c93008a C unimplemented tasking features
-c940001 C unimplemented tasking features
-c940002 C unimplemented tasking features
-c940004 C unimplemented tasking features
-c940005 C unimplemented tasking features
-c940007 C unimplemented tasking features
-c940010 C unimplemented tasking features
+c940004 C unimplemented tasking features (protected.entry'Count)
 c940013 C unimplemented tasking features
 c940014 C unimplemented tasking features
-c940016 C unimplemented tasking features
 c94001g C unimplemented tasking features
 c94004c C unimplemented tasking features
 c94006a C unimplemented tasking features
@@ -70,8 +55,8 @@ c94008b C unimplemented tasking features
 c94008c C unimplemented tasking features
 c94008d C unimplemented tasking features
 c94020a C unimplemented tasking features
-c940a03 C unimplemented tasking features
-c95008a C unimplemented tasking features
+c940a03 C unimplemented tasking features (select)
+c95008a C unimplemented tasking features (select)
 c95065a C unimplemented tasking features
 c95065b C unimplemented tasking features
 c95065c C unimplemented tasking features
@@ -100,8 +85,7 @@ c95089a C unimplemented tasking features
 c95095a C unimplemented tasking features
 c95095b C unimplemented tasking features
 c95095c C unimplemented tasking features
-c951002 C unimplemented tasking features
-c953001 C unimplemented tasking features
+c951002 C unimplemented tasking features (protected.entry'Count)
 c953002 C unimplemented tasking features
 c953003 C unimplemented tasking features
 c954001 C unimplemented tasking features
@@ -198,7 +182,6 @@ ca14028 F on GNAT, it can not use specialized body with generic package spec
 ca5004a C unimplemented tasking features (select)
 cb10002 N enough memory exists
 cb20001 C unimplemented tasking features (select)
-cb20004 C unimplemented tasking features (protected)
 cc1225a C unimplemented tasking features
 cc3019c C unimplemented tasking features
 cc3120b C unimplemented tasking features
@@ -254,7 +237,7 @@ cxa4030 F unicode (translate latin-1)
 cxa4033 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
 cxa5013 C unimplemented tasking features (select)
 cxaa006 F strict End_Of_Line
-cxaa019 C see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48002
+cxaa019 C it requires Ada95 mode (Ada.Text_IO.Current_Output)
 cxab001 F strict End_Of_Line
 cxac003 F strict End_Of_Line
 cxac004 C unicode (latin-1)
@@ -285,17 +268,15 @@ cxb5002 C some Interfaces.Fortran features are unimplemented
 cxb5003 C some Interfaces.Fortran features are unimplemented
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
-cxc3001 C unimplemented tasking features (protected)
-cxc3002 C unimplemented tasking features (protected)
-cxc3003 C unimplemented tasking features
-cxc3004 C unimplemented tasking features (protected)
-cxc3005 C unimplemented tasking features
-cxc3006 C unimplemented tasking features
-cxc3007 C unimplemented tasking features
-cxc3008 C unimplemented tasking features
-cxc3009 C unimplemented tasking features
-cxc6003 C unimplemented tasking features
-cxc7001 C unimplemented tasking features
+cxc3001 C unimplemented tasking features (System.Interrupts)
+cxc3003 C unimplemented tasking features (System.Interrupts)
+cxc3005 C unimplemented tasking features (System.Interrupts)
+cxc3006 C unimplemented tasking features (System.Interrupts)
+cxc3007 C unimplemented tasking features (System.Interrupts)
+cxc3008 C unimplemented tasking features (System.Interrupts)
+cxc3009 C unimplemented tasking features (System.Interrupts)
+cxc6003 C unimplemented tasking features (protected.entry'Count)
+cxc7001 C unimplemented tasking features (task.entry'Caller)
 cxc7004 C unimplemented tasking features
 cxc7005 C unimplemented tasking features
 cxd1001 C unimplemented tasking features
@@ -308,12 +289,12 @@ cxd1007 C unimplemented tasking features
 cxd1008 C unimplemented tasking features
 cxd2001 C unimplemented tasking features
 cxd2002 F unimplemented tasking features (priority)
-cxd2003 C unimplemented tasking features
-cxd2004 C unimplemented tasking features
+cxd2003 F unimplemented tasking features (priority)
+cxd2004 F unimplemented tasking features (priority)
 cxd2006 C unimplemented tasking features
 cxd2007 C unimplemented tasking features
 cxd2008 C unimplemented tasking features
-cxd3001 C unimplemented tasking features
+cxd3001 F unimplemented tasking features (priority)
 cxd3002 F unimplemented tasking features (priority)
 cxd3003 C unimplemented tasking features
 cxd4001 C unimplemented tasking features
@@ -322,22 +303,21 @@ cxd4003 C unimplemented tasking features
 cxd4004 C unimplemented tasking features
 cxd4005 C unimplemented tasking features
 cxd4006 C unimplemented tasking features
-cxd4007 C unimplemented tasking features
+cxd4007 F unimplemented tasking features (priority)
 cxd4008 C unimplemented tasking features
 cxd4009 C unimplemented tasking features
 cxd4010 C unimplemented tasking features
 cxd5001 C unimplemented tasking features
 cxd6001 C unimplemented tasking features
-cxd6002 C unimplemented tasking features
+cxd6002 C unimplemented tasking features (select)
 cxd6003 C unimplemented tasking features (protected)
 cxd8003 C Ada.Real_Time.Split/Time_Of are unimplemented
 cxd9001 C unimplemented tasking features (protected)
-cxda003 C unimplemented tasking features (protected)
-cxda004 C unimplemented tasking features (protected)
-cxdb001 C unimplemented tasking features (protected)
+cxda003 C unimplemented tasking features (select)
+cxdb001 C unimplemented tasking features (Ada.Asynchronous_Task_Control)
 cxdb002 C unimplemented tasking features (Ada.Dynamic_Priorities)
-cxdb003 C unimplemented tasking features (protected)
-cxdb004 C unimplemented tasking features (protected)
+cxdb003 C unimplemented tasking features (Ada.Asynchronous_Task_Control)
+cxdb004 C unimplemented tasking features (Ada.Asynchronous_Task_Control)
 cxe1001 U Annex E is not supported
 cxe2001 U Annex E is not supported
 cxe2002 U Annex E is not supported
@@ -353,10 +333,8 @@ cxe4006 U Annex E is not supported
 cxe5001 C Annex E is not supported
 cxe5002 U Annex E is not supported
 cxe5003 U Annex E is not supported
-cxh3001 C unimplemented tasking features (protected)
-cxh3002 C unimplemented tasking features (protected)
-cxh3003 C unimplemented tasking features (protected)
-cxh1001 C unimplemented tasking features (protected)
+cxh3002 C unimplemented tasking features (select)
+cxh1001 C all sources should be recompilation with pragma Normalize_Scalars
 cz00004 F z should not equal Z Expecting: z Got: Z. (???)
 ee3402b F strict End_Of_Line
 la14027 C unimplemented tasking features (select)
