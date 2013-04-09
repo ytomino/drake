@@ -191,6 +191,7 @@ private
    pragma Suppress_Initialization (Entry_Name_Array);
 
    type Rendezvous_Record is limited record
+      Mutex : aliased Synchronous_Objects.Mutex;
       Calling : aliased Synchronous_Objects.Queue;
    end record;
    pragma Suppress_Initialization (Rendezvous_Record);

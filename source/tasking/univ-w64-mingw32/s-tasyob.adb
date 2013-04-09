@@ -84,9 +84,11 @@ package body System.Tasking.Synchronous_Objects is
 
    --  queue
 
-   procedure Initialize (Object : in out Queue) is
+   procedure Initialize (
+      Object : in out Queue;
+      Mutex : not null access Synchronous_Objects.Mutex) is
    begin
-      Initialize (Object.Mutex);
+      Object.Mutex := Mutex;
       Initialize (Object.Event, Manual => False);
       Object.Head := null;
       Object.Tail := null;
@@ -97,7 +99,6 @@ package body System.Tasking.Synchronous_Objects is
 
    procedure Finalize (Object : in out Queue) is
    begin
-      Finalize (Object.Mutex);
       Finalize (Object.Event);
    end Finalize;
 
@@ -109,7 +110,7 @@ package body System.Tasking.Synchronous_Objects is
    is
       Result : Natural := 0;
    begin
-      Enter (Object.Mutex);
+      Enter (Object.Mutex.all);
       declare
          I : Queue_Node_Access := Object.Head;
       begin
@@ -120,7 +121,7 @@ package body System.Tasking.Synchronous_Objects is
             I := I.Next;
          end loop;
       end;
-      Leave (Object.Mutex);
+      Leave (Object.Mutex.all);
       return Result;
    end Count;
 
@@ -133,7 +134,7 @@ package body System.Tasking.Synchronous_Objects is
       Object : in out Queue;
       Cancel_Node : access procedure (X : in out Queue_Node_Access)) is
    begin
-      Enter (Object.Mutex);
+      Enter (Object.Mutex.all);
       Object.Canceled := True;
       if Cancel_Node /= null then
          while Object.Head /= null loop
@@ -145,7 +146,7 @@ package body System.Tasking.Synchronous_Objects is
             end;
          end loop;
       end if;
-      Leave (Object.Mutex);
+      Leave (Object.Mutex.all);
    end Cancel;
 
    procedure Add (
@@ -154,7 +155,7 @@ package body System.Tasking.Synchronous_Objects is
    is
       Error : Boolean;
    begin
-      Enter (Object.Mutex);
+      Enter (Object.Mutex.all);
       Error := Object.Canceled;
       if not Error then
          if Object.Head = null then
@@ -171,7 +172,7 @@ package body System.Tasking.Synchronous_Objects is
             Set (Object.Event);
          end if;
       end if;
-      Leave (Object.Mutex);
+      Leave (Object.Mutex.all);
       if Error then
          Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
       end if;
@@ -183,14 +184,14 @@ package body System.Tasking.Synchronous_Objects is
       Params : Address;
       Filter : Queue_Filter) is
    begin
-      Enter (Object.Mutex);
+      Enter (Object.Mutex.all);
       declare
          Previous : Queue_Node_Access := null;
          I : Queue_Node_Access := Object.Head;
       begin
          Take_No_Sync (Object, Item, Params, Filter, Previous, I);
       end;
-      Leave (Object.Mutex);
+      Leave (Object.Mutex.all);
    end Take;
 
    procedure Take_No_Sync (
