@@ -17,7 +17,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
       Aborted : out Boolean) is
    begin
       Aborted := Tasks.Is_Aborted;
-      Enter (Object.Mutex);
+      Enter (Object.Mutex.all);
       declare
          Previous : Queue_Node_Access := null;
          I : Queue_Node_Access := Object.Head;
@@ -32,11 +32,11 @@ package body System.Tasking.Synchronous_Objects.Abortable is
                Object.Filter := Filter;
                loop
                   Object.Waiting := True;
-                  Leave (Object.Mutex);
+                  Leave (Object.Mutex.all);
                   Wait (
                      Object.Event,
                      Aborted => Aborted);
-                  Enter (Object.Mutex);
+                  Enter (Object.Mutex.all);
                   Object.Waiting := False;
                   exit Taking when Aborted;
                   exit when Object.Tail /= Tail_On_Waiting;
@@ -51,7 +51,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
             end Not_Found;
          end loop Taking;
       end;
-      Leave (Object.Mutex);
+      Leave (Object.Mutex.all);
    end Take;
 
    --  event

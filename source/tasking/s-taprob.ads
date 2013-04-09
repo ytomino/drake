@@ -6,6 +6,9 @@ package System.Tasking.Protected_Objects is
    --  required by compiler
    subtype Protected_Entry_Index is Entry_Index range Null_Entry .. Max_Entry;
 
+   subtype Positive_Protected_Entry_Index is
+      Protected_Entry_Index range 1 .. Max_Entry; -- not req
+
    type Barrier_Function_Pointer is access function (
       O : Address;
       E : Protected_Entry_Index)
