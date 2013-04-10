@@ -51,9 +51,9 @@ package System.Tasking.Protected_Objects.Entries is
       Current_Calling : access Node;
    end record;
 
-   --  required by compiler
---  type Protection_Entries_Access is access all Protection_Entries'Class;
---  for Protection_Entries_Access'Storage_Size use 0;
+   --  required for synchronized interface by compiler
+   type Protection_Entries_Access is access all Protection_Entries'Class;
+   for Protection_Entries_Access'Storage_Size use 0;
 
    --  required by compiler
    procedure Initialize_Protection_Entries (

@@ -127,6 +127,27 @@ package body System.Tasking.Rendezvous is
       Complete_Rendezvous;
    end Accept_Trivial;
 
+   procedure Task_Entry_Call (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      Uninterpreted_Data : Address;
+      Mode : Call_Modes;
+      Rendezvous_Successful : out Boolean) is
+   begin
+      raise Program_Error;
+   end Task_Entry_Call;
+
+   procedure Timed_Task_Entry_Call (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      Uninterpreted_Data : System.Address;
+      Timeout : Duration;
+      Mode : Integer;
+      Rendezvous_Successful : out Boolean) is
+   begin
+      raise Program_Error;
+   end Timed_Task_Entry_Call;
+
    procedure Call_Simple (
       Acceptor : Task_Id;
       E : Task_Entry_Index;
@@ -187,6 +208,23 @@ package body System.Tasking.Rendezvous is
          end if;
       end;
    end Call_Simple;
+
+   procedure Requeue_Task_Entry (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      With_Abort : Boolean) is
+   begin
+      raise Program_Error;
+   end Requeue_Task_Entry;
+
+   procedure Requeue_Protected_To_Task_Entry (
+      Object : not null access Entries.Protection_Entries'Class;
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      With_Abort : Boolean) is
+   begin
+      raise Program_Error;
+   end Requeue_Protected_To_Task_Entry;
 
    function Callable (T : Task_Id) return Boolean is
    begin
