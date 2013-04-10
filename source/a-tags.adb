@@ -235,6 +235,13 @@ package body Ada.Tags is
       end return;
    end External_Tag;
 
+   function Get_Entry_Index (T : Tag; Position : Positive) return Positive is
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
+   begin
+      return TSD.SSD.SSD_Table (Position).Index;
+   end Get_Entry_Index;
+
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind
    is
@@ -463,6 +470,28 @@ package body Ada.Tags is
       end loop;
       --  should it raise some error ???
    end Register_Interface_Offset;
+
+   procedure Set_Entry_Index (
+      T : Tag;
+      Position : Positive;
+      Value : Positive)
+   is
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
+   begin
+      TSD.SSD.SSD_Table (Position).Index := Value;
+   end Set_Entry_Index;
+
+   procedure Set_Prim_Op_Kind (
+      T : Tag;
+      Position : Positive;
+      Value : Prim_Op_Kind)
+   is
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
+   begin
+      TSD.SSD.SSD_Table (Position).Kind := Value;
+   end Set_Prim_Op_Kind;
 
    function Wide_Expanded_Name (T : Tag) return Wide_String is
    begin
