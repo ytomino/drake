@@ -39,15 +39,25 @@ package System.Tasking is
    type Entry_Index is range Interrupt_Entry .. Max_Entry;
    type Task_Entry_Index is new Entry_Index range Null_Entry .. Max_Entry;
 
+   --  required for select when or by compiler (s-taskin.ads)
+   Null_Task_Entry : constant := Null_Entry;
+
    --  required for protected entry by compiler (s-taskin.ads)
-   Simple_Call : constant := 0;
-   Conditional_Call : constant := 1;
-   Asynchronous_Call : constant := 2;
-   subtype Call_Modes is Integer range Simple_Call .. Asynchronous_Call;
+   --  note, compiler may crash if Call_Modes is not declared as enum.
+   type Call_Modes is (
+      Simple_Call, -- 0
+      Conditional_Call, -- 1
+      Asynchronous_Call); -- 2
+--    Timed_Call); -- 3
+   pragma Discard_Names (Call_Modes);
 
    --  required for abort statement by compiler (s-taskin.ads)
    type Task_List is array (Positive range <>) of Task_Id;
    pragma Suppress_Initialization (Task_List);
+
+   --  required for abort statement by compiler (s-taskin.ads)
+   function Self return Task_Id;
+   pragma Import (Ada, Self, "__drake_current_task");
 
    --  required for 'Storage_Size by compiler (s-taskin.ads)
    Storage_Size : access function (T : Task_Id)

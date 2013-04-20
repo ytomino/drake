@@ -209,6 +209,11 @@ package body System.Tasking.Rendezvous is
       end;
    end Call_Simple;
 
+   procedure Cancel_Task_Entry_Call (Cancelled : out Boolean) is
+   begin
+      raise Program_Error;
+   end Cancel_Task_Entry_Call;
+
    procedure Requeue_Task_Entry (
       Acceptor : Task_Id;
       E : Task_Entry_Index;
@@ -230,6 +235,12 @@ package body System.Tasking.Rendezvous is
    begin
       return Tasks.Callable (Task_Record_Conv.To_Pointer (T));
    end Callable;
+
+   function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_Id is
+   begin
+      raise Program_Error;
+      return Task_Entry_Caller (D);
+   end Task_Entry_Caller;
 
    function Task_Count (E : Task_Entry_Index) return Natural is
    begin

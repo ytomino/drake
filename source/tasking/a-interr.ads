@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 --  with System.Multiprocessors;
 package Ada.Interrupts is
 
-   type Interrupt_Id is new Integer; -- implementation-defined
+   type Interrupt_Id is range 0 .. 2 ** 16 - 1; -- implementation-defined
    type Parameterless_Handler is access protected procedure;
 
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean;
