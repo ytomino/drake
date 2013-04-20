@@ -224,11 +224,23 @@ package body System.Tasking.Protected_Objects.Operations is
       end case;
    end Protected_Entry_Call;
 
+   function Enqueued (Block : Communication_Block) return Boolean is
+   begin
+      raise Program_Error;
+      return Enqueued (Block);
+   end Enqueued;
+
    function Cancelled (Block : Communication_Block) return Boolean is
    begin
       raise Program_Error;
       return Cancelled (Block);
    end Cancelled;
+
+   procedure Cancel_Protected_Entry_Call (
+      Block : in out Communication_Block) is
+   begin
+      raise Program_Error;
+   end Cancel_Protected_Entry_Call;
 
    procedure Timed_Protected_Entry_Call (
       Object : not null access Entries.Protection_Entries'Class;
@@ -265,5 +277,14 @@ package body System.Tasking.Protected_Objects.Operations is
    begin
       raise Program_Error;
    end Requeue_Task_To_Protected_Entry;
+
+   function Protected_Count (
+      Object : Entries.Protection_Entries'Class;
+      E : Protected_Entry_Index)
+      return Natural is
+   begin
+      raise Program_Error;
+      return Protected_Count (Object, E);
+   end Protected_Count;
 
 end System.Tasking.Protected_Objects.Operations;

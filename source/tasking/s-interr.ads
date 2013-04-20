@@ -51,9 +51,12 @@ package System.Interrupts is
       Object : not null access Static_Interrupt_Protection;
       New_Handlers : New_Handler_Array);
 
+   type Dynamic_Interrupt_Protection is
+      new Tasking.Protected_Objects.Entries.Protection_Entries
+      with null record;
+
    --  unimplemented subprograms required by compiler
    --  Bind_Interrupt_To_Entry
-   --  Dynamic_Interrupt_Protection
    --  Install_Restricted_Handlers
 
 end System.Interrupts;

@@ -81,6 +81,9 @@ package System.Tasking.Rendezvous is
    --    entry_index,
    --    (const system__address) &P);
 
+   --  required for select then abort by compiler (s-tasren.ads)
+   procedure Cancel_Task_Entry_Call (Cancelled : out Boolean);
+
    --  required for synchronized interface by compiler (s-tasren.ads)
    procedure Requeue_Task_Entry (
       Acceptor : Task_Id;
@@ -97,13 +100,15 @@ package System.Tasking.Rendezvous is
    --  required for 'Callable by compiler (s-tasren.ads)
    function Callable (T : Task_Id) return Boolean;
 
+   --  required for 'Caller by compiler (s-tasren.ads)
+   type Task_Entry_Nesting_Depth is range 0 .. Max_Entry;
+   function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_Id;
+
    --  required for 'Count by compiler (s-tasren.ads)
    function Task_Count (E : Task_Entry_Index) return Natural;
 
    --  unimplemented subprograms required by compiler
-   --  Cancel_Task_Entry_Call
    --  Selective_Wait
-   --  Task_Entry_Caller
    --  Timed_Selective_Wait
 
 end System.Tasking.Rendezvous;
