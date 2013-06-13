@@ -417,7 +417,6 @@ package body Ada.Streams.Stream_IO.Inside is
       Default_Lock_Flags : C.unsigned_int;
       Modes : constant := 8#644#;
       errno : C.signed_int;
-      Error : Boolean;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
       if Mode = In_File then
@@ -458,7 +457,9 @@ package body Ada.Streams.Stream_IO.Inside is
                Flags := Table (Mode);
             end;
       end case;
-      Flags := Flags or Form_Share_Mode (Form, Default_Lock_Flags);
+      Flags := Flags
+         or Form_Share_Mode (Form, Default_Lock_Flags)
+         or System.File_Control.O_CLOEXEC;
       --  open
       Handle := C.fcntl.open (Name, C.signed_int (Flags), Modes);
       if Handle < 0 then
@@ -476,11 +477,21 @@ package body Ada.Streams.Stream_IO.Inside is
                Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
       end if;
-      Set_Close_On_Exec (Handle, Error);
-      if Error then
-         Free (File); -- free on error
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
-      end if;
+      declare
+         O_CLOEXEC_Is_Missing : constant Boolean :=
+            System.File_Control.O_CLOEXEC = 0;
+         pragma Warnings (Off, O_CLOEXEC_Is_Missing);
+         Error : Boolean;
+      begin
+         if O_CLOEXEC_Is_Missing then
+            --  set FD_CLOEXEC if O_CLOEXEC is missing
+            Set_Close_On_Exec (Handle, Error);
+            if Error then
+               Free (File); -- free on error
+               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            end if;
+         end if;
+      end;
       --  set file
       File.Handle := Handle;
       File.Mode := Mode;
