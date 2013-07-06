@@ -437,7 +437,7 @@ package body System.Tasking.Tasks is
          end if;
          Termination.Error_Put (", raised ");
          Termination.Error_Put (
-            Full_Name (1 .. Cast (Current).Id.Name_Length));
+            Full_Name (1 .. Cast (Current).Id.Name_Length - 1));
          if Cast (Current).Msg_Length > 0 then
             Termination.Error_Put (" : ");
             Termination.Error_Put (
