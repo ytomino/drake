@@ -216,7 +216,11 @@ begin
 			null;
 		end;
 		declare
-			subtype T is Long_Float range Long_Float'First .. Long_Float'Value (Long_Float'Image (Long_Float'Last));
+			subtype T is Long_Float range
+				Long_Float'First ..
+				Long_Float'Min (
+					Long_Float'Last,
+					Long_Float'Value (Long_Float'Image (Long_Float'Last)));
 			Widest_Image : constant String := Long_Float'Image (Long_Float'First);
 		begin
 			pragma Assert (T'Width = Widest_Image'Length);
@@ -227,7 +231,9 @@ begin
 		declare
 			subtype T is Long_Long_Float range
 				Long_Long_Float'First ..
-				Long_Long_Float'Value (Long_Long_Float'Image (Long_Long_Float'Last));
+				Long_Long_Float'Min (
+					Long_Long_Float'Last,
+					Long_Long_Float'Value (Long_Long_Float'Image (Long_Long_Float'Last)));
 			Widest_Image : constant String := Long_Long_Float'Image (Long_Long_Float'First);
 		begin
 			pragma Assert (T'Width = Widest_Image'Length);
