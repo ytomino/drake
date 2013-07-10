@@ -1,6 +1,5 @@
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
-with System.File_Control;
 with System.IO_Options;
 with System.Memory;
 with System.Storage_Elements;
@@ -386,9 +385,9 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       System.IO_Options.Form_Parameter (Form, "shared", First, Last);
       if First <= Last and then Form (First) = 'r' then -- read
-         return System.File_Control.O_SHLOCK;
+         return C.fcntl.O_SHLOCK;
       elsif First <= Last and then Form (First) = 'w' then -- write
-         return System.File_Control.O_EXLOCK;
+         return C.fcntl.O_EXLOCK;
       elsif First <= Last and then Form (First) = 'y' then -- yes
          return 0;
       else -- no
@@ -420,9 +419,9 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       --  Flags, Append_File always has read and write access for Inout_File
       if Mode = In_File then
-         Default_Lock_Flags := System.File_Control.O_SHLOCK;
+         Default_Lock_Flags := C.fcntl.O_SHLOCK;
       else
-         Default_Lock_Flags := System.File_Control.O_EXLOCK;
+         Default_Lock_Flags := C.fcntl.O_EXLOCK;
       end if;
       case Method is
          when Create =>
@@ -434,7 +433,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Append_File => O_RDWR or O_CREAT); -- no truncation
             begin
                Flags := Table (Mode);
-               Default_Lock_Flags := System.File_Control.O_EXLOCK;
+               Default_Lock_Flags := C.fcntl.O_EXLOCK;
             end;
          when Open =>
             declare
@@ -459,7 +458,7 @@ package body Ada.Streams.Stream_IO.Inside is
       end case;
       Flags := Flags
          or Form_Share_Mode (Form, Default_Lock_Flags)
-         or System.File_Control.O_CLOEXEC;
+         or C.fcntl.O_CLOEXEC;
       --  open
       Handle := C.fcntl.open (Name, C.signed_int (Flags), Modes);
       if Handle < 0 then
@@ -479,7 +478,7 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
       declare
          O_CLOEXEC_Is_Missing : constant Boolean :=
-            System.File_Control.O_CLOEXEC = 0;
+            C.fcntl.O_CLOEXEC = 0;
          pragma Warnings (Off, O_CLOEXEC_Is_Missing);
          Error : Boolean;
       begin

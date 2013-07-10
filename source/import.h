@@ -111,6 +111,8 @@
 #endif
 
 #if defined(__unix__) || defined(__APPLE__)
+#include "fix-fcntl.h"
+#pragma for Ada "fcntl.h" monolithic_include "fix-fcntl.h"
 #pragma instance pthread_rwlock_t "PTHREAD_RWLOCK_INITIALIZER"
 #pragma instance pthread_mutex_t "PTHREAD_MUTEX_INITIALIZER"
 #pragma instance pthread_cond_t "PTHREAD_COND_INITIALIZER"
