@@ -33,6 +33,13 @@ package System.Native_Encoding is
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Error_Status);
 
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Substitute : Ada.Streams.Stream_Element := Default_Substitute);
+
    --  exceptions
 
    Name_Error : exception
@@ -97,6 +104,13 @@ private
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Error_Status);
+
+   procedure Convert_No_Check (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Substitute : Ada.Streams.Stream_Element := Default_Substitute);
 
    --  max length of one multi-byte character
 

@@ -27,6 +27,19 @@ package body System.Native_Encoding is
       Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
    end Convert;
 
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Substitute : Ada.Streams.Stream_Element := Default_Substitute) is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Convert_No_Check (Object, Item, Out_Item, Out_Last, Substitute);
+   end Convert;
+
    procedure Convert_No_Check (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
@@ -72,6 +85,43 @@ package body System.Native_Encoding is
       Out_Last := Out_Item'First
          + (Out_Item'Length - Ada.Streams.Stream_Element_Offset (Out_Size))
          - 1;
+   end Convert_No_Check;
+
+   procedure Convert_No_Check (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Substitute : Ada.Streams.Stream_Element := Default_Substitute)
+   is
+      Index : Ada.Streams.Stream_Element_Offset := Item'First;
+      Out_Index : Ada.Streams.Stream_Element_Offset := Out_Item'First;
+   begin
+      loop
+         declare
+            Status : Error_Status;
+            Last : Ada.Streams.Stream_Element_Offset;
+         begin
+            Convert_No_Check (
+               Object,
+               Item (Index .. Item'Last),
+               Last,
+               Out_Item (Out_Index .. Out_Item'Last),
+               Out_Last,
+               Status);
+            Index := Last + 1;
+            Out_Index := Out_Last + 1;
+            case Status is
+               when Fine =>
+                  null;
+               when Incomplete | Illegal_Sequence =>
+                  Out_Item (Out_Index) := Substitute;
+                  Out_Index := Out_Index + 1;
+                  Index := Index + 1;
+            end case;
+            exit when Index > Item'Last;
+         end;
+      end loop;
    end Convert_No_Check;
 
    package body Controlled is

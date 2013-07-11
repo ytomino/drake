@@ -80,7 +80,7 @@ package body System.Native_Encoding.Encoding_Streams is
                Out_Last : Stream_Element_Offset;
                Status : Error_Status;
             begin
-               Convert (
+               Convert_No_Check (
                   Object.Reading_Converter,
                   Buffer (Buffer'First .. Buffer_Last),
                   Taken,
@@ -176,7 +176,7 @@ package body System.Native_Encoding.Encoding_Streams is
                Out_Last : Stream_Element_Offset;
                Status : Error_Status;
             begin
-               Convert (
+               Convert_No_Check (
                   Object.Writing_Converter,
                   Buffer (Buffer'First .. Buffer_Last),
                   Taken,
