@@ -8,6 +8,8 @@ package System.Native_Encoding is
    --  Platform-depended text encoding.
    pragma Preelaborate;
 
+   --  encoding identifier
+
    type Encoding_Id is private;
 
    Default_Substitute : constant := Character'Pos ('?');
@@ -53,6 +55,8 @@ private
 
    Expanding : constant := 6; -- UTF-8
 
+   --  encoding identifier
+
    type Encoding_Id is new C.windef.UINT;
 
    UTF_8 : constant Encoding_Id := C.winnls.CP_UTF8;
@@ -60,6 +64,8 @@ private
    UTF_32 : constant Encoding_Id := 16#ffff_ff20#; -- dummy value
 
    Invalid_Encoding_Id : constant := 16#ffff_ffff#; -- dummy value
+
+   --  converter
 
    type Converter is record
       From : Encoding_Id := Invalid_Encoding_Id;

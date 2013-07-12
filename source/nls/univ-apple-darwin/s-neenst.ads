@@ -15,6 +15,8 @@ package System.Native_Encoding.Encoding_Streams is
 
    function Is_Open (Object : Encoding) return Boolean;
 
+   --  stream access
+
    function Stream (Object : aliased in out Encoding)
       return not null access Ada.Streams.Root_Stream_Type'Class;
 

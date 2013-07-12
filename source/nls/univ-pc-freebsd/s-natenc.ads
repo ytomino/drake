@@ -9,6 +9,8 @@ package System.Native_Encoding is
    --  Platform-depended text encoding.
    pragma Preelaborate;
 
+   --  encoding identifier
+
    type Encoding_Id is private;
 
    Default_Substitute : constant := Character'Pos ('?');
@@ -54,6 +56,8 @@ private
 
    Expanding : constant := 6; -- UTF-8
 
+   --  encoding identifier
+
    type Encoding_Id is access constant C.char;
    for Encoding_Id'Storage_Size use 0;
 
@@ -77,6 +81,8 @@ private
       Fine => 0,
       Incomplete => C.errno.EINVAL,
       Illegal_Sequence => C.errno.EILSEQ);
+
+   --  converter
 
    package Controlled is
 
