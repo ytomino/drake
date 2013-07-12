@@ -9,9 +9,9 @@ package System.Native_Encoding is
    --  Platform-depended text encoding.
    pragma Preelaborate;
 
-   Default_Substitute : constant := Character'Pos ('?');
-
    type Encoding_Id is private;
+
+   Default_Substitute : constant := Character'Pos ('?');
 
    UTF_8 : constant Encoding_Id;
    UTF_16 : constant Encoding_Id;
@@ -49,6 +49,10 @@ package System.Native_Encoding is
 
 private
    use type C.char_array;
+
+   --  max length of one multi-byte character
+
+   Expanding : constant := 6; -- UTF-8
 
    type Encoding_Id is access constant C.char;
    for Encoding_Id'Storage_Size use 0;
@@ -111,9 +115,5 @@ private
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Substitute : Ada.Streams.Stream_Element := Default_Substitute);
-
-   --  max length of one multi-byte character
-
-   Expanding : constant := 6; -- UTF-8
 
 end System.Native_Encoding;
