@@ -13,7 +13,8 @@ package System.Native_Encoding is
 
    type Encoding_Id is private;
 
-   Default_Substitute : constant := Character'Pos ('?');
+   function Default_Substitute (Encoding : Encoding_Id)
+      return Ada.Streams.Stream_Element_Array;
 
    UTF_8 : constant Encoding_Id;
    UTF_16 : constant Encoding_Id;
@@ -27,6 +28,13 @@ package System.Native_Encoding is
 
    function Is_Open (Object : Converter) return Boolean;
 
+   function Substitute (Object : Converter)
+      return Ada.Streams.Stream_Element_Array;
+
+   procedure Set_Substitute (
+      Object : Converter;
+      Substitute : Ada.Streams.Stream_Element_Array);
+
    procedure Convert (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
@@ -39,8 +47,7 @@ package System.Native_Encoding is
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute);
+      Out_Last : out Ada.Streams.Stream_Element_Offset);
 
    --  exceptions
 
@@ -50,6 +57,7 @@ package System.Native_Encoding is
       renames Ada.IO_Exceptions.Status_Error;
 
 private
+   use type Ada.Streams.Stream_Element_Offset;
    use type C.char_array;
 
    --  max length of one multi-byte character
@@ -84,6 +92,12 @@ private
 
    --  converter
 
+   type Substitute_Type is record
+      Length : Ada.Streams.Stream_Element_Offset;
+      Element : Ada.Streams.Stream_Element_Array (1 .. Expanding);
+   end record;
+   pragma Suppress_Initialization (Substitute_Type);
+
    package Controlled is
 
       type Converter is limited private;
@@ -93,12 +107,17 @@ private
       function Value (Object : Converter) return C.iconv.iconv_t;
       pragma Inline (Value);
 
+      function Substitute_Reference (Object : Converter)
+         return not null access Substitute_Type;
+      pragma Inline (Substitute_Reference);
+
    private
 
       type Converter is
          limited new Ada.Finalization.Limited_Controlled with
       record
          iconv : C.iconv.iconv_t := C.iconv.iconv_t (Null_Address);
+         Substitute : aliased Substitute_Type;
       end record;
 
       overriding procedure Finalize (Object : in out Converter);
@@ -119,7 +138,11 @@ private
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute);
+      Out_Last : out Ada.Streams.Stream_Element_Offset);
+
+   procedure Put_Substitute (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset);
 
 end System.Native_Encoding;

@@ -5,11 +5,36 @@ package body System.Native_Encoding.Encoding_Streams is
 
    subtype Stream_Element_Offset is Ada.Streams.Stream_Element_Offset;
 
+   procedure Set_Substitute_To_Reading_Converter (Object : in out Encoding);
+   procedure Set_Substitute_To_Reading_Converter (Object : in out Encoding) is
+   begin
+      Set_Substitute (
+         Object.Reading_Converter,
+         Object.Substitute (1 .. Object.Substitute_Length));
+   end Set_Substitute_To_Reading_Converter;
+
+   procedure Set_Substitute_To_Writing_Converter (Object : in out Encoding);
+   procedure Set_Substitute_To_Writing_Converter (Object : in out Encoding) is
+      S2 : Ada.Streams.Stream_Element_Array (1 .. Expanding);
+      S2_Length : Ada.Streams.Stream_Element_Offset;
+   begin
+      --  convert substitute from internal to external
+      Convert (
+         Object.Writing_Converter,
+         Object.Substitute (1 .. Object.Substitute_Length),
+         S2,
+         S2_Length);
+      Set_Substitute (
+         Object.Writing_Converter,
+         S2 (1 .. S2_Length));
+   end Set_Substitute_To_Writing_Converter;
+
+   --  implementation
+
    function Open (
       Internal : Encoding_Id;
       External : Encoding_Id;
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute)
+      Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Encoding
    is
       pragma Suppress (Accessibility_Check);
@@ -18,7 +43,7 @@ package body System.Native_Encoding.Encoding_Streams is
          Result.Internal := Internal;
          Result.External := External;
          Result.Stream := Stream;
-         Result.Substitute := Substitute;
+         Result.Substitute_Length := -1;
          Result.Reading_Last := -1;
          Result.Writing_Last := -1;
       end return;
@@ -28,6 +53,34 @@ package body System.Native_Encoding.Encoding_Streams is
    begin
       return Object.Stream /= null;
    end Is_Open;
+
+   function Substitute (Object : Encoding)
+      return Ada.Streams.Stream_Element_Array is
+   begin
+      if Object.Substitute_Length < 0 then
+         return Default_Substitute (Object.Internal);
+      else
+         return Object.Substitute (1 .. Object.Substitute_Length);
+      end if;
+   end Substitute;
+
+   procedure Set_Substitute (
+      Object : in out Encoding;
+      Substitute : Ada.Streams.Stream_Element_Array) is
+   begin
+      if Substitute'Length > Object.Substitute'Length then
+         raise Constraint_Error;
+      end if;
+      Object.Substitute_Length := Substitute'Length;
+      Object.Substitute (1 .. Object.Substitute_Length) := Substitute;
+      --  set to converters
+      if Is_Open (Object.Reading_Converter) then
+         Set_Substitute_To_Reading_Converter (Object);
+      end if;
+      if Is_Open (Object.Writing_Converter) then
+         Set_Substitute_To_Writing_Converter (Object);
+      end if;
+   end Set_Substitute;
 
    function Stream (Object : aliased in out Encoding)
       return not null access Ada.Streams.Root_Stream_Type'Class is
@@ -48,6 +101,9 @@ package body System.Native_Encoding.Encoding_Streams is
             Object.Reading_Converter,
             From => Object.External,
             To => Object.Internal);
+         if Object.Substitute_Length >= 0 then
+            Set_Substitute_To_Reading_Converter (Object);
+         end if;
       end if;
       Last := Item'First - 1;
       declare
@@ -93,8 +149,10 @@ package body System.Native_Encoding.Encoding_Streams is
                   when Incomplete =>
                      exit; -- wait tail-bytes
                   when Illegal_Sequence =>
-                     Out_Buffer (Out_Buffer'First) := Object.Substitute;
-                     Out_Last := Out_Buffer'First;
+                     Put_Substitute (
+                        Object.Reading_Converter,
+                        Out_Buffer,
+                        Out_Last);
                      if Taken < Buffer'First then
                         Taken := Buffer'First; -- skip one byte at least
                      end if;
@@ -138,6 +196,9 @@ package body System.Native_Encoding.Encoding_Streams is
             Object.Writing_Converter,
             From => Object.Internal,
             To => Object.External);
+         if Object.Substitute_Length >= 0 then
+            Set_Substitute_To_Writing_Converter (Object);
+         end if;
       end if;
       declare
          Item_Index : Stream_Element_Offset := Item'First;
@@ -189,8 +250,10 @@ package body System.Native_Encoding.Encoding_Streams is
                   when Incomplete =>
                      exit; -- wait tail-bytes
                   when Illegal_Sequence =>
-                     Out_Buffer (Out_Buffer'First) := Object.Substitute;
-                     Out_Last := Out_Buffer'First;
+                     Put_Substitute (
+                        Object.Writing_Converter,
+                        Out_Buffer,
+                        Out_Last);
                      if Taken < Buffer'First then
                         Taken := Buffer'First; -- skip one byte at least
                      end if;
