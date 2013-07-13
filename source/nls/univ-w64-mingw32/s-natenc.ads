@@ -12,7 +12,8 @@ package System.Native_Encoding is
 
    type Encoding_Id is private;
 
-   Default_Substitute : constant := Character'Pos ('?');
+   function Default_Substitute (Encoding : Encoding_Id)
+      return Ada.Streams.Stream_Element_Array;
 
    UTF_8 : constant Encoding_Id;
    UTF_16 : constant Encoding_Id;
@@ -26,6 +27,13 @@ package System.Native_Encoding is
 
    function Is_Open (Object : Converter) return Boolean;
 
+   function Substitute (Object : Converter)
+      return Ada.Streams.Stream_Element_Array;
+
+   procedure Set_Substitute (
+      Object : in out Converter;
+      Substitute : Ada.Streams.Stream_Element_Array);
+
    procedure Convert (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
@@ -38,8 +46,7 @@ package System.Native_Encoding is
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute);
+      Out_Last : out Ada.Streams.Stream_Element_Offset);
 
    --  exceptions
 
@@ -49,6 +56,7 @@ package System.Native_Encoding is
       renames Ada.IO_Exceptions.Status_Error;
 
 private
+   use type Ada.Streams.Stream_Element_Offset;
    use type C.char_array;
 
    --  max length of one multi-byte character
@@ -70,6 +78,10 @@ private
    type Converter is record
       From : Encoding_Id := Invalid_Encoding_Id;
       To : Encoding_Id;
+      Substitute_Length : Ada.Streams.Stream_Element_Offset;
+      Substitute : aliased Ada.Streams.Stream_Element_Array (
+         1 ..
+         Expanding + 1); -- zero terminated
    end record;
 
    procedure Convert_No_Check (
@@ -84,8 +96,12 @@ private
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute);
+      Out_Last : out Ada.Streams.Stream_Element_Offset);
+
+   procedure Put_Substitute (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset);
 
    procedure Open (Object : out Converter; From, To : Encoding_Id);
 

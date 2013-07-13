@@ -26,14 +26,11 @@ package System.Native_Encoding.Generic_Strings is
       Object : Decoder;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out String_Type;
-      Out_Last : out Natural;
-      Substitute : Character_Type :=
-         Character_Type'Val (Default_Substitute));
+      Out_Last : out Natural);
 
    function Decode (
       Object : Decoder;
-      Item : Ada.Streams.Stream_Element_Array;
-      Substitute : Character_Type := Character_Type'Val (Default_Substitute))
+      Item : Ada.Streams.Stream_Element_Array)
       return String_Type;
 
    --  encoder
@@ -54,13 +51,11 @@ package System.Native_Encoding.Generic_Strings is
       Object : Encoder;
       Item : String_Type;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute);
+      Out_Last : out Ada.Streams.Stream_Element_Offset);
 
    function Encode (
       Object : Encoder;
-      Item : String_Type;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute)
+      Item : String_Type)
       return Ada.Streams.Stream_Element_Array;
 
 end System.Native_Encoding.Generic_Strings;

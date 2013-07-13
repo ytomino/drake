@@ -1,5 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Exceptions;
+with System.Address_To_Constant_Access_Conversions;
 with System.UTF_Conversions;
 with System.UTF_Conversions.From_32_To_16;
 with System.UTF_Conversions.From_16_To_32;
@@ -7,13 +8,110 @@ with C.winbase;
 with C.winerror;
 with C.winnt;
 package body System.Native_Encoding is
-   use type Ada.Streams.Stream_Element_Offset;
    use type C.windef.WINBOOL;
+
+   package char_Conv is
+      new Address_To_Constant_Access_Conversions (
+         C.char,
+         C.char_const_ptr);
+
+   procedure Default_Substitute (
+      Encoding : Encoding_Id;
+      Item : out Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset);
+   procedure Default_Substitute (
+      Encoding : Encoding_Id;
+      Item : out Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset) is
+   begin
+      case Encoding is
+         when UTF_16 =>
+            if Item'Length < 2 then
+               raise Constraint_Error;
+            end if;
+            case Default_Bit_Order is
+               when High_Order_First =>
+                  Last := Item'First;
+                  Item (Last) := 0;
+                  Last := Last + 1;
+                  Item (Last) := Character'Pos ('?');
+               when Low_Order_First =>
+                  Last := Item'First;
+                  Item (Last) := Character'Pos ('?');
+                  Last := Last + 1;
+                  Item (Last) := 0;
+            end case;
+         when UTF_32 =>
+            if Item'Length < 4 then
+               raise Constraint_Error;
+            end if;
+            case Default_Bit_Order is
+               when High_Order_First =>
+                  Last := Item'First;
+                  Item (Last) := 0;
+                  Last := Last + 1;
+                  Item (Last) := 0;
+                  Last := Last + 1;
+                  Item (Last) := 0;
+                  Last := Last + 1;
+                  Item (Last) := Character'Pos ('?');
+               when Low_Order_First =>
+                  Last := Item'First;
+                  Item (Last) := Character'Pos ('?');
+                  Last := Last + 1;
+                  Item (Last) := 0;
+                  Last := Last + 1;
+                  Item (Last) := 0;
+                  Last := Last + 1;
+                  Item (Last) := 0;
+            end case;
+         when others =>
+            if Item'Length = 0 then
+               raise Constraint_Error;
+            end if;
+            Last := Item'First;
+            Item (Last) := Character'Pos ('?');
+      end case;
+   end Default_Substitute;
+
+   --  implementation
+
+   function Default_Substitute (Encoding : Encoding_Id)
+      return Ada.Streams.Stream_Element_Array
+   is
+      Result : Ada.Streams.Stream_Element_Array (0 .. Expanding - 1);
+      Last : Ada.Streams.Stream_Element_Offset;
+   begin
+      Default_Substitute (Encoding, Result, Last);
+      return Result (Result'First .. Last);
+   end Default_Substitute;
 
    function Is_Open (Object : Converter) return Boolean is
    begin
       return Object.From /= Invalid_Encoding_Id;
    end Is_Open;
+
+   function Substitute (Object : Converter)
+      return Ada.Streams.Stream_Element_Array is
+   begin
+      if Object.Substitute_Length < 0 then
+         return Default_Substitute (Object.To);
+      else
+         return Object.Substitute (1 .. Object.Substitute_Length);
+      end if;
+   end Substitute;
+
+   procedure Set_Substitute (
+      Object : in out Converter;
+      Substitute : Ada.Streams.Stream_Element_Array) is
+   begin
+      if Substitute'Length > Object.Substitute'Length - 1 then
+         raise Constraint_Error;
+      end if;
+      Object.Substitute_Length := Substitute'Length;
+      Object.Substitute (1 .. Object.Substitute_Length) := Substitute;
+      Object.Substitute (Object.Substitute_Length + 1) := 0; -- zero terminator
+   end Set_Substitute;
 
    procedure Convert (
       Object : Converter;
@@ -33,13 +131,12 @@ package body System.Native_Encoding is
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute) is
+      Out_Last : out Ada.Streams.Stream_Element_Offset) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      Convert_No_Check (Object, Item, Out_Item, Out_Last, Substitute);
+      Convert_No_Check (Object, Item, Out_Item, Out_Last);
    end Convert;
 
    procedure Convert_No_Check (
@@ -304,8 +401,7 @@ package body System.Native_Encoding is
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute)
+      Out_Last : out Ada.Streams.Stream_Element_Offset)
    is
       Item_Length : constant Ada.Streams.Stream_Element_Offset := Item'Length;
       Buffer : aliased C.winnt.WCHAR_array (1 .. C.size_t (Item_Length));
@@ -323,7 +419,7 @@ package body System.Native_Encoding is
             if Item_Length rem 2 /= 0 then
                Buffer_Length := Buffer_Length + 1;
                Buffer (C.size_t (Buffer_Length)) :=
-                  C.winnt.WCHAR'Val (Substitute);
+                  C.winnt.WCHAR'Val (Character'Pos ('?')); -- use Substitute
             end if;
          when UTF_32 =>
             declare
@@ -336,12 +432,12 @@ package body System.Native_Encoding is
                   WW,
                   Buffer_As_W,
                   Natural (Buffer_Length),
-                  Substitute => Wide_Character'Val (Substitute));
+                  Substitute => '?'); -- use Substitute
             end;
             if Item_Length rem 4 /= 0 then
                Buffer_Length := Buffer_Length + 1;
                Buffer (C.size_t (Buffer_Length)) :=
-                  C.winnt.WCHAR'Val (Substitute);
+                  C.winnt.WCHAR'Val (Character'Pos ('?')); -- use Substitute
             end if;
          when others => -- including UTF_8
             declare
@@ -384,7 +480,7 @@ package body System.Native_Encoding is
                   Buffer_As_W,
                   Out_WW,
                   Out_WW_Length,
-                  Substitute => Wide_Wide_Character'Val (Substitute));
+                  Substitute => '?'); -- use Substitute
                declare
                   Out_WW_Length_In_SEA : constant
                      Ada.Streams.Stream_Element_Offset :=
@@ -403,15 +499,13 @@ package body System.Native_Encoding is
                Out_Item_As_C : aliased C.char_array (1 .. Out_Item'Length);
                for Out_Item_As_C'Address use Out_Item'Address;
                Out_Length : C.signed_int;
-               Substitute_C : aliased C.char_array (1 .. 2);
                Substitute_P : C.char_const_ptr;
             begin
-               if Object.To = UTF_8 then
+               if Object.Substitute_Length < 0 or else Object.To = UTF_8 then
                   Substitute_P := null;
                else
-                  Substitute_C (1) := C.char'Val (Substitute);
-                  Substitute_C (2) := C.char'Val (0);
-                  Substitute_P := Substitute_C (1)'Unchecked_Access;
+                  Substitute_P :=
+                     char_Conv.To_Pointer (Object.Substitute (1)'Address);
                end if;
                Out_Length := C.winnls.WideCharToMultiByte (
                   C.windef.UINT (Object.To),
@@ -432,10 +526,31 @@ package body System.Native_Encoding is
       end case;
    end Convert_No_Check;
 
+   procedure Put_Substitute (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset) is
+   begin
+      if Object.Substitute_Length < 0 then
+         Default_Substitute (
+            Object.To,
+            Out_Item,
+            Out_Last);
+      else
+         if Out_Item'Length < Object.Substitute_Length then
+            raise Constraint_Error;
+         end if;
+         Out_Last := Out_Item'First - 1 + Object.Substitute_Length;
+         Out_Item (Out_Item'First .. Out_Last) :=
+            Object.Substitute (1 .. Object.Substitute_Length);
+      end if;
+   end Put_Substitute;
+
    procedure Open (Object : out Converter; From, To : Encoding_Id) is
    begin
       Object.From := From;
       Object.To := To;
+      Object.Substitute_Length := -1;
    end Open;
 
 end System.Native_Encoding;

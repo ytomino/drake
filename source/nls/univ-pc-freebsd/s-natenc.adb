@@ -3,15 +3,92 @@ with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 package body System.Native_Encoding is
-   use type Ada.Streams.Stream_Element_Offset;
    use type C.signed_int;
    use type C.size_t;
+
+   procedure Default_Substitute (
+      Encoding : Encoding_Id;
+      Item : out Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset);
+   procedure Default_Substitute (
+      Encoding : Encoding_Id;
+      Item : out Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset) is
+   begin
+      if Encoding = UTF_16_Names (High_Order_First)(0)'Access then
+         Last := Item'First;
+         Item (Last) := 0;
+         Last := Last + 1;
+         Item (Last) := Character'Pos ('?');
+      elsif Encoding = UTF_16_Names (Low_Order_First)(0)'Access then
+         Last := Item'First;
+         Item (Last) := Character'Pos ('?');
+         Last := Last + 1;
+         Item (Last) := 0;
+      elsif Encoding = UTF_32_Names (High_Order_First)(0)'Access then
+         Last := Item'First;
+         Item (Last) := 0;
+         Last := Last + 1;
+         Item (Last) := 0;
+         Last := Last + 1;
+         Item (Last) := 0;
+         Last := Last + 1;
+         Item (Last) := Character'Pos ('?');
+      elsif Encoding = UTF_32_Names (Low_Order_First)(0)'Access then
+         Last := Item'First;
+         Item (Last) := Character'Pos ('?');
+         Last := Last + 1;
+         Item (Last) := 0;
+         Last := Last + 1;
+         Item (Last) := 0;
+         Last := Last + 1;
+         Item (Last) := 0;
+      else
+         Last := Item'First;
+         Item (Last) := Character'Pos ('?');
+      end if;
+   end Default_Substitute;
+
+   --  implementation
+
+   function Default_Substitute (Encoding : Encoding_Id)
+      return Ada.Streams.Stream_Element_Array
+   is
+      Result : Ada.Streams.Stream_Element_Array (0 .. Expanding - 1);
+      Last : Ada.Streams.Stream_Element_Offset;
+   begin
+      Default_Substitute (Encoding, Result, Last);
+      return Result (Result'First .. Last);
+   end Default_Substitute;
 
    function Is_Open (Object : Converter) return Boolean is
       iconv : constant C.iconv.iconv_t := Value (Object);
    begin
       return Address (iconv) /= Null_Address;
    end Is_Open;
+
+   function Substitute (Object : Converter)
+      return Ada.Streams.Stream_Element_Array
+   is
+      S : constant not null access constant Substitute_Type :=
+         Substitute_Reference (Object);
+   begin
+      return S.Element (1 .. S.Length);
+   end Substitute;
+
+   procedure Set_Substitute (
+      Object : Converter;
+      Substitute : Ada.Streams.Stream_Element_Array)
+   is
+      S : constant not null access Substitute_Type :=
+         Substitute_Reference (Object);
+   begin
+      if Substitute'Length > S.Element'Length then
+         raise Constraint_Error;
+      end if;
+      S.Length := Substitute'Length;
+      S.Element (1 .. S.Length) := Substitute;
+   end Set_Substitute;
 
    procedure Convert (
       Object : Converter;
@@ -31,13 +108,12 @@ package body System.Native_Encoding is
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute) is
+      Out_Last : out Ada.Streams.Stream_Element_Offset) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      Convert_No_Check (Object, Item, Out_Item, Out_Last, Substitute);
+      Convert_No_Check (Object, Item, Out_Item, Out_Last);
    end Convert;
 
    procedure Convert_No_Check (
@@ -91,8 +167,7 @@ package body System.Native_Encoding is
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute)
+      Out_Last : out Ada.Streams.Stream_Element_Offset)
    is
       Index : Ada.Streams.Stream_Element_Offset := Item'First;
       Out_Index : Ada.Streams.Stream_Element_Offset := Out_Item'First;
@@ -115,14 +190,32 @@ package body System.Native_Encoding is
                when Fine =>
                   null;
                when Incomplete | Illegal_Sequence =>
-                  Out_Item (Out_Index) := Substitute;
-                  Out_Index := Out_Index + 1;
+                  Put_Substitute (
+                     Object,
+                     Out_Item (Out_Index .. Out_Item'Last),
+                     Out_Last);
+                  Out_Index := Out_Last + 1;
                   Index := Index + 1;
             end case;
             exit when Index > Item'Last;
          end;
       end loop;
    end Convert_No_Check;
+
+   procedure Put_Substitute (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset)
+   is
+      S : constant not null access constant Substitute_Type :=
+         Substitute_Reference (Object);
+   begin
+      if Out_Item'Length < S.Length then
+         raise Constraint_Error;
+      end if;
+      Out_Last := Out_Item'First - 1 + S.Length;
+      Out_Item (Out_Item'First .. Out_Last) := S.Element (1 .. S.Length);
+   end Put_Substitute;
 
    package body Controlled is
 
@@ -137,12 +230,22 @@ package body System.Native_Encoding is
             Ada.Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
          end if;
          Object.iconv := iconv;
+         Default_Substitute (
+            To,
+            Object.Substitute.Element,
+            Object.Substitute.Length);
       end Open;
 
       function Value (Object : Converter) return C.iconv.iconv_t is
       begin
          return Object.iconv;
       end Value;
+
+      function Substitute_Reference (Object : Converter)
+         return not null access Substitute_Type is
+      begin
+         return Object.Substitute'Unrestricted_Access;
+      end Substitute_Reference;
 
       overriding procedure Finalize (Object : in out Converter) is
       begin

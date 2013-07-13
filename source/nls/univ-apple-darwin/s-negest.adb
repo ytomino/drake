@@ -53,9 +53,7 @@ package body System.Native_Encoding.Generic_Strings is
       Object : Decoder;
       Item : Ada.Streams.Stream_Element_Array;
       Out_Item : out String_Type;
-      Out_Last : out Natural;
-      Substitute : Character_Type :=
-         Character_Type'Val (Default_Substitute))
+      Out_Last : out Natural)
    is
       Out_Item_2 : Ada.Streams.Stream_Element_Array (
          1 ..
@@ -63,10 +61,8 @@ package body System.Native_Encoding.Generic_Strings is
             * (Character_Type'Size / Ada.Streams.Stream_Element'Size));
       for Out_Item_2'Address use Out_Item'Address;
       Out_Last_2 : Ada.Streams.Stream_Element_Offset;
-      Substitute_2 : constant Ada.Streams.Stream_Element :=
-         Character_Type'Pos (Substitute);
    begin
-      Convert (Object, Item, Out_Item_2, Out_Last_2, Substitute_2);
+      Convert (Object, Item, Out_Item_2, Out_Last_2);
       pragma Assert (Out_Last_2
          rem (Character_Type'Size / Ada.Streams.Stream_Element'Size) = 0);
       Out_Last := Out_Item'First
@@ -78,8 +74,7 @@ package body System.Native_Encoding.Generic_Strings is
 
    function Decode (
       Object : Decoder;
-      Item : Ada.Streams.Stream_Element_Array;
-      Substitute : Character_Type := Character_Type'Val (Default_Substitute))
+      Item : Ada.Streams.Stream_Element_Array)
       return String_Type
    is
       Out_Item : aliased String_Type (
@@ -87,7 +82,7 @@ package body System.Native_Encoding.Generic_Strings is
          Expanding * Item'Length);
       Out_Last : Natural;
    begin
-      Decode (Object, Item, Out_Item, Out_Last, Substitute => Substitute);
+      Decode (Object, Item, Out_Item, Out_Last);
       return Out_Item (Out_Item'First .. Out_Last);
    end Decode;
 
@@ -129,8 +124,7 @@ package body System.Native_Encoding.Generic_Strings is
       Object : Encoder;
       Item : String_Type;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute)
+      Out_Last : out Ada.Streams.Stream_Element_Offset)
    is
       Item_2 : Ada.Streams.Stream_Element_Array (
          1 ..
@@ -138,13 +132,12 @@ package body System.Native_Encoding.Generic_Strings is
             * (Character_Type'Size / Ada.Streams.Stream_Element'Size));
       for Item_2'Address use Item'Address;
    begin
-      Convert (Object, Item_2, Out_Item, Out_Last, Substitute);
+      Convert (Object, Item_2, Out_Item, Out_Last);
    end Encode;
 
    function Encode (
       Object : Encoder;
-      Item : String_Type;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute)
+      Item : String_Type)
       return Ada.Streams.Stream_Element_Array
    is
       Out_Item : aliased Ada.Streams.Stream_Element_Array (
@@ -152,7 +145,7 @@ package body System.Native_Encoding.Generic_Strings is
          Expanding * Item'Length - 1);
       Out_Last : Ada.Streams.Stream_Element_Offset;
    begin
-      Encode (Object, Item, Out_Item, Out_Last, Substitute => Substitute);
+      Encode (Object, Item, Out_Item, Out_Last);
       return Out_Item (Out_Item'First .. Out_Last);
    end Encode;
 

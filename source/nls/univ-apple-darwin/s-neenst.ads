@@ -9,11 +9,19 @@ package System.Native_Encoding.Encoding_Streams is
    function Open (
       Internal : Encoding_Id;
       External : Encoding_Id;
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Substitute : Ada.Streams.Stream_Element := Default_Substitute)
+      Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Encoding;
 
    function Is_Open (Object : Encoding) return Boolean;
+
+   --  substitute (encoded as internal)
+
+   function Substitute (Object : Encoding)
+      return Ada.Streams.Stream_Element_Array;
+
+   procedure Set_Substitute (
+      Object : in out Encoding;
+      Substitute : Ada.Streams.Stream_Element_Array);
 
    --  stream access
 
@@ -26,13 +34,14 @@ package System.Native_Encoding.Encoding_Streams is
       renames Ada.IO_Exceptions.End_Error;
 
 private
-   use type Ada.Streams.Stream_Element_Offset;
 
    type Encoding is limited new Ada.Streams.Root_Stream_Type with record
       Internal : Encoding_Id;
       External : Encoding_Id;
       Stream : access Ada.Streams.Root_Stream_Type'Class;
-      Substitute : Ada.Streams.Stream_Element;
+      --  substitute (encoded as internal)
+      Substitute_Length : Ada.Streams.Stream_Element_Offset;
+      Substitute : Ada.Streams.Stream_Element_Array (1 .. Expanding);
       --  reading
       Reading_Converter : Converter;
       Reading_Buffer : Ada.Streams.Stream_Element_Array (0 .. Expanding - 1);
