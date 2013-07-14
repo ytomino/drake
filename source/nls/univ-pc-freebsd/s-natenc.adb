@@ -169,35 +169,30 @@ package body System.Native_Encoding is
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset)
    is
-      Index : Ada.Streams.Stream_Element_Offset := Item'First;
-      Out_Index : Ada.Streams.Stream_Element_Offset := Out_Item'First;
+      Last : Ada.Streams.Stream_Element_Offset := Item'First - 1;
    begin
-      loop
+      Out_Last := Out_Item'First - 1;
+      while Last /= Item'Last loop
          declare
             Status : Error_Status;
-            Last : Ada.Streams.Stream_Element_Offset;
          begin
             Convert_No_Check (
                Object,
-               Item (Index .. Item'Last),
+               Item (Last + 1 .. Item'Last),
                Last,
-               Out_Item (Out_Index .. Out_Item'Last),
+               Out_Item (Out_Last + 1 .. Out_Item'Last),
                Out_Last,
                Status);
-            Index := Last + 1;
-            Out_Index := Out_Last + 1;
             case Status is
                when Fine =>
                   null;
                when Incomplete | Illegal_Sequence =>
                   Put_Substitute (
                      Object,
-                     Out_Item (Out_Index .. Out_Item'Last),
+                     Out_Item (Out_Last + 1 .. Out_Item'Last),
                      Out_Last);
-                  Out_Index := Out_Last + 1;
-                  Index := Index + 1;
+                  Last := Last + 1;
             end case;
-            exit when Index > Item'Last;
          end;
       end loop;
    end Convert_No_Check;
