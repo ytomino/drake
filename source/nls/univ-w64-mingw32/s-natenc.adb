@@ -86,10 +86,29 @@ package body System.Native_Encoding is
       return Result (Result'First .. Last);
    end Default_Substitute;
 
+   function Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
+      return Ada.Streams.Stream_Element_Offset is
+   begin
+      case Encoding is
+         when UTF_16 =>
+            return 2;
+         when UTF_32 =>
+            return 4;
+         when others =>
+            return 1;
+      end case;
+   end Min_Size_In_Stream_Elements;
+
    function Is_Open (Object : Converter) return Boolean is
    begin
       return Object.From /= Invalid_Encoding_Id;
    end Is_Open;
+
+   function Min_Size_In_From_Stream_Elements (Object : Converter)
+      return Ada.Streams.Stream_Element_Offset is
+   begin
+      return Min_Size_In_Stream_Elements (Object.From);
+   end Min_Size_In_From_Stream_Elements;
 
    function Substitute (Object : Converter)
       return Ada.Streams.Stream_Element_Array is

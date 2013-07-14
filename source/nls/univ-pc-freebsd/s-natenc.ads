@@ -16,6 +16,9 @@ package System.Native_Encoding is
    function Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array;
 
+   function Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
+      return Ada.Streams.Stream_Element_Offset;
+
    UTF_8 : constant Encoding_Id;
    UTF_16 : constant Encoding_Id;
    UTF_32 : constant Encoding_Id;
@@ -27,6 +30,9 @@ package System.Native_Encoding is
    type Converter is limited private;
 
    function Is_Open (Object : Converter) return Boolean;
+
+   function Min_Size_In_From_Stream_Elements (Object : Converter)
+      return Ada.Streams.Stream_Element_Offset;
 
    function Substitute (Object : Converter)
       return Ada.Streams.Stream_Element_Array;
@@ -92,11 +98,15 @@ private
 
    --  converter
 
-   type Substitute_Type is record
-      Length : Ada.Streams.Stream_Element_Offset;
-      Element : Ada.Streams.Stream_Element_Array (1 .. Expanding);
+   type Non_Controlled_Converter is record
+      iconv : C.iconv.iconv_t;
+      --  about "From"
+      Min_Size_In_From_Stream_Elements : Ada.Streams.Stream_Element_Offset;
+      --  about "To"
+      Substitute_Length : Ada.Streams.Stream_Element_Offset;
+      Substitute : Ada.Streams.Stream_Element_Array (1 .. Expanding);
    end record;
-   pragma Suppress_Initialization (Substitute_Type);
+   pragma Suppress_Initialization (Non_Controlled_Converter);
 
    package Controlled is
 
@@ -104,20 +114,18 @@ private
 
       procedure Open (Object : out Converter; From, To : Encoding_Id);
 
-      function Value (Object : Converter) return C.iconv.iconv_t;
-      pragma Inline (Value);
-
-      function Substitute_Reference (Object : Converter)
-         return not null access Substitute_Type;
-      pragma Inline (Substitute_Reference);
+      function Reference (Object : Converter)
+         return not null access Non_Controlled_Converter;
+      pragma Inline (Reference);
 
    private
 
       type Converter is
          limited new Ada.Finalization.Limited_Controlled with
       record
-         iconv : C.iconv.iconv_t := C.iconv.iconv_t (Null_Address);
-         Substitute : aliased Substitute_Type;
+         Data : aliased Non_Controlled_Converter := (
+            iconv => C.iconv.iconv_t (Null_Address),
+            others => <>);
       end record;
 
       overriding procedure Finalize (Object : in out Converter);

@@ -15,6 +15,9 @@ package System.Native_Encoding is
    function Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array;
 
+   function Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
+      return Ada.Streams.Stream_Element_Offset;
+
    UTF_8 : constant Encoding_Id;
    UTF_16 : constant Encoding_Id;
    UTF_32 : constant Encoding_Id;
@@ -26,6 +29,9 @@ package System.Native_Encoding is
    type Converter is limited private;
 
    function Is_Open (Object : Converter) return Boolean;
+
+   function Min_Size_In_From_Stream_Elements (Object : Converter)
+      return Ada.Streams.Stream_Element_Offset;
 
    function Substitute (Object : Converter)
       return Ada.Streams.Stream_Element_Array;
