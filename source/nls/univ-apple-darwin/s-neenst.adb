@@ -201,7 +201,7 @@ package body System.Native_Encoding.Encoding_Streams is
          end if;
       end if;
       declare
-         Item_Index : Stream_Element_Offset := Item'First;
+         Item_Last : Stream_Element_Offset := Item'First - 1;
          Buffer : Ada.Streams.Stream_Element_Array
             renames Object.Writing_Buffer;
          Buffer_Last : Stream_Element_Offset
@@ -209,21 +209,21 @@ package body System.Native_Encoding.Encoding_Streams is
       begin
          loop
             --  filling
-            if Item_Index <= Item'Last then
+            if Item_Last /= Item'Last then
                declare
                   Rest : constant Stream_Element_Offset :=
                      Stream_Element_Offset'Min (
-                        Item'Last - Item_Index + 1,
+                        Item'Last - Item_Last,
                         Buffer'Last - Buffer_Last);
                   New_Buffer_Last : constant Stream_Element_Offset :=
                      Buffer_Last + Rest;
-                  New_Item_Index : constant Stream_Element_Offset :=
-                     Item_Index + Rest;
+                  New_Item_Last : constant Stream_Element_Offset :=
+                     Item_Last + Rest;
                begin
                   Buffer (Buffer_Last + 1 .. New_Buffer_Last) :=
-                     Item (Item_Index .. New_Item_Index - 1);
+                     Item (Item_Last + 1 .. New_Item_Last);
                   Buffer_Last := New_Buffer_Last;
-                  Item_Index := New_Item_Index;
+                  Item_Last := New_Item_Last;
                end;
             else
                exit when Buffer_Last < Buffer'First;
