@@ -13,6 +13,10 @@ procedure nls is
 		Character'Val (16#e3#),
 		Character'Val (16#81#),
 		Character'Val (16#82#));
+	Mongolian_Birga : constant String := (
+		Character'Val (16#e1#),
+		Character'Val (16#a0#),
+		Character'Val (16#80#));
 begin
 	-- status check
 	declare
@@ -61,7 +65,24 @@ begin
 		pragma Assert (System.Native_Encoding.Strings.Encode (E, "A") = (1 => 16#41#));
 		pragma Assert (System.Native_Encoding.Strings.Encode (E, "AB") = (16#41#, 16#42#));
 		pragma Assert (System.Native_Encoding.Strings.Encode (E, Japanease_A) = (16#82#, 16#a0#));
-		null;
+		-- substitute
+		declare
+			Mongolian_Birga_In_Windows_31J : constant Ada.Streams.Stream_Element_Array :=
+				System.Native_Encoding.Strings.Encode (E, Mongolian_Birga);
+		begin
+			pragma Assert (Mongolian_Birga_In_Windows_31J = (1 => 16#3f#)
+				or else Mongolian_Birga_In_Windows_31J = (16#3f#, 16#3f#, 16#3f#));
+			null;
+		end;
+		System.Native_Encoding.Strings.Set_Substitute (E, (16#81#, 16#51#)); -- fullwidth low line in Windows-31J
+		declare
+			Mongolian_Birga_In_Windows_31J : constant Ada.Streams.Stream_Element_Array :=
+				System.Native_Encoding.Strings.Encode (E, Mongolian_Birga);
+		begin
+			pragma Assert (Mongolian_Birga_In_Windows_31J = (16#81#, 16#51#)
+				or else Mongolian_Birga_In_Windows_31J = (16#81#, 16#51#, 16#81#, 16#51#, 16#81#, 16#51#));
+			null;
+		end;
 	end;
 	declare
 		WE : System.Native_Encoding.Wide_Strings.Encoder :=

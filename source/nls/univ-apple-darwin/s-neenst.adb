@@ -153,9 +153,13 @@ package body System.Native_Encoding.Encoding_Streams is
                         Object.Reading_Converter,
                         Out_Buffer,
                         Out_Last);
-                     if Taken < Buffer'First then
-                        Taken := Buffer'First; -- skip one byte at least
-                     end if;
+                     --  skip one element
+                     Taken := Stream_Element_Offset'Min (
+                        Buffer'Last,
+                        Buffer'First
+                           + Min_Size_In_From_Stream_Elements (
+                              Object.Writing_Converter)
+                           - 1);
                end case;
                --  write one converted multi-byte character
                declare
@@ -254,9 +258,13 @@ package body System.Native_Encoding.Encoding_Streams is
                         Object.Writing_Converter,
                         Out_Buffer,
                         Out_Last);
-                     if Taken < Buffer'First then
-                        Taken := Buffer'First; -- skip one byte at least
-                     end if;
+                     --  skip one element
+                     Taken := Stream_Element_Offset'Min (
+                        Buffer'Last,
+                        Buffer'First
+                           + Min_Size_In_From_Stream_Elements (
+                              Object.Writing_Converter)
+                           - 1);
                end case;
                --  write one converted multi-byte character
                Ada.Streams.Write (

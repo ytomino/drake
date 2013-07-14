@@ -61,33 +61,60 @@ package body System.Native_Encoding is
       return Result (Result'First .. Last);
    end Default_Substitute;
 
-   function Is_Open (Object : Converter) return Boolean is
-      iconv : constant C.iconv.iconv_t := Value (Object);
+   function Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
+      return Ada.Streams.Stream_Element_Offset is
    begin
-      return Address (iconv) /= Null_Address;
+      if Encoding = UTF_16_Names (High_Order_First)(0)'Access
+         or else Encoding = UTF_16_Names (Low_Order_First)(0)'Access
+      then
+         return 2;
+      elsif Encoding = UTF_32_Names (High_Order_First)(0)'Access
+         or else Encoding = UTF_32_Names (Low_Order_First)(0)'Access
+      then
+         return 4;
+      else
+         return 1;
+      end if;
+   end Min_Size_In_Stream_Elements;
+
+   function Is_Open (Object : Converter) return Boolean is
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
+   begin
+      return Address (NC_Converter.iconv) /= Null_Address;
    end Is_Open;
+
+   function Min_Size_In_From_Stream_Elements (Object : Converter)
+      return Ada.Streams.Stream_Element_Offset
+   is
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
+   begin
+      return NC_Converter.Min_Size_In_From_Stream_Elements;
+   end Min_Size_In_From_Stream_Elements;
 
    function Substitute (Object : Converter)
       return Ada.Streams.Stream_Element_Array
    is
-      S : constant not null access constant Substitute_Type :=
-         Substitute_Reference (Object);
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
    begin
-      return S.Element (1 .. S.Length);
+      return NC_Converter.Substitute (1 .. NC_Converter.Substitute_Length);
    end Substitute;
 
    procedure Set_Substitute (
       Object : Converter;
       Substitute : Ada.Streams.Stream_Element_Array)
    is
-      S : constant not null access Substitute_Type :=
-         Substitute_Reference (Object);
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
    begin
-      if Substitute'Length > S.Element'Length then
+      if Substitute'Length > NC_Converter.Substitute'Length then
          raise Constraint_Error;
       end if;
-      S.Length := Substitute'Length;
-      S.Element (1 .. S.Length) := Substitute;
+      NC_Converter.Substitute_Length := Substitute'Length;
+      NC_Converter.Substitute (1 .. NC_Converter.Substitute_Length) :=
+         Substitute;
    end Set_Substitute;
 
    procedure Convert (
@@ -129,7 +156,8 @@ package body System.Native_Encoding is
          new Address_To_Constant_Access_Conversions (C.char, C.char_const_ptr);
       package V_Conv is
          new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
-      iconv : constant C.iconv.iconv_t := Value (Object);
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
       Pointer : aliased C.char_const_ptr := C_Conv.To_Pointer (Item'Address);
       Size : aliased C.size_t := Item'Length;
       Out_Pointer : aliased C.char_ptr := V_Conv.To_Pointer (Out_Item'Address);
@@ -137,7 +165,7 @@ package body System.Native_Encoding is
       errno : C.signed_int;
    begin
       if C.iconv.iconv (
-         iconv,
+         NC_Converter.iconv,
          Pointer'Access,
          Size'Access,
          Out_Pointer'Access,
@@ -169,6 +197,8 @@ package body System.Native_Encoding is
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset)
    is
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
       Last : Ada.Streams.Stream_Element_Offset := Item'First - 1;
    begin
       Out_Last := Out_Item'First - 1;
@@ -191,7 +221,17 @@ package body System.Native_Encoding is
                      Object,
                      Out_Item (Out_Last + 1 .. Out_Item'Last),
                      Out_Last);
-                  Last := Last + 1;
+                  declare
+                     New_Last : Ada.Streams.Stream_Element_Offset :=
+                        Last + NC_Converter.Min_Size_In_From_Stream_Elements;
+                  begin
+                     if New_Last > Item'Last
+                        or else New_Last < Last -- overflow
+                     then
+                        New_Last := Item'Last;
+                     end if;
+                     Last := New_Last;
+                  end;
             end case;
          end;
       end loop;
@@ -202,14 +242,15 @@ package body System.Native_Encoding is
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset)
    is
-      S : constant not null access constant Substitute_Type :=
-         Substitute_Reference (Object);
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
    begin
-      if Out_Item'Length < S.Length then
+      if Out_Item'Length < NC_Converter.Substitute_Length then
          raise Constraint_Error;
       end if;
-      Out_Last := Out_Item'First - 1 + S.Length;
-      Out_Item (Out_Item'First .. Out_Last) := S.Element (1 .. S.Length);
+      Out_Last := Out_Item'First - 1 + NC_Converter.Substitute_Length;
+      Out_Item (Out_Item'First .. Out_Last) :=
+         NC_Converter.Substitute (1 .. NC_Converter.Substitute_Length);
    end Put_Substitute;
 
    package body Controlled is
@@ -224,27 +265,26 @@ package body System.Native_Encoding is
          if Address (iconv) = Address (Error) then
             Ada.Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
          end if;
-         Object.iconv := iconv;
+         Object.Data.iconv := iconv;
+         --  about "From"
+         Object.Data.Min_Size_In_From_Stream_Elements :=
+            Min_Size_In_Stream_Elements (From);
+         --  about "To"
          Default_Substitute (
             To,
-            Object.Substitute.Element,
-            Object.Substitute.Length);
+            Object.Data.Substitute,
+            Object.Data.Substitute_Length);
       end Open;
 
-      function Value (Object : Converter) return C.iconv.iconv_t is
+      function Reference (Object : Converter)
+         return not null access Non_Controlled_Converter is
       begin
-         return Object.iconv;
-      end Value;
-
-      function Substitute_Reference (Object : Converter)
-         return not null access Substitute_Type is
-      begin
-         return Object.Substitute'Unrestricted_Access;
-      end Substitute_Reference;
+         return Object.Data'Unrestricted_Access;
+      end Reference;
 
       overriding procedure Finalize (Object : in out Converter) is
       begin
-         if C.iconv.iconv_close (Object.iconv) /= 0 then
+         if C.iconv.iconv_close (Object.Data.iconv) /= 0 then
             null; -- raise Status_Error;
          end if;
       end Finalize;
