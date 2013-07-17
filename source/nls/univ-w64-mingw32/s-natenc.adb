@@ -304,6 +304,13 @@ package body System.Native_Encoding is
                      C.windef.UINT (Object.From),
                      C.char'Pos (Item_As_C (1))) /= 0
                   then
+                     if Item'Length < 2 then
+                        Last := Item'First - 1;
+                        Out_Last := Out_Item'First - 1;
+                        Status := Incomplete;
+                        pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+                        return;
+                     end if;
                      Item_Length := 2;
                   else
                      Item_Length := 1;
@@ -318,6 +325,11 @@ package body System.Native_Encoding is
                      Item_Length,
                      Buffer (1)'Access,
                      Buffer'Length);
+                  if Buffer_Length = 0 then
+                     Status := Illegal_Sequence;
+                     pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
+                     return;
+                  end if;
                end;
             end if;
       end case;
@@ -395,8 +407,7 @@ package body System.Native_Encoding is
                   Out_Last := Out_Item'First - 1;
                   case C.winbase.GetLastError is
                      when C.winerror.ERROR_INSUFFICIENT_BUFFER =>
-                        Status := Incomplete;
-                        pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+                        raise Constraint_Error; -- overflow
                      when others =>
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
