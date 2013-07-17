@@ -1,5 +1,6 @@
+with Ada.Exceptions.Finally;
+with Ada.Unchecked_Deallocation;
 package body System.Native_Encoding.Generic_Strings is
-   use type Ada.Streams.Stream_Element_Offset;
 
    function Current_Id return Encoding_Id;
    function Current_Id return Encoding_Id is
@@ -14,6 +15,18 @@ package body System.Native_Encoding.Generic_Strings is
          raise Program_Error; -- bad instance
       end if;
    end Current_Id;
+
+   type String_Type_Access is access String_Type;
+   procedure Free is
+      new Ada.Unchecked_Deallocation (
+         String_Type,
+         String_Type_Access);
+
+   type Stream_Element_Array_Access is access Ada.Streams.Stream_Element_Array;
+   procedure Free is
+      new Ada.Unchecked_Deallocation (
+         Ada.Streams.Stream_Element_Array,
+         Stream_Element_Array_Access);
 
    --  implementation of decoder
 
@@ -52,8 +65,10 @@ package body System.Native_Encoding.Generic_Strings is
    procedure Decode (
       Object : Decoder;
       Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out String_Type;
-      Out_Last : out Natural)
+      Out_Last : out Natural;
+      Status : out Substituting_Status_Type)
    is
       Out_Item_2 : Ada.Streams.Stream_Element_Array (
          1 ..
@@ -62,7 +77,7 @@ package body System.Native_Encoding.Generic_Strings is
       for Out_Item_2'Address use Out_Item'Address;
       Out_Last_2 : Ada.Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item, Out_Item_2, Out_Last_2);
+      Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Status);
       pragma Assert (Out_Last_2
          rem (Character_Type'Size / Ada.Streams.Stream_Element'Size) = 0);
       Out_Last := Out_Item'First
@@ -72,17 +87,72 @@ package body System.Native_Encoding.Generic_Strings is
          - 1;
    end Decode;
 
+   procedure Decode (
+      Object : Decoder;
+      Item : Ada.Streams.Stream_Element_Array;
+      Out_Item : out String_Type;
+      Out_Last : out Natural)
+   is
+      Last : Ada.Streams.Stream_Element_Offset;
+      Status : Substituting_Status_Type;
+   begin
+      Decode (Object, Item, Last, Out_Item, Out_Last, Status);
+      case Status is
+         when Fine =>
+            null;
+         when Insufficient =>
+            raise Constraint_Error;
+      end case;
+   end Decode;
+
    function Decode (
       Object : Decoder;
       Item : Ada.Streams.Stream_Element_Array)
       return String_Type
    is
-      Out_Item : aliased String_Type (
-         1 ..
-         Expanding * Item'Length);
+      procedure Finally (X : not null access String_Type_Access);
+      procedure Finally (X : not null access String_Type_Access) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is
+         new Ada.Exceptions.Finally.Scoped_Holder (
+            String_Type_Access,
+            Finally);
+      Last : Ada.Streams.Stream_Element_Offset := Item'First - 1;
+      Out_Item : aliased String_Type_Access;
       Out_Last : Natural;
+      Status : Substituting_Status_Type;
    begin
-      Decode (Object, Item, Out_Item, Out_Last);
+      Holder.Assign (Out_Item'Access);
+      Out_Item := new String_Type (
+         1 ..
+         2 * Item'Length
+            / (Character_Type'Size / Ada.Streams.Stream_Element'Size));
+      Out_Last := 0;
+      loop
+         Decode (
+            Object,
+            Item (Last + 1 .. Item'Last),
+            Last,
+            Out_Item.all (Out_Last + 1 .. Out_Item'Last),
+            Out_Last,
+            Status);
+         case Status is
+            when Fine =>
+               exit;
+            when Insufficient =>
+               declare
+                  New_Out_Item : constant String_Type_Access :=
+                     new String_Type (1 .. 2 * Out_Item'Length);
+               begin
+                  New_Out_Item (Out_Item'First .. Out_Last) :=
+                     Out_Item.all (Out_Item'First .. Out_Last);
+                  Free (Out_Item);
+                  Out_Item := New_Out_Item;
+               end;
+         end case;
+      end loop;
       return Out_Item (Out_Item'First .. Out_Last);
    end Decode;
 
@@ -123,16 +193,42 @@ package body System.Native_Encoding.Generic_Strings is
    procedure Encode (
       Object : Encoder;
       Item : String_Type;
+      Last : out Natural;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset)
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Substituting_Status_Type)
    is
       Item_2 : Ada.Streams.Stream_Element_Array (
          1 ..
          Item'Length
             * (Character_Type'Size / Ada.Streams.Stream_Element'Size));
       for Item_2'Address use Item'Address;
+      Last_2 : Ada.Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item_2, Out_Item, Out_Last);
+      Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Status);
+      Last := Item'First
+         + Natural (
+            Last_2
+            / (Character_Type'Size / Ada.Streams.Stream_Element'Size))
+         - 1;
+   end Encode;
+
+   procedure Encode (
+      Object : Encoder;
+      Item : String_Type;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset)
+   is
+      Last : Natural;
+      Status : Substituting_Status_Type;
+   begin
+      Encode (Object, Item, Last, Out_Item, Out_Last, Status);
+      case Status is
+         when Fine =>
+            null;
+         when Insufficient =>
+            raise Constraint_Error;
+      end case;
    end Encode;
 
    function Encode (
@@ -140,12 +236,52 @@ package body System.Native_Encoding.Generic_Strings is
       Item : String_Type)
       return Ada.Streams.Stream_Element_Array
    is
-      Out_Item : aliased Ada.Streams.Stream_Element_Array (
-         0 ..
-         Expanding * Item'Length - 1);
+      procedure Finally (X : not null access Stream_Element_Array_Access);
+      procedure Finally (X : not null access Stream_Element_Array_Access) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is
+         new Ada.Exceptions.Finally.Scoped_Holder (
+            Stream_Element_Array_Access,
+            Finally);
+      Last : Natural := Item'First - 1;
+      Out_Item : aliased Stream_Element_Array_Access;
       Out_Last : Ada.Streams.Stream_Element_Offset;
+      Status : Substituting_Status_Type;
    begin
-      Encode (Object, Item, Out_Item, Out_Last);
+      Holder.Assign (Out_Item'Access);
+      Out_Item := new Ada.Streams.Stream_Element_Array (
+         0 ..
+         2 * Item'Length
+            * (Character_Type'Size / Ada.Streams.Stream_Element'Size)
+            - 1);
+      Out_Last := -1;
+      loop
+         Encode (
+            Object,
+            Item (Last + 1 .. Item'Last),
+            Last,
+            Out_Item.all (Out_Last + 1 .. Out_Item'Last),
+            Out_Last,
+            Status);
+         case Status is
+            when Fine =>
+               exit;
+            when Insufficient =>
+               declare
+                  New_Out_Item : constant Stream_Element_Array_Access :=
+                     new Ada.Streams.Stream_Element_Array (
+                        0 ..
+                        2 * Out_Item'Length - 1);
+               begin
+                  New_Out_Item (Out_Item'First .. Out_Last) :=
+                     Out_Item.all (Out_Item'First .. Out_Last);
+                  Free (Out_Item);
+                  Out_Item := New_Out_Item;
+               end;
+         end case;
+      end loop;
       return Out_Item (Out_Item'First .. Out_Last);
    end Encode;
 

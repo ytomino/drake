@@ -41,14 +41,16 @@ private
       Stream : access Ada.Streams.Root_Stream_Type'Class;
       --  substitute (encoded as internal)
       Substitute_Length : Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element_Array (1 .. Expanding);
+      Substitute : Ada.Streams.Stream_Element_Array (
+         1 ..
+         Max_Substitute_Length);
       --  reading
       Reading_Converter : Converter;
-      Reading_Buffer : Ada.Streams.Stream_Element_Array (0 .. Expanding - 1);
+      Reading_Buffer : Ada.Streams.Stream_Element_Array (0 .. 5); -- UTF-8
       Reading_Last : Ada.Streams.Stream_Element_Offset;
       --  writing
       Writing_Converter : Converter;
-      Writing_Buffer : Ada.Streams.Stream_Element_Array (0 .. Expanding - 1);
+      Writing_Buffer : Ada.Streams.Stream_Element_Array (0 .. 5); -- UTF-8
       Writing_Last : Ada.Streams.Stream_Element_Offset;
    end record;
 

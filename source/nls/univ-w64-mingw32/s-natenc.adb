@@ -79,7 +79,9 @@ package body System.Native_Encoding is
    function Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array
    is
-      Result : Ada.Streams.Stream_Element_Array (0 .. Expanding - 1);
+      Result : Ada.Streams.Stream_Element_Array (
+         0 .. -- from 0 for a result value
+         Max_Substitute_Length - 1);
       Last : Ada.Streams.Stream_Element_Offset;
    begin
       Default_Substitute (Encoding, Result, Last);
@@ -149,13 +151,33 @@ package body System.Native_Encoding is
    procedure Convert (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset) is
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Substituting_Status_Type) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      Convert_No_Check (Object, Item, Out_Item, Out_Last);
+      Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset)
+   is
+      Last : Ada.Streams.Stream_Element_Offset;
+      Status : Substituting_Status_Type;
+   begin
+      Convert (Object, Item, Last, Out_Item, Out_Last, Status);
+      case Status is
+         when Fine =>
+            null;
+         when Insufficient =>
+            raise Constraint_Error;
+      end case;
    end Convert;
 
    procedure Convert_No_Check (
@@ -407,7 +429,9 @@ package body System.Native_Encoding is
                   Out_Last := Out_Item'First - 1;
                   case C.winbase.GetLastError is
                      when C.winerror.ERROR_INSUFFICIENT_BUFFER =>
-                        raise Constraint_Error; -- overflow
+                        Status := Insufficient;
+                        pragma Check (Trace,
+                           Ada.Debug.Put ("insufficient buffer"));
                      when others =>
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
@@ -430,8 +454,10 @@ package body System.Native_Encoding is
    procedure Convert_No_Check (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset)
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Substituting_Status_Type)
    is
       Item_Length : constant Ada.Streams.Stream_Element_Offset := Item'Length;
       Buffer : aliased C.winnt.WCHAR_array (1 .. C.size_t (Item_Length));
@@ -492,7 +518,11 @@ package body System.Native_Encoding is
             begin
                Out_Last := Out_Item'First + Buffer_Length_In_SEA - 1;
                if Out_Last > Out_Item'Length then
-                  raise Constraint_Error; -- overflow
+                  Last := Item'First - 1;
+                  Out_Last := Out_Item'First - 1;
+                  Status := Insufficient;
+                  pragma Check (Trace, Ada.Debug.Put ("insufficient buffer"));
+                  return;
                end if;
                Out_Item (Out_Item'First .. Out_Last) :=
                   Buffer_As_SEA (1 .. Buffer_Length_In_SEA);
@@ -518,7 +548,12 @@ package body System.Native_Encoding is
                begin
                   Out_Last := Out_Item'First + Out_WW_Length_In_SEA - 1;
                   if Out_Last > Out_Item'Last then
-                     raise Constraint_Error; -- overflow
+                     Last := Item'First - 1;
+                     Out_Last := Out_Item'First - 1;
+                     Status := Insufficient;
+                     pragma Check (Trace,
+                        Ada.Debug.Put ("insufficient buffer"));
+                     return;
                   end if;
                   Out_Item (Out_Item'First .. Out_Last) :=
                      Out_WW_As_SEA (1 .. Out_WW_Length_In_SEA); -- un-alignment
@@ -547,13 +582,18 @@ package body System.Native_Encoding is
                   Substitute_P,
                   null);
                if Out_Length = 0 and then Item_Length /= 0 then
-                  raise Constraint_Error; -- overflow
+                  Last := Item'First - 1;
+                  Out_Last := Out_Item'First - 1;
+                  Status := Insufficient;
+                  pragma Check (Trace, Ada.Debug.Put ("insufficient buffer"));
+                  return;
                end if;
                Out_Last := Out_Item'First
                   + Ada.Streams.Stream_Element_Offset (Out_Length)
                   - 1;
             end;
       end case;
+      Status := Fine;
    end Convert_No_Check;
 
    procedure Put_Substitute (
