@@ -55,7 +55,9 @@ package body System.Native_Encoding is
    function Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array
    is
-      Result : Ada.Streams.Stream_Element_Array (0 .. Expanding - 1);
+      Result : Ada.Streams.Stream_Element_Array (
+         0 .. -- from 0 for a result value
+         Max_Substitute_Length - 1);
       Last : Ada.Streams.Stream_Element_Offset;
    begin
       Default_Substitute (Encoding, Result, Last);
@@ -135,13 +137,33 @@ package body System.Native_Encoding is
    procedure Convert (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset) is
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Substituting_Status_Type) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      Convert_No_Check (Object, Item, Out_Item, Out_Last);
+      Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset)
+   is
+      Last : Ada.Streams.Stream_Element_Offset;
+      Status : Substituting_Status_Type;
+   begin
+      Convert (Object, Item, Last, Out_Item, Out_Last, Status);
+      case Status is
+         when Fine =>
+            null;
+         when Insufficient =>
+            raise Constraint_Error;
+      end case;
    end Convert;
 
    procedure Convert_No_Check (
@@ -175,7 +197,7 @@ package body System.Native_Encoding is
          errno := C.errno.errno;
          case errno is
             when C.errno.E2BIG =>
-               raise Constraint_Error;
+               Status := Insufficient;
             when C.errno.EINVAL =>
                Status := Incomplete;
             when others => -- C.errno.EILSEQ =>
@@ -195,17 +217,19 @@ package body System.Native_Encoding is
    procedure Convert_No_Check (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset)
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Substituting_Status_Type)
    is
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);
-      Last : Ada.Streams.Stream_Element_Offset := Item'First - 1;
    begin
+      Last := Item'First - 1;
       Out_Last := Out_Item'First - 1;
       while Last /= Item'Last loop
          declare
-            Status : Status_Type;
+            One_Character_Status : Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -213,10 +237,13 @@ package body System.Native_Encoding is
                Last,
                Out_Item (Out_Last + 1 .. Out_Item'Last),
                Out_Last,
-               Status);
-            case Status is
+               One_Character_Status);
+            case One_Character_Status is
                when Fine =>
                   null;
+               when Insufficient =>
+                  Status := Insufficient;
+                  return;
                when Incomplete | Illegal_Sequence =>
                   Put_Substitute (
                      Object,
@@ -236,6 +263,7 @@ package body System.Native_Encoding is
             end case;
          end;
       end loop;
+      Status := Fine;
    end Convert_No_Check;
 
    procedure Put_Substitute (

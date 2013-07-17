@@ -15,7 +15,7 @@ package body System.Native_Encoding.Encoding_Streams is
 
    procedure Set_Substitute_To_Writing_Converter (Object : in out Encoding);
    procedure Set_Substitute_To_Writing_Converter (Object : in out Encoding) is
-      S2 : Ada.Streams.Stream_Element_Array (1 .. Expanding);
+      S2 : Ada.Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
       S2_Length : Ada.Streams.Stream_Element_Offset;
    begin
       --  convert substitute from internal to external
@@ -130,9 +130,7 @@ package body System.Native_Encoding.Encoding_Streams is
             --  try to convert one multi-byte character
             declare
                Taken : Stream_Element_Offset;
-               Out_Buffer : Ada.Streams.Stream_Element_Array (
-                  0 ..
-                  Expanding - 1);
+               Out_Buffer : Ada.Streams.Stream_Element_Array (0 .. 63);
                Out_Last : Stream_Element_Offset;
                Status : Status_Type;
             begin
@@ -146,6 +144,8 @@ package body System.Native_Encoding.Encoding_Streams is
                case Status is
                   when Fine =>
                      null;
+                  when Insufficient =>
+                     raise Constraint_Error; -- Out_Buffer is too smaller
                   when Incomplete =>
                      exit; -- wait tail-bytes
                   when Illegal_Sequence =>
@@ -235,9 +235,7 @@ package body System.Native_Encoding.Encoding_Streams is
             --  try to convert one multi-byte character
             declare
                Taken : Stream_Element_Offset;
-               Out_Buffer : Ada.Streams.Stream_Element_Array (
-                  0 ..
-                  Expanding - 1);
+               Out_Buffer : Ada.Streams.Stream_Element_Array (0 .. 63);
                Out_Last : Stream_Element_Offset;
                Status : Status_Type;
             begin
@@ -251,6 +249,8 @@ package body System.Native_Encoding.Encoding_Streams is
                case Status is
                   when Fine =>
                      null;
+                  when Insufficient =>
+                     raise Constraint_Error; -- Out_Buffer is too smaller
                   when Incomplete =>
                      exit; -- wait tail-bytes
                   when Illegal_Sequence =>
