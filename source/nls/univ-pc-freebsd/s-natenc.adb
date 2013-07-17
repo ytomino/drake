@@ -2,6 +2,7 @@ with Ada.Exceptions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
+with C.errno;
 package body System.Native_Encoding is
    use type C.signed_int;
    use type C.size_t;
@@ -123,7 +124,7 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status) is
+      Status : out Status_Type) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -149,7 +150,7 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status)
+      Status : out Status_Type)
    is
       pragma Suppress (All_Checks);
       package C_Conv is
@@ -204,7 +205,7 @@ package body System.Native_Encoding is
       Out_Last := Out_Item'First - 1;
       while Last /= Item'Last loop
          declare
-            Status : Error_Status;
+            Status : Status_Type;
          begin
             Convert_No_Check (
                Object,

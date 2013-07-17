@@ -22,7 +22,7 @@ package System.Native_Encoding is
    UTF_16 : constant Encoding_Id;
    UTF_32 : constant Encoding_Id;
 
-   type Error_Status is (Fine, Incomplete, Illegal_Sequence);
+   type Status_Type is (Fine, Incomplete, Illegal_Sequence);
 
    --  converter
 
@@ -46,7 +46,7 @@ package System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status);
+      Status : out Status_Type);
 
    procedure Convert (
       Object : Converter;
@@ -96,7 +96,7 @@ private
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status);
+      Status : out Status_Type);
 
    procedure Convert_No_Check (
       Object : Converter;

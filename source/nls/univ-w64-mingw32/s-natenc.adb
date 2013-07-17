@@ -138,7 +138,7 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status) is
+      Status : out Status_Type) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -164,7 +164,7 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status)
+      Status : out Status_Type)
    is
       Buffer : aliased C.winnt.WCHAR_array (1 .. 2);
       Buffer_As_W : aliased Wide_String (1 .. 2);

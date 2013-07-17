@@ -3,7 +3,6 @@ pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.Streams;
 private with Ada.Finalization;
-private with C.errno;
 private with C.iconv;
 package System.Native_Encoding is
    --  Platform-depended text encoding.
@@ -23,7 +22,7 @@ package System.Native_Encoding is
    UTF_16 : constant Encoding_Id;
    UTF_32 : constant Encoding_Id;
 
-   type Error_Status is (Fine, Incomplete, Illegal_Sequence);
+   type Status_Type is (Fine, Incomplete, Illegal_Sequence);
 
    --  converter
 
@@ -47,7 +46,7 @@ package System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status);
+      Status : out Status_Type);
 
    procedure Convert (
       Object : Converter;
@@ -90,11 +89,6 @@ private
          High_Order_First => "UTF-32BE" & C.char'Val (0),
          Low_Order_First => "UTF-32LE" & C.char'Val (0));
    UTF_32 : constant Encoding_Id := UTF_32_Names (Default_Bit_Order)(0)'Access;
-
-   for Error_Status use (
-      Fine => 0,
-      Incomplete => C.errno.EINVAL,
-      Illegal_Sequence => C.errno.EILSEQ);
 
    --  converter
 
@@ -140,7 +134,7 @@ private
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status);
+      Status : out Status_Type);
 
    procedure Convert_No_Check (
       Object : Converter;

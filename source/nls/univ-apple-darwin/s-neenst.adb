@@ -134,7 +134,7 @@ package body System.Native_Encoding.Encoding_Streams is
                   0 ..
                   Expanding - 1);
                Out_Last : Stream_Element_Offset;
-               Status : Error_Status;
+               Status : Status_Type;
             begin
                Convert_No_Check (
                   Object.Reading_Converter,
@@ -239,7 +239,7 @@ package body System.Native_Encoding.Encoding_Streams is
                   0 ..
                   Expanding - 1);
                Out_Last : Stream_Element_Offset;
-               Status : Error_Status;
+               Status : Status_Type;
             begin
                Convert_No_Check (
                   Object.Writing_Converter,

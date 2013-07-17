@@ -20,7 +20,7 @@ package System.Native_Encoding.Generic_Strings is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out String_Type;
       Out_Last : out Natural;
-      Status : out Error_Status);
+      Status : out Status_Type);
 
    procedure Decode (
       Object : Decoder;
@@ -45,7 +45,7 @@ package System.Native_Encoding.Generic_Strings is
       Last : out Natural;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Error_Status);
+      Status : out Status_Type);
 
    procedure Encode (
       Object : Encoder;
