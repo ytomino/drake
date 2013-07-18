@@ -14,7 +14,7 @@ package System.Native_Encoding.Generic_Strings is
 
    function From (Id : Encoding_Id) return Decoder;
 
-   --  decode one character sequence
+   --  decode subsequence
    procedure Decode (
       Object : Decoder;
       Item : Ada.Streams.Stream_Element_Array;
@@ -22,6 +22,13 @@ package System.Native_Encoding.Generic_Strings is
       Out_Item : out String_Type;
       Out_Last : out Natural;
       Status : out Status_Type);
+
+   --  finish decoding and receive remaindered sequence
+   procedure Decode (
+      Object : Decoder;
+      Out_Item : out String_Type;
+      Out_Last : out Natural;
+      Status : out Finishing_Status_Type);
 
    --  decode all character sequence with substitute,
    --    and stop if Out_Item is not large enough
@@ -52,7 +59,7 @@ package System.Native_Encoding.Generic_Strings is
 
    function To (Id : Encoding_Id) return Encoder;
 
-   --  encode one character sequence
+   --  encode subsequence
    procedure Encode (
       Object : Encoder;
       Item : String_Type;
@@ -60,6 +67,14 @@ package System.Native_Encoding.Generic_Strings is
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Status_Type);
+
+   --  finish encoding and receive remaindered sequence
+   procedure Encode (
+      Object : Encoder;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Finishing_Status_Type)
+      renames Convert; -- inherited
 
    --  encode all character sequence with substitute,
    --    and stop if Out_Item is not large enough

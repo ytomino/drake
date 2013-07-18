@@ -70,6 +70,7 @@ package body System.Native_Encoding.Encoding_Streams is
          Result.Reading_Last := Buffer_Type'First - 1;
          Result.Reading_Converted_First := Buffer_Type'First;
          Result.Reading_Converted_Last := Buffer_Type'First - 1;
+         Result.Reading_Status := Continuing;
          Result.Writing_First := Buffer_Type'First;
          Result.Writing_Last := Buffer_Type'First - 1;
       end return;
@@ -117,6 +118,39 @@ package body System.Native_Encoding.Encoding_Streams is
       return Object'Unchecked_Access;
    end Stream;
 
+   procedure Finish (Object : in out Encoding) is
+   begin
+      if Is_Open (Object.Writing_Converter) then
+         declare
+            Buffer_First : Stream_Element_Offset
+               renames Object.Writing_First;
+            Buffer_Last : Stream_Element_Offset
+               renames Object.Writing_Last;
+            Out_Buffer : Ada.Streams.Stream_Element_Array (0 .. 63);
+            Out_Last : Stream_Element_Offset := -1;
+            Finishing_Status : Finishing_Status_Type;
+         begin
+            if Buffer_First <= Buffer_Last then
+               --  put substitute instead of incomplete sequence in the buffer
+               Put_Substitute (
+                  Object.Writing_Converter,
+                  Out_Buffer (Out_Last + 1 .. Out_Buffer'Last),
+                  Out_Last);
+            end if;
+            --  finish
+            Convert_No_Check (
+               Object.Writing_Converter,
+               Out_Buffer (Out_Last + 1 .. Out_Buffer'Last),
+               Out_Last,
+               Finishing_Status);
+            --  write
+            Ada.Streams.Write (
+               Object.Stream.all,
+               Out_Buffer (Out_Buffer'First .. Out_Last));
+         end;
+      end if;
+   end Finish;
+
    overriding procedure Read (
       Object : in out Encoding;
       Item : out Ada.Streams.Stream_Element_Array;
@@ -133,7 +167,6 @@ package body System.Native_Encoding.Encoding_Streams is
       end if;
       Last := Item'First - 1;
       declare
-         End_Error_Received : Boolean := False;
          Buffer : Ada.Streams.Stream_Element_Array
             renames Object.Reading_Buffer;
          Buffer_First : Stream_Element_Offset
@@ -149,7 +182,7 @@ package body System.Native_Encoding.Encoding_Streams is
       begin
          while Last /= Item'Last loop
             --  filling
-            if not End_Error_Received then
+            if Object.Reading_Status = Continuing then
                Adjust_Buffer (Buffer, Buffer_First, Buffer_Last);
                if Buffer_Last /= Buffer'Last then
                   begin
@@ -159,14 +192,14 @@ package body System.Native_Encoding.Encoding_Streams is
                         Buffer_Last);
                   exception
                      when End_Error =>
-                        End_Error_Received := True;
+                        Object.Reading_Status := Finishing;
                   end;
                end if;
             end if;
             --  converting
             if Buffer_First <= Buffer_Last then
                Adjust_Buffer (Converted, Converted_First, Converted_Last);
-               --  try to convert one multi-byte character
+               --  try to convert subsequence
                declare
                   Taken : Stream_Element_Offset;
                   Status : Status_Type;
@@ -183,10 +216,18 @@ package body System.Native_Encoding.Encoding_Streams is
                         null;
                      when Insufficient =>
                         if Converted_Last < Converted_First then
-                           raise Constraint_Error; -- Out_Buffer is too smaller
+                           raise Constraint_Error; -- Converted is too smaller
                         end if;
                      when Incomplete =>
-                        if Converted_Last < Converted_First then
+                        if Object.Reading_Status /= Continuing then
+                           --  put substitute instead of incomplete sequence
+                           Put_Substitute (
+                              Object.Reading_Converter,
+                              Converted (Converted_Last + 1 .. Converted'Last),
+                              Converted_Last);
+                           --  to finishing phase
+                           Buffer_First := Buffer_Last + 1;
+                        elsif Converted_Last < Converted_First then
                            exit; -- wait tail-bytes
                         end if;
                      when Illegal_Sequence =>
@@ -202,8 +243,28 @@ package body System.Native_Encoding.Encoding_Streams is
                                  Object.Writing_Converter)
                               - 1);
                   end case;
-                  --  drop one multi-byte character
+                  --  drop converted subsequence
                   Buffer_First := Taken + 1;
+               end;
+            elsif Object.Reading_Status = Finishing then
+               Adjust_Buffer (Converted, Converted_First, Converted_Last);
+               --  finish
+               declare
+                  Status : Finishing_Status_Type;
+               begin
+                  Convert_No_Check (
+                     Object.Reading_Converter,
+                     Converted (Converted_Last + 1 .. Converted'Last),
+                     Converted_Last,
+                     Status);
+                  case Status is
+                     when Fine =>
+                        Object.Reading_Status := Ended;
+                     when Insufficient =>
+                        if Converted_Last < Converted_First then
+                           raise Constraint_Error; -- Converted is too smaller
+                        end if;
+                  end case;
                end;
             end if;
             --  copy converted elements
@@ -222,13 +283,12 @@ package body System.Native_Encoding.Encoding_Streams is
                Last := New_Last;
                Converted_First := New_Converted_First;
             end;
-            exit when End_Error_Received
-               and then Buffer_Last < Buffer_First
+            exit when Object.Reading_Status = Ended
                and then Converted_Last < Converted_First;
          end loop;
          if Last = Item'First - 1 -- do not use "<" since underflow
-            and then Buffer_Last < Buffer_First
-            and then End_Error_Received
+            and then Object.Reading_Status = Ended
+            and then Converted_Last < Converted_First
          then
             Ada.Exceptions.Raise_Exception_From_Here (End_Error'Identity);
          end if;
@@ -281,7 +341,7 @@ package body System.Native_Encoding.Encoding_Streams is
             else
                exit when Buffer_Last < Buffer_First;
             end if;
-            --  try to convert one multi-byte character
+            --  try to convert subsequence
             declare
                Taken : Stream_Element_Offset;
                Out_Buffer : Ada.Streams.Stream_Element_Array (0 .. 63);
@@ -319,11 +379,11 @@ package body System.Native_Encoding.Encoding_Streams is
                               Object.Writing_Converter)
                            - 1);
                end case;
-               --  write one converted multi-byte character
+               --  write converted subsequence
                Ada.Streams.Write (
                   Object.Stream.all,
                   Out_Buffer (Out_Buffer'First .. Out_Last));
-               --  drop one multi-byte character
+               --  drop converted subsequence
                Buffer_First := Taken + 1;
             end;
          end loop;
