@@ -108,16 +108,20 @@ begin
 				Ada.Streams.Buffer_Storage_IO.Stream (Buffer));
 		S : String (1 .. 3);
 	begin
-		Ada.Streams.Write (
-			Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all,
-			(16#82#, 16#a0#));
+		for I in 1 .. 100 loop
+			Ada.Streams.Write (
+				Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all,
+				(16#82#, 16#a0#));
+		end loop;
 		Ada.Streams.Set_Index (
 			Ada.Streams.Seekable_Stream_Type'Class (Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all),
 			1);
-		String'Read (
-			System.Native_Encoding.Encoding_Streams.Stream (E),
-			S);
-		pragma Assert (S = Japanease_A);
+		for I in 1 .. 100 loop
+			String'Read (
+				System.Native_Encoding.Encoding_Streams.Stream (E),
+				S);
+			pragma Assert (S = Japanease_A);
+		end loop;
 	end;
 	-- writing
 	declare
@@ -129,17 +133,21 @@ begin
 				Ada.Streams.Buffer_Storage_IO.Stream (Buffer));
 		S : String (1 .. 3);
 	begin
-		Ada.Streams.Write (
-			System.Native_Encoding.Encoding_Streams.Stream (E).all,
-			(16#82#, 16#a0#));
+		for I in 1 .. 100 loop
+			Ada.Streams.Write (
+				System.Native_Encoding.Encoding_Streams.Stream (E).all,
+				(16#82#, 16#a0#));
+		end loop;
 		Ada.Streams.Set_Index (
 			Ada.Streams.Seekable_Stream_Type'Class (Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all),
 			1);
-		pragma Assert (Ada.Streams.Stream_Element_Count'(Ada.Streams.Buffer_Storage_IO.Size (Buffer)) = 3);
-		String'Read (
-			Ada.Streams.Buffer_Storage_IO.Stream (Buffer),
-			S);
-		pragma Assert (S = Japanease_A);
+		pragma Assert (Ada.Streams.Stream_Element_Count'(Ada.Streams.Buffer_Storage_IO.Size (Buffer)) = 300);
+		for I in 1 .. 100 loop
+			String'Read (
+				Ada.Streams.Buffer_Storage_IO.Stream (Buffer),
+				S);
+			pragma Assert (S = Japanease_A);
+		end loop;
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end nls;
