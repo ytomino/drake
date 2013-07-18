@@ -179,17 +179,22 @@ package body System.Native_Encoding.Encoding_Streams is
             renames Object.Reading_Converted_First;
          Converted_Last : Stream_Element_Offset
             renames Object.Reading_Converted_Last;
+         Read_Zero : Boolean := False;
       begin
          while Last /= Item'Last loop
             --  filling
             if Object.Reading_Status = Continuing then
                Adjust_Buffer (Buffer, Buffer_First, Buffer_Last);
                if Buffer_Last /= Buffer'Last then
+                  declare
+                     Old_Buffer_Last : constant Stream_Element_Offset :=
+                        Buffer_Last;
                   begin
                      Ada.Streams.Read (
                         Object.Stream.all,
                         Buffer (Buffer_Last + 1 .. Buffer'Last),
                         Buffer_Last);
+                     Read_Zero := Old_Buffer_Last = Buffer_Last;
                   exception
                      when End_Error =>
                         Object.Reading_Status := Finishing;
@@ -283,7 +288,7 @@ package body System.Native_Encoding.Encoding_Streams is
                Last := New_Last;
                Converted_First := New_Converted_First;
             end;
-            exit when Object.Reading_Status = Ended
+            exit when (Object.Reading_Status = Ended or else Read_Zero)
                and then Converted_Last < Converted_First;
          end loop;
          if Last = Item'First - 1 -- do not use "<" since underflow
