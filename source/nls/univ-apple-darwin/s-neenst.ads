@@ -32,6 +32,11 @@ package System.Native_Encoding.Encoding_Streams is
 
 private
 
+   Half_Buffer_Length : constant := 64;
+
+   subtype Buffer_Type is
+      Ada.Streams.Stream_Element_Array (0 .. 2 * Half_Buffer_Length - 1);
+
    type Encoding is limited new Ada.Streams.Root_Stream_Type with record
       Internal : Encoding_Id;
       External : Encoding_Id;
@@ -43,11 +48,16 @@ private
          Max_Substitute_Length);
       --  reading
       Reading_Converter : Converter;
-      Reading_Buffer : Ada.Streams.Stream_Element_Array (0 .. 5); -- UTF-8
+      Reading_Buffer : Buffer_Type;
+      Reading_First : Ada.Streams.Stream_Element_Offset;
       Reading_Last : Ada.Streams.Stream_Element_Offset;
+      Reading_Converted_Buffer : Buffer_Type;
+      Reading_Converted_First : Ada.Streams.Stream_Element_Offset;
+      Reading_Converted_Last : Ada.Streams.Stream_Element_Offset;
       --  writing
       Writing_Converter : Converter;
-      Writing_Buffer : Ada.Streams.Stream_Element_Array (0 .. 5); -- UTF-8
+      Writing_Buffer : Buffer_Type;
+      Writing_First : Ada.Streams.Stream_Element_Offset;
       Writing_Last : Ada.Streams.Stream_Element_Offset;
    end record;
 
