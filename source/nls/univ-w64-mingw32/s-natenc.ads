@@ -28,6 +28,7 @@ package System.Native_Encoding is
       Incomplete, -- the input buffer is broken off at a multi-byte character
       Illegal_Sequence); -- a input character could not be mapped to the output
 
+   type Finishing_Status_Type is new Status_Type range Fine .. Insufficient;
    type Substituting_Status_Type is new Status_Type range Fine .. Insufficient;
 
    --  converter
@@ -46,7 +47,7 @@ package System.Native_Encoding is
       Object : in out Converter;
       Substitute : Ada.Streams.Stream_Element_Array);
 
-   --  convert one character sequence
+   --  convert subsequence
    procedure Convert (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
@@ -54,6 +55,13 @@ package System.Native_Encoding is
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Status_Type);
+
+   --  finish converting and receive remaindered sequence
+   procedure Convert (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Finishing_Status_Type);
 
    --  convert all character sequence with substitute,
    --    and stop if Out_Item is not large enough
@@ -79,6 +87,8 @@ package System.Native_Encoding is
       renames Ada.IO_Exceptions.Name_Error;
    Status_Error : exception
       renames Ada.IO_Exceptions.Status_Error;
+   Use_Error : exception
+      renames Ada.IO_Exceptions.Use_Error;
 
 private
    use type Ada.Streams.Stream_Element_Offset;
@@ -116,6 +126,12 @@ private
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Status_Type);
+
+   procedure Convert_No_Check (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Finishing_Status_Type);
 
    procedure Convert_No_Check (
       Object : Converter;

@@ -107,6 +107,7 @@ begin
 				System.Native_Encoding.Names.Windows_31J,
 				Ada.Streams.Buffer_Storage_IO.Stream (Buffer));
 		S : String (1 .. 3);
+		One_Element : String (1 .. 1);
 	begin
 		for I in 1 .. 100 loop
 			Ada.Streams.Write (
@@ -122,6 +123,15 @@ begin
 				S);
 			pragma Assert (S = Japanease_A);
 		end loop;
+		begin
+			String'Read (
+				System.Native_Encoding.Encoding_Streams.Stream (E),
+				One_Element);
+			raise Program_Error;
+		exception
+			when System.Native_Encoding.Encoding_Streams.End_Error =>
+				null;
+		end;
 	end;
 	-- writing
 	declare
@@ -138,6 +148,7 @@ begin
 				System.Native_Encoding.Encoding_Streams.Stream (E).all,
 				(16#82#, 16#a0#));
 		end loop;
+		System.Native_Encoding.Encoding_Streams.Finish (E);
 		Ada.Streams.Set_Index (
 			Ada.Streams.Seekable_Stream_Type'Class (Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all),
 			1);

@@ -150,6 +150,18 @@ package body System.Native_Encoding is
 
    procedure Convert (
       Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Finishing_Status_Type) is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Convert_No_Check (Object, Out_Item, Out_Last, Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
@@ -449,6 +461,19 @@ package body System.Native_Encoding is
          Ada.Debug.Put ("Out_Item'First =" & Out_Item'First'Img));
       pragma Check (Trace, Ada.Debug.Put ("Out_Last =" & Out_Last'Img));
       pragma Check (Trace, Ada.Debug.Put ("leave"));
+   end Convert_No_Check;
+
+   procedure Convert_No_Check (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Finishing_Status_Type)
+   is
+      pragma Unreferenced (Object);
+      pragma Unmodified (Out_Item);
+   begin
+      Out_Last := Out_Item'First - 1;
+      Status := Fine;
    end Convert_No_Check;
 
    procedure Convert_No_Check (

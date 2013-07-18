@@ -136,6 +136,18 @@ package body System.Native_Encoding is
 
    procedure Convert (
       Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Finishing_Status_Type) is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Convert_No_Check (Object, Out_Item, Out_Last, Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
@@ -216,6 +228,43 @@ package body System.Native_Encoding is
 
    procedure Convert_No_Check (
       Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Finishing_Status_Type)
+   is
+      pragma Suppress (All_Checks);
+      package V_Conv is
+         new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
+      Out_Pointer : aliased C.char_ptr := V_Conv.To_Pointer (Out_Item'Address);
+      Out_Size : aliased C.size_t := Out_Item'Length;
+      errno : C.signed_int;
+   begin
+      if C.iconv.iconv (
+         NC_Converter.iconv,
+         null,
+         null,
+         Out_Pointer'Access,
+         Out_Size'Access) = C.size_t'Last
+      then
+         errno := C.errno.errno;
+         case errno is
+            when C.errno.E2BIG =>
+               Status := Insufficient;
+            when others => -- unknown
+               Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         end case;
+      else
+         Status := Fine;
+      end if;
+      Out_Last := Out_Item'First
+         + (Out_Item'Length - Ada.Streams.Stream_Element_Offset (Out_Size))
+         - 1;
+   end Convert_No_Check;
+
+   procedure Convert_No_Check (
+      Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
@@ -229,7 +278,7 @@ package body System.Native_Encoding is
       Out_Last := Out_Item'First - 1;
       while Last /= Item'Last loop
          declare
-            One_Character_Status : Status_Type;
+            Step_Status : Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -237,8 +286,8 @@ package body System.Native_Encoding is
                Last,
                Out_Item (Out_Last + 1 .. Out_Item'Last),
                Out_Last,
-               One_Character_Status);
-            case One_Character_Status is
+               Step_Status);
+            case Step_Status is
                when Fine =>
                   null;
                when Insufficient =>
@@ -263,6 +312,23 @@ package body System.Native_Encoding is
             end case;
          end;
       end loop;
+      --  receive remaindered sequence
+      declare
+         Finishing_Status : Finishing_Status_Type;
+      begin
+         Convert_No_Check (
+            Object,
+            Out_Item (Out_Last + 1 .. Out_Item'Last),
+            Out_Last,
+            Finishing_Status);
+         case Finishing_Status is
+            when Fine =>
+               null;
+            when Insufficient =>
+               Status := Insufficient;
+               return;
+         end case;
+      end;
       Status := Fine;
    end Convert_No_Check;
 

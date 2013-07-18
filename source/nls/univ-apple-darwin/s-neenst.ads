@@ -28,6 +28,10 @@ package System.Native_Encoding.Encoding_Streams is
    function Stream (Object : aliased in out Encoding)
       return not null access Ada.Streams.Root_Stream_Type'Class;
 
+   --  finish writing
+
+   procedure Finish (Object : in out Encoding);
+
    --  exceptions
 
    End_Error : exception
@@ -39,6 +43,8 @@ private
 
    subtype Buffer_Type is
       Ada.Streams.Stream_Element_Array (0 .. 2 * Half_Buffer_Length - 1);
+
+   type Reading_Status_Type is (Continuing, Finishing, Ended);
 
    type Encoding is limited new Ada.Streams.Root_Stream_Type with record
       Internal : Encoding_Id;
@@ -57,6 +63,7 @@ private
       Reading_Converted_Buffer : Buffer_Type;
       Reading_Converted_First : Ada.Streams.Stream_Element_Offset;
       Reading_Converted_Last : Ada.Streams.Stream_Element_Offset;
+      Reading_Status : Reading_Status_Type;
       --  writing
       Writing_Converter : Converter;
       Writing_Buffer : Buffer_Type;
