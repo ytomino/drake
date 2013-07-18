@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
 with System.Memory.Allocated_Size;
 package body Ada.Streams.Buffer_Storage_IO is
@@ -86,6 +87,9 @@ package body Ada.Streams.Buffer_Storage_IO is
       Length : Stream_Element_Count := Item'Length;
       Rest : constant Stream_Element_Count := Stream.Last - Stream.Index + 1;
    begin
+      if Length > 0 and then Rest = 0 then
+         Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+      end if;
       if Length > Rest then
          Length := Rest;
       end if;
