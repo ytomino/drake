@@ -67,11 +67,12 @@ begin
 		pragma Assert (System.Native_Encoding.Strings.Encode (E, Japanease_A) = (16#82#, 16#a0#));
 		-- substitute
 		declare
+			Default : constant Ada.Streams.Stream_Element_Array := System.Native_Encoding.Strings.Substitute (E);
 			Mongolian_Birga_In_Windows_31J : constant Ada.Streams.Stream_Element_Array :=
 				System.Native_Encoding.Strings.Encode (E, Mongolian_Birga);
 		begin
-			pragma Assert (Mongolian_Birga_In_Windows_31J = (1 => 16#3f#)
-				or else Mongolian_Birga_In_Windows_31J = (16#3f#, 16#3f#, 16#3f#));
+			pragma Assert (Mongolian_Birga_In_Windows_31J = Default
+				or else Mongolian_Birga_In_Windows_31J = Default & Default & Default);
 			null;
 		end;
 		System.Native_Encoding.Strings.Set_Substitute (E, (16#81#, 16#51#)); -- fullwidth low line in Windows-31J
