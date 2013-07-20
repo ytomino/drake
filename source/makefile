@@ -419,7 +419,7 @@ $(BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
 ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad[sb]) $(IMPORTDIR)/c.ads
-IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
+IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata c-icucore,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
 IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 

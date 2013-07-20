@@ -50,7 +50,7 @@ MFLAGS=-a
 endif
 
 ifneq ($(findstring darwin,$(TARGET)),)
-LFLAGS=-liconv
+LFLAGS=-licucore
 endif
 ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS=-lm -lpthread -liconv -lgcc_eh
