@@ -41,6 +41,25 @@ private
       Ada.Streams.Stream_Element_Array (0 .. 2 * Half_Buffer_Length - 1);
 
    type Reading_Status_Type is (Continuing, Finishing, Ended);
+   pragma Discard_Names (Reading_Status_Type);
+
+   type Reading_Context_Type is record
+      Buffer : Buffer_Type;
+      First : Ada.Streams.Stream_Element_Offset;
+      Last : Ada.Streams.Stream_Element_Offset;
+      Converted_Buffer : Buffer_Type;
+      Converted_First : Ada.Streams.Stream_Element_Offset;
+      Converted_Last : Ada.Streams.Stream_Element_Offset;
+      Status : Reading_Status_Type;
+   end record;
+   pragma Suppress_Initialization (Reading_Context_Type);
+
+   type Writing_Context_Type is record
+      Buffer : Buffer_Type;
+      First : Ada.Streams.Stream_Element_Offset;
+      Last : Ada.Streams.Stream_Element_Offset;
+   end record;
+   pragma Suppress_Initialization (Writing_Context_Type);
 
    type Encoding is limited new Ada.Streams.Root_Stream_Type with record
       Internal : Encoding_Id;
@@ -53,18 +72,10 @@ private
          Max_Substitute_Length);
       --  reading
       Reading_Converter : Converter;
-      Reading_Buffer : Buffer_Type;
-      Reading_First : Ada.Streams.Stream_Element_Offset;
-      Reading_Last : Ada.Streams.Stream_Element_Offset;
-      Reading_Converted_Buffer : Buffer_Type;
-      Reading_Converted_First : Ada.Streams.Stream_Element_Offset;
-      Reading_Converted_Last : Ada.Streams.Stream_Element_Offset;
-      Reading_Status : Reading_Status_Type;
+      Reading_Context : Reading_Context_Type;
       --  writing
       Writing_Converter : Converter;
-      Writing_Buffer : Buffer_Type;
-      Writing_First : Ada.Streams.Stream_Element_Offset;
-      Writing_Last : Ada.Streams.Stream_Element_Offset;
+      Writing_Context : Writing_Context_Type;
    end record;
 
    overriding procedure Read (
