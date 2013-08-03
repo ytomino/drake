@@ -1,4 +1,5 @@
 with Ada.Exceptions;
+with System.Address_To_Access_Conversions;
 package body System.Native_Encoding.Encoding_Streams is
    use type Ada.Streams.Stream_Element;
    use type Ada.Streams.Stream_Element_Array;
@@ -347,11 +348,14 @@ package body System.Native_Encoding.Encoding_Streams is
       return Encoding
    is
       pragma Suppress (Accessibility_Check);
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
    begin
       return Result : Encoding do
          Result.Internal := Internal;
          Result.External := External;
-         Result.Stream := Stream;
+         Result.Stream := Conv.To_Address (Conv.Object_Pointer (Stream));
          Result.Substitute_Length := -1;
          Initialize (Result.Reading_Context);
          Initialize (Result.Writing_Context);
@@ -360,7 +364,7 @@ package body System.Native_Encoding.Encoding_Streams is
 
    function Is_Open (Object : Encoding) return Boolean is
    begin
-      return Object.Stream /= null;
+      return Object.Stream /= Null_Address;
    end Is_Open;
 
    function Substitute (Object : Encoding)
@@ -405,10 +409,13 @@ package body System.Native_Encoding.Encoding_Streams is
    end Stream;
 
    procedure Finish (Object : in out Encoding) is
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
    begin
       if Is_Open (Object.Writing_Converter) then
          Finish (
-            Object.Stream,
+            Conv.To_Pointer (Object.Stream),
             Object.Writing_Converter,
             Object.Writing_Context);
       end if;
@@ -417,7 +424,11 @@ package body System.Native_Encoding.Encoding_Streams is
    overriding procedure Read (
       Object : in out Encoding;
       Item : out Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset) is
+      Last : out Ada.Streams.Stream_Element_Offset)
+   is
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
    begin
       if not Is_Open (Object.Reading_Converter) then
          Open (
@@ -431,7 +442,7 @@ package body System.Native_Encoding.Encoding_Streams is
          end if;
       end if;
       Read (
-         Object.Stream,
+         Conv.To_Pointer (Object.Stream),
          Item,
          Last,
          Object.Reading_Converter,
@@ -440,7 +451,11 @@ package body System.Native_Encoding.Encoding_Streams is
 
    overriding procedure Write (
       Object : in out Encoding;
-      Item : Ada.Streams.Stream_Element_Array) is
+      Item : Ada.Streams.Stream_Element_Array)
+   is
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
    begin
       if not Is_Open (Object.Writing_Converter) then
          Open (
@@ -454,7 +469,7 @@ package body System.Native_Encoding.Encoding_Streams is
          end if;
       end if;
       Write (
-         Object.Stream,
+         Conv.To_Pointer (Object.Stream),
          Item,
          Object.Writing_Converter,
          Object.Writing_Context);

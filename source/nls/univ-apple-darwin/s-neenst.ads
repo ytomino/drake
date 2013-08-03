@@ -64,7 +64,7 @@ private
    type Encoding is limited new Ada.Streams.Root_Stream_Type with record
       Internal : Encoding_Id;
       External : Encoding_Id;
-      Stream : access Ada.Streams.Root_Stream_Type'Class;
+      Stream : Address := Null_Address; -- access Root_Stream_Type'Class;
       --  substitute (encoded as internal)
       Substitute_Length : Ada.Streams.Stream_Element_Offset;
       Substitute : Ada.Streams.Stream_Element_Array (
