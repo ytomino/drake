@@ -51,7 +51,7 @@ package body Ada.Interrupts.Inside is
          System.Termination.Error_Put (Name (Name'First .. Name_Last));
          System.Termination.Error_Put (", raised ");
          System.Termination.Error_Put (
-            Full_Name (1 .. Cast (Current).Id.Name_Length));
+            Full_Name (1 .. Cast (Current).Id.Name_Length - 1));
          if Cast (Current).Msg_Length > 0 then
             System.Termination.Error_Put (" : ");
             System.Termination.Error_Put (

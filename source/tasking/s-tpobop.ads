@@ -27,9 +27,28 @@ package System.Tasking.Protected_Objects.Operations is
    procedure Protected_Entry_Call (
       Object : not null access Entries.Protection_Entries'Class;
       E : Protected_Entry_Index;
-      Uninterpreted_Data : System.Address;
+      Uninterpreted_Data : Address;
       Mode : Call_Modes;
       Block : out Communication_Block);
+
+   --  required for synchronized interface by compiler
+   procedure Timed_Protected_Entry_Call (
+      Object : not null access Entries.Protection_Entries'Class;
+      E : Protected_Entry_Index;
+      Uninterpreted_Data : Address;
+      Timeout : Duration;
+      Mode : Integer; -- Tasking.Delay_Modes;
+      Entry_Call_Successful : out Boolean);
+
+   --  required for select else by compiler
+   function Enqueued (Block : Communication_Block) return Boolean;
+
+   --  required for synchronized interface by compiler
+   function Cancelled (Block : Communication_Block) return Boolean;
+
+   --  required for select then abort by compiler
+   procedure Cancel_Protected_Entry_Call (
+      Block : in out Communication_Block);
 
    --  required by compiler
    procedure Requeue_Protected_Entry (
@@ -38,13 +57,19 @@ package System.Tasking.Protected_Objects.Operations is
       E : Protected_Entry_Index;
       With_Abort : Boolean);
 
+   --  required for synchronized interface by compiler
+   procedure Requeue_Task_To_Protected_Entry (
+      New_Object : not null access Entries.Protection_Entries'Class;
+      E : Protected_Entry_Index;
+      With_Abort : Boolean);
+
+   --  required for 'Count by compiler
+   function Protected_Count (
+      Object : Entries.Protection_Entries'Class;
+      E : Protected_Entry_Index)
+      return Natural;
+
    --  unimplemented subprograms required by compiler
-   --  Cancel_Protected_Entry_Call
-   --  Enqueued
-   --  Cancelled
-   --  Requeue_Task_To_Protected_Entry
-   --  Protected_Count
    --  Protected_Entry_Caller
-   --  Timed_Protected_Entry_Call
 
 end System.Tasking.Protected_Objects.Operations;

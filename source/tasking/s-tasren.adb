@@ -127,6 +127,27 @@ package body System.Tasking.Rendezvous is
       Complete_Rendezvous;
    end Accept_Trivial;
 
+   procedure Task_Entry_Call (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      Uninterpreted_Data : Address;
+      Mode : Call_Modes;
+      Rendezvous_Successful : out Boolean) is
+   begin
+      raise Program_Error;
+   end Task_Entry_Call;
+
+   procedure Timed_Task_Entry_Call (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      Uninterpreted_Data : System.Address;
+      Timeout : Duration;
+      Mode : Integer;
+      Rendezvous_Successful : out Boolean) is
+   begin
+      raise Program_Error;
+   end Timed_Task_Entry_Call;
+
    procedure Call_Simple (
       Acceptor : Task_Id;
       E : Task_Entry_Index;
@@ -188,10 +209,38 @@ package body System.Tasking.Rendezvous is
       end;
    end Call_Simple;
 
+   procedure Cancel_Task_Entry_Call (Cancelled : out Boolean) is
+   begin
+      raise Program_Error;
+   end Cancel_Task_Entry_Call;
+
+   procedure Requeue_Task_Entry (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      With_Abort : Boolean) is
+   begin
+      raise Program_Error;
+   end Requeue_Task_Entry;
+
+   procedure Requeue_Protected_To_Task_Entry (
+      Object : not null access Entries.Protection_Entries'Class;
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      With_Abort : Boolean) is
+   begin
+      raise Program_Error;
+   end Requeue_Protected_To_Task_Entry;
+
    function Callable (T : Task_Id) return Boolean is
    begin
       return Tasks.Callable (Task_Record_Conv.To_Pointer (T));
    end Callable;
+
+   function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_Id is
+   begin
+      raise Program_Error;
+      return Task_Entry_Caller (D);
+   end Task_Entry_Caller;
 
    function Task_Count (E : Task_Entry_Index) return Natural is
    begin

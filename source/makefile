@@ -74,7 +74,7 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib/build
 
-SUBDIRS=ada83 calendar containers directories environment image interfaces numerics primitives streams strings tasking textio $(EH)
+SUBDIRS=ada83 calendar containers directories environment image interfaces nls numerics primitives streams strings tasking textio $(EH)
 
 ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
@@ -116,6 +116,7 @@ endif
 # directories : calendar                       # Ada.Directories
 # image       :                                # support for 'Image and 'Value attributes
 # interfaces  :                                # Interfaces.C and Interfaces.COBOL
+# nls         :                                # System.Native_Encoding
 # numerics    :                                # support for float attributes, Ada.Numerics and Interfaces.Fortran
 # streams     :                                # all *_IO packages (including Text_IO)
 # strings     :                                # Ada.Characters and Ada.Strings
@@ -322,6 +323,12 @@ $(RTSDIR)/adainclude/%.ads: interfaces/$(TARGETSUBDIR)/%.ads
 $(RTSDIR)/adainclude/%.adb: interfaces/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+$(RTSDIR)/adainclude/%.ads: nls/$(TARGETSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: nls/$(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
 $(RTSDIR)/adainclude/%.ads: numerics/%.ads
 	$(INSTALL) $(abspath $<) $@
 
@@ -412,7 +419,7 @@ $(BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
 ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad[sb]) $(IMPORTDIR)/c.ads
-IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
+IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata c-icucore,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
 IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 

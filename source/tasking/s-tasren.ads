@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
 with Ada.Exceptions;
+limited with System.Tasking.Protected_Objects.Entries;
 package System.Tasking.Rendezvous is
 
    --  required for accept statement by compiler (s-tasren.ads)
@@ -48,6 +49,23 @@ package System.Tasking.Rendezvous is
    --        }
    --    }
 
+   --  required for synchronized interface by compiler (s-tasren.ads)
+   procedure Task_Entry_Call (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      Uninterpreted_Data : Address;
+      Mode : Call_Modes;
+      Rendezvous_Successful : out Boolean);
+
+   --  required for synchronized interface by compiler (s-tasren.ads)
+   procedure Timed_Task_Entry_Call (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      Uninterpreted_Data : System.Address;
+      Timeout : Duration;
+      Mode : Integer; -- Tasking.Delay_Modes;
+      Rendezvous_Successful : out Boolean);
+
    --  required for calling entry of task by compiler (s-tasren.ads)
    procedure Call_Simple (
       Acceptor : Task_Id;
@@ -63,10 +81,34 @@ package System.Tasking.Rendezvous is
    --    entry_index,
    --    (const system__address) &P);
 
+   --  required for select then abort by compiler (s-tasren.ads)
+   procedure Cancel_Task_Entry_Call (Cancelled : out Boolean);
+
+   --  required for synchronized interface by compiler (s-tasren.ads)
+   procedure Requeue_Task_Entry (
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      With_Abort : Boolean);
+
+   --  required for synchronized interface by compiler (s-tasren.ads)
+   procedure Requeue_Protected_To_Task_Entry (
+      Object : not null access Entries.Protection_Entries'Class;
+      Acceptor : Task_Id;
+      E : Task_Entry_Index;
+      With_Abort : Boolean);
+
    --  required for 'Callable by compiler (s-tasren.ads)
    function Callable (T : Task_Id) return Boolean;
 
+   --  required for 'Caller by compiler (s-tasren.ads)
+   type Task_Entry_Nesting_Depth is range 0 .. Max_Entry;
+   function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_Id;
+
    --  required for 'Count by compiler (s-tasren.ads)
    function Task_Count (E : Task_Entry_Index) return Natural;
+
+   --  unimplemented subprograms required by compiler
+   --  Selective_Wait
+   --  Timed_Selective_Wait
 
 end System.Tasking.Rendezvous;

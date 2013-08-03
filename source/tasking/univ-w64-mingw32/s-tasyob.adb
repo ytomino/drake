@@ -366,6 +366,7 @@ package body System.Tasking.Synchronous_Objects is
          exit when sync_bool_compare_and_swap (Object.State'Access, 0, -999);
          Wait (Object.Writer_Barrier);
       end loop;
+      Reset (Object.Reader_Barrier);
    end Enter_Writing;
 
    procedure Leave (Object : in out RW_Lock) is

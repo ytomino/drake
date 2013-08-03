@@ -49,8 +49,11 @@ else
 MFLAGS=-a
 endif
 
+ifneq ($(findstring darwin,$(TARGET)),)
+LFLAGS=-licucore
+endif
 ifneq ($(findstring freebsd,$(TARGET)),)
-LFLAGS=-lm -lpthread -lgcc_eh
+LFLAGS=-lm -lpthread -liconv -lgcc_eh
 endif
 ifneq ($(findstring linux-gnu,$(TARGET)),)
 LFLAGS=-lm -lpthread

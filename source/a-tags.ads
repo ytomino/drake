@@ -217,6 +217,17 @@ private
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind;
 
+   --  required for synchronized interface by compiler (a-tags.ads)
+   procedure Set_Prim_Op_Kind (
+      T : Tag;
+      Position : Positive;
+      Value : Prim_Op_Kind);
+   function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
+   procedure Set_Entry_Index (
+      T : Tag;
+      Position : Positive;
+      Value : Positive);
+
    --  required for Obj in Intf'Class by compiler (a-tags.ads)
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
 
@@ -238,7 +249,6 @@ private
 
    --  required by compiler ??? (a-tags.ads)
 --  procedure Check_TSD (TSD : Type_Specific_Data_Ptr);
---   function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
 --   function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
 --   function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
 --   function Offset_To_Top (This : System.Address)
@@ -249,11 +259,6 @@ private
 --      Interface_T : Tag;
 --      Offset_Value : System.Storage_Elements.Storage_Offset;
 --      Offset_Func : Offset_To_Top_Function_Ptr);
---  procedure Set_Entry_Index (T : Tag; Position : Positive; Value : Positive);
---   procedure Set_Prim_Op_Kind (
---      T : Tag;
---      Position : Positive;
---      Value : Prim_Op_Kind);
 
    --  inheritance relation check
    function Is_Descendant (

@@ -13,6 +13,7 @@ package System.Tasking.Tasks is
    type Task_Id is access all Task_Record;
 
    function Current_Task_Id return Task_Id;
+   pragma Export (Ada, Current_Task_Id, "__drake_current_task");
    function Main_Task_Id return Task_Id;
 
    type Master_Record is limited private;
