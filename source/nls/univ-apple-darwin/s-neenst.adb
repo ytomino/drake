@@ -27,27 +27,29 @@ package body System.Native_Encoding.Encoding_Streams is
       end if;
    end Adjust_Buffer;
 
-   procedure Set_Substitute_To_Reading_Converter (Object : in out Encoding);
-   procedure Set_Substitute_To_Reading_Converter (Object : in out Encoding) is
-   begin
-      Set_Substitute (
-         Object.Reading_Converter,
-         Object.Substitute (1 .. Object.Substitute_Length));
-   end Set_Substitute_To_Reading_Converter;
+   procedure Set_Substitute_To_Reading_Converter (
+      Object : in out Converter;
+      Substitute : Ada.Streams.Stream_Element_Array)
+      renames Set_Substitute; -- System.Native_Encoding.Set_Substitute
 
-   procedure Set_Substitute_To_Writing_Converter (Object : in out Encoding);
-   procedure Set_Substitute_To_Writing_Converter (Object : in out Encoding) is
+   procedure Set_Substitute_To_Writing_Converter (
+      Object : in out Converter;
+      Substitute : Ada.Streams.Stream_Element_Array);
+   procedure Set_Substitute_To_Writing_Converter (
+      Object : in out Converter;
+      Substitute : Ada.Streams.Stream_Element_Array)
+   is
       S2 : Ada.Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
       S2_Length : Ada.Streams.Stream_Element_Offset;
    begin
       --  convert substitute from internal to external
       Convert (
-         Object.Writing_Converter,
-         Object.Substitute (1 .. Object.Substitute_Length),
+         Object,
+         Substitute,
          S2,
          S2_Length);
       Set_Substitute (
-         Object.Writing_Converter,
+         Object,
          S2 (1 .. S2_Length));
    end Set_Substitute_To_Writing_Converter;
 
@@ -102,10 +104,14 @@ package body System.Native_Encoding.Encoding_Streams is
       Object.Substitute (1 .. Object.Substitute_Length) := Substitute;
       --  set to converters
       if Is_Open (Object.Reading_Converter) then
-         Set_Substitute_To_Reading_Converter (Object);
+         Set_Substitute_To_Reading_Converter (
+            Object.Reading_Converter,
+            Substitute);
       end if;
       if Is_Open (Object.Writing_Converter) then
-         Set_Substitute_To_Writing_Converter (Object);
+         Set_Substitute_To_Writing_Converter (
+            Object.Writing_Converter,
+            Substitute);
       end if;
    end Set_Substitute;
 
@@ -162,7 +168,9 @@ package body System.Native_Encoding.Encoding_Streams is
             From => Object.External,
             To => Object.Internal);
          if Object.Substitute_Length >= 0 then
-            Set_Substitute_To_Reading_Converter (Object);
+            Set_Substitute_To_Reading_Converter (
+               Object.Reading_Converter,
+               Object.Substitute (1 .. Object.Substitute_Length));
          end if;
       end if;
       Last := Item'First - 1;
@@ -310,7 +318,9 @@ package body System.Native_Encoding.Encoding_Streams is
             From => Object.Internal,
             To => Object.External);
          if Object.Substitute_Length >= 0 then
-            Set_Substitute_To_Writing_Converter (Object);
+            Set_Substitute_To_Writing_Converter (
+               Object.Writing_Converter,
+               Object.Substitute (1 .. Object.Substitute_Length));
          end if;
       end if;
       declare

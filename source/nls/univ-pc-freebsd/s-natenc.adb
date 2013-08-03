@@ -106,7 +106,7 @@ package body System.Native_Encoding is
    end Substitute;
 
    procedure Set_Substitute (
-      Object : Converter;
+      Object : in out Converter;
       Substitute : Ada.Streams.Stream_Element_Array)
    is
       NC_Converter : constant not null access Non_Controlled_Converter :=
