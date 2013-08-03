@@ -339,6 +339,118 @@ package body System.Native_Encoding.Encoding_Streams is
          Out_Buffer (Out_Buffer'First .. Out_Last));
    end Finish;
 
+   --  implementation of only reading
+
+   function Open (
+      Decoder : Converter;
+      Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+      return In_Type
+   is
+      pragma Suppress (Accessibility_Check);
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
+   begin
+      return Result : In_Type do
+         Result.Stream := Conv.To_Address (Conv.Object_Pointer (Stream));
+         Result.Reading_Converter := Decoder'Unrestricted_Access;
+         Initialize (Result.Reading_Context);
+      end return;
+   end Open;
+
+   function Is_Open (Object : In_Type) return Boolean is
+   begin
+      return Object.Stream /= Null_Address;
+   end Is_Open;
+
+   function Stream (Object : aliased in out In_Type)
+      return not null access Ada.Streams.Root_Stream_Type'Class is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      return Object'Unchecked_Access;
+   end Stream;
+
+   overriding procedure Read (
+      Object : in out In_Type;
+      Item : out Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset)
+   is
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
+   begin
+      Read (
+         Conv.To_Pointer (Object.Stream),
+         Item,
+         Last,
+         Object.Reading_Converter.all,
+         Object.Reading_Context);
+   end Read;
+
+   --  implementation of only writing
+
+   function Open (
+      Encoder : Converter;
+      Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+      return Out_Type
+   is
+      pragma Suppress (Accessibility_Check);
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
+   begin
+      return Result : Out_Type do
+         Result.Stream := Conv.To_Address (Conv.Object_Pointer (Stream));
+         Result.Writing_Converter := Encoder'Unrestricted_Access;
+         Initialize (Result.Writing_Context);
+      end return;
+   end Open;
+
+   function Is_Open (Object : Out_Type) return Boolean is
+   begin
+      return Object.Stream /= Null_Address;
+   end Is_Open;
+
+   function Stream (Object : aliased in out Out_Type)
+      return not null access Ada.Streams.Root_Stream_Type'Class is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      return Object'Unchecked_Access;
+   end Stream;
+
+   procedure Finish (Object : in out Out_Type) is
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Finish (
+         Conv.To_Pointer (Object.Stream),
+         Object.Writing_Converter.all,
+         Object.Writing_Context);
+   end Finish;
+
+   overriding procedure Write (
+      Object : in out Out_Type;
+      Item : Ada.Streams.Stream_Element_Array)
+   is
+      package Conv is
+         new Address_To_Access_Conversions (
+            Ada.Streams.Root_Stream_Type'Class);
+   begin
+      Write (
+         Conv.To_Pointer (Object.Stream),
+         Item,
+         Object.Writing_Converter.all,
+         Object.Writing_Context);
+   end Write;
+
    --  implementation of bidirectional
 
    function Open (
@@ -413,6 +525,9 @@ package body System.Native_Encoding.Encoding_Streams is
          new Address_To_Access_Conversions (
             Ada.Streams.Root_Stream_Type'Class);
    begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
       if Is_Open (Object.Writing_Converter) then
          Finish (
             Conv.To_Pointer (Object.Stream),
