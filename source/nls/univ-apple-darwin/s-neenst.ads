@@ -4,29 +4,31 @@ package System.Native_Encoding.Encoding_Streams is
    --  This is a stream wrapper encoding from/to another stream.
    pragma Preelaborate;
 
-   type Encoding is limited private;
+   --  bidirectional
+
+   type Inout_Type is limited private;
 
    --  management
    function Open (
       Internal : Encoding_Id;
       External : Encoding_Id;
       Stream : not null access Ada.Streams.Root_Stream_Type'Class)
-      return Encoding;
-   function Is_Open (Object : Encoding) return Boolean;
+      return Inout_Type;
+   function Is_Open (Object : Inout_Type) return Boolean;
 
    --  substitute (encoded as internal)
-   function Substitute (Object : Encoding)
+   function Substitute (Object : Inout_Type)
       return Ada.Streams.Stream_Element_Array;
    procedure Set_Substitute (
-      Object : in out Encoding;
+      Object : in out Inout_Type;
       Substitute : Ada.Streams.Stream_Element_Array);
 
    --  stream access
-   function Stream (Object : aliased in out Encoding)
+   function Stream (Object : aliased in out Inout_Type)
       return not null access Ada.Streams.Root_Stream_Type'Class;
 
    --  finish writing
-   procedure Finish (Object : in out Encoding);
+   procedure Finish (Object : in out Inout_Type);
 
    --  exceptions
 
@@ -61,7 +63,9 @@ private
    end record;
    pragma Suppress_Initialization (Writing_Context_Type);
 
-   type Encoding is limited new Ada.Streams.Root_Stream_Type with record
+   --  bidirectional
+
+   type Inout_Type is limited new Ada.Streams.Root_Stream_Type with record
       Internal : Encoding_Id;
       External : Encoding_Id;
       Stream : Address := Null_Address; -- access Root_Stream_Type'Class;
@@ -79,11 +83,11 @@ private
    end record;
 
    overriding procedure Read (
-      Object : in out Encoding;
+      Object : in out Inout_Type;
       Item : out Ada.Streams.Stream_Element_Array;
       Last : out Ada.Streams.Stream_Element_Offset);
    overriding procedure Write (
-      Object : in out Encoding;
+      Object : in out Inout_Type;
       Item : Ada.Streams.Stream_Element_Array);
 
 end System.Native_Encoding.Encoding_Streams;
