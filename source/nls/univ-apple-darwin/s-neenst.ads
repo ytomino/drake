@@ -4,32 +4,30 @@ package System.Native_Encoding.Encoding_Streams is
    --  This is a stream wrapper encoding from/to another stream.
    pragma Preelaborate;
 
+   --  bidirectional
+
    type Encoding is limited private;
 
+   --  management
    function Open (
       Internal : Encoding_Id;
       External : Encoding_Id;
       Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Encoding;
-
    function Is_Open (Object : Encoding) return Boolean;
 
    --  substitute (encoded as internal)
-
    function Substitute (Object : Encoding)
       return Ada.Streams.Stream_Element_Array;
-
    procedure Set_Substitute (
       Object : in out Encoding;
       Substitute : Ada.Streams.Stream_Element_Array);
 
    --  stream access
-
    function Stream (Object : aliased in out Encoding)
       return not null access Ada.Streams.Root_Stream_Type'Class;
 
    --  finish writing
-
    procedure Finish (Object : in out Encoding);
 
    --  exceptions
@@ -64,6 +62,8 @@ private
       Last : Ada.Streams.Stream_Element_Offset;
    end record;
    pragma Suppress_Initialization (Writing_Context_Type);
+
+   --  bidirectional
 
    type Encoding is limited new Ada.Streams.Root_Stream_Type with record
       Internal : Encoding_Id;

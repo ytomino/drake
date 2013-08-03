@@ -339,7 +339,7 @@ package body System.Native_Encoding.Encoding_Streams is
          Out_Buffer (Out_Buffer'First .. Out_Last));
    end Finish;
 
-   --  implementation
+   --  implementation of bidirectional
 
    function Open (
       Internal : Encoding_Id;
