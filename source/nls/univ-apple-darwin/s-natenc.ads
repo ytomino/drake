@@ -44,7 +44,7 @@ package System.Native_Encoding is
       return Ada.Streams.Stream_Element_Array;
 
    procedure Set_Substitute (
-      Object : Converter;
+      Object : in out Converter;
       Substitute : Ada.Streams.Stream_Element_Array);
 
    --  convert subsequence
