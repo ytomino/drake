@@ -5,6 +5,28 @@ package body System.Native_Encoding.Encoding_Streams is
 
    subtype Stream_Element_Offset is Ada.Streams.Stream_Element_Offset;
 
+   procedure Adjust_Buffer (
+      Buffer : in out Buffer_Type;
+      First : in out Ada.Streams.Stream_Element_Offset;
+      Last : in out Ada.Streams.Stream_Element_Offset);
+   procedure Adjust_Buffer (
+      Buffer : in out Buffer_Type;
+      First : in out Ada.Streams.Stream_Element_Offset;
+      Last : in out Ada.Streams.Stream_Element_Offset) is
+   begin
+      if First >= Buffer_Type'First + Half_Buffer_Length then
+         --  shift
+         declare
+            New_Last : constant Ada.Streams.Stream_Element_Offset :=
+               Buffer_Type'First + Last - First;
+         begin
+            Buffer (Buffer_Type'First .. New_Last) := Buffer (First .. Last);
+            First := Buffer_Type'First;
+            Last := New_Last;
+         end;
+      end if;
+   end Adjust_Buffer;
+
    procedure Set_Substitute_To_Reading_Converter (Object : in out Encoding);
    procedure Set_Substitute_To_Reading_Converter (Object : in out Encoding) is
    begin
@@ -28,28 +50,6 @@ package body System.Native_Encoding.Encoding_Streams is
          Object.Writing_Converter,
          S2 (1 .. S2_Length));
    end Set_Substitute_To_Writing_Converter;
-
-   procedure Adjust_Buffer (
-      Buffer : in out Buffer_Type;
-      First : in out Ada.Streams.Stream_Element_Offset;
-      Last : in out Ada.Streams.Stream_Element_Offset);
-   procedure Adjust_Buffer (
-      Buffer : in out Buffer_Type;
-      First : in out Ada.Streams.Stream_Element_Offset;
-      Last : in out Ada.Streams.Stream_Element_Offset) is
-   begin
-      if First >= Buffer_Type'First + Half_Buffer_Length then
-         --  shift
-         declare
-            New_Last : constant Ada.Streams.Stream_Element_Offset :=
-               Buffer_Type'First + Last - First;
-         begin
-            Buffer (Buffer_Type'First .. New_Last) := Buffer (First .. Last);
-            First := Buffer_Type'First;
-            Last := New_Last;
-         end;
-      end if;
-   end Adjust_Buffer;
 
    --  implementation
 
