@@ -102,7 +102,7 @@ begin
 	-- reading
 	declare
 		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
-		E : aliased System.Native_Encoding.Encoding_Streams.Encoding :=
+		E : aliased System.Native_Encoding.Encoding_Streams.Inout_Type :=
 			System.Native_Encoding.Encoding_Streams.Open (
 				System.Native_Encoding.Names.UTF_8,
 				System.Native_Encoding.Names.Windows_31J,
@@ -137,7 +137,7 @@ begin
 	-- writing
 	declare
 		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
-		E : aliased System.Native_Encoding.Encoding_Streams.Encoding :=
+		E : aliased System.Native_Encoding.Encoding_Streams.Inout_Type :=
 			System.Native_Encoding.Encoding_Streams.Open (
 				System.Native_Encoding.Names.Windows_31J,
 				System.Native_Encoding.Names.UTF_8,

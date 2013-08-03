@@ -345,14 +345,14 @@ package body System.Native_Encoding.Encoding_Streams is
       Internal : Encoding_Id;
       External : Encoding_Id;
       Stream : not null access Ada.Streams.Root_Stream_Type'Class)
-      return Encoding
+      return Inout_Type
    is
       pragma Suppress (Accessibility_Check);
       package Conv is
          new Address_To_Access_Conversions (
             Ada.Streams.Root_Stream_Type'Class);
    begin
-      return Result : Encoding do
+      return Result : Inout_Type do
          Result.Internal := Internal;
          Result.External := External;
          Result.Stream := Conv.To_Address (Conv.Object_Pointer (Stream));
@@ -362,12 +362,12 @@ package body System.Native_Encoding.Encoding_Streams is
       end return;
    end Open;
 
-   function Is_Open (Object : Encoding) return Boolean is
+   function Is_Open (Object : Inout_Type) return Boolean is
    begin
       return Object.Stream /= Null_Address;
    end Is_Open;
 
-   function Substitute (Object : Encoding)
+   function Substitute (Object : Inout_Type)
       return Ada.Streams.Stream_Element_Array is
    begin
       if Object.Substitute_Length < 0 then
@@ -378,7 +378,7 @@ package body System.Native_Encoding.Encoding_Streams is
    end Substitute;
 
    procedure Set_Substitute (
-      Object : in out Encoding;
+      Object : in out Inout_Type;
       Substitute : Ada.Streams.Stream_Element_Array) is
    begin
       if Substitute'Length > Object.Substitute'Length then
@@ -399,7 +399,7 @@ package body System.Native_Encoding.Encoding_Streams is
       end if;
    end Set_Substitute;
 
-   function Stream (Object : aliased in out Encoding)
+   function Stream (Object : aliased in out Inout_Type)
       return not null access Ada.Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
@@ -408,7 +408,7 @@ package body System.Native_Encoding.Encoding_Streams is
       return Object'Unchecked_Access;
    end Stream;
 
-   procedure Finish (Object : in out Encoding) is
+   procedure Finish (Object : in out Inout_Type) is
       package Conv is
          new Address_To_Access_Conversions (
             Ada.Streams.Root_Stream_Type'Class);
@@ -422,7 +422,7 @@ package body System.Native_Encoding.Encoding_Streams is
    end Finish;
 
    overriding procedure Read (
-      Object : in out Encoding;
+      Object : in out Inout_Type;
       Item : out Ada.Streams.Stream_Element_Array;
       Last : out Ada.Streams.Stream_Element_Offset)
    is
@@ -450,7 +450,7 @@ package body System.Native_Encoding.Encoding_Streams is
    end Read;
 
    overriding procedure Write (
-      Object : in out Encoding;
+      Object : in out Inout_Type;
       Item : Ada.Streams.Stream_Element_Array)
    is
       package Conv is
