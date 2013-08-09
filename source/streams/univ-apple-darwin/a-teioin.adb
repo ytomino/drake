@@ -1080,7 +1080,7 @@ package body Ada.Text_IO.Inside is
 
    procedure Put (File : Non_Controlled_File_Type; Item : Character) is
       Sequence_Length : Natural;
-      Error : Boolean;
+      Sequence_Status : System.UTF_Conversions.Sequence_Status_Type; -- ignore
    begin
       Check_File_Open (File);
       --  if Item is not trailing byte, flush the buffer
@@ -1098,7 +1098,7 @@ package body Ada.Text_IO.Inside is
          System.UTF_Conversions.UTF_8_Sequence (
             File.Buffer (1),
             Sequence_Length,
-            Error);
+            Sequence_Status);
          if File.Last >= Sequence_Length then
             Write_Buffer (File, Sequence_Length);
             File.Col := File.Col + File.Buffer_Col;

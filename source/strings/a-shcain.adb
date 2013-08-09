@@ -11,14 +11,14 @@ begin
       declare
          Code : System.UTF_Conversions.UCS_4;
          Next : Natural;
-         Error : Boolean; -- ignore
+         From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
       begin
          --  get single unicode character
          System.UTF_Conversions.From_UTF_8 (
             Key (I .. Key'Last),
             Next,
             Code,
-            Error);
+            From_Status);
          I := Next + 1;
          --  update
          Result := Containers.Rotate_Left (Result, 5) xor

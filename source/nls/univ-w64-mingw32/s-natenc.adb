@@ -8,6 +8,8 @@ with C.winbase;
 with C.winerror;
 with C.winnt;
 package body System.Native_Encoding is
+   use type UTF_Conversions.From_Status_Type;
+   use type UTF_Conversions.To_Status_Type;
    use type C.windef.WINBOOL;
 
    package char_Conv is
@@ -224,18 +226,24 @@ package body System.Native_Encoding is
                   for Item_As_C'Address use Item'Address;
                   Item_Length : C.signed_int;
                   Dummy_Code : UTF_Conversions.UCS_4;
-                  Error : Boolean;
+                  From_Status : UTF_Conversions.From_Status_Type;
                begin
                   UTF_Conversions.From_UTF_8 (
                      Item_As_S,
                      Integer (Item_Length),
                      Dummy_Code,
-                     Error => Error);
-                  if Error then
+                     From_Status);
+                  if From_Status /= UTF_Conversions.Success then
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
-                     Status := Illegal_Sequence;
-                     pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
+                     if From_Status = UTF_Conversions.Truncated then
+                        Status := Incomplete;
+                        pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+                     else
+                        Status := Illegal_Sequence;
+                        pragma Check (Trace,
+                           Ada.Debug.Put ("illegal sequence"));
+                     end if;
                      return;
                   end if;
                   Buffer_Length := C.winnls.MultiByteToWideChar (
@@ -274,18 +282,24 @@ package body System.Native_Encoding is
                   Item (Item'First .. Last);
                declare
                   Dummy_Code : UTF_Conversions.UCS_4;
-                  Error : Boolean;
+                  From_Status : UTF_Conversions.From_Status_Type;
                begin
                   UTF_Conversions.From_UTF_16 (
                      Buffer_As_W,
                      Integer (Buffer_Length),
                      Dummy_Code,
-                     Error => Error);
-                  if Error then
+                     From_Status);
+                  if From_Status /= UTF_Conversions.Success then
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
-                     Status := Illegal_Sequence;
-                     pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
+                     if From_Status = UTF_Conversions.Truncated then
+                        Status := Incomplete;
+                        pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+                     else
+                        Status := Illegal_Sequence;
+                        pragma Check (Trace,
+                           Ada.Debug.Put ("illegal sequence"));
+                     end if;
                      return;
                   end if;
                end;
@@ -303,7 +317,7 @@ package body System.Native_Encoding is
                   Code : UTF_Conversions.UCS_4;
                   Code_As_SEA : Ada.Streams.Stream_Element_Array (1 .. 4);
                   for Code_As_SEA'Address use Code'Address;
-                  Error : Boolean;
+                  To_Status : UTF_Conversions.To_Status_Type;
                begin
                   Last := Item'First + 3;
                   Code_As_SEA := Item (Item'First .. Last);
@@ -311,10 +325,11 @@ package body System.Native_Encoding is
                      Code,
                      Buffer_As_W,
                      Integer (Buffer_Length),
-                     Error => Error);
-                  if Error then
+                     To_Status);
+                  if To_Status /= UTF_Conversions.Success then
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
+                     pragma Assert (To_Status = UTF_Conversions.Unmappable);
                      Status := Illegal_Sequence;
                      pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
                      return;
@@ -402,14 +417,16 @@ package body System.Native_Encoding is
                   Out_Code_As_SEA : Ada.Streams.Stream_Element_Array (1 .. 4);
                   for Out_Code_As_SEA'Address use Out_Code'Address;
                   Buffer_Used : Natural;
-                  Error : Boolean;
+                  From_Status : UTF_Conversions.From_Status_Type;
                begin
                   UTF_Conversions.From_UTF_16 (
                      Buffer_As_W (1 .. Integer (Buffer_Length)),
                      Buffer_Used,
                      Out_Code,
-                     Error => Error);
-                  if Error or else Buffer_Used /= Integer (Buffer_Length) then
+                     From_Status);
+                  if From_Status /= UTF_Conversions.Success
+                     or else Buffer_Used /= Integer (Buffer_Length)
+                  then
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
                      Status := Illegal_Sequence;

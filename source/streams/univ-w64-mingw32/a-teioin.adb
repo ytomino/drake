@@ -449,7 +449,7 @@ package body Ada.Text_IO.Inside is
       W_Buffer_Length : C.size_t;
       Read_Size : aliased C.windef.DWORD;
       UTF_16_Seq : Natural;
-      Error : Boolean;
+      Sequence_Status : System.UTF_Conversions.Sequence_Status_Type; -- ignore
    begin
       W_Buffer (0) := Leading;
       if W_Buffer (0) /= C.winnt.WCHAR'Val (0) then
@@ -457,7 +457,7 @@ package body Ada.Text_IO.Inside is
          System.UTF_Conversions.UTF_16_Sequence (
             Wide_Character'Val (C.winnt.WCHAR'Pos (W_Buffer (0))),
             UTF_16_Seq,
-            Error);
+            Sequence_Status);
          if UTF_16_Seq = 2
             and then C.wincon.ReadConsoleW (
                hConsoleInput => Streams.Stream_IO.Inside.Handle (File.File),
@@ -1132,7 +1132,7 @@ package body Ada.Text_IO.Inside is
 
    procedure Put (File : Non_Controlled_File_Type; Item : Character) is
       Sequence_Length : Natural;
-      Error : Boolean;
+      Sequence_Status : System.UTF_Conversions.Sequence_Status_Type; -- ignore
    begin
       Check_File_Open (File);
       --  if Item is not trailing byte, flush the buffer
@@ -1148,7 +1148,7 @@ package body Ada.Text_IO.Inside is
       System.UTF_Conversions.UTF_8_Sequence (
          File.Buffer (1),
          Sequence_Length,
-         Error);
+         Sequence_Status);
       if File.Last >= Sequence_Length then
          Write_Buffer (File, Sequence_Length);
          File.Col := File.Col + File.Buffer_Col;

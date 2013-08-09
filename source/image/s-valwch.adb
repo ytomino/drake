@@ -7,6 +7,8 @@ with System.UTF_Conversions;
 package body System.Val_WChar is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
+   use type UTF_Conversions.From_Status_Type;
+   use type UTF_Conversions.To_Status_Type;
 
    function Value_Wide_Character (Str : String; EM : WC_Encoding_Method)
       return Wide_Character
@@ -23,21 +25,26 @@ package body System.Val_WChar is
          declare
             Used_Last : Natural;
             Code : UTF_Conversions.UCS_4;
-            Error : Boolean;
+            From_Status : UTF_Conversions.From_Status_Type;
+            To_Status : UTF_Conversions.To_Status_Type;
             Result : Wide_String (1 .. 2);
          begin
             UTF_Conversions.From_UTF_8 (
                Str (First + 1 .. Last),
                Used_Last,
                Code,
-               Error);
-            if not Error and then Used_Last + 1 = Last then
+               From_Status);
+            if From_Status = UTF_Conversions.Success
+               and then Used_Last + 1 = Last
+            then
                UTF_Conversions.To_UTF_16 (
                   Code,
                   Result,
                   Used_Last,
-                  Error);
-               if not Error and then Used_Last = 1 then
+                  To_Status);
+               if To_Status = UTF_Conversions.Success
+                  and then Used_Last = 1
+               then
                   return Result (1);
                end if;
             end if;
@@ -103,14 +110,16 @@ package body System.Val_WChar is
          declare
             Used_Last : Natural;
             Code : UTF_Conversions.UCS_4;
-            Error : Boolean;
+            From_Status : UTF_Conversions.From_Status_Type;
          begin
             UTF_Conversions.From_UTF_8 (
                Str (First + 1 .. Last),
                Used_Last,
                Code,
-               Error);
-            if not Error and then Used_Last + 1 = Last then
+               From_Status);
+            if From_Status = UTF_Conversions.Success
+               and then Used_Last + 1 = Last
+            then
                return Wide_Wide_Character'Val (Code);
             end if;
          end;

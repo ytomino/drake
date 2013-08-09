@@ -4,6 +4,8 @@ with System.Storage_Elements;
 with System.UTF_Conversions;
 package body Ada.Strings.UTF_Encoding.Conversions is
    use type System.Storage_Elements.Storage_Offset;
+   use type System.UTF_Conversions.From_Status_Type;
+   use type System.UTF_Conversions.To_Status_Type;
    use type System.UTF_Conversions.UCS_4;
 
    --  binary to Wide_String, Wide_Wide_String
@@ -44,31 +46,31 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean)
+      Status : out System.UTF_Conversions.To_Status_Type)
       renames System.UTF_Conversions.To_UTF_8;
 
    procedure From_UTF_8 (
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean)
+      Status : out System.UTF_Conversions.From_Status_Type)
       renames System.UTF_Conversions.From_UTF_8;
 
    procedure To_UTF_16BE (
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean);
+      Status : out System.UTF_Conversions.To_Status_Type);
    procedure To_UTF_16BE (
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean)
+      Status : out System.UTF_Conversions.To_Status_Type)
    is
       W_Result : Wide_String (1 .. System.UTF_Conversions.UTF_16_Max_Length);
       W_Last : Natural;
    begin
-      System.UTF_Conversions.To_UTF_16 (Code, W_Result, W_Last, Error);
+      System.UTF_Conversions.To_UTF_16 (Code, W_Result, W_Last, Status);
       Last := Result'First - 1;
       for I in 1 .. W_Last loop
          declare
@@ -87,16 +89,16 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean);
+      Status : out System.UTF_Conversions.From_Status_Type);
    procedure From_UTF_16BE (
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean) is
+      Status : out System.UTF_Conversions.From_Status_Type) is
    begin
       if Data'Length < 2 then
          Last := Data'Last;
-         Error := True;
+         Status := System.UTF_Conversions.Truncated;
       else
          declare
             Leading : constant Wide_Character := Wide_Character'Val (
@@ -105,12 +107,12 @@ package body Ada.Strings.UTF_Encoding.Conversions is
             Length : Natural;
          begin
             Last := Data'First + 1;
-            System.UTF_Conversions.UTF_16_Sequence (Leading, Length, Error);
-            if not Error then
+            System.UTF_Conversions.UTF_16_Sequence (Leading, Length, Status);
+            if Status = System.UTF_Conversions.Success then
                if Length = 2 then
                   if Data'Length < 4 then
                      Last := Data'Last;
-                     Error := True;
+                     Status := System.UTF_Conversions.Truncated;
                   else
                      declare
                         Trailing : constant Wide_Character :=
@@ -126,7 +128,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                            W_Data,
                            W_Last,
                            Result,
-                           Error);
+                           Status);
                      end;
                   end if;
                else
@@ -142,17 +144,17 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean);
+      Status : out System.UTF_Conversions.To_Status_Type);
    procedure To_UTF_16LE (
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean)
+      Status : out System.UTF_Conversions.To_Status_Type)
    is
       W_Result : Wide_String (1 .. System.UTF_Conversions.UTF_16_Max_Length);
       W_Last : Natural;
    begin
-      System.UTF_Conversions.To_UTF_16 (Code, W_Result, W_Last, Error);
+      System.UTF_Conversions.To_UTF_16 (Code, W_Result, W_Last, Status);
       Last := Result'First - 1;
       for I in 1 .. W_Last loop
          declare
@@ -171,16 +173,16 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean);
+      Status : out System.UTF_Conversions.From_Status_Type);
    procedure From_UTF_16LE (
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean) is
+      Status : out System.UTF_Conversions.From_Status_Type) is
    begin
       if Data'Length < 2 then
          Last := Data'Last;
-         Error := True;
+         Status := System.UTF_Conversions.Truncated;
       else
          declare
             Leading : constant Wide_Character := Wide_Character'Val (
@@ -189,12 +191,12 @@ package body Ada.Strings.UTF_Encoding.Conversions is
             Length : Natural;
          begin
             Last := Data'First + 1;
-            System.UTF_Conversions.UTF_16_Sequence (Leading, Length, Error);
-            if not Error then
+            System.UTF_Conversions.UTF_16_Sequence (Leading, Length, Status);
+            if Status = System.UTF_Conversions.Success then
                if Length = 2 then
                   if Data'Length < 4 then
                      Last := Data'Last;
-                     Error := True;
+                     Status := System.UTF_Conversions.Truncated;
                   else
                      declare
                         Trailing : constant Wide_Character :=
@@ -210,7 +212,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                            W_Data,
                            W_Last,
                            Result,
-                           Error);
+                           Status);
                      end;
                   end if;
                else
@@ -226,12 +228,12 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean);
+      Status : out System.UTF_Conversions.To_Status_Type);
    procedure To_UTF_32BE (
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean) is
+      Status : out System.UTF_Conversions.To_Status_Type) is
    begin
       Last := Result'First;
       Result (Last) := Character'Val (Code / 16#1000000#);
@@ -241,23 +243,23 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Result (Last) := Character'Val (Code / 16#100# rem 16#100#);
       Last := Last + 1;
       Result (Last) := Character'Val (Code rem 16#100#);
-      Error := False;
+      Status := System.UTF_Conversions.Success;
    end To_UTF_32BE;
 
    procedure From_UTF_32BE (
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean);
+      Status : out System.UTF_Conversions.From_Status_Type);
    procedure From_UTF_32BE (
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean) is
+      Status : out System.UTF_Conversions.From_Status_Type) is
    begin
       if Data'Length < 4 then
          Last := Data'Last;
-         Error := True;
+         Status := System.UTF_Conversions.Truncated;
       else
          declare
             type U32 is mod 2 ** 32; -- Wide_Wide_Character'Size = 31(?)
@@ -270,13 +272,13 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          begin
             Last := Data'First + 3;
             if Leading > U32 (System.UTF_Conversions.UCS_4'Last) then
-               Error := True;
+               Status := System.UTF_Conversions.Illegal_Sequence;
             else
                Result := System.UTF_Conversions.UCS_4 (Leading);
                System.UTF_Conversions.UTF_32_Sequence (
                   Wide_Wide_Character'Val (Leading),
                   Length,
-                  Error); -- checking surrogate pair
+                  Status); -- checking surrogate pair
             end if;
          end;
       end if;
@@ -286,12 +288,12 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean);
+      Status : out System.UTF_Conversions.To_Status_Type);
    procedure To_UTF_32LE (
       Code : System.UTF_Conversions.UCS_4;
       Result : out UTF_String;
       Last : out Natural;
-      Error : out Boolean) is
+      Status : out System.UTF_Conversions.To_Status_Type) is
    begin
       Last := Result'First;
       Result (Last) := Character'Val (Code rem 16#100#);
@@ -301,23 +303,23 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Result (Last) := Character'Val (Code / 16#10000# rem 16#100#);
       Last := Last + 1;
       Result (Last) := Character'Val (Code / 16#1000000#);
-      Error := False;
+      Status := System.UTF_Conversions.Success;
    end To_UTF_32LE;
 
    procedure From_UTF_32LE (
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean);
+      Status : out System.UTF_Conversions.From_Status_Type);
    procedure From_UTF_32LE (
       Data : UTF_String;
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
-      Error : out Boolean) is
+      Status : out System.UTF_Conversions.From_Status_Type) is
    begin
       if Data'Length < 4 then
          Last := Data'Last;
-         Error := True;
+         Status := System.UTF_Conversions.Truncated;
       else
          declare
             type U32 is mod 2 ** 32; -- Wide_Wide_Character'Size = 31(?)
@@ -330,13 +332,13 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          begin
             Last := Data'First + 3;
             if Leading > U32 (System.UTF_Conversions.UCS_4'Last) then
-               Error := True;
+               Status := System.UTF_Conversions.Illegal_Sequence;
             else
                Result := System.UTF_Conversions.UCS_4 (Leading);
                System.UTF_Conversions.UTF_32_Sequence (
                   Wide_Wide_Character'Val (Leading),
                   Length,
-                  Error); -- checking surrogate pair
+                  Status); -- checking surrogate pair
             end if;
          end;
       end if;
@@ -347,7 +349,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          Code : System.UTF_Conversions.UCS_4;
          Result : out UTF_String;
          Last : out Natural;
-         Error : out Boolean) := (
+         Status : out System.UTF_Conversions.To_Status_Type) := (
       UTF_8 => To_UTF_8'Access,
       UTF_16BE => To_UTF_16BE'Access,
       UTF_16LE => To_UTF_16LE'Access,
@@ -359,7 +361,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          Data : UTF_String;
          Last : out Natural;
          Result : out System.UTF_Conversions.UCS_4;
-         Error : out Boolean) := (
+         Status : out System.UTF_Conversions.From_Status_Type) := (
       UTF_8 => From_UTF_8'Access,
       UTF_16BE => From_UTF_16BE'Access,
       UTF_16LE => From_UTF_16LE'Access,
@@ -405,15 +407,24 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          declare
             Code : System.UTF_Conversions.UCS_4;
             Used : Natural;
-            E : Boolean;
+            From_Status : System.UTF_Conversions.From_Status_Type;
+            To_Status : System.UTF_Conversions.To_Status_Type;
          begin
-            From_UTF (Input_Scheme) (Item (I .. Item'Last), Used, Code, E);
-            if E then
+            From_UTF (Input_Scheme) (
+               Item (I .. Item'Last),
+               Used,
+               Code,
+               From_Status);
+            if From_Status /= System.UTF_Conversions.Success then
                Exceptions.Raise_Exception_From_Here (Encoding_Error'Identity);
             end if;
             I := Used + 1;
-            To_UTF (Output_Scheme) (Code, Result (J .. Result'Last), Last, E);
-            if E then
+            To_UTF (Output_Scheme) (
+               Code,
+               Result (J .. Result'Last),
+               Last,
+               To_Status);
+            if To_Status /= System.UTF_Conversions.Success then
                Exceptions.Raise_Exception_From_Here (Encoding_Error'Identity);
             end if;
             J := Last + 1;

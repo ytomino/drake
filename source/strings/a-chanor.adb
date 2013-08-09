@@ -461,12 +461,12 @@ package body Ada.Characters.Normalization is
          Data : String_Type;
          Last : out Natural;
          Result : out System.UTF_Conversions.UCS_4;
-         Error : out Boolean);
+         Status : out System.UTF_Conversions.From_Status_Type);
       with procedure To_UTF (
          Code : System.UTF_Conversions.UCS_4;
          Result : out String_Type;
          Last : out Natural;
-         Error : out Boolean);
+         Status : out System.UTF_Conversions.To_Status_Type);
    package Generic_Normalization is
 
       procedure Start (Item : String_Type; State : out Normalization.State);
@@ -576,14 +576,14 @@ package body Ada.Characters.Normalization is
 
       procedure Start (Item : String_Type; State : out Normalization.State) is
          Code : System.UTF_Conversions.UCS_4;
-         Error : Boolean;
+         From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
       begin
          if Item'Length = 0 then
             State.Next_Character := Wide_Wide_Character'Val (0);
             State.Next_Combining_Class := 0;
             State.Next_Last := Item'Last;
          else
-            From_UTF (Item, State.Next_Last, Code, Error);
+            From_UTF (Item, State.Next_Last, Code, From_Status);
             State.Next_Character := Wide_Wide_Character'Val (Code);
             State.Next_Combining_Class :=
                Combining_Class (State.Next_Character);
@@ -597,16 +597,24 @@ package body Ada.Characters.Normalization is
       is
          Next : Natural;
          Code : System.UTF_Conversions.UCS_4;
-         Error : Boolean;
+         From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
       begin
          Last := State.Next_Last; -- skip first code point
          if State.Next_Combining_Class = 0 then
             Code := Wide_Wide_Character'Pos (State.Next_Character);
             if Code in Hangle.LBase .. Hangle.LBase + Hangle.LCount - 1 then
-               From_UTF (Item (Last + 1 .. Item'Last), Next, Code, Error);
+               From_UTF (
+                  Item (Last + 1 .. Item'Last),
+                  Next,
+                  Code,
+                  From_Status);
                if Code in Hangle.VBase .. Hangle.VBase + Hangle.VCount - 1 then
                   Last := Next; -- LV
-                  From_UTF (Item (Last + 1 .. Item'Last), Next, Code, Error);
+                  From_UTF (
+                     Item (Last + 1 .. Item'Last),
+                     Next,
+                     Code,
+                     From_Status);
                   if Code in
                      Hangle.TBase ..
                      Hangle.TBase + Hangle.TCount - 1
@@ -615,7 +623,11 @@ package body Ada.Characters.Normalization is
                   end if;
                end if;
             elsif Code in Hangle.SBase .. Hangle.SBase + Hangle.SCount - 1 then
-               From_UTF (Item (Last + 1 .. Item'Last), Next, Code, Error);
+               From_UTF (
+                  Item (Last + 1 .. Item'Last),
+                  Next,
+                  Code,
+                  From_Status);
                if Code in Hangle.TBase .. Hangle.TBase + Hangle.TCount - 1 then
                   Last := Next; -- ST
                end if;
@@ -628,7 +640,11 @@ package body Ada.Characters.Normalization is
             State.Next_Combining_Class := 0;
             State.Next_Last := Last;
             while Last < Item'Last loop
-               From_UTF (Item (Last + 1 .. Item'Last), Next, Code, Error);
+               From_UTF (
+                  Item (Last + 1 .. Item'Last),
+                  Next,
+                  Code,
+                  From_Status);
                State.Next_Character := Wide_Wide_Character'Val (Code);
                State.Next_Combining_Class :=
                   Combining_Class (State.Next_Character);
@@ -648,7 +664,7 @@ package body Ada.Characters.Normalization is
                            Item (Last + 1 .. Item'Last),
                            Next,
                            Code,
-                           Error);
+                           From_Status);
                         State.Next_Character := Wide_Wide_Character'Val (Code);
                         State.Next_Combining_Class :=
                            Combining_Class (State.Next_Character);
@@ -701,11 +717,11 @@ package body Ada.Characters.Normalization is
       is
          Last : Natural := Item'First - 1;
          Code : System.UTF_Conversions.UCS_4;
-         Error : Boolean;
+         From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
       begin
          Buffer_Last := Buffer'First - 1;
          while Last < Item'Last loop
-            From_UTF (Item (Last + 1 .. Item'Last), Last, Code, Error);
+            From_UTF (Item (Last + 1 .. Item'Last), Last, Code, From_Status);
             Buffer_Last := Buffer_Last + 1;
             Buffer (Buffer_Last) := Wide_Wide_Character'Val (Code);
          end loop;
@@ -716,7 +732,7 @@ package body Ada.Characters.Normalization is
          Buffer : out String_Type;
          Buffer_Last : out Natural)
       is
-         Error : Boolean;
+         To_Status : System.UTF_Conversions.To_Status_Type; -- ignore
       begin
          Buffer_Last := Buffer'First - 1;
          for I in Item'Range loop
@@ -724,7 +740,7 @@ package body Ada.Characters.Normalization is
                Wide_Wide_Character'Pos (Item (I)),
                Buffer (Buffer_Last + 1 .. Buffer'Last),
                Buffer_Last,
-               Error);
+               To_Status);
          end loop;
       end Encode;
 
