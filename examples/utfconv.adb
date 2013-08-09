@@ -5,6 +5,7 @@ with Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 with System.UTF_Conversions;
 procedure utfconv is
+	use type System.UTF_Conversions.From_Status_Type;
 	use type System.UTF_Conversions.UCS_4;
 	subtype C is Character;
 	subtype WC is Wide_Character;
@@ -61,12 +62,13 @@ begin
 			S : String := (1 => Item);
 			Last : Natural;
 			Code : System.UTF_Conversions.UCS_4;
-			Error : Boolean;
+			From_Status : System.UTF_Conversions.From_Status_Type;
+			To_Status : System.UTF_Conversions.To_Status_Type;
 			D : String (1 .. 6);
 		begin
-			System.UTF_Conversions.From_UTF_8 (S, Last, Code, Error);
-			pragma Assert (Error);
-			System.UTF_Conversions.To_UTF_8 (Code, D, Last, Error);
+			System.UTF_Conversions.From_UTF_8 (S, Last, Code, From_Status);
+			pragma Assert (From_Status = System.UTF_Conversions.Illegal_Sequence);
+			System.UTF_Conversions.To_UTF_8 (Code, D, Last, To_Status);
 			pragma Assert ((System.UTF_Conversions.UCS_4'(Character'Pos (D (Last))) and 16#3f#)
 				= (System.UTF_Conversions.UCS_4'(Character'Pos (Item)) and 16#3f#));
 		end Test;
