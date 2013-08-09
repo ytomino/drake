@@ -394,8 +394,8 @@ package body System.Native_Encoding is
                if Out_Item'Length < Buffer_As_SEA_Length then
                   Last := Item'First - 1;
                   Out_Last := Out_Item'First - 1;
-                  Status := Incomplete;
-                  pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+                  Status := Insufficient;
+                  pragma Check (Trace, Ada.Debug.Put ("insufficient buffer"));
                   return;
                else
                   Out_Last := Out_Item'First + Buffer_As_SEA_Length - 1;
@@ -408,8 +408,8 @@ package body System.Native_Encoding is
             if Out_Item'Length < 4 then
                Last := Item'First - 1;
                Out_Last := Out_Item'First - 1;
-               Status := Incomplete;
-               pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+               Status := Insufficient;
+               pragma Check (Trace, Ada.Debug.Put ("insufficient buffer"));
                return;
             else
                declare
