@@ -14,23 +14,34 @@ package Ada.Characters.Conversions is
    function Is_Wide_Character (Item : Character) return Boolean;
 
    --  extended
+   --  This function returns False if Item is not in BMP or surrogate pair,
+   --    otherwise True.
+   --  These functions Is_XXX_String assume Item contains a legal sequence.
+   function Is_Wide_String (Item : String) return Boolean;
+
+   --  extended
+   --  This function returns False if Item is in UTF-8 multibyte sequence,
+   --    otherwise True.
    function Is_Wide_Wide_Character (Item : Character) return Boolean
       renames Is_Wide_Character;
 
+--  function Is_Wide_Wide_String (Item : String) return Boolean; -- True
+
    function Is_Character (Item : Wide_Character) return Boolean;
-   function Is_String (Item : Wide_String) return Boolean;
+   function Is_String (Item : Wide_String) return Boolean; -- True
 
    --  extended
    --  This function returns False if Item is in UTF-16 surrogate pair,
    --    otherwise True.
    function Is_Wide_Wide_Character (Item : Wide_Character) return Boolean;
 
+--  function Is_Wide_Wide_String (Item : Wide_String) return Boolean; -- True
+
    function Is_Character (Item : Wide_Wide_Character) return Boolean;
-   function Is_String (Item : Wide_Wide_String) return Boolean;
+   function Is_String (Item : Wide_Wide_String) return Boolean; -- True
 
    function Is_Wide_Character (Item : Wide_Wide_Character) return Boolean;
-   function Is_Wide_String (Item : Wide_Wide_String) return Boolean
-      renames Is_String;
+   function Is_Wide_String (Item : Wide_Wide_String) return Boolean;
 
    pragma Inline (Is_Character);
    pragma Inline (Is_Wide_Character);
