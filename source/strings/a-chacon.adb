@@ -7,6 +7,31 @@ package body Ada.Characters.Conversions is
       return Character'Pos (Item) <= 16#7f#;
    end Is_Wide_Character;
 
+   function Is_Wide_String (Item : String) return Boolean is
+      Last : Natural := Item'First - 1;
+   begin
+      while Last /= Item'Last loop
+         declare
+            Code : System.UTF_Conversions.UCS_4;
+            From_State : System.UTF_Conversions.From_Status_Type;
+         begin
+            System.UTF_Conversions.From_UTF_8 (
+               Item,
+               Last,
+               Code,
+               From_State);
+            if System.UTF_Conversions.UCS_4'Pos (Code) > 16#10ffff#
+               --  a check for detecting illegal sequence are omitted
+--             or else Code in 16#d800# .. 16#dfff#
+--             or else From_State /= System.UTF_Conversions.Success
+            then
+               return False;
+            end if;
+         end;
+      end loop;
+      return True;
+   end Is_Wide_String;
+
    function Is_Character (Item : Wide_Character) return Boolean is
    begin
       return Wide_Character'Pos (Item) <= 16#7f#;
@@ -15,6 +40,7 @@ package body Ada.Characters.Conversions is
    function Is_String (Item : Wide_String) return Boolean is
       pragma Unreferenced (Item);
    begin
+      --  a check for detecting illegal sequence are omitted
       return True;
    end Is_String;
 
@@ -31,6 +57,7 @@ package body Ada.Characters.Conversions is
    function Is_String (Item : Wide_Wide_String) return Boolean is
       pragma Unreferenced (Item);
    begin
+      --  a check for detecting illegal sequence are omitted
       return True;
    end Is_String;
 
@@ -39,6 +66,19 @@ package body Ada.Characters.Conversions is
       return Wide_Wide_Character'Pos (Item) <= 16#d7ff#
          or else Wide_Wide_Character'Pos (Item) in 16#e000# .. 16#ffff#;
    end Is_Wide_Character;
+
+   function Is_Wide_String (Item : Wide_Wide_String) return Boolean is
+   begin
+      for I in Item'Range loop
+         if Wide_Wide_Character'Pos (Item (I)) > 16#10ffff#
+            --  a check for detecting illegal sequence are omitted
+--          or else Wide_Wide_Character'Pos (Item (I)) in 16#d800# .. 16#dfff#
+         then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Is_Wide_String;
 
    function To_Wide_Character (
       Item : Character;
