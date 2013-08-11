@@ -4,6 +4,7 @@ with System.Address_To_Constant_Access_Conversions;
 with System.UTF_Conversions;
 with System.UTF_Conversions.From_32_To_16;
 with System.UTF_Conversions.From_16_To_32;
+with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winerror;
 with C.winnt;
@@ -78,6 +79,19 @@ package body System.Native_Encoding is
 
    --  implementation
 
+   function Image (Encoding : Encoding_Id) return String is
+      Info : aliased C.winnls.CPINFOEX;
+   begin
+      if C.winnls.GetCPInfoEx (
+         C.windef.UINT (Encoding),
+         0,
+         Info'Access) = 0
+      then
+         Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity); -- ?
+      end if;
+      return Zero_Terminated_WStrings.Value (Info.CodePageName (0)'Access);
+   end Image;
+
    function Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array
    is
@@ -113,6 +127,11 @@ package body System.Native_Encoding is
    begin
       return Min_Size_In_Stream_Elements (Object.From);
    end Min_Size_In_From_Stream_Elements;
+
+   function Current_Encoding return Encoding_Id is
+   begin
+      return Encoding_Id (C.winnls.GetACP);
+   end Current_Encoding;
 
    function Substitute (Object : Converter)
       return Ada.Streams.Stream_Element_Array is

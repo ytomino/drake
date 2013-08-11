@@ -12,6 +12,8 @@ package System.Native_Encoding is
 
    type Encoding_Id is private;
 
+   function Image (Encoding : Encoding_Id) return String;
+
    function Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array;
 
@@ -21,6 +23,8 @@ package System.Native_Encoding is
    UTF_8 : constant Encoding_Id;
    UTF_16 : constant Encoding_Id;
    UTF_32 : constant Encoding_Id;
+
+   Current_Encoding : constant Encoding_Id;
 
    type Status_Type is (
       Fine,
@@ -118,6 +122,10 @@ private
          High_Order_First => "UTF-32BE" & C.char'Val (0),
          Low_Order_First => "UTF-32LE" & C.char'Val (0));
    UTF_32 : constant Encoding_Id := UTF_32_Names (Default_Bit_Order)(0)'Access;
+
+   Current_Encoding : constant Encoding_Id := UTF_8_Name (0)'Access;
+   --  In POSIX, other packages (Ada.Command_Line, Ada.Environment_Variables,
+   --    Ada.Text_IO, etc) also assume that system encoding is UTF-8.
 
    --  converter
 

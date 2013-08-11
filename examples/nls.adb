@@ -18,6 +18,7 @@ procedure nls is
 		Character'Val (16#a0#),
 		Character'Val (16#80#));
 begin
+	Ada.Debug.Put (System.Native_Encoding.Image (System.Native_Encoding.Current_Encoding));
 	-- status check
 	declare
 		E : System.Native_Encoding.Strings.Encoder;
