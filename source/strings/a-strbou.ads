@@ -21,8 +21,8 @@ package Ada.Strings.Bounded is
    package Generic_Bounded_Length is
 
       --  for renaming
-      package Instance is new Bounded.Instance.Generic_Bounded_Length (Max);
-      package Functions is new Instance.Generic_Functions (
+      package Bounded_Strings is new Instance.Generic_Bounded_Length (Max);
+      package Functions is new Bounded_Strings.Generic_Functions (
          Space => Space,
          Fixed_Index_From => Strings.Functions.Index,
          Fixed_Index => Strings.Functions.Index,
@@ -64,187 +64,187 @@ package Ada.Strings.Bounded is
 
 --    Max_Length : constant Positive := Max;
       Max_Length : Positive
-         renames Instance.Max_Length;
+         renames Bounded_Strings.Max_Length;
 
 --    type Bounded_String is private;
-      subtype Bounded_String is Instance.Bounded_String;
+      subtype Bounded_String is Bounded_Strings.Bounded_String;
 
       --  modified
 --    Null_Bounded_String : constant Bounded_String;
       function Null_Bounded_String return Bounded_String
-         renames Instance.Null_Bounded_String;
+         renames Bounded_Strings.Null_Bounded_String;
 
 --    subtype Length_Range is Natural range 0 .. Max_Length;
-      subtype Length_Range is Instance.Length_Range;
+      subtype Length_Range is Bounded_Strings.Length_Range;
 
       function Length (Source : Bounded_String) return Length_Range
-         renames Instance.Length;
+         renames Bounded_Strings.Length;
 
       --  Conversion, Concatenation, and Selection functions
 
       function To_Bounded_String (Source : String; Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.To_Bounded_String;
+         renames Bounded_Strings.To_Bounded_String;
 
       function To_String (Source : Bounded_String) return String
-         renames Instance.To_String;
+         renames Bounded_Strings.To_String;
 
       procedure Set_Bounded_String (
          Target : out Bounded_String;
          Source : String;
          Drop : Truncation := Error)
-         renames Instance.Set_Bounded_String;
+         renames Bounded_Strings.Set_Bounded_String;
 
       function Append (
          Left, Right : Bounded_String;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.Append;
+         renames Bounded_Strings.Append;
 
       function Append (
          Left : Bounded_String;
          Right : String;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.Append;
+         renames Bounded_Strings.Append;
 
       function Append (
          Left : String;
          Right : Bounded_String;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.Append;
+         renames Bounded_Strings.Append;
 
       function Append (
          Left : Bounded_String;
          Right : Character;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.Append;
+         renames Bounded_Strings.Append;
 
       function Append (
          Left : Character;
          Right : Bounded_String;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.Append;
+         renames Bounded_Strings.Append;
 
       procedure Append (
          Source : in out Bounded_String;
          New_Item : Bounded_String;
          Drop : Truncation := Error)
-         renames Instance.Append;
+         renames Bounded_Strings.Append;
 
       procedure Append (
          Source : in out Bounded_String;
          New_Item : String;
          Drop : Truncation := Error)
-         renames Instance.Append;
+         renames Bounded_Strings.Append;
 
       procedure Append (
          Source : in out Bounded_String;
          New_Item : Character;
          Drop : Truncation := Error)
-         renames Instance.Append;
+         renames Bounded_Strings.Append;
 
       function "&" (Left, Right : Bounded_String)
          return Bounded_String
-         renames Instance."&";
+         renames Bounded_Strings."&";
 
       function "&" (Left : Bounded_String; Right : String)
          return Bounded_String
-         renames Instance."&";
+         renames Bounded_Strings."&";
 
       function "&" (Left : String; Right : Bounded_String)
          return Bounded_String
-         renames Instance."&";
+         renames Bounded_Strings."&";
 
       function "&" (Left : Bounded_String; Right : Character)
          return Bounded_String
-         renames Instance."&";
+         renames Bounded_Strings."&";
 
       function "&" (Left : Character; Right : Bounded_String)
          return Bounded_String
-         renames Instance."&";
+         renames Bounded_Strings."&";
 
       function Element (
          Source : Bounded_String;
          Index : Positive)
          return Character
-         renames Instance.Element;
+         renames Bounded_Strings.Element;
 
       procedure Replace_Element (
          Source : in out Bounded_String;
          Index : Positive;
          By : Character)
-         renames Instance.Replace_Element;
+         renames Bounded_Strings.Replace_Element;
 
       function Slice (
          Source : Bounded_String;
          Low : Positive;
          High : Natural)
          return String
-         renames Instance.Slice;
+         renames Bounded_Strings.Slice;
 
       function Bounded_Slice (
          Source : Bounded_String;
          Low : Positive;
          High : Natural)
          return Bounded_String
-         renames Instance.Bounded_Slice;
+         renames Bounded_Strings.Bounded_Slice;
 
       procedure Bounded_Slice (
          Source : Bounded_String;
          Target : out Bounded_String;
          Low : Positive;
          High : Natural)
-         renames Instance.Bounded_Slice;
+         renames Bounded_Strings.Bounded_Slice;
 
       function "=" (Left, Right : Bounded_String) return Boolean
-         renames Instance."=";
+         renames Bounded_Strings."=";
       --  In CXA4028, conflicted by "use" and "use types"
       --  but CXA5011 requires this.
       function "=" (Left : Bounded_String; Right : String) return Boolean
-         renames Instance."=";
+         renames Bounded_Strings."=";
 
       function "=" (Left : String; Right : Bounded_String) return Boolean
-         renames Instance."=";
+         renames Bounded_Strings."=";
 
       function "<" (Left, Right : Bounded_String) return Boolean
-         renames Instance."<";
+         renames Bounded_Strings."<";
 
       function "<" (Left : Bounded_String; Right : String) return Boolean
-         renames Instance."<";
+         renames Bounded_Strings."<";
 
       function "<" (Left : String; Right : Bounded_String) return Boolean
-         renames Instance."<";
+         renames Bounded_Strings."<";
 
       function "<=" (Left, Right : Bounded_String) return Boolean
-         renames Instance."<=";
+         renames Bounded_Strings."<=";
 
       function "<=" (Left : Bounded_String; Right : String) return Boolean
-         renames Instance."<=";
+         renames Bounded_Strings."<=";
 
       function "<=" (Left : String; Right : Bounded_String) return Boolean
-         renames Instance."<=";
+         renames Bounded_Strings."<=";
 
       function ">" (Left, Right : Bounded_String) return Boolean
-         renames Instance.">";
+         renames Bounded_Strings.">";
 
       function ">" (Left : Bounded_String; Right : String) return Boolean
-         renames Instance.">";
+         renames Bounded_Strings.">";
 
       function ">" (Left : String; Right : Bounded_String) return Boolean
-         renames Instance.">";
+         renames Bounded_Strings.">";
 
       function ">=" (Left, Right : Bounded_String) return Boolean
-         renames Instance.">=";
+         renames Bounded_Strings.">=";
 
       function ">=" (Left : Bounded_String; Right : String) return Boolean
-         renames Instance.">=";
+         renames Bounded_Strings.">=";
 
       function ">=" (Left : String; Right : Bounded_String) return Boolean
-         renames Instance.">=";
+         renames Bounded_Strings.">=";
 
       --  Search subprograms
 
@@ -612,36 +612,36 @@ package Ada.Strings.Bounded is
 
       function "*" (Left : Natural; Right : Character)
          return Bounded_String
-         renames Instance."*";
+         renames Bounded_Strings."*";
 
       function "*" (Left : Natural; Right : String)
          return Bounded_String
-         renames Instance."*";
+         renames Bounded_Strings."*";
 
       function "*" (Left : Natural; Right : Bounded_String)
          return Bounded_String
-         renames Instance."*";
+         renames Bounded_Strings."*";
 
       function Replicate (
          Count : Natural;
          Item : Character;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.Replicate;
+         renames Bounded_Strings.Replicate;
 
       function Replicate (
          Count : Natural;
          Item : String;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.Replicate;
+         renames Bounded_Strings.Replicate;
 
       function Replicate (
          Count : Natural;
          Item : Bounded_String;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Instance.Replicate;
+         renames Bounded_Strings.Replicate;
 
    end Generic_Bounded_Length;
 
