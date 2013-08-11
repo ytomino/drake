@@ -119,7 +119,9 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                            Wide_Character'Val (
                               Character'Pos (Data (Data'First + 2)) * 256
                               + Character'Pos (Data (Data'First + 3)));
-                        W_Data : constant Wide_String (1 .. 2) :=
+                        W_Data : constant Wide_String (
+                           1 ..
+                           System.UTF_Conversions.UTF_16_Max_Length) :=
                            (Leading, Trailing);
                         W_Last : Natural;
                      begin
@@ -203,7 +205,9 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                            Wide_Character'Val (
                               Character'Pos (Data (Data'First + 2))
                               + Character'Pos (Data (Data'First + 3)) * 256);
-                        W_Data : constant Wide_String (1 .. 2) :=
+                        W_Data : constant Wide_String (
+                           1 ..
+                           System.UTF_Conversions.UTF_16_Max_Length) :=
                            (Leading, Trailing);
                         W_Last : Natural;
                      begin
@@ -441,7 +445,16 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Output_BOM : Boolean := False)
       return UTF_String
    is
-      Result : UTF_String (1 .. 4 * Item'Length + 4); -- max (see below)
+      Result : UTF_String (1 .. 4 * Item'Length + 4);
+      --  from 8 to 8 : Item'Length + 3
+      --  from 16 to 8 : 3 * Item'Length / 2 + 3 = 3/2 * Item'Length + 3
+      --  from 32 to 8 : 6 * Item'Length / 4 + 3 = 2 * Item'Length + 3
+      --  from 8 to 16 : (Item'Length + 1) * 2 = 2 * Item'Length + 2
+      --  from 16 to 16 : (Item'Length / 2 + 1) * 2 = Item'Length + 2
+      --  from 32 to 16 : (2 * Item'Length / 4 + 1) * 2 = Item'Length + 2
+      --  from 8 to 32 : (Item'Length + 1) * 4 = 4 * Item'Length + 4 (max)
+      --  from 16 to 32 : (Item'Length / 2 + 1) * 4 = 2 * Item'Length + 4
+      --  from 32 to 32 : (Item'Length / 4 + 1) * 4 = Item'Length + 4
       Last : Natural;
    begin
       Do_Convert (
@@ -460,9 +473,9 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Output_BOM : Boolean := False)
       return UTF_16_Wide_String
    is
-      --  from 8 to 16 : (Item'Length + 1) * 2 = [2] * Item'Length + [2]
+      --  from 8 to 16 : (Item'Length + 1) * 2 = 2 * Item'Length + 2 (max)
       --  from 16 to 16 : (Item'Length / 2 + 1) * 2 = Item'Length + 2
-      --  from 32 to 16 : (Item'Length / 4 * 2 + 1) * 2 = Item'Length + 2
+      --  from 32 to 16 : (2 * Item'Length / 4 + 1) * 2 = Item'Length + 2
       Result : UTF_String (1 .. 2 * Item'Length + 2);
       Last : Natural;
    begin
@@ -482,8 +495,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Output_BOM : Boolean := False)
       return UTF_32_Wide_Wide_String
    is
-      --  from 8 to 32 : (Item'Length + 1) * 4 = [4] * Item'Length + [4]
-      --  from 16 to 32 : (Item'Length / 2 + 1) * 4 = Item'Length + 4
+      --  from 8 to 32 : (Item'Length + 1) * 4 = 4 * Item'Length + 4 (max)
+      --  from 16 to 32 : (Item'Length / 2 + 1) * 4 = 2 * Item'Length + 4
       --  from 32 to 32 : (Item'Length / 4 + 1) * 4 = Item'Length + 4
       Result : UTF_String (1 .. 4 * Item'Length + 4);
       Last : Natural;
@@ -503,7 +516,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Output_BOM : Boolean := False)
       return UTF_16_Wide_String
    is
-      Result : UTF_String (1 .. (Item'Length + 1) * 2);
+      Result : UTF_String (
+         1 ..
+         (Item'Length * System.UTF_Conversions.Expanding_From_8_To_16 + 1)
+            * 2);
       Last : Natural;
    begin
       --  it should be specialized version ?
@@ -522,7 +538,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Output_BOM : Boolean := False)
       return UTF_32_Wide_Wide_String
    is
-      Result : UTF_String (1 .. (Item'Length + 1) * 4);
+      Result : UTF_String (
+         1 ..
+         (Item'Length * System.UTF_Conversions.Expanding_From_8_To_32 + 1)
+            * 4);
       Last : Natural;
    begin
       --  it should be specialized version ?
@@ -544,10 +563,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    is
       Item_A : UTF_String (1 .. Item'Length * 2);
       for Item_A'Address use Item'Address;
-      --  from 16 to 8 : Item'Length / 2 * 6 + 3 = [3] * Item'Length + 3
-      --  from 16 to 16 : (Item'Length / 2 + 1) * 2 = Item'Length + 2
-      --  from 16 to 32 : (Item'Length / 2 + 1) * 4 = 2 * Item'Length + [4]
-      Result : UTF_String (1 .. 3 * Item'Length + 4);
+      --  from 16 to 8 : 3 * Item'Length + 3
+      --  from 16 to 16 : (Item'Length + 1) * 2 = 2 * Item'Length + 2
+      --  from 16 to 32 : (Item'Length + 1) * 4 = 4 * Item'Length + 4 (max)
+      Result : UTF_String (1 .. 4 * Item'Length + 4);
       Last : Natural;
    begin
       Do_Convert (
@@ -569,7 +588,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       for Item_A'Address use Item'Address;
       Result : UTF_String (
          1 ..
-         Item'Length * System.UTF_Conversions.UTF_8_Max_Length + 3);
+         Item'Length * System.UTF_Conversions.Expanding_From_16_To_8 + 3);
       Last : Natural;
    begin
       --  it should be specialized version ?
@@ -590,7 +609,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    is
       Item_A : UTF_String (1 .. Item'Length * 2);
       for Item_A'Address use Item'Address;
-      Result : UTF_String (1 .. (Item'Length + 1) * 4);
+      Result : UTF_String (
+         1 ..
+         (Item'Length * System.UTF_Conversions.Expanding_From_16_To_32 + 1)
+            * 4);
       Last : Natural;
    begin
       --  it should be specialized version ?
@@ -612,10 +634,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    is
       Item_A : UTF_String (1 .. Item'Length * 4);
       for Item_A'Address use Item'Address;
-      --  from 32 to 8 : Item'Length / 4 * 6 + 3 = [3/2] * Item'Length + 3
-      --  from 32 to 16 : (Item'Length / 4 * 2 + 1) * 2 = 1/2 * Item'Length + 2
-      --  from 32 to 32 : (Item'Length / 4 + 1) * 4 = Item'Length + [4]
-      Result : UTF_String (1 .. (3 * Item'Length + 1) / 2 + 4); -- ceil by +1
+      --  from 32 to 8 : 6 * Item'Length + 3 (max rate)
+      --  from 32 to 16 : (2 * Item'Length + 1) * 2 = 4 * Item'Length + 2
+      --  from 32 to 32 : (Item'Length + 1) * 4 = 4 * Item'Length + 4 (max BOM)
+      Result : UTF_String (1 .. 6 * Item'Length + 4);
       Last : Natural;
    begin
       Do_Convert (
@@ -637,7 +659,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       for Item_A'Address use Item'Address;
       Result : UTF_String (
          1 ..
-         Item'Length * System.UTF_Conversions.UTF_8_Max_Length + 3);
+         Item'Length * System.UTF_Conversions.Expanding_From_32_To_8 + 3);
       Last : Natural;
    begin
       --  it should be specialized version ?
@@ -660,7 +682,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       for Item_A'Address use Item'Address;
       Result : UTF_String (
          1 ..
-         (Item'Length * System.UTF_Conversions.UTF_16_Max_Length + 1) * 2);
+         (Item'Length * System.UTF_Conversions.Expanding_From_32_To_16 + 1)
+            * 2);
       Last : Natural;
    begin
       --  it should be specialized version ?

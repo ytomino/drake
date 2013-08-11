@@ -119,4 +119,16 @@ package System.UTF_Conversions is
       Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
       return Target_Type;
 
+   --  the rates of expansion
+   --  16#ef# 16#bf# 16#bf#        : 16#ffff#          : 16#0000ffff#
+   --  16#f0# 16#90# 16#80# 16#90# : 16#d800# 16#dc00# : 16#00010000#
+   --  16#f4# 16#8f# 16#bf# 16#bf# : 16#dbff# 16#dfff# : 16#0010ffff#
+
+   Expanding_From_8_To_16 : constant := 1;
+   Expanding_From_8_To_32 : constant := 1;
+   Expanding_From_16_To_8 : constant := 3;
+   Expanding_From_16_To_32 : constant := 1;
+   Expanding_From_32_To_8 : constant := 6;
+   Expanding_From_32_To_16 : constant := 2;
+
 end System.UTF_Conversions;

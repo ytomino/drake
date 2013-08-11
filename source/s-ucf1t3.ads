@@ -16,7 +16,7 @@ package System.UTF_Conversions.From_16_To_32 is
       Wide_String,
       Wide_Wide_Character,
       Wide_Wide_String,
-      1,
+      Expanding_From_16_To_32,
       Convert);
 
 end System.UTF_Conversions.From_16_To_32;
