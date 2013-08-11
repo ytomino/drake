@@ -16,7 +16,7 @@ package System.UTF_Conversions.From_8_To_16 is
       String,
       Wide_Character,
       Wide_String,
-      1,
+      Expanding_From_8_To_16,
       Convert);
 
 end System.UTF_Conversions.From_8_To_16;

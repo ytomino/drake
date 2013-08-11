@@ -50,7 +50,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Get;
 
    procedure Get (File : File_Type; Item : out Wide_Wide_Character) is
-      S : String (1 .. 6);
+      S : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
       Length : Natural;
       From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
    begin
@@ -123,7 +123,7 @@ package body Ada.Text_IO.Inside.Wide is
       Available : out Boolean;
       Wait : Boolean)
    is
-      S : String (1 .. 6);
+      S : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
       Read_Last : Natural;
       Length : Natural;
       From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
