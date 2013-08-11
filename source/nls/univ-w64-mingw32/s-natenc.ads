@@ -12,6 +12,8 @@ package System.Native_Encoding is
 
    type Encoding_Id is private;
 
+   function Image (Encoding : Encoding_Id) return String;
+
    function Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array;
 
@@ -21,6 +23,8 @@ package System.Native_Encoding is
    UTF_8 : constant Encoding_Id;
    UTF_16 : constant Encoding_Id;
    UTF_32 : constant Encoding_Id;
+
+   function Current_Encoding return Encoding_Id;
 
    type Status_Type is (
       Fine,

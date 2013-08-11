@@ -2,6 +2,7 @@ with Ada.Exceptions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
+with System.Zero_Terminated_Strings;
 with C.stdint;
 package body System.Native_Encoding is
    use type System.Storage_Elements.Storage_Offset;
@@ -87,6 +88,16 @@ package body System.Native_Encoding is
    end Default_Substitute;
 
    --  implementation
+
+   function Image (Encoding : Encoding_Id) return String is
+      package char_const_ptr_Conv is
+         new Address_To_Constant_Access_Conversions (
+            C.char,
+            Encoding_Id);
+   begin
+      return Zero_Terminated_Strings.Value (
+         char_const_ptr_Conv.To_Address (Encoding));
+   end Image;
 
    function Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array
