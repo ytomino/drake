@@ -1,66 +1,24 @@
 pragma License (Unrestricted);
-with Ada.References.String;
-with Ada.Strings.Functions;
-with Ada.Strings.Functions.Maps;
-with Ada.Strings.Generic_Bounded;
+with Ada.Strings.Bounded_Strings;
+with Ada.Strings.Bounded_Strings.Functions;
+with Ada.Strings.Bounded_Strings.Functions.Maps;
 with Ada.Strings.Maps;
-with System.Strings.Stream_Ops;
 package Ada.Strings.Bounded is
    pragma Preelaborate;
-
-   --  instantiate Generic_Bounded
-   package Instance is new Generic_Bounded (
-      Character,
-      String,
-      System.Strings.Stream_Ops.String_Read_Blk_IO,
-      System.Strings.Stream_Ops.String_Write_Blk_IO,
-      Ada.References.String.Slicing);
 
    generic
       Max : Positive; -- Maximum length of a Bounded_String
    package Generic_Bounded_Length is
 
       --  for renaming
-      package Bounded_Strings is new Instance.Generic_Bounded_Length (Max);
-      package Functions is new Bounded_Strings.Generic_Functions (
-         Space => Space,
-         Fixed_Index_From => Strings.Functions.Index,
-         Fixed_Index => Strings.Functions.Index,
-         Fixed_Index_Non_Blank_From => Strings.Functions.Index_Non_Blank,
-         Fixed_Index_Non_Blank => Strings.Functions.Index_Non_Blank,
-         Fixed_Count => Strings.Functions.Count,
-         Fixed_Replace_Slice => Strings.Functions.Replace_Slice,
-         Fixed_Insert => Strings.Functions.Insert,
-         Fixed_Overwrite => Strings.Functions.Overwrite,
-         Fixed_Delete => Strings.Functions.Delete,
-         Fixed_Trim => Strings.Functions.Trim,
-         Fixed_Head => Strings.Functions.Head,
-         Fixed_Tail => Strings.Functions.Tail);
-      package Maps is new Functions.Generic_Maps (
-         Character_Set => Strings.Maps.Character_Set,
-         Character_Mapping => Strings.Maps.Character_Mapping,
-         Fixed_Index_Mapping_From => Strings.Functions.Maps.Index,
-         Fixed_Index_Mapping => Strings.Functions.Maps.Index,
-         Fixed_Index_Mapping_Function_From => Strings.Functions.Maps.Index,
-         Fixed_Index_Mapping_Function => Strings.Functions.Maps.Index,
-         Fixed_Index_Mapping_Function_Per_Element_From =>
-            Strings.Functions.Maps.Index_Per_Element,
-         Fixed_Index_Mapping_Function_Per_Element =>
-            Strings.Functions.Maps.Index_Per_Element,
-         Fixed_Index_Set_From => Strings.Functions.Maps.Index,
-         Fixed_Index_Set => Strings.Functions.Maps.Index,
-         Fixed_Count_Mapping => Strings.Functions.Maps.Count,
-         Fixed_Count_Mapping_Function => Strings.Functions.Maps.Count,
-         Fixed_Count_Mapping_Function_Per_Element =>
-            Strings.Functions.Maps.Count_Per_Element,
-         Fixed_Count_Set => Strings.Functions.Maps.Count,
-         Fixed_Find_Token_From => Strings.Functions.Maps.Find_Token,
-         Fixed_Find_Token => Strings.Functions.Maps.Find_Token,
-         Fixed_Translate_Mapping => Strings.Functions.Maps.Translate,
-         Fixed_Translate_Mapping_Function => Strings.Functions.Maps.Translate,
-         Fixed_Translate_Mapping_Function_Per_Element =>
-            Strings.Functions.Maps.Translate_Per_Element,
-         Fixed_Trim_Set => Strings.Functions.Maps.Trim);
+      package Bounded_Strings is
+         new Strings.Bounded_Strings.Generic_Bounded_Length (Max);
+      package Functions is
+         new Strings.Bounded_Strings.Functions.Generic_Bounded_Length (
+            Bounded_Strings);
+      package Maps is
+         new Strings.Bounded_Strings.Functions.Maps.Generic_Bounded_Length (
+            Bounded_Strings);
 
 --    Max_Length : constant Positive := Max;
       Max_Length : Positive

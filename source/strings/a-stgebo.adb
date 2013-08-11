@@ -466,601 +466,6 @@ package body Ada.Strings.Generic_Bounded is
          return Replicate (Count, Item.Element (1 .. Item.Length), Drop);
       end Replicate;
 
-      package body Generic_Functions is
-
-         function Index (
-            Source : Bounded_String;
-            Pattern : String_Type;
-            From : Positive;
-            Going : Direction := Forward)
-            return Natural is
-         begin
-            return Fixed_Index_From (
-               Source.Element (1 .. Source.Length),
-               Pattern,
-               From,
-               Going);
-         end Index;
-
-         function Index (
-            Source : Bounded_String;
-            Pattern : String_Type;
-            Going : Direction := Forward)
-            return Natural is
-         begin
-            return Fixed_Index (
-               Source.Element (1 .. Source.Length),
-               Pattern,
-               Going);
-         end Index;
-
-         function Index_Non_Blank (
-            Source : Bounded_String;
-            From : Positive;
-            Going : Direction := Forward)
-            return Natural is
-         begin
-            return Fixed_Index_Non_Blank_From (
-               Source.Element (1 .. Source.Length),
-               From,
-               Going);
-         end Index_Non_Blank;
-
-         function Index_Non_Blank (
-            Source : Bounded_String;
-            Going : Direction := Forward)
-            return Natural is
-         begin
-            return Fixed_Index_Non_Blank (
-               Source.Element (1 .. Source.Length),
-               Going);
-         end Index_Non_Blank;
-
-         function Count (
-            Source : Bounded_String;
-            Pattern : String_Type)
-            return Natural is
-         begin
-            return Fixed_Count (
-               Source.Element (1 .. Source.Length),
-               Pattern);
-         end Count;
-
-         function Replace_Slice (
-            Source : Bounded_String;
-            Low : Positive;
-            High : Natural;
-            By : String_Type;
-            Drop : Truncation := Error)
-            return Bounded_String is
-         begin
-            return To_Bounded_String (
-               Fixed_Replace_Slice (
-                  Source.Element (1 .. Source.Length),
-                  Low,
-                  High,
-                  By),
-               Drop);
-         end Replace_Slice;
-
-         procedure Replace_Slice (
-            Source : in out Bounded_String;
-            Low : Positive;
-            High : Natural;
-            By : String_Type;
-            Drop : Truncation := Error) is
-         begin
-            Set_Bounded_String (
-               Source,
-               Fixed_Replace_Slice (
-                  Source.Element (1 .. Source.Length),
-                  Low,
-                  High,
-                  By),
-               Drop);
-         end Replace_Slice;
-
-         function Insert (
-            Source : Bounded_String;
-            Before : Positive;
-            New_Item : String_Type;
-            Drop : Truncation := Error)
-            return Bounded_String is
-         begin
-            return To_Bounded_String (
-               Fixed_Insert (
-                  Source.Element (1 .. Source.Length),
-                  Before,
-                  New_Item),
-               Drop);
-         end Insert;
-
-         procedure Insert (
-            Source : in out Bounded_String;
-            Before : Positive;
-            New_Item : String_Type;
-            Drop : Truncation := Error) is
-         begin
-            Set_Bounded_String (
-               Source,
-               Fixed_Insert (
-                  Source.Element (1 .. Source.Length),
-                  Before,
-                  New_Item),
-               Drop);
-         end Insert;
-
-         function Overwrite (
-            Source : Bounded_String;
-            Position : Positive;
-            New_Item : String_Type;
-            Drop : Truncation := Error)
-            return Bounded_String is
-         begin
-            return To_Bounded_String (
-               Fixed_Overwrite (
-                  Source.Element (1 .. Source.Length),
-                  Position,
-                  New_Item),
-               Drop);
-         end Overwrite;
-
-         procedure Overwrite (
-            Source : in out Bounded_String;
-            Position : Positive;
-            New_Item : String_Type;
-            Drop : Truncation := Error) is
-         begin
-            Set_Bounded_String (
-               Source,
-               Fixed_Overwrite (
-                  Source.Element (1 .. Source.Length),
-                  Position,
-                  New_Item),
-               Drop);
-         end Overwrite;
-
-         function Delete (
-            Source : Bounded_String;
-            From : Positive;
-            Through : Natural)
-            return Bounded_String is
-         begin
-            return Result : Bounded_String := Source do
-               Delete (Result, From, Through);
-            end return;
-         end Delete;
-
-         procedure Delete (
-            Source : in out Bounded_String;
-            From : Positive;
-            Through : Natural) is
-         begin
-            if From <= Through then
-               if Through >= Source.Length then
-                  Source.Length := From - 1;
-               else
-                  Fixed_Delete (Source.Element, Source.Length, From, Through);
-               end if;
-            end if;
-         end Delete;
-
-         function Trim (
-            Source : Bounded_String;
-            Side : Trim_End;
-            Blank : Character_Type := Space)
-            return Bounded_String
-         is
-            First : Positive;
-            Last : Natural;
-         begin
-            Fixed_Trim (
-               Source.Element (1 .. Source.Length),
-               Side,
-               Blank,
-               First,
-               Last);
-            return Bounded_Slice (Source, First, Last);
-         end Trim;
-
-         procedure Trim (
-            Source : in out Bounded_String;
-            Side : Trim_End;
-            Blank : Character_Type := Space)
-         is
-            First : Positive;
-            Last : Natural;
-         begin
-            Fixed_Trim (
-               Source.Element (1 .. Source.Length),
-               Side,
-               Blank,
-               First,
-               Last);
-            Bounded_Slice (Source, Source, First, Last);
-         end Trim;
-
-         function Head (
-            Source : Bounded_String;
-            Count : Natural;
-            Pad : Character_Type := Space;
-            Drop : Truncation := Error)
-            return Bounded_String is
-         begin
-            return To_Bounded_String (
-               Fixed_Head (
-                  Source.Element (1 .. Source.Length),
-                  Count,
-                  Pad),
-               Drop);
-         end Head;
-
-         procedure Head (
-            Source : in out Bounded_String;
-            Count : Natural;
-            Pad : Character_Type := Space;
-            Drop : Truncation := Error) is
-         begin
-            Set_Bounded_String (
-               Source,
-               Fixed_Head (
-                  Source.Element (1 .. Source.Length),
-                  Count,
-                  Pad),
-               Drop);
-         end Head;
-
-         function Tail (
-            Source : Bounded_String;
-            Count : Natural;
-            Pad : Character_Type := Space;
-            Drop : Truncation := Error)
-            return Bounded_String is
-         begin
-            return To_Bounded_String (
-               Fixed_Tail (
-                  Source.Element (1 .. Source.Length),
-                  Count,
-                  Pad),
-               Drop);
-         end Tail;
-
-         procedure Tail (
-            Source : in out Bounded_String;
-            Count : Natural;
-            Pad : Character_Type := Space;
-            Drop : Truncation := Error) is
-         begin
-            Set_Bounded_String (
-               Source,
-               Fixed_Tail (
-                  Source.Element (1 .. Source.Length),
-                  Count,
-                  Pad),
-               Drop);
-         end Tail;
-
-         package body Generic_Maps is
-
-            function Index (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               From : Positive;
-               Going : Direction := Forward;
-               Mapping : Character_Mapping)
-               return Natural is
-            begin
-               return Fixed_Index_Mapping_From (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  From,
-                  Going,
-                  Mapping);
-            end Index;
-
-            function Index (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               Going : Direction := Forward;
-               Mapping : Character_Mapping)
-               return Natural is
-            begin
-               return Fixed_Index_Mapping (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  Going,
-                  Mapping);
-            end Index;
-
-            function Index (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               From : Positive;
-               Going : Direction := Forward;
-               Mapping : not null access function (From : Wide_Wide_Character)
-                  return Wide_Wide_Character)
-               return Natural is
-            begin
-               return Fixed_Index_Mapping_Function_From (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  From,
-                  Going,
-                  Mapping);
-            end Index;
-
-            function Index (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               Going : Direction := Forward;
-               Mapping : not null access function (From : Wide_Wide_Character)
-                  return Wide_Wide_Character)
-               return Natural is
-            begin
-               return Fixed_Index_Mapping_Function (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  Going,
-                  Mapping);
-            end Index;
-
-            function Index_Per_Element (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               From : Positive;
-               Going : Direction := Forward;
-               Mapping : not null access function (From : Character_Type)
-                  return Character_Type)
-               return Natural is
-            begin
-               return Fixed_Index_Mapping_Function_Per_Element_From (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  From,
-                  Going,
-                  Mapping);
-            end Index_Per_Element;
-
-            function Index_Per_Element (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               Going : Direction := Forward;
-               Mapping : not null access function (From : Character_Type)
-                  return Character_Type)
-               return Natural is
-            begin
-               return Fixed_Index_Mapping_Function_Per_Element (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  Going,
-                  Mapping);
-            end Index_Per_Element;
-
-            function Index (
-               Source : Bounded_String;
-               Set : Character_Set;
-               From : Positive;
-               Test : Membership := Inside;
-               Going : Direction := Forward)
-               return Natural is
-            begin
-               return Fixed_Index_Set_From (
-                  Source.Element (1 .. Source.Length),
-                  Set,
-                  From,
-                  Test,
-                  Going);
-            end Index;
-
-            function Index (
-               Source : Bounded_String;
-               Set : Character_Set;
-               Test : Membership := Inside;
-               Going : Direction := Forward)
-               return Natural is
-            begin
-               return Fixed_Index_Set (
-                  Source.Element (1 .. Source.Length),
-                  Set,
-                  Test,
-                  Going);
-            end Index;
-
-            function Count (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               Mapping : Character_Mapping)
-               return Natural is
-            begin
-               return Fixed_Count_Mapping (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  Mapping);
-            end Count;
-
-            function Count (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               Mapping : not null access function (From : Wide_Wide_Character)
-                  return Wide_Wide_Character)
-               return Natural is
-            begin
-               return Fixed_Count_Mapping_Function (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  Mapping);
-            end Count;
-
-            function Count_Per_Element (
-               Source : Bounded_String;
-               Pattern : String_Type;
-               Mapping : not null access function (From : Character_Type)
-                  return Character_Type)
-               return Natural is
-            begin
-               return Fixed_Count_Mapping_Function_Per_Element (
-                  Source.Element (1 .. Source.Length),
-                  Pattern,
-                  Mapping);
-            end Count_Per_Element;
-
-            function Count (Source : Bounded_String; Set : Character_Set)
-               return Natural is
-            begin
-               return Fixed_Count_Set (
-                  Source.Element (1 .. Source.Length),
-                  Set);
-            end Count;
-
-            procedure Find_Token (
-               Source : Bounded_String;
-               Set : Character_Set;
-               From : Positive;
-               Test : Membership;
-               First : out Positive;
-               Last : out Natural) is
-            begin
-               Fixed_Find_Token_From (
-                  Source.Element (1 .. Source.Length),
-                  Set,
-                  From,
-                  Test,
-                  First,
-                  Last);
-            end Find_Token;
-
-            procedure Find_Token (
-               Source : Bounded_String;
-               Set : Character_Set;
-               Test : Membership;
-               First : out Positive;
-               Last : out Natural) is
-            begin
-               Fixed_Find_Token (
-                  Source.Element (1 .. Source.Length),
-                  Set,
-                  Test,
-                  First,
-                  Last);
-            end Find_Token;
-
-            function Translate (
-               Source : Bounded_String;
-               Mapping : Character_Mapping;
-               Drop : Truncation := Error)
-               return Bounded_String is
-            begin
-               return To_Bounded_String (
-                  Fixed_Translate_Mapping (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
-            end Translate;
-
-            procedure Translate (
-               Source : in out Bounded_String;
-               Mapping : Character_Mapping;
-               Drop : Truncation := Error) is
-            begin
-               Set_Bounded_String (
-                  Source,
-                  Fixed_Translate_Mapping (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
-            end Translate;
-
-            function Translate (
-               Source : Bounded_String;
-               Mapping : not null access function (From : Wide_Wide_Character)
-                  return Wide_Wide_Character;
-               Drop : Truncation := Error)
-               return Bounded_String is
-            begin
-               return To_Bounded_String (
-                  Fixed_Translate_Mapping_Function (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
-            end Translate;
-
-            procedure Translate (
-               Source : in out Bounded_String;
-               Mapping : not null access function (From : Wide_Wide_Character)
-                  return Wide_Wide_Character;
-               Drop : Truncation := Error) is
-            begin
-               Set_Bounded_String (
-                  Source,
-                  Fixed_Translate_Mapping_Function (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
-            end Translate;
-
-            function Translate_Per_Element (
-               Source : Bounded_String;
-               Mapping : not null access function (From : Character_Type)
-                  return Character_Type)
-               return Bounded_String is
-            begin
-               return To_Bounded_String (
-                  Fixed_Translate_Mapping_Function_Per_Element (
-                     Source.Element (1 .. Source.Length),
-                     Mapping));
-            end Translate_Per_Element;
-
-            procedure Translate_Per_Element (
-               Source : in out Bounded_String;
-               Mapping : not null access function (From : Character_Type)
-                  return Character_Type) is
-            begin
-               Set_Bounded_String (
-                  Source,
-                  Fixed_Translate_Mapping_Function_Per_Element (
-                     Source.Element (1 .. Source.Length),
-                     Mapping));
-            end Translate_Per_Element;
-
-            function Trim (
-               Source : Bounded_String;
-               Left : Character_Set;
-               Right : Character_Set)
-               return Bounded_String
-            is
-               First : Positive;
-               Last : Natural;
-            begin
-               Fixed_Trim_Set (
-                  Source.Element (1 .. Source.Length),
-                  Left,
-                  Right,
-                  First,
-                  Last);
-               return Bounded_Slice (Source, First, Last);
-            end Trim;
-
-            procedure Trim (
-               Source : in out Bounded_String;
-               Left : Character_Set;
-               Right : Character_Set)
-            is
-               First : Positive;
-               Last : Natural;
-            begin
-               Fixed_Trim_Set (
-                  Source.Element (1 .. Source.Length),
-                  Left,
-                  Right,
-                  First,
-                  Last);
-               Bounded_Slice (Source, Source, First, Last);
-            end Trim;
-
-         end Generic_Maps;
-
-      end Generic_Functions;
-
       package body No_Primitives is
 
          procedure Read (
@@ -1097,5 +502,610 @@ package body Ada.Strings.Generic_Bounded is
       end No_Primitives;
 
    end Generic_Bounded_Length;
+
+   package body Generic_Functions is
+
+      package body Generic_Bounded_Length is
+
+         function Index (
+            Source : Bounded.Bounded_String;
+            Pattern : String_Type;
+            From : Positive;
+            Going : Direction := Forward)
+            return Natural is
+         begin
+            return Fixed_Index_From (
+               Source.Element (1 .. Source.Length),
+               Pattern,
+               From,
+               Going);
+         end Index;
+
+         function Index (
+            Source : Bounded.Bounded_String;
+            Pattern : String_Type;
+            Going : Direction := Forward)
+            return Natural is
+         begin
+            return Fixed_Index (
+               Source.Element (1 .. Source.Length),
+               Pattern,
+               Going);
+         end Index;
+
+         function Index_Non_Blank (
+            Source : Bounded.Bounded_String;
+            From : Positive;
+            Going : Direction := Forward)
+            return Natural is
+         begin
+            return Fixed_Index_Non_Blank_From (
+               Source.Element (1 .. Source.Length),
+               From,
+               Going);
+         end Index_Non_Blank;
+
+         function Index_Non_Blank (
+            Source : Bounded.Bounded_String;
+            Going : Direction := Forward)
+            return Natural is
+         begin
+            return Fixed_Index_Non_Blank (
+               Source.Element (1 .. Source.Length),
+               Going);
+         end Index_Non_Blank;
+
+         function Count (
+            Source : Bounded.Bounded_String;
+            Pattern : String_Type)
+            return Natural is
+         begin
+            return Fixed_Count (
+               Source.Element (1 .. Source.Length),
+               Pattern);
+         end Count;
+
+         function Replace_Slice (
+            Source : Bounded.Bounded_String;
+            Low : Positive;
+            High : Natural;
+            By : String_Type;
+            Drop : Truncation := Error)
+            return Bounded.Bounded_String is
+         begin
+            return Bounded.To_Bounded_String (
+               Fixed_Replace_Slice (
+                  Source.Element (1 .. Source.Length),
+                  Low,
+                  High,
+                  By),
+               Drop);
+         end Replace_Slice;
+
+         procedure Replace_Slice (
+            Source : in out Bounded.Bounded_String;
+            Low : Positive;
+            High : Natural;
+            By : String_Type;
+            Drop : Truncation := Error) is
+         begin
+            Bounded.Set_Bounded_String (
+               Source,
+               Fixed_Replace_Slice (
+                  Source.Element (1 .. Source.Length),
+                  Low,
+                  High,
+                  By),
+               Drop);
+         end Replace_Slice;
+
+         function Insert (
+            Source : Bounded.Bounded_String;
+            Before : Positive;
+            New_Item : String_Type;
+            Drop : Truncation := Error)
+            return Bounded.Bounded_String is
+         begin
+            return Bounded.To_Bounded_String (
+               Fixed_Insert (
+                  Source.Element (1 .. Source.Length),
+                  Before,
+                  New_Item),
+               Drop);
+         end Insert;
+
+         procedure Insert (
+            Source : in out Bounded.Bounded_String;
+            Before : Positive;
+            New_Item : String_Type;
+            Drop : Truncation := Error) is
+         begin
+            Bounded.Set_Bounded_String (
+               Source,
+               Fixed_Insert (
+                  Source.Element (1 .. Source.Length),
+                  Before,
+                  New_Item),
+               Drop);
+         end Insert;
+
+         function Overwrite (
+            Source : Bounded.Bounded_String;
+            Position : Positive;
+            New_Item : String_Type;
+            Drop : Truncation := Error)
+            return Bounded.Bounded_String is
+         begin
+            return Bounded.To_Bounded_String (
+               Fixed_Overwrite (
+                  Source.Element (1 .. Source.Length),
+                  Position,
+                  New_Item),
+               Drop);
+         end Overwrite;
+
+         procedure Overwrite (
+            Source : in out Bounded.Bounded_String;
+            Position : Positive;
+            New_Item : String_Type;
+            Drop : Truncation := Error) is
+         begin
+            Bounded.Set_Bounded_String (
+               Source,
+               Fixed_Overwrite (
+                  Source.Element (1 .. Source.Length),
+                  Position,
+                  New_Item),
+               Drop);
+         end Overwrite;
+
+         function Delete (
+            Source : Bounded.Bounded_String;
+            From : Positive;
+            Through : Natural)
+            return Bounded.Bounded_String is
+         begin
+            return Result : Bounded.Bounded_String := Source do
+               Delete (Result, From, Through);
+            end return;
+         end Delete;
+
+         procedure Delete (
+            Source : in out Bounded.Bounded_String;
+            From : Positive;
+            Through : Natural) is
+         begin
+            if From <= Through then
+               if Through >= Source.Length then
+                  Source.Length := From - 1;
+               else
+                  Fixed_Delete (Source.Element, Source.Length, From, Through);
+               end if;
+            end if;
+         end Delete;
+
+         function Trim (
+            Source : Bounded.Bounded_String;
+            Side : Trim_End;
+            Blank : Character_Type := Space)
+            return Bounded.Bounded_String
+         is
+            First : Positive;
+            Last : Natural;
+         begin
+            Fixed_Trim (
+               Source.Element (1 .. Source.Length),
+               Side,
+               Blank,
+               First,
+               Last);
+            return Bounded.Bounded_Slice (Source, First, Last);
+         end Trim;
+
+         procedure Trim (
+            Source : in out Bounded.Bounded_String;
+            Side : Trim_End;
+            Blank : Character_Type := Space)
+         is
+            First : Positive;
+            Last : Natural;
+         begin
+            Fixed_Trim (
+               Source.Element (1 .. Source.Length),
+               Side,
+               Blank,
+               First,
+               Last);
+            Bounded.Bounded_Slice (Source, Source, First, Last);
+         end Trim;
+
+         function Head (
+            Source : Bounded.Bounded_String;
+            Count : Natural;
+            Pad : Character_Type := Space;
+            Drop : Truncation := Error)
+            return Bounded.Bounded_String is
+         begin
+            return Bounded.To_Bounded_String (
+               Fixed_Head (
+                  Source.Element (1 .. Source.Length),
+                  Count,
+                  Pad),
+               Drop);
+         end Head;
+
+         procedure Head (
+            Source : in out Bounded.Bounded_String;
+            Count : Natural;
+            Pad : Character_Type := Space;
+            Drop : Truncation := Error) is
+         begin
+            Bounded.Set_Bounded_String (
+               Source,
+               Fixed_Head (
+                  Source.Element (1 .. Source.Length),
+                  Count,
+                  Pad),
+               Drop);
+         end Head;
+
+         function Tail (
+            Source : Bounded.Bounded_String;
+            Count : Natural;
+            Pad : Character_Type := Space;
+            Drop : Truncation := Error)
+            return Bounded.Bounded_String is
+         begin
+            return Bounded.To_Bounded_String (
+               Fixed_Tail (
+                  Source.Element (1 .. Source.Length),
+                  Count,
+                  Pad),
+               Drop);
+         end Tail;
+
+         procedure Tail (
+            Source : in out Bounded.Bounded_String;
+            Count : Natural;
+            Pad : Character_Type := Space;
+            Drop : Truncation := Error) is
+         begin
+            Bounded.Set_Bounded_String (
+               Source,
+               Fixed_Tail (
+                  Source.Element (1 .. Source.Length),
+                  Count,
+                  Pad),
+               Drop);
+         end Tail;
+
+      end Generic_Bounded_Length;
+
+      package body Generic_Maps is
+
+         package body Generic_Bounded_Length is
+
+            function Index (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               From : Positive;
+               Going : Direction := Forward;
+               Mapping : Character_Mapping)
+               return Natural is
+            begin
+               return Fixed_Index_Mapping_From (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  From,
+                  Going,
+                  Mapping);
+            end Index;
+
+            function Index (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               Going : Direction := Forward;
+               Mapping : Character_Mapping)
+               return Natural is
+            begin
+               return Fixed_Index_Mapping (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  Going,
+                  Mapping);
+            end Index;
+
+            function Index (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               From : Positive;
+               Going : Direction := Forward;
+               Mapping : not null access function (From : Wide_Wide_Character)
+                  return Wide_Wide_Character)
+               return Natural is
+            begin
+               return Fixed_Index_Mapping_Function_From (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  From,
+                  Going,
+                  Mapping);
+            end Index;
+
+            function Index (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               Going : Direction := Forward;
+               Mapping : not null access function (From : Wide_Wide_Character)
+                  return Wide_Wide_Character)
+               return Natural is
+            begin
+               return Fixed_Index_Mapping_Function (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  Going,
+                  Mapping);
+            end Index;
+
+            function Index_Per_Element (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               From : Positive;
+               Going : Direction := Forward;
+               Mapping : not null access function (From : Character_Type)
+                  return Character_Type)
+               return Natural is
+            begin
+               return Fixed_Index_Mapping_Function_Per_Element_From (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  From,
+                  Going,
+                  Mapping);
+            end Index_Per_Element;
+
+            function Index_Per_Element (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               Going : Direction := Forward;
+               Mapping : not null access function (From : Character_Type)
+                  return Character_Type)
+               return Natural is
+            begin
+               return Fixed_Index_Mapping_Function_Per_Element (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  Going,
+                  Mapping);
+            end Index_Per_Element;
+
+            function Index (
+               Source : Bounded.Bounded_String;
+               Set : Character_Set;
+               From : Positive;
+               Test : Membership := Inside;
+               Going : Direction := Forward)
+               return Natural is
+            begin
+               return Fixed_Index_Set_From (
+                  Source.Element (1 .. Source.Length),
+                  Set,
+                  From,
+                  Test,
+                  Going);
+            end Index;
+
+            function Index (
+               Source : Bounded.Bounded_String;
+               Set : Character_Set;
+               Test : Membership := Inside;
+               Going : Direction := Forward)
+               return Natural is
+            begin
+               return Fixed_Index_Set (
+                  Source.Element (1 .. Source.Length),
+                  Set,
+                  Test,
+                  Going);
+            end Index;
+
+            function Count (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               Mapping : Character_Mapping)
+               return Natural is
+            begin
+               return Fixed_Count_Mapping (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  Mapping);
+            end Count;
+
+            function Count (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               Mapping : not null access function (From : Wide_Wide_Character)
+                  return Wide_Wide_Character)
+               return Natural is
+            begin
+               return Fixed_Count_Mapping_Function (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  Mapping);
+            end Count;
+
+            function Count_Per_Element (
+               Source : Bounded.Bounded_String;
+               Pattern : String_Type;
+               Mapping : not null access function (From : Character_Type)
+                  return Character_Type)
+               return Natural is
+            begin
+               return Fixed_Count_Mapping_Function_Per_Element (
+                  Source.Element (1 .. Source.Length),
+                  Pattern,
+                  Mapping);
+            end Count_Per_Element;
+
+            function Count (
+               Source : Bounded.Bounded_String;
+               Set : Character_Set)
+               return Natural is
+            begin
+               return Fixed_Count_Set (
+                  Source.Element (1 .. Source.Length),
+                  Set);
+            end Count;
+
+            procedure Find_Token (
+               Source : Bounded.Bounded_String;
+               Set : Character_Set;
+               From : Positive;
+               Test : Membership;
+               First : out Positive;
+               Last : out Natural) is
+            begin
+               Fixed_Find_Token_From (
+                  Source.Element (1 .. Source.Length),
+                  Set,
+                  From,
+                  Test,
+                  First,
+                  Last);
+            end Find_Token;
+
+            procedure Find_Token (
+               Source : Bounded.Bounded_String;
+               Set : Character_Set;
+               Test : Membership;
+               First : out Positive;
+               Last : out Natural) is
+            begin
+               Fixed_Find_Token (
+                  Source.Element (1 .. Source.Length),
+                  Set,
+                  Test,
+                  First,
+                  Last);
+            end Find_Token;
+
+            function Translate (
+               Source : Bounded.Bounded_String;
+               Mapping : Character_Mapping;
+               Drop : Truncation := Error)
+               return Bounded.Bounded_String is
+            begin
+               return Bounded.To_Bounded_String (
+                  Fixed_Translate_Mapping (
+                     Source.Element (1 .. Source.Length),
+                     Mapping),
+                  Drop);
+            end Translate;
+
+            procedure Translate (
+               Source : in out Bounded.Bounded_String;
+               Mapping : Character_Mapping;
+               Drop : Truncation := Error) is
+            begin
+               Bounded.Set_Bounded_String (
+                  Source,
+                  Fixed_Translate_Mapping (
+                     Source.Element (1 .. Source.Length),
+                     Mapping),
+                  Drop);
+            end Translate;
+
+            function Translate (
+               Source : Bounded.Bounded_String;
+               Mapping : not null access function (From : Wide_Wide_Character)
+                  return Wide_Wide_Character;
+               Drop : Truncation := Error)
+               return Bounded.Bounded_String is
+            begin
+               return Bounded.To_Bounded_String (
+                  Fixed_Translate_Mapping_Function (
+                     Source.Element (1 .. Source.Length),
+                     Mapping),
+                  Drop);
+            end Translate;
+
+            procedure Translate (
+               Source : in out Bounded.Bounded_String;
+               Mapping : not null access function (From : Wide_Wide_Character)
+                  return Wide_Wide_Character;
+               Drop : Truncation := Error) is
+            begin
+               Bounded.Set_Bounded_String (
+                  Source,
+                  Fixed_Translate_Mapping_Function (
+                     Source.Element (1 .. Source.Length),
+                     Mapping),
+                  Drop);
+            end Translate;
+
+            function Translate_Per_Element (
+               Source : Bounded.Bounded_String;
+               Mapping : not null access function (From : Character_Type)
+                  return Character_Type)
+               return Bounded.Bounded_String is
+            begin
+               return Bounded.To_Bounded_String (
+                  Fixed_Translate_Mapping_Function_Per_Element (
+                     Source.Element (1 .. Source.Length),
+                     Mapping));
+            end Translate_Per_Element;
+
+            procedure Translate_Per_Element (
+               Source : in out Bounded.Bounded_String;
+               Mapping : not null access function (From : Character_Type)
+                  return Character_Type) is
+            begin
+               Bounded.Set_Bounded_String (
+                  Source,
+                  Fixed_Translate_Mapping_Function_Per_Element (
+                     Source.Element (1 .. Source.Length),
+                     Mapping));
+            end Translate_Per_Element;
+
+            function Trim (
+               Source : Bounded.Bounded_String;
+               Left : Character_Set;
+               Right : Character_Set)
+               return Bounded.Bounded_String
+            is
+               First : Positive;
+               Last : Natural;
+            begin
+               Fixed_Trim_Set (
+                  Source.Element (1 .. Source.Length),
+                  Left,
+                  Right,
+                  First,
+                  Last);
+               return Bounded.Bounded_Slice (Source, First, Last);
+            end Trim;
+
+            procedure Trim (
+               Source : in out Bounded.Bounded_String;
+               Left : Character_Set;
+               Right : Character_Set)
+            is
+               First : Positive;
+               Last : Natural;
+            begin
+               Fixed_Trim_Set (
+                  Source.Element (1 .. Source.Length),
+                  Left,
+                  Right,
+                  First,
+                  Last);
+               Bounded.Bounded_Slice (Source, Source, First, Last);
+            end Trim;
+
+         end Generic_Bounded_Length;
+
+      end Generic_Maps;
+
+   end Generic_Functions;
 
 end Ada.Strings.Generic_Bounded;

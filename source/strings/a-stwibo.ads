@@ -1,20 +1,10 @@
 pragma License (Unrestricted);
-with Ada.References.Wide_String;
-with Ada.Strings.Generic_Bounded;
-with Ada.Strings.Wide_Functions;
-with Ada.Strings.Wide_Functions.Maps;
+with Ada.Strings.Bounded_Wide_Strings;
+with Ada.Strings.Bounded_Wide_Strings.Functions;
+with Ada.Strings.Bounded_Wide_Strings.Functions.Maps;
 with Ada.Strings.Wide_Maps;
-with System.Strings.Stream_Ops;
 package Ada.Strings.Wide_Bounded is
    pragma Preelaborate;
-
-   --  Generic_Bounded is not able to use directly since some names differ.
-   package Instance is new Generic_Bounded (
-      Wide_Character,
-      Wide_String,
-      System.Strings.Stream_Ops.Wide_String_Read_Blk_IO,
-      System.Strings.Stream_Ops.Wide_String_Write_Blk_IO,
-      References.Wide_String.Slicing);
 
    generic
       Max : Positive; -- Maximum length of a Bounded_Wide_String
@@ -22,48 +12,14 @@ package Ada.Strings.Wide_Bounded is
 
       --  for renaming
       package Bounded_Wide_Strings is
-         new Instance.Generic_Bounded_Length (Max);
-      package Functions is new Bounded_Wide_Strings.Generic_Functions (
-         Space => Wide_Space,
-         Fixed_Index_From => Strings.Wide_Functions.Index,
-         Fixed_Index => Strings.Wide_Functions.Index,
-         Fixed_Index_Non_Blank_From => Strings.Wide_Functions.Index_Non_Blank,
-         Fixed_Index_Non_Blank => Strings.Wide_Functions.Index_Non_Blank,
-         Fixed_Count => Strings.Wide_Functions.Count,
-         Fixed_Replace_Slice => Strings.Wide_Functions.Replace_Slice,
-         Fixed_Insert => Strings.Wide_Functions.Insert,
-         Fixed_Overwrite => Strings.Wide_Functions.Overwrite,
-         Fixed_Delete => Strings.Wide_Functions.Delete,
-         Fixed_Trim => Strings.Wide_Functions.Trim,
-         Fixed_Head => Strings.Wide_Functions.Head,
-         Fixed_Tail => Strings.Wide_Functions.Tail);
-      package Maps is new Functions.Generic_Maps (
-         Character_Set => Strings.Wide_Maps.Wide_Character_Set,
-         Character_Mapping => Strings.Wide_Maps.Wide_Character_Mapping,
-         Fixed_Index_Mapping_From => Strings.Wide_Functions.Maps.Index,
-         Fixed_Index_Mapping => Strings.Wide_Functions.Maps.Index,
-         Fixed_Index_Mapping_Function_From =>
-            Strings.Wide_Functions.Maps.Index,
-         Fixed_Index_Mapping_Function => Strings.Wide_Functions.Maps.Index,
-         Fixed_Index_Mapping_Function_Per_Element_From =>
-            Strings.Wide_Functions.Maps.Index_Per_Element,
-         Fixed_Index_Mapping_Function_Per_Element =>
-            Strings.Wide_Functions.Maps.Index_Per_Element,
-         Fixed_Index_Set_From => Strings.Wide_Functions.Maps.Index,
-         Fixed_Index_Set => Strings.Wide_Functions.Maps.Index,
-         Fixed_Count_Mapping => Strings.Wide_Functions.Maps.Count,
-         Fixed_Count_Mapping_Function => Strings.Wide_Functions.Maps.Count,
-         Fixed_Count_Mapping_Function_Per_Element =>
-            Strings.Wide_Functions.Maps.Count_Per_Element,
-         Fixed_Count_Set => Strings.Wide_Functions.Maps.Count,
-         Fixed_Find_Token_From => Strings.Wide_Functions.Maps.Find_Token,
-         Fixed_Find_Token => Strings.Wide_Functions.Maps.Find_Token,
-         Fixed_Translate_Mapping => Strings.Wide_Functions.Maps.Translate,
-         Fixed_Translate_Mapping_Function =>
-            Strings.Wide_Functions.Maps.Translate,
-         Fixed_Translate_Mapping_Function_Per_Element =>
-            Strings.Wide_Functions.Maps.Translate_Per_Element,
-         Fixed_Trim_Set => Strings.Wide_Functions.Maps.Trim);
+         new Strings.Bounded_Wide_Strings.Generic_Bounded_Length (Max);
+      package Functions is
+         new Strings.Bounded_Wide_Strings.Functions.Generic_Bounded_Length (
+            Bounded_Wide_Strings);
+      package Maps is
+         new Strings.Bounded_Wide_Strings.Functions.Maps.
+            Generic_Bounded_Length (
+               Bounded_Wide_Strings);
 
 --    Max_Length : constant Positive := Max;
       Max_Length : Positive
