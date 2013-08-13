@@ -221,24 +221,6 @@ package body System.Native_Encoding is
       Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
    end Convert;
 
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset)
-   is
-      Last : Ada.Streams.Stream_Element_Offset;
-      Status : Substituting_Status_Type;
-   begin
-      Convert (Object, Item, Last, Out_Item, Out_Last, Status);
-      case Status is
-         when Fine =>
-            null;
-         when Insufficient =>
-            raise Constraint_Error;
-      end case;
-   end Convert;
-
    procedure Convert_No_Check (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
@@ -398,10 +380,19 @@ package body System.Native_Encoding is
                   Status := Insufficient;
                   return;
                when Incomplete | Illegal_Sequence =>
-                  Put_Substitute (
-                     Object,
-                     Out_Item (Out_Last + 1 .. Out_Item'Last),
-                     Out_Last);
+                  declare
+                     Is_Overflow : Boolean;
+                  begin
+                     Put_Substitute (
+                        Object,
+                        Out_Item (Out_Last + 1 .. Out_Item'Last),
+                        Out_Last,
+                        Is_Overflow);
+                     if Is_Overflow then
+                        Status := Insufficient;
+                        return; -- wait a next try
+                     end if;
+                  end;
                   declare
                      New_Last : Ada.Streams.Stream_Element_Offset :=
                         Last + Min_Size_In_From_Stream_Elements (Object);
@@ -439,15 +430,18 @@ package body System.Native_Encoding is
    procedure Put_Substitute (
       Object : Converter;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset)
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Is_Overflow : out Boolean)
    is
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);
    begin
-      if Out_Item'Length < NC_Converter.Substitute_Length then
-         raise Constraint_Error;
+      Out_Last := Out_Item'First - 1;
+      Is_Overflow := Out_Item'Length < NC_Converter.Substitute_Length;
+      if Is_Overflow then
+         return;
       end if;
-      Out_Last := Out_Item'First - 1 + NC_Converter.Substitute_Length;
+      Out_Last := Out_Last + NC_Converter.Substitute_Length;
       Out_Item (Out_Item'First .. Out_Last) :=
          NC_Converter.Substitute (1 .. NC_Converter.Substitute_Length);
    end Put_Substitute;

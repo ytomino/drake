@@ -109,12 +109,20 @@ package body System.Native_Encoding.Encoding_Streams is
                   when Incomplete =>
                      if Context.Status /= Continuing then
                         --  put substitute instead of incomplete sequence
-                        Put_Substitute (
-                           Object,
-                           Context.Converted_Buffer (
-                              Context.Converted_Last + 1 ..
-                              Buffer_Type'Last),
-                           Context.Converted_Last);
+                        declare
+                           Is_Overflow : Boolean;
+                        begin
+                           Put_Substitute (
+                              Object,
+                              Context.Converted_Buffer (
+                                 Context.Converted_Last + 1 ..
+                                 Buffer_Type'Last),
+                              Context.Converted_Last,
+                              Is_Overflow);
+                           if Is_Overflow then
+                              exit; -- wait a next try
+                           end if;
+                        end;
                         --  to finishing phase
                         Context.First := Context.Last + 1;
                      elsif Context.Converted_Last <
@@ -123,12 +131,20 @@ package body System.Native_Encoding.Encoding_Streams is
                         exit; -- wait tail-bytes
                      end if;
                   when Illegal_Sequence =>
-                     Put_Substitute (
-                        Object,
-                        Context.Converted_Buffer (
-                           Context.Converted_Last + 1 ..
-                           Buffer_Type'Last),
-                        Context.Converted_Last);
+                     declare
+                        Is_Overflow : Boolean;
+                     begin
+                        Put_Substitute (
+                           Object,
+                           Context.Converted_Buffer (
+                              Context.Converted_Last + 1 ..
+                              Buffer_Type'Last),
+                           Context.Converted_Last,
+                           Is_Overflow);
+                        if Is_Overflow then
+                           exit; -- wait a next try
+                        end if;
+                     end;
                      --  skip one element
                      Taken := Stream_Element_Offset'Min (
                         Context.Last,
@@ -208,18 +224,28 @@ package body System.Native_Encoding.Encoding_Streams is
       Object : in out Converter;
       Substitute : Ada.Streams.Stream_Element_Array)
    is
+      Substitute_Last : Ada.Streams.Stream_Element_Offset;
       S2 : Ada.Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
-      S2_Length : Ada.Streams.Stream_Element_Offset;
+      S2_Last : Ada.Streams.Stream_Element_Offset;
+      Status : Substituting_Status_Type;
    begin
       --  convert substitute from internal to external
       Convert (
          Object,
          Substitute,
+         Substitute_Last,
          S2,
-         S2_Length);
+         S2_Last,
+         Status => Status);
+      case Status is
+         when Fine =>
+            null;
+         when Insufficient =>
+            raise Constraint_Error;
+      end case;
       Set_Substitute (
          Object,
-         S2 (1 .. S2_Length));
+         S2 (1 .. S2_Last));
    end Set_Substitute_To_Writing_Converter;
 
    procedure Write (
@@ -285,10 +311,18 @@ package body System.Native_Encoding.Encoding_Streams is
                      exit; -- wait tail-bytes
                   end if;
                when Illegal_Sequence =>
-                  Put_Substitute (
-                     Object,
-                     Out_Buffer,
-                     Out_Last);
+                  declare
+                     Is_Overflow : Boolean;
+                  begin
+                     Put_Substitute (
+                        Object,
+                        Out_Buffer,
+                        Out_Last,
+                        Is_Overflow);
+                     if Is_Overflow then
+                        exit; -- wait a next try
+                     end if;
+                  end;
                   --  skip one element
                   Taken := Stream_Element_Offset'Min (
                      Context.Last,
@@ -321,10 +355,15 @@ package body System.Native_Encoding.Encoding_Streams is
    begin
       if Context.First <= Context.Last then
          --  put substitute instead of incomplete sequence in the buffer
-         Put_Substitute (
-            Object,
-            Out_Buffer (Out_Last + 1 .. Out_Buffer'Last),
-            Out_Last);
+         declare
+            Is_Overflow : Boolean; -- ignore
+         begin
+            Put_Substitute (
+               Object,
+               Out_Buffer (Out_Last + 1 .. Out_Buffer'Last),
+               Out_Last,
+               Is_Overflow);
+         end;
          Initialize (Context); -- reset indexes
       end if;
       --  finish
