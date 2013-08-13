@@ -77,14 +77,6 @@ package System.Native_Encoding is
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Substituting_Status_Type);
 
-   --  convert all character sequence with substitute,
-   --    and raise Constraint_Error if Out_Item is not large enough
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset);
-
    --  exceptions
 
    Name_Error : exception
@@ -204,6 +196,7 @@ private
    procedure Put_Substitute (
       Object : Converter;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset);
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Is_Overflow : out Boolean);
 
 end System.Native_Encoding;

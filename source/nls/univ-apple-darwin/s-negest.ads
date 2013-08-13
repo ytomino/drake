@@ -40,14 +40,6 @@ package System.Native_Encoding.Generic_Strings is
       Out_Last : out Natural;
       Status : out Substituting_Status_Type);
 
-   --  decode all character sequence with substitute,
-   --    and raise Constraint_Error if Out_Item is not large enough
-   procedure Decode (
-      Object : Decoder;
-      Item : Ada.Streams.Stream_Element_Array;
-      Out_Item : out String_Type;
-      Out_Last : out Natural);
-
    function Decode (
       Object : Decoder;
       Item : Ada.Streams.Stream_Element_Array)
@@ -85,14 +77,6 @@ package System.Native_Encoding.Generic_Strings is
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Substituting_Status_Type);
-
-   --  encode all character sequence with substitute,
-   --    and raise Constraint_Error if Out_Item is not large enough
-   procedure Encode (
-      Object : Encoder;
-      Item : String_Type;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset);
 
    function Encode (
       Object : Encoder;

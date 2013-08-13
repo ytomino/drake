@@ -21,36 +21,42 @@ package body System.Native_Encoding is
    procedure Default_Substitute (
       Encoding : Encoding_Id;
       Item : out Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset);
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Is_Overflow : out Boolean);
    procedure Default_Substitute (
       Encoding : Encoding_Id;
       Item : out Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset) is
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Is_Overflow : out Boolean) is
    begin
       case Encoding is
          when UTF_16 =>
-            if Item'Length < 2 then
-               raise Constraint_Error;
+            Last := Item'First - 1;
+            Is_Overflow := Item'Length < 2;
+            if Is_Overflow then
+               return;
             end if;
             case Default_Bit_Order is
                when High_Order_First =>
-                  Last := Item'First;
+                  Last := Last + 1;
                   Item (Last) := 0;
                   Last := Last + 1;
                   Item (Last) := Character'Pos ('?');
                when Low_Order_First =>
-                  Last := Item'First;
+                  Last := Last + 1;
                   Item (Last) := Character'Pos ('?');
                   Last := Last + 1;
                   Item (Last) := 0;
             end case;
          when UTF_32 =>
-            if Item'Length < 4 then
-               raise Constraint_Error;
+            Last := Item'First - 1;
+            Is_Overflow := Item'Length < 4;
+            if Is_Overflow then
+               return;
             end if;
             case Default_Bit_Order is
                when High_Order_First =>
-                  Last := Item'First;
+                  Last := Last + 1;
                   Item (Last) := 0;
                   Last := Last + 1;
                   Item (Last) := 0;
@@ -59,7 +65,7 @@ package body System.Native_Encoding is
                   Last := Last + 1;
                   Item (Last) := Character'Pos ('?');
                when Low_Order_First =>
-                  Last := Item'First;
+                  Last := Last + 1;
                   Item (Last) := Character'Pos ('?');
                   Last := Last + 1;
                   Item (Last) := 0;
@@ -69,10 +75,12 @@ package body System.Native_Encoding is
                   Item (Last) := 0;
             end case;
          when others =>
-            if Item'Length = 0 then
-               raise Constraint_Error;
+            Last := Item'First - 1;
+            Is_Overflow := Item'Length = 0;
+            if Is_Overflow then
+               return;
             end if;
-            Last := Item'First;
+            Last := Last + 1;
             Item (Last) := Character'Pos ('?');
       end case;
    end Default_Substitute;
@@ -99,8 +107,10 @@ package body System.Native_Encoding is
          0 .. -- from 0 for a result value
          Max_Substitute_Length - 1);
       Last : Ada.Streams.Stream_Element_Offset;
+      Is_Overflow : Boolean;
    begin
-      Default_Substitute (Encoding, Result, Last);
+      Default_Substitute (Encoding, Result, Last, Is_Overflow);
+      pragma Assert (not Is_Overflow);
       return Result (Result'First .. Last);
    end Default_Substitute;
 
@@ -193,24 +203,6 @@ package body System.Native_Encoding is
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
-   end Convert;
-
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset)
-   is
-      Last : Ada.Streams.Stream_Element_Offset;
-      Status : Substituting_Status_Type;
-   begin
-      Convert (Object, Item, Last, Out_Item, Out_Last, Status);
-      case Status is
-         when Fine =>
-            null;
-         when Insufficient =>
-            raise Constraint_Error;
-      end case;
    end Convert;
 
    procedure Convert_No_Check (
@@ -660,18 +652,22 @@ package body System.Native_Encoding is
    procedure Put_Substitute (
       Object : Converter;
       Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset) is
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Is_Overflow : out Boolean) is
    begin
       if Object.Substitute_Length < 0 then
          Default_Substitute (
             Object.To,
             Out_Item,
-            Out_Last);
+            Out_Last,
+            Is_Overflow);
       else
-         if Out_Item'Length < Object.Substitute_Length then
-            raise Constraint_Error;
+         Out_Last := Out_Item'First - 1;
+         Is_Overflow := Out_Item'Length < Object.Substitute_Length;
+         if Is_Overflow then
+            return;
          end if;
-         Out_Last := Out_Item'First - 1 + Object.Substitute_Length;
+         Out_Last := Out_Last + Object.Substitute_Length;
          Out_Item (Out_Item'First .. Out_Last) :=
             Object.Substitute (1 .. Object.Substitute_Length);
       end if;

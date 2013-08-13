@@ -144,24 +144,6 @@ package body System.Native_Encoding.Generic_Strings is
          - 1;
    end Decode;
 
-   procedure Decode (
-      Object : Decoder;
-      Item : Ada.Streams.Stream_Element_Array;
-      Out_Item : out String_Type;
-      Out_Last : out Natural)
-   is
-      Last : Ada.Streams.Stream_Element_Offset;
-      Status : Substituting_Status_Type;
-   begin
-      Decode (Object, Item, Last, Out_Item, Out_Last, Status);
-      case Status is
-         when Fine =>
-            null;
-         when Insufficient =>
-            raise Constraint_Error;
-      end case;
-   end Decode;
-
    function Decode (
       Object : Decoder;
       Item : Ada.Streams.Stream_Element_Array)
@@ -277,24 +259,6 @@ package body System.Native_Encoding.Generic_Strings is
             Last_2
             / (Character_Type'Size / Ada.Streams.Stream_Element'Size))
          - 1;
-   end Encode;
-
-   procedure Encode (
-      Object : Encoder;
-      Item : String_Type;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset)
-   is
-      Last : Natural;
-      Status : Substituting_Status_Type;
-   begin
-      Encode (Object, Item, Last, Out_Item, Out_Last, Status);
-      case Status is
-         when Fine =>
-            null;
-         when Insufficient =>
-            raise Constraint_Error;
-      end case;
    end Encode;
 
    function Encode (
