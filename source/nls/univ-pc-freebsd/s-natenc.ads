@@ -26,14 +26,30 @@ package System.Native_Encoding is
 
    Current_Encoding : constant Encoding_Id;
 
-   type Status_Type is (
-      Fine,
-      Insufficient, -- the output buffer is not large enough
-      Incomplete, -- the input buffer is broken off at a multi-byte character
-      Illegal_Sequence); -- a input character could not be mapped to the output
+   --  subsidiary types to converter
 
-   type Finishing_Status_Type is new Status_Type range Fine .. Insufficient;
-   type Substituting_Status_Type is new Status_Type range Fine .. Insufficient;
+   type Subsequence_Status_Type is (
+      Finished,
+      Success,
+      Overflow, -- the output buffer is not large enough
+      Illegal_Sequence, -- a input character could not be mapped to the output
+      Truncated); -- the input buffer is broken off at a multi-byte character
+
+   type Continuing_Status_Type is
+      new Subsequence_Status_Type
+         range Success .. Subsequence_Status_Type'Last;
+   type Finishing_Status_Type is
+      new Subsequence_Status_Type
+         range Finished .. Overflow;
+   type Status_Type is
+      new Subsequence_Status_Type
+         range Finished .. Illegal_Sequence;
+
+   type Substituting_Status_Type is
+      new Status_Type
+         range Finished .. Overflow;
+
+   subtype True_Only is Boolean range True .. True;
 
    --  converter
 
@@ -58,23 +74,42 @@ package System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Status_Type);
+      Finish : Boolean;
+      Status : out Subsequence_Status_Type);
 
-   --  finish converting and receive remaindered sequence
-   procedure Convert (
-      Object : Converter;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Finishing_Status_Type);
-
-   --  convert all character sequence with substitute,
-   --    and stop if Out_Item is not large enough
    procedure Convert (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Continuing_Status_Type);
+
+   procedure Convert (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
+      Status : out Finishing_Status_Type);
+
+   --  convert all character sequence
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finished : True_Only;
+      Status : out Status_Type);
+
+   --  convert all character sequence with substitute
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
       Status : out Substituting_Status_Type);
 
    --  exceptions
@@ -165,12 +200,22 @@ private
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Status_Type);
+      Finish : Boolean;
+      Status : out Subsequence_Status_Type);
+
+   procedure Convert_No_Check (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Continuing_Status_Type);
 
    procedure Convert_No_Check (
       Object : Converter;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
       Status : out Finishing_Status_Type);
 
    procedure Convert_No_Check (
@@ -179,6 +224,7 @@ private
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
       Status : out Substituting_Status_Type);
 
    procedure Put_Substitute (

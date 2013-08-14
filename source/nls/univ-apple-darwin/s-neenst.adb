@@ -80,7 +80,7 @@ package body System.Native_Encoding.Encoding_Streams is
             end if;
          end if;
          --  converting
-         if Context.First <= Context.Last then
+         if Context.Status <= Finishing then
             Adjust_Buffer (
                Context.Converted_Buffer,
                Context.Converted_First,
@@ -88,7 +88,7 @@ package body System.Native_Encoding.Encoding_Streams is
             --  try to convert subsequence
             declare
                Taken : Stream_Element_Offset;
-               Status : Status_Type;
+               Status : Subsequence_Status_Type;
             begin
                Convert_No_Check (
                   Object,
@@ -98,36 +98,20 @@ package body System.Native_Encoding.Encoding_Streams is
                      Context.Converted_Last + 1 ..
                      Buffer_Type'Last),
                   Context.Converted_Last,
-                  Status);
+                  Finish => Context.Status > Continuing,
+                  Status => Status);
                case Status is
-                  when Fine =>
+                  when Finished =>
+                     Context.Status := Ended;
+                  when Success =>
                      null;
-                  when Insufficient =>
+                  when Overflow =>
                      if Context.Converted_Last < Context.Converted_First then
                         raise Constraint_Error; -- Converted is too smaller
                      end if;
-                  when Incomplete =>
-                     if Context.Status /= Continuing then
-                        --  put substitute instead of incomplete sequence
-                        declare
-                           Is_Overflow : Boolean;
-                        begin
-                           Put_Substitute (
-                              Object,
-                              Context.Converted_Buffer (
-                                 Context.Converted_Last + 1 ..
-                                 Buffer_Type'Last),
-                              Context.Converted_Last,
-                              Is_Overflow);
-                           if Is_Overflow then
-                              exit; -- wait a next try
-                           end if;
-                        end;
-                        --  to finishing phase
-                        Context.First := Context.Last + 1;
-                     elsif Context.Converted_Last <
-                        Context.Converted_First
-                     then
+                  when Truncated =>
+                     pragma Assert (Context.Status = Continuing);
+                     if Context.Converted_Last < Context.Converted_First then
                         exit; -- wait tail-bytes
                      end if;
                   when Illegal_Sequence =>
@@ -154,31 +138,6 @@ package body System.Native_Encoding.Encoding_Streams is
                end case;
                --  drop converted subsequence
                Context.First := Taken + 1;
-            end;
-         elsif Context.Status = Finishing then
-            Adjust_Buffer (
-               Context.Converted_Buffer,
-               Context.Converted_First,
-               Context.Converted_Last);
-            --  finish
-            declare
-               Status : Finishing_Status_Type;
-            begin
-               Convert_No_Check (
-                  Object,
-                  Context.Converted_Buffer (
-                     Context.Converted_Last + 1 ..
-                     Buffer_Type'Last),
-                  Context.Converted_Last,
-                  Status);
-               case Status is
-                  when Fine =>
-                     Context.Status := Ended;
-                  when Insufficient =>
-                     if Context.Converted_Last < Context.Converted_First then
-                        raise Constraint_Error; -- Converted is too smaller
-                     end if;
-               end case;
             end;
          end if;
          --  copy converted elements
@@ -224,25 +183,34 @@ package body System.Native_Encoding.Encoding_Streams is
       Object : in out Converter;
       Substitute : Ada.Streams.Stream_Element_Array)
    is
-      Substitute_Last : Ada.Streams.Stream_Element_Offset;
+      Substitute_Last : Ada.Streams.Stream_Element_Offset :=
+         Substitute'First - 1;
       S2 : Ada.Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
-      S2_Last : Ada.Streams.Stream_Element_Offset;
-      Status : Substituting_Status_Type;
+      S2_Last : Ada.Streams.Stream_Element_Offset := S2'First - 1;
    begin
       --  convert substitute from internal to external
-      Convert (
-         Object,
-         Substitute,
-         Substitute_Last,
-         S2,
-         S2_Last,
-         Status => Status);
-      case Status is
-         when Fine =>
-            null;
-         when Insufficient =>
-            raise Constraint_Error;
-      end case;
+      loop
+         declare
+            Status : Substituting_Status_Type;
+         begin
+            Convert_No_Check (
+               Object,
+               Substitute (Substitute_Last + 1 .. Substitute'Last),
+               Substitute_Last,
+               S2 (S2_Last + 1 .. S2'Last),
+               S2_Last,
+               Finish => True,
+               Status => Status);
+            case Status is
+               when Finished =>
+                  exit;
+               when Success =>
+                  null;
+               when Overflow =>
+                  raise Constraint_Error;
+            end case;
+         end;
+      end loop;
       Set_Substitute (
          Object,
          S2 (1 .. S2_Last));
@@ -290,7 +258,7 @@ package body System.Native_Encoding.Encoding_Streams is
             Taken : Stream_Element_Offset;
             Out_Buffer : Ada.Streams.Stream_Element_Array (0 .. 63);
             Out_Last : Stream_Element_Offset;
-            Status : Status_Type;
+            Status : Continuing_Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -298,15 +266,15 @@ package body System.Native_Encoding.Encoding_Streams is
                Taken,
                Out_Buffer,
                Out_Last,
-               Status);
+               Status => Status);
             case Status is
-               when Fine =>
+               when Success =>
                   null;
-               when Insufficient =>
+               when Overflow =>
                   if Out_Last < Out_Buffer'First then
                      raise Constraint_Error; -- Out_Buffer is too smaller
                   end if;
-               when Incomplete =>
+               when Truncated =>
                   if Out_Last < Out_Buffer'First then
                      exit; -- wait tail-bytes
                   end if;
@@ -351,7 +319,7 @@ package body System.Native_Encoding.Encoding_Streams is
    is
       Out_Buffer : Ada.Streams.Stream_Element_Array (0 .. 63);
       Out_Last : Stream_Element_Offset := -1;
-      Finishing_Status : Finishing_Status_Type;
+      Status : Finishing_Status_Type;
    begin
       if Context.First <= Context.Last then
          --  put substitute instead of incomplete sequence in the buffer
@@ -367,15 +335,27 @@ package body System.Native_Encoding.Encoding_Streams is
          Initialize (Context); -- reset indexes
       end if;
       --  finish
-      Convert_No_Check (
-         Object,
-         Out_Buffer (Out_Last + 1 .. Out_Buffer'Last),
-         Out_Last,
-         Finishing_Status);
-      --  write
-      Ada.Streams.Write (
-         Stream.all,
-         Out_Buffer (Out_Buffer'First .. Out_Last));
+      loop
+         Convert_No_Check (
+            Object,
+            Out_Buffer (Out_Last + 1 .. Out_Buffer'Last),
+            Out_Last,
+            Finish => True,
+            Status => Status);
+         Ada.Streams.Write (
+            Stream.all,
+            Out_Buffer (Out_Buffer'First .. Out_Last));
+         case Status is
+            when Finished =>
+               exit;
+            when Success =>
+               null;
+            when Overflow =>
+               if Out_Last < Out_Buffer'First then
+                  raise Constraint_Error; -- Out_Buffer is too smaller
+               end if;
+         end case;
+      end loop;
    end Finish;
 
    --  implementation of only reading
