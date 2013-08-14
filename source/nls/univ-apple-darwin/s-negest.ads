@@ -21,23 +21,42 @@ package System.Native_Encoding.Generic_Strings is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out String_Type;
       Out_Last : out Natural;
-      Status : out Status_Type);
+      Finish : Boolean;
+      Status : out Subsequence_Status_Type);
 
-   --  finish decoding and receive remaindered sequence
-   procedure Decode (
-      Object : Decoder;
-      Out_Item : out String_Type;
-      Out_Last : out Natural;
-      Status : out Finishing_Status_Type);
-
-   --  decode all character sequence with substitute,
-   --    and stop if Out_Item is not large enough
    procedure Decode (
       Object : Decoder;
       Item : Ada.Streams.Stream_Element_Array;
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out String_Type;
       Out_Last : out Natural;
+      Status : out Continuing_Status_Type);
+
+   procedure Decode (
+      Object : Decoder;
+      Out_Item : out String_Type;
+      Out_Last : out Natural;
+      Finish : True_Only;
+      Status : out Finishing_Status_Type);
+
+   --  decode all character sequence
+   procedure Decode (
+      Object : Decoder;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out String_Type;
+      Out_Last : out Natural;
+      Finish : True_Only;
+      Status : out Status_Type);
+
+   --  decode all character sequence with substitute
+   procedure Decode (
+      Object : Decoder;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out String_Type;
+      Out_Last : out Natural;
+      Finish : True_Only;
       Status : out Substituting_Status_Type);
 
    function Decode (
@@ -58,24 +77,43 @@ package System.Native_Encoding.Generic_Strings is
       Last : out Natural;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Status_Type);
+      Finish : Boolean;
+      Status : out Subsequence_Status_Type);
 
-   --  finish encoding and receive remaindered sequence
-   procedure Encode (
-      Object : Encoder;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Finishing_Status_Type)
-      renames Convert; -- inherited
-
-   --  encode all character sequence with substitute,
-   --    and stop if Out_Item is not large enough
    procedure Encode (
       Object : Encoder;
       Item : String_Type;
       Last : out Natural;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Continuing_Status_Type);
+
+   procedure Encode (
+      Object : Encoder;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
+      Status : out Finishing_Status_Type)
+      renames Convert; -- inherited
+
+   --  encode all character sequence
+   procedure Encode (
+      Object : Encoder;
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
+      Status : out Status_Type);
+
+   --  encode all character sequence with substitute
+   procedure Encode (
+      Object : Encoder;
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
       Status : out Substituting_Status_Type);
 
    function Encode (

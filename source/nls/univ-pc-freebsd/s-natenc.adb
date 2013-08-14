@@ -137,24 +137,20 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Status_Type) is
+      Finish : Boolean;
+      Status : out Subsequence_Status_Type) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
-   end Convert;
-
-   procedure Convert (
-      Object : Converter;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Finishing_Status_Type) is
-   begin
-      if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
-      end if;
-      Convert_No_Check (Object, Out_Item, Out_Last, Status);
+      Convert_No_Check (
+         Object,
+         Item,
+         Last,
+         Out_Item,
+         Out_Last,
+         Finish,
+         Status);
    end Convert;
 
    procedure Convert (
@@ -163,12 +159,72 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Substituting_Status_Type) is
+      Status : out Continuing_Status_Type) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
+      Status : out Finishing_Status_Type) is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Convert_No_Check (Object, Out_Item, Out_Last, Finish, Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finished : True_Only;
+      Status : out Status_Type)
+   is
+      Subsequence_Status : Subsequence_Status_Type;
+   begin
+      Convert (
+         Object,
+         Item,
+         Last,
+         Out_Item,
+         Out_Last,
+         Finished,
+         Subsequence_Status);
+      pragma Assert (Subsequence_Status in
+         Subsequence_Status_Type (Status_Type'First) ..
+         Subsequence_Status_Type (Status_Type'Last));
+      Status := Status_Type (Subsequence_Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
+      Status : out Substituting_Status_Type) is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Convert_No_Check (
+         Object,
+         Item,
+         Last,
+         Out_Item,
+         Out_Last,
+         Finish,
+         Status);
    end Convert;
 
    procedure Convert_No_Check (
@@ -177,7 +233,38 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Status_Type)
+      Finish : Boolean;
+      Status : out Subsequence_Status_Type)
+   is
+      Continuing_Status : Continuing_Status_Type;
+      Finishing_Status : Finishing_Status_Type;
+   begin
+      Convert_No_Check (
+         Object,
+         Item,
+         Last,
+         Out_Item,
+         Out_Last,
+         Status => Continuing_Status);
+      Status := Subsequence_Status_Type (Continuing_Status);
+      if Finish and then Status = Success and then Last = Item'Last then
+         Convert_No_Check (
+            Object,
+            Out_Item (Out_Last + 1 .. Out_Item'Last),
+            Out_Last,
+            Finish => True,
+            Status => Finishing_Status);
+         Status := Subsequence_Status_Type (Finishing_Status);
+      end if;
+   end Convert_No_Check;
+
+   procedure Convert_No_Check (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Continuing_Status_Type)
    is
       pragma Suppress (All_Checks);
       package C_Conv is
@@ -202,14 +289,14 @@ package body System.Native_Encoding is
          errno := C.errno.errno;
          case errno is
             when C.errno.E2BIG =>
-               Status := Insufficient;
+               Status := Overflow;
             when C.errno.EINVAL =>
-               Status := Incomplete;
+               Status := Truncated;
             when others => -- C.errno.EILSEQ =>
                Status := Illegal_Sequence;
          end case;
       else
-         Status := Fine;
+         Status := Success;
       end if;
       Last := Item'First
          + (Item'Length - Ada.Streams.Stream_Element_Offset (Size))
@@ -223,9 +310,11 @@ package body System.Native_Encoding is
       Object : Converter;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
       Status : out Finishing_Status_Type)
    is
       pragma Suppress (All_Checks);
+      pragma Unreferenced (Finish);
       package V_Conv is
          new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       NC_Converter : constant not null access Non_Controlled_Converter :=
@@ -244,12 +333,12 @@ package body System.Native_Encoding is
          errno := C.errno.errno;
          case errno is
             when C.errno.E2BIG =>
-               Status := Insufficient;
+               Status := Overflow;
             when others => -- unknown
                Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
       else
-         Status := Fine;
+         Status := Finished;
       end if;
       Out_Last := Out_Item'First
          + (Out_Item'Length - Ada.Streams.Stream_Element_Offset (Out_Size))
@@ -262,6 +351,7 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
       Status : out Substituting_Status_Type)
    is
       NC_Converter : constant not null access Non_Controlled_Converter :=
@@ -269,9 +359,9 @@ package body System.Native_Encoding is
    begin
       Last := Item'First - 1;
       Out_Last := Out_Item'First - 1;
-      while Last /= Item'Last loop
+      loop
          declare
-            Step_Status : Status_Type;
+            Subsequence_Status : Subsequence_Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -279,14 +369,22 @@ package body System.Native_Encoding is
                Last,
                Out_Item (Out_Last + 1 .. Out_Item'Last),
                Out_Last,
-               Step_Status);
-            case Step_Status is
-               when Fine =>
-                  null;
-               when Insufficient =>
-                  Status := Insufficient;
+               Finish => Finish,
+               Status => Subsequence_Status);
+            pragma Assert (Subsequence_Status in
+               Subsequence_Status_Type (Status_Type'First) ..
+               Subsequence_Status_Type (Status_Type'Last));
+            case Status_Type (Subsequence_Status) is
+               when Finished =>
+                  Status := Finished;
                   return;
-               when Incomplete | Illegal_Sequence =>
+               when Success =>
+                  Status := Success;
+                  return;
+               when Overflow =>
+                  Status := Overflow;
+                  return;
+               when Illegal_Sequence =>
                   declare
                      Is_Overflow : Boolean;
                   begin
@@ -296,7 +394,7 @@ package body System.Native_Encoding is
                         Out_Last,
                         Is_Overflow);
                      if Is_Overflow then
-                        Status := Insufficient;
+                        Status := Overflow;
                         return; -- wait a next try
                      end if;
                   end;
@@ -314,24 +412,6 @@ package body System.Native_Encoding is
             end case;
          end;
       end loop;
-      --  receive remaindered sequence
-      declare
-         Finishing_Status : Finishing_Status_Type;
-      begin
-         Convert_No_Check (
-            Object,
-            Out_Item (Out_Last + 1 .. Out_Item'Last),
-            Out_Last,
-            Finishing_Status);
-         case Finishing_Status is
-            when Fine =>
-               null;
-            when Insufficient =>
-               Status := Insufficient;
-               return;
-         end case;
-      end;
-      Status := Fine;
    end Convert_No_Check;
 
    procedure Put_Substitute (

@@ -171,24 +171,20 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Status_Type) is
+      Finish : Boolean;
+      Status : out Subsequence_Status_Type) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
-   end Convert;
-
-   procedure Convert (
-      Object : Converter;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Finishing_Status_Type) is
-   begin
-      if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
-      end if;
-      Convert_No_Check (Object, Out_Item, Out_Last, Status);
+      Convert_No_Check (
+         Object,
+         Item,
+         Last,
+         Out_Item,
+         Out_Last,
+         Finish,
+         Status);
    end Convert;
 
    procedure Convert (
@@ -197,12 +193,72 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Substituting_Status_Type) is
+      Status : out Continuing_Status_Type) is
    begin
       if not Is_Open (Object) then
          Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
+      Status : out Finishing_Status_Type) is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Convert_No_Check (Object, Out_Item, Out_Last, Finish, Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
+      Status : out Substituting_Status_Type) is
+   begin
+      if not Is_Open (Object) then
+         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      Convert_No_Check (
+         Object,
+         Item,
+         Last,
+         Out_Item,
+         Out_Last,
+         Finish,
+         Status);
+   end Convert;
+
+   procedure Convert (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finished : True_Only;
+      Status : out Status_Type)
+   is
+      Subsequence_Status : Subsequence_Status_Type;
+   begin
+      Convert (
+         Object,
+         Item,
+         Last,
+         Out_Item,
+         Out_Last,
+         Finished,
+         Subsequence_Status);
+      pragma Assert (Subsequence_Status in
+         Subsequence_Status_Type (Status_Type'First) ..
+         Subsequence_Status_Type (Status_Type'Last));
+      Status := Status_Type (Subsequence_Status);
    end Convert;
 
    procedure Convert_No_Check (
@@ -211,7 +267,8 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Status_Type)
+      Finish : Boolean;
+      Status : out Subsequence_Status_Type)
    is
       Buffer : aliased C.winnt.WCHAR_array (1 .. 2);
       Buffer_As_W : aliased Wide_String (1 .. 2);
@@ -221,15 +278,13 @@ package body System.Native_Encoding is
       Buffer_Length : C.signed_int;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      case Object.From is
-         when UTF_8 =>
-            if Item'Length = 0 then
-               Last := Item'First - 1;
-               Out_Last := Out_Item'First - 1;
-               Status := Incomplete;
-               pragma Check (Trace, Ada.Debug.Put ("incomplete"));
-               return;
-            else
+      pragma Check (Trace, Ada.Debug.Put ("Finish = " & Finish'Img));
+      if Item'Length = 0 then
+         Last := Item'First - 1;
+         Out_Last := Out_Item'First - 1;
+      else
+         case Object.From is
+            when UTF_8 =>
                declare
                   Item_As_S : aliased String (1 .. Item'Length);
                   for Item_As_S'Address use Item'Address;
@@ -248,8 +303,8 @@ package body System.Native_Encoding is
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
                      if From_Status = UTF_Conversions.Truncated then
-                        Status := Incomplete;
-                        pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+                        Status := Truncated;
+                        pragma Check (Trace, Ada.Debug.Put ("truncated"));
                      else
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
@@ -275,15 +330,14 @@ package body System.Native_Encoding is
                      + Ada.Streams.Stream_Element_Offset (Item_Length)
                      - 1;
                end;
-            end if;
-         when UTF_16 =>
-            if Item'Length < 2 then
-               Last := Item'First - 1;
-               Out_Last := Out_Item'First - 1;
-               Status := Incomplete;
-               pragma Check (Trace, Ada.Debug.Put ("imcomplete"));
-               return;
-            else
+            when UTF_16 =>
+               if Item'Length < 2 then
+                  Last := Item'First - 1;
+                  Out_Last := Out_Item'First - 1;
+                  Status := Truncated;
+                  pragma Check (Trace, Ada.Debug.Put ("truncated"));
+                  return;
+               end if;
                if Item'Length < 4 then
                   Last := Item'First + 1;
                else
@@ -304,8 +358,8 @@ package body System.Native_Encoding is
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
                      if From_Status = UTF_Conversions.Truncated then
-                        Status := Incomplete;
-                        pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+                        Status := Truncated;
+                        pragma Check (Trace, Ada.Debug.Put ("truncated"));
                      else
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
@@ -315,15 +369,14 @@ package body System.Native_Encoding is
                   end if;
                end;
                Last := 2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
-            end if;
-         when UTF_32 =>
-            if Item'Length < 4 then
-               Last := Item'First - 1;
-               Out_Last := Out_Item'First - 1;
-               Status := Incomplete;
-               pragma Check (Trace, Ada.Debug.Put ("incomplete"));
-               return;
-            else
+            when UTF_32 =>
+               if Item'Length < 4 then
+                  Last := Item'First - 1;
+                  Out_Last := Out_Item'First - 1;
+                  Status := Truncated;
+                  pragma Check (Trace, Ada.Debug.Put ("truncated"));
+                  return;
+               end if;
                declare
                   Code : UTF_Conversions.UCS_4;
                   Code_As_SEA : Ada.Streams.Stream_Element_Array (1 .. 4);
@@ -346,15 +399,7 @@ package body System.Native_Encoding is
                      return;
                   end if;
                end;
-            end if;
-         when others =>
-            if Item'Length = 0 then
-               Last := Item'First - 1;
-               Out_Last := Out_Item'First - 1;
-               Status := Incomplete;
-               pragma Check (Trace, Ada.Debug.Put ("incomplete"));
-               return;
-            else
+            when others =>
                declare
                   Item_As_C : aliased C.char_array (1 .. Item'Length);
                   for Item_As_C'Address use Item'Address;
@@ -367,8 +412,8 @@ package body System.Native_Encoding is
                      if Item'Length < 2 then
                         Last := Item'First - 1;
                         Out_Last := Out_Item'First - 1;
-                        Status := Incomplete;
-                        pragma Check (Trace, Ada.Debug.Put ("incomplete"));
+                        Status := Truncated;
+                        pragma Check (Trace, Ada.Debug.Put ("truncated"));
                         return;
                      end if;
                      Item_Length := 2;
@@ -391,38 +436,35 @@ package body System.Native_Encoding is
                      return;
                   end if;
                end;
-            end if;
-      end case;
-      pragma Check (Trace, Ada.Debug.Put ("Item'First =" & Item'First'Img));
-      pragma Check (Trace, Ada.Debug.Put ("Last =" & Last'Img));
-      case Object.To is
-         when UTF_16 =>
-            declare
-               Buffer_As_SEA_Length : constant
-                  Ada.Streams.Stream_Element_Offset :=
-                     2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
-            begin
-               if Out_Item'Length < Buffer_As_SEA_Length then
-                  Last := Item'First - 1;
-                  Out_Last := Out_Item'First - 1;
-                  Status := Insufficient;
-                  pragma Check (Trace, Ada.Debug.Put ("insufficient buffer"));
-                  return;
-               else
+         end case;
+         pragma Check (Trace, Ada.Debug.Put ("Item'First =" & Item'First'Img));
+         pragma Check (Trace, Ada.Debug.Put ("Last =" & Last'Img));
+         case Object.To is
+            when UTF_16 =>
+               declare
+                  Buffer_As_SEA_Length : constant
+                     Ada.Streams.Stream_Element_Offset :=
+                        2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
+               begin
+                  if Out_Item'Length < Buffer_As_SEA_Length then
+                     Last := Item'First - 1;
+                     Out_Last := Out_Item'First - 1;
+                     Status := Overflow;
+                     pragma Check (Trace, Ada.Debug.Put ("overflow"));
+                     return;
+                  end if;
                   Out_Last := Out_Item'First + Buffer_As_SEA_Length - 1;
                   Out_Item (Out_Item'First .. Out_Last) :=
                      Buffer_As_SEA (1 .. Buffer_As_SEA_Length);
-                  Status := Fine;
+               end;
+            when UTF_32 =>
+               if Out_Item'Length < 4 then
+                  Last := Item'First - 1;
+                  Out_Last := Out_Item'First - 1;
+                  Status := Overflow;
+                  pragma Check (Trace, Ada.Debug.Put ("overflow"));
+                  return;
                end if;
-            end;
-         when UTF_32 =>
-            if Out_Item'Length < 4 then
-               Last := Item'First - 1;
-               Out_Last := Out_Item'First - 1;
-               Status := Insufficient;
-               pragma Check (Trace, Ada.Debug.Put ("insufficient buffer"));
-               return;
-            else
                declare
                   Out_Code : UTF_Conversions.UCS_4;
                   Out_Code_As_SEA : Ada.Streams.Stream_Element_Array (1 .. 4);
@@ -446,62 +488,53 @@ package body System.Native_Encoding is
                   end if;
                   Out_Last := Out_Item'First + 3;
                   Out_Item (Out_Item'First .. Out_Last) := Out_Code_As_SEA;
-                  Status := Fine;
                end;
-            end if;
-         when others => -- including UTF_8
-            declare
-               Out_Item_As_C : aliased C.char_array (1 .. Out_Item'Length);
-               for Out_Item_As_C'Address use Out_Item'Address;
-               Out_Length : C.signed_int;
-            begin
-               Out_Length := C.winnls.WideCharToMultiByte (
-                  C.windef.UINT (Object.To),
-                  0, -- MB_ERR_INVALID_CHARS ?
-                  Buffer (1)'Access,
-                  Buffer_Length,
-                  Out_Item_As_C (1)'Access,
-                  Out_Item_As_C'Length,
-                  null,
-                  null);
-               if Out_Length = 0 then
-                  Last := Item'First - 1;
-                  Out_Last := Out_Item'First - 1;
-                  case C.winbase.GetLastError is
-                     when C.winerror.ERROR_INSUFFICIENT_BUFFER =>
-                        Status := Insufficient;
-                        pragma Check (Trace,
-                           Ada.Debug.Put ("insufficient buffer"));
-                     when others =>
-                        Status := Illegal_Sequence;
-                        pragma Check (Trace,
-                           Ada.Debug.Put ("illegal sequence"));
-                  end case;
-                  return;
-               end if;
-               Out_Last := Out_Item'First
-                  + Ada.Streams.Stream_Element_Offset (Out_Length)
-                  - 1;
-               Status := Fine;
-            end;
-      end case;
-      pragma Check (Trace,
-         Ada.Debug.Put ("Out_Item'First =" & Out_Item'First'Img));
-      pragma Check (Trace, Ada.Debug.Put ("Out_Last =" & Out_Last'Img));
+            when others => -- including UTF_8
+               declare
+                  Out_Item_As_C : aliased C.char_array (1 .. Out_Item'Length);
+                  for Out_Item_As_C'Address use Out_Item'Address;
+                  Out_Length : C.signed_int;
+               begin
+                  Out_Length := C.winnls.WideCharToMultiByte (
+                     C.windef.UINT (Object.To),
+                     0, -- MB_ERR_INVALID_CHARS ?
+                     Buffer (1)'Access,
+                     Buffer_Length,
+                     Out_Item_As_C (1)'Access,
+                     Out_Item_As_C'Length,
+                     null,
+                     null);
+                  if Out_Length = 0 then
+                     Last := Item'First - 1;
+                     Out_Last := Out_Item'First - 1;
+                     case C.winbase.GetLastError is
+                        when C.winerror.ERROR_INSUFFICIENT_BUFFER =>
+                           Status := Overflow;
+                           pragma Check (Trace, Ada.Debug.Put ("overflow"));
+                        when others =>
+                           Status := Illegal_Sequence;
+                           pragma Check (Trace,
+                              Ada.Debug.Put ("illegal sequence"));
+                     end case;
+                     return;
+                  end if;
+                  Out_Last := Out_Item'First
+                     + Ada.Streams.Stream_Element_Offset (Out_Length)
+                     - 1;
+               end;
+         end case;
+         pragma Check (Trace,
+            Ada.Debug.Put ("Out_Item'First =" & Out_Item'First'Img));
+         pragma Check (Trace, Ada.Debug.Put ("Out_Last =" & Out_Last'Img));
+      end if;
+      if Finish and then Last = Item'Last then
+         Status := Finished;
+         pragma Check (Trace, Ada.Debug.Put ("finished"));
+      else
+         Status := Success;
+         pragma Check (Trace, Ada.Debug.Put ("success"));
+      end if;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
-   end Convert_No_Check;
-
-   procedure Convert_No_Check (
-      Object : Converter;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Finishing_Status_Type)
-   is
-      pragma Unreferenced (Object);
-      pragma Unmodified (Out_Item);
-   begin
-      Out_Last := Out_Item'First - 1;
-      Status := Fine;
    end Convert_No_Check;
 
    procedure Convert_No_Check (
@@ -510,8 +543,49 @@ package body System.Native_Encoding is
       Last : out Ada.Streams.Stream_Element_Offset;
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Status : out Continuing_Status_Type)
+   is
+      Subsequence_Status : Subsequence_Status_Type;
+   begin
+      Convert_No_Check (
+         Object,
+         Item,
+         Last,
+         Out_Item,
+         Out_Last,
+         False,
+         Subsequence_Status);
+      pragma Assert (Subsequence_Status in
+         Subsequence_Status_Type (Continuing_Status_Type'First) ..
+         Subsequence_Status_Type (Continuing_Status_Type'Last));
+      Status := Continuing_Status_Type (Subsequence_Status);
+   end Convert_No_Check;
+
+   procedure Convert_No_Check (
+      Object : Converter;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
+      Status : out Finishing_Status_Type)
+   is
+      pragma Unreferenced (Object);
+      pragma Unmodified (Out_Item);
+      pragma Unreferenced (Finish);
+   begin
+      Out_Last := Out_Item'First - 1;
+      Status := Finished;
+   end Convert_No_Check;
+
+   procedure Convert_No_Check (
+      Object : Converter;
+      Item : Ada.Streams.Stream_Element_Array;
+      Last : out Ada.Streams.Stream_Element_Offset;
+      Out_Item : out Ada.Streams.Stream_Element_Array;
+      Out_Last : out Ada.Streams.Stream_Element_Offset;
+      Finish : True_Only;
       Status : out Substituting_Status_Type)
    is
+      pragma Unreferenced (Finish);
       Item_Length : constant Ada.Streams.Stream_Element_Offset := Item'Length;
       Buffer : aliased C.winnt.WCHAR_array (1 .. C.size_t (Item_Length));
       Buffer_As_W : aliased Wide_String (1 .. Natural (Item_Length));
@@ -573,8 +647,8 @@ package body System.Native_Encoding is
                if Out_Last > Out_Item'Length then
                   Last := Item'First - 1;
                   Out_Last := Out_Item'First - 1;
-                  Status := Insufficient;
-                  pragma Check (Trace, Ada.Debug.Put ("insufficient buffer"));
+                  Status := Overflow;
+                  pragma Check (Trace, Ada.Debug.Put ("overflow"));
                   return;
                end if;
                Out_Item (Out_Item'First .. Out_Last) :=
@@ -603,9 +677,8 @@ package body System.Native_Encoding is
                   if Out_Last > Out_Item'Last then
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
-                     Status := Insufficient;
-                     pragma Check (Trace,
-                        Ada.Debug.Put ("insufficient buffer"));
+                     Status := Overflow;
+                     pragma Check (Trace, Ada.Debug.Put ("overflow"));
                      return;
                   end if;
                   Out_Item (Out_Item'First .. Out_Last) :=
@@ -637,8 +710,8 @@ package body System.Native_Encoding is
                if Out_Length = 0 and then Item_Length /= 0 then
                   Last := Item'First - 1;
                   Out_Last := Out_Item'First - 1;
-                  Status := Insufficient;
-                  pragma Check (Trace, Ada.Debug.Put ("insufficient buffer"));
+                  Status := Overflow;
+                  pragma Check (Trace, Ada.Debug.Put ("overflow"));
                   return;
                end if;
                Out_Last := Out_Item'First
@@ -646,7 +719,7 @@ package body System.Native_Encoding is
                   - 1;
             end;
       end case;
-      Status := Fine;
+      Status := Finished;
    end Convert_No_Check;
 
    procedure Put_Substitute (
