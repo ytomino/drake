@@ -5,6 +5,7 @@ procedure System.Formatting.Address_Image (
    Item : Address;
    Set : Type_Set := Upper_Case)
 is
+   pragma Suppress (All_Checks);
    procedure Runtime_Error (
       Condition : Boolean;
       S : String;
