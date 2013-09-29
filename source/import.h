@@ -8,7 +8,6 @@
 #define st_ctim st_ctimespec
 #endif
 
-#include <unwind.h> /* exception mechanism of gcc */
 #include <stdint.h> /* included by unwind-pe.h */
 
 #if defined(__linux__) || defined(__WINNT__)
@@ -93,7 +92,9 @@
 #undef LONG
 #undef SHORT
 #undef NT_INCLUDED
+#define __INTRIN_H_
 #include <winnt.h>
+#undef __INTRIN_H_
 #include <winsock2.h> /* before windows.h */
 #undef h_errno /* headmaster can not translate it */
 #include <windows.h>
@@ -109,6 +110,8 @@
 #undef UNICODE
 #undef WIN32_LEAN_AND_MEAN
 #endif
+
+#include <unwind.h> /* exception mechanism of gcc, after windows.h */
 
 #if defined(__unix__) || defined(__APPLE__)
 #include "fix-fcntl.h"
