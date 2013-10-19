@@ -19,10 +19,10 @@ package body Ada.Streams.Stream_IO.Inside is
    use type C.char_ptr;
    use type C.signed_int; -- ssize_t is signed int or signed long
    use type C.signed_long;
+   use type C.signed_long_long; -- 64bit off_t in Darwin
    use type C.size_t;
    use type C.unsigned_short;
    use type C.unsigned_int;
-   use type C.sys.types.off_t; -- 64bit off_t
 
    pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
       "off_t is not 64bit");

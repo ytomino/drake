@@ -13,6 +13,7 @@ is
    pragma Unreferenced (Form);
    use type C.signed_int;
    use type C.unsigned_int;
+   use type C.signed_long; -- 64bit ssize_t
    Z_Source : String := Source_Name & Character'Val (0);
    C_Source : C.char_array (C.size_t);
    for C_Source'Address use Z_Source'Address;
