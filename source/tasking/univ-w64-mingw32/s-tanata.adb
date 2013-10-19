@@ -44,16 +44,14 @@ package body System.Tasking.Native_Tasks is
                2,
                Handles (0)'Access,
                0,
-               C.windef.DWORD'Mod (C.winbase.INFINITE));
+               C.winbase.INFINITE);
             if R /= C.winbase.WAIT_OBJECT_0 + 1 then
                goto Done;
             end if;
             Installed_Abort_Handler.all; -- may abort child tasks
          end;
       end if;
-      R := C.winbase.WaitForSingleObject (
-         Handle,
-         C.windef.DWORD'Mod (C.winbase.INFINITE));
+      R := C.winbase.WaitForSingleObject (Handle, C.winbase.INFINITE);
    <<Done>>
       case R is
          when C.winbase.WAIT_OBJECT_0 =>

@@ -189,4 +189,7 @@
 #endif
 
 #if defined(__WINNT__)
+#pragma instance DWORD "INFINITE" /* winbase.h */
+#pragma instance DWORD "CRYPT_VERIFYCONTEXT" /* wincrypt.h */
+#pragma instance DWORD "GENERIC_READ" /* winnt.h */
 #endif

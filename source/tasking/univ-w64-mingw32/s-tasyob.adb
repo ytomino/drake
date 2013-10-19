@@ -22,9 +22,8 @@ package body System.Tasking.Synchronous_Objects is
 
    procedure Enter (Object : in out Mutex) is
    begin
-      if C.winbase.WaitForSingleObject (
-         Object.Handle,
-         C.windef.DWORD'Mod (C.winbase.INFINITE)) /= C.winbase.WAIT_OBJECT_0
+      if C.winbase.WaitForSingleObject (Object.Handle, C.winbase.INFINITE) /=
+         C.winbase.WAIT_OBJECT_0
       then
          Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
       end if;
@@ -66,7 +65,7 @@ package body System.Tasking.Synchronous_Objects is
       case C.winbase.SignalObjectAndWait (
          hObjectToSignal => Mutex.Handle,
          hObjectToWaitOn => Object.Event.Handle,
-         dwMilliseconds => C.windef.DWORD'Mod (C.winbase.INFINITE),
+         dwMilliseconds => C.winbase.INFINITE,
          bAlertable => 0)
       is
          when C.winbase.WAIT_OBJECT_0 =>
@@ -260,9 +259,8 @@ package body System.Tasking.Synchronous_Objects is
    procedure Wait (
       Object : in out Event) is
    begin
-      if C.winbase.WaitForSingleObject (
-         Object.Handle,
-         C.windef.DWORD'Mod (C.winbase.INFINITE)) /= C.winbase.WAIT_OBJECT_0
+      if C.winbase.WaitForSingleObject (Object.Handle, C.winbase.INFINITE) /=
+         C.winbase.WAIT_OBJECT_0
       then
          Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
       end if;

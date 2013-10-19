@@ -23,7 +23,7 @@ begin
       null,
       null,
       C.wincrypt.PROV_RSA_FULL,
-      C.windef.DWORD'Mod (C.wincrypt.CRYPT_VERIFYCONTEXT)) = 0
+      C.wincrypt.CRYPT_VERIFYCONTEXT) = 0
    then
       Exceptions.Raise_Exception_From_Here (IO_Exceptions.Use_Error'Identity);
    end if;
