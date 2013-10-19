@@ -7,6 +7,7 @@ with C.errno;
 with C.fcntl;
 with C.stdlib;
 with C.string;
+with C.sys.file;
 with C.sys.stat;
 with C.sys.types;
 with C.unistd;
@@ -375,21 +376,24 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Compose_File_Name;
 
-   function Form_Share_Mode (Form : String; Default : C.unsigned_int)
-      return C.unsigned_int;
-   function Form_Share_Mode (Form : String; Default : C.unsigned_int)
-      return C.unsigned_int
+   type Share_Mode_Type is (None, Shared, Exclusive);
+   pragma Discard_Names (Share_Mode_Type);
+
+   function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
+      return Share_Mode_Type;
+   function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
+      return Share_Mode_Type
    is
       First : Positive;
       Last : Natural;
    begin
       System.IO_Options.Form_Parameter (Form, "shared", First, Last);
       if First <= Last and then Form (First) = 'r' then -- read
-         return C.fcntl.O_SHLOCK;
+         return Shared;
       elsif First <= Last and then Form (First) = 'w' then -- write
-         return C.fcntl.O_EXLOCK;
+         return Exclusive;
       elsif First <= Last and then Form (First) = 'y' then -- yes
-         return 0;
+         return None;
       else -- no
          return Default;
       end if;
@@ -413,15 +417,15 @@ package body Ada.Streams.Stream_IO.Inside is
    is
       Handle : Handle_Type;
       Flags : C.unsigned_int;
-      Default_Lock_Flags : C.unsigned_int;
+      Share_Mode : Share_Mode_Type;
       Modes : constant := 8#644#;
       errno : C.signed_int;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
       if Mode = In_File then
-         Default_Lock_Flags := C.fcntl.O_SHLOCK;
+         Share_Mode := Shared;
       else
-         Default_Lock_Flags := C.fcntl.O_EXLOCK;
+         Share_Mode := Exclusive;
       end if;
       case Method is
          when Create =>
@@ -433,7 +437,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Append_File => O_RDWR or O_CREAT); -- no truncation
             begin
                Flags := Table (Mode);
-               Default_Lock_Flags := C.fcntl.O_EXLOCK;
+               Share_Mode := Exclusive;
             end;
          when Open =>
             declare
@@ -456,9 +460,15 @@ package body Ada.Streams.Stream_IO.Inside is
                Flags := Table (Mode);
             end;
       end case;
-      Flags := Flags
-         or Form_Share_Mode (Form, Default_Lock_Flags)
-         or C.fcntl.O_CLOEXEC;
+      Share_Mode := Form_Share_Mode (Form, Share_Mode);
+      declare
+         Lock_Flags : constant array (Share_Mode_Type) of C.unsigned_int := (
+            None => 0,
+            Shared => C.fcntl.O_SHLOCK,
+            Exclusive => C.fcntl.O_EXLOCK);
+      begin
+         Flags := Flags or C.fcntl.O_CLOEXEC or Lock_Flags (Share_Mode);
+      end;
       --  open
       Handle := C.fcntl.open (Name, C.signed_int (Flags), Modes);
       if Handle < 0 then
@@ -486,6 +496,24 @@ package body Ada.Streams.Stream_IO.Inside is
             --  set FD_CLOEXEC if O_CLOEXEC is missing
             Set_Close_On_Exec (Handle, Error);
             if Error then
+               Free (File); -- free on error
+               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            end if;
+         end if;
+      end;
+      declare
+         O_EXLOCK_Is_Missing : constant Boolean :=
+            C.fcntl.O_EXLOCK = 0;
+         Operation : constant array (Shared .. Exclusive) of C.signed_int := (
+            Shared => C.sys.file.LOCK_SH,
+            Exclusive => C.sys.file.LOCK_EX);
+         pragma Warnings (Off, O_EXLOCK_Is_Missing);
+         Dummy : C.signed_int;
+         pragma Unreferenced (Dummy);
+      begin
+         if O_EXLOCK_Is_Missing and then Share_Mode /= None then
+            if C.sys.file.flock (Handle, Operation (Share_Mode)) < 0 then
+               Dummy := C.unistd.close (Handle); -- close on error
                Free (File); -- free on error
                Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
             end if;
