@@ -11,7 +11,7 @@ Environment
 
 - MacOSX 10.5/10.6 (x86, 32bit/64bit)
 - FreeBSD 7 (x86, 32bit only)
-- Linux (x86, 32bit only) [#experimental]_
+- Linux (x86, 32bit/64bit) [#experimental]_
 - Windows (x86, 32bit only) [#experimental]_
 
 Depending tools and libraries
@@ -32,6 +32,8 @@ headmaster (or pre-translated headers)
     <https://raw.github.com/wiki/ytomino/drake/import-i686-pc-freebsd7.tar.bz2>`_
   - **experimental** `for Linux (x86, 32bit)
     <https://raw.github.com/wiki/ytomino/drake/import-i686-pc-linux-gnu.tar.bz2>`_
+  - **experimental** `for Linux (x86, 64bit)
+    <https://raw.github.com/wiki/ytomino/drake/import-x86_64-pc-linux-gnu.tar.bz2>`_
   - **experimental** `for Windows (x86, 32bit, from mingw-w64 headers)
     <https://raw.github.com/wiki/ytomino/drake/import-i686-w64-mingw32.tar.bz2>`_
 

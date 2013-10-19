@@ -4,7 +4,6 @@ with System.Unwind.Raising;
 with System.Unwind.Standard;
 with C.stdlib;
 with C.string;
-with C.sys.syscall;
 with C.sys.types;
 with C.sys.ucontext;
 with C.unistd;
@@ -81,18 +80,7 @@ package body System.Termination is
             begin
                null; -- probe uc for debugging
             end;
-            declare
-               UC_RESET_ALT_STACK : constant := 16#80000000#; -- ???
-            begin
-               --  emulate normal return
-               if C.unistd.syscall (
-                  C.sys.syscall.SYS_sigreturn,
-                  C.void_ptr (Null_Address),
-                  UC_RESET_ALT_STACK) < 0
-               then
-                  null; -- no error handling
-               end if;
-            end;
+            Native_Stack.Fake_Return_From_Signal_Handler;
             Eexception_Id := Unwind.Standard.Storage_Error'Access;
          when others =>
             Eexception_Id := Unwind.Standard.Program_Error'Access;
