@@ -38,6 +38,7 @@
 #include <fcntl.h> /* low-level file op, before sys/stat.h */
 #include <sys/stat.h> /* low-level file info */
 #endif
+#include <sys/file.h> /* flock */
 #include <sys/socket.h> /* socket, before sys/mount.h */
 #include <sys/mount.h> /* filesystem */
 #include <dirent.h> /* directory searching */
@@ -138,6 +139,7 @@
 #pragma for Ada "pthread.h" include "sys/types.h"
 #pragma for Ada "signal.h" include "sys/_structs.h" /* stack_t */
 #pragma for Ada "signal.h" include "sys/signal.h"
+#pragma for Ada "sys/file.h" include "sys/fcntl.h"
 #pragma for Ada "sys/stat.h" include "sys/fcntl.h" /* S_IF* */
 #pragma for Ada "sys/time.h" include "sys/_structs.h" /* timeval */
 #pragma for Ada "sys/ucontext.h" include "sys/_structs.h" /* ucontext_t */
@@ -149,6 +151,7 @@
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
 #pragma for Ada "signal.h" include "sys/select.h" /* sigset_t */
 #pragma for Ada "signal.h" include "sys/signal.h"
+#pragma for Ada "sys/file.h" include "fcntl.h"
 #pragma for Ada "sys/mman.h" include "sys/types.h" /* mmap */
 #pragma for Ada "sys/time.h" include "sys/_timeval.h" /* timeval */
 #pragma for Ada "time.h" include "sys/timespec.h" /* timespec */
@@ -175,6 +178,7 @@
 #pragma for Ada "signal.h" include "bits/sigstack.h" /* MINSIGSTKSZ */
 #pragma for Ada "signal.h" monolithic_include "bits/sigaction.h"
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
+#pragma for Ada "sys/file.h" include "bits/fcntl.h"
 #pragma for Ada "sys/mman.h" include "bits/mman.h"
 #pragma for Ada "sys/resource.h" include "bits/resource.h"
 #pragma for Ada "sys/socket.h" include "bits/socket.h"
