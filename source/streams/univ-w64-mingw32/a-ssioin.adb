@@ -228,7 +228,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle := C.winbase.CreateFile (
          lpFileName => Temp_Name (0)'Access,
          dwDesiredAccess =>
-            C.windef.DWORD'Mod (C.winnt.GENERIC_READ)
+            C.winnt.GENERIC_READ
             or C.winnt.GENERIC_WRITE, -- full access for Reset/Set_Mode
          dwShareMode =>
             C.winnt.FILE_SHARE_READ
@@ -353,11 +353,9 @@ package body Ada.Streams.Stream_IO.Inside is
             declare
                use C.winbase, C.winnt;
                Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File =>
-                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE,
+                  In_File => GENERIC_READ or GENERIC_WRITE,
                   Out_File => GENERIC_WRITE,
-                  Append_File =>
-                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
+                  Append_File => GENERIC_READ or GENERIC_WRITE);
             begin
                DesiredAccess := Access_Modes (Mode);
                CreationDisposition := CREATE_ALWAYS; -- no truncation
@@ -366,10 +364,9 @@ package body Ada.Streams.Stream_IO.Inside is
             declare
                use C.winbase, C.winnt;
                Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => C.windef.DWORD'Mod (GENERIC_READ),
+                  In_File => GENERIC_READ,
                   Out_File => GENERIC_WRITE,
-                  Append_File =>
-                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
+                  Append_File => GENERIC_READ or GENERIC_WRITE);
                Creations : constant array (File_Mode) of C.windef.DWORD := (
                   In_File => OPEN_EXISTING,
                   Out_File => TRUNCATE_EXISTING,
@@ -382,10 +379,9 @@ package body Ada.Streams.Stream_IO.Inside is
             declare
                use C.winbase, C.winnt;
                Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => C.windef.DWORD'Mod (GENERIC_READ),
+                  In_File => GENERIC_READ,
                   Out_File => GENERIC_WRITE,
-                  Append_File =>
-                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
+                  Append_File => GENERIC_READ or GENERIC_WRITE);
                Creations : constant array (File_Mode) of C.windef.DWORD := (
                   In_File => OPEN_EXISTING,
                   Out_File => OPEN_EXISTING, -- no truncation
