@@ -659,16 +659,18 @@ private
    overriding procedure Adjust (Object : in out Unbounded_String);
    overriding procedure Finalize (Object : in out Unbounded_String);
 
-   package No_Primitives is
+   package Streaming is
+
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : out Unbounded_String);
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Unbounded_String);
-   end No_Primitives;
 
-   for Unbounded_String'Read use No_Primitives.Read;
-   for Unbounded_String'Write use No_Primitives.Write;
+   end Streaming;
+
+   for Unbounded_String'Read use Streaming.Read;
+   for Unbounded_String'Write use Streaming.Write;
 
 end Ada.Strings.Generic_Unbounded;

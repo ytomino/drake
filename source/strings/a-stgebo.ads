@@ -303,7 +303,8 @@ package Ada.Strings.Generic_Bounded is
 
    private
 
-      package No_Primitives is
+      package Streaming is
+
          procedure Read (
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Bounded_String);
@@ -313,12 +314,13 @@ package Ada.Strings.Generic_Bounded is
          procedure Write (
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : Bounded_String);
-      end No_Primitives;
 
-      for Bounded_String'Read use No_Primitives.Read;
-      for Bounded_String'Write use No_Primitives.Write;
-      for Bounded_String'Input use No_Primitives.Input;
-      for Bounded_String'Output use No_Primitives.Write;
+      end Streaming;
+
+      for Bounded_String'Read use Streaming.Read;
+      for Bounded_String'Write use Streaming.Write;
+      for Bounded_String'Input use Streaming.Input;
+      for Bounded_String'Output use Streaming.Write;
 
    end Generic_Bounded_Length;
 

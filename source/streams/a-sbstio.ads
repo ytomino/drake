@@ -66,21 +66,28 @@ private
    overriding procedure Finalize (Object : in out Buffer);
    overriding procedure Adjust (Object : in out Buffer);
 
-   package No_Primitives is
+   package Streaming is
 
-      procedure Read (
+      procedure Missing_Read (
          Stream : not null access Root_Stream_Type'Class;
-         Object : out Buffer);
-      pragma Import (Ada, Read, "__drake_program_error");
-      --  "out" parameter destructs size info
+         Item : out Buffer);
+      function Missing_Input (
+         Stream : not null access Streams.Root_Stream_Type'Class)
+         return Buffer;
+
+      pragma Import (Ada, Missing_Read, "__drake_program_error");
+      pragma Import (Ada, Missing_Input, "__drake_program_error");
+      --  "out" parameter destructs size info, and result is also
 
       procedure Write (
          Stream : not null access Root_Stream_Type'Class;
-         Object : Buffer);
+         Item : Buffer);
 
-   end No_Primitives;
+   end Streaming;
 
-   for Buffer'Write use No_Primitives.Write;
-   for Buffer'Read use No_Primitives.Read;
+   for Buffer'Read use Streaming.Missing_Read;
+   for Buffer'Input use Streaming.Missing_Input;
+   for Buffer'Write use Streaming.Write;
+   for Buffer'Output use Streaming.Write;
 
 end Ada.Streams.Buffer_Storage_IO;

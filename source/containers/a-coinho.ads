@@ -88,47 +88,47 @@ private
    overriding procedure Finalize (Object : in out Holder)
       renames Clear;
 
-   package No_Primitives is
-      procedure Read (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Holder);
-      procedure Write (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Holder);
-   end No_Primitives;
-
-   for Holder'Read use No_Primitives.Read;
-   for Holder'Write use No_Primitives.Write;
-
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   --  dummy 'Read and 'Write
+   package Streaming is
 
-   procedure Read (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : out Constant_Reference_Type);
-   procedure Write (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : Constant_Reference_Type);
+      procedure Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Holder);
+      procedure Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Holder);
 
-   for Constant_Reference_Type'Read use Read;
-   for Constant_Reference_Type'Write use Write;
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Constant_Reference_Type);
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Constant_Reference_Type);
 
-   procedure Read (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : out Reference_Type);
-   procedure Write (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : Reference_Type);
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Reference_Type);
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Reference_Type);
 
-   for Reference_Type'Read use Read;
-   for Reference_Type'Write use Write;
+      pragma Import (Ada, Missing_Read, "__drake_program_error");
+      pragma Import (Ada, Missing_Write, "__drake_program_error");
 
-   pragma Import (Ada, Read, "__drake_program_error");
-   pragma Import (Ada, Write, "__drake_program_error");
+   end Streaming;
+
+   for Holder'Read use Streaming.Read;
+   for Holder'Write use Streaming.Write;
+
+   for Constant_Reference_Type'Read use Streaming.Missing_Read;
+   for Constant_Reference_Type'Write use Streaming.Missing_Write;
+
+   for Reference_Type'Read use Streaming.Missing_Read;
+   for Reference_Type'Write use Streaming.Missing_Write;
 
 end Ada.Containers.Indefinite_Holders;

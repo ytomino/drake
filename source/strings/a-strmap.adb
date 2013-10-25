@@ -680,43 +680,6 @@ package body Ada.Strings.Maps is
       return Create (Data);
    end "-";
 
-   procedure Read (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : out Character_Set)
-   is
-      Item_Data : Set_Data_Access;
-      Length : Integer;
-   begin
-      Finalize (Item);
-      Integer'Read (Stream, Length);
-      if Length = 0 then
-         Assign (Item, Empty_Set_Data'Unrestricted_Access);
-      else
-         Item_Data := new Set_Data'(
-            Length => Length,
-            Reference_Count => 1,
-            Items => <>);
-         Assign (Item, Item_Data);
-         Characters.Inside.Sets.Character_Ranges'Read (
-            Stream,
-            Item_Data.Items);
-         pragma Assert (Valid (Item_Data));
-      end if;
-   end Read;
-
-   procedure Write (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : Character_Set)
-   is
-      pragma Assert (Valid (Reference (Item)));
-      Item_Data : constant not null Set_Data_Access := Reference (Item);
-   begin
-      Integer'Write (Stream, Item_Data.Length);
-      Characters.Inside.Sets.Character_Ranges'Write (
-         Stream,
-         Item_Data.Items);
-   end Write;
-
    package body Controlled_Sets is
 
       procedure Assign (
@@ -758,6 +721,47 @@ package body Ada.Strings.Maps is
             Object.Data.Reference_Count'Access,
             Free => Free_Set_Data'Access);
       end Finalize;
+
+      package body Streaming is
+
+         procedure Read (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : out Character_Set)
+         is
+            Item_Data : Set_Data_Access;
+            Length : Integer;
+         begin
+            Finalize (Item);
+            Integer'Read (Stream, Length);
+            if Length = 0 then
+               Assign (Item, Empty_Set_Data'Unrestricted_Access);
+            else
+               Item_Data := new Set_Data'(
+                  Length => Length,
+                  Reference_Count => 1,
+                  Items => <>);
+               Assign (Item, Item_Data);
+               Characters.Inside.Sets.Character_Ranges'Read (
+                  Stream,
+                  Item_Data.Items);
+               pragma Assert (Valid (Item_Data));
+            end if;
+         end Read;
+
+         procedure Write (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : Character_Set)
+         is
+            pragma Assert (Valid (Reference (Item)));
+            Item_Data : constant not null Set_Data_Access := Reference (Item);
+         begin
+            Integer'Write (Stream, Item_Data.Length);
+            Characters.Inside.Sets.Character_Ranges'Write (
+               Stream,
+               Item_Data.Items);
+         end Write;
+
+      end Streaming;
 
    end Controlled_Sets;
 
@@ -897,48 +901,6 @@ package body Ada.Strings.Maps is
             and then Left_Data.To = Right_Data.To);
    end "=";
 
-   procedure Read (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : out Character_Mapping)
-   is
-      Item_Data : Map_Data_Access;
-      Length : Integer;
-   begin
-      Finalize (Item);
-      Integer'Read (Stream, Length);
-      if Length = 0 then
-         Assign (Item, Empty_Map_Data'Unrestricted_Access);
-      else
-         Item_Data := new Map_Data'(
-            Length => Length,
-            Reference_Count => 1,
-            From => <>,
-            To => <>);
-         Assign (Item, Item_Data);
-         System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
-            Stream,
-            Item_Data.From);
-         System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
-            Stream,
-            Item_Data.To);
-      end if;
-   end Read;
-
-   procedure Write (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : Character_Mapping)
-   is
-      Item_Data : constant not null Map_Data_Access := Reference (Item);
-   begin
-      Integer'Write (Stream, Item_Data.Length);
-      System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
-         Stream,
-         Item_Data.From);
-      System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
-         Stream,
-         Item_Data.To);
-   end Write;
-
    package body Controlled_Maps is
 
       procedure Assign (
@@ -980,6 +942,52 @@ package body Ada.Strings.Maps is
             Object.Data.Reference_Count'Access,
             Free => Free_Map_Data'Access);
       end Finalize;
+
+      package body Streaming is
+
+         procedure Read (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : out Character_Mapping)
+         is
+            Item_Data : Map_Data_Access;
+            Length : Integer;
+         begin
+            Finalize (Item);
+            Integer'Read (Stream, Length);
+            if Length = 0 then
+               Assign (Item, Empty_Map_Data'Unrestricted_Access);
+            else
+               Item_Data := new Map_Data'(
+                  Length => Length,
+                  Reference_Count => 1,
+                  From => <>,
+                  To => <>);
+               Assign (Item, Item_Data);
+               System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+                  Stream,
+                  Item_Data.From);
+               System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+                  Stream,
+                  Item_Data.To);
+            end if;
+         end Read;
+
+         procedure Write (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : Character_Mapping)
+         is
+            Item_Data : constant not null Map_Data_Access := Reference (Item);
+         begin
+            Integer'Write (Stream, Item_Data.Length);
+            System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+               Stream,
+               Item_Data.From);
+            System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+               Stream,
+               Item_Data.To);
+         end Write;
+
+      end Streaming;
 
    end Controlled_Maps;
 

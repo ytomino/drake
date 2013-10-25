@@ -180,18 +180,18 @@ package body Ada.Streams.Buffer_Storage_IO is
       Object.Stream.Index := Old_Stream.Index;
    end Adjust;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Write (
          Stream : not null access Root_Stream_Type'Class;
-         Object : Buffer)
+         Item : Buffer)
       is
-         Stream_Item : Stream_Element_Array (1 .. Object.Stream.Last);
-         for Stream_Item'Address use Object.Stream.Data;
+         Stream_Item : Stream_Element_Array (1 .. Item.Stream.Last);
+         for Stream_Item'Address use Item.Stream.Data;
       begin
          Streams.Write (Stream.all, Stream_Item);
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Streams.Buffer_Storage_IO;

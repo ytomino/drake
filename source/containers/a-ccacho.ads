@@ -104,4 +104,21 @@ private
    overriding procedure Adjust (Object : in out Holder);
    overriding procedure Finalize (Object : in out Holder);
 
+   package Streaming is
+
+      procedure Missing_Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Holder);
+      procedure Missing_Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Holder);
+
+      pragma Import (Ada, Missing_Read, "__drake_program_error");
+      pragma Import (Ada, Missing_Write, "__drake_program_error");
+
+   end Streaming;
+
+   for Holder'Read use Streaming.Missing_Read;
+   for Holder'Write use Streaming.Missing_Write;
+
 end Ada.Containers.Counted_Access_Holders;

@@ -620,16 +620,16 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       return Left.Key.all < Right;
    end "<";
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Map)
+         Item : out Map)
       is
          Length : Count_Type'Base;
       begin
          Count_Type'Read (Stream, Length);
-         Clear (Container);
+         Clear (Item);
          for I in 1 .. Length loop
             declare
                Key : constant Key_Type := Key_Type'Input (Stream);
@@ -637,14 +637,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
             begin
 --  diff
 --  diff
-               Include (Container, Key, Element);
+               Include (Item, Key, Element);
             end;
          end loop;
       end Read;
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Map)
+         Item : Map)
       is
          package Stream_Cast is new System.Address_To_Access_Conversions (
             Streams.Root_Stream_Type'Class);
@@ -663,15 +663,15 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
                Downcast (Position).Element.all);
          end Process;
       begin
-         Count_Type'Write (Stream, Container.Length);
-         if Container.Length > 0 then
+         Count_Type'Write (Stream, Item.Length);
+         if Item.Length > 0 then
             Binary_Trees.Iterate (
-               Downcast (Container.Super.Data).Root,
+               Downcast (Item.Super.Data).Root,
                Stream_Cast.To_Address (Stream_Cast.Object_Pointer (Stream)),
                Process => Process'Access);
          end if;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Indefinite_Ordered_Maps;
