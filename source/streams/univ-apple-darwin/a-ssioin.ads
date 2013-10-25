@@ -119,9 +119,12 @@ package Ada.Streams.Stream_IO.Inside is
 
    type Share_Mode_Type is (None, Shared, Exclusive);
    pragma Discard_Names (Share_Mode_Type);
+   type Race_Type is (Raising, Waiting);
+   pragma Discard_Names (Race_Type);
 
    function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
       return Share_Mode_Type;
+   function Form_Race (Form : String) return Race_Type;
 
 private
 

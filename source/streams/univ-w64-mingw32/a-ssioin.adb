@@ -320,6 +320,7 @@ package body Ada.Streams.Stream_IO.Inside is
       ShareMode : C.windef.DWORD;
       CreationDisposition : C.windef.DWORD;
       Share_Mode : Share_Mode_Type;
+      Race : Race_Type;
       Error : C.windef.DWORD;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
@@ -373,14 +374,25 @@ package body Ada.Streams.Stream_IO.Inside is
             end;
       end case;
       Share_Mode := Form_Share_Mode (Form, Share_Mode);
-      declare
-         Lock_Flags : constant array (Share_Mode_Type) of C.windef.DWORD := (
-            None => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE,
-            Shared => C.winnt.FILE_SHARE_READ,
-            Exclusive => 0);
-      begin
-         ShareMode := Lock_Flags (Share_Mode);
-      end;
+      if Share_Mode /= None then
+         Race := Form_Race (Form);
+         case Race is
+            when Raising =>
+               declare
+                  Lock_Flags : constant
+                     array (Shared .. Exclusive) of C.windef.DWORD := (
+                        Shared => C.winnt.FILE_SHARE_READ,
+                        Exclusive => 0);
+               begin
+                  ShareMode := Lock_Flags (Share_Mode);
+               end;
+            when Waiting =>
+               ShareMode := C.winnt.FILE_SHARE_READ
+                  or C.winnt.FILE_SHARE_WRITE;
+         end case;
+      else
+         ShareMode := C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
+      end if;
       --  open
       Handle := C.winbase.CreateFile (
          lpFileName => Name,
@@ -399,9 +411,37 @@ package body Ada.Streams.Stream_IO.Inside is
                | C.winerror.ERROR_INVALID_NAME
                | C.winerror.ERROR_ALREADY_EXISTS =>
                Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+            when C.winerror.ERROR_SHARING_VIOLATION =>
+               Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+               --  Is Tasking_Error suitable?
             when others =>
                Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
+      end if;
+      if Share_Mode /= None and then Race = Waiting then
+         declare
+            Flags : constant array (Shared .. Exclusive) of C.windef.DWORD := (
+               Shared => 0,
+               Exclusive => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
+            Overlapped : aliased C.winbase.OVERLAPPED := (
+               0, 0, (0, 0, 0), C.winnt.HANDLE (System.Null_Address));
+            Dummy : C.windef.WINBOOL;
+            pragma Unreferenced (Dummy);
+         begin
+            if C.winbase.LockFileEx (
+               hFile => Handle,
+               dwFlags => Flags (Share_Mode),
+               dwReserved => 0,
+               nNumberOfBytesToLockLow => C.windef.DWORD'Last,
+               nNumberOfBytesToLockHigh => C.windef.DWORD'Last,
+               lpOverlapped => Overlapped'Access) = 0
+            then
+               Dummy := C.winbase.CloseHandle (Handle); -- close on error
+               Free (File); -- free on error
+               Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+               --  Is Tasking_Error suitable?
+            end if;
+         end;
       end if;
       --  set file
       File.Handle := Handle;
@@ -1223,5 +1263,17 @@ package body Ada.Streams.Stream_IO.Inside is
          return Default;
       end if;
    end Form_Share_Mode;
+
+   function Form_Race (Form : String) return Race_Type is
+      First : Positive;
+      Last : Natural;
+   begin
+      System.IO_Options.Form_Parameter (Form, "race", First, Last);
+      if First <= Last and then Form (First) = 'w' then
+         return Waiting;
+      else
+         return Raising;
+      end if;
+   end Form_Race;
 
 end Ada.Streams.Stream_IO.Inside;
