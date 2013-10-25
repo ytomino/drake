@@ -376,29 +376,6 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Compose_File_Name;
 
-   type Share_Mode_Type is (None, Shared, Exclusive);
-   pragma Discard_Names (Share_Mode_Type);
-
-   function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
-      return Share_Mode_Type;
-   function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
-      return Share_Mode_Type
-   is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.IO_Options.Form_Parameter (Form, "shared", First, Last);
-      if First <= Last and then Form (First) = 'r' then -- read
-         return Shared;
-      elsif First <= Last and then Form (First) = 'w' then -- write
-         return Exclusive;
-      elsif First <= Last and then Form (First) = 'y' then -- yes
-         return None;
-      else -- no
-         return Default;
-      end if;
-   end Form_Share_Mode;
-
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
 
@@ -1229,7 +1206,7 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Flush;
 
-   --  handle for non-controlled
+   --  implementation of handle for non-controlled
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
@@ -1283,5 +1260,25 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       return File /= null and then File.Kind = Standard_Handle;
    end Is_Standard;
+
+   --  implementation of form parameter
+
+   function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
+      return Share_Mode_Type
+   is
+      First : Positive;
+      Last : Natural;
+   begin
+      System.IO_Options.Form_Parameter (Form, "shared", First, Last);
+      if First <= Last and then Form (First) = 'r' then -- read
+         return Shared;
+      elsif First <= Last and then Form (First) = 'w' then -- write
+         return Exclusive;
+      elsif First <= Last and then Form (First) = 'y' then -- yes
+         return None;
+      else -- no
+         return Default;
+      end if;
+   end Form_Share_Mode;
 
 end Ada.Streams.Stream_IO.Inside;
