@@ -198,27 +198,27 @@ package body Ada.Containers.Indefinite_Holders is
       end if;
    end "=";
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Holder) is
+         Item : out Holder) is
       begin
-         Clear (Container);
-         Unique (Container, True);
-         Downcast (Container.Super.Data).Element :=
+         Clear (Item);
+         Unique (Item, True);
+         Downcast (Item.Super.Data).Element :=
             new Element_Type'(Element_Type'Input (Stream));
       end Read;
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Holder) is
+         Item : Holder) is
       begin
          Element_Type'Output (
             Stream,
-            Downcast (Container.Super.Data).Element.all);
+            Downcast (Item.Super.Data).Element.all);
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Indefinite_Holders;

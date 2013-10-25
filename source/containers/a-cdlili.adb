@@ -743,16 +743,16 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    end Generic_Sorting;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out List)
+         Item : out List)
       is
          Length : Count_Type'Base;
       begin
          Count_Type'Read (Stream, Length);
-         Clear (Container);
+         Clear (Item);
 --  diff
          for I in 1 .. Length loop
             declare
@@ -760,7 +760,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 --  diff
 --  diff
             begin
-               Insert (Container, null, Position);
+               Insert (Item, null, Position);
                Element_Type'Read (Stream, Position.Element);
 --  diff
 --  diff
@@ -772,18 +772,18 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : List)
+         Item : List)
       is
          Position : Cursor;
       begin
-         Count_Type'Write (Stream, Container.Length);
-         Position := First (Container);
+         Count_Type'Write (Stream, Item.Length);
+         Position := First (Item);
          while Position /= null loop
             Element_Type'Write (Stream, Position.Element);
             Next (Position);
          end loop;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Doubly_Linked_Lists;

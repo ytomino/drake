@@ -824,16 +824,16 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    end Generic_Keys;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Set)
+         Item : out Set)
       is
          Length : Count_Type'Base;
       begin
          Count_Type'Read (Stream, Length);
-         Clear (Container);
+         Clear (Item);
          for I in 1 .. Length loop
             declare
                Position : constant Cursor := new Node'(
@@ -841,8 +841,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                   Element => new Element_Type'(Element_Type'Input (Stream)));
             begin
                Hash_Tables.Insert (
-                  Downcast (Container.Super.Data).Table,
-                  Downcast (Container.Super.Data).Length,
+                  Downcast (Item.Super.Data).Table,
+                  Downcast (Item.Super.Data).Length,
                   Hash (Position.Element.all),
                   New_Item => Upcast (Position));
             end;
@@ -851,18 +851,18 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Set)
+         Item : Set)
       is
          Position : Cursor;
       begin
-         Count_Type'Write (Stream, Container.Length);
-         Position := First (Container);
+         Count_Type'Write (Stream, Item.Length);
+         Position := First (Item);
          while Position /= null loop
             Element_Type'Output (Stream, Position.Element.all);
             Next (Position);
          end loop;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Indefinite_Hashed_Sets;

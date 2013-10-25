@@ -466,7 +466,7 @@ package body Ada.Strings.Generic_Bounded is
          return Replicate (Count, Item.Element (1 .. Item.Length), Drop);
       end Replicate;
 
-      package body No_Primitives is
+      package body Streaming is
 
          procedure Read (
             Stream : not null access Streams.Root_Stream_Type'Class;
@@ -499,7 +499,7 @@ package body Ada.Strings.Generic_Bounded is
             Write (Stream, Item.Element (1 .. Item.Length));
          end Write;
 
-      end No_Primitives;
+      end Streaming;
 
    end Generic_Bounded_Length;
 

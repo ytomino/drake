@@ -214,18 +214,6 @@ private
    overriding procedure Finalize (Object : in out Map)
       renames Clear;
 
---  diff (No_Primitives)
---
---
---
---
---
---
---
-
---  diff ('Read)
---  diff ('Write)
-
    type Cursor is access Node;
 
    type Key_Reference_Type (
@@ -248,50 +236,78 @@ private
    overriding function Next (Object : Iterator; Position : Cursor)
       return Cursor;
 
-   --  dummy 'Read and 'Write
+   package Streaming is
 
-   procedure Read (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : out Cursor);
-   procedure Write (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : Cursor);
+--  diff (Read)
+--
+--
+--  diff (Write)
+--
+--
 
-   for Cursor'Read use Read;
-   for Cursor'Write use Write;
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Cursor);
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Cursor);
 
-   procedure Read (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : out Key_Reference_Type);
-   procedure Write (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : Key_Reference_Type);
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Key_Reference_Type);
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Key_Reference_Type);
 
-   for Key_Reference_Type'Read use Read;
-   for Key_Reference_Type'Write use Write;
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Constant_Reference_Type);
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Constant_Reference_Type);
 
-   procedure Read (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : out Constant_Reference_Type);
-   procedure Write (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : Constant_Reference_Type);
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Reference_Type);
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Reference_Type);
 
-   for Constant_Reference_Type'Read use Read;
-   for Constant_Reference_Type'Write use Write;
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Iterator);
+      function Missing_Input (
+         Stream : not null access Streams.Root_Stream_Type'Class)
+         return Iterator;
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Iterator);
 
-   procedure Read (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : out Reference_Type);
-   procedure Write (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : Reference_Type);
+      pragma Import (Ada, Missing_Read, "__drake_program_error");
+      pragma Import (Ada, Missing_Input, "__drake_program_error");
+      pragma Import (Ada, Missing_Write, "__drake_program_error");
 
-   for Reference_Type'Read use Read;
-   for Reference_Type'Write use Write;
+   end Streaming;
 
-   pragma Import (Ada, Read, "__drake_program_error");
-   pragma Import (Ada, Write, "__drake_program_error");
+--  diff ('Read)
+--  diff ('Write)
+
+   for Cursor'Read use Streaming.Missing_Read;
+   for Cursor'Write use Streaming.Missing_Write;
+
+   for Key_Reference_Type'Read use Streaming.Missing_Read;
+   for Key_Reference_Type'Write use Streaming.Missing_Write;
+
+   for Constant_Reference_Type'Read use Streaming.Missing_Read;
+   for Constant_Reference_Type'Write use Streaming.Missing_Write;
+
+   for Reference_Type'Read use Streaming.Missing_Read;
+   for Reference_Type'Write use Streaming.Missing_Write;
+
+   for Iterator'Read use Streaming.Missing_Read;
+   for Iterator'Input use Streaming.Missing_Input;
+   for Iterator'Write use Streaming.Missing_Write;
+   for Iterator'Output use Streaming.Missing_Write;
 
    No_Element : constant Cursor := null;
 

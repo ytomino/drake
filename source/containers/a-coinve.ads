@@ -397,18 +397,6 @@ private
    overriding procedure Finalize (Object : in out Vector)
       renames Clear;
 
-   package No_Primitives is
-      procedure Read (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Vector);
-      procedure Write (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Vector);
-   end No_Primitives;
-
-   for Vector'Read use No_Primitives.Read;
-   for Vector'Write use No_Primitives.Write;
-
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
@@ -429,29 +417,57 @@ private
    overriding function Previous (Object : Iterator; Position : Cursor)
       return Cursor;
 
-   --  dummy 'Read and 'Write
+   package Streaming is
 
-   procedure Read (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : out Constant_Reference_Type);
-   procedure Write (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : Constant_Reference_Type);
+      procedure Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Vector);
+      procedure Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Vector);
 
-   for Constant_Reference_Type'Read use Read;
-   for Constant_Reference_Type'Write use Write;
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Constant_Reference_Type);
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Constant_Reference_Type);
 
-   procedure Read (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : out Reference_Type);
-   procedure Write (
-      Stream : access Streams.Root_Stream_Type'Class;
-      Item : Reference_Type);
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Reference_Type);
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Reference_Type);
 
-   for Reference_Type'Read use Read;
-   for Reference_Type'Write use Write;
+      procedure Missing_Read (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : out Iterator);
+      function Missing_Input (
+         Stream : not null access Streams.Root_Stream_Type'Class)
+         return Iterator;
+      procedure Missing_Write (
+         Stream : access Streams.Root_Stream_Type'Class;
+         Item : Iterator);
 
-   pragma Import (Ada, Read, "__drake_program_error");
-   pragma Import (Ada, Write, "__drake_program_error");
+      pragma Import (Ada, Missing_Read, "__drake_program_error");
+      pragma Import (Ada, Missing_Input, "__drake_program_error");
+      pragma Import (Ada, Missing_Write, "__drake_program_error");
+
+   end Streaming;
+
+   for Vector'Read use Streaming.Read;
+   for Vector'Write use Streaming.Write;
+
+   for Constant_Reference_Type'Read use Streaming.Missing_Read;
+   for Constant_Reference_Type'Write use Streaming.Missing_Write;
+
+   for Reference_Type'Read use Streaming.Missing_Read;
+   for Reference_Type'Write use Streaming.Missing_Write;
+
+   for Iterator'Read use Streaming.Missing_Read;
+   for Iterator'Input use Streaming.Missing_Input;
+   for Iterator'Write use Streaming.Missing_Write;
+   for Iterator'Output use Streaming.Missing_Write;
 
 end Ada.Containers.Indefinite_Vectors;

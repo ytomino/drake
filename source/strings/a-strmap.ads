@@ -254,19 +254,23 @@ private
       overriding procedure Adjust (Object : in out Character_Set);
       overriding procedure Finalize (Object : in out Character_Set);
 
+      package Streaming is
+
+         procedure Read (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : out Character_Set);
+         procedure Write (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : Character_Set);
+
+      end Streaming;
+
+      for Character_Set'Read use Streaming.Read;
+      for Character_Set'Write use Streaming.Write;
+
    end Controlled_Sets;
 
    type Character_Set is new Controlled_Sets.Character_Set;
-
-   procedure Read (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : out Character_Set);
-   procedure Write (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : Character_Set);
-
-   for Character_Set'Read use Read;
-   for Character_Set'Write use Write;
 
    subtype Map_Data is Characters.Inside.Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
@@ -305,18 +309,22 @@ private
       overriding procedure Adjust (Object : in out Character_Mapping);
       overriding procedure Finalize (Object : in out Character_Mapping);
 
+      package Streaming is
+
+         procedure Read (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : out Character_Mapping);
+         procedure Write (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : Character_Mapping);
+
+      end Streaming;
+
+      for Character_Mapping'Read use Streaming.Read;
+      for Character_Mapping'Write use Streaming.Write;
+
    end Controlled_Maps;
 
    type Character_Mapping is new Controlled_Maps.Character_Mapping;
-
-   procedure Read (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : out Character_Mapping);
-   procedure Write (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : Character_Mapping);
-
-   for Character_Mapping'Read use Read;
-   for Character_Mapping'Write use Write;
 
 end Ada.Strings.Maps;

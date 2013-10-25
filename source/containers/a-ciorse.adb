@@ -932,17 +932,17 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    end Generic_Keys;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Set)
+         Item : out Set)
       is
          Length : Count_Type'Base;
       begin
          Count_Type'Read (Stream, Length);
-         Clear (Container);
-         Unique (Container, True);
+         Clear (Item);
+         Unique (Item, True);
          for I in 1 .. Length loop
             declare
                Position : constant Cursor := new Node'(
@@ -950,8 +950,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                   Element => new Element_Type'(Element_Type'Input (Stream)));
             begin
                Base.Insert (
-                  Downcast (Container.Super.Data).Root,
-                  Downcast (Container.Super.Data).Length,
+                  Downcast (Item.Super.Data).Root,
+                  Downcast (Item.Super.Data).Length,
                   Before => null,
                   New_Item => Upcast (Position));
             end;
@@ -960,7 +960,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Set)
+         Item : Set)
       is
          package Stream_Cast is new System.Address_To_Access_Conversions (
             Streams.Root_Stream_Type'Class);
@@ -976,15 +976,15 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                Downcast (Position).Element.all);
          end Process;
       begin
-         Count_Type'Write (Stream, Container.Length);
-         if Container.Length > 0 then
+         Count_Type'Write (Stream, Item.Length);
+         if Item.Length > 0 then
             Binary_Trees.Iterate (
-               Downcast (Container.Super.Data).Root,
+               Downcast (Item.Super.Data).Root,
                Stream_Cast.To_Address (Stream_Cast.Object_Pointer (Stream)),
                Process => Process'Access);
          end if;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Indefinite_Ordered_Sets;
