@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 with Ada.Iterator_Interfaces;
-with Ada.References.String;
+with Ada.References.Strings;
 private with Ada.Finalization;
 package Ada.Text_IO.Iterators is
    --  Iterators for Ada.Text_IO.File_Type.
@@ -24,7 +24,7 @@ package Ada.Text_IO.Iterators is
    function Constant_Reference (
       Container : aliased Lines_Type;
       Position : Line_Cursor)
-      return References.String.Constant_Reference_Type;
+      return References.Strings.Constant_Reference_Type;
 
    package Lines_Iterator_Interfaces is
       new Iterator_Interfaces (Line_Cursor, Has_Element);
