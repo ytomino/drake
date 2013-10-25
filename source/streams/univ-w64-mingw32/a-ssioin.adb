@@ -337,9 +337,13 @@ package body Ada.Streams.Stream_IO.Inside is
                   In_File => GENERIC_READ or GENERIC_WRITE,
                   Out_File => GENERIC_WRITE,
                   Append_File => GENERIC_READ or GENERIC_WRITE);
+               Creations : constant array (File_Mode) of C.windef.DWORD := (
+                  In_File => CREATE_ALWAYS,
+                  Out_File => CREATE_ALWAYS,
+                  Append_File => OPEN_ALWAYS); -- no truncation
             begin
                DesiredAccess := Access_Modes (Mode);
-               CreationDisposition := CREATE_ALWAYS; -- no truncation
+               CreationDisposition := Creations (Mode);
                Share_Mode := Exclusive;
             end;
          when Open =>
@@ -352,7 +356,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Creations : constant array (File_Mode) of C.windef.DWORD := (
                   In_File => OPEN_EXISTING,
                   Out_File => TRUNCATE_EXISTING,
-                  Append_File => OPEN_ALWAYS);
+                  Append_File => OPEN_EXISTING);
             begin
                DesiredAccess := Access_Modes (Mode);
                CreationDisposition := Creations (Mode);
@@ -364,13 +368,9 @@ package body Ada.Streams.Stream_IO.Inside is
                   In_File => GENERIC_READ,
                   Out_File => GENERIC_WRITE,
                   Append_File => GENERIC_READ or GENERIC_WRITE);
-               Creations : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => OPEN_EXISTING,
-                  Out_File => OPEN_EXISTING, -- no truncation
-                  Append_File => OPEN_ALWAYS);
             begin
                DesiredAccess := Access_Modes (Mode);
-               CreationDisposition := Creations (Mode);
+               CreationDisposition := OPEN_EXISTING; -- no truncation
             end;
       end case;
       Share_Mode := Form_Share_Mode (Form, Share_Mode);
