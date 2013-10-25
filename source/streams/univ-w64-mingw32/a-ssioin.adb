@@ -299,26 +299,6 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Compose_File_Name;
 
-   function Form_Share_Mode (Form : String; Default : C.windef.DWORD)
-      return C.windef.DWORD;
-   function Form_Share_Mode (Form : String; Default : C.windef.DWORD)
-      return C.windef.DWORD
-   is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.IO_Options.Form_Parameter (Form, "shared", First, Last);
-      if First <= Last and then Form (First) = 'r' then -- read
-         return C.winnt.FILE_SHARE_READ;
-      elsif First <= Last and then Form (First) = 'w' then -- write
-         return 0;
-      elsif First <= Last and then Form (First) = 'y' then -- yes
-         return C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
-      else -- no
-         return Default;
-      end if;
-   end Form_Share_Mode;
-
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
 
@@ -339,15 +319,15 @@ package body Ada.Streams.Stream_IO.Inside is
       DesiredAccess : C.windef.DWORD;
       ShareMode : C.windef.DWORD;
       CreationDisposition : C.windef.DWORD;
+      Share_Mode : Share_Mode_Type;
       Error : C.windef.DWORD;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
       if Mode = In_File then
-         ShareMode := C.winnt.FILE_SHARE_READ;
+         Share_Mode := Shared;
       else
-         ShareMode := 0;
+         Share_Mode := Exclusive;
       end if;
-      ShareMode := Form_Share_Mode (Form, ShareMode);
       case Method is
          when Create =>
             declare
@@ -391,6 +371,15 @@ package body Ada.Streams.Stream_IO.Inside is
                CreationDisposition := Creations (Mode);
             end;
       end case;
+      Share_Mode := Form_Share_Mode (Form, Share_Mode);
+      declare
+         Lock_Flags : constant array (Share_Mode_Type) of C.windef.DWORD := (
+            None => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE,
+            Shared => C.winnt.FILE_SHARE_READ,
+            Exclusive => 0);
+      begin
+         ShareMode := Lock_Flags (Share_Mode);
+      end;
       --  open
       Handle := C.winbase.CreateFile (
          lpFileName => Name,
@@ -1159,7 +1148,7 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Flush;
 
-   --  handle for non-controlled
+   --  implementation of handle for non-controlled
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
@@ -1213,5 +1202,25 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       return File /= null and then File.Kind = Standard_Handle;
    end Is_Standard;
+
+   --  implementation of form parameter
+
+   function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
+      return Share_Mode_Type
+   is
+      First : Positive;
+      Last : Natural;
+   begin
+      System.IO_Options.Form_Parameter (Form, "shared", First, Last);
+      if First <= Last and then Form (First) = 'r' then -- read
+         return Shared;
+      elsif First <= Last and then Form (First) = 'w' then -- write
+         return Exclusive;
+      elsif First <= Last and then Form (First) = 'y' then -- yes
+         return None;
+      else -- no
+         return Default;
+      end if;
+   end Form_Share_Mode;
 
 end Ada.Streams.Stream_IO.Inside;

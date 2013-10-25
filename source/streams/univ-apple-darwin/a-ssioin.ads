@@ -115,6 +115,14 @@ package Ada.Streams.Stream_IO.Inside is
    function Is_Standard (File : Non_Controlled_File_Type) return Boolean;
    pragma Inline (Is_Standard);
 
+   --  form parameter
+
+   type Share_Mode_Type is (None, Shared, Exclusive);
+   pragma Discard_Names (Share_Mode_Type);
+
+   function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
+      return Share_Mode_Type;
+
 private
 
    type Stream_Kind is (
