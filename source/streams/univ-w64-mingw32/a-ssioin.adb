@@ -339,6 +339,7 @@ package body Ada.Streams.Stream_IO.Inside is
             begin
                DesiredAccess := Access_Modes (Mode);
                CreationDisposition := CREATE_ALWAYS; -- no truncation
+               Share_Mode := Exclusive;
             end;
          when Open =>
             declare
