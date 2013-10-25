@@ -480,11 +480,14 @@ package body Ada.Streams.Stream_IO.Inside is
             C.fcntl.O_CLOEXEC = 0;
          pragma Warnings (Off, O_CLOEXEC_Is_Missing);
          Error : Boolean;
+         Dummy : C.signed_int;
+         pragma Unreferenced (Dummy);
       begin
          if O_CLOEXEC_Is_Missing then
             --  set FD_CLOEXEC if O_CLOEXEC is missing
             Set_Close_On_Exec (Handle, Error);
             if Error then
+               Dummy := C.unistd.close (Handle); -- close on error
                Free (File); -- free on error
                Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
             end if;
