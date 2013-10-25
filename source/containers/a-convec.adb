@@ -493,25 +493,6 @@ package body Ada.Containers.Vectors is
       end loop;
    end Insert;
 
-   procedure Insert (
-      Container : in out Vector;
-      Before : Extended_Index;
-      Count : Count_Type := 1)
-   is
-      Position : Cursor;
-   begin
-      Insert_Space (Container, Before, Position, Count);
-   end Insert;
-
-   procedure Insert (
-      Container : in out Vector;
-      Before : Cursor;
-      Position : out Cursor;
-      Count : Count_Type := 1) is
-   begin
-      Insert_Space (Container, Before, Position, Count);
-   end Insert;
-
    procedure Insert_Space (
       Container : in out Vector;
       Before : Extended_Index;
