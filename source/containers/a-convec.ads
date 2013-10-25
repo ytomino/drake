@@ -186,16 +186,16 @@ package Ada.Containers.Vectors is
       Position : out Cursor;
       Count : Count_Type := 1);
 
-   procedure Insert (
-      Container : in out Vector;
-      Before : Extended_Index;
-      Count : Count_Type := 1);
+--  procedure Insert (
+--    Container : in out Vector;
+--    Before : Extended_Index;
+--    Count : Count_Type := 1);
 
-   procedure Insert (
-      Container : in out Vector;
-      Before : Cursor;
-      Position : out Cursor;
-      Count : Count_Type := 1);
+--  procedure Insert (
+--    Container : in out Vector;
+--    Before : Cursor;
+--    Position : out Cursor;
+--    Count : Count_Type := 1);
 
    procedure Prepend (
       Container : in out Vector;
