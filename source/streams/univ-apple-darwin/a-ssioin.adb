@@ -394,8 +394,9 @@ package body Ada.Streams.Stream_IO.Inside is
    is
       Handle : Handle_Type;
       Flags : C.unsigned_int;
-      Share_Mode : Share_Mode_Type;
       Modes : constant := 8#644#;
+      Share_Mode : Share_Mode_Type;
+      Race : Race_Type;
       errno : C.signed_int;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
@@ -438,14 +439,25 @@ package body Ada.Streams.Stream_IO.Inside is
             end;
       end case;
       Share_Mode := Form_Share_Mode (Form, Share_Mode);
-      declare
-         Lock_Flags : constant array (Share_Mode_Type) of C.unsigned_int := (
-            None => 0,
-            Shared => C.fcntl.O_SHLOCK,
-            Exclusive => C.fcntl.O_EXLOCK);
-      begin
-         Flags := Flags or C.fcntl.O_CLOEXEC or Lock_Flags (Share_Mode);
-      end;
+      if Share_Mode /= None then
+         Race := Form_Race (Form);
+         case Race is
+            when Raising =>
+               null; -- use flock
+            when Waiting =>
+               declare
+                  Lock_Flags : constant
+                     array (Shared .. Exclusive) of C.unsigned_int := (
+                        Shared => C.fcntl.O_SHLOCK,
+                        Exclusive => C.fcntl.O_EXLOCK);
+               begin
+                  Flags := Flags or Lock_Flags (Share_Mode);
+               end;
+         end case;
+      else
+         null; -- use flock
+      end if;
+      Flags := Flags or C.fcntl.O_CLOEXEC;
       --  open
       Handle := C.fcntl.open (Name, C.signed_int (Flags), Modes);
       if Handle < 0 then
@@ -481,18 +493,36 @@ package body Ada.Streams.Stream_IO.Inside is
       declare
          O_EXLOCK_Is_Missing : constant Boolean :=
             C.fcntl.O_EXLOCK = 0;
-         Operation : constant array (Shared .. Exclusive) of C.signed_int := (
-            Shared => C.sys.file.LOCK_SH,
-            Exclusive => C.sys.file.LOCK_EX);
          pragma Warnings (Off, O_EXLOCK_Is_Missing);
+         Race_Is_Raising : constant Boolean := Race = Raising;
+         pragma Warnings (Off, Race_Is_Raising);
+         Operation_Table : constant
+            array (Shared .. Exclusive) of C.unsigned_int := (
+               Shared => C.sys.file.LOCK_SH,
+               Exclusive => C.sys.file.LOCK_EX);
+         operation : C.unsigned_int;
          Dummy : C.signed_int;
          pragma Unreferenced (Dummy);
       begin
-         if O_EXLOCK_Is_Missing and then Share_Mode /= None then
-            if C.sys.file.flock (Handle, Operation (Share_Mode)) < 0 then
+         if Share_Mode /= None
+            and then (O_EXLOCK_Is_Missing or else Race_Is_Raising)
+         then
+            operation := Operation_Table (Share_Mode);
+            if Race_Is_Raising then
+               operation := operation or C.sys.file.LOCK_NB;
+            end if;
+            if C.sys.file.flock (Handle, C.signed_int (operation)) < 0 then
+               errno := C.errno.errno;
                Dummy := C.unistd.close (Handle); -- close on error
                Free (File); -- free on error
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               case errno is
+                  when C.errno.EWOULDBLOCK =>
+                     Exceptions.Raise_Exception_From_Here (
+                        Tasking_Error'Identity);
+                     --  Is Tasking_Error suitable?
+                  when others =>
+                     Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               end case;
             end if;
          end if;
       end;
@@ -1280,5 +1310,17 @@ package body Ada.Streams.Stream_IO.Inside is
          return Default;
       end if;
    end Form_Share_Mode;
+
+   function Form_Race (Form : String) return Race_Type is
+      First : Positive;
+      Last : Natural;
+   begin
+      System.IO_Options.Form_Parameter (Form, "race", First, Last);
+      if First <= Last and then Form (First) = 'w' then
+         return Waiting;
+      else
+         return Raising;
+      end if;
+   end Form_Race;
 
 end Ada.Streams.Stream_IO.Inside;
