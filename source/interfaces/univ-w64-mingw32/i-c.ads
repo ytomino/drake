@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
-with Ada.References.Wide_String;
+with Ada.References.Wide_Strings;
 package Interfaces.C is
    pragma Pure;
 
@@ -84,7 +84,7 @@ package Interfaces.C is
    subtype wchar_Character is Wide_Character;
    subtype wchar_String is Wide_String;
    package wchar_String_Slicing
-      renames Ada.References.Wide_String.Slicing;
+      renames Ada.References.Wide_Strings.Slicing;
    --  wchar_t does not correspond to Wide_Character in all platform
 
 --  function To_C (Item : Wide_Character) return wchar_t;

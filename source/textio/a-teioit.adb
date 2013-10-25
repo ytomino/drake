@@ -18,7 +18,7 @@ package body Ada.Text_IO.Iterators is
    function Constant_Reference (
       Container : aliased Lines_Type;
       Position : Line_Cursor)
-      return References.String.Constant_Reference_Type
+      return References.Strings.Constant_Reference_Type
    is
       pragma Unreferenced (Container);
    begin
