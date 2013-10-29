@@ -124,6 +124,7 @@ package Ada.Streams.Stream_IO.Inside is
    function Form_Share_Mode (Form : String; Default : Share_Mode_Type)
       return Share_Mode_Type;
    function Form_Race (Form : String) return Race_Type;
+   function Form_Overwrite (Form : String) return Boolean;
 
 private
 
