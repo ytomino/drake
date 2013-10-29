@@ -341,10 +341,15 @@ package body Ada.Streams.Stream_IO.Inside is
                   In_File => CREATE_ALWAYS,
                   Out_File => CREATE_ALWAYS,
                   Append_File => OPEN_ALWAYS); -- no truncation
+               Overwrite : Boolean;
             begin
                DesiredAccess := Access_Modes (Mode);
                CreationDisposition := Creations (Mode);
                Share_Mode := Exclusive;
+               Overwrite := Form_Overwrite (Form);
+               if not Overwrite then
+                  CreationDisposition := CREATE_NEW;
+               end if;
             end;
          when Open =>
             declare
@@ -408,6 +413,7 @@ package body Ada.Streams.Stream_IO.Inside is
          case Error is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND
+               | C.winerror.ERROR_FILE_EXISTS -- CREATE_NEW
                | C.winerror.ERROR_INVALID_NAME
                | C.winerror.ERROR_ALREADY_EXISTS =>
                Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
@@ -1275,5 +1281,17 @@ package body Ada.Streams.Stream_IO.Inside is
          return Raising;
       end if;
    end Form_Race;
+
+   function Form_Overwrite (Form : String) return Boolean is
+      First : Positive;
+      Last : Natural;
+   begin
+      System.IO_Options.Form_Parameter (Form, "overwrite", First, Last);
+      if First <= Last and then Form (First) = 'f' then -- false
+         return False;
+      else
+         return True;
+      end if;
+   end Form_Overwrite;
 
 end Ada.Streams.Stream_IO.Inside;

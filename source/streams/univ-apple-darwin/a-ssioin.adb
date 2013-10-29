@@ -413,9 +413,14 @@ package body Ada.Streams.Stream_IO.Inside is
                   In_File => O_RDWR or O_CREAT or O_TRUNC,
                   Out_File => O_WRONLY or O_CREAT or O_TRUNC,
                   Append_File => O_RDWR or O_CREAT); -- no truncation
+               Overwrite : Boolean;
             begin
                Flags := Table (Mode);
                Share_Mode := Exclusive;
+               Overwrite := Form_Overwrite (Form);
+               if not Overwrite then
+                  Flags := Flags or O_EXCL;
+               end if;
             end;
          when Open =>
             declare
@@ -468,6 +473,7 @@ package body Ada.Streams.Stream_IO.Inside is
                | C.errno.ENAMETOOLONG
                | C.errno.ENOENT
                | C.errno.EACCES
+               | C.errno.EEXIST -- O_EXCL
                | C.errno.EISDIR
                | C.errno.EROFS =>
                Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
@@ -1325,5 +1331,17 @@ package body Ada.Streams.Stream_IO.Inside is
          return Raising;
       end if;
    end Form_Race;
+
+   function Form_Overwrite (Form : String) return Boolean is
+      First : Positive;
+      Last : Natural;
+   begin
+      System.IO_Options.Form_Parameter (Form, "overwrite", First, Last);
+      if First <= Last and then Form (First) = 'f' then -- false
+         return False;
+      else
+         return True;
+      end if;
+   end Form_Overwrite;
 
 end Ada.Streams.Stream_IO.Inside;
