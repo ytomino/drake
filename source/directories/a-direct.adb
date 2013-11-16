@@ -2,6 +2,7 @@ with Ada.Directories.Inside;
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System.IO_Options;
 with System.Native_Time;
 with System.Storage_Elements;
 package body Ada.Directories is
@@ -78,7 +79,17 @@ package body Ada.Directories is
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String := "";
+      Form : String)
+   is
+      Overwrite : Boolean;
+   begin
+      Overwrite := Form_Overwrite (Form);
+      Copy_File (Source_Name, Target_Name, Overwrite);
+   end Copy_File;
+
+   procedure Copy_File (
+      Source_Name : String;
+      Target_Name : String;
       Overwrite : Boolean := True)
       renames Inside.Copy_File;
 
@@ -326,5 +337,29 @@ package body Ada.Directories is
             Directory_Entry.Data,
             Directory_Entry.Additional'Unrestricted_Access)));
    end Modification_Time;
+
+   --  form parameter
+
+   function Form_Overwrite (Form : String) return Boolean is
+      First : Positive;
+      Last : Natural;
+   begin
+      System.IO_Options.Form_Parameter (Form, "overwrite", First, Last);
+      if First <= Last then
+         if Form (First) = 'f' then -- false
+            return False;
+         else
+            return True;
+         end if;
+      else
+         --  compatibility with GNAT runtime
+         System.IO_Options.Form_Parameter (Form, "mode", First, Last);
+         if First <= Last and then Form (First) = 'c' then -- copy
+            return False;
+         else
+            return True;
+         end if;
+      end if;
+   end Form_Overwrite;
 
 end Ada.Directories;

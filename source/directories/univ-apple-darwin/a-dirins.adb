@@ -125,7 +125,6 @@ package body Ada.Directories.Inside is
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String;
       Overwrite : Boolean)
       renames Inside.Do_Copy_File;
 

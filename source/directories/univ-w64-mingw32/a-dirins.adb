@@ -94,10 +94,8 @@ package body Ada.Directories.Inside is
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String;
       Overwrite : Boolean)
    is
-      pragma Unreferenced (Form);
       W_Source : aliased C.winnt.WCHAR_array (0 .. Source_Name'Length);
       W_Target : aliased C.winnt.WCHAR_array (0 .. Target_Name'Length);
    begin
