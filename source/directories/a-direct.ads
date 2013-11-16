@@ -39,8 +39,12 @@ package Ada.Directories is
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String := "";
-      Overwrite : Boolean := True); -- additional
+      Form : String); -- removed default
+   --  extended
+   procedure Copy_File (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean := True);
 
    --  extended
    --  Create a symbolic link.
@@ -283,5 +287,9 @@ private
    for Search_Iterator'Input use Streaming.Missing_Input;
    for Search_Iterator'Write use Streaming.Missing_Write;
    for Search_Iterator'Output use Streaming.Missing_Write;
+
+   --  form parameter
+
+   function Form_Overwrite (Form : String) return Boolean;
 
 end Ada.Directories;
