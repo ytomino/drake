@@ -19,19 +19,19 @@ package body Ada.Tags.Delegating is
    type I_Node;
    type I_Node_Access is access I_Node;
    type I_Node is record
-      Left, Right : I_Node_Access;
+      Left, Right : aliased I_Node_Access;
       Interface_Tag : Tag;
       Get : not null Delegate;
    end record;
    pragma Suppress_Initialization (I_Node);
 
    procedure I_Insert (
-      Node : in out I_Node_Access;
+      Node : not null access I_Node_Access;
       Interface_Tag : Tag;
       Get : not null access function (Object : System.Address)
          return System.Address);
    procedure I_Insert (
-      Node : in out I_Node_Access;
+      Node : not null access I_Node_Access;
       Interface_Tag : Tag;
       Get : not null access function (Object : System.Address)
          return System.Address)
@@ -39,17 +39,17 @@ package body Ada.Tags.Delegating is
       function "+" (X : Tag) return System.Address
          renames Tag_Conv.To_Address;
    begin
-      if Node = null then
+      if Node.all = null then
          pragma Check (Trace, Debug.Put ("add"));
-         Node := new I_Node'(
+         Node.all := new I_Node'(
             Left => null,
             Right => null,
             Interface_Tag => Interface_Tag,
             Get => Get);
-      elsif +Node.Interface_Tag > +Interface_Tag then
-         I_Insert (Node.Left, Interface_Tag, Get);
-      elsif +Node.Interface_Tag < +Interface_Tag then
-         I_Insert (Node.Right, Interface_Tag, Get);
+      elsif +Node.all.Interface_Tag > +Interface_Tag then
+         I_Insert (Node.all.Left'Access, Interface_Tag, Get);
+      elsif +Node.all.Interface_Tag < +Interface_Tag then
+         I_Insert (Node.all.Right'Access, Interface_Tag, Get);
       else
          null; -- already added
       end if;
@@ -77,37 +77,37 @@ package body Ada.Tags.Delegating is
    type D_Node;
    type D_Node_Access is access D_Node;
    type D_Node is record
-      Left, Right : D_Node_Access;
+      Left, Right : aliased D_Node_Access;
       Object_Tag : Tag;
-      Map : I_Node_Access;
+      Map : aliased I_Node_Access;
    end record;
    pragma Suppress_Initialization (D_Node);
 
    procedure D_Insert (
-      Node : in out D_Node_Access;
+      Node : not null access D_Node_Access;
       T : Tag;
       Result : out D_Node_Access);
    procedure D_Insert (
-      Node : in out D_Node_Access;
+      Node : not null access D_Node_Access;
       T : Tag;
       Result : out D_Node_Access)
    is
       function "+" (X : Tag) return System.Address
          renames Tag_Conv.To_Address;
    begin
-      if Node = null then
-         Node := new D_Node'(
+      if Node.all = null then
+         Node.all := new D_Node'(
             Left => null,
             Right => null,
             Object_Tag => T,
             Map => null);
-         Result := Node;
-      elsif +Node.Object_Tag > +T then
-         D_Insert (Node.Left, T, Result);
-      elsif +Node.Object_Tag < +T then
-         D_Insert (Node.Right, T, Result);
+         Result := Node.all;
+      elsif +Node.all.Object_Tag > +T then
+         D_Insert (Node.all.Left'Access, T, Result);
+      elsif +Node.all.Object_Tag < +T then
+         D_Insert (Node.all.Right'Access, T, Result);
       else
-         Result := Node;
+         Result := Node.all;
       end if;
    end D_Insert;
 
@@ -127,7 +127,7 @@ package body Ada.Tags.Delegating is
       end if;
    end D_Find;
 
-   Delegating_Map : D_Node_Access := null;
+   Delegating_Map : aliased D_Node_Access := null;
 
    --  implementation
 
@@ -168,8 +168,8 @@ package body Ada.Tags.Delegating is
       D : D_Node_Access;
    begin
       System.Shared_Locking.Enter;
-      D_Insert (Delegating_Map, T, D);
-      I_Insert (D.Map, Interface_Tag, Get);
+      D_Insert (Delegating_Map'Access, T, D);
+      I_Insert (D.Map'Access, Interface_Tag, Get);
       System.Shared_Locking.Leave;
    end Register_Delegation;
 
