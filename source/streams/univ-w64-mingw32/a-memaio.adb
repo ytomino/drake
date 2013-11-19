@@ -141,7 +141,11 @@ package body Ada.Memory_Mapped_IO is
       end if;
       --  open file
       --  this file will be closed in Finalize even if any exception is raised
-      Streams.Stream_IO.Inside.Open (NC_Mapping.File, Mode, Name, Form);
+      Streams.Stream_IO.Inside.Open (
+         NC_Mapping.File,
+         Mode,
+         Name,
+         Streams.Stream_IO.Inside.Pack (Form));
       Map (
          NC_Mapping.all,
          NC_Mapping.File,

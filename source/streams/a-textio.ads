@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 with Ada.Formatting;
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
+with Ada.IO_Text_Modes;
 private with Ada.Finalization;
 limited private with Ada.Text_IO.Inside;
 package Ada.Text_IO is
@@ -25,29 +26,63 @@ package Ada.Text_IO is
 
    --  File Management
 
+   --  modified
    procedure Create (
       File : in out File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "");
+      Form : String); -- removed default
    --  extended
+   procedure Create (
+      File : in out File_Type;
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
+      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
+      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary);
    function Create (
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "")
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
+      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
+      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary)
       return File_Type;
+   pragma Inline (Create);
 
+   --  modified
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "");
+      Form : String); -- removed default
    --  extended
+   procedure Open (
+      File : in out File_Type;
+      Mode : File_Mode;
+      Name : String;
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
+      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
+      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary);
    function Open (
       Mode : File_Mode;
       Name : String;
-      Form : String := "")
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
+      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
+      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary)
       return File_Type;
+   pragma Inline (Open);
 
    procedure Close (File : in out File_Type);
    procedure Delete (File : in out File_Type);

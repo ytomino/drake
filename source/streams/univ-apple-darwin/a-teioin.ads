@@ -3,6 +3,30 @@ pragma License (Unrestricted);
 with Ada.Streams.Stream_IO.Inside.Standard_Files;
 package Ada.Text_IO.Inside is
 
+   --  the parameter Form
+
+   type Packed_Form is record
+      Stream_Form : Streams.Stream_IO.Inside.Packed_Form;
+      External : IO_Text_Modes.File_External_Encoding;
+      New_Line : IO_Text_Modes.File_New_Line;
+      SUB : IO_Text_Modes.File_SUB;
+   end record;
+   pragma Suppress_Initialization (Packed_Form);
+   pragma Pack (Packed_Form);
+   pragma Compile_Time_Error (Packed_Form'Size /= 4, "not packed");
+
+   Default_Form : constant Packed_Form := (
+      Stream_Form => Streams.Stream_IO.Inside.Default_Form,
+      External => IO_Text_Modes.Locale,
+      New_Line => IO_Text_Modes.By_Target,
+      SUB => IO_Text_Modes.Ordinary);
+
+   function Pack (Form : String) return Packed_Form;
+   procedure Unpack (
+      Form : Packed_Form;
+      Result : out Streams.Stream_IO.Inside.Form_String;
+      Last : out Natural);
+
    --  handle of stream
 
    procedure Open (
@@ -10,7 +34,13 @@ package Ada.Text_IO.Inside is
       Stream : Streams.Stream_IO.Stream_Access;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "");
+      Form : String);
+   procedure Open (
+      File : in out File_Type;
+      Stream : Streams.Stream_IO.Stream_Access;
+      Mode : File_Mode;
+      Name : String := "";
+      Form : Packed_Form := Default_Form);
 
    function Stream (File : File_Type) return Streams.Stream_IO.Stream_Access;
    pragma Inline (Stream);
@@ -23,21 +53,16 @@ package Ada.Text_IO.Inside is
    type Text_Type (<>) is limited private;
    type Non_Controlled_File_Type is access all Text_Type;
 
-   type Encoding_Type is (
-      Locale, -- Is_Terminal = False
-      Terminal); -- Is_Terminal = True
-   pragma Discard_Names (Encoding_Type);
-
    procedure Create (
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "");
+      Form : Packed_Form := Default_Form);
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "");
+      Form : Packed_Form := Default_Form);
 
    procedure Close (
       File : in out Non_Controlled_File_Type;
@@ -49,10 +74,11 @@ package Ada.Text_IO.Inside is
 
    function Mode (File : Non_Controlled_File_Type) return File_Mode;
    function Name (File : Non_Controlled_File_Type) return String;
-   function Form (File : Non_Controlled_File_Type) return String;
+   function Form (File : Non_Controlled_File_Type) return Packed_Form;
 
-   function Encoding (File : Non_Controlled_File_Type) return Encoding_Type;
-   pragma Inline (Encoding);
+   function External (File : Non_Controlled_File_Type)
+      return IO_Text_Modes.File_External;
+   pragma Inline (External);
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean;
    pragma Inline (Is_Open);
@@ -140,7 +166,7 @@ package Ada.Text_IO.Inside is
       Stream : Streams.Stream_IO.Stream_Access;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "");
+      Form : Packed_Form := Default_Form);
 
    function Stream (File : Non_Controlled_File_Type)
       return Streams.Stream_IO.Stream_Access;
@@ -155,12 +181,10 @@ package Ada.Text_IO.Inside is
 
    --  form parameter
 
-   type Line_Mark_Type is (LF, CR, CRLF);
-   pragma Discard_Names (Line_Mark_Type);
-
-   function Form_Encoding (Form : String) return Encoding_Type;
-   function Form_Line_Mark (Form : String) return Line_Mark_Type;
-   function Form_SUB (Form : String) return Boolean;
+   function Form_External (Form : String)
+      return IO_Text_Modes.File_External_Encoding;
+   function Form_New_Line (Form : String) return IO_Text_Modes.File_New_Line;
+   function Form_SUB (Form : String) return IO_Text_Modes.File_SUB;
 
 private
 
@@ -168,8 +192,7 @@ private
    pragma Discard_Names (Dummy_Mark_Type);
 
    type Text_Type (
-      Name_Length : Natural;
-      Form_Length : Natural) is -- "limited" prevents No_Elaboration_Code
+      Name_Length : Natural) is -- "limited" prevents No_Elaboration_Code
    record
       Stream : Streams.Stream_IO.Stream_Access; -- internal stream
       File : aliased Streams.Stream_IO.Inside.Non_Controlled_File_Type;
@@ -184,17 +207,15 @@ private
       End_Of_File : Boolean := False;
       Dummy_Mark : Dummy_Mark_Type := None;
       Mode : File_Mode;
-      Encoding : Encoding_Type;
-      Line_Mark : Line_Mark_Type;
-      SUB : Boolean; -- ASCII.SUB = 16#1A#
+      External : IO_Text_Modes.File_External;
+      New_Line : IO_Text_Modes.File_New_Line;
+      SUB : IO_Text_Modes.File_SUB; -- ASCII.SUB = 16#1A#
       Name : String (1 .. Name_Length);
-      Form : String (1 .. Form_Length);
    end record;
    pragma Suppress_Initialization (Text_Type);
 
    Standard_Input_Text : aliased Text_Type := (
       Name_Length => 0,
-      Form_Length => 0,
       Stream => null, -- overwrite when initialization
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Input,
       Page => 1,
@@ -208,15 +229,13 @@ private
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => In_File,
-      Encoding => Locale, -- overwrite when initialization
-      Line_Mark => LF,
-      SUB => False,
-      Name => "",
-      Form => "");
+      External => IO_Text_Modes.UTF_8, -- overwrite when initialization
+      New_Line => IO_Text_Modes.LF,
+      SUB => IO_Text_Modes.Ordinary,
+      Name => "");
 
    Standard_Output_Text : aliased Text_Type := (
       Name_Length => 0,
-      Form_Length => 0,
       Stream => null, -- overwrite when initialization
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Output,
       Page => 1,
@@ -230,15 +249,13 @@ private
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => Out_File,
-      Encoding => Locale, -- overwrite when initialization
-      Line_Mark => LF,
-      SUB => False,
-      Name => "",
-      Form => "");
+      External => IO_Text_Modes.UTF_8, -- overwrite when initialization
+      New_Line => IO_Text_Modes.LF,
+      SUB => IO_Text_Modes.Ordinary,
+      Name => "");
 
    Standard_Error_Text : aliased Text_Type := (
       Name_Length => 0,
-      Form_Length => 0,
       Stream => null, -- overwrite when initialization
       File => Streams.Stream_IO.Inside.Standard_Files.Standard_Error,
       Page => 1,
@@ -252,11 +269,10 @@ private
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => Out_File,
-      Encoding => Locale, -- overwrite when initialization
-      Line_Mark => LF,
-      SUB => False,
-      Name => "",
-      Form => "");
+      External => IO_Text_Modes.UTF_8, -- overwrite when initialization
+      New_Line => IO_Text_Modes.LF,
+      SUB => IO_Text_Modes.Ordinary,
+      Name => "");
 
    Standard_Input : constant Non_Controlled_File_Type :=
       Standard_Input_Text'Access;

@@ -21,29 +21,51 @@ package Ada.Streams.Stream_IO is
    subtype Positive_Count is Count range 1 .. Count'Last;
    --  Index into file, in stream elements
 
+   --  modified
    procedure Create (
       File : in out File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "");
+      Form : String); -- removed default
    --  extended
+   procedure Create (
+      File : in out File_Type;
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True);
    function Create (
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "")
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True)
       return File_Type;
+   pragma Inline (Create);
 
+   --  modified
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "");
+      Form : String); -- removed default
    --  extended
+   procedure Open (
+      File : in out File_Type;
+      Mode : File_Mode;
+      Name : String;
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True);
    function Open (
       Mode : File_Mode;
       Name : String;
-      Form : String := "")
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True)
       return File_Type;
+   pragma Inline (Open);
 
    procedure Close (File : in out File_Type);
    procedure Delete (File : in out File_Type);
