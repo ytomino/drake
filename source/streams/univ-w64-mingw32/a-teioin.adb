@@ -10,6 +10,10 @@ with C.wincon;
 with C.winnls;
 with C.winnt;
 package body Ada.Text_IO.Inside is
+   use type IO_Text_Modes.File_External;
+   use type IO_Text_Modes.File_External_Encoding;
+   use type IO_Text_Modes.File_New_Line;
+   use type IO_Text_Modes.File_SUB;
    use type Streams.Stream_Element_Offset;
    use type Streams.Stream_IO.Inside.Handle_Type;
    use type Streams.Stream_IO.Stream_Access;
@@ -91,6 +95,67 @@ package body Ada.Text_IO.Inside is
       end if;
    end SetConsoleScreenBufferSize_With_Adjusting;
 
+   --  implementation of the parameter Form
+
+   function Pack (Form : String) return Packed_Form is
+   begin
+      return (
+         Stream_Form => Streams.Stream_IO.Inside.Pack (Form),
+         External => Form_External (Form),
+         New_Line => Form_New_Line (Form),
+         SUB => Form_SUB (Form));
+   end Pack;
+
+   procedure Unpack (
+      Form : Packed_Form;
+      Result : out Streams.Stream_IO.Inside.Form_String;
+      Last : out Natural)
+   is
+      subtype Not_CR_LF is IO_Text_Modes.File_New_Line range
+         IO_Text_Modes.LF ..
+         IO_Text_Modes.CR;
+      New_Last : Natural;
+   begin
+      Streams.Stream_IO.Inside.Unpack (Form.Stream_Form, Result, Last);
+      if Form.External = IO_Text_Modes.UTF_8 then
+         if Last /= Streams.Stream_IO.Inside.Form_String'First - 1 then
+            New_Last := Last + 1;
+            Result (New_Last) := ',';
+            Last := New_Last;
+         end if;
+         New_Last := Last + 14;
+         Result (Last + 1 .. New_Last) := "external=utf-8";
+         Last := New_Last;
+      end if;
+      if Form.New_Line /= IO_Text_Modes.CR_LF then
+         if Last /= Streams.Stream_IO.Inside.Form_String'First - 1 then
+            New_Last := Last + 1;
+            Result (New_Last) := ',';
+            Last := New_Last;
+         end if;
+         case Not_CR_LF (Form.New_Line) is
+            when IO_Text_Modes.LF =>
+               New_Last := Last + 5;
+               Result (Last + 1 .. New_Last) := "lm=lf";
+               Last := New_Last;
+            when IO_Text_Modes.CR =>
+               New_Last := Last + 5;
+               Result (Last + 1 .. New_Last) := "lm=cr";
+               Last := New_Last;
+         end case;
+      end if;
+      if Form.SUB /= IO_Text_Modes.Ordinary then
+         if Last /= Streams.Stream_IO.Inside.Form_String'First - 1 then
+            New_Last := Last + 1;
+            Result (New_Last) := ',';
+            Last := New_Last;
+         end if;
+         New_Last := Last + 7;
+         Result (Last + 1 .. New_Last) := "sub=eof";
+         Last := New_Last;
+      end if;
+   end Unpack;
+
    --  implementation of handle of stream
 
    procedure Open (
@@ -98,7 +163,22 @@ package body Ada.Text_IO.Inside is
       Stream : Streams.Stream_IO.Stream_Access;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "") is
+      Form : String) is
+   begin
+      Open (
+         File => Reference (File).all,
+         Stream => Stream,
+         Mode => Mode,
+         Name => Name,
+         Form => Pack (Form));
+   end Open;
+
+   procedure Open (
+      File : in out File_Type;
+      Stream : Streams.Stream_IO.Stream_Access;
+      Mode : File_Mode;
+      Name : String := "";
+      Form : Packed_Form := Default_Form) is
    begin
       Open (
          File => Reference (File).all,
@@ -167,31 +247,29 @@ package body Ada.Text_IO.Inside is
       File : in out Streams.Stream_IO.Inside.Non_Controlled_File_Type;
       Mode : Streams.Stream_IO.File_Mode;
       Name : String;
-      Form : String);
+      Form : Streams.Stream_IO.Inside.Packed_Form);
 
    procedure Open_File (
       Open_Proc : Open_Access;
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String);
+      Form : Packed_Form);
    procedure Open_File (
       Open_Proc : Open_Access;
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String)
+      Form : Packed_Form)
    is
       New_File : aliased Non_Controlled_File_Type := new Text_Type'(
          Name_Length => 0,
-         Form_Length => 0,
          Stream => <>,
          Mode => Mode,
-         Encoding => <>,
-         Line_Mark => <>,
+         External => <>,
+         New_Line => <>,
          SUB => <>,
          Name => "",
-         Form => "",
          others => <>);
       package Holder is new Exceptions.Finally.Scoped_Holder (
          Non_Controlled_File_Type,
@@ -203,19 +281,19 @@ package body Ada.Text_IO.Inside is
          File => New_File.File,
          Mode => Streams.Stream_IO.File_Mode (Mode),
          Name => Name,
-         Form => Form);
+         Form => Form.Stream_Form);
       New_File.Stream := Streams.Stream_IO.Inside.Stream (New_File.File);
       --  select encoding
       if Streams.Stream_IO.Inside.Is_Terminal (
          Streams.Stream_IO.Inside.Handle (New_File.File))
       then
-         New_File.Encoding := Terminal;
-         New_File.Line_Mark := CRLF;
-         New_File.SUB := False;
+         New_File.External := IO_Text_Modes.Terminal;
+         New_File.New_Line := IO_Text_Modes.CR_LF;
+         New_File.SUB := IO_Text_Modes.Ordinary;
       else
-         New_File.Encoding := Form_Encoding (Form);
-         New_File.Line_Mark := Form_Line_Mark (Form);
-         New_File.SUB := Form_SUB (Form);
+         New_File.External := IO_Text_Modes.File_External (Form.External);
+         New_File.New_Line := Form.New_Line;
+         New_File.SUB := Form.SUB;
       end if;
       --  complete
       Holder.Clear;
@@ -225,7 +303,7 @@ package body Ada.Text_IO.Inside is
    procedure Raw_New_Page (File : Non_Controlled_File_Type);
    procedure Raw_New_Page (File : Non_Controlled_File_Type) is
    begin
-      if File.Encoding = Terminal then
+      if File.External = IO_Text_Modes.Terminal then
          declare -- clear screen
             Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
             Handle : constant Streams.Stream_IO.Inside.Handle_Type :=
@@ -290,8 +368,8 @@ package body Ada.Text_IO.Inside is
                (16#0d#, 16#0a#);
             F, L : Streams.Stream_Element_Offset;
          begin
-            F := Boolean'Pos (File.Line_Mark = LF);
-            L := Boolean'Pos (File.Line_Mark /= CR);
+            F := Boolean'Pos (File.New_Line = IO_Text_Modes.LF);
+            L := Boolean'Pos (File.New_Line /= IO_Text_Modes.CR);
             Streams.Write (File.Stream.all, Line_Mark (F .. L));
          end;
          File.Line := File.Line + 1;
@@ -344,7 +422,7 @@ package body Ada.Text_IO.Inside is
          null;
       elsif File.Last = 0 or else not File.Converted then
          File.Converted := False;
-         if File.Encoding = Terminal
+         if File.External = IO_Text_Modes.Terminal
             and then C.wincon.ReadConsole (
                hConsoleInput => Streams.Stream_IO.Inside.Handle (File.File),
                lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
@@ -374,7 +452,7 @@ package body Ada.Text_IO.Inside is
             end;
             if File.Last = 0 then
                null; -- read 0 byte
-            elsif File.Encoding = Locale
+            elsif File.External = IO_Text_Modes.Locale
                and then File.Buffer (1) >= Character'Val (16#80#)
             then
                DBCS_Seq := 1 + Boolean'Pos (
@@ -526,7 +604,7 @@ package body Ada.Text_IO.Inside is
          File.Buffer (1 .. Sequence_Length),
          Ada_Buffer,
          Ada_Buffer_Last);
-      if File.Encoding = Terminal
+      if File.External = IO_Text_Modes.Terminal
          and then C.wincon.WriteConsoleW (
             hConsoleOutput => Streams.Stream_IO.Inside.Handle (File.File),
             lpBuffer => C.windef.LPVOID (Ada_Buffer (1)'Address),
@@ -536,7 +614,7 @@ package body Ada.Text_IO.Inside is
          and then Written = C.windef.DWORD (Ada_Buffer_Last)
       then
          File.Buffer_Col := 0; -- unused
-      elsif File.Encoding = UTF_8
+      elsif File.External = IO_Text_Modes.UTF_8
          or else (
             Sequence_Length = 1
             and then File.Buffer (1) < Character'Val (16#80#))
@@ -600,7 +678,7 @@ package body Ada.Text_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "") is
+      Form : Packed_Form := Default_Form) is
    begin
       if Is_Open (File) then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -617,7 +695,7 @@ package body Ada.Text_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "") is
+      Form : Packed_Form := Default_Form) is
    begin
       if Is_Open (File) then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -723,21 +801,27 @@ package body Ada.Text_IO.Inside is
       end if;
    end Name;
 
-   function Form (File : Non_Controlled_File_Type) return String is
+   function Form (File : Non_Controlled_File_Type) return Packed_Form is
    begin
       Check_File_Open (File);
-      if Streams.Stream_IO.Inside.Is_Open (File.File) then
-         return Streams.Stream_IO.Inside.Form (File.File);
-      else
-         return File.Form;
-      end if;
+      declare
+         Stream_Form : Streams.Stream_IO.Inside.Packed_Form;
+      begin
+         if Streams.Stream_IO.Inside.Is_Open (File.File) then
+            Stream_Form := Streams.Stream_IO.Inside.Form (File.File);
+         else
+            Stream_Form := Streams.Stream_IO.Inside.Default_Form;
+         end if;
+         return (Stream_Form, IO_Text_Modes.UTF_8, File.New_Line, File.SUB);
+      end;
    end Form;
 
-   function Encoding (File : Non_Controlled_File_Type) return Encoding_Type is
+   function External (File : Non_Controlled_File_Type)
+      return IO_Text_Modes.File_External is
    begin
       Check_File_Open (File);
-      return File.Encoding;
-   end Encoding;
+      return File.External;
+   end External;
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean is
    begin
@@ -752,7 +836,8 @@ package body Ada.Text_IO.Inside is
          File.Col := File.Col + File.Buffer_Col;
       end if;
       if Streams.Stream_IO.Inside.Is_Open (File.File)
-         and then File.Encoding /= Terminal -- console can not flush
+         and then File.External /=
+            IO_Text_Modes.Terminal -- console can not flush
       then
          Streams.Stream_IO.Inside.Flush (File.File);
       end if;
@@ -765,7 +850,7 @@ package body Ada.Text_IO.Inside is
       Handle : Streams.Stream_IO.Inside.Handle_Type;
    begin
       Check_File_Mode (File, Out_File);
-      if File.Encoding = Terminal then
+      if File.External = IO_Text_Modes.Terminal then
          Handle := Streams.Stream_IO.Inside.Handle (File.File);
          SetConsoleScreenBufferSize_With_Adjusting (
             Handle,
@@ -796,7 +881,7 @@ package body Ada.Text_IO.Inside is
       Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
       Check_File_Mode (File, Out_File);
-      if File.Encoding = Terminal then
+      if File.External = IO_Text_Modes.Terminal then
          GetConsoleScreenBufferInfo (
             Streams.Stream_IO.Inside.Handle (File.File),
             Info'Access);
@@ -863,7 +948,7 @@ package body Ada.Text_IO.Inside is
                         Take_Page (File);
                         exit;
                      when Character'Val (16#1a#) =>
-                        if File.SUB then
+                        if File.SUB = IO_Text_Modes.End_Of_File then
                            File.End_Of_File := True; -- for next loop
                            File.Last := 0;
                         else
@@ -891,7 +976,8 @@ package body Ada.Text_IO.Inside is
             or else File.Buffer (1) = Character'Val (16#0a#)
             or else File.Buffer (1) = Character'Val (16#0c#)
             or else (
-               File.SUB and then File.Buffer (1) = Character'Val (16#1a#)));
+               File.SUB = IO_Text_Modes.End_Of_File
+                  and then File.Buffer (1) = Character'Val (16#1a#)));
       end if;
    end End_Of_Line;
 
@@ -949,7 +1035,7 @@ package body Ada.Text_IO.Inside is
       if File.Last > 0 then
          return False;
       elsif not Streams.Stream_IO.Inside.Is_Open (File.File)
-         or else File.Encoding = Terminal
+         or else File.External = IO_Text_Modes.Terminal
       then
          Read_Buffer (File);
          return File.End_Of_File;
@@ -968,7 +1054,7 @@ package body Ada.Text_IO.Inside is
       Handle : Streams.Stream_IO.Inside.Handle_Type;
    begin
       Check_File_Mode (File, Out_File);
-      if File.Encoding = Terminal then
+      if File.External = IO_Text_Modes.Terminal then
          Handle := Streams.Stream_IO.Inside.Handle (File.File);
          GetConsoleScreenBufferInfo (
             Handle,
@@ -1013,7 +1099,7 @@ package body Ada.Text_IO.Inside is
          end loop;
       else
          --  Out_File (or Append_File)
-         if File.Encoding = Terminal then
+         if File.External = IO_Text_Modes.Terminal then
             Set_Col_Within_Terminal (File, To);
          else
             if File.Line_Length /= 0 and then To > File.Line_Length then
@@ -1038,7 +1124,7 @@ package body Ada.Text_IO.Inside is
          end loop;
       else
          --  Out_File (or Append_File)
-         if File.Encoding = Terminal then
+         if File.External = IO_Text_Modes.Terminal then
             Set_Position_Within_Terminal (File, 1, To);
          else
             if File.Page_Length /= 0 and then To > File.Page_Length then
@@ -1061,7 +1147,7 @@ package body Ada.Text_IO.Inside is
       Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
       Check_File_Open (File);
-      if File.Encoding = Terminal then
+      if File.External = IO_Text_Modes.Terminal then
          GetConsoleScreenBufferInfo (
             Streams.Stream_IO.Inside.Handle (File.File),
             Info'Access);
@@ -1110,7 +1196,7 @@ package body Ada.Text_IO.Inside is
                   when Character'Val (16#0c#) =>
                      Take_Page (File);
                   when Character'Val (16#1a#) =>
-                     if File.SUB then
+                     if File.SUB = IO_Text_Modes.End_Of_File then
                         File.End_Of_File := True; -- for next loop
                         File.Last := 0;
                      else
@@ -1211,7 +1297,7 @@ package body Ada.Text_IO.Inside is
       Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
       Check_File_Mode (File, Out_File);
-      if File.Encoding = Terminal then
+      if File.External = IO_Text_Modes.Terminal then
          GetConsoleScreenBufferInfo (
             Streams.Stream_IO.Inside.Handle (File.File),
             Info'Access);
@@ -1231,21 +1317,19 @@ package body Ada.Text_IO.Inside is
       Stream : Streams.Stream_IO.Stream_Access;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "") is
+      Form : Packed_Form := Default_Form) is
    begin
       if Is_Open (File) then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       File := new Text_Type'(
          Name_Length => Name'Length + 1,
-         Form_Length => Form'Length,
          Stream => Stream,
          Mode => Mode,
-         Encoding => Form_Encoding (Form),
-         Line_Mark => Form_Line_Mark (Form),
-         SUB => Form_SUB (Form),
+         External => IO_Text_Modes.File_External (Form.External),
+         New_Line => Form.New_Line,
+         SUB => Form.SUB,
          Name => '*' & Name,
-         Form => Form,
          others => <>);
    end Open;
 
@@ -1266,7 +1350,9 @@ package body Ada.Text_IO.Inside is
 
    --  implementation of form parameter
 
-   function Form_Encoding (Form : String) return Encoding_Type is
+   function Form_External (Form : String)
+      return IO_Text_Modes.File_External_Encoding
+   is
       First : Positive;
       Last : Natural;
    begin
@@ -1276,44 +1362,44 @@ package body Ada.Text_IO.Inside is
             and then Form (First) = 'u'
             and then Form (Last) = '8'
          then -- "utf-8"
-            return UTF_8;
+            return IO_Text_Modes.UTF_8;
          else
-            return Locale;
+            return IO_Text_Modes.Locale;
          end if;
       else
          --  compatibility with GNAT runtime
          System.IO_Options.Form_Parameter (Form, "wcem", First, Last);
          if First <= Last and then Form (First) = '8' then
-            return UTF_8;
+            return IO_Text_Modes.UTF_8;
          else
-            return Locale;
+            return IO_Text_Modes.Locale;
          end if;
       end if;
-   end Form_Encoding;
+   end Form_External;
 
-   function Form_Line_Mark (Form : String) return Line_Mark_Type is
+   function Form_New_Line (Form : String) return IO_Text_Modes.File_New_Line is
       First : Positive;
       Last : Natural;
    begin
       System.IO_Options.Form_Parameter (Form, "lm", First, Last);
       if First <= Last and then Form (First) = 'c' then -- cr
-         return CR;
+         return IO_Text_Modes.CR;
       elsif First <= Last and then Form (First) = 'l' then -- lf
-         return LF;
+         return IO_Text_Modes.LF;
       else -- ms
-         return CRLF;
+         return IO_Text_Modes.CR_LF;
       end if;
-   end Form_Line_Mark;
+   end Form_New_Line;
 
-   function Form_SUB (Form : String) return Boolean is
+   function Form_SUB (Form : String) return IO_Text_Modes.File_SUB is
       First : Positive;
       Last : Natural;
    begin
       System.IO_Options.Form_Parameter (Form, "sub", First, Last);
       if First <= Last and then Form (First) = 'e' then
-         return True;
+         return IO_Text_Modes.End_Of_File;
       else
-         return False;
+         return IO_Text_Modes.Ordinary;
       end if;
    end Form_SUB;
 
@@ -1344,7 +1430,8 @@ package body Ada.Text_IO.Inside is
                or else File.Buffer (I) = Character'Val (16#0a#)
                or else File.Buffer (I) = Character'Val (16#0c#)
                or else (
-                  File.SUB and then File.Buffer (I) = Character'Val (16#1a#))
+                  File.SUB = IO_Text_Modes.End_Of_File
+                     and then File.Buffer (I) = Character'Val (16#1a#))
             then
                Buffer_Last := I - 1;
                End_Of_Line := True;
@@ -1366,7 +1453,7 @@ package body Ada.Text_IO.Inside is
       Handle : Streams.Stream_IO.Inside.Handle_Type;
    begin
       Check_File_Mode (File, In_File);
-      if File.Encoding = Terminal then
+      if File.External = IO_Text_Modes.Terminal then
          Handle := Streams.Stream_IO.Inside.Handle (File.File);
          --  get and unset line-input mode
          if C.wincon.GetConsoleMode (
@@ -1384,7 +1471,7 @@ package body Ada.Text_IO.Inside is
       Last := Item'First - 1;
       Multi_Character : for I in Item'Range loop
          Single_Character : loop
-            if not Wait and then File.Encoding = Terminal then
+            if not Wait and then File.External = IO_Text_Modes.Terminal then
                Read_Buffer_From_Event (File);
             else
                Read_Buffer (File);
@@ -1401,7 +1488,7 @@ package body Ada.Text_IO.Inside is
             end if;
          end loop Single_Character;
       end loop Multi_Character;
-      if File.Encoding = Terminal then
+      if File.External = IO_Text_Modes.Terminal then
          --  restore terminal mode
          if C.wincon.SetConsoleMode (
             Handle,
@@ -1418,8 +1505,8 @@ package body Ada.Text_IO.Inside is
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type) is
    begin
       File.Stream := Streams.Stream_IO.Inside.Stream (File.File);
-      File.Encoding := Encoding_Type'Val (Boolean'Pos (
-         Streams.Stream_IO.Inside.Is_Terminal (
+      File.External := IO_Text_Modes.File_External'Val (Boolean'Pos (
+         not Streams.Stream_IO.Inside.Is_Terminal (
             Streams.Stream_IO.Inside.Handle (File.File))));
    end Init_Standard_File;
 
