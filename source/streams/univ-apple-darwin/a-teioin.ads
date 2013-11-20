@@ -21,6 +21,7 @@ package Ada.Text_IO.Inside is
       New_Line => IO_Text_Modes.By_Target,
       SUB => IO_Text_Modes.Ordinary);
 
+   procedure Set (Form : in out Packed_Form; Keyword, Item : String);
    function Pack (Form : String) return Packed_Form;
    procedure Unpack (
       Form : Packed_Form;
@@ -178,13 +179,6 @@ package Ada.Text_IO.Inside is
    Standard_Input : constant Non_Controlled_File_Type;
    Standard_Output : constant Non_Controlled_File_Type;
    Standard_Error : constant Non_Controlled_File_Type;
-
-   --  form parameter
-
-   function Form_External (Form : String)
-      return IO_Text_Modes.File_External_Encoding;
-   function Form_New_Line (Form : String) return IO_Text_Modes.File_New_Line;
-   function Form_SUB (Form : String) return IO_Text_Modes.File_SUB;
 
 private
 

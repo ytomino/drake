@@ -288,8 +288,4 @@ private
    for Search_Iterator'Write use Streaming.Missing_Write;
    for Search_Iterator'Output use Streaming.Missing_Write;
 
-   --  form parameter
-
-   function Form_Overwrite (Form : String) return Boolean;
-
 end Ada.Directories;

@@ -24,6 +24,7 @@ package Ada.Streams.Stream_IO.Inside is
 
    subtype Form_String is String (1 .. 256);
 
+   procedure Set (Form : in out Packed_Form; Keyword, Item : String);
    function Pack (Form : String) return Packed_Form;
    procedure Unpack (
       Form : Packed_Form;
@@ -138,12 +139,6 @@ package Ada.Streams.Stream_IO.Inside is
 
    function Is_Standard (File : Non_Controlled_File_Type) return Boolean;
    pragma Inline (Is_Standard);
-
-   --  form parameter
-
-   function Form_Shared (Form : String) return IO_Modes.File_Shared_Spec;
-   function Form_Wait (Form : String) return Boolean;
-   function Form_Overwrite (Form : String) return Boolean;
 
 private
 

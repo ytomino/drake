@@ -67,12 +67,56 @@ package body Ada.Streams.Stream_IO.Inside is
 
    --  the parameter Form
 
-   function Pack (Form : String) return Packed_Form is
+   procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
    begin
-      return (
-         Shared => Form_Shared (Form),
-         Wait => Form_Wait (Form),
-         Overwrite => Form_Overwrite (Form));
+      if Keyword = "shared" then
+         if Item'Length > 0 and then Item (Item'First) = 'y' then -- yes
+            Form.Shared := IO_Modes.Allow;
+         elsif Item'Length > 0 and then Item (Item'First) = 'r' then -- read
+            Form.Shared := IO_Modes.Read_Only;
+         elsif Item'Length > 0 and then Item (Item'First) = 'w' then -- write
+            Form.Shared := IO_Modes.Deny;
+         elsif Item'Length > 0 and then Item (Item'First) = 'n' then -- no
+            Form.Shared := IO_Modes.By_Mode;
+         end if;
+      elsif Keyword = "race" then
+         if Item'Length > 0 and then Item (Item'First) = 'w' then -- wait
+            Form.Wait := True;
+         elsif Item'Length > 0 and then Item (Item'First) = 'r' then -- raise
+            Form.Wait := False;
+         end if;
+      elsif Keyword = "overwrite" then
+         if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
+            Form.Overwrite := False;
+         elsif Item'Length > 0 and then Item (Item'First) = 't' then -- true
+            Form.Overwrite := True;
+         end if;
+      end if;
+   end Set;
+
+   function Pack (Form : String) return Packed_Form is
+      Keyword_First : Positive;
+      Keyword_Last : Natural;
+      Item_First : Positive;
+      Item_Last : Natural;
+      Last : Natural;
+   begin
+      return Result : Packed_Form := Default_Form do
+         Last := Form'First - 1;
+         while Last < Form'Last loop
+            System.Form_Parameters.Get (
+               Form (Last + 1 .. Form'Last),
+               Keyword_First,
+               Keyword_Last,
+               Item_First,
+               Item_Last,
+               Last);
+            Set (
+               Result,
+               Form (Keyword_First .. Keyword_Last),
+               Form (Item_First .. Item_Last));
+         end loop;
+      end return;
    end Pack;
 
    procedure Unpack (
@@ -1291,47 +1335,5 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       return File /= null and then File.Kind = Standard_Handle;
    end Is_Standard;
-
-   --  implementation of form parameter
-
-   function Form_Shared (Form : String) return IO_Modes.File_Shared_Spec is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.Form_Parameters.Form_Parameter (Form, "shared", First, Last);
-      if First <= Last and then Form (First) = 'r' then -- read
-         return IO_Modes.Read_Only;
-      elsif First <= Last and then Form (First) = 'w' then -- write
-         return IO_Modes.Deny;
-      elsif First <= Last and then Form (First) = 'y' then -- yes
-         return IO_Modes.Allow;
-      else -- no
-         return IO_Modes.By_Mode;
-      end if;
-   end Form_Shared;
-
-   function Form_Wait (Form : String) return Boolean is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.Form_Parameters.Form_Parameter (Form, "race", First, Last);
-      if First <= Last and then Form (First) = 'w' then
-         return True;
-      else
-         return False;
-      end if;
-   end Form_Wait;
-
-   function Form_Overwrite (Form : String) return Boolean is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.Form_Parameters.Form_Parameter (Form, "overwrite", First, Last);
-      if First <= Last and then Form (First) = 'f' then -- false
-         return False;
-      else
-         return True;
-      end if;
-   end Form_Overwrite;
 
 end Ada.Streams.Stream_IO.Inside;

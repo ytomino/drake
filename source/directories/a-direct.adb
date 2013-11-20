@@ -81,9 +81,47 @@ package body Ada.Directories is
       Target_Name : String;
       Form : String)
    is
-      Overwrite : Boolean;
+      Overwrite : Boolean := True; -- default
    begin
-      Overwrite := Form_Overwrite (Form);
+      Pack : declare
+         Keyword_First : Positive;
+         Keyword_Last : Natural;
+         Item_First : Positive;
+         Item_Last : Natural;
+         Last : Natural;
+      begin
+         Last := Form'First - 1;
+         while Last < Form'Last loop
+            System.Form_Parameters.Get (
+               Form (Last + 1 .. Form'Last),
+               Keyword_First,
+               Keyword_Last,
+               Item_First,
+               Item_Last,
+               Last);
+            Set : declare
+               Keyword : String
+                  renames Form (Keyword_First .. Keyword_Last);
+               Item : String
+                  renames Form (Item_First .. Item_Last);
+            begin
+               if Keyword = "overwrite" then
+                  if Item'Length > 0 and then Item (Item'First) = 'f' then
+                     Overwrite := False; -- false
+                  elsif Item'Length > 0 and then Item (Item'First) = 't' then
+                     Overwrite := True; -- true
+                  end if;
+               elsif Keyword = "mode" then
+                  --  compatibility with GNAT runtime
+                  if Item'Length > 0 and then Item (Item'First) = 'c' then
+                     Overwrite := False; -- copy
+                  elsif Item'Length > 0 and then Item (Item'First) = 'o' then
+                     Overwrite := True; -- overwrite
+                  end if;
+               end if;
+            end Set;
+         end loop;
+      end Pack;
       Copy_File (Source_Name, Target_Name, Overwrite);
    end Copy_File;
 
@@ -337,29 +375,5 @@ package body Ada.Directories is
             Directory_Entry.Data,
             Directory_Entry.Additional'Unrestricted_Access)));
    end Modification_Time;
-
-   --  form parameter
-
-   function Form_Overwrite (Form : String) return Boolean is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.Form_Parameters.Form_Parameter (Form, "overwrite", First, Last);
-      if First <= Last then
-         if Form (First) = 'f' then -- false
-            return False;
-         else
-            return True;
-         end if;
-      else
-         --  compatibility with GNAT runtime
-         System.Form_Parameters.Form_Parameter (Form, "mode", First, Last);
-         if First <= Last and then Form (First) = 'c' then -- copy
-            return False;
-         else
-            return True;
-         end if;
-      end if;
-   end Form_Overwrite;
 
 end Ada.Directories;
