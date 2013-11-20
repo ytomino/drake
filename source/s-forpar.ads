@@ -6,10 +6,12 @@ package System.Form_Parameters is
    --  parsing form parameter
    --  the format is "keyword1=value1,keyword2=value2,..."
 
-   procedure Form_Parameter (
+   procedure Get (
       Form : String;
-      Keyword : String;
-      First : out Positive;
+      Keyword_First : out Positive;
+      Keyword_Last : out Natural;
+      Item_First : out Positive;
+      Item_Last : out Natural;
       Last : out Natural);
 
 end System.Form_Parameters;

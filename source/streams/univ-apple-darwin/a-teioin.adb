@@ -132,13 +132,50 @@ package body Ada.Text_IO.Inside is
 
    --  implementation of the parameter Form
 
-   function Pack (Form : String) return Packed_Form is
+   procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
    begin
-      return (
-         Stream_Form => Streams.Stream_IO.Inside.Pack (Form),
-         External => Form_External (Form),
-         New_Line => Form_New_Line (Form),
-         SUB => Form_SUB (Form));
+      if Keyword = "lm" then
+         if Item'Length > 0 and then Item (Item'First) = 'l' then -- lf
+            Form.New_Line := IO_Text_Modes.LF;
+         elsif Item'Length > 0 and then Item (Item'First) = 'c' then -- cr
+            Form.New_Line := IO_Text_Modes.CR;
+         elsif Item'Length > 0 and then Item (Item'First) = 'm' then
+            Form.New_Line := IO_Text_Modes.CR_LF;
+         end if;
+      elsif Keyword = "sub" then
+         if Item'Length > 0 and then Item (Item'First) = 'e' then -- eof
+            Form.SUB := IO_Text_Modes.End_Of_File;
+         elsif Item'Length > 0 and then Item (Item'First) = 'o' then
+            Form.SUB := IO_Text_Modes.Ordinary;
+         end if;
+      else
+         Streams.Stream_IO.Inside.Set (Form.Stream_Form, Keyword, Item);
+      end if;
+   end Set;
+
+   function Pack (Form : String) return Packed_Form is
+      Keyword_First : Positive;
+      Keyword_Last : Natural;
+      Item_First : Positive;
+      Item_Last : Natural;
+      Last : Natural;
+   begin
+      return Result : Packed_Form := Default_Form do
+         Last := Form'First - 1;
+         while Last < Form'Last loop
+            System.Form_Parameters.Get (
+               Form (Last + 1 .. Form'Last),
+               Keyword_First,
+               Keyword_Last,
+               Item_First,
+               Item_Last,
+               Last);
+            Set (
+               Result,
+               Form (Keyword_First .. Keyword_Last),
+               Form (Item_First .. Item_Last));
+         end loop;
+      end return;
    end Pack;
 
    procedure Unpack (
@@ -1278,42 +1315,6 @@ package body Ada.Text_IO.Inside is
       Check_Stream_IO_Open (File);
       return File.File'Access;
    end Stream_IO;
-
-   --  implementation of form parameter
-
-   function Form_External (Form : String)
-      return IO_Text_Modes.File_External_Encoding
-   is
-      pragma Unreferenced (Form);
-   begin
-      return IO_Text_Modes.UTF_8;
-   end Form_External;
-
-   function Form_New_Line (Form : String) return IO_Text_Modes.File_New_Line is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.Form_Parameters.Form_Parameter (Form, "lm", First, Last);
-      if First <= Last and then Form (First) = 'm' then
-         return IO_Text_Modes.CR_LF;
-      elsif First <= Last and then Form (First) = 'c' then
-         return IO_Text_Modes.CR;
-      else
-         return IO_Text_Modes.LF;
-      end if;
-   end Form_New_Line;
-
-   function Form_SUB (Form : String) return IO_Text_Modes.File_SUB is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.Form_Parameters.Form_Parameter (Form, "sub", First, Last);
-      if First <= Last and then Form (First) = 'e' then
-         return IO_Text_Modes.End_Of_File;
-      else
-         return IO_Text_Modes.Ordinary;
-      end if;
-   end Form_SUB;
 
    --  implementation for Wide_Text_IO/Wide_Wide_Text_IO
 

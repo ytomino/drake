@@ -2,57 +2,46 @@ package body System.Form_Parameters is
 
    --  parsing form parameter
 
-   procedure Form_Parameter (
+   procedure Get (
       Form : String;
-      Keyword : String;
-      First : out Positive;
-      Last : out Natural)
-   is
-      Max_Last : constant Integer := Form'Last - (Keyword'Length - 1);
-      I : Positive := Form'First;
+      Keyword_First : out Positive;
+      Keyword_Last : out Natural;
+      Item_First : out Positive;
+      Item_Last : out Natural;
+      Last : out Natural) is
    begin
-      while I <= Max_Last loop
-         declare
-            Next : Positive := I;
-         begin
-            Get_Keyword : loop
-               if Next > Form'Last or else Form (Next) = ',' then
-                  if Form (I .. Next - 1) = Keyword then
-                     --  keyword is found, but value is empty
-                     First := Next;
-                     Last := Next - 1;
-                     return;
-                  else
-                     I := Next + 1; -- skip ','
-                     exit Get_Keyword;
-                  end if;
-               elsif Form (Next) = '=' then
-                  Next := Next + 1; -- skip '='
-                  declare
-                     Value_First : constant Positive := Next;
-                  begin
-                     while Next <= Form'Last and then Form (Next) /= ',' loop
-                        Next := Next + 1;
-                     end loop;
-                     if Form (I .. Value_First - 2) = Keyword then
-                        --  keyword is found
-                        First := Value_First;
-                        Last := Next - 1;
-                        return;
-                     else
-                        --  skip value
-                        I := Next + 1; -- skip ','
-                        exit Get_Keyword;
-                     end if;
-                  end;
-               else
-                  Next := Next + 1;
+      --  get keyword
+      Keyword_First := Form'First;
+      Keyword_Last := Keyword_First - 1;
+      loop
+         if Keyword_Last >= Form'Last then
+            Item_First := Keyword_Last + 1;
+            Item_Last := Keyword_Last;
+            Last := Keyword_Last;
+            exit;
+         elsif Form (Keyword_Last + 1) = ',' then
+            Item_First := Keyword_Last + 1;
+            Item_Last := Keyword_Last;
+            Last := Keyword_Last + 1; -- skip ','
+            exit;
+         elsif Form (Keyword_Last + 1) = '=' then
+            --  get value
+            Item_First := Keyword_Last + 2; -- skip '='
+            Item_Last := Keyword_Last + 1;
+            loop
+               if Item_Last >= Form'Last then
+                  Last := Item_Last;
+                  exit;
+               elsif Form (Item_Last + 1) = ',' then
+                  Last := Item_Last + 1; -- skip ','
+                  exit;
                end if;
-            end loop Get_Keyword;
-         end;
+               Item_Last := Item_Last + 1;
+            end loop;
+            exit;
+         end if;
+         Keyword_Last := Keyword_Last + 1;
       end loop;
-      First := Form'First;
-      Last := First - 1;
-   end Form_Parameter;
+   end Get;
 
 end System.Form_Parameters;
