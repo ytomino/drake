@@ -12,7 +12,7 @@ begin
 		Step := 1;
 		Open (File_1, In_File, Name); -- read lock
 		Step := 2;
-		Open (File_2, In_File, Name, Form => "shared=write"); -- write lock
+		Open (File_2, In_File, Name, Form => "shared=deny"); -- write lock
 		Step := 3;
 	exception
 		when Tasking_Error =>
@@ -33,14 +33,14 @@ begin
 			delay 0.1;
 			pragma Assert (Step = 2);
 			Step := 3;
-			Open (File_2, In_File, Name, Form => "shared=write,race=wait"); -- write lock
+			Open (File_2, In_File, Name, Form => "shared=deny,wait=true"); -- write lock
 			pragma Assert (Step = 4);
 			Step := 5;
 		end Task_2;
 	begin
 		pragma Assert (Step = 0);
 		Step := 1;
-		Open (File_1, In_File, Name, "race=wait"); -- read lock
+		Open (File_1, In_File, Name, Form => "wait=true"); -- read lock
 		pragma Assert (Step = 1);
 		Step := 2;
 		delay 0.2;

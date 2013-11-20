@@ -113,7 +113,7 @@ package body Ada.Text_IO.Inside is
          if Item'Length > 0 and then Item (Item'First) = '8' then
             Form.External := IO_Text_Modes.UTF_8;
          end if;
-      elsif Keyword = "lm" then
+      elsif Keyword = "nl" then -- abbr or new_line
          if Item'Length > 0 and then Item (Item'First) = 'l' then -- lf
             Form.New_Line := IO_Text_Modes.LF;
          elsif Item'Length > 0 and then Item (Item'First) = 'c' then -- cr

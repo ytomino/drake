@@ -35,20 +35,24 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
    begin
       if Keyword = "shared" then
-         if Item'Length > 0 and then Item (Item'First) = 'y' then -- yes
+         if Item'Length > 0
+            and then (
+               Item (Item'First) = 'a' -- allow
+               or else Item (Item'First) = 'y') -- yes, compatibility
+         then
             Form.Shared := IO_Modes.Allow;
          elsif Item'Length > 0 and then Item (Item'First) = 'r' then -- read
             Form.Shared := IO_Modes.Read_Only;
-         elsif Item'Length > 0 and then Item (Item'First) = 'w' then -- write
+         elsif Item'Length > 0 and then Item (Item'First) = 'd' then -- deny
             Form.Shared := IO_Modes.Deny;
          elsif Item'Length > 0 and then Item (Item'First) = 'n' then -- no
             Form.Shared := IO_Modes.By_Mode;
          end if;
-      elsif Keyword = "race" then
-         if Item'Length > 0 and then Item (Item'First) = 'w' then -- wait
-            Form.Wait := True;
-         elsif Item'Length > 0 and then Item (Item'First) = 'r' then -- raise
+      elsif Keyword = "wait" then
+         if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
             Form.Wait := False;
+         elsif Item'Length > 0 and then Item (Item'First) = 't' then -- true
+            Form.Wait := True;
          end if;
       elsif Keyword = "overwrite" then
          if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
