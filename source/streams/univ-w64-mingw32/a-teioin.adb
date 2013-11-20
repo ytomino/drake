@@ -1,7 +1,7 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
-with System.IO_Options;
+with System.Form_Parameters;
 with System.UTF_Conversions;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_16_To_8;
@@ -1356,7 +1356,7 @@ package body Ada.Text_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "external", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "external", First, Last);
       if First > Form'First then
          if First <= Last
             and then Form (First) = 'u'
@@ -1368,7 +1368,7 @@ package body Ada.Text_IO.Inside is
          end if;
       else
          --  compatibility with GNAT runtime
-         System.IO_Options.Form_Parameter (Form, "wcem", First, Last);
+         System.Form_Parameters.Form_Parameter (Form, "wcem", First, Last);
          if First <= Last and then Form (First) = '8' then
             return IO_Text_Modes.UTF_8;
          else
@@ -1381,7 +1381,7 @@ package body Ada.Text_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "lm", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "lm", First, Last);
       if First <= Last and then Form (First) = 'c' then -- cr
          return IO_Text_Modes.CR;
       elsif First <= Last and then Form (First) = 'l' then -- lf
@@ -1395,7 +1395,7 @@ package body Ada.Text_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "sub", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "sub", First, Last);
       if First <= Last and then Form (First) = 'e' then
          return IO_Text_Modes.End_Of_File;
       else

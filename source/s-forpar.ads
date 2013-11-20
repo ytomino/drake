@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package System.IO_Options is
+package System.Form_Parameters is
    pragma Preelaborate;
 
    --  parsing form parameter
@@ -12,4 +12,4 @@ package System.IO_Options is
       First : out Positive;
       Last : out Natural);
 
-end System.IO_Options;
+end System.Form_Parameters;
