@@ -134,7 +134,7 @@ package body Ada.Text_IO.Inside is
 
    procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
    begin
-      if Keyword = "lm" then
+      if Keyword = "nl" then -- abbr or new_line
          if Item'Length > 0 and then Item (Item'First) = 'l' then -- lf
             Form.New_Line := IO_Text_Modes.LF;
          elsif Item'Length > 0 and then Item (Item'First) = 'c' then -- cr
