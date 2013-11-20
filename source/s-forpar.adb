@@ -1,4 +1,4 @@
-package body System.IO_Options is
+package body System.Form_Parameters is
 
    --  parsing form parameter
 
@@ -55,4 +55,4 @@ package body System.IO_Options is
       Last := First - 1;
    end Form_Parameter;
 
-end System.IO_Options;
+end System.Form_Parameters;

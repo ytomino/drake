@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
-with System.IO_Options;
+with System.Form_Parameters;
 with System.Memory;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
@@ -1298,7 +1298,7 @@ package body Ada.Streams.Stream_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "shared", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "shared", First, Last);
       if First <= Last and then Form (First) = 'r' then -- read
          return IO_Modes.Read_Only;
       elsif First <= Last and then Form (First) = 'w' then -- write
@@ -1314,7 +1314,7 @@ package body Ada.Streams.Stream_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "race", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "race", First, Last);
       if First <= Last and then Form (First) = 'w' then
          return True;
       else
@@ -1326,7 +1326,7 @@ package body Ada.Streams.Stream_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "overwrite", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "overwrite", First, Last);
       if First <= Last and then Form (First) = 'f' then -- false
          return False;
       else

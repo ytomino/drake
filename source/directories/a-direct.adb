@@ -2,7 +2,7 @@ with Ada.Directories.Inside;
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System.IO_Options;
+with System.Form_Parameters;
 with System.Native_Time;
 with System.Storage_Elements;
 package body Ada.Directories is
@@ -344,7 +344,7 @@ package body Ada.Directories is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "overwrite", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "overwrite", First, Last);
       if First <= Last then
          if Form (First) = 'f' then -- false
             return False;
@@ -353,7 +353,7 @@ package body Ada.Directories is
          end if;
       else
          --  compatibility with GNAT runtime
-         System.IO_Options.Form_Parameter (Form, "mode", First, Last);
+         System.Form_Parameters.Form_Parameter (Form, "mode", First, Last);
          if First <= Last and then Form (First) = 'c' then -- copy
             return False;
          else

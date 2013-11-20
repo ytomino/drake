@@ -1,6 +1,6 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
-with System.IO_Options;
+with System.Form_Parameters;
 with System.Formatting;
 with System.UTF_Conversions;
 with C.sys.types;
@@ -1293,7 +1293,7 @@ package body Ada.Text_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "lm", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "lm", First, Last);
       if First <= Last and then Form (First) = 'm' then
          return IO_Text_Modes.CR_LF;
       elsif First <= Last and then Form (First) = 'c' then
@@ -1307,7 +1307,7 @@ package body Ada.Text_IO.Inside is
       First : Positive;
       Last : Natural;
    begin
-      System.IO_Options.Form_Parameter (Form, "sub", First, Last);
+      System.Form_Parameters.Form_Parameter (Form, "sub", First, Last);
       if First <= Last and then Form (First) = 'e' then
          return IO_Text_Modes.End_Of_File;
       else
