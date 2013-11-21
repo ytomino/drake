@@ -5,7 +5,7 @@ with Ada.Streams.Stream_IO;
 with System.Storage_Elements;
 private with Ada.Finalization;
 private with Ada.Streams.Stream_IO.Inside;
-package Ada.Memory_Mapped_IO is
+package Ada.Storage_Mapped_IO is
    --  This package provides memory-mapped I/O.
 
    subtype File_Mode is Streams.Stream_IO.File_Mode;
@@ -80,4 +80,4 @@ private
 
    type Mapping is new Controlled.Mapping;
 
-end Ada.Memory_Mapped_IO;
+end Ada.Storage_Mapped_IO;
