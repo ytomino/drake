@@ -53,8 +53,7 @@ package Ada.Containers.Inside.Binary_Trees is
    function Equivalent (
       Left, Right : Node_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean;
 

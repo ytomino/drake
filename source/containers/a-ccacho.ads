@@ -32,9 +32,7 @@ package Ada.Containers.Counted_Access_Holders is
       Source : Name);
    procedure Assign (Target : in out Holder; Source : Holder);
 
-   procedure Move (
-      Target : in out Holder;
-      Source : in out Holder);
+   procedure Move (Target : in out Holder; Source : in out Holder);
 
    procedure Swap (I, J : in out Holder);
 

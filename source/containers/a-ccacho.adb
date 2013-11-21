@@ -89,9 +89,7 @@ package body Ada.Containers.Counted_Access_Holders is
          Free => Free_Data'Access);
    end Assign;
 
-   procedure Move (
-      Target : in out Holder;
-      Source : in out Holder) is
+   procedure Move (Target : in out Holder; Source : in out Holder) is
    begin
       System.Reference_Counting.Move (
          Target => Upcast (Target.Data'Unchecked_Access),
