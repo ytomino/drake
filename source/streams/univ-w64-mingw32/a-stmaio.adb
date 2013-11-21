@@ -1,12 +1,11 @@
 with Ada.Exceptions;
-with C.sys.mman;
-with C.sys.types;
-package body Ada.Memory_Mapped_IO is
-   use type Streams.Stream_IO.Count;
+with C.basetsd;
+with C.windef;
+package body Ada.Storage_Mapped_IO is
+   use type Ada.Streams.Stream_Element_Offset;
    use type System.Address;
-   use type C.signed_int;
-   use type C.size_t;
-   use type C.sys.types.off_t;
+   use type C.windef.WINBOOL;
+   use type C.winnt.ULONGLONG;
 
    procedure Map (
       Object : in out Non_Controlled_Mapping;
@@ -21,32 +20,50 @@ package body Ada.Memory_Mapped_IO is
       Size : Streams.Stream_IO.Count;
       Writable : Boolean)
    is
-      Protects : constant array (Boolean) of C.signed_int := (
-         C.sys.mman.PROT_READ,
-         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
-      Mapped_Offset : constant C.sys.types.off_t :=
-         C.sys.types.off_t (Offset) - 1;
-      Mapped_Size : C.size_t := C.size_t (Size);
-      Mapped_Address : C.void_ptr;
+      Protects : constant array (Boolean) of C.windef.DWORD := (
+         C.winnt.PAGE_READONLY,
+         C.winnt.PAGE_READWRITE);
+      Accesses : constant array (Boolean) of C.windef.DWORD := (
+         C.winbase.FILE_MAP_READ,
+         C.winbase.FILE_MAP_WRITE);
+      Mapped_Offset : C.winnt.ULARGE_INTEGER;
+      Mapped_Size : C.winnt.ULARGE_INTEGER;
+      Mapped_Address : C.windef.LPVOID;
+      File_Mapping : C.winnt.HANDLE;
    begin
-      if Mapped_Size = 0 then
-         Mapped_Size := C.size_t (Streams.Stream_IO.Inside.Size (File))
-            - C.size_t (Mapped_Offset);
+      Mapped_Offset.QuadPart := C.winnt.ULONGLONG (Offset) - 1;
+      Mapped_Size.QuadPart := C.winnt.ULONGLONG (Size);
+      if Mapped_Size.QuadPart = 0 then
+         Mapped_Size.QuadPart :=
+            C.winnt.ULONGLONG (Streams.Stream_IO.Inside.Size (File))
+            - Mapped_Offset.QuadPart;
       end if;
-      Mapped_Address := C.sys.mman.mmap (
-         C.void_ptr (System.Null_Address),
-         Mapped_Size,
-         Protects (Writable),
-         C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
+      File_Mapping := C.winbase.CreateFileMapping (
          Streams.Stream_IO.Inside.Handle (File),
-         Mapped_Offset);
-      if System.Address (Mapped_Address) =
-         System.Address (C.sys.mman.MAP_FAILED)
-      then
+         null,
+         Protects (Writable),
+         Mapped_Size.HighPart,
+         Mapped_Size.LowPart,
+         null);
+      if File_Mapping = C.winbase.INVALID_HANDLE_VALUE then
+         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+      end if;
+      Mapped_Address := C.winbase.MapViewOfFileEx (
+         File_Mapping,
+         Accesses (Writable),
+         Mapped_Offset.HighPart,
+         Mapped_Offset.LowPart,
+         C.basetsd.SIZE_T (Mapped_Size.QuadPart),
+         C.windef.LPVOID (System.Null_Address));
+      if Mapped_Address = C.windef.LPVOID (System.Null_Address) then
+         if C.winbase.CloseHandle (File_Mapping) = 0 then
+            null; -- raise Use_Error;
+         end if;
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       Object.Address := System.Address (Mapped_Address);
-      Object.Size := System.Storage_Elements.Storage_Count (Mapped_Size);
+      Object.Size := System.Storage_Elements.Storage_Count (Size);
+      Object.File_Mapping := File_Mapping;
    end Map;
 
    procedure Unmap (
@@ -57,9 +74,8 @@ package body Ada.Memory_Mapped_IO is
       Raise_On_Error : Boolean) is
    begin
       --  unmap
-      if C.sys.mman.munmap (
-         C.void_ptr (Object.Address),
-         C.size_t (Object.Size)) /= 0
+      if C.winbase.UnmapViewOfFile (Object.Address) = 0
+         or else C.winbase.CloseHandle (Object.File_Mapping) = 0
       then
          if Raise_On_Error then
             Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
@@ -130,7 +146,6 @@ package body Ada.Memory_Mapped_IO is
          Mode,
          Name,
          Streams.Stream_IO.Inside.Pack (Form));
-      --  map
       Map (
          NC_Mapping.all,
          NC_Mapping.File,
@@ -182,4 +197,4 @@ package body Ada.Memory_Mapped_IO is
 
    end Controlled;
 
-end Ada.Memory_Mapped_IO;
+end Ada.Storage_Mapped_IO;
