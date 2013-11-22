@@ -1,4 +1,5 @@
 with System.Formatting.Decimal_Image;
+with System.Formatting.Float;
 with System.Formatting.Float_Image;
 with System.Formatting.Fixed_Image;
 package body Ada.Formatting is
@@ -160,7 +161,12 @@ package body Ada.Formatting is
    function Fixed_Image (Item : T) return String is
       Result : String (
          1 ..
-         Integer'Max (T'Fore, Fore_Width + 1)
+         Integer'Max (
+            System.Formatting.Float.Fore_Width (
+               Long_Long_Float (T'First),
+               Long_Long_Float (T'Last),
+               Base => Base),
+            Fore_Width + 1)
          + Aft_Width + Exponent_Width + 7); -- (16#.#/16#.#E-)
       Last : Natural;
    begin
@@ -207,7 +213,11 @@ package body Ada.Formatting is
    function Decimal_Image (Item : T) return String is
       Result : String (
          1 ..
-         Integer'Max (T'Fore, Fore_Width + 1)
+         Integer'Max (
+            System.Formatting.Float.Fore_Width (
+               Long_Long_Float (T'First),
+               Long_Long_Float (T'Last)),
+            Fore_Width + 1)
          + Aft_Width + Exponent_Width + 7); -- (./16#.#E+)
       Last : Natural;
    begin

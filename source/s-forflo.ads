@@ -28,6 +28,9 @@ package System.Formatting.Float is
 
    function Fore_Width (Value : Longest_Float; Base : Number_Base := 10)
       return Positive;
+   function Fore_Width (First, Last : Longest_Float; Base : Number_Base := 10)
+      return Positive;
+   pragma Inline (Fore_Width);
    --  return width of integer part
 
 end System.Formatting.Float;

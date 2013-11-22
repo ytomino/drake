@@ -111,4 +111,25 @@ package body System.Formatting.Float is
       return Result;
    end Fore_Width;
 
+   function Fore_Width (First, Last : Longest_Float; Base : Number_Base := 10)
+      return Positive
+   is
+      Actual_First : Long_Long_Float := First;
+      Actual_Last : Long_Long_Float := Last;
+      Max_Abs : Long_Long_Float;
+   begin
+      if First > Last then
+         Actual_First := Last;
+         Actual_Last := First;
+      end if;
+      if Actual_Last <= 0.0 then
+         Max_Abs := -Actual_First;
+      elsif Actual_First >= 0.0 then
+         Max_Abs := Actual_Last;
+      else -- Actual_First < 0 and then Actual_Last > 0
+         Max_Abs := Longest_Float'Max (-Actual_First, Actual_Last);
+      end if;
+      return Fore_Width (Max_Abs, Base => Base);
+   end Fore_Width;
+
 end System.Formatting.Float;

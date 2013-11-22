@@ -64,12 +64,17 @@ begin
 	end Float;
 	Fixed : declare
 		type T is delta 0.001 range 0.000 .. 999.999;
+		function Bin_Image is new Ada.Formatting.Fixed_Image (
+			T,
+			Base => 2,
+			Aft_Width => 3);
 		function Image is new Ada.Formatting.Fixed_Image (T);
 		function Hex_Image is new Ada.Formatting.Fixed_Image (
 			T,
 			Base => 16,
 			Aft_Width => 2);
 	begin
+		pragma Assert (Bin_Image (1.25) = " 2#1.010#");
 		pragma Assert (Image (1.25) = " 1.250");
 		pragma Assert (Hex_Image (1.25) = " 16#1.40#");
 		null;
