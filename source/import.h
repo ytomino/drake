@@ -47,6 +47,7 @@
 #include <netdb.h> /* getaddrinfo */
 #include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
+#include <dlfcn.h>
 #include <iconv.h>
 #endif
 #if defined(__APPLE__)
@@ -167,6 +168,7 @@
 	char ** restrict __outbuf, size_t * restrict __outbytesleft)
 #pragma for Ada "bits/time.h" monolithic_include "bits/timex.h"
 #pragma for Ada "dirent.h" include "bits/dirent.h"
+#pragma for Ada "dlfcn.h" include "bits/dlfcn.h"
 #pragma for Ada "errno.h" include "asm-generic/errno.h"
 #pragma for Ada "errno.h" include "asm-generic/errno-base.h"
 #pragma for Ada "errno.h" include "bits/errno.h"
