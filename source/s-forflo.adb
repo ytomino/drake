@@ -68,21 +68,34 @@ package body System.Formatting.Float is
       end if;
    end Split;
 
+   procedure Aft_Scale (
+      Aft : Longest_Unsigned_Float;
+      Scaled_Aft : out Longest_Unsigned_Float;
+      Exponent : Integer;
+      Round_Up : out Boolean;
+      Base : Number_Base := 10;
+      Width : Positive := Standard.Float'Digits - 1)
+   is
+      L : constant Longest_Unsigned_Float :=
+         Longest_Unsigned_Float (Base) ** Width;
+   begin
+      Scaled_Aft := roundl (
+         Aft * Longest_Unsigned_Float (Base) ** (Width - Exponent));
+      Round_Up := Scaled_Aft >= L; -- ".99"99.. would be rounded up to 1".00"
+   end Aft_Scale;
+
    procedure Aft_Image (
       Value : Longest_Unsigned_Float;
-      Exponent : Integer;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := Standard.Float'Digits - 1)
    is
-      X : Longest_Unsigned_Float;
+      X : Longest_Unsigned_Float := Value;
    begin
       Last := Item'First + Width;
       Item (Item'First) := '.';
-      X := roundl (
-         Value * Longest_Unsigned_Float (Base) ** (Width - Exponent));
       for I in reverse Item'First + 1 .. Last loop
          declare
             Q : Long_Long_Float;
@@ -96,6 +109,7 @@ package body System.Formatting.Float is
             X := Q;
          end;
       end loop;
+      pragma Assert (X = 0.0);
    end Aft_Image;
 
    function Fore_Width (Value : Longest_Float; Base : Number_Base := 10)

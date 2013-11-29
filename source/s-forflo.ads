@@ -16,9 +16,16 @@ package System.Formatting.Float is
       Exponent : out Integer;
       Base : Number_Base := 10);
 
-   procedure Aft_Image (
-      Value : Longest_Unsigned_Float;
+   procedure Aft_Scale (
+      Aft : Longest_Unsigned_Float;
+      Scaled_Aft : out Longest_Unsigned_Float;
       Exponent : Integer;
+      Round_Up : out Boolean;
+      Base : Number_Base := 10;
+      Width : Positive := Standard.Float'Digits - 1);
+
+   procedure Aft_Image (
+      Value : Longest_Unsigned_Float; -- scaled Aft
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
