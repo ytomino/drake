@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 private with Ada.Containers.Inside.Weak_Access_Holders;
 private with Ada.Finalization;
+private with Ada.Streams;
 private with System.Reference_Counting;
 generic
    type Name is private; -- it must have default value
@@ -11,30 +12,48 @@ package Ada.Containers.Access_Holders is
    pragma Preelaborate;
 
    type Holder is tagged private;
+   pragma Preelaborable_Initialization (Holder);
+
+   function Null_Holder return Holder;
+   --  Empty_Holder?
 
    function "=" (Left, Right : Holder) return Boolean;
 
    function To_Holder (Source : Name) return Holder;
+   --  for shorthand
    function "+" (Right : Name) return Holder
       renames To_Holder;
 
-   function Null_Holder return Holder;
-
    function Is_Null (Container : Holder) return Boolean;
+   --  Is_Empty?
 
    procedure Clear (Container : in out Holder);
 
-   function Constant_Reference (Container : Holder) return Name;
    function Element (Container : Holder'Class) return Name;
 
    procedure Replace_Element (
       Target : in out Holder;
       Source : Name);
+
+--  procedure Query_Element (
+--    Container : Holder;
+--    Process : not null access procedure (Element : Element_Type));
+
+--  procedure Update_Element (
+--    Container : in out Holder;
+--    Process : not null access procedure (Element : in out Element_Type));
+
+   function Constant_Reference (Container : Holder) return Name;
+
+--  function Reference (
+--    Container : aliased in out Holder)
+--    return Reference_Type;
+
    procedure Assign (Target : in out Holder; Source : Holder);
 
-   procedure Move (
-      Target : in out Holder;
-      Source : in out Holder);
+--  function Copy (Source : Holder) return Holder;
+
+   procedure Move (Target : in out Holder; Source : in out Holder);
 
    procedure Swap (I, J : in out Holder);
 
@@ -103,5 +122,22 @@ private
 
    overriding procedure Adjust (Object : in out Holder);
    overriding procedure Finalize (Object : in out Holder);
+
+   package Streaming is
+
+      procedure Missing_Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Holder);
+      procedure Missing_Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Holder);
+
+      pragma Import (Ada, Missing_Read, "__drake_program_error");
+      pragma Import (Ada, Missing_Write, "__drake_program_error");
+
+   end Streaming;
+
+   for Holder'Read use Streaming.Missing_Read;
+   for Holder'Write use Streaming.Missing_Write;
 
 end Ada.Containers.Access_Holders;
