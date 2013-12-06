@@ -21,6 +21,25 @@ begin
 	begin
 		S.Move (S2, S1);
 		pragma Assert (S2.Element.all = 99);
+		-- weak
+		declare
+			use type S.Weak.Weak_Holder;
+			S3 : S.Weak.Weak_Holder := +S2;
+		begin
+			declare
+				S4 : S.Weak.Weak_Holder := +S2;
+			begin
+				pragma Assert (S.Weak.To_Holder (S4).Element.all = 99);
+				S.Weak.Clear (S4);
+				pragma Assert (S.Weak.Is_Null (S4));
+			end;
+			pragma Assert (not S.Weak.Is_Null (S3));
+			pragma Assert (S.Weak.To_Holder (S3).Element.all = 99);
+			pragma Assert (not S.Is_Null (S2));
+			pragma Assert (S2.Element.all = 99);
+			S.Clear (S2);
+			pragma Assert (S.Weak.Is_Null (S3));
+		end;
 	end;
 	-- derived to base
 	declare

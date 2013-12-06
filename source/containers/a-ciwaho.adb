@@ -4,7 +4,9 @@ package body Ada.Containers.Inside.Weak_Access_Holders is
    begin
       Item.Previous := null;
       Item.Next := Item.Data.Weak_List;
-      Item.Next.Previous := Item;
+      if Item.Next /= null then
+         Item.Next.Previous := Item;
+      end if;
       Item.Data.Weak_List := Item;
    end Add_Weak;
 
