@@ -1,5 +1,5 @@
 with Ada.Unchecked_Conversion;
-package body Ada.Containers.Counted_Access_Holders_Derivational_Conversions is
+package body Ada.Containers.Access_Holders_Derivational_Conversions is
 
    procedure Assign (
       Target : in out Base_Holders.Holder;
@@ -27,4 +27,4 @@ package body Ada.Containers.Counted_Access_Holders_Derivational_Conversions is
       Base_Holders.Move (Target, Cast (Source'Unrestricted_Access).all);
    end Move;
 
-end Ada.Containers.Counted_Access_Holders_Derivational_Conversions;
+end Ada.Containers.Access_Holders_Derivational_Conversions;

@@ -1,7 +1,7 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
-package body Ada.Containers.Counted_Access_Holders is
+package body Ada.Containers.Access_Holders is
    use type Containers.Inside.Weak_Access_Holders.Data_Access;
    use type System.Reference_Counting.Counter;
 
@@ -212,4 +212,4 @@ package body Ada.Containers.Counted_Access_Holders is
 
    end Weak;
 
-end Ada.Containers.Counted_Access_Holders;
+end Ada.Containers.Access_Holders;

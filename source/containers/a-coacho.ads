@@ -6,7 +6,7 @@ private with System.Reference_Counting;
 generic
    type Name is private; -- it must have default value
    with procedure Free (X : in out Name) is <>;
-package Ada.Containers.Counted_Access_Holders is
+package Ada.Containers.Access_Holders is
    --  Reference counted access types.
    pragma Preelaborate;
 
@@ -119,4 +119,4 @@ private
    for Holder'Read use Streaming.Missing_Read;
    for Holder'Write use Streaming.Missing_Write;
 
-end Ada.Containers.Counted_Access_Holders;
+end Ada.Containers.Access_Holders;
