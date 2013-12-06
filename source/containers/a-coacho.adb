@@ -31,6 +31,11 @@ package body Ada.Containers.Access_Holders is
 
    --  implementation
 
+   function Null_Holder return Holder is
+   begin
+      return (Finalization.Controlled with Data => Null_Data'Access);
+   end Null_Holder;
+
    function "=" (Left, Right : Holder) return Boolean is
    begin
       return Left.Data = Right.Data;
@@ -45,11 +50,6 @@ package body Ada.Containers.Access_Holders is
       end return;
    end To_Holder;
 
-   function Null_Holder return Holder is
-   begin
-      return (Finalization.Controlled with Data => Null_Data'Access);
-   end Null_Holder;
-
    function Is_Null (Container : Holder) return Boolean is
    begin
       return Container.Data = Null_Data'Access;
@@ -60,11 +60,6 @@ package body Ada.Containers.Access_Holders is
       Finalize (Container);
       Container.Data := Null_Data'Access;
    end Clear;
-
-   function Constant_Reference (Container : Holder) return Name is
-   begin
-      return Container.Data.Item;
-   end Constant_Reference;
 
    function Element (Container : Holder'Class) return Name is
    begin
@@ -78,6 +73,11 @@ package body Ada.Containers.Access_Holders is
          Target.Data := new Data'((1, null), Source);
       end if;
    end Replace_Element;
+
+   function Constant_Reference (Container : Holder) return Name is
+   begin
+      return Container.Data.Item;
+   end Constant_Reference;
 
    procedure Assign (Target : in out Holder; Source : Holder) is
    begin

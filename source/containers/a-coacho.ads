@@ -12,24 +12,26 @@ package Ada.Containers.Access_Holders is
 
    type Holder is tagged private;
 
+   function Null_Holder return Holder;
+
    function "=" (Left, Right : Holder) return Boolean;
 
    function To_Holder (Source : Name) return Holder;
    function "+" (Right : Name) return Holder
       renames To_Holder;
 
-   function Null_Holder return Holder;
-
    function Is_Null (Container : Holder) return Boolean;
 
    procedure Clear (Container : in out Holder);
 
-   function Constant_Reference (Container : Holder) return Name;
    function Element (Container : Holder'Class) return Name;
 
    procedure Replace_Element (
       Target : in out Holder;
       Source : Name);
+
+   function Constant_Reference (Container : Holder) return Name;
+
    procedure Assign (Target : in out Holder; Source : Holder);
 
    procedure Move (Target : in out Holder; Source : in out Holder);
