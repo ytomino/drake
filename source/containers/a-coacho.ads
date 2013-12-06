@@ -6,7 +6,7 @@ private with System.Reference_Counting;
 generic
    type Name is private; -- it must have default value
    with procedure Free (X : in out Name) is <>;
-package Ada.Containers.Counted_Access_Holders is
+package Ada.Containers.Access_Holders is
    --  Reference counted access types.
    pragma Preelaborate;
 
@@ -104,4 +104,4 @@ private
    overriding procedure Adjust (Object : in out Holder);
    overriding procedure Finalize (Object : in out Holder);
 
-end Ada.Containers.Counted_Access_Holders;
+end Ada.Containers.Access_Holders;
