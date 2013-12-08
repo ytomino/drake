@@ -1,6 +1,6 @@
 with Ada.Unchecked_Deallocation;
 --with System.Address_Image;
-with System.Storage_Pools.Zones;
+with System.Storage_Pools.Unbounded;
 procedure storagepool is
 begin
 	Global : declare
@@ -66,7 +66,7 @@ begin
 		Free (A (2));
 	end Sized_And_Variable;
 	Local : declare
-		Pool : System.Storage_Pools.Zones.Zone_Pool;
+		Pool : System.Storage_Pools.Unbounded.Unbounded_Pool;
 		type T is access all Integer;
 		for T'Storage_Pool use Pool;
 		A : array (1 .. 2) of T;
