@@ -1,1 +1,0 @@
-../univ-pc-freebsd/s-stpozo.ads
