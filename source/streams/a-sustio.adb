@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
 with System.Memory.Allocated_Size;
-package body Ada.Streams.Buffer_Storage_IO is
+package body Ada.Streams.Unbounded_Storage_IO is
 
    procedure Free is new Unchecked_Deallocation (
       Stream_Type,
@@ -44,13 +44,13 @@ package body Ada.Streams.Buffer_Storage_IO is
 
    --  implementation
 
-   function Size (Object : Buffer) return Stream_Element_Count is
+   function Size (Object : Buffer_Type) return Stream_Element_Count is
    begin
       return Object.Stream.Last;
    end Size;
 
    procedure Set_Size (
-      Object : in out Buffer;
+      Object : in out Buffer_Type;
       New_Size : Stream_Element_Count) is
    begin
       Reallocate (Object.Stream.all, New_Size);
@@ -62,18 +62,18 @@ package body Ada.Streams.Buffer_Storage_IO is
       end if;
    end Set_Size;
 
-   function Address (Object : Buffer) return System.Address is
+   function Address (Object : Buffer_Type) return System.Address is
    begin
       return Object.Stream.Data;
    end Address;
 
-   function Size (Object : Buffer)
+   function Size (Object : Buffer_Type)
       return System.Storage_Elements.Storage_Count is
    begin
       return System.Storage_Elements.Storage_Count (Object.Stream.Last);
    end Size;
 
-   function Stream (Object : Buffer)
+   function Stream (Object : Buffer_Type)
       return not null access Root_Stream_Type'Class is
    begin
       return Object.Stream;
@@ -154,7 +154,7 @@ package body Ada.Streams.Buffer_Storage_IO is
       return Stream.Last;
    end Size;
 
-   overriding procedure Initialize (Object : in out Buffer) is
+   overriding procedure Initialize (Object : in out Buffer_Type) is
    begin
       Object.Stream := new Stream_Type'(
          Data => System.Null_Address,
@@ -163,7 +163,7 @@ package body Ada.Streams.Buffer_Storage_IO is
          Index => 1);
    end Initialize;
 
-   overriding procedure Finalize (Object : in out Buffer) is
+   overriding procedure Finalize (Object : in out Buffer_Type) is
    begin
       if Object.Stream /= null then
          Deallocate (Object.Stream.all);
@@ -171,7 +171,7 @@ package body Ada.Streams.Buffer_Storage_IO is
       end if;
    end Finalize;
 
-   overriding procedure Adjust (Object : in out Buffer) is
+   overriding procedure Adjust (Object : in out Buffer_Type) is
       Old_Stream : constant Stream_Access := Object.Stream;
    begin
       Object.Stream := new Stream_Type;
@@ -184,7 +184,7 @@ package body Ada.Streams.Buffer_Storage_IO is
 
       procedure Write (
          Stream : not null access Root_Stream_Type'Class;
-         Item : Buffer)
+         Item : Buffer_Type)
       is
          Stream_Item : Stream_Element_Array (1 .. Item.Stream.Last);
          for Stream_Item'Address use Item.Stream.Data;
@@ -194,4 +194,4 @@ package body Ada.Streams.Buffer_Storage_IO is
 
    end Streaming;
 
-end Ada.Streams.Buffer_Storage_IO;
+end Ada.Streams.Unbounded_Storage_IO;

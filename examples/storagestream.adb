@@ -1,10 +1,10 @@
 with Ada.Streams.Overlaps_Storage_IO;
-with Ada.Streams.Buffer_Storage_IO;
+with Ada.Streams.Unbounded_Storage_IO;
 procedure storagestream is
-	Memory : Ada.Streams.Buffer_Storage_IO.Buffer;
+	Memory : Ada.Streams.Unbounded_Storage_IO.Buffer_Type;
 	Stream : not null access Ada.Streams.Seekable_Stream_Type'Class :=
 		Ada.Streams.Seekable_Stream_Type'Class (
-			Ada.Streams.Buffer_Storage_IO.Stream (Memory).all)'Access;
+			Ada.Streams.Unbounded_Storage_IO.Stream (Memory).all)'Access;
 begin
 	String'Output (Stream, "ABCDEFG");
 	Ada.Streams.Set_Index (Stream.all, 1);

@@ -1,7 +1,7 @@
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Ada.Containers.Limited_Doubly_Linked_Lists;
-with Ada.Streams.Buffer_Storage_IO;
+with Ada.Streams.Unbounded_Storage_IO;
 -- with Ada.Text_IO;
 procedure cntnr_d_Linked_List is
 	use type Ada.Containers.Count_Type;
@@ -271,25 +271,25 @@ procedure cntnr_d_Linked_List is
 	pragma Debug (Test_07);
 begin
 	Stream_Test : declare
-		package BSIO renames Ada.Streams.Buffer_Storage_IO;
+		package USIO renames Ada.Streams.Unbounded_Storage_IO;
 		X : Lists.List;
 		IX : ILists.List;
-		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+		Buffer : USIO.Buffer_Type;
 	begin
 		-- Definite -> Inefinite (0)
-		Lists.List'Write (BSIO.Stream (Buffer), X); -- write empty
+		Lists.List'Write (USIO.Stream (Buffer), X); -- write empty
 		ILists.Append (IX, 'a');
 		pragma Assert (IX.Length = 1);
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
-		ILists.List'Read (BSIO.Stream (Buffer), IX);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
+		ILists.List'Read (USIO.Stream (Buffer), IX);
 		pragma Assert (IX.Length = 0);
 		-- Indefinite -> Definite (1)
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
 		ILists.Append (IX, 'b');
 		pragma Assert (IX.Length = 1);
-		ILists.List'Write (BSIO.Stream (Buffer), IX); -- write 'b'
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
-		Lists.List'Read (BSIO.Stream (Buffer), X);
+		ILists.List'Write (USIO.Stream (Buffer), IX); -- write 'b'
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
+		Lists.List'Read (USIO.Stream (Buffer), X);
 		pragma Assert (X.Length = 1);
 		pragma Assert (Lists.Element (X.First) = 'b');
 	end Stream_Test;

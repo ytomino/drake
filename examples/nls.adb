@@ -1,5 +1,5 @@
 with Ada.Streams;
-with Ada.Streams.Buffer_Storage_IO;
+with Ada.Streams.Unbounded_Storage_IO;
 with System.Native_Encoding;
 with System.Native_Encoding.Names;
 with System.Native_Encoding.Strings;
@@ -7,6 +7,7 @@ with System.Native_Encoding.Wide_Strings;
 with System.Native_Encoding.Wide_Wide_Strings;
 with System.Native_Encoding.Encoding_Streams;
 procedure nls is
+	package USIO renames Ada.Streams.Unbounded_Storage_IO;
 	use type Ada.Streams.Stream_Element_Array;
 	use type Ada.Streams.Stream_Element_Offset;
 	Japanease_A : constant String := (
@@ -102,22 +103,22 @@ begin
 	end;
 	-- reading
 	declare
-		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+		Buffer : USIO.Buffer_Type;
 		E : aliased System.Native_Encoding.Encoding_Streams.Inout_Type :=
 			System.Native_Encoding.Encoding_Streams.Open (
 				System.Native_Encoding.Names.UTF_8,
 				System.Native_Encoding.Names.Windows_31J,
-				Ada.Streams.Buffer_Storage_IO.Stream (Buffer));
+				USIO.Stream (Buffer));
 		S : String (1 .. 3);
 		One_Element : String (1 .. 1);
 	begin
 		for I in 1 .. 100 loop
 			Ada.Streams.Write (
-				Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all,
+				USIO.Stream (Buffer).all,
 				(16#82#, 16#a0#));
 		end loop;
 		Ada.Streams.Set_Index (
-			Ada.Streams.Seekable_Stream_Type'Class (Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all),
+			Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all),
 			1);
 		for I in 1 .. 100 loop
 			String'Read (
@@ -137,12 +138,12 @@ begin
 	end;
 	-- writing
 	declare
-		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+		Buffer : USIO.Buffer_Type;
 		E : aliased System.Native_Encoding.Encoding_Streams.Inout_Type :=
 			System.Native_Encoding.Encoding_Streams.Open (
 				System.Native_Encoding.Names.Windows_31J,
 				System.Native_Encoding.Names.UTF_8,
-				Ada.Streams.Buffer_Storage_IO.Stream (Buffer));
+				USIO.Stream (Buffer));
 		S : String (1 .. 3);
 	begin
 		for I in 1 .. 100 loop
@@ -152,12 +153,12 @@ begin
 		end loop;
 		System.Native_Encoding.Encoding_Streams.Finish (E);
 		Ada.Streams.Set_Index (
-			Ada.Streams.Seekable_Stream_Type'Class (Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all),
+			Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all),
 			1);
-		pragma Assert (Ada.Streams.Stream_Element_Count'(Ada.Streams.Buffer_Storage_IO.Size (Buffer)) = 300);
+		pragma Assert (Ada.Streams.Stream_Element_Count'(USIO.Size (Buffer)) = 300);
 		for I in 1 .. 100 loop
 			String'Read (
-				Ada.Streams.Buffer_Storage_IO.Stream (Buffer),
+				USIO.Stream (Buffer),
 				S);
 			pragma Assert (S = Japanease_A);
 		end loop;
