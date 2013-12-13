@@ -1,7 +1,7 @@
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Containers.Limited_Hashed_Maps;
-with Ada.Streams.Buffer_Storage_IO;
+with Ada.Streams.Unbounded_Storage_IO;
 -- with Ada.Text_IO;
 procedure cntnr_Hashed_Map is
 	use type Ada.Containers.Count_Type;
@@ -91,25 +91,25 @@ procedure cntnr_Hashed_Map is
 	pragma Debug (Test_02);
 begin
 	Stream_Test : declare
-		package BSIO renames Ada.Streams.Buffer_Storage_IO;
+		package USIO renames Ada.Streams.Unbounded_Storage_IO;
 		X : Maps.Map;
 		IX : IMaps.Map;
-		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+		Buffer : USIO.Buffer_Type;
 	begin
 		-- Definite -> Inefinite (0)
-		Maps.Map'Write (BSIO.Stream (Buffer), X); -- write empty
+		Maps.Map'Write (USIO.Stream (Buffer), X); -- write empty
 		IMaps.Insert (IX, '#', 9);
 		pragma Assert (IX.Length = 1);
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
-		IMaps.Map'Read (BSIO.Stream (Buffer), IX);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
+		IMaps.Map'Read (USIO.Stream (Buffer), IX);
 		pragma Assert (IX.Length = 0);
 		-- Indefinite -> Definite (1)
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
 		IMaps.Insert (IX, '$', 10);
 		pragma Assert (IX.Length = 1);
-		IMaps.Map'Write (BSIO.Stream (Buffer), IX); -- write 'b'
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
-		Maps.Map'Read (BSIO.Stream (Buffer), X);
+		IMaps.Map'Write (USIO.Stream (Buffer), IX); -- write 'b'
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
+		Maps.Map'Read (USIO.Stream (Buffer), X);
 		pragma Assert (X.Length = 1);
 		pragma Assert (Maps.Element (X.First) = 10);
 		pragma Assert (X.Element ('$') = 10);

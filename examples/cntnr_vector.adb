@@ -3,7 +3,7 @@ with Ada.Containers.Vectors;
 with Ada.Containers.Indefinite_Vectors;
 with Ada.Containers.Limited_Vectors;
 with Ada.Characters.ASCII.Handling;
-with Ada.Streams.Buffer_Storage_IO;
+with Ada.Streams.Unbounded_Storage_IO;
 -- with Ada.Text_IO;
 with System;
 procedure cntnr_Vector is
@@ -176,25 +176,25 @@ procedure cntnr_Vector is
 	pragma Debug (Test_08);
 begin
 	Stream_Test : declare
-		package BSIO renames Ada.Streams.Buffer_Storage_IO;
+		package USIO renames Ada.Streams.Unbounded_Storage_IO;
 		X : Vectors.Vector;
 		IX : IVectors.Vector;
-		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+		Buffer : USIO.Buffer_Type;
 	begin
 		-- Definite -> Inefinite (0)
-		Vectors.Vector'Write (BSIO.Stream (Buffer), X); -- write empty
+		Vectors.Vector'Write (USIO.Stream (Buffer), X); -- write empty
 		IVectors.Append (IX, 'a');
 		pragma Assert (IX.Length = 1);
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
-		IVectors.Vector'Read (BSIO.Stream (Buffer), IX);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
+		IVectors.Vector'Read (USIO.Stream (Buffer), IX);
 		pragma Assert (IX.Length = 0);
 		-- Indefinite -> Definite (1)
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
 		IVectors.Append (IX, 'b');
 		pragma Assert (IX.Length = 1);
-		IVectors.Vector'Write (BSIO.Stream (Buffer), IX); -- write 'b'
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
-		Vectors.Vector'Read (BSIO.Stream (Buffer), X);
+		IVectors.Vector'Write (USIO.Stream (Buffer), IX); -- write 'b'
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
+		Vectors.Vector'Read (USIO.Stream (Buffer), X);
 		pragma Assert (X.Length = 1);
 		pragma Assert (X.Element (1) = 'b');
 	end Stream_Test;
