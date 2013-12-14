@@ -1,15 +1,16 @@
 pragma License (Unrestricted);
 --  extended unit
-package System.Native_Encoding.Names is
+private with C;
+package Ada.Environment_Encoding.Names is
    --  Constants for schemes of platform-depended text encoding.
    pragma Preelaborate;
 
    UTF_8 : Encoding_Id
-      renames Native_Encoding.UTF_8;
+      renames Environment_Encoding.UTF_8;
    UTF_16 : Encoding_Id
-      renames Native_Encoding.UTF_16;
+      renames Environment_Encoding.UTF_16;
    UTF_32 : Encoding_Id
-      renames Native_Encoding.UTF_32;
+      renames Environment_Encoding.UTF_32;
 
    UTF_16BE : constant Encoding_Id;
    UTF_16LE : constant Encoding_Id;
@@ -24,16 +25,17 @@ package System.Native_Encoding.Names is
    EUC_JP : constant Encoding_Id;
 
 private
+   use type C.char_array;
 
    UTF_16BE : constant Encoding_Id :=
-      UTF_16_Names (High_Order_First)(0)'Access;
+      System.Native_Encoding.UTF_16_Names (System.High_Order_First)(0)'Access;
    UTF_16LE : constant Encoding_Id :=
-      UTF_16_Names (Low_Order_First)(0)'Access;
+      System.Native_Encoding.UTF_16_Names (System.Low_Order_First)(0)'Access;
 
    UTF_32BE : constant Encoding_Id :=
-      UTF_32_Names (High_Order_First)(0)'Access;
+      System.Native_Encoding.UTF_32_Names (System.High_Order_First)(0)'Access;
    UTF_32LE : constant Encoding_Id :=
-      UTF_32_Names (Low_Order_First)(0)'Access;
+      System.Native_Encoding.UTF_32_Names (System.Low_Order_First)(0)'Access;
 
    Latin_1_Name : aliased constant C.char_array (0 .. 5) :=
       "CP819" & C.char'Val (0);
@@ -47,4 +49,4 @@ private
       "EUC-JP" & C.char'Val (0);
    EUC_JP : constant Encoding_Id := EUC_JP_Name (0)'Access;
 
-end System.Native_Encoding.Names;
+end Ada.Environment_Encoding.Names;
