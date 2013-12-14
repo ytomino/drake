@@ -78,14 +78,15 @@ package body Ada.Characters.Inside.Maps is
             Code : System.UTF_Conversions.UCS_4;
             I_Next : Natural;
             J_Next : Natural;
-            Error : Boolean; -- ignore
+            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+            To_Status : System.UTF_Conversions.To_Status_Type; -- ignore
          begin
             --  get single unicode character
             System.UTF_Conversions.From_UTF_8 (
                Source (I .. Source'Last),
                I_Next,
                Code,
-               Error);
+               From_Status);
             --  map it
             Code := Wide_Wide_Character'Pos (
                Value (Mapping, Wide_Wide_Character'Val (Code)));
@@ -94,7 +95,7 @@ package body Ada.Characters.Inside.Maps is
                Code,
                Item (J .. Item'Last),
                J_Next,
-               Error);
+               To_Status);
             --  forwarding
             I := I_Next + 1;
             J := J_Next + 1;
@@ -118,13 +119,13 @@ package body Ada.Characters.Inside.Maps is
             I_Next : Natural;
             J_Code : System.UTF_Conversions.UCS_4;
             J_Next : Natural;
-            Error : Boolean; -- ignore
+            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
          begin
             System.UTF_Conversions.From_UTF_8 (
                Left (I .. Left'Last),
                I_Next,
                I_Code,
-               Error);
+               From_Status);
             I := I_Next + 1;
             I_Code := Wide_Wide_Character'Pos (
                Value (Mapping, Wide_Wide_Character'Val (I_Code)));
@@ -132,7 +133,7 @@ package body Ada.Characters.Inside.Maps is
                Right (J .. Right'Last),
                J_Next,
                J_Code,
-               Error);
+               From_Status);
             J := J_Next + 1;
             J_Code := Wide_Wide_Character'Pos (
                Value (Mapping, Wide_Wide_Character'Val (J_Code)));

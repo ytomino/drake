@@ -1,12 +1,13 @@
 with Ada.Streams;
-with Ada.Streams.Buffer_Storage_IO;
-with System.Native_Encoding;
-with System.Native_Encoding.Names;
-with System.Native_Encoding.Strings;
-with System.Native_Encoding.Wide_Strings;
-with System.Native_Encoding.Wide_Wide_Strings;
-with System.Native_Encoding.Encoding_Streams;
+with Ada.Streams.Unbounded_Storage_IO;
+with Ada.Environment_Encoding;
+with Ada.Environment_Encoding.Names;
+with Ada.Environment_Encoding.Strings;
+with Ada.Environment_Encoding.Wide_Strings;
+with Ada.Environment_Encoding.Wide_Wide_Strings;
+with Ada.Environment_Encoding.Encoding_Streams;
 procedure nls is
+	package USIO renames Ada.Streams.Unbounded_Storage_IO;
 	use type Ada.Streams.Stream_Element_Array;
 	use type Ada.Streams.Stream_Element_Offset;
 	Japanease_A : constant String := (
@@ -18,67 +19,68 @@ procedure nls is
 		Character'Val (16#a0#),
 		Character'Val (16#80#));
 begin
+	Ada.Debug.Put (Ada.Environment_Encoding.Image (Ada.Environment_Encoding.Current_Encoding));
 	-- status check
 	declare
-		E : System.Native_Encoding.Strings.Encoder;
+		E : Ada.Environment_Encoding.Strings.Encoder;
 		pragma Warnings (Off, E);
 	begin
-		if System.Native_Encoding.Strings.Encode (E, "") = (1 .. 0 => <>) then
+		if Ada.Environment_Encoding.Strings.Encode (E, "") = (1 .. 0 => <>) then
 			null;
 		end if;
 		raise Program_Error; -- bad
 	exception
-		when System.Native_Encoding.Status_Error =>
+		when Ada.Environment_Encoding.Status_Error =>
 			null;
 	end;
 	-- decoding
 	declare
-		D : System.Native_Encoding.Strings.Decoder :=
-			System.Native_Encoding.Strings.From (System.Native_Encoding.Names.Windows_31J);
+		D : Ada.Environment_Encoding.Strings.Decoder :=
+			Ada.Environment_Encoding.Strings.From (Ada.Environment_Encoding.Names.Windows_31J);
 	begin
-		pragma Assert (System.Native_Encoding.Strings.Decode (D, (1 .. 0 => <>)) = "");
-		pragma Assert (System.Native_Encoding.Strings.Decode (D, (1 => 16#41#)) = "A");
-		pragma Assert (System.Native_Encoding.Strings.Decode (D, (16#41#, 16#42#)) = "AB");
-		pragma Assert (System.Native_Encoding.Strings.Decode (D, (16#82#, 16#a0#)) = Japanease_A);
+		pragma Assert (Ada.Environment_Encoding.Strings.Decode (D, (1 .. 0 => <>)) = "");
+		pragma Assert (Ada.Environment_Encoding.Strings.Decode (D, (1 => 16#41#)) = "A");
+		pragma Assert (Ada.Environment_Encoding.Strings.Decode (D, (16#41#, 16#42#)) = "AB");
+		pragma Assert (Ada.Environment_Encoding.Strings.Decode (D, (16#82#, 16#a0#)) = Japanease_A);
 		null;
 	end;
 	declare
-		WD : System.Native_Encoding.Wide_Strings.Decoder :=
-			System.Native_Encoding.Wide_Strings.From (System.Native_Encoding.Names.Windows_31J);
+		WD : Ada.Environment_Encoding.Wide_Strings.Decoder :=
+			Ada.Environment_Encoding.Wide_Strings.From (Ada.Environment_Encoding.Names.Windows_31J);
 	begin
-		pragma Assert (System.Native_Encoding.Wide_Strings.Decode (WD, (16#41#, 16#42#)) = "AB");
+		pragma Assert (Ada.Environment_Encoding.Wide_Strings.Decode (WD, (16#41#, 16#42#)) = "AB");
 		null;
 	end;
 	declare
-		WWD : System.Native_Encoding.Wide_Wide_Strings.Decoder :=
-			System.Native_Encoding.Wide_Wide_Strings.From (System.Native_Encoding.Names.Windows_31J);
+		WWD : Ada.Environment_Encoding.Wide_Wide_Strings.Decoder :=
+			Ada.Environment_Encoding.Wide_Wide_Strings.From (Ada.Environment_Encoding.Names.Windows_31J);
 	begin
-		pragma Assert (System.Native_Encoding.Wide_Wide_Strings.Decode (WWD, (16#41#, 16#42#)) = "AB");
+		pragma Assert (Ada.Environment_Encoding.Wide_Wide_Strings.Decode (WWD, (16#41#, 16#42#)) = "AB");
 		null;
 	end;
 	-- encoding
 	declare
-		E : System.Native_Encoding.Strings.Encoder :=
-			System.Native_Encoding.Strings.To (System.Native_Encoding.Names.Windows_31J);
+		E : Ada.Environment_Encoding.Strings.Encoder :=
+			Ada.Environment_Encoding.Strings.To (Ada.Environment_Encoding.Names.Windows_31J);
 	begin
-		pragma Assert (System.Native_Encoding.Strings.Encode (E, "") = (1 .. 0 => <>));
-		pragma Assert (System.Native_Encoding.Strings.Encode (E, "A") = (1 => 16#41#));
-		pragma Assert (System.Native_Encoding.Strings.Encode (E, "AB") = (16#41#, 16#42#));
-		pragma Assert (System.Native_Encoding.Strings.Encode (E, Japanease_A) = (16#82#, 16#a0#));
+		pragma Assert (Ada.Environment_Encoding.Strings.Encode (E, "") = (1 .. 0 => <>));
+		pragma Assert (Ada.Environment_Encoding.Strings.Encode (E, "A") = (1 => 16#41#));
+		pragma Assert (Ada.Environment_Encoding.Strings.Encode (E, "AB") = (16#41#, 16#42#));
+		pragma Assert (Ada.Environment_Encoding.Strings.Encode (E, Japanease_A) = (16#82#, 16#a0#));
 		-- substitute
 		declare
-			Default : constant Ada.Streams.Stream_Element_Array := System.Native_Encoding.Strings.Substitute (E);
+			Default : constant Ada.Streams.Stream_Element_Array := Ada.Environment_Encoding.Strings.Substitute (E);
 			Mongolian_Birga_In_Windows_31J : constant Ada.Streams.Stream_Element_Array :=
-				System.Native_Encoding.Strings.Encode (E, Mongolian_Birga);
+				Ada.Environment_Encoding.Strings.Encode (E, Mongolian_Birga);
 		begin
 			pragma Assert (Mongolian_Birga_In_Windows_31J = Default
 				or else Mongolian_Birga_In_Windows_31J = Default & Default & Default);
 			null;
 		end;
-		System.Native_Encoding.Strings.Set_Substitute (E, (16#81#, 16#51#)); -- fullwidth low line in Windows-31J
+		Ada.Environment_Encoding.Strings.Set_Substitute (E, (16#81#, 16#51#)); -- fullwidth low line in Windows-31J
 		declare
 			Mongolian_Birga_In_Windows_31J : constant Ada.Streams.Stream_Element_Array :=
-				System.Native_Encoding.Strings.Encode (E, Mongolian_Birga);
+				Ada.Environment_Encoding.Strings.Encode (E, Mongolian_Birga);
 		begin
 			pragma Assert (Mongolian_Birga_In_Windows_31J = (16#81#, 16#51#)
 				or else Mongolian_Birga_In_Windows_31J = (16#81#, 16#51#, 16#81#, 16#51#, 16#81#, 16#51#));
@@ -86,77 +88,77 @@ begin
 		end;
 	end;
 	declare
-		WE : System.Native_Encoding.Wide_Strings.Encoder :=
-			System.Native_Encoding.Wide_Strings.To (System.Native_Encoding.Names.Windows_31J);
+		WE : Ada.Environment_Encoding.Wide_Strings.Encoder :=
+			Ada.Environment_Encoding.Wide_Strings.To (Ada.Environment_Encoding.Names.Windows_31J);
 	begin
-		pragma Assert (System.Native_Encoding.Wide_Strings.Encode (WE, "AB") = (16#41#, 16#42#));
+		pragma Assert (Ada.Environment_Encoding.Wide_Strings.Encode (WE, "AB") = (16#41#, 16#42#));
 		null;
 	end;
 	declare
-		WWE : System.Native_Encoding.Wide_Wide_Strings.Encoder :=
-			System.Native_Encoding.Wide_Wide_Strings.To (System.Native_Encoding.Names.Windows_31J);
+		WWE : Ada.Environment_Encoding.Wide_Wide_Strings.Encoder :=
+			Ada.Environment_Encoding.Wide_Wide_Strings.To (Ada.Environment_Encoding.Names.Windows_31J);
 	begin
-		pragma Assert (System.Native_Encoding.Wide_Wide_Strings.Encode (WWE, "AB") = (16#41#, 16#42#));
+		pragma Assert (Ada.Environment_Encoding.Wide_Wide_Strings.Encode (WWE, "AB") = (16#41#, 16#42#));
 		null;
 	end;
 	-- reading
 	declare
-		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
-		E : aliased System.Native_Encoding.Encoding_Streams.Inout_Type :=
-			System.Native_Encoding.Encoding_Streams.Open (
-				System.Native_Encoding.Names.UTF_8,
-				System.Native_Encoding.Names.Windows_31J,
-				Ada.Streams.Buffer_Storage_IO.Stream (Buffer));
+		Buffer : USIO.Buffer_Type;
+		E : aliased Ada.Environment_Encoding.Encoding_Streams.Inout_Type :=
+			Ada.Environment_Encoding.Encoding_Streams.Open (
+				Ada.Environment_Encoding.Names.UTF_8,
+				Ada.Environment_Encoding.Names.Windows_31J,
+				USIO.Stream (Buffer));
 		S : String (1 .. 3);
 		One_Element : String (1 .. 1);
 	begin
 		for I in 1 .. 100 loop
 			Ada.Streams.Write (
-				Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all,
+				USIO.Stream (Buffer).all,
 				(16#82#, 16#a0#));
 		end loop;
 		Ada.Streams.Set_Index (
-			Ada.Streams.Seekable_Stream_Type'Class (Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all),
+			Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all),
 			1);
 		for I in 1 .. 100 loop
 			String'Read (
-				System.Native_Encoding.Encoding_Streams.Stream (E),
+				Ada.Environment_Encoding.Encoding_Streams.Stream (E),
 				S);
 			pragma Assert (S = Japanease_A);
 		end loop;
 		begin
 			String'Read (
-				System.Native_Encoding.Encoding_Streams.Stream (E),
+				Ada.Environment_Encoding.Encoding_Streams.Stream (E),
 				One_Element);
 			raise Program_Error;
 		exception
-			when System.Native_Encoding.Encoding_Streams.End_Error =>
+			when Ada.Environment_Encoding.Encoding_Streams.End_Error =>
 				null;
 		end;
 	end;
 	-- writing
 	declare
-		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
-		E : aliased System.Native_Encoding.Encoding_Streams.Inout_Type :=
-			System.Native_Encoding.Encoding_Streams.Open (
-				System.Native_Encoding.Names.Windows_31J,
-				System.Native_Encoding.Names.UTF_8,
-				Ada.Streams.Buffer_Storage_IO.Stream (Buffer));
+		Buffer : USIO.Buffer_Type;
+		E : aliased Ada.Environment_Encoding.Encoding_Streams.Inout_Type :=
+			Ada.Environment_Encoding.Encoding_Streams.Open (
+				Ada.Environment_Encoding.Names.Windows_31J,
+				Ada.Environment_Encoding.Names.UTF_8,
+				USIO.Stream (Buffer));
 		S : String (1 .. 3);
 	begin
 		for I in 1 .. 100 loop
 			Ada.Streams.Write (
-				System.Native_Encoding.Encoding_Streams.Stream (E).all,
+				Ada.Environment_Encoding.Encoding_Streams.Stream (E).all,
 				(16#82#, 16#a0#));
 		end loop;
-		System.Native_Encoding.Encoding_Streams.Finish (E);
+		Ada.Environment_Encoding.Encoding_Streams.Finish (E);
 		Ada.Streams.Set_Index (
-			Ada.Streams.Seekable_Stream_Type'Class (Ada.Streams.Buffer_Storage_IO.Stream (Buffer).all),
+			Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all),
 			1);
-		pragma Assert (Ada.Streams.Stream_Element_Count'(Ada.Streams.Buffer_Storage_IO.Size (Buffer)) = 300);
+		pragma Assert (Ada.Streams.Stream_Element_Count'(USIO.Size (Buffer)) = 300);
 		for I in 1 .. 100 loop
 			String'Read (
-				Ada.Streams.Buffer_Storage_IO.Stream (Buffer),
+				USIO.Stream (Buffer),
 				S);
 			pragma Assert (S = Japanease_A);
 		end loop;

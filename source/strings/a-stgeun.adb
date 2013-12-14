@@ -1114,7 +1114,7 @@ package body Ada.Strings.Generic_Unbounded is
 
    end Generic_Constant;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
@@ -1143,6 +1143,6 @@ package body Ada.Strings.Generic_Unbounded is
          Write (Stream, Item.Data.Items (1 .. Item.Length));
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Strings.Generic_Unbounded;

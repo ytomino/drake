@@ -559,16 +559,16 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       end if;
    end "=";
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Map)
+         Item : out Map)
       is
          Length : Count_Type'Base;
       begin
          Count_Type'Read (Stream, Length);
-         Clear (Container);
+         Clear (Item);
          for I in 1 .. Length loop
             declare
                Key : constant Key_Type := Key_Type'Input (Stream);
@@ -576,19 +576,19 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
             begin
 --  diff
 --  diff
-               Include (Container, Key, Element);
+               Include (Item, Key, Element);
             end;
          end loop;
       end Read;
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Map)
+         Item : Map)
       is
          Position : Cursor;
       begin
-         Count_Type'Write (Stream, Container.Length);
-         Position := First (Container);
+         Count_Type'Write (Stream, Item.Length);
+         Position := First (Item);
          while Position /= null loop
             Key_Type'Output (Stream, Position.Key.all);
             Element_Type'Output (Stream, Position.Element.all);
@@ -596,6 +596,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          end loop;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Indefinite_Hashed_Maps;

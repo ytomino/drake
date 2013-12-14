@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
-with Ada.References.String;
+with Ada.References.Strings;
 with Interfaces.C.Char_Pointers;
 with Interfaces.C.Generic_Strings;
 package Interfaces.C.Strings is new Generic_Strings (
@@ -8,5 +8,5 @@ package Interfaces.C.Strings is new Generic_Strings (
    Element => char,
    Element_Array => char_array,
    Pointers => Char_Pointers,
-   Slicing => Ada.References.String.Slicing);
+   Slicing => Ada.References.Strings.Slicing);
 pragma Preelaborate (Interfaces.C.Strings);

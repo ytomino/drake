@@ -1,9 +1,36 @@
 package body Ada.Characters.Conversions is
+   use type System.UTF_Conversions.From_Status_Type;
+   use type System.UTF_Conversions.To_Status_Type;
 
    function Is_Wide_Character (Item : Character) return Boolean is
    begin
       return Character'Pos (Item) <= 16#7f#;
    end Is_Wide_Character;
+
+   function Is_Wide_String (Item : String) return Boolean is
+      Last : Natural := Item'First - 1;
+   begin
+      while Last /= Item'Last loop
+         declare
+            Code : System.UTF_Conversions.UCS_4;
+            From_State : System.UTF_Conversions.From_Status_Type;
+         begin
+            System.UTF_Conversions.From_UTF_8 (
+               Item,
+               Last,
+               Code,
+               From_State);
+            if System.UTF_Conversions.UCS_4'Pos (Code) > 16#10ffff#
+               --  a check for detecting illegal sequence are omitted
+--             or else Code in 16#d800# .. 16#dfff#
+--             or else From_State /= System.UTF_Conversions.Success
+            then
+               return False;
+            end if;
+         end;
+      end loop;
+      return True;
+   end Is_Wide_String;
 
    function Is_Character (Item : Wide_Character) return Boolean is
    begin
@@ -13,6 +40,7 @@ package body Ada.Characters.Conversions is
    function Is_String (Item : Wide_String) return Boolean is
       pragma Unreferenced (Item);
    begin
+      --  a check for detecting illegal sequence are omitted
       return True;
    end Is_String;
 
@@ -29,6 +57,7 @@ package body Ada.Characters.Conversions is
    function Is_String (Item : Wide_Wide_String) return Boolean is
       pragma Unreferenced (Item);
    begin
+      --  a check for detecting illegal sequence are omitted
       return True;
    end Is_String;
 
@@ -37,6 +66,19 @@ package body Ada.Characters.Conversions is
       return Wide_Wide_Character'Pos (Item) <= 16#d7ff#
          or else Wide_Wide_Character'Pos (Item) in 16#e000# .. 16#ffff#;
    end Is_Wide_Character;
+
+   function Is_Wide_String (Item : Wide_Wide_String) return Boolean is
+   begin
+      for I in Item'Range loop
+         if Wide_Wide_Character'Pos (Item (I)) > 16#10ffff#
+            --  a check for detecting illegal sequence are omitted
+--          or else Wide_Wide_Character'Pos (Item (I)) in 16#d800# .. 16#dfff#
+         then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Is_Wide_String;
 
    function To_Wide_Character (
       Item : Character;
@@ -117,14 +159,14 @@ package body Ada.Characters.Conversions is
       Substitute : Wide_Wide_Character := ' ')
    is
       Code : System.UTF_Conversions.UCS_4;
-      Is_Illegal_Sequence : Boolean;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_8 (
          Item,
          Last,
          Code,
-         Is_Illegal_Sequence);
-      if Is_Illegal_Sequence then
+         From_Status);
+      if From_Status /= System.UTF_Conversions.Success then
          Value := Substitute;
       else
          Value := Wide_Wide_Character'Val (Code);
@@ -138,13 +180,15 @@ package body Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean)
    is
       Code : System.UTF_Conversions.UCS_4;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_8 (
          Item,
          Last,
          Code,
-         Is_Illegal_Sequence);
+         From_Status);
       Value := Wide_Wide_Character'Val (Code);
+      Is_Illegal_Sequence := From_Status /= System.UTF_Conversions.Success;
    end Get;
 
    procedure Get_Reverse (
@@ -154,14 +198,14 @@ package body Ada.Characters.Conversions is
       Substitute : Wide_Wide_Character := ' ')
    is
       Code : System.UTF_Conversions.UCS_4;
-      Is_Illegal_Sequence : Boolean;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_8_Reverse (
          Item,
          First,
          Code,
-         Is_Illegal_Sequence);
-      if Is_Illegal_Sequence then
+         From_Status);
+      if From_Status /= System.UTF_Conversions.Success then
          Value := Substitute;
       else
          Value := Wide_Wide_Character'Val (Code);
@@ -175,13 +219,15 @@ package body Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean)
    is
       Code : System.UTF_Conversions.UCS_4;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_8_Reverse (
          Item,
          First,
          Code,
-         Is_Illegal_Sequence);
+         From_Status);
       Value := Wide_Wide_Character'Val (Code);
+      Is_Illegal_Sequence := From_Status /= System.UTF_Conversions.Success;
    end Get_Reverse;
 
    procedure Get (
@@ -191,14 +237,14 @@ package body Ada.Characters.Conversions is
       Substitute : Wide_Wide_Character := ' ')
    is
       Code : System.UTF_Conversions.UCS_4;
-      Is_Illegal_Sequence : Boolean;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_16 (
          Item,
          Last,
          Code,
-         Is_Illegal_Sequence);
-      if Is_Illegal_Sequence then
+         From_Status);
+      if From_Status /= System.UTF_Conversions.Success then
          Value := Substitute;
       else
          Value := Wide_Wide_Character'Val (Code);
@@ -212,13 +258,15 @@ package body Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean)
    is
       Code : System.UTF_Conversions.UCS_4;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_16 (
          Item,
          Last,
          Code,
-         Is_Illegal_Sequence);
+         From_Status);
       Value := Wide_Wide_Character'Val (Code);
+      Is_Illegal_Sequence := From_Status /= System.UTF_Conversions.Success;
    end Get;
 
    procedure Get_Reverse (
@@ -228,14 +276,14 @@ package body Ada.Characters.Conversions is
       Substitute : Wide_Wide_Character := ' ')
    is
       Code : System.UTF_Conversions.UCS_4;
-      Is_Illegal_Sequence : Boolean;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_16_Reverse (
          Item,
          First,
          Code,
-         Is_Illegal_Sequence);
-      if Is_Illegal_Sequence then
+         From_Status);
+      if From_Status /= System.UTF_Conversions.Success then
          Value := Substitute;
       else
          Value := Wide_Wide_Character'Val (Code);
@@ -249,13 +297,15 @@ package body Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean)
    is
       Code : System.UTF_Conversions.UCS_4;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_16_Reverse (
          Item,
          First,
          Code,
-         Is_Illegal_Sequence);
+         From_Status);
       Value := Wide_Wide_Character'Val (Code);
+      Is_Illegal_Sequence := From_Status /= System.UTF_Conversions.Success;
    end Get_Reverse;
 
    procedure Get (
@@ -265,14 +315,14 @@ package body Ada.Characters.Conversions is
       Substitute : Wide_Wide_Character := ' ')
    is
       Code : System.UTF_Conversions.UCS_4;
-      Is_Illegal_Sequence : Boolean;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_32 (
          Item,
          Last,
          Code,
-         Is_Illegal_Sequence);
-      if Is_Illegal_Sequence then
+         From_Status);
+      if From_Status /= System.UTF_Conversions.Success then
          Value := Substitute;
       else
          Value := Wide_Wide_Character'Val (Code);
@@ -286,13 +336,15 @@ package body Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean)
    is
       Code : System.UTF_Conversions.UCS_4;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_32 (
          Item,
          Last,
          Code,
-         Is_Illegal_Sequence);
+         From_Status);
       Value := Wide_Wide_Character'Val (Code);
+      Is_Illegal_Sequence := From_Status /= System.UTF_Conversions.Success;
    end Get;
 
    procedure Get_Reverse (
@@ -302,14 +354,14 @@ package body Ada.Characters.Conversions is
       Substitute : Wide_Wide_Character := ' ')
    is
       Code : System.UTF_Conversions.UCS_4;
-      Is_Illegal_Sequence : Boolean;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_32_Reverse (
          Item,
          First,
          Code,
-         Is_Illegal_Sequence);
-      if Is_Illegal_Sequence then
+         From_Status);
+      if From_Status /= System.UTF_Conversions.Success then
          Value := Substitute;
       else
          Value := Wide_Wide_Character'Val (Code);
@@ -323,13 +375,15 @@ package body Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean)
    is
       Code : System.UTF_Conversions.UCS_4;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_32_Reverse (
          Item,
          First,
          Code,
-         Is_Illegal_Sequence);
+         From_Status);
       Value := Wide_Wide_Character'Val (Code);
+      Is_Illegal_Sequence := From_Status /= System.UTF_Conversions.Success;
    end Get_Reverse;
 
    procedure Put (
@@ -337,14 +391,14 @@ package body Ada.Characters.Conversions is
       Item : out String;
       Last : out Natural)
    is
-      Error : Boolean;
+      To_Status : System.UTF_Conversions.To_Status_Type;
    begin
       System.UTF_Conversions.To_UTF_8 (
          Wide_Wide_Character'Pos (Value),
          Item,
          Last,
-         Error);
-      if Error then
+         To_Status);
+      if To_Status /= System.UTF_Conversions.Success then
          raise Constraint_Error; -- Strings.Length_Error ???
       end if;
    end Put;
@@ -354,14 +408,14 @@ package body Ada.Characters.Conversions is
       Item : out Wide_String;
       Last : out Natural)
    is
-      Error : Boolean;
+      To_Status : System.UTF_Conversions.To_Status_Type;
    begin
       System.UTF_Conversions.To_UTF_16 (
          Wide_Wide_Character'Pos (Value),
          Item,
          Last,
-         Error);
-      if Error then
+         To_Status);
+      if To_Status /= System.UTF_Conversions.Success then
          raise Constraint_Error;
       end if;
    end Put;
@@ -371,14 +425,14 @@ package body Ada.Characters.Conversions is
       Item : out Wide_Wide_String;
       Last : out Natural)
    is
-      Error : Boolean;
+      To_Status : System.UTF_Conversions.To_Status_Type;
    begin
       System.UTF_Conversions.To_UTF_32 (
          Wide_Wide_Character'Pos (Value),
          Item,
          Last,
-         Error);
-      if Error then
+         To_Status);
+      if To_Status /= System.UTF_Conversions.Success then
          raise Constraint_Error;
       end if;
    end Put;

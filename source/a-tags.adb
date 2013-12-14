@@ -34,40 +34,45 @@ package body Ada.Tags is
       System.Storage_Elements.Storage_Offset,
       Offset_To_Top_Ptr);
 
-   function External_Tag_Impl (DT : Dispatch_Table_Ptr) return String;
-   function External_Tag_Impl (DT : Dispatch_Table_Ptr) return String is
-      TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (DT.TSD);
-   begin
-      return System.Zero_Terminated_Strings.Value (
-         Cstring_Ptr_Conv.To_Address (TSD.External_Tag));
-   end External_Tag_Impl;
+   function strlen (Item : not null Cstring_Ptr)
+      return System.Storage_Elements.Storage_Count;
+   pragma Import (Intrinsic, strlen, "__builtin_strlen");
 
    type E_Node;
    type E_Node_Access is access E_Node;
    type E_Node is record
-      Left, Right : E_Node_Access;
+      Left, Right : aliased E_Node_Access;
       Tag : Tags.Tag;
    end record;
    pragma Suppress_Initialization (E_Node);
 
    procedure E_Insert (
-      Node : in out E_Node_Access;
+      Node : not null access E_Node_Access;
       T : Tag;
       External : String);
    procedure E_Insert (
-      Node : in out E_Node_Access;
+      Node : not null access E_Node_Access;
       T : Tag;
       External : String) is
    begin
-      if Node = null then
-         Node := new E_Node'(Left => null, Right => null, Tag => T);
-      elsif External_Tag_Impl (DT (Node.Tag)) > External then
-         E_Insert (Node.Left, T, External);
-      elsif External_Tag_Impl (DT (Node.Tag)) < External then
-         E_Insert (Node.Right, T, External);
+      if Node.all = null then
+         Node.all := new E_Node'(Left => null, Right => null, Tag => T);
       else
-         null; -- already added
+         declare
+            TSD : constant Type_Specific_Data_Ptr :=
+               TSD_Ptr_Conv.To_Pointer (DT (Node.all.Tag).TSD);
+            Node_External : String
+               renames
+                  TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
+         begin
+            if Node_External > External then
+               E_Insert (Node.all.Left'Access, T, External);
+            elsif Node_External < External then
+               E_Insert (Node.all.Right'Access, T, External);
+            else
+               null; -- already added
+            end if;
+         end;
       end if;
    end E_Insert;
 
@@ -78,16 +83,26 @@ package body Ada.Tags is
    begin
       if Node = null then
          return null;
-      elsif External_Tag_Impl (DT (Node.Tag)) > External then
-         return E_Find (Node.Left, External);
-      elsif External_Tag_Impl (DT (Node.Tag)) < External then
-         return E_Find (Node.Right, External);
       else
-         return Node;
+         declare
+            TSD : constant Type_Specific_Data_Ptr :=
+               TSD_Ptr_Conv.To_Pointer (DT (Node.Tag).TSD);
+            Node_External : String
+               renames
+                  TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
+         begin
+            if Node_External > External then
+               return E_Find (Node.Left, External);
+            elsif Node_External < External then
+               return E_Find (Node.Right, External);
+            else
+               return Node;
+            end if;
+         end;
       end if;
    end E_Find;
 
-   External_Map : E_Node_Access;
+   External_Map : aliased E_Node_Access := null;
 
    function DT_With_Checking (T : Tag) return Dispatch_Table_Ptr;
    function DT_With_Checking (T : Tag) return Dispatch_Table_Ptr is
@@ -219,8 +234,12 @@ package body Ada.Tags is
 
    function External_Tag (T : Tag) return String is
       DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
    begin
-      return Result : constant String := External_Tag_Impl (DT) do
+      return Result : constant String := System.Zero_Terminated_Strings.Value (
+         Cstring_Ptr_Conv.To_Address (TSD.External_Tag))
+      do
          if Result'Length > Nested_Prefix'Length
             and then Result (
                Result'First + Result'First - 1 ..
@@ -229,7 +248,7 @@ package body Ada.Tags is
             null; -- nested
          else
             System.Shared_Locking.Enter;
-            E_Insert (External_Map, T, Result); -- library level
+            E_Insert (External_Map'Access, T, Result); -- library level
             System.Shared_Locking.Leave;
          end if;
       end return;

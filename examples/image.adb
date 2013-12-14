@@ -1,4 +1,5 @@
 with Ada.Exceptions;
+with Ada.Float;
 procedure image is
 	type Ordinal_Fixed is delta 0.1 range -99.9 .. 99.9;
 	type Short_Fixed is delta 0.1 digits 2;
@@ -67,16 +68,25 @@ begin
 	-- 'Value
 	declare
 		function "=" (Left, Right : Float) return Boolean is
+			function Is_Infinity is new Ada.Float.Is_Infinity (Float);
 		begin
+			pragma Assert (not Is_Infinity (Left));
+			pragma Assert (not Is_Infinity (Right));
 			return abs (Left - Right) / Float'Max (abs Left, abs Right) < Float'Model_Epsilon * 100.0;
 		end "=";
 		function "=" (Left, Right : Long_Float) return Boolean is
+			function Is_Infinity is new Ada.Float.Is_Infinity (Long_Float);
 		begin
-			return abs (Left - Right) / Long_Float'Min (abs Left, abs Right) < Long_Float'Model_Epsilon * 100.0;
+			pragma Assert (not Is_Infinity (Left));
+			pragma Assert (not Is_Infinity (Right));
+			return abs (Left - Right) / Long_Float'Max (abs Left, abs Right) < Long_Float'Model_Epsilon * 100.0;
 		end "=";
 		function "=" (Left, Right : Long_Long_Float) return Boolean is
+			function Is_Infinity is new Ada.Float.Is_Infinity (Long_Long_Float);
 		begin
-			return abs (Left - Right) / Long_Long_Float'Min (abs Left, abs Right) < Long_Long_Float'Model_Epsilon * 100.0;
+			pragma Assert (not Is_Infinity (Left));
+			pragma Assert (not Is_Infinity (Right));
+			return abs (Left - Right) / Long_Long_Float'Max (abs Left, abs Right) < Long_Long_Float'Model_Epsilon * 100.0;
 		end "=";
 		function "=" (Left, Right : Ordinal_Fixed) return Boolean is
 		begin
@@ -121,6 +131,8 @@ begin
 		pragma Assert (Long_Float'Value (Long_Float'Image (Long_Float'Last * 0.999999999999999)) = Long_Float'Last);
 		pragma Assert (Long_Long_Float'Value (Long_Long_Float'Image (Long_Long_Float'First * 0.999999999999999999)) = Long_Long_Float'First);
 		pragma Assert (Long_Long_Float'Value (Long_Long_Float'Image (Long_Long_Float'Last * 0.999999999999999999)) = Long_Long_Float'Last);
+		pragma Assert (Long_Long_Float'Value ("0.01") = 0.01);
+		pragma Assert (Long_Long_Float'Value ("0.001") = 0.001);
 		pragma Assert (Ordinal_Fixed'Value (Ordinal_Fixed'Image (Ordinal_Fixed'First)) = Ordinal_Fixed'First);
 		pragma Assert (Ordinal_Fixed'Value (Ordinal_Fixed'Image (Ordinal_Fixed'Last)) = Ordinal_Fixed'Last);
 		pragma Assert (Short_Fixed'Value (Short_Fixed'Image (Short_Fixed'First)) = Short_Fixed'First);

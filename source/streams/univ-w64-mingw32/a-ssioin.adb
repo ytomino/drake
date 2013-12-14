@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
-with System.IO_Options;
+with System.Form_Parameters;
 with System.Memory;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
@@ -10,6 +10,8 @@ with C.wincon;
 with C.windef;
 with C.winerror;
 package body Ada.Streams.Stream_IO.Inside is
+   use type IO_Modes.File_Shared;
+   use type IO_Modes.File_Shared_Spec;
    use type Tags.Tag;
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
@@ -63,6 +65,110 @@ package body Ada.Streams.Stream_IO.Inside is
          C.winbase.FILE_CURRENT) /= 0;
    end Is_Seekable;
 
+   --  the parameter Form
+
+   procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
+   begin
+      if Keyword = "shared" then
+         if Item'Length > 0
+            and then (
+               Item (Item'First) = 'a' -- allow
+               or else Item (Item'First) = 'y') -- yes, compatibility
+         then
+            Form.Shared := IO_Modes.Allow;
+         elsif Item'Length > 0 and then Item (Item'First) = 'r' then -- read
+            Form.Shared := IO_Modes.Read_Only;
+         elsif Item'Length > 0 and then Item (Item'First) = 'd' then -- deny
+            Form.Shared := IO_Modes.Deny;
+         elsif Item'Length > 0 and then Item (Item'First) = 'n' then -- no
+            Form.Shared := IO_Modes.By_Mode;
+         end if;
+      elsif Keyword = "wait" then
+         if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
+            Form.Wait := False;
+         elsif Item'Length > 0 and then Item (Item'First) = 't' then -- true
+            Form.Wait := True;
+         end if;
+      elsif Keyword = "overwrite" then
+         if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
+            Form.Overwrite := False;
+         elsif Item'Length > 0 and then Item (Item'First) = 't' then -- true
+            Form.Overwrite := True;
+         end if;
+      end if;
+   end Set;
+
+   function Pack (Form : String) return Packed_Form is
+      Keyword_First : Positive;
+      Keyword_Last : Natural;
+      Item_First : Positive;
+      Item_Last : Natural;
+      Last : Natural;
+   begin
+      return Result : Packed_Form := Default_Form do
+         Last := Form'First - 1;
+         while Last < Form'Last loop
+            System.Form_Parameters.Get (
+               Form (Last + 1 .. Form'Last),
+               Keyword_First,
+               Keyword_Last,
+               Item_First,
+               Item_Last,
+               Last);
+            Set (
+               Result,
+               Form (Keyword_First .. Keyword_Last),
+               Form (Item_First .. Item_Last));
+         end loop;
+      end return;
+   end Pack;
+
+   procedure Unpack (
+      Form : Packed_Form;
+      Result : out Form_String;
+      Last : out Natural)
+   is
+      New_Last : Natural;
+   begin
+      Last := Form_String'First - 1;
+      if Form.Shared /= IO_Modes.By_Mode then
+         case IO_Modes.File_Shared (Form.Shared) is
+            when IO_Modes.Allow =>
+               New_Last := Last + 10;
+               Result (Last + 1 .. New_Last) := "shared=yes";
+               Last := New_Last;
+            when IO_Modes.Read_Only =>
+               New_Last := Last + 11;
+               Result (Last + 1 .. New_Last) := "shared=read";
+               Last := New_Last;
+            when IO_Modes.Deny =>
+               New_Last := Last + 12;
+               Result (Last + 1 .. New_Last) := "shared=write";
+               Last := New_Last;
+         end case;
+      end if;
+      if Form.Wait then
+         if Last /= Form_String'First - 1 then
+            New_Last := Last + 1;
+            Result (New_Last) := ',';
+            Last := New_Last;
+         end if;
+         New_Last := Last + 9;
+         Result (Last + 1 .. New_Last) := "wait=true";
+         Last := New_Last;
+      end if;
+      if Form.Overwrite then
+         if Last /= Form_String'First - 1 then
+            New_Last := Last + 1;
+            Result (New_Last) := ',';
+            Last := New_Last;
+         end if;
+         New_Last := Last + 14;
+         Result (Last + 1 .. New_Last) := "overwrite=true";
+         Last := New_Last;
+      end if;
+   end Unpack;
+
    --  implementation of handle for controlled
 
    procedure Open (
@@ -70,7 +176,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle : Handle_Type;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "";
+      Form : Packed_Form := Default_Form;
       To_Close : Boolean := False) is
    begin
       Open (
@@ -111,7 +217,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Kind : Stream_Kind;
       Name : C.winnt.LPWSTR; -- be freeing on error
       Name_Length : C.signed_int;
-      Form : String)
+      Form : Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
       Handle : Handle_Type;
@@ -119,14 +225,14 @@ package body Ada.Streams.Stream_IO.Inside is
       Kind : Stream_Kind;
       Name : C.winnt.LPWSTR;
       Name_Length : C.signed_int;
-      Form : String)
+      Form : Packed_Form)
       return Non_Controlled_File_Type
    is
       Result_Addr : constant System.Address := System.Address (
          C.winbase.HeapAlloc (
             C.winbase.GetProcessHeap,
             0,
-            Stream_Type'Size / Standard'Storage_Unit + Form'Length));
+            Stream_Type'Size / Standard'Storage_Unit));
    begin
       if Result_Addr = System.Null_Address then
          System.Memory.Free (LPWSTR_Conv.To_Address (Name));
@@ -135,18 +241,13 @@ package body Ada.Streams.Stream_IO.Inside is
          declare
             Result : constant Non_Controlled_File_Type :=
                Non_Controlled_File_Type_Conv.To_Pointer (Result_Addr);
-            --  Form is into same memory block
-            Result_Form : String (1 .. Form'Length);
-            for Result_Form'Address use
-               Result_Addr + Stream_Type'Size / Standard'Storage_Unit;
          begin
             Result.Handle := Handle;
             Result.Mode := Mode;
             Result.Kind := Kind;
             Result.Name := Name;
             Result.Name_Length := Name_Length;
-            Result.Form := Result_Form'Address;
-            Result.Form_Length := Form'Length;
+            Result.Form := Form;
             Result.Buffer := System.Null_Address;
             Result.Buffer_Length := Uninitialized_Buffer;
             Result.Buffer_Index := 0;
@@ -154,7 +255,6 @@ package body Ada.Streams.Stream_IO.Inside is
             Result.Writing_Index := 0;
             Result.Dispatcher.Tag := Ada.Tags.No_Tag;
             Result.Dispatcher.File := null;
-            Result_Form := Form;
             return Result;
          end;
       end if;
@@ -228,7 +328,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle := C.winbase.CreateFile (
          lpFileName => Temp_Name (0)'Access,
          dwDesiredAccess =>
-            C.windef.DWORD'Mod (C.winnt.GENERIC_READ)
+            C.winnt.GENERIC_READ
             or C.winnt.GENERIC_WRITE, -- full access for Reset/Set_Mode
          dwShareMode =>
             C.winnt.FILE_SHARE_READ
@@ -299,26 +399,6 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Compose_File_Name;
 
-   function Form_Share_Mode (Form : String; Default : C.windef.DWORD)
-      return C.windef.DWORD;
-   function Form_Share_Mode (Form : String; Default : C.windef.DWORD)
-      return C.windef.DWORD
-   is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.IO_Options.Form_Parameter (Form, "shared", First, Last);
-      if First <= Last and then Form (First) = 'r' then -- read
-         return C.winnt.FILE_SHARE_READ;
-      elsif First <= Last and then Form (First) = 'w' then -- write
-         return 0;
-      elsif First <= Last and then Form (First) = 'y' then -- yes
-         return C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
-      else -- no
-         return Default;
-      end if;
-   end Form_Share_Mode;
-
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
 
@@ -327,53 +407,63 @@ package body Ada.Streams.Stream_IO.Inside is
       File : not null Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : not null C.winnt.LPWSTR;
-      Form : String);
+      Form : Packed_Form);
    procedure Open_Normal (
       Method : Open_Method;
       File : not null Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : not null C.winnt.LPWSTR;
-      Form : String)
+      Form : Packed_Form)
    is
       Handle : Handle_Type;
       DesiredAccess : C.windef.DWORD;
       ShareMode : C.windef.DWORD;
       CreationDisposition : C.windef.DWORD;
+      Shared : IO_Modes.File_Shared;
       Error : C.windef.DWORD;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
-      if Mode = In_File then
-         ShareMode := C.winnt.FILE_SHARE_READ;
+      if Form.Shared /= IO_Modes.By_Mode then
+         Shared := IO_Modes.File_Shared (Form.Shared);
       else
-         ShareMode := 0;
+         case Mode is
+            when In_File =>
+               Shared := IO_Modes.Read_Only;
+            when Out_File | Append_File =>
+               Shared := IO_Modes.Deny;
+         end case;
       end if;
-      ShareMode := Form_Share_Mode (Form, ShareMode);
       case Method is
          when Create =>
             declare
                use C.winbase, C.winnt;
                Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File =>
-                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE,
+                  In_File => GENERIC_READ or GENERIC_WRITE,
                   Out_File => GENERIC_WRITE,
-                  Append_File =>
-                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
+                  Append_File => GENERIC_READ or GENERIC_WRITE);
+               Creations : constant array (File_Mode) of C.windef.DWORD := (
+                  In_File => CREATE_ALWAYS,
+                  Out_File => CREATE_ALWAYS,
+                  Append_File => OPEN_ALWAYS); -- no truncation
             begin
                DesiredAccess := Access_Modes (Mode);
-               CreationDisposition := CREATE_ALWAYS; -- no truncation
+               CreationDisposition := Creations (Mode);
+               Shared := IO_Modes.Deny;
+               if not Form.Overwrite then
+                  CreationDisposition := CREATE_NEW;
+               end if;
             end;
          when Open =>
             declare
                use C.winbase, C.winnt;
                Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => C.windef.DWORD'Mod (GENERIC_READ),
+                  In_File => GENERIC_READ,
                   Out_File => GENERIC_WRITE,
-                  Append_File =>
-                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
+                  Append_File => GENERIC_READ or GENERIC_WRITE);
                Creations : constant array (File_Mode) of C.windef.DWORD := (
                   In_File => OPEN_EXISTING,
                   Out_File => TRUNCATE_EXISTING,
-                  Append_File => OPEN_ALWAYS);
+                  Append_File => OPEN_EXISTING);
             begin
                DesiredAccess := Access_Modes (Mode);
                CreationDisposition := Creations (Mode);
@@ -382,19 +472,30 @@ package body Ada.Streams.Stream_IO.Inside is
             declare
                use C.winbase, C.winnt;
                Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => C.windef.DWORD'Mod (GENERIC_READ),
+                  In_File => GENERIC_READ,
                   Out_File => GENERIC_WRITE,
-                  Append_File =>
-                     C.windef.DWORD'Mod (GENERIC_READ) or GENERIC_WRITE);
-               Creations : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => OPEN_EXISTING,
-                  Out_File => OPEN_EXISTING, -- no truncation
-                  Append_File => OPEN_ALWAYS);
+                  Append_File => GENERIC_READ or GENERIC_WRITE);
             begin
                DesiredAccess := Access_Modes (Mode);
-               CreationDisposition := Creations (Mode);
+               CreationDisposition := OPEN_EXISTING; -- no truncation
             end;
       end case;
+      if Shared /= IO_Modes.Allow then
+         if Form.Wait then -- use LockFileEx
+            ShareMode := C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
+         else
+            declare
+               Lock_Flags : constant array (IO_Modes.File_Shared range
+                  IO_Modes.Read_Only .. IO_Modes.Deny) of C.windef.DWORD := (
+                     IO_Modes.Read_Only => C.winnt.FILE_SHARE_READ,
+                     IO_Modes.Deny => 0);
+            begin
+               ShareMode := Lock_Flags (Shared);
+            end;
+         end if;
+      else
+         ShareMode := C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
+      end if;
       --  open
       Handle := C.winbase.CreateFile (
          lpFileName => Name,
@@ -410,12 +511,42 @@ package body Ada.Streams.Stream_IO.Inside is
          case Error is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND
+               | C.winerror.ERROR_FILE_EXISTS -- CREATE_NEW
                | C.winerror.ERROR_INVALID_NAME
                | C.winerror.ERROR_ALREADY_EXISTS =>
                Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+            when C.winerror.ERROR_SHARING_VIOLATION =>
+               Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+               --  Is Tasking_Error suitable?
             when others =>
                Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end case;
+      end if;
+      if Shared /= IO_Modes.Allow and then Form.Wait then
+         declare
+            Flags : constant array (IO_Modes.File_Shared range
+               IO_Modes.Read_Only .. IO_Modes.Deny) of C.windef.DWORD := (
+                  IO_Modes.Read_Only => 0,
+                  IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
+            Overlapped : aliased C.winbase.OVERLAPPED := (
+               0, 0, (0, 0, 0), C.winnt.HANDLE (System.Null_Address));
+            Dummy : C.windef.WINBOOL;
+            pragma Unreferenced (Dummy);
+         begin
+            if C.winbase.LockFileEx (
+               hFile => Handle,
+               dwFlags => Flags (Shared),
+               dwReserved => 0,
+               nNumberOfBytesToLockLow => C.windef.DWORD'Last,
+               nNumberOfBytesToLockHigh => C.windef.DWORD'Last,
+               lpOverlapped => Overlapped'Access) = 0
+            then
+               Dummy := C.winbase.CloseHandle (Handle); -- close on error
+               Free (File); -- free on error
+               Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+               --  Is Tasking_Error suitable?
+            end if;
+         end;
       end if;
       --  set file
       File.Handle := Handle;
@@ -427,13 +558,13 @@ package body Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String);
+      Form : Packed_Form);
    procedure Allocate_And_Open (
       Method : Open_Method;
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String)
+      Form : Packed_Form)
    is
       Handle : Handle_Type;
       Full_Name : C.winnt.LPWSTR;
@@ -713,7 +844,7 @@ package body Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "") is
+      Form : Packed_Form := Default_Form) is
    begin
       if File /= null then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -730,7 +861,7 @@ package body Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "") is
+      Form : Packed_Form := Default_Form) is
    begin
       if File /= null then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -802,8 +933,6 @@ package body Ada.Streams.Stream_IO.Inside is
          when Normal =>
             declare
                File2 : constant Non_Controlled_File_Type := File.all;
-               Form : String (1 .. File2.Form_Length);
-               for Form'Address use File2.Form;
             begin
                File.all := null;
                Close_File (File2, Raise_On_Error => True);
@@ -815,7 +944,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   File => File2,
                   Mode => Mode,
                   Name => File2.Name,
-                  Form => Form);
+                  Form => File2.Form);
                File.all := File2;
             end;
          when Temporary =>
@@ -843,15 +972,10 @@ package body Ada.Streams.Stream_IO.Inside is
          File.Name_Length);
    end Name;
 
-   function Form (File : Non_Controlled_File_Type) return String is
+   function Form (File : Non_Controlled_File_Type) return Packed_Form is
    begin
       Check_File_Open (File);
-      declare
-         A_Form : String (1 .. File.Form_Length);
-         for A_Form'Address use File.Form;
-      begin
-         return A_Form;
-      end;
+      return File.Form;
    end Form;
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean is
@@ -1125,8 +1249,6 @@ package body Ada.Streams.Stream_IO.Inside is
          when Normal =>
             declare
                File2 : constant Non_Controlled_File_Type := File.all;
-               Form : String (1 .. File2.Form_Length);
-               for Form'Address use File2.Form;
             begin
                File.all := null;
                Close_File (File2, Raise_On_Error => True);
@@ -1135,7 +1257,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   File => File2,
                   Mode => Mode,
                   Name => File2.Name,
-                  Form => Form);
+                  Form => File2.Form);
                File.all := File2;
             end;
          when Temporary =>
@@ -1163,14 +1285,14 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Flush;
 
-   --  handle for non-controlled
+   --  implementation of handle for non-controlled
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Handle : Handle_Type;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "";
+      Form : Packed_Form := Default_Form;
       To_Close : Boolean := False)
    is
       Kind : Stream_Kind;

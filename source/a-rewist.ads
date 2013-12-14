@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-package Ada.References.Wide_String is
+package Ada.References.Wide_Strings is
    --  There are helpers for returning sliced wide string from a function.
    pragma Pure;
 
@@ -19,4 +19,4 @@ package Ada.References.Wide_String is
       Wide_Character,
       Standard.Wide_String);
 
-end Ada.References.Wide_String;
+end Ada.References.Wide_Strings;

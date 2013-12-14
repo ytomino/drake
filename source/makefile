@@ -74,7 +74,7 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib/build
 
-SUBDIRS=ada83 calendar containers directories environment image interfaces nls numerics primitives streams strings tasking textio $(EH)
+SUBDIRS=ada83 calendar containers directories distributed environment image interfaces mman nls numerics primitives streams strings tasking textio $(EH)
 
 ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
@@ -114,8 +114,10 @@ endif
 # calendar    :                                # support for delay statement, Ada.Calendars, Ada.Execution_Time and Ada.Real_Time
 # containers  :                                # Ada.Containers
 # directories : calendar                       # Ada.Directories
+# distributed :                                # Annex E, Distributed Systems
 # image       :                                # support for 'Image and 'Value attributes
 # interfaces  :                                # Interfaces.C and Interfaces.COBOL
+# mman        :                                # support for 'Storage_Size and custom Storage_Pools
 # nls         :                                # System.Native_Encoding
 # numerics    :                                # support for float attributes, Ada.Numerics and Interfaces.Fortran
 # streams     :                                # all *_IO packages (including Text_IO)
@@ -293,6 +295,12 @@ $(RTSDIR)/adainclude/%.ads: directories/$(TARGETSUBDIR)/%.ads
 $(RTSDIR)/adainclude/%.adb: directories/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+$(RTSDIR)/adainclude/%.ads: distributed/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: distributed/%.adb
+	$(INSTALL) $(abspath $<) $@
+
 $(RTSDIR)/adainclude/%.ads: environment/%.ads
 	$(INSTALL) $(abspath $<) $@
 
@@ -321,6 +329,24 @@ $(RTSDIR)/adainclude/%.ads: interfaces/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: interfaces/$(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: mman/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: mman/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: mman/$(TARGETSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: mman/$(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: nls/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: nls/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: nls/$(TARGETSUBDIR)/%.ads

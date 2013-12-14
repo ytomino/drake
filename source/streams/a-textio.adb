@@ -20,6 +20,7 @@
 --  ***************************************************************************
 pragma Check_Policy (Trace, Off);
 with Ada.Exceptions.Finally;
+with Ada.Streams.Stream_IO.Inside;
 with Ada.Text_IO.Inside; -- full view
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -51,19 +52,50 @@ package body Ada.Text_IO is
       File : in out File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "") is
+      Form : String) is
    begin
-      Inside.Create (Reference (File).all, Mode, Name => Name, Form => Form);
+      Inside.Create (
+         Reference (File).all,
+         Mode,
+         Name => Name,
+         Form => Inside.Pack (Form));
+   end Create;
+
+   procedure Create (
+      File : in out File_Type;
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
+      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
+      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary) is
+   begin
+      Inside.Create (
+         Reference (File).all,
+         Mode,
+         Name => Name,
+         Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
    end Create;
 
    function Create (
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "")
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
+      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
+      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary)
       return File_Type is
    begin
       return Result : File_Type do
-         Create (Result, Mode, Name => Name, Form => Form);
+         Inside.Create (
+            Reference (Result).all,
+            Mode,
+            Name => Name,
+            Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
       end return;
    end Create;
 
@@ -71,19 +103,50 @@ package body Ada.Text_IO is
       File : in out File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "") is
+      Form : String) is
    begin
-      Inside.Open (Reference (File).all, Mode, Name => Name, Form => Form);
+      Inside.Open (
+         Reference (File).all,
+         Mode,
+         Name => Name,
+         Form => Inside.Pack (Form));
+   end Open;
+
+   procedure Open (
+      File : in out File_Type;
+      Mode : File_Mode;
+      Name : String;
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
+      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
+      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary) is
+   begin
+      Inside.Open (
+         Reference (File).all,
+         Mode,
+         Name => Name,
+         Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
    end Open;
 
    function Open (
       Mode : File_Mode;
       Name : String;
-      Form : String := "")
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
+      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
+      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary)
       return File_Type is
    begin
       return Result : File_Type do
-         Open (Result, Mode, Name => Name, Form => Form);
+         Inside.Open (
+            Reference (Result).all,
+            Mode,
+            Name => Name,
+            Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
       end return;
    end Open;
 
@@ -131,8 +194,13 @@ package body Ada.Text_IO is
    end Name;
 
    function Form (File : File_Type) return String is
+      Non_Controlled_File : constant Inside.Non_Controlled_File_Type :=
+         Reference (File).all;
+      Result : Streams.Stream_IO.Inside.Form_String;
+      Last : Natural;
    begin
-      return Inside.Form (Reference (File).all);
+      Inside.Unpack (Inside.Form (Non_Controlled_File), Result, Last);
+      return Result (Result'First .. Last);
    end Form;
 
    function Is_Open (File : File_Type) return Boolean is

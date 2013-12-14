@@ -824,16 +824,16 @@ package body Ada.Containers.Hashed_Sets is
 
    end Generic_Keys;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Set)
+         Item : out Set)
       is
          Length : Count_Type'Base;
       begin
          Count_Type'Read (Stream, Length);
-         Clear (Container);
+         Clear (Item);
          for I in 1 .. Length loop
             declare
                New_Item : Element_Type;
@@ -841,7 +841,7 @@ package body Ada.Containers.Hashed_Sets is
 --  diff
             begin
                Element_Type'Read (Stream, New_Item);
-               Include (Container, New_Item);
+               Include (Item, New_Item);
 --  diff
 --  diff
 --  diff
@@ -851,18 +851,18 @@ package body Ada.Containers.Hashed_Sets is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Set)
+         Item : Set)
       is
          Position : Cursor;
       begin
-         Count_Type'Write (Stream, Container.Length);
-         Position := First (Container);
+         Count_Type'Write (Stream, Item.Length);
+         Position := First (Item);
          while Position /= null loop
             Element_Type'Write (Stream, Position.Element);
             Next (Position);
          end loop;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Hashed_Sets;

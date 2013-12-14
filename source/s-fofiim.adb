@@ -22,6 +22,8 @@ is
    pragma Import (Intrinsic, modfl, "__builtin_modfl");
    Item_Fore : aliased Long_Long_Float;
    Aft : Long_Long_Float;
+   Scaled_Aft : Long_Long_Float;
+   Round_Up : Boolean;
    Required_Fore_Width : Positive;
    Error : Boolean;
 begin
@@ -57,8 +59,20 @@ begin
       pragma Assert (Last <= To'Last);
       To (Last) := '#';
    end if;
-   --  integer part
+   --  split
    Aft := modfl (abs Item, Item_Fore'Access);
+   Float.Aft_Scale (
+      Aft,
+      Scaled_Aft,
+      0,
+      Round_Up,
+      Base => Base,
+      Width => Aft_Width);
+   if Round_Up then
+      Item_Fore := Item_Fore + 1.0;
+      Scaled_Aft := 0.0;
+   end if;
+   --  integer part
    Required_Fore_Width := Float.Fore_Width (Item_Fore, Base => Base);
    for I in Required_Fore_Width + 1 .. Fore_Width loop
       Last := Last + 1;
@@ -83,8 +97,7 @@ begin
    --  '.' and decimal part
    pragma Assert (Last + Aft_Width <= To'Last);
    Float.Aft_Image (
-      Aft,
-      0,
+      Scaled_Aft,
       To (Last + 1 .. To'Last),
       Last,
       Base => Base,

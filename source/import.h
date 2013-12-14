@@ -8,7 +8,6 @@
 #define st_ctim st_ctimespec
 #endif
 
-#include <unwind.h> /* exception mechanism of gcc */
 #include <stdint.h> /* included by unwind-pe.h */
 
 #if defined(__linux__) || defined(__WINNT__)
@@ -39,6 +38,7 @@
 #include <fcntl.h> /* low-level file op, before sys/stat.h */
 #include <sys/stat.h> /* low-level file info */
 #endif
+#include <sys/file.h> /* flock */
 #include <sys/socket.h> /* socket, before sys/mount.h */
 #include <sys/mount.h> /* filesystem */
 #include <dirent.h> /* directory searching */
@@ -47,6 +47,7 @@
 #include <netdb.h> /* getaddrinfo */
 #include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
+#include <dlfcn.h>
 #include <iconv.h>
 #endif
 #if defined(__APPLE__)
@@ -93,7 +94,9 @@
 #undef LONG
 #undef SHORT
 #undef NT_INCLUDED
+#define __INTRIN_H_
 #include <winnt.h>
+#undef __INTRIN_H_
 #include <winsock2.h> /* before windows.h */
 #undef h_errno /* headmaster can not translate it */
 #include <windows.h>
@@ -109,6 +112,8 @@
 #undef UNICODE
 #undef WIN32_LEAN_AND_MEAN
 #endif
+
+#include <unwind.h> /* exception mechanism of gcc, after windows.h */
 
 #if defined(__unix__) || defined(__APPLE__)
 #include "fix-fcntl.h"
@@ -135,6 +140,7 @@
 #pragma for Ada "pthread.h" include "sys/types.h"
 #pragma for Ada "signal.h" include "sys/_structs.h" /* stack_t */
 #pragma for Ada "signal.h" include "sys/signal.h"
+#pragma for Ada "sys/file.h" include "sys/fcntl.h"
 #pragma for Ada "sys/stat.h" include "sys/fcntl.h" /* S_IF* */
 #pragma for Ada "sys/time.h" include "sys/_structs.h" /* timeval */
 #pragma for Ada "sys/ucontext.h" include "sys/_structs.h" /* ucontext_t */
@@ -146,6 +152,7 @@
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
 #pragma for Ada "signal.h" include "sys/select.h" /* sigset_t */
 #pragma for Ada "signal.h" include "sys/signal.h"
+#pragma for Ada "sys/file.h" include "fcntl.h"
 #pragma for Ada "sys/mman.h" include "sys/types.h" /* mmap */
 #pragma for Ada "sys/time.h" include "sys/_timeval.h" /* timeval */
 #pragma for Ada "time.h" include "sys/timespec.h" /* timespec */
@@ -161,6 +168,7 @@
 	char ** restrict __outbuf, size_t * restrict __outbytesleft)
 #pragma for Ada "bits/time.h" monolithic_include "bits/timex.h"
 #pragma for Ada "dirent.h" include "bits/dirent.h"
+#pragma for Ada "dlfcn.h" include "bits/dlfcn.h"
 #pragma for Ada "errno.h" include "asm-generic/errno.h"
 #pragma for Ada "errno.h" include "asm-generic/errno-base.h"
 #pragma for Ada "errno.h" include "bits/errno.h"
@@ -172,6 +180,7 @@
 #pragma for Ada "signal.h" include "bits/sigstack.h" /* MINSIGSTKSZ */
 #pragma for Ada "signal.h" monolithic_include "bits/sigaction.h"
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
+#pragma for Ada "sys/file.h" include "bits/fcntl.h"
 #pragma for Ada "sys/mman.h" include "bits/mman.h"
 #pragma for Ada "sys/resource.h" include "bits/resource.h"
 #pragma for Ada "sys/socket.h" include "bits/socket.h"
@@ -186,4 +195,7 @@
 #endif
 
 #if defined(__WINNT__)
+#pragma instance DWORD "INFINITE" /* winbase.h */
+#pragma instance DWORD "CRYPT_VERIFYCONTEXT" /* wincrypt.h */
+#pragma instance DWORD "GENERIC_READ" /* winnt.h */
 #endif

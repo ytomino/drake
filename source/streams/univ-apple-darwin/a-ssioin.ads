@@ -6,6 +6,31 @@ private with System;
 package Ada.Streams.Stream_IO.Inside is
    pragma Preelaborate;
 
+   --  the parameter Form
+
+   type Packed_Form is record
+      Shared : IO_Modes.File_Shared_Spec;
+      Wait : Boolean;
+      Overwrite : Boolean;
+   end record;
+   pragma Suppress_Initialization (Packed_Form);
+   pragma Pack (Packed_Form);
+   pragma Compile_Time_Error (Packed_Form'Size /= 4, "not packed");
+
+   Default_Form : constant Packed_Form := (
+      Shared => IO_Modes.By_Mode,
+      Wait => False,
+      Overwrite => True);
+
+   subtype Form_String is String (1 .. 256);
+
+   procedure Set (Form : in out Packed_Form; Keyword, Item : String);
+   function Pack (Form : String) return Packed_Form;
+   procedure Unpack (
+      Form : Packed_Form;
+      Result : out Form_String;
+      Last : out Natural);
+
    --  handle
 
    subtype Handle_Type is C.signed_int;
@@ -21,7 +46,7 @@ package Ada.Streams.Stream_IO.Inside is
       Handle : Handle_Type;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "";
+      Form : Packed_Form := Default_Form;
       To_Close : Boolean := False);
 
    function Handle (File : File_Type) return Handle_Type;
@@ -45,13 +70,13 @@ package Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "");
+      Form : Packed_Form := Default_Form);
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "");
+      Form : Packed_Form := Default_Form);
 
    procedure Close (
       File : in out Non_Controlled_File_Type;
@@ -65,7 +90,7 @@ package Ada.Streams.Stream_IO.Inside is
    pragma Inline (Mode);
    function Name (File : Non_Controlled_File_Type) return String;
    pragma Inline (Name);
-   function Form (File : Non_Controlled_File_Type) return String;
+   function Form (File : Non_Controlled_File_Type) return Packed_Form;
    pragma Inline (Form);
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean;
@@ -106,7 +131,7 @@ package Ada.Streams.Stream_IO.Inside is
       Handle : Handle_Type;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "";
+      Form : Packed_Form := Default_Form;
       To_Close : Boolean := False);
 
    function Handle (File : Non_Controlled_File_Type) return Handle_Type;
@@ -133,9 +158,8 @@ private
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
       Name : System.Address;
-      Form : System.Address;
       Name_Length : Natural;
-      Form_Length : Natural;
+      Form : Packed_Form;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;
       Buffer_Index : Stream_Element_Offset; -- Index (File) mod Buffer_Length

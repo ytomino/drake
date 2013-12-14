@@ -493,25 +493,6 @@ package body Ada.Containers.Limited_Vectors is
       end loop;
    end Insert;
 
---  diff (Insert)
---
---
---
---
---
---
---
---
-
---  diff (Insert)
---
---
---
---
---
---
---
-
    procedure Insert_Space (
       Container : in out Vector;
       Before : Extended_Index;

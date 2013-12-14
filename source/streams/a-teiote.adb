@@ -1,12 +1,12 @@
 with Ada.Text_IO.Inside;
 package body Ada.Text_IO.Terminal is
-   use type Inside.Encoding_Type;
+   use type IO_Text_Modes.File_External;
 
    function Is_Terminal (File : File_Type) return Boolean is
       NC_File : Inside.Non_Controlled_File_Type
          renames Reference (File).all;
    begin
-      return Inside.Encoding (NC_File) = Inside.Terminal;
+      return Inside.External (NC_File) = IO_Text_Modes.Terminal;
    end Is_Terminal;
 
    procedure Set_Size (File : File_Type; Size : Size_Type) is

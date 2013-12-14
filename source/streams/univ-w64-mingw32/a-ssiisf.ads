@@ -11,8 +11,6 @@ package Ada.Streams.Stream_IO.Inside.Standard_Files is
 private
    use type C.char_array;
 
-   Empty_Form : aliased C.char_array (0 .. 0) := (0 => C.char'Val (0));
-
    Standard_Input_Name : aliased C.winnt.WCHAR_array (0 .. 6) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('*')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('s')),
@@ -28,8 +26,7 @@ private
       Kind => Standard_Handle,
       Name => Standard_Input_Name (0)'Access,
       Name_Length => 6,
-      Form => Empty_Form'Address,
-      Form_Length => 0,
+      Form => Default_Form,
       Buffer => System.Null_Address,
       Buffer_Inline => 0,
       Buffer_Length => Uninitialized_Buffer,
@@ -54,8 +51,7 @@ private
       Kind => Standard_Handle,
       Name => Standard_Output_Name (0)'Access,
       Name_Length => 7,
-      Form => Empty_Form'Address,
-      Form_Length => 0,
+      Form => Default_Form,
       Buffer => System.Null_Address,
       Buffer_Inline => 0,
       Buffer_Length => Uninitialized_Buffer,
@@ -80,8 +76,7 @@ private
       Kind => Standard_Handle,
       Name => Standard_Error_Name (0)'Access,
       Name_Length => 7,
-      Form => Empty_Form'Address,
-      Form_Length => 0,
+      Form => Default_Form,
       Buffer => System.Null_Address,
       Buffer_Inline => 0,
       Buffer_Length => Uninitialized_Buffer,

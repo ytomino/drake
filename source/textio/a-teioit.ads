@@ -1,8 +1,9 @@
 pragma License (Unrestricted);
 --  extended unit
 with Ada.Iterator_Interfaces;
-with Ada.References.String;
+with Ada.References.Strings;
 private with Ada.Finalization;
+private with Ada.Streams;
 package Ada.Text_IO.Iterators is
    --  Iterators for Ada.Text_IO.File_Type.
 
@@ -24,7 +25,7 @@ package Ada.Text_IO.Iterators is
    function Constant_Reference (
       Container : aliased Lines_Type;
       Position : Line_Cursor)
-      return References.String.Constant_Reference_Type;
+      return References.Strings.Constant_Reference_Type;
 
    package Lines_Iterator_Interfaces is
       new Iterator_Interfaces (Line_Cursor, Has_Element);
@@ -61,6 +62,29 @@ private
       overriding procedure Adjust (Object : in out Line_Cursor);
       overriding procedure Finalize (Object : in out Line_Cursor);
 
+      package Streaming is
+
+         procedure Missing_Read (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : out Line_Cursor);
+         function Missing_Input (
+            Stream : not null access Streams.Root_Stream_Type'Class)
+            return Line_Cursor;
+         procedure Missing_Write (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : Line_Cursor);
+
+         pragma Import (Ada, Missing_Read, "__drake_program_error");
+         pragma Import (Ada, Missing_Input, "__drake_program_error");
+         pragma Import (Ada, Missing_Write, "__drake_program_error");
+
+      end Streaming;
+
+      for Line_Cursor'Read use Streaming.Missing_Read;
+      for Line_Cursor'Input use Streaming.Missing_Input;
+      for Line_Cursor'Write use Streaming.Missing_Write;
+      for Line_Cursor'Output use Streaming.Missing_Write;
+
    end Line_Cursors;
 
    type Line_Cursor is new Line_Cursors.Line_Cursor;
@@ -78,5 +102,28 @@ private
    type Lines_Type is tagged limited record
       File : File_Access;
    end record;
+
+   package Streaming is
+
+      procedure Missing_Read (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : out Line_Iterator);
+      function Missing_Input (
+         Stream : not null access Streams.Root_Stream_Type'Class)
+         return Line_Iterator;
+      procedure Missing_Write (
+         Stream : not null access Streams.Root_Stream_Type'Class;
+         Item : Line_Iterator);
+
+      pragma Import (Ada, Missing_Read, "__drake_program_error");
+      pragma Import (Ada, Missing_Input, "__drake_program_error");
+      pragma Import (Ada, Missing_Write, "__drake_program_error");
+
+   end Streaming;
+
+   for Line_Iterator'Read use Streaming.Missing_Read;
+   for Line_Iterator'Input use Streaming.Missing_Input;
+   for Line_Iterator'Write use Streaming.Missing_Write;
+   for Line_Iterator'Output use Streaming.Missing_Write;
 
 end Ada.Text_IO.Iterators;

@@ -225,7 +225,7 @@ begin
 					+ 1,
 					Width => 1);
 				Put (", ");
-				Put (EAW_Property_Names.Instance.Constant_Reference (EAW).Element.all);
+				Put (EAW_Property_Names.Bounded_Strings.Constant_Reference (EAW).Element.all);
 				Put (")");
 				if Has_Element (N) then
 					if State = In_XXXX

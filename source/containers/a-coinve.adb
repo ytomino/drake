@@ -493,25 +493,6 @@ package body Ada.Containers.Indefinite_Vectors is
       end loop;
    end Insert;
 
---  diff (Insert)
---
---
---
---
---
---
---
---
-
---  diff (Insert)
---
---
---
---
---
---
---
-
    procedure Insert_Space (
       Container : in out Vector;
       Before : Extended_Index;
@@ -962,20 +943,20 @@ package body Ada.Containers.Indefinite_Vectors is
 
    end Generic_Sorting;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Vector)
+         Item : out Vector)
       is
          Length : Count_Type'Base;
       begin
-         Clear (Container);
+         Clear (Item);
          Count_Type'Base'Read (Stream, Length);
          if Length > 0 then
-            Set_Length (Container, Length);
-            for I in Index_Type'First .. Last_Index (Container) loop
-               Downcast (Container.Super.Data).Items (I) :=
+            Set_Length (Item, Length);
+            for I in Index_Type'First .. Last_Index (Item) loop
+               Downcast (Item.Super.Data).Items (I) :=
                   new Element_Type'(Element_Type'Input (Stream));
 --  diff
             end loop;
@@ -984,20 +965,20 @@ package body Ada.Containers.Indefinite_Vectors is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Vector)
+         Item : Vector)
       is
-         Length : constant Count_Type := Indefinite_Vectors.Length (Container);
+         Length : constant Count_Type := Indefinite_Vectors.Length (Item);
       begin
          Count_Type'Base'Write (Stream, Length);
          if Length > 0 then
-            for I in Index_Type'First .. Last_Index (Container) loop
+            for I in Index_Type'First .. Last_Index (Item) loop
                Element_Type'Output (
                   Stream,
-                  Downcast (Container.Super.Data).Items (I).all);
+                  Downcast (Item.Super.Data).Items (I).all);
             end loop;
          end if;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Indefinite_Vectors;

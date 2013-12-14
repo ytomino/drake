@@ -932,16 +932,16 @@ package body Ada.Containers.Ordered_Sets is
 
    end Generic_Keys;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Set)
+         Item : out Set)
       is
          Length : Count_Type'Base;
       begin
          Count_Type'Read (Stream, Length);
-         Clear (Container);
+         Clear (Item);
 --  diff
          for I in 1 .. Length loop
             declare
@@ -950,7 +950,7 @@ package body Ada.Containers.Ordered_Sets is
 --  diff
             begin
                Element_Type'Read (Stream, New_Item);
-               Include (Container, New_Item);
+               Include (Item, New_Item);
 --  diff
 --  diff
 --  diff
@@ -960,7 +960,7 @@ package body Ada.Containers.Ordered_Sets is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Set)
+         Item : Set)
       is
          package Stream_Cast is new System.Address_To_Access_Conversions (
             Streams.Root_Stream_Type'Class);
@@ -976,15 +976,15 @@ package body Ada.Containers.Ordered_Sets is
                Downcast (Position).Element);
          end Process;
       begin
-         Count_Type'Write (Stream, Container.Length);
-         if Container.Length > 0 then
+         Count_Type'Write (Stream, Item.Length);
+         if Item.Length > 0 then
             Binary_Trees.Iterate (
-               Downcast (Container.Super.Data).Root,
+               Downcast (Item.Super.Data).Root,
                Stream_Cast.To_Address (Stream_Cast.Object_Pointer (Stream)),
                Process => Process'Access);
          end if;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Ordered_Sets;

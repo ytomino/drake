@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-package Ada.References.String is
+package Ada.References.Strings is
    --  There are helpers for returning sliced string from a function.
    pragma Pure;
 
@@ -19,4 +19,4 @@ package Ada.References.String is
       Character,
       Standard.String);
 
-end Ada.References.String;
+end Ada.References.Strings;

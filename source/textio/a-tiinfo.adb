@@ -390,12 +390,13 @@ package body Ada.Text_IO.Inside.Formatting is
                if not End_Of_Line then
                   declare
                      Length : Natural;
-                     Error : Boolean;
+                     Sequence_Status : System.UTF_Conversions.
+                        Sequence_Status_Type; -- ignore
                   begin
                      System.UTF_Conversions.UTF_8_Sequence (
                         Item,
                         Length,
-                        Error);
+                        Sequence_Status);
                      Add (Buffer, Last, Item);
                      Get (File, Item);
                      for I in 2 .. Length loop

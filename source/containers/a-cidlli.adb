@@ -743,17 +743,17 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    end Generic_Sorting;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out List)
+         Item : out List)
       is
          Length : Count_Type'Base;
       begin
          Count_Type'Read (Stream, Length);
-         Clear (Container);
-         Unique (Container, True);
+         Clear (Item);
+         Unique (Item, True);
          for I in 1 .. Length loop
             declare
                Position : constant Cursor := new Node'(
@@ -761,9 +761,9 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
                   Element => new Element_Type'(Element_Type'Input (Stream)));
             begin
                Base.Insert (
-                  Downcast (Container.Super.Data).First,
-                  Downcast (Container.Super.Data).Last,
-                  Downcast (Container.Super.Data).Length,
+                  Downcast (Item.Super.Data).First,
+                  Downcast (Item.Super.Data).Last,
+                  Downcast (Item.Super.Data).Length,
                   Before => null,
                   New_Item => Upcast (Position));
             end;
@@ -772,18 +772,18 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : List)
+         Item : List)
       is
          Position : Cursor;
       begin
-         Count_Type'Write (Stream, Container.Length);
-         Position := First (Container);
+         Count_Type'Write (Stream, Item.Length);
+         Position := First (Item);
          while Position /= null loop
             Element_Type'Output (Stream, Position.Element.all);
             Next (Position);
          end loop;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Indefinite_Doubly_Linked_Lists;

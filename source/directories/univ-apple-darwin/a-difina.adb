@@ -16,6 +16,7 @@ package body Ada.Directories.Inside.File_Names is
    use type System.Formatting.Digit;
    use type System.Storage_Elements.Integer_Address;
    use type System.Storage_Elements.Storage_Offset;
+   use type System.UTF_Conversions.From_Status_Type;
    use type System.UTF_Conversions.UCS_4;
    use type C.signed_int;
    use type C.size_t;
@@ -343,14 +344,14 @@ package body Ada.Directories.Inside.File_Names is
    is
       Last : Natural;
       Code : System.UTF_Conversions.UCS_4;
-      Error : Boolean;
+      From_Status : System.UTF_Conversions.From_Status_Type;
    begin
       System.UTF_Conversions.From_UTF_8 (
          S (Index .. S'Last),
          Last,
          Code,
-         Error);
-      if Error then
+         From_Status);
+      if From_Status /= System.UTF_Conversions.Success then
          --  an illegal sequence is replaced to %XX at HFS
          declare
             Illegal : Character;
@@ -378,14 +379,14 @@ package body Ada.Directories.Inside.File_Names is
             declare
                Trailing_Last : Natural;
                Trailing_Code : System.UTF_Conversions.UCS_4;
-               Trailing_Error : Boolean;
+               Trailing_From_Status : System.UTF_Conversions.From_Status_Type;
             begin
                System.UTF_Conversions.From_UTF_8 (
                   S (Last + 1 .. S'Last),
                   Trailing_Last,
                   Trailing_Code,
-                  Trailing_Error);
-               if not Trailing_Error
+                  Trailing_From_Status);
+               if Trailing_From_Status = System.UTF_Conversions.Success
                   and then Trailing_Code < 16#FFFF#
                   and then get_combining_class (
                      C.vfs_utfconvdata.u_int16_t (Trailing_Code)) /= 0

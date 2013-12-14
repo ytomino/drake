@@ -493,25 +493,6 @@ package body Ada.Containers.Vectors is
       end loop;
    end Insert;
 
-   procedure Insert (
-      Container : in out Vector;
-      Before : Extended_Index;
-      Count : Count_Type := 1)
-   is
-      Position : Cursor;
-   begin
-      Insert_Space (Container, Before, Position, Count);
-   end Insert;
-
-   procedure Insert (
-      Container : in out Vector;
-      Before : Cursor;
-      Position : out Cursor;
-      Count : Count_Type := 1) is
-   begin
-      Insert_Space (Container, Before, Position, Count);
-   end Insert;
-
    procedure Insert_Space (
       Container : in out Vector;
       Before : Extended_Index;
@@ -962,42 +943,42 @@ package body Ada.Containers.Vectors is
 
    end Generic_Sorting;
 
-   package body No_Primitives is
+   package body Streaming is
 
       procedure Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : out Vector)
+         Item : out Vector)
       is
          Length : Count_Type'Base;
       begin
-         Clear (Container);
+         Clear (Item);
          Count_Type'Base'Read (Stream, Length);
          if Length > 0 then
-            Set_Length (Container, Length);
+            Set_Length (Item, Length);
             Element_Array'Read (
                Stream,
-               Downcast (Container.Super.Data).Items (
+               Downcast (Item.Super.Data).Items (
                   Index_Type'First ..
-                  Last_Index (Container)));
+                  Last_Index (Item)));
          end if;
       end Read;
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Container : Vector)
+         Item : Vector)
       is
-         Length : constant Count_Type := Vectors.Length (Container);
+         Length : constant Count_Type := Vectors.Length (Item);
       begin
          Count_Type'Base'Write (Stream, Length);
          if Length > 0 then
             Element_Array'Write (
                Stream,
-               Downcast (Container.Super.Data).Items (
+               Downcast (Item.Super.Data).Items (
                   Index_Type'First ..
-                  Last_Index (Container)));
+                  Last_Index (Item)));
          end if;
       end Write;
 
-   end No_Primitives;
+   end Streaming;
 
 end Ada.Containers.Vectors;

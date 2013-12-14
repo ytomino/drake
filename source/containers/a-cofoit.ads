@@ -3,6 +3,7 @@ pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.Iterator_Interfaces;
 private with Ada.Finalization;
+private with Ada.Streams;
 generic
    type Input_Cursor is private;
    with function Has_Element (Position : Input_Cursor) return Boolean is <>;
@@ -71,6 +72,29 @@ private
 
       overriding procedure Adjust (Object : in out Cursor);
       overriding procedure Finalize (Object : in out Cursor);
+
+      package Streaming is
+
+         procedure Missing_Read (
+            Stream : access Streams.Root_Stream_Type'Class;
+            Item : out Cursor);
+         function Missing_Input (
+            Stream : not null access Streams.Root_Stream_Type'Class)
+            return Cursor;
+         procedure Missing_Write (
+            Stream : access Streams.Root_Stream_Type'Class;
+            Item : Cursor);
+
+         pragma Import (Ada, Missing_Read, "__drake_program_error");
+         pragma Import (Ada, Missing_Input, "__drake_program_error");
+         pragma Import (Ada, Missing_Write, "__drake_program_error");
+
+      end Streaming;
+
+      for Cursor'Read use Streaming.Missing_Read;
+      for Cursor'Input use Streaming.Missing_Input;
+      for Cursor'Write use Streaming.Missing_Write;
+      for Cursor'Output use Streaming.Missing_Write;
 
    end Cursors;
 

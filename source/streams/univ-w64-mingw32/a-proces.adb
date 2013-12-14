@@ -102,7 +102,7 @@ package body Ada.Processes is
    begin
       if C.winbase.WaitForSingleObject (
          Handle,
-         C.windef.DWORD'Mod (C.winbase.INFINITE)) /= C.winbase.WAIT_OBJECT_0
+         C.winbase.INFINITE) /= C.winbase.WAIT_OBJECT_0
       then
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       else

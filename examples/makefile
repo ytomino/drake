@@ -56,7 +56,7 @@ ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS=-lm -lpthread -liconv -lgcc_eh
 endif
 ifneq ($(findstring linux-gnu,$(TARGET)),)
-LFLAGS=-lm -lpthread
+LFLAGS=-lm -lpthread -ldl
 endif
 
 ifneq ($(WITHD),0)

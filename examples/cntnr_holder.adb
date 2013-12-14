@@ -1,5 +1,5 @@
 with Ada.Containers.Indefinite_Holders;
-with Ada.Streams.Buffer_Storage_IO;
+with Ada.Streams.Unbounded_Storage_IO;
 procedure cntnr_holder is
 	package String_Holders is new Ada.Containers.Indefinite_Holders (String);
 	procedure Test_1 is
@@ -13,25 +13,25 @@ procedure cntnr_holder is
 	pragma Debug (Test_1);
 begin
 	Stream_Test : declare
-		package BSIO renames Ada.Streams.Buffer_Storage_IO;
+		package USIO renames Ada.Streams.Unbounded_Storage_IO;
 		X : String_Holders.Holder;
-		Buffer : Ada.Streams.Buffer_Storage_IO.Buffer;
+		Buffer : USIO.Buffer_Type;
 	begin
 		-- Holder -> Raw
 		String_Holders.Replace_Element (X, "");
-		String_Holders.Holder'Write (BSIO.Stream (Buffer), X);
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
+		String_Holders.Holder'Write (USIO.Stream (Buffer), X);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
 		declare
-			S : constant String := String'Input (BSIO.Stream (Buffer));
+			S : constant String := String'Input (USIO.Stream (Buffer));
 		begin
 			pragma Assert (S = "");
 			null;
 		end;
 		-- Raw -> Holder
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
-		String'Output (BSIO.Stream (Buffer), "XYZ");
-		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (BSIO.Stream (Buffer).all), 1);
-		String_Holders.Holder'Read (BSIO.Stream (Buffer), X);
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
+		String'Output (USIO.Stream (Buffer), "XYZ");
+		Ada.Streams.Set_Index (Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all), 1);
+		String_Holders.Holder'Read (USIO.Stream (Buffer), X);
 		pragma Assert (X.Element = "XYZ");
 	end Stream_Test;
 	pragma Debug (Ada.Debug.Put ("OK"));

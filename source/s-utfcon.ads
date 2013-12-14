@@ -11,25 +11,34 @@ package System.UTF_Conversions is
 
    UTF_8_Max_Length : constant := 6;
 
+   type From_Status_Type is (Success, Illegal_Sequence, Truncated);
+   pragma Discard_Names (From_Status_Type);
+
+   subtype Sequence_Status_Type is
+      From_Status_Type range Success .. Illegal_Sequence;
+
+   type To_Status_Type is (Success, Overflow, Unmappable);
+   pragma Discard_Names (To_Status_Type);
+
    procedure To_UTF_8 (
       Code : UCS_4;
       Result : out String;
       Last : out Natural;
-      Error : out Boolean);
+      Status : out To_Status_Type);
    procedure From_UTF_8 (
       Data : String;
       Last : out Natural;
       Result : out UCS_4;
-      Error : out Boolean);
+      Status : out From_Status_Type);
    procedure From_UTF_8_Reverse (
       Data : String;
       First : out Positive;
       Result : out UCS_4;
-      Error : out Boolean);
+      Status : out From_Status_Type);
    procedure UTF_8_Sequence (
       Leading : Character;
       Result : out Positive;
-      Error : out Boolean);
+      Status : out Sequence_Status_Type);
 
    UTF_16_Max_Length : constant := 2;
 
@@ -37,41 +46,41 @@ package System.UTF_Conversions is
       Code : UCS_4;
       Result : out Wide_String;
       Last : out Natural;
-      Error : out Boolean);
+      Status : out To_Status_Type);
    procedure From_UTF_16 (
       Data : Wide_String;
       Last : out Natural;
       Result : out UCS_4;
-      Error : out Boolean);
+      Status : out From_Status_Type);
    procedure From_UTF_16_Reverse (
       Data : Wide_String;
       First : out Positive;
       Result : out UCS_4;
-      Error : out Boolean);
+      Status : out From_Status_Type);
    procedure UTF_16_Sequence (
       Leading : Wide_Character;
       Result : out Positive;
-      Error : out Boolean);
+      Status : out Sequence_Status_Type);
 
    procedure To_UTF_32 (
       Code : UCS_4;
       Result : out Wide_Wide_String;
       Last : out Natural;
-      Error : out Boolean);
+      Status : out To_Status_Type);
    procedure From_UTF_32 (
       Data : Wide_Wide_String;
       Last : out Natural;
       Result : out UCS_4;
-      Error : out Boolean);
+      Status : out From_Status_Type);
    procedure From_UTF_32_Reverse (
       Data : Wide_Wide_String;
       First : out Positive;
       Result : out UCS_4;
-      Error : out Boolean);
+      Status : out From_Status_Type);
    procedure UTF_32_Sequence (
       Leading : Wide_Wide_Character;
       Result : out Positive;
-      Error : out Boolean);
+      Status : out Sequence_Status_Type);
 
    generic
       type Source_Element_Type is (<>);
@@ -82,12 +91,12 @@ package System.UTF_Conversions is
          Data : Source_Type;
          Last : out Natural;
          Result : out UCS_4;
-         Error : out Boolean);
+         Status : out From_Status_Type);
       with procedure To_UTF (
          Code : UCS_4;
          Result : out Target_Type;
          Last : out Natural;
-         Error : out Boolean);
+         Status : out To_Status_Type);
    procedure Convert_Procedure (
       Source : Source_Type;
       Result : out Target_Type;
@@ -109,5 +118,17 @@ package System.UTF_Conversions is
       Source : Source_Type;
       Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
       return Target_Type;
+
+   --  the rates of expansion
+   --  16#ef# 16#bf# 16#bf#        : 16#ffff#          : 16#0000ffff#
+   --  16#f0# 16#90# 16#80# 16#90# : 16#d800# 16#dc00# : 16#00010000#
+   --  16#f4# 16#8f# 16#bf# 16#bf# : 16#dbff# 16#dfff# : 16#0010ffff#
+
+   Expanding_From_8_To_16 : constant := 1;
+   Expanding_From_8_To_32 : constant := 1;
+   Expanding_From_16_To_8 : constant := 3;
+   Expanding_From_16_To_32 : constant := 1;
+   Expanding_From_32_To_8 : constant := 6;
+   Expanding_From_32_To_16 : constant := 2;
 
 end System.UTF_Conversions;

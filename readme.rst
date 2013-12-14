@@ -1,39 +1,29 @@
-Drake The Runtime Library for gcc-Ada (GNAT)
-============================================
+Drake The Runtime Library for gcc-Ada
+=====================================
 
 What's this?
 ------------
 
 Drake is a runtime library written in 100% Ada to replace GNAT runtime.
 
+Please, read wiki_ for more information.
+
 Environment
 -----------
 
-- MacOSX 10.5/10.6 (x86, 32bit/64bit)
-- FreeBSD 7 (x86, 32bit only)
-- Linux (x86, 32bit only) [#experimental]_
-- Windows (x86, 32bit only) [#experimental]_
+- Darwin (from 10.5, x86, 32bit/64bit)
+- FreeBSD (from 7, x86, 32bit only)
+- Linux (from 2.6, x86, 32bit/64bit) [#experimental]_
+- Windows (from XP, x86, 32bit only) [#experimental]_
 
 Depending tools and libraries
 -----------------------------
 
 gcc
- http://gcc.gnu.org/
-
-headmaster (or pre-translated headers)
- headmaster
-  http://github.com/ytomino/headmaster
- pre-translated headers
-  - `for MacOSX 10.6 (x86, 64bit)
-    <https://raw.github.com/wiki/ytomino/drake/import-x86_64-apple-darwin10.tar.bz2>`_
-  - `for MacOSX 10.5 (x86, 32bit)
-    <https://raw.github.com/wiki/ytomino/drake/import-i686-apple-darwin9.tar.bz2>`_
-  - `for FreeBSD 7 (x86, 32bit)
-    <https://raw.github.com/wiki/ytomino/drake/import-i686-pc-freebsd7.tar.bz2>`_
-  - **experimental** `for Linux (x86, 32bit)
-    <https://raw.github.com/wiki/ytomino/drake/import-i686-pc-linux-gnu.tar.bz2>`_
-  - **experimental** `for Windows (x86, 32bit, from mingw-w64 headers)
-    <https://raw.github.com/wiki/ytomino/drake/import-i686-w64-mingw32.tar.bz2>`_
+ Use gcc_ *instead of GNAT GPL Edition*.
+translated headers
+ Install headmaster_ to convert the headers on your system,
+ or download them from `pre-translated headers page`_.
 
 Downloads
 ---------
@@ -50,7 +40,17 @@ for gcc-4.6
 for gcc-4.5
  ``git clone git://github.com/ytomino/drake.git -b gcc-4.5``
 
-Short Example
+How to build
+------------
+
+Run ``make`` command with some variables, specify a translated headers path
+to ``IMPORTDIR`` and a destination path to ``RTSDIR``. ::
+
+ $ make IMPORTDIR=... RTSDIR=...
+
+Read the `build page`_ for details.
+
+Short example
 -------------
 
 1. Ready source code of a sample application. ::
@@ -73,6 +73,8 @@ Short Example
    
     $ gnatmake hello.adb --RTS=rts-drake
 
+   Specify ``--RTS`` option of ``gnatmake`` to use the alternative runtime.
+
 4. Run the sample application. ::
    
     $ ./hello
@@ -84,8 +86,13 @@ Limitations
 Many many features are unimplemented !!!
 
 And there are several intentional ACATS violations for usability.
-See incompatibility_.
+See `incompatibility features page`_.
 
-.. _incompatibility: https://github.com/ytomino/drake/wiki/Incompatibility
+.. _gcc: http://gcc.gnu.org/
+.. _headmaster: http://github.com/ytomino/headmaster
+.. _wiki: https://github.com/ytomino/drake/wiki
+.. _`pre-translated headers page`: https://github.com/ytomino/drake/wiki/Pre-translated-headers
+.. _`build page`: https://github.com/ytomino/drake/wiki/Build
+.. _`incompatibility features page`: https://github.com/ytomino/drake/wiki/Incompatibility
 .. [#experimental] Linux and Windows support is under construction,
                    limited and experimental.

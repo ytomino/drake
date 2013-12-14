@@ -73,7 +73,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
                2,
                Handles (0)'Access,
                0,
-               C.windef.DWORD'Mod (C.winbase.INFINITE))
+               C.winbase.INFINITE)
             is
                when C.winbase.WAIT_OBJECT_0 | C.winbase.WAIT_OBJECT_0 + 1 =>
                   null;

@@ -1,16 +1,19 @@
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
-with System.IO_Options;
+with System.Form_Parameters;
 with System.Memory;
 with System.Storage_Elements;
 with C.errno;
 with C.fcntl;
 with C.stdlib;
 with C.string;
+with C.sys.file;
 with C.sys.stat;
 with C.sys.types;
 with C.unistd;
 package body Ada.Streams.Stream_IO.Inside is
+   use type IO_Modes.File_Shared;
+   use type IO_Modes.File_Shared_Spec;
    use type Tags.Tag;
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
@@ -19,13 +22,117 @@ package body Ada.Streams.Stream_IO.Inside is
    use type C.char_ptr;
    use type C.signed_int; -- ssize_t is signed int or signed long
    use type C.signed_long;
+   use type C.signed_long_long; -- 64bit off_t in Darwin
    use type C.size_t;
    use type C.unsigned_short;
    use type C.unsigned_int;
-   use type C.sys.types.off_t; -- 64bit off_t
 
    pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
       "off_t is not 64bit");
+
+   --  the parameter Form
+
+   procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
+   begin
+      if Keyword = "shared" then
+         if Item'Length > 0
+            and then (
+               Item (Item'First) = 'a' -- allow
+               or else Item (Item'First) = 'y') -- yes, compatibility
+         then
+            Form.Shared := IO_Modes.Allow;
+         elsif Item'Length > 0 and then Item (Item'First) = 'r' then -- read
+            Form.Shared := IO_Modes.Read_Only;
+         elsif Item'Length > 0 and then Item (Item'First) = 'd' then -- deny
+            Form.Shared := IO_Modes.Deny;
+         elsif Item'Length > 0 and then Item (Item'First) = 'n' then -- no
+            Form.Shared := IO_Modes.By_Mode;
+         end if;
+      elsif Keyword = "wait" then
+         if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
+            Form.Wait := False;
+         elsif Item'Length > 0 and then Item (Item'First) = 't' then -- true
+            Form.Wait := True;
+         end if;
+      elsif Keyword = "overwrite" then
+         if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
+            Form.Overwrite := False;
+         elsif Item'Length > 0 and then Item (Item'First) = 't' then -- true
+            Form.Overwrite := True;
+         end if;
+      end if;
+   end Set;
+
+   function Pack (Form : String) return Packed_Form is
+      Keyword_First : Positive;
+      Keyword_Last : Natural;
+      Item_First : Positive;
+      Item_Last : Natural;
+      Last : Natural;
+   begin
+      return Result : Packed_Form := Default_Form do
+         Last := Form'First - 1;
+         while Last < Form'Last loop
+            System.Form_Parameters.Get (
+               Form (Last + 1 .. Form'Last),
+               Keyword_First,
+               Keyword_Last,
+               Item_First,
+               Item_Last,
+               Last);
+            Set (
+               Result,
+               Form (Keyword_First .. Keyword_Last),
+               Form (Item_First .. Item_Last));
+         end loop;
+      end return;
+   end Pack;
+
+   procedure Unpack (
+      Form : Packed_Form;
+      Result : out Form_String;
+      Last : out Natural)
+   is
+      New_Last : Natural;
+   begin
+      Last := Form_String'First - 1;
+      if Form.Shared /= IO_Modes.By_Mode then
+         case IO_Modes.File_Shared (Form.Shared) is
+            when IO_Modes.Allow =>
+               New_Last := Last + 10;
+               Result (Last + 1 .. New_Last) := "shared=yes";
+               Last := New_Last;
+            when IO_Modes.Read_Only =>
+               New_Last := Last + 11;
+               Result (Last + 1 .. New_Last) := "shared=read";
+               Last := New_Last;
+            when IO_Modes.Deny =>
+               New_Last := Last + 12;
+               Result (Last + 1 .. New_Last) := "shared=write";
+               Last := New_Last;
+         end case;
+      end if;
+      if Form.Wait then
+         if Last /= Form_String'First - 1 then
+            New_Last := Last + 1;
+            Result (New_Last) := ',';
+            Last := New_Last;
+         end if;
+         New_Last := Last + 9;
+         Result (Last + 1 .. New_Last) := "wait=true";
+         Last := New_Last;
+      end if;
+      if Form.Overwrite then
+         if Last /= Form_String'First - 1 then
+            New_Last := Last + 1;
+            Result (New_Last) := ',';
+            Last := New_Last;
+         end if;
+         New_Last := Last + 14;
+         Result (Last + 1 .. New_Last) := "overwrite=true";
+         Last := New_Last;
+      end if;
+   end Unpack;
 
    --  handle
 
@@ -101,7 +208,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle : Handle_Type;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "";
+      Form : Packed_Form := Default_Form;
       To_Close : Boolean := False) is
    begin
       Open (
@@ -141,7 +248,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Kind : Stream_Kind;
       Name : System.Address; -- be freeing on error
       Name_Length : Natural;
-      Form : String)
+      Form : Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
       Handle : Handle_Type;
@@ -149,12 +256,12 @@ package body Ada.Streams.Stream_IO.Inside is
       Kind : Stream_Kind;
       Name : System.Address;
       Name_Length : Natural;
-      Form : String)
+      Form : Packed_Form)
       return Non_Controlled_File_Type
    is
       Result_Addr : constant System.Address :=
          System.Address (C.stdlib.malloc (
-            Stream_Type'Size / Standard'Storage_Unit + Form'Length));
+            Stream_Type'Size / Standard'Storage_Unit));
    begin
       if Result_Addr = System.Null_Address then
          System.Memory.Free (Name);
@@ -163,18 +270,13 @@ package body Ada.Streams.Stream_IO.Inside is
          declare
             Result : constant Non_Controlled_File_Type :=
                Non_Controlled_File_Type_Conv.To_Pointer (Result_Addr);
-            --  Form is into same memory block
-            Result_Form : String (1 .. Form'Length);
-            for Result_Form'Address use
-               Result_Addr + Stream_Type'Size / Standard'Storage_Unit;
          begin
             Result.Handle := Handle;
             Result.Mode := Mode;
             Result.Kind := Kind;
             Result.Name := Name;
             Result.Name_Length := Name_Length;
-            Result.Form := Result_Form'Address;
-            Result.Form_Length := Form'Length;
+            Result.Form := Form;
             Result.Buffer := System.Null_Address;
             Result.Buffer_Length := Uninitialized_Buffer;
             Result.Buffer_Index := 0;
@@ -182,7 +284,6 @@ package body Ada.Streams.Stream_IO.Inside is
             Result.Writing_Index := 0;
             Result.Dispatcher.Tag := Ada.Tags.No_Tag;
             Result.Dispatcher.File := null;
-            Result_Form := Form;
             return Result;
          end;
       end if;
@@ -375,26 +476,6 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Compose_File_Name;
 
-   function Form_Share_Mode (Form : String; Default : C.unsigned_int)
-      return C.unsigned_int;
-   function Form_Share_Mode (Form : String; Default : C.unsigned_int)
-      return C.unsigned_int
-   is
-      First : Positive;
-      Last : Natural;
-   begin
-      System.IO_Options.Form_Parameter (Form, "shared", First, Last);
-      if First <= Last and then Form (First) = 'r' then -- read
-         return C.fcntl.O_SHLOCK;
-      elsif First <= Last and then Form (First) = 'w' then -- write
-         return C.fcntl.O_EXLOCK;
-      elsif First <= Last and then Form (First) = 'y' then -- yes
-         return 0;
-      else -- no
-         return Default;
-      end if;
-   end Form_Share_Mode;
-
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
 
@@ -403,25 +484,30 @@ package body Ada.Streams.Stream_IO.Inside is
       File : not null Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : not null C.char_ptr;
-      Form : String);
+      Form : Packed_Form);
    procedure Open_Normal (
       Method : Open_Method;
       File : not null Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : not null C.char_ptr;
-      Form : String)
+      Form : Packed_Form)
    is
       Handle : Handle_Type;
       Flags : C.unsigned_int;
-      Default_Lock_Flags : C.unsigned_int;
       Modes : constant := 8#644#;
+      Shared : IO_Modes.File_Shared;
       errno : C.signed_int;
    begin
       --  Flags, Append_File always has read and write access for Inout_File
-      if Mode = In_File then
-         Default_Lock_Flags := C.fcntl.O_SHLOCK;
+      if Form.Shared /= IO_Modes.By_Mode then
+         Shared := IO_Modes.File_Shared (Form.Shared);
       else
-         Default_Lock_Flags := C.fcntl.O_EXLOCK;
+         case Mode is
+            when In_File =>
+               Shared := IO_Modes.Read_Only;
+            when Out_File | Append_File =>
+               Shared := IO_Modes.Deny;
+         end case;
       end if;
       case Method is
          when Create =>
@@ -433,7 +519,10 @@ package body Ada.Streams.Stream_IO.Inside is
                   Append_File => O_RDWR or O_CREAT); -- no truncation
             begin
                Flags := Table (Mode);
-               Default_Lock_Flags := C.fcntl.O_EXLOCK;
+               Shared := IO_Modes.Deny;
+               if not Form.Overwrite then
+                  Flags := Flags or O_EXCL;
+               end if;
             end;
          when Open =>
             declare
@@ -456,9 +545,23 @@ package body Ada.Streams.Stream_IO.Inside is
                Flags := Table (Mode);
             end;
       end case;
-      Flags := Flags
-         or Form_Share_Mode (Form, Default_Lock_Flags)
-         or C.fcntl.O_CLOEXEC;
+      if Shared /= IO_Modes.Allow then
+         if Form.Wait then
+            declare
+               Lock_Flags : constant array (IO_Modes.File_Shared range
+                  IO_Modes.Read_Only .. IO_Modes.Deny) of C.unsigned_int := (
+                     IO_Modes.Read_Only => C.fcntl.O_SHLOCK,
+                     IO_Modes.Deny => C.fcntl.O_EXLOCK);
+            begin
+               Flags := Flags or Lock_Flags (Shared);
+            end;
+         else
+            null; -- use flock
+         end if;
+      else
+         null; -- use flock
+      end if;
+      Flags := Flags or C.fcntl.O_CLOEXEC;
       --  open
       Handle := C.fcntl.open (Name, C.signed_int (Flags), Modes);
       if Handle < 0 then
@@ -469,6 +572,7 @@ package body Ada.Streams.Stream_IO.Inside is
                | C.errno.ENAMETOOLONG
                | C.errno.ENOENT
                | C.errno.EACCES
+               | C.errno.EEXIST -- O_EXCL
                | C.errno.EISDIR
                | C.errno.EROFS =>
                Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
@@ -481,13 +585,52 @@ package body Ada.Streams.Stream_IO.Inside is
             C.fcntl.O_CLOEXEC = 0;
          pragma Warnings (Off, O_CLOEXEC_Is_Missing);
          Error : Boolean;
+         Dummy : C.signed_int;
+         pragma Unreferenced (Dummy);
       begin
          if O_CLOEXEC_Is_Missing then
             --  set FD_CLOEXEC if O_CLOEXEC is missing
             Set_Close_On_Exec (Handle, Error);
             if Error then
+               Dummy := C.unistd.close (Handle); -- close on error
                Free (File); -- free on error
                Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            end if;
+         end if;
+      end;
+      declare
+         O_EXLOCK_Is_Missing : constant Boolean :=
+            C.fcntl.O_EXLOCK = 0;
+         pragma Warnings (Off, O_EXLOCK_Is_Missing);
+         Race_Is_Raising : constant Boolean := not Form.Wait;
+         pragma Warnings (Off, Race_Is_Raising);
+         Operation_Table : constant array (IO_Modes.File_Shared range
+            IO_Modes.Read_Only .. IO_Modes.Deny) of C.unsigned_int := (
+               IO_Modes.Read_Only => C.sys.file.LOCK_SH,
+               IO_Modes.Deny => C.sys.file.LOCK_EX);
+         operation : C.unsigned_int;
+         Dummy : C.signed_int;
+         pragma Unreferenced (Dummy);
+      begin
+         if Shared /= IO_Modes.Allow
+            and then (O_EXLOCK_Is_Missing or else Race_Is_Raising)
+         then
+            operation := Operation_Table (Shared);
+            if Race_Is_Raising then
+               operation := operation or C.sys.file.LOCK_NB;
+            end if;
+            if C.sys.file.flock (Handle, C.signed_int (operation)) < 0 then
+               errno := C.errno.errno;
+               Dummy := C.unistd.close (Handle); -- close on error
+               Free (File); -- free on error
+               case errno is
+                  when C.errno.EWOULDBLOCK =>
+                     Exceptions.Raise_Exception_From_Here (
+                        Tasking_Error'Identity);
+                     --  Is Tasking_Error suitable?
+                  when others =>
+                     Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               end case;
             end if;
          end if;
       end;
@@ -501,13 +644,13 @@ package body Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String);
+      Form : Packed_Form);
    procedure Allocate_And_Open (
       Method : Open_Method;
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String)
+      Form : Packed_Form)
    is
       Handle : Handle_Type;
       Full_Name : C.char_ptr;
@@ -776,7 +919,7 @@ package body Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "") is
+      Form : Packed_Form := Default_Form) is
    begin
       if File /= null then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -793,7 +936,7 @@ package body Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "") is
+      Form : Packed_Form := Default_Form) is
    begin
       if File /= null then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
@@ -847,8 +990,6 @@ package body Ada.Streams.Stream_IO.Inside is
          when Normal =>
             declare
                File2 : constant Non_Controlled_File_Type := File.all;
-               Form : String (1 .. File2.Form_Length);
-               for Form'Address use File2.Form;
             begin
                File.all := null;
                Close_File (File2, Raise_On_Error => True);
@@ -860,7 +1001,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   File => File2,
                   Mode => Mode,
                   Name => char_ptr_Conv.To_Pointer (File2.Name),
-                  Form => Form);
+                  Form => File2.Form);
                File.all := File2;
             end;
          when Temporary =>
@@ -891,15 +1032,10 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Name;
 
-   function Form (File : Non_Controlled_File_Type) return String is
+   function Form (File : Non_Controlled_File_Type) return Packed_Form is
    begin
       Check_File_Open (File);
-      declare
-         A_Form : String (1 .. File.Form_Length);
-         for A_Form'Address use File.Form;
-      begin
-         return A_Form;
-      end;
+      return File.Form;
    end Form;
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean is
@@ -1163,8 +1299,6 @@ package body Ada.Streams.Stream_IO.Inside is
          when Normal =>
             declare
                File2 : constant Non_Controlled_File_Type := File.all;
-               Form : String (1 .. File2.Form_Length);
-               for Form'Address use File2.Form;
             begin
                File.all := null;
                Close_File (File2, Raise_On_Error => True);
@@ -1173,7 +1307,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   File => File2,
                   Mode => Mode,
                   Name => char_ptr_Conv.To_Pointer (File2.Name),
-                  Form => Form);
+                  Form => File2.Form);
                File.all := File2;
             end;
          when Temporary =>
@@ -1201,14 +1335,14 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Flush;
 
-   --  handle for non-controlled
+   --  implementation of handle for non-controlled
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Handle : Handle_Type;
       Mode : File_Mode;
       Name : String := "";
-      Form : String := "";
+      Form : Packed_Form := Default_Form;
       To_Close : Boolean := False)
    is
       Kind : Stream_Kind;

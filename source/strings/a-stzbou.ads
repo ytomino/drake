@@ -1,90 +1,45 @@
 pragma License (Unrestricted);
-with Ada.References.Wide_Wide_String;
-with Ada.Strings.Generic_Bounded;
-with Ada.Strings.Wide_Wide_Functions;
-with Ada.Strings.Wide_Wide_Functions.Maps;
+with Ada.Strings.Bounded_Wide_Wide_Strings;
+with Ada.Strings.Bounded_Wide_Wide_Strings.Functions;
+with Ada.Strings.Bounded_Wide_Wide_Strings.Functions.Maps;
 with Ada.Strings.Wide_Wide_Maps;
-with System.Strings.Stream_Ops;
 package Ada.Strings.Wide_Wide_Bounded is
    pragma Preelaborate;
-
-   --  Generic_Bounded is not able to use directly since some names differ.
-   package Instance is new Generic_Bounded (
-      Wide_Wide_Character,
-      Wide_Wide_String,
-      System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO,
-      System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO,
-      References.Wide_Wide_String.Slicing);
 
    generic
       Max : Positive; -- Maximum length of a Bounded_String
    package Generic_Bounded_Length is
 
       --  for renaming
-      package Instance is new Instance.Generic_Bounded_Length (Max);
-      package Functions is new Instance.Generic_Functions (
-         Space => Wide_Wide_Space,
-         Fixed_Index_From => Strings.Wide_Wide_Functions.Index,
-         Fixed_Index => Strings.Wide_Wide_Functions.Index,
-         Fixed_Index_Non_Blank_From =>
-            Strings.Wide_Wide_Functions.Index_Non_Blank,
-         Fixed_Index_Non_Blank => Strings.Wide_Wide_Functions.Index_Non_Blank,
-         Fixed_Count => Strings.Wide_Wide_Functions.Count,
-         Fixed_Replace_Slice => Strings.Wide_Wide_Functions.Replace_Slice,
-         Fixed_Insert => Strings.Wide_Wide_Functions.Insert,
-         Fixed_Overwrite => Strings.Wide_Wide_Functions.Overwrite,
-         Fixed_Delete => Strings.Wide_Wide_Functions.Delete,
-         Fixed_Trim => Strings.Wide_Wide_Functions.Trim,
-         Fixed_Head => Strings.Wide_Wide_Functions.Head,
-         Fixed_Tail => Strings.Wide_Wide_Functions.Tail);
-      package Maps is new Functions.Generic_Maps (
-         Character_Set => Strings.Wide_Wide_Maps.Wide_Wide_Character_Set,
-         Character_Mapping =>
-            Strings.Wide_Wide_Maps.Wide_Wide_Character_Mapping,
-         Fixed_Index_Mapping_From => Strings.Wide_Wide_Functions.Maps.Index,
-         Fixed_Index_Mapping => Strings.Wide_Wide_Functions.Maps.Index,
-         Fixed_Index_Mapping_Function_From =>
-            Strings.Wide_Wide_Functions.Maps.Index,
-         Fixed_Index_Mapping_Function =>
-            Strings.Wide_Wide_Functions.Maps.Index,
-         Fixed_Index_Mapping_Function_Per_Element_From =>
-            Strings.Wide_Wide_Functions.Maps.Index_Per_Element,
-         Fixed_Index_Mapping_Function_Per_Element =>
-            Strings.Wide_Wide_Functions.Maps.Index_Per_Element,
-         Fixed_Index_Set_From => Strings.Wide_Wide_Functions.Maps.Index,
-         Fixed_Index_Set => Strings.Wide_Wide_Functions.Maps.Index,
-         Fixed_Count_Mapping => Strings.Wide_Wide_Functions.Maps.Count,
-         Fixed_Count_Mapping_Function =>
-            Strings.Wide_Wide_Functions.Maps.Count,
-         Fixed_Count_Mapping_Function_Per_Element =>
-            Strings.Wide_Wide_Functions.Maps.Count_Per_Element,
-         Fixed_Count_Set => Strings.Wide_Wide_Functions.Maps.Count,
-         Fixed_Find_Token_From => Strings.Wide_Wide_Functions.Maps.Find_Token,
-         Fixed_Find_Token => Strings.Wide_Wide_Functions.Maps.Find_Token,
-         Fixed_Translate_Mapping => Strings.Wide_Wide_Functions.Maps.Translate,
-         Fixed_Translate_Mapping_Function =>
-            Strings.Wide_Wide_Functions.Maps.Translate,
-         Fixed_Translate_Mapping_Function_Per_Element =>
-            Strings.Wide_Wide_Functions.Maps.Translate_Per_Element,
-         Fixed_Trim_Set => Strings.Wide_Wide_Functions.Maps.Trim);
+      package Bounded_Wide_Wide_Strings is
+         new Strings.Bounded_Wide_Wide_Strings.Generic_Bounded_Length (Max);
+      package Functions is
+         new Strings.Bounded_Wide_Wide_Strings.Functions.
+            Generic_Bounded_Length (
+               Bounded_Wide_Wide_Strings);
+      package Maps is
+         new Strings.Bounded_Wide_Wide_Strings.Functions.Maps.
+            Generic_Bounded_Length (
+               Bounded_Wide_Wide_Strings);
 
 --    Max_Length : constant Positive := Max;
       Max_Length : Positive
-         renames Instance.Max_Length;
+         renames Bounded_Wide_Wide_Strings.Max_Length;
 
 --    type Bounded_Wide_Wide_String is private;
-      subtype Bounded_Wide_Wide_String is Instance.Bounded_String;
+      subtype Bounded_Wide_Wide_String is
+         Bounded_Wide_Wide_Strings.Bounded_String;
 
       --  modified
 --    Null_Wide_Wide_Bounded_String : constant Bounded_Wide_Wide_String;
       function Null_Bounded_Wide_Wide_String return Bounded_Wide_Wide_String
-         renames Instance.Null_Bounded_String;
+         renames Bounded_Wide_Wide_Strings.Null_Bounded_String;
 
 --    subtype Length_Range is Natural range 0 .. Max_Length;
-      subtype Length_Range is Instance.Length_Range;
+      subtype Length_Range is Bounded_Wide_Wide_Strings.Length_Range;
 
       function Length (Source : Bounded_Wide_Wide_String) return Length_Range
-         renames Instance.Length;
+         renames Bounded_Wide_Wide_Strings.Length;
 
       --  Conversion, Concatenation, and Selection functions
 
@@ -92,180 +47,180 @@ package Ada.Strings.Wide_Wide_Bounded is
          Source : Wide_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.To_Bounded_String;
+         renames Bounded_Wide_Wide_Strings.To_Bounded_String;
 
       function To_Wide_Wide_String (Source : Bounded_Wide_Wide_String)
          return Wide_Wide_String
-         renames Instance.To_String;
+         renames Bounded_Wide_Wide_Strings.To_String;
 
       procedure Set_Bounded_Wide_Wide_String (
          Target : out Bounded_Wide_Wide_String;
          Source : Wide_Wide_String;
          Drop : Truncation := Error)
-         renames Instance.Set_Bounded_String;
+         renames Bounded_Wide_Wide_Strings.Set_Bounded_String;
 
       function Append (
          Left, Right : Bounded_Wide_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.Append;
+         renames Bounded_Wide_Wide_Strings.Append;
 
       function Append (
          Left : Bounded_Wide_Wide_String;
          Right : Wide_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.Append;
+         renames Bounded_Wide_Wide_Strings.Append;
 
       function Append (
          Left : Wide_Wide_String;
          Right : Bounded_Wide_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.Append;
+         renames Bounded_Wide_Wide_Strings.Append;
 
       function Append (
          Left : Bounded_Wide_Wide_String;
          Right : Wide_Wide_Character;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.Append;
+         renames Bounded_Wide_Wide_Strings.Append;
 
       function Append (
          Left : Wide_Wide_Character;
          Right : Bounded_Wide_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.Append;
+         renames Bounded_Wide_Wide_Strings.Append;
 
       procedure Append (
          Source : in out Bounded_Wide_Wide_String;
          New_Item : Bounded_Wide_Wide_String;
          Drop : Truncation := Error)
-         renames Instance.Append;
+         renames Bounded_Wide_Wide_Strings.Append;
 
       procedure Append (
          Source : in out Bounded_Wide_Wide_String;
          New_Item : Wide_Wide_String;
          Drop : Truncation := Error)
-         renames Instance.Append;
+         renames Bounded_Wide_Wide_Strings.Append;
 
       procedure Append (
          Source : in out Bounded_Wide_Wide_String;
          New_Item : Wide_Wide_Character;
          Drop : Truncation := Error)
-         renames Instance.Append;
+         renames Bounded_Wide_Wide_Strings.Append;
 
       function "&" (Left, Right : Bounded_Wide_Wide_String)
          return Bounded_Wide_Wide_String
-         renames Instance."&";
+         renames Bounded_Wide_Wide_Strings."&";
 
       function "&" (Left : Bounded_Wide_Wide_String; Right : Wide_Wide_String)
          return Bounded_Wide_Wide_String
-         renames Instance."&";
+         renames Bounded_Wide_Wide_Strings."&";
 
       function "&" (Left : Wide_Wide_String; Right : Bounded_Wide_Wide_String)
          return Bounded_Wide_Wide_String
-         renames Instance."&";
+         renames Bounded_Wide_Wide_Strings."&";
 
       function "&" (
          Left : Bounded_Wide_Wide_String;
          Right : Wide_Wide_Character)
          return Bounded_Wide_Wide_String
-         renames Instance."&";
+         renames Bounded_Wide_Wide_Strings."&";
 
       function "&" (
          Left : Wide_Wide_Character;
          Right : Bounded_Wide_Wide_String)
          return Bounded_Wide_Wide_String
-         renames Instance."&";
+         renames Bounded_Wide_Wide_Strings."&";
 
       function Element (
          Source : Bounded_Wide_Wide_String;
          Index : Positive)
          return Wide_Wide_Character
-         renames Instance.Element;
+         renames Bounded_Wide_Wide_Strings.Element;
 
       procedure Replace_Element (
          Source : in out Bounded_Wide_Wide_String;
          Index : Positive;
          By : Wide_Wide_Character)
-         renames Instance.Replace_Element;
+         renames Bounded_Wide_Wide_Strings.Replace_Element;
 
       function Slice (
          Source : Bounded_Wide_Wide_String;
          Low : Positive;
          High : Natural)
          return Wide_Wide_String
-         renames Instance.Slice;
+         renames Bounded_Wide_Wide_Strings.Slice;
 
       function Bounded_Slice (
          Source : Bounded_Wide_Wide_String;
          Low : Positive;
          High : Natural)
          return Bounded_Wide_Wide_String
-         renames Instance.Bounded_Slice;
+         renames Bounded_Wide_Wide_Strings.Bounded_Slice;
 
       procedure Bounded_Slice (
          Source : Bounded_Wide_Wide_String;
          Target : out Bounded_Wide_Wide_String;
          Low : Positive;
          High : Natural)
-         renames Instance.Bounded_Slice;
+         renames Bounded_Wide_Wide_Strings.Bounded_Slice;
 
       function "=" (Left, Right : Bounded_Wide_Wide_String) return Boolean
-         renames Instance."=";
+         renames Bounded_Wide_Wide_Strings."=";
       function "=" (Left : Bounded_Wide_Wide_String; Right : Wide_Wide_String)
          return Boolean
-         renames Instance."=";
+         renames Bounded_Wide_Wide_Strings."=";
 
       function "=" (Left : Wide_Wide_String; Right : Bounded_Wide_Wide_String)
          return Boolean
-         renames Instance."=";
+         renames Bounded_Wide_Wide_Strings."=";
 
       function "<" (Left, Right : Bounded_Wide_Wide_String) return Boolean
-         renames Instance."<";
+         renames Bounded_Wide_Wide_Strings."<";
 
       function "<" (Left : Bounded_Wide_Wide_String; Right : Wide_Wide_String)
          return Boolean
-         renames Instance."<";
+         renames Bounded_Wide_Wide_Strings."<";
 
       function "<" (Left : Wide_Wide_String; Right : Bounded_Wide_Wide_String)
          return Boolean
-         renames Instance."<";
+         renames Bounded_Wide_Wide_Strings."<";
 
       function "<=" (Left, Right : Bounded_Wide_Wide_String) return Boolean
-         renames Instance."<=";
+         renames Bounded_Wide_Wide_Strings."<=";
 
       function "<=" (Left : Bounded_Wide_Wide_String; Right : Wide_Wide_String)
          return Boolean
-         renames Instance."<=";
+         renames Bounded_Wide_Wide_Strings."<=";
 
       function "<=" (Left : Wide_Wide_String; Right : Bounded_Wide_Wide_String)
          return Boolean
-         renames Instance."<=";
+         renames Bounded_Wide_Wide_Strings."<=";
 
       function ">" (Left, Right : Bounded_Wide_Wide_String) return Boolean
-         renames Instance.">";
+         renames Bounded_Wide_Wide_Strings.">";
 
       function ">" (Left : Bounded_Wide_Wide_String; Right : Wide_Wide_String)
          return Boolean
-         renames Instance.">";
+         renames Bounded_Wide_Wide_Strings.">";
 
       function ">" (Left : Wide_Wide_String; Right : Bounded_Wide_Wide_String)
          return Boolean
-         renames Instance.">";
+         renames Bounded_Wide_Wide_Strings.">";
 
       function ">=" (Left, Right : Bounded_Wide_Wide_String) return Boolean
-         renames Instance.">=";
+         renames Bounded_Wide_Wide_Strings.">=";
 
       function ">=" (Left : Bounded_Wide_Wide_String; Right : Wide_Wide_String)
          return Boolean
-         renames Instance.">=";
+         renames Bounded_Wide_Wide_Strings.">=";
 
       function ">=" (Left : Wide_Wide_String; Right : Bounded_Wide_Wide_String)
          return Boolean
-         renames Instance.">=";
+         renames Bounded_Wide_Wide_Strings.">=";
 
       --  Search subprograms
 
@@ -598,36 +553,36 @@ package Ada.Strings.Wide_Wide_Bounded is
 
       function "*" (Left : Natural; Right : Wide_Wide_Character)
          return Bounded_Wide_Wide_String
-         renames Instance."*";
+         renames Bounded_Wide_Wide_Strings."*";
 
       function "*" (Left : Natural; Right : Wide_Wide_String)
          return Bounded_Wide_Wide_String
-         renames Instance."*";
+         renames Bounded_Wide_Wide_Strings."*";
 
       function "*" (Left : Natural; Right : Bounded_Wide_Wide_String)
          return Bounded_Wide_Wide_String
-         renames Instance."*";
+         renames Bounded_Wide_Wide_Strings."*";
 
       function Replicate (
          Count : Natural;
          Item : Wide_Wide_Character;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.Replicate;
+         renames Bounded_Wide_Wide_Strings.Replicate;
 
       function Replicate (
          Count : Natural;
          Item : Wide_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.Replicate;
+         renames Bounded_Wide_Wide_Strings.Replicate;
 
       function Replicate (
          Count : Natural;
          Item : Bounded_Wide_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Instance.Replicate;
+         renames Bounded_Wide_Wide_Strings.Replicate;
 
    end Generic_Bounded_Length;
 

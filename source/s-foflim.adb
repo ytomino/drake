@@ -22,6 +22,7 @@ procedure System.Formatting.Float_Image (
    Infinity : String := "INF")
 is
    pragma Suppress (All_Checks);
+   use type Unsigned;
    function isnan (X : Long_Long_Float) return Integer;
    pragma Import (Intrinsic, isnan, "__builtin_isnanl");
    function isinf (X : Long_Long_Float) return Integer;
@@ -70,6 +71,8 @@ begin
          Fore : Unsigned;
          Aft : Long_Long_Float;
          Exponent : Integer;
+         Scaled_Aft : Long_Long_Float;
+         Rouned_Up : Boolean;
          Error : Boolean;
       begin
          Float.Split (
@@ -78,6 +81,21 @@ begin
             Aft,
             Exponent,
             Base => Base);
+         Float.Aft_Scale (
+            Aft,
+            Scaled_Aft,
+            Exponent,
+            Rouned_Up,
+            Base => Base,
+            Width => Aft_Width);
+         if Rouned_Up then
+            Fore := Fore + 1;
+            Scaled_Aft := 0.0;
+            if Fore >= Unsigned (Base) then
+               Fore := 1;
+               Exponent := Exponent + 1;
+            end if;
+         end if;
          --  opening '#'
          if Base_Form then
             Image (
@@ -105,8 +123,7 @@ begin
          --  '.' and decimal part
          pragma Assert (Last + 1 + Aft_Width <= To'Last);
          Float.Aft_Image (
-            Aft,
-            Exponent,
+            Scaled_Aft,
             To (Last + 1 .. To'Last),
             Last,
             Base => Base,
