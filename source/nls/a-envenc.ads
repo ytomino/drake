@@ -12,18 +12,22 @@ package Ada.Environment_Encoding is
    type Encoding_Id is private;
 
    function Image (Encoding : Encoding_Id) return String;
+   pragma Inline (Image); -- renamed
 
    function Default_Substitute (Encoding : Encoding_Id)
       return Streams.Stream_Element_Array;
+   pragma Inline (Default_Substitute); -- renamed
 
    function Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
       return Streams.Stream_Element_Offset;
+   pragma Inline (Min_Size_In_Stream_Elements); -- renamed
 
    UTF_8 : constant Encoding_Id;
    UTF_16 : constant Encoding_Id;
    UTF_32 : constant Encoding_Id;
 
    function Current_Encoding return Encoding_Id;
+   pragma Inline (Current_Encoding); -- renamed
 
    --  subsidiary types to converter
 
@@ -55,6 +59,7 @@ package Ada.Environment_Encoding is
    type Converter is limited private;
 
    function Is_Open (Object : Converter) return Boolean;
+   pragma Inline (Is_Open); -- renamed
 
    function Min_Size_In_From_Stream_Elements (Object : Converter)
       return Streams.Stream_Element_Offset;

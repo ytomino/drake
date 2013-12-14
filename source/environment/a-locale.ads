@@ -20,6 +20,7 @@ package Ada.Locales is
    function To_Alpha_3 (Item : ISO_639_Alpha_2) return ISO_639_Alpha_3;
    function Language return ISO_639_Alpha_2;
    function Language return ISO_639_Alpha_3;
+   pragma Inline (Language); -- renamed
 
    --  extended
    --  These are country code for ISO 3166.
@@ -28,6 +29,7 @@ package Ada.Locales is
 --       (for all E of ISO_3166_1_Alpha_2 => E in 'A' .. 'Z');
    ISO_3166_1_Alpha_2_Unknown : constant ISO_3166_1_Alpha_2 := "ZZ";
    function Country return ISO_3166_1_Alpha_2;
+   pragma Inline (Country); -- renamed
 
    --  modified
    --  Language_Code is ISO_639_Alpha_3, Country_Code is ISO_3166_1_Alpha_2
