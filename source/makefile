@@ -343,6 +343,12 @@ $(RTSDIR)/adainclude/%.ads: mman/$(TARGETSUBDIR)/%.ads
 $(RTSDIR)/adainclude/%.adb: mman/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+$(RTSDIR)/adainclude/%.ads: nls/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: nls/%.adb
+	$(INSTALL) $(abspath $<) $@
+
 $(RTSDIR)/adainclude/%.ads: nls/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 

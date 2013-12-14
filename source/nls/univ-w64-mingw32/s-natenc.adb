@@ -87,7 +87,7 @@ package body System.Native_Encoding is
 
    --  implementation
 
-   function Image (Encoding : Encoding_Id) return String is
+   function Get_Image (Encoding : Encoding_Id) return String is
       Info : aliased C.winnls.CPINFOEX;
    begin
       if C.winnls.GetCPInfoEx (
@@ -98,9 +98,9 @@ package body System.Native_Encoding is
          Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity); -- ?
       end if;
       return Zero_Terminated_WStrings.Value (Info.CodePageName (0)'Access);
-   end Image;
+   end Get_Image;
 
-   function Default_Substitute (Encoding : Encoding_Id)
+   function Get_Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array
    is
       Result : Ada.Streams.Stream_Element_Array (
@@ -112,9 +112,9 @@ package body System.Native_Encoding is
       Default_Substitute (Encoding, Result, Last, Is_Overflow);
       pragma Assert (not Is_Overflow);
       return Result (Result'First .. Last);
-   end Default_Substitute;
+   end Get_Default_Substitute;
 
-   function Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
+   function Get_Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Offset is
    begin
       case Encoding is
@@ -125,35 +125,35 @@ package body System.Native_Encoding is
          when others =>
             return 1;
       end case;
-   end Min_Size_In_Stream_Elements;
+   end Get_Min_Size_In_Stream_Elements;
 
-   function Is_Open (Object : Converter) return Boolean is
+   function Get_Is_Open (Object : Converter) return Boolean is
    begin
       return Object.From /= Invalid_Encoding_Id;
-   end Is_Open;
+   end Get_Is_Open;
 
-   function Min_Size_In_From_Stream_Elements (Object : Converter)
+   function Min_Size_In_From_Stream_Elements_No_Check (Object : Converter)
       return Ada.Streams.Stream_Element_Offset is
    begin
-      return Min_Size_In_Stream_Elements (Object.From);
-   end Min_Size_In_From_Stream_Elements;
+      return Get_Min_Size_In_Stream_Elements (Object.From);
+   end Min_Size_In_From_Stream_Elements_No_Check;
 
-   function Current_Encoding return Encoding_Id is
+   function Get_Current_Encoding return Encoding_Id is
    begin
       return Encoding_Id (C.winnls.GetACP);
-   end Current_Encoding;
+   end Get_Current_Encoding;
 
-   function Substitute (Object : Converter)
+   function Substitute_No_Check (Object : Converter)
       return Ada.Streams.Stream_Element_Array is
    begin
       if Object.Substitute_Length < 0 then
-         return Default_Substitute (Object.To);
+         return Get_Default_Substitute (Object.To);
       else
          return Object.Substitute (1 .. Object.Substitute_Length);
       end if;
-   end Substitute;
+   end Substitute_No_Check;
 
-   procedure Set_Substitute (
+   procedure Set_Substitute_No_Check (
       Object : in out Converter;
       Substitute : Ada.Streams.Stream_Element_Array) is
    begin
@@ -163,103 +163,7 @@ package body System.Native_Encoding is
       Object.Substitute_Length := Substitute'Length;
       Object.Substitute (1 .. Object.Substitute_Length) := Substitute;
       Object.Substitute (Object.Substitute_Length + 1) := 0; -- zero terminator
-   end Set_Substitute;
-
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Finish : Boolean;
-      Status : out Subsequence_Status_Type) is
-   begin
-      if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
-      end if;
-      Convert_No_Check (
-         Object,
-         Item,
-         Last,
-         Out_Item,
-         Out_Last,
-         Finish,
-         Status);
-   end Convert;
-
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Continuing_Status_Type) is
-   begin
-      if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
-      end if;
-      Convert_No_Check (Object, Item, Last, Out_Item, Out_Last, Status);
-   end Convert;
-
-   procedure Convert (
-      Object : Converter;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Finish : True_Only;
-      Status : out Finishing_Status_Type) is
-   begin
-      if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
-      end if;
-      Convert_No_Check (Object, Out_Item, Out_Last, Finish, Status);
-   end Convert;
-
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Finish : True_Only;
-      Status : out Substituting_Status_Type) is
-   begin
-      if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
-      end if;
-      Convert_No_Check (
-         Object,
-         Item,
-         Last,
-         Out_Item,
-         Out_Last,
-         Finish,
-         Status);
-   end Convert;
-
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Finished : True_Only;
-      Status : out Status_Type)
-   is
-      Subsequence_Status : Subsequence_Status_Type;
-   begin
-      Convert (
-         Object,
-         Item,
-         Last,
-         Out_Item,
-         Out_Last,
-         Finished,
-         Subsequence_Status);
-      pragma Assert (Subsequence_Status in
-         Subsequence_Status_Type (Status_Type'First) ..
-         Subsequence_Status_Type (Status_Type'Last));
-      Status := Status_Type (Subsequence_Status);
-   end Convert;
+   end Set_Substitute_No_Check;
 
    procedure Convert_No_Check (
       Object : Converter;

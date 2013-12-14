@@ -1,30 +1,37 @@
 pragma License (Unrestricted);
---  extended unit
+--  implementation unit
 with Ada.IO_Exceptions;
 with Ada.Streams;
-private with C.windef;
-private with C.winnls;
+with C.windef;
+with C.winnls;
 package System.Native_Encoding is
    --  Platform-depended text encoding.
    pragma Preelaborate;
+   use type Ada.Streams.Stream_Element_Offset;
+
+   --  max length of one multi-byte character
+
+   Max_Substitute_Length : constant := 6; -- UTF-8
 
    --  encoding identifier
 
-   type Encoding_Id is private;
+   type Encoding_Id is new C.windef.UINT;
 
-   function Image (Encoding : Encoding_Id) return String;
+   function Get_Image (Encoding : Encoding_Id) return String;
 
-   function Default_Substitute (Encoding : Encoding_Id)
+   function Get_Default_Substitute (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Array;
 
-   function Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
+   function Get_Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Offset;
 
-   UTF_8 : constant Encoding_Id;
-   UTF_16 : constant Encoding_Id;
-   UTF_32 : constant Encoding_Id;
+   UTF_8 : constant Encoding_Id := C.winnls.CP_UTF8;
+   UTF_16 : constant Encoding_Id := 16#ffff_ff10#; -- dummy value
+   UTF_32 : constant Encoding_Id := 16#ffff_ff20#; -- dummy value
 
-   function Current_Encoding return Encoding_Id;
+   function Get_Current_Encoding return Encoding_Id;
+
+   Invalid_Encoding_Id : constant := 16#ffff_ffff#; -- dummy value
 
    --  subsidiary types to converter
 
@@ -34,6 +41,7 @@ package System.Native_Encoding is
       Overflow, -- the output buffer is not large enough
       Illegal_Sequence, -- a input character could not be mapped to the output
       Truncated); -- the input buffer is broken off at a multi-byte character
+   pragma Discard_Names (Subsequence_Status_Type);
 
    type Continuing_Status_Type is
       new Subsequence_Status_Type
@@ -53,94 +61,6 @@ package System.Native_Encoding is
 
    --  converter
 
-   type Converter is limited private;
-
-   function Is_Open (Object : Converter) return Boolean;
-
-   function Min_Size_In_From_Stream_Elements (Object : Converter)
-      return Ada.Streams.Stream_Element_Offset;
-
-   function Substitute (Object : Converter)
-      return Ada.Streams.Stream_Element_Array;
-
-   procedure Set_Substitute (
-      Object : in out Converter;
-      Substitute : Ada.Streams.Stream_Element_Array);
-
-   --  convert subsequence
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Finish : Boolean;
-      Status : out Subsequence_Status_Type);
-
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Status : out Continuing_Status_Type);
-
-   procedure Convert (
-      Object : Converter;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Finish : True_Only;
-      Status : out Finishing_Status_Type);
-
-   --  convert all character sequence
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Finished : True_Only;
-      Status : out Status_Type);
-
-   --  convert all character sequence with substitute
-   procedure Convert (
-      Object : Converter;
-      Item : Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
-      Out_Item : out Ada.Streams.Stream_Element_Array;
-      Out_Last : out Ada.Streams.Stream_Element_Offset;
-      Finish : True_Only;
-      Status : out Substituting_Status_Type);
-
-   --  exceptions
-
-   Name_Error : exception
-      renames Ada.IO_Exceptions.Name_Error;
-   Status_Error : exception
-      renames Ada.IO_Exceptions.Status_Error;
-   Use_Error : exception
-      renames Ada.IO_Exceptions.Use_Error;
-
-private
-   use type Ada.Streams.Stream_Element_Offset;
-   use type C.char_array;
-
-   --  max length of one multi-byte character
-
-   Max_Substitute_Length : constant := 6; -- UTF-8
-
-   --  encoding identifier
-
-   type Encoding_Id is new C.windef.UINT;
-
-   UTF_8 : constant Encoding_Id := C.winnls.CP_UTF8;
-   UTF_16 : constant Encoding_Id := 16#ffff_ff10#; -- dummy value
-   UTF_32 : constant Encoding_Id := 16#ffff_ff20#; -- dummy value
-
-   Invalid_Encoding_Id : constant := 16#ffff_ffff#; -- dummy value
-
-   --  converter
-
    type Converter is record
       From : Encoding_Id := Invalid_Encoding_Id;
       To : Encoding_Id;
@@ -150,6 +70,21 @@ private
          Max_Substitute_Length + 1); -- zero terminated
    end record;
 
+   procedure Open (Object : out Converter; From, To : Encoding_Id);
+
+   function Get_Is_Open (Object : Converter) return Boolean;
+
+   function Min_Size_In_From_Stream_Elements_No_Check (Object : Converter)
+      return Ada.Streams.Stream_Element_Offset;
+
+   function Substitute_No_Check (Object : Converter)
+      return Ada.Streams.Stream_Element_Array;
+
+   procedure Set_Substitute_No_Check (
+      Object : in out Converter;
+      Substitute : Ada.Streams.Stream_Element_Array);
+
+   --  convert subsequence
    procedure Convert_No_Check (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
@@ -174,6 +109,17 @@ private
       Finish : True_Only;
       Status : out Finishing_Status_Type);
 
+   --  convert all character sequence
+--  procedure Convert_No_Check (
+--    Object : Converter;
+--    Item : Ada.Streams.Stream_Element_Array;
+--    Last : out Ada.Streams.Stream_Element_Offset;
+--    Out_Item : out Ada.Streams.Stream_Element_Array;
+--    Out_Last : out Ada.Streams.Stream_Element_Offset;
+--    Finished : True_Only;
+--    Status : out Status_Type);
+
+   --  convert all character sequence with substitute
    procedure Convert_No_Check (
       Object : Converter;
       Item : Ada.Streams.Stream_Element_Array;
@@ -189,6 +135,13 @@ private
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Is_Overflow : out Boolean);
 
-   procedure Open (Object : out Converter; From, To : Encoding_Id);
+   --  exceptions
+
+   Name_Error : exception
+      renames Ada.IO_Exceptions.Name_Error;
+   Status_Error : exception
+      renames Ada.IO_Exceptions.Status_Error;
+   Use_Error : exception
+      renames Ada.IO_Exceptions.Use_Error;
 
 end System.Native_Encoding;

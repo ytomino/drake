@@ -1,24 +1,25 @@
 with Ada.Exceptions;
 with System.Address_To_Access_Conversions;
-package body System.Native_Encoding.Encoding_Streams is
-   use type Ada.Streams.Stream_Element;
-   use type Ada.Streams.Stream_Element_Array;
+package body Ada.Environment_Encoding.Encoding_Streams is
+   use type Streams.Stream_Element;
+   use type Streams.Stream_Element_Array;
+   use type System.Address;
 
-   subtype Stream_Element_Offset is Ada.Streams.Stream_Element_Offset;
+   subtype Stream_Element_Offset is Streams.Stream_Element_Offset;
 
    procedure Adjust_Buffer (
       Buffer : in out Buffer_Type;
-      First : in out Ada.Streams.Stream_Element_Offset;
-      Last : in out Ada.Streams.Stream_Element_Offset);
+      First : in out Streams.Stream_Element_Offset;
+      Last : in out Streams.Stream_Element_Offset);
    procedure Adjust_Buffer (
       Buffer : in out Buffer_Type;
-      First : in out Ada.Streams.Stream_Element_Offset;
-      Last : in out Ada.Streams.Stream_Element_Offset) is
+      First : in out Streams.Stream_Element_Offset;
+      Last : in out Streams.Stream_Element_Offset) is
    begin
       if First >= Buffer_Type'First + Half_Buffer_Length then
          --  shift
          declare
-            New_Last : constant Ada.Streams.Stream_Element_Offset :=
+            New_Last : constant Streams.Stream_Element_Offset :=
                Buffer_Type'First + Last - First;
          begin
             Buffer (Buffer_Type'First .. New_Last) := Buffer (First .. Last);
@@ -40,19 +41,19 @@ package body System.Native_Encoding.Encoding_Streams is
 
    procedure Set_Substitute_To_Reading_Converter (
       Object : in out Converter;
-      Substitute : Ada.Streams.Stream_Element_Array)
+      Substitute : Streams.Stream_Element_Array)
       renames Set_Substitute; -- System.Native_Encoding.Set_Substitute
 
    procedure Read (
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item : out Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : out Streams.Stream_Element_Array;
+      Last : out Streams.Stream_Element_Offset;
       Object : Converter;
       Context : in out Reading_Context_Type);
    procedure Read (
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item : out Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset;
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : out Streams.Stream_Element_Array;
+      Last : out Streams.Stream_Element_Offset;
       Object : Converter;
       Context : in out Reading_Context_Type)
    is
@@ -68,7 +69,7 @@ package body System.Native_Encoding.Encoding_Streams is
                   Old_Context_Last : constant Stream_Element_Offset :=
                      Context.Last;
                begin
-                  Ada.Streams.Read (
+                  Streams.Read (
                      Stream.all,
                      Context.Buffer (Context.Last + 1 .. Buffer_Type'Last),
                      Context.Last);
@@ -88,7 +89,7 @@ package body System.Native_Encoding.Encoding_Streams is
             --  try to convert subsequence
             declare
                Taken : Stream_Element_Offset;
-               Status : Subsequence_Status_Type;
+               Status : System.Native_Encoding.Subsequence_Status_Type;
             begin
                Convert_No_Check (
                   Object,
@@ -101,20 +102,20 @@ package body System.Native_Encoding.Encoding_Streams is
                   Finish => Context.Status > Continuing,
                   Status => Status);
                case Status is
-                  when Finished =>
+                  when System.Native_Encoding.Finished =>
                      Context.Status := Ended;
-                  when Success =>
+                  when System.Native_Encoding.Success =>
                      null;
-                  when Overflow =>
+                  when System.Native_Encoding.Overflow =>
                      if Context.Converted_Last < Context.Converted_First then
                         raise Constraint_Error; -- Converted is too smaller
                      end if;
-                  when Truncated =>
+                  when System.Native_Encoding.Truncated =>
                      pragma Assert (Context.Status = Continuing);
                      if Context.Converted_Last < Context.Converted_First then
                         exit; -- wait tail-bytes
                      end if;
-                  when Illegal_Sequence =>
+                  when System.Native_Encoding.Illegal_Sequence =>
                      declare
                         Is_Overflow : Boolean;
                      begin
@@ -165,7 +166,7 @@ package body System.Native_Encoding.Encoding_Streams is
          and then Context.Status = Ended
          and then Context.Converted_Last < Context.Converted_First
       then
-         Ada.Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+         Exceptions.Raise_Exception_From_Here (End_Error'Identity);
       end if;
    end Read;
 
@@ -178,20 +179,20 @@ package body System.Native_Encoding.Encoding_Streams is
 
    procedure Set_Substitute_To_Writing_Converter (
       Object : in out Converter;
-      Substitute : Ada.Streams.Stream_Element_Array);
+      Substitute : Streams.Stream_Element_Array);
    procedure Set_Substitute_To_Writing_Converter (
       Object : in out Converter;
-      Substitute : Ada.Streams.Stream_Element_Array)
+      Substitute : Streams.Stream_Element_Array)
    is
-      Substitute_Last : Ada.Streams.Stream_Element_Offset :=
+      Substitute_Last : Streams.Stream_Element_Offset :=
          Substitute'First - 1;
-      S2 : Ada.Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
-      S2_Last : Ada.Streams.Stream_Element_Offset := S2'First - 1;
+      S2 : Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
+      S2_Last : Streams.Stream_Element_Offset := S2'First - 1;
    begin
       --  convert substitute from internal to external
       loop
          declare
-            Status : Substituting_Status_Type;
+            Status : System.Native_Encoding.Substituting_Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -202,11 +203,11 @@ package body System.Native_Encoding.Encoding_Streams is
                Finish => True,
                Status => Status);
             case Status is
-               when Finished =>
+               when System.Native_Encoding.Finished =>
                   exit;
-               when Success =>
+               when System.Native_Encoding.Success =>
                   null;
-               when Overflow =>
+               when System.Native_Encoding.Overflow =>
                   raise Constraint_Error;
             end case;
          end;
@@ -217,13 +218,13 @@ package body System.Native_Encoding.Encoding_Streams is
    end Set_Substitute_To_Writing_Converter;
 
    procedure Write (
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item : Ada.Streams.Stream_Element_Array;
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : Streams.Stream_Element_Array;
       Object : Converter;
       Context : in out Writing_Context_Type);
    procedure Write (
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item : Ada.Streams.Stream_Element_Array;
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Item : Streams.Stream_Element_Array;
       Object : Converter;
       Context : in out Writing_Context_Type)
    is
@@ -256,9 +257,9 @@ package body System.Native_Encoding.Encoding_Streams is
          --  try to convert subsequence
          declare
             Taken : Stream_Element_Offset;
-            Out_Buffer : Ada.Streams.Stream_Element_Array (0 .. 63);
+            Out_Buffer : Streams.Stream_Element_Array (0 .. 63);
             Out_Last : Stream_Element_Offset;
-            Status : Continuing_Status_Type;
+            Status : System.Native_Encoding.Continuing_Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -268,17 +269,17 @@ package body System.Native_Encoding.Encoding_Streams is
                Out_Last,
                Status => Status);
             case Status is
-               when Success =>
+               when System.Native_Encoding.Success =>
                   null;
-               when Overflow =>
+               when System.Native_Encoding.Overflow =>
                   if Out_Last < Out_Buffer'First then
                      raise Constraint_Error; -- Out_Buffer is too smaller
                   end if;
-               when Truncated =>
+               when System.Native_Encoding.Truncated =>
                   if Out_Last < Out_Buffer'First then
                      exit; -- wait tail-bytes
                   end if;
-               when Illegal_Sequence =>
+               when System.Native_Encoding.Illegal_Sequence =>
                   declare
                      Is_Overflow : Boolean;
                   begin
@@ -299,7 +300,7 @@ package body System.Native_Encoding.Encoding_Streams is
                         - 1);
             end case;
             --  write converted subsequence
-            Ada.Streams.Write (
+            Streams.Write (
                Stream.all,
                Out_Buffer (Out_Buffer'First .. Out_Last));
             --  drop converted subsequence
@@ -309,17 +310,17 @@ package body System.Native_Encoding.Encoding_Streams is
    end Write;
 
    procedure Finish (
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Stream : not null access Streams.Root_Stream_Type'Class;
       Object : Converter;
       Context : in out Writing_Context_Type);
    procedure Finish (
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Stream : not null access Streams.Root_Stream_Type'Class;
       Object : Converter;
       Context : in out Writing_Context_Type)
    is
-      Out_Buffer : Ada.Streams.Stream_Element_Array (0 .. 63);
+      Out_Buffer : Streams.Stream_Element_Array (0 .. 63);
       Out_Last : Stream_Element_Offset := -1;
-      Status : Finishing_Status_Type;
+      Status : System.Native_Encoding.Finishing_Status_Type;
    begin
       if Context.First <= Context.Last then
          --  put substitute instead of incomplete sequence in the buffer
@@ -342,15 +343,15 @@ package body System.Native_Encoding.Encoding_Streams is
             Out_Last,
             Finish => True,
             Status => Status);
-         Ada.Streams.Write (
+         Streams.Write (
             Stream.all,
             Out_Buffer (Out_Buffer'First .. Out_Last));
          case Status is
-            when Finished =>
+            when System.Native_Encoding.Finished =>
                exit;
-            when Success =>
+            when System.Native_Encoding.Success =>
                null;
-            when Overflow =>
+            when System.Native_Encoding.Overflow =>
                if Out_Last < Out_Buffer'First then
                   raise Constraint_Error; -- Out_Buffer is too smaller
                end if;
@@ -362,13 +363,13 @@ package body System.Native_Encoding.Encoding_Streams is
 
    function Open (
       Decoder : Converter;
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+      Stream : not null access Streams.Root_Stream_Type'Class)
       return In_Type
    is
       pragma Suppress (Accessibility_Check);
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       return Result : In_Type do
          Result.Stream := Conv.To_Address (Conv.Object_Pointer (Stream));
@@ -379,26 +380,26 @@ package body System.Native_Encoding.Encoding_Streams is
 
    function Is_Open (Object : In_Type) return Boolean is
    begin
-      return Object.Stream /= Null_Address;
+      return Object.Stream /= System.Null_Address;
    end Is_Open;
 
    function Stream (Object : aliased in out In_Type)
-      return not null access Ada.Streams.Root_Stream_Type'Class is
+      return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       return Object'Unchecked_Access;
    end Stream;
 
    overriding procedure Read (
       Object : in out In_Type;
-      Item : out Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset)
+      Item : out Streams.Stream_Element_Array;
+      Last : out Streams.Stream_Element_Offset)
    is
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       Read (
          Conv.To_Pointer (Object.Stream),
@@ -412,13 +413,13 @@ package body System.Native_Encoding.Encoding_Streams is
 
    function Open (
       Encoder : Converter;
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+      Stream : not null access Streams.Root_Stream_Type'Class)
       return Out_Type
    is
       pragma Suppress (Accessibility_Check);
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       return Result : Out_Type do
          Result.Stream := Conv.To_Address (Conv.Object_Pointer (Stream));
@@ -429,25 +430,25 @@ package body System.Native_Encoding.Encoding_Streams is
 
    function Is_Open (Object : Out_Type) return Boolean is
    begin
-      return Object.Stream /= Null_Address;
+      return Object.Stream /= System.Null_Address;
    end Is_Open;
 
    function Stream (Object : aliased in out Out_Type)
-      return not null access Ada.Streams.Root_Stream_Type'Class is
+      return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       return Object'Unchecked_Access;
    end Stream;
 
    procedure Finish (Object : in out Out_Type) is
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       Finish (
          Conv.To_Pointer (Object.Stream),
@@ -457,11 +458,11 @@ package body System.Native_Encoding.Encoding_Streams is
 
    overriding procedure Write (
       Object : in out Out_Type;
-      Item : Ada.Streams.Stream_Element_Array)
+      Item : Streams.Stream_Element_Array)
    is
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       Write (
          Conv.To_Pointer (Object.Stream),
@@ -475,13 +476,13 @@ package body System.Native_Encoding.Encoding_Streams is
    function Open (
       Internal : Encoding_Id;
       External : Encoding_Id;
-      Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+      Stream : not null access Streams.Root_Stream_Type'Class)
       return Inout_Type
    is
       pragma Suppress (Accessibility_Check);
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       return Result : Inout_Type do
          Result.Internal := Internal;
@@ -495,11 +496,11 @@ package body System.Native_Encoding.Encoding_Streams is
 
    function Is_Open (Object : Inout_Type) return Boolean is
    begin
-      return Object.Stream /= Null_Address;
+      return Object.Stream /= System.Null_Address;
    end Is_Open;
 
    function Substitute (Object : Inout_Type)
-      return Ada.Streams.Stream_Element_Array is
+      return Streams.Stream_Element_Array is
    begin
       if Object.Substitute_Length < 0 then
          return Default_Substitute (Object.Internal);
@@ -510,7 +511,7 @@ package body System.Native_Encoding.Encoding_Streams is
 
    procedure Set_Substitute (
       Object : in out Inout_Type;
-      Substitute : Ada.Streams.Stream_Element_Array) is
+      Substitute : Streams.Stream_Element_Array) is
    begin
       if Substitute'Length > Object.Substitute'Length then
          raise Constraint_Error;
@@ -531,21 +532,21 @@ package body System.Native_Encoding.Encoding_Streams is
    end Set_Substitute;
 
    function Stream (Object : aliased in out Inout_Type)
-      return not null access Ada.Streams.Root_Stream_Type'Class is
+      return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       return Object'Unchecked_Access;
    end Stream;
 
    procedure Finish (Object : in out Inout_Type) is
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       if not Is_Open (Object) then
-         Ada.Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
       if Is_Open (Object.Writing_Converter) then
          Finish (
@@ -557,18 +558,18 @@ package body System.Native_Encoding.Encoding_Streams is
 
    overriding procedure Read (
       Object : in out Inout_Type;
-      Item : out Ada.Streams.Stream_Element_Array;
-      Last : out Ada.Streams.Stream_Element_Offset)
+      Item : out Streams.Stream_Element_Array;
+      Last : out Streams.Stream_Element_Offset)
    is
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       if not Is_Open (Object.Reading_Converter) then
          Open (
             Object.Reading_Converter,
-            From => Object.External,
-            To => Object.Internal);
+            From => System.Native_Encoding.Encoding_Id (Object.External),
+            To => System.Native_Encoding.Encoding_Id (Object.Internal));
          if Object.Substitute_Length >= 0 then
             Set_Substitute_To_Reading_Converter (
                Object.Reading_Converter,
@@ -585,17 +586,17 @@ package body System.Native_Encoding.Encoding_Streams is
 
    overriding procedure Write (
       Object : in out Inout_Type;
-      Item : Ada.Streams.Stream_Element_Array)
+      Item : Streams.Stream_Element_Array)
    is
       package Conv is
-         new Address_To_Access_Conversions (
-            Ada.Streams.Root_Stream_Type'Class);
+         new System.Address_To_Access_Conversions (
+            Streams.Root_Stream_Type'Class);
    begin
       if not Is_Open (Object.Writing_Converter) then
          Open (
             Object.Writing_Converter,
-            From => Object.Internal,
-            To => Object.External);
+            From => System.Native_Encoding.Encoding_Id (Object.Internal),
+            To => System.Native_Encoding.Encoding_Id (Object.External));
          if Object.Substitute_Length >= 0 then
             Set_Substitute_To_Writing_Converter (
                Object.Writing_Converter,
@@ -609,4 +610,4 @@ package body System.Native_Encoding.Encoding_Streams is
          Object.Writing_Context);
    end Write;
 
-end System.Native_Encoding.Encoding_Streams;
+end Ada.Environment_Encoding.Encoding_Streams;
