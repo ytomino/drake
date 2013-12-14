@@ -16,6 +16,7 @@ package Ada.Dynamic_Linking is
    procedure Close (Lib : in out Library);
 
    function Is_Open (Lib : Library) return Boolean;
+   pragma Inline (Is_Open);
 
    function Import (Lib : Library; Symbol : String) return System.Address;
 

@@ -73,6 +73,7 @@ package System.Native_Encoding is
    procedure Open (Object : out Converter; From, To : Encoding_Id);
 
    function Get_Is_Open (Object : Converter) return Boolean;
+   pragma Inline (Get_Is_Open);
 
    function Min_Size_In_From_Stream_Elements_No_Check (Object : Converter)
       return Ada.Streams.Stream_Element_Offset;

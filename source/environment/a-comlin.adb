@@ -14,10 +14,8 @@ package body Ada.Command_Line is
       end if;
    end Argument;
 
-   function Argument_Count return Natural is
-   begin
-      return Inside.Argument_Count;
-   end Argument_Count;
+   function Argument_Count return Natural
+      renames Inside.Argument_Count;
 
    function Command_Name return String is
    begin

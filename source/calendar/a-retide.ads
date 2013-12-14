@@ -8,7 +8,7 @@ private package Ada.Real_Time.Delays is
    --    'entity "Ada.Real_Time.Delays.Rt_Delay_Until" not available',
    --  but "Delay_Until" is required in fact.
    procedure Delay_Until (T : Time);
-   pragma Inline (Delay_Until);
+   pragma Inline (Delay_Until); -- renamed
 
    --  required by compiler ??? (a-retide.ads)
 --  function To_Duration (T : Time) return Duration;

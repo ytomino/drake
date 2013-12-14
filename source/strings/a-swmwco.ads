@@ -12,7 +12,7 @@ package Ada.Strings.Wide_Maps.Wide_Constants is
    --  extended
    --  There are sets of unicode category.
    function Unassigned_Set return Wide_Character_Set;
-   pragma Inline (Unassigned_Set);
+   pragma Inline (Unassigned_Set); -- renamed, the followings are the same
    function Uppercase_Letter_Set return Wide_Character_Set;
    pragma Inline (Uppercase_Letter_Set);
    function Lowercase_Letter_Set return Wide_Character_Set;

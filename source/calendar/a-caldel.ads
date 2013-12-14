@@ -9,17 +9,17 @@ private package Ada.Calendar.Delays is
    --  but "Delay_For" is required in fact
    --  note, Is_RTE returns False if it is declared with renaming directly
    procedure Delay_For (D : Duration);
-   pragma Inline (Delay_For);
+   pragma Inline (Delay_For); -- renamed
 
    --  required for delay until statement by compiler (a-caldel.ads)
    --  the error is "entity "Ada.Calendar.Delays.Ca_Delay_Until" not defined",
    --  but "Delay_Until" is required in fact
    procedure Delay_Until (T : Time);
-   pragma Inline (Delay_Until);
+   pragma Inline (Delay_Until); -- renamed
 
    --  required for select or delay by compiler (a-caldel.ads)
    function To_Duration (T : Time) return Duration;
-   pragma Inline (To_Duration);
+   pragma Inline (To_Duration); -- renamed
 
 private
 

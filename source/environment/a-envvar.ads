@@ -7,17 +7,17 @@ package Ada.Environment_Variables is
 
    function Value (Name : String) return String;
    function Value (Name : String; Default : String) return String;
-   pragma Inline (Value);
+   pragma Inline (Value); -- renamed
 
    function Exists (Name : String) return Boolean;
-   pragma Inline (Exists);
+   pragma Inline (Exists); -- renamed
 
    procedure Set (Name : String; Value : String);
-   pragma Inline (Set);
+   pragma Inline (Set); -- renamed
 
    procedure Clear (Name : String);
    procedure Clear;
-   pragma Inline (Clear);
+   pragma Inline (Clear); -- renamed
 
    procedure Iterate (
       Process : not null access procedure (Name, Value : String));
@@ -27,11 +27,11 @@ package Ada.Environment_Variables is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
-   pragma Inline (Has_Element);
+   pragma Inline (Has_Element); -- renamed
    function Name (Position : Cursor) return String;
-   pragma Inline (Name);
+   pragma Inline (Name); -- renamed
    function Value (Position : Cursor) return String;
-   pragma Inline (Value);
+   pragma Inline (Value); -- renamed
    package Iterator_Interfaces is
       new Ada.Iterator_Interfaces (Cursor, Has_Element);
    function Iterate return Iterator_Interfaces.Forward_Iterator'Class;

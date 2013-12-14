@@ -42,7 +42,7 @@ package Interfaces.C.Generic_Strings is
       Nul_Check : Boolean := False)
       return not null chars_ptr;
    pragma Pure_Function (To_Chars_Ptr);
-   pragma Inline_Always (To_Chars_Ptr);
+   pragma Inline (To_Chars_Ptr);
 
 --  function New_Char_Array (Chars : char_array) return chars_ptr;
    function New_Char_Array (Chars : Element_Array) return not null chars_ptr;
@@ -119,17 +119,17 @@ package Interfaces.C.Generic_Strings is
    function To_Chars_Ptr (Item : not null access String_Type)
       return not null chars_ptr;
    pragma Pure_Function (To_Chars_Ptr);
-   pragma Inline_Always (To_Chars_Ptr);
+   pragma Inline (To_Chars_Ptr);
 
    function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
       return not null const_chars_ptr;
    pragma Pure_Function (To_Const_Chars_Ptr);
-   pragma Inline_Always (To_Const_Chars_Ptr);
+   pragma Inline (To_Const_Chars_Ptr);
 
    function To_Const_Chars_Ptr (Item : not null access constant String_Type)
       return not null const_chars_ptr;
    pragma Pure_Function (To_Const_Chars_Ptr);
-   pragma Inline_Always (To_Const_Chars_Ptr);
+   pragma Inline (To_Const_Chars_Ptr);
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr;
 

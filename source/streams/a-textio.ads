@@ -95,7 +95,6 @@ package Ada.Text_IO is
    function Name (File : not null File_Access) return String; -- alt
    pragma Inline (Name);
    function Form (File : File_Type) return String;
-   pragma Inline (Form);
 
    function Is_Open (File : File_Type) return Boolean;
    function Is_Open (File : not null File_Access) return Boolean; -- alt
