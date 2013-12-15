@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  implementation unit
 private generic
 package Ada.Numerics.SFMT.Random.Inside is
+   --  SSE2 version
    pragma Preelaborate;
 
    procedure gen_rand_all (
