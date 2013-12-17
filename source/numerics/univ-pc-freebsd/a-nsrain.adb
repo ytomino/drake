@@ -1,6 +1,8 @@
 package body Ada.Numerics.SFMT.Random.Inside is
    --  no SIMD version
    pragma Suppress (All_Checks);
+   use type Unsigned_32;
+   use type Unsigned_64;
 
    procedure rshift128 (
       Out_Item : out w128_t;
@@ -26,16 +28,16 @@ package body Ada.Numerics.SFMT.Random.Inside is
    is
       th, tl, oh, ol : Unsigned_64;
    begin
-      th := Shift_Left (Unsigned_64 (In_Item (3)), 32)
+      th := Interfaces.Shift_Left (Unsigned_64 (In_Item (3)), 32)
          or Unsigned_64 (In_Item (2));
-      tl := Shift_Left (Unsigned_64 (In_Item (1)), 32)
+      tl := Interfaces.Shift_Left (Unsigned_64 (In_Item (1)), 32)
          or Unsigned_64 (In_Item (0));
-      oh := Shift_Right (th, shift * 8);
-      ol := Shift_Right (tl, shift * 8);
-      ol := ol or Shift_Left (th, 64 - shift * 8);
-      Out_Item (1) := Unsigned_32'Mod (Shift_Right (ol, 32));
+      oh := Interfaces.Shift_Right (th, shift * 8);
+      ol := Interfaces.Shift_Right (tl, shift * 8);
+      ol := ol or Interfaces.Shift_Left (th, 64 - shift * 8);
+      Out_Item (1) := Unsigned_32'Mod (Interfaces.Shift_Right (ol, 32));
       Out_Item (0) := Unsigned_32'Mod (ol);
-      Out_Item (3) := Unsigned_32'Mod (Shift_Right (oh, 32));
+      Out_Item (3) := Unsigned_32'Mod (Interfaces.Shift_Right (oh, 32));
       Out_Item (2) := Unsigned_32'Mod (oh);
    end rshift128;
 
@@ -49,16 +51,16 @@ package body Ada.Numerics.SFMT.Random.Inside is
    is
       th, tl, oh, ol : Unsigned_64;
    begin
-      th := Shift_Left (Unsigned_64 (In_Item (3)), 32)
+      th := Interfaces.Shift_Left (Unsigned_64 (In_Item (3)), 32)
          or Unsigned_64 (In_Item (2));
-      tl := Shift_Left (Unsigned_64 (In_Item (1)), 32)
+      tl := Interfaces.Shift_Left (Unsigned_64 (In_Item (1)), 32)
          or Unsigned_64 (In_Item (0));
-      oh := Shift_Left (th, shift * 8);
-      ol := Shift_Left (tl, shift * 8);
-      oh := oh or Shift_Right (tl, 64 - shift * 8);
-      Out_Item (1) := Unsigned_32'Mod (Shift_Right (ol, 32));
+      oh := Interfaces.Shift_Left (th, shift * 8);
+      ol := Interfaces.Shift_Left (tl, shift * 8);
+      oh := oh or Interfaces.Shift_Right (tl, 64 - shift * 8);
+      Out_Item (1) := Unsigned_32'Mod (Interfaces.Shift_Right (ol, 32));
       Out_Item (0) := Unsigned_32'Mod (ol);
-      Out_Item (3) := Unsigned_32'Mod (Shift_Right (oh, 32));
+      Out_Item (3) := Unsigned_32'Mod (Interfaces.Shift_Right (oh, 32));
       Out_Item (2) := Unsigned_32'Mod (oh);
    end lshift128;
 
@@ -69,14 +71,18 @@ package body Ada.Numerics.SFMT.Random.Inside is
    begin
       lshift128 (x, a, SL2);
       rshift128 (y, c, SR2);
-      r (0) := a (0) xor x (0) xor (Shift_Right (b (0), SR1) and MSK1)
-         xor y (0) xor Shift_Left (d (0), SL1);
-      r (1) := a (1) xor x (1) xor (Shift_Right (b (1), SR1) and MSK2)
-         xor y (1) xor Shift_Left (d (1), SL1);
-      r (2) := a (2) xor x (2) xor (Shift_Right (b (2), SR1) and MSK3)
-         xor y (2) xor Shift_Left (d (2), SL1);
-      r (3) := a (3) xor x (3) xor (Shift_Right (b (3), SR1) and MSK4)
-         xor y (3) xor Shift_Left (d (3), SL1);
+      r (0) := a (0) xor x (0)
+         xor (Interfaces.Shift_Right (b (0), SR1) and MSK1) xor y (0)
+         xor Interfaces.Shift_Left (d (0), SL1);
+      r (1) := a (1) xor x (1)
+         xor (Interfaces.Shift_Right (b (1), SR1) and MSK2) xor y (1)
+         xor Interfaces.Shift_Left (d (1), SL1);
+      r (2) := a (2) xor x (2)
+         xor (Interfaces.Shift_Right (b (2), SR1) and MSK3) xor y (2)
+         xor Interfaces.Shift_Left (d (2), SL1);
+      r (3) := a (3) xor x (3)
+         xor (Interfaces.Shift_Right (b (3), SR1) and MSK4) xor y (3)
+         xor Interfaces.Shift_Left (d (3), SL1);
    end do_recursion;
 
    --  implementation

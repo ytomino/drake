@@ -1,5 +1,7 @@
 pragma License (Unrestricted);
 --  translated unit from SFMT
+with Ada.IO_Exceptions;
+with Interfaces;
 generic
    --  Mersenne Exponent. The period of the sequence
    --  is a multiple of 2^MEXP-1.
@@ -18,19 +20,35 @@ generic
    SR2 : Natural := 1;
    --  A bitmask, used in the recursion.  These parameters are introduced
    --  to break symmetry of SIMD.
-   MSK1 : Unsigned_32 := 16#dfffffef#;
-   MSK2 : Unsigned_32 := 16#ddfecb7f#;
-   MSK3 : Unsigned_32 := 16#bffaffff#;
-   MSK4 : Unsigned_32 := 16#bffffff6#;
+   MSK1 : Interfaces.Unsigned_32 := 16#dfffffef#;
+   MSK2 : Interfaces.Unsigned_32 := 16#ddfecb7f#;
+   MSK3 : Interfaces.Unsigned_32 := 16#bffaffff#;
+   MSK4 : Interfaces.Unsigned_32 := 16#bffffff6#;
    --  These definitions are part of a 128-bit period certification vector.
-   PARITY1 : Unsigned_32 := 16#00000001#;
-   PARITY2 : Unsigned_32 := 16#00000000#;
-   PARITY3 : Unsigned_32 := 16#00000000#;
-   PARITY4 : Unsigned_32 := 16#c98e126a#;
+   PARITY1 : Interfaces.Unsigned_32 := 16#00000001#;
+   PARITY2 : Interfaces.Unsigned_32 := 16#00000000#;
+   PARITY3 : Interfaces.Unsigned_32 := 16#00000000#;
+   PARITY4 : Interfaces.Unsigned_32 := 16#c98e126a#;
 package Ada.Numerics.SFMT.Random is
    pragma Preelaborate;
 
+   subtype Unsigned_32 is Interfaces.Unsigned_32;
+
+   type Unsigned_32_Array is array (Natural range <>) of
+      aliased Interfaces.Unsigned_32;
+   for Unsigned_32_Array'Alignment use 16;
+
+   subtype Unsigned_64 is Interfaces.Unsigned_64;
+
+   type Unsigned_64_Array is array (Natural range <>) of
+      aliased Interfaces.Unsigned_64;
+   for Unsigned_64_Array'Alignment use 16;
+
+   --  Identification string
+
    function Id return String;
+
+   --  Basic facilities
 
    type Generator is limited private;
 
@@ -50,6 +68,8 @@ package Ada.Numerics.SFMT.Random is
 
    procedure Reset (Gen : in out Generator);
    procedure Reset (Gen : in out Generator; Initiator : Integer);
+
+   --  Advanced facilities
 
    type State is private;
    pragma Preelaborable_Initialization (State); -- uninitialized
@@ -111,6 +131,12 @@ package Ada.Numerics.SFMT.Random is
    function Random_53_0_To_Less_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
    pragma Inline (Random_53_0_To_Less_1);
+
+   --  Exceptions
+
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
+   --  Note: Use_Error may be raised from Initialize
 
 private
 

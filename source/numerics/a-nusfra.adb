@@ -1,9 +1,12 @@
+pragma Check_Policy (Validate, Off);
 with Ada.Numerics.Initiator;
 with Ada.Numerics.SFMT.Random.Inside;
 with System.Formatting;
 with System.Storage_Elements;
 package body Ada.Numerics.SFMT.Random is
    pragma Suppress (All_Checks);
+   use type Unsigned_32;
+   use type Unsigned_64;
    use type System.Bit_Order;
    use type System.Storage_Elements.Storage_Count;
 
@@ -11,6 +14,11 @@ package body Ada.Numerics.SFMT.Random is
 
    function idxof (i : Integer) return Integer;
    pragma Inline (idxof);
+
+   function func1 (x : Unsigned_32) return Unsigned_32;
+   pragma Inline (func1);
+   function func2 (x : Unsigned_32) return Unsigned_32;
+   pragma Inline (func2);
 
    procedure period_certification (
       psfmt32 : in out Unsigned_32_Array_N32);
@@ -20,6 +28,20 @@ package body Ada.Numerics.SFMT.Random is
    --  Note: This Ada version is always 32-bit.
    function idxof (i : Integer) return Integer
       renames "+";
+
+   --  This function represents a function used in the initialization
+   --  by init_by_array
+   function func1 (x : Unsigned_32) return Unsigned_32 is
+   begin
+      return (x xor Interfaces.Shift_Right (x, 27)) * 1664525;
+   end func1;
+
+   --  This function represents a function used in the initialization
+   --  by init_by_array
+   function func2 (x : Unsigned_32) return Unsigned_32 is
+   begin
+      return (x xor Interfaces.Shift_Right (x, 27)) * 1566083941;
+   end func2;
 
    --  This function certificate the period of 2^{MEXP}
    procedure period_certification (
@@ -32,7 +54,7 @@ package body Ada.Numerics.SFMT.Random is
          inner := inner xor (psfmt32 (idxof (i)) and parity (i));
       end loop;
       for i in reverse 0 .. 4 loop
-         inner := inner xor Shift_Right (inner, 2 ** i);
+         inner := inner xor Interfaces.Shift_Right (inner, 2 ** i);
       end loop;
       inner := inner and 1;
       --  check OK
@@ -51,7 +73,7 @@ package body Ada.Numerics.SFMT.Random is
                end;
                return;
             end if;
-            work := Shift_Left (work, 1);
+            work := Interfaces.Shift_Left (work, 1);
          end loop;
       end loop;
    end period_certification;
@@ -189,7 +211,8 @@ package body Ada.Numerics.SFMT.Random is
             r1 : constant Unsigned_32 := Random_32 (Gen);
             r2 : constant Unsigned_32 := Random_32 (Gen);
          begin
-            r := Shift_Left (Unsigned_64 (r2), 32) or Unsigned_64 (r1);
+            r := Interfaces.Shift_Left (Unsigned_64 (r2), 32)
+               or Unsigned_64 (r1);
          end;
       else
          if Gen.State.idx >= N32 then
@@ -326,7 +349,9 @@ package body Ada.Numerics.SFMT.Random is
             Result.psfmt32 (idxof (i)) :=
                1812433253
                   * (Result.psfmt32 (idxof (i - 1))
-                     xor (Shift_Right (Result.psfmt32 (idxof (i - 1)), 30)))
+                     xor (Interfaces.Shift_Right (
+                        Result.psfmt32 (idxof (i - 1)),
+                        30)))
                + Unsigned_32 (i);
          end loop;
          period_certification (Result.psfmt32);
@@ -458,6 +483,23 @@ package body Ada.Numerics.SFMT.Random is
    end Reset;
 
    function Image (Of_State : State) return String is
+      procedure Hex_Put (To : out String; Item : Unsigned_32);
+      procedure Hex_Put (To : out String; Item : Unsigned_32) is
+         Error : Boolean;
+         Last : Natural;
+      begin
+         pragma Compile_Time_Error (
+            System.Formatting.Unsigned'Size < 32,
+            "integer size < 32");
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Item),
+            To,
+            Last,
+            Base => 16,
+            Width => 32 / 4,
+            Error => Error);
+         pragma Check (Validate, not Error and then Last = To'Last);
+      end Hex_Put;
       Position : Positive := 1;
    begin
       return Result : String (1 .. Max_Image_Width) do
@@ -476,6 +518,23 @@ package body Ada.Numerics.SFMT.Random is
    end Image;
 
    function Value (Coded_State : String) return State is
+      procedure Hex_Get (From : String; Item : out Unsigned_32);
+      procedure Hex_Get (From : String; Item : out Unsigned_32) is
+         Last : Positive;
+         Result : System.Formatting.Unsigned;
+         Error : Boolean;
+      begin
+         System.Formatting.Value (
+            From,
+            Last,
+            Result,
+            Base => 16,
+            Error => Error);
+         if Error or else Last /= From'Last then
+            raise Constraint_Error;
+         end if;
+         Item := Unsigned_32 (Result);
+      end Hex_Get;
       Position : Positive := Coded_State'First;
       idx : Unsigned_32;
    begin
