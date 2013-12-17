@@ -613,51 +613,52 @@ package body Ada.Numerics.SFMT.Random is
    end Random_0_To_1;
 
    --  converts an unsigned 32-bit integer to a double on [0,1)-real-interval.
-   function To_0_To_Less_1 (v : Unsigned_32)
+   function To_0_To_Less_Than_1 (v : Unsigned_32)
       return Uniformly_Distributed is
    begin
       return Long_Long_Float (v) * (1.0 / 2.0 ** 32);
       --  divided by 2^32
-   end To_0_To_Less_1;
+   end To_0_To_Less_Than_1;
 
    --  generates a random number on [0,1)-real-interval
-   function Random_0_To_Less_1 (Gen : not null access Generator)
+   function Random_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return To_0_To_Less_1 (Random_32 (Gen));
-   end Random_0_To_Less_1;
+      return To_0_To_Less_Than_1 (Random_32 (Gen));
+   end Random_0_To_Less_Than_1;
 
    --  converts an unsigned 32-bit integer to a double on (0,1)-real-interval.
-   function To_Greater_0_To_Less_1 (v : Unsigned_32)
+   function To_Greater_Than_0_To_Less_Than_1 (v : Unsigned_32)
       return Uniformly_Distributed is
    begin
       return (Long_Long_Float (v) + 0.5) * (1.0 / 2.0 ** 32);
       --  divided by 2^32
-   end To_Greater_0_To_Less_1;
+   end To_Greater_Than_0_To_Less_Than_1;
 
    --  generates a random number on (0,1)-real-interval
-   function Random_Greater_0_To_Less_1 (Gen : not null access Generator)
+   function Random_Greater_Than_0_To_Less_Than_1 (
+      Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return To_Greater_0_To_Less_1 (Random_32 (Gen));
-   end Random_Greater_0_To_Less_1;
+      return To_Greater_Than_0_To_Less_Than_1 (Random_32 (Gen));
+   end Random_Greater_Than_0_To_Less_Than_1;
 
    --  converts an unsigned 32-bit integer to double on [0,1)
    --  with 53-bit resolution.
    --  Note: This Ada version is implemented with extended float,
    --        it has 64-bit resolution on x86 (32bit mode).
-   function To_53_0_To_Less_1 (v : Unsigned_64)
+   function To_53_0_To_Less_Than_1 (v : Unsigned_64)
       return Uniformly_Distributed is
    begin
       return Long_Long_Float (v) * (1.0 / 2.0 ** 64);
-   end To_53_0_To_Less_1;
+   end To_53_0_To_Less_Than_1;
 
    --  generates a random number on [0,1) with 53-bit resolution
-   function Random_53_0_To_Less_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
-      return To_53_0_To_Less_1 (Random_64 (Gen));
-   end Random_53_0_To_Less_1;
+      return To_53_0_To_Less_Than_1 (Random_64 (Gen));
+   end Random_53_0_To_Less_Than_1;
 
    --  Note: to_res53_mix and genrand_res53_mix are unimplemented.
 

@@ -85,11 +85,12 @@ package Ada.Numerics.MT19937 is
 
    function Random_0_To_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
-   function Random_0_To_Less_1 (Gen : not null access Generator)
+   function Random_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
-   function Random_Greater_0_To_Less_1 (Gen : not null access Generator)
+   function Random_Greater_Than_0_To_Less_Than_1 (
+      Gen : not null access Generator)
       return Uniformly_Distributed;
-   function Random_53_0_To_Less_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
 
    generic

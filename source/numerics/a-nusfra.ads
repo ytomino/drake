@@ -110,29 +110,30 @@ package Ada.Numerics.SFMT.Random is
       return Uniformly_Distributed;
    pragma Inline (Random_0_To_1);
 
-   function To_0_To_Less_1 (v : Unsigned_32)
+   function To_0_To_Less_Than_1 (v : Unsigned_32)
       return Uniformly_Distributed;
-   pragma Inline (To_0_To_Less_1);
+   pragma Inline (To_0_To_Less_Than_1);
 
-   function Random_0_To_Less_1 (Gen : not null access Generator)
+   function Random_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
-   pragma Inline (Random_0_To_Less_1);
+   pragma Inline (Random_0_To_Less_Than_1);
 
-   function To_Greater_0_To_Less_1 (v : Unsigned_32)
+   function To_Greater_Than_0_To_Less_Than_1 (v : Unsigned_32)
       return Uniformly_Distributed;
-   pragma Inline (To_Greater_0_To_Less_1);
+   pragma Inline (To_Greater_Than_0_To_Less_Than_1);
 
-   function Random_Greater_0_To_Less_1 (Gen : not null access Generator)
+   function Random_Greater_Than_0_To_Less_Than_1 (
+      Gen : not null access Generator)
       return Uniformly_Distributed;
-   pragma Inline (Random_Greater_0_To_Less_1);
+   pragma Inline (Random_Greater_Than_0_To_Less_Than_1);
 
-   function To_53_0_To_Less_1 (v : Unsigned_64)
+   function To_53_0_To_Less_Than_1 (v : Unsigned_64)
       return Uniformly_Distributed;
-   pragma Inline (To_53_0_To_Less_1);
+   pragma Inline (To_53_0_To_Less_Than_1);
 
-   function Random_53_0_To_Less_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
-   pragma Inline (Random_53_0_To_Less_1);
+   pragma Inline (Random_53_0_To_Less_Than_1);
 
    --  Exceptions
 

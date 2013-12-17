@@ -226,21 +226,22 @@ package body Ada.Numerics.MT19937 is
          * (1.0 / 4294967295.0);
    end Random_0_To_1;
 
-   function Random_0_To_Less_1 (Gen : not null access Generator)
+   function Random_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
       return Uniformly_Distributed'Base (Random_32 (Gen))
          * (1.0 / 4294967296.0);
-   end Random_0_To_Less_1;
+   end Random_0_To_Less_Than_1;
 
-   function Random_Greater_0_To_Less_1 (Gen : not null access Generator)
+   function Random_Greater_Than_0_To_Less_Than_1 (
+      Gen : not null access Generator)
       return Uniformly_Distributed is
    begin
       return (Uniformly_Distributed'Base (Random_32 (Gen)) + 0.5)
          * (1.0 / 4294967296.0);
-   end Random_Greater_0_To_Less_1;
+   end Random_Greater_Than_0_To_Less_Than_1;
 
-   function Random_53_0_To_Less_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed
    is
       A : constant Cardinal := Interfaces.Shift_Right (Random_32 (Gen), 5);
@@ -249,7 +250,7 @@ package body Ada.Numerics.MT19937 is
       Float_B : constant Long_Long_Float := Uniformly_Distributed'Base (B);
    begin
       return (Float_A * 67108864.0 + Float_B) * (1.0 / 9007199254740992.0);
-   end Random_53_0_To_Less_1;
+   end Random_53_0_To_Less_Than_1;
 
    package body Discrete_Random is
       pragma Suppress (All_Checks);
@@ -259,7 +260,7 @@ package body Ada.Numerics.MT19937 is
       is
          subtype Real is Long_Long_Float;
          Random : constant Real :=
-            MT19937.Random_0_To_Less_1 (Gen);
+            MT19937.Random_0_To_Less_Than_1 (Gen);
          Position : constant Integer :=
             Result_Subtype'Pos (Result_Subtype'First)
             + Integer (Real'Floor (
