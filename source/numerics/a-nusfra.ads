@@ -53,7 +53,9 @@ package Ada.Numerics.SFMT.Random is
    type Generator is limited private;
 
    function Random_32 (Gen : not null access Generator) return Unsigned_32;
+   pragma Inline (Random_32);
    function Random_64 (Gen : not null access Generator) return Unsigned_64;
+   pragma Inline (Random_64);
 
    procedure Fill_Random_32 (
       Gen : in out Generator;
@@ -155,6 +157,7 @@ private
    Max_Image_Width : constant Natural := (N32 + 1) * (32 / 4 + 1) - 1;
 
    subtype Unsigned_32_Array_N32 is Unsigned_32_Array (0 .. N32 - 1);
+   subtype Unsigned_64_Array_N64 is Unsigned_64_Array (0 .. N64 - 1);
 
    --  128-bit data type
    type w128_t is array (0 .. 3) of Unsigned_32;
@@ -166,33 +169,17 @@ private
    subtype w128_t_Array_N is w128_t_Array (0 .. N - 1);
    subtype w128_t_Array_Fixed is w128_t_Array (Natural);
 
-   --  internal state, index counter and flag
-   type State (Unchecked_Tag : Natural := 0) is record
-      case Unchecked_Tag is
-         when 0 =>
-            --  the 128-bit internal state array
-            sfmt : aliased w128_t_Array_N;
-            --  index counter to the 32-bit internal state array
-            idx : Integer;
-         when 1 =>
-            --  the 32bit integer pointer
-            --  to the 128-bit internal state array
-            psfmt32 : aliased Unsigned_32_Array_N32;
-         when others =>
-            --  the 64bit integer pointer
-            --  to the 128-bit internal state array
-            psfmt64 : aliased Unsigned_64_Array (0 .. N64 - 1);
-      end case;
+   --  SFMT internal state
+   type State is record
+      --  the 128-bit internal state array
+      state : aliased w128_t_Array_N;
+      --  index counter to the 32-bit internal state array
+      idx : Integer;
    end record;
-   pragma Unchecked_Union (State);
    pragma Suppress_Initialization (State);
 
    type Generator is limited record
-      State : Random.State := Initialize (Default_Initiator);
+      sfmt : State := Initialize (Default_Initiator);
    end record;
-
-   --  a parity check vector which certificate the period of 2^{MEXP}
-   parity : constant Unsigned_32_Array (0 .. 3) :=
-      (PARITY1, PARITY2, PARITY3, PARITY4);
 
 end Ada.Numerics.SFMT.Random;

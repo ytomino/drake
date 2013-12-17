@@ -49,6 +49,8 @@ package body Ada.Numerics.SFMT.Random is
    is
       inner : Unsigned_32 := 0;
       work : Unsigned_32;
+      parity : constant Unsigned_32_Array (0 .. 3) :=
+         (PARITY1, PARITY2, PARITY3, PARITY4);
    begin
       for i in 0 .. 3 loop
          inner := inner xor (psfmt32 (idxof (i)) and parity (i));
@@ -184,14 +186,16 @@ package body Ada.Numerics.SFMT.Random is
    function Random_32 (Gen : not null access Generator)
       return Unsigned_32
    is
+      psfmt32 : Unsigned_32_Array_N32;
+      for psfmt32'Address use Gen.sfmt.state'Address;
       r : Unsigned_32;
    begin
-      if Gen.State.idx >= N32 then
-         Impl.gen_rand_all (Gen.State.sfmt);
-         Gen.State.idx := 0;
+      if Gen.sfmt.idx >= N32 then
+         Impl.gen_rand_all (Gen.sfmt.state);
+         Gen.sfmt.idx := 0;
       end if;
-      r := Gen.State.psfmt32 (Gen.State.idx);
-      Gen.State.idx := Gen.State.idx + 1;
+      r := psfmt32 (Gen.sfmt.idx);
+      Gen.sfmt.idx := Gen.sfmt.idx + 1;
       return r;
    end Random_32;
 
@@ -199,14 +203,17 @@ package body Ada.Numerics.SFMT.Random is
    --  init_gen_rand or init_by_array must be called before this function.
    --  The function gen_rand64 should not be called after gen_rand32,
    --  unless an initialization is again executed.
+   --  Note: This Ada version supports mixed callings with Random_32 (still).
    function Random_64 (Gen : not null access Generator)
       return Unsigned_64
    is
+      psfmt32 : Unsigned_32_Array_N32;
+      for psfmt32'Address use Gen.sfmt.state'Address;
+      psfmt64 : Unsigned_64_Array_N64;
+      for psfmt64'Address use Gen.sfmt.state'Address;
       r : Unsigned_64;
    begin
-      if System.Default_Bit_Order /= System.Low_Order_First
-         or else Gen.State.idx rem 2 /= 0
-      then
+      if Gen.sfmt.idx rem 2 /= 0 then
          declare
             r1 : constant Unsigned_32 := Random_32 (Gen);
             r2 : constant Unsigned_32 := Random_32 (Gen);
@@ -215,12 +222,24 @@ package body Ada.Numerics.SFMT.Random is
                or Unsigned_64 (r1);
          end;
       else
-         if Gen.State.idx >= N32 then
-            Impl.gen_rand_all (Gen.State.sfmt);
-            Gen.State.idx := 0;
+--       pragma Assert (Gen.sfmt.idx rem 2 = 0);
+         if Gen.sfmt.idx >= N32 then
+            Impl.gen_rand_all (Gen.sfmt.state);
+            Gen.sfmt.idx := 0;
          end if;
-         r := Gen.State.psfmt64 (Gen.State.idx / 2);
-         Gen.State.idx := Gen.State.idx + 2;
+         if System.Default_Bit_Order /= System.Low_Order_First then
+            declare
+               r1 : constant Unsigned_32 := psfmt32 (Gen.sfmt.idx);
+               r2 : constant Unsigned_32 := psfmt32 (Gen.sfmt.idx + 1);
+            begin
+               Gen.sfmt.idx := Gen.sfmt.idx + 2;
+               r := Interfaces.Shift_Left (Unsigned_64 (r2), 32)
+                  or Unsigned_64 (r1);
+            end;
+         else
+            r := psfmt64 (Gen.sfmt.idx / 2);
+            Gen.sfmt.idx := Gen.sfmt.idx + 2;
+         end if;
       end if;
       return r;
    end Random_64;
@@ -236,7 +255,7 @@ package body Ada.Numerics.SFMT.Random is
    is
       size : constant Integer := Item'Length;
    begin
-      if Gen.State.idx /= N32
+      if Gen.sfmt.idx /= N32
          or else size rem 4 /= 0
          or else size < N32
       then
@@ -248,9 +267,9 @@ package body Ada.Numerics.SFMT.Random is
             the_array : w128_t_Array_Fixed;
             for the_array'Address use Item'Address;
          begin
-            Impl.gen_rand_array (Gen.State.sfmt, the_array, size / 4);
+            Impl.gen_rand_array (Gen.sfmt.state, the_array, size / 4);
          end;
-         Gen.State.idx := N32;
+         Gen.sfmt.idx := N32;
       end if;
    end Fill_Random_32;
 
@@ -265,7 +284,7 @@ package body Ada.Numerics.SFMT.Random is
    is
       size : constant Integer := Item'Length;
    begin
-      if Gen.State.idx /= N32
+      if Gen.sfmt.idx /= N32
          or else size rem 2 /= 0
          or else size < N64
       then
@@ -277,7 +296,7 @@ package body Ada.Numerics.SFMT.Random is
             the_array : w128_t_Array_Fixed;
             for the_array'Address use Item'Address;
          begin
-            Impl.gen_rand_array (Gen.State.sfmt, the_array, size / 2);
+            Impl.gen_rand_array (Gen.sfmt.state, the_array, size / 2);
             if System.Default_Bit_Order /= System.Low_Order_First then
                --  swap
                for I in 0 .. size / 2 - 1 loop
@@ -294,38 +313,38 @@ package body Ada.Numerics.SFMT.Random is
                end loop;
             end if;
          end;
-         Gen.State.idx := N32;
+         Gen.sfmt.idx := N32;
       end if;
    end Fill_Random_64;
 
    function Initialize return Generator is
    begin
-      return (State => Initialize);
+      return (sfmt => Initialize);
    end Initialize;
 
    function Initialize (Initiator : Unsigned_32) return Generator is
    begin
-      return (State => Initialize (Initiator));
+      return (sfmt => Initialize (Initiator));
    end Initialize;
 
    function Initialize (Initiator : Unsigned_32_Array) return Generator is
    begin
-      return (State => Initialize (Initiator));
+      return (sfmt => Initialize (Initiator));
    end Initialize;
 
    procedure Reset (Gen : in out Generator) is
    begin
-      Gen.State := Initialize;
+      Gen.sfmt := Initialize;
    end Reset;
 
    procedure Reset (Gen : in out Generator; Initiator : Integer) is
    begin
-      Gen.State := Initialize (Unsigned_32'Mod (Initiator));
+      Gen.sfmt := Initialize (Unsigned_32'Mod (Initiator));
    end Reset;
 
    function Reset (From_State : State) return Generator is
    begin
-      return (State => From_State);
+      return (sfmt => From_State);
    end Reset;
 
    function Initialize return State is
@@ -340,21 +359,27 @@ package body Ada.Numerics.SFMT.Random is
    function Initialize (Initiator : Unsigned_32) return State is
    begin
       return Result : State := (
-         Unchecked_Tag => 0,
-         sfmt => <>,
+         state => <>,
          idx => N32)
       do
-         Result.psfmt32 (idxof (0)) := Initiator;
-         for i in 1 .. N32 - 1 loop
-            Result.psfmt32 (idxof (i)) :=
-               1812433253
-                  * (Result.psfmt32 (idxof (i - 1))
-                     xor (Interfaces.Shift_Right (
-                        Result.psfmt32 (idxof (i - 1)),
-                        30)))
-               + Unsigned_32 (i);
-         end loop;
-         period_certification (Result.psfmt32);
+         declare
+            psfmt32 : Unsigned_32_Array_N32;
+            for psfmt32'Address use Result.state'Address;
+         begin
+            psfmt32 (idxof (0)) := Initiator;
+            for i in 1 .. N32 - 1 loop
+               psfmt32 (idxof (i)) :=
+                  1812433253
+                     * (
+                        psfmt32 (idxof (i - 1))
+                        xor (
+                           Interfaces.Shift_Right (
+                              psfmt32 (idxof (i - 1)),
+                              30)))
+                  + Unsigned_32 (i);
+            end loop;
+            period_certification (psfmt32);
+         end;
       end return;
    end Initialize;
 
@@ -379,107 +404,111 @@ package body Ada.Numerics.SFMT.Random is
       end if;
       mid := (size - lag) / 2;
       return Result : State := (
-         Unchecked_Tag => 0,
-         sfmt => (others => (others => 16#8b8b8b8b#)),
+         state => (others => (others => 16#8b8b8b8b#)),
          idx => N32)
       do
-         if key_length + 1 > N32 then
-            count := key_length + 1;
-         else
-            count := N32;
-         end if;
-         r := func1 (
-            Result.psfmt32 (idxof (0))
-            xor Result.psfmt32 (idxof (mid))
-            xor Result.psfmt32 (idxof (N32 - 1)));
          declare
-            Index : constant Natural := idxof (mid);
+            psfmt32 : Unsigned_32_Array_N32;
+            for psfmt32'Address use Result.state'Address;
          begin
-            Result.psfmt32 (Index) := Result.psfmt32 (Index) + r;
-         end;
-         r := r + Unsigned_32 (key_length);
-         declare
-            Index : constant Natural := idxof (mid + lag);
-         begin
-            Result.psfmt32 (Index) := Result.psfmt32 (Index) + r;
-         end;
-         Result.psfmt32 (idxof (0)) := r;
-         count := count - 1;
-         i := 1;
-         j := 0;
-         while j < count and then j < key_length loop
+            if key_length + 1 > N32 then
+               count := key_length + 1;
+            else
+               count := N32;
+            end if;
             r := func1 (
-               Result.psfmt32 (idxof (i))
-               xor Result.psfmt32 (idxof ((i + mid) rem N32))
-               xor Result.psfmt32 (idxof ((i + N32 - 1) rem N32)));
+               psfmt32 (idxof (0))
+               xor psfmt32 (idxof (mid))
+               xor psfmt32 (idxof (N32 - 1)));
             declare
-               Index : constant Natural := idxof ((i + mid) rem N32);
+               Index : constant Natural := idxof (mid);
             begin
-               Result.psfmt32 (Index) := Result.psfmt32 (Index) + r;
+               psfmt32 (Index) := psfmt32 (Index) + r;
             end;
-            r := r + Initiator (Initiator'First + j) + Unsigned_32 (i);
+            r := r + Unsigned_32 (key_length);
             declare
-               Index : constant Natural := idxof ((i + mid + lag) rem N32);
+               Index : constant Natural := idxof (mid + lag);
             begin
-               Result.psfmt32 (Index) := Result.psfmt32 (Index) + r;
+               psfmt32 (Index) := psfmt32 (Index) + r;
             end;
-            Result.psfmt32 (idxof (i)) := r;
-            i := (i + 1) rem N32;
-            j := j + 1;
-         end loop;
-         while j < count loop
-            r := func1 (
-               Result.psfmt32 (idxof (i))
-               xor Result.psfmt32 (idxof ((i + mid) rem N32))
-                 xor Result.psfmt32 (idxof ((i + N32 - 1) rem N32)));
-            declare
-               Index : constant Natural := idxof ((i + mid) rem N32);
-            begin
-               Result.psfmt32 (Index) := Result.psfmt32 (Index) + r;
-            end;
-            r := r + Unsigned_32 (i);
-            declare
-               Index : constant Natural := idxof ((i + mid + lag) rem N32);
-            begin
-               Result.psfmt32 (Index) := Result.psfmt32 (Index) + r;
-            end;
-            Result.psfmt32 (idxof (i)) := r;
-            i := (i + 1) rem N32;
-            j := j + 1;
-         end loop;
-         j := 0;
-         while j < N32 loop
-            r := func2 (
-               Result.psfmt32 (idxof (i))
-               + Result.psfmt32 (idxof ((i + mid) rem N32))
-               + Result.psfmt32 (idxof ((i + N32 - 1) rem N32)));
-            declare
-               Index : constant Natural := idxof ((i + mid) rem N32);
-            begin
-               Result.psfmt32 (Index) := Result.psfmt32 (Index) xor r;
-            end;
-            r := r - Unsigned_32 (i);
-            declare
-               Index : constant Natural := idxof ((i + mid + lag) rem N32);
-            begin
-               Result.psfmt32 (Index) := Result.psfmt32 (Index) xor r;
-            end;
-            Result.psfmt32 (idxof (i)) := r;
-            i := (i + 1) rem N32;
-            j := j + 1;
-         end loop;
-         period_certification (Result.psfmt32);
+            psfmt32 (idxof (0)) := r;
+            count := count - 1;
+            i := 1;
+            j := 0;
+            while j < count and then j < key_length loop
+               r := func1 (
+                  psfmt32 (idxof (i))
+                  xor psfmt32 (idxof ((i + mid) rem N32))
+                  xor psfmt32 (idxof ((i + N32 - 1) rem N32)));
+               declare
+                  Index : constant Natural := idxof ((i + mid) rem N32);
+               begin
+                  psfmt32 (Index) := psfmt32 (Index) + r;
+               end;
+               r := r + Initiator (Initiator'First + j) + Unsigned_32 (i);
+               declare
+                  Index : constant Natural := idxof ((i + mid + lag) rem N32);
+               begin
+                  psfmt32 (Index) := psfmt32 (Index) + r;
+               end;
+               psfmt32 (idxof (i)) := r;
+               i := (i + 1) rem N32;
+               j := j + 1;
+            end loop;
+            while j < count loop
+               r := func1 (
+                  psfmt32 (idxof (i))
+                  xor psfmt32 (idxof ((i + mid) rem N32))
+                  xor psfmt32 (idxof ((i + N32 - 1) rem N32)));
+               declare
+                  Index : constant Natural := idxof ((i + mid) rem N32);
+               begin
+                  psfmt32 (Index) := psfmt32 (Index) + r;
+               end;
+               r := r + Unsigned_32 (i);
+               declare
+                  Index : constant Natural := idxof ((i + mid + lag) rem N32);
+               begin
+                  psfmt32 (Index) := psfmt32 (Index) + r;
+               end;
+               psfmt32 (idxof (i)) := r;
+               i := (i + 1) rem N32;
+               j := j + 1;
+            end loop;
+            j := 0;
+            while j < N32 loop
+               r := func2 (
+                  psfmt32 (idxof (i))
+                  + psfmt32 (idxof ((i + mid) rem N32))
+                  + psfmt32 (idxof ((i + N32 - 1) rem N32)));
+               declare
+                  Index : constant Natural := idxof ((i + mid) rem N32);
+               begin
+                  psfmt32 (Index) := psfmt32 (Index) xor r;
+               end;
+               r := r - Unsigned_32 (i);
+               declare
+                  Index : constant Natural := idxof ((i + mid + lag) rem N32);
+               begin
+                  psfmt32 (Index) := psfmt32 (Index) xor r;
+               end;
+               psfmt32 (idxof (i)) := r;
+               i := (i + 1) rem N32;
+               j := j + 1;
+            end loop;
+            period_certification (psfmt32);
+         end;
       end return;
    end Initialize;
 
    procedure Save (Gen : Generator; To_State : out State) is
    begin
-      To_State := Gen.State;
+      To_State := Gen.sfmt;
    end Save;
 
    procedure Reset (Gen : in out Generator; From_State : State) is
    begin
-      Gen.State := From_State;
+      Gen.sfmt := From_State;
    end Reset;
 
    function Image (Of_State : State) return String is
@@ -500,13 +529,15 @@ package body Ada.Numerics.SFMT.Random is
             Error => Error);
          pragma Check (Validate, not Error and then Last = To'Last);
       end Hex_Put;
+      psfmt32 : Unsigned_32_Array_N32;
+      for psfmt32'Address use Of_State.state'Address;
       Position : Positive := 1;
    begin
       return Result : String (1 .. Max_Image_Width) do
          for I in 0 .. N32 - 1 loop
             Hex_Put (
                Result (Position .. Position + 32 / 4 - 1),
-               Of_State.psfmt32 (I));
+               psfmt32 (I));
             Position := Position + 32 / 4;
             Result (Position) := ':';
             Position := Position + 1;
@@ -542,16 +573,21 @@ package body Ada.Numerics.SFMT.Random is
          if Coded_State'Length /= Max_Image_Width then
             raise Constraint_Error;
          end if;
-         for I in 0 .. N32 - 1 loop
-            Hex_Get (
-               Coded_State (Position .. Position + 32 / 4 - 1),
-               Result.psfmt32 (I));
-            Position := Position + 32 / 4;
-            if Coded_State (Position) /= ':' then
-               raise Constraint_Error;
-            end if;
-            Position := Position + 1;
-         end loop;
+         declare
+            psfmt32 : Unsigned_32_Array_N32;
+            for psfmt32'Address use Result.state'Address;
+         begin
+            for I in 0 .. N32 - 1 loop
+               Hex_Get (
+                  Coded_State (Position .. Position + 32 / 4 - 1),
+                  psfmt32 (I));
+               Position := Position + 32 / 4;
+               if Coded_State (Position) /= ':' then
+                  raise Constraint_Error;
+               end if;
+               Position := Position + 1;
+            end loop;
+         end;
          Hex_Get (
             Coded_State (Position .. Coded_State'Last),
             idx);
@@ -559,8 +595,9 @@ package body Ada.Numerics.SFMT.Random is
       end return;
    end Value;
 
-   --  These real versions are due to Isaku Wada
-   --  generates a random number on [0,1]-real-interval
+   --  The following real versions are due to Isaku Wada
+
+   --  converts an unsigned 32-bit number to a double on [0,1]-real-interval.
    function To_0_To_1 (v : Unsigned_32)
       return Uniformly_Distributed is
    begin
@@ -575,7 +612,7 @@ package body Ada.Numerics.SFMT.Random is
       return To_0_To_1 (Random_32 (Gen));
    end Random_0_To_1;
 
-   --  generates a random number on [0,1)-real-interval
+   --  converts an unsigned 32-bit integer to a double on [0,1)-real-interval.
    function To_0_To_Less_1 (v : Unsigned_32)
       return Uniformly_Distributed is
    begin
@@ -590,7 +627,7 @@ package body Ada.Numerics.SFMT.Random is
       return To_0_To_Less_1 (Random_32 (Gen));
    end Random_0_To_Less_1;
 
-   --  generates a random number on (0,1)-real-interval
+   --  converts an unsigned 32-bit integer to a double on (0,1)-real-interval.
    function To_Greater_0_To_Less_1 (v : Unsigned_32)
       return Uniformly_Distributed is
    begin
@@ -605,7 +642,8 @@ package body Ada.Numerics.SFMT.Random is
       return To_Greater_0_To_Less_1 (Random_32 (Gen));
    end Random_Greater_0_To_Less_1;
 
-   --  generates a random number on [0,1) with 53-bit resolution
+   --  converts an unsigned 32-bit integer to double on [0,1)
+   --  with 53-bit resolution.
    --  Note: This Ada version is implemented with extended float,
    --        it has 64-bit resolution on x86 (32bit mode).
    function To_53_0_To_Less_1 (v : Unsigned_64)
