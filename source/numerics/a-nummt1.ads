@@ -93,12 +93,6 @@ package Ada.Numerics.MT19937 is
    function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
       return Uniformly_Distributed;
 
-   generic
-      type Result_Subtype is (<>);
-   package Discrete_Random is
-      function Random (Gen : not null access Generator) return Result_Subtype;
-   end Discrete_Random;
-
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
    --  Use_Error may be raised from Initialize (Generic_Initiator)

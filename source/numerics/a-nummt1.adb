@@ -252,23 +252,4 @@ package body Ada.Numerics.MT19937 is
       return (Float_A * 67108864.0 + Float_B) * (1.0 / 9007199254740992.0);
    end Random_53_0_To_Less_Than_1;
 
-   package body Discrete_Random is
-      pragma Suppress (All_Checks);
-
-      function Random (Gen : not null access Generator)
-         return Result_Subtype
-      is
-         subtype Real is Long_Long_Float;
-         Random : constant Real :=
-            MT19937.Random_0_To_Less_Than_1 (Gen);
-         Position : constant Integer :=
-            Result_Subtype'Pos (Result_Subtype'First)
-            + Integer (Real'Floor (
-               Random * Real (Result_Subtype'Range_Length)));
-      begin
-         return Result_Subtype'Val (Position);
-      end Random;
-
-   end Discrete_Random;
-
 end Ada.Numerics.MT19937;
