@@ -9,11 +9,6 @@ package Ada.Text_IO.Iterators is
 
    --  per line
 
-   type Line_Cursor is private;
-   pragma Preelaborable_Initialization (Line_Cursor);
-
-   function Has_Element (Position : Line_Cursor) return Boolean;
-
    type Lines_Type is tagged limited private
       with
          Constant_Indexing => Constant_Reference,
@@ -21,6 +16,11 @@ package Ada.Text_IO.Iterators is
          Iterator_Element => String;
 
    function Lines (File : File_Type) return Lines_Type;
+
+   type Line_Cursor is private;
+   pragma Preelaborable_Initialization (Line_Cursor);
+
+   function Has_Element (Position : Line_Cursor) return Boolean;
 
    function Constant_Reference (
       Container : aliased Lines_Type;
@@ -34,6 +34,10 @@ package Ada.Text_IO.Iterators is
       return Lines_Iterator_Interfaces.Forward_Iterator'Class;
 
 private
+
+   type Lines_Type is tagged limited record
+      File : File_Access;
+   end record;
 
    package Line_Cursors is
 
@@ -98,10 +102,6 @@ private
    overriding function First (Object : Line_Iterator) return Line_Cursor;
    overriding function Next (Object : Line_Iterator; Position : Line_Cursor)
       return Line_Cursor;
-
-   type Lines_Type is tagged limited record
-      File : File_Access;
-   end record;
 
    package Streaming is
 

@@ -5,15 +5,15 @@ package body Ada.Text_IO.Iterators is
 
    --  implementation
 
-   function Has_Element (Position : Line_Cursor) return Boolean is
-   begin
-      return Reference (Position) /= null;
-   end Has_Element;
-
    function Lines (File : File_Type) return Lines_Type is
    begin
       return (File => File'Unrestricted_Access);
    end Lines;
+
+   function Has_Element (Position : Line_Cursor) return Boolean is
+   begin
+      return Reference (Position) /= null;
+   end Has_Element;
 
    function Constant_Reference (
       Container : aliased Lines_Type;
