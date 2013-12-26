@@ -197,6 +197,8 @@ package Ada.Directories is
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
    pragma Inline (Has_Element);
+   function Element (Container : Search_Type; Position : Cursor)
+      return Directory_Entry_Type;
    type Constant_Reference_Type (
       Element : not null access constant Directory_Entry_Type) is null record
       with Implicit_Dereference => Element;
@@ -254,7 +256,7 @@ private
          Handle => Directory_Searching.Null_Handle,
          others => <>);
       Path : String_Access;
-      Next_Data : aliased Directory_Searching.Directory_Entry_Type;
+      Next_Directory_Entry : aliased Directory_Entry_Type;
       Has_Next : Boolean;
       Count : Natural;
    end record;
@@ -262,10 +264,7 @@ private
    overriding procedure Finalize (Search : in out Search_Type);
    procedure End_Search (Search : in out Search_Type) renames Finalize;
 
-   type Cursor is record
-      Directory_Entry : aliased Directory_Entry_Type;
-      Index : Positive;
-   end record;
+   type Cursor is new Natural;
 
    type Search_Iterator is new Search_Iterator_Interfaces.Forward_Iterator
       with
