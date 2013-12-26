@@ -1,97 +1,71 @@
-pragma Check_Policy (Validate, Off);
+with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
 package body Ada.Text_IO.Iterators is
-   use type Line_Cursors.String_Access;
+
+   procedure Free is new Unchecked_Deallocation (String, String_Access);
 
    --  implementation
 
    function Lines (File : File_Type) return Lines_Type is
    begin
-      return (File => File'Unrestricted_Access);
+      return (Finalization.Limited_Controlled with
+         File => File'Unrestricted_Access,
+         Item => null,
+         Line => 0);
    end Lines;
 
    function Has_Element (Position : Line_Cursor) return Boolean is
    begin
-      return Reference (Position) /= null;
+      return Position > 0;
    end Has_Element;
+
+   function Element (Container : Lines_Type; Position : Line_Cursor)
+      return String is
+   begin
+      return Constant_Reference (Container, Position).Element.all;
+   end Element;
 
    function Constant_Reference (
       Container : aliased Lines_Type;
       Position : Line_Cursor)
-      return References.Strings.Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
+      return References.Strings.Constant_Reference_Type is
    begin
-      return (Element => Reference (Position));
+      if Count (Position) /= Container.Line then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      return (Element => Container.Item);
    end Constant_Reference;
 
    function Iterate (Container : Lines_Type)
       return Lines_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Line_Iterator'(File => Container.File);
+      return Line_Iterator'(Lines => Container'Unrestricted_Access);
    end Iterate;
 
-   package body Line_Cursors is
-
-      procedure Free is new Unchecked_Deallocation (String, String_Access);
-
-      --  implementation
-
-      function Reference (Position : Line_Cursor) return String_Access is
-      begin
-         return Position.Line;
-      end Reference;
-
-      procedure Assign (Position : out Line_Cursor; Line : String_Access) is
-      begin
-         Position.Line := Line;
-         Position.Owner := Position'Unchecked_Access;
-         Position.Last := True;
-      end Assign;
-
-      procedure Step (Position : in out Line_Cursor) is
-      begin
-         if not Position.Last then
-            raise Program_Error;
-         else
-            Position.Last := False;
-         end if;
-      end Step;
-
-      overriding procedure Adjust (Object : in out Line_Cursor) is
-      begin
-         if Object.Line /= null then
-            Object.Owner.Line := null;
-            Object.Owner := Object'Unrestricted_Access;
-         end if;
-      end Adjust;
-
-      overriding procedure Finalize (Object : in out Line_Cursor) is
-      begin
-         pragma Check (Validate,
-            Object.Line = null
-            or else Object.Owner = Object'Unrestricted_Access);
-         Free (Object.Line);
-      end Finalize;
-
-   end Line_Cursors;
+   overriding procedure Finalize (Object : in out Lines_Type) is
+   begin
+      Free (Object.Item);
+   end Finalize;
 
    overriding function First (Object : Line_Iterator) return Line_Cursor is
    begin
-      return Result : Line_Cursor do
-         Assign (Result, new String'(Get_Line (Object.File.all)));
-      end return;
+      if End_Of_File (Object.Lines.File.all) then
+         return 0; -- No_Element
+      else
+         Free (Object.Lines.Item);
+         Object.Lines.Line := Line (Object.Lines.File.all);
+         Object.Lines.Item := new String'(Get_Line (Object.Lines.File.all));
+         return Line_Cursor (Object.Lines.Line);
+      end if;
    end First;
 
    overriding function Next (Object : Line_Iterator; Position : Line_Cursor)
       return Line_Cursor is
    begin
-      Step (Position'Unrestricted_Access.all);
-      return Result : Line_Cursor do
-         if not End_Of_File (Object.File.all) then
-            Assign (Result, new String'(Get_Line (Object.File.all)));
-         end if;
-      end return;
+      if Count (Position) /= Object.Lines.Line then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      return First (Object);
    end Next;
 
 end Ada.Text_IO.Iterators;
