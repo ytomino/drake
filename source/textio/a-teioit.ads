@@ -22,7 +22,7 @@ package Ada.Text_IO.Iterators is
 
    function Has_Element (Position : Line_Cursor) return Boolean;
 
-   function Element (Container : Lines_Type; Position : Line_Cursor)
+   function Element (Container : Lines_Type'Class; Position : Line_Cursor)
       return String;
 
    function Constant_Reference (

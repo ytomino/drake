@@ -197,7 +197,7 @@ package Ada.Directories is
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
    pragma Inline (Has_Element);
-   function Element (Container : Search_Type; Position : Cursor)
+   function Element (Container : Search_Type'Class; Position : Cursor)
       return Directory_Entry_Type;
    type Constant_Reference_Type (
       Element : not null access constant Directory_Entry_Type) is null record

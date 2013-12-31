@@ -289,7 +289,7 @@ package body Ada.Directories is
       return Position > 0;
    end Has_Element;
 
-   function Element (Container : Search_Type; Position : Cursor)
+   function Element (Container : Search_Type'Class; Position : Cursor)
       return Directory_Entry_Type is
    begin
       return Constant_Reference (Container, Position).Element.all;
