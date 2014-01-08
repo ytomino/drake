@@ -5,7 +5,6 @@ with System.Formatting;
 with System.Shared_Locking;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_8_To_32;
-with System.Zero_Terminated_Strings;
 package body Ada.Tags is
    pragma Suppress (All_Checks);
    use type System.Address;
@@ -27,9 +26,6 @@ package body Ada.Tags is
       Type_Specific_Data,
       Type_Specific_Data_Ptr);
 
-   package Cstring_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      Fixed_String,
-      Cstring_Ptr);
    package OTT_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
       System.Storage_Elements.Storage_Offset,
       Offset_To_Top_Ptr);
@@ -228,30 +224,28 @@ package body Ada.Tags is
       TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT.TSD);
    begin
-      return System.Zero_Terminated_Strings.Value (
-         Cstring_Ptr_Conv.To_Address (TSD.Expanded_Name));
+      return TSD.Expanded_Name (1 .. Natural (strlen (TSD.Expanded_Name)));
    end Expanded_Name;
 
    function External_Tag (T : Tag) return String is
       DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
       TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT.TSD);
+      Result : String
+         renames TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
    begin
-      return Result : constant String := System.Zero_Terminated_Strings.Value (
-         Cstring_Ptr_Conv.To_Address (TSD.External_Tag))
-      do
-         if Result'Length > Nested_Prefix'Length
-            and then Result (
-               Result'First + Result'First - 1 ..
-               Nested_Prefix'Length) = Nested_Prefix
-         then
-            null; -- nested
-         else
-            System.Shared_Locking.Enter;
-            E_Insert (External_Map'Access, T, Result); -- library level
-            System.Shared_Locking.Leave;
-         end if;
-      end return;
+      if Result'Length > Nested_Prefix'Length
+         and then Result (
+            Result'First ..
+            Result'First - 1 + Nested_Prefix'Length) = Nested_Prefix
+      then
+         null; -- nested
+      else
+         System.Shared_Locking.Enter;
+         E_Insert (External_Map'Access, T, Result); -- library level
+         System.Shared_Locking.Leave;
+      end if;
+      return Result;
    end External_Tag;
 
    function Get_Entry_Index (T : Tag; Position : Positive) return Positive is
