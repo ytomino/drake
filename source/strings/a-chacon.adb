@@ -63,8 +63,8 @@ package body Ada.Characters.Conversions is
 
    function Is_Wide_Character (Item : Wide_Wide_Character) return Boolean is
    begin
-      return Wide_Wide_Character'Pos (Item) <= 16#d7ff#
-         or else Wide_Wide_Character'Pos (Item) in 16#e000# .. 16#ffff#;
+      --  a check for detecting illegal sequence are omitted
+      return Wide_Wide_Character'Pos (Item) <= 16#ffff#;
    end Is_Wide_Character;
 
    function Is_Wide_String (Item : Wide_Wide_String) return Boolean is
