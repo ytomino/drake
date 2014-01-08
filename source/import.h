@@ -1,4 +1,7 @@
-#if defined(__FreeBSD__)
+#if defined(__APPLE__)
+#define _DONT_USE_CTYPE_INLINE_
+#elif defined(__FreeBSD__)
+#define _DONT_USE_CTYPE_INLINE_
 #define d_fileno d_ino
 #elif defined(__linux__)
 #define _GNU_SOURCE /* use GNU extension */
@@ -49,13 +52,18 @@
 #include <pthread.h> /* tasking */
 #include <dlfcn.h>
 #include <iconv.h>
+#if !defined(__linux__)
+#include <wchar.h> /* after malloc.h in Linux */
+#endif
 #endif
 #if defined(__APPLE__)
+#undef _DONT_USE_CTYPE_INLINE_
 #include <crt_externs.h> /* environment variable */
 #include <malloc/malloc.h> /* malloc_size */
 #include <spawn.h> /* spawn */
 #include <copyfile.h> /* copyfile */
 #elif defined(__FreeBSD__)
+#undef _DONT_USE_CTYPE_INLINE_
 #undef d_fileno
 #include <sys/param.h> /* PAGE_SIZE */
 #include <malloc_np.h> /* malloc_usable_size */
@@ -73,6 +81,8 @@
 #undef st_ctime
 #undef _SC_NPROCESSORS_ONLN
 #include <malloc.h> /* malloc_usable_size */
+#undef __USE_XOPEN2K8 /* avoiding circular dependency between wchar.h and stdio.h */
+#include <wchar.h>
 #undef _FILE_OFFSET_BITS
 #endif
 
@@ -118,6 +128,8 @@
 #if defined(__unix__) || defined(__APPLE__)
 #include "fix-fcntl.h"
 #pragma for Ada "fcntl.h" monolithic_include "fix-fcntl.h"
+#include "fix-wchar.h"
+#pragma for Ada "wchar.h" monolithic_include "fix-wchar.h"
 #pragma instance pthread_rwlock_t "PTHREAD_RWLOCK_INITIALIZER"
 #pragma instance pthread_mutex_t "PTHREAD_MUTEX_INITIALIZER"
 #pragma instance pthread_cond_t "PTHREAD_COND_INITIALIZER"
