@@ -31,6 +31,19 @@ package Interfaces.C.Generic_Strings is
 
    type chars_ptr_array is array (size_t range <>) of aliased chars_ptr;
 
+   --  extended
+   subtype const_chars_ptr is Pointers.Constant_Pointer;
+   function "=" (Left, Right : const_chars_ptr) return Boolean
+      renames Pointers."=";
+   type const_chars_ptr_array is
+      array (size_t range <>) of aliased const_chars_ptr;
+   type const_chars_ptr_With_Length is record
+      ptr : const_chars_ptr;
+      Length : size_t;
+   end record;
+   type const_chars_ptr_With_Length_array is
+      array (size_t range <>) of aliased const_chars_ptr_With_Length;
+
    Null_Ptr : constant chars_ptr := null;
 
 --  function To_Chars_Ptr (
@@ -44,11 +57,40 @@ package Interfaces.C.Generic_Strings is
    pragma Pure_Function (To_Chars_Ptr);
    pragma Inline (To_Chars_Ptr);
 
+   --  extended
+   function To_Chars_Ptr (Item : not null access String_Type)
+      return not null chars_ptr;
+   pragma Pure_Function (To_Chars_Ptr);
+   pragma Inline (To_Chars_Ptr);
+   function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
+      return not null const_chars_ptr;
+   pragma Pure_Function (To_Const_Chars_Ptr);
+   pragma Inline (To_Const_Chars_Ptr);
+   function To_Const_Chars_Ptr (Item : not null access constant String_Type)
+      return not null const_chars_ptr;
+   pragma Pure_Function (To_Const_Chars_Ptr);
+   pragma Inline (To_Const_Chars_Ptr);
+
 --  function New_Char_Array (Chars : char_array) return chars_ptr;
    function New_Char_Array (Chars : Element_Array) return not null chars_ptr;
 
 --  function New_String (Str : String) return chars_ptr;
    function New_String (Str : String_Type) return not null chars_ptr;
+
+   --  extended
+   function New_Chars_Ptr (Length : size_t) return not null chars_ptr;
+   function New_Chars_Ptr (
+      Item : not null access constant Element;
+      Length : size_t)
+      return not null chars_ptr;
+   function New_Chars_Ptr (Item : not null access constant Element)
+      return not null chars_ptr;
+
+   --  extended
+   function New_Strcat (Items : const_chars_ptr_array)
+      return not null chars_ptr;
+   function New_Strcat (Items : const_chars_ptr_With_Length_array)
+      return not null chars_ptr;
 
    procedure Free (Item : in out chars_ptr);
 
@@ -97,66 +139,20 @@ package Interfaces.C.Generic_Strings is
       Str : String_Type;
       Check : Boolean := True);
 
---  Update_Error : exception;
-
-   --  extended from here
-
-   subtype const_chars_ptr is Pointers.Constant_Pointer;
-   function "=" (Left, Right : const_chars_ptr) return Boolean
-      renames Pointers."=";
-
-   type const_chars_ptr_array is
-      array (size_t range <>) of aliased const_chars_ptr;
-
-   type const_chars_ptr_With_Length is record
-      ptr : const_chars_ptr;
-      Length : size_t;
-   end record;
-
-   type const_chars_ptr_With_Length_array is
-      array (size_t range <>) of aliased const_chars_ptr_With_Length;
-
-   function To_Chars_Ptr (Item : not null access String_Type)
-      return not null chars_ptr;
-   pragma Pure_Function (To_Chars_Ptr);
-   pragma Inline (To_Chars_Ptr);
-
-   function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
-      return not null const_chars_ptr;
-   pragma Pure_Function (To_Const_Chars_Ptr);
-   pragma Inline (To_Const_Chars_Ptr);
-
-   function To_Const_Chars_Ptr (Item : not null access constant String_Type)
-      return not null const_chars_ptr;
-   pragma Pure_Function (To_Const_Chars_Ptr);
-   pragma Inline (To_Const_Chars_Ptr);
-
-   function New_Chars_Ptr (Length : size_t) return not null chars_ptr;
-
-   function New_Chars_Ptr (
-      Item : not null access constant Element;
-      Length : size_t)
-      return not null chars_ptr;
-
-   function New_Chars_Ptr (Item : not null access constant Element)
-      return not null chars_ptr;
-
-   function New_Strcat (Items : const_chars_ptr_array)
-      return not null chars_ptr;
-
-   function New_Strcat (Items : const_chars_ptr_With_Length_array)
-      return not null chars_ptr;
-
+   --  extended
    procedure Update (
       Item : not null access Element;
       Offset : size_t;
       Source : not null access constant Element;
       Length : size_t);
-
    procedure Update (
       Item : not null access Element;
       Offset : size_t;
       Source : not null access constant Element);
+
+--  Update_Error : exception;
+
+   --  extended from here
 
    function Reference (
       Item : not null access Element;

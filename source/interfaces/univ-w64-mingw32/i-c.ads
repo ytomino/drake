@@ -80,13 +80,6 @@ package Interfaces.C is
 
    wide_nul : constant wchar_t := wchar_t'Val (0); -- implementation-defined
 
-   --  extended
-   subtype wchar_Character is Wide_Character;
-   subtype wchar_String is Wide_String;
-   package wchar_String_Slicing
-      renames Ada.References.Wide_Strings.Slicing;
-   --  wchar_t does not correspond to Wide_Character in all platform
-
 --  function To_C (Item : Wide_Character) return wchar_t;
 --  function To_Ada (Item : wchar_t) return Wide_Character;
 
@@ -110,6 +103,13 @@ package Interfaces.C is
 --    Target : out Wide_String;
 --    Count : out Natural;
 --    Trim_Nul : Boolean := True);
+
+   --  extended
+   subtype wchar_Character is Wide_Character;
+   subtype wchar_String is Wide_String;
+   package wchar_String_Slicing
+      renames Ada.References.Wide_Strings.Slicing;
+   --  wchar_t does not correspond to Wide_Character in all platform
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.
 
