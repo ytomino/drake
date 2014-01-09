@@ -44,25 +44,33 @@ package body Interfaces.C.Generic_Strings is
 
    --  implementation
 
-   function Constant_Reference (
-      Item : not null access constant Element;
-      Length : size_t)
-      return Slicing.Constant_Reference_Type
+   function To_Chars_Ptr (
+      Item : not null access Element_Array;
+      Nul_Check : Boolean := False)
+      return not null chars_ptr
    is
-      Source : aliased String_Type (1 .. Natural (Length));
-      for Source'Address use Item.all'Address;
+      pragma Unreferenced (Nul_Check);
    begin
-      return Slicing.Constant_Slice (
-         Source'Unrestricted_Access,
-         Source'First,
-         Source'Last);
-   end Constant_Reference;
+      return Item.all (Item.all'First)'Access;
+   end To_Chars_Ptr;
 
-   procedure Free (Item : in out chars_ptr) is
+   function To_Chars_Ptr (Item : not null access String_Type)
+      return not null chars_ptr is
    begin
-      libc.free (Item);
-      Item := null;
-   end Free;
+      return Conv.To_Pointer (Item.all'Address);
+   end To_Chars_Ptr;
+
+   function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
+      return not null const_chars_ptr is
+   begin
+      return Item.all (Item.all'First)'Access;
+   end To_Const_Chars_Ptr;
+
+   function To_Const_Chars_Ptr (Item : not null access constant String_Type)
+      return not null const_chars_ptr is
+   begin
+      return const_Conv.To_Pointer (Item.all'Address);
+   end To_Const_Chars_Ptr;
 
    function New_Char_Array (Chars : Element_Array)
       return not null chars_ptr
@@ -73,6 +81,11 @@ package body Interfaces.C.Generic_Strings is
    begin
       return New_Chars_Ptr (Source, Length);
    end New_Char_Array;
+
+   function New_String (Str : String_Type) return not null chars_ptr is
+   begin
+      return New_Chars_Ptr (Conv.To_Pointer (Str'Address), Str'Length);
+   end New_String;
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
       Size : constant System.Storage_Elements.Storage_Count :=
@@ -157,24 +170,45 @@ package body Interfaces.C.Generic_Strings is
       return Result;
    end New_Strcat;
 
-   function New_String (Str : String_Type) return not null chars_ptr is
+   procedure Free (Item : in out chars_ptr) is
    begin
-      return New_Chars_Ptr (Conv.To_Pointer (Str'Address), Str'Length);
-   end New_String;
+      libc.free (Item);
+      Item := null;
+   end Free;
 
-   function Reference (
-      Item : not null access Element;
+   function Value (Item : not null access constant Element)
+      return Element_Array is
+   begin
+      return Value (Item, Strlen (Item));
+   end Value;
+
+   function Value (
+      Item : access constant Element;
       Length : size_t)
-      return Slicing.Reference_Type
+      return Element_Array
    is
-      Source : aliased String_Type (1 .. Natural (Length));
+      Source : Element_Array (1 .. Length);
       for Source'Address use Item.all'Address;
    begin
-      return Slicing.Slice (
-         Source'Unrestricted_Access,
-         Source'First,
-         Source'Last);
-   end Reference;
+      return Source;
+   end Value;
+
+   function Value (Item : not null access constant Element)
+      return String_Type is
+   begin
+      return Value (Item, Strlen (Item));
+   end Value;
+
+   function Value (
+      Item : access constant Element;
+      Length : size_t)
+      return String_Type
+   is
+      Source : String_Type (1 .. Natural (Length));
+      for Source'Address use Item.all'Address;
+   begin
+      return Source;
+   end Value;
 
    function Strlen (Item : not null access constant Element)
       return size_t is
@@ -198,34 +232,6 @@ package body Interfaces.C.Generic_Strings is
          end;
       end if;
    end Strlen;
-
-   function To_Chars_Ptr (
-      Item : not null access Element_Array;
-      Nul_Check : Boolean := False)
-      return not null chars_ptr
-   is
-      pragma Unreferenced (Nul_Check);
-   begin
-      return Item.all (Item.all'First)'Access;
-   end To_Chars_Ptr;
-
-   function To_Chars_Ptr (Item : not null access String_Type)
-      return not null chars_ptr is
-   begin
-      return Conv.To_Pointer (Item.all'Address);
-   end To_Chars_Ptr;
-
-   function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
-      return not null const_chars_ptr is
-   begin
-      return Item.all (Item.all'First)'Access;
-   end To_Const_Chars_Ptr;
-
-   function To_Const_Chars_Ptr (Item : not null access constant String_Type)
-      return not null const_chars_ptr is
-   begin
-      return const_Conv.To_Pointer (Item.all'Address);
-   end To_Const_Chars_Ptr;
 
    procedure Update (
       Item : not null access Element;
@@ -293,38 +299,32 @@ package body Interfaces.C.Generic_Strings is
          Strlen (Source));
    end Update;
 
-   function Value (Item : not null access constant Element)
-      return Element_Array is
-   begin
-      return Value (Item, Strlen (Item));
-   end Value;
-
-   function Value (
-      Item : access constant Element;
+   function Reference (
+      Item : not null access Element;
       Length : size_t)
-      return Element_Array
+      return Slicing.Reference_Type
    is
-      Source : Element_Array (1 .. Length);
+      Source : aliased String_Type (1 .. Natural (Length));
       for Source'Address use Item.all'Address;
    begin
-      return Source;
-   end Value;
+      return Slicing.Slice (
+         Source'Unrestricted_Access,
+         Source'First,
+         Source'Last);
+   end Reference;
 
-   function Value (Item : not null access constant Element)
-      return String_Type is
-   begin
-      return Value (Item, Strlen (Item));
-   end Value;
-
-   function Value (
-      Item : access constant Element;
+   function Constant_Reference (
+      Item : not null access constant Element;
       Length : size_t)
-      return String_Type
+      return Slicing.Constant_Reference_Type
    is
-      Source : String_Type (1 .. Natural (Length));
+      Source : aliased String_Type (1 .. Natural (Length));
       for Source'Address use Item.all'Address;
    begin
-      return Source;
-   end Value;
+      return Slicing.Constant_Slice (
+         Source'Unrestricted_Access,
+         Source'First,
+         Source'Last);
+   end Constant_Reference;
 
 end Interfaces.C.Generic_Strings;
