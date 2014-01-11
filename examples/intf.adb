@@ -31,6 +31,26 @@ begin
 		pragma Assert (Interfaces.sync_bool_compare_and_swap (I'Access, 10, 11));
 		pragma Assert (not Interfaces.sync_bool_compare_and_swap (I'Access, 12, 13));
 	end;
+	-- Interfaces.C
+	declare
+		use type Interfaces.C.size_t;
+		use type Interfaces.C.char_array;
+		use type Interfaces.C.wchar_array;
+		use type Interfaces.C.char16_array;
+		use type Interfaces.C.char32_array;
+	begin
+		pragma Assert (Interfaces.C.To_C (String'("")) = Interfaces.C.char_array'(0 => Interfaces.C.nul));
+		pragma Assert (Interfaces.C.To_Ada (Interfaces.C.char_array'(0 => Interfaces.C.nul)) = String'(""));
+		pragma Assert (Interfaces.C.To_C (Wide_String'("")) = Interfaces.C.wchar_array'(0 => Interfaces.C.wide_nul));
+		pragma Assert (Interfaces.C.To_Ada (Interfaces.C.wchar_array'(0 => Interfaces.C.wide_nul)) = Wide_String'(""));
+		pragma Assert (Interfaces.C.To_C (Wide_String'("")) = Interfaces.C.char16_array'(0 => Interfaces.C.char16_nul));
+		pragma Assert (Interfaces.C.To_Ada (Interfaces.C.char16_array'(0 => Interfaces.C.char16_nul)) = Wide_String'(""));
+		pragma Assert (Interfaces.C.To_C (Wide_Wide_String'("")) = Interfaces.C.char32_array'(0 => Interfaces.C.char32_nul));
+		pragma Assert (Interfaces.C.To_Ada (Interfaces.C.char32_array'(0 => Interfaces.C.char32_nul)) = Wide_Wide_String'(""));
+		-- contains nul
+		pragma Assert (Interfaces.C.To_Ada (Interfaces.C.char_array'(0 => Interfaces.C.nul), Trim_Nul => False) = String'(1 => Character'Val (0)));
+		null;
+	end;
 	-- Interfaces.C.Pointers
 	declare
 		use type Interfaces.C.ptrdiff_t;
@@ -49,15 +69,15 @@ begin
 	end;
 	-- Interfaces.C.Strings
 	declare
-		Ada_Str : aliased String := "12345";
-		Ada_Sub_Str : String renames Ada_Str (3 .. 5);
+		C_Str : aliased Interfaces.C.char_array (1 .. 5) := "12345";
+		C_Sub_Str : Interfaces.C.char_array renames C_Str (3 .. 5);
 		p : Interfaces.C.Strings.chars_ptr := Interfaces.C.Strings.New_String ("ABC");
 	begin
 		pragma Assert (Interfaces.C.Strings.Value (p) = String'("ABC"));
 		Interfaces.C.Strings.Update (p, 1, String'("Z"));
-		pragma Assert (Interfaces.C.Strings.Value (p) = String'("AZ"));
+		pragma Assert (Interfaces.C.Strings.Value (p) = String'("AZC"));
 		Interfaces.C.Strings.Free (p);
-		pragma Assert (Interfaces.C.Strings.Value (Interfaces.C.Strings.To_Const_Chars_Ptr (Ada_Sub_Str'Unrestricted_Access), 3) = String'("345"));
+		pragma Assert (Interfaces.C.Strings.Value (Interfaces.C.Strings.To_Const_Chars_Ptr (C_Sub_Str'Unrestricted_Access), 3) = String'("345"));
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end intf;
