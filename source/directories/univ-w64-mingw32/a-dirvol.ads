@@ -27,7 +27,7 @@ private
 
    type Non_Controlled_File_System is record
       Root_Path : C.winnt.LPWSTR;
-      Root_Path_Length : C.signed_int;
+      Root_Path_Length : C.size_t;
       FileSystemFlags : aliased C.windef.DWORD;
       FileSystemFlags_Valid : Boolean;
       Is_NTFS : Boolean;

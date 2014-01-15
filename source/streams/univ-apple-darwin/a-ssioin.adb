@@ -3,6 +3,7 @@ with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.Memory;
 with System.Storage_Elements;
+with System.Zero_Terminated_Strings;
 with C.errno;
 with C.fcntl;
 with C.stdlib;
@@ -246,16 +247,16 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle : Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Name : System.Address; -- be freeing on error
-      Name_Length : Natural;
+      Name : C.char_ptr; -- be freeing on error
+      Name_Length : C.size_t;
       Form : Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
       Handle : Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Name : System.Address;
-      Name_Length : Natural;
+      Name : C.char_ptr;
+      Name_Length : C.size_t;
       Form : Packed_Form)
       return Non_Controlled_File_Type
    is
@@ -264,7 +265,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Stream_Type'Size / Standard'Storage_Unit));
    begin
       if Result_Addr = System.Null_Address then
-         System.Memory.Free (Name);
+         System.Memory.Free (char_ptr_Conv.To_Address (Name));
          raise Storage_Error;
       else
          declare
@@ -295,7 +296,7 @@ package body Ada.Streams.Stream_IO.Inside is
       if File.Buffer /= File.Buffer_Inline'Address then
          System.Memory.Free (File.Buffer);
       end if;
-      System.Memory.Free (File.Name);
+      System.Memory.Free (char_ptr_Conv.To_Address (File.Name));
       System.Memory.Free (Non_Controlled_File_Type_Conv.To_Address (File));
    end Free;
 
@@ -665,8 +666,8 @@ package body Ada.Streams.Stream_IO.Inside is
                Handle => -1,
                Mode => Mode,
                Kind => Normal,
-               Name => char_ptr_Conv.To_Address (Full_Name),
-               Name_Length => Natural (Full_Name_Length),
+               Name => Full_Name,
+               Name_Length => Full_Name_Length,
                Form => Form);
             Open_Normal (Method, New_File, Mode, Full_Name, Form);
             File := New_File;
@@ -680,8 +681,8 @@ package body Ada.Streams.Stream_IO.Inside is
             Handle => Handle,
             Mode => Mode,
             Kind => Temporary,
-            Name => char_ptr_Conv.To_Address (Full_Name),
-            Name_Length => Natural (Full_Name_Length),
+            Name => Full_Name,
+            Name_Length => Full_Name_Length,
             Form => Form);
       end if;
    end Allocate_And_Open;
@@ -853,8 +854,7 @@ package body Ada.Streams.Stream_IO.Inside is
          when Normal | Temporary | External =>
             Error := C.unistd.close (File.Handle) < 0;
             if not Error and then File.Kind = Temporary then
-               Error := C.unistd.unlink (
-                  char_ptr_Conv.To_Pointer (File.Name)) < 0;
+               Error := C.unistd.unlink (File.Name) < 0;
             end if;
             if Error and then Raise_On_Error then
                Free (File); -- free on error
@@ -1000,7 +1000,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Method => Reset,
                   File => File2,
                   Mode => Mode,
-                  Name => char_ptr_Conv.To_Pointer (File2.Name),
+                  Name => File2.Name,
                   Form => File2.Form);
                File.all := File2;
             end;
@@ -1024,12 +1024,9 @@ package body Ada.Streams.Stream_IO.Inside is
    function Name (File : Non_Controlled_File_Type) return String is
    begin
       Check_File_Open (File);
-      declare
-         A_Name : String (1 .. File.Name_Length);
-         for A_Name'Address use File.Name;
-      begin
-         return A_Name;
-      end;
+      return System.Zero_Terminated_Strings.Value (
+         File.Name,
+         File.Name_Length);
    end Name;
 
    function Form (File : Non_Controlled_File_Type) return Packed_Form is
@@ -1306,7 +1303,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Method => Reset,
                   File => File2,
                   Mode => Mode,
-                  Name => char_ptr_Conv.To_Pointer (File2.Name),
+                  Name => File2.Name,
                   Form => File2.Form);
                File.all := File2;
             end;
@@ -1374,8 +1371,8 @@ package body Ada.Streams.Stream_IO.Inside is
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,
-         Name => char_ptr_Conv.To_Address (Full_Name),
-         Name_Length => Natural (Full_Name_Length),
+         Name => Full_Name,
+         Name_Length => Full_Name_Length,
          Form => Form);
    end Open;
 

@@ -216,7 +216,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Mode : File_Mode;
       Kind : Stream_Kind;
       Name : C.winnt.LPWSTR; -- be freeing on error
-      Name_Length : C.signed_int;
+      Name_Length : C.size_t;
       Form : Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
@@ -224,7 +224,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Mode : File_Mode;
       Kind : Stream_Kind;
       Name : C.winnt.LPWSTR;
-      Name_Length : C.signed_int;
+      Name_Length : C.size_t;
       Form : Packed_Form)
       return Non_Controlled_File_Type
    is
@@ -305,11 +305,11 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Open_Temporary_File (
       Handle : out Handle_Type;
       Full_Name : out C.winnt.LPWSTR;
-      Full_Name_Length : out C.signed_int);
+      Full_Name_Length : out C.size_t);
    procedure Open_Temporary_File (
       Handle : out Handle_Type;
       Full_Name : out C.winnt.LPWSTR;
-      Full_Name_Length : out C.signed_int)
+      Full_Name_Length : out C.size_t)
    is
       Temp_Dir : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
       Temp_Name : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
@@ -345,57 +345,56 @@ package body Ada.Streams.Stream_IO.Inside is
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
       --  allocate filename
-      Full_Name_Length := C.signed_int (
-         C.string.wcslen (Temp_Name (0)'Access));
+      Full_Name_Length := C.string.wcslen (Temp_Name (0)'Access);
       Full_Name := LPWSTR_Conv.To_Pointer (System.Memory.Allocate (
          System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
-         W_Full_Name : C.winnt.WCHAR_array (0 .. C.size_t (Full_Name_Length));
+         W_Full_Name : C.winnt.WCHAR_array (0 .. Full_Name_Length);
          for W_Full_Name'Address use LPWSTR_Conv.To_Address (Full_Name);
       begin
-         W_Full_Name := Temp_Name (0 .. C.size_t (Full_Name_Length));
+         W_Full_Name := Temp_Name (0 .. Full_Name_Length);
       end;
    end Open_Temporary_File;
 
    procedure Compose_File_Name (
       Name : String;
       Full_Name : out C.winnt.LPWSTR;
-      Full_Name_Length : out C.signed_int);
+      Full_Name_Length : out C.size_t);
    procedure Compose_File_Name (
       Name : String;
       Full_Name : out C.winnt.LPWSTR;
-      Full_Name_Length : out C.signed_int)
+      Full_Name_Length : out C.size_t)
    is
       W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
-      W_Name_Length : C.signed_int;
+      W_Name_Length : C.size_t;
       W_Full_Path : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
-      W_Full_Path_Length : C.windef.DWORD;
+      W_Full_Path_Length : C.size_t;
    begin
       System.Zero_Terminated_WStrings.Convert (
          Name,
          W_Name (0)'Access,
          W_Name_Length);
-      W_Full_Path_Length := C.winbase.GetFullPathName (
+      W_Full_Path_Length := C.size_t (C.winbase.GetFullPathName (
          W_Name (0)'Access,
          W_Full_Path'Length,
          W_Full_Path (0)'Access,
-         null);
+         null));
       if W_Full_Path_Length = 0 then
-         W_Full_Path_Length := C.windef.DWORD (W_Name_Length);
-         W_Full_Path (0 .. C.size_t (W_Full_Path_Length)) :=
-            W_Name (0 .. C.size_t (W_Name_Length));
+         W_Full_Path_Length := W_Name_Length;
+         W_Full_Path (0 .. W_Full_Path_Length) :=
+            W_Name (0 .. W_Name_Length);
       end if;
       --  allocate filename
-      Full_Name_Length := C.signed_int (W_Full_Path_Length);
+      Full_Name_Length := W_Full_Path_Length;
       Full_Name := LPWSTR_Conv.To_Pointer (System.Memory.Allocate (
          System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
-         W_Full_Name : C.winnt.WCHAR_array (0 .. C.size_t (Full_Name_Length));
+         W_Full_Name : C.winnt.WCHAR_array (0 .. Full_Name_Length);
          for W_Full_Name'Address use LPWSTR_Conv.To_Address (Full_Name);
       begin
-         W_Full_Name := W_Full_Path (0 .. C.size_t (Full_Name_Length));
+         W_Full_Name := W_Full_Path (0 .. Full_Name_Length);
       end;
    end Compose_File_Name;
 
@@ -568,7 +567,7 @@ package body Ada.Streams.Stream_IO.Inside is
    is
       Handle : Handle_Type;
       Full_Name : C.winnt.LPWSTR;
-      Full_Name_Length : C.signed_int;
+      Full_Name_Length : C.size_t;
    begin
       if Name /= "" then
          Compose_File_Name (Name, Full_Name, Full_Name_Length);
@@ -902,12 +901,12 @@ package body Ada.Streams.Stream_IO.Inside is
             declare
                Deleting_File_Name : C.winnt.WCHAR_array (
                   0 ..
-                  C.size_t (File.Name_Length));
+                  File.Name_Length);
             begin
                declare
                   File_Name : C.winnt.WCHAR_array (
                      0 ..
-                     C.size_t (File.Name_Length));
+                     File.Name_Length);
                   for File_Name'Address use LPWSTR_Conv.To_Address (File.Name);
                begin
                   Deleting_File_Name := File_Name;
@@ -1297,7 +1296,7 @@ package body Ada.Streams.Stream_IO.Inside is
    is
       Kind : Stream_Kind;
       Full_Name : C.winnt.LPWSTR;
-      Full_Name_Length : C.signed_int;
+      Full_Name_Length : C.size_t;
    begin
       if File /= null then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);

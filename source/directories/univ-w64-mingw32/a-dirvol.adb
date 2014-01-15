@@ -90,12 +90,12 @@ package body Ada.Directories.Volumes is
                   * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
             Dest_S : C.winnt.WCHAR_array (
                0 ..
-               C.size_t (NC_Result.Root_Path_Length));
+               NC_Result.Root_Path_Length);
             for Dest_S'Address use Dest;
          begin
-            NC_Result.Root_Path_Length := C.signed_int (
-               C.string.wcslen (Root_Path (0)'Access));
-            Dest_S := Root_Path (0 .. C.size_t (NC_Result.Root_Path_Length));
+            NC_Result.Root_Path_Length :=
+               C.string.wcslen (Root_Path (0)'Access);
+            Dest_S := Root_Path (0 .. NC_Result.Root_Path_Length);
             NC_Result.Root_Path := Conv.To_Pointer (Dest);
          end;
       end return;
@@ -238,11 +238,11 @@ package body Ada.Directories.Volumes is
                         * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
                   Source_S : C.winnt.WCHAR_array (
                      0 ..
-                     C.size_t (Object.Data.Root_Path_Length));
+                     Object.Data.Root_Path_Length);
                   for Source_S'Address use Source;
                   Dest_S : C.winnt.WCHAR_array (
                      0 ..
-                     C.size_t (Object.Data.Root_Path_Length));
+                     Object.Data.Root_Path_Length);
                   for Dest_S'Address use Dest;
                begin
                   Dest_S := Source_S;

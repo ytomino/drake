@@ -30,7 +30,7 @@ package body Ada.Directories.Temporary is
       Length := C.winbase.GetTempPath (Result'Length, Result (0)'Access);
       return System.Zero_Terminated_WStrings.Value (
          Result (0)'Access,
-         C.signed_int (Length));
+         C.size_t (Length));
    end Temporary_Directory;
 
    procedure Set_Temporary_Directory (Name : String) is

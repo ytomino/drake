@@ -36,17 +36,18 @@ package body Ada.Directories.Volumes is
 
    function Format_Name (FS : File_System) return String is
    begin
-      return System.Zero_Terminated_Strings.Value (FS.f_fstypename'Address);
+      return System.Zero_Terminated_Strings.Value (FS.f_fstypename (0)'Access);
    end Format_Name;
 
    function Directory (FS : File_System) return String is
    begin
-      return System.Zero_Terminated_Strings.Value (FS.f_mntonname'Address);
+      return System.Zero_Terminated_Strings.Value (FS.f_mntonname (0)'Access);
    end Directory;
 
    function Device (FS : File_System) return String is
    begin
-      return System.Zero_Terminated_Strings.Value (FS.f_mntfromname'Address);
+      return System.Zero_Terminated_Strings.Value (
+         FS.f_mntfromname (0)'Access);
    end Device;
 
    function Is_HFS (FS : File_System) return Boolean is

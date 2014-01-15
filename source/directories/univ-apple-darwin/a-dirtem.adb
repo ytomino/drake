@@ -20,7 +20,7 @@ package body Ada.Directories.Temporary is
       if Temp_Dir = null then
          return Current_Directory;
       else
-         return System.Zero_Terminated_Strings.Value (Temp_Dir.all'Address);
+         return System.Zero_Terminated_Strings.Value (Temp_Dir);
       end if;
    end Temporary_Directory;
 

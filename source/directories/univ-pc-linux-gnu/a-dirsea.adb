@@ -110,7 +110,7 @@ package body Ada.Directory_Searching is
       return String is
    begin
       return System.Zero_Terminated_Strings.Value (
-         Directory_Entry.d_name'Address);
+         Directory_Entry.d_name (0)'Access);
    end Simple_Name;
 
    function Kind (Directory_Entry : Directory_Entry_Type)
