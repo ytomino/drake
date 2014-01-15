@@ -71,6 +71,7 @@ package body Ada.Directories.Volumes is
    function Where (Name : String) return File_System is
       W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
       Root_Path : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
+      Root_Path_Length : C.size_t;
    begin
       System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
       if C.winbase.GetVolumePathName (
@@ -80,22 +81,22 @@ package body Ada.Directories.Volumes is
       then
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
+      Root_Path_Length := C.string.wcslen (Root_Path (0)'Access);
       return Result : File_System do
          declare
             NC_Result : constant not null access Non_Controlled_File_System :=
                Reference (Result);
             Dest : constant System.Address := System.Memory.Allocate (
                System.Storage_Elements.Storage_Count (
-                  NC_Result.Root_Path_Length)
-                  * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+                  NC_Result.Root_Path_Length + 1)
+               * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
             Dest_S : C.winnt.WCHAR_array (
                0 ..
-               NC_Result.Root_Path_Length);
+               Root_Path_Length);
             for Dest_S'Address use Dest;
          begin
-            NC_Result.Root_Path_Length :=
-               C.string.wcslen (Root_Path (0)'Access);
-            Dest_S := Root_Path (0 .. NC_Result.Root_Path_Length);
+            NC_Result.Root_Path_Length := Root_Path_Length;
+            Dest_S := Root_Path (0 .. Root_Path_Length);
             NC_Result.Root_Path := Conv.To_Pointer (Dest);
          end;
       end return;
@@ -234,8 +235,8 @@ package body Ada.Directories.Volumes is
                declare
                   Dest : constant System.Address := System.Memory.Allocate (
                      System.Storage_Elements.Storage_Count (
-                        Object.Data.Root_Path_Length)
-                        * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+                        Object.Data.Root_Path_Length + 1)
+                     * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
                   Source_S : C.winnt.WCHAR_array (
                      0 ..
                      Object.Data.Root_Path_Length);
