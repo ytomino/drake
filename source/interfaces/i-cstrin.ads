@@ -7,7 +7,6 @@ package Interfaces.C.Strings is new Generic_Strings (
    Element => char,
    Element_Array => char_array,
    Pointers => Char_Pointers,
-   Length => Length,
    To_C => To_C,
    To_Ada => To_Ada);
 pragma Preelaborate (Interfaces.C.Strings);

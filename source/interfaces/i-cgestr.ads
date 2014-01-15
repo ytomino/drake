@@ -11,7 +11,6 @@ generic
       Element => Element,
       Element_Array => Element_Array,
       Default_Terminator => Element'Val (0));
-   with function Length (Item : Element_Array) return size_t;
    with function To_C (
       Item : String_Type;
       Append_Nul : Boolean := True)
