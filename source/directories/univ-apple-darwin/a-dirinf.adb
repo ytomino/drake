@@ -6,6 +6,7 @@ with System.Address_To_Named_Access_Conversions;
 with System.Memory;
 with System.Native_Time;
 with System.Storage_Elements;
+with System.Zero_Terminated_Strings;
 with C.errno;
 with C.sys.stat;
 with C.sys.types;
@@ -260,12 +261,9 @@ package body Ada.Directories.Information is
                end case;
             end if;
             if C.size_t (Result) < Buffer_Length then
-               declare
-                  Image : String (1 .. Natural (Result));
-                  for Image'Address use Conv.To_Address (Buffer);
-               begin
-                  return Image;
-               end;
+               return System.Zero_Terminated_Strings.Value (
+                  Buffer,
+                  C.size_t (Result));
             end if;
             Buffer_Length := Buffer_Length * 2;
             Buffer := Conv.To_Pointer (System.Memory.Reallocate (

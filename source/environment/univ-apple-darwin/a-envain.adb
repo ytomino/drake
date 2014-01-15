@@ -66,8 +66,7 @@ package body Ada.Environment_Variables.Inside is
       if Result = null then
          raise Constraint_Error;
       else
-         return System.Zero_Terminated_Strings.Value (
-            char_const_ptr_Conv.To_Address (C.char_const_ptr (Result)));
+         return System.Zero_Terminated_Strings.Value (Result);
       end if;
    end Value;
 
@@ -77,8 +76,7 @@ package body Ada.Environment_Variables.Inside is
       if Result = null then
          return Default;
       else
-         return System.Zero_Terminated_Strings.Value (
-            char_const_ptr_Conv.To_Address (C.char_const_ptr (Result)));
+         return System.Zero_Terminated_Strings.Value (Result);
       end if;
    end Value;
 
@@ -166,8 +164,7 @@ package body Ada.Environment_Variables.Inside is
       Value : C.char_const_ptr;
    begin
       Do_Separate (Item, Name_Length, Value);
-      return System.Zero_Terminated_Strings.Value (
-         char_const_ptr_Conv.To_Address (Value));
+      return System.Zero_Terminated_Strings.Value (Value);
    end Value;
 
    function Get_Block return System.Address is

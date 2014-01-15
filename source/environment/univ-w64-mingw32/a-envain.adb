@@ -54,7 +54,7 @@ package body Ada.Environment_Variables.Inside is
          Result'Length);
       return System.Zero_Terminated_WStrings.Value (
          Result (0)'Access,
-         C.signed_int (Result_Length));
+         C.size_t (Result_Length));
    end Get_2;
 
    procedure Do_Separate (
@@ -212,9 +212,7 @@ package body Ada.Environment_Variables.Inside is
       Value : C.winnt.LPCWCH;
    begin
       Do_Separate (Item, Name_Length, Value);
-      return System.Zero_Terminated_WStrings.Value (
-         Item,
-         C.signed_int (Name_Length));
+      return System.Zero_Terminated_WStrings.Value (Item, Name_Length);
    end Name;
 
    function Value (Position : Cursor) return String is

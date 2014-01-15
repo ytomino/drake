@@ -21,7 +21,7 @@ package body Ada.Directories.Inside is
       else
          return System.Zero_Terminated_WStrings.Value (
             Buffer (0)'Access,
-            C.signed_int (Length));
+            C.size_t (Length));
       end if;
    end Current_Directory;
 
@@ -199,7 +199,7 @@ package body Ada.Directories.Inside is
       end if;
       return System.Zero_Terminated_WStrings.Value (
          Full (0)'Access,
-         C.signed_int (Full_Last));
+         Full_Last);
    end Full_Name;
 
    function Exists (Name : String) return Boolean is

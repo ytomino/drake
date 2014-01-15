@@ -2,6 +2,7 @@ with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 with System.Memory;
+with System.Zero_Terminated_Strings;
 with C.fnmatch;
 with C.sys.dirent;
 package body Ada.Directory_Searching is
@@ -105,15 +106,11 @@ package body Ada.Directory_Searching is
    end Get_Next_Entry;
 
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
-      return String
-   is
-      subtype Simple_Name_String is String (
-         1 ..
-         Natural (Directory_Entry.d_namlen));
-      Result : Simple_Name_String;
-      for Result'Address use Directory_Entry.d_name'Address;
+      return String is
    begin
-      return Result;
+      return System.Zero_Terminated_Strings.Value (
+         Directory_Entry.d_name (0)'Access,
+         C.size_t (Directory_Entry.d_namlen));
    end Simple_Name;
 
    function Kind (Directory_Entry : Directory_Entry_Type)

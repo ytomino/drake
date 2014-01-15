@@ -157,7 +157,7 @@ private
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
       Name : C.winnt.LPWSTR;
-      Name_Length : C.signed_int;
+      Name_Length : C.size_t;
       Form : Packed_Form;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;

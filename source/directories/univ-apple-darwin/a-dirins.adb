@@ -1,8 +1,9 @@
 with Ada.Directories.Inside.Do_Copy_File;
-with Ada.Exceptions;
+with Ada.Exceptions.Finally;
+with System.Address_To_Named_Access_Conversions;
+with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdlib;
-with C.string;
 with C.sys.time;
 with C.sys.types;
 with C.time;
@@ -59,16 +60,21 @@ package body Ada.Directories.Inside is
    --  implementation
 
    function Current_Directory return String is
-      Path : constant C.char_ptr := C.unistd.getcwd (null, 0);
-      Path_Length : constant C.size_t := C.string.strlen (Path);
-      Path_String : String (1 .. Natural (Path_Length));
-      for Path_String'Address use Path.all'Address;
+      procedure Finally (X : not null access C.char_ptr);
+      procedure Finally (X : not null access C.char_ptr) is
+         package Conv is
+            new System.Address_To_Named_Access_Conversions (
+               C.char,
+               C.char_ptr);
+      begin
+         C.stdlib.free (C.void_ptr (Conv.To_Address (X.all)));
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
+      Path : aliased C.char_ptr := C.unistd.getcwd (null, 0);
    begin
-      return Result : String := Path_String do -- copy
-         pragma Unmodified (Result);
-         pragma Unreferenced (Result);
-         C.stdlib.free (C.void_ptr (Path.all'Address));
-      end return;
+      Holder.Assign (Path'Access);
+      return System.Zero_Terminated_Strings.Value (Path);
    end Current_Directory;
 
    procedure Set_Directory (Directory : String) is
