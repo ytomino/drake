@@ -55,12 +55,38 @@ package body Interfaces.C.Generic_Strings is
       else
          if Nul_Check then
             --  raise Terminator_Error when Item contains no nul
-            declare
-               Dummy : constant size_t := Length (Item.all);
-               pragma Unreferenced (Dummy);
-            begin
-               null;
-            end;
+            if Element'Size = char'Size then
+               declare
+                  ca_Item : char_array (Item'Range);
+                  for ca_Item'Address use Item.all'Address;
+                  Dummy : constant size_t := Length (ca_Item);
+                  pragma Unreferenced (Dummy);
+               begin
+                  null;
+               end;
+            elsif Element'Size = wchar_t'Size then
+               declare
+                  wa_Item : wchar_array (Item'Range);
+                  for wa_Item'Address use Item.all'Address;
+                  Dummy : constant size_t := Length (wa_Item);
+                  pragma Unreferenced (Dummy);
+               begin
+                  null;
+               end;
+            else
+               declare
+                  I : size_t := Item'First;
+               begin
+                  loop
+                     if I <= Item'Last then
+                        Ada.Exceptions.Raise_Exception_From_Here (
+                           Terminator_Error'Identity);
+                     end if;
+                     exit when Item (I) = Element'Val (0);
+                     I := I + 1;
+                  end loop;
+               end;
+            end if;
          end if;
          return Item.all (Item.all'First)'Access;
       end if;
