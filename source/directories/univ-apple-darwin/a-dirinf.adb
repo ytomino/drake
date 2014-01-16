@@ -217,9 +217,6 @@ package body Ada.Directories.Information is
       package Conv is new System.Address_To_Named_Access_Conversions (
          C.char,
          C.char_ptr);
-      Buffer_Length : C.size_t := 1024;
-      Buffer : aliased C.char_ptr := Conv.To_Pointer (System.Memory.Allocate (
-         System.Storage_Elements.Storage_Count (Buffer_Length)));
       procedure Finally (X : not null access C.char_ptr);
       procedure Finally (X : not null access C.char_ptr) is
       begin
@@ -231,6 +228,9 @@ package body Ada.Directories.Information is
       Z_Name : constant String := Name & Character'Val (0);
       C_Name : C.char_array (C.size_t);
       for C_Name'Address use Z_Name'Address;
+      Buffer_Length : C.size_t := 1024;
+      Buffer : aliased C.char_ptr := Conv.To_Pointer (System.Memory.Allocate (
+         System.Storage_Elements.Storage_Count (Buffer_Length)));
    begin
       Holder.Assign (Buffer'Access);
       loop
