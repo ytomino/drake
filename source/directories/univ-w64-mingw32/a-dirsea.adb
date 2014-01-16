@@ -3,6 +3,7 @@ with System.Zero_Terminated_WStrings;
 with C.winerror;
 package body Ada.Directory_Searching is
    use type C.signed_int;
+   use type C.size_t;
    use type C.windef.DWORD;
    use type C.winnt.HANDLE;
    use type C.winnt.WCHAR;
@@ -40,28 +41,32 @@ package body Ada.Directory_Searching is
       Has_Next_Entry : out Boolean) is
    begin
       declare
-         Wildcard : String (1 .. Directory'Length + Pattern'Length + 1);
-         Wildcard_Last : Natural;
-         W_Wildcard : C.winnt.WCHAR_array (0 .. Wildcard'Length);
+         Wildcard : C.winnt.WCHAR_array (
+            0 ..
+            (Directory'Length + Pattern'Length)
+               * System.Zero_Terminated_WStrings.Expanding
+               + 1); -- '/'
+         Wildcard_Length : C.size_t;
       begin
          --  compose wildcard
-         Wildcard (1 .. Directory'Length) := Directory;
+         System.Zero_Terminated_WStrings.To_C (
+            Directory,
+            Wildcard (0)'Access,
+            Wildcard_Length);
          case Directory (Directory'Last) is
             when '\' | '/' | ':' =>
-               Wildcard (Directory'Length + 1 .. Wildcard'Last - 1) := Pattern;
-               Wildcard_Last := Wildcard'Last - 1;
+               null;
             when others =>
-               Wildcard (Directory'Length + 1) := '\';
-               Wildcard (Directory'Length + 2 .. Wildcard'Last) := Pattern;
-               Wildcard_Last := Wildcard'Last;
+               Wildcard (Wildcard_Length) :=
+                  C.winnt.WCHAR'Val (Character'Pos ('\'));
+               Wildcard_Length := Wildcard_Length + 1;
          end case;
-         --  convert character code
-         System.Zero_Terminated_WStrings.Convert (
-            Wildcard (1 .. Wildcard_Last),
-            W_Wildcard (0)'Access);
+         System.Zero_Terminated_WStrings.To_C (
+            Pattern,
+            Wildcard (Wildcard_Length)'Access);
          --  start search
          Search.Handle := C.winbase.FindFirstFileW (
-            W_Wildcard (0)'Access,
+            Wildcard (0)'Access,
             Directory_Entry);
       end;
       if Search.Handle = C.winbase.INVALID_HANDLE_VALUE then

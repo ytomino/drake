@@ -1,4 +1,5 @@
 with Ada.Exceptions;
+with System.Zero_Terminated_Strings;
 with C.fcntl;
 with C.sys.mman;
 with C.sys.stat;
@@ -12,13 +13,14 @@ is
    use type C.signed_int;
    use type C.unsigned_int;
    use type C.signed_long; -- 64bit ssize_t
-   Z_Source : String := Source_Name & Character'Val (0);
-   C_Source : C.char_array (C.size_t);
-   for C_Source'Address use Z_Source'Address;
+   use type C.size_t;
+   C_Source_Name : C.char_array (
+      0 ..
+      Source_Name'Length * System.Zero_Terminated_Strings.Expanding);
    Source : C.signed_int;
-   Z_Target : String := Target_Name & Character'Val (0);
-   C_Target : C.char_array (C.size_t);
-   for C_Target'Address use Z_Target'Address;
+   C_Target_Name : C.char_array (
+      0 ..
+      Target_Name'Length * System.Zero_Terminated_Strings.Expanding);
    Target : C.signed_int;
    Flag : C.unsigned_int :=
       C.fcntl.O_WRONLY or
@@ -30,8 +32,10 @@ is
    Dummy : C.signed_int;
    pragma Unreferenced (Dummy);
 begin
+   System.Zero_Terminated_Strings.To_C (Source_Name, C_Source_Name (0)'Access);
+   System.Zero_Terminated_Strings.To_C (Target_Name, C_Target_Name (0)'Access);
    Source := C.fcntl.open (
-      C_Source (0)'Access,
+      C_Source_Name (0)'Access,
       C.fcntl.O_RDONLY);
    if Source < 0 then
       Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
@@ -44,7 +48,7 @@ begin
       Flag := Flag or C.fcntl.O_EXCL;
    end if;
    Target := C.fcntl.open (
-      C_Target (0)'Access,
+      C_Target_Name (0)'Access,
       C.signed_int (Flag),
       Data.st_mode);
    if Target < 0 then

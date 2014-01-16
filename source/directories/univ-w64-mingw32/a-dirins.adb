@@ -26,10 +26,12 @@ package body Ada.Directories.Inside is
    end Current_Directory;
 
    procedure Set_Directory (Directory : String) is
-      W_Dir : aliased C.winnt.WCHAR_array (0 .. Directory'Length);
+      W_Directory : aliased C.winnt.WCHAR_array (
+         0 ..
+         Directory'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (Directory, W_Dir (0)'Access);
-      if C.winbase.SetCurrentDirectory (W_Dir (0)'Access) = 0 then
+      System.Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
+      if C.winbase.SetCurrentDirectory (W_Directory (0)'Access) = 0 then
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
@@ -45,12 +47,14 @@ package body Ada.Directories.Inside is
       Form : String)
    is
       pragma Unreferenced (Form);
-      W_New_Dir : aliased C.winnt.WCHAR_array (0 .. New_Directory'Length);
+      W_New_Directory : aliased C.winnt.WCHAR_array (
+         0 ..
+         New_Directory'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (
+      System.Zero_Terminated_WStrings.To_C (
          New_Directory,
-         W_New_Dir (0)'Access);
-      if C.winbase.CreateDirectory (W_New_Dir (0)'Access, null) = 0 then
+         W_New_Directory (0)'Access);
+      if C.winbase.CreateDirectory (W_New_Directory (0)'Access, null) = 0 then
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
@@ -62,10 +66,12 @@ package body Ada.Directories.Inside is
    end Create_Directory;
 
    procedure Delete_Directory (Directory : String) is
-      W_Dir : aliased C.winnt.WCHAR_array (0 .. Directory'Length);
+      W_Directory : aliased C.winnt.WCHAR_array (
+         0 ..
+         Directory'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (Directory, W_Dir (0)'Access);
-      if C.winbase.RemoveDirectory (W_Dir (0)'Access) = 0 then
+      System.Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
+      if C.winbase.RemoveDirectory (W_Directory (0)'Access) = 0 then
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
@@ -77,9 +83,11 @@ package body Ada.Directories.Inside is
    end Delete_Directory;
 
    procedure Delete_File (Name : String) is
-      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.DeleteFile (W_Name (0)'Access) = 0 then
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
@@ -96,18 +104,22 @@ package body Ada.Directories.Inside is
       Target_Name : String;
       Overwrite : Boolean)
    is
-      W_Source : aliased C.winnt.WCHAR_array (0 .. Source_Name'Length);
-      W_Target : aliased C.winnt.WCHAR_array (0 .. Target_Name'Length);
+      W_Source_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Source_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+      W_Target_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Target_Name'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (
+      System.Zero_Terminated_WStrings.To_C (
          Source_Name,
-         W_Source (0)'Access);
-      System.Zero_Terminated_WStrings.Convert (
+         W_Source_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (
          Target_Name,
-         W_Target (0)'Access);
+         W_Target_Name (0)'Access);
       if C.winbase.CopyFile (
-         W_Source (0)'Access,
-         W_Target (0)'Access,
+         W_Source_Name (0)'Access,
+         W_Target_Name (0)'Access,
          bFailIfExists => Boolean'Pos (not Overwrite)) = 0
       then
          case C.winbase.GetLastError is
@@ -125,12 +137,16 @@ package body Ada.Directories.Inside is
       New_Name : String;
       Overwrite : Boolean)
    is
-      W_Old : aliased C.winnt.WCHAR_array (0 .. Old_Name'Length);
-      W_New : aliased C.winnt.WCHAR_array (0 .. New_Name'Length);
+      W_Old : aliased C.winnt.WCHAR_array (
+         0 ..
+         Old_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+      W_New : aliased C.winnt.WCHAR_array (
+         0 ..
+         New_Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Overwrite_Flag : C.windef.DWORD;
    begin
-      System.Zero_Terminated_WStrings.Convert (Old_Name, W_Old (0)'Access);
-      System.Zero_Terminated_WStrings.Convert (New_Name, W_New (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Old_Name, W_Old (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (New_Name, W_New (0)'Access);
       if Overwrite then
          Overwrite_Flag := C.winbase.MOVEFILE_REPLACE_EXISTING;
       else
@@ -161,14 +177,16 @@ package body Ada.Directories.Inside is
 
    function Full_Name (Name : String) return String is
       Name_Length : constant C.size_t := Name'Length;
+      W_Name : C.winnt.WCHAR_array (
+         0 ..
+         Name_Length * System.Zero_Terminated_WStrings.Expanding);
       Buffer_Length : constant C.size_t := Name_Length + C.windef.MAX_PATH;
-      W_Name : C.winnt.WCHAR_array (0 .. Name_Length);
       Long : C.winnt.WCHAR_array (0 .. Buffer_Length - 1);
       Long_Last : C.size_t;
       Full : C.winnt.WCHAR_array (0 .. Buffer_Length - 1);
       Full_Last : C.size_t;
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       --  expand short filename to long filename
       Long_Last := C.size_t (C.winbase.GetLongPathName (
          W_Name (0)'Access,
@@ -203,10 +221,12 @@ package body Ada.Directories.Inside is
    end Full_Name;
 
    function Exists (Name : String) return Boolean is
-      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Information : aliased Directory_Entry_Information_Type;
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       return C.winbase.GetFileAttributesEx (
          W_Name (0)'Access,
          C.winbase.GetFileExInfoStandard,
@@ -217,9 +237,11 @@ package body Ada.Directories.Inside is
       Name : String;
       Information : not null access Directory_Entry_Information_Type)
    is
-      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.GetFileAttributesEx (
          W_Name (0)'Access,
          C.winbase.GetFileExInfoStandard,
@@ -257,14 +279,16 @@ package body Ada.Directories.Inside is
       Name : String;
       Time : System.Native_Time.Native_Time)
    is
-      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Information : aliased Directory_Entry_Information_Type;
       Aliased_Time : aliased System.Native_Time.Native_Time := Time;
       Handle : C.winnt.HANDLE;
       Dummy : C.windef.WINBOOL;
       pragma Unreferenced (Dummy);
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.GetFileAttributesEx (
          W_Name (0)'Access,
          C.winbase.GetFileExInfoStandard,

@@ -4,15 +4,18 @@ with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winnt;
 package body Ada.Dynamic_Linking is
+   use type C.size_t;
    use type C.windef.FARPROC;
    use type C.windef.HMODULE;
 
    procedure Open (Handle : out C.windef.HMODULE; Name : String);
    procedure Open (Handle : out C.windef.HMODULE; Name : String) is
-      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Result : C.windef.HMODULE;
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Result := C.winbase.LoadLibrary (W_Name (0)'Access);
       if Result = null then
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);

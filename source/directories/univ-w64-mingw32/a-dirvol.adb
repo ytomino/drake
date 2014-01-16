@@ -49,17 +49,15 @@ package body Ada.Directories.Volumes is
          --  save NTFS or not
          if not FS.Is_NTFS_Valid and then FileSystemNameBuffer /= null then
             declare
-               FileSystem : C.winnt.WCHAR_array (
-                  0 ..
-                  C.size_t (FileSystemNameSize) - 1);
-               for FileSystem'Address use
+               FileSystem_A : C.winnt.WCHAR_array (C.size_t);
+               for FileSystem_A'Address use
                   Conv.To_Address (C.winnt.LPWSTR (FileSystemNameBuffer));
             begin
-               FS.Is_NTFS := FileSystem (0) = Wide_Character'Pos ('N')
-                  and then FileSystem (1) = Wide_Character'Pos ('T')
-                  and then FileSystem (2) = Wide_Character'Pos ('F')
-                  and then FileSystem (3) = Wide_Character'Pos ('S')
-                  and then FileSystem (4) = C.winnt.WCHAR'Val (0);
+               FS.Is_NTFS := FileSystem_A (0) = Wide_Character'Pos ('N')
+                  and then FileSystem_A (1) = Wide_Character'Pos ('T')
+                  and then FileSystem_A (2) = Wide_Character'Pos ('F')
+                  and then FileSystem_A (3) = Wide_Character'Pos ('S')
+                  and then FileSystem_A (4) = C.winnt.WCHAR'Val (0);
             end;
             FS.Is_NTFS_Valid := True;
          end if;
@@ -69,11 +67,13 @@ package body Ada.Directories.Volumes is
    --  implementation
 
    function Where (Name : String) return File_System is
-      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Root_Path : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
       Root_Path_Length : C.size_t;
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.GetVolumePathName (
          W_Name (0)'Access,
          Root_Path (0)'Access,
@@ -90,13 +90,12 @@ package body Ada.Directories.Volumes is
                System.Storage_Elements.Storage_Count (
                   NC_Result.Root_Path_Length + 1)
                * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
-            Dest_S : C.winnt.WCHAR_array (
-               0 ..
-               Root_Path_Length);
-            for Dest_S'Address use Dest;
+            Dest_A : C.winnt.WCHAR_array (C.size_t);
+            for Dest_A'Address use Dest;
          begin
             NC_Result.Root_Path_Length := Root_Path_Length;
-            Dest_S := Root_Path (0 .. Root_Path_Length);
+            Dest_A (0 .. Root_Path_Length) :=
+               Root_Path (0 .. Root_Path_Length);
             NC_Result.Root_Path := Conv.To_Pointer (Dest);
          end;
       end return;
@@ -237,16 +236,13 @@ package body Ada.Directories.Volumes is
                      System.Storage_Elements.Storage_Count (
                         Object.Data.Root_Path_Length + 1)
                      * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
-                  Source_S : C.winnt.WCHAR_array (
-                     0 ..
-                     Object.Data.Root_Path_Length);
-                  for Source_S'Address use Source;
-                  Dest_S : C.winnt.WCHAR_array (
-                     0 ..
-                     Object.Data.Root_Path_Length);
-                  for Dest_S'Address use Dest;
+                  Source_A : C.winnt.WCHAR_array (C.size_t);
+                  for Source_A'Address use Source;
+                  Dest_A : C.winnt.WCHAR_array (C.size_t);
+                  for Dest_A'Address use Dest;
                begin
-                  Dest_S := Source_S;
+                  Dest_A (0 .. Object.Data.Root_Path_Length) :=
+                     Source_A (0 .. Object.Data.Root_Path_Length);
                   Object.Data.Root_Path := Conv.To_Pointer (Dest);
                end;
             end;

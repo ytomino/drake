@@ -1,6 +1,7 @@
 with Ada.Streams.Stream_IO.Inside;
 with Ada.Exceptions;
 with System.Formatting;
+with System.Zero_Terminated_Strings;
 with C.bits.socket;
 with C.netinet.in_h;
 with C.sys.socket;
@@ -8,6 +9,7 @@ with C.unistd;
 package body Ada.Streams.Stream_IO.Sockets is
    use type C.signed_int;
    use type C.netdb.struct_addrinfo_ptr;
+   use type C.size_t;
 
    function Get (
       Host_Name : not null access constant C.char;
@@ -53,13 +55,15 @@ package body Ada.Streams.Stream_IO.Sockets is
          ai_canonname => null,
          ai_addr => null,
          ai_next => null);
-      Z_Host_Name : String := Host_Name & Character'Val (0);
-      C_Host_Name : C.char_array (C.size_t);
-      for C_Host_Name'Address use Z_Host_Name'Address;
-      Z_Service : String := Service & Character'Val (0);
-      C_Service : C.char_array (C.size_t);
-      for C_Service'Address use Z_Service'Address;
+      C_Host_Name : C.char_array (
+         0 ..
+         Host_Name'Length * System.Zero_Terminated_Strings.Expanding);
+      C_Service : C.char_array (
+         0 ..
+         Service'Length * System.Zero_Terminated_Strings.Expanding);
    begin
+      System.Zero_Terminated_Strings.To_C (Host_Name, C_Host_Name (0)'Access);
+      System.Zero_Terminated_Strings.To_C (Service, C_Service (0)'Access);
       return Get (C_Host_Name (0)'Access, C_Service (0)'Access, Hints'Access);
    end Resolve;
 
@@ -77,23 +81,29 @@ package body Ada.Streams.Stream_IO.Sockets is
          ai_canonname => null,
          ai_addr => null,
          ai_next => null);
-      Z_Host_Name : String := Host_Name & Character'Val (0);
-      C_Host_Name : C.char_array (C.size_t);
-      for C_Host_Name'Address use Z_Host_Name'Address;
-      Z_Service : String (1 .. 5);
-      Z_Service_Last : Natural;
-      C_Service : C.char_array (C.size_t);
-      for C_Service'Address use Z_Service'Address;
+      C_Host_Name : C.char_array (
+         0 ..
+         Host_Name'Length * System.Zero_Terminated_Strings.Expanding);
+      Service : C.char_array (0 .. 5); -- "65535" & NUL
+      Service_Length : C.size_t;
       Error : Boolean;
    begin
-      System.Formatting.Image (
-         System.Formatting.Unsigned (Port),
-         Z_Service,
-         Z_Service_Last,
-         Base => 10,
-         Error => Error);
-      Z_Service (Z_Service_Last + 1) := Character'Val (0);
-      return Get (C_Host_Name (0)'Access, C_Service (0)'Access, Hints'Access);
+      System.Zero_Terminated_Strings.To_C (Host_Name, C_Host_Name (0)'Access);
+      declare
+         Service_As_String : String (1 .. 5);
+         for Service_As_String'Address use Service'Address;
+         Service_Last : Natural;
+      begin
+         System.Formatting.Image (
+            System.Formatting.Unsigned (Port),
+            Service_As_String,
+            Service_Last,
+            Base => 10,
+            Error => Error);
+         Service_Length := C.size_t (Service_Last);
+      end;
+      Service (Service_Length) := C.char'Val (0);
+      return Get (C_Host_Name (0)'Access, Service (0)'Access, Hints'Access);
    end Resolve;
 
    procedure Connect (File : in out File_Type; Peer : End_Point) is

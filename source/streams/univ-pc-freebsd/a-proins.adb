@@ -1,8 +1,10 @@
 with Ada.Exceptions;
+with System.Zero_Terminated_Strings;
 with C.fcntl;
 with C.unistd;
 package body Ada.Processes.Inside is
    use type C.signed_int;
+   use type C.size_t;
 
    procedure Spawn (
       Child : out C.sys.types.pid_t;
@@ -20,19 +22,22 @@ package body Ada.Processes.Inside is
          --  child process
          if Directory /= "" then
             declare
-               Z_Directory : String := Directory & Character'Val (0);
-               C_Directory : C.char_array (C.size_t);
-               for C_Directory'Address use Z_Directory'Address;
+               C_Directory : C.char_array (
+                  0 ..
+                  Directory'Length * System.Zero_Terminated_Strings.Expanding);
             begin
+               System.Zero_Terminated_Strings.To_C (
+                  Directory,
+                  C_Directory (0)'Access);
                if C.unistd.chdir (C_Directory (0)'Access) = -1 then
                   C.unistd.C_qexit (127);
                end if;
             end;
          end if;
          declare
-            Z_Command_Line : String := Command_Line & Character'Val (0);
-            C_Command_Line : C.char_array (C.size_t);
-            for C_Command_Line'Address use Z_Command_Line'Address;
+            C_Command_Line : C.char_array (
+               0 ..
+               Command_Line'Length * System.Zero_Terminated_Strings.Expanding);
             Arguments : C.char_ptr_array (0 .. 255);
             Duplicated_Input : Streams.Stream_IO.Inside.Handle_Type;
             Duplicated_Output : Streams.Stream_IO.Inside.Handle_Type;
@@ -40,6 +45,9 @@ package body Ada.Processes.Inside is
             Dummy : C.signed_int;
             pragma Unreferenced (Dummy);
          begin
+            System.Zero_Terminated_Strings.To_C (
+               Command_Line,
+               C_Command_Line (0)'Access);
             Split_Argument (C_Command_Line, Arguments);
             if Input /= 0 or else Output /= 1 or else Error /= 2 then
                --  duplicate handles

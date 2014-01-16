@@ -351,11 +351,10 @@ package body Ada.Streams.Stream_IO.Inside is
             System.Storage_Elements.Storage_Count (
                Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
          declare
-            subtype Fixed_char_array is C.char_array (C.size_t);
-            Temp_Dir_A : Fixed_char_array;
-            for Temp_Dir_A'Address use Temp_Dir.all'Address;
-            Full_Name_A : Fixed_char_array;
-            for Full_Name_A'Address use Full_Name.all'Address;
+            Temp_Dir_A : C.char_array (C.size_t);
+            for Temp_Dir_A'Address use char_ptr_Conv.To_Address (Temp_Dir);
+            Full_Name_A : C.char_array (C.size_t);
+            for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
          begin
             Full_Name_A (0 .. Full_Name_Length - 1) :=
                Temp_Dir_A (0 .. Full_Name_Length - 1);
@@ -380,9 +379,8 @@ package body Ada.Streams.Stream_IO.Inside is
          end;
       end if;
       declare
-         subtype Fixed_char_array is C.char_array (C.size_t);
-         Full_Name_A : Fixed_char_array;
-         for Full_Name_A'Address use Full_Name.all'Address;
+         Full_Name_A : C.char_array (C.size_t);
+         for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
       begin
          --  append slash
          if Full_Name_A (Full_Name_Length - 1) /= '/' then
@@ -422,14 +420,15 @@ package body Ada.Streams.Stream_IO.Inside is
       Full_Name : out C.char_ptr;
       Full_Name_Length : out C.size_t)
    is
-      Name_Length : constant C.size_t := Name'Length;
+      Name_Length_For_Alloc : constant C.size_t :=
+         Name'Length * System.Zero_Terminated_Strings.Expanding;
    begin
       if Name (Name'First) = '/' then
          --  absolute path
          Full_Name := char_ptr_Conv.To_Pointer (
             System.Memory.Allocate (
-               System.Storage_Elements.Storage_Count (
-                  Name_Length + 1))); -- NUL
+               System.Storage_Elements.Storage_Count (Name_Length_For_Alloc)
+               + 1)); -- NUL
          Full_Name_Length := 0;
       else
          --  current directory
@@ -440,7 +439,7 @@ package body Ada.Streams.Stream_IO.Inside is
             New_Full_Name : constant C.char_ptr :=
                char_ptr_Conv.To_Pointer (System.Address (C.stdlib.realloc (
                   C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
-                  Full_Name_Length + Name_Length + 2))); -- '/' & NUL
+                  Full_Name_Length + Name_Length_For_Alloc + 2))); -- '/' & NUL
          begin
             if New_Full_Name = null then
                C.stdlib.free (
@@ -451,9 +450,8 @@ package body Ada.Streams.Stream_IO.Inside is
          end;
          --  append slash
          declare
-            subtype Fixed_char_array is C.char_array (C.size_t);
-            Full_Name_A : Fixed_char_array;
-            for Full_Name_A'Address use Full_Name.all'Address;
+            Full_Name_A : C.char_array (C.size_t);
+            for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
          begin
             if Full_Name_A (Full_Name_Length - 1) /= '/' then
                Full_Name_A (Full_Name_Length) := '/';
@@ -463,17 +461,15 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
       --  append name
       declare
-         subtype Fixed_char_array is C.char_array (C.size_t);
-         Full_Name_A : Fixed_char_array;
-         for Full_Name_A'Address use Full_Name.all'Address;
-         C_Name : C.char_array (0 .. Name_Length - 1);
-         for C_Name'Address use Name'Address;
+         Full_Name_A : C.char_array (C.size_t);
+         for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
+         Appended_Name_Length : C.size_t;
       begin
-         Full_Name_A (
-            Full_Name_Length ..
-            Full_Name_Length + Name_Length - 1) := C_Name;
-         Full_Name_Length := Full_Name_Length + Name_Length;
-         Full_Name_A (Full_Name_Length) := C.char'Val (0);
+         System.Zero_Terminated_Strings.To_C (
+            Name,
+            Full_Name_A (Full_Name_Length)'Access,
+            Appended_Name_Length);
+         Full_Name_Length := Full_Name_Length + Appended_Name_Length;
       end;
    end Compose_File_Name;
 
@@ -1355,17 +1351,16 @@ package body Ada.Streams.Stream_IO.Inside is
          Kind := External_No_Close;
       end if;
       Full_Name := char_ptr_Conv.To_Pointer (
-         System.Memory.Allocate (Name'Length + 2));
+         System.Memory.Allocate (
+            Name'Length * System.Zero_Terminated_Strings.Expanding
+            + 2)); -- '*' & NUL
       Full_Name_Length := Name'Length + 1;
       declare
-         C_Name : C.char_array (0 .. Name'Length - 1);
-         for C_Name'Address use Name'Address;
          Full_Name_A : C.char_array (C.size_t);
-         for Full_Name_A'Address use Full_Name.all'Address;
+         for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
       begin
          Full_Name_A (0) := '*';
-         Full_Name_A (1 .. Full_Name_Length - 1) := C_Name;
-         Full_Name_A (Full_Name_Length) := C.char'Val (0);
+         System.Zero_Terminated_Strings.To_C (Name, Full_Name_A (1)'Access);
       end;
       File := Allocate (
          Handle => Handle,

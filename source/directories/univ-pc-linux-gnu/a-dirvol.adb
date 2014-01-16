@@ -1,13 +1,16 @@
 with Ada.Exceptions;
+with System.Zero_Terminated_Strings;
 package body Ada.Directories.Volumes is
    use type File_Size;
    use type C.signed_int;
+   use type C.size_t;
 
    function Where (Name : String) return File_System is
-      Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+      C_Name : C.char_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_Strings.Expanding);
    begin
+      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       return Result : File_System do
          if C.sys.statvfs.statvfs64 (
             C_Name (0)'Access,

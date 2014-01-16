@@ -12,6 +12,7 @@ package body Ada.Environment_Variables.Inside is
    use type C.char_ptr_ptr;
    use type C.signed_int;
    use type C.ptrdiff_t;
+   use type C.size_t;
 
    package char_const_ptr_Conv is
       new System.Address_To_Constant_Access_Conversions (
@@ -25,10 +26,11 @@ package body Ada.Environment_Variables.Inside is
 
    function getenv (Name : String) return C.char_ptr;
    function getenv (Name : String) return C.char_ptr is
-      Z_Name : String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+      C_Name : C.char_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_Strings.Expanding);
    begin
+      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       return C.stdlib.getenv (C_Name (0)'Access);
    end getenv;
 
@@ -87,23 +89,26 @@ package body Ada.Environment_Variables.Inside is
    end Exists;
 
    procedure Set (Name : String; Value : String) is
-      Z_Name : String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
-      Z_Value : String := Value & Character'Val (0);
-      C_Value : C.char_array (C.size_t);
-      for C_Value'Address use Z_Value'Address;
+      C_Name : C.char_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_Strings.Expanding);
+      C_Value : C.char_array (
+         0 ..
+         Value'Length * System.Zero_Terminated_Strings.Expanding);
    begin
+      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      System.Zero_Terminated_Strings.To_C (Value, C_Value (0)'Access);
       if C.stdlib.setenv (C_Name (0)'Access, C_Value (0)'Access, 1) < 0 then
          raise Constraint_Error;
       end if;
    end Set;
 
    procedure Clear (Name : String) is
-      Z_Name : String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+      C_Name : C.char_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_Strings.Expanding);
    begin
+      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       if C.stdlib.unsetenv (C_Name (0)'Access) < 0 then
          raise Constraint_Error;
       end if;
@@ -124,15 +129,22 @@ package body Ada.Environment_Variables.Inside is
             - C.char_ptr'Size / Standard'Storage_Unit);
          declare
             Item : constant C.char_ptr := I.all;
-            subtype Fixed_String is String (Positive);
-            Name : Fixed_String;
-            for Name'Address use
-               char_const_ptr_Conv.To_Address (C.char_const_ptr (Item));
             Name_Length : C.size_t;
             Value : C.char_const_ptr;
          begin
             Do_Separate (Item, Name_Length, Value);
-            Clear (Name (1 .. Natural (Name_Length)));
+            declare
+               Item_A : C.char_array (C.size_t);
+               for Item_A'Address use
+                  char_const_ptr_Conv.To_Address (C.char_const_ptr (Item));
+               Name : aliased C.char_array (0 .. Name_Length);
+            begin
+               Name (0 .. Name_Length - 1) := Item_A (0 .. Name_Length - 1);
+               Name (Name_Length) := C.char'Val (0);
+               if C.stdlib.unsetenv (Name (0)'Access) < 0 then
+                  raise Constraint_Error;
+               end if;
+            end;
          end;
       end loop;
    end Clear;
@@ -146,15 +158,11 @@ package body Ada.Environment_Variables.Inside is
    function Name (Position : Cursor) return String is
       Item : constant C.char_ptr :=
          char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all;
-      subtype Fixed_String is String (Positive);
-      Name : Fixed_String;
-      for Name'Address use
-         char_const_ptr_Conv.To_Address (C.char_const_ptr (Item));
       Name_Length : C.size_t;
       Value : C.char_const_ptr;
    begin
       Do_Separate (Item, Name_Length, Value);
-      return Name (1 .. Natural (Name_Length));
+      return System.Zero_Terminated_Strings.Value (Item, Name_Length);
    end Name;
 
    function Value (Position : Cursor) return String is

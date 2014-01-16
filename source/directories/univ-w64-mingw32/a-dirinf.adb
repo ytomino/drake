@@ -6,6 +6,7 @@ with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winnt;
 package body Ada.Directories.Information is
+   use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE;
@@ -231,14 +232,16 @@ package body Ada.Directories.Information is
    end Is_Not_Indexed;
 
    function Identity (Name : String) return File_Id is
-      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Handle : C.winnt.HANDLE;
       Info : aliased C.winbase.BY_HANDLE_FILE_INFORMATION;
       Result : C.windef.WINBOOL;
       Dummy : C.windef.WINBOOL;
       pragma Unreferenced (Dummy);
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Handle := C.winbase.CreateFile (
          W_Name (0)'Access,
          dwDesiredAccess => 0,

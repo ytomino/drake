@@ -1,9 +1,11 @@
---  with System.Zero_Terminated_Strings;
+with System.Address_To_Named_Access_Conversions;
 with C.stdlib;
 package body Ada.Locales.Inside is
    pragma Suppress (All_Checks);
+   use type C.char;
    use type C.char_array;
    use type C.char_ptr;
+   use type C.size_t;
 
    --  should it use CFLocaleGetValue in OSX ???
 
@@ -12,20 +14,21 @@ package body Ada.Locales.Inside is
    --  implementation
 
    function Language return ISO_639_Alpha_2 is
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
    begin
       if P /= null then
          declare
-            subtype Fixed_String is String (Positive);
-            Value : Fixed_String;
-            for Value'Address use P.all'Address;
-            Len : Natural := 0;
+            Value : C.char_array (C.size_t);
+            for Value'Address use Conv.To_Address (P);
+            Len : C.size_t := 0;
          begin
-            while Value (Len + 1) in 'a' .. 'z' loop
+            while Value (Len) in 'a' .. 'z' loop
                Len := Len + 1;
             end loop;
             if Len = 2 then
-               return (1 => Value (1), 2 => Value (2));
+               return (1 => Character (Value (0)), 2 => Character (Value (1)));
             end if;
          end;
       end if;
@@ -38,27 +41,30 @@ package body Ada.Locales.Inside is
    end Language;
 
    function Country return ISO_3166_1_Alpha_2 is
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
    begin
       if P /= null then
          declare
-            subtype Fixed_String is String (Positive);
-            Value : Fixed_String;
-            for Value'Address use P.all'Address;
-            Last : Natural := 0;
+            Value : C.char_array (C.size_t);
+            for Value'Address use Conv.To_Address (P);
+            I : C.size_t := 0;
          begin
-            while Value (Last + 1) /= Character'Val (0)
-               and then Value (Last + 1) /= '.' -- codeset
-               and then Value (Last + 1) /= '@' -- modifier
+            while Value (I) /= C.char'Val (0)
+               and then Value (I) /= '.' -- codeset
+               and then Value (I) /= '@' -- modifier
             loop
-               Last := Last + 1;
+               I := I + 1;
             end loop;
-            if Last >= 2
-               and then Value (Last) in 'A' .. 'Z'
-               and then Value (Last - 1) in 'A' .. 'Z'
-               and then (Last = 2 or else Value (Last - 2) = '_')
+            if I >= 2
+               and then Value (I - 1) in 'A' .. 'Z'
+               and then Value (I - 2) in 'A' .. 'Z'
+               and then (I = 2 or else Value (I - 3) = '_')
             then
-               return (1 => Value (Last - 1), 2 => Value (Last));
+               return (
+                  1 => Character (Value (I - 2)),
+                  2 => Character (Value (I - 1)));
             end if;
          end;
       end if;

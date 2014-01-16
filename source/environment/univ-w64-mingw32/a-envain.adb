@@ -93,11 +93,13 @@ package body Ada.Environment_Variables.Inside is
    --  implementation
 
    function Value (Name : String) return String is
-      W_Name : aliased C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Length : C.windef.DWORD;
       Found : Boolean;
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Get_1 (W_Name (0)'Access, Length, Found => Found);
       if not Found then
          raise Constraint_Error;
@@ -107,11 +109,13 @@ package body Ada.Environment_Variables.Inside is
    end Value;
 
    function Value (Name : String; Default : String) return String is
-      W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Length : C.windef.DWORD;
       Found : Boolean;
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Get_1 (W_Name (0)'Access, Length, Found => Found);
       if not Found then
          return Default;
@@ -121,21 +125,27 @@ package body Ada.Environment_Variables.Inside is
    end Value;
 
    function Exists (Name : String) return Boolean is
-      W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Length : C.windef.DWORD;
       Found : Boolean;
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Get_1 (W_Name (0)'Access, Length, Found => Found);
       return Found;
    end Exists;
 
    procedure Set (Name : String; Value : String) is
-      W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
-      W_Value : C.winnt.WCHAR_array (0 .. Value'Length);
+      W_Name : C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
+      W_Value : C.winnt.WCHAR_array (
+         0 ..
+         Value'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
-      System.Zero_Terminated_WStrings.Convert (Value, W_Value (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Value, W_Value (0)'Access);
       if C.winbase.SetEnvironmentVariable (
          W_Name (0)'Access,
          W_Value (0)'Access) = 0
@@ -145,9 +155,11 @@ package body Ada.Environment_Variables.Inside is
    end Set;
 
    procedure Clear (Name : String) is
-      W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.SetEnvironmentVariable (
          W_Name (0)'Access,
          null) = 0
@@ -173,12 +185,12 @@ package body Ada.Environment_Variables.Inside is
                begin
                   Do_Separate (Item, Name_Length, Value);
                   declare
-                     Item_S : C.winnt.WCHAR_array (C.size_t);
-                     for Item_S'Address use LPCWCH_Conv.To_Address (Item);
+                     Item_A : C.winnt.WCHAR_array (C.size_t);
+                     for Item_A'Address use LPCWCH_Conv.To_Address (Item);
                      Name : aliased C.winnt.WCHAR_array (0 .. Name_Length);
                   begin
                      Name (0 .. Name_Length - 1) :=
-                        Item_S (0 .. Name_Length - 1);
+                        Item_A (0 .. Name_Length - 1);
                      Name (Name_Length) := C.winnt.WCHAR'Val (0);
                      if C.winbase.SetEnvironmentVariable (
                         Name (0)'Access,

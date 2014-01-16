@@ -41,17 +41,17 @@ package body System.Zero_Terminated_WStrings is
       return Result (1 .. Result_Length);
    end Value;
 
-   procedure Convert (
+   procedure To_C (
       Source : String;
       Result : not null access C.winnt.WCHAR)
    is
       Dummy : C.size_t;
       pragma Unreferenced (Dummy);
    begin
-      Convert (Source, Result, Dummy);
-   end Convert;
+      To_C (Source, Result, Dummy);
+   end To_C;
 
-   procedure Convert (
+   procedure To_C (
       Source : String;
       Result : not null access C.winnt.WCHAR;
       Result_Length : out C.size_t)
@@ -71,6 +71,6 @@ package body System.Zero_Terminated_WStrings is
          + System.Storage_Elements.Storage_Offset (Result_Length)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
       Result_End.all := C.winnt.WCHAR'Val (0);
-   end Convert;
+   end To_C;
 
 end System.Zero_Terminated_WStrings;

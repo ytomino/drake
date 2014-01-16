@@ -2,6 +2,7 @@ with Ada.Exceptions;
 with Ada.Streams.Stream_IO.Inside;
 with Ada.Processes.Inside;
 with System.Soft_Links;
+with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdlib;
 with C.sys.wait;
@@ -110,12 +111,15 @@ package body Ada.Processes is
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status)
    is
-      Z_Command : String := Command_Line & Character'Val (0);
-      C_Command : C.char_array (C.size_t);
-      for C_Command'Address use Z_Command'Address;
+      C_Command_Line : C.char_array (
+         0 ..
+         Command_Line'Length * System.Zero_Terminated_Strings.Expanding);
       Code : C.signed_int;
    begin
-      Code := C.stdlib.C_system (C_Command (0)'Access);
+      System.Zero_Terminated_Strings.To_C (
+         Command_Line,
+         C_Command_Line (0)'Access);
+      Code := C.stdlib.C_system (C_Command_Line (0)'Access);
       if Code = -1 then
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       else
