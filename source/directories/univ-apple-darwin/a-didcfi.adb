@@ -1,4 +1,5 @@
 with Ada.Exceptions;
+with System.Zero_Terminated_Strings;
 with C.copyfile;
 with C.errno;
 procedure Ada.Directories.Inside.Do_Copy_File (
@@ -7,21 +8,24 @@ procedure Ada.Directories.Inside.Do_Copy_File (
    Overwrite : Boolean := True)
 is
    use type C.signed_int;
+   use type C.size_t;
    use type C.unsigned_int;
-   Z_Source : String := Source_Name & Character'Val (0);
-   C_Source : C.char_array (C.size_t);
-   for C_Source'Address use Z_Source'Address;
-   Z_Target : String := Target_Name & Character'Val (0);
-   C_Target : C.char_array (C.size_t);
-   for C_Target'Address use Z_Target'Address;
+   C_Source_Name : C.char_array (
+      0 ..
+      Source_Name'Length * System.Zero_Terminated_Strings.Expanding);
+   C_Target_Name : C.char_array (
+      0 ..
+      Target_Name'Length * System.Zero_Terminated_Strings.Expanding);
    Flag : C.unsigned_int := C.copyfile.COPYFILE_ALL;
 begin
+   System.Zero_Terminated_Strings.To_C (Source_Name, C_Source_Name (0)'Access);
+   System.Zero_Terminated_Strings.To_C (Target_Name, C_Target_Name (0)'Access);
    if not Overwrite then
       Flag := Flag or C.copyfile.COPYFILE_EXCL;
    end if;
    if C.copyfile.copyfile (
-      C_Source (0)'Access,
-      C_Target (0)'Access,
+      C_Source_Name (0)'Access,
+      C_Target_Name (0)'Access,
       null,
       Flag) < 0
    then
