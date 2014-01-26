@@ -38,10 +38,10 @@ DRAKEVARS+=IMPORTDIR=$(abspath $(IMPORTDIR))
 endif
 
 export WITHA=0
-export WITHD=1
 export WITHF=0
 export WITHI=0
 export WITHS=0
+export DEBUG=2
 
 ifneq ($(WITHA),0)
 MFLAGS=
@@ -59,7 +59,7 @@ ifneq ($(findstring linux-gnu,$(TARGET)),)
 LFLAGS=-lm -lpthread -ldl
 endif
 
-ifneq ($(WITHD),0)
+ifneq ($(DEBUG),0)
 CFLAGS=-gnatf -gnatwIj -g -gnata
 BFLAGS=-E
 else

@@ -10,11 +10,11 @@
 #   IMPORTDIR=  pre-translated headers (default:generating on make)
 #   WITHA=      if 0, building minimum runtime (default:1)
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
-#   WITHD=      debug info (default:if TARGET=HOST then 1 else 0)
 #   WITHF=      -ffast-math (default:0)
 #   WITHI=      if 0, symbolic link instead of install (default:1)
 #   WITHL=      link time optimization (default:0)
 #   WITHS=      assembly source (default:0)
+#   DEBUG=      debug level (default:if TARGET=HOST then 2 else 1)
 #   CFLAGS=     additional compiler options (default:empty)
 
 HOST=$(shell gcc -dumpmachine)
@@ -37,15 +37,6 @@ ifeq ($(WITHC),)
 WITHC=1
 endif
 
-# if WITHD=1, debug info
-ifeq ($(WITHD),)
-ifeq ($(TARGET),$(HOST))
-WITHD=1
-else
-WITHD=0
-endif
-endif
-
 # if WITHF=1, -ffast-math
 ifeq ($(WITHF),)
 WITHF=0
@@ -64,6 +55,15 @@ endif
 # if WITHS=1, assembly sources be outputed
 ifeq ($(WITHS),)
 WITHS=0
+endif
+
+# if DEBUG>0, debug info
+ifeq ($(DEBUG),)
+ifeq ($(TARGET),$(HOST))
+DEBUG=2
+else
+DEBUG=1
+endif
 endif
 
 PHASE=
@@ -192,11 +192,22 @@ else
 INSTALL=ln -s
 endif
 
-ifneq ($(WITHD),0)
+ifeq ($(DEBUG),0)
+CFLAGS_DEBUG=
+OPTIMIZE=1
+else
+ifeq ($(DEBUG),1)
+CFLAGS_DEBUG=-g1
+OPTIMIZE=1
+else
 CFLAGS_DEBUG=-g -gnata
+OPTIMIZE=0
+endif
+endif
+
+ifeq ($(OPTIMIZE),0)
 CFLAGS_OPTIMIZE=-Og
 else
-CFLAGS_DEBUG=
 ifeq ($(OBJFMT),ELF)
 CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn -ffunction-sections -fdata-sections
 else
