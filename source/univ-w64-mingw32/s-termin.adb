@@ -219,20 +219,20 @@ package body System.Termination is
                   Message (1 .. 21) := "The instruction at 0x";
                   Message_Last := 21;
                   Formatting.Address_Image (
-                     Message (Message_Last + 1 .. Message'Last),
-                     Message_Last,
                      Address (
 --                      Exception_Record.ExceptionInformation (0)),
                         Exception_Record.ExceptionAddress),
+                     Message (Message_Last + 1 .. Message'Last),
+                     Message_Last,
                      Set => Formatting.Lower_Case);
                   Message (Message_Last + 1 .. Message_Last + 24) :=
                      " referenced memory at 0x";
                   Message_Last := Message_Last + 24;
                   Formatting.Address_Image (
-                     Message (Message_Last + 1 .. Message'Last),
-                     Message_Last,
                      Address (
                         Exception_Record.ExceptionInformation (1)),
+                     Message (Message_Last + 1 .. Message'Last),
+                     Message_Last,
                      Set => Formatting.Lower_Case);
                   Message (Message_Last + 1) := '.';
                   Message_Last := Message_Last + 1;

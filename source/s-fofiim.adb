@@ -1,9 +1,9 @@
 with System.Formatting.Float;
 with System.Long_Long_Float_Divide;
 procedure System.Formatting.Fixed_Image (
-   To : out String;
+   Value : Long_Long_Float;
+   Item : out String;
    Last : out Natural;
-   Item : Long_Long_Float;
    Minus_Sign : Character := '-';
    Zero_Sign : Character := ' ';
    Plus_Sign : Character := ' ';
@@ -27,40 +27,40 @@ is
    Required_Fore_Width : Positive;
    Error : Boolean;
 begin
-   Last := To'First - 1;
-   if signbit (Item) /= 0 then
+   Last := Item'First - 1;
+   if signbit (Value) /= 0 then
       if Minus_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Minus_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Minus_Sign;
       end if;
-   elsif Item > 0.0 then
+   elsif Value > 0.0 then
       if Plus_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Plus_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Plus_Sign;
       end if;
    else
       if Zero_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Zero_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Zero_Sign;
       end if;
    end if;
    --  opening '#'
    if Base_Form then
       Image (
          Unsigned (Base),
-         To (Last + 1 .. To'Last),
+         Item (Last + 1 .. Item'Last),
          Last,
          Error => Error);
       pragma Assert (not Error);
       Last := Last + 1;
-      pragma Assert (Last <= To'Last);
-      To (Last) := '#';
+      pragma Assert (Last <= Item'Last);
+      Item (Last) := '#';
    end if;
    --  split
-   Aft := modfl (abs Item, Item_Fore'Access);
+   Aft := modfl (abs Value, Item_Fore'Access);
    Float.Aft_Scale (
       Aft,
       Scaled_Aft,
@@ -76,10 +76,10 @@ begin
    Required_Fore_Width := Float.Fore_Width (Item_Fore, Base => Base);
    for I in Required_Fore_Width + 1 .. Fore_Width loop
       Last := Last + 1;
-      pragma Assert (Last <= To'Last);
-      To (Last) := Fore_Padding;
+      pragma Assert (Last <= Item'Last);
+      Item (Last) := Fore_Padding;
    end loop;
-   pragma Assert (Last + Required_Fore_Width <= To'Last);
+   pragma Assert (Last + Required_Fore_Width <= Item'Last);
    for I in reverse Last + 1 .. Last + Required_Fore_Width loop
       declare
          Q : Long_Long_Float;
@@ -88,17 +88,17 @@ begin
          Long_Long_Float_Divide (Item_Fore, Long_Long_Float (Base), Q, R);
          Image (
             Digit (R),
-            To (I),
+            Item (I),
             Set => Set);
          Item_Fore := Q;
       end;
    end loop;
    Last := Last + Required_Fore_Width;
    --  '.' and decimal part
-   pragma Assert (Last + Aft_Width <= To'Last);
+   pragma Assert (Last + Aft_Width <= Item'Last);
    Float.Aft_Image (
       Scaled_Aft,
-      To (Last + 1 .. To'Last),
+      Item (Last + 1 .. Item'Last),
       Last,
       Base => Base,
       Set => Set,
@@ -106,7 +106,7 @@ begin
    --  closing '#'
    if Base_Form then
       Last := Last + 1;
-      pragma Assert (Last <= To'Last);
-      To (Last) := '#';
+      pragma Assert (Last <= Item'Last);
+      Item (Last) := '#';
    end if;
 end System.Formatting.Fixed_Image;

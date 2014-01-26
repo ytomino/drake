@@ -21,18 +21,18 @@ package body Ada.Text_IO.Float_IO is
    begin
       if Exp /= 0 then
          System.Formatting.Float_Image (
+            Long_Long_Float (Item),
             To,
             Last,
-            Long_Long_Float (Item),
             Zero_Sign => System.Formatting.No_Sign,
             Plus_Sign => System.Formatting.No_Sign,
             Aft_Width => Aft_Width,
             Exponent_Width => Exp - 1);
       else
          System.Formatting.Fixed_Image (
+            Long_Long_Float (Item),
             To,
             Last,
-            Long_Long_Float (Item),
             Zero_Sign => System.Formatting.No_Sign,
             Plus_Sign => System.Formatting.No_Sign,
             Aft_Width => Aft_Width);

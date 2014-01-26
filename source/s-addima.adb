@@ -7,9 +7,9 @@ is
 begin
    return Result : Storage_Elements.Address_Image do
       Formatting.Address_Image (
+         A,
          Result,
          Last,
-         A,
          Set => Formatting.Upper_Case);
    end return;
 end System.Address_Image;

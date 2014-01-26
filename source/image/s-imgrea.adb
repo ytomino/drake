@@ -10,9 +10,9 @@ package body System.Img_Real is
       Aft : Natural) is
    begin
       Formatting.Fixed_Image (
+         V,
          S,
          P,
-         V,
          Aft_Width => Aft);
    end Image_Ordinary_Fixed_Point;
 
@@ -23,9 +23,9 @@ package body System.Img_Real is
       Digs : Natural) is
    begin
       Formatting.Float_Image (
+         V,
          S,
          P,
-         V,
          Aft_Width => Digs - 1);
    end Image_Floating_Point;
 
