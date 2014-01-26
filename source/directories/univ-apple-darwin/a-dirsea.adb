@@ -2,13 +2,16 @@ with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 with System.Memory;
+with System.Zero_Terminated_Strings;
 with C.fnmatch;
 with C.sys.dirent;
 package body Ada.Directory_Searching is
+   use type System.Storage_Elements.Storage_Offset;
    use type C.char;
    use type C.signed_int;
    use type C.unsigned_char; -- d_namelen in FreeBSD
    use type C.dirent.DIR_ptr;
+   use type C.size_t;
    use type C.sys.dirent.struct_dirent_ptr;
    use type C.sys.types.mode_t;
 
@@ -30,10 +33,13 @@ package body Ada.Directory_Searching is
          Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
       end if;
       declare
-         Z_Directory : constant String := Directory & Character'Val (0);
-         C_Directory : C.char_array (C.size_t);
-         for C_Directory'Address use Z_Directory'Address;
+         C_Directory : C.char_array (
+            0 ..
+            Directory'Length * System.Zero_Terminated_Strings.Expanding);
       begin
+         System.Zero_Terminated_Strings.To_C (
+            Directory,
+            C_Directory (0)'Access);
          Search.Handle := C.dirent.opendir (C_Directory (0)'Access);
       end;
       if Search.Handle = null then
@@ -45,14 +51,10 @@ package body Ada.Directory_Searching is
       begin
          Search.Pattern := char_ptr_Conv.To_Pointer (
             System.Memory.Allocate (
-               System.Storage_Elements.Storage_Offset (Pattern_Length + 1)));
-         declare
-            Search_Pattern : String (Positive);
-            for Search_Pattern'Address use Search.Pattern.all'Address;
-         begin
-            Search_Pattern (1 .. Pattern_Length) := Pattern;
-            Search_Pattern (Pattern_Length + 1) := Character'Val (0);
-         end;
+               System.Storage_Elements.Storage_Offset (
+                  Pattern_Length * System.Zero_Terminated_Strings.Expanding)
+               + 1)); -- NUL
+         System.Zero_Terminated_Strings.To_C (Pattern, Search.Pattern);
       end;
       Get_Next_Entry (Search, Directory_Entry, Has_Next_Entry);
    end Start_Search;
@@ -105,15 +107,11 @@ package body Ada.Directory_Searching is
    end Get_Next_Entry;
 
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
-      return String
-   is
-      subtype Simple_Name_String is String (
-         1 ..
-         Natural (Directory_Entry.d_namlen));
-      Result : Simple_Name_String;
-      for Result'Address use Directory_Entry.d_name'Address;
+      return String is
    begin
-      return Result;
+      return System.Zero_Terminated_Strings.Value (
+         Directory_Entry.d_name (0)'Access,
+         C.size_t (Directory_Entry.d_namlen));
    end Simple_Name;
 
    function Kind (Directory_Entry : Directory_Entry_Type)
@@ -173,17 +171,28 @@ package body Ada.Directory_Searching is
       Directory_Entry : Directory_Entry_Type;
       Information : not null access C.sys.stat.struct_stat)
    is
-      subtype Simple_Name_String is String (
-         1 ..
-         Natural (Directory_Entry.d_namlen));
-      Simple_Name : Simple_Name_String;
-      for Simple_Name'Address use Directory_Entry.d_name'Address;
-      Z_Name : String := Directory & "/" & Simple_Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+      S_Length : constant C.size_t := C.size_t (Directory_Entry.d_namlen);
+      Full_Name : C.char_array (
+         0 ..
+         Directory'Length * System.Zero_Terminated_Strings.Expanding
+            + 1 -- '/'
+            + S_Length);
+      Full_Name_Length : C.size_t;
    begin
+      --  compose
+      System.Zero_Terminated_Strings.To_C (
+         Directory,
+         Full_Name (0)'Access,
+         Full_Name_Length);
+      Full_Name (Full_Name_Length) := '/';
+      Full_Name_Length := Full_Name_Length + 1;
+      Full_Name (Full_Name_Length .. Full_Name_Length + S_Length - 1) :=
+         Directory_Entry.d_name (0 .. S_Length - 1);
+      Full_Name_Length := Full_Name_Length + S_Length;
+      Full_Name (Full_Name_Length) := C.char'Val (0);
+      --  stat
       if C.sys.stat.lstat (
-         C_Name (0)'Access,
+         Full_Name (0)'Access,
          Information) < 0
       then
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);

@@ -1,6 +1,7 @@
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Environment_Block;
+with System.Zero_Terminated_Strings;
 with C.errno;
 with C.spawn;
 with C.stdlib;
@@ -9,6 +10,7 @@ package body Ada.Processes.Inside is
    use type Ada.Exceptions.Exception_Id;
    use type C.char_ptr;
    use type C.signed_int;
+   use type C.size_t;
 
    procedure Spawn (
       Child : out C.sys.types.pid_t;
@@ -29,10 +31,13 @@ package body Ada.Processes.Inside is
       if Directory /= "" then
          Old_Directory := C.unistd.getcwd (null, 0);
          declare
-            Z_Directory : String := Directory & Character'Val (0);
-            C_Directory : C.char_array (C.size_t);
-            for C_Directory'Address use Z_Directory'Address;
+            C_Directory : C.char_array (
+               0 ..
+               Directory'Length * System.Zero_Terminated_Strings.Expanding);
          begin
+            System.Zero_Terminated_Strings.To_C (
+               Directory,
+               C_Directory (0)'Access);
             if C.unistd.chdir (C_Directory (0)'Access) < 0 then
                Exception_Id := Name_Error'Identity;
                goto Cleanup;
@@ -41,9 +46,9 @@ package body Ada.Processes.Inside is
       end if;
       --  execute
       declare
-         Z_Command_Line : String := Command_Line & Character'Val (0);
-         C_Command_Line : C.char_array (C.size_t);
-         for C_Command_Line'Address use Z_Command_Line'Address;
+         C_Command_Line : C.char_array (
+            0 ..
+            Command_Line'Length * System.Zero_Terminated_Strings.Expanding);
          Arguments : C.char_ptr_array (0 .. 255) := (others => <>);
          Environment_Block : constant C.char_ptr_ptr :=
             System.Environment_Block;
@@ -54,6 +59,9 @@ package body Ada.Processes.Inside is
          pragma Unreferenced (Dummy);
          errno : C.signed_int;
       begin
+         System.Zero_Terminated_Strings.To_C (
+            Command_Line,
+            C_Command_Line (0)'Access);
          Split_Argument (C_Command_Line, Arguments);
          Dummy := C.spawn.posix_spawn_file_actions_init (Actions'Access);
          Dummy := C.spawn.posix_spawnattr_init (Attrs'Access);

@@ -9,6 +9,9 @@ generic
    with function Has_Element (Position : Input_Cursor) return Boolean is <>;
    with package Input_Iterator_Interfaces is
       new Iterator_Interfaces (Input_Cursor, Has_Element);
+   Input_Iterator : Input_Iterator_Interfaces.Forward_Iterator'Class;
+   type Element_Type (<>) is limited private;
+   with function Element (Position : Input_Cursor) return Element_Type is <>;
 package Ada.Containers.Forward_Iterators is
    --  This package makes a normal forward iterator
    --    from a non-rollbackable forward iterator (input iterator).
@@ -19,39 +22,31 @@ package Ada.Containers.Forward_Iterators is
 
    function Has_Element (Position : Cursor) return Boolean;
 
-   type Input_Cursor_Ref (Element : not null access constant Input_Cursor) is
-      null record
+   type Constant_Reference_Type (
+      Element : not null access constant Element_Type) is null record
       with Implicit_Dereference => Element;
 
-   function To (Position : Cursor) return Input_Cursor_Ref;
+   function Constant_Reference (Position : Cursor)
+      return Constant_Reference_Type;
 
    package Iterator_Interfaces is
       new Ada.Iterator_Interfaces (Cursor, Has_Element);
 
-   function Satisfy (
-      Iterator : aliased in out
-         Input_Iterator_Interfaces.Forward_Iterator'Class)
-      return Iterator_Interfaces.Forward_Iterator'Class;
+   function Iterate return Iterator_Interfaces.Forward_Iterator'Class;
 
    Status_Error : exception
       renames IO_Exceptions.Status_Error;
 
 private
 
-   type Input_Iterator_Access is
-      access all Input_Iterator_Interfaces.Forward_Iterator'Class;
-   for Input_Iterator_Access'Storage_Size use 0;
-
-   type Iterator;
-   type Iterator_Access is access all Iterator;
-   for Iterator_Access'Storage_Size use 0;
+   type Element_Access is access Element_Type;
 
    type Node;
    type Node_Access is access Node;
    type Node is limited record
       Reference_Count : Integer;
       Next : Node_Access;
-      Original : aliased Input_Cursor;
+      Item : Element_Access;
    end record;
 
    package Cursors is
@@ -107,7 +102,7 @@ private
       new Finalization.Limited_Controlled
       and Iterator_Interfaces.Forward_Iterator with
    record
-      Input_Iterator : not null Input_Iterator_Access;
+      Last_Input_Cursor : Input_Cursor;
       Last : Node_Access;
       State : State_Type;
    end record;

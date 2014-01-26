@@ -55,13 +55,8 @@ package body System.Native_Encoding is
    --  implementation
 
    function Get_Image (Encoding : Encoding_Id) return String is
-      package char_const_ptr_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.char,
-            Encoding_Id);
    begin
-      return Zero_Terminated_Strings.Value (
-         char_const_ptr_Conv.To_Address (Encoding));
+      return Zero_Terminated_Strings.Value (Encoding);
    end Get_Image;
 
    function Get_Default_Substitute (Encoding : Encoding_Id)

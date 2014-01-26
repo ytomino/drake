@@ -157,8 +157,8 @@ private
       Mode : File_Mode;
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
-      Name : System.Address;
-      Name_Length : Natural;
+      Name : C.char_ptr;
+      Name_Length : C.size_t;
       Form : Packed_Form;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;

@@ -17,7 +17,6 @@ with Ada.Numerics.SFMT.Params_19937;
 with Ada.Real_Time;
 with Ada.Text_IO;
 procedure random_sfmt is
-	use Ada.Numerics.SFMT;
 	use Ada.Numerics.SFMT.Params_19937;
 	-- use Ada.Numerics.SFMT.Params_216091;
 	use type Ada.Execution_Time.CPU_Time;

@@ -11,6 +11,61 @@ package body Ada.Directories is
 
    procedure Free is new Unchecked_Deallocation (String, String_Access);
 
+   function Pack_For_Copy_File (Form : String) return Boolean;
+   function Pack_For_Copy_File (Form : String) return Boolean is
+      Keyword_First : Positive;
+      Keyword_Last : Natural;
+      Item_First : Positive;
+      Item_Last : Natural;
+      Last : Natural;
+      Overwrite : Boolean := True; -- default
+   begin
+      Last := Form'First - 1;
+      while Last < Form'Last loop
+         System.Form_Parameters.Get (
+            Form (Last + 1 .. Form'Last),
+            Keyword_First,
+            Keyword_Last,
+            Item_First,
+            Item_Last,
+            Last);
+         Set : declare
+            Keyword : String
+               renames Form (Keyword_First .. Keyword_Last);
+            Item : String
+               renames Form (Item_First .. Item_Last);
+         begin
+            if Keyword = "overwrite" then
+               if Item'Length > 0 and then Item (Item'First) = 'f' then
+                  Overwrite := False; -- false
+               elsif Item'Length > 0 and then Item (Item'First) = 't' then
+                  Overwrite := True; -- true
+               end if;
+            elsif Keyword = "mode" then
+               --  compatibility with GNAT runtime
+               if Item'Length > 0 and then Item (Item'First) = 'c' then
+                  Overwrite := False; -- copy
+               elsif Item'Length > 0 and then Item (Item'First) = 'o' then
+                  Overwrite := True; -- overwrite
+               end if;
+            end if;
+         end Set;
+      end loop;
+      return Overwrite;
+   end Pack_For_Copy_File;
+
+   procedure Next (Search : in out Search_Type);
+   procedure Next (Search : in out Search_Type) is
+   begin
+      --  increment
+      Search.Count := Search.Count + 1;
+      --  search next
+      Directory_Searching.Get_Next_Entry (
+         Search.Search,
+         Search.Next_Directory_Entry.Data'Access,
+         Search.Has_Next);
+   end Next;
+
    --  directory and file operations
 
    function Current_Directory return String
@@ -79,50 +134,9 @@ package body Ada.Directories is
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
-      Form : String)
-   is
-      Overwrite : Boolean := True; -- default
+      Form : String) is
    begin
-      Pack : declare
-         Keyword_First : Positive;
-         Keyword_Last : Natural;
-         Item_First : Positive;
-         Item_Last : Natural;
-         Last : Natural;
-      begin
-         Last := Form'First - 1;
-         while Last < Form'Last loop
-            System.Form_Parameters.Get (
-               Form (Last + 1 .. Form'Last),
-               Keyword_First,
-               Keyword_Last,
-               Item_First,
-               Item_Last,
-               Last);
-            Set : declare
-               Keyword : String
-                  renames Form (Keyword_First .. Keyword_Last);
-               Item : String
-                  renames Form (Item_First .. Item_Last);
-            begin
-               if Keyword = "overwrite" then
-                  if Item'Length > 0 and then Item (Item'First) = 'f' then
-                     Overwrite := False; -- false
-                  elsif Item'Length > 0 and then Item (Item'First) = 't' then
-                     Overwrite := True; -- true
-                  end if;
-               elsif Keyword = "mode" then
-                  --  compatibility with GNAT runtime
-                  if Item'Length > 0 and then Item (Item'First) = 'c' then
-                     Overwrite := False; -- copy
-                  elsif Item'Length > 0 and then Item (Item'First) = 'o' then
-                     Overwrite := True; -- overwrite
-                  end if;
-               end if;
-            end Set;
-         end loop;
-      end Pack;
-      Copy_File (Source_Name, Target_Name, Overwrite);
+      Inside.Copy_File (Source_Name, Target_Name, Pack_For_Copy_File (Form));
    end Copy_File;
 
    procedure Copy_File (
@@ -199,10 +213,10 @@ package body Ada.Directories is
          Directory,
          Pattern,
          Cast (Filter),
-         Search.Next_Data'Access,
+         Search.Next_Directory_Entry.Data'Access,
          Search.Has_Next);
       Search.Path := new String'(Full_Name (Directory));
-      Search.Count := 0;
+      Search.Count := 1;
    end Start_Search;
 
    function Start_Search (
@@ -226,8 +240,10 @@ package body Ada.Directories is
 
    function More_Entries (Search : Search_Type) return Boolean is
    begin
-      return Search.Search.Handle /= Directory_Searching.Null_Handle
-         and then Search.Has_Next;
+      if Search.Search.Handle = Directory_Searching.Null_Handle then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      return Search.Has_Next;
    end More_Entries;
 
    procedure Get_Next_Entry (
@@ -241,15 +257,10 @@ package body Ada.Directories is
       else
          --  copy entry and get info
          Directory_Entry.Search := Search'Unrestricted_Access; -- overwrite
-         Directory_Entry.Data := Search.Next_Data;
+         Directory_Entry.Data := Search.Next_Directory_Entry.Data;
          Directory_Entry.Additional.Filled := False;
-         --  counting
-         Search.Count := Search.Count + 1;
-         --  search next
-         Directory_Searching.Get_Next_Entry (
-            Search.Search,
-            Search.Next_Data'Access,
-            Search.Has_Next);
+         --  increment and search next
+         Next (Search);
       end if;
    end Get_Next_Entry;
 
@@ -275,17 +286,24 @@ package body Ada.Directories is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Position.Directory_Entry.Search /= null;
+      return Position > 0;
    end Has_Element;
+
+   function Element (Container : Search_Type'Class; Position : Cursor)
+      return Directory_Entry_Type is
+   begin
+      return Constant_Reference (Container, Position).Element.all;
+   end Element;
 
    function Constant_Reference (
       Container : aliased Search_Type;
       Position : Cursor)
-      return Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
+      return Constant_Reference_Type is
    begin
-      return (Element => Position.Directory_Entry'Access);
+      if Integer (Position) /= Container.Count then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+      end if;
+      return (Element => Container.Next_Directory_Entry'Access);
    end Constant_Reference;
 
    function Iterate (Container : Search_Type)
@@ -296,29 +314,35 @@ package body Ada.Directories is
 
    overriding function First (Object : Search_Iterator) return Cursor is
    begin
-      if Object.Search.Count /= 0 then
-         raise Constraint_Error; -- Status_Error?
+      if Object.Search.Search.Handle = Directory_Searching.Null_Handle
+         or else Object.Search.Count /= 1
+      then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      return Result : Cursor do
-         if More_Entries (Object.Search.all) then
-            Get_Next_Entry (Object.Search.all, Result.Directory_Entry);
-            Result.Index := Object.Search.Count;
-         end if;
-      end return;
+      if not Object.Search.Has_Next then
+         return 0; -- No_Element
+      else
+         Object.Search.Next_Directory_Entry.Search := Object.Search;
+         Object.Search.Next_Directory_Entry.Additional.Filled := False;
+         return 1;
+      end if;
    end First;
 
    overriding function Next (Object : Search_Iterator; Position : Cursor)
       return Cursor is
    begin
-      if Object.Search.Count /= Position.Index then
-         raise Constraint_Error; -- Status_Error?
+      if Integer (Position) /= Object.Search.Count then
+         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       end if;
-      return Result : Cursor do
-         if More_Entries (Object.Search.all) then
-            Get_Next_Entry (Object.Search.all, Result.Directory_Entry);
-            Result.Index := Object.Search.Count;
-         end if;
-      end return;
+      --  increment and search next
+      Next (Object.Search.all);
+      if not Object.Search.Has_Next then
+         Object.Search.Next_Directory_Entry.Search := null;
+         return 0; -- No_Element
+      else
+         Object.Search.Next_Directory_Entry.Additional.Filled := False;
+         return Cursor (Object.Search.Count);
+      end if;
    end Next;
 
    --  operations on directory entries

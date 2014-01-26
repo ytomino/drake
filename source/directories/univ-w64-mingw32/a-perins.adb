@@ -19,7 +19,7 @@ package body Ada.Permissions.Inside is
       end if;
       return System.Zero_Terminated_WStrings.Value (
          Result (0)'Access,
-         C.signed_int (Length) - 1);
+         C.size_t (Length) - 1);
    end User_Name;
 
 end Ada.Permissions.Inside;

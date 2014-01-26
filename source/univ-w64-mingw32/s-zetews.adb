@@ -18,12 +18,12 @@ package body System.Zero_Terminated_WStrings is
       First : not null access constant C.winnt.WCHAR)
       return String is
    begin
-      return Value (First, C.signed_int (C.string.wcslen (First)));
+      return Value (First, C.string.wcslen (First));
    end Value;
 
    function Value (
       First : not null access constant C.winnt.WCHAR;
-      Length : C.signed_int)
+      Length : C.size_t)
       return String
    is
       Result : String (1 .. Natural (Length) * 2);
@@ -33,7 +33,7 @@ package body System.Zero_Terminated_WStrings is
          C.winnls.CP_UTF8,
          0,
          First,
-         Length,
+         C.signed_int (Length),
          LPSTR_Conv.To_Pointer (Result'Address),
          Result'Length,
          null,
@@ -41,36 +41,36 @@ package body System.Zero_Terminated_WStrings is
       return Result (1 .. Result_Length);
    end Value;
 
-   procedure Convert (
+   procedure To_C (
       Source : String;
       Result : not null access C.winnt.WCHAR)
    is
-      Dummy : C.signed_int;
+      Dummy : C.size_t;
       pragma Unreferenced (Dummy);
    begin
-      Convert (Source, Result, Dummy);
-   end Convert;
+      To_C (Source, Result, Dummy);
+   end To_C;
 
-   procedure Convert (
+   procedure To_C (
       Source : String;
       Result : not null access C.winnt.WCHAR;
-      Result_Length : out C.signed_int)
+      Result_Length : out C.size_t)
    is
       Source_Length : constant Natural := Source'Length;
       Result_End : C.winnt.LPWSTR;
    begin
-      Result_Length := C.winnls.MultiByteToWideChar (
+      Result_Length := C.size_t (C.winnls.MultiByteToWideChar (
          C.winnls.CP_UTF8,
          0,
          LPSTR_Conv.To_Pointer (Source'Address),
          C.signed_int (Source_Length),
          Result,
-         C.signed_int (Source_Length)); -- assuming Result has enough size
+         C.signed_int (Source_Length))); -- assuming Result has enough size
       Result_End := LPWSTR_Conv.To_Pointer (
          LPWSTR_Conv.To_Address (C.winnt.LPWSTR (Result))
          + System.Storage_Elements.Storage_Offset (Result_Length)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
       Result_End.all := C.winnt.WCHAR'Val (0);
-   end Convert;
+   end To_C;
 
 end System.Zero_Terminated_WStrings;

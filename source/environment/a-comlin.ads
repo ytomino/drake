@@ -3,6 +3,7 @@ package Ada.Command_Line is
    pragma Preelaborate;
 
    function Argument_Count return Natural;
+   pragma Inline (Argument_Count); -- renamed
 
    function Argument (Number : Positive) return String;
 

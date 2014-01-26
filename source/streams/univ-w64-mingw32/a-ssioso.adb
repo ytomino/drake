@@ -11,6 +11,7 @@ with C.winnt;
 with C.winsock2;
 package body Ada.Streams.Stream_IO.Sockets is
    use type C.signed_int;
+   use type C.size_t;
    use type C.psdk_inc.qsocket_types.SOCKET;
    use type C.ws2tcpip.struct_addrinfoW_ptr;
 
@@ -88,13 +89,17 @@ package body Ada.Streams.Stream_IO.Sockets is
             ai_canonname => null,
             ai_addr => null,
             ai_next => null);
-         W_Host_Name : C.winnt.WCHAR_array (0 .. Host_Name'Length);
-         W_Service : C.winnt.WCHAR_array (0 .. Service'Length);
+         W_Host_Name : C.winnt.WCHAR_array (
+            0 ..
+            Host_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+         W_Service : C.winnt.WCHAR_array (
+            0 ..
+            Service'Length * System.Zero_Terminated_WStrings.Expanding);
       begin
-         System.Zero_Terminated_WStrings.Convert (
+         System.Zero_Terminated_WStrings.To_C (
             Host_Name,
             W_Host_Name (0)'Access);
-         System.Zero_Terminated_WStrings.Convert (
+         System.Zero_Terminated_WStrings.To_C (
             Service,
             W_Service (0)'Access);
          return Get (
@@ -118,13 +123,17 @@ package body Ada.Streams.Stream_IO.Sockets is
             ai_canonname => null,
             ai_addr => null,
             ai_next => null);
-         W_Host_Name : C.winnt.WCHAR_array (0 .. Host_Name'Length);
+         W_Host_Name : C.winnt.WCHAR_array (
+            0 ..
+            Host_Name'Length * System.Zero_Terminated_WStrings.Expanding);
          Service : String (1 .. 5);
          Service_Last : Natural;
-         W_Service : C.winnt.WCHAR_array (0 .. 5);
+         W_Service : C.winnt.WCHAR_array (
+            0 ..
+            Service'Length * System.Zero_Terminated_WStrings.Expanding);
          Error : Boolean;
       begin
-         System.Zero_Terminated_WStrings.Convert (
+         System.Zero_Terminated_WStrings.To_C (
             Host_Name,
             W_Host_Name (0)'Access);
          System.Formatting.Image (
@@ -133,7 +142,7 @@ package body Ada.Streams.Stream_IO.Sockets is
             Service_Last,
             Base => 10,
             Error => Error);
-         System.Zero_Terminated_WStrings.Convert (
+         System.Zero_Terminated_WStrings.To_C (
             Service (1 .. Service_Last),
             W_Service (0)'Access);
          return Get (

@@ -1,9 +1,9 @@
 pragma License (Unrestricted);
 --  implementation unit
 procedure System.Formatting.Float_Image (
-   To : out String; -- To'Length >= Long_Long_Float'Width + 4 (16##)
+   Value : Long_Long_Float;
+   Item : out String; -- To'Length >= Long_Long_Float'Width + 4 (16##)
    Last : out Natural;
-   Item : Long_Long_Float;
    Minus_Sign : Character := '-';
    Zero_Sign : Character := ' ';
    Plus_Sign : Character := ' ';

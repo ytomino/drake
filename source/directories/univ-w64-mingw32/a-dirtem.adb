@@ -30,13 +30,15 @@ package body Ada.Directories.Temporary is
       Length := C.winbase.GetTempPath (Result'Length, Result (0)'Access);
       return System.Zero_Terminated_WStrings.Value (
          Result (0)'Access,
-         C.signed_int (Length));
+         C.size_t (Length));
    end Temporary_Directory;
 
    procedure Set_Temporary_Directory (Name : String) is
-      W_Name : C.winnt.WCHAR_array (0 .. Name'Length);
+      W_Name : C.winnt.WCHAR_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.Convert (Name, W_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.SetEnvironmentVariable (
          TMP (0)'Access,
          W_Name (0)'Access) = 0
@@ -49,12 +51,14 @@ package body Ada.Directories.Temporary is
       Directory : String := Temporary_Directory)
       return String
    is
-      W_Dir : C.winnt.WCHAR_array (0 .. Directory'Length);
+      W_Directory : C.winnt.WCHAR_array (
+         0 ..
+         Directory'Length * System.Zero_Terminated_WStrings.Expanding);
       Result : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
-      System.Zero_Terminated_WStrings.Convert (Directory, W_Dir (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
       if C.winbase.GetTempFileName (
-         W_Dir (0)'Access,
+         W_Directory (0)'Access,
          Prefix (0)'Access,
          0,
          Result (0)'Access) = 0

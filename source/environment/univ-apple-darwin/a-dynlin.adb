@@ -1,7 +1,25 @@
 with Ada.Exceptions;
+with System.Zero_Terminated_Strings;
 with C.dlfcn;
 package body Ada.Dynamic_Linking is
+   use type C.size_t;
    use type C.void_ptr;
+
+   procedure Open (Handle : out C.void_ptr; Name : String);
+   procedure Open (Handle : out C.void_ptr; Name : String) is
+      C_Name : C.char_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_Strings.Expanding);
+      Result : C.void_ptr;
+   begin
+      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Result := C.dlfcn.dlopen (C_Name (0)'Access, 0);
+      if Result = C.void_ptr (System.Null_Address) then
+         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+      else
+         Handle := Result;
+      end if;
+   end Open;
 
    procedure Close (Handle : C.void_ptr);
    procedure Close (Handle : C.void_ptr) is
@@ -21,26 +39,14 @@ package body Ada.Dynamic_Linking is
       if Handle.all /= C.void_ptr (System.Null_Address) then
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else
-         declare
-            Z_Name : String := Name & Character'Val (0);
-            C_Name : C.char_array (C.size_t);
-            for C_Name'Address use Z_Name'Address;
-            Result : C.void_ptr;
-         begin
-            Result := C.dlfcn.dlopen (C_Name (0)'Access, 0);
-            if Result = C.void_ptr (System.Null_Address) then
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
-            else
-               Handle.all := Result;
-            end if;
-         end;
+         Open (Handle.all, Name);
       end if;
    end Open;
 
    function Open (Name : String) return Library is
    begin
       return Result : Library do
-         Open (Result, Name);
+         Open (Reference (Result).all, Name);
       end return;
    end Open;
 
@@ -63,11 +69,12 @@ package body Ada.Dynamic_Linking is
          Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
       else
          declare
-            Z_Symbol : String := Symbol & Character'Val (0);
-            C_Symbol : C.char_array (C.size_t);
-            for C_Symbol'Address use Z_Symbol'Address;
+            C_Symbol : C.char_array (
+               0 ..
+               Symbol'Length * System.Zero_Terminated_Strings.Expanding);
             Result : C.void_ptr;
          begin
+            System.Zero_Terminated_Strings.To_C (Symbol, C_Symbol (0)'Access);
             Result := C.dlfcn.dlsym (Handle, C_Symbol (0)'Access);
             if Result = C.void_ptr (System.Null_Address) then
                Exceptions.Raise_Exception_From_Here (Data_Error'Identity);

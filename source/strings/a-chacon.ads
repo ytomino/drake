@@ -110,9 +110,9 @@ package Ada.Characters.Conversions is
       Substitute : Wide_Character := ' ')
       return Wide_String;
 
-   pragma Inline (To_String);
-   pragma Inline (To_Wide_String);
-   pragma Inline (To_Wide_Wide_String);
+   pragma Inline (To_String); -- renamed
+   pragma Inline (To_Wide_String); -- renamed
+   pragma Inline (To_Wide_Wide_String); -- renamed
 
    --  extended
    --  There are subprograms for code-point based decoding iteration.

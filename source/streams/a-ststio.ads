@@ -77,7 +77,6 @@ package Ada.Streams.Stream_IO is
    function Name (File : File_Type) return String;
    pragma Inline (Name);
    function Form (File : File_Type) return String;
-   pragma Inline (Form);
 
    function Is_Open (File : File_Type) return Boolean;
    pragma Inline (Is_Open);

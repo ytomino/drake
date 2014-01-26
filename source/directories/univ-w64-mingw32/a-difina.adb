@@ -3,6 +3,7 @@ with C.string;
 with C.winnls;
 with C.winnt;
 package body Ada.Directories.Inside.File_Names is
+   use type C.size_t;
 
    --  see http://blogs.msdn.com/b/michkap/archive/2005/10/17/481600.aspx
 
@@ -20,35 +21,39 @@ package body Ada.Directories.Inside.File_Names is
          return 1; -- Left'Length > Right'Length
       else
          declare
-            W_Left : aliased C.winnt.WCHAR_array (0 .. Left'Length);
-            W_Right : aliased C.winnt.WCHAR_array (0 .. Right'Length);
-            W_Left_Length : C.signed_int;
-            W_Right_Length : C.signed_int;
+            W_Left : aliased C.winnt.WCHAR_array (
+               0 ..
+               Left'Length * System.Zero_Terminated_WStrings.Expanding);
+            W_Right : aliased C.winnt.WCHAR_array (
+               0 ..
+               Right'Length * System.Zero_Terminated_WStrings.Expanding);
+            W_Left_Length : C.size_t;
+            W_Right_Length : C.size_t;
          begin
-            System.Zero_Terminated_WStrings.Convert (
+            System.Zero_Terminated_WStrings.To_C (
                Left,
                W_Left (0)'Access,
                W_Left_Length);
-            System.Zero_Terminated_WStrings.Convert (
+            System.Zero_Terminated_WStrings.To_C (
                Right,
                W_Right (0)'Access,
                W_Right_Length);
-            W_Left_Length := C.winnls.LCMapString (
+            W_Left_Length := C.size_t (C.winnls.LCMapString (
                C.winnt.LOCALE_INVARIANT,
                C.winnls.LCMAP_UPPERCASE,
                W_Left (0)'Access,
-               W_Left_Length,
+               C.signed_int (W_Left_Length),
                W_Left (0)'Access, -- overwritable when only LCMAP_UPPERCASE
-               W_Left_Length);
-            W_Left (C.size_t (W_Left_Length)) := C.winnt.WCHAR'Val (0);
-            W_Right_Length := C.winnls.LCMapString (
+               C.signed_int (W_Left_Length)));
+            W_Left (W_Left_Length) := C.winnt.WCHAR'Val (0);
+            W_Right_Length := C.size_t (C.winnls.LCMapString (
                C.winnt.LOCALE_INVARIANT,
                C.winnls.LCMAP_UPPERCASE,
                W_Right (0)'Access,
-               W_Right_Length,
+               C.signed_int (W_Right_Length),
                W_Right (0)'Access,
-               W_Right_Length);
-            W_Right (C.size_t (W_Right_Length)) := C.winnt.WCHAR'Val (0);
+               C.signed_int (W_Right_Length)));
+            W_Right (W_Right_Length) := C.winnt.WCHAR'Val (0);
             return Integer (
                C.string.wcscmp (W_Left (0)'Access, W_Right (0)'Access));
             --  it should be replaced to wmemcmp for practical use length info

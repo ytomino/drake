@@ -134,9 +134,9 @@ package body Ada.Formatting is
       Last : Natural;
    begin
       System.Formatting.Float_Image (
+         Long_Long_Float (Item),
          Result,
          Last,
-         Long_Long_Float (Item),
          Minus_Sign => Signs (-1),
          Zero_Sign => Signs (0),
          Plus_Sign => Signs (1),
@@ -172,9 +172,9 @@ package body Ada.Formatting is
    begin
       if Exponent then
          System.Formatting.Float_Image (
+            Long_Long_Float (Item),
             Result,
             Last,
-            Long_Long_Float (Item),
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),
             Plus_Sign => Signs (1),
@@ -193,9 +193,9 @@ package body Ada.Formatting is
             Exponent_Padding => Exponent_Padding);
       else
          System.Formatting.Fixed_Image (
+            Long_Long_Float (Item),
             Result,
             Last,
-            Long_Long_Float (Item),
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),
             Plus_Sign => Signs (1),
@@ -223,9 +223,9 @@ package body Ada.Formatting is
    begin
       if Exponent then
          System.Formatting.Float_Image (
+            Long_Long_Float (Item),
             Result,
             Last,
-            Long_Long_Float (Item),
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),
             Plus_Sign => Signs (1),
@@ -240,9 +240,9 @@ package body Ada.Formatting is
             Exponent_Padding => Exponent_Padding);
       else
          System.Formatting.Decimal_Image (
+            Long_Long_Integer'Integer_Value (Item),
             Result,
             Last,
-            Long_Long_Integer'Integer_Value (Item),
             T'Scale,
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),

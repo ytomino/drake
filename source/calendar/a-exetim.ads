@@ -14,7 +14,7 @@ package Ada.Execution_Time is
 --    T : Task_Identification.Task_Id := Task_Identification.Current_Task)
 --    return CPU_Time;
    function Clock return CPU_Time; -- substitution
-   pragma Inline (Clock);
+   pragma Inline (Clock); -- renamed
 
 --  function "+" (Left : CPU_Time; Right : Time_Span) return CPU_Time;
 --  function "+" (Left : Time_Span; Right : CPU_Time) return CPU_Time;

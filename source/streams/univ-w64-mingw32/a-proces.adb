@@ -3,6 +3,7 @@ with Ada.Streams.Stream_IO.Inside;
 with System.Zero_Terminated_WStrings;
 with C.windef;
 package body Ada.Processes is
+   use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE;
@@ -28,7 +29,9 @@ package body Ada.Processes is
             lpSecurityDescriptor => C.windef.LPCVOID (System.Null_Address),
             bInheritHandle => 1);
       pragma Unreferenced (Search_Path);
-      W_Command_Line : aliased C.winnt.WCHAR_array (0 .. Command_Line'Length);
+      W_Command_Line : aliased C.winnt.WCHAR_array (
+         0 ..
+         Command_Line'Length * System.Zero_Terminated_WStrings.Expanding);
       W_Directory : aliased C.winnt.WCHAR_array (0 .. Directory'Length);
       Directory_Ref : access constant C.winnt.WCHAR;
       Startup_Info : aliased C.winbase.STARTUPINFO;
@@ -40,11 +43,11 @@ package body Ada.Processes is
       Startup_Info.hStdInput := Streams.Stream_IO.Inside.Handle (Input);
       Startup_Info.hStdOutput := Streams.Stream_IO.Inside.Handle (Output);
       Startup_Info.hStdError := Streams.Stream_IO.Inside.Handle (Error);
-      System.Zero_Terminated_WStrings.Convert (
+      System.Zero_Terminated_WStrings.To_C (
          Command_Line,
          W_Command_Line (0)'Access);
       if Directory'Length > 0 then
-         System.Zero_Terminated_WStrings.Convert (
+         System.Zero_Terminated_WStrings.To_C (
             Directory,
             W_Directory (0)'Access);
          Directory_Ref := W_Directory (0)'Access;

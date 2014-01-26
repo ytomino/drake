@@ -12,16 +12,18 @@ package System.Zero_Terminated_WStrings is
       return String;
    function Value (
       First : not null access constant C.winnt.WCHAR;
-      Length : C.signed_int)
+      Length : C.size_t)
       return String;
 
    --  convert to zero-terminated wide string from UTF-8
-   procedure Convert (
+   procedure To_C (
       Source : String;
       Result : not null access C.winnt.WCHAR);
-   procedure Convert (
+   procedure To_C (
       Source : String;
       Result : not null access C.winnt.WCHAR;
-      Result_Length : out C.signed_int);
+      Result_Length : out C.size_t);
+
+   Expanding : constant := 1; -- same as Expanding_From_8_To_16
 
 end System.Zero_Terminated_WStrings;

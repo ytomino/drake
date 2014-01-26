@@ -127,6 +127,18 @@ package body System.Native_Encoding is
       end case;
    end Get_Min_Size_In_Stream_Elements;
 
+   function Get_Current_Encoding return Encoding_Id is
+   begin
+      return Encoding_Id (C.winnls.GetACP);
+   end Get_Current_Encoding;
+
+   procedure Open (Object : out Converter; From, To : Encoding_Id) is
+   begin
+      Object.From := From;
+      Object.To := To;
+      Object.Substitute_Length := -1;
+   end Open;
+
    function Get_Is_Open (Object : Converter) return Boolean is
    begin
       return Object.From /= Invalid_Encoding_Id;
@@ -137,11 +149,6 @@ package body System.Native_Encoding is
    begin
       return Get_Min_Size_In_Stream_Elements (Object.From);
    end Min_Size_In_From_Stream_Elements_No_Check;
-
-   function Get_Current_Encoding return Encoding_Id is
-   begin
-      return Encoding_Id (C.winnls.GetACP);
-   end Get_Current_Encoding;
 
    function Substitute_No_Check (Object : Converter)
       return Ada.Streams.Stream_Element_Array is
@@ -649,12 +656,5 @@ package body System.Native_Encoding is
             Object.Substitute (1 .. Object.Substitute_Length);
       end if;
    end Put_Substitute;
-
-   procedure Open (Object : out Converter; From, To : Encoding_Id) is
-   begin
-      Object.From := From;
-      Object.To := To;
-      Object.Substitute_Length := -1;
-   end Open;
 
 end System.Native_Encoding;

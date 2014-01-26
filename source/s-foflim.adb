@@ -1,8 +1,8 @@
 with System.Formatting.Float;
 procedure System.Formatting.Float_Image (
-   To : out String;
+   Value : Long_Long_Float;
+   Item : out String;
    Last : out Natural;
-   Item : Long_Long_Float;
    Minus_Sign : Character := '-';
    Zero_Sign : Character := ' ';
    Plus_Sign : Character := ' ';
@@ -30,41 +30,41 @@ is
    function signbit (X : Long_Long_Float) return Integer;
    pragma Import (Intrinsic, signbit, "__builtin_signbitl");
 begin
-   Last := To'First - 1;
-   if signbit (Item) /= 0 then
+   Last := Item'First - 1;
+   if signbit (Value) /= 0 then
       if Minus_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Minus_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Minus_Sign;
       end if;
-   elsif Item > 0.0 then
+   elsif Value > 0.0 then
       if Plus_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Plus_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Plus_Sign;
       end if;
    else
       if Zero_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Zero_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Zero_Sign;
       end if;
    end if;
-   if isnan (Item) /= 0 then
+   if isnan (Value) /= 0 then
       declare
          First : constant Positive := Last + 1;
       begin
          Last := Last + NaN'Length;
-         pragma Assert (Last <= To'Last);
-         To (First .. Last) := NaN;
+         pragma Assert (Last <= Item'Last);
+         Item (First .. Last) := NaN;
       end;
-   elsif isinf (Item) /= 0 then
+   elsif isinf (Value) /= 0 then
       declare
          First : constant Positive := Last + 1;
       begin
          Last := Last + Infinity'Length;
-         pragma Assert (Last <= To'Last);
-         To (First .. Last) := Infinity;
+         pragma Assert (Last <= Item'Last);
+         Item (First .. Last) := Infinity;
       end;
    else
       declare
@@ -76,7 +76,7 @@ begin
          Error : Boolean;
       begin
          Float.Split (
-            abs Item,
+            abs Value,
             Fore,
             Aft,
             Exponent,
@@ -100,66 +100,66 @@ begin
          if Base_Form then
             Image (
                Unsigned (Base),
-               To (Last + 1 .. To'Last),
+               Item (Last + 1 .. Item'Last),
                Last,
                Error => Error);
             pragma Assert (not Error);
             Last := Last + 1;
-            pragma Assert (Last <= To'Last);
-            To (Last) := '#';
+            pragma Assert (Last <= Item'Last);
+            Item (Last) := '#';
          end if;
          --  integer part
          for I in 2 .. Fore_Width loop
             Last := Last + 1;
-            pragma Assert (Last <= To'Last);
-            To (Last) := Fore_Padding;
+            pragma Assert (Last <= Item'Last);
+            Item (Last) := Fore_Padding;
          end loop;
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
+         pragma Assert (Last <= Item'Last);
          Image (
             Fore,
-            To (Last),
+            Item (Last),
             Set => Set);
          --  '.' and decimal part
-         pragma Assert (Last + 1 + Aft_Width <= To'Last);
+         pragma Assert (Last + 1 + Aft_Width <= Item'Last);
          Float.Aft_Image (
             Scaled_Aft,
-            To (Last + 1 .. To'Last),
+            Item (Last + 1 .. Item'Last),
             Last,
             Base => Base,
             Width => Aft_Width);
          --  closing #
          if Base_Form then
             Last := Last + 1;
-            pragma Assert (Last <= To'Last);
-            To (Last) := '#';
+            pragma Assert (Last <= Item'Last);
+            Item (Last) := '#';
          end if;
          --  exponent
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Exponent_Mark;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Exponent_Mark;
          if Exponent < 0 then
             if Exponent_Minus_Sign /= No_Sign then
                Last := Last + 1;
-               pragma Assert (Last <= To'Last);
-               To (Last) := Exponent_Minus_Sign;
+               pragma Assert (Last <= Item'Last);
+               Item (Last) := Exponent_Minus_Sign;
             end if;
          elsif Exponent > 0 then
             if Exponent_Plus_Sign /= No_Sign then
                Last := Last + 1;
-               pragma Assert (Last <= To'Last);
-               To (Last) := Exponent_Plus_Sign;
+               pragma Assert (Last <= Item'Last);
+               Item (Last) := Exponent_Plus_Sign;
             end if;
          else
             if Exponent_Zero_Sign /= No_Sign then
                Last := Last + 1;
-               pragma Assert (Last <= To'Last);
-               To (Last) := Exponent_Zero_Sign;
+               pragma Assert (Last <= Item'Last);
+               Item (Last) := Exponent_Zero_Sign;
             end if;
          end if;
          Image (
             Unsigned (abs Exponent),
-            To (Last + 1 .. To'Last),
+            Item (Last + 1 .. Item'Last),
             Last,
             Width => Exponent_Width,
             Padding => Exponent_Padding,

@@ -13,8 +13,7 @@ package body Ada.Permissions.Inside is
       if Info = null then
          raise Constraint_Error;
       else
-         return System.Zero_Terminated_Strings.Value (
-            Info.pw_name.all'Address);
+         return System.Zero_Terminated_Strings.Value (Info.pw_name);
       end if;
    end User_Name;
 
@@ -25,8 +24,7 @@ package body Ada.Permissions.Inside is
       if Info = null then
          raise Constraint_Error;
       else
-         return System.Zero_Terminated_Strings.Value (
-            Info.gr_name.all'Address);
+         return System.Zero_Terminated_Strings.Value (Info.gr_name);
       end if;
    end Group_Name;
 

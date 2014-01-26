@@ -1,8 +1,8 @@
 with Ada;
 procedure System.Formatting.Address_Image (
-   To : out String;
+   Value : Address;
+   Item : out String;
    Last : out Natural;
-   Item : Address;
    Set : Type_Set := Upper_Case)
 is
    pragma Suppress (All_Checks);
@@ -19,8 +19,8 @@ is
 begin
    if Use_Longest then
       Image (
-         Longest_Unsigned (Item),
-         To,
+         Longest_Unsigned (Value),
+         Item,
          Last,
          Base => 16,
          Set => Set,
@@ -28,13 +28,13 @@ begin
          Error => Error);
    else
       Image (
-         Unsigned (Item),
-         To,
+         Unsigned (Value),
+         Item,
          Last,
          Base => 16,
          Set => Set,
          Width => Width,
          Error => Error);
    end if;
-   pragma Debug (Runtime_Error (Error, "To'Length is short"));
+   pragma Debug (Runtime_Error (Error, "Item'Length is short"));
 end System.Formatting.Address_Image;

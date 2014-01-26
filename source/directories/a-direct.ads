@@ -11,14 +11,18 @@ package Ada.Directories is
    --  Directory and file operations:
 
    function Current_Directory return String;
+   pragma Inline (Current_Directory); -- renamed
 
    procedure Set_Directory (Directory : String);
+   pragma Inline (Set_Directory); -- renamed
 
    procedure Create_Directory (
       New_Directory : String;
       Form : String := "");
+   pragma Inline (Create_Directory); -- renamed
 
    procedure Delete_Directory (Directory : String);
+   pragma Inline (Delete_Directory); -- renamed
 
    procedure Create_Path (
       New_Directory : String;
@@ -27,6 +31,7 @@ package Ada.Directories is
    procedure Delete_Tree (Directory : String);
 
    procedure Delete_File (Name : String);
+   pragma Inline (Delete_File); -- renamed
 
    --  modified
    --  These functions fail if Overwrite = False and New_Name already exists.
@@ -34,6 +39,7 @@ package Ada.Directories is
       Old_Name : String;
       New_Name : String;
       Overwrite : Boolean := True); -- additional
+   pragma Inline (Rename); -- renamed
 
    --  modified
    procedure Copy_File (
@@ -45,6 +51,7 @@ package Ada.Directories is
       Source_Name : String;
       Target_Name : String;
       Overwrite : Boolean := True);
+   pragma Inline (Copy_File); -- renamed
 
    --  extended
    --  Create a symbolic link.
@@ -52,10 +59,12 @@ package Ada.Directories is
       Source_Name : String;
       Target_Name : String;
       Overwrite : Boolean := True);
+   pragma Inline (Symbolic_Link); -- renamed
 
    --  File and directory name operations:
 
    function Full_Name (Name : String) return String;
+   pragma Inline (Full_Name); -- renamed
 
    function Simple_Name (Name : String) return String
       renames Hierarchical_File_Names.Simple_Name;
@@ -122,6 +131,7 @@ package Ada.Directories is
    subtype File_Size is Streams.Stream_Element_Count;
 
    function Exists (Name : String) return Boolean;
+   pragma Inline (Exists); -- renamed
 
    function Kind (Name : String) return File_Kind;
 
@@ -186,6 +196,9 @@ package Ada.Directories is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
+   pragma Inline (Has_Element);
+   function Element (Container : Search_Type'Class; Position : Cursor)
+      return Directory_Entry_Type;
    type Constant_Reference_Type (
       Element : not null access constant Directory_Entry_Type) is null record
       with Implicit_Dereference => Element;
@@ -193,6 +206,7 @@ package Ada.Directories is
       Container : aliased Search_Type;
       Position : Cursor)
       return Constant_Reference_Type;
+   pragma Inline (Constant_Reference);
    package Search_Iterator_Interfaces is
       new Iterator_Interfaces (Cursor, Has_Element);
    function Iterate (Container : Search_Type)
@@ -242,7 +256,7 @@ private
          Handle => Directory_Searching.Null_Handle,
          others => <>);
       Path : String_Access;
-      Next_Data : aliased Directory_Searching.Directory_Entry_Type;
+      Next_Directory_Entry : aliased Directory_Entry_Type;
       Has_Next : Boolean;
       Count : Natural;
    end record;
@@ -250,10 +264,7 @@ private
    overriding procedure Finalize (Search : in out Search_Type);
    procedure End_Search (Search : in out Search_Type) renames Finalize;
 
-   type Cursor is record
-      Directory_Entry : aliased Directory_Entry_Type;
-      Index : Positive;
-   end record;
+   type Cursor is new Natural;
 
    type Search_Iterator is new Search_Iterator_Interfaces.Forward_Iterator
       with

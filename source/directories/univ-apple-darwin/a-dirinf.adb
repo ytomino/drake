@@ -6,6 +6,7 @@ with System.Address_To_Named_Access_Conversions;
 with System.Memory;
 with System.Native_Time;
 with System.Storage_Elements;
+with System.Zero_Terminated_Strings;
 with C.errno;
 with C.sys.stat;
 with C.sys.types;
@@ -216,9 +217,6 @@ package body Ada.Directories.Information is
       package Conv is new System.Address_To_Named_Access_Conversions (
          C.char,
          C.char_ptr);
-      Buffer_Length : C.size_t := 1024;
-      Buffer : aliased C.char_ptr := Conv.To_Pointer (System.Memory.Allocate (
-         System.Storage_Elements.Storage_Count (Buffer_Length)));
       procedure Finally (X : not null access C.char_ptr);
       procedure Finally (X : not null access C.char_ptr) is
       begin
@@ -227,11 +225,15 @@ package body Ada.Directories.Information is
       package Holder is new Exceptions.Finally.Scoped_Holder (
          C.char_ptr,
          Finally);
-      Z_Name : constant String := Name & Character'Val (0);
-      C_Name : C.char_array (C.size_t);
-      for C_Name'Address use Z_Name'Address;
+      C_Name : C.char_array (
+         0 ..
+         Name'Length * System.Zero_Terminated_Strings.Expanding);
+      Buffer_Length : C.size_t := 1024;
+      Buffer : aliased C.char_ptr := Conv.To_Pointer (System.Memory.Allocate (
+         System.Storage_Elements.Storage_Count (Buffer_Length)));
    begin
       Holder.Assign (Buffer'Access);
+      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       loop
          declare
             function To_size (X : C.size_t) return C.size_t renames "+"; -- OSX
@@ -260,12 +262,9 @@ package body Ada.Directories.Information is
                end case;
             end if;
             if C.size_t (Result) < Buffer_Length then
-               declare
-                  Image : String (1 .. Natural (Result));
-                  for Image'Address use Conv.To_Address (Buffer);
-               begin
-                  return Image;
-               end;
+               return System.Zero_Terminated_Strings.Value (
+                  Buffer,
+                  C.size_t (Result));
             end if;
             Buffer_Length := Buffer_Length * 2;
             Buffer := Conv.To_Pointer (System.Memory.Reallocate (

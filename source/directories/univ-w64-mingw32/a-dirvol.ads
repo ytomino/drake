@@ -25,16 +25,41 @@ package Ada.Directories.Volumes is
 
 private
 
-   type File_System is new Finalization.Controlled with record
-      Root_Path : C.winnt.LPWSTR := null;
-      Root_Path_Length : C.signed_int := 0;
+   type Non_Controlled_File_System is record
+      Root_Path : C.winnt.LPWSTR;
+      Root_Path_Length : C.size_t;
       FileSystemFlags : aliased C.windef.DWORD;
-      FileSystemFlags_Valid : Boolean := False;
+      FileSystemFlags_Valid : Boolean;
       Is_NTFS : Boolean;
-      Is_NTFS_Valid : Boolean := False;
+      Is_NTFS_Valid : Boolean;
    end record;
+   pragma Suppress_Initialization (Non_Controlled_File_System);
 
-   overriding procedure Adjust (Object : in out File_System);
-   overriding procedure Finalize (Object : in out File_System);
+   package Controlled is
+
+      type File_System is private;
+
+      function Reference (Object : File_System)
+         return not null access Non_Controlled_File_System;
+      pragma Inline (Reference);
+
+   private
+
+      type File_System is new Finalization.Controlled with record
+         Data : aliased Non_Controlled_File_System := (
+            Root_Path => null,
+            Root_Path_Length => 0,
+            FileSystemFlags => <>,
+            FileSystemFlags_Valid => False,
+            Is_NTFS => <>,
+            Is_NTFS_Valid => False);
+      end record;
+
+      overriding procedure Adjust (Object : in out File_System);
+      overriding procedure Finalize (Object : in out File_System);
+
+   end Controlled;
+
+   type File_System is new Controlled.File_System;
 
 end Ada.Directories.Volumes;

@@ -2,6 +2,7 @@ pragma Check_Policy (Validate, Off);
 with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Forward_Iterators is
 
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Node, Node_Access);
 
    procedure Retain (Node : not null Node_Access);
@@ -17,6 +18,7 @@ package body Ada.Containers.Forward_Iterators is
          Node.Reference_Count := Node.Reference_Count - 1;
          if Node.Reference_Count = 0 then
             Release (Node.Next);
+            Free (Node.Item);
             Free (Node);
          end if;
       end if;
@@ -24,14 +26,12 @@ package body Ada.Containers.Forward_Iterators is
 
    procedure Append (
       Object : in out Iterator;
-      Result : out Cursor;
-      Original : Input_Cursor);
+      Result : out Cursor);
    procedure Append (
       Object : in out Iterator;
-      Result : out Cursor;
-      Original : Input_Cursor) is
+      Result : out Cursor) is
    begin
-      if not Has_Element (Original) then
+      if not Has_Element (Object.Last_Input_Cursor) then
          Object.State := No_Element;
          pragma Check (Validate, Reference (Result) = null);
       else
@@ -39,7 +39,7 @@ package body Ada.Containers.Forward_Iterators is
             New_Node : constant Node_Access := new Node'(
                Reference_Count => 1,
                Next => null,
-               Original => Original);
+               Item => new Element_Type'(Element (Object.Last_Input_Cursor)));
          begin
             if Object.Last /= null then
                pragma Check (Validate, Object.Last.Next = null);
@@ -61,21 +61,19 @@ package body Ada.Containers.Forward_Iterators is
       return Reference (Position) /= null;
    end Has_Element;
 
-   function To (Position : Cursor) return Input_Cursor_Ref is
+   function Constant_Reference (Position : Cursor)
+      return Constant_Reference_Type is
    begin
-      return (Element => Reference (Position).Original'Access);
-   end To;
+      return (Element => Reference (Position).Item.all'Access);
+   end Constant_Reference;
 
-   function Satisfy (
-      Iterator : aliased in out
-         Input_Iterator_Interfaces.Forward_Iterator'Class)
-      return Iterator_Interfaces.Forward_Iterator'Class is
+   function Iterate return Iterator_Interfaces.Forward_Iterator'Class is
    begin
       return Forward_Iterators.Iterator'(Finalization.Limited_Controlled with
-         Input_Iterator => Iterator'Unchecked_Access,
+         Last_Input_Cursor => <>,
          Last => null,
          State => First);
-   end Satisfy;
+   end Iterate;
 
    package body Cursors is
 
@@ -116,14 +114,14 @@ package body Ada.Containers.Forward_Iterators is
          raise Status_Error;
       end if;
       return Result : Cursor do
+         Mutable_Object.Last_Input_Cursor :=
+            Input_Iterator_Interfaces.First (Input_Iterator);
          if Mutable_Object.Last /= null then
             Assign (Result, Mutable_Object.Last);
          else
             Append (
                Mutable_Object,
-               Result,
-               Input_Iterator_Interfaces.First (
-                  Mutable_Object.Input_Iterator.all));
+               Result);
          end if;
       end return;
    end First;
@@ -137,12 +135,13 @@ package body Ada.Containers.Forward_Iterators is
          if Reference (Position).Next /= null then
             Assign (Result, Reference (Position).Next);
          elsif Mutable_Object.State /= No_Element then
+            Mutable_Object.Last_Input_Cursor :=
+               Input_Iterator_Interfaces.Next (
+                  Input_Iterator,
+                  Mutable_Object.Last_Input_Cursor);
             Append (
                Mutable_Object,
-               Result,
-               Input_Iterator_Interfaces.Next (
-                  Mutable_Object.Input_Iterator.all,
-                  Reference (Position).Original));
+               Result);
             if Reference (Result) /= null then
                Mutable_Object.State := Next;
             end if;

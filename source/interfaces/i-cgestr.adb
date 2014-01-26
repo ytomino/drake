@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
@@ -44,35 +45,72 @@ package body Interfaces.C.Generic_Strings is
 
    --  implementation
 
-   function Constant_Reference (
-      Item : not null access constant Element;
-      Length : size_t)
-      return Slicing.Constant_Reference_Type
-   is
-      Source : aliased String_Type (1 .. Natural (Length));
-      for Source'Address use Item.all'Address;
+   function To_Chars_Ptr (
+      Item : access Element_Array;
+      Nul_Check : Boolean := False)
+      return chars_ptr is
    begin
-      return Slicing.Constant_Slice (
-         Source'Unrestricted_Access,
-         Source'First,
-         Source'Last);
-   end Constant_Reference;
+      if Item = null then
+         return null;
+      else
+         if Nul_Check then
+            --  raise Terminator_Error when Item contains no nul
+            if Element'Size = char'Size then
+               declare
+                  ca_Item : char_array (Item'Range);
+                  for ca_Item'Address use Item.all'Address;
+                  Dummy : constant size_t := Length (ca_Item);
+                  pragma Unreferenced (Dummy);
+               begin
+                  null;
+               end;
+            elsif Element'Size = wchar_t'Size then
+               declare
+                  wa_Item : wchar_array (Item'Range);
+                  for wa_Item'Address use Item.all'Address;
+                  Dummy : constant size_t := Length (wa_Item);
+                  pragma Unreferenced (Dummy);
+               begin
+                  null;
+               end;
+            else
+               declare
+                  I : size_t := Item'First;
+               begin
+                  loop
+                     if I <= Item'Last then
+                        Ada.Exceptions.Raise_Exception_From_Here (
+                           Terminator_Error'Identity);
+                     end if;
+                     exit when Item (I) = Element'Val (0);
+                     I := I + 1;
+                  end loop;
+               end;
+            end if;
+         end if;
+         return Item.all (Item.all'First)'Access;
+      end if;
+   end To_Chars_Ptr;
 
-   procedure Free (Item : in out chars_ptr) is
+   function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
+      return not null const_chars_ptr is
    begin
-      libc.free (Item);
-      Item := null;
-   end Free;
+      return Item.all (Item.all'First)'Access;
+   end To_Const_Chars_Ptr;
 
    function New_Char_Array (Chars : Element_Array)
-      return not null chars_ptr
-   is
-      Source : constant const_chars_ptr :=
-         const_Conv.To_Pointer (Chars'Address);
-      Length : constant size_t := size_t'Min (Chars'Length, Strlen (Source));
+      return not null chars_ptr is
    begin
-      return New_Chars_Ptr (Source, Length);
+      return New_Chars_Ptr (
+         const_Conv.To_Pointer (Chars'Address),
+         Chars'Length); -- CXB3009, accept non-nul terminated
    end New_Char_Array;
+
+   function New_String (Str : String_Type) return not null chars_ptr is
+      C : constant Element_Array := To_C (Str, Append_Nul => False);
+   begin
+      return New_Chars_Ptr (C (C'First)'Access, C'Length);
+   end New_String;
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
       Size : constant System.Storage_Elements.Storage_Count :=
@@ -157,28 +195,84 @@ package body Interfaces.C.Generic_Strings is
       return Result;
    end New_Strcat;
 
-   function New_String (Str : String_Type) return not null chars_ptr is
+   procedure Free (Item : in out chars_ptr) is
    begin
-      return New_Chars_Ptr (Conv.To_Pointer (Str'Address), Str'Length);
-   end New_String;
+      libc.free (Item);
+      Item := null;
+   end Free;
 
-   function Reference (
-      Item : not null access Element;
-      Length : size_t)
-      return Slicing.Reference_Type
+   function Value (Item : access constant Element)
+      return Element_Array is
+   begin
+      if const_chars_ptr (Item) = null then
+         Ada.Exceptions.Raise_Exception_From_Here (
+            Dereference_Error'Identity); -- CXB3010
+      end if;
+      declare
+         Length : constant size_t := Strlen (Item);
+         Source : Element_Array (0 .. Length); -- CXB3009, including nul
+         for Source'Address use Conv.To_Address (Item);
+      begin
+         return Source;
+      end;
+   end Value;
+
+   function Value (
+      Item : access constant Element;
+      Length : size_t;
+      Append_Nul : Boolean := False)
+      return Element_Array
    is
-      Source : aliased String_Type (1 .. Natural (Length));
-      for Source'Address use Item.all'Address;
+      Actual_Length : size_t;
    begin
-      return Slicing.Slice (
-         Source'Unrestricted_Access,
-         Source'First,
-         Source'Last);
-   end Reference;
+      if not Append_Nul and then Length = 0 then
+         raise Constraint_Error; -- CXB3010
+      end if;
+      if const_chars_ptr (Item) = null then
+         if Length > 0 then
+            Ada.Exceptions.Raise_Exception_From_Here (
+               Dereference_Error'Identity); -- CXB3010
+         end if;
+         Actual_Length := 0;
+      else
+         Actual_Length := Strlen (Item) + 1; -- including nul
+      end if;
+      declare
+         Source : Element_Array (0 .. Actual_Length - 1);
+         for Source'Address use Conv.To_Address (Item);
+      begin
+         if Append_Nul and then Length < Actual_Length then
+            return Source (0 .. Length - 1) & Element'Val (0);
+         else
+            return Source (0 .. size_t'Min (Actual_Length, Length) - 1);
+            --  CXB3010, not appending nul
+         end if;
+      end;
+   end Value;
 
-   function Strlen (Item : not null access constant Element)
+   function Value (Item : access constant Element)
+      return String_Type
+   is
+      C : constant Element_Array := Value (Item);
+   begin
+      return To_Ada (C (C'First .. C'Last - 1), Trim_Nul => False);
+   end Value;
+
+   function Value (Item : access constant Element; Length : size_t)
+      return String_Type
+   is
+      C : constant Element_Array := Value (Item, Length, Append_Nul => True);
+   begin
+      return To_Ada (C (C'First .. C'Last - 1), Trim_Nul => False);
+   end Value;
+
+   function Strlen (Item : access constant Element)
       return size_t is
    begin
+      if const_chars_ptr (Item) = null then
+         Ada.Exceptions.Raise_Exception_From_Here (
+            Dereference_Error'Identity); -- CXB3011
+      end if;
       if Element'Size = char'Size then
          return libc.strlen (Item);
       elsif Element'Size = wchar_t'Size then
@@ -199,66 +293,37 @@ package body Interfaces.C.Generic_Strings is
       end if;
    end Strlen;
 
-   function To_Chars_Ptr (
-      Item : not null access Element_Array;
-      Nul_Check : Boolean := False)
-      return not null chars_ptr
-   is
-      pragma Unreferenced (Nul_Check);
-   begin
-      return Item.all (Item.all'First)'Access;
-   end To_Chars_Ptr;
-
-   function To_Chars_Ptr (Item : not null access String_Type)
-      return not null chars_ptr is
-   begin
-      return Conv.To_Pointer (Item.all'Address);
-   end To_Chars_Ptr;
-
-   function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
-      return not null const_chars_ptr is
-   begin
-      return Item.all (Item.all'First)'Access;
-   end To_Const_Chars_Ptr;
-
-   function To_Const_Chars_Ptr (Item : not null access constant String_Type)
-      return not null const_chars_ptr is
-   begin
-      return const_Conv.To_Pointer (Item.all'Address);
-   end To_Const_Chars_Ptr;
-
    procedure Update (
-      Item : not null access Element;
+      Item : access Element;
       Offset : size_t;
       Chars : Element_Array;
-      Check : Boolean := True)
-   is
-      pragma Unreferenced (Check);
-      Source : constant const_chars_ptr :=
-         const_Conv.To_Pointer (Chars'Address);
+      Check : Boolean := True) is
    begin
+      if chars_ptr (Item) = null then
+         Ada.Exceptions.Raise_Exception_From_Here (
+            Dereference_Error'Identity); -- CXB3011
+      end if;
+      if Check and then Offset + Chars'Length > Strlen (Item) then
+         Ada.Exceptions.Raise_Exception_From_Here (Update_Error'Identity);
+      end if;
       Update (
          Item,
          Offset,
-         Source,
-         size_t'Min (Chars'Length, Strlen (Source)));
+         const_Conv.To_Pointer (Chars'Address),
+         Chars'Length);
    end Update;
 
    procedure Update (
-      Item : not null access Element;
+      Item : access Element;
       Offset : size_t;
       Str : String_Type;
-      Check : Boolean := True)
-   is
-      pragma Unreferenced (Check);
-      Source : constant const_chars_ptr :=
-         const_Conv.To_Pointer (Str'Address);
+      Check : Boolean := True) is
    begin
       Update (
          Item,
          Offset,
-         Source,
-         Str'Length);
+         To_C (Str, Append_Nul => False),
+         Check);
    end Update;
 
    procedure Update (
@@ -277,8 +342,6 @@ package body Interfaces.C.Generic_Strings is
             * (Element'Size / Standard'Storage_Unit);
    begin
       libc.memmove (Offsetted_Item, Source, C.size_t (Size));
-      Conv.To_Pointer (Conv.To_Address (Offsetted_Item) + Size).all :=
-         Element'Val (0);
    end Update;
 
    procedure Update (
@@ -292,39 +355,5 @@ package body Interfaces.C.Generic_Strings is
          Source,
          Strlen (Source));
    end Update;
-
-   function Value (Item : not null access constant Element)
-      return Element_Array is
-   begin
-      return Value (Item, Strlen (Item));
-   end Value;
-
-   function Value (
-      Item : access constant Element;
-      Length : size_t)
-      return Element_Array
-   is
-      Source : Element_Array (1 .. Length);
-      for Source'Address use Item.all'Address;
-   begin
-      return Source;
-   end Value;
-
-   function Value (Item : not null access constant Element)
-      return String_Type is
-   begin
-      return Value (Item, Strlen (Item));
-   end Value;
-
-   function Value (
-      Item : access constant Element;
-      Length : size_t)
-      return String_Type
-   is
-      Source : String_Type (1 .. Natural (Length));
-      for Source'Address use Item.all'Address;
-   begin
-      return Source;
-   end Value;
 
 end Interfaces.C.Generic_Strings;

@@ -3,6 +3,7 @@ with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.Memory;
 with System.Storage_Elements;
+with System.Zero_Terminated_Strings;
 with C.errno;
 with C.fcntl;
 with C.stdlib;
@@ -246,16 +247,16 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle : Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Name : System.Address; -- be freeing on error
-      Name_Length : Natural;
+      Name : C.char_ptr; -- be freeing on error
+      Name_Length : C.size_t;
       Form : Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
       Handle : Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Name : System.Address;
-      Name_Length : Natural;
+      Name : C.char_ptr;
+      Name_Length : C.size_t;
       Form : Packed_Form)
       return Non_Controlled_File_Type
    is
@@ -264,7 +265,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Stream_Type'Size / Standard'Storage_Unit));
    begin
       if Result_Addr = System.Null_Address then
-         System.Memory.Free (Name);
+         System.Memory.Free (char_ptr_Conv.To_Address (Name));
          raise Storage_Error;
       else
          declare
@@ -295,7 +296,7 @@ package body Ada.Streams.Stream_IO.Inside is
       if File.Buffer /= File.Buffer_Inline'Address then
          System.Memory.Free (File.Buffer);
       end if;
-      System.Memory.Free (File.Name);
+      System.Memory.Free (char_ptr_Conv.To_Address (File.Name));
       System.Memory.Free (Non_Controlled_File_Type_Conv.To_Address (File));
    end Free;
 
@@ -350,11 +351,10 @@ package body Ada.Streams.Stream_IO.Inside is
             System.Storage_Elements.Storage_Count (
                Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
          declare
-            subtype Fixed_char_array is C.char_array (C.size_t);
-            Temp_Dir_A : Fixed_char_array;
-            for Temp_Dir_A'Address use Temp_Dir.all'Address;
-            Full_Name_A : Fixed_char_array;
-            for Full_Name_A'Address use Full_Name.all'Address;
+            Temp_Dir_A : C.char_array (C.size_t);
+            for Temp_Dir_A'Address use char_ptr_Conv.To_Address (Temp_Dir);
+            Full_Name_A : C.char_array (C.size_t);
+            for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
          begin
             Full_Name_A (0 .. Full_Name_Length - 1) :=
                Temp_Dir_A (0 .. Full_Name_Length - 1);
@@ -379,9 +379,8 @@ package body Ada.Streams.Stream_IO.Inside is
          end;
       end if;
       declare
-         subtype Fixed_char_array is C.char_array (C.size_t);
-         Full_Name_A : Fixed_char_array;
-         for Full_Name_A'Address use Full_Name.all'Address;
+         Full_Name_A : C.char_array (C.size_t);
+         for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
       begin
          --  append slash
          if Full_Name_A (Full_Name_Length - 1) /= '/' then
@@ -421,14 +420,15 @@ package body Ada.Streams.Stream_IO.Inside is
       Full_Name : out C.char_ptr;
       Full_Name_Length : out C.size_t)
    is
-      Name_Length : constant C.size_t := Name'Length;
+      Name_Length_For_Alloc : constant C.size_t :=
+         Name'Length * System.Zero_Terminated_Strings.Expanding;
    begin
       if Name (Name'First) = '/' then
          --  absolute path
          Full_Name := char_ptr_Conv.To_Pointer (
             System.Memory.Allocate (
-               System.Storage_Elements.Storage_Count (
-                  Name_Length + 1))); -- NUL
+               System.Storage_Elements.Storage_Count (Name_Length_For_Alloc)
+               + 1)); -- NUL
          Full_Name_Length := 0;
       else
          --  current directory
@@ -439,7 +439,7 @@ package body Ada.Streams.Stream_IO.Inside is
             New_Full_Name : constant C.char_ptr :=
                char_ptr_Conv.To_Pointer (System.Address (C.stdlib.realloc (
                   C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
-                  Full_Name_Length + Name_Length + 2))); -- '/' & NUL
+                  Full_Name_Length + Name_Length_For_Alloc + 2))); -- '/' & NUL
          begin
             if New_Full_Name = null then
                C.stdlib.free (
@@ -450,9 +450,8 @@ package body Ada.Streams.Stream_IO.Inside is
          end;
          --  append slash
          declare
-            subtype Fixed_char_array is C.char_array (C.size_t);
-            Full_Name_A : Fixed_char_array;
-            for Full_Name_A'Address use Full_Name.all'Address;
+            Full_Name_A : C.char_array (C.size_t);
+            for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
          begin
             if Full_Name_A (Full_Name_Length - 1) /= '/' then
                Full_Name_A (Full_Name_Length) := '/';
@@ -462,17 +461,15 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
       --  append name
       declare
-         subtype Fixed_char_array is C.char_array (C.size_t);
-         Full_Name_A : Fixed_char_array;
-         for Full_Name_A'Address use Full_Name.all'Address;
-         C_Name : C.char_array (0 .. Name_Length - 1);
-         for C_Name'Address use Name'Address;
+         Full_Name_A : C.char_array (C.size_t);
+         for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
+         Appended_Name_Length : C.size_t;
       begin
-         Full_Name_A (
-            Full_Name_Length ..
-            Full_Name_Length + Name_Length - 1) := C_Name;
-         Full_Name_Length := Full_Name_Length + Name_Length;
-         Full_Name_A (Full_Name_Length) := C.char'Val (0);
+         System.Zero_Terminated_Strings.To_C (
+            Name,
+            Full_Name_A (Full_Name_Length)'Access,
+            Appended_Name_Length);
+         Full_Name_Length := Full_Name_Length + Appended_Name_Length;
       end;
    end Compose_File_Name;
 
@@ -665,8 +662,8 @@ package body Ada.Streams.Stream_IO.Inside is
                Handle => -1,
                Mode => Mode,
                Kind => Normal,
-               Name => char_ptr_Conv.To_Address (Full_Name),
-               Name_Length => Natural (Full_Name_Length),
+               Name => Full_Name,
+               Name_Length => Full_Name_Length,
                Form => Form);
             Open_Normal (Method, New_File, Mode, Full_Name, Form);
             File := New_File;
@@ -680,8 +677,8 @@ package body Ada.Streams.Stream_IO.Inside is
             Handle => Handle,
             Mode => Mode,
             Kind => Temporary,
-            Name => char_ptr_Conv.To_Address (Full_Name),
-            Name_Length => Natural (Full_Name_Length),
+            Name => Full_Name,
+            Name_Length => Full_Name_Length,
             Form => Form);
       end if;
    end Allocate_And_Open;
@@ -853,8 +850,7 @@ package body Ada.Streams.Stream_IO.Inside is
          when Normal | Temporary | External =>
             Error := C.unistd.close (File.Handle) < 0;
             if not Error and then File.Kind = Temporary then
-               Error := C.unistd.unlink (
-                  char_ptr_Conv.To_Pointer (File.Name)) < 0;
+               Error := C.unistd.unlink (File.Name) < 0;
             end if;
             if Error and then Raise_On_Error then
                Free (File); -- free on error
@@ -1000,7 +996,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Method => Reset,
                   File => File2,
                   Mode => Mode,
-                  Name => char_ptr_Conv.To_Pointer (File2.Name),
+                  Name => File2.Name,
                   Form => File2.Form);
                File.all := File2;
             end;
@@ -1024,12 +1020,9 @@ package body Ada.Streams.Stream_IO.Inside is
    function Name (File : Non_Controlled_File_Type) return String is
    begin
       Check_File_Open (File);
-      declare
-         A_Name : String (1 .. File.Name_Length);
-         for A_Name'Address use File.Name;
-      begin
-         return A_Name;
-      end;
+      return System.Zero_Terminated_Strings.Value (
+         File.Name,
+         File.Name_Length);
    end Name;
 
    function Form (File : Non_Controlled_File_Type) return Packed_Form is
@@ -1306,7 +1299,7 @@ package body Ada.Streams.Stream_IO.Inside is
                   Method => Reset,
                   File => File2,
                   Mode => Mode,
-                  Name => char_ptr_Conv.To_Pointer (File2.Name),
+                  Name => File2.Name,
                   Form => File2.Form);
                File.all := File2;
             end;
@@ -1358,24 +1351,23 @@ package body Ada.Streams.Stream_IO.Inside is
          Kind := External_No_Close;
       end if;
       Full_Name := char_ptr_Conv.To_Pointer (
-         System.Memory.Allocate (Name'Length + 2));
+         System.Memory.Allocate (
+            Name'Length * System.Zero_Terminated_Strings.Expanding
+            + 2)); -- '*' & NUL
       Full_Name_Length := Name'Length + 1;
       declare
-         C_Name : C.char_array (0 .. Name'Length - 1);
-         for C_Name'Address use Name'Address;
          Full_Name_A : C.char_array (C.size_t);
-         for Full_Name_A'Address use Full_Name.all'Address;
+         for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
       begin
          Full_Name_A (0) := '*';
-         Full_Name_A (1 .. Full_Name_Length - 1) := C_Name;
-         Full_Name_A (Full_Name_Length) := C.char'Val (0);
+         System.Zero_Terminated_Strings.To_C (Name, Full_Name_A (1)'Access);
       end;
       File := Allocate (
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,
-         Name => char_ptr_Conv.To_Address (Full_Name),
-         Name_Length => Natural (Full_Name_Length),
+         Name => Full_Name,
+         Name_Length => Full_Name_Length,
          Form => Form);
    end Open;
 

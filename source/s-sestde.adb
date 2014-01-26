@@ -19,9 +19,9 @@ package body System.Secondary_Stack.Debug is
    begin
       Termination.Error_Put ("0x");
       Formatting.Address_Image (
+         Item,
          S,
          Last,
-         Item,
          Set => Formatting.Lower_Case);
       Termination.Error_Put (S);
    end Error_Put;
