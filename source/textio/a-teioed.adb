@@ -59,9 +59,9 @@ package body Ada.Text_IO.Editing is
                   Radix_Position := Radix_Position + Currency'Length - 1;
                end if;
                System.Formatting.Decimal_Image (
+                  Item,
                   Item_Image,
                   Item_Last,
-                  Item,
                   Scale,
                   Fore_Width => Fore,
                   Fore_Padding => ' ',

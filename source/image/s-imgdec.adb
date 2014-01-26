@@ -9,9 +9,9 @@ package body System.Img_Dec is
       Scale : Integer) is
    begin
       Formatting.Decimal_Image (
+         Long_Long_Integer (V),
          S,
          P,
-         Long_Long_Integer (V),
          Scale,
          Aft_Width => Integer'Max (1, Scale));
    end Image_Decimal;

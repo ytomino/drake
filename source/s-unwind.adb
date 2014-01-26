@@ -29,9 +29,9 @@ package body System.Unwind is
                Last : Natural;
             begin
                Formatting.Address_Image (
+                  Item,
                   S,
                   Last,
-                  Item,
                   Set => Formatting.Lower_Case);
                Put (S);
             end;

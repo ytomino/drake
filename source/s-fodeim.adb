@@ -1,8 +1,8 @@
 with System.Long_Long_Integer_Divide;
 procedure System.Formatting.Decimal_Image (
-   To : out String;
+   Value : Long_Long_Integer;
+   Item : out String;
    Last : out Natural;
-   Item : Long_Long_Integer;
    Scale : Integer;
    Minus_Sign : Character := '-';
    Zero_Sign : Character := ' ';
@@ -15,29 +15,29 @@ is
    use type Unsigned_Types.Long_Long_Unsigned;
    Error : Boolean;
 begin
-   Last := To'First - 1;
-   if Item < 0 then
+   Last := Item'First - 1;
+   if Value < 0 then
       if Minus_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Minus_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Minus_Sign;
       end if;
-   elsif Item > 0 then
+   elsif Value > 0 then
       if Plus_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Plus_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Plus_Sign;
       end if;
    else
       if Zero_Sign /= No_Sign then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := Zero_Sign;
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := Zero_Sign;
       end if;
    end if;
    if Scale > 0 then
       declare
-         Rounded_Item : Long_Long_Integer := abs Item;
+         Rounded_Item : Long_Long_Integer := abs Value;
          Sp : constant Long_Long_Integer := 10 ** Scale;
          Q : Long_Long_Integer;
          R : Long_Long_Integer;
@@ -51,7 +51,7 @@ begin
          Aft := Formatting.Longest_Unsigned (R);
          Formatting.Image (
             Formatting.Longest_Unsigned (Q),
-            To (Last + 1 .. To'Last),
+            Item (Last + 1 .. Item'Last),
             Last,
             Width => Fore_Width,
             Padding => Fore_Padding,
@@ -59,8 +59,8 @@ begin
          pragma Assert (not Error);
          if Aft_Width > 0 then
             Last := Last + 1;
-            pragma Assert (Last <= To'Last);
-            To (Last) := '.';
+            pragma Assert (Last <= Item'Last);
+            Item (Last) := '.';
             if Aft_Width > Scale then
                Aft := Aft * 10 ** (Aft_Width - Scale);
             elsif Aft_Width < Scale then
@@ -68,7 +68,7 @@ begin
             end if;
             Formatting.Image (
                Aft,
-               To (Last + 1 .. To'Last),
+               Item (Last + 1 .. Item'Last),
                Last,
                Width => Aft_Width,
                Error => Error);
@@ -76,38 +76,38 @@ begin
          end if;
       end;
    else
-      if Item /= 0 then
+      if Value /= 0 then
          Formatting.Image (
-            Formatting.Longest_Unsigned (abs Item),
-            To (Last + 1 .. To'Last),
+            Formatting.Longest_Unsigned (abs Value),
+            Item (Last + 1 .. Item'Last),
             Last,
             Width => Fore_Width,
             Padding => Fore_Padding,
             Error => Error);
          pragma Assert (not Error);
          for I in Scale .. -1 loop
-            pragma Assert (Last + 1 <= To'Last);
+            pragma Assert (Last + 1 <= Item'Last);
             Last := Last + 1;
-            To (Last) := '0';
+            Item (Last) := '0';
          end loop;
       else
          for I in 2 .. Fore_Width loop
             Last := Last + 1;
-            pragma Assert (Last <= To'Last);
-            To (Last) := Fore_Padding;
+            pragma Assert (Last <= Item'Last);
+            Item (Last) := Fore_Padding;
          end loop;
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := '0';
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := '0';
       end if;
       if Aft_Width > 0 then
          Last := Last + 1;
-         pragma Assert (Last <= To'Last);
-         To (Last) := '.';
+         pragma Assert (Last <= Item'Last);
+         Item (Last) := '.';
          for I in Last + 1 .. Last + Aft_Width loop
             Last := Last + 1;
-            pragma Assert (Last <= To'Last);
-            To (Last) := '0';
+            pragma Assert (Last <= Item'Last);
+            Item (Last) := '0';
          end loop;
       end if;
    end if;
