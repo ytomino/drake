@@ -291,6 +291,11 @@ package body System.Tasking.Tasks is
       return Cast (Get_SS.Current_Exception'Access);
    end Get_CE;
 
+   --  name
+
+   Main_Name : aliased constant String := "*main";
+   Null_Name : aliased constant String := "";
+
    --  signal handler
 
    procedure Abort_Signal_Handler;
@@ -298,7 +303,7 @@ package body System.Tasking.Tasks is
       T : constant Task_Id := TLS_Current_Task_Id;
       Error : Boolean;
    begin
-      pragma Check (Trace, Ada.Debug.Put (Name (T)));
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all));
       T.Aborted := True;
       if T.Abort_Handler /= null then
          T.Abort_Handler (T);
@@ -687,7 +692,8 @@ package body System.Tasking.Tasks is
    procedure Set_Active (T : not null Task_Id; State : Activation_State) is
    begin
       if not Elaborated (T) then
-         pragma Check (Trance, Ada.Debug.Put ("elab error in " & Name (T)));
+         pragma Check (Trance, Ada.Debug.Put (
+            "elab error in " & Name (T).all));
          T.Activation_Chain.Error := Elaboration_Error;
       end if;
       T.Activation_State := State;
@@ -1056,14 +1062,15 @@ package body System.Tasking.Tasks is
       Size := Bottom - Top;
    end Get_Stack;
 
-   function Name (T : not null Task_Id) return String is
+   function Name (T : not null Task_Id)
+      return not null access constant String is
    begin
       if T.Kind = Main then
-         return "*main";
+         return Main_Name'Access;
       elsif T.Name = null then
-         return "";
+         return Null_Name'Access;
       else
-         return T.Name.all;
+         return T.Name;
       end if;
    end Name;
 
@@ -1102,7 +1109,7 @@ package body System.Tasking.Tasks is
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
       if T /= null then
-         pragma Check (Trace, Ada.Debug.Put (Name (T)
+         pragma Check (Trace, Ada.Debug.Put (Name (T).all
             & Natural'Image (T.Abort_Locking) & " =>"
             & Natural'Image (T.Abort_Locking - 1)));
          pragma Assert (T.Abort_Locking > 0);
@@ -1119,7 +1126,7 @@ package body System.Tasking.Tasks is
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
       if T /= null then
-         pragma Check (Trace, Ada.Debug.Put (Name (T)
+         pragma Check (Trace, Ada.Debug.Put (Name (T).all
             & Natural'Image (T.Abort_Locking) & " =>"
             & Natural'Image (T.Abort_Locking + 1)));
          if T.Kind = Sub then
@@ -1139,7 +1146,7 @@ package body System.Tasking.Tasks is
          declare
             T : constant Task_Id := Current_Task_Id;
          begin
-            pragma Check (Trace, Ada.Debug.Put (Name (T)
+            pragma Check (Trace, Ada.Debug.Put (Name (T).all
                & Natural'Image (T.Abort_Locking) & " =>"
                & Natural'Image (T.Abort_Locking + 1)));
             T.Abort_Locking := T.Abort_Locking + 1;
@@ -1153,7 +1160,7 @@ package body System.Tasking.Tasks is
          declare
             T : constant Task_Id := TLS_Current_Task_Id;
          begin
-            pragma Check (Trace, Ada.Debug.Put (Name (T)
+            pragma Check (Trace, Ada.Debug.Put (Name (T).all
                & Natural'Image (T.Abort_Locking) & " =>"
                & Natural'Image (T.Abort_Locking - 1)));
             T.Abort_Locking := T.Abort_Locking - 1;
@@ -1315,7 +1322,7 @@ package body System.Tasking.Tasks is
    procedure Enter_Master is
       T : constant Task_Id := Current_Task_Id; -- and register
    begin
-      pragma Check (Trace, Ada.Debug.Put ("enter in " & Name (T)));
+      pragma Check (Trace, Ada.Debug.Put ("enter in " & Name (T).all));
       declare
          New_Master : constant Master_Access := new Master_Record'(
             Previous => T.Master_Top,
@@ -1327,12 +1334,12 @@ package body System.Tasking.Tasks is
          Synchronous_Objects.Initialize (New_Master.Mutex);
          T.Master_Top := New_Master;
       end;
-      pragma Check (Trace, Ada.Debug.Put ("leave in " & Name (T)));
+      pragma Check (Trace, Ada.Debug.Put ("leave in " & Name (T).all));
    end Enter_Master;
 
    procedure Leave_Master is
       T : constant Task_Id := TLS_Current_Task_Id;
-      pragma Check (Trace, Ada.Debug.Put ("enter in " & Name (T)));
+      pragma Check (Trace, Ada.Debug.Put ("enter in " & Name (T).all));
       M : Master_Access := T.Master_Top;
       Free_List : Task_Id := null;
    begin
@@ -1397,7 +1404,7 @@ package body System.Tasking.Tasks is
          Free (M);
          T.Master_Top := Previous;
       end;
-      pragma Check (Trace, Ada.Debug.Put ("leave in " & Name (T)));
+      pragma Check (Trace, Ada.Debug.Put ("leave in " & Name (T).all));
    end Leave_Master;
 
    procedure Leave_All_Masters is
