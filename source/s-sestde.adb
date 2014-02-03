@@ -2,11 +2,10 @@ with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address_Image;
 with System.Soft_Links;
 with System.Termination;
-with System.Unsigned_Types;
 package body System.Secondary_Stack.Debug is
    pragma Suppress (All_Checks);
+   use type Formatting.Unsigned;
    use type Storage_Elements.Storage_Offset;
-   use type Unsigned_Types.Unsigned;
 
    package Conv is new Address_To_Named_Access_Conversions (
       Block,
@@ -41,7 +40,7 @@ package body System.Secondary_Stack.Debug is
          Error : Boolean;
          --  index
          I : Address := TLS.Secondary_Stack;
-         Block_Number : Unsigned_Types.Unsigned := 0;
+         Block_Number : Formatting.Unsigned := 0;
       begin
          while I /= Null_Address loop
             --  put block number
@@ -69,8 +68,8 @@ package body System.Secondary_Stack.Debug is
                   Conv.To_Pointer (I).Limit - (I + Header_Size);
                Used : constant Storage_Elements.Storage_Count :=
                   Conv.To_Pointer (I).Used - (I + Header_Size);
-               Percentage : constant Unsigned_Types.Unsigned :=
-                  Unsigned_Types.Unsigned ((Used * 100 + Space - 1) / Space);
+               Percentage : constant Formatting.Unsigned :=
+                  Formatting.Unsigned ((Used * 100 + Space - 1) / Space);
             begin
                Formatting.Image (
                   Percentage,

@@ -2,6 +2,7 @@ with System.Val_Uns;
 with System.Value_Error;
 package body System.Val_LLU is
    pragma Suppress (All_Checks);
+   use type Formatting.Longest_Unsigned;
    use type Unsigned_Types.Long_Long_Unsigned;
 
    function Value_Long_Long_Unsigned (Str : String)
@@ -11,7 +12,11 @@ package body System.Val_LLU is
       Result : Unsigned_Types.Long_Long_Unsigned;
       Error : Boolean;
    begin
-      Get_Longest_Unsigned_Literal (Str, Last, Result, Error);
+      Get_Longest_Unsigned_Literal (
+         Str,
+         Last,
+         Formatting.Longest_Unsigned (Result),
+         Error => Error);
       if not Error then
          Val_Uns.Check_Last (Str, Last, Error);
          if not Error then

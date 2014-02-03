@@ -12,7 +12,6 @@ procedure System.Formatting.Decimal_Image (
    Aft_Width : Natural)
 is
    pragma Suppress (All_Checks);
-   use type Unsigned_Types.Long_Long_Unsigned;
    Error : Boolean;
 begin
    Last := Item'First - 1;

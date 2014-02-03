@@ -12,7 +12,7 @@ package body System.Img_Uns is
       pragma Assert (S'Length >= 1);
       S (S'First) := ' ';
       Formatting.Image (
-         V,
+         Formatting.Unsigned (V),
          S (S'First + 1 .. S'Last),
          P,
          Error => Error);
