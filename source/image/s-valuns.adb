@@ -1,6 +1,7 @@
 with System.Value_Error;
 package body System.Val_Uns is
    pragma Suppress (All_Checks);
+   use type Formatting.Unsigned;
    use type Unsigned_Types.Unsigned;
 
    function Value_Unsigned (Str : String) return Unsigned_Types.Unsigned is
@@ -8,7 +9,8 @@ package body System.Val_Uns is
       Result : Unsigned_Types.Unsigned;
       Error : Boolean;
    begin
-      Get_Unsigned_Literal (Str, Last, Result, Error);
+      Get_Unsigned_Literal (Str, Last, Formatting.Unsigned (Result),
+         Error => Error);
       if not Error then
          Check_Last (Str, Last, Error);
          if not Error then

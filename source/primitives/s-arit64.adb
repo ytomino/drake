@@ -1,5 +1,4 @@
 with System.Long_Long_Integer_Divide;
-with System.Unsigned_Types;
 with System.Unwind.Raising;
 pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Arith_64 is
@@ -7,7 +6,6 @@ package body System.Arith_64 is
    use type Interfaces.Integer_64;
    use type Interfaces.Unsigned_32;
    use type Interfaces.Unsigned_64;
-   use type Unsigned_Types.Unsigned;
 
    pragma Compile_Time_Error (
       Long_Long_Integer'Size /= 64,
@@ -115,7 +113,9 @@ package body System.Arith_64 is
          Long_Long_Integer (R));
    end Div;
 
-   function clz (X : U64) return Unsigned_Types.Unsigned;
+   type Unsigned is mod 2 ** Integer'Size;
+
+   function clz (X : U64) return Unsigned;
    pragma Import (Intrinsic, clz, "__builtin_clzll");
 
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64);

@@ -11,7 +11,7 @@ package body System.Version_Control is
    begin
       return Result : Version_String do
          Formatting.Image (
-            V,
+            Formatting.Unsigned (V),
             Result,
             Last,
             Base => 16,
