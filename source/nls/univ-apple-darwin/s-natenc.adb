@@ -6,7 +6,7 @@ with System.Zero_Terminated_Strings;
 with C.stdint;
 package body System.Native_Encoding is
    use type Ada.Streams.Stream_Element_Offset;
-   use type System.Storage_Elements.Storage_Offset;
+   use type Storage_Elements.Storage_Offset;
    use type C.icucore.UChar_const_ptr;
    use type C.icucore.UConverter_ptr;
 
@@ -39,7 +39,7 @@ package body System.Native_Encoding is
    begin
       if UChar_const_ptr_Conv.To_Address (First) >=
          Buffer'Address
-         + System.Storage_Elements.Storage_Offset'(Half_Buffer_Length)
+         + Storage_Elements.Storage_Offset'(Half_Buffer_Length)
       then
          --  shift
          declare
@@ -195,19 +195,19 @@ package body System.Native_Encoding is
       Unused_Buffer_Limit : constant C.icucore.UChar_const_ptr :=
          UChar_const_ptr_Conv.To_Pointer (
             NC_Converter.Buffer'Address
-            + System.Storage_Elements.Storage_Offset'(Buffer_Type'Length));
+            + Storage_Elements.Storage_Offset'(Buffer_Type'Length));
       Pointer : aliased C.char_const_ptr :=
          char_const_ptr_Conv.To_Pointer (Item'Address);
       Limit : constant C.char_const_ptr :=
          char_const_ptr_Conv.To_Pointer (
             Item'Address
-            + System.Storage_Elements.Storage_Offset'(Item'Length));
+            + Storage_Elements.Storage_Offset'(Item'Length));
       Out_Pointer : aliased C.char_ptr :=
          char_ptr_Conv.To_Pointer (Out_Item'Address);
       Out_Limit : constant C.char_ptr :=
          char_ptr_Conv.To_Pointer (
             Out_Item'Address
-            + System.Storage_Elements.Storage_Offset'(Out_Item'Length));
+            + Storage_Elements.Storage_Offset'(Out_Item'Length));
       Finish_2nd : Boolean;
       Error : aliased C.icucore.UErrorCode;
    begin
@@ -315,7 +315,7 @@ package body System.Native_Encoding is
       Out_Limit : constant C.char_ptr :=
          char_ptr_Conv.To_Pointer (
             Out_Item'Address
-            + System.Storage_Elements.Storage_Offset'(Out_Item'Length));
+            + Storage_Elements.Storage_Offset'(Out_Item'Length));
       Error : aliased C.icucore.UErrorCode :=
          C.icucore.unicode.utypes.U_ZERO_ERROR;
    begin

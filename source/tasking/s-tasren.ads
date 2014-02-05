@@ -61,7 +61,7 @@ package System.Tasking.Rendezvous is
    procedure Timed_Task_Entry_Call (
       Acceptor : Task_Id;
       E : Task_Entry_Index;
-      Uninterpreted_Data : System.Address;
+      Uninterpreted_Data : Address;
       Timeout : Duration;
       Mode : Integer; -- Tasking.Delay_Modes;
       Rendezvous_Successful : out Boolean);

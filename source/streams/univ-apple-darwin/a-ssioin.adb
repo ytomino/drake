@@ -283,7 +283,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Result.Buffer_Index := 0;
             Result.Reading_Index := 0;
             Result.Writing_Index := 0;
-            Result.Dispatcher.Tag := Ada.Tags.No_Tag;
+            Result.Dispatcher.Tag := Tags.No_Tag;
             Result.Dispatcher.File := null;
             return Result;
          end;

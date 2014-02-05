@@ -5,7 +5,7 @@ with C.string;
 with C.winnls;
 package body System.Zero_Terminated_WStrings is
    pragma Suppress (All_Checks);
-   use type System.Storage_Elements.Storage_Offset;
+   use type Storage_Elements.Storage_Offset;
 
    package LPSTR_Conv is
       new Address_To_Named_Access_Conversions (C.winnt.C_CHAR, C.winnt.LPSTR);
@@ -68,7 +68,7 @@ package body System.Zero_Terminated_WStrings is
          C.signed_int (Source_Length))); -- assuming Result has enough size
       Result_End := LPWSTR_Conv.To_Pointer (
          LPWSTR_Conv.To_Address (C.winnt.LPWSTR (Result))
-         + System.Storage_Elements.Storage_Offset (Result_Length)
+         + Storage_Elements.Storage_Offset (Result_Length)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
       Result_End.all := C.winnt.WCHAR'Val (0);
    end To_C;

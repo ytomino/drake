@@ -731,9 +731,9 @@ package body Ada.Text_IO.Inside is
             Last := Last + 1;
             Seq (Last) := 't';
             declare
-               Item : Ada.Streams.Stream_Element_Array (
+               Item : Streams.Stream_Element_Array (
                   1 ..
-                  Ada.Streams.Stream_Element_Offset (Last));
+                  Streams.Stream_Element_Offset (Last));
                for Item'Address use Seq'Address;
             begin
                Streams.Write (File.Stream.all, Item);
@@ -979,9 +979,9 @@ package body Ada.Text_IO.Inside is
             Last := Last + 1;
             Seq (Last) := 'H';
             declare
-               Item : Ada.Streams.Stream_Element_Array (
+               Item : Streams.Stream_Element_Array (
                   1 ..
-                  Ada.Streams.Stream_Element_Offset (Last));
+                  Streams.Stream_Element_Offset (Last));
                for Item'Address use Seq'Address;
             begin
                Streams.Write (File.Stream.all, Item);
@@ -1014,9 +1014,9 @@ package body Ada.Text_IO.Inside is
             Last := Last + 1;
             Seq (Last) := 'G';
             declare
-               Item : Ada.Streams.Stream_Element_Array (
+               Item : Streams.Stream_Element_Array (
                   1 ..
-                  Ada.Streams.Stream_Element_Offset (Last));
+                  Streams.Stream_Element_Offset (Last));
                for Item'Address use Seq'Address;
             begin
                Streams.Write (File.Stream.all, Item);
