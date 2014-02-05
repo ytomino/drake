@@ -6,8 +6,10 @@ package System.UTF_Conversions is
    --  UCS-4 defined 31 bit.
    type UCS_4 is mod 16#80000000#;
 
-   function Shift_Left (Left : UCS_4; Right : Natural) return UCS_4;
+   function Shift_Left (Value : UCS_4; Amount : Natural) return UCS_4;
    pragma Import (Intrinsic, Shift_Left);
+   function Shift_Right (Value : UCS_4; Amount : Natural) return UCS_4;
+   pragma Import (Intrinsic, Shift_Right);
 
    UTF_8_Max_Length : constant := 6;
 
