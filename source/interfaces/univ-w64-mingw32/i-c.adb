@@ -257,34 +257,46 @@ package body Interfaces.C is
       Item : String;
       Target : out char_array;
       Count : out size_t;
-      Substitute : char)
-   is
-      function To_LPSTR is
-         new Ada.Unchecked_Conversion (
-            System.Address,
-            Standard.C.winnt.LPSTR);
-      W_Item : Standard.C.winnt.WCHAR_array (0 .. Item'Length - 1);
-      W_Length : size_t;
-      Sub : aliased constant Standard.C.char_array (0 .. 1) := (
-         Standard.C.char'Val (char'Pos (Substitute)),
-         Standard.C.char'Val (0));
+      Substitute : char) is
    begin
-      W_Length := size_t (Standard.C.winnls.MultiByteToWideChar (
-         Standard.C.winnls.CP_UTF8,
-         0,
-         To_LPSTR (Item'Address),
-         Item'Length,
-         W_Item (0)'Access,
-         W_Item'Length));
-      Count := size_t (Standard.C.winnls.WideCharToMultiByte (
-         Standard.C.winnls.CP_ACP,
-         0,
-         W_Item (0)'Access,
-         Standard.C.signed_int (W_Length),
-         To_LPSTR (Target'Address),
-         Target'Length,
-         Sub (0)'Access,
-         null));
+      if Item'Length = 0 then
+         Count := 0;
+      else
+         declare
+            function To_LPSTR is
+               new Ada.Unchecked_Conversion (
+                  System.Address,
+                  Standard.C.winnt.LPSTR);
+            W_Item : Standard.C.winnt.WCHAR_array (0 .. Item'Length - 1);
+            W_Length : size_t;
+            Sub : aliased constant Standard.C.char_array (0 .. 1) := (
+               Standard.C.char'Val (char'Pos (Substitute)),
+               Standard.C.char'Val (0));
+         begin
+            W_Length := size_t (Standard.C.winnls.MultiByteToWideChar (
+               Standard.C.winnls.CP_UTF8,
+               0,
+               To_LPSTR (Item'Address),
+               Item'Length,
+               W_Item (0)'Access,
+               W_Item'Length));
+            if W_Length = 0 then
+               raise Constraint_Error;
+            end if;
+            Count := size_t (Standard.C.winnls.WideCharToMultiByte (
+               Standard.C.winnls.CP_ACP,
+               0,
+               W_Item (0)'Access,
+               Standard.C.signed_int (W_Length),
+               To_LPSTR (Target'Address),
+               Target'Length,
+               Sub (0)'Access,
+               null));
+            if Count = 0 then
+               raise Constraint_Error;
+            end if;
+         end;
+      end if;
    end To_Non_Nul_Terminated;
 
    procedure From_Non_Nul_Terminated (
@@ -294,31 +306,43 @@ package body Interfaces.C is
    procedure From_Non_Nul_Terminated (
       Item : char_array;
       Target : out String;
-      Count : out Natural)
-   is
-      function To_LPSTR is
-         new Ada.Unchecked_Conversion (
-            System.Address,
-            Standard.C.winnt.LPSTR);
-      W_Item : Standard.C.winnt.WCHAR_array (0 .. Item'Length - 1);
-      W_Length : size_t;
+      Count : out Natural) is
    begin
-      W_Length := size_t (Standard.C.winnls.MultiByteToWideChar (
-         Standard.C.winnls.CP_ACP,
-         0,
-         To_LPSTR (Item'Address),
-         Item'Length,
-         W_Item (0)'Access,
-         W_Item'Length));
-      Count := Natural (Standard.C.winnls.WideCharToMultiByte (
-         Standard.C.winnls.CP_UTF8,
-         0,
-         W_Item (0)'Access,
-         Standard.C.signed_int (W_Length),
-         To_LPSTR (Target'Address),
-         Target'Length,
-         null,
-         null));
+      if Item'Length = 0 then
+         Count := 0;
+      else
+         declare
+            function To_LPSTR is
+               new Ada.Unchecked_Conversion (
+                  System.Address,
+                  Standard.C.winnt.LPSTR);
+            W_Item : Standard.C.winnt.WCHAR_array (0 .. Item'Length - 1);
+            W_Length : size_t;
+         begin
+            W_Length := size_t (Standard.C.winnls.MultiByteToWideChar (
+               Standard.C.winnls.CP_ACP,
+               0,
+               To_LPSTR (Item'Address),
+               Item'Length,
+               W_Item (0)'Access,
+               W_Item'Length));
+            if W_Length = 0 then
+               raise Constraint_Error;
+            end if;
+            Count := Natural (Standard.C.winnls.WideCharToMultiByte (
+               Standard.C.winnls.CP_UTF8,
+               0,
+               W_Item (0)'Access,
+               Standard.C.signed_int (W_Length),
+               To_LPSTR (Target'Address),
+               Target'Length,
+               null,
+               null));
+            if Count = 0 then
+               raise Constraint_Error;
+            end if;
+         end;
+      end if;
    end From_Non_Nul_Terminated;
 
    --  wchar_t
