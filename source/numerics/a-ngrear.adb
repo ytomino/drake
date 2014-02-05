@@ -40,15 +40,15 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
    end Elementary_Functions;
 
-   function Minor is new Generic_Arrays.Minor (
-      Real'Base,
-      Real_Matrix);
+   function Minor is
+      new Generic_Arrays.Minor (Real'Base, Real_Matrix);
 
-   function Determinant_Body is new Generic_Arrays.Determinant (
-      Real'Base,
-      Real_Matrix,
-      Zero => 0.0,
-      One => 1.0);
+   function Determinant_Body is
+      new Generic_Arrays.Determinant (
+         Real'Base,
+         Real_Matrix,
+         Zero => 0.0,
+         One => 1.0);
 
    function Determinant (A : Real_Matrix) return Real'Base
       renames Determinant_Body;
@@ -67,18 +67,19 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
    --  implementation
 
-   procedure Eigensystem_Body is new Generic_Arrays.Eigensystem (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Matrix,
-      Zero => 0.0,
-      One => 1.0,
-      Two => 2.0,
-      Sqrt => Elementary_Functions.Sqrt,
-      Is_Minus => Is_Minus,
-      Is_Small => Is_Small,
-      To_Real => "+");
+   procedure Eigensystem_Body is
+      new Generic_Arrays.Eigensystem (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Matrix,
+         Zero => 0.0,
+         One => 1.0,
+         Two => 2.0,
+         Sqrt => Elementary_Functions.Sqrt,
+         Is_Minus => Is_Minus,
+         Is_Small => Is_Small,
+         To_Real => "+");
 
    procedure Eigensystem (
       A : Real_Matrix;
@@ -94,10 +95,11 @@ package body Ada.Numerics.Generic_Real_Arrays is
       end return;
    end Eigenvalues;
 
-   function Inverse_Body is new Generic_Arrays.Inverse (
-      Real'Base,
-      Real_Matrix,
-      One => 1.0);
+   function Inverse_Body is
+      new Generic_Arrays.Inverse (
+         Real'Base,
+         Real_Matrix,
+         One => 1.0);
 
    function Inverse (A : Real_Matrix) return Real_Matrix
       renames Inverse_Body;
@@ -112,18 +114,18 @@ package body Ada.Numerics.Generic_Real_Arrays is
       return Inverse (A) * X;
    end Solve;
 
-   function Transpose_Body is new Generic_Arrays.Transpose (
-      Real'Base,
-      Real_Matrix);
+   function Transpose_Body is
+      new Generic_Arrays.Transpose (Real'Base, Real_Matrix);
 
    function Transpose (X : Real_Matrix) return Real_Matrix
       renames Transpose_Body;
 
-   function Unit_Matrix_Body is new Generic_Arrays.Unit_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Zero => 0.0,
-      One => 1.0);
+   function Unit_Matrix_Body is
+      new Generic_Arrays.Unit_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Zero => 0.0,
+         One => 1.0);
 
    function Unit_Matrix (
       Order : Positive;
@@ -131,11 +133,12 @@ package body Ada.Numerics.Generic_Real_Arrays is
       return Real_Matrix
       renames Unit_Matrix_Body;
 
-   function Unit_Vector_Body is new Generic_Arrays.Unit_Vector (
-      Real'Base,
-      Real_Vector,
-      Zero => 0.0,
-      One => 1.0);
+   function Unit_Vector_Body is
+      new Generic_Arrays.Unit_Vector (
+         Real'Base,
+         Real_Vector,
+         Zero => 0.0,
+         One => 1.0);
 
    function Unit_Vector (
       Index : Integer;
@@ -143,32 +146,35 @@ package body Ada.Numerics.Generic_Real_Arrays is
       First : Integer := 1) return Real_Vector
       renames Unit_Vector_Body;
 
-   function abs_Body is new Generic_Arrays.Operator_Vector (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      "abs");
+   function abs_Body is
+      new Generic_Arrays.Operator_Vector (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         "abs");
 
    function "abs" (Right : Real_Vector) return Real_Vector
       renames abs_Body;
 
-   function abs_Body is new Generic_Arrays.Absolute (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Zero => 0.0,
-      Sqrt => Elementary_Functions.Sqrt);
+   function abs_Body is
+      new Generic_Arrays.Absolute (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Zero => 0.0,
+         Sqrt => Elementary_Functions.Sqrt);
 
    function "abs" (Right : Real_Vector) return Real'Base
       renames abs_Body;
 
-   function abs_Body is new Generic_Arrays.Operator_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Matrix,
-      "abs");
+   function abs_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Matrix,
+         "abs");
 
    function "abs" (Right : Real_Matrix) return Real_Matrix
       renames abs_Body;
@@ -178,14 +184,15 @@ package body Ada.Numerics.Generic_Real_Arrays is
       return Right;
    end "+";
 
-   function add_Body is new Generic_Arrays.Operator_Vector_Vector (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      "+");
+   function add_Body is
+      new Generic_Arrays.Operator_Vector_Vector (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         "+");
 
    function "+" (Left, Right : Real_Vector) return Real_Vector
       renames add_Body;
@@ -195,69 +202,75 @@ package body Ada.Numerics.Generic_Real_Arrays is
       return Right;
    end "+";
 
-   function add_Body is new Generic_Arrays.Operator_Matrix_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Matrix,
-      "+");
+   function add_Body is
+      new Generic_Arrays.Operator_Matrix_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Matrix,
+         "+");
 
    function "+" (Left, Right : Real_Matrix) return Real_Matrix
       renames add_Body;
 
-   function neg_Body is new Generic_Arrays.Operator_Vector (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      "-");
+   function neg_Body is
+      new Generic_Arrays.Operator_Vector (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         "-");
 
    function "-" (Right : Real_Vector) return Real_Vector
       renames neg_Body;
 
-   function sub_Body is new Generic_Arrays.Operator_Vector_Vector (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      "-");
+   function sub_Body is
+      new Generic_Arrays.Operator_Vector_Vector (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         "-");
 
    function "-" (Left, Right : Real_Vector) return Real_Vector
       renames sub_Body;
 
-   function neg_Body is new Generic_Arrays.Operator_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Matrix,
-      "-");
+   function neg_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Matrix,
+         "-");
 
    function "-" (Right : Real_Matrix) return Real_Matrix
       renames neg_Body;
 
-   function sub_Body is new Generic_Arrays.Operator_Matrix_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Matrix,
-      "-");
+   function sub_Body is
+      new Generic_Arrays.Operator_Matrix_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Matrix,
+         "-");
 
    function "-" (Left, Right : Real_Matrix) return Real_Matrix
       renames sub_Body;
 
-   function mul_Body is new Generic_Arrays.Inner_Production (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Zero => 0.0);
+   function mul_Body is
+      new Generic_Arrays.Inner_Production (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Zero => 0.0);
 
    function "*" (Left, Right : Real_Vector) return Real'Base
       renames mul_Body;
@@ -267,60 +280,65 @@ package body Ada.Numerics.Generic_Real_Arrays is
       return Right * Left;
    end "*";
 
-   function mul_Body is new Generic_Arrays.Operator_Vector_Param (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real'Base,
-      Real_Vector,
-      "*");
+   function mul_Body is
+      new Generic_Arrays.Operator_Vector_Param (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real'Base,
+         Real_Vector,
+         "*");
 
    function "*" (Left : Real_Vector; Right : Real'Base) return Real_Vector
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Matrix_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Zero => 0.0);
+   function mul_Body is
+      new Generic_Arrays.Multiply_Matrix_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Zero => 0.0);
 
    function "*" (Left, Right : Real_Matrix) return Real_Matrix
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Vector_Vector (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Matrix);
+   function mul_Body is
+      new Generic_Arrays.Multiply_Vector_Vector (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Matrix);
 
    function "*" (Left, Right : Real_Vector) return Real_Matrix
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Vector_Matrix (
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Vector,
-      Zero => 0.0);
+   function mul_Body is
+      new Generic_Arrays.Multiply_Vector_Matrix (
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Vector,
+         Zero => 0.0);
 
    function "*" (Left : Real_Vector; Right : Real_Matrix) return Real_Vector
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Matrix_Vector (
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real_Vector,
-      Real'Base,
-      Real_Vector,
-      Zero => 0.0);
+   function mul_Body is
+      new Generic_Arrays.Multiply_Matrix_Vector (
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real_Vector,
+         Real'Base,
+         Real_Vector,
+         Zero => 0.0);
 
    function "*" (Left : Real_Matrix; Right : Real_Vector) return Real_Vector
       renames mul_Body;
@@ -330,13 +348,14 @@ package body Ada.Numerics.Generic_Real_Arrays is
       return Right * Left;
    end "*";
 
-   function mul_Body is new Generic_Arrays.Operator_Matrix_Param (
-      Real'Base,
-      Real_Matrix,
-      Real'Base,
-      Real'Base,
-      Real_Matrix,
-      "*");
+   function mul_Body is
+      new Generic_Arrays.Operator_Matrix_Param (
+         Real'Base,
+         Real_Matrix,
+         Real'Base,
+         Real'Base,
+         Real_Matrix,
+         "*");
 
    function "*" (Left : Real_Matrix; Right : Real'Base) return Real_Matrix
       renames mul_Body;

@@ -8,18 +8,15 @@ package body Ada.Containers.Access_Holders is
    subtype Not_Null_Data_Access is not null Data_Access;
    type Data_Access_Access is access all Not_Null_Data_Access;
    type System_Address_Access is access all System.Address;
-   function Upcast is new Unchecked_Conversion (
-      Data_Access_Access,
-      System_Address_Access);
+   function Upcast is
+      new Unchecked_Conversion (Data_Access_Access, System_Address_Access);
 
    procedure Free_Data (X : System.Address);
    procedure Free_Data (X : System.Address) is
-      package Data_Cast is new System.Address_To_Named_Access_Conversions (
-         Data,
-         Data_Access);
-      procedure Unchecked_Free is new Unchecked_Deallocation (
-         Data,
-         Data_Access);
+      package Data_Cast is
+         new System.Address_To_Named_Access_Conversions (Data, Data_Access);
+      procedure Unchecked_Free is
+         new Unchecked_Deallocation (Data, Data_Access);
       Y : Data_Access := Data_Cast.To_Pointer (X);
    begin
       Containers.Inside.Weak_Access_Holders.Clear_Weaks (
@@ -122,9 +119,10 @@ package body Ada.Containers.Access_Holders is
 
    package body Weak is
 
-      function Downcast is new Unchecked_Conversion (
-         Containers.Inside.Weak_Access_Holders.Data_Access,
-         Data_Access);
+      function Downcast is
+         new Unchecked_Conversion (
+            Containers.Inside.Weak_Access_Holders.Data_Access,
+            Data_Access);
 
       function "=" (Left, Right : Weak_Holder) return Boolean is
       begin

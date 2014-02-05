@@ -35,9 +35,8 @@ package body Ada.Exceptions is
                Last := Last + 1;
                Result (Last) := Character'Val (10);
             end New_Line;
-            procedure Fill is new System.Unwind.Exception_Information (
-               Put,
-               New_Line);
+            procedure Fill is
+               new System.Unwind.Exception_Information (Put, New_Line);
          begin
             Fill (System.Unwind.Exception_Occurrence (X));
             return Result (1 .. Last);

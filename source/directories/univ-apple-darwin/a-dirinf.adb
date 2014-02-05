@@ -214,17 +214,15 @@ package body Ada.Directories.Information is
    end Permission_Set;
 
    function Read_Symbolic_Link (Name : String) return String is
-      package Conv is new System.Address_To_Named_Access_Conversions (
-         C.char,
-         C.char_ptr);
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       procedure Finally (X : not null access C.char_ptr);
       procedure Finally (X : not null access C.char_ptr) is
       begin
          System.Memory.Free (Conv.To_Address (X.all));
       end Finally;
-      package Holder is new Exceptions.Finally.Scoped_Holder (
-         C.char_ptr,
-         Finally);
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
       C_Name : C.char_array (
          0 ..
          Name'Length * System.Zero_Terminated_Strings.Expanding);

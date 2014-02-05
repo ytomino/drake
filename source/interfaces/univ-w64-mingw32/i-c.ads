@@ -145,7 +145,7 @@ package Interfaces.C is
    function To_C (Item : Wide_String; Append_Nul : Boolean := True)
       return char16_array;
    function To_Ada (Item : char16_array; Trim_Nul : Boolean := True)
-     return Wide_String;
+      return Wide_String;
 
    procedure To_C (
       Item : Wide_String;
@@ -173,9 +173,9 @@ package Interfaces.C is
    function Is_Nul_Terminated (Item : char32_array) return Boolean;
 
    function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
-     return char32_array;
+      return char32_array;
    function To_Ada (Item : char32_array; Trim_Nul : Boolean := True)
-     return Wide_Wide_String;
+      return Wide_Wide_String;
 
    procedure To_C (
       Item : Wide_Wide_String;

@@ -75,12 +75,14 @@ package body Ada.Containers.Inside.Binary_Trees.Simple is
          Target : out Node_Access;
          Source : not null Node_Access))
    is
-      procedure Process (Target : out Node_Access;
-                         Parent : Node_Access;
-                         Source : Node_Access);
-      procedure Process (Target : out Node_Access;
-                         Parent : Node_Access;
-                         Source : Node_Access) is
+      procedure Process (
+         Target : out Node_Access;
+         Parent : Node_Access;
+         Source : Node_Access);
+      procedure Process (
+         Target : out Node_Access;
+         Parent : Node_Access;
+         Source : Node_Access) is
       begin
          if Source = null then
             Target := null;

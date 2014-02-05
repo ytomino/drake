@@ -681,9 +681,8 @@ package body Ada.Text_IO is
       begin
          Free (X.all);
       end Finally;
-      package Holder is new Exceptions.Finally.Scoped_Holder (
-         String_Access,
-         Finally);
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (String_Access, Finally);
    begin
       Holder.Assign (Line_Buffer'Access);
       loop

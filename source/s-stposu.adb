@@ -16,9 +16,10 @@ package body System.Storage_Pools.Subpools is
    pragma Import (Intrinsic, sync_bool_compare_and_swap,
       "__sync_bool_compare_and_swap_1");
 
-   package FM_Node_Ptr_Conv is new Address_To_Named_Access_Conversions (
-      Finalization_Masters.FM_Node,
-      Finalization_Masters.FM_Node_Ptr);
+   package FM_Node_Ptr_Conv is
+      new Address_To_Named_Access_Conversions (
+         Finalization_Masters.FM_Node,
+         Finalization_Masters.FM_Node_Ptr);
 
    --  hooks for smart linking, making code of subpool as removable
 

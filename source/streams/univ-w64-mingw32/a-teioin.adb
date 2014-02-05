@@ -27,9 +27,10 @@ package body Ada.Text_IO.Inside is
    pragma Compile_Time_Error (Wide_Character'Size /= C.winnt.WCHAR'Size,
       "WCHAR'Size is mismatch");
 
-   package LPSTR_Conv is new System.Address_To_Named_Access_Conversions (
-      C.winnt.CCHAR,
-      C.winnt.LPSTR);
+   package LPSTR_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.winnt.CCHAR,
+         C.winnt.LPSTR);
 
    procedure GetConsoleScreenBufferInfo (
       ConsoleOutput : C.winnt.HANDLE;
@@ -253,9 +254,8 @@ package body Ada.Text_IO.Inside is
 
    --  non-controlled
 
-   procedure Free is new Unchecked_Deallocation (
-      Text_Type,
-      Non_Controlled_File_Type);
+   procedure Free is
+      new Unchecked_Deallocation (Text_Type, Non_Controlled_File_Type);
 
    procedure Finally (X : not null access Non_Controlled_File_Type);
    procedure Finally (X : not null access Non_Controlled_File_Type) is
@@ -322,9 +322,10 @@ package body Ada.Text_IO.Inside is
          SUB => <>,
          Name => "",
          others => <>);
-      package Holder is new Exceptions.Finally.Scoped_Holder (
-         Non_Controlled_File_Type,
-         Finally);
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Non_Controlled_File_Type,
+            Finally);
    begin
       Holder.Assign (New_File'Access);
       --  open
@@ -524,7 +525,7 @@ package body Ada.Text_IO.Inside is
                   File.Converted := True;
                   File.Buffer_Col := 2;
                else
-                  null; --  No converted
+                  null; -- No converted
                end if;
             else
                File.Converted := True;
@@ -532,7 +533,7 @@ package body Ada.Text_IO.Inside is
             end if;
          end if;
       else
-         null; --  No filled
+         null; -- No filled
       end if;
    end Read_Buffer;
 
@@ -658,7 +659,7 @@ package body Ada.Text_IO.Inside is
       if File.External = IO_Text_Modes.Terminal
          and then C.wincon.WriteConsoleW (
             hConsoleOutput => Streams.Stream_IO.Inside.Handle (File.File),
-            lpBuffer => C.windef.LPVOID (Ada_Buffer (1)'Address),
+            lpBuffer => C.windef.LPCVOID (Ada_Buffer (1)'Address),
             nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
             lpNumberOfCharsWritten => Written'Access,
             lpReserved => C.windef.LPVOID (System.Null_Address)) /= 0
@@ -807,9 +808,10 @@ package body Ada.Text_IO.Inside is
             Flush (File.all);
          end if;
          declare
-            package Holder is new Exceptions.Finally.Scoped_Holder (
-               Non_Controlled_File_Type,
-               Finally);
+            package Holder is
+               new Exceptions.Finally.Scoped_Holder (
+                  Non_Controlled_File_Type,
+                  Finally);
          begin
             Holder.Assign (File);
             Streams.Stream_IO.Inside.Reset (

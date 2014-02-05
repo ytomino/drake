@@ -14,9 +14,7 @@ package Ada.References.Strings is
       with Implicit_Dereference => Element;
    pragma Suppress_Initialization (Reference_Type);
 
-   package Slicing is new Generic_Slicing (
-      Positive,
-      Character,
-      String);
+   package Slicing is
+      new Generic_Slicing (Positive, Character, String);
 
 end Ada.References.Strings;

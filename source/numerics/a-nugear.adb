@@ -49,8 +49,9 @@ package body Ada.Numerics.Generic_Arrays is
    begin
       return Result : Result_Vector (Left'Range) do
          for I in Result'Range loop
-            Result (I) := Operator (Left (I),
-                                    Right (Right'First - Left'First + I));
+            Result (I) := Operator (
+               Left (I),
+               Right (Right'First - Left'First + I));
          end loop;
       end return;
    end Operator_Vector_Vector;
@@ -75,9 +76,7 @@ package body Ada.Numerics.Generic_Arrays is
    begin
       return Result : Result_Vector (X'Range) do
          for I in Result'Range loop
-            Result (I) := Operator (X (I),
-                                    Y (Y'First - X'First + I),
-                                    Z);
+            Result (I) := Operator (X (I), Y (Y'First - X'First + I), Z);
          end loop;
       end return;
    end Operator_Vector_Vector_Param;
@@ -88,10 +87,12 @@ package body Ada.Numerics.Generic_Arrays is
       return Result : Result_Matrix (X'Range (1), X'Range (2)) do
          for I in Result'Range (1) loop
             for J in Result'Range (2) loop
-               Result (I, J) := Operator (X (I, J),
-                                          Y (Y'First (1) - X'First (1) + I,
-                                             Y'First (2) - X'First (2) + J),
-                                          Z);
+               Result (I, J) := Operator (
+                  X (I, J),
+                  Y (
+                     Y'First (1) - X'First (1) + I,
+                     Y'First (2) - X'First (2) + J),
+                  Z);
             end loop;
          end loop;
       end return;
@@ -108,16 +109,20 @@ package body Ada.Numerics.Generic_Arrays is
    begin
       for I in X'Range (1) loop
          for J in X'Range (1) loop
-            Apply (X (I, J), Param (Param'First (1) - X'First (1) + I,
-                                    Param'First (2) - X'First (2) + J));
+            Apply (
+               X (I, J),
+               Param (
+                  Param'First (1) - X'First (1) + I,
+                  Param'First (2) - X'First (2) + J));
          end loop;
       end loop;
    end Apply_Matrix;
 
    function Minor (A : Matrix; I, J : Integer) return Matrix is
    begin
-      return Result : Matrix (A'First (1) + 1 .. A'Last (1),
-                              A'First (2) + 1 .. A'Last (2))
+      return Result : Matrix (
+         A'First (1) + 1 .. A'Last (1),
+         A'First (2) + 1 .. A'Last (2))
       do
          for I2 in Result'First (1) .. I loop
             for J2 in Result'First (2) .. J loop
@@ -236,24 +241,27 @@ package body Ada.Numerics.Generic_Arrays is
                   mat (mat'First (1) + i, mat'First (2) + j) := Zero;
                   mat (mat'First (1) + j, mat'First (2) + i) := Zero;
                   for k in 0 .. n - 1 loop
-                     v1 := eigenvecs (eigenvecs'First (1) + i,
-                                      eigenvecs'First (2) + k);
-                     v2 := eigenvecs (eigenvecs'First (1) + j,
-                                      eigenvecs'First (2) + k);
-                     eigenvecs (eigenvecs'First (1) + i,
-                                eigenvecs'First (2) + k) :=
-                        v1 * y11 + v2 * y12;
-                     eigenvecs (eigenvecs'First (1) + j,
-                                eigenvecs'First (2) + k) :=
-                        v1 * y21 + v2 * y22;
+                     v1 := eigenvecs (
+                        eigenvecs'First (1) + i,
+                        eigenvecs'First (2) + k);
+                     v2 := eigenvecs (
+                        eigenvecs'First (1) + j,
+                        eigenvecs'First (2) + k);
+                     eigenvecs (
+                        eigenvecs'First (1) + i,
+                        eigenvecs'First (2) + k) := v1 * y11 + v2 * y12;
+                     eigenvecs (
+                        eigenvecs'First (1) + j,
+                        eigenvecs'First (2) + k) := v1 * y21 + v2 * y22;
                   end loop;
                end if;
             end loop;
          end loop;
       end loop;
       for i in lami'Range loop
-         lami (i) := To_Real (mat (mat'First (1) - lami'First + i,
-                                   mat'First (2) - lami'First + i));
+         lami (i) := To_Real (mat (
+            mat'First (1) - lami'First + i,
+            mat'First (2) - lami'First + i));
       end loop;
    end Eigensystem;
 
@@ -266,9 +274,12 @@ package body Ada.Numerics.Generic_Arrays is
          for I in Result'Range (1) loop
             Sign := Master_Sign;
             for J in Result'Range (2) loop
-               Result (I, J) := Sign * Determinant (
-                  Minor (A, Result'First (1) - Result'First (2) + J,
-                            Result'First (2) - Result'First (1) + I)) / detA;
+               Result (I, J) := Sign
+                  * Determinant (Minor (
+                     A,
+                     Result'First (1) - Result'First (2) + J,
+                     Result'First (2) - Result'First (1) + I))
+                  / detA;
                Sign := -Sign;
             end loop;
             Master_Sign := -Master_Sign;
@@ -292,9 +303,9 @@ package body Ada.Numerics.Generic_Arrays is
       First_1, First_2 : Integer := 1)
       return Matrix is
    begin
-      return Result : Matrix (First_1 .. First_1 + Order - 1,
-                              First_2 .. First_2 + Order - 1) :=
-         (others => (others => Zero))
+      return Result : Matrix (
+         First_1 .. First_1 + Order - 1,
+         First_2 .. First_2 + Order - 1) := (others => (others => Zero))
       do
          for I in 0 .. Order - 1 loop
             Result (First_1 + I, First_2 + I) := One;

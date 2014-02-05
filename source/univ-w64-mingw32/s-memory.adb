@@ -7,6 +7,7 @@ with C.windef;
 with C.winnt;
 package body System.Memory is
    pragma Suppress (All_Checks);
+   use type C.void_ptr;
    use type C.windef.WINBOOL;
    use type C.windef.DWORD;
 

@@ -6,18 +6,14 @@ package body Ada.Containers.Limited_Hashed_Sets is
    use type Hash_Tables.Table_Access;
 --  diff
 
-   function Upcast is new Unchecked_Conversion (
-      Cursor,
-      Hash_Tables.Node_Access);
-   function Downcast is new Unchecked_Conversion (
-      Hash_Tables.Node_Access,
-      Cursor);
+   function Upcast is
+      new Unchecked_Conversion (Cursor, Hash_Tables.Node_Access);
+   function Downcast is
+      new Unchecked_Conversion (Hash_Tables.Node_Access, Cursor);
 
 --  diff (Upcast)
 --
---
 --  diff (Downcast)
---
 --
 
    type Context_Type is limited record

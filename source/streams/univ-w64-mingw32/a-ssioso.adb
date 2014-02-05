@@ -153,9 +153,10 @@ package body Ada.Streams.Stream_IO.Sockets is
    end Resolve;
 
    procedure Connect (File : in out File_Type; Peer : End_Point) is
-      function Cast is new Unchecked_Conversion (
-         C.psdk_inc.qsocket_types.SOCKET,
-         C.winnt.HANDLE);
+      function Cast is
+         new Unchecked_Conversion (
+            C.psdk_inc.qsocket_types.SOCKET,
+            C.winnt.HANDLE);
       Socket : C.psdk_inc.qsocket_types.SOCKET :=
          C.psdk_inc.qsocket_types.INVALID_SOCKET;
       I : C.ws2tcpip.struct_addrinfoW_ptr := Reference (Peer).all;

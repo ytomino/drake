@@ -15,9 +15,10 @@ package body Separated is
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
 
-   function To_GNAT is new Ada.Unchecked_Conversion (
-      C.unwind.struct_Unwind_Exception_ptr,
-      Handling.GNAT_GCC_Exception_Access);
+   function To_GNAT is
+      new Ada.Unchecked_Conversion (
+         C.unwind.struct_Unwind_Exception_ptr,
+         Handling.GNAT_GCC_Exception_Access);
 
    --  (a-exexpr-gcc.adb)
    --  set current occurrence or Foreign_Exception (a-exexpr-gcc.adb)

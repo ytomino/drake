@@ -3,9 +3,10 @@ with C.basetsd;
 with C.windef;
 package body Ada.Storage_Mapped_IO is
    use type Streams.Stream_Element_Offset;
-   use type System.Address;
    use type C.windef.WINBOOL;
    use type C.winnt.ULONGLONG;
+--  use type System.Address;
+--  use type C.winnt.HANDLE; -- C.void_ptr
 
    procedure Map (
       Object : in out Non_Controlled_Mapping;
@@ -45,9 +46,13 @@ package body Ada.Storage_Mapped_IO is
          Mapped_Size.HighPart,
          Mapped_Size.LowPart,
          null);
-      if File_Mapping = C.winbase.INVALID_HANDLE_VALUE then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
-      end if;
+      declare
+         use type C.winnt.HANDLE;
+      begin
+         if File_Mapping = C.winbase.INVALID_HANDLE_VALUE then
+            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         end if;
+      end;
       Mapped_Address := C.winbase.MapViewOfFileEx (
          File_Mapping,
          Accesses (Writable),
@@ -55,12 +60,16 @@ package body Ada.Storage_Mapped_IO is
          Mapped_Offset.LowPart,
          C.basetsd.SIZE_T (Mapped_Size.QuadPart),
          C.windef.LPVOID (System.Null_Address));
-      if Mapped_Address = C.windef.LPVOID (System.Null_Address) then
-         if C.winbase.CloseHandle (File_Mapping) = 0 then
-            null; -- raise Use_Error;
+      declare
+         use type C.windef.LPVOID;
+      begin
+         if Mapped_Address = C.windef.LPVOID (System.Null_Address) then
+            if C.winbase.CloseHandle (File_Mapping) = 0 then
+               null; -- raise Use_Error;
+            end if;
+            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
          end if;
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
-      end if;
+      end;
       Object.Address := System.Address (Mapped_Address);
       Object.Size := System.Storage_Elements.Storage_Count (Size);
       Object.File_Mapping := File_Mapping;
@@ -74,7 +83,7 @@ package body Ada.Storage_Mapped_IO is
       Raise_On_Error : Boolean) is
    begin
       --  unmap
-      if C.winbase.UnmapViewOfFile (Object.Address) = 0
+      if C.winbase.UnmapViewOfFile (C.windef.LPCVOID (Object.Address)) = 0
          or else C.winbase.CloseHandle (Object.File_Mapping) = 0
       then
          if Raise_On_Error then
@@ -94,6 +103,7 @@ package body Ada.Storage_Mapped_IO is
    --  implementation
 
    function Is_Map (Object : Mapping) return Boolean is
+      use type System.Address;
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
@@ -107,6 +117,7 @@ package body Ada.Storage_Mapped_IO is
       Size : Streams.Stream_IO.Count := 0)
    is
       pragma Unmodified (Object); -- modified via 'Unrestricted_Access
+      use type System.Address;
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
@@ -132,6 +143,7 @@ package body Ada.Storage_Mapped_IO is
       Size : Streams.Stream_IO.Count := 0)
    is
       pragma Unmodified (Object); -- modified via 'Unrestricted_Access
+      use type System.Address;
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
@@ -155,6 +167,7 @@ package body Ada.Storage_Mapped_IO is
    end Map;
 
    procedure Unmap (Object : in out Mapping) is
+      use type System.Address;
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
@@ -189,6 +202,7 @@ package body Ada.Storage_Mapped_IO is
       end Reference;
 
       overriding procedure Finalize (Object : in out Mapping) is
+         use type System.Address;
       begin
          if Object.Data.Address /= System.Null_Address then
             Unmap (Object.Data, Raise_On_Error => False);

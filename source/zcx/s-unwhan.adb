@@ -26,9 +26,10 @@ package body System.Unwind.Handling is
 
    procedure Increment (p : in out C.unsigned_char_const_ptr);
    procedure Increment (p : in out C.unsigned_char_const_ptr) is
-      package uchar_Conv is new Address_To_Constant_Access_Conversions (
-         C.unsigned_char,
-         C.unsigned_char_const_ptr);
+      package uchar_Conv is
+         new Address_To_Constant_Access_Conversions (
+            C.unsigned_char,
+            C.unsigned_char_const_ptr);
    begin
       p := uchar_Conv.To_Pointer (uchar_Conv.To_Address (p) + 1);
    end Increment;
@@ -38,9 +39,10 @@ package body System.Unwind.Handling is
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr
    is
-      package uchar_Conv is new Address_To_Constant_Access_Conversions (
-         C.unsigned_char,
-         C.unsigned_char_const_ptr);
+      package uchar_Conv is
+         new Address_To_Constant_Access_Conversions (
+            C.unsigned_char,
+            C.unsigned_char_const_ptr);
    begin
       return uchar_Conv.To_Pointer (uchar_Conv.To_Address (Left)
          + Address (Right));
@@ -48,9 +50,10 @@ package body System.Unwind.Handling is
 
    function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean;
    function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean is
-      package uchar_Conv is new Address_To_Constant_Access_Conversions (
-         C.unsigned_char,
-         C.unsigned_char_const_ptr);
+      package uchar_Conv is
+         new Address_To_Constant_Access_Conversions (
+            C.unsigned_char,
+            C.unsigned_char_const_ptr);
    begin
       return uchar_Conv.To_Address (Left) < uchar_Conv.To_Address (Right);
    end "<";
@@ -65,15 +68,18 @@ package body System.Unwind.Handling is
       Context : access C.unwind.struct_Unwind_Context)
       return C.unwind.Unwind_Reason_Code
    is
-      function To_GNAT is new Ada.Unchecked_Conversion (
-         C.unwind.struct_Unwind_Exception_ptr,
-         GNAT_GCC_Exception_Access);
-      function Cast is new Ada.Unchecked_Conversion (
-         C.unwind.struct_Unwind_Exception_ptr,
-         C.unwind.Unwind_Word);
-      function Cast is new Ada.Unchecked_Conversion (
-         C.unwind.Unwind_Sword,
-         C.unwind.Unwind_Word);
+      function To_GNAT is
+         new Ada.Unchecked_Conversion (
+            C.unwind.struct_Unwind_Exception_ptr,
+            GNAT_GCC_Exception_Access);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            C.unwind.struct_Unwind_Exception_ptr,
+            C.unwind.Unwind_Word);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            C.unwind.Unwind_Sword,
+            C.unwind.Unwind_Word);
       GCC_Exception : constant GNAT_GCC_Exception_Access :=
          To_GNAT (Exception_Object);
       landing_pad : C.unwind.Unwind_Ptr;
@@ -118,9 +124,10 @@ package body System.Unwind.Handling is
             end if;
             base := C.unwind.Unwind_GetRegionStart (Context);
             declare
-               function Cast is new Ada.Unchecked_Conversion (
-                  C.void_ptr,
-                  C.unsigned_char_const_ptr);
+               function Cast is
+                  new Ada.Unchecked_Conversion (
+                     C.void_ptr,
+                     C.unsigned_char_const_ptr);
                p : C.unsigned_char_const_ptr := Cast (lsda);
                tmp : aliased C.unwind_pe.uleb128_t;
                lpbase_encoding : C.unsigned_char;
@@ -239,14 +246,16 @@ package body System.Unwind.Handling is
                            and C.unwind.UA_FORCE_UNWIND) = 0
                      then
                         declare
-                           function Cast is new Ada.Unchecked_Conversion (
-                              Exception_Data_Access,
-                              C.unwind.Unwind_Ptr);
+                           function Cast is
+                              new Ada.Unchecked_Conversion (
+                                 Exception_Data_Access,
+                                 C.unwind.Unwind_Ptr);
                            type Unwind_Ptr_Ptr is
                               access constant C.unwind.Unwind_Ptr;
-                           function Cast is new Ada.Unchecked_Conversion (
-                              Unwind_Ptr_Ptr,
-                              C.unwind.Unwind_Ptr);
+                           function Cast is
+                              new Ada.Unchecked_Conversion (
+                                 Unwind_Ptr_Ptr,
+                                 C.unwind.Unwind_Ptr);
                            filter : constant C.ptrdiff_t :=
                               C.ptrdiff_t (ar_filter)
                                  * C.ptrdiff_t (

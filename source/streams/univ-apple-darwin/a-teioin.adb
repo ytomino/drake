@@ -55,7 +55,11 @@ package body Ada.Text_IO.Inside is
       Handle : Streams.Stream_IO.Inside.Handle_Type;
       Item : String) is
    begin
-      if C.unistd.write (Handle, Item'Address, Item'Length) < 0 then
+      if C.unistd.write (
+         Handle,
+         C.void_const_ptr (Item'Address),
+         Item'Length) < 0
+      then
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end write;
@@ -264,9 +268,8 @@ package body Ada.Text_IO.Inside is
 
    --  non-controlled
 
-   procedure Free is new Unchecked_Deallocation (
-      Text_Type,
-      Non_Controlled_File_Type);
+   procedure Free is
+      new Unchecked_Deallocation (Text_Type, Non_Controlled_File_Type);
 
    procedure Finally (X : not null access Non_Controlled_File_Type);
    procedure Finally (X : not null access Non_Controlled_File_Type) is
@@ -333,9 +336,10 @@ package body Ada.Text_IO.Inside is
          SUB => <>,
          Name => "",
          others => <>);
-      package Holder is new Exceptions.Finally.Scoped_Holder (
-         Non_Controlled_File_Type,
-         Finally);
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Non_Controlled_File_Type,
+            Finally);
    begin
       Holder.Assign (New_File'Access);
       --  open
@@ -617,9 +621,10 @@ package body Ada.Text_IO.Inside is
             Flush (File.all);
          end if;
          declare
-            package Holder is new Exceptions.Finally.Scoped_Holder (
-               Non_Controlled_File_Type,
-               Finally);
+            package Holder is
+               new Exceptions.Finally.Scoped_Holder (
+                  Non_Controlled_File_Type,
+                  Finally);
          begin
             Holder.Assign (File);
             Streams.Stream_IO.Inside.Reset (

@@ -12,9 +12,10 @@ is
    pragma Suppress (All_Checks);
    use type C.windef.WINBOOL;
    use type C.windef.DWORD; -- error code
-   package BYTE_ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      C.windef.BYTE,
-      C.windef.BYTE_ptr);
+   package BYTE_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.windef.BYTE,
+         C.windef.BYTE_ptr);
    Context : aliased C.wincrypt.HCRYPTPROV;
    Error : Boolean;
 begin

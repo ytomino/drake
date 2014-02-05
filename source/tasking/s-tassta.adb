@@ -5,9 +5,10 @@ with System.Termination;
 package body System.Tasking.Stages is
    pragma Suppress (All_Checks);
 
-   package Task_Record_Conv is new Address_To_Named_Access_Conversions (
-      Tasks.Task_Record,
-      Tasks.Task_Id);
+   package Task_Record_Conv is
+      new Address_To_Named_Access_Conversions (
+         Tasks.Task_Record,
+         Tasks.Task_Id);
 
    procedure Unregister;
    procedure Unregister is

@@ -7,7 +7,7 @@ package body Ada.Directories.Inside is
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
-   use type C.winnt.HANDLE;
+   use type C.winnt.HANDLE; -- C.void_ptr
 
    function Current_Directory return String is
       Buffer : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);

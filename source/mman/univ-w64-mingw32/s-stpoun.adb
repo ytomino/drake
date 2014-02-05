@@ -6,7 +6,7 @@ package body System.Storage_Pools.Unbounded is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
    use type C.windef.WINBOOL;
-   use type C.winnt.HANDLE;
+   use type C.winnt.HANDLE; -- C.void_ptr
 
    procedure Runtime_Error (
       Condition : Boolean;

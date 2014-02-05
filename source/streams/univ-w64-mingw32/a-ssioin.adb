@@ -13,13 +13,14 @@ package body Ada.Streams.Stream_IO.Inside is
    use type IO_Modes.File_Shared;
    use type IO_Modes.File_Shared_Spec;
    use type Tags.Tag;
-   use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.UINT;
    use type C.windef.WINBOOL;
    use type C.winnt.LONGLONG;
+--  use type System.Address;
+--  use type C.winnt.HANDLE; -- C.void_ptr
 
    procedure SetFilePointerEx (
       Handle : C.winnt.HANDLE;
@@ -228,6 +229,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Form : Packed_Form)
       return Non_Controlled_File_Type
    is
+      use type System.Address;
       Result_Addr : constant System.Address := System.Address (
          C.winbase.HeapAlloc (
             C.winbase.GetProcessHeap,
@@ -262,6 +264,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Free (File : Non_Controlled_File_Type);
    procedure Free (File : Non_Controlled_File_Type) is
+      use type System.Address;
    begin
       if File.Buffer /= File.Buffer_Inline'Address then
          System.Memory.Free (File.Buffer);
@@ -311,6 +314,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Full_Name : out C.winnt.LPWSTR;
       Full_Name_Length : out C.size_t)
    is
+      use type C.winnt.HANDLE;
       Temp_Dir : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
       Temp_Name : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
@@ -417,6 +421,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Name : not null C.winnt.LPWSTR;
       Form : Packed_Form)
    is
+      use type C.winnt.HANDLE;
       Handle : Handle_Type;
       DesiredAccess : C.windef.DWORD;
       ShareMode : C.windef.DWORD;
@@ -1017,9 +1022,10 @@ package body Ada.Streams.Stream_IO.Inside is
    end End_Of_File;
 
    function Stream (File : Non_Controlled_File_Type) return Stream_Access is
-      package Conv is new System.Address_To_Named_Access_Conversions (
-         Root_Stream_Type'Class,
-         Stream_Access);
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (
+            Root_Stream_Type'Class,
+            Stream_Access);
    begin
       Check_File_Open (File);
       if File.Dispatcher.Tag = Tags.No_Tag then

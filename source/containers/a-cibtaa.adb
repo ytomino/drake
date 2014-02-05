@@ -112,10 +112,9 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
       Before : Node_Access;
       New_Item : not null Node_Access)
    is
-      Root_Body : Node := (Super => (Left => Container,
-                                     Right => null,
-                                     Parent => null),
-                           Level => -1);
+      Root_Body : Node := (
+         Super => (Left => Container, Right => null, Parent => null),
+         Level => -1);
       Root : constant Node_Access := Root_Body.Super'Unrestricted_Access;
       Current : Node_Access;
    begin
@@ -173,10 +172,9 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
       Length : in out Count_Type;
       Position : not null Node_Access)
    is
-      Root_Body : Node := (Super => (Left => Container,
-                                     Right => null,
-                                     Parent => null),
-                           Level => -1);
+      Root_Body : Node := (
+         Super => (Left => Container, Right => null, Parent => null),
+         Level => -1);
       Root : constant Node_Access := Root_Body.Super'Unrestricted_Access;
       Leaf : Node_Access;
       Current : Node_Access; -- leveling point
@@ -280,18 +278,22 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
       pragma Check (Validate, Debug.Validate (Container, Length));
    end Remove;
 
-   procedure Copy (Target : out Node_Access;
-                   Length : out Count_Type;
-                   Source : Node_Access;
-      Copy : not null access procedure (Target : out Node_Access;
-                                        Source : not null Node_Access))
+   procedure Copy (
+      Target : out Node_Access;
+      Length : out Count_Type;
+      Source : Node_Access;
+      Copy : not null access procedure (
+         Target : out Node_Access;
+         Source : not null Node_Access))
    is
-      procedure Process (Target : out Node_Access;
-                         Parent : Node_Access;
-                         Source : Node_Access);
-      procedure Process (Target : out Node_Access;
-                         Parent : Node_Access;
-                         Source : Node_Access) is
+      procedure Process (
+         Target : out Node_Access;
+         Parent : Node_Access;
+         Source : Node_Access);
+      procedure Process (
+         Target : out Node_Access;
+         Parent : Node_Access;
+         Source : Node_Access) is
       begin
          if Source = null then
             Target := null;

@@ -347,22 +347,21 @@ package Ada.Containers.Limited_Vectors is
    package Equivalents is
       function "=" (Left, Right : Vector) return Boolean;
       function Find (Container : Vector; Item : Element_Type) return Cursor;
-      function Find (Container : Vector;
-                     Item : Element_Type;
-                     Position : Cursor) return Cursor;
-      function Reverse_Find (Container : Vector;
-                             Item : Element_Type) return Cursor;
-      function Reverse_Find (Container : Vector;
-                             Item : Element_Type;
-                             Position : Cursor) return Cursor;
+      function Find (
+         Container : Vector;
+         Item : Element_Type;
+         Position : Cursor)
+         return Cursor;
+      function Reverse_Find (Container : Vector; Item : Element_Type)
+         return Cursor;
+      function Reverse_Find (
+         Container : Vector;
+         Item : Element_Type;
+         Position : Cursor)
+         return Cursor;
       function Contains (Container : Vector; Item : Element_Type)
          return Boolean;
    end Equivalents;
---  diff
---  diff
---  diff
---  diff
---  diff
 
 --  diff (Generic_Array_To_Vector)
 --

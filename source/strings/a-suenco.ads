@@ -5,11 +5,11 @@ package Ada.Strings.UTF_Encoding.Conversions is
 
    --  Conversions between various encoding schemes
    function Convert (
-     Item : UTF_String;
-     Input_Scheme : Encoding_Scheme;
-     Output_Scheme : Encoding_Scheme;
-     Output_BOM : Boolean := False)
-     return UTF_String;
+      Item : UTF_String;
+      Input_Scheme : Encoding_Scheme;
+      Output_Scheme : Encoding_Scheme;
+      Output_BOM : Boolean := False)
+      return UTF_String;
 
    --  function from binary to 8 is missing, use from binary to binary
 

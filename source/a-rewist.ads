@@ -14,9 +14,7 @@ package Ada.References.Wide_Strings is
       with Implicit_Dereference => Element;
    pragma Suppress_Initialization (Reference_Type);
 
-   package Slicing is new Generic_Slicing (
-      Positive,
-      Wide_Character,
-      Wide_String);
+   package Slicing is
+      new Generic_Slicing (Positive, Wide_Character, Wide_String);
 
 end Ada.References.Wide_Strings;

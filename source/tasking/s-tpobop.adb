@@ -6,9 +6,10 @@ package body System.Tasking.Protected_Objects.Operations is
    use type Ada.Exceptions.Exception_Id;
    use type Synchronous_Objects.Queue_Node_Access;
 
-   package Queue_Node_Conv is new Address_To_Named_Access_Conversions (
-      Synchronous_Objects.Queue_Node,
-      Synchronous_Objects.Queue_Node_Access);
+   package Queue_Node_Conv is
+      new Address_To_Named_Access_Conversions (
+         Synchronous_Objects.Queue_Node,
+         Synchronous_Objects.Queue_Node_Access);
 
    function Uncall_Filter (
       The_Node : not null Synchronous_Objects.Queue_Node_Access;
@@ -56,9 +57,10 @@ package body System.Tasking.Protected_Objects.Operations is
          Entries.Downcast (The_Node);
       --  Params to access Entries.Protection_Entries'Class
       type P is access all Entries.Protection_Entries'Class;
-      package Object_Conv is new Address_To_Named_Access_Conversions (
-         Entries.Protection_Entries'Class,
-         P);
+      package Object_Conv is
+         new Address_To_Named_Access_Conversions (
+            Entries.Protection_Entries'Class,
+            P);
       Object : constant not null P := Object_Conv.To_Pointer (Params);
       Index : constant Positive_Protected_Entry_Index :=
          Object.Find_Body_Index (
@@ -171,9 +173,10 @@ package body System.Tasking.Protected_Objects.Operations is
       case Mode is
          when Simple_Call =>
             declare
-               package Holder is new Ada.Exceptions.Finally.Scoped_Holder (
-                  Synchronous_Objects.Event,
-                  Finally);
+               package Holder is
+                  new Ada.Exceptions.Finally.Scoped_Holder (
+                     Synchronous_Objects.Event,
+                     Finally);
                The_Node : aliased Entries.Node := (
                   Super => <>,
                   E => E,

@@ -15,9 +15,8 @@ package body Ada.Directory_Searching is
    use type C.sys.dirent.struct_dirent_ptr;
    use type C.sys.types.mode_t;
 
-   package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      C.char,
-      C.char_ptr);
+   package char_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
 
    --  implementation
 

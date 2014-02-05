@@ -1126,24 +1126,27 @@ package body Ada.Characters.Normalization is
 
    end Generic_Normalization;
 
-   package UTF_8 is new Generic_Normalization (
-      Character,
-      String,
-      System.UTF_Conversions.UTF_8_Max_Length,
-      System.UTF_Conversions.From_UTF_8,
-      System.UTF_Conversions.To_UTF_8);
-   package UTF_16 is new Generic_Normalization (
-      Wide_Character,
-      Wide_String,
-      System.UTF_Conversions.UTF_16_Max_Length,
-      System.UTF_Conversions.From_UTF_16,
-      System.UTF_Conversions.To_UTF_16);
-   package UTF_32 is new Generic_Normalization (
-      Wide_Wide_Character,
-      Wide_Wide_String,
-      1,
-      System.UTF_Conversions.From_UTF_32,
-      System.UTF_Conversions.To_UTF_32);
+   package UTF_8 is
+      new Generic_Normalization (
+         Character,
+         String,
+         System.UTF_Conversions.UTF_8_Max_Length,
+         System.UTF_Conversions.From_UTF_8,
+         System.UTF_Conversions.To_UTF_8);
+   package UTF_16 is
+      new Generic_Normalization (
+         Wide_Character,
+         Wide_String,
+         System.UTF_Conversions.UTF_16_Max_Length,
+         System.UTF_Conversions.From_UTF_16,
+         System.UTF_Conversions.To_UTF_16);
+   package UTF_32 is
+      new Generic_Normalization (
+         Wide_Wide_Character,
+         Wide_Wide_String,
+         1,
+         System.UTF_Conversions.From_UTF_32,
+         System.UTF_Conversions.To_UTF_32);
 
    --  implementation
 
