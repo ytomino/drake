@@ -15,7 +15,7 @@ package body Ada.Streams.Stream_IO.Pipes is
          C.winbase.SECURITY_ATTRIBUTES := (
             nLength =>
                C.winbase.SECURITY_ATTRIBUTES'Size / Standard'Storage_Unit,
-            lpSecurityDescriptor => C.windef.LPCVOID (System.Null_Address),
+            lpSecurityDescriptor => C.windef.LPVOID (System.Null_Address),
             bInheritHandle => 1);
       Reading_Handle, Writing_Handle : aliased C.winnt.HANDLE;
    begin

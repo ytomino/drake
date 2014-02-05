@@ -448,7 +448,7 @@ package body System.Native_Encoding is
          C.icucore.unicode.ucnv.ucnv_setFromUCallBack (
             To_uconv,
             C.icucore.unicode.ucnv_err.UCNV_FROM_U_CALLBACK_STOP'Access,
-            Null_Address,
+            C.void_const_ptr (Null_Address),
             null,
             null,
             Error'Access);

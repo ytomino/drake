@@ -9,7 +9,7 @@ package body Ada.Directories.Information is
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
-   use type C.winnt.HANDLE;
+   use type C.winnt.HANDLE; -- C.void_ptr
 
    function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
 

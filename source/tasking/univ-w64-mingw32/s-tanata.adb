@@ -1,5 +1,6 @@
 with C.winerror;
 package body System.Tasking.Native_Tasks is
+   use type C.void_ptr; -- C.void_ptr
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
 
@@ -74,7 +75,8 @@ package body System.Tasking.Native_Tasks is
       if C.winbase.CloseHandle (Handle) /= 0 then
          Handle := C.winbase.GetCurrentThread;
          --  magic value meaning current thread
-         pragma Assert (Handle = 16#fffffffe#);
+         pragma Assert (
+            Handle = C.winnt.HANDLE (System'To_Address (16#fffffffe#)));
       else
          Error := True;
       end if;

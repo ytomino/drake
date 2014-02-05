@@ -5,7 +5,7 @@ package body Ada.Directory_Searching is
    use type C.signed_int;
    use type C.size_t;
    use type C.windef.DWORD;
-   use type C.winnt.HANDLE;
+   use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
 
    function Match_Filter (

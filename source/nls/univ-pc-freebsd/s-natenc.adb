@@ -6,6 +6,7 @@ with System.Zero_Terminated_Strings;
 with C.errno;
 package body System.Native_Encoding is
    use type Ada.Streams.Stream_Element_Offset;
+   use type C.iconv.iconv_t; -- C.void_ptr
    use type C.signed_int;
    use type C.size_t;
 
@@ -96,7 +97,7 @@ package body System.Native_Encoding is
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);
    begin
-      return Address (NC_Converter.iconv) /= Null_Address;
+      return NC_Converter.iconv /= C.void_ptr (Null_Address);
    end Get_Is_Open;
 
    function Min_Size_In_From_Stream_Elements_No_Check (Object : Converter)
@@ -347,7 +348,7 @@ package body System.Native_Encoding is
          iconv : C.iconv.iconv_t;
       begin
          iconv := C.iconv.iconv_open (To, From);
-         if Address (iconv) = Address (Error) then
+         if iconv = Error then
             Ada.Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
          end if;
          Object.Data.iconv := iconv;

@@ -13,7 +13,7 @@ package body Ada.Directories.Volumes is
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.winnt.LPWSTR;
-   use type C.winnt.HANDLE;
+   use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
 
    package Conv is new System.Address_To_Named_Access_Conversions (

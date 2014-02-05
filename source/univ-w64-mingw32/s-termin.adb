@@ -204,6 +204,8 @@ package body System.Termination is
                Arguments => Cast (
                   Exception_Record.ExceptionInformation (0)'Access));
             declare
+               function To_Address is
+                  new Ada.Unchecked_Conversion (C.winnt.PVOID, Address);
                Wide_Message : Wide_String (Positive);
                for Wide_Message'Address use C_Wide_Buf.all'Address;
                Wide_Message_Last : constant Natural := Natural (R);
@@ -219,7 +221,7 @@ package body System.Termination is
                   Message (1 .. 21) := "The instruction at 0x";
                   Message_Last := 21;
                   Formatting.Address_Image (
-                     Address (
+                     To_Address (
 --                      Exception_Record.ExceptionInformation (0)),
                         Exception_Record.ExceptionAddress),
                      Message (Message_Last + 1 .. Message'Last),
