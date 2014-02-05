@@ -158,6 +158,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-stoele.o \
 	s-termin.o \
 	s-unstyp.o \
+	s-unwfor.o \
 	s-unwhan.o \
 	s-unwind.o \
 	s-unwrai.o \
