@@ -41,7 +41,7 @@ package Ada.Containers.Limited_Vectors is
    function Has_Element (Position : Cursor) return Boolean;
 
    package Vector_Iterator_Interfaces is
-      new Ada.Iterator_Interfaces (Cursor, Has_Element);
+      new Iterator_Interfaces (Cursor, Has_Element);
 
 --  diff ("=")
 

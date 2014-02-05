@@ -36,7 +36,7 @@ package body Ada.Calendar.Inside is
          FileTime'Access,
          SystemTime'Access) = 0
       then
-         Ada.Exceptions.Raise_Exception_From_Here (Time_Error'Identity);
+         Exceptions.Raise_Exception_From_Here (Time_Error'Identity);
       else
          Year := Year_Number (SystemTime.wYear);
          Month := Month_Number (SystemTime.wMonth);
@@ -75,7 +75,7 @@ package body Ada.Calendar.Inside is
          SystemTime'Access,
          FileTime'Access) = 0
       then
-         Ada.Exceptions.Raise_Exception_From_Here (Time_Error'Identity);
+         Exceptions.Raise_Exception_From_Here (Time_Error'Identity);
       else
          return Time (
             System.Native_Time.To_Time (FileTime)

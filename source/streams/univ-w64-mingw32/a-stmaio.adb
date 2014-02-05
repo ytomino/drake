@@ -2,7 +2,7 @@ with Ada.Exceptions;
 with C.basetsd;
 with C.windef;
 package body Ada.Storage_Mapped_IO is
-   use type Ada.Streams.Stream_Element_Offset;
+   use type Streams.Stream_Element_Offset;
    use type System.Address;
    use type C.windef.WINBOOL;
    use type C.winnt.ULONGLONG;

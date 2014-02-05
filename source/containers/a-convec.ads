@@ -41,7 +41,7 @@ package Ada.Containers.Vectors is
    function Has_Element (Position : Cursor) return Boolean;
 
    package Vector_Iterator_Interfaces is
-      new Ada.Iterator_Interfaces (Cursor, Has_Element);
+      new Iterator_Interfaces (Cursor, Has_Element);
 
    function "=" (Left, Right : Vector) return Boolean;
 
@@ -343,7 +343,7 @@ package Ada.Containers.Vectors is
 
    --  extended
    type Element_Array is array (Index_Type range <>) of aliased Element_Type;
-   package Slicing is new Ada.References.Generic_Slicing (
+   package Slicing is new References.Generic_Slicing (
       Index_Type,
       Element_Type,
       Element_Array);

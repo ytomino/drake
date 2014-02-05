@@ -28,7 +28,7 @@ package System.Tasking is
    type Activation_Chain_Access is access all Activation_Chain;
 
    --  required for task by compiler (s-taskin.ads)
-   Unspecified_Priority : constant Integer := System.Priority'First - 1;
+   Unspecified_Priority : constant Integer := Priority'First - 1;
    Unspecified_CPU : constant := -1;
 
    --  required for entry of task by compiler (s-taskin.ads)

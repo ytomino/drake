@@ -29,14 +29,14 @@ package Ada.Exceptions is
    --    exception with source location.
    procedure Raise_Exception_From_Here (
       E : Exception_Id;
-      File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line)
+      File : String := Debug.File;
+      Line : Integer := Debug.Line)
       with No_Return, Import, Convention => Ada,
          External_Name => "__drake_raise_exception_from_here";
    procedure Raise_Exception_From_Here (
       E : Exception_Id;
-      File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line;
+      File : String := Debug.File;
+      Line : Integer := Debug.Line;
       Message : String)
       with No_Return, Import, Convention => Ada,
          External_Name => "__drake_raise_exception_from_here_with";

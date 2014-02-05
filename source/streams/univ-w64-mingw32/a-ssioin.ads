@@ -165,7 +165,7 @@ private
       Reading_Index : Stream_Element_Offset;
       Writing_Index : Stream_Element_Offset;
       Dispatcher : aliased Dispatchers.Dispatcher := (
-         Tag => Ada.Tags.No_Tag,
+         Tag => Tags.No_Tag,
          File => null);
    end record;
    pragma Suppress_Initialization (Stream_Type);

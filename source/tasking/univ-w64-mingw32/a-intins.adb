@@ -11,7 +11,7 @@ package body Ada.Interrupts.Inside is
    use type C.unsigned_int;
 
    Report_Traceback : access procedure (
-      Current : Ada.Exceptions.Exception_Occurrence);
+      Current : Exceptions.Exception_Occurrence);
    pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
    pragma Weak_External (Report_Traceback);
 
