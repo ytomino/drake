@@ -17,9 +17,10 @@ package body System.Unwind.Traceback is
 
    package body Separated is separate;
 
-   procedure Put_Exception_Information is new Exception_Information (
-      Termination.Error_Put,
-      Termination.Error_New_Line);
+   procedure Put_Exception_Information is
+      new Exception_Information (
+         Termination.Error_Put,
+         Termination.Error_New_Line);
 
    procedure Call_Chain (Current : not null Exception_Occurrence_Access) is
    begin

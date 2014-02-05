@@ -15,8 +15,8 @@ private package Ada.Numerics.Generic_Arrays is
       type Number is private;
       type Matrix is array (Integer range <>, Integer range <>) of Number;
       type Result_Type is private;
-      type Result_Matrix is array (Integer range <>,
-                                   Integer range <>) of Result_Type;
+      type Result_Matrix is
+         array (Integer range <>, Integer range <>) of Result_Type;
       with function Operator (Right : Number) return Result_Type;
    function Operator_Matrix (Right : Matrix) return Result_Matrix;
 
@@ -36,8 +36,8 @@ private package Ada.Numerics.Generic_Arrays is
       type Matrix is array (Integer range <>, Integer range <>) of Number;
       type Parameter_Type is private;
       type Result_Type is private;
-      type Result_Matrix is array (Integer range <>,
-                                   Integer range <>) of Result_Type;
+      type Result_Matrix is
+         array (Integer range <>, Integer range <>) of Result_Type;
       with function Operator (X : Number; Y : Parameter_Type)
          return Result_Type;
    function Operator_Matrix_Param (X : Matrix; Y : Parameter_Type)
@@ -57,14 +57,14 @@ private package Ada.Numerics.Generic_Arrays is
 
    generic
       type Left_Type is private;
-      type Left_Matrix is array (Integer range <>,
-                                 Integer range <>) of Left_Type;
+      type Left_Matrix is array (
+         Integer range <>, Integer range <>) of Left_Type;
       type Right_Type is private;
-      type Right_Matrix is array (Integer range <>,
-                                  Integer range <>) of Right_Type;
+      type Right_Matrix is
+         array (Integer range <>, Integer range <>) of Right_Type;
       type Result_Type is private;
-      type Result_Matrix is array (Integer range <>,
-                                   Integer range <>) of Result_Type;
+      type Result_Matrix is
+         array (Integer range <>, Integer range <>) of Result_Type;
       with function Operator (Left : Left_Type; Right : Right_Type)
          return Result_Type;
    function Operator_Matrix_Matrix (Left : Left_Matrix; Right : Right_Matrix)
@@ -86,8 +86,8 @@ private package Ada.Numerics.Generic_Arrays is
       type Matrix is array (Integer range <>, Integer range <>) of Number;
       type Parameter_Type is private;
       type Result_Type is private;
-      type Result_Matrix is array (Integer range <>,
-                                   Integer range <>) of Result_Type;
+      type Result_Matrix is
+         array (Integer range <>, Integer range <>) of Result_Type;
       with function Operator (X, Y : Number; Z : Parameter_Type)
          return Result_Type;
    function Operator_Matrix_Matrix_Param (X, Y : Matrix; Z : Parameter_Type)
@@ -105,8 +105,8 @@ private package Ada.Numerics.Generic_Arrays is
       type Number is private;
       type Matrix is array (Integer range <>, Integer range <>) of Number;
       type Parameter_Type is private;
-      type Parameter_Matrix is array (Integer range <>,
-                                      Integer range <>) of Parameter_Type;
+      type Parameter_Matrix is
+         array (Integer range <>, Integer range <>) of Parameter_Type;
       with procedure Apply (X : in out Number; Param : Parameter_Type);
    procedure Apply_Matrix (X : in out Matrix; Param : Parameter_Matrix);
 
@@ -210,14 +210,14 @@ private package Ada.Numerics.Generic_Arrays is
 
    generic
       type Left_Type is private;
-      type Left_Matrix is array (Integer range <>,
-                                 Integer range <>) of Left_Type;
+      type Left_Matrix is
+         array (Integer range <>, Integer range <>) of Left_Type;
       type Right_Type is private;
-      type Right_Matrix is array (Integer range <>,
-                                  Integer range <>) of Right_Type;
+      type Right_Matrix is
+         array (Integer range <>, Integer range <>) of Right_Type;
       type Result_Type is private;
-      type Result_Matrix is array (Integer range <>,
-                                   Integer range <>) of Result_Type;
+      type Result_Matrix is
+         array (Integer range <>, Integer range <>) of Result_Type;
       Zero : Result_Type;
       with function "+" (Left, Right : Result_Type) return Result_Type is <>;
       with function "*" (Left : Left_Type; Right : Right_Type)
@@ -231,8 +231,8 @@ private package Ada.Numerics.Generic_Arrays is
       type Right_Type is private;
       type Right_Vector is array (Integer range <>) of Right_Type;
       type Result_Type is private;
-      type Result_Matrix is array (Integer range <>,
-                                   Integer range <>) of Result_Type;
+      type Result_Matrix is
+         array (Integer range <>, Integer range <>) of Result_Type;
       with function "*" (Left : Left_Type; Right : Right_Type)
          return Result_Type is <>;
    function Multiply_Vector_Vector (Left : Left_Vector; Right : Right_Vector)
@@ -242,8 +242,8 @@ private package Ada.Numerics.Generic_Arrays is
       type Left_Type is private;
       type Left_Vector is array (Integer range <>) of Left_Type;
       type Right_Type is private;
-      type Right_Matrix is array (Integer range <>,
-                                  Integer range <>) of Right_Type;
+      type Right_Matrix is
+         array (Integer range <>, Integer range <>) of Right_Type;
       type Result_Type is private;
       type Result_Vector is array (Integer range <>) of Result_Type;
       Zero : Result_Type;
@@ -255,8 +255,8 @@ private package Ada.Numerics.Generic_Arrays is
 
    generic
       type Left_Type is private;
-      type Left_Matrix is array (Integer range <>,
-                                 Integer range <>) of Left_Type;
+      type Left_Matrix is
+         array (Integer range <>, Integer range <>) of Left_Type;
       type Right_Type is private;
       type Right_Vector is array (Integer range <>) of Right_Type;
       type Result_Type is private;

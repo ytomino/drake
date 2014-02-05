@@ -3,10 +3,11 @@ with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Elementary_Functions is
    pragma Suppress (All_Checks);
 
-   procedure Modulo_Divide_By_1 is new Float.Modulo_Divide_By_1 (
-      Float_Type'Base,
-      Float_Type'Base,
-      Float_Type'Base);
+   procedure Modulo_Divide_By_1 is
+      new Float.Modulo_Divide_By_1 (
+         Float_Type'Base,
+         Float_Type'Base,
+         Float_Type'Base);
    subtype Float is Standard.Float; -- hiding "Float" package
 
    --  constants for Sinh/Cosh on high precision mode

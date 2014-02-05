@@ -35,7 +35,7 @@ package Ada.Strings.UTF_Encoding is
       & Character'Val (16#FE#);
 
    BOM_16 : constant Wide_String :=
-       (1 => Wide_Character'Val (16#FEFF#));
+      (1 => Wide_Character'Val (16#FEFF#));
 
    --  extended
    BOM_32BE : aliased constant String :=
@@ -53,7 +53,7 @@ package Ada.Strings.UTF_Encoding is
 
    --  extended
    BOM_32 : constant Wide_Wide_String :=
-       (1 => Wide_Wide_Character'Val (16#0000FEFF#));
+      (1 => Wide_Wide_Character'Val (16#0000FEFF#));
 
    function Encoding (
       Item : UTF_String;

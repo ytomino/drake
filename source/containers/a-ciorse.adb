@@ -7,19 +7,15 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    use type Binary_Trees.Node_Access;
    use type Copy_On_Write.Data_Access;
 
-   function Upcast is new Unchecked_Conversion (
-      Cursor,
-      Binary_Trees.Node_Access);
-   function Downcast is new Unchecked_Conversion (
-      Binary_Trees.Node_Access,
-      Cursor);
+   function Upcast is
+      new Unchecked_Conversion (Cursor, Binary_Trees.Node_Access);
+   function Downcast is
+      new Unchecked_Conversion (Binary_Trees.Node_Access, Cursor);
 
-   function Upcast is new Unchecked_Conversion (
-      Data_Access,
-      Copy_On_Write.Data_Access);
-   function Downcast is new Unchecked_Conversion (
-      Copy_On_Write.Data_Access,
-      Data_Access);
+   function Upcast is
+      new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
+   function Downcast is
+      new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
 
    function Compare is new Composites.Compare (Element_Type);
 
@@ -962,8 +958,9 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Set)
       is
-         package Stream_Cast is new System.Address_To_Access_Conversions (
-            Streams.Root_Stream_Type'Class);
+         package Stream_Cast is
+            new System.Address_To_Access_Conversions (
+               Streams.Root_Stream_Type'Class);
          procedure Process (
             Position : not null Binary_Trees.Node_Access;
             Params : System.Address);

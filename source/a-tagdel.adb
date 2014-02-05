@@ -6,12 +6,10 @@ package body Ada.Tags.Delegating is
    pragma Suppress (All_Checks);
    use type System.Address;
 
-   package Tag_Conv is new System.Address_To_Named_Access_Conversions (
-      Dispatch_Table,
-      Tag);
-   package Tag_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      Tag,
-      Tag_Ptr);
+   package Tag_Conv is
+      new System.Address_To_Named_Access_Conversions (Dispatch_Table, Tag);
+   package Tag_Ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (Tag, Tag_Ptr);
 
    type Delegate is access function (Object : System.Address)
       return System.Address;

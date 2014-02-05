@@ -1,9 +1,10 @@
 package body Ada.Strings.UTF_Encoding.Wide_Wide_Strings is
 
-   function Add_Or_Remove_BOM is new Generic_Add_Or_Remove_BOM (
-      Wide_Wide_Character,
-      Wide_Wide_String,
-      BOM_32);
+   function Add_Or_Remove_BOM is
+      new Generic_Add_Or_Remove_BOM (
+         Wide_Wide_Character,
+         Wide_Wide_String,
+         BOM_32);
 
    --  implementation
 

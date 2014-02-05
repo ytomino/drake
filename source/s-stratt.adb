@@ -217,9 +217,10 @@ package body System.Stream_Attributes is
    function I_LLU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Long_Long_Unsigned
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         S_LLU,
-         Unsigned_Types.Long_Long_Unsigned);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            S_LLU,
+            Unsigned_Types.Long_Long_Unsigned);
       Buffer : S_LLU;
    begin
       Read_Just (Stream, Buffer);
@@ -229,9 +230,8 @@ package body System.Stream_Attributes is
    function I_LU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Long_Unsigned
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         S_LU,
-         Unsigned_Types.Long_Unsigned);
+      function Cast is
+         new Ada.Unchecked_Conversion (S_LU, Unsigned_Types.Long_Unsigned);
       Buffer : S_LU;
    begin
       Read_Just (Stream, Buffer);
@@ -261,9 +261,8 @@ package body System.Stream_Attributes is
    function I_SSI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Short_Short_Integer
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         S_SSI,
-         Short_Short_Integer);
+      function Cast is
+         new Ada.Unchecked_Conversion (S_SSI, Short_Short_Integer);
       Buffer : S_SSI;
    begin
       Read_Just (Stream, Buffer);
@@ -273,9 +272,10 @@ package body System.Stream_Attributes is
    function I_SSU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Short_Short_Unsigned
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         S_SSU,
-         Unsigned_Types.Short_Short_Unsigned);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            S_SSU,
+            Unsigned_Types.Short_Short_Unsigned);
       Buffer : S_SSU;
    begin
       Read_Just (Stream, Buffer);
@@ -285,9 +285,8 @@ package body System.Stream_Attributes is
    function I_SU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Short_Unsigned
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         S_SU,
-         Unsigned_Types.Short_Unsigned);
+      function Cast is
+         new Ada.Unchecked_Conversion (S_SU, Unsigned_Types.Short_Unsigned);
       Buffer : S_SU;
    begin
       Read_Just (Stream, Buffer);
@@ -297,9 +296,8 @@ package body System.Stream_Attributes is
    function I_U (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Unsigned
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         S_U,
-         Unsigned_Types.Unsigned);
+      function Cast is
+         new Ada.Unchecked_Conversion (S_U, Unsigned_Types.Unsigned);
       Buffer : S_U;
    begin
       Read_Just (Stream, Buffer);
@@ -319,9 +317,8 @@ package body System.Stream_Attributes is
    function I_WWC (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Wide_Wide_Character
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         S_WWC,
-         Wide_Wide_Character);
+      function Cast is
+         new Ada.Unchecked_Conversion (S_WWC, Wide_Wide_Character);
       Buffer : S_WWC;
    begin
       Read_Just (Stream, Buffer);
@@ -422,9 +419,10 @@ package body System.Stream_Attributes is
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Long_Long_Unsigned)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Unsigned_Types.Long_Long_Unsigned,
-         S_LLU);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Unsigned_Types.Long_Long_Unsigned,
+            S_LLU);
    begin
       Ada.Streams.Write (Stream.all, Cast (Item));
    end W_LLU;
@@ -433,9 +431,8 @@ package body System.Stream_Attributes is
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Long_Unsigned)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Unsigned_Types.Long_Unsigned,
-         S_LU);
+      function Cast is
+         new Ada.Unchecked_Conversion (Unsigned_Types.Long_Unsigned, S_LU);
    begin
       Ada.Streams.Write (Stream.all, Cast (Item));
    end W_LU;
@@ -462,9 +459,8 @@ package body System.Stream_Attributes is
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Short_Short_Integer)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Short_Short_Integer,
-         S_SSI);
+      function Cast is
+         new Ada.Unchecked_Conversion (Short_Short_Integer, S_SSI);
    begin
       Ada.Streams.Write (Stream.all, Cast (Item));
    end W_SSI;
@@ -473,9 +469,10 @@ package body System.Stream_Attributes is
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Short_Short_Unsigned)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Unsigned_Types.Short_Short_Unsigned,
-         S_SSU);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Unsigned_Types.Short_Short_Unsigned,
+            S_SSU);
    begin
       Ada.Streams.Write (Stream.all, Cast (Item));
    end W_SSU;
@@ -484,9 +481,8 @@ package body System.Stream_Attributes is
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Short_Unsigned)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Unsigned_Types.Short_Unsigned,
-         S_SU);
+      function Cast is
+         new Ada.Unchecked_Conversion (Unsigned_Types.Short_Unsigned, S_SU);
    begin
       Ada.Streams.Write (Stream.all, Cast (Item));
    end W_SU;
@@ -495,9 +491,8 @@ package body System.Stream_Attributes is
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Unsigned)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Unsigned_Types.Unsigned,
-         S_U);
+      function Cast is
+         new Ada.Unchecked_Conversion (Unsigned_Types.Unsigned, S_U);
    begin
       Ada.Streams.Write (Stream.all, Cast (Item));
    end W_U;
@@ -515,9 +510,8 @@ package body System.Stream_Attributes is
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Wide_Wide_Character)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Wide_Wide_Character,
-         S_WWC);
+      function Cast is
+         new Ada.Unchecked_Conversion (Wide_Wide_Character, S_WWC);
    begin
       Ada.Streams.Write (Stream.all, Cast (Item));
    end W_WWC;

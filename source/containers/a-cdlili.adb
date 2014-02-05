@@ -5,19 +5,15 @@ package body Ada.Containers.Doubly_Linked_Lists is
    use type Linked_Lists.Node_Access;
    use type Copy_On_Write.Data_Access;
 
-   function Upcast is new Unchecked_Conversion (
-      Cursor,
-      Linked_Lists.Node_Access);
-   function Downcast is new Unchecked_Conversion (
-      Linked_Lists.Node_Access,
-      Cursor);
+   function Upcast is
+      new Unchecked_Conversion (Cursor, Linked_Lists.Node_Access);
+   function Downcast is
+      new Unchecked_Conversion (Linked_Lists.Node_Access, Cursor);
 
-   function Upcast is new Unchecked_Conversion (
-      Data_Access,
-      Copy_On_Write.Data_Access);
-   function Downcast is new Unchecked_Conversion (
-      Copy_On_Write.Data_Access,
-      Data_Access);
+   function Upcast is
+      new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
+   function Downcast is
+      new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
 
    type Context_Type is limited record
       Left : not null access Element_Type;

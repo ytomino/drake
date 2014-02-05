@@ -34,9 +34,10 @@ package System.Unwind is
    end record;
 
    type Exception_Occurrence_Access is access all Exception_Occurrence;
-   procedure Free is new Ada.Unchecked_Deallocation (
-      Exception_Occurrence,
-      Exception_Occurrence_Access);
+   procedure Free is
+      new Ada.Unchecked_Deallocation (
+         Exception_Occurrence,
+         Exception_Occurrence_Access);
 
    --  implementation for catching object (a-except-2005.adb)
    procedure Save_Occurrence (

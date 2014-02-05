@@ -12,23 +12,24 @@ package body Ada.Tags is
 
    Nested_Prefix : constant String := "Internal tag at 16#";
 
-   package Tag_Conv is new System.Address_To_Named_Access_Conversions (
-      Dispatch_Table,
-      Tag);
-   package Tag_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      Tag,
-      Tag_Ptr);
+   package Tag_Conv is
+      new System.Address_To_Named_Access_Conversions (Dispatch_Table, Tag);
+   package Tag_Ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (Tag, Tag_Ptr);
 
-   package DT_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      Dispatch_Table_Wrapper,
-      Dispatch_Table_Ptr);
-   package TSD_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      Type_Specific_Data,
-      Type_Specific_Data_Ptr);
+   package DT_Ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         Dispatch_Table_Wrapper,
+         Dispatch_Table_Ptr);
+   package TSD_Ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         Type_Specific_Data,
+         Type_Specific_Data_Ptr);
 
-   package OTT_Ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      System.Storage_Elements.Storage_Offset,
-      Offset_To_Top_Ptr);
+   package OTT_Ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         System.Storage_Elements.Storage_Offset,
+         Offset_To_Top_Ptr);
 
    function strlen (Item : not null Cstring_Ptr)
       return System.Storage_Elements.Storage_Count;

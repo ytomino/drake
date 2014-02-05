@@ -7,18 +7,14 @@ package body Ada.Containers.Limited_Ordered_Sets is
    use type Binary_Trees.Node_Access;
 --  diff
 
-   function Upcast is new Unchecked_Conversion (
-      Cursor,
-      Binary_Trees.Node_Access);
-   function Downcast is new Unchecked_Conversion (
-      Binary_Trees.Node_Access,
-      Cursor);
+   function Upcast is
+      new Unchecked_Conversion (Cursor, Binary_Trees.Node_Access);
+   function Downcast is
+      new Unchecked_Conversion (Binary_Trees.Node_Access, Cursor);
 
 --  diff (Upcast)
 --
---
 --  diff (Downcast)
---
 --
 
    function Compare is new Composites.Compare (Element_Type);

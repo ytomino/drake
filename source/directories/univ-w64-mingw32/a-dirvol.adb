@@ -16,9 +16,10 @@ package body Ada.Directories.Volumes is
    use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
 
-   package Conv is new System.Address_To_Named_Access_Conversions (
-      C.winnt.WCHAR,
-      C.winnt.LPWSTR);
+   package Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.winnt.WCHAR,
+         C.winnt.LPWSTR);
 
    procedure GetVolumeInformation (
       FS : not null access Non_Controlled_File_System;

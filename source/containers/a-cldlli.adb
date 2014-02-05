@@ -5,18 +5,14 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    use type Linked_Lists.Node_Access;
 --  diff
 
-   function Upcast is new Unchecked_Conversion (
-      Cursor,
-      Linked_Lists.Node_Access);
-   function Downcast is new Unchecked_Conversion (
-      Linked_Lists.Node_Access,
-      Cursor);
+   function Upcast is
+      new Unchecked_Conversion (Cursor, Linked_Lists.Node_Access);
+   function Downcast is
+      new Unchecked_Conversion (Linked_Lists.Node_Access, Cursor);
 
 --  diff (Upcast)
 --
---
 --  diff (Downcast)
---
 --
 
 --  diff (Context_Type)

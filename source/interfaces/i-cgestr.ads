@@ -6,11 +6,12 @@ generic
    type String_Type is array (Positive range <>) of Character_Type;
    type Element is new Character_Type;
    type Element_Array is array (size_t range <>) of aliased Element;
-   with package Pointers is new Interfaces.C.Pointers (
-      Index => size_t,
-      Element => Element,
-      Element_Array => Element_Array,
-      Default_Terminator => Element'Val (0));
+   with package Pointers is
+      new Interfaces.C.Pointers (
+         Index => size_t,
+         Element => Element,
+         Element_Array => Element_Array,
+         Default_Terminator => Element'Val (0));
    with function To_C (
       Item : String_Type;
       Append_Nul : Boolean := True)

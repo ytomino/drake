@@ -212,12 +212,14 @@ package body System.Long_Long_Complex_Elementary_Functions is
       renames Ada.Numerics.Long_Long_Complex_Types;
    use type Numerics_Complex_Types.Complex;
 
-   function To_Numerics_Complex is new Ada.Unchecked_Conversion (
-      Long_Long_Complex,
-      Numerics_Complex_Types.Complex);
-   function From_Numerics_Complex is new Ada.Unchecked_Conversion (
-      Numerics_Complex_Types.Complex,
-      Long_Long_Complex);
+   function To_Numerics_Complex is
+      new Ada.Unchecked_Conversion (
+         Long_Long_Complex,
+         Numerics_Complex_Types.Complex);
+   function From_Numerics_Complex is
+      new Ada.Unchecked_Conversion (
+         Numerics_Complex_Types.Complex,
+         Long_Long_Complex);
 
    Pi : constant :=
       3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37511;
@@ -476,8 +478,8 @@ package body System.Long_Long_Complex_Elementary_Functions is
                Im => C.Im / 2.0);
             Sqrt_D : constant Long_Long_Complex := Fast_Sqrt (D);
             E : constant Long_Long_Complex := ( -- Sqrt_D + i_Sqrt_B
-              Re => Sqrt_D.Re + i_Sqrt_B.Re,
-              Im => Sqrt_D.Im + i_Sqrt_B.Im);
+               Re => Sqrt_D.Re + i_Sqrt_B.Re,
+               Im => Sqrt_D.Im + i_Sqrt_B.Im);
             Log_E : constant Long_Long_Complex := Fast_Log (E);
             Result : constant Long_Long_Complex := ( -- -2.0 * i * Log_E
                Re => 2.0 * Log_E.Im,
@@ -601,7 +603,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
                Im => Log_X.Im);
          begin
             if (X.Re < 0.0 and then Result.Re > 0.0)
-              or else (X.Re > 0.0 and then Result.Re < 0.0)
+               or else (X.Re > 0.0 and then Result.Re < 0.0)
             then
                return (Re => -Result.Re, Im => Result.Im);
             else

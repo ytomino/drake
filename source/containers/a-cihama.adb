@@ -5,19 +5,15 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    use type Hash_Tables.Table_Access;
    use type Copy_On_Write.Data_Access;
 
-   function Upcast is new Unchecked_Conversion (
-      Cursor,
-      Hash_Tables.Node_Access);
-   function Downcast is new Unchecked_Conversion (
-      Hash_Tables.Node_Access,
-      Cursor);
+   function Upcast is
+      new Unchecked_Conversion (Cursor, Hash_Tables.Node_Access);
+   function Downcast is
+      new Unchecked_Conversion (Hash_Tables.Node_Access, Cursor);
 
-   function Upcast is new Unchecked_Conversion (
-      Data_Access,
-      Copy_On_Write.Data_Access);
-   function Downcast is new Unchecked_Conversion (
-      Copy_On_Write.Data_Access,
-      Data_Access);
+   function Upcast is
+      new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
+   function Downcast is
+      new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
 
    type Context_Type is limited record
       Left : not null access Key_Type;

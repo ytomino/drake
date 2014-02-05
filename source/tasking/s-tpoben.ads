@@ -16,9 +16,10 @@ package System.Tasking.Protected_Objects.Entries is
    pragma Suppress_Initialization (Node);
    type Node_Access is access all Node;
 
-   function Downcast is new Ada.Unchecked_Conversion (
-      Synchronous_Objects.Queue_Node_Access,
-      Node_Access);
+   function Downcast is
+      new Ada.Unchecked_Conversion (
+         Synchronous_Objects.Queue_Node_Access,
+         Node_Access);
 
    type Find_Body_Index_Access is access function (
       O : Address;

@@ -9,9 +9,10 @@ package body System.Tasking.Rendezvous is
    pragma Suppress (All_Checks);
    use type Ada.Exceptions.Exception_Id;
 
-   package Task_Record_Conv is new Address_To_Named_Access_Conversions (
-      Tasks.Task_Record,
-      Tasks.Task_Id);
+   package Task_Record_Conv is
+      new Address_To_Named_Access_Conversions (
+         Tasks.Task_Record,
+         Tasks.Task_Id);
 
    type Node;
    type Node_Access is access all Node;
@@ -25,9 +26,10 @@ package body System.Tasking.Rendezvous is
    end record;
    pragma Suppress_Initialization (Node);
 
-   function Downcast is new Ada.Unchecked_Conversion (
-      Synchronous_Objects.Queue_Node_Access,
-      Node_Access);
+   function Downcast is
+      new Ada.Unchecked_Conversion (
+         Synchronous_Objects.Queue_Node_Access,
+         Node_Access);
 
    function Filter (
       The_Node : not null Synchronous_Objects.Queue_Node_Access;
@@ -165,9 +167,10 @@ package body System.Tasking.Rendezvous is
          begin
             Synchronous_Objects.Finalize (X.all);
          end Finally;
-         package Holder is new Ada.Exceptions.Finally.Scoped_Holder (
-            Synchronous_Objects.Event,
-            Finally);
+         package Holder is
+            new Ada.Exceptions.Finally.Scoped_Holder (
+               Synchronous_Objects.Event,
+               Finally);
          The_Node : aliased Node := (
             Super => <>,
             Previous => null,

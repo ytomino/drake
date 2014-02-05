@@ -13,9 +13,8 @@ package body Ada.Strings.Generic_Unbounded is
    subtype Not_Null_Data_Access is not null Data_Access;
    type Data_Access_Access is access all Not_Null_Data_Access;
    type System_Address_Access is access all System.Address;
-   function Upcast is new Unchecked_Conversion (
-      Data_Access_Access,
-      System_Address_Access);
+   function Upcast is
+      new Unchecked_Conversion (Data_Access_Access, System_Address_Access);
 
    function Allocate_Data (Max_Length, Capacity : Natural)
       return not null Data_Access;

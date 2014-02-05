@@ -9,9 +9,8 @@ package body System.Initialization is
    type Object_Access is access all Object;
    for Object_Access'Storage_Pool use Storage_Pools.Overlaps.Pool;
 
-   procedure Free is new Ada.Unchecked_Deallocation (
-      Object,
-      Object_Access);
+   procedure Free is
+      new Ada.Unchecked_Deallocation (Object, Object_Access);
 
    --  implementation
 
@@ -27,9 +26,8 @@ package body System.Initialization is
       else
          declare
             type Storage_Access is access all Object_Storage;
-            function Cast is new Ada.Unchecked_Conversion (
-               Storage_Access,
-               Object_Pointer);
+            function Cast is
+               new Ada.Unchecked_Conversion (Storage_Access, Object_Pointer);
          begin
             return Cast (Storage_Access (Storage));
          end;
@@ -50,9 +48,8 @@ package body System.Initialization is
       else
          declare
             type Storage_Access is access all Object_Storage;
-            function Cast is new Ada.Unchecked_Conversion (
-               Storage_Access,
-               Object_Pointer);
+            function Cast is
+               new Ada.Unchecked_Conversion (Storage_Access, Object_Pointer);
          begin
             return Result : constant Object_Pointer :=
                Cast (Storage_Access (Storage))
@@ -71,9 +68,8 @@ package body System.Initialization is
       then
          declare
             type Storage_Access is access all Object_Storage;
-            function Cast is new Ada.Unchecked_Conversion (
-               Storage_Access,
-               Object_Access);
+            function Cast is
+               new Ada.Unchecked_Conversion (Storage_Access, Object_Access);
             X : Object_Access := Cast (Storage_Access (Storage));
          begin
             Storage_Pools.Overlaps.Set_Address (Storage.all'Address);

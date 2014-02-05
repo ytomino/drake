@@ -27,7 +27,7 @@ package Ada.Characters.Handling is
    function Is_Digit (Item : Character) return Boolean;
    pragma Inline (Is_Digit);
    function Is_Decimal_Digit (Item : Character) return Boolean
-     renames Is_Digit;
+      renames Is_Digit;
    function Is_Hexadecimal_Digit (Item : Character) return Boolean;
    pragma Inline (Is_Hexadecimal_Digit);
    function Is_Alphanumeric (Item : Character) return Boolean;

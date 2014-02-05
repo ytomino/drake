@@ -3,9 +3,8 @@ with Ada.Unchecked_Deallocation;
 with System.Memory.Allocated_Size;
 package body Ada.Streams.Unbounded_Storage_IO is
 
-   procedure Free is new Unchecked_Deallocation (
-      Stream_Type,
-      Stream_Access);
+   procedure Free is
+      new Unchecked_Deallocation (Stream_Type, Stream_Access);
 
    procedure Allocate (
       Stream : in out Stream_Type;

@@ -22,9 +22,10 @@ package body Ada.Interrupts.Inside is
       Interrupt : Interrupt_Id;
       Current : Exceptions.Exception_Occurrence)
    is
-      function Cast is new Unchecked_Conversion (
-         Exceptions.Exception_Occurrence,
-         System.Unwind.Exception_Occurrence);
+      function Cast is
+         new Unchecked_Conversion (
+            Exceptions.Exception_Occurrence,
+            System.Unwind.Exception_Occurrence);
       subtype Fixed_String is String (Positive);
       Full_Name : Fixed_String;
       for Full_Name'Address use Cast (Current).Id.Full_Name;
