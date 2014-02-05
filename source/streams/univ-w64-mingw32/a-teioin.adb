@@ -658,7 +658,7 @@ package body Ada.Text_IO.Inside is
       if File.External = IO_Text_Modes.Terminal
          and then C.wincon.WriteConsoleW (
             hConsoleOutput => Streams.Stream_IO.Inside.Handle (File.File),
-            lpBuffer => C.windef.LPVOID (Ada_Buffer (1)'Address),
+            lpBuffer => C.windef.LPCVOID (Ada_Buffer (1)'Address),
             nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
             lpNumberOfCharsWritten => Written'Access,
             lpReserved => C.windef.LPVOID (System.Null_Address)) /= 0

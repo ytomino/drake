@@ -55,7 +55,11 @@ package body Ada.Text_IO.Inside is
       Handle : Streams.Stream_IO.Inside.Handle_Type;
       Item : String) is
    begin
-      if C.unistd.write (Handle, Item'Address, Item'Length) < 0 then
+      if C.unistd.write (
+         Handle,
+         C.void_const_ptr (Item'Address),
+         Item'Length) < 0
+      then
          Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
       end if;
    end write;

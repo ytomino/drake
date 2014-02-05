@@ -8,5 +8,5 @@ begin
    return Storage_Elements.Storage_Count (C.winbase.HeapSize (
       C.winbase.GetProcessHeap,
       0,
-      C.windef.LPVOID (P)));
+      C.windef.LPCVOID (P)));
 end System.Memory.Allocated_Size;

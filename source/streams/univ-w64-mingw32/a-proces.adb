@@ -6,7 +6,7 @@ package body Ada.Processes is
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
-   use type C.winnt.HANDLE;
+   use type C.winnt.HANDLE; -- C.void_ptr
 
    --  implementation
 
@@ -26,7 +26,7 @@ package body Ada.Processes is
          C.winbase.SECURITY_ATTRIBUTES := (
             nLength =>
                C.winbase.SECURITY_ATTRIBUTES'Size / Standard'Storage_Unit,
-            lpSecurityDescriptor => C.windef.LPCVOID (System.Null_Address),
+            lpSecurityDescriptor => C.windef.LPVOID (System.Null_Address),
             bInheritHandle => 1);
       pragma Unreferenced (Search_Path);
       W_Command_Line : aliased C.winnt.WCHAR_array (
@@ -62,7 +62,7 @@ package body Ada.Processes is
          lpThreadAttributes => null,
          bInheritHandles => 1,
          dwCreationFlags => 0,
-         lpEnvironment => C.windef.LPCVOID (System.Null_Address),
+         lpEnvironment => C.windef.LPVOID (System.Null_Address),
          lpCurrentDirectory => Directory_Ref,
          lpStartupInfo => Startup_Info'Access,
          lpProcessInformation => Process_Info'Access) = 0

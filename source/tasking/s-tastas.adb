@@ -462,7 +462,7 @@ package body System.Tasking.Tasks is
          Native_Tasks.Parameter_Type,
          Address);
       function To_Result is new Ada.Unchecked_Conversion (
-         Address,
+         Native_Tasks.Parameter_Type,
          Native_Tasks.Result_Type);
       Result : Native_Tasks.Result_Type;
       Local : aliased Soft_Links.Task_Local_Storage;
@@ -553,11 +553,11 @@ package body System.Tasking.Tasks is
                Result := To_Result (Rec); -- master already has been waiting
             else
                Free (T);
-               Result := To_Result (Null_Address);
+               Result := Native_Tasks.Result_Type (Null_Address);
             end if;
          else
             Free (T);
-            Result := To_Result (Null_Address);
+            Result := Native_Tasks.Result_Type (Null_Address);
          end if;
       end if;
       --  cleanup secondary stack
