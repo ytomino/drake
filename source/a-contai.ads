@@ -6,8 +6,11 @@ package Ada.Containers is
 
    --  extended
    --  It's convenience to make a hash function.
-   function Rotate_Left (Left : Hash_Type; Right : Natural) return Hash_Type;
+   function Rotate_Left (Value : Hash_Type; Amount : Natural) return Hash_Type;
    pragma Import (Intrinsic, Rotate_Left);
+   function Rotate_Right (Value : Hash_Type; Amount : Natural)
+      return Hash_Type;
+   pragma Import (Intrinsic, Rotate_Right);
 
    --  modified
    --  Count_Type is essentially same as Natural.
