@@ -1,12 +1,10 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Memory;
 with System.Soft_Links;
-with System.Unsigned_Types;
 package body System.Secondary_Stack is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Integer_Address;
    use type Storage_Elements.Storage_Offset;
-   use type Unsigned_Types.Unsigned;
 
    Expanding : constant := 1; -- connecting next page
    pragma Warnings (Off, Expanding);
@@ -30,8 +28,9 @@ package body System.Secondary_Stack is
    function Cast (X : Address) return Block_Access
       renames Conv.To_Pointer;
 
-   function clz (X : Storage_Elements.Integer_Address)
-      return Unsigned_Types.Unsigned;
+   type Unsigned is mod 2 ** Integer'Size;
+
+   function clz (X : Storage_Elements.Integer_Address) return Unsigned;
    pragma Import (Intrinsic, clz, "__builtin_clzl");
 
    procedure unreachable;

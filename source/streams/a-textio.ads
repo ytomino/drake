@@ -22,7 +22,7 @@ package Ada.Text_IO is
    subtype Number_Base is Integer range 2 .. 16;
 
 --  type Type_Set is (Lower_Case, Upper_Case);
-   type Type_Set is new Ada.Formatting.Type_Set;
+   type Type_Set is new Formatting.Type_Set;
 
    --  File Management
 

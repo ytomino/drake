@@ -32,7 +32,7 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    function Has_Element (Position : Cursor) return Boolean;
 
    package List_Iterator_Interfaces is
-      new Ada.Iterator_Interfaces (Cursor, Has_Element);
+      new Iterator_Interfaces (Cursor, Has_Element);
 
    function "=" (Left, Right : List) return Boolean;
 

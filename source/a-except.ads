@@ -30,16 +30,16 @@ package Ada.Exceptions is
 --
 --    procedure Raise_Exception_From_Here (
 --       E : Exception_Id;
---       File : String := Ada.Debug.File;
---       Line : Integer := Ada.Debug.Line);
+--       File : String := Debug.File;
+--       Line : Integer := Debug.Line);
 --    pragma No_Return (Raise_Exception_From_Here);
 --    pragma Import (Ada, Raise_Exception_From_Here,
 --       "__drake_raise_exception_from_here");
 --
 --    procedure Raise_Exception_From_Here_With (
 --       E : Exception_Id;
---       File : String := Ada.Debug.File;
---       Line : Integer := Ada.Debug.Line;
+--       File : String := Debug.File;
+--       Line : Integer := Debug.Line;
 --       Message : String);
 --    pragma No_Return (Raise_Exception_From_Here_With);
 --    pragma Import (Ada, Raise_Exception_From_Here_With,
@@ -49,16 +49,16 @@ package Ada.Exceptions is
 
    procedure Implementation_Raise_Exception_From_Here (
       E : Exception_Id;
-      File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line);
+      File : String := Debug.File;
+      Line : Integer := Debug.Line);
    pragma No_Return (Implementation_Raise_Exception_From_Here);
    pragma Import (Ada, Implementation_Raise_Exception_From_Here,
       "__drake_raise_exception_from_here");
 
    procedure Implementation_Raise_Exception_From_Here_With (
       E : Exception_Id;
-      File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line;
+      File : String := Debug.File;
+      Line : Integer := Debug.Line;
       Message : String);
    pragma No_Return (Implementation_Raise_Exception_From_Here_With);
    pragma Import (Ada, Implementation_Raise_Exception_From_Here_With,
@@ -69,13 +69,13 @@ package Ada.Exceptions is
    --    exception with source location.
    procedure Raise_Exception_From_Here (
       E : Exception_Id;
-      File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line)
+      File : String := Debug.File;
+      Line : Integer := Debug.Line)
       renames Implementation_Raise_Exception_From_Here;
    procedure Raise_Exception_From_Here (
       E : Exception_Id;
-      File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line;
+      File : String := Debug.File;
+      Line : Integer := Debug.Line;
       Message : String)
       renames Implementation_Raise_Exception_From_Here_With;
 

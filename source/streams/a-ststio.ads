@@ -203,7 +203,7 @@ private
          return Stream_Element_Count;
 
       type Dispatcher is record
-         Tag : Ada.Tags.Tag := Ada.Tags.No_Tag;
+         Tag : Tags.Tag := Tags.No_Tag;
          File : access Inside.Stream_Type := null;
       end record;
       pragma Suppress_Initialization (Dispatcher);

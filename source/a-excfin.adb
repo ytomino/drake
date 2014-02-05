@@ -7,7 +7,7 @@ package body Ada.Exceptions.Finally is
 
    type Handler_Type is access procedure (Params : System.Address);
 
-   type Finalizer is new Ada.Finalization.Limited_Controlled with record
+   type Finalizer is new Finalization.Limited_Controlled with record
       Params : System.Address;
       Handler : System.Address;
    end record;
@@ -29,7 +29,7 @@ package body Ada.Exceptions.Finally is
       package Conv is new System.Address_To_Access_Conversions (Parameters);
 
       Object : Finalizer := (
-         Ada.Finalization.Limited_Controlled with
+         Finalization.Limited_Controlled with
          Params => System.Null_Address,
          Handler => Handler'Code_Address);
       pragma Unreferenced (Object);
@@ -52,7 +52,7 @@ package body Ada.Exceptions.Finally is
       Handler : not null access procedure (Params : System.Address))
    is
       Object : Finalizer := (
-         Ada.Finalization.Limited_Controlled with
+         Finalization.Limited_Controlled with
          Params => Params,
          Handler => Handler.all'Address);
       pragma Unreferenced (Object);
@@ -66,7 +66,7 @@ package body Ada.Exceptions.Finally is
       Handler : not null access procedure (Params : System.Address))
    is
       Object : Finalizer := (
-         Ada.Finalization.Limited_Controlled with
+         Finalization.Limited_Controlled with
          Params => Params,
          Handler => Handler.all'Address);
       pragma Unreferenced (Object);

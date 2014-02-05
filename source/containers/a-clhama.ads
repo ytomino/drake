@@ -35,7 +35,7 @@ package Ada.Containers.Limited_Hashed_Maps is
    function Has_Element (Position : Cursor) return Boolean;
 
    package Map_Iterator_Interfaces is
-      new Ada.Iterator_Interfaces (Cursor, Has_Element);
+      new Iterator_Interfaces (Cursor, Has_Element);
 
 --  diff ("=")
 

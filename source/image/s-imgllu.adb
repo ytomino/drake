@@ -12,7 +12,7 @@ package body System.Img_LLU is
       pragma Assert (S'Length >= 1);
       S (S'First) := ' ';
       Formatting.Image (
-         V,
+         Formatting.Longest_Unsigned (V),
          S (S'First + 1 .. S'Last),
          P,
          Error => Error);

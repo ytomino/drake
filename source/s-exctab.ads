@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  runtime unit required by compiler
 with System.Standard_Library; -- System.Unwind making "elaboration circularity"
 package System.Exception_Table is
    pragma Preelaborate;

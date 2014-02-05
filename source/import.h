@@ -2,6 +2,7 @@
 #define _DONT_USE_CTYPE_INLINE_
 #elif defined(__FreeBSD__)
 #define _DONT_USE_CTYPE_INLINE_
+#define _STDSTREAM_DECLARED
 #define d_fileno d_ino
 #elif defined(__linux__)
 #define _GNU_SOURCE /* use GNU extension */
@@ -64,6 +65,7 @@
 #include <copyfile.h> /* copyfile */
 #elif defined(__FreeBSD__)
 #undef _DONT_USE_CTYPE_INLINE_
+#undef _STDSTREAM_DECLARED
 #undef d_fileno
 #include <sys/param.h> /* PAGE_SIZE */
 #include <malloc_np.h> /* malloc_usable_size */

@@ -1,7 +1,5 @@
 package body System.Formatting is
    pragma Suppress (All_Checks);
-   use type Unsigned_Types.Unsigned;
-   use type Unsigned_Types.Long_Long_Unsigned;
 
    procedure Fill_Padding (Item : out String; Padding : Character);
    procedure Fill_Padding (Item : out String; Padding : Character) is

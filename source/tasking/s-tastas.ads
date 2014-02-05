@@ -50,7 +50,8 @@ package System.Tasking.Tasks is
       Size : out Storage_Elements.Storage_Count);
 
    --  name
-   function Name (T : not null Task_Id) return String;
+   function Name (T : not null Task_Id)
+      return not null access constant String;
 
    --  abort
    procedure Send_Abort (T : not null Task_Id);
