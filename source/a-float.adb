@@ -186,10 +186,8 @@ package body Ada.Float is
       Quotient : out Quotient_Type;
       Remainder : out Remainder_Type)
    is
-      procedure Divide_By_1 is new Float.Divide_By_1 (
-         Dividend_Type,
-         Quotient_Type,
-         Remainder_Type);
+      procedure Divide_By_1 is
+         new Float.Divide_By_1 (Dividend_Type, Quotient_Type, Remainder_Type);
    begin
       Divide_By_1 (Dividend, Quotient, Remainder);
       if Remainder < 0.0 then

@@ -228,14 +228,15 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
    package Equivalents is
       function "=" (Left, Right : List) return Boolean;
       function Find (Container : List; Item : Element_Type) return Cursor;
-      function Find (Container : List;
-                     Item : Element_Type;
-                     Position : Cursor) return Cursor;
-      function Reverse_Find (Container : List;
-                             Item : Element_Type) return Cursor;
-      function Reverse_Find (Container : List;
-                             Item : Element_Type;
-                             Position : Cursor) return Cursor;
+      function Find (Container : List; Item : Element_Type; Position : Cursor)
+         return Cursor;
+      function Reverse_Find (Container : List; Item : Element_Type)
+         return Cursor;
+      function Reverse_Find (
+         Container : List;
+         Item : Element_Type;
+         Position : Cursor)
+         return Cursor;
       function Contains (Container : List; Item : Element_Type) return Boolean;
    end Equivalents;
 

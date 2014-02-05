@@ -34,9 +34,10 @@ package body Ada.Strings.Maps is
 
    procedure Free_Set_Data (Data : System.Address);
    procedure Free_Set_Data (Data : System.Address) is
-      package Conv is new System.Address_To_Named_Access_Conversions (
-         Set_Data,
-         Set_Data_Access);
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (
+            Set_Data,
+            Set_Data_Access);
       X : Set_Data_Access := Conv.To_Pointer (Data);
    begin
       Free (X);
@@ -712,9 +713,10 @@ package body Ada.Strings.Maps is
          subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
          type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
          type System_Address_Access is access all System.Address;
-         function Upcast is new Unchecked_Conversion (
-            Set_Data_Access_Access,
-            System_Address_Access);
+         function Upcast is
+            new Unchecked_Conversion (
+               Set_Data_Access_Access,
+               System_Address_Access);
       begin
          System.Reference_Counting.Clear (
             Upcast (Object.Data'Access),
@@ -771,9 +773,10 @@ package body Ada.Strings.Maps is
 
    procedure Free_Map_Data (Data : System.Address);
    procedure Free_Map_Data (Data : System.Address) is
-      package Conv is new System.Address_To_Named_Access_Conversions (
-         Map_Data,
-         Map_Data_Access);
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (
+            Map_Data,
+            Map_Data_Access);
       X : Map_Data_Access := Conv.To_Pointer (Data);
    begin
       Free (X);
@@ -933,9 +936,10 @@ package body Ada.Strings.Maps is
          subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
          type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
          type System_Address_Access is access all System.Address;
-         function Upcast is new Unchecked_Conversion (
-            Map_Data_Access_Access,
-            System_Address_Access);
+         function Upcast is
+            new Unchecked_Conversion (
+               Map_Data_Access_Access,
+               System_Address_Access);
       begin
          System.Reference_Counting.Clear (
             Upcast (Object.Data'Access),

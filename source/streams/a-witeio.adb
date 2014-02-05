@@ -4,9 +4,8 @@ with Ada.Unchecked_Deallocation;
 package body Ada.Wide_Text_IO is
 
    type Wide_String_Access is access Wide_String;
-   procedure Free is new Unchecked_Deallocation (
-      Wide_String,
-      Wide_String_Access);
+   procedure Free is
+      new Unchecked_Deallocation (Wide_String, Wide_String_Access);
 
    --  implementation
 
@@ -108,9 +107,8 @@ package body Ada.Wide_Text_IO is
       begin
          Free (X.all);
       end Finally;
-      package Holder is new Exceptions.Finally.Scoped_Holder (
-         Wide_String_Access,
-         Finally);
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Wide_String_Access, Finally);
    begin
       Holder.Assign (Line_Buffer'Access);
       loop

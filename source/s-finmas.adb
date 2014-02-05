@@ -50,9 +50,8 @@ package body System.Finalization_Masters is
    begin
       while List.Objects.Next /= List.Objects'Unchecked_Access loop
          declare
-            package Conv is new Address_To_Named_Access_Conversions (
-               FM_Node,
-               FM_Node_Ptr);
+            package Conv is
+               new Address_To_Named_Access_Conversions (FM_Node, FM_Node_Ptr);
             Curr_Ptr : constant FM_Node_Ptr := List.Objects.Next;
             Obj_Addr : constant Address :=
                Conv.To_Address (Curr_Ptr) + Header_Offset;

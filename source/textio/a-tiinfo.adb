@@ -270,9 +270,8 @@ package body Ada.Text_IO.Inside.Formatting is
       declare
          Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
-         package Holder is new Exceptions.Finally.Scoped_Holder (
-            String_Access,
-            Finally);
+         package Holder is
+            new Exceptions.Finally.Scoped_Holder (String_Access, Finally);
       begin
          Holder.Assign (Buffer'Access);
          declare
@@ -373,9 +372,8 @@ package body Ada.Text_IO.Inside.Formatting is
       declare
          Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
-         package Holder is new Exceptions.Finally.Scoped_Holder (
-            String_Access,
-            Finally);
+         package Holder is
+            new Exceptions.Finally.Scoped_Holder (String_Access, Finally);
       begin
          Holder.Assign (Buffer'Access);
          declare

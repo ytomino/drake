@@ -134,10 +134,8 @@ package body System.Tasking.Tasks is
 
    end Simple_Vectors;
 
-   package Attribute_Vectors is new Simple_Vectors (
-      Attribute,
-      Attribute_Array,
-      Attribute_Array_Access);
+   package Attribute_Vectors is
+      new Simple_Vectors (Attribute, Attribute_Array, Attribute_Array_Access);
 
    procedure Clear_Attributes (Item : Task_Id);
    procedure Clear_Attributes (Item : Task_Id) is
@@ -164,16 +162,16 @@ package body System.Tasking.Tasks is
    Attribute_Indexes : Attribute_Index_Set_Access := null;
    Attribute_Indexes_Length : Natural := 0;
 
-   package Attribute_Index_Sets is new Simple_Vectors (
-      Word,
-      Attribute_Index_Set,
-      Attribute_Index_Set_Access);
+   package Attribute_Index_Sets is
+      new Simple_Vectors (
+         Word,
+         Attribute_Index_Set,
+         Attribute_Index_Set_Access);
 
    --  task record
 
-   package Task_Record_Conv is new Address_To_Named_Access_Conversions (
-      Task_Record,
-      Task_Id);
+   package Task_Record_Conv is
+      new Address_To_Named_Access_Conversions (Task_Record, Task_Id);
 
    procedure Append_To_Completion_List (
       Master : Master_Access;
@@ -238,15 +236,12 @@ package body System.Tasking.Tasks is
 
    procedure Free (Item : in out Task_Id);
    procedure Free (Item : in out Task_Id) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-         String,
-         String_Access);
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-         Rendezvous_Record,
-         Rendezvous_Access);
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-         Task_Record,
-         Task_Id);
+      procedure Unchecked_Free is
+         new Ada.Unchecked_Deallocation (String, String_Access);
+      procedure Unchecked_Free is
+         new Ada.Unchecked_Deallocation (Rendezvous_Record, Rendezvous_Access);
+      procedure Unchecked_Free is
+         new Ada.Unchecked_Deallocation (Task_Record, Task_Id);
    begin
       --  detach from master
       Remove_From_Completion_List (Item);
@@ -284,9 +279,10 @@ package body System.Tasking.Tasks is
 
    function Get_CE return Ada.Exceptions.Exception_Occurrence_Access;
    function Get_CE return Ada.Exceptions.Exception_Occurrence_Access is
-      function Cast is new Ada.Unchecked_Conversion (
-         Unwind.Exception_Occurrence_Access,
-         Ada.Exceptions.Exception_Occurrence_Access);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Unwind.Exception_Occurrence_Access,
+            Ada.Exceptions.Exception_Occurrence_Access);
    begin
       return Cast (Get_SS.Current_Exception'Access);
    end Get_CE;
@@ -414,9 +410,10 @@ package body System.Tasking.Tasks is
       T : not null Task_Id;
       Current : Ada.Exceptions.Exception_Occurrence)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Ada.Exceptions.Exception_Occurrence,
-         Unwind.Exception_Occurrence);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Ada.Exceptions.Exception_Occurrence,
+            Unwind.Exception_Occurrence);
       subtype Fixed_String is String (Positive);
       Full_Name : Fixed_String;
       for Full_Name'Address use Cast (Current).Id.Full_Name;
@@ -458,12 +455,12 @@ package body System.Tasking.Tasks is
    function Thread (Rec : Native_Tasks.Parameter_Type)
       return Native_Tasks.Result_Type
    is
-      function To_Address is new Ada.Unchecked_Conversion (
-         Native_Tasks.Parameter_Type,
-         Address);
-      function To_Result is new Ada.Unchecked_Conversion (
-         Native_Tasks.Parameter_Type,
-         Native_Tasks.Result_Type);
+      function To_Address is
+         new Ada.Unchecked_Conversion (Native_Tasks.Parameter_Type, Address);
+      function To_Result is
+         new Ada.Unchecked_Conversion (
+            Native_Tasks.Parameter_Type,
+            Native_Tasks.Result_Type);
       Result : Native_Tasks.Result_Type;
       Local : aliased Soft_Links.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
@@ -571,9 +568,8 @@ package body System.Tasking.Tasks is
 
    procedure Execute (T : Task_Id; Error : out Execution_Error);
    procedure Execute (T : Task_Id; Error : out Execution_Error) is
-      function To_Parameter is new Ada.Unchecked_Conversion (
-         Address,
-         Native_Tasks.Parameter_Type);
+      function To_Parameter is
+         new Ada.Unchecked_Conversion (Address, Native_Tasks.Parameter_Type);
       Creation_Error : Boolean;
    begin
       if not sync_bool_compare_and_swap (
@@ -603,9 +599,8 @@ package body System.Tasking.Tasks is
 
    procedure Wait (T : Task_Id; Free_Task_Id : out Task_Id);
    procedure Wait (T : Task_Id; Free_Task_Id : out Task_Id) is
-      function To_Address is new Ada.Unchecked_Conversion (
-         Native_Tasks.Result_Type,
-         Address);
+      function To_Address is
+         new Ada.Unchecked_Conversion (Native_Tasks.Result_Type, Address);
       Rec : aliased Native_Tasks.Result_Type;
       Error : Boolean;
    begin
@@ -644,9 +639,10 @@ package body System.Tasking.Tasks is
 
    --  activation
 
-   package Activation_Chain_Conv is new Address_To_Named_Access_Conversions (
-      Activation_Chain_Data,
-      Activation_Chain_Access);
+   package Activation_Chain_Conv is
+      new Address_To_Named_Access_Conversions (
+         Activation_Chain_Data,
+         Activation_Chain_Access);
 
    procedure Remove_From_Merged_Activation_Chain_List (
       C : not null Activation_Chain_Access);
@@ -674,9 +670,10 @@ package body System.Tasking.Tasks is
    procedure Release (C : in out Activation_Chain_Access) is
       procedure Free (Item : in out Activation_Chain_Access);
       procedure Free (Item : in out Activation_Chain_Access) is
-         procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-            Activation_Chain_Data,
-            Activation_Chain_Access);
+         procedure Unchecked_Free is
+            new Ada.Unchecked_Deallocation (
+               Activation_Chain_Data,
+               Activation_Chain_Access);
       begin
          Synchronous_Objects.Finalize (Item.Mutex);
          Synchronous_Objects.Finalize (Item.Condition_Variable);
@@ -802,9 +799,8 @@ package body System.Tasking.Tasks is
 
    procedure Free (Item : in out Master_Access);
    procedure Free (Item : in out Master_Access) is
-      procedure Unchecked_Free is new Ada.Unchecked_Deallocation (
-         Master_Record,
-         Master_Access);
+      procedure Unchecked_Free is
+         new Ada.Unchecked_Deallocation (Master_Record, Master_Access);
    begin
       Synchronous_Objects.Finalize (Item.Mutex);
       Unchecked_Free (Item);
@@ -812,9 +808,10 @@ package body System.Tasking.Tasks is
 
    --  queue
 
-   package Queue_Node_Conv is new Address_To_Named_Access_Conversions (
-      Synchronous_Objects.Queue_Node,
-      Synchronous_Objects.Queue_Node_Access);
+   package Queue_Node_Conv is
+      new Address_To_Named_Access_Conversions (
+         Synchronous_Objects.Queue_Node,
+         Synchronous_Objects.Queue_Node_Access);
 
    function Uncall_Filter (
       The_Node : not null Synchronous_Objects.Queue_Node_Access;

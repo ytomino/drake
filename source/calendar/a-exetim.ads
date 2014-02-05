@@ -37,7 +37,7 @@ package Ada.Execution_Time is
       False; -- implementation-defined
 
    Separate_Interrupt_Clocks_Supported : constant Boolean :=
-     False; -- implementation-defined
+      False; -- implementation-defined
 
 --  function Clock_For_Interrupts return CPU_Time;
 

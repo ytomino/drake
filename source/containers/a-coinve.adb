@@ -8,12 +8,10 @@ package body Ada.Containers.Indefinite_Vectors is
    package Data_Cast is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
-   function Upcast is new Unchecked_Conversion (
-      Data_Access,
-      Copy_On_Write.Data_Access);
-   function Downcast is new Unchecked_Conversion (
-      Copy_On_Write.Data_Access,
-      Data_Access);
+   function Upcast is
+      new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
+   function Downcast is
+      new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
 
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);

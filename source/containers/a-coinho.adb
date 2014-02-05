@@ -4,12 +4,10 @@ with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Indefinite_Holders is
    use type Copy_On_Write.Data_Access;
 
-   function Upcast is new Unchecked_Conversion (
-      Data_Access,
-      Copy_On_Write.Data_Access);
-   function Downcast is new Unchecked_Conversion (
-      Copy_On_Write.Data_Access,
-      Data_Access);
+   function Upcast is
+      new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
+   function Downcast is
+      new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
 
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
@@ -57,9 +55,10 @@ package body Ada.Containers.Indefinite_Holders is
          begin
             Free_Data (X.all);
          end Finally;
-         package Holder is new Exceptions.Finally.Scoped_Holder (
-            Copy_On_Write.Data_Access,
-            Finally);
+         package Holder is
+            new Exceptions.Finally.Scoped_Holder (
+               Copy_On_Write.Data_Access,
+               Finally);
       begin
          Holder.Assign (Target'Unrestricted_Access);
          Downcast (Target).Element :=

@@ -25,9 +25,7 @@ package body Separated is
       Argument : C.void_ptr)
       return C.unwind.Unwind_Reason_Code
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         C.void_ptr,
-         Address);
+      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       D : Data;
       for D'Address use Cast (Argument);
    begin
@@ -41,9 +39,8 @@ package body Separated is
          return C.unwind.URC_NORMAL_STOP;
       else
          declare
-            function Cast is new Ada.Unchecked_Conversion (
-               C.unwind.Unwind_Ptr,
-               Address);
+            function Cast is
+               new Ada.Unchecked_Conversion (C.unwind.Unwind_Ptr, Address);
             IP : constant Address :=
                Cast (C.unwind.Unwind_GetIP (Context));
          begin

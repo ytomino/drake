@@ -15,57 +15,57 @@ package System.Machine_Code is
    type Asm_Insn (<>) is private;
 
    procedure Asm (
-     Template : String;
-     Outputs : Asm_Output_Operand_List;
-     Inputs : Asm_Input_Operand_List;
-     Clobber : String := "";
-     Volatile : Boolean := False);
+      Template : String;
+      Outputs : Asm_Output_Operand_List;
+      Inputs : Asm_Input_Operand_List;
+      Clobber : String := "";
+      Volatile : Boolean := False);
    procedure Asm (
-     Template : String;
-     Outputs : Asm_Output_Operand := No_Output_Operands;
-     Inputs : Asm_Input_Operand_List;
-     Clobber : String := "";
-     Volatile : Boolean := False);
+      Template : String;
+      Outputs : Asm_Output_Operand := No_Output_Operands;
+      Inputs : Asm_Input_Operand_List;
+      Clobber : String := "";
+      Volatile : Boolean := False);
    procedure Asm (
-     Template : String;
-     Outputs : Asm_Output_Operand_List;
-     Inputs : Asm_Input_Operand := No_Input_Operands;
-     Clobber : String := "";
-     Volatile : Boolean := False);
+      Template : String;
+      Outputs : Asm_Output_Operand_List;
+      Inputs : Asm_Input_Operand := No_Input_Operands;
+      Clobber : String := "";
+      Volatile : Boolean := False);
    procedure Asm (
-     Template : String;
-     Outputs : Asm_Output_Operand := No_Output_Operands;
-     Inputs : Asm_Input_Operand := No_Input_Operands;
-     Clobber : String := "";
-     Volatile : Boolean := False);
+      Template : String;
+      Outputs : Asm_Output_Operand := No_Output_Operands;
+      Inputs : Asm_Input_Operand := No_Input_Operands;
+      Clobber : String := "";
+      Volatile : Boolean := False);
    function Asm (
-     Template : String;
-     Outputs : Asm_Output_Operand_List;
-     Inputs : Asm_Input_Operand_List;
-     Clobber : String := "";
-     Volatile : Boolean := False)
-     return Asm_Insn;
+      Template : String;
+      Outputs : Asm_Output_Operand_List;
+      Inputs : Asm_Input_Operand_List;
+      Clobber : String := "";
+      Volatile : Boolean := False)
+      return Asm_Insn;
    function Asm (
-     Template : String;
-     Outputs : Asm_Output_Operand := No_Output_Operands;
-     Inputs : Asm_Input_Operand_List;
-     Clobber : String := "";
-     Volatile : Boolean := False)
-     return Asm_Insn;
+      Template : String;
+      Outputs : Asm_Output_Operand := No_Output_Operands;
+      Inputs : Asm_Input_Operand_List;
+      Clobber : String := "";
+      Volatile : Boolean := False)
+      return Asm_Insn;
    function Asm (
-     Template : String;
-     Outputs : Asm_Output_Operand_List;
-     Inputs : Asm_Input_Operand := No_Input_Operands;
-     Clobber : String := "";
-     Volatile : Boolean := False)
-     return Asm_Insn;
+      Template : String;
+      Outputs : Asm_Output_Operand_List;
+      Inputs : Asm_Input_Operand := No_Input_Operands;
+      Clobber : String := "";
+      Volatile : Boolean := False)
+      return Asm_Insn;
    function Asm (
-     Template : String;
-     Outputs : Asm_Output_Operand := No_Output_Operands;
-     Inputs : Asm_Input_Operand := No_Input_Operands;
-     Clobber : String := "";
-     Volatile : Boolean := False)
-     return Asm_Insn;
+      Template : String;
+      Outputs : Asm_Output_Operand := No_Output_Operands;
+      Inputs : Asm_Input_Operand := No_Input_Operands;
+      Clobber : String := "";
+      Volatile : Boolean := False)
+      return Asm_Insn;
    pragma Import (Intrinsic, Asm);
 
 private

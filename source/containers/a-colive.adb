@@ -10,9 +10,7 @@ package body Ada.Containers.Limited_Vectors is
 
 --  diff (Upcast)
 --
---
 --  diff (Downcast)
---
 --
 
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);

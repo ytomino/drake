@@ -3,9 +3,8 @@ package body Ada.Containers.Inside.Linked_Lists.Doubly is
 
    type Doubly_Node_Access is access Node;
 
-   function Downcast is new Unchecked_Conversion (
-      Node_Access,
-      Doubly_Node_Access);
+   function Downcast is
+      new Unchecked_Conversion (Node_Access, Doubly_Node_Access);
 
    --  implementation
 

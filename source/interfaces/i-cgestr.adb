@@ -36,12 +36,12 @@ package body Interfaces.C.Generic_Strings is
 
    end libc;
 
-   package Conv is new System.Address_To_Named_Access_Conversions (
-      Element,
-      chars_ptr);
-   package const_Conv is new System.Address_To_Constant_Access_Conversions (
-      Element,
-      const_chars_ptr);
+   package Conv is
+      new System.Address_To_Named_Access_Conversions (Element, chars_ptr);
+   package const_Conv is
+      new System.Address_To_Constant_Access_Conversions (
+         Element,
+         const_chars_ptr);
 
    --  implementation
 

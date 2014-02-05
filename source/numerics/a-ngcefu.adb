@@ -5,24 +5,30 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    pragma Suppress (All_Checks);
 
    pragma Warnings (Off);
-   function To_Complex is new Unchecked_Conversion (
-      Complex,
-      System.Long_Long_Complex_Types.Complex);
-   function To_Long_Complex is new Unchecked_Conversion (
-      Complex,
-      System.Long_Long_Complex_Types.Long_Complex);
-   function To_Long_Long_Complex is new Unchecked_Conversion (
-      Complex,
-      System.Long_Long_Complex_Types.Long_Long_Complex);
-   function From_Complex is new Unchecked_Conversion (
-      System.Long_Long_Complex_Types.Complex,
-      Complex);
-   function From_Long_Complex is new Unchecked_Conversion (
-      System.Long_Long_Complex_Types.Long_Complex,
-      Complex);
-   function From_Long_Long_Complex is new Unchecked_Conversion (
-      System.Long_Long_Complex_Types.Long_Long_Complex,
-      Complex);
+   function To_Complex is
+      new Unchecked_Conversion (
+         Complex,
+         System.Long_Long_Complex_Types.Complex);
+   function To_Long_Complex is
+      new Unchecked_Conversion (
+         Complex,
+         System.Long_Long_Complex_Types.Long_Complex);
+   function To_Long_Long_Complex is
+      new Unchecked_Conversion (
+         Complex,
+         System.Long_Long_Complex_Types.Long_Long_Complex);
+   function From_Complex is
+      new Unchecked_Conversion (
+         System.Long_Long_Complex_Types.Complex,
+         Complex);
+   function From_Long_Complex is
+      new Unchecked_Conversion (
+         System.Long_Long_Complex_Types.Long_Complex,
+         Complex);
+   function From_Long_Long_Complex is
+      new Unchecked_Conversion (
+         System.Long_Long_Complex_Types.Long_Long_Complex,
+         Complex);
    pragma Warnings (On);
 
    --  implementation

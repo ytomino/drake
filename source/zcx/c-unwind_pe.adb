@@ -5,12 +5,10 @@ package body C.unwind_pe is
 
    procedure Increment (p : in out unsigned_char_const_ptr);
    procedure Increment (p : in out unsigned_char_const_ptr) is
-      function Cast is new Ada.Unchecked_Conversion (
-         unsigned_char_const_ptr,
-         ptrdiff_t);
-      function Cast is new Ada.Unchecked_Conversion (
-         ptrdiff_t,
-         unsigned_char_const_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (unsigned_char_const_ptr, ptrdiff_t);
+      function Cast is
+         new Ada.Unchecked_Conversion (ptrdiff_t, unsigned_char_const_ptr);
    begin
       p := Cast (Cast (p) + 1);
    end Increment;
@@ -20,12 +18,10 @@ package body C.unwind_pe is
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         C.unsigned_char_const_ptr,
-         C.ptrdiff_t);
-      function Cast is new Ada.Unchecked_Conversion (
-         C.ptrdiff_t,
-         C.unsigned_char_const_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (C.unsigned_char_const_ptr, C.ptrdiff_t);
+      function Cast is
+         new Ada.Unchecked_Conversion (C.ptrdiff_t, C.unsigned_char_const_ptr);
    begin
       return Cast (Cast (Left) + Right);
    end "+";
@@ -132,19 +128,21 @@ package body C.unwind_pe is
       val : access unwind.Unwind_Ptr)
       return unsigned_char_const_ptr
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         void_ptr,
-         unwind.Unwind_Internal_Ptr);
-      function Cast is new Ada.Unchecked_Conversion (
-         unsigned_char_const_ptr,
-         unwind.Unwind_Internal_Ptr);
-      function Cast is new Ada.Unchecked_Conversion (
-         unwind.Unwind_Internal_Ptr,
-         unsigned_char_const_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (void_ptr, unwind.Unwind_Internal_Ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            unsigned_char_const_ptr,
+            unwind.Unwind_Internal_Ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            unwind.Unwind_Internal_Ptr,
+            unsigned_char_const_ptr);
       type Unwind_Internal_Ptr_ptr is access all unwind.Unwind_Internal_Ptr;
-      function Cast is new Ada.Unchecked_Conversion (
-         unwind.Unwind_Internal_Ptr,
-         Unwind_Internal_Ptr_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            unwind.Unwind_Internal_Ptr,
+            Unwind_Internal_Ptr_ptr);
       Mutable_p : unsigned_char_const_ptr := unsigned_char_const_ptr (p);
       type unaligned (unchecked_tag : unsigned_int := 0) is record
          case unchecked_tag is
@@ -166,12 +164,12 @@ package body C.unwind_pe is
       end record;
       pragma Unchecked_Union (unaligned);
       type unaligned_ptr is access all unaligned;
-      function Cast is new Ada.Unchecked_Conversion (
-         unsigned_char_const_ptr,
-         unaligned_ptr);
-      function Cast is new Ada.Unchecked_Conversion (
-         unaligned_ptr,
-         unwind.Unwind_Internal_Ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (unsigned_char_const_ptr, unaligned_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            unaligned_ptr,
+            unwind.Unwind_Internal_Ptr);
       u : constant unaligned_ptr := Cast (Mutable_p);
       result : unwind.Unwind_Internal_Ptr;
    begin

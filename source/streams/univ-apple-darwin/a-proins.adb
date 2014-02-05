@@ -21,9 +21,8 @@ package body Ada.Processes.Inside is
       Output : Streams.Stream_IO.Inside.Handle_Type;
       Error : Streams.Stream_IO.Inside.Handle_Type)
    is
-      package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
-         C.char,
-         C.char_ptr);
+      package char_ptr_Conv is
+         new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       Old_Directory : C.char_ptr := null;
       Exception_Id : Exceptions.Exception_Id := Exceptions.Null_Id;
    begin

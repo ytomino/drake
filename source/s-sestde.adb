@@ -7,9 +7,8 @@ package body System.Secondary_Stack.Debug is
    use type Formatting.Unsigned;
    use type Storage_Elements.Storage_Offset;
 
-   package Conv is new Address_To_Named_Access_Conversions (
-      Block,
-      Block_Access);
+   package Conv is
+      new Address_To_Named_Access_Conversions (Block, Block_Access);
 
    procedure Error_Put (Item : Address) is
       Width : constant Natural := (Standard'Address_Size + 3) / 4;

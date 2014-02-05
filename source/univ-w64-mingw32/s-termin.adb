@@ -118,15 +118,14 @@ package body System.Termination is
       Dispatcher_Context : C.void_ptr)
       return C.signed_int
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         C.windef.HMODULE,
-         C.windef.LPCVOID);
-      function Cast is new Ada.Unchecked_Conversion (
-         C.winnt.LPWSTR_ptr,
-         C.winnt.LPTSTR);
-      function Cast is new Ada.Unchecked_Conversion (
-         C.basetsd.ULONG_PTR_ptr,
-         C.vadefs.va_list_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (C.windef.HMODULE, C.windef.LPCVOID);
+      function Cast is
+         new Ada.Unchecked_Conversion (C.winnt.LPWSTR_ptr, C.winnt.LPTSTR);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            C.basetsd.ULONG_PTR_ptr,
+            C.vadefs.va_list_ptr);
       pragma Unreferenced (Establisher_Frame);
       pragma Unreferenced (Context_Record);
       pragma Unreferenced (Dispatcher_Context);
@@ -265,12 +264,14 @@ package body System.Termination is
    end Ada_SEH_Handler;
 
    procedure Install_Exception_Handler (SEH : Address) is
-      function Cast is new Ada.Unchecked_Conversion (
-         C.winnt.struct_TEB_ptr,
-         C.winnt.NT_TIB_ptr);
-      function Cast is new Ada.Unchecked_Conversion (
-         Address,
-         C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            C.winnt.struct_TEB_ptr,
+            C.winnt.NT_TIB_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Address,
+            C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr);
       TEB : constant C.winnt.struct_TEB_ptr := C.winnt.NtCurrentTeb;
       TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
       SEH_Rec : SEH_Record;
@@ -287,9 +288,10 @@ package body System.Termination is
    end Install_Exception_Handler;
 
    procedure Reinstall_Exception_Handler is
-      function Cast is new Ada.Unchecked_Conversion (
-         C.winnt.struct_TEB_ptr,
-         C.winnt.NT_TIB_ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            C.winnt.struct_TEB_ptr,
+            C.winnt.NT_TIB_ptr);
       TEB : constant C.winnt.struct_TEB_ptr := C.winnt.NtCurrentTeb;
       TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
    begin

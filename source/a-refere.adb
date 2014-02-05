@@ -37,9 +37,8 @@ package body Ada.References is
          Last : Index_Type'Base)
          return Reference_Type
       is
-         function Cast is new Unchecked_Conversion (
-            Constant_Reference_Type,
-            Reference_Type);
+         function Cast is
+            new Unchecked_Conversion (Constant_Reference_Type, Reference_Type);
       begin
          return Cast (Constant_Slice (Item, First, Last));
       end Slice;

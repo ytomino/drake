@@ -234,9 +234,8 @@ package body Ada.Streams.Stream_IO.Inside is
 
    --  non-controlled
 
-   package char_ptr_Conv is new System.Address_To_Named_Access_Conversions (
-      C.char,
-      C.char_ptr);
+   package char_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
 
    package Non_Controlled_File_Type_Conv is
       new System.Address_To_Named_Access_Conversions (
@@ -1067,9 +1066,10 @@ package body Ada.Streams.Stream_IO.Inside is
    end End_Of_File;
 
    function Stream (File : Non_Controlled_File_Type) return Stream_Access is
-      package Conv is new System.Address_To_Named_Access_Conversions (
-         Root_Stream_Type'Class,
-         Stream_Access);
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (
+            Root_Stream_Type'Class,
+            Stream_Access);
    begin
       Check_File_Open (File);
       if File.Dispatcher.Tag = Tags.No_Tag then

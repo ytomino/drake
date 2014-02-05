@@ -76,11 +76,12 @@ package body Ada.Containers.Inside.Linked_Lists is
       Length := 0;
       while I /= null loop
          Copy (New_Node, I);
-         Insert (First => Target_First,
-                 Last => Target_Last,
-                 Length => Length,
-                 Before => Target_First,
-                 New_Item => New_Node);
+         Insert (
+            First => Target_First,
+            Last => Target_Last,
+            Length => Length,
+            Before => Target_First,
+            New_Item => New_Node);
          I := I.Previous;
       end loop;
    end Copy;
@@ -205,16 +206,20 @@ package body Ada.Containers.Inside.Linked_Lists is
             Right_Last : Node_Access := Target_Last;
             Right_Length : Count_Type := Length;
          begin
-            Split (Left_First, Left_Last, Left_Length,
-                   Right_First, Right_Last, Right_Length,
-                   Length / 2);
-            Merge_Sort (Left_First, Left_Last, Left_Length,
-                        LT, Splice, Split, Insert, Remove);
-            Merge_Sort (Right_First, Right_Last, Right_Length,
-                        LT, Splice, Split, Insert, Remove);
-            Merge (Left_First, Left_Last, Left_Length,
-                   Right_First, Right_Last, Right_Length,
-                   LT, Insert, Remove);
+            Split (
+               Left_First, Left_Last, Left_Length,
+               Right_First, Right_Last, Right_Length,
+               Length / 2);
+            Merge_Sort (
+               Left_First, Left_Last, Left_Length,
+               LT, Splice, Split, Insert, Remove);
+            Merge_Sort (
+               Right_First, Right_Last, Right_Length,
+               LT, Splice, Split, Insert, Remove);
+            Merge (
+               Left_First, Left_Last, Left_Length,
+               Right_First, Right_Last, Right_Length,
+               LT, Insert, Remove);
             Target_First := Left_First;
             Target_Last := Left_Last;
             Length := Left_Length;

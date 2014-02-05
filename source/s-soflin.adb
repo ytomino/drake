@@ -17,20 +17,23 @@ package body System.Soft_Links is
    function Get_Main_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Unwind.Exception_Occurrence_Access,
-         Ada.Exceptions.Exception_Occurrence_Access);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Unwind.Exception_Occurrence_Access,
+            Ada.Exceptions.Exception_Occurrence_Access);
    begin
       return Cast (Main_Task_Local_Storage.Current_Exception'Access);
    end Get_Main_Current_Excep;
 
    function Get_GNAT_Exception return Ada.Exceptions.Exception_Id is
-      function Cast is new Ada.Unchecked_Conversion (
-         Ada.Exceptions.Exception_Occurrence_Access,
-         Unwind.Exception_Occurrence_Access);
-      function Cast is new Ada.Unchecked_Conversion (
-         Unwind.Exception_Data_Access,
-         Ada.Exceptions.Exception_Id);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Ada.Exceptions.Exception_Occurrence_Access,
+            Unwind.Exception_Occurrence_Access);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Unwind.Exception_Data_Access,
+            Ada.Exceptions.Exception_Id);
    begin
       return Cast (Cast (Get_Current_Excep.all).Id);
    end Get_GNAT_Exception;
@@ -38,9 +41,10 @@ package body System.Soft_Links is
    procedure Save_Library_Occurrence (
       E : Ada.Exceptions.Exception_Occurrence_Access)
    is
-      function Cast is new Ada.Unchecked_Conversion (
-         Ada.Exceptions.Exception_Occurrence_Access,
-         Unwind.Exception_Occurrence_Access);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Ada.Exceptions.Exception_Occurrence_Access,
+            Unwind.Exception_Occurrence_Access);
    begin
       if not Library_Exception_Set then
          Library_Exception_Set := True;

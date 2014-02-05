@@ -7,9 +7,8 @@ package body Ada.Containers.Access_Holders_Derivational_Conversions is
    is
       type Base_Holder_Access is access all Base_Holders.Holder;
       type Derived_Holder_Access is access all Derived_Holders.Holder;
-      function Cast is new Unchecked_Conversion (
-         Derived_Holder_Access,
-         Base_Holder_Access);
+      function Cast is
+         new Unchecked_Conversion (Derived_Holder_Access, Base_Holder_Access);
    begin
       Base_Holders.Assign (Target, Cast (Source'Unrestricted_Access).all);
    end Assign;
@@ -20,9 +19,8 @@ package body Ada.Containers.Access_Holders_Derivational_Conversions is
    is
       type Base_Holder_Access is access all Base_Holders.Holder;
       type Derived_Holder_Access is access all Derived_Holders.Holder;
-      function Cast is new Unchecked_Conversion (
-         Derived_Holder_Access,
-         Base_Holder_Access);
+      function Cast is
+         new Unchecked_Conversion (Derived_Holder_Access, Base_Holder_Access);
    begin
       Base_Holders.Move (Target, Cast (Source'Unrestricted_Access).all);
    end Move;

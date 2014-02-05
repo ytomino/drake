@@ -886,9 +886,10 @@ package body Ada.Strings.Generic_Fixed is
       is
          type Character_Mapping_Access is access all Character_Mapping;
          for Character_Mapping_Access'Storage_Size use 0;
-         package Conv is new System.Address_To_Named_Access_Conversions (
-            Character_Mapping,
-            Character_Mapping_Access);
+         package Conv is
+            new System.Address_To_Named_Access_Conversions (
+               Character_Mapping,
+               Character_Mapping_Access);
       begin
          return Value (Conv.To_Pointer (Params).all, From);
       end By_Mapping;

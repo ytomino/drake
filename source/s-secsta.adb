@@ -22,9 +22,8 @@ package body System.Secondary_Stack is
          + Storage_Elements.Integer_Address'Mod (-Required) mod Alignment);
    end Ceiling_Page_Size;
 
-   package Conv is new Address_To_Named_Access_Conversions (
-      Block,
-      Block_Access);
+   package Conv is
+      new Address_To_Named_Access_Conversions (Block, Block_Access);
    function Cast (X : Address) return Block_Access
       renames Conv.To_Pointer;
 

@@ -80,7 +80,7 @@ package System.Stream_Attributes is
    pragma Inline (I_SSI);
 
    function I_SSU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
-     return Unsigned_Types.Short_Short_Unsigned;
+      return Unsigned_Types.Short_Short_Unsigned;
    pragma Inline (I_SSU);
 
    function I_SU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)

@@ -54,24 +54,30 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    package body Complex_Elementary_Functions is
 
       pragma Warnings (Off);
-      function To_Complex is new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Complex);
-      function To_Long_Complex is new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Long_Complex);
-      function To_Long_Long_Complex is new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Long_Long_Complex);
-      function From_Complex is new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Complex,
-         Complex);
-      function From_Long_Complex is new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Long_Complex,
-         Complex);
-      function From_Long_Long_Complex is new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Long_Long_Complex,
-         Complex);
+      function To_Complex is
+         new Unchecked_Conversion (
+            Complex,
+            System.Long_Long_Complex_Types.Complex);
+      function To_Long_Complex is
+         new Unchecked_Conversion (
+            Complex,
+            System.Long_Long_Complex_Types.Long_Complex);
+      function To_Long_Long_Complex is
+         new Unchecked_Conversion (
+            Complex,
+            System.Long_Long_Complex_Types.Long_Long_Complex);
+      function From_Complex is
+         new Unchecked_Conversion (
+            System.Long_Long_Complex_Types.Complex,
+            Complex);
+      function From_Long_Complex is
+         new Unchecked_Conversion (
+            System.Long_Long_Complex_Types.Long_Complex,
+            Complex);
+      function From_Long_Long_Complex is
+         new Unchecked_Conversion (
+            System.Long_Long_Complex_Types.Long_Long_Complex,
+            Complex);
       pragma Warnings (On);
 
       function Sqrt (X : Complex) return Complex is
@@ -93,60 +99,64 @@ package body Ada.Numerics.Generic_Complex_Arrays is
 
    end Complex_Elementary_Functions;
 
-   function Minor is new Generic_Arrays.Minor (
-      Complex,
-      Complex_Matrix);
+   function Minor is
+      new Generic_Arrays.Minor (Complex, Complex_Matrix);
 
    --  implementation
 
-   function Argument_Body is new Generic_Arrays.Operator_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Argument);
+   function Argument_Body is
+      new Generic_Arrays.Operator_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Argument);
 
    function Argument (X : Complex_Vector) return Real_Vector
       renames Argument_Body;
 
-   function Argument_Body is new Generic_Arrays.Operator_Vector_Param (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real'Base,
-      Real_Vector,
-      Argument);
+   function Argument_Body is
+      new Generic_Arrays.Operator_Vector_Param (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real'Base,
+         Real_Vector,
+         Argument);
 
    function Argument (X : Complex_Vector; Cycle : Real'Base) return Real_Vector
       renames Argument_Body;
 
-   function Argument_Body is new Generic_Arrays.Operator_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Argument);
+   function Argument_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Argument);
 
    function Argument (X : Complex_Matrix) return Real_Matrix
       renames Argument_Body;
 
-   function Argument_Body is new Generic_Arrays.Operator_Matrix_Param (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real'Base,
-      Real_Matrix,
-      Argument);
+   function Argument_Body is
+      new Generic_Arrays.Operator_Matrix_Param (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real'Base,
+         Real_Matrix,
+         Argument);
 
    function Argument (X : Complex_Matrix; Cycle : Real'Base) return Real_Matrix
       renames Argument_Body;
 
-   function Compose_From_Cartesian_Body is new Generic_Arrays.Operator_Vector (
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Vector,
-      Compose_From_Cartesian);
+   function Compose_From_Cartesian_Body is
+      new Generic_Arrays.Operator_Vector (
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Vector,
+         Compose_From_Cartesian);
 
    function Compose_From_Cartesian (Re : Real_Vector) return Complex_Vector
       renames Compose_From_Cartesian_Body;
@@ -164,12 +174,13 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    function Compose_From_Cartesian (Re, Im : Real_Vector) return Complex_Vector
       renames Compose_From_Cartesian_Body;
 
-   function Compose_From_Cartesian_Body is new Generic_Arrays.Operator_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Complex,
-      Complex_Matrix,
-      Compose_From_Cartesian);
+   function Compose_From_Cartesian_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Complex,
+         Complex_Matrix,
+         Compose_From_Cartesian);
 
    function Compose_From_Cartesian (Re : Real_Matrix) return Complex_Matrix
       renames Compose_From_Cartesian_Body;
@@ -245,31 +256,34 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Complex_Matrix
       renames Compose_From_Polar_Body;
 
-   function Conjugate_Body is new Generic_Arrays.Operator_Vector (
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      Conjugate);
+   function Conjugate_Body is
+      new Generic_Arrays.Operator_Vector (
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         Conjugate);
 
    function Conjugate (X : Complex_Vector) return Complex_Vector
       renames Conjugate_Body;
 
-   function Conjugate_Body is new Generic_Arrays.Operator_Matrix (
-     Complex,
-     Complex_Matrix,
-     Complex,
-     Complex_Matrix,
-     Conjugate);
+   function Conjugate_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         Conjugate);
 
    function Conjugate (X : Complex_Matrix) return Complex_Matrix
       renames Conjugate_Body;
 
-   function Determinant_Body is new Generic_Arrays.Determinant (
-      Complex,
-      Complex_Matrix,
-      Zero => (Re => 0.0, Im => 0.0),
-      One => (Re => 1.0, Im => 0.0));
+   function Determinant_Body is
+      new Generic_Arrays.Determinant (
+         Complex,
+         Complex_Matrix,
+         Zero => (Re => 0.0, Im => 0.0),
+         One => (Re => 1.0, Im => 0.0));
 
    function Determinant (A : Complex_Matrix) return Complex
       renames Determinant_Body;
@@ -286,18 +300,19 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return abs X < 1.0e-32;
    end Is_Small;
 
-   procedure Eigensystem_Body is new Generic_Arrays.Eigensystem (
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Matrix,
-      Zero => (Re => 0.0, Im => 0.0),
-      One => (Re => 1.0, Im => 0.0),
-      Two => (Re => 2.0, Im => 0.0),
-      Sqrt => Complex_Elementary_Functions.Sqrt,
-      Is_Minus => Is_Minus,
-      Is_Small => Is_Small,
-      To_Real => Re);
+   procedure Eigensystem_Body is
+      new Generic_Arrays.Eigensystem (
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Matrix,
+         Zero => (Re => 0.0, Im => 0.0),
+         One => (Re => 1.0, Im => 0.0),
+         Two => (Re => 2.0, Im => 0.0),
+         Sqrt => Complex_Elementary_Functions.Sqrt,
+         Is_Minus => Is_Minus,
+         Is_Small => Is_Small,
+         To_Real => Re);
 
    procedure Eigensystem (
       A : Complex_Matrix;
@@ -313,110 +328,121 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       end return;
    end Eigenvalues;
 
-   function Im_Body is new Generic_Arrays.Operator_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Im);
+   function Im_Body is
+      new Generic_Arrays.Operator_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Im);
 
    function Im (X : Complex_Vector) return Real_Vector
       renames Im_Body;
 
-   function Im_Body is new Generic_Arrays.Operator_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Im);
+   function Im_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Im);
 
    function Im (X : Complex_Matrix) return Real_Matrix
       renames Im_Body;
 
-   function Inverse_Body is new Generic_Arrays.Inverse (
-      Complex,
-      Complex_Matrix,
-      One => (Re => 1.0, Im => 0.0));
+   function Inverse_Body is
+      new Generic_Arrays.Inverse (
+         Complex,
+         Complex_Matrix,
+         One => (Re => 1.0, Im => 0.0));
 
    function Inverse (A : Complex_Matrix) return Complex_Matrix
       renames Inverse_Body;
 
-   function Modulus_Body is new Generic_Arrays.Operator_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Modulus);
+   function Modulus_Body is
+      new Generic_Arrays.Operator_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Modulus);
 
    function Modulus (X : Complex_Vector) return Real_Vector
       renames Modulus_Body;
 
-   function Modulus_Body is new Generic_Arrays.Operator_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Modulus);
+   function Modulus_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Modulus);
 
    function Modulus (X : Complex_Matrix) return Real_Matrix
       renames Modulus_Body;
 
-   function Re_Body is new Generic_Arrays.Operator_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Re);
+   function Re_Body is
+      new Generic_Arrays.Operator_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Re);
 
    function Re (X : Complex_Vector) return Real_Vector
       renames Re_Body;
 
-   function Re_Body is new Generic_Arrays.Operator_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Re);
+   function Re_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Re);
 
    function Re (X : Complex_Matrix) return Real_Matrix
       renames Re_Body;
 
-   procedure Set_Im_Body is new Generic_Arrays.Apply_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Set_Im);
+   procedure Set_Im_Body is
+      new Generic_Arrays.Apply_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Set_Im);
 
    procedure Set_Im (X : in out Complex_Vector; Im : Real_Vector)
       renames Set_Im_Body;
 
-   procedure Set_Im_Body is new Generic_Arrays.Apply_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Set_Im);
+   procedure Set_Im_Body is
+      new Generic_Arrays.Apply_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Set_Im);
 
    procedure Set_Im (X : in out Complex_Matrix; Im : Real_Matrix)
       renames Set_Im_Body;
 
-   procedure Set_Re_Body is new Generic_Arrays.Apply_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Set_Re);
+   procedure Set_Re_Body is
+      new Generic_Arrays.Apply_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Set_Re);
 
    procedure Set_Re (X : in out Complex_Vector; Re : Real_Vector)
       renames Set_Re_Body;
 
-   procedure Set_Re_Body is new Generic_Arrays.Apply_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Set_Re);
+   procedure Set_Re_Body is
+      new Generic_Arrays.Apply_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Set_Re);
 
    procedure Set_Re (X : in out Complex_Matrix; Re : Real_Matrix)
       renames Set_Re_Body;
@@ -432,29 +458,30 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Inverse (A) * X;
    end Solve;
 
-   function Transpose_Body is new Generic_Arrays.Transpose (
-      Complex,
-      Complex_Matrix);
+   function Transpose_Body is
+      new Generic_Arrays.Transpose (Complex, Complex_Matrix);
 
    function Transpose (X : Complex_Matrix) return Complex_Matrix
       renames Transpose_Body;
 
-   function Unit_Matrix_Body is new Generic_Arrays.Unit_Matrix (
-      Complex,
-      Complex_Matrix,
-      Zero => (Re => 0.0, Im => 0.0),
-      One => (Re => 1.0, Im => 0.0));
+   function Unit_Matrix_Body is
+      new Generic_Arrays.Unit_Matrix (
+         Complex,
+         Complex_Matrix,
+         Zero => (Re => 0.0, Im => 0.0),
+         One => (Re => 1.0, Im => 0.0));
 
    function Unit_Matrix (
       Order : Positive;
       First_1, First_2 : Integer := 1) return Complex_Matrix
       renames Unit_Matrix_Body;
 
-   function Unit_Vector_Body is new Generic_Arrays.Unit_Vector (
-      Complex,
-      Complex_Vector,
-      Zero => (Re => 0.0, Im => 0.0),
-      One => (Re => 1.0, Im => 0.0));
+   function Unit_Vector_Body is
+      new Generic_Arrays.Unit_Vector (
+         Complex,
+         Complex_Vector,
+         Zero => (Re => 0.0, Im => 0.0),
+         One => (Re => 1.0, Im => 0.0));
 
    function Unit_Vector (
       Index : Integer;
@@ -463,12 +490,13 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Complex_Vector
       renames Unit_Vector_Body;
 
-   function abs_Body is new Generic_Arrays.Absolute (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Zero => 0.0,
-      Sqrt => Elementary_Functions.Sqrt);
+   function abs_Body is
+      new Generic_Arrays.Absolute (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Zero => 0.0,
+         Sqrt => Elementary_Functions.Sqrt);
 
    function "abs" (Right : Complex_Vector) return Real'Base
       renames abs_Body;
@@ -478,14 +506,15 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Right;
    end "+";
 
-   function add_Body is new Generic_Arrays.Operator_Vector_Vector (
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      "+");
+   function add_Body is
+      new Generic_Arrays.Operator_Vector_Vector (
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         "+");
 
    function "+" (Left, Right : Complex_Vector) return Complex_Vector
       renames add_Body;
@@ -496,14 +525,15 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Right + Left;
    end "+";
 
-   function add_Body is new Generic_Arrays.Operator_Vector_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Vector,
-      "+");
+   function add_Body is
+      new Generic_Arrays.Operator_Vector_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Vector,
+         "+");
 
    function "+" (Left : Complex_Vector; Right : Real_Vector)
       return Complex_Vector
@@ -514,14 +544,15 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Right;
    end "+";
 
-   function add_Body is new Generic_Arrays.Operator_Matrix_Matrix (
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      "+");
+   function add_Body is
+      new Generic_Arrays.Operator_Matrix_Matrix (
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         "+");
 
    function "+" (Left, Right : Complex_Matrix) return Complex_Matrix
       renames add_Body;
@@ -532,144 +563,156 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Right + Left;
    end "+";
 
-   function add_Body is new Generic_Arrays.Operator_Matrix_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Complex,
-      Complex_Matrix,
-      "+");
+   function add_Body is
+      new Generic_Arrays.Operator_Matrix_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Complex,
+         Complex_Matrix,
+         "+");
 
    function "+" (Left : Complex_Matrix; Right : Real_Matrix)
       return Complex_Matrix
       renames add_Body;
 
-   function neg_Body is new Generic_Arrays.Operator_Vector (
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      "-");
+   function neg_Body is
+      new Generic_Arrays.Operator_Vector (
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         "-");
 
    function "-" (Right : Complex_Vector) return Complex_Vector
       renames neg_Body;
 
-   function sub_Body is new Generic_Arrays.Operator_Vector_Vector (
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      "-");
+   function sub_Body is
+      new Generic_Arrays.Operator_Vector_Vector (
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         "-");
 
    function "-" (Left, Right : Complex_Vector) return Complex_Vector
       renames sub_Body;
 
-   function sub_Body is new Generic_Arrays.Operator_Vector_Vector (
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      "-");
+   function sub_Body is
+      new Generic_Arrays.Operator_Vector_Vector (
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         "-");
 
    function "-" (Left : Real_Vector; Right : Complex_Vector)
       return Complex_Vector
       renames sub_Body;
 
-   function sub_Body is new Generic_Arrays.Operator_Vector_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Vector,
-      "-");
+   function sub_Body is
+      new Generic_Arrays.Operator_Vector_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Vector,
+         "-");
 
    function "-" (Left : Complex_Vector; Right : Real_Vector)
       return Complex_Vector
       renames sub_Body;
 
-   function neg_Body is new Generic_Arrays.Operator_Matrix (
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      "-");
+   function neg_Body is
+      new Generic_Arrays.Operator_Matrix (
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         "-");
 
    function "-" (Right : Complex_Matrix) return Complex_Matrix
       renames neg_Body;
 
-   function sub_Body is new Generic_Arrays.Operator_Matrix_Matrix (
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      "-");
+   function sub_Body is
+      new Generic_Arrays.Operator_Matrix_Matrix (
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         "-");
 
    function "-" (Left, Right : Complex_Matrix) return Complex_Matrix
       renames sub_Body;
 
-   function sub_Body is new Generic_Arrays.Operator_Matrix_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      "-");
+   function sub_Body is
+      new Generic_Arrays.Operator_Matrix_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         "-");
 
    function "-" (Left : Real_Matrix; Right : Complex_Matrix)
       return Complex_Matrix
       renames sub_Body;
 
-   function sub_Body is new Generic_Arrays.Operator_Matrix_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Complex,
-      Complex_Matrix,
-      "-");
+   function sub_Body is
+      new Generic_Arrays.Operator_Matrix_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Complex,
+         Complex_Matrix,
+         "-");
 
    function "-" (Left : Complex_Matrix; Right : Real_Matrix)
       return Complex_Matrix
       renames sub_Body;
 
-   function mul_Body is new Generic_Arrays.Inner_Production (
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Inner_Production (
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left, Right : Complex_Vector) return Complex
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Inner_Production (
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Inner_Production (
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Real_Vector; Right : Complex_Vector) return Complex
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Inner_Production (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Inner_Production (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Complex_Vector; Right : Real_Vector) return Complex
       renames mul_Body;
@@ -680,13 +723,14 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Right * Left;
    end "*";
 
-   function mul_Body is new Generic_Arrays.Operator_Vector_Param (
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex,
-      Complex_Vector,
-      "*");
+   function mul_Body is
+      new Generic_Arrays.Operator_Vector_Param (
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex,
+         Complex_Vector,
+         "*");
 
    function "*" (Left : Complex_Vector; Right : Complex)
       return Complex_Vector
@@ -698,164 +742,177 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Right * Left;
    end "*";
 
-   function mul_Body is new Generic_Arrays.Operator_Vector_Param (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Complex,
-      Complex_Vector,
-      "*");
+   function mul_Body is
+      new Generic_Arrays.Operator_Vector_Param (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Complex,
+         Complex_Vector,
+         "*");
 
    function "*" (Left : Complex_Vector; Right : Real'Base)
       return Complex_Vector
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Matrix_Matrix (
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Matrix_Matrix (
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left, Right : Complex_Matrix) return Complex_Matrix
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Vector_Vector (
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Matrix);
+   function mul_Body is
+      new Generic_Arrays.Multiply_Vector_Vector (
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Matrix);
 
    function "*" (Left, Right : Complex_Vector) return Complex_Matrix
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Vector_Matrix (
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Vector,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Vector_Matrix (
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Vector,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Complex_Vector; Right : Complex_Matrix)
       return Complex_Vector
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Matrix_Vector (
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Matrix_Vector (
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Complex_Matrix; Right : Complex_Vector)
       return Complex_Vector
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Matrix_Matrix (
-      Real'Base,
-      Real_Matrix,
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Matrix,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Matrix_Matrix (
+         Real'Base,
+         Real_Matrix,
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Matrix,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Real_Matrix; Right : Complex_Matrix)
       return Complex_Matrix
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Matrix_Matrix (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Matrix,
-      Complex,
-      Complex_Matrix,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Matrix_Matrix (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Matrix,
+         Complex,
+         Complex_Matrix,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Complex_Matrix; Right : Real_Matrix)
       return Complex_Matrix
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Vector_Vector (
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Matrix);
+   function mul_Body is
+      new Generic_Arrays.Multiply_Vector_Vector (
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Matrix);
 
    function "*" (Left : Real_Vector; Right : Complex_Vector)
       return Complex_Matrix
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Vector_Vector (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Matrix);
+   function mul_Body is
+      new Generic_Arrays.Multiply_Vector_Vector (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Matrix);
 
    function "*" (Left : Complex_Vector; Right : Real_Vector)
       return Complex_Matrix
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Vector_Matrix (
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex_Vector,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Vector_Matrix (
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex_Vector,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Real_Vector; Right : Complex_Matrix)
       return Complex_Vector
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Vector_Matrix (
-      Complex,
-      Complex_Vector,
-      Real'Base,
-      Real_Matrix,
-      Complex,
-      Complex_Vector,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Vector_Matrix (
+         Complex,
+         Complex_Vector,
+         Real'Base,
+         Real_Matrix,
+         Complex,
+         Complex_Vector,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Complex_Vector; Right : Real_Matrix)
       return Complex_Vector
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Matrix_Vector (
-      Real'Base,
-      Real_Matrix,
-      Complex,
-      Complex_Vector,
-      Complex,
-      Complex_Vector,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Matrix_Vector (
+         Real'Base,
+         Real_Matrix,
+         Complex,
+         Complex_Vector,
+         Complex,
+         Complex_Vector,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Real_Matrix; Right : Complex_Vector)
       return Complex_Vector
       renames mul_Body;
 
-   function mul_Body is new Generic_Arrays.Multiply_Matrix_Vector (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Real_Vector,
-      Complex,
-      Complex_Vector,
-      Zero => (Re => 0.0, Im => 0.0));
+   function mul_Body is
+      new Generic_Arrays.Multiply_Matrix_Vector (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Real_Vector,
+         Complex,
+         Complex_Vector,
+         Zero => (Re => 0.0, Im => 0.0));
 
    function "*" (Left : Complex_Matrix; Right : Real_Vector)
       return Complex_Vector
@@ -867,13 +924,14 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Right * Left;
    end "*";
 
-   function mul_Body is new Generic_Arrays.Operator_Matrix_Param (
-      Complex,
-      Complex_Matrix,
-      Complex,
-      Complex,
-      Complex_Matrix,
-      "*");
+   function mul_Body is
+      new Generic_Arrays.Operator_Matrix_Param (
+         Complex,
+         Complex_Matrix,
+         Complex,
+         Complex,
+         Complex_Matrix,
+         "*");
 
    function "*" (Left : Complex_Matrix; Right : Complex)
       return Complex_Matrix
@@ -885,13 +943,14 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       return Right * Left;
    end "*";
 
-   function mul_Body is new Generic_Arrays.Operator_Matrix_Param (
-      Complex,
-      Complex_Matrix,
-      Real'Base,
-      Complex,
-      Complex_Matrix,
-      "*");
+   function mul_Body is
+      new Generic_Arrays.Operator_Matrix_Param (
+         Complex,
+         Complex_Matrix,
+         Real'Base,
+         Complex,
+         Complex_Matrix,
+         "*");
 
    function "*" (Left : Complex_Matrix; Right : Real'Base)
       return Complex_Matrix

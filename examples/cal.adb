@@ -35,12 +35,12 @@ begin
 	Ada.Calendar.Formatting.Split (Seconds, H, M, S, SS);
 	Output_GM : begin
 		Put ("GM ");
-		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-'); Put (Day, Width => 2); Put (' ');
 		Put (Seconds, Fore => 1); New_Line;
 	end Output_GM;
 	Output_GM_Full : begin
 		Put ("GM ");
-		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-'); Put (Day, Width => 2); Put (' ');
 		Put (H, Width => 2); Put (':'); Put (M, Width => 2); Put (':'); Put (S, Width => 2); Put (' ');
 		Put (SS, Fore => 1); New_Line;
 	end Output_GM_Full;
@@ -57,7 +57,7 @@ begin
 		Time_Zone => Ada.Calendar.Time_Zones.UTC_Time_Offset);
 	Output_LT_Full : begin
 		Put ("LT ");
-		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+		Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-'); Put (Day, Width => 2); Put (' ');
 		Put (H, Width => 2); Put (':'); Put (M, Width => 2); Put (':'); Put (S, Width => 2); Put (' ');
 		Put (SS, Fore => 1); New_Line;
 	end Output_LT_Full;
@@ -106,7 +106,7 @@ begin
 		Ada.Calendar.Formatting.Split (EF, Year, Month, Day, H, M, S, SS, LS);
 		Output_EF_Full : begin
 			Put ("EF ");
-			Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+			Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-'); Put (Day, Width => 2); Put (' ');
 			Put (H, Width => 2); Put (':'); Put (M, Width => 2); Put (':'); Put (S, Width => 2); Put (' ');
 			Put (SS, Fore => 1); New_Line;
 		end Output_EF_Full;
@@ -114,7 +114,7 @@ begin
 		Ada.Calendar.Formatting.Split (EL, Year, Month, Day, H, M, S, SS, LS);
 		Output_EL_Full : begin
 			Put ("EL ");
-			Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-');  Put (Day, Width => 2); Put (' ');
+			Put (Year, Width => 4); Put ('-'); Put (Month, Width => 2); Put ('-'); Put (Day, Width => 2); Put (' ');
 			Put (H, Width => 2); Put (':'); Put (M, Width => 2); Put (':'); Put (S, Width => 2); Put (' ');
 			Put (SS, Fore => 1); New_Line;
 		end Output_EL_Full;

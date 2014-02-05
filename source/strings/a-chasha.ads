@@ -13,7 +13,7 @@ package Ada.Characters.ASCII.Handling is
 --  function Is_Basic (Item : Character) return Boolean;
    function Is_Digit (Item : Character) return Boolean;
    function Is_Decimal_Digit (Item : Character) return Boolean
-     renames Is_Digit;
+      renames Is_Digit;
    function Is_Hexadecimal_Digit (Item : Character) return Boolean;
    function Is_Alphanumeric (Item : Character) return Boolean;
    function Is_Special (Item : Character) return Boolean;

@@ -8,15 +8,14 @@ package body Ada.Task_Attributes is
 
    Index : System.Tasking.Tasks.Attribute_Index;
 
-   function Cast is new Unchecked_Conversion (
-      Task_Identification.Task_Id,
-      System.Tasking.Tasks.Task_Id);
-   function Cast is new Unchecked_Conversion (
-      System.Address,
-      Attribute_Handle);
-   function Cast is new Unchecked_Conversion (
-      Attribute_Handle,
-      System.Address);
+   function Cast is
+      new Unchecked_Conversion (
+         Task_Identification.Task_Id,
+         System.Tasking.Tasks.Task_Id);
+   function Cast is
+      new Unchecked_Conversion (System.Address, Attribute_Handle);
+   function Cast is
+      new Unchecked_Conversion (Attribute_Handle, System.Address);
 
    procedure Free is new Unchecked_Deallocation (Attribute, Attribute_Handle);
 

@@ -300,9 +300,8 @@ package body Ada.Containers.Inside.Copy_On_Write is
          Capacity : Count_Type);
       Free : not null access procedure (Object : in out Data_Access))
    is
-      function Downcast is new Unchecked_Conversion (
-         Data_Access,
-         Data_Ex_Access);
+      function Downcast is
+         new Unchecked_Conversion (Data_Access, Data_Ex_Access);
    begin
       if New_Length > Target_Length then
          if New_Length > Target_Capacity then
