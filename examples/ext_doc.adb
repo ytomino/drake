@@ -262,15 +262,13 @@ procedure ext_doc is
 					begin
 						while not Ada.Text_IO.End_Of_File (File) loop
 							declare
-								Line : constant String := Get_Next_Line;
-								F : Integer := Ada.Strings.Fixed.Index_Non_Blank (Line);
-								procedure Should_Be_Empty (S : in String) is
+								procedure Should_Be_Empty (S, Line : in String) is
 								begin
 									if S'Length > 0 then
 										raise Extended_Style_Error with Name & " """ & Line & """";
 									end if;
 								end Should_Be_Empty;
-								procedure Process (Block : in Boolean) is
+								procedure Process (Block : in Boolean; Line : String; F : Integer) is
 									type State_T is (Start, Comment, Code);
 									State : State_T := Start;
 									Indent : Natural := F - Line'First;
@@ -291,6 +289,10 @@ procedure ext_doc is
 												if State = Start then
 													raise Extended_Style_Error with Name & " """ & Ex_Line & """";
 												end if;
+												exit;
+											elsif Block and then Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "--  extended") then
+												Should_Be_Empty (Ex_Line (Ex_F + 12 .. Ex_Line'Last), Ex_Line);
+												Process (False, Ex_Line, Ex_F); -- switch to a normal extended section
 												exit;
 											end if;
 											if State < Code and then Ex_F - Ex_Line'First = Indent and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "--  ") then
@@ -342,17 +344,19 @@ procedure ext_doc is
 										Ada.Strings.Unbounded.Append (Document, ASCII.LF);
 									end if;
 								end Process;
+								Line : constant String := Get_Next_Line;
+								F : Integer := Ada.Strings.Fixed.Index_Non_Blank (Line);
 							begin
 								if F > 0 then
 									if Start_With (Line (F .. Line'Last), "--  extended from here") then
-										Should_Be_Empty (Line (F + 22 .. Line'Last));
-										Process (True);
+										Should_Be_Empty (Line (F + 22 .. Line'Last), Line);
+										Process (True, Line, F);
 									elsif Start_With (Line (F .. Line'Last), "--  extended") then
-										Should_Be_Empty (Line (F + 12 .. Line'Last));
-										Process (False);
+										Should_Be_Empty (Line (F + 12 .. Line'Last), Line);
+										Process (False, Line, F);
 									elsif Start_With (Line (F .. Line'Last), "--  modified") then
-										Should_Be_Empty (Line (F + 12 .. Line'Last));
-										Process (False);
+										Should_Be_Empty (Line (F + 12 .. Line'Last), Line);
+										Process (False, Line, F);
 									elsif Ada.Strings.Fixed.Index (Line, "-- extended") > 0
 										or else Ada.Strings.Fixed.Index (Line, "--  extended") > 0
 									then

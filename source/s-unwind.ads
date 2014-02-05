@@ -1,13 +1,26 @@
 pragma License (Unrestricted);
 --  runtime unit
 with Ada.Unchecked_Deallocation;
-with System.Standard_Library;
 package System.Unwind is
    pragma Preelaborate;
 
-   subtype Exception_Data is Standard_Library.Exception_Data;
-   subtype Exception_Data_Access is Standard_Library.Exception_Data_Ptr;
-   use type Unwind.Exception_Data_Access;
+   --  exception data type (s-stalib.ads)
+   type Raise_Action is access procedure;
+   type Exception_Code is mod 2 ** Integer'Size;
+   for Exception_Code'Size use Integer'Size;
+   type Exception_Data;
+   type Exception_Data_Access is access constant Exception_Data;
+   for Exception_Data_Access'Storage_Size use 0;
+   type Exception_Data is record
+      Not_Handled_By_Others : Boolean;
+      Lang : Character;
+      Name_Length : Natural;
+      Full_Name : Address;
+      HTable_Ptr : Exception_Data_Access;
+      Import_Code : Exception_Code;
+      Raise_Hook : Raise_Action;
+   end record;
+   pragma Suppress_Initialization (Exception_Data);
 
    --  RM 11.4.1(18) (s-parame.ads)
    Default_Exception_Msg_Max_Length : constant := 200;
@@ -51,10 +64,5 @@ package System.Unwind is
       with procedure Put (S : String);
       with procedure New_Line;
    procedure Exception_Information (X : Exception_Occurrence);
-
-   --  (s-except.ads)
-   Foreign_Exception : exception;
-   pragma Export (Ada, Foreign_Exception,
-      "system__exceptions__foreign_exception");
 
 end System.Unwind;
