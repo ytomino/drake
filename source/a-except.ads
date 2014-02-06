@@ -89,28 +89,49 @@ private
       Num_Tracebacks => 0,
       Tracebacks => (others => System.Null_Address));
 
-   --  required for reraising by compiler (a-except-2005.ads)
+   --  optionally required by compiler (a-except-2005.ads)
+   --  for raising, Raise_Exception may be called if not existing (exp_ch6.adb)
+   procedure Raise_Exception_Always (E : Exception_Id; Message : String := "")
+      renames Raise_Exception;
+   pragma No_Return (Raise_Exception_Always);
+
+   --  required by compiler (a-except-2005.ads)
+   --  for reraising (exp_ch11.adb)
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
    pragma Import (Ada, Reraise_Occurrence_Always,
       "ada__exceptions__reraise_occurrence_always");
 
+   --  required by compiler (a-except-2005.ads)
+   --  for reraising from when all others (exp_ch11.adb)
+   procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence);
+   pragma No_Return (Reraise_Occurrence_No_Defer);
+   pragma Import (Ada, Reraise_Occurrence_No_Defer,
+      "ada__exceptions__reraise_occurrence_no_defer");
+
    --  optionally required by compiler (a-except-2005.ads)
+   --  raise Program_Error if not existing (exp_ch7.adb)
    procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
    pragma Import (Ada, Raise_From_Controlled_Operation,
       "__gnat_raise_from_controlled_operation");
 
-   --  required for tasking by compiler (a-except-2005.ads)
+   --  required by compiler (a-except-2005.ads)
+   --  for finalizer (exp_ch7.adb)
    function Triggered_By_Abort return Boolean;
    pragma Import (Ada, Triggered_By_Abort,
       "ada__exceptions__triggered_by_abort");
 
-   --  required by compiler ??? (a-except-2005.ads)
---  subtype Code_Loc is System.Address;
---  function Exception_Name_Simple (X : Exception_Occurrence) return String;
---  procedure Raise_Exception_Always (
---    E : Exception_Id;
---    Message : String := "");
---  procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence);
+   --  required by compiler (a-except-2005.ads)
+   --  for Intrinsic function Exception_Name (exp_intr.adb)
+   function Exception_Name_Simple (X : Exception_Occurrence) return String
+      renames Exception_Name;
+
+   --  required by compiler (a-except-2005.ads)
+   --  ??? (exp_ch11.adb, sem_ch11.adb)
+   subtype Code_Loc is System.Address;
+
+   --  not required for gcc (a-except-2005.ads)
+--  function Current_Target_Exception return Exception_Occurrence;
+--  procedure Poll;
 
 end Ada.Exceptions;
