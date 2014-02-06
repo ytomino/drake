@@ -281,6 +281,9 @@ package body System.Unwind.Raising is
       Reraise_No_Defer (X);
    end Reraise;
 
+   procedure Reraise_From_All_Others (X : Exception_Occurrence)
+      renames Reraise_No_Defer;
+
    procedure Reraise_From_Controlled_Operation (X : Exception_Occurrence) is
       Prefix : constant String := "adjust/finalize raised ";
    begin

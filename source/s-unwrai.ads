@@ -55,6 +55,12 @@ package System.Unwind.Raising is
    pragma No_Return (Reraise);
    pragma Export (Ada, Reraise, "ada__exceptions__reraise_occurrence_always");
 
+   --  implementation for reraising from when all others (a-except-2005.adb)
+   procedure Reraise_From_All_Others (X : Exception_Occurrence);
+   pragma No_Return (Reraise_From_All_Others);
+   pragma Export (Ada, Reraise_From_All_Others,
+      "ada__exceptions__reraise_occurrence_no_defer");
+
    --  implementation for raising from controlled objects (a-except-2005.adb)
    procedure Reraise_From_Controlled_Operation (X : Exception_Occurrence);
    pragma No_Return (Reraise_From_Controlled_Operation);
