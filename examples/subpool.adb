@@ -6,7 +6,7 @@ with Ada.Unchecked_Deallocate_Subpool;
 -- for dummy item type
 with Ada.Finalization;
 -- with Ada.Unchecked_Deallocation;
-with System.Address_Image;
+with System.Storage_Elements.Formatting;
 procedure subpool is
 	-- RM 13-11-6
 	package MR_Pool is
@@ -166,17 +166,18 @@ procedure subpool is
 	end Dummy;
 	
 	package body Dummy is
+		package SSEF renames System.Storage_Elements.Formatting;
 		overriding procedure Initialize (Object : in out Dummy) is
 		begin
-			Ada.Debug.Put ("at " & System.Address_Image (Object'Address));
+			Ada.Debug.Put ("at " & SSEF.Image (Object'Address));
 		end Initialize;
 		overriding procedure Adjust (Object : in out Dummy) is
 		begin
-			Ada.Debug.Put ("at " & System.Address_Image (Object'Address));
+			Ada.Debug.Put ("at " & SSEF.Image (Object'Address));
 		end Adjust;
 		overriding procedure Finalize (Object : in out Dummy) is
 		begin
-			Ada.Debug.Put ("at " & System.Address_Image (Object'Address));
+			Ada.Debug.Put ("at " & SSEF.Image (Object'Address));
 		end Finalize;
 	end Dummy;
 	
