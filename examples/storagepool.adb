@@ -1,7 +1,8 @@
 with Ada.Unchecked_Deallocation;
---with System.Address_Image;
+with System.Storage_Elements.Formatting;
 with System.Storage_Pools.Unbounded;
 procedure storagepool is
+	Verbose : constant Boolean := False;
 begin
 	Global : declare
 		type A is access all Integer;
@@ -35,7 +36,9 @@ begin
 	begin
 		for I in A'Range loop
 			A (I) := new System.Address'(System'To_Address (I));
---			Ada.Debug.Put (System.Address_Image (A(I).all'Address));
+			if Verbose then
+				Ada.Debug.Put (System.Storage_Elements.Formatting.Image (A(I).all'Address));
+			end if;
 			for J in A'First .. I - 1 loop
 				pragma Assert (A(I) /= A (J));
 				null;
@@ -58,9 +61,13 @@ begin
 		A : array (1 .. 2) of V;
 	begin
 		A (1) := new String (1 .. 5);
---		Ada.Debug.Put (System.Address_Image (A (1).all'Address));
+		if Verbose then
+			Ada.Debug.Put (System.Storage_Elements.Formatting.Image (A (1).all'Address));
+		end if;
 		A (2) := new String (1 .. 10);
---		Ada.Debug.Put (System.Address_Image (A (2).all'Address));
+		if Verbose then
+			Ada.Debug.Put (System.Storage_Elements.Formatting.Image (A (2).all'Address));
+		end if;
 		pragma Assert (A (1) /= A (2));
 		Free (A (1));
 		Free (A (2));

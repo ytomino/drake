@@ -1,7 +1,8 @@
 with Ada.Tags;
 with Ada.Unchecked_Conversion;
-with System.Address_Image;
+with System.Storage_Elements.Formatting;
 procedure tagged1 is
+	package SSEF renames System.Storage_Elements.Formatting;
 	use type Ada.Tags.Tag;
 	use type Ada.Tags.Tag_Array;
 	use type System.Address;
@@ -49,15 +50,15 @@ begin
 			LIRef : LI_Access := LI'Class (ObjRef.all)'Access;
 		begin
 			pragma Assert (L_Cast (ObjRef) /= LI_Cast (LIRef));
-			Ada.Debug.Put (System.Address_Image (L_Cast (ObjRef)));
-			Ada.Debug.Put (System.Address_Image (LI_Cast (LIRef)));
+			Ada.Debug.Put (SSEF.Image (L_Cast (ObjRef)));
+			Ada.Debug.Put (SSEF.Image (LI_Cast (LIRef)));
 		end X;
 		Obj : aliased LDI;
 		LIRef : LI_Access := Obj'Access;
 	begin
 		pragma Assert (L_Cast (Obj'Access) /= LI_Cast (LIRef));
-		Ada.Debug.Put (System.Address_Image (L_Cast (Obj'Access)));
-		Ada.Debug.Put (System.Address_Image (LI_Cast (LIRef)));
+		Ada.Debug.Put (SSEF.Image (L_Cast (Obj'Access)));
+		Ada.Debug.Put (SSEF.Image (LI_Cast (LIRef)));
 		X (Obj'Access);
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
