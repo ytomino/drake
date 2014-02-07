@@ -1,3 +1,4 @@
+pragma License (Unrestricted);
 --  with System;
 --  with Ada.Task_Identification; -- See C.7.1
 package Ada.Dynamic_Priorities is
