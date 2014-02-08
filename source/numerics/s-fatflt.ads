@@ -49,6 +49,7 @@ package System.Fat_Flt is
 
       --  required for Float'Remainder by compiler (s-fatgen.ads)
       function Remainder (X, Y : Float) return Float;
+      pragma Import (Intrinsic, Remainder, "__builtin_remainderf");
 
       --  required for Float'Rounding by compiler (s-fatgen.ads)
       function Rounding (X : Float) return Float;

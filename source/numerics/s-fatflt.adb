@@ -51,13 +51,6 @@ package body System.Fat_Flt is
          return Float (Long_Long_Float (X)); -- ???
       end Machine;
 
-      function Remainder (X, Y : Float) return Float is
-      begin
-         return Float (Long_Long_Float_Attributes.Remainder (
-            Long_Long_Float (X),
-            Long_Long_Float (Y)));
-      end Remainder;
-
       function Succ (X : Float) return Float is
       begin
          return Adjacent (X, inf);
