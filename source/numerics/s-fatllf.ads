@@ -50,13 +50,13 @@ package System.Fat_LLF is
       --  required for Long_Long_Float'Pred by compiler (s-fatgen.ads)
       function Pred (X : Long_Long_Float) return Long_Long_Float;
 
-      --  required for Long_Long_Float'Rounding by compiler (s-fatgen.ads)
-      function Rounding (X : Long_Long_Float) return Long_Long_Float;
-      pragma Import (Intrinsic, Rounding, "__builtin_roundl");
-
       --  required for Long_Long_Float'Remainder by compiler (s-fatgen.ads)
       function Remainder (X, Y : Long_Long_Float) return Long_Long_Float
          renames Long_Long_Float_Attributes.Remainder;
+
+      --  required for Long_Long_Float'Rounding by compiler (s-fatgen.ads)
+      function Rounding (X : Long_Long_Float) return Long_Long_Float;
+      pragma Import (Intrinsic, Rounding, "__builtin_roundl");
 
       --  required for Long_Long_Float'Scaling by compiler (s-fatgen.ads)
       function Scaling (X : Long_Long_Float; Adjustment : Integer)
