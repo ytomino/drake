@@ -51,6 +51,7 @@ package System.Fat_Lflt is
 
       --  required for Long_Float'Remainder by compiler (s-fatgen.ads)
       function Remainder (X, Y : Long_Float) return Long_Float;
+      pragma Import (Intrinsic, Remainder, "__builtin_remainder");
 
       --  required for Long_Float'Rounding by compiler (s-fatgen.ads)
       function Rounding (X : Long_Float) return Long_Float;

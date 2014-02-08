@@ -51,6 +51,7 @@ package System.Fat_Sflt is
 
       --  required for Short_Float'Remainder by compiler (s-fatgen.ads)
       function Remainder (X, Y : Short_Float) return Short_Float;
+      pragma Import (Intrinsic, Remainder, "__builtin_remainderf");
 
       --  required for Short_Float'Rounding by compiler (s-fatgen.ads)
       function Rounding (X : Short_Float) return Short_Float;
