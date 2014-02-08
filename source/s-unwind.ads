@@ -1,8 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit
-with Ada.Unchecked_Deallocation;
 package System.Unwind is
-   pragma Preelaborate;
+   pragma Pure;
 
    --  exception data type (s-stalib.ads)
    type Raise_Action is access procedure;
@@ -47,10 +46,7 @@ package System.Unwind is
    end record;
 
    type Exception_Occurrence_Access is access all Exception_Occurrence;
-   procedure Free is
-      new Ada.Unchecked_Deallocation (
-         Exception_Occurrence,
-         Exception_Occurrence_Access);
+   for Exception_Occurrence_Access'Storage_Size use 0;
 
    --  implementation for catching object (a-except-2005.adb)
    procedure Save_Occurrence (

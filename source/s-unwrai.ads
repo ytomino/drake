@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  runtime unit
+with Ada;
 package System.Unwind.Raising is
    pragma Preelaborate;
 
