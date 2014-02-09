@@ -1,5 +1,5 @@
 pragma Check_Policy (Trace, Off);
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
 with System.Shared_Locking;
@@ -7,6 +7,7 @@ with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_8_To_32;
 package body Ada.Tags is
    pragma Suppress (All_Checks);
+   use Exception_Identification.From_Here;
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
@@ -105,7 +106,7 @@ package body Ada.Tags is
    function DT_With_Checking (T : Tag) return Dispatch_Table_Ptr is
    begin
       if T = No_Tag then
-         Exceptions.Raise_Exception_From_Here (Tag_Error'Identity);
+         Raise_Exception (Tag_Error'Identity);
       else
          return DT (T);
       end if;
@@ -149,7 +150,7 @@ package body Ada.Tags is
          Primary_Only => False,
          Same_Level => False)
       then
-         Exceptions.Raise_Exception_From_Here (Tag_Error'Identity);
+         Raise_Exception (Tag_Error'Identity);
       else
          return Result;
       end if;
@@ -321,7 +322,7 @@ package body Ada.Tags is
                or else Last >= External'Last
                or else External (Last + 1) /= '#'
             then
-               Exceptions.Raise_Exception_From_Here (Tag_Error'Identity);
+               Raise_Exception (Tag_Error'Identity);
             end if;
             return Tag_Conv.To_Pointer (
                System.Storage_Elements.To_Address (Result));
@@ -334,7 +335,7 @@ package body Ada.Tags is
             Node := E_Find (External_Map, External);
             System.Shared_Locking.Leave;
             if Node = null then
-               Exceptions.Raise_Exception_From_Here (Tag_Error'Identity);
+               Raise_Exception (Tag_Error'Identity);
             end if;
             return Node.Tag;
          end;

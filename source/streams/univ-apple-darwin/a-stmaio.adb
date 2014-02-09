@@ -1,7 +1,8 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with C.sys.mman;
 with C.sys.types;
 package body Ada.Storage_Mapped_IO is
+   use Exception_Identification.From_Here;
    use type Streams.Stream_IO.Count;
    use type System.Address;
    use type C.signed_int;
@@ -43,7 +44,7 @@ package body Ada.Storage_Mapped_IO is
       if System.Address (Mapped_Address) =
          System.Address (C.sys.mman.MAP_FAILED)
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
       Object.Address := System.Address (Mapped_Address);
       Object.Size := System.Storage_Elements.Storage_Count (Mapped_Size);
@@ -62,7 +63,7 @@ package body Ada.Storage_Mapped_IO is
          C.size_t (Object.Size)) /= 0
       then
          if Raise_On_Error then
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
          end if;
       end if;
       --  reset
@@ -96,7 +97,7 @@ package body Ada.Storage_Mapped_IO is
    begin
       --  check already opened
       if NC_Mapping.Address /= System.Null_Address then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       --  map
       Map (
@@ -121,7 +122,7 @@ package body Ada.Storage_Mapped_IO is
    begin
       --  check already opened
       if NC_Mapping.Address /= System.Null_Address then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       --  open file
       --  this file will be closed in Finalize even if any exception is raised
@@ -144,7 +145,7 @@ package body Ada.Storage_Mapped_IO is
          Reference (Object);
    begin
       if NC_Mapping.Address = System.Null_Address then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Unmap (NC_Mapping.all, Raise_On_Error => True);
    end Unmap;

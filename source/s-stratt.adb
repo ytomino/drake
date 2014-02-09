@@ -1,7 +1,8 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 package body System.Stream_Attributes is
    pragma Suppress (All_Checks);
+   use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
 
    type IO_Boolean is new Boolean;
@@ -107,9 +108,7 @@ package body System.Stream_Attributes is
    begin
       Ada.Streams.Read (Stream.all, Item, Last);
       if Last < Item'Last then
-         Ada.Exceptions.Raise_Exception_From_Here (
-            End_Error'Identity,
-            Line => Line);
+         Raise_Exception (End_Error'Identity, Line => Line);
       end if;
    end Read_Just;
 

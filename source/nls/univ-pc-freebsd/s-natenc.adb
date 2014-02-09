@@ -1,10 +1,11 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
 package body System.Native_Encoding is
+   use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
    use type C.iconv.iconv_t; -- C.void_ptr
    use type C.signed_int;
@@ -241,7 +242,7 @@ package body System.Native_Encoding is
             when C.errno.E2BIG =>
                Status := Overflow;
             when others => -- unknown
-               Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       else
          Status := Finished;
@@ -349,7 +350,7 @@ package body System.Native_Encoding is
       begin
          iconv := C.iconv.iconv_open (To, From);
          if iconv = Error then
-            Ada.Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+            Raise_Exception (Name_Error'Identity);
          end if;
          Object.Data.iconv := iconv;
          --  about "From"

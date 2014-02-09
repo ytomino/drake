@@ -1,5 +1,6 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 package body Ada.Environment_Encoding is
+   use Exception_Identification.From_Here;
 
    --  implementation
 
@@ -7,7 +8,7 @@ package body Ada.Environment_Encoding is
       return Streams.Stream_Element_Offset is
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Min_Size_In_From_Stream_Elements_No_Check (Object);
    end Min_Size_In_From_Stream_Elements;
@@ -16,7 +17,7 @@ package body Ada.Environment_Encoding is
       return Streams.Stream_Element_Array is
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Substitute_No_Check (Object);
    end Substitute;
@@ -26,7 +27,7 @@ package body Ada.Environment_Encoding is
       Substitute : Streams.Stream_Element_Array) is
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Set_Substitute_No_Check (Object, Substitute);
    end Set_Substitute;
@@ -43,7 +44,7 @@ package body Ada.Environment_Encoding is
       N_Status : System.Native_Encoding.Subsequence_Status_Type;
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Convert_No_Check (Object,
          Item,
@@ -67,7 +68,7 @@ package body Ada.Environment_Encoding is
       N_Status : System.Native_Encoding.Continuing_Status_Type;
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Convert_No_Check (
          Object,
@@ -90,7 +91,7 @@ package body Ada.Environment_Encoding is
       N_Status : System.Native_Encoding.Finishing_Status_Type;
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Convert_No_Check (
          Object,
@@ -139,7 +140,7 @@ package body Ada.Environment_Encoding is
       N_Status : System.Native_Encoding.Substituting_Status_Type;
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Convert_No_Check (
          Object,

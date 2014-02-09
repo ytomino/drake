@@ -1,8 +1,8 @@
-with Ada.Exceptions;
-pragma Warnings (Off, Ada.Exceptions); -- break "pure" rule
+with Ada.Exception_Identification.From_Here;
 with System.Storage_Elements;
 with System.UTF_Conversions;
 package body Ada.Strings.UTF_Encoding.Conversions is
+   use Exception_Identification.From_Here;
    use type System.Storage_Elements.Storage_Offset;
    use type System.UTF_Conversions.From_Status_Type;
    use type System.UTF_Conversions.To_Status_Type;
@@ -420,7 +420,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                Code,
                From_Status);
             if From_Status /= System.UTF_Conversions.Success then
-               Exceptions.Raise_Exception_From_Here (Encoding_Error'Identity);
+               Raise_Exception (Encoding_Error'Identity);
             end if;
             I := Used + 1;
             To_UTF (Output_Scheme) (
@@ -429,7 +429,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                Last,
                To_Status);
             if To_Status /= System.UTF_Conversions.Success then
-               Exceptions.Raise_Exception_From_Here (Encoding_Error'Identity);
+               Raise_Exception (Encoding_Error'Identity);
             end if;
             J := Last + 1;
          end;

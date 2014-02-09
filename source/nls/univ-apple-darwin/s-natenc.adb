@@ -1,10 +1,11 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.stdint;
 package body System.Native_Encoding is
+   use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
    use type Storage_Elements.Storage_Offset;
    use type C.icucore.UChar_const_ptr;
@@ -109,7 +110,7 @@ package body System.Native_Encoding is
    begin
       uconv := C.icucore.unicode.ucnv.ucnv_open (Encoding, Error'Access);
       if uconv = null then
-         Ada.Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
       Default_Substitute (uconv, Result, Last);
       C.icucore.unicode.ucnv.ucnv_close (uconv);
@@ -126,7 +127,7 @@ package body System.Native_Encoding is
    begin
       uconv := C.icucore.unicode.ucnv.ucnv_open (Encoding, Error'Access);
       if uconv = null then
-         Ada.Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
       Result := Ada.Streams.Stream_Element_Offset (
          C.icucore.unicode.ucnv.ucnv_getMinCharSize (uconv));
@@ -236,7 +237,7 @@ package body System.Native_Encoding is
          when C.icucore.unicode.utypes.U_BUFFER_OVERFLOW_ERROR =>
             null;
          when others =>
-            Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
       end case;
       Last := Item'First
          + Ada.Streams.Stream_Element_Offset (
@@ -267,7 +268,7 @@ package body System.Native_Encoding is
                Status := Overflow;
             end if;
          when others => -- unknown
-            Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
       end case;
       Out_Last := Out_Item'First
          + Ada.Streams.Stream_Element_Offset (
@@ -334,7 +335,7 @@ package body System.Native_Encoding is
          when C.icucore.unicode.utypes.U_BUFFER_OVERFLOW_ERROR =>
             Status := Overflow;
          when others => -- unknown
-            Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
       end case;
       Out_Last := Out_Item'First
          + Ada.Streams.Stream_Element_Offset (
@@ -438,12 +439,12 @@ package body System.Native_Encoding is
       begin
          From_uconv := C.icucore.unicode.ucnv.ucnv_open (From, Error'Access);
          if From_uconv = null then
-            Ada.Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+            Raise_Exception (Name_Error'Identity);
          end if;
          To_uconv := C.icucore.unicode.ucnv.ucnv_open (To, Error'Access);
          if To_uconv = null then
             C.icucore.unicode.ucnv.ucnv_close (From_uconv);
-            Ada.Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+            Raise_Exception (Name_Error'Identity);
          end if;
          C.icucore.unicode.ucnv.ucnv_setFromUCallBack (
             To_uconv,
@@ -458,7 +459,7 @@ package body System.Native_Encoding is
             when others =>
                C.icucore.unicode.ucnv.ucnv_close (To_uconv);
                C.icucore.unicode.ucnv.ucnv_close (From_uconv);
-               Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
          --  about "From"
          Object.Data.From_uconv := From_uconv;

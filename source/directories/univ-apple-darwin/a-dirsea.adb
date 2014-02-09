@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 with System.Memory;
@@ -6,6 +6,7 @@ with System.Zero_Terminated_Strings;
 with C.fnmatch;
 with C.sys.dirent;
 package body Ada.Directory_Searching is
+   use Exception_Identification.From_Here;
    use type System.Storage_Elements.Storage_Offset;
    use type C.char;
    use type C.signed_int;
@@ -29,7 +30,7 @@ package body Ada.Directory_Searching is
       Has_Next_Entry : out Boolean) is
    begin
       if Directory'Length = 0 then -- reject
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
       declare
          C_Directory : C.char_array (
@@ -42,7 +43,7 @@ package body Ada.Directory_Searching is
          Search.Handle := C.dirent.opendir (C_Directory (0)'Access);
       end;
       if Search.Handle = null then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
       Search.Filter := Filter;
       declare
@@ -194,7 +195,7 @@ package body Ada.Directory_Searching is
          Full_Name (0)'Access,
          Information) < 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
    end Get_Information;
 

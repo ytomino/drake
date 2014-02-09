@@ -1,8 +1,9 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Inside;
 with System.Zero_Terminated_WStrings;
 with C.windef;
 package body Ada.Processes is
+   use Exception_Identification.From_Here;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
@@ -67,10 +68,10 @@ package body Ada.Processes is
          lpStartupInfo => Startup_Info'Access,
          lpProcessInformation => Process_Info'Access) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       else
          if C.winbase.CloseHandle (Process_Info.hThread) = 0 then
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
          end if;
          Reference (Child).all := Process_Info.hProcess;
       end if;
@@ -107,13 +108,13 @@ package body Ada.Processes is
          Handle,
          C.winbase.INFINITE) /= C.winbase.WAIT_OBJECT_0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       else
          declare
             Exit_Code : aliased C.windef.DWORD;
          begin
             if C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access) = 0 then
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
             end if;
             Status := Command_Line.Exit_Status (Exit_Code);
          end;

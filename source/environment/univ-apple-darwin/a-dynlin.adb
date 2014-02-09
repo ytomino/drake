@@ -1,7 +1,8 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
 with C.dlfcn;
 package body Ada.Dynamic_Linking is
+   use Exception_Identification.From_Here;
    use type C.size_t;
    use type C.void_ptr;
 
@@ -15,7 +16,7 @@ package body Ada.Dynamic_Linking is
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       Result := C.dlfcn.dlopen (C_Name (0)'Access, 0);
       if Result = C.void_ptr (System.Null_Address) then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       else
          Handle := Result;
       end if;
@@ -37,7 +38,7 @@ package body Ada.Dynamic_Linking is
       Handle : constant not null access C.void_ptr := Reference (Lib);
    begin
       if Handle.all /= C.void_ptr (System.Null_Address) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       else
          Open (Handle.all, Name);
       end if;
@@ -66,7 +67,7 @@ package body Ada.Dynamic_Linking is
       Handle : constant C.void_ptr := Reference (Lib).all;
    begin
       if Handle = C.void_ptr (System.Null_Address) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       else
          declare
             C_Symbol : C.char_array (
@@ -77,7 +78,7 @@ package body Ada.Dynamic_Linking is
             System.Zero_Terminated_Strings.To_C (Symbol, C_Symbol (0)'Access);
             Result := C.dlfcn.dlsym (Handle, C_Symbol (0)'Access);
             if Result = C.void_ptr (System.Null_Address) then
-               Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
+               Raise_Exception (Data_Error'Identity);
             else
                return System.Address (Result);
             end if;

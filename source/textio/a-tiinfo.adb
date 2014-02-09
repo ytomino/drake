@@ -1,7 +1,9 @@
+with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Inside.Formatting is
+   use Exception_Identification.From_Here;
 
    type String_Access is access String;
    procedure Free is new Unchecked_Deallocation (String, String_Access);
@@ -35,7 +37,7 @@ package body Ada.Text_IO.Inside.Formatting is
       if Line = 0 then
          null;
       elsif Count (Width) > Line then
-         Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+         Raise_Exception (Layout_Error'Identity);
       elsif Col (File) + Count (Width) - 1 > Line then
          New_Line (File);
       end if;
@@ -177,11 +179,11 @@ package body Ada.Text_IO.Inside.Formatting is
             Last,
             Error => Error);
          if Error then
-            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+            Raise_Exception (Layout_Error'Identity);
          end if;
          Last := Last + 1;
          if Last > To'Last then
-            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+            Raise_Exception (Layout_Error'Identity);
          end if;
          To (Last) := '#';
          if Padding /= ' ' then
@@ -197,12 +199,12 @@ package body Ada.Text_IO.Inside.Formatting is
          Padding => Padding,
          Error => Error);
       if Error then
-         Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+         Raise_Exception (Layout_Error'Identity);
       end if;
       if Base /= 10 then
          Last := Last + 1;
          if Last > To'Last then
-            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+            Raise_Exception (Layout_Error'Identity);
          end if;
          To (Last) := '#';
       end if;
@@ -232,11 +234,11 @@ package body Ada.Text_IO.Inside.Formatting is
             Last,
             Error => Error);
          if Error then
-            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+            Raise_Exception (Layout_Error'Identity);
          end if;
          Last := Last + 1;
          if Last > To'Last then
-            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+            Raise_Exception (Layout_Error'Identity);
          end if;
          To (Last) := '#';
          if Padding /= ' ' then
@@ -252,12 +254,12 @@ package body Ada.Text_IO.Inside.Formatting is
          Padding => Padding,
          Error => Error);
       if Error then
-         Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+         Raise_Exception (Layout_Error'Identity);
       end if;
       if Base /= 10 then
          Last := Last + 1;
          if Last > To'Last then
-            Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+            Raise_Exception (Layout_Error'Identity);
          end if;
          To (Last) := '#';
       end if;
@@ -358,7 +360,7 @@ package body Ada.Text_IO.Inside.Formatting is
                if Item = ')' then
                   Get (File, Item);
                else
-                  Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
+                  Raise_Exception (Data_Error'Identity);
                end if;
             end if;
             return '(' & Re & ',' & Im & ')';
@@ -460,9 +462,9 @@ package body Ada.Text_IO.Inside.Formatting is
       end loop;
       if not Has_Data then
          if End_Of_File (File) then
-            Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+            Raise_Exception (End_Error'Identity);
          else
-            Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
+            Raise_Exception (Data_Error'Identity);
          end if;
       end if;
    end Get_Field;
@@ -505,7 +507,7 @@ package body Ada.Text_IO.Inside.Formatting is
       First := Item'First;
       loop
          if First > Item'Last then
-            Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+            Raise_Exception (End_Error'Identity);
          end if;
          exit when Item (First) /= ' '
             and then Item (First) /= Character'Val (9);
@@ -519,7 +521,7 @@ package body Ada.Text_IO.Inside.Formatting is
       Padding : Character := ' ') is
    begin
       if Target'Length < Source'Length then
-         Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+         Raise_Exception (Layout_Error'Identity);
       end if;
       Target (Target'First .. Target'First + Source'Length - 1) := Source;
       for I in Target'First + Source'Length .. Target'Last loop
@@ -533,7 +535,7 @@ package body Ada.Text_IO.Inside.Formatting is
       Padding : Character := ' ') is
    begin
       if Target'Length < Source'Length then
-         Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+         Raise_Exception (Layout_Error'Identity);
       end if;
       for I in Target'First .. Target'Last - Source'Length loop
          Target (I) := Padding;

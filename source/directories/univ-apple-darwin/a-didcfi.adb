@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
 with C.copyfile;
 with C.errno;
@@ -7,6 +7,7 @@ procedure Ada.Directories.Inside.Do_Copy_File (
    Target_Name : String;
    Overwrite : Boolean := True)
 is
+   use Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.size_t;
    use type C.unsigned_int;
@@ -32,9 +33,9 @@ begin
       case C.errno.errno is
          when C.errno.ENOENT
             | C.errno.ENOTSUP =>
-            Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+            Raise_Exception (Name_Error'Identity);
          when others =>
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
       end case;
    end if;
 end Ada.Directories.Inside.Do_Copy_File;

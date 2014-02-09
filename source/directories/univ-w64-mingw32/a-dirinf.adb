@@ -1,11 +1,12 @@
 with Ada.Directories.Inside;
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with System.Native_Time;
 with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winnt;
 package body Ada.Directories.Information is
+   use Exception_Identification.From_Here;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
@@ -27,7 +28,7 @@ package body Ada.Directories.Information is
       return Calendar.Time is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Cast (System.Native_Time.To_Time (
          Directory_Entry.Data.ftLastWriteTime));
@@ -45,7 +46,7 @@ package body Ada.Directories.Information is
       return Calendar.Time is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Cast (System.Native_Time.To_Time (
          Directory_Entry.Data.ftLastAccessTime));
@@ -63,7 +64,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_READONLY) /= 0;
@@ -81,7 +82,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ARCHIVE) /= 0;
@@ -99,7 +100,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_COMPRESSED) /= 0;
@@ -117,7 +118,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ENCRYPTED) /= 0;
@@ -135,7 +136,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_HIDDEN) /= 0;
@@ -153,7 +154,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SYSTEM) /= 0;
@@ -171,7 +172,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_OFFLINE) /= 0;
@@ -189,7 +190,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_TEMPORARY) /= 0;
@@ -207,7 +208,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SPARSE_FILE) /= 0;
@@ -225,7 +226,7 @@ package body Ada.Directories.Information is
       return Boolean is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Directory_Entry.Data.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) /= 0;
@@ -253,12 +254,12 @@ package body Ada.Directories.Information is
             or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
          hTemplateFile => C.windef.LPVOID (System.Null_Address));
       if Handle = C.winbase.INVALID_HANDLE_VALUE then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
       Result := C.winbase.GetFileInformationByHandle (Handle, Info'Access);
       Dummy := C.winbase.CloseHandle (Handle);
       if Result = 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
       return (
          FileIndexLow => Info.nFileIndexLow,

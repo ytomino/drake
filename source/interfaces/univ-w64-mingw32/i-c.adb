@@ -1,5 +1,4 @@
-with Ada.Exceptions;
-pragma Warnings (Off, Ada.Exceptions); -- break "pure" rule
+with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with System;
 with C.winnls;
@@ -8,6 +7,7 @@ with C.winnt;
 pragma Warnings (Off, C.winnt); -- break "pure" rule
 package body Interfaces.C is
    pragma Suppress (All_Checks);
+   use Ada.Exception_Identification.From_Here;
    use type Standard.C.size_t;
 
    generic
@@ -112,8 +112,7 @@ package body Interfaces.C is
          nul_Pos : constant Element_ptr := Find_nul (Item_ptr, Item'Length);
       begin
          if nul_Pos = null then
-            Ada.Exceptions.Raise_Exception_From_Here (
-               Terminator_Error'Identity); -- CXB3005
+            Raise_Exception (Terminator_Error'Identity); -- CXB3005
          end if;
          return size_t (nul_Pos - Item_ptr);
       end Length;

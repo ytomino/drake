@@ -1,6 +1,6 @@
-with Ada.Exceptions;
-pragma Warnings (Off, Ada.Exceptions); -- break "pure" rule
+with Ada.Exception_Identification.From_Here;
 package body Ada.Hierarchical_File_Names is
+   use Exception_Identification.From_Here;
 
    function Parent_Directory_Name (
       Level : Positive)
@@ -80,7 +80,7 @@ package body Ada.Hierarchical_File_Names is
       Containing_Directory (Name, First, Last);
       if First > Last and then Raise_On_Error then
          --  A.16.1 (38/3)
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
       return Name (First .. Last);
    end Containing_Directory;
@@ -411,7 +411,7 @@ package body Ada.Hierarchical_File_Names is
    begin
       if Is_Full_Name (Name) /= Is_Full_Name (From) then
          --  Relative_Name ("A", "/B") or reverse
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       else
          declare
             R_N_First : Positive := Name'First;
@@ -522,8 +522,7 @@ package body Ada.Hierarchical_File_Names is
                         Parent_Count := Parent_Count - 1;
                      else
                         --  Relative_Name ("A", "..")
-                        Exceptions.Raise_Exception_From_Here (
-                           Use_Error'Identity);
+                        Raise_Exception (Use_Error'Identity);
                      end if;
                   else
                      Parent_Count := Parent_Count + 1;

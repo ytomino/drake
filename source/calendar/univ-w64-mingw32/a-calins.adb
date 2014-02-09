@@ -1,9 +1,10 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Native_Time;
 with C.winbase;
 with C.windef;
 package body Ada.Calendar.Inside is
    pragma Suppress (All_Checks);
+   use Exception_Identification.From_Here;
    use type System.Native_Time.Nanosecond_Number;
    use type C.windef.WINBOOL;
 
@@ -36,7 +37,7 @@ package body Ada.Calendar.Inside is
          FileTime'Access,
          SystemTime'Access) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Time_Error'Identity);
+         Raise_Exception (Time_Error'Identity);
       else
          Year := Year_Number (SystemTime.wYear);
          Month := Month_Number (SystemTime.wMonth);
@@ -75,7 +76,7 @@ package body Ada.Calendar.Inside is
          SystemTime'Access,
          FileTime'Access) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Time_Error'Identity);
+         Raise_Exception (Time_Error'Identity);
       else
          return Time (
             System.Native_Time.To_Time (FileTime)

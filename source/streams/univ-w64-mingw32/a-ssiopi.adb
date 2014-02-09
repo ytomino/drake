@@ -1,10 +1,11 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Inside;
 with System;
 with C.winbase;
 with C.windef;
 with C.winnt;
 package body Ada.Streams.Stream_IO.Pipes is
+   use Exception_Identification.From_Here;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
 
@@ -25,7 +26,7 @@ package body Ada.Streams.Stream_IO.Pipes is
          Inheritable_Security_Attributes'Unrestricted_Access,
          0) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       else
          Inside.Open (
             Reading,

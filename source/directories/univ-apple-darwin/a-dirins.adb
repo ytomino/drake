@@ -1,4 +1,5 @@
 with Ada.Directories.Inside.Do_Copy_File;
+with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Zero_Terminated_Strings;
@@ -9,6 +10,7 @@ with C.sys.types;
 with C.time;
 with C.unistd;
 package body Ada.Directories.Inside is
+   use Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.signed_long;
    use type C.size_t;
@@ -86,7 +88,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
       if C.unistd.chdir (C_Directory (0)'Access) /= 0 then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
    end Set_Directory;
 
@@ -107,9 +109,9 @@ package body Ada.Directories.Inside is
             when C.errno.ENOENT
                | C.errno.ENOTDIR
                | C.errno.ENAMETOOLONG =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Create_Directory;
@@ -121,7 +123,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
       if C.unistd.rmdir (C_Directory (0)'Access) < 0 then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
    end Delete_Directory;
 
@@ -132,7 +134,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       if C.unistd.unlink (C_Name (0)'Access) < 0 then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
    end Delete_File;
 
@@ -166,9 +168,9 @@ package body Ada.Directories.Inside is
                | C.errno.ENOTDIR
                | C.errno.EISDIR
                | C.errno.ENAMETOOLONG =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Rename;
@@ -210,9 +212,9 @@ package body Ada.Directories.Inside is
                when C.errno.ENOENT
                   | C.errno.ENOTDIR
                   | C.errno.ENAMETOOLONG =>
-                  Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+                  Raise_Exception (Name_Error'Identity);
                when others =>
-                  Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+                  Raise_Exception (Use_Error'Identity);
             end case;
          end if;
       end;
@@ -243,7 +245,7 @@ package body Ada.Directories.Inside is
    begin
       Get_Information (Name, Information, Error);
       if Error then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
    end Get_Information;
 
@@ -287,12 +289,12 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       if C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) < 0 then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
       Times (0) := To_timeval (Attributes.st_atimespec);
       Times (1) := To_timeval (Time);
       if C.sys.time.lutimes (C_Name (0)'Access, Times (0)'Access) < 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
    end Set_Modification_Time;
 

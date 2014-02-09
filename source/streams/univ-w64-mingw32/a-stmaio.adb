@@ -1,7 +1,8 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with C.basetsd;
 with C.windef;
 package body Ada.Storage_Mapped_IO is
+   use Exception_Identification.From_Here;
    use type Streams.Stream_Element_Offset;
    use type C.windef.WINBOOL;
    use type C.winnt.ULONGLONG;
@@ -50,7 +51,7 @@ package body Ada.Storage_Mapped_IO is
          use type C.winnt.HANDLE;
       begin
          if File_Mapping = C.winbase.INVALID_HANDLE_VALUE then
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
          end if;
       end;
       Mapped_Address := C.winbase.MapViewOfFileEx (
@@ -67,7 +68,7 @@ package body Ada.Storage_Mapped_IO is
             if C.winbase.CloseHandle (File_Mapping) = 0 then
                null; -- raise Use_Error;
             end if;
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
          end if;
       end;
       Object.Address := System.Address (Mapped_Address);
@@ -87,7 +88,7 @@ package body Ada.Storage_Mapped_IO is
          or else C.winbase.CloseHandle (Object.File_Mapping) = 0
       then
          if Raise_On_Error then
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
          end if;
       end if;
       --  reset
@@ -123,7 +124,7 @@ package body Ada.Storage_Mapped_IO is
    begin
       --  check already opened
       if NC_Mapping.Address /= System.Null_Address then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       --  map
       Map (
@@ -149,7 +150,7 @@ package body Ada.Storage_Mapped_IO is
    begin
       --  check already opened
       if NC_Mapping.Address /= System.Null_Address then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       --  open file
       --  this file will be closed in Finalize even if any exception is raised
@@ -172,7 +173,7 @@ package body Ada.Storage_Mapped_IO is
          Reference (Object);
    begin
       if NC_Mapping.Address = System.Null_Address then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Unmap (NC_Mapping.all, Raise_On_Error => True);
    end Unmap;
