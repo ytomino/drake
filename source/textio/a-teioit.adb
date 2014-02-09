@@ -1,6 +1,7 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Deallocation;
 package body Ada.Text_IO.Iterators is
+   use Exception_Identification.From_Here;
 
    procedure Free is new Unchecked_Deallocation (String, String_Access);
 
@@ -31,7 +32,7 @@ package body Ada.Text_IO.Iterators is
       return References.Strings.Constant_Reference_Type is
    begin
       if Count (Position) /= Container.Line then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Element => Container.Item);
    end Constant_Reference;
@@ -63,7 +64,7 @@ package body Ada.Text_IO.Iterators is
       return Line_Cursor is
    begin
       if Count (Position) /= Object.Lines.Line then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return First (Object);
    end Next;

@@ -1,8 +1,9 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Permissions.Inside;
 with System.Zero_Terminated_Strings;
 with C.stdint;
 package body Ada.Directories.Volumes is
+   use Exception_Identification.From_Here;
    use type File_Size;
    use type C.signed_int;
    use type C.size_t;
@@ -16,7 +17,7 @@ package body Ada.Directories.Volumes is
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       return Result : File_System do
          if statfs64 (C_Name (0)'Access, Result'Unrestricted_Access) < 0 then
-            Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+            Raise_Exception (Name_Error'Identity);
          end if;
       end return;
    end Where;

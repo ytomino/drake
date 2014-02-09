@@ -1,14 +1,19 @@
 pragma License (Unrestricted);
 --  with Ada.Streams;
+with Ada.Exception_Identification;
 private with System.Unwind;
 package Ada.Exceptions is
    pragma Preelaborate;
 
-   type Exception_Id is private;
-   pragma Preelaborable_Initialization (Exception_Id);
-   Null_Id : constant Exception_Id;
+--  type Exception_Id is private;
+--  pragma Preelaborable_Initialization (Exception_Id);
+   subtype Exception_Id is Exception_Identification.Exception_Id;
+--  Null_Id : constant Exception_Id;
+   Null_Id : Exception_Id
+      renames Exception_Identification.Null_Id;
 
-   function Exception_Name (Id : Exception_Id) return String;
+   function Exception_Name (Id : Exception_Id) return String
+      renames Exception_Identification.Exception_Name;
    function Wide_Exception_Name (Id : Exception_Id) return Wide_String;
    function Wide_Wide_Exception_Name (Id : Exception_Id)
       return Wide_Wide_String;
@@ -18,28 +23,11 @@ package Ada.Exceptions is
    type Exception_Occurrence_Access is access all Exception_Occurrence;
    Null_Occurrence : constant Exception_Occurrence;
 
-   procedure Raise_Exception (E : Exception_Id; Message : String := "");
+   procedure Raise_Exception (E : Exception_Id; Message : String := "")
+      renames Exception_Identification.Raise_Exception;
    pragma No_Return (Raise_Exception);
-   pragma Import (Ada, Raise_Exception, "ada__exceptions__raise_exception");
    function Exception_Message (X : Exception_Occurrence) return String;
    procedure Reraise_Occurrence (X : Exception_Occurrence);
-
-   --  extended
-   --  Raise_Exception_From_Here raises a new occurrence of the identified
-   --    exception with source location.
-   procedure Raise_Exception_From_Here (
-      E : Exception_Id;
-      File : String := Debug.File;
-      Line : Integer := Debug.Line)
-      with No_Return, Import, Convention => Ada,
-         External_Name => "__drake_raise_exception_from_here";
-   procedure Raise_Exception_From_Here (
-      E : Exception_Id;
-      File : String := Debug.File;
-      Line : Integer := Debug.Line;
-      Message : String)
-      with No_Return, Import, Convention => Ada,
-         External_Name => "__drake_raise_exception_from_here_with";
 
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id;
@@ -72,10 +60,6 @@ package Ada.Exceptions is
 --  for Exception_Occurrence'Write use Write_Exception_Occurrence;
 
 private
-
-   type Exception_Id is new System.Unwind.Exception_Data_Access;
-
-   Null_Id : constant Exception_Id := null;
 
    type Exception_Occurrence is new System.Unwind.Exception_Occurrence;
 

@@ -1,10 +1,11 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Tasking.Native_Tasks;
 with System.Tasking.Tasks;
 with C.winbase;
 with C.windef;
 with C.winerror;
 package body System.Tasking.Synchronous_Objects.Abortable is
+   use Ada.Exception_Identification.From_Here;
    use type C.windef.DWORD;
 
    --  queue
@@ -78,8 +79,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
                when C.winbase.WAIT_OBJECT_0 | C.winbase.WAIT_OBJECT_0 + 1 =>
                   null;
                when others =>
-                  Ada.Exceptions.Raise_Exception_From_Here (
-                     Tasking_Error'Identity);
+                  Raise_Exception (Tasking_Error'Identity);
             end case;
          end;
       else
@@ -118,8 +118,7 @@ package body System.Tasking.Synchronous_Objects.Abortable is
                   Value := Get (Object);
                   Aborted := True;
                when others =>
-                  Ada.Exceptions.Raise_Exception_From_Here (
-                     Tasking_Error'Identity);
+                  Raise_Exception (Tasking_Error'Identity);
             end case;
          end;
       else

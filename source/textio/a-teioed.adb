@@ -1,9 +1,10 @@
 pragma Check_Policy (Trace, Off);
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Text_IO.Inside.Formatting;
 with System.Formatting.Decimal_Image;
 with System.Val_Uns;
 package body Ada.Text_IO.Editing is
+   use Exception_Identification.From_Here;
    use type System.Formatting.Unsigned;
 
    function Length (Pic : Picture; Currency : String := Default_Currency)
@@ -94,8 +95,7 @@ package body Ada.Text_IO.Editing is
                            & Integer'Image (-Scale)
                            & " is too longer for "
                            & Pic_String (Pic)));
-                        Exceptions.Raise_Exception_From_Here (
-                           Layout_Error'Identity);
+                        Raise_Exception (Layout_Error'Identity);
                      end if;
                      loop
                         pragma Assert (Pic_Index >= Pic.Expanded'First);
@@ -167,8 +167,7 @@ package body Ada.Text_IO.Editing is
                                              and then
                                              Pic.Expanded (Pic_Index) /= '_'))
                                     then
-                                       Exceptions.Raise_Exception_From_Here (
-                                          Layout_Error'Identity);
+                                       Raise_Exception (Layout_Error'Identity);
                                     end if;
                                     Pic_Index := Pic_Index - 1;
                                     N := N - 1;
@@ -244,8 +243,7 @@ package body Ada.Text_IO.Editing is
                      or else (Pic.Has_Dollar = Previous
                         and then not Dollar_Used) -- all $ used for item
                   then
-                     Exceptions.Raise_Exception_From_Here (
-                        Layout_Error'Identity);
+                     Raise_Exception (Layout_Error'Identity);
                   end if;
                end;
                declare
@@ -292,8 +290,7 @@ package body Ada.Text_IO.Editing is
                                     if Pic_Index > Pic.Length
                                        or else Pic.Expanded (Pic_Index) /= '#'
                                     then
-                                       Exceptions.Raise_Exception_From_Here (
-                                          Layout_Error'Identity);
+                                       Raise_Exception (Layout_Error'Identity);
                                     end if;
                                     Pic_Index := Pic_Index + 1;
                                     N := N - 1;
@@ -406,16 +403,14 @@ package body Ada.Text_IO.Editing is
                            Count,
                            Error => Error);
                         if Error then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                      end;
                      if Count = 0
                         or else I = Pic_String'First
                         or else I + Integer (Count) - 1 > Pic_String'Last
                      then
-                        Exceptions.Raise_Exception_From_Here (
-                           Picture_Error'Identity);
+                        Raise_Exception (Picture_Error'Identity);
                      end if;
                      for J in 2 .. Count loop
                         Result.Length := Result.Length + 1;
@@ -424,26 +419,22 @@ package body Ada.Text_IO.Editing is
                      I := Count_Last + 1;
                   end;
                when ')' =>
-                  Exceptions.Raise_Exception_From_Here (
-                     Picture_Error'Identity);
+                  Raise_Exception (Picture_Error'Identity);
                when others =>
                   Result.Length := Result.Length + 1;
                   if Result.Length > Result.Expanded'Last then
-                     Exceptions.Raise_Exception_From_Here (
-                        Picture_Error'Identity);
+                     Raise_Exception (Picture_Error'Identity);
                   end if;
                   Result.Expanded (Result.Length) := Pic_String (I);
                   case Pic_String (I) is
                      when '$' =>
                         if Currency = Sharp then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         Currency := Dollar;
                         if State >= Radix then
                            if Result.Has_Dollar = None then
-                              Exceptions.Raise_Exception_From_Here (
-                                 Layout_Error'Identity);
+                              Raise_Exception (Layout_Error'Identity);
                            end if;
                            Result.Aft := Result.Aft + 1;
                         else
@@ -451,14 +442,12 @@ package body Ada.Text_IO.Editing is
                         end if;
                      when '#' =>
                         if Currency = Dollar then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         Currency := Sharp;
                      when '<' =>
                         if Paren = Closed then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         Paren := Opened;
                         if Result.First_Sign_Position = 0 then
@@ -470,14 +459,12 @@ package body Ada.Text_IO.Editing is
                         end if;
                      when '>' =>
                         if Paren /= Opened then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         Paren := Closed;
                      when '+' =>
                         if Sign = Minus or else State >= Radix then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         if Result.First_Sign_Position = 0 then
                            Result.First_Sign_Position := Result.Length;
@@ -488,8 +475,7 @@ package body Ada.Text_IO.Editing is
                         end if;
                      when '-' =>
                         if Sign = Plus or else State >= Radix then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         if Result.First_Sign_Position = 0 then
                            Result.First_Sign_Position := Result.Length;
@@ -500,8 +486,7 @@ package body Ada.Text_IO.Editing is
                         end if;
                      when '*' =>
                         if Blank_When_Zero then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         Result.Real_Blank_When_Zero := False;
                         if State >= Radix then
@@ -510,8 +495,7 @@ package body Ada.Text_IO.Editing is
                         elsif Suppression = Z
                            or else State > Any_Suppression
                         then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         else
                            Suppression := Asterisk;
                            State := Any_Suppression;
@@ -524,8 +508,7 @@ package body Ada.Text_IO.Editing is
                         elsif Suppression = Asterisk
                            or else State > Any_Suppression
                         then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         else
                            Suppression := Z;
                            State := Any_Suppression;
@@ -536,8 +519,7 @@ package body Ada.Text_IO.Editing is
                            State := Fraction;
                            Result.Aft := Result.Aft + 1;
                         elsif State > Nine then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         else
                            State := Nine;
                         end if;
@@ -548,8 +530,7 @@ package body Ada.Text_IO.Editing is
                               and then Currency = None
                               and then Paren = None)
                         then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         State := Radix;
                         Result.Radix_Position := Result.Length;
@@ -561,8 +542,7 @@ package body Ada.Text_IO.Editing is
                               and then Currency = None
                               and then Paren = None)
                         then
-                           Exceptions.Raise_Exception_From_Here (
-                              Picture_Error'Identity);
+                           Raise_Exception (Picture_Error'Identity);
                         end if;
                         State := Radix;
                         Result.Radix_Position := Result.Length;
@@ -575,8 +555,7 @@ package body Ada.Text_IO.Editing is
                      when '_' | '/' | '0' =>
                         null;
                      when others =>
-                        Exceptions.Raise_Exception_From_Here (
-                           Picture_Error'Identity);
+                        Raise_Exception (Picture_Error'Identity);
                   end case;
                   I := I + 1;
             end case;
@@ -588,7 +567,7 @@ package body Ada.Text_IO.Editing is
                and then Paren = None)
             or else State = B_After_Sign -- CXF3A01
          then
-            Exceptions.Raise_Exception_From_Here (Picture_Error'Identity);
+            Raise_Exception (Picture_Error'Identity);
          end if;
          if State < Radix then
             Result.Radix_Position := Result.Length + 1;

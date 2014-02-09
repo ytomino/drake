@@ -1,10 +1,11 @@
 pragma License (Unrestricted);
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_WStrings;
 with C.windef;
 with C.winbase;
 with C.winnt;
 package body Ada.Directories.Temporary is
+   use Exception_Identification.From_Here;
    use type C.size_t;
    use type C.windef.UINT;
    use type C.windef.WINBOOL;
@@ -43,7 +44,7 @@ package body Ada.Directories.Temporary is
          TMP (0)'Access,
          W_Name (0)'Access) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
    end Set_Temporary_Directory;
 
@@ -63,7 +64,7 @@ package body Ada.Directories.Temporary is
          0,
          Result (0)'Access) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
       return System.Zero_Terminated_WStrings.Value (Result (0)'Access);
    end Create_Temporary_File;

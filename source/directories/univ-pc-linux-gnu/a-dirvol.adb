@@ -1,6 +1,7 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
 package body Ada.Directories.Volumes is
+   use Exception_Identification.From_Here;
    use type File_Size;
    use type C.signed_int;
    use type C.size_t;
@@ -16,7 +17,7 @@ package body Ada.Directories.Volumes is
             C_Name (0)'Access,
             Result.Info'Access) < 0
          then
-            Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+            Raise_Exception (Name_Error'Identity);
          end if;
       end return;
    end Where;

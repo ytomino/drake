@@ -1,6 +1,7 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Inside; -- full view
 package body Ada.Streams.Stream_IO is
+   use Exception_Identification.From_Here;
 
    procedure Create (
       File : in out File_Type;
@@ -166,7 +167,7 @@ package body Ada.Streams.Stream_IO is
          Reference (File).all;
    begin
       if not Inside.Is_Open (Non_Controlled_File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Inside.Read (Non_Controlled_File, Item, Last);
    end Read;
@@ -188,7 +189,7 @@ package body Ada.Streams.Stream_IO is
          Reference (File).all;
    begin
       if not Inside.Is_Open (Non_Controlled_File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Inside.Write (Non_Controlled_File, Item);
    end Write;
@@ -198,7 +199,7 @@ package body Ada.Streams.Stream_IO is
          Reference (File).all;
    begin
       if not Inside.Is_Open (Non_Controlled_File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Inside.Set_Index (Non_Controlled_File, To);
    end Set_Index;
@@ -208,7 +209,7 @@ package body Ada.Streams.Stream_IO is
          Reference (File).all;
    begin
       if not Inside.Is_Open (Non_Controlled_File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Inside.Index (Non_Controlled_File);
    end Index;
@@ -218,7 +219,7 @@ package body Ada.Streams.Stream_IO is
          Reference (File).all;
    begin
       if not Inside.Is_Open (Non_Controlled_File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Inside.Size (Non_Controlled_File);
    end Size;

@@ -1,6 +1,7 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Access_Conversions;
 package body Ada.Environment_Encoding.Encoding_Streams is
+   use Exception_Identification.From_Here;
    use type Streams.Stream_Element;
    use type Streams.Stream_Element_Array;
    use type System.Address;
@@ -166,7 +167,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          and then Context.Status = Ended
          and then Context.Converted_Last < Context.Converted_First
       then
-         Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+         Raise_Exception (End_Error'Identity);
       end if;
    end Read;
 
@@ -387,7 +388,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Object'Unchecked_Access;
    end Stream;
@@ -437,7 +438,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Object'Unchecked_Access;
    end Stream;
@@ -448,7 +449,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
             Streams.Root_Stream_Type'Class);
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Finish (
          Conv.To_Pointer (Object.Stream),
@@ -535,7 +536,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Object'Unchecked_Access;
    end Stream;
@@ -546,7 +547,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
             Streams.Root_Stream_Type'Class);
    begin
       if not Is_Open (Object) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       if Is_Open (Object.Writing_Converter) then
          Finish (

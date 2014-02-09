@@ -1,8 +1,9 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
 with C.fcntl;
 with C.unistd;
 package body Ada.Processes.Inside is
+   use Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.size_t;
 
@@ -17,7 +18,7 @@ package body Ada.Processes.Inside is
    begin
       Child := C.unistd.fork;
       if Child < 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       elsif Child = 0 then
          --  child process
          if Directory /= "" then

@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Inside;
 with Ada.Unchecked_Conversion;
 with System.Formatting;
@@ -10,6 +10,7 @@ with C.psdk_inc.qwsadata;
 with C.winnt;
 with C.winsock2;
 package body Ada.Streams.Stream_IO.Sockets is
+   use Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.size_t;
    use type C.psdk_inc.qsocket_types.SOCKET;
@@ -65,7 +66,7 @@ package body Ada.Streams.Stream_IO.Sockets is
          Hints,
          Data'Access);
       if Result /= 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       else
          return Result : End_Point do
             Reference (Result).all := Data;
@@ -186,7 +187,7 @@ package body Ada.Streams.Stream_IO.Sockets is
          I := I.ai_next;
       end loop;
       if Socket = C.psdk_inc.qsocket_types.INVALID_SOCKET then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       else
          Inside.Open (
             File,

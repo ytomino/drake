@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.IO_Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with C.windef;
@@ -10,6 +10,7 @@ procedure Ada.Numerics.Initiator (
    Size : System.Storage_Elements.Storage_Count)
 is
    pragma Suppress (All_Checks);
+   use Exception_Identification.From_Here;
    use type C.windef.WINBOOL;
    use type C.windef.DWORD; -- error code
    package BYTE_ptr_Conv is
@@ -26,7 +27,7 @@ begin
       C.wincrypt.PROV_RSA_FULL,
       C.wincrypt.CRYPT_VERIFYCONTEXT) = 0
    then
-      Exceptions.Raise_Exception_From_Here (IO_Exceptions.Use_Error'Identity);
+      Raise_Exception (IO_Exceptions.Use_Error'Identity);
    end if;
    for I in 1 .. 5 loop
       Error := C.wincrypt.CryptGenRandom (
@@ -41,6 +42,6 @@ begin
       Error := True;
    end if;
    if Error then
-      Exceptions.Raise_Exception_From_Here (IO_Exceptions.Use_Error'Identity);
+      Raise_Exception (IO_Exceptions.Use_Error'Identity);
    end if;
 end Ada.Numerics.Initiator;
