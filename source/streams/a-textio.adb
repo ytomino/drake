@@ -19,12 +19,14 @@
 --
 --  ***************************************************************************
 pragma Check_Policy (Trace, Off);
+with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Streams.Stream_IO.Inside;
 with Ada.Text_IO.Inside; -- full view
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 package body Ada.Text_IO is
+   use Exception_Identification.From_Here;
 
    type String_Access is access String;
    procedure Free is new Unchecked_Deallocation (String, String_Access);
@@ -42,7 +44,7 @@ package body Ada.Text_IO is
       Expected : File_Mode) is
    begin
       if (Mode (File) = In_File) /= (Expected = In_File) then
-         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
+         Raise_Exception (Mode_Error'Identity);
       end if;
    end Check_File_Mode;
 
@@ -167,7 +169,7 @@ package body Ada.Text_IO is
          or else File'Unrestricted_Access = Current_Error)
          and then Text_IO.Mode (File) /= Mode
       then
-         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
+         Raise_Exception (Mode_Error'Identity);
       else
          Inside.Reset (Reference (File), Mode);
       end if;
@@ -641,7 +643,7 @@ package body Ada.Text_IO is
    begin
       if Item'Length > 0 then
          if End_Of_File (File) then
-            Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+            Raise_Exception (End_Error'Identity);
          end if;
          Last := Item'First - 1;
          while Last < Item'Last loop

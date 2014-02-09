@@ -50,18 +50,15 @@ package System.Storage_Elements is
    --  package.
 
    --  extended
-   function Shift_Left (Left : Storage_Element; Right : Natural)
+   function Shift_Left (Value : Storage_Element; Amount : Natural)
       return Storage_Element;
-   function Shift_Left (Left : Integer_Address; Right : Natural)
+   function Shift_Left (Value : Integer_Address; Amount : Natural)
       return Integer_Address;
    pragma Import (Intrinsic, Shift_Left);
-   function Shift_Right (Left : Storage_Element; Right : Natural)
+   function Shift_Right (Value : Storage_Element; Amount : Natural)
       return Storage_Element;
-   function Shift_Right (Left : Integer_Address; Right : Natural)
+   function Shift_Right (Value : Integer_Address; Amount : Natural)
       return Integer_Address;
    pragma Import (Intrinsic, Shift_Right);
-
-   --  extended
-   subtype Address_Image is String (1 .. (Standard'Address_Size + 3) / 4);
 
 end System.Storage_Elements;

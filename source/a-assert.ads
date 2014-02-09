@@ -13,4 +13,9 @@ package Ada.Assertions is
       Check : Boolean;
       Message : String := Debug.Source_Location);
 
+   --  for System.Assertions
+   procedure Raise_Assertion_Error (
+      Message : String := Debug.Source_Location);
+   pragma No_Return (Raise_Assertion_Error);
+
 end Ada.Assertions;

@@ -1,5 +1,6 @@
 with Ada.Exceptions.Finally;
 with Ada.Directories.Inside;
+with Ada.Exception_Identification.From_Here;
 with Ada.Permissions.Inside;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
@@ -12,6 +13,7 @@ with C.sys.stat;
 with C.sys.types;
 with C.unistd;
 package body Ada.Directories.Information is
+   use Exception_Identification.From_Here;
    use type C.size_t;
    use type C.sys.types.mode_t;
    use type C.sys.types.ssize_t;
@@ -20,7 +22,7 @@ package body Ada.Directories.Information is
    procedure Fill (Directory_Entry : not null access Directory_Entry_Type) is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       if not Directory_Entry.Additional.Filled then
          Directory_Searching.Get_Information (
@@ -252,11 +254,9 @@ package body Ada.Directories.Information is
                      | C.errno.ENOENT
                      | C.errno.ENOTDIR
                   =>
-                     Exceptions.Raise_Exception_From_Here (
-                        Name_Error'Identity);
+                     Raise_Exception (Name_Error'Identity);
                   when others =>
-                     Exceptions.Raise_Exception_From_Here (
-                        Use_Error'Identity);
+                     Raise_Exception (Use_Error'Identity);
                end case;
             end if;
             if C.size_t (Result) < Buffer_Length then
@@ -288,7 +288,7 @@ package body Ada.Directories.Information is
    function Identity (Directory_Entry : Directory_Entry_Type) return File_Id is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return File_Id (Directory_Entry.Data.d_ino);
    end Identity;

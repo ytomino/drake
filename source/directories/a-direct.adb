@@ -1,11 +1,12 @@
 with Ada.Directories.Inside;
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Form_Parameters;
 with System.Native_Time;
 with System.Storage_Elements;
 package body Ada.Directories is
+   use Exception_Identification.From_Here;
    use type Directory_Searching.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
 
@@ -241,7 +242,7 @@ package body Ada.Directories is
    function More_Entries (Search : Search_Type) return Boolean is
    begin
       if Search.Search.Handle = Directory_Searching.Null_Handle then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Search.Has_Next;
    end More_Entries;
@@ -253,7 +254,7 @@ package body Ada.Directories is
       if Search.Search.Handle = Directory_Searching.Null_Handle
          or else not Search.Has_Next
       then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       else
          --  copy entry and get info
          Directory_Entry.Search := Search'Unrestricted_Access; -- overwrite
@@ -301,7 +302,7 @@ package body Ada.Directories is
       return Constant_Reference_Type is
    begin
       if Integer (Position) /= Container.Count then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return (Element => Container.Next_Directory_Entry'Access);
    end Constant_Reference;
@@ -317,7 +318,7 @@ package body Ada.Directories is
       if Object.Search.Search.Handle = Directory_Searching.Null_Handle
          or else Object.Search.Count /= 1
       then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       if not Object.Search.Has_Next then
          return 0; -- No_Element
@@ -332,7 +333,7 @@ package body Ada.Directories is
       return Cursor is
    begin
       if Integer (Position) /= Object.Search.Count then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       --  increment and search next
       Next (Object.Search.all);
@@ -351,7 +352,7 @@ package body Ada.Directories is
       return String is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Directory_Searching.Simple_Name (Directory_Entry.Data);
    end Simple_Name;
@@ -367,7 +368,7 @@ package body Ada.Directories is
    function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
          Directory_Searching.Kind (Directory_Entry.Data)));
@@ -391,7 +392,7 @@ package body Ada.Directories is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
       if Directory_Entry.Search = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       return Cast (System.Native_Time.To_Time (
          Directory_Searching.Modification_Time (

@@ -1,8 +1,9 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.unistd;
 package body Ada.Directories.Temporary is
+   use Exception_Identification.From_Here;
    use type C.char;
    use type C.char_array;
    use type C.char_ptr;
@@ -53,7 +54,7 @@ package body Ada.Directories.Temporary is
          C_Name (C_Name'First)'Access,
          1) /= 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
    end Set_Temporary_Directory;
 
@@ -86,7 +87,7 @@ package body Ada.Directories.Temporary is
             Handle := mkstemp (Template (0)'Access);
          end;
          if Handle < 0 then
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
          end if;
          Dummy := C.unistd.close (Handle);
       end;
@@ -122,7 +123,7 @@ package body Ada.Directories.Temporary is
             R := mkdtemp (Template (0)'Access);
          end;
          if R = null then
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
          end if;
       end;
       return System.Zero_Terminated_Strings.Value (

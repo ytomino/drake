@@ -1,8 +1,9 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with C.winbase;
 with C.windef;
 with C.winerror;
 package body System.Tasking.Synchronous_Objects is
+   use Ada.Exception_Identification.From_Here;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
 
@@ -25,14 +26,14 @@ package body System.Tasking.Synchronous_Objects is
       if C.winbase.WaitForSingleObject (Object.Handle, C.winbase.INFINITE) /=
          C.winbase.WAIT_OBJECT_0
       then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Enter;
 
    procedure Leave (Object : in out Mutex) is
    begin
       if C.winbase.ReleaseMutex (Object.Handle) = 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Leave;
 
@@ -71,7 +72,7 @@ package body System.Tasking.Synchronous_Objects is
          when C.winbase.WAIT_OBJECT_0 =>
             null;
          when others =>
-            Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+            Raise_Exception (Tasking_Error'Identity);
       end case;
       if sync_sub_and_fetch (Object.Waiters'Access, 1) = 0 then
          Reset (Object.Event);
@@ -174,7 +175,7 @@ package body System.Tasking.Synchronous_Objects is
       end if;
       Leave (Object.Mutex.all);
       if Error then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Add;
 
@@ -245,14 +246,14 @@ package body System.Tasking.Synchronous_Objects is
    procedure Set (Object : in out Event) is
    begin
       if C.winbase.SetEvent (Object.Handle) = 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Set;
 
    procedure Reset (Object : in out Event) is
    begin
       if C.winbase.ResetEvent (Object.Handle) = 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Reset;
 
@@ -262,7 +263,7 @@ package body System.Tasking.Synchronous_Objects is
       if C.winbase.WaitForSingleObject (Object.Handle, C.winbase.INFINITE) /=
          C.winbase.WAIT_OBJECT_0
       then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Wait;
 
@@ -288,7 +289,7 @@ package body System.Tasking.Synchronous_Objects is
          when C.winerror.WAIT_TIMEOUT =>
             Value := False;
          when others =>
-            Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+            Raise_Exception (Tasking_Error'Identity);
       end case;
    end Wait;
 

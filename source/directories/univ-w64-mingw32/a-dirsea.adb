@@ -1,7 +1,8 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_WStrings;
 with C.winerror;
 package body Ada.Directory_Searching is
+   use Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.size_t;
    use type C.windef.DWORD;
@@ -76,7 +77,7 @@ package body Ada.Directory_Searching is
                --  no files match the pattern
                Has_Next_Entry := False;
             when others =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
          end case;
       else
          Search.Filter := Filter;

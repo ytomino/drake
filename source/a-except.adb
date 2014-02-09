@@ -1,3 +1,4 @@
+with Ada.Unchecked_Conversion;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_8_To_32;
 package body Ada.Exceptions is
@@ -5,9 +6,14 @@ package body Ada.Exceptions is
    use type System.Unwind.Exception_Data_Access;
 
    function Exception_Identity (X : Exception_Occurrence)
-      return Exception_Id is
+      return Exception_Id
+   is
+      function To_Exception_Id is
+         new Unchecked_Conversion (
+            System.Unwind.Exception_Data_Access,
+            Exception_Id);
    begin
-      return Exceptions.Exception_Id (X.Id);
+      return Exception_Id (To_Exception_Id (X.Id));
    end Exception_Identity;
 
    function Exception_Information (X : Exception_Occurrence) return String is
@@ -53,24 +59,9 @@ package body Ada.Exceptions is
       end if;
    end Exception_Message;
 
-   function Exception_Name (Id : Exception_Id) return String is
-   begin
-      if Id = null then
-         raise Constraint_Error;
-      else
-         declare
-            subtype Fixed_String is String (Positive);
-            Full_Name : Fixed_String;
-            for Full_Name'Address use Id.Full_Name;
-         begin
-            return Full_Name (1 .. Id.Name_Length - 1);
-         end;
-      end if;
-   end Exception_Name;
-
    function Exception_Name (X : Exception_Occurrence) return String is
    begin
-      return Exception_Name (Exception_Id (X.Id));
+      return Exception_Name (Exception_Identity (X));
    end Exception_Name;
 
    procedure Reraise_Occurrence (X : Exception_Occurrence) is
@@ -99,7 +90,7 @@ package body Ada.Exceptions is
    function Wide_Exception_Name (X : Exception_Occurrence)
       return Wide_String is
    begin
-      return Wide_Exception_Name (Exception_Id (X.Id));
+      return Wide_Exception_Name (Exception_Identity (X));
    end Wide_Exception_Name;
 
    function Wide_Wide_Exception_Name (Id : Exception_Id)
@@ -111,7 +102,7 @@ package body Ada.Exceptions is
    function Wide_Wide_Exception_Name (X : Exception_Occurrence)
       return Wide_Wide_String is
    begin
-      return Wide_Wide_Exception_Name (Exception_Id (X.Id));
+      return Wide_Wide_Exception_Name (Exception_Identity (X));
    end Wide_Wide_Exception_Name;
 
 end Ada.Exceptions;

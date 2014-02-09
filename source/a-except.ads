@@ -1,14 +1,19 @@
 pragma License (Unrestricted);
 --  with Ada.Streams;
+with Ada.Exception_Identification;
 private with System.Unwind;
 package Ada.Exceptions is
    pragma Preelaborate;
 
-   type Exception_Id is private;
-   pragma Preelaborable_Initialization (Exception_Id);
-   Null_Id : constant Exception_Id;
+--  type Exception_Id is private;
+--  pragma Preelaborable_Initialization (Exception_Id);
+   subtype Exception_Id is Exception_Identification.Exception_Id;
+--  Null_Id : constant Exception_Id;
+   Null_Id : Exception_Id
+      renames Exception_Identification.Null_Id;
 
-   function Exception_Name (Id : Exception_Id) return String;
+   function Exception_Name (Id : Exception_Id) return String
+      renames Exception_Identification.Exception_Name;
    function Wide_Exception_Name (Id : Exception_Id) return Wide_String;
    function Wide_Wide_Exception_Name (Id : Exception_Id)
       return Wide_Wide_String;
@@ -18,66 +23,11 @@ package Ada.Exceptions is
    type Exception_Occurrence_Access is access all Exception_Occurrence;
    Null_Occurrence : constant Exception_Occurrence;
 
-   procedure Raise_Exception (E : Exception_Id; Message : String := "");
+   procedure Raise_Exception (E : Exception_Id; Message : String := "")
+      renames Exception_Identification.Raise_Exception;
    pragma No_Return (Raise_Exception);
-   pragma Import (Ada, Raise_Exception, "ada__exceptions__raise_exception");
    function Exception_Message (X : Exception_Occurrence) return String;
    procedure Reraise_Occurrence (X : Exception_Occurrence);
-
-   --  [gcc-4.7] compiler lose sight of System if this has a nested package
-
---  package Implementation is
---
---    procedure Raise_Exception_From_Here (
---       E : Exception_Id;
---       File : String := Debug.File;
---       Line : Integer := Debug.Line);
---    pragma No_Return (Raise_Exception_From_Here);
---    pragma Import (Ada, Raise_Exception_From_Here,
---       "__drake_raise_exception_from_here");
---
---    procedure Raise_Exception_From_Here_With (
---       E : Exception_Id;
---       File : String := Debug.File;
---       Line : Integer := Debug.Line;
---       Message : String);
---    pragma No_Return (Raise_Exception_From_Here_With);
---    pragma Import (Ada, Raise_Exception_From_Here_With,
---       "__drake_raise_exception_from_here_with");
---
---  end Implementation;
-
-   procedure Implementation_Raise_Exception_From_Here (
-      E : Exception_Id;
-      File : String := Debug.File;
-      Line : Integer := Debug.Line);
-   pragma No_Return (Implementation_Raise_Exception_From_Here);
-   pragma Import (Ada, Implementation_Raise_Exception_From_Here,
-      "__drake_raise_exception_from_here");
-
-   procedure Implementation_Raise_Exception_From_Here_With (
-      E : Exception_Id;
-      File : String := Debug.File;
-      Line : Integer := Debug.Line;
-      Message : String);
-   pragma No_Return (Implementation_Raise_Exception_From_Here_With);
-   pragma Import (Ada, Implementation_Raise_Exception_From_Here_With,
-      "__drake_raise_exception_from_here_with");
-
-   --  extended
-   --  Raise_Exception_From_Here raises a new occurrence of the identified
-   --    exception with source location.
-   procedure Raise_Exception_From_Here (
-      E : Exception_Id;
-      File : String := Debug.File;
-      Line : Integer := Debug.Line)
-      renames Implementation_Raise_Exception_From_Here;
-   procedure Raise_Exception_From_Here (
-      E : Exception_Id;
-      File : String := Debug.File;
-      Line : Integer := Debug.Line;
-      Message : String)
-      renames Implementation_Raise_Exception_From_Here_With;
 
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id;
@@ -111,10 +61,6 @@ package Ada.Exceptions is
 
 private
 
-   type Exception_Id is new System.Unwind.Exception_Data_Access;
-
-   Null_Id : constant Exception_Id := null;
-
    type Exception_Occurrence is new System.Unwind.Exception_Occurrence;
 
    Null_Occurrence : constant Exception_Occurrence := (
@@ -126,28 +72,49 @@ private
       Num_Tracebacks => 0,
       Tracebacks => (others => System.Null_Address));
 
-   --  required for reraising by compiler (a-except-2005.ads)
+   --  optionally required by compiler (a-except-2005.ads)
+   --  for raising, Raise_Exception may be called if not existing (exp_ch6.adb)
+   procedure Raise_Exception_Always (E : Exception_Id; Message : String := "")
+      renames Raise_Exception;
+   pragma No_Return (Raise_Exception_Always);
+
+   --  required by compiler (a-except-2005.ads)
+   --  for reraising (exp_ch11.adb)
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
    pragma Import (Ada, Reraise_Occurrence_Always,
       "ada__exceptions__reraise_occurrence_always");
 
+   --  required by compiler (a-except-2005.ads)
+   --  for reraising from when all others (exp_ch11.adb)
+   procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence);
+   pragma No_Return (Reraise_Occurrence_No_Defer);
+   pragma Import (Ada, Reraise_Occurrence_No_Defer,
+      "ada__exceptions__reraise_occurrence_no_defer");
+
    --  optionally required by compiler (a-except-2005.ads)
+   --  raise Program_Error if not existing (exp_ch7.adb)
    procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
    pragma Import (Ada, Raise_From_Controlled_Operation,
       "__gnat_raise_from_controlled_operation");
 
-   --  required for tasking by compiler (a-except-2005.ads)
+   --  required by compiler (a-except-2005.ads)
+   --  for finalizer (exp_ch7.adb)
    function Triggered_By_Abort return Boolean;
    pragma Import (Ada, Triggered_By_Abort,
       "ada__exceptions__triggered_by_abort");
 
-   --  required by compiler ??? (a-except-2005.ads)
---  subtype Code_Loc is System.Address;
---  function Exception_Name_Simple (X : Exception_Occurrence) return String;
---  procedure Raise_Exception_Always (
---    E : Exception_Id;
---    Message : String := "");
---  procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence);
+   --  required by compiler (a-except-2005.ads)
+   --  for Intrinsic function Exception_Name (exp_intr.adb)
+   function Exception_Name_Simple (X : Exception_Occurrence) return String
+      renames Exception_Name;
+
+   --  required by compiler (a-except-2005.ads)
+   --  ??? (exp_ch11.adb, sem_ch11.adb)
+   subtype Code_Loc is System.Address;
+
+   --  not required for gcc (a-except-2005.ads)
+--  function Current_Target_Exception return Exception_Occurrence;
+--  procedure Poll;
 
 end Ada.Exceptions;

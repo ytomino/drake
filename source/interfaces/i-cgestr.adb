@@ -1,9 +1,10 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
    pragma Suppress (All_Checks);
+   use Ada.Exception_Identification.From_Here;
    use type System.Storage_Elements.Storage_Offset;
 
    package libc is
@@ -79,8 +80,7 @@ package body Interfaces.C.Generic_Strings is
                begin
                   loop
                      if I <= Item'Last then
-                        Ada.Exceptions.Raise_Exception_From_Here (
-                           Terminator_Error'Identity);
+                        Raise_Exception (Terminator_Error'Identity);
                      end if;
                      exit when Item (I) = Element'Val (0);
                      I := I + 1;
@@ -205,8 +205,7 @@ package body Interfaces.C.Generic_Strings is
       return Element_Array is
    begin
       if const_chars_ptr (Item) = null then
-         Ada.Exceptions.Raise_Exception_From_Here (
-            Dereference_Error'Identity); -- CXB3010
+         Raise_Exception (Dereference_Error'Identity); -- CXB3010
       end if;
       declare
          Length : constant size_t := Strlen (Item);
@@ -230,8 +229,7 @@ package body Interfaces.C.Generic_Strings is
       end if;
       if const_chars_ptr (Item) = null then
          if Length > 0 then
-            Ada.Exceptions.Raise_Exception_From_Here (
-               Dereference_Error'Identity); -- CXB3010
+            Raise_Exception (Dereference_Error'Identity); -- CXB3010
          end if;
          Actual_Length := 0;
       else
@@ -270,8 +268,7 @@ package body Interfaces.C.Generic_Strings is
       return size_t is
    begin
       if const_chars_ptr (Item) = null then
-         Ada.Exceptions.Raise_Exception_From_Here (
-            Dereference_Error'Identity); -- CXB3011
+         Raise_Exception (Dereference_Error'Identity); -- CXB3011
       end if;
       if Element'Size = char'Size then
          return libc.strlen (Item);
@@ -300,11 +297,10 @@ package body Interfaces.C.Generic_Strings is
       Check : Boolean := True) is
    begin
       if chars_ptr (Item) = null then
-         Ada.Exceptions.Raise_Exception_From_Here (
-            Dereference_Error'Identity); -- CXB3011
+         Raise_Exception (Dereference_Error'Identity); -- CXB3011
       end if;
       if Check and then Offset + Chars'Length > Strlen (Item) then
-         Ada.Exceptions.Raise_Exception_From_Here (Update_Error'Identity);
+         Raise_Exception (Update_Error'Identity);
       end if;
       Update (
          Item,

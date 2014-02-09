@@ -1,9 +1,10 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winnt;
 package body Ada.Dynamic_Linking is
+   use Exception_Identification.From_Here;
    use type C.size_t;
    use type C.windef.FARPROC;
    use type C.windef.HMODULE;
@@ -18,7 +19,7 @@ package body Ada.Dynamic_Linking is
       System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Result := C.winbase.LoadLibrary (W_Name (0)'Access);
       if Result = null then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       else
          Handle := Result;
       end if;
@@ -40,7 +41,7 @@ package body Ada.Dynamic_Linking is
       Handle : constant not null access C.windef.HMODULE := Reference (Lib);
    begin
       if Handle.all /= null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       else
          Open (Handle.all, Name);
       end if;
@@ -69,7 +70,7 @@ package body Ada.Dynamic_Linking is
       Handle : constant C.windef.HMODULE := Reference (Lib).all;
    begin
       if Handle = null then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       else
          declare
             function Cast is
@@ -81,7 +82,7 @@ package body Ada.Dynamic_Linking is
          begin
             Result := C.winbase.GetProcAddress (Handle, C_Symbol (0)'Access);
             if Result = null then
-               Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
+               Raise_Exception (Data_Error'Identity);
             else
                return Cast (Result);
             end if;

@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Environment_Block;
 with System.Zero_Terminated_Strings;
@@ -7,7 +7,8 @@ with C.spawn;
 with C.stdlib;
 with C.unistd;
 package body Ada.Processes.Inside is
-   use type Exceptions.Exception_Id;
+   use Exception_Identification.From_Here;
+   use type Exception_Identification.Exception_Id;
    use type C.char_ptr;
    use type C.signed_int;
    use type C.size_t;
@@ -24,7 +25,8 @@ package body Ada.Processes.Inside is
       package char_ptr_Conv is
          new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       Old_Directory : C.char_ptr := null;
-      Exception_Id : Exceptions.Exception_Id := Exceptions.Null_Id;
+      Exception_Id : Exception_Identification.Exception_Id :=
+         Exception_Identification.Null_Id;
    begin
       --  set current directory
       if Directory /= "" then
@@ -122,8 +124,8 @@ package body Ada.Processes.Inside is
          end if;
          C.stdlib.free (C.void_ptr (char_ptr_Conv.To_Address (Old_Directory)));
       end if;
-      if Exception_Id /= Exceptions.Null_Id then
-         Exceptions.Raise_Exception_From_Here (Exception_Id);
+      if Exception_Id /= Exception_Identification.Null_Id then
+         Raise_Exception (Exception_Id);
       end if;
    end Spawn;
 

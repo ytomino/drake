@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Inside;
 with System.Zero_Terminated_Strings;
 with System.Formatting;
@@ -6,6 +6,7 @@ with C.netinet.in_h;
 with C.sys.socket;
 with C.unistd;
 package body Ada.Streams.Stream_IO.Sockets is
+   use Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.size_t;
    use type C.netdb.struct_addrinfo_ptr;
@@ -30,7 +31,7 @@ package body Ada.Streams.Stream_IO.Sockets is
          Hints,
          Data'Access);
       if Result /= 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       else
          return Result : End_Point do
             Reference (Result).all := Data;
@@ -126,7 +127,7 @@ package body Ada.Streams.Stream_IO.Sockets is
          I := I.ai_next;
       end loop;
       if Handle < 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       else
          Inside.Set_Close_On_Exec (Handle);
          Inside.Open (

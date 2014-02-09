@@ -54,13 +54,6 @@ package body System.Fat_Sflt is
          return Adjacent (X, -inf);
       end Pred;
 
-      function Remainder (X, Y : Short_Float) return Short_Float is
-      begin
-         return Short_Float (Long_Long_Float_Attributes.Remainder (
-            Long_Long_Float (X),
-            Long_Long_Float (Y)));
-      end Remainder;
-
       function Succ (X : Short_Float) return Short_Float is
       begin
          return Adjacent (X, inf);

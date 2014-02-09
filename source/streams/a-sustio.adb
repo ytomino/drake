@@ -1,7 +1,8 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Deallocation;
 with System.Memory.Allocated_Size;
 package body Ada.Streams.Unbounded_Storage_IO is
+   use Exception_Identification.From_Here;
 
    procedure Free is
       new Unchecked_Deallocation (Stream_Type, Stream_Access);
@@ -87,7 +88,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Rest : constant Stream_Element_Count := Stream.Last - Stream.Index + 1;
    begin
       if Length > 0 and then Rest = 0 then
-         Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+         Raise_Exception (End_Error'Identity);
       end if;
       if Length > Rest then
          Length := Rest;

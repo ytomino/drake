@@ -1,6 +1,7 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Inside.Wide is
+   use Exception_Identification.From_Here;
    use type System.UTF_Conversions.UCS_4;
 
    procedure Store_Second (
@@ -244,7 +245,7 @@ package body Ada.Text_IO.Inside.Wide is
                   or else Last /= Ref_Text.Last
                then
                   --  previous data is wrong
-                  Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
+                  Raise_Exception (Data_Error'Identity);
                end if;
             end;
             declare
@@ -288,7 +289,7 @@ package body Ada.Text_IO.Inside.Wide is
    begin
       if Ref_Text.Last > 0 then
          --  previous data is rested
-         Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
+         Raise_Exception (Data_Error'Identity);
       else
          declare
             Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);

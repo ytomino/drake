@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  runtime unit required by compiler
+with System.Unwind;
 package System.Standard_Library is
    pragma Preelaborate;
 
@@ -86,22 +87,8 @@ package System.Standard_Library is
    pragma Import (Ada, Abort_Undefer_Direct,
       "system__standard_library__abort_undefer_direct");
 
-   --  exception data type required by compiler (s-stalib.ads)
-   type Raise_Action is access procedure;
-   type Exception_Code is mod 2 ** Integer'Size;
-   for Exception_Code'Size use Integer'Size;
-   type Exception_Data;
-   type Exception_Data_Ptr is access constant Exception_Data;
-   type Exception_Data is record
-      Not_Handled_By_Others : Boolean;
-      Lang : Character;
-      Name_Length : Natural;
-      Full_Name : Address;
-      HTable_Ptr : Exception_Data_Ptr;
-      Import_Code : Exception_Code;
-      Raise_Hook : Raise_Action;
-   end record;
-   --  supressing "_system__standard_library__exception_dataIP"
-   pragma Suppress_Initialization (Exception_Data);
+   --  required by compiler (s-stalib.ads)
+   subtype Exception_Code is Unwind.Exception_Code;
+   subtype Exception_Data_Ptr is Unwind.Exception_Data_Access;
 
 end System.Standard_Library;

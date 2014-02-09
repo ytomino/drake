@@ -1,15 +1,7 @@
-with System.Formatting.Address_Image;
 function System.Address_Image (A : Address)
-   return Storage_Elements.Address_Image
+   return Storage_Elements.Formatting.Address_String
 is
    pragma Suppress (All_Checks);
-   Last : Natural;
 begin
-   return Result : Storage_Elements.Address_Image do
-      Formatting.Address_Image (
-         A,
-         Result,
-         Last,
-         Set => Formatting.Upper_Case);
-   end return;
+   return Storage_Elements.Formatting.Image (A);
 end System.Address_Image;

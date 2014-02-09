@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Inside;
 with Ada.Processes.Inside;
 with System.Soft_Links;
@@ -7,6 +7,7 @@ with C.errno;
 with C.stdlib;
 with C.sys.wait;
 package body Ada.Processes is
+   use Exception_Identification.From_Here;
    use type Command_Line.Exit_Status;
    use type C.char;
    use type C.char_ptr;
@@ -86,7 +87,7 @@ package body Ada.Processes is
          System.Soft_Links.Abort_Defer.all; -- raise an exception if aborted
          if Result < 0 then
             if C.errno.errno /= C.errno.EINTR then
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
             end if;
             --  interrupted and the signal is not "abort", then retry
          else
@@ -121,7 +122,7 @@ package body Ada.Processes is
          C_Command_Line (0)'Access);
       Code := C.stdlib.C_system (C_Command_Line (0)'Access);
       if Code = -1 then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       else
          if WIFEXITED (Code) then
             Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));

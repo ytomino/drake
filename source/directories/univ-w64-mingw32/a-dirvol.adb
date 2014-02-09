@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Memory;
 with System.Storage_Elements;
@@ -7,6 +7,7 @@ with C.winbase;
 with C.winerror;
 with C.string;
 package body Ada.Directories.Volumes is
+   use Exception_Identification.From_Here;
    use type File_Size;
    use type System.Storage_Elements.Storage_Offset;
    use type C.signed_int;
@@ -43,7 +44,7 @@ package body Ada.Directories.Volumes is
             FileSystemNameBuffer,
             FileSystemNameSize) = 0
          then
-            Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+            Raise_Exception (Use_Error'Identity);
          end if;
          --  save FileSystemFlags
          FS.FileSystemFlags_Valid := True;
@@ -80,7 +81,7 @@ package body Ada.Directories.Volumes is
          Root_Path (0)'Access,
          Root_Path'Length) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
       Root_Path_Length := C.string.wcslen (Root_Path (0)'Access);
       return Result : File_System do
@@ -114,7 +115,7 @@ package body Ada.Directories.Volumes is
          TotalNumberOfBytes'Access,
          null) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
       return File_Size (TotalNumberOfBytes.QuadPart);
    end Size;
@@ -131,7 +132,7 @@ package body Ada.Directories.Volumes is
          TotalNumberOfBytes'Access,
          null) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
       return File_Size (FreeBytesAvailable.QuadPart);
    end Free_Space;
@@ -171,9 +172,9 @@ package body Ada.Directories.Volumes is
             when C.winerror.ERROR_PATH_NOT_FOUND =>
                --  is it a network drive ?
                --  should it call WNetGetConnection32 to get the UNC path?
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
       return System.Zero_Terminated_WStrings.Value (VolumeName (0)'Access);

@@ -1,9 +1,10 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_WStrings;
 with C.windef;
 with C.winerror;
 with C.winnt;
 package body Ada.Directories.Inside is
+   use Exception_Identification.From_Here;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
@@ -17,7 +18,7 @@ package body Ada.Directories.Inside is
          C.windef.MAX_PATH,
          Buffer (0)'Access);
       if Length = 0 then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       else
          return System.Zero_Terminated_WStrings.Value (
             Buffer (0)'Access,
@@ -35,9 +36,9 @@ package body Ada.Directories.Inside is
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Set_Directory;
@@ -58,9 +59,9 @@ package body Ada.Directories.Inside is
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Create_Directory;
@@ -75,9 +76,9 @@ package body Ada.Directories.Inside is
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Delete_Directory;
@@ -92,9 +93,9 @@ package body Ada.Directories.Inside is
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Delete_File;
@@ -125,9 +126,9 @@ package body Ada.Directories.Inside is
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Copy_File;
@@ -160,9 +161,9 @@ package body Ada.Directories.Inside is
          case C.winbase.GetLastError is
             when C.winerror.ERROR_FILE_NOT_FOUND
                | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+               Raise_Exception (Name_Error'Identity);
             when others =>
-               Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+               Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Rename;
@@ -247,7 +248,7 @@ package body Ada.Directories.Inside is
          C.winbase.GetFileExInfoStandard,
          C.windef.LPVOID (Information.all'Address)) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
    end Get_Information;
 
@@ -294,7 +295,7 @@ package body Ada.Directories.Inside is
          C.winbase.GetFileExInfoStandard,
          C.windef.LPVOID (Information'Address)) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Name_Error'Identity);
+         Raise_Exception (Name_Error'Identity);
       end if;
       Handle := C.winbase.CreateFile (
          W_Name (0)'Access,
@@ -306,7 +307,7 @@ package body Ada.Directories.Inside is
             or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
          hTemplateFile => C.windef.LPVOID (System.Null_Address));
       if Handle = C.winbase.INVALID_HANDLE_VALUE then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
       if C.winbase.SetFileTime (
          Handle,
@@ -314,7 +315,7 @@ package body Ada.Directories.Inside is
          Information.ftLastAccessTime'Access,
          Aliased_Time'Access) = 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
       Dummy := C.winbase.CloseHandle (Handle);
    end Set_Modification_Time;

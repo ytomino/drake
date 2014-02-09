@@ -1,6 +1,7 @@
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with C.errno;
 package body System.Tasking.Synchronous_Objects is
+   use Ada.Exception_Identification.From_Here;
    use type C.signed_int;
 
    --  mutex
@@ -20,14 +21,14 @@ package body System.Tasking.Synchronous_Objects is
    procedure Enter (Object : in out Mutex) is
    begin
       if C.pthread.pthread_mutex_lock (Object.Handle'Access) /= 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Enter;
 
    procedure Leave (Object : in out Mutex) is
    begin
       if C.pthread.pthread_mutex_unlock (Object.Handle'Access) /= 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Leave;
 
@@ -48,14 +49,14 @@ package body System.Tasking.Synchronous_Objects is
    procedure Notify_One (Object : in out Condition_Variable) is
    begin
       if C.pthread.pthread_cond_signal (Object.Handle'Access) /= 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Notify_One;
 
    procedure Notify_All (Object : in out Condition_Variable) is
    begin
       if C.pthread.pthread_cond_broadcast (Object.Handle'Access) /= 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Notify_All;
 
@@ -67,7 +68,7 @@ package body System.Tasking.Synchronous_Objects is
          Object.Handle'Access,
          Mutex.Handle'Access) /= 0
       then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Wait;
 
@@ -87,7 +88,7 @@ package body System.Tasking.Synchronous_Objects is
          when C.errno.ETIMEDOUT =>
             Notified := False;
          when others =>
-            Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+            Raise_Exception (Tasking_Error'Identity);
       end case;
    end Wait;
 
@@ -196,7 +197,7 @@ package body System.Tasking.Synchronous_Objects is
       end if;
       Leave (Object.Mutex.all);
       if Error then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Add;
 
@@ -370,8 +371,7 @@ package body System.Tasking.Synchronous_Objects is
             when C.errno.EAGAIN =>
                null; -- loop
             when others =>
-               Ada.Exceptions.Raise_Exception_From_Here (
-                  Tasking_Error'Identity);
+               Raise_Exception (Tasking_Error'Identity);
          end case;
       end loop Again_Loop;
    end Enter_Reading;
@@ -379,14 +379,14 @@ package body System.Tasking.Synchronous_Objects is
    procedure Enter_Writing (Object : in out RW_Lock) is
    begin
       if C.pthread.pthread_rwlock_wrlock (Object.Handle'Access) /= 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Enter_Writing;
 
    procedure Leave (Object : in out RW_Lock) is
    begin
       if C.pthread.pthread_rwlock_unlock (Object.Handle'Access) /= 0 then
-         Ada.Exceptions.Raise_Exception_From_Here (Tasking_Error'Identity);
+         Raise_Exception (Tasking_Error'Identity);
       end if;
    end Leave;
 

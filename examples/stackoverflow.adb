@@ -1,14 +1,15 @@
 with Ada;
-with System.Address_Image;
 with System.Native_Stack;
+with System.Storage_Elements.Formatting;
 procedure stackoverflow is
+	package SSEF renames System.Storage_Elements.Formatting;
 	procedure Put_Stack_Range is
 		Stack_Top, Stack_Bottom : System.Address;
 	begin
 		System.Native_Stack.Get (Top => Stack_Top, Bottom => Stack_Bottom);
-		Ada.Debug.Put ("top = " & System.Address_Image (Stack_Top));
-		Ada.Debug.Put ("here = " & System.Address_Image (Stack_Top'Address));
-		Ada.Debug.Put ("bottom = " & System.Address_Image (Stack_Bottom));
+		Ada.Debug.Put ("top = " & SSEF.Image (Stack_Top));
+		Ada.Debug.Put ("here = " & SSEF.Image (Stack_Top'Address));
+		Ada.Debug.Put ("bottom = " & SSEF.Image (Stack_Bottom));
 	end Put_Stack_Range;
 	Count : Natural;
 	procedure Do_Overflow is

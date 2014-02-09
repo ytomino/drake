@@ -1,5 +1,5 @@
 pragma Check_Policy (Trace, Off);
-with Ada.Exceptions;
+with Ada.Exception_Identification.From_Here;
 with System.Address_To_Constant_Access_Conversions;
 with System.UTF_Conversions;
 with System.UTF_Conversions.From_32_To_16;
@@ -9,6 +9,7 @@ with C.winbase;
 with C.winerror;
 with C.winnt;
 package body System.Native_Encoding is
+   use Ada.Exception_Identification.From_Here;
    use type UTF_Conversions.From_Status_Type;
    use type UTF_Conversions.To_Status_Type;
    use type C.windef.WINBOOL;
@@ -95,7 +96,7 @@ package body System.Native_Encoding is
          0,
          Info'Access) = 0
       then
-         Ada.Exceptions.Raise_Exception_From_Here (Use_Error'Identity); -- ?
+         Raise_Exception (Use_Error'Identity); -- ?
       end if;
       return Zero_Terminated_WStrings.Value (Info.CodePageName (0)'Access);
    end Get_Image;

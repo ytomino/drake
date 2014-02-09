@@ -1,3 +1,4 @@
+with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.Form_Parameters;
@@ -7,6 +8,7 @@ with C.sys.types;
 with C.termios;
 with C.unistd;
 package body Ada.Text_IO.Inside is
+   use Exception_Identification.From_Here;
    use type IO_Text_Modes.File_External;
    use type IO_Text_Modes.File_New_Line;
    use type IO_Text_Modes.File_SUB;
@@ -60,7 +62,7 @@ package body Ada.Text_IO.Inside is
          C.void_const_ptr (Item'Address),
          Item'Length) < 0
       then
-         Exceptions.Raise_Exception_From_Here (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity);
       end if;
    end write;
 
@@ -131,7 +133,7 @@ package body Ada.Text_IO.Inside is
             end if;
          end if;
       end if;
-      Exceptions.Raise_Exception_From_Here (Data_Error'Identity);
+      Raise_Exception (Data_Error'Identity);
    end Parse_Escape_Sequence;
 
    --  implementation of the parameter Form
@@ -288,14 +290,14 @@ package body Ada.Text_IO.Inside is
       Expected : File_Mode) is
    begin
       if (Mode (File) = In_File) /= (Expected = In_File) then
-         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
+         Raise_Exception (Mode_Error'Identity);
       end if;
    end Check_File_Mode;
 
    procedure Check_File_Open (File : Non_Controlled_File_Type) is
    begin
       if not Is_Open (File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
    end Check_File_Open;
 
@@ -304,7 +306,7 @@ package body Ada.Text_IO.Inside is
       if not Is_Open (File)
          or else not Streams.Stream_IO.Inside.Is_Open (File.File)
       then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
    end Check_Stream_IO_Open;
 
@@ -546,7 +548,7 @@ package body Ada.Text_IO.Inside is
       Form : Packed_Form := Default_Form) is
    begin
       if Is_Open (File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Open_File (
          Open_Proc => Streams.Stream_IO.Inside.Create'Access,
@@ -563,7 +565,7 @@ package body Ada.Text_IO.Inside is
       Form : Packed_Form := Default_Form) is
    begin
       if Is_Open (File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       Open_File (
          Open_Proc => Streams.Stream_IO.Inside.Open'Access,
@@ -592,7 +594,7 @@ package body Ada.Text_IO.Inside is
             end if;
          end;
       elsif Raise_On_Error then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
    end Close;
 
@@ -612,10 +614,10 @@ package body Ada.Text_IO.Inside is
       if Current_Mode /= Mode
          and then Streams.Stream_IO.Inside.Is_Standard (File.all.File)
       then
-         Exceptions.Raise_Exception_From_Here (Mode_Error'Identity);
+         Raise_Exception (Mode_Error'Identity);
       elsif not Streams.Stream_IO.Inside.Is_Open (File.all.File) then
          --  External stream mode
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       else
          if Current_Mode /= In_File then
             Flush (File.all);
@@ -845,7 +847,7 @@ package body Ada.Text_IO.Inside is
                   File.Col := 1;
                   exit;
                else
-                  Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+                  Raise_Exception (End_Error'Identity);
                end if;
             elsif File.Last > 0 then
                declare
@@ -909,7 +911,7 @@ package body Ada.Text_IO.Inside is
       end loop;
       case File.Dummy_Mark is
          when EOF =>
-            Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+            Raise_Exception (End_Error'Identity);
          when EOP =>
             File.Dummy_Mark := None;
          when EOP_EOF =>
@@ -993,7 +995,7 @@ package body Ada.Text_IO.Inside is
             end;
          end;
       else
-         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+         Raise_Exception (Device_Error'Identity);
       end if;
    end Set_Position_Within_Terminal;
 
@@ -1028,7 +1030,7 @@ package body Ada.Text_IO.Inside is
             end;
          end;
       else
-         Exceptions.Raise_Exception_From_Here (Device_Error'Identity);
+         Raise_Exception (Device_Error'Identity);
       end if;
    end Set_Col_Within_Terminal;
 
@@ -1056,7 +1058,7 @@ package body Ada.Text_IO.Inside is
             Set_Col_Within_Terminal (File, To);
          else
             if File.Line_Length /= 0 and then To > File.Line_Length then
-               Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+               Raise_Exception (Layout_Error'Identity);
             end if;
             if File.Col > To then
                Raw_New_Line (File);
@@ -1081,7 +1083,7 @@ package body Ada.Text_IO.Inside is
             Set_Position_Within_Terminal (File, 1, To);
          else
             if File.Page_Length /= 0 and then To > File.Page_Length then
-               Exceptions.Raise_Exception_From_Here (Layout_Error'Identity);
+               Raise_Exception (Layout_Error'Identity);
             end if;
             if File.Line > To then
                Raw_New_Page (File);
@@ -1163,7 +1165,7 @@ package body Ada.Text_IO.Inside is
       loop
          Read_Buffer (File);
          if End_Of_File (File) then
-            Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+            Raise_Exception (End_Error'Identity);
          elsif File.Last > 0 then
             declare
                C : constant Character := File.Buffer (1);
@@ -1293,7 +1295,7 @@ package body Ada.Text_IO.Inside is
       Form : Packed_Form := Default_Form) is
    begin
       if Is_Open (File) then
-         Exceptions.Raise_Exception_From_Here (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity);
       end if;
       File := new Text_Type'(
          Name_Length => Name'Length + 1,
@@ -1394,7 +1396,7 @@ package body Ada.Text_IO.Inside is
                Take_Buffer (File); -- not add File.Text.Col
                exit Single_Character; -- next character
             elsif File.End_Of_File then
-               Exceptions.Raise_Exception_From_Here (End_Error'Identity);
+               Raise_Exception (End_Error'Identity);
             elsif not Wait then
                exit Multi_Character;
             end if;
