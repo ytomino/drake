@@ -1,8 +1,10 @@
+with Ada.Exception_Identification.From_Here;
 with System.Native_Time;
 with C.time;
 with C.sys.types;
 package body Ada.Calendar.Inside is
    pragma Suppress (All_Checks);
+   use Exception_Identification.From_Here;
    use type C.signed_int; -- time_t is signed int or signed long
    use type C.signed_long;
 
@@ -71,7 +73,7 @@ package body Ada.Calendar.Inside is
          if Year = 1901 and then Month = 1 and then Day = 1 then
             Result := -7857734400.0; -- first day in Time
          else
-            raise Time_Error;
+            Raise_Exception (Time_Error'Identity);
          end if;
       else
          Result := System.Native_Time.To_Time (C_Result);

@@ -1,8 +1,10 @@
+with Ada.Exception_Identification.From_Here;
 with System.Native_Time;
 with C.time;
 with C.sys.types;
 package body Ada.Calendar.Inside.Time_Zones is
    pragma Suppress (All_Checks);
+   use Exception_Identification.From_Here;
    use type C.sys.types.time_t;
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
@@ -17,7 +19,7 @@ package body Ada.Calendar.Inside.Time_Zones is
       Dummy := C.time.localtime_r (GMT_Time.tv_sec'Access, Local_TM'Access);
       Local_Time := C.time.timegm (Local_TM'Access);
       if Local_Time = -1 then
-         raise Time_Error;
+         Raise_Exception (Time_Error'Identity);
       end if;
       return Time_Offset ((Local_Time - GMT_Time.tv_sec) / 60);
    end UTC_Time_Offset;
