@@ -24,7 +24,8 @@ package Ada.Wide_Text_IO.Editing is
 
    Max_Picture_Length : constant := 30; -- implementation_defined
 
-   Picture_Error : exception;
+   Picture_Error : exception
+      renames Text_IO.Editing.Picture_Error;
 
    Default_Currency : constant Wide_String := "$";
    Default_Fill : constant Wide_Character := '*';
