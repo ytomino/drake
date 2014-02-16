@@ -57,6 +57,7 @@ package body System.Tasking.Protected_Objects.Operations is
          Entries.Downcast (The_Node);
       --  Params to access Entries.Protection_Entries'Class
       type P is access all Entries.Protection_Entries'Class;
+      for P'Storage_Size use 0;
       package Object_Conv is
          new Address_To_Named_Access_Conversions (
             Entries.Protection_Entries'Class,
