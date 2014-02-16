@@ -2,7 +2,7 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Containers.Composites;
 with Ada.Streams; -- [gcc-4.7] can not search in private with
-with System.Address_To_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Ordered_Sets is
    use type Binary_Trees.Node_Access;
    use type Copy_On_Write.Data_Access;
@@ -958,9 +958,12 @@ package body Ada.Containers.Ordered_Sets is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Set)
       is
+         type Stream_Access is access all Streams.Root_Stream_Type'Class;
+         for Stream_Access'Storage_Size use 0;
          package Stream_Cast is
-            new System.Address_To_Access_Conversions (
-               Streams.Root_Stream_Type'Class);
+            new System.Address_To_Named_Access_Conversions (
+               Streams.Root_Stream_Type'Class,
+               Stream_Access);
          procedure Process (
             Position : not null Binary_Trees.Node_Access;
             Params : System.Address);
@@ -977,7 +980,7 @@ package body Ada.Containers.Ordered_Sets is
          if Item.Length > 0 then
             Binary_Trees.Iterate (
                Downcast (Item.Super.Data).Root,
-               Stream_Cast.To_Address (Stream_Cast.Object_Pointer (Stream)),
+               Stream_Cast.To_Address (Stream),
                Process => Process'Access);
          end if;
       end Write;
