@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit
 with System.Storage_Elements;
-package System.Memory is
+package System.Standard_Allocators is
    pragma Preelaborate;
 
    --  heap (s-memory.ads)
@@ -35,4 +35,4 @@ package System.Memory is
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count);
 
-end System.Memory;
+end System.Standard_Allocators;

@@ -1,1 +1,0 @@
-../univ-apple-darwin/s-memory.ads

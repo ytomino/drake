@@ -1,7 +1,7 @@
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
-with System.Memory.Allocated_Size;
+with System.Standard_Allocators.Allocated_Size;
 with System.Storage_Elements;
 procedure heap is
 	type Integer_Access is access all Integer;
@@ -41,9 +41,9 @@ begin
 	x := new Integer;
 	y := new Integer;
 	Put (System.Storage_Elements.To_Integer (Conv.To_Address (x)));
-	Put (System.Memory.Allocated_Size (Conv.To_Address (x)));
+	Put (System.Standard_Allocators.Allocated_Size (Conv.To_Address (x)));
 	Put (System.Storage_Elements.To_Integer (Conv.To_Address (y)));
-	Put (System.Memory.Allocated_Size (Conv.To_Address (y)));
+	Put (System.Standard_Allocators.Allocated_Size (Conv.To_Address (y)));
 	Free (x);
 	Free (y);
 end heap;

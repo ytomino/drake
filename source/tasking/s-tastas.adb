@@ -3,13 +3,13 @@ with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
-with System.Memory;
 with System.Native_Stack;
 with System.Native_Time;
 with System.Once;
 with System.Secondary_Stack;
 with System.Shared_Locking;
 with System.Soft_Links;
+with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Tasking.Synchronous_Objects.Abortable;
 with System.Tasking.Yield;
@@ -114,7 +114,7 @@ package body System.Tasking.Tasks is
          function Cast is new Ada.Unchecked_Conversion (Address, Array_Access);
       begin
          if New_Length > Length then
-            Data := Cast (Memory.Reallocate (
+            Data := Cast (Standard_Allocators.Reallocate (
                Data.all'Address,
                Storage_Elements.Storage_Count (
                   Array_Type'Component_Size * New_Length)));
@@ -127,7 +127,7 @@ package body System.Tasking.Tasks is
 
       procedure Clear (Data : in out Array_Access; Length : in out Natural) is
       begin
-         Memory.Free (Data.all'Address);
+         Standard_Allocators.Free (Data.all'Address);
          Data := null;
          Length := 0;
       end Clear;

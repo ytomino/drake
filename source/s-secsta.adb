@@ -1,6 +1,6 @@
 with System.Address_To_Named_Access_Conversions;
-with System.Memory;
 with System.Soft_Links;
+with System.Standard_Allocators;
 package body System.Secondary_Stack is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Integer_Address;
@@ -15,7 +15,7 @@ package body System.Secondary_Stack is
       return Storage_Elements.Storage_Count
    is
       Alignment : constant Storage_Elements.Integer_Address :=
-         Storage_Elements.Integer_Address (Memory.Page_Size);
+         Storage_Elements.Integer_Address (Standard_Allocators.Page_Size);
    begin
       return Storage_Elements.Storage_Offset (
          Storage_Elements.Integer_Address'Mod (Required)
@@ -84,7 +84,7 @@ package body System.Secondary_Stack is
                   Cast (Previous).Limit
                then
                   TLS.Secondary_Stack := Previous;
-                  Memory.Unmap (Top, Cast (Top).Limit - Top);
+                  Standard_Allocators.Unmap (Top, Cast (Top).Limit - Top);
                   Addr := Aligned_Previous_Used;
                   Cast (Previous).Used := Addr + Storage_Size;
                   return;
@@ -106,7 +106,7 @@ package body System.Secondary_Stack is
                Additional_Block_Size : constant
                   Storage_Elements.Storage_Count := Ceiling_Page_Size (
                      Storage_Size - (Cast (Top).Limit - Aligned_Top_Used));
-               Additional_Block : constant Address := Memory.Map (
+               Additional_Block : constant Address := Standard_Allocators.Map (
                   Cast (Top).Limit,
                   Additional_Block_Size,
                   Raise_On_Error => False);
@@ -122,7 +122,7 @@ package body System.Secondary_Stack is
          --  top block is not enough, then free it if unused
          if Cast (Top).Used = Top + Header_Size then
             TLS.Secondary_Stack := Cast (Top).Previous;
-            Memory.Unmap (Top, Cast (Top).Limit - Top);
+            Standard_Allocators.Unmap (Top, Cast (Top).Limit - Top);
          end if;
       end if;
       --  new block
@@ -137,7 +137,7 @@ package body System.Secondary_Stack is
                Storage_Elements.Storage_Offset'Max (
                   Default_Block_Size,
                   Storage_Size + Aligned_Header_Size));
-         New_Block : constant Address := Memory.Map (Block_Size);
+         New_Block : constant Address := Standard_Allocators.Map (Block_Size);
       begin
          Cast (New_Block).Previous := TLS.Secondary_Stack;
          TLS.Secondary_Stack := New_Block;
@@ -193,7 +193,7 @@ package body System.Secondary_Stack is
                   exit;
                end if;
                TLS.Secondary_Stack := Cast (Top).Previous;
-               Memory.Unmap (Top, Cast (Top).Limit - Top);
+               Standard_Allocators.Unmap (Top, Cast (Top).Limit - Top);
             end;
          end loop;
       end if;
@@ -208,7 +208,7 @@ package body System.Secondary_Stack is
             Top : constant Address := TLS.Secondary_Stack;
          begin
             TLS.Secondary_Stack := Cast (Top).Previous;
-            Memory.Unmap (Top, Cast (Top).Limit - Top);
+            Standard_Allocators.Unmap (Top, Cast (Top).Limit - Top);
          end;
       end loop;
    end Clear;
