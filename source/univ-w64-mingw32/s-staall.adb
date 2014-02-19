@@ -5,7 +5,7 @@ with C.basetsd;
 with C.winbase;
 with C.windef;
 with C.winnt;
-package body System.Memory is
+package body System.Standard_Allocators is
    pragma Suppress (All_Checks);
    use type C.void_ptr;
    use type C.windef.WINBOOL;
@@ -153,4 +153,4 @@ package body System.Memory is
          "failed to VirtualFree (..., MEM_RELEASE)"));
    end Unmap;
 
-end System.Memory;
+end System.Standard_Allocators;

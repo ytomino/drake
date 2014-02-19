@@ -1,6 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Deallocation;
-with System.Memory.Allocated_Size;
+with System.Standard_Allocators.Allocated_Size;
 package body Ada.Streams.Unbounded_Storage_IO is
    use Exception_Identification.From_Here;
 
@@ -14,10 +14,10 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Stream : in out Stream_Type;
       Size : Stream_Element_Count) is
    begin
-      Stream.Data := System.Memory.Allocate (
+      Stream.Data := System.Standard_Allocators.Allocate (
          System.Storage_Elements.Storage_Count (Size));
       Stream.Capacity := Stream_Element_Offset (
-         System.Memory.Allocated_Size (Stream.Data));
+         System.Standard_Allocators.Allocated_Size (Stream.Data));
    end Allocate;
 
    procedure Reallocate (
@@ -27,17 +27,17 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Stream : in out Stream_Type;
       Size : Stream_Element_Count) is
    begin
-      Stream.Data := System.Memory.Reallocate (
+      Stream.Data := System.Standard_Allocators.Reallocate (
          Stream.Data,
          System.Storage_Elements.Storage_Count (Size));
       Stream.Capacity := Stream_Element_Offset (
-         System.Memory.Allocated_Size (Stream.Data));
+         System.Standard_Allocators.Allocated_Size (Stream.Data));
    end Reallocate;
 
    procedure Deallocate (Stream : in out Stream_Type);
    procedure Deallocate (Stream : in out Stream_Type) is
    begin
-      System.Memory.Free (Stream.Data);
+      System.Standard_Allocators.Free (Stream.Data);
       Stream.Data := System.Null_Address;
       Stream.Capacity := 0;
    end Deallocate;

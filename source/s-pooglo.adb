@@ -1,4 +1,4 @@
-with System.Memory;
+with System.Standard_Allocators;
 package body System.Pool_Global is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
@@ -11,9 +11,10 @@ package body System.Pool_Global is
    is
       pragma Unreferenced (Pool);
    begin
-      Storage_Address := Memory.Allocate (Size_In_Storage_Elements);
+      Storage_Address := Standard_Allocators.Allocate (
+         Size_In_Storage_Elements);
       if Storage_Address mod Alignment /= 0 then
-         Memory.Free (Storage_Address);
+         Standard_Allocators.Free (Storage_Address);
          raise Storage_Error;
       end if;
    end Allocate;
@@ -28,7 +29,7 @@ package body System.Pool_Global is
       pragma Unreferenced (Size_In_Storage_Elements);
       pragma Unreferenced (Alignment);
    begin
-      Memory.Free (Storage_Address);
+      Standard_Allocators.Free (Storage_Address);
    end Deallocate;
 
    overriding function Storage_Size (Pool : Unbounded_No_Reclaim_Pool)

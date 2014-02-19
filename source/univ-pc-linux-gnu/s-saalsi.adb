@@ -1,5 +1,5 @@
 with C.malloc;
-function System.Memory.Allocated_Size (
+function System.Standard_Allocators.Allocated_Size (
    Storage_Address : Address)
    return Storage_Elements.Storage_Count
 is
@@ -7,4 +7,4 @@ is
 begin
    return Storage_Elements.Storage_Count (
       C.malloc.malloc_usable_size (C.void_ptr (Storage_Address)));
-end System.Memory.Allocated_Size;
+end System.Standard_Allocators.Allocated_Size;

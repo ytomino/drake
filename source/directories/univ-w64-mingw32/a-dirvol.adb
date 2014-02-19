@@ -1,6 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
-with System.Memory;
+with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.winbase;
@@ -88,10 +88,11 @@ package body Ada.Directories.Volumes is
          declare
             NC_Result : constant not null access Non_Controlled_File_System :=
                Reference (Result);
-            Dest : constant System.Address := System.Memory.Allocate (
-               System.Storage_Elements.Storage_Count (
-                  NC_Result.Root_Path_Length + 1)
-               * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+            Dest : constant System.Address :=
+               System.Standard_Allocators.Allocate (
+                  System.Storage_Elements.Storage_Count (
+                     NC_Result.Root_Path_Length + 1)
+                  * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
             Dest_A : C.winnt.WCHAR_array (C.size_t);
             for Dest_A'Address use Dest;
          begin
@@ -234,10 +235,11 @@ package body Ada.Directories.Volumes is
             begin
                Object.Data.Root_Path := null;
                declare
-                  Dest : constant System.Address := System.Memory.Allocate (
-                     System.Storage_Elements.Storage_Count (
-                        Object.Data.Root_Path_Length + 1)
-                     * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+                  Dest : constant System.Address :=
+                     System.Standard_Allocators.Allocate (
+                        System.Storage_Elements.Storage_Count (
+                           Object.Data.Root_Path_Length + 1)
+                        * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
                   Source_A : C.winnt.WCHAR_array (C.size_t);
                   for Source_A'Address use Source;
                   Dest_A : C.winnt.WCHAR_array (C.size_t);
@@ -253,7 +255,8 @@ package body Ada.Directories.Volumes is
 
       overriding procedure Finalize (Object : in out File_System) is
       begin
-         System.Memory.Free (Conv.To_Address (Object.Data.Root_Path));
+         System.Standard_Allocators.Free (
+            Conv.To_Address (Object.Data.Root_Path));
       end Finalize;
 
    end Controlled;

@@ -1,7 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
+with System.Standard_Allocators;
 with System.Storage_Elements;
-with System.Memory;
 with System.Zero_Terminated_Strings;
 with C.fnmatch;
 with C.sys.dirent;
@@ -50,7 +50,7 @@ package body Ada.Directory_Searching is
          Pattern_Length : constant Natural := Pattern'Length;
       begin
          Search.Pattern := char_ptr_Conv.To_Pointer (
-            System.Memory.Allocate (
+            System.Standard_Allocators.Allocate (
                System.Storage_Elements.Storage_Offset (
                   Pattern_Length * System.Zero_Terminated_Strings.Expanding)
                + 1)); -- NUL
@@ -65,7 +65,8 @@ package body Ada.Directory_Searching is
    begin
       Dummy := C.dirent.closedir (Search.Handle);
       Search.Handle := null;
-      System.Memory.Free (char_ptr_Conv.To_Address (Search.Pattern));
+      System.Standard_Allocators.Free (
+         char_ptr_Conv.To_Address (Search.Pattern));
       Search.Pattern := null;
    end End_Search;
 

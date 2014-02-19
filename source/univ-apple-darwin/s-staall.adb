@@ -5,7 +5,7 @@ with System.Unwind.Standard;
 with C.stdlib;
 with C.unistd;
 with C.sys.mman;
-package body System.Memory is
+package body System.Standard_Allocators is
    pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.void_ptr;
@@ -134,4 +134,4 @@ package body System.Memory is
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unmap;
 
-end System.Memory;
+end System.Standard_Allocators;
