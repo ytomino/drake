@@ -37,20 +37,20 @@ package body System.Memory is
       end return;
    end Allocate;
 
-   procedure Free (P : Address) is
+   procedure Free (Storage_Address : Address) is
    begin
-      C.stdlib.free (C.void_ptr (P));
+      C.stdlib.free (C.void_ptr (Storage_Address));
    end Free;
 
    function Reallocate (
-      P : Address;
+      Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
       return Address
    is
       function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
    begin
       return Result : constant Address := Cast (C.stdlib.realloc (
-         C.void_ptr (P),
+         C.void_ptr (Storage_Address),
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
@@ -96,7 +96,7 @@ package body System.Memory is
    end Map;
 
    function Map (
-      P : Address;
+      Storage_Address : Address;
       Size : Storage_Elements.Storage_Count;
       Raise_On_Error : Boolean := True)
       return Address
@@ -106,7 +106,7 @@ package body System.Memory is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       Mapped_Address := C.sys.mman.mmap (
-         C.void_ptr (P),
+         C.void_ptr (Storage_Address),
          C.size_t (Size),
          C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE,
          C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE + C.sys.mman.MAP_FIXED,
@@ -123,11 +123,13 @@ package body System.Memory is
       return Cast (Mapped_Address);
    end Map;
 
-   procedure Unmap (P : Address; Size : Storage_Elements.Storage_Count) is
+   procedure Unmap (
+      Storage_Address : Address;
+      Size : Storage_Elements.Storage_Count) is
       R : C.signed_int;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      R := C.sys.mman.munmap (C.void_ptr (P), C.size_t (Size));
+      R := C.sys.mman.munmap (C.void_ptr (Storage_Address), C.size_t (Size));
       pragma Debug (Runtime_Error (R < 0, "failed to unmap"));
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unmap;
