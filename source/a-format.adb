@@ -167,7 +167,7 @@ package body Ada.Formatting is
                Long_Long_Float (T'Last),
                Base => Base),
             Fore_Width + 1)
-         + Aft_Width + Exponent_Width + 7); -- (16#.#/16#.#E-)
+            + Aft_Width + Exponent_Width + 7); -- (16#.#/16#.#E-)
       Last : Natural;
    begin
       if Exponent then
@@ -218,7 +218,7 @@ package body Ada.Formatting is
                Long_Long_Float (T'First),
                Long_Long_Float (T'Last)),
             Fore_Width + 1)
-         + Aft_Width + Exponent_Width + 7); -- (./16#.#E+)
+            + Aft_Width + Exponent_Width + 7); -- (./16#.#E+)
       Last : Natural;
    begin
       if Exponent then

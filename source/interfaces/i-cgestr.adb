@@ -113,7 +113,7 @@ package body Interfaces.C.Generic_Strings is
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
       Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Length)
-            * (Element'Size / Standard'Storage_Unit);
+         * (Element'Size / Standard'Storage_Unit);
       Result : constant chars_ptr := libc.malloc (
          C.size_t (Size + Element'Size / Standard'Storage_Unit));
    begin
@@ -132,7 +132,7 @@ package body Interfaces.C.Generic_Strings is
       Result : constant chars_ptr := New_Chars_Ptr (Length);
       Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Length)
-            * (Element'Size / Standard'Storage_Unit);
+         * (Element'Size / Standard'Storage_Unit);
    begin
       libc.memcpy (Result, Item, C.size_t (Size));
       Conv.To_Pointer (Conv.To_Address (Result) + Size).all := Element'Val (0);
@@ -328,12 +328,12 @@ package body Interfaces.C.Generic_Strings is
    is
       Offset_Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Offset)
-            * (Element'Size / Standard'Storage_Unit);
+         * (Element'Size / Standard'Storage_Unit);
       Offsetted_Item : constant chars_ptr :=
          Conv.To_Pointer (Conv.To_Address (chars_ptr (Item)) + Offset_Size);
       Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Length)
-            * (Element'Size / Standard'Storage_Unit);
+         * (Element'Size / Standard'Storage_Unit);
    begin
       libc.memmove (Offsetted_Item, Source, C.size_t (Size));
    end Update;

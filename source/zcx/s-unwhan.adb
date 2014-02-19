@@ -258,9 +258,9 @@ package body System.Unwind.Handling is
                                  C.unwind.Unwind_Ptr);
                            filter : constant C.ptrdiff_t :=
                               C.ptrdiff_t (ar_filter)
-                                 * C.ptrdiff_t (
-                                    C.unwind_pe.size_of_encoded_value (
-                                       ttype_encoding));
+                              * C.ptrdiff_t (
+                                 C.unwind_pe.size_of_encoded_value (
+                                    ttype_encoding));
                            choice : aliased C.unwind.Unwind_Ptr;
                            is_handled : Boolean;
                         begin

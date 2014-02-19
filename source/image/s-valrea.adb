@@ -84,7 +84,7 @@ package body System.Val_Real is
             exit when Is_Invalid or else X >= Formatting.Unsigned (Base);
             if Result >
                (Long_Long_Float'Last - Long_Long_Float (X))
-                  / Long_Long_Float (Base)
+               / Long_Long_Float (Base)
             then
                Error := True;
                return;

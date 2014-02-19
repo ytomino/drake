@@ -158,7 +158,8 @@ package body Ada.Numerics.Generic_Arrays is
             begin
                for X in A'Range (1) loop
                   Result := Result
-                     + Sign * A (X, A'First (2))
+                     + Sign
+                        * A (X, A'First (2))
                         * Determinant (Minor (A, X, A'First (2)));
                   Sign := -Sign;
                end loop;
