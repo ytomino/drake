@@ -1,3 +1,4 @@
+with System.Strings.Stream_Ops;
 package body Ada.Strings.Generic_Bounded is
 
    function Length (Source : Bounded_String) return Natural is
@@ -477,8 +478,41 @@ package body Ada.Strings.Generic_Bounded is
          begin
             Integer'Read (Stream, First);
             Integer'Read (Stream, Last);
-            Item.Length := Last - First + 1;
-            Read (Stream, Item.Element (1 .. Item.Length));
+            declare
+               Length : constant Integer := Last - First + 1;
+            begin
+               Item.Length := Length;
+               if Character_Type'Size = Character'Size then
+                  declare
+                     Item_As_String : String (1 .. Length);
+                     for Item_As_String'Address use Item.Element'Address;
+                  begin
+                     System.Strings.Stream_Ops.String_Read_Blk_IO (
+                        Stream,
+                        Item_As_String);
+                  end;
+               elsif Character_Type'Size = Wide_Character'Size then
+                  declare
+                     Item_As_WString : Wide_String (1 .. Length);
+                     for Item_As_WString'Address use Item.Element'Address;
+                  begin
+                     System.Strings.Stream_Ops.Wide_String_Read_Blk_IO (
+                        Stream,
+                        Item_As_WString);
+                  end;
+               elsif Character_Type'Size = Wide_Wide_Character'Size then
+                  declare
+                     Item_As_WWString : Wide_Wide_String (1 .. Length);
+                     for Item_As_WWString'Address use Item.Element'Address;
+                  begin
+                     System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+                        Stream,
+                        Item_As_WWString);
+                  end;
+               else
+                  String_Type'Read (Stream, Item.Element (1 .. Length));
+               end if;
+            end;
          end Read;
 
          function Input (
@@ -496,7 +530,36 @@ package body Ada.Strings.Generic_Bounded is
          begin
             Integer'Write (Stream, 1);
             Integer'Write (Stream, Item.Length);
-            Write (Stream, Item.Element (1 .. Item.Length));
+            if Character_Type'Size = Character'Size then
+               declare
+                  Item_As_String : String (1 .. Item.Length);
+                  for Item_As_String'Address use Item.Element'Address;
+               begin
+                  System.Strings.Stream_Ops.String_Write_Blk_IO (
+                     Stream,
+                     Item_As_String);
+               end;
+            elsif Character_Type'Size = Wide_Character'Size then
+               declare
+                  Item_As_WString : Wide_String (1 .. Item.Length);
+                  for Item_As_WString'Address use Item.Element'Address;
+               begin
+                  System.Strings.Stream_Ops.Wide_String_Write_Blk_IO (
+                     Stream,
+                     Item_As_WString);
+               end;
+            elsif Character_Type'Size = Wide_Wide_Character'Size then
+               declare
+                  Item_As_WWString : Wide_Wide_String (1 .. Item.Length);
+                  for Item_As_WWString'Address use Item.Element'Address;
+               begin
+                  System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+                     Stream,
+                     Item_As_WWString);
+               end;
+            else
+               String_Type'Write (Stream, Item.Element (1 .. Item.Length));
+            end if;
          end Write;
 
       end Streaming;

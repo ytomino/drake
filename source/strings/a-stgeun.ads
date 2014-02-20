@@ -8,12 +8,6 @@ private with System.Reference_Counting;
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
-   with procedure Read (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : out String_Type);
-   with procedure Write (
-      Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : String_Type);
    with package Slicing is
       new References.Generic_Slicing (Positive, Character_Type, String_Type);
 package Ada.Strings.Generic_Unbounded is

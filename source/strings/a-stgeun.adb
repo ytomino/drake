@@ -2,6 +2,7 @@ with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Standard_Allocators.Allocated_Size;
 with System.Storage_Elements;
+with System.Strings.Stream_Ops;
 package body Ada.Strings.Generic_Unbounded is
    use type Streams.Stream_Element_Offset;
    use type System.Address;
@@ -1126,21 +1127,94 @@ package body Ada.Strings.Generic_Unbounded is
          Integer'Read (Stream, First);
          Integer'Read (Stream, Last);
          declare
+            package String_Access_Conv is
+               new System.Address_To_Named_Access_Conversions (
+                  String_Type,
+                  String_Access);
             Length : constant Integer := Last - First + 1;
          begin
             Item.Length := 0;
             Set_Length (Item, Length);
-            Read (Stream, Item.Data.Items (1 .. Length));
+            if Character_Type'Size = Character'Size then
+               declare
+                  Item_As_String : String (1 .. Length);
+                  for Item_As_String'Address use
+                     String_Access_Conv.To_Address (Item.Data.Items);
+               begin
+                  System.Strings.Stream_Ops.String_Read_Blk_IO (
+                     Stream,
+                     Item_As_String);
+               end;
+            elsif Character_Type'Size = Wide_Character'Size then
+               declare
+                  Item_As_WString : Wide_String (1 .. Length);
+                  for Item_As_WString'Address use
+                     String_Access_Conv.To_Address (Item.Data.Items);
+               begin
+                  System.Strings.Stream_Ops.Wide_String_Read_Blk_IO (
+                     Stream,
+                     Item_As_WString);
+               end;
+            elsif Character_Type'Size = Wide_Wide_Character'Size then
+               declare
+                  Item_As_WWString : Wide_Wide_String (1 .. Length);
+                  for Item_As_WWString'Address use
+                     String_Access_Conv.To_Address (Item.Data.Items);
+               begin
+                  System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+                     Stream,
+                     Item_As_WWString);
+               end;
+            else
+               String_Type'Read (Stream, Item.Data.Items (1 .. Length));
+            end if;
          end;
       end Read;
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Unbounded_String) is
+         Item : Unbounded_String)
+      is
+         package String_Access_Conv is
+            new System.Address_To_Named_Access_Conversions (
+               String_Type,
+               String_Access);
       begin
          Integer'Write (Stream, 1);
          Integer'Write (Stream, Item.Length);
-         Write (Stream, Item.Data.Items (1 .. Item.Length));
+         if Character_Type'Size = Character'Size then
+            declare
+               Item_As_String : String (1 .. Item.Length);
+               for Item_As_String'Address use
+                  String_Access_Conv.To_Address (Item.Data.Items);
+            begin
+               System.Strings.Stream_Ops.String_Write_Blk_IO (
+                  Stream,
+                  Item_As_String);
+            end;
+         elsif Character_Type'Size = Wide_Character'Size then
+            declare
+               Item_As_WString : Wide_String (1 .. Item.Length);
+               for Item_As_WString'Address use
+                  String_Access_Conv.To_Address (Item.Data.Items);
+            begin
+               System.Strings.Stream_Ops.Wide_String_Write_Blk_IO (
+                  Stream,
+                  Item_As_WString);
+            end;
+         elsif Character_Type'Size = Wide_Wide_Character'Size then
+            declare
+               Item_As_WWString : Wide_Wide_String (1 .. Item.Length);
+               for Item_As_WWString'Address use
+                  String_Access_Conv.To_Address (Item.Data.Items);
+            begin
+               System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+                  Stream,
+                  Item_As_WWString);
+            end;
+         else
+            String_Type'Write (Stream, Item.Data.Items (1 .. Item.Length));
+         end if;
       end Write;
 
    end Streaming;
