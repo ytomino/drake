@@ -1135,39 +1135,40 @@ package body Ada.Strings.Generic_Unbounded is
          begin
             Item.Length := 0;
             Set_Length (Item, Length);
-            if Character_Type'Size = Character'Size then
-               declare
-                  Item_As_String : String (1 .. Length);
-                  for Item_As_String'Address use
-                     String_Access_Conv.To_Address (Item.Data.Items);
-               begin
-                  System.Strings.Stream_Ops.String_Read_Blk_IO (
-                     Stream,
-                     Item_As_String);
-               end;
-            elsif Character_Type'Size = Wide_Character'Size then
-               declare
-                  Item_As_WString : Wide_String (1 .. Length);
-                  for Item_As_WString'Address use
-                     String_Access_Conv.To_Address (Item.Data.Items);
-               begin
-                  System.Strings.Stream_Ops.Wide_String_Read_Blk_IO (
-                     Stream,
-                     Item_As_WString);
-               end;
-            elsif Character_Type'Size = Wide_Wide_Character'Size then
-               declare
-                  Item_As_WWString : Wide_Wide_String (1 .. Length);
-                  for Item_As_WWString'Address use
-                     String_Access_Conv.To_Address (Item.Data.Items);
-               begin
-                  System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
-                     Stream,
-                     Item_As_WWString);
-               end;
-            else
-               String_Type'Read (Stream, Item.Data.Items (1 .. Length));
-            end if;
+            case Character_Type'Size is
+               when Character'Size =>
+                  declare
+                     Item_As_String : String (1 .. Length);
+                     for Item_As_String'Address use
+                        String_Access_Conv.To_Address (Item.Data.Items);
+                  begin
+                     System.Strings.Stream_Ops.String_Read_Blk_IO (
+                        Stream,
+                        Item_As_String);
+                  end;
+               when Wide_Character'Size =>
+                  declare
+                     Item_As_WString : Wide_String (1 .. Length);
+                     for Item_As_WString'Address use
+                        String_Access_Conv.To_Address (Item.Data.Items);
+                  begin
+                     System.Strings.Stream_Ops.Wide_String_Read_Blk_IO (
+                        Stream,
+                        Item_As_WString);
+                  end;
+               when Wide_Wide_Character'Size =>
+                  declare
+                     Item_As_WWString : Wide_Wide_String (1 .. Length);
+                     for Item_As_WWString'Address use
+                        String_Access_Conv.To_Address (Item.Data.Items);
+                  begin
+                     System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+                        Stream,
+                        Item_As_WWString);
+                  end;
+               when others =>
+                  String_Type'Read (Stream, Item.Data.Items (1 .. Length));
+            end case;
          end;
       end Read;
 
@@ -1182,39 +1183,40 @@ package body Ada.Strings.Generic_Unbounded is
       begin
          Integer'Write (Stream, 1);
          Integer'Write (Stream, Item.Length);
-         if Character_Type'Size = Character'Size then
-            declare
-               Item_As_String : String (1 .. Item.Length);
-               for Item_As_String'Address use
-                  String_Access_Conv.To_Address (Item.Data.Items);
-            begin
-               System.Strings.Stream_Ops.String_Write_Blk_IO (
-                  Stream,
-                  Item_As_String);
-            end;
-         elsif Character_Type'Size = Wide_Character'Size then
-            declare
-               Item_As_WString : Wide_String (1 .. Item.Length);
-               for Item_As_WString'Address use
-                  String_Access_Conv.To_Address (Item.Data.Items);
-            begin
-               System.Strings.Stream_Ops.Wide_String_Write_Blk_IO (
-                  Stream,
-                  Item_As_WString);
-            end;
-         elsif Character_Type'Size = Wide_Wide_Character'Size then
-            declare
-               Item_As_WWString : Wide_Wide_String (1 .. Item.Length);
-               for Item_As_WWString'Address use
-                  String_Access_Conv.To_Address (Item.Data.Items);
-            begin
-               System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
-                  Stream,
-                  Item_As_WWString);
-            end;
-         else
-            String_Type'Write (Stream, Item.Data.Items (1 .. Item.Length));
-         end if;
+         case Character_Type'Size is
+            when Character'Size =>
+               declare
+                  Item_As_String : String (1 .. Item.Length);
+                  for Item_As_String'Address use
+                     String_Access_Conv.To_Address (Item.Data.Items);
+               begin
+                  System.Strings.Stream_Ops.String_Write_Blk_IO (
+                     Stream,
+                     Item_As_String);
+               end;
+            when Wide_Character'Size =>
+               declare
+                  Item_As_WString : Wide_String (1 .. Item.Length);
+                  for Item_As_WString'Address use
+                     String_Access_Conv.To_Address (Item.Data.Items);
+               begin
+                  System.Strings.Stream_Ops.Wide_String_Write_Blk_IO (
+                     Stream,
+                     Item_As_WString);
+               end;
+            when Wide_Wide_Character'Size =>
+               declare
+                  Item_As_WWString : Wide_Wide_String (1 .. Item.Length);
+                  for Item_As_WWString'Address use
+                     String_Access_Conv.To_Address (Item.Data.Items);
+               begin
+                  System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+                     Stream,
+                     Item_As_WWString);
+               end;
+            when others =>
+               String_Type'Write (Stream, Item.Data.Items (1 .. Item.Length));
+         end case;
       end Write;
 
    end Streaming;
