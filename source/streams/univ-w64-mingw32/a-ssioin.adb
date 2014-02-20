@@ -886,15 +886,15 @@ package body Ada.Streams.Stream_IO.Inside is
    end Open;
 
    procedure Close (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is
    begin
-      Check_File_Open (File);
+      Check_File_Open (File.all);
       declare
-         Freeing_File : constant not null Non_Controlled_File_Type := File;
-         Kind : constant Stream_Kind := File.Kind;
+         Freeing_File : constant not null Non_Controlled_File_Type := File.all;
+         Kind : constant Stream_Kind := File.all.Kind;
       begin
-         File := null;
+         File.all := null;
          Close_File (Freeing_File, Raise_On_Error);
          case Kind is
             when Normal | Temporary | External | External_No_Close =>
@@ -905,22 +905,24 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Close;
 
-   procedure Delete (File : in out Non_Controlled_File_Type) is
+   procedure Delete (File : not null access Non_Controlled_File_Type) is
    begin
-      Check_File_Open (File);
-      case File.Kind is
+      Check_File_Open (File.all);
+      case File.all.Kind is
          when Normal =>
             declare
                Deleting_File_Name : C.winnt.WCHAR_array (
                   0 ..
-                  File.Name_Length);
+                  File.all.Name_Length);
             begin
                declare
                   File_Name_A : C.winnt.WCHAR_array (C.size_t);
                   for File_Name_A'Address use
-                     LPWSTR_Conv.To_Address (File.Name);
+                     LPWSTR_Conv.To_Address (File.all.Name);
                begin
-                  Deleting_File_Name := File_Name_A (0 .. File.Name_Length);
+                  Deleting_File_Name := File_Name_A (
+                     0 ..
+                     File.all.Name_Length);
                end;
                Close (File, Raise_On_Error => True);
                if C.winbase.DeleteFile (Deleting_File_Name (0)'Access) = 0 then

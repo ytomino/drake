@@ -66,9 +66,9 @@ package Ada.Text_IO.Inside is
       Form : Packed_Form := Default_Form);
 
    procedure Close (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True);
-   procedure Delete (File : in out Non_Controlled_File_Type);
+   procedure Delete (File : not null access Non_Controlled_File_Type);
    procedure Reset (
       File : not null access Non_Controlled_File_Type;
       Mode : File_Mode);
