@@ -308,7 +308,7 @@ package body Ada.Streams.Stream_IO.Inside is
       File : not null Non_Controlled_File_Type;
       Buffer_Index : Stream_Element_Offset) is
    begin
-      if File.Buffer_Length < Uninitialized_Buffer then
+      if File.Buffer_Length = Uninitialized_Buffer then
          File.Buffer_Index := Buffer_Index;
       elsif File.Buffer_Length = 0 then
          File.Buffer_Index := 0;
