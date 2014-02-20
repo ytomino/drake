@@ -95,12 +95,12 @@ package body Ada.Streams.Stream_IO is
 
    procedure Close (File : in out File_Type) is
    begin
-      Inside.Close (Reference (File).all, Raise_On_Error => True);
+      Inside.Close (Reference (File), Raise_On_Error => True);
    end Close;
 
    procedure Delete (File : in out File_Type) is
    begin
-      Inside.Delete (Reference (File).all);
+      Inside.Delete (Reference (File));
    end Delete;
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
@@ -246,7 +246,7 @@ package body Ada.Streams.Stream_IO is
       overriding procedure Finalize (Object : in out File_Type) is
       begin
          if Inside.Is_Open (Reference (Object).all) then
-            Inside.Close (Reference (Object).all, Raise_On_Error => False);
+            Inside.Close (Reference (Object), Raise_On_Error => False);
          end if;
       end Finalize;
 

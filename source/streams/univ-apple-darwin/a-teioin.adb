@@ -576,20 +576,21 @@ package body Ada.Text_IO.Inside is
    end Open;
 
    procedure Close (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is
    begin
-      if Is_Open (File) then
+      if Is_Open (File.all) then
          declare
-            Internal : Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
-               File.File;
+            Internal : aliased
+               Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
+               File.all.File;
          begin
             if not Streams.Stream_IO.Inside.Is_Standard (Internal) then
-               Free (File);
+               Free (File.all);
             end if;
             if Streams.Stream_IO.Inside.Is_Open (Internal) then
                Streams.Stream_IO.Inside.Close (
-                  Internal,
+                  Internal'Access,
                   Raise_On_Error => Raise_On_Error);
             end if;
          end;
@@ -598,11 +599,17 @@ package body Ada.Text_IO.Inside is
       end if;
    end Close;
 
-   procedure Delete (File : in out Non_Controlled_File_Type) is
+   procedure Delete (File : not null access Non_Controlled_File_Type) is
    begin
-      Check_File_Open (File);
-      Streams.Stream_IO.Inside.Delete (File.File);
-      Free (File);
+      Check_File_Open (File.all);
+      declare
+         Internal : aliased
+            Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
+            File.all.File;
+      begin
+         Free (File.all);
+         Streams.Stream_IO.Inside.Delete (Internal'Access);
+      end;
    end Delete;
 
    procedure Reset (
