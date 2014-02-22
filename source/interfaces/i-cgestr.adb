@@ -7,14 +7,6 @@ package body Interfaces.C.Generic_Strings is
 
    package libc is
 
-      function strlen (Item : not null access constant Element)
-         return size_t;
-      pragma Import (Intrinsic, strlen, "__builtin_strlen");
-
-      function wcslen (Item : not null access constant Element)
-         return size_t;
-      pragma Import (C, wcslen);
-
       procedure memcpy (
          s1 : not null access Element;
          s2 : not null access constant Element;
@@ -112,10 +104,9 @@ package body Interfaces.C.Generic_Strings is
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
       Size : constant System.Storage_Elements.Storage_Count :=
-         System.Storage_Elements.Storage_Count (Length)
+         (System.Storage_Elements.Storage_Count (Length) + 1) -- appending nul
          * (Element'Size / Standard'Storage_Unit);
-      Result : constant chars_ptr := libc.malloc (
-         C.size_t (Size + Element'Size / Standard'Storage_Unit));
+      Result : constant chars_ptr := libc.malloc (C.size_t (Size));
    begin
       if Result = null then
          raise Storage_Error;
@@ -269,9 +260,21 @@ package body Interfaces.C.Generic_Strings is
          raise Dereference_Error; -- CXB3011
       end if;
       if Element'Size = char'Size then
-         return libc.strlen (Item);
+         declare
+            function strlen (Item : not null access constant Element)
+               return size_t;
+            pragma Import (Intrinsic, strlen, "__builtin_strlen");
+         begin
+            return strlen (Item);
+         end;
       elsif Element'Size = wchar_t'Size then
-         return libc.wcslen (Item);
+         declare
+            function wcslen (Item : not null access constant Element)
+               return size_t;
+            pragma Import (C, wcslen);
+         begin
+            return wcslen (Item);
+         end;
       else
          declare
             S : const_chars_ptr := const_chars_ptr (Item);
