@@ -1,8 +1,8 @@
 with Ada.Characters.Inside;
+with Ada.Streams.Block_Transmission.Wide_Wide_Strings;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
-with System.Strings.Stream_Ops;
 with System.UTF_Conversions.From_8_To_32;
 with System.UTF_Conversions.From_16_To_32;
 with System.UTF_Conversions.From_32_To_8;
@@ -967,10 +967,10 @@ package body Ada.Strings.Maps is
                   From => <>,
                   To => <>);
                Assign (Item, Item_Data);
-               System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+               Streams.Block_Transmission.Wide_Wide_Strings.Read (
                   Stream,
                   Item_Data.From);
-               System.Strings.Stream_Ops.Wide_Wide_String_Read_Blk_IO (
+               Streams.Block_Transmission.Wide_Wide_Strings.Read (
                   Stream,
                   Item_Data.To);
             end if;
@@ -983,10 +983,10 @@ package body Ada.Strings.Maps is
             Item_Data : constant not null Map_Data_Access := Reference (Item);
          begin
             Integer'Write (Stream, Item_Data.Length);
-            System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+            Streams.Block_Transmission.Wide_Wide_Strings.Write (
                Stream,
                Item_Data.From);
-            System.Strings.Stream_Ops.Wide_Wide_String_Write_Blk_IO (
+            Streams.Block_Transmission.Wide_Wide_Strings.Write (
                Stream,
                Item_Data.To);
          end Write;
