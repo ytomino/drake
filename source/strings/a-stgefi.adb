@@ -13,7 +13,9 @@ package body Ada.Strings.Generic_Fixed is
       Target : out String_Type;
       Pad : Character_Type := Space) is
    begin
-      if Character_Type'Size = Character'Size then
+      if Character_Type'Size = Standard'Storage_Unit
+         and then String_Type'Component_Size = Standard'Storage_Unit
+      then
          declare
             package Conv is
                new System.Address_To_Access_Conversions (Character);
@@ -118,7 +120,9 @@ package body Ada.Strings.Generic_Fixed is
    function Index_Forward (Source : String_Type; Pattern : Character_Type)
       return Natural is
    begin
-      if Character_Type'Size = Character'Size then
+      if Character_Type'Size = Standard'Storage_Unit
+         and then String_Type'Component_Size = Standard'Storage_Unit
+      then
          declare
             package Conv is
                new System.Address_To_Access_Conversions (Character);

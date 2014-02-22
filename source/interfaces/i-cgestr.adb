@@ -46,7 +46,11 @@ package body Interfaces.C.Generic_Strings is
       else
          if Nul_Check then
             --  raise Terminator_Error when Item contains no nul
-            if Element'Size = char'Size then
+            if Element'Size = char'Size
+               and then Element_Array'Component_Size =
+                  char_array'Component_Size
+               --  'Scalar_Storage_Order is unrelated since searching 0
+            then
                declare
                   ca_Item : char_array (Item'Range);
                   for ca_Item'Address use Item.all'Address;
@@ -55,7 +59,10 @@ package body Interfaces.C.Generic_Strings is
                begin
                   null;
                end;
-            elsif Element'Size = wchar_t'Size then
+            elsif Element'Size = wchar_t'Size
+               and then Element_Array'Component_Size =
+                  wchar_array'Component_Size
+            then
                declare
                   wa_Item : wchar_array (Item'Range);
                   for wa_Item'Address use Item.all'Address;
@@ -105,7 +112,7 @@ package body Interfaces.C.Generic_Strings is
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
       Size : constant System.Storage_Elements.Storage_Count :=
          (System.Storage_Elements.Storage_Count (Length) + 1) -- appending nul
-         * (Element'Size / Standard'Storage_Unit);
+         * (Element_Array'Component_Size / Standard'Storage_Unit);
       Result : constant chars_ptr := libc.malloc (C.size_t (Size));
    begin
       if Result = null then
@@ -123,7 +130,7 @@ package body Interfaces.C.Generic_Strings is
       Result : constant chars_ptr := New_Chars_Ptr (Length);
       Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Length)
-         * (Element'Size / Standard'Storage_Unit);
+         * (Element_Array'Component_Size / Standard'Storage_Unit);
    begin
       libc.memcpy (Result, Item, C.size_t (Size));
       Conv.To_Pointer (Conv.To_Address (Result) + Size).all := Element'Val (0);
@@ -259,7 +266,10 @@ package body Interfaces.C.Generic_Strings is
       if const_chars_ptr (Item) = null then
          raise Dereference_Error; -- CXB3011
       end if;
-      if Element'Size = char'Size then
+      if Element'Size = char'Size
+         and then Element_Array'Component_Size = char_array'Component_Size
+         --  'Scalar_Storage_Order is unrelated since searching 0
+      then
          declare
             function strlen (Item : not null access constant Element)
                return size_t;
@@ -267,7 +277,9 @@ package body Interfaces.C.Generic_Strings is
          begin
             return strlen (Item);
          end;
-      elsif Element'Size = wchar_t'Size then
+      elsif Element'Size = wchar_t'Size
+         and then Element_Array'Component_Size = wchar_array'Component_Size
+      then
          declare
             function wcslen (Item : not null access constant Element)
                return size_t;
@@ -284,7 +296,7 @@ package body Interfaces.C.Generic_Strings is
                Length := Length + 1;
                S := const_Conv.To_Pointer (
                   const_Conv.To_Address (S)
-                  + Element'Size / Standard'Storage_Unit);
+                  + Element_Array'Component_Size / Standard'Storage_Unit);
             end loop;
             return Length;
          end;
@@ -331,12 +343,12 @@ package body Interfaces.C.Generic_Strings is
    is
       Offset_Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Offset)
-         * (Element'Size / Standard'Storage_Unit);
+         * (Element_Array'Component_Size / Standard'Storage_Unit);
       Offsetted_Item : constant chars_ptr :=
          Conv.To_Pointer (Conv.To_Address (chars_ptr (Item)) + Offset_Size);
       Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Length)
-         * (Element'Size / Standard'Storage_Unit);
+         * (Element_Array'Component_Size / Standard'Storage_Unit);
    begin
       libc.memmove (Offsetted_Item, Source, C.size_t (Size));
    end Update;

@@ -3,6 +3,13 @@ with Ada.Unchecked_Deallocation;
 package body Ada.Environment_Encoding.Generic_Strings is
    use type Streams.Stream_Element_Offset;
 
+   pragma Compile_Time_Error (
+      String_Type'Component_Size /= Character_Type'Size,
+      "String_Type is not packed");
+   pragma Compile_Time_Error (
+      Character_Type'Size rem Streams.Stream_Element'Size /= 0,
+      "String_Type could not be treated as Stream_Element_Array");
+
    function Current_Id return Encoding_Id;
    function Current_Id return Encoding_Id is
    begin
