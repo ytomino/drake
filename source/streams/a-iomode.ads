@@ -10,15 +10,15 @@ package Ada.IO_Modes is
    --  the types for the parameters Form of Stream_IO
 
    type File_Shared_Spec is (
-      Allow, -- "shared=yes"
+      Allow, -- "shared=allow" or "shared=yes"
       Read_Only, -- "shared=read"
-      Deny, -- "shared=write"
+      Deny, -- "shared=deny"
       By_Mode); -- "shared=no" or default
    type File_Shared is new File_Shared_Spec range Allow .. Deny;
 
 --  subtype File_Wait is Boolean;
-   --  False as "race=raise" or default
-   --  True as "race=wait"
+   --  False as "wait=false" or default
+   --  True as "wait=true"
 
 --  subtype File_Overwrite is Boolean;
    --  False as "overwrite=false"

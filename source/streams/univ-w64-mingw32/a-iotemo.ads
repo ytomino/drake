@@ -13,9 +13,9 @@ package Ada.IO_Text_Modes is
    type File_External_Encoding is new File_External range Locale .. UTF_8;
 
    type File_New_Line is (
-      LF, -- "lm=lf"
-      CR, -- "lm=cr"
-      CR_LF); -- "lm=m"
+      LF, -- "nl=lf"
+      CR, -- "nl=cr"
+      CR_LF); -- "nl=m"
    function By_Target return File_New_Line
       renames CR_LF;
 
