@@ -477,8 +477,15 @@ package body Ada.Strings.Generic_Bounded is
          begin
             Integer'Read (Stream, First);
             Integer'Read (Stream, Last);
-            Item.Length := Last - First + 1;
-            Read (Stream, Item.Element (1 .. Item.Length));
+            declare
+               Length : constant Integer := Last - First + 1;
+            begin
+               if Length > Item.Capacity then
+                  raise Length_Error;
+               end if;
+               Item.Length := Length;
+               Read (Stream, Item.Element (1 .. Length));
+            end;
          end Read;
 
          function Input (

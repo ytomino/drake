@@ -271,7 +271,7 @@ package body Ada.Containers.Generic_Arrays is
             Container := new Array_Type'(Container.all & Array_Type'(
                Index_Type'First ..
                Index_Type'First
-               + Index_Type'Base (Length - Container'Length) - 1 => <>));
+                  + Index_Type'Base (Length - Container'Length) - 1 => <>));
             Free (S);
          end;
       end if;

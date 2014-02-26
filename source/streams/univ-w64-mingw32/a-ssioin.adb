@@ -1,7 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
-with System.Memory;
+with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.string;
@@ -22,50 +22,6 @@ package body Ada.Streams.Stream_IO.Inside is
    use type C.winnt.LONGLONG;
 --  use type System.Address;
 --  use type C.winnt.HANDLE; -- C.void_ptr
-
-   procedure SetFilePointerEx (
-      Handle : C.winnt.HANDLE;
-      DistanceToMove : C.winnt.LONGLONG;
-      NewFilePointer : out C.winnt.LONGLONG;
-      MoveMethod : C.windef.DWORD);
-   procedure SetFilePointerEx (
-      Handle : C.winnt.HANDLE;
-      DistanceToMove : C.winnt.LONGLONG;
-      NewFilePointer : out C.winnt.LONGLONG;
-      MoveMethod : C.windef.DWORD)
-   is
-      liDistanceToMove : C.winnt.LARGE_INTEGER;
-      liNewFilePointer : aliased C.winnt.LARGE_INTEGER;
-   begin
-      liDistanceToMove.QuadPart := DistanceToMove;
-      if C.winbase.SetFilePointerEx (
-         Handle,
-         liDistanceToMove,
-         liNewFilePointer'Access,
-         MoveMethod) = 0
-      then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      NewFilePointer := liNewFilePointer.QuadPart;
-   end SetFilePointerEx;
-
-   --  implementation of handle
-
-   function Is_Terminal (Handle : Handle_Type) return Boolean is
-      Mode : aliased C.windef.DWORD;
-   begin
-      return C.winbase.GetFileType (Handle) = C.winbase.FILE_TYPE_CHAR
-         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0;
-   end Is_Terminal;
-
-   function Is_Seekable (Handle : Handle_Type) return Boolean is
-   begin
-      return C.winbase.SetFilePointerEx (
-         Handle,
-         (Unchecked_Tag => 2, QuadPart => 0),
-         null,
-         C.winbase.FILE_CURRENT) /= 0;
-   end Is_Seekable;
 
    --  the parameter Form
 
@@ -171,6 +127,52 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Unpack;
 
+   --  handle
+
+   procedure SetFilePointerEx (
+      Handle : C.winnt.HANDLE;
+      DistanceToMove : C.winnt.LONGLONG;
+      NewFilePointer : out C.winnt.LONGLONG;
+      MoveMethod : C.windef.DWORD);
+   procedure SetFilePointerEx (
+      Handle : C.winnt.HANDLE;
+      DistanceToMove : C.winnt.LONGLONG;
+      NewFilePointer : out C.winnt.LONGLONG;
+      MoveMethod : C.windef.DWORD)
+   is
+      liDistanceToMove : C.winnt.LARGE_INTEGER;
+      liNewFilePointer : aliased C.winnt.LARGE_INTEGER;
+   begin
+      liDistanceToMove.QuadPart := DistanceToMove;
+      if C.winbase.SetFilePointerEx (
+         Handle,
+         liDistanceToMove,
+         liNewFilePointer'Access,
+         MoveMethod) = 0
+      then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      NewFilePointer := liNewFilePointer.QuadPart;
+   end SetFilePointerEx;
+
+   --  implementation of handle
+
+   function Is_Terminal (Handle : Handle_Type) return Boolean is
+      Mode : aliased C.windef.DWORD;
+   begin
+      return C.winbase.GetFileType (Handle) = C.winbase.FILE_TYPE_CHAR
+         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0;
+   end Is_Terminal;
+
+   function Is_Seekable (Handle : Handle_Type) return Boolean is
+   begin
+      return C.winbase.SetFilePointerEx (
+         Handle,
+         (Unchecked_Tag => 2, QuadPart => 0),
+         null,
+         C.winbase.FILE_CURRENT) /= 0;
+   end Is_Seekable;
+
    --  implementation of handle for controlled
 
    procedure Open (
@@ -238,7 +240,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Stream_Type'Size / Standard'Storage_Unit));
    begin
       if Result_Addr = System.Null_Address then
-         System.Memory.Free (LPWSTR_Conv.To_Address (Name));
+         System.Standard_Allocators.Free (LPWSTR_Conv.To_Address (Name));
          raise Storage_Error;
       else
          declare
@@ -268,10 +270,11 @@ package body Ada.Streams.Stream_IO.Inside is
       use type System.Address;
    begin
       if File.Buffer /= File.Buffer_Inline'Address then
-         System.Memory.Free (File.Buffer);
+         System.Standard_Allocators.Free (File.Buffer);
       end if;
-      System.Memory.Free (LPWSTR_Conv.To_Address (File.Name));
-      System.Memory.Free (Non_Controlled_File_Type_Conv.To_Address (File));
+      System.Standard_Allocators.Free (LPWSTR_Conv.To_Address (File.Name));
+      System.Standard_Allocators.Free (
+         Non_Controlled_File_Type_Conv.To_Address (File));
    end Free;
 
    procedure Set_Buffer_Index (
@@ -281,7 +284,7 @@ package body Ada.Streams.Stream_IO.Inside is
       File : not null Non_Controlled_File_Type;
       Buffer_Index : Stream_Element_Offset) is
    begin
-      if File.Buffer_Length < Uninitialized_Buffer then
+      if File.Buffer_Length = Uninitialized_Buffer then
          File.Buffer_Index := Buffer_Index;
       elsif File.Buffer_Length = 0 then
          File.Buffer_Index := 0;
@@ -351,8 +354,9 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
       --  allocate filename
       Full_Name_Length := C.string.wcslen (Temp_Name (0)'Access);
-      Full_Name := LPWSTR_Conv.To_Pointer (System.Memory.Allocate (
-         System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
+      Full_Name := LPWSTR_Conv.To_Pointer (
+         System.Standard_Allocators.Allocate (
+            System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          Full_Name_A : C.winnt.WCHAR_array (C.size_t);
@@ -394,8 +398,9 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
       --  allocate filename
       Full_Name_Length := Full_Path_Length;
-      Full_Name := LPWSTR_Conv.To_Pointer (System.Memory.Allocate (
-         System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
+      Full_Name := LPWSTR_Conv.To_Pointer (
+         System.Standard_Allocators.Allocate (
+            System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          Full_Name_A : C.winnt.WCHAR_array (C.size_t);
@@ -630,14 +635,14 @@ package body Ada.Streams.Stream_IO.Inside is
             else
                --  disk file
                File.Buffer_Length :=
-                  Stream_Element_Offset (System.Memory.Page_Size);
+                  Stream_Element_Offset (System.Standard_Allocators.Page_Size);
             end if;
          end;
          if File.Buffer_Length = 0 then
             File.Buffer := File.Buffer_Inline'Address;
             File.Buffer_Index := 0;
          else
-            File.Buffer := System.Memory.Allocate (
+            File.Buffer := System.Standard_Allocators.Allocate (
                System.Storage_Elements.Storage_Count (File.Buffer_Length));
             File.Buffer_Index := File.Buffer_Index rem File.Buffer_Length;
          end if;
@@ -883,15 +888,15 @@ package body Ada.Streams.Stream_IO.Inside is
    end Open;
 
    procedure Close (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is
    begin
-      Check_File_Open (File);
+      Check_File_Open (File.all);
       declare
-         Freeing_File : constant not null Non_Controlled_File_Type := File;
-         Kind : constant Stream_Kind := File.Kind;
+         Freeing_File : constant not null Non_Controlled_File_Type := File.all;
+         Kind : constant Stream_Kind := File.all.Kind;
       begin
-         File := null;
+         File.all := null;
          Close_File (Freeing_File, Raise_On_Error);
          case Kind is
             when Normal | Temporary | External | External_No_Close =>
@@ -902,22 +907,24 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Close;
 
-   procedure Delete (File : in out Non_Controlled_File_Type) is
+   procedure Delete (File : not null access Non_Controlled_File_Type) is
    begin
-      Check_File_Open (File);
-      case File.Kind is
+      Check_File_Open (File.all);
+      case File.all.Kind is
          when Normal =>
             declare
                Deleting_File_Name : C.winnt.WCHAR_array (
                   0 ..
-                  File.Name_Length);
+                  File.all.Name_Length);
             begin
                declare
                   File_Name_A : C.winnt.WCHAR_array (C.size_t);
                   for File_Name_A'Address use
-                     LPWSTR_Conv.To_Address (File.Name);
+                     LPWSTR_Conv.To_Address (File.all.Name);
                begin
-                  Deleting_File_Name := File_Name_A (0 .. File.Name_Length);
+                  Deleting_File_Name := File_Name_A (
+                     0 ..
+                     File.all.Name_Length);
                end;
                Close (File, Raise_On_Error => True);
                if C.winbase.DeleteFile (Deleting_File_Name (0)'Access) = 0 then
@@ -1315,7 +1322,7 @@ package body Ada.Streams.Stream_IO.Inside is
          Kind := External_No_Close;
       end if;
       Full_Name := LPWSTR_Conv.To_Pointer (
-         System.Memory.Allocate (
+         System.Standard_Allocators.Allocate (
             (Name'Length * System.Zero_Terminated_WStrings.Expanding
                + 2) -- '*' & NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));

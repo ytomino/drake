@@ -71,10 +71,11 @@ package System.Fat_Flt is
 
       --  required for Float'Valid by compiler (s-fatgen.ads)
       function Valid (X : not null access Float) return Boolean;
+      pragma Export (Ada, Valid, "system__fat_flt__attr_float__valid");
       function Unaligned_Valid (A : Address) return Boolean;
-      pragma Import (Ada, Unaligned_Valid);
+      pragma Import (Ada, Unaligned_Valid,
+         "system__fat_flt__attr_float__valid");
       pragma Pure_Function (Unaligned_Valid);
-      for Unaligned_Valid'Address use Valid'Address;
 
    end Attr_Float;
 

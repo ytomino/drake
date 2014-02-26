@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit
 with System.Storage_Elements;
-package System.Memory is
+package System.Standard_Allocators is
    pragma Preelaborate;
 
    --  heap (s-memory.ads)
@@ -9,10 +9,12 @@ package System.Memory is
    function Allocate (Size : Storage_Elements.Storage_Count) return Address;
    pragma Export (C, Allocate, "__gnat_malloc");
 
-   procedure Free (P : Address);
+   procedure Free (Storage_Address : Address);
    pragma Export (C, Free, "__gnat_free");
 
-   function Reallocate (P : Address; Size : Storage_Elements.Storage_Count)
+   function Reallocate (
+      Storage_Address : Address;
+      Size : Storage_Elements.Storage_Count)
       return Address;
    pragma Export (C, Reallocate, "__gnat_realloc");
 
@@ -25,10 +27,12 @@ package System.Memory is
       Raise_On_Error : Boolean := True)
       return Address;
    function Map (
-      P : Address;
+      Storage_Address : Address;
       Size : Storage_Elements.Storage_Count;
       Raise_On_Error : Boolean := True)
       return Address;
-   procedure Unmap (P : Address; Size : Storage_Elements.Storage_Count);
+   procedure Unmap (
+      Storage_Address : Address;
+      Size : Storage_Elements.Storage_Count);
 
-end System.Memory;
+end System.Standard_Allocators;

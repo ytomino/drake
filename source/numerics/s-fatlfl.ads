@@ -74,10 +74,11 @@ package System.Fat_Lflt is
 
       --  required for Long_Float'Valid by compiler (s-fatgen.ads)
       function Valid (X : not null access Long_Float) return Boolean;
+      pragma Export (Ada, Valid, "system__fat_lflt__attr_long_float__valid");
       function Unaligned_Valid (A : Address) return Boolean;
-      pragma Import (Ada, Unaligned_Valid);
+      pragma Import (Ada, Unaligned_Valid,
+         "system__fat_lflt__attr_long_float__valid");
       pragma Pure_Function (Unaligned_Valid);
-      for Unaligned_Valid'Address use Valid'Address;
 
    end Attr_Long_Float;
 

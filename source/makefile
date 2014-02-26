@@ -150,10 +150,10 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-foadim.o \
 	s-format.o \
 	s-maccod.o \
-	s-memory.o \
 	s-natsta.o \
 	s-shaloc.o \
 	s-soflin.o \
+	s-staall.o \
 	s-stalib.o \
 	s-stoele.o \
 	s-termin.o \

@@ -5,7 +5,7 @@ with C.basetsd;
 with C.winbase;
 with C.windef;
 with C.winnt;
-package body System.Memory is
+package body System.Standard_Allocators is
    pragma Suppress (All_Checks);
    use type C.void_ptr;
    use type C.windef.WINBOOL;
@@ -49,18 +49,18 @@ package body System.Memory is
       end return;
    end Allocate;
 
-   procedure Free (P : Address) is
+   procedure Free (Storage_Address : Address) is
       R : C.windef.WINBOOL;
    begin
       R := C.winbase.HeapFree (
          C.winbase.GetProcessHeap,
          0,
-         C.windef.LPVOID (P));
+         C.windef.LPVOID (Storage_Address));
       pragma Debug (Runtime_Error (R = 0, "failed to HeapFree"));
    end Free;
 
    function Reallocate (
-      P : Address;
+      Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
       return Address
    is
@@ -69,11 +69,11 @@ package body System.Memory is
       return Result : Address := Cast (C.winbase.HeapReAlloc (
          C.winbase.GetProcessHeap,
          0,
-         C.windef.LPVOID (P),
+         C.windef.LPVOID (Storage_Address),
          C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
-            if P = Null_Address then
+            if Storage_Address = Null_Address then
                Result := Allocate (Size); -- Reallocate (null, ...)
             else
                Unwind.Raising.Raise_Exception_From_Here_With (
@@ -117,12 +117,12 @@ package body System.Memory is
    end Map;
 
    function Map (
-      P : Address;
+      Storage_Address : Address;
       Size : Storage_Elements.Storage_Count;
       Raise_On_Error : Boolean := True)
       return Address
    is
-      pragma Unreferenced (P);
+      pragma Unreferenced (Storage_Address);
       pragma Unreferenced (Size);
    begin
       --  VirtualAlloc and VirtualFree should be one-to-one correspondence
@@ -134,21 +134,23 @@ package body System.Memory is
       return Null_Address;
    end Map;
 
-   procedure Unmap (P : Address; Size : Storage_Elements.Storage_Count) is
+   procedure Unmap (
+      Storage_Address : Address;
+      Size : Storage_Elements.Storage_Count) is
       R : C.windef.WINBOOL;
    begin
       R := C.winbase.VirtualFree (
-         C.windef.LPVOID (P),
+         C.windef.LPVOID (Storage_Address),
          C.basetsd.SIZE_T (Size),
          C.winnt.MEM_DECOMMIT);
       pragma Debug (Runtime_Error (R = 0,
          "failed to VirtualFree (..., MEM_DECOMMIT)"));
       R := C.winbase.VirtualFree (
-         C.windef.LPVOID (P),
+         C.windef.LPVOID (Storage_Address),
          0,
          C.winnt.MEM_RELEASE);
       pragma Debug (Runtime_Error (R = 0,
          "failed to VirtualFree (..., MEM_RELEASE)"));
    end Unmap;
 
-end System.Memory;
+end System.Standard_Allocators;

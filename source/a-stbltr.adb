@@ -8,8 +8,8 @@ package body Ada.Streams.Block_Transmission is
       Stream : not null access Root_Stream_Type'Class;
       Item : out Array_Type) is
    begin
-      if Array_Type'Component_Size = Element_Type'Size
-         and then Element_Type'Size mod Stream_Element'Size = 0
+      if Element_Type'Size = Element_Type'Stream_Size
+         and then Array_Type'Component_Size = Element_Type'Stream_Size
       then
          declare
             Length : constant Natural := Item'Length;
@@ -41,8 +41,8 @@ package body Ada.Streams.Block_Transmission is
       Stream : not null access Root_Stream_Type'Class;
       Item : Array_Type) is
    begin
-      if Array_Type'Component_Size = Element_Type'Size
-         and then Element_Type'Size mod Stream_Element'Size = 0
+      if Element_Type'Size = Element_Type'Stream_Size
+         and then Array_Type'Component_Size = Element_Type'Stream_Size
       then
          declare
             Length : constant Natural := Item'Length;

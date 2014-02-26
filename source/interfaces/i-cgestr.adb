@@ -1,21 +1,11 @@
-with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
    pragma Suppress (All_Checks);
-   use Ada.Exception_Identification.From_Here;
    use type System.Storage_Elements.Storage_Offset;
 
    package libc is
-
-      function strlen (Item : not null access constant Element)
-         return size_t;
-      pragma Import (Intrinsic, strlen, "__builtin_strlen");
-
-      function wcslen (Item : not null access constant Element)
-         return size_t;
-      pragma Import (C, wcslen);
 
       procedure memcpy (
          s1 : not null access Element;
@@ -56,7 +46,11 @@ package body Interfaces.C.Generic_Strings is
       else
          if Nul_Check then
             --  raise Terminator_Error when Item contains no nul
-            if Element'Size = char'Size then
+            if Element'Size = char'Size
+               and then Element_Array'Component_Size =
+                  char_array'Component_Size
+               --  'Scalar_Storage_Order is unrelated since searching 0
+            then
                declare
                   ca_Item : char_array (Item'Range);
                   for ca_Item'Address use Item.all'Address;
@@ -65,7 +59,10 @@ package body Interfaces.C.Generic_Strings is
                begin
                   null;
                end;
-            elsif Element'Size = wchar_t'Size then
+            elsif Element'Size = wchar_t'Size
+               and then Element_Array'Component_Size =
+                  wchar_array'Component_Size
+            then
                declare
                   wa_Item : wchar_array (Item'Range);
                   for wa_Item'Address use Item.all'Address;
@@ -80,7 +77,7 @@ package body Interfaces.C.Generic_Strings is
                begin
                   loop
                      if I <= Item'Last then
-                        Raise_Exception (Terminator_Error'Identity);
+                        raise Terminator_Error;
                      end if;
                      exit when Item (I) = Element'Val (0);
                      I := I + 1;
@@ -114,10 +111,9 @@ package body Interfaces.C.Generic_Strings is
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
       Size : constant System.Storage_Elements.Storage_Count :=
-         System.Storage_Elements.Storage_Count (Length)
-            * (Element'Size / Standard'Storage_Unit);
-      Result : constant chars_ptr := libc.malloc (
-         C.size_t (Size + Element'Size / Standard'Storage_Unit));
+         (System.Storage_Elements.Storage_Count (Length) + 1) -- appending nul
+         * (Element_Array'Component_Size / Standard'Storage_Unit);
+      Result : constant chars_ptr := libc.malloc (C.size_t (Size));
    begin
       if Result = null then
          raise Storage_Error;
@@ -134,7 +130,7 @@ package body Interfaces.C.Generic_Strings is
       Result : constant chars_ptr := New_Chars_Ptr (Length);
       Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Length)
-            * (Element'Size / Standard'Storage_Unit);
+         * (Element_Array'Component_Size / Standard'Storage_Unit);
    begin
       libc.memcpy (Result, Item, C.size_t (Size));
       Conv.To_Pointer (Conv.To_Address (Result) + Size).all := Element'Val (0);
@@ -205,7 +201,7 @@ package body Interfaces.C.Generic_Strings is
       return Element_Array is
    begin
       if const_chars_ptr (Item) = null then
-         Raise_Exception (Dereference_Error'Identity); -- CXB3010
+         raise Dereference_Error; -- CXB3010
       end if;
       declare
          Length : constant size_t := Strlen (Item);
@@ -229,7 +225,7 @@ package body Interfaces.C.Generic_Strings is
       end if;
       if const_chars_ptr (Item) = null then
          if Length > 0 then
-            Raise_Exception (Dereference_Error'Identity); -- CXB3010
+            raise Dereference_Error; -- CXB3010
          end if;
          Actual_Length := 0;
       else
@@ -268,12 +264,29 @@ package body Interfaces.C.Generic_Strings is
       return size_t is
    begin
       if const_chars_ptr (Item) = null then
-         Raise_Exception (Dereference_Error'Identity); -- CXB3011
+         raise Dereference_Error; -- CXB3011
       end if;
-      if Element'Size = char'Size then
-         return libc.strlen (Item);
-      elsif Element'Size = wchar_t'Size then
-         return libc.wcslen (Item);
+      if Element'Size = char'Size
+         and then Element_Array'Component_Size = char_array'Component_Size
+         --  'Scalar_Storage_Order is unrelated since searching 0
+      then
+         declare
+            function strlen (Item : not null access constant Element)
+               return size_t;
+            pragma Import (Intrinsic, strlen, "__builtin_strlen");
+         begin
+            return strlen (Item);
+         end;
+      elsif Element'Size = wchar_t'Size
+         and then Element_Array'Component_Size = wchar_array'Component_Size
+      then
+         declare
+            function wcslen (Item : not null access constant Element)
+               return size_t;
+            pragma Import (C, wcslen);
+         begin
+            return wcslen (Item);
+         end;
       else
          declare
             S : const_chars_ptr := const_chars_ptr (Item);
@@ -283,7 +296,7 @@ package body Interfaces.C.Generic_Strings is
                Length := Length + 1;
                S := const_Conv.To_Pointer (
                   const_Conv.To_Address (S)
-                  + Element'Size / Standard'Storage_Unit);
+                  + Element_Array'Component_Size / Standard'Storage_Unit);
             end loop;
             return Length;
          end;
@@ -297,10 +310,10 @@ package body Interfaces.C.Generic_Strings is
       Check : Boolean := True) is
    begin
       if chars_ptr (Item) = null then
-         Raise_Exception (Dereference_Error'Identity); -- CXB3011
+         raise Dereference_Error; -- CXB3011
       end if;
       if Check and then Offset + Chars'Length > Strlen (Item) then
-         Raise_Exception (Update_Error'Identity);
+         raise Update_Error;
       end if;
       Update (
          Item,
@@ -330,12 +343,12 @@ package body Interfaces.C.Generic_Strings is
    is
       Offset_Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Offset)
-            * (Element'Size / Standard'Storage_Unit);
+         * (Element_Array'Component_Size / Standard'Storage_Unit);
       Offsetted_Item : constant chars_ptr :=
          Conv.To_Pointer (Conv.To_Address (chars_ptr (Item)) + Offset_Size);
       Size : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Count (Length)
-            * (Element'Size / Standard'Storage_Unit);
+         * (Element_Array'Component_Size / Standard'Storage_Unit);
    begin
       libc.memmove (Offsetted_Item, Source, C.size_t (Size));
    end Update;

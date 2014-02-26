@@ -8,6 +8,7 @@ package Ada.Streams.Stream_IO is
    pragma Preelaborate; -- AI12-0010-1
 
    type Stream_Access is access all Root_Stream_Type'Class;
+   for Stream_Access'Storage_Size use 0;
 
    type File_Type is limited private;
 

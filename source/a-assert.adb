@@ -1,13 +1,7 @@
-with System.Unwind;
-pragma Warnings (Off, System.Unwind); -- break "pure" rule
-with System.Unwind.Raising;
-pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
+with Ada.Exception_Identification.From_Here;
 package body Ada.Assertions is
    pragma Suppress (All_Checks);
-
-   --  skip Ada.Exceptions
-   Assertion_Error_Data : aliased constant System.Unwind.Exception_Data;
-   pragma Import (Ada, Assertion_Error_Data, "assertion_error");
+   use Exception_Identification.From_Here;
 
    --  implementation
 
@@ -23,9 +17,7 @@ package body Ada.Assertions is
    procedure Raise_Assertion_Error (
       Message : String := Debug.Source_Location) is
    begin
-      System.Unwind.Raising.Raise_Exception (
-         Assertion_Error_Data'Access,
-         Message => Message);
+      Raise_Exception (Assertion_Error'Identity, Message => Message);
    end Raise_Assertion_Error;
 
 end Ada.Assertions;

@@ -4,7 +4,7 @@ package body Ada.Storage_IO is
    procedure Read (Buffer : Buffer_Type; Item : out Element_Type) is
       subtype T is System.Storage_Elements.Storage_Array (
          1 ..
-         Item'Size / Standard'Storage_Unit);
+         (Item'Size + Standard'Storage_Unit - 1) / Standard'Storage_Unit);
       Item_As : T;
       for Item_As'Address use Item'Address;
    begin
@@ -14,7 +14,7 @@ package body Ada.Storage_IO is
    procedure Write (Buffer : out Buffer_Type; Item : Element_Type) is
       subtype T is System.Storage_Elements.Storage_Array (
          1 ..
-         Item'Size / Standard'Storage_Unit);
+         (Item'Size + Standard'Storage_Unit - 1) / Standard'Storage_Unit);
       Item_As : T;
       for Item_As'Address use Item'Address;
    begin

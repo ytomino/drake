@@ -1,6 +1,6 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
-with System.Memory.Allocated_Size;
+with System.Standard_Allocators.Allocated_Size;
 with System.Storage_Elements;
 package body Ada.Strings.Generic_Unbounded is
    use type Streams.Stream_Element_Offset;
@@ -28,17 +28,22 @@ package body Ada.Strings.Generic_Unbounded is
             Header_Size : constant System.Storage_Elements.Storage_Count :=
                Data'Size / Standard'Storage_Unit
                + Integer'Size / Standard'Storage_Unit * 2; -- constraints
-            Required_Size : constant System.Storage_Elements.Storage_Count :=
-               Header_Size
-               + Character_Type'Size / Standard'Storage_Unit
-                  * System.Storage_Elements.Storage_Count (Capacity);
+            Use_Size : constant System.Storage_Elements.Storage_Count :=
+               (System.Storage_Elements.Storage_Count (Capacity)
+                  * String_Type'Component_Size
+                     + (Standard'Storage_Unit - 1))
+               / Standard'Storage_Unit;
             M : constant System.Address :=
-               System.Memory.Allocate (Required_Size);
+               System.Standard_Allocators.Allocate (Header_Size + Use_Size);
          begin
             return Result : not null Data_Access := Data_Cast.To_Pointer (M) do
                Result.Reference_Count := 1;
                Result.Max_Length := Max_Length;
                declare
+                  Usable_Size : constant
+                     System.Storage_Elements.Storage_Count :=
+                     System.Standard_Allocators.Allocated_Size (M)
+                     - Header_Size;
                   type Repr is record
                      Data : System.Address;
                      Constraints : System.Address;
@@ -57,9 +62,19 @@ package body Ada.Strings.Generic_Unbounded is
                      Last'Address + Integer'Size / Standard'Storage_Unit;
                begin
                   First := 1;
-                  Last := Integer (
-                     (System.Memory.Allocated_Size (M) - Header_Size)
-                        / (Character_Type'Size / Standard'Storage_Unit));
+                  if String_Type'Component_Size
+                     rem Standard'Storage_Unit = 0
+                  then -- optimized for packed
+                     Last := Integer (
+                        Usable_Size
+                        / (String_Type'Component_Size
+                           / Standard'Storage_Unit));
+                  else -- unpacked
+                     Last := Integer (
+                        Usable_Size
+                        * Standard'Storage_Unit
+                        / String_Type'Component_Size);
+                  end if;
                   R.Constraints := First'Address;
                   R.Data := Data'Address;
                end;
@@ -71,7 +86,7 @@ package body Ada.Strings.Generic_Unbounded is
    procedure Free_Data (Data : System.Address);
    procedure Free_Data (Data : System.Address) is
    begin
-      System.Memory.Free (Data);
+      System.Standard_Allocators.Free (Data);
    end Free_Data;
 
    procedure Copy_Data (

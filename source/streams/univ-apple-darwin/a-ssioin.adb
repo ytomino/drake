@@ -1,7 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
-with System.Memory;
+with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
@@ -265,7 +265,7 @@ package body Ada.Streams.Stream_IO.Inside is
             Stream_Type'Size / Standard'Storage_Unit));
    begin
       if Result_Addr = System.Null_Address then
-         System.Memory.Free (char_ptr_Conv.To_Address (Name));
+         System.Standard_Allocators.Free (char_ptr_Conv.To_Address (Name));
          raise Storage_Error;
       else
          declare
@@ -294,10 +294,11 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Free (File : Non_Controlled_File_Type) is
    begin
       if File.Buffer /= File.Buffer_Inline'Address then
-         System.Memory.Free (File.Buffer);
+         System.Standard_Allocators.Free (File.Buffer);
       end if;
-      System.Memory.Free (char_ptr_Conv.To_Address (File.Name));
-      System.Memory.Free (Non_Controlled_File_Type_Conv.To_Address (File));
+      System.Standard_Allocators.Free (char_ptr_Conv.To_Address (File.Name));
+      System.Standard_Allocators.Free (
+         Non_Controlled_File_Type_Conv.To_Address (File));
    end Free;
 
    procedure Set_Buffer_Index (
@@ -307,7 +308,7 @@ package body Ada.Streams.Stream_IO.Inside is
       File : not null Non_Controlled_File_Type;
       Buffer_Index : Stream_Element_Offset) is
    begin
-      if File.Buffer_Length < Uninitialized_Buffer then
+      if File.Buffer_Length = Uninitialized_Buffer then
          File.Buffer_Index := Buffer_Index;
       elsif File.Buffer_Length = 0 then
          File.Buffer_Index := 0;
@@ -347,9 +348,10 @@ package body Ada.Streams.Stream_IO.Inside is
       if Temp_Dir /= null then
          --  environment variable TMPDIR
          Full_Name_Length := C.string.strlen (Temp_Dir);
-         Full_Name := char_ptr_Conv.To_Pointer (System.Memory.Allocate (
-            System.Storage_Elements.Storage_Count (
-               Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
+         Full_Name := char_ptr_Conv.To_Pointer (
+            System.Standard_Allocators.Allocate (
+               System.Storage_Elements.Storage_Count (
+                  Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
          declare
             Temp_Dir_A : C.char_array (C.size_t);
             for Temp_Dir_A'Address use char_ptr_Conv.To_Address (Temp_Dir);
@@ -401,12 +403,14 @@ package body Ada.Streams.Stream_IO.Inside is
          Handle := mkstemp (Full_Name);
       end;
       if Handle < 0 then
-         System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
+         System.Standard_Allocators.Free (
+            char_ptr_Conv.To_Address (Full_Name));
          Raise_Exception (Use_Error'Identity);
       end if;
       Set_Close_On_Exec (Handle, Error);
       if Error then
-         System.Memory.Free (char_ptr_Conv.To_Address (Full_Name));
+         System.Standard_Allocators.Free (
+            char_ptr_Conv.To_Address (Full_Name));
          Raise_Exception (Use_Error'Identity);
       end if;
    end Open_Temporary_File;
@@ -426,7 +430,7 @@ package body Ada.Streams.Stream_IO.Inside is
       if Name (Name'First) = '/' then
          --  absolute path
          Full_Name := char_ptr_Conv.To_Pointer (
-            System.Memory.Allocate (
+            System.Standard_Allocators.Allocate (
                System.Storage_Elements.Storage_Count (Name_Length_For_Alloc)
                + 1)); -- NUL
          Full_Name_Length := 0;
@@ -718,7 +722,7 @@ package body Ada.Streams.Stream_IO.Inside is
             File.Buffer := File.Buffer_Inline'Address;
             File.Buffer_Index := 0;
          else
-            File.Buffer := System.Memory.Allocate (
+            File.Buffer := System.Standard_Allocators.Allocate (
                System.Storage_Elements.Storage_Count (File.Buffer_Length));
             File.Buffer_Index := File.Buffer_Index rem File.Buffer_Length;
          end if;
@@ -945,15 +949,15 @@ package body Ada.Streams.Stream_IO.Inside is
    end Open;
 
    procedure Close (
-      File : in out Non_Controlled_File_Type;
+      File : not null access Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is
    begin
-      Check_File_Open (File);
+      Check_File_Open (File.all);
       declare
-         Freeing_File : constant not null Non_Controlled_File_Type := File;
-         Kind : constant Stream_Kind := File.Kind;
+         Freeing_File : constant not null Non_Controlled_File_Type := File.all;
+         Kind : constant Stream_Kind := File.all.Kind;
       begin
-         File := null;
+         File.all := null;
          Close_File (Freeing_File, Raise_On_Error);
          case Kind is
             when Normal | Temporary | External | External_No_Close =>
@@ -964,12 +968,12 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Close;
 
-   procedure Delete (File : in out Non_Controlled_File_Type) is
+   procedure Delete (File : not null access Non_Controlled_File_Type) is
    begin
-      Check_File_Open (File);
-      case File.Kind is
+      Check_File_Open (File.all);
+      case File.all.Kind is
          when Normal | Temporary =>
-            File.Kind := Temporary;
+            File.all.Kind := Temporary;
             Close (File, Raise_On_Error => True);
          when External | External_No_Close | Standard_Handle =>
             Raise_Exception (Status_Error'Identity);
@@ -1351,7 +1355,7 @@ package body Ada.Streams.Stream_IO.Inside is
          Kind := External_No_Close;
       end if;
       Full_Name := char_ptr_Conv.To_Pointer (
-         System.Memory.Allocate (
+         System.Standard_Allocators.Allocate (
             Name'Length * System.Zero_Terminated_Strings.Expanding
             + 2)); -- '*' & NUL
       Full_Name_Length := Name'Length + 1;

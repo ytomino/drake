@@ -64,8 +64,8 @@ package body Ada.Directories.Temporary is
       Template : C.char_array (
          0 ..
          Directory'Length * System.Zero_Terminated_Strings.Expanding
-         + 1 -- '/'
-         + Temp_Template'Length);
+            + 1 -- '/'
+            + Temp_Template'Length);
       Length : C.size_t;
    begin
       System.Zero_Terminated_Strings.To_C (

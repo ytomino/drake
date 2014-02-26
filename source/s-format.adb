@@ -130,7 +130,7 @@ package body System.Formatting is
                exit when Is_Invalid or else X >= Unsigned (Base);
                if Result >
                   (Longest_Unsigned'Last - Longest_Unsigned (X))
-                     / Longest_Unsigned (Base)
+                  / Longest_Unsigned (Base)
                then
                   Overflow := True;
                   exit;

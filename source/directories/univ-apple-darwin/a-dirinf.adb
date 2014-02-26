@@ -4,8 +4,8 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Permissions.Inside;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
-with System.Memory;
 with System.Native_Time;
+with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
@@ -221,7 +221,7 @@ package body Ada.Directories.Information is
       procedure Finally (X : not null access C.char_ptr);
       procedure Finally (X : not null access C.char_ptr) is
       begin
-         System.Memory.Free (Conv.To_Address (X.all));
+         System.Standard_Allocators.Free (Conv.To_Address (X.all));
       end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
@@ -229,8 +229,9 @@ package body Ada.Directories.Information is
          0 ..
          Name'Length * System.Zero_Terminated_Strings.Expanding);
       Buffer_Length : C.size_t := 1024;
-      Buffer : aliased C.char_ptr := Conv.To_Pointer (System.Memory.Allocate (
-         System.Storage_Elements.Storage_Count (Buffer_Length)));
+      Buffer : aliased C.char_ptr :=
+         Conv.To_Pointer (System.Standard_Allocators.Allocate (
+            System.Storage_Elements.Storage_Count (Buffer_Length)));
    begin
       Holder.Assign (Buffer'Access);
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
@@ -265,9 +266,10 @@ package body Ada.Directories.Information is
                   C.size_t (Result));
             end if;
             Buffer_Length := Buffer_Length * 2;
-            Buffer := Conv.To_Pointer (System.Memory.Reallocate (
-               Conv.To_Address (Buffer),
-               System.Storage_Elements.Storage_Count (Buffer_Length)));
+            Buffer := Conv.To_Pointer (
+               System.Standard_Allocators.Reallocate (
+                  Conv.To_Address (Buffer),
+                  System.Storage_Elements.Storage_Count (Buffer_Length)));
          end;
       end loop;
    end Read_Symbolic_Link;

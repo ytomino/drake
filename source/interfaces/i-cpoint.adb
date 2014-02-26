@@ -13,30 +13,39 @@ package body Interfaces.C.Pointers is
       Ref := Ref - 1;
    end Decrement;
 
-   procedure Decrement (Ref : in out Constant_Pointer) is
+   procedure Decrement (Ref : in out not null Constant_Pointer) is
    begin
       Ref := Ref - 1;
    end Decrement;
 
-   procedure Increment (Ref : in out Pointer) is
+   procedure Increment (Ref : in out not null Pointer) is
    begin
       Ref := Ref + 1;
    end Increment;
 
-   procedure Increment (Ref : in out Constant_Pointer) is
+   procedure Increment (Ref : in out not null Constant_Pointer) is
    begin
       Ref := Ref + 1;
    end Increment;
 
-   function "+" (Left : Pointer; Right : ptrdiff_t) return Pointer is
+   function "+" (
+      Left : Pointer;
+      Right : ptrdiff_t)
+      return not null Pointer
+   is
       function I is new C (Pointer, ptrdiff_t);
       function P is new C (ptrdiff_t, Pointer);
    begin
+      if not Standard'Fast_Math and then Left = null then
+         raise Pointer_Error; -- CXB3015
+      end if;
       return P (I (Left) + Right * (A'Component_Size / Storage_Unit));
    end "+";
 
-   function "+" (Left : Constant_Pointer; Right : ptrdiff_t)
-      return Constant_Pointer
+   function "+" (
+      Left : not null Constant_Pointer;
+      Right : ptrdiff_t)
+      return not null Constant_Pointer
    is
       function I is new C (Constant_Pointer, ptrdiff_t);
       function P is new C (ptrdiff_t, Constant_Pointer);
@@ -44,26 +53,40 @@ package body Interfaces.C.Pointers is
       return P (I (Left) + Right * (A'Component_Size / Storage_Unit));
    end "+";
 
-   function "+" (Left : ptrdiff_t; Right : Pointer) return Pointer is
+   function "+" (
+      Left : ptrdiff_t;
+      Right : not null Pointer)
+      return not null Pointer is
    begin
       return Right + Left;
    end "+";
 
-   function "+" (Left : ptrdiff_t; Right : Constant_Pointer)
-      return Constant_Pointer is
+   function "+" (
+      Left : ptrdiff_t;
+      Right : not null Constant_Pointer)
+      return not null Constant_Pointer is
    begin
       return Right + Left;
    end "+";
 
-   function "-" (Left : Pointer; Right : ptrdiff_t) return Pointer is
+   function "-" (
+      Left : Pointer;
+      Right : ptrdiff_t)
+      return not null Pointer
+   is
       function I is new C (Pointer, ptrdiff_t);
       function P is new C (ptrdiff_t, Pointer);
    begin
+      if not Standard'Fast_Math and then Left = null then
+         raise Pointer_Error; -- CXB3015
+      end if;
       return P (I (Left) - Right * (A'Component_Size / Storage_Unit));
    end "-";
 
-   function "-" (Left : Constant_Pointer; Right : ptrdiff_t)
-      return Constant_Pointer
+   function "-" (
+      Left : not null Constant_Pointer;
+      Right : ptrdiff_t)
+      return not null Constant_Pointer
    is
       function I is new C (Constant_Pointer, ptrdiff_t);
       function P is new C (ptrdiff_t, Constant_Pointer);
@@ -71,13 +94,16 @@ package body Interfaces.C.Pointers is
       return P (I (Left) - Right * (A'Component_Size / Storage_Unit));
    end "-";
 
-   function "-" (Left : Pointer; Right : not null access constant Element)
+   function "-" (
+      Left : not null Pointer;
+      Right : not null access constant Element)
       return ptrdiff_t is
    begin
       return Constant_Pointer (Left) - Right;
    end "-";
 
-   function "-" (Left : Constant_Pointer;
+   function "-" (
+      Left : not null Constant_Pointer;
       Right : not null access constant Element)
       return ptrdiff_t
    is

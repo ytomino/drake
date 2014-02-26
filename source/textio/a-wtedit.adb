@@ -1,11 +1,13 @@
+with Ada.Exception_Identification.From_Here;
 package body Ada.Wide_Text_IO.Editing is
+   use Exception_Identification.From_Here;
 
    procedure Tail (Target : out Wide_String; Source : Wide_String);
    procedure Tail (Target : out Wide_String; Source : Wide_String) is
       Padding : constant Wide_Character := ' ';
    begin
       if Target'Length < Source'Length then
-         raise Layout_Error;
+         Raise_Exception (Layout_Error'Identity);
       end if;
       for I in Target'First .. Target'Last - Source'Length loop
          Target (I) := Padding;

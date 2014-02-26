@@ -560,6 +560,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Source : in out List)
    is
       type List_Access is access all List;
+      for List_Access'Storage_Size use 0;
    begin
       if List_Access'(Target'Access) /= List_Access'(Source'Access) then
          Unique (Target, True);

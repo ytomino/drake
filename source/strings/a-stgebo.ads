@@ -7,10 +7,10 @@ generic
    type String_Type is array (Positive range <>) of Character_Type;
    with procedure Read (
       Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : out String_Type);
+      Item : out String_Type) is String_Type'Read;
    with procedure Write (
       Stream : not null access Streams.Root_Stream_Type'Class;
-      Item : String_Type);
+      Item : String_Type) is String_Type'Write;
    with package Slicing is
       new References.Generic_Slicing (Positive, Character_Type, String_Type);
 package Ada.Strings.Generic_Bounded is

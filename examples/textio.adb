@@ -1,4 +1,5 @@
 with Ada.Command_Line;
+with Ada.Streams;
 with Ada.Text_IO;
 with Ada.Text_IO.Text_Streams;
 with Ada.Wide_Text_IO;
@@ -6,7 +7,9 @@ with Ada.Wide_Text_IO.Text_Streams;
 with Ada.Wide_Wide_Text_IO;
 with Ada.Wide_Wide_Text_IO.Text_Streams;
 with System.Form_Parameters;
+with System.Standard_Allocators;
 procedure textio is
+	use type Ada.Streams.Stream_Element_Offset;
 	subtype C is Character;
 	subtype WC is Wide_Character;
 	subtype WWC is Wide_Wide_Character;
@@ -51,6 +54,33 @@ begin
 		Ada.Text_IO.Open (File_2, Ada.Text_IO.In_File, Test_File_Name, "shared=yes"); -- dead lock when File_1 acquired exclusive lock
 		Ada.Text_IO.Close (File_2);
 		Ada.Text_IO.Delete (File_1);
+	end;
+	-- check Append_File
+	declare
+		Page_Size : constant Ada.Streams.Stream_Element_Positive_Count :=
+		   Ada.Streams.Stream_Element_Offset (System.Standard_Allocators.Page_Size);
+		Test_File_Name : constant String := Ada.Command_Line.Command_Name & "-test";
+		File : Ada.Text_IO.File_Type;
+	begin
+		Ada.Text_IO.Create (File, Ada.Text_IO.Out_File, Test_File_Name);
+		Ada.Text_IO.Put (File, "ABC");
+		Ada.Text_IO.Close (File);
+		Ada.Text_IO.Open (File, Ada.Text_IO.Append_File, Test_File_Name);
+		pragma Assert (Ada.Streams.Index (Ada.Streams.Seekable_Stream_Type'Class (Ada.Text_IO.Text_Streams.Stream (File).all)) = 4);
+		Ada.Text_IO.Put (File, (1 .. Natural (Page_Size) => ' '));
+		Ada.Text_IO.Close (File);
+		Ada.Text_IO.Open (File, Ada.Text_IO.Append_File, Test_File_Name);
+		pragma Assert (Ada.Streams.Index (Ada.Streams.Seekable_Stream_Type'Class (Ada.Text_IO.Text_Streams.Stream (File).all)) = 4 + Page_Size);
+		Ada.Text_IO.Put_Line (File, "DEF");
+		Ada.Text_IO.Close (File);
+		Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Test_File_Name);
+		declare
+			Line : constant String := Ada.Text_IO.Get_Line (File);
+		begin
+			pragma Assert (Line = "ABC" & (1 .. Natural (Page_Size) => ' ') & "DEF");
+			null;
+		end;
+		Ada.Text_IO.Delete (File);
 	end;
 	-- test form parameter
 	declare
