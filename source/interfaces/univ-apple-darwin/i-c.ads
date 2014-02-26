@@ -213,6 +213,10 @@ package Interfaces.C is
    Terminator_Error : exception;
 
    --  extended
+   --  Common to instances of Interfaces.C.Pointers.
+   Pointer_Error : exception;
+
+   --  extended
    --  Common to instances of Interfaces.C.Generic_Strings.
    Dereference_Error : exception;
    Update_Error : exception;
