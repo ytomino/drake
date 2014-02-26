@@ -8,6 +8,8 @@ package Ada.Exceptions is
 --  type Exception_Id is private;
 --  pragma Preelaborable_Initialization (Exception_Id);
    subtype Exception_Id is Exception_Identification.Exception_Id;
+   function "=" (Left, Right : Exception_Id) return Boolean -- CB41003
+      renames Exception_Identification."=";
 --  Null_Id : constant Exception_Id;
    Null_Id : Exception_Id
       renames Exception_Identification.Null_Id;
