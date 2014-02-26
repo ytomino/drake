@@ -23,50 +23,6 @@ package body Ada.Streams.Stream_IO.Inside is
 --  use type System.Address;
 --  use type C.winnt.HANDLE; -- C.void_ptr
 
-   procedure SetFilePointerEx (
-      Handle : C.winnt.HANDLE;
-      DistanceToMove : C.winnt.LONGLONG;
-      NewFilePointer : out C.winnt.LONGLONG;
-      MoveMethod : C.windef.DWORD);
-   procedure SetFilePointerEx (
-      Handle : C.winnt.HANDLE;
-      DistanceToMove : C.winnt.LONGLONG;
-      NewFilePointer : out C.winnt.LONGLONG;
-      MoveMethod : C.windef.DWORD)
-   is
-      liDistanceToMove : C.winnt.LARGE_INTEGER;
-      liNewFilePointer : aliased C.winnt.LARGE_INTEGER;
-   begin
-      liDistanceToMove.QuadPart := DistanceToMove;
-      if C.winbase.SetFilePointerEx (
-         Handle,
-         liDistanceToMove,
-         liNewFilePointer'Access,
-         MoveMethod) = 0
-      then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      NewFilePointer := liNewFilePointer.QuadPart;
-   end SetFilePointerEx;
-
-   --  implementation of handle
-
-   function Is_Terminal (Handle : Handle_Type) return Boolean is
-      Mode : aliased C.windef.DWORD;
-   begin
-      return C.winbase.GetFileType (Handle) = C.winbase.FILE_TYPE_CHAR
-         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0;
-   end Is_Terminal;
-
-   function Is_Seekable (Handle : Handle_Type) return Boolean is
-   begin
-      return C.winbase.SetFilePointerEx (
-         Handle,
-         (Unchecked_Tag => 2, QuadPart => 0),
-         null,
-         C.winbase.FILE_CURRENT) /= 0;
-   end Is_Seekable;
-
    --  the parameter Form
 
    procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
@@ -170,6 +126,52 @@ package body Ada.Streams.Stream_IO.Inside is
          Last := New_Last;
       end if;
    end Unpack;
+
+   --  handle
+
+   procedure SetFilePointerEx (
+      Handle : C.winnt.HANDLE;
+      DistanceToMove : C.winnt.LONGLONG;
+      NewFilePointer : out C.winnt.LONGLONG;
+      MoveMethod : C.windef.DWORD);
+   procedure SetFilePointerEx (
+      Handle : C.winnt.HANDLE;
+      DistanceToMove : C.winnt.LONGLONG;
+      NewFilePointer : out C.winnt.LONGLONG;
+      MoveMethod : C.windef.DWORD)
+   is
+      liDistanceToMove : C.winnt.LARGE_INTEGER;
+      liNewFilePointer : aliased C.winnt.LARGE_INTEGER;
+   begin
+      liDistanceToMove.QuadPart := DistanceToMove;
+      if C.winbase.SetFilePointerEx (
+         Handle,
+         liDistanceToMove,
+         liNewFilePointer'Access,
+         MoveMethod) = 0
+      then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      NewFilePointer := liNewFilePointer.QuadPart;
+   end SetFilePointerEx;
+
+   --  implementation of handle
+
+   function Is_Terminal (Handle : Handle_Type) return Boolean is
+      Mode : aliased C.windef.DWORD;
+   begin
+      return C.winbase.GetFileType (Handle) = C.winbase.FILE_TYPE_CHAR
+         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0;
+   end Is_Terminal;
+
+   function Is_Seekable (Handle : Handle_Type) return Boolean is
+   begin
+      return C.winbase.SetFilePointerEx (
+         Handle,
+         (Unchecked_Tag => 2, QuadPart => 0),
+         null,
+         C.winbase.FILE_CURRENT) /= 0;
+   end Is_Seekable;
 
    --  implementation of handle for controlled
 
