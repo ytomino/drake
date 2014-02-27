@@ -490,8 +490,8 @@ endif
 
 c-archive: $(IMPORTDIR)/c.ads
 ifneq ($(DESTDIR),)
-	-rm $(DESTDIR)/import-$(TARGET).tar.bz2 2> /dev/null
-	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/import-$(TARGET).tar.bz2) c.ads c-*
+	-rm $(DESTDIR)/$(TARGET).tar.bz2 2> /dev/null
+	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/$(TARGET).tar.bz2) c.ads c-*
 else
 	@echo please tell DESTDIR=[DIRECTORY]
 endif

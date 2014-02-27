@@ -1,4 +1,3 @@
-/build
-/build-*
+/*.build
+/bin
 /import
-/import-*

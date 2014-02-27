@@ -3,5 +3,5 @@
 /acats_30
 /drake-result.txt
 /gnat-result.txt
-/support
-/test
+/support.build
+/test.build

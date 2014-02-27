@@ -1,0 +1,11 @@
+--- support.build/impdef.ads.orig	2014-03-04 00:46:04.000000000 +0900
++++ support.build/impdef.ads	2014-03-04 00:58:51.000000000 +0900
+@@ -202,7 +202,7 @@
+    function Cd30005_Proc (X : Integer) return Integer;
+    pragma Import (C, Cd30005_Proc, "_cd30005_1");
+  
+-   pragma Linker_Options ("../support/cd300051.o");
++   pragma Linker_Options ("../support.build/cd300051.o");
+  
+    CD30005_1_Foreign_Address : constant System.Address:= Cd30005_Proc'Address;
+  

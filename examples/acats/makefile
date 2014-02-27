@@ -4,11 +4,7 @@
 export HOST=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
-ifeq ($(TARGET),$(HOST))
-BUILDDIR_NAME=build
-else
-BUILDDIR_NAME=build-$(TARGET)
-endif
+BUILDDIR_NAME=$(TARGET).build
 BUILDDIR_REL=../$(BUILDDIR_NAME)
 
 SOURCES=$(wildcard ../../source/*.ad?) $(wildcard ../../source/*/*.ad?) $(wildcard ../../source/*/*/*.ad?)
@@ -17,8 +13,8 @@ SOURCES=$(wildcard ../../source/*.ad?) $(wildcard ../../source/*/*.ad?) $(wildca
 export RTSDIR=$(abspath $(BUILDDIR_REL))
 
 export ACATSDIR=acats_30
-export SUPPORTDIR=support
-export TESTDIR=test
+export SUPPORTDIR=support.build
+export TESTDIR=test.build
 
 MACROSUB=$(SUPPORTDIR)/macrosub
 RUN_ACATS=$(SUPPORTDIR)/run_acats
@@ -177,6 +173,7 @@ $(SUPPORTDIR)/fcndecl.ads: gcc_support/fcndecl.ada
 
 $(SUPPORTDIR)/impdef.adb: gcc_support/impdef.a $(SUPPORTDIR)/report.ads
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	patch -p0 < impdef.ads.patch
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
 $(SUPPORTDIR)/impdef-annex_c.adb: $(ACATSDIR)/support/impdefc.a

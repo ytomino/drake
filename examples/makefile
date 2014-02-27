@@ -22,15 +22,15 @@ endif
 ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*)
 
 ifeq ($(TARGET),$(HOST))
-TARGETSUFFIX=
+BINLN=bin
 else
-TARGETSUFFIX=-$(TARGET)
+BINLN=
 endif
 
-BUILDDIR=build$(TARGETSUFFIX)
+BUILDDIR=$(TARGET).build
 
-ifneq ($(wildcard import$(TARGETSUFFIX)),)
-IMPORTDIR=$(abspath import$(TARGETSUFFIX))
+ifneq ($(wildcard import/$(TARGET)),)
+IMPORTDIR=$(abspath import/$(TARGET))
 endif
 
 ifneq ($(IMPORTDIR),)
@@ -79,7 +79,10 @@ endif
 
 .PHONY: all clean
 
-all: $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
+all: $(BINLN) $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
+
+$(BINLN):
+	ln -s $(BUILDDIR) $(BINLN)
 
 $(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
 	make -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
@@ -92,4 +95,4 @@ $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT)
 
 clean:
-	-rm -rf build*
+	-rm -rf $(BINLN) *.build
