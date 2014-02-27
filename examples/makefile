@@ -49,6 +49,8 @@ else
 MFLAGS=-a
 endif
 
+CFLAGS=-gnatef
+
 ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS=-licucore
 endif
@@ -60,10 +62,10 @@ LFLAGS=-lm -lpthread -ldl
 endif
 
 ifneq ($(DEBUG),0)
-CFLAGS=-gnatf -gnatwIj -g -gnata
+CFLAGS+=-gnatf -gnatwIj -g -gnata
 BFLAGS=-E
 else
-CFLAGS=-gnatf -gnatwIj
+CFLAGS+=-gnatf -gnatwIj
 BFLAGS=
 ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS=-Wl,-dead_strip
@@ -90,7 +92,7 @@ $(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
 	-rm $(EXAMPLES) 2> /dev/null
 
 $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
-	cd $(BUILDDIR) && $(GNATMAKE) --RTS=. -D . $(MFLAGS) $(CFLAGS) -o ../$@ ../$< -bargs $(BFLAGS) -largs $(LFLAGS)
+	cd $(BUILDDIR) && $(GNATMAKE) --RTS=$(abspath $(BUILDDIR)) -D . $(MFLAGS) $(CFLAGS) -o ../$@ ../$< -bargs $(BFLAGS) -largs $(LFLAGS)
 
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT)
 
