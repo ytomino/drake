@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
+with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.Standard_Allocators;
@@ -267,11 +268,6 @@ package body Ada.Streams.Stream_IO.Inside is
       C.stdlib.free (C.void_ptr (char_ptr_Conv.To_Address (X.all)));
    end Finally;
 
-   package Non_Controlled_File_Type_Conv is
-      new System.Address_To_Named_Access_Conversions (
-         Stream_Type,
-         Non_Controlled_File_Type);
-
    function Allocate (
       Handle : Handle_Type;
       Mode : File_Mode;
@@ -307,15 +303,16 @@ package body Ada.Streams.Stream_IO.Inside is
             File => null));
    end Allocate;
 
-   procedure Free (File : Non_Controlled_File_Type);
-   procedure Free (File : Non_Controlled_File_Type) is
+   procedure Free (File : in out Non_Controlled_File_Type);
+   procedure Free (File : in out Non_Controlled_File_Type) is
+      procedure Raw_Free is
+         new Unchecked_Deallocation (Stream_Type, Non_Controlled_File_Type);
    begin
       if File.Buffer /= File.Buffer_Inline'Address then
          System.Standard_Allocators.Free (File.Buffer);
       end if;
-      System.Standard_Allocators.Free (char_ptr_Conv.To_Address (File.Name));
-      System.Standard_Allocators.Free (
-         Non_Controlled_File_Type_Conv.To_Address (File));
+      C.stdlib.free (C.void_ptr (char_ptr_Conv.To_Address (File.Name)));
+      Raw_Free (File);
    end Free;
 
    procedure Finally (X : not null access Non_Controlled_File_Type);
@@ -371,9 +368,12 @@ package body Ada.Streams.Stream_IO.Inside is
          --  environment variable TMPDIR
          Full_Name_Length := C.string.strlen (Temp_Dir);
          Full_Name := char_ptr_Conv.To_Pointer (
-            System.Standard_Allocators.Allocate (
-               System.Storage_Elements.Storage_Count (
+            System.Address (
+               C.stdlib.malloc (
                   Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
+         if Full_Name = null then
+            raise Storage_Error;
+         end if;
          declare
             Temp_Dir_A : C.char_array (C.size_t);
             for Temp_Dir_A'Address use char_ptr_Conv.To_Address (Temp_Dir);
@@ -442,10 +442,11 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       if Name (Name'First) = '/' then
          --  absolute path
-         Full_Name := char_ptr_Conv.To_Pointer (
-            System.Standard_Allocators.Allocate (
-               System.Storage_Elements.Storage_Count (Name_Length_For_Alloc)
-               + 1)); -- NUL
+         Full_Name := char_ptr_Conv.To_Pointer (System.Address (
+            C.stdlib.malloc (Name_Length_For_Alloc + 1))); -- NUL
+         if Full_Name = null then
+            raise Storage_Error;
+         end if;
          Full_Name_Length := 0;
       else
          --  current directory
@@ -1411,10 +1412,13 @@ package body Ada.Streams.Stream_IO.Inside is
       else
          Kind := External_No_Close;
       end if;
-      Full_Name := char_ptr_Conv.To_Pointer (
-         System.Standard_Allocators.Allocate (
+      Full_Name := char_ptr_Conv.To_Pointer (System.Address (
+         C.stdlib.malloc (
             Name'Length * System.Zero_Terminated_Strings.Expanding
-            + 2)); -- '*' & NUL
+            + 2))); -- '*' & NUL
+      if Full_Name = null then
+         raise Storage_Error;
+      end if;
       Full_Name_Length := Name'Length + 1;
       Name_Holder.Assign (Full_Name'Access);
       declare

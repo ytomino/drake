@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
+with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.Standard_Allocators;
@@ -257,11 +258,6 @@ package body Ada.Streams.Stream_IO.Inside is
       System.Standard_Allocators.Free (LPWSTR_Conv.To_Address (X.all));
    end Finally;
 
-   package Non_Controlled_File_Type_Conv is
-      new System.Address_To_Named_Access_Conversions (
-         Stream_Type,
-         Non_Controlled_File_Type);
-
    function Allocate (
       Handle : Handle_Type;
       Mode : File_Mode;
@@ -297,16 +293,17 @@ package body Ada.Streams.Stream_IO.Inside is
             File => null));
    end Allocate;
 
-   procedure Free (File : Non_Controlled_File_Type);
-   procedure Free (File : Non_Controlled_File_Type) is
+   procedure Free (File : in out Non_Controlled_File_Type);
+   procedure Free (File : in out Non_Controlled_File_Type) is
       use type System.Address;
+      procedure Raw_Free is
+         new Unchecked_Deallocation (Stream_Type, Non_Controlled_File_Type);
    begin
       if File.Buffer /= File.Buffer_Inline'Address then
          System.Standard_Allocators.Free (File.Buffer);
       end if;
       System.Standard_Allocators.Free (LPWSTR_Conv.To_Address (File.Name));
-      System.Standard_Allocators.Free (
-         Non_Controlled_File_Type_Conv.To_Address (File));
+      Raw_Free (File);
    end Free;
 
    procedure Finally (X : not null access Non_Controlled_File_Type);
