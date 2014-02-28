@@ -181,6 +181,21 @@ package body Ada.Streams.Stream_IO.Inside is
       NewFilePointer := liNewFilePointer.QuadPart;
    end SetFilePointerEx;
 
+   procedure GetFileSizeEx (
+      Handle : C.winnt.HANDLE;
+      FileSize : out C.winnt.LONGLONG);
+   procedure GetFileSizeEx (
+      Handle : C.winnt.HANDLE;
+      FileSize : out C.winnt.LONGLONG)
+   is
+      liFileSize : aliased C.winnt.LARGE_INTEGER;
+   begin
+      if C.winbase.GetFileSizeEx (Handle, liFileSize'Access) = 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      FileSize := liFileSize.QuadPart;
+   end GetFileSizeEx;
+
    --  implementation of handle
 
    function Is_Terminal (Handle : Handle_Type) return Boolean is
@@ -437,13 +452,13 @@ package body Ada.Streams.Stream_IO.Inside is
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
 
-   procedure Open_Normal (
+   procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type; -- held
       Mode : File_Mode;
       Name : not null C.winnt.LPWSTR;
       Form : Packed_Form);
-   procedure Open_Normal (
+   procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type;
       Mode : File_Mode;
@@ -516,7 +531,8 @@ package body Ada.Streams.Stream_IO.Inside is
             end;
       end case;
       if Shared /= IO_Modes.Allow then
-         if Form.Wait then -- use LockFileEx
+         if Form.Wait then
+            --  use LockFileEx
             ShareMode := C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
          else
             declare
@@ -580,7 +596,7 @@ package body Ada.Streams.Stream_IO.Inside is
             end if;
          end;
       end if;
-   end Open_Normal;
+   end Open_Ordinary;
 
    procedure Allocate_And_Open (
       Method : Open_Method;
@@ -608,7 +624,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Kind : Stream_Kind;
    begin
       if Name /= "" then
-         Kind := Normal;
+         Kind := Ordinary;
       else
          Kind := Temporary;
       end if;
@@ -618,9 +634,9 @@ package body Ada.Streams.Stream_IO.Inside is
       begin
          Handle_Holder.Assign (Handle'Access);
          Name_Holder.Assign (Full_Name'Access);
-         if Kind = Normal then
+         if Kind = Ordinary then
             Compose_File_Name (Name, Full_Name, Full_Name_Length);
-            Open_Normal (Method, Handle, Mode, Full_Name, Form);
+            Open_Ordinary (Method, Handle, Mode, Full_Name, Form);
          else
             Open_Temporary_File (Handle, Full_Name, Full_Name_Length);
          end if;
@@ -635,7 +651,7 @@ package body Ada.Streams.Stream_IO.Inside is
          File_Holder.Assign (New_File'Access);
          Name_Holder.Clear;
       end;
-      if Kind = Normal and then Mode = Append_File then
+      if Kind = Ordinary and then Mode = Append_File then
          Set_Index_To_Append (New_File); -- sets index to the last
       end if;
       File := New_File;
@@ -753,13 +769,11 @@ package body Ada.Streams.Stream_IO.Inside is
       Raise_On_Error : Boolean := True);
    procedure Flush_Writing_Buffer (
       File : not null Non_Controlled_File_Type;
-      Raise_On_Error : Boolean := True)
-   is
-      Error : Boolean;
+      Raise_On_Error : Boolean := True) is
    begin
-      Error := False;
       if File.Writing_Index > File.Buffer_Index then
          declare
+            Error : Boolean := False;
             Written : aliased C.windef.DWORD;
          begin
             if C.winbase.WriteFile (
@@ -782,12 +796,12 @@ package body Ada.Streams.Stream_IO.Inside is
                      Error := True;
                end case;
             end if;
+            if not Error then
+               File.Buffer_Index := File.Writing_Index rem File.Buffer_Length;
+               File.Writing_Index := File.Buffer_Index;
+               File.Reading_Index := File.Buffer_Index;
+            end if;
          end;
-         if not Error then
-            File.Buffer_Index := File.Writing_Index rem File.Buffer_Length;
-            File.Writing_Index := File.Buffer_Index;
-            File.Reading_Index := File.Buffer_Index;
-         end if;
       end if;
    end Flush_Writing_Buffer;
 
@@ -901,14 +915,14 @@ package body Ada.Streams.Stream_IO.Inside is
          To_Close : Boolean;
       begin
          case Kind is
-            when Normal | Temporary | External | External_No_Close =>
+            when Ordinary | Temporary | External | External_No_Close =>
                File_Holder.Assign (Freeing_File'Access);
             when Standard_Handle =>
                null; -- statically allocated
          end case;
          File.all := null;
          case Freeing_File.Kind is
-            when Normal | Temporary | External =>
+            when Ordinary | Temporary | External =>
                To_Close := True;
             when External_No_Close | Standard_Handle =>
                To_Close := False;
@@ -936,7 +950,7 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File.all);
       case File.all.Kind is
-         when Normal =>
+         when Ordinary =>
             declare
                Deleting_File_Name : C.winnt.WCHAR_array (
                   0 ..
@@ -979,7 +993,7 @@ package body Ada.Streams.Stream_IO.Inside is
          File2 : aliased Non_Controlled_File_Type := File.all;
       begin
          case File2.Kind is
-            when Normal =>
+            when Ordinary =>
                Handle := File2.Handle;
                Handle_Holder.Assign (Handle'Access);
                File_Holder.Assign (File2'Access);
@@ -990,7 +1004,7 @@ package body Ada.Streams.Stream_IO.Inside is
                File2.Buffer_Index := 0;
                File2.Reading_Index := File2.Buffer_Index;
                File2.Writing_Index := File2.Buffer_Index;
-               Open_Normal (
+               Open_Ordinary (
                   Method => Reset,
                   Handle => Handle,
                   Mode => Mode,
@@ -1066,15 +1080,13 @@ package body Ada.Streams.Stream_IO.Inside is
          return File.Reading_Index = File.Buffer_Index;
       else
          declare
-            Size : aliased C.winnt.LARGE_INTEGER;
+            Size : C.winnt.LONGLONG;
             Z_Index : C.winnt.LONGLONG;
          begin
-            if C.winbase.GetFileSizeEx (File.Handle, Size'Access) = 0 then
-               Raise_Exception (Use_Error'Identity);
-            end if;
+            GetFileSizeEx (File.Handle, Size);
             SetFilePointerEx (File.Handle, 0, Z_Index, C.winbase.FILE_CURRENT);
             Z_Index := Z_Index + C.winnt.LONGLONG (Offset_Of_Buffer (File));
-            return Z_Index >= Size.QuadPart;
+            return Z_Index >= Size;
             --  whether writing buffer will expand the file size or not
          end;
       end if;
@@ -1293,13 +1305,11 @@ package body Ada.Streams.Stream_IO.Inside is
    function Size (File : not null Non_Controlled_File_Type)
       return Stream_Element_Count
    is
-      Size : aliased C.winnt.LARGE_INTEGER;
+      Size : C.winnt.LONGLONG;
    begin
       Flush_Writing_Buffer (File);
-      if C.winbase.GetFileSizeEx (File.Handle, Size'Access) = 0 then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      return Count (Size.QuadPart);
+      GetFileSizeEx (File.Handle, Size);
+      return Count (Size);
    end Size;
 
    procedure Set_Mode (
@@ -1319,7 +1329,7 @@ package body Ada.Streams.Stream_IO.Inside is
          Current : Positive_Count;
       begin
          case File2.Kind is
-            when Normal =>
+            when Ordinary =>
                Handle := File2.Handle;
                Handle_Holder.Assign (Handle'Access);
                File_Holder.Assign (File2'Access);
@@ -1328,7 +1338,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Flush_Writing_Buffer (File2);
                Handle := C.winbase.INVALID_HANDLE_VALUE;
                CloseHandle (File2.Handle, Raise_On_Error => True);
-               Open_Normal (
+               Open_Ordinary (
                   Method => Reset,
                   Handle => Handle,
                   Mode => Mode,
@@ -1407,9 +1417,7 @@ package body Ada.Streams.Stream_IO.Inside is
          for Full_Name_A'Address use LPWSTR_Conv.To_Address (Full_Name);
       begin
          Full_Name_A (0) := C.winnt.WCHAR'Val (Wide_Character'Pos ('*'));
-         System.Zero_Terminated_WStrings.To_C (
-            Name,
-            Full_Name_A (1)'Access);
+         System.Zero_Terminated_WStrings.To_C (Name, Full_Name_A (1)'Access);
       end;
       File := Allocate (
          Handle => Handle,

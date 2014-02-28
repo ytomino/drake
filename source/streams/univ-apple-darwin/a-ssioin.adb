@@ -178,9 +178,9 @@ package body Ada.Streams.Stream_IO.Inside is
       whence : C.signed_int)
       return C.sys.types.off_t
    is
-      Result : constant C.sys.types.off_t :=
-         C.unistd.lseek (Handle, offset, whence);
+      Result : C.sys.types.off_t;
    begin
+      Result := C.unistd.lseek (Handle, offset, whence);
       if Result < 0 then
          Raise_Exception (Use_Error'Identity);
       end if;
@@ -344,10 +344,10 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Set_Index_To_Append (File : not null Non_Controlled_File_Type);
    procedure Set_Index_To_Append (File : not null Non_Controlled_File_Type) is
-      Z_Index : constant Stream_Element_Offset := Stream_Element_Offset (
-         lseek (File.Handle, 0, C.unistd.SEEK_END));
+      Z_Index : C.sys.types.off_t;
    begin
-      Set_Buffer_Index (File, Z_Index);
+      Z_Index := lseek (File.Handle, 0, C.unistd.SEEK_END);
+      Set_Buffer_Index (File, Stream_Element_Offset (Z_Index));
    end Set_Index_To_Append;
 
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
@@ -491,13 +491,13 @@ package body Ada.Streams.Stream_IO.Inside is
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
 
-   procedure Open_Normal (
+   procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type; -- held
       Mode : File_Mode;
       Name : not null C.char_ptr;
       Form : Packed_Form);
-   procedure Open_Normal (
+   procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type;
       Mode : File_Mode;
@@ -635,7 +635,7 @@ package body Ada.Streams.Stream_IO.Inside is
             end if;
          end if;
       end;
-   end Open_Normal;
+   end Open_Ordinary;
 
    procedure Allocate_And_Open (
       Method : Open_Method;
@@ -663,7 +663,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Kind : Stream_Kind;
    begin
       if Name /= "" then
-         Kind := Normal;
+         Kind := Ordinary;
       else
          Kind := Temporary;
       end if;
@@ -673,9 +673,9 @@ package body Ada.Streams.Stream_IO.Inside is
       begin
          Handle_Holder.Assign (Handle'Access);
          Name_Holder.Assign (Full_Name'Access);
-         if Kind = Normal then
+         if Kind = Ordinary then
             Compose_File_Name (Name, Full_Name, Full_Name_Length);
-            Open_Normal (Method, Handle, Mode, Full_Name, Form);
+            Open_Ordinary (Method, Handle, Mode, Full_Name, Form);
          else
             Open_Temporary_File (Handle, Full_Name, Full_Name_Length);
          end if;
@@ -690,7 +690,7 @@ package body Ada.Streams.Stream_IO.Inside is
          File_Holder.Assign (New_File'Access);
          Name_Holder.Clear;
       end;
-      if Kind = Normal and then Mode = Append_File then
+      if Kind = Ordinary and then Mode = Append_File then
          Set_Index_To_Append (New_File); -- sets index to the last
       end if;
       File := New_File;
@@ -725,6 +725,7 @@ package body Ada.Streams.Stream_IO.Inside is
                then
                   File.Buffer_Length := 0; -- no buffering for pipe and socket
                else
+                  --  disk file
                   File.Buffer_Length := Stream_Element_Offset'Max (
                      2, -- Buffer_Length /= 1
                      Stream_Element_Offset (Info.st_blksize));
@@ -802,33 +803,36 @@ package body Ada.Streams.Stream_IO.Inside is
       Raise_On_Error : Boolean := True);
    procedure Flush_Writing_Buffer (
       File : not null Non_Controlled_File_Type;
-      Raise_On_Error : Boolean := True)
-   is
-      Error : Boolean;
+      Raise_On_Error : Boolean := True) is
    begin
-      Error := False;
       if File.Writing_Index > File.Buffer_Index then
-         if C.unistd.write (
-            File.Handle,
-            C.void_const_ptr (File.Buffer
-               + System.Storage_Elements.Storage_Offset (File.Buffer_Index)),
-            C.size_t (File.Writing_Index - File.Buffer_Index)) < 0
-         then
-            case C.errno.errno is
-               when C.errno.EPIPE =>
-                  null;
-               when others =>
-                  if Raise_On_Error then
-                     Raise_Exception (Device_Error'Identity);
-                  end if;
-                  Error := True;
-            end case;
-         end if;
-         if not Error then
-            File.Buffer_Index := File.Writing_Index rem File.Buffer_Length;
-            File.Writing_Index := File.Buffer_Index;
-            File.Reading_Index := File.Buffer_Index;
-         end if;
+         declare
+            Error : Boolean := False;
+         begin
+            if C.unistd.write (
+               File.Handle,
+               C.void_const_ptr (
+                  File.Buffer
+                  + System.Storage_Elements.Storage_Offset (
+                     File.Buffer_Index)),
+               C.size_t (File.Writing_Index - File.Buffer_Index)) < 0
+            then
+               case C.errno.errno is
+                  when C.errno.EPIPE =>
+                     null;
+                  when others =>
+                     if Raise_On_Error then
+                        Raise_Exception (Device_Error'Identity);
+                     end if;
+                     Error := True;
+               end case;
+            end if;
+            if not Error then
+               File.Buffer_Index := File.Writing_Index rem File.Buffer_Length;
+               File.Writing_Index := File.Buffer_Index;
+               File.Reading_Index := File.Buffer_Index;
+            end if;
+         end;
       end if;
    end Flush_Writing_Buffer;
 
@@ -942,14 +946,14 @@ package body Ada.Streams.Stream_IO.Inside is
          To_Close : Boolean;
       begin
          case Kind is
-            when Normal | Temporary | External | External_No_Close =>
+            when Ordinary | Temporary | External | External_No_Close =>
                File_Holder.Assign (Freeing_File'Access);
             when Standard_Handle =>
                null; -- statically allocated
          end case;
          File.all := null;
          case Freeing_File.Kind is
-            when Normal | Temporary | External =>
+            when Ordinary | Temporary | External =>
                To_Close := True;
             when External_No_Close | Standard_Handle =>
                To_Close := False;
@@ -977,7 +981,7 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File.all);
       case File.all.Kind is
-         when Normal | Temporary =>
+         when Ordinary | Temporary =>
             File.all.Kind := Temporary;
             Close (File, Raise_On_Error => True);
          when External | External_No_Close | Standard_Handle =>
@@ -1001,7 +1005,7 @@ package body Ada.Streams.Stream_IO.Inside is
          File2 : aliased Non_Controlled_File_Type := File.all;
       begin
          case File2.Kind is
-            when Normal =>
+            when Ordinary =>
                Handle := File2.Handle;
                Handle_Holder.Assign (Handle'Access);
                File_Holder.Assign (File2'Access);
@@ -1012,7 +1016,7 @@ package body Ada.Streams.Stream_IO.Inside is
                File2.Buffer_Index := 0;
                File2.Reading_Index := File2.Buffer_Index;
                File2.Writing_Index := File2.Buffer_Index;
-               Open_Normal (
+               Open_Ordinary (
                   Method => Reset,
                   Handle => Handle,
                   Mode => Mode,
@@ -1090,10 +1094,10 @@ package body Ada.Streams.Stream_IO.Inside is
          return File.Reading_Index = File.Buffer_Index;
       else
          declare
-            Z_Index : constant C.sys.types.off_t :=
-               lseek (File.Handle, 0, C.unistd.SEEK_CUR)
-               + C.sys.types.off_t (Offset_Of_Buffer (File));
+            Z_Index : C.sys.types.off_t;
          begin
+            Z_Index :=  lseek (File.Handle, 0, C.unistd.SEEK_CUR)
+               + C.sys.types.off_t (Offset_Of_Buffer (File));
             return Z_Index >= Info.st_size;
             --  whether writing buffer will expand the file size or not
          end;
@@ -1257,8 +1261,7 @@ package body Ada.Streams.Stream_IO.Inside is
                         when C.errno.EPIPE =>
                            null;
                         when others =>
-                           Raise_Exception (
-                              Use_Error'Identity);
+                           Raise_Exception (Use_Error'Identity);
                      end case;
                   end if;
                   First := First + Taking_Length;
@@ -1298,9 +1301,9 @@ package body Ada.Streams.Stream_IO.Inside is
    function Index (File : not null Non_Controlled_File_Type)
       return Stream_Element_Positive_Count
    is
-      Result : constant C.sys.types.off_t :=
-         lseek (File.Handle, 0, C.unistd.SEEK_CUR);
+      Result : C.sys.types.off_t;
    begin
+      Result := lseek (File.Handle, 0, C.unistd.SEEK_CUR);
       return Stream_Element_Positive_Count (Result + 1)
          + Offset_Of_Buffer (File);
    end Index;
@@ -1332,7 +1335,7 @@ package body Ada.Streams.Stream_IO.Inside is
          Current : Positive_Count;
       begin
          case File2.Kind is
-            when Normal =>
+            when Ordinary =>
                Handle := File2.Handle;
                Handle_Holder.Assign (Handle'Access);
                File_Holder.Assign (File2'Access);
@@ -1341,7 +1344,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Flush_Writing_Buffer (File2);
                Handle := -1;
                close (File2, Raise_On_Error => True);
-               Open_Normal (
+               Open_Ordinary (
                   Method => Reset,
                   Handle => Handle,
                   Mode => Mode,
