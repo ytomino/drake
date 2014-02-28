@@ -147,15 +147,6 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end CloseHandle;
 
-   procedure Finally (X : not null access Handle_Type);
-   procedure Finally (X : not null access Handle_Type) is
-      use type C.winnt.HANDLE;
-   begin
-      if X.all /= C.winbase.INVALID_HANDLE_VALUE then
-         CloseHandle (X.all, Raise_On_Error => False);
-      end if;
-   end Finally;
-
    procedure SetFilePointerEx (
       Handle : C.winnt.HANDLE;
       DistanceToMove : C.winnt.LONGLONG;
@@ -306,10 +297,35 @@ package body Ada.Streams.Stream_IO.Inside is
       Raw_Free (File);
    end Free;
 
-   procedure Finally (X : not null access Non_Controlled_File_Type);
-   procedure Finally (X : not null access Non_Controlled_File_Type) is
+   type Scoped_Handle_And_File is record
+      Handle : aliased Handle_Type;
+      File : aliased Non_Controlled_File_Type;
+   end record;
+   pragma Suppress_Initialization (Scoped_Handle_And_File);
+
+   procedure Finally (X : not null access Scoped_Handle_And_File);
+   procedure Finally (X : not null access Scoped_Handle_And_File) is
+      use type C.winnt.HANDLE;
    begin
-      Free (X.all);
+      if X.Handle /= C.winbase.INVALID_HANDLE_VALUE then
+         CloseHandle (X.Handle, Raise_On_Error => False);
+      end if;
+      if X.File /= null then
+         Free (X.File);
+      end if;
+   end Finally;
+
+   type Scoped_Handle_And_File_And_Name is record
+      Super : aliased Scoped_Handle_And_File;
+      Name : aliased C.winnt.LPWSTR;
+   end record;
+   pragma Suppress_Initialization (Scoped_Handle_And_File_And_Name);
+
+   procedure Finally (X : not null access Scoped_Handle_And_File_And_Name);
+   procedure Finally (X : not null access Scoped_Handle_And_File_And_Name) is
+   begin
+      Finally (X.Super'Access);
+      Finally (X.Name'Access);
    end Finally;
 
    procedure Set_Buffer_Index (
@@ -608,53 +624,53 @@ package body Ada.Streams.Stream_IO.Inside is
       Name : String;
       Form : Packed_Form)
    is
-      package Handle_Holder is
-         new Exceptions.Finally.Scoped_Holder (Handle_Type, Finally);
-      package Name_Holder is
-         new Exceptions.Finally.Scoped_Holder (C.winnt.LPWSTR, Finally);
-      package File_Holder is
+      package Holder is
          new Exceptions.Finally.Scoped_Holder (
-            Non_Controlled_File_Type,
+            Scoped_Handle_And_File_And_Name,
             Finally);
-      Handle : aliased Handle_Type := C.winbase.INVALID_HANDLE_VALUE;
-      New_File : aliased Non_Controlled_File_Type;
+      Scoped : aliased Scoped_Handle_And_File_And_Name :=
+         ((C.winbase.INVALID_HANDLE_VALUE, null), null);
       Kind : Stream_Kind;
    begin
+      Holder.Assign (Scoped'Access);
       if Name /= "" then
          Kind := Ordinary;
       else
          Kind := Temporary;
       end if;
       declare
-         Full_Name : aliased C.winnt.LPWSTR;
          Full_Name_Length : C.size_t;
       begin
-         Handle_Holder.Assign (Handle'Access);
-         Name_Holder.Assign (Full_Name'Access);
          if Kind = Ordinary then
-            Compose_File_Name (Name, Full_Name, Full_Name_Length);
-            Open_Ordinary (Method, Handle, Mode, Full_Name, Form);
+            Compose_File_Name (Name, Scoped.Name, Full_Name_Length);
+            Open_Ordinary (
+               Method => Method,
+               Handle => Scoped.Super.Handle,
+               Mode => Mode,
+               Name => Scoped.Name,
+               Form => Form);
          else
-            Open_Temporary_File (Handle, Full_Name, Full_Name_Length);
+            Open_Temporary_File (
+               Handle => Scoped.Super.Handle,
+               Full_Name => Scoped.Name,
+               Full_Name_Length => Full_Name_Length);
          end if;
-         New_File := Allocate (
-            Handle => Handle,
+         Scoped.Super.File := Allocate (
+            Handle => Scoped.Super.Handle,
             Mode => Mode,
             Kind => Kind,
-            Name => Full_Name,
+            Name => Scoped.Name,
             Name_Length => Full_Name_Length,
             Form => Form);
-         --  New_File holds Full_Name
-         File_Holder.Assign (New_File'Access);
-         Name_Holder.Clear;
+         --  Scoped.Super.File holds Scoped.Name
+         Scoped.Name := null;
       end;
       if Kind = Ordinary and then Mode = Append_File then
-         Set_Index_To_Append (New_File); -- sets index to the last
+         Set_Index_To_Append (Scoped.Super.File); -- sets index to the last
       end if;
-      File := New_File;
+      File := Scoped.Super.File;
       --  complete
-      Handle_Holder.Clear;
-      File_Holder.Clear;
+      Holder.Clear;
    end Allocate_And_Open;
 
    procedure Check_File_Open (File : Non_Controlled_File_Type);
@@ -901,43 +917,38 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File.all);
       declare
-         package File_Holder is
+         use type C.winnt.HANDLE;
+         package Holder is
             new Exceptions.Finally.Scoped_Holder (
-               Non_Controlled_File_Type,
+               Scoped_Handle_And_File,
                Finally);
-         package Handle_Holder is
-            new Exceptions.Finally.Scoped_Holder (Handle_Type, Finally);
-         Freeing_File : aliased Non_Controlled_File_Type := File.all;
+         Scoped : aliased Scoped_Handle_And_File :=
+            (C.winbase.INVALID_HANDLE_VALUE, null);
+         Freeing_File : constant Non_Controlled_File_Type := File.all;
          Kind : constant Stream_Kind := File.all.Kind;
-         To_Close : Boolean;
       begin
+         Holder.Assign (Scoped'Access);
          case Kind is
             when Ordinary | Temporary | External | External_No_Close =>
-               File_Holder.Assign (Freeing_File'Access);
+               Scoped.File := Freeing_File;
             when Standard_Handle =>
                null; -- statically allocated
          end case;
          File.all := null;
          case Freeing_File.Kind is
             when Ordinary | Temporary | External =>
-               To_Close := True;
+               Scoped.Handle := Freeing_File.Handle;
             when External_No_Close | Standard_Handle =>
-               To_Close := False;
+               null;
          end case;
          if Freeing_File.Kind /= Temporary then
-            declare
-               Handle : aliased Handle_Type := Freeing_File.Handle;
-            begin
-               if To_Close then
-                  Handle_Holder.Assign (Handle'Access);
-               end if;
-               Flush_Writing_Buffer (
-                  Freeing_File,
-                  Raise_On_Error => Raise_On_Error);
-               Handle_Holder.Clear;
-            end;
+            Flush_Writing_Buffer (
+               Freeing_File,
+               Raise_On_Error => Raise_On_Error);
          end if;
-         if To_Close then
+         if Scoped.Handle /= C.winbase.INVALID_HANDLE_VALUE then
+            --  close explicitly in below
+            Scoped.Handle := C.winbase.INVALID_HANDLE_VALUE;
             CloseHandle (Freeing_File.Handle, Raise_On_Error => True);
          end if;
       end;
@@ -980,57 +991,54 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File.all);
       declare
-         package Handle_Holder is
-            new Exceptions.Finally.Scoped_Holder (Handle_Type, Finally);
-         package File_Holder is
+         package Holder is
             new Exceptions.Finally.Scoped_Holder (
-               Non_Controlled_File_Type,
+               Scoped_Handle_And_File,
                Finally);
-         Handle : aliased Handle_Type;
-         File2 : aliased Non_Controlled_File_Type := File.all;
+         Scoped : aliased Scoped_Handle_And_File :=
+            (C.winbase.INVALID_HANDLE_VALUE, null);
       begin
-         case File2.Kind is
+         Holder.Assign (Scoped'Access);
+         case File.all.Kind is
             when Ordinary =>
-               Handle := File2.Handle;
-               Handle_Holder.Assign (Handle'Access);
-               File_Holder.Assign (File2'Access);
+               Scoped.Handle := File.all.Handle;
+               Scoped.File := File.all;
                File.all := null;
-               Flush_Writing_Buffer (File2);
-               Handle := C.winbase.INVALID_HANDLE_VALUE;
-               CloseHandle (File2.Handle, Raise_On_Error => True);
-               File2.Buffer_Index := 0;
-               File2.Reading_Index := File2.Buffer_Index;
-               File2.Writing_Index := File2.Buffer_Index;
+               Flush_Writing_Buffer (Scoped.File);
+               --  close explicitly in below
+               Scoped.Handle := C.winbase.INVALID_HANDLE_VALUE;
+               CloseHandle (Scoped.File.Handle, Raise_On_Error => True);
+               Scoped.File.Buffer_Index := 0;
+               Scoped.File.Reading_Index := Scoped.File.Buffer_Index;
+               Scoped.File.Writing_Index := Scoped.File.Buffer_Index;
                Open_Ordinary (
                   Method => Reset,
-                  Handle => Handle,
+                  Handle => Scoped.Handle,
                   Mode => Mode,
-                  Name => File2.Name,
-                  Form => File2.Form);
-               File2.Handle := Handle;
-               File2.Mode := Mode;
+                  Name => Scoped.File.Name,
+                  Form => Scoped.File.Form);
+               Scoped.File.Handle := Scoped.Handle;
+               Scoped.File.Mode := Mode;
                if Mode = Append_File then
-                  Set_Index_To_Append (File2);
+                  Set_Index_To_Append (Scoped.File);
                end if;
             when Temporary =>
-               Handle := File2.Handle;
-               Handle_Holder.Assign (Handle'Access);
-               File_Holder.Assign (File2'Access);
+               Scoped.Handle := File.all.Handle;
+               Scoped.File := File.all;
                File.all := null;
-               File2.Mode := Mode;
+               Scoped.File.Mode := Mode;
                if Mode = Append_File then
-                  Flush_Writing_Buffer (File2);
-                  Set_Index_To_Append (File2);
+                  Flush_Writing_Buffer (Scoped.File);
+                  Set_Index_To_Append (Scoped.File);
                else
-                  Set_Index (File2, 1);
+                  Set_Index (Scoped.File, 1);
                end if;
             when External | External_No_Close | Standard_Handle =>
                Raise_Exception (Status_Error'Identity);
          end case;
-         File.all := File2;
+         File.all := Scoped.File;
          --  complete
-         Handle_Holder.Clear;
-         File_Holder.Clear;
+         Holder.Clear;
       end;
    end Reset;
 
@@ -1315,54 +1323,51 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File.all);
       declare
-         package Handle_Holder is
-            new Exceptions.Finally.Scoped_Holder (Handle_Type, Finally);
-         package File_Holder is
+         package Holder is
             new Exceptions.Finally.Scoped_Holder (
-               Non_Controlled_File_Type,
+               Scoped_Handle_And_File,
                Finally);
-         Handle : aliased Handle_Type;
-         File2 : aliased Non_Controlled_File_Type := File.all;
+         Scoped : aliased Scoped_Handle_And_File :=
+            (C.winbase.INVALID_HANDLE_VALUE, null);
          Current : Positive_Count;
       begin
-         case File2.Kind is
+         Holder.Assign (Scoped'Access);
+         case File.all.Kind is
             when Ordinary =>
-               Handle := File2.Handle;
-               Handle_Holder.Assign (Handle'Access);
-               File_Holder.Assign (File2'Access);
+               Scoped.Handle := File.all.Handle;
+               Scoped.File := File.all;
                File.all := null;
-               Current := Index (File2);
-               Flush_Writing_Buffer (File2);
-               Handle := C.winbase.INVALID_HANDLE_VALUE;
-               CloseHandle (File2.Handle, Raise_On_Error => True);
+               Current := Index (Scoped.File);
+               Flush_Writing_Buffer (Scoped.File);
+               --  close explicitly in below
+               Scoped.Handle := C.winbase.INVALID_HANDLE_VALUE;
+               CloseHandle (Scoped.File.Handle, Raise_On_Error => True);
                Open_Ordinary (
                   Method => Reset,
-                  Handle => Handle,
+                  Handle => Scoped.Handle,
                   Mode => Mode,
-                  Name => File2.Name,
-                  Form => File2.Form);
-               File2.Handle := Handle;
-               File2.Mode := Mode;
+                  Name => Scoped.File.Name,
+                  Form => Scoped.File.Form);
+               Scoped.File.Handle := Scoped.Handle;
+               Scoped.File.Mode := Mode;
             when Temporary =>
-               Handle := File2.Handle;
-               Handle_Holder.Assign (Handle'Access);
-               File_Holder.Assign (File2'Access);
+               Scoped.Handle := File.all.Handle;
+               Scoped.File := File.all;
                File.all := null;
-               Current := Index (File2);
-               Flush_Writing_Buffer (File2);
-               File2.Mode := Mode;
+               Current := Index (Scoped.File);
+               Flush_Writing_Buffer (Scoped.File);
+               Scoped.File.Mode := Mode;
             when External | External_No_Close | Standard_Handle =>
                Raise_Exception (Status_Error'Identity);
          end case;
          if Mode = Append_File then
-            Set_Index_To_Append (File2);
+            Set_Index_To_Append (Scoped.File);
          else
-            Set_Index (File2, Current);
+            Set_Index (Scoped.File, Current);
          end if;
-         File.all := File2;
+         File.all := Scoped.File;
          --  complete
-         Handle_Holder.Clear;
-         File_Holder.Clear;
+         Holder.Clear;
       end;
    end Set_Mode;
 
