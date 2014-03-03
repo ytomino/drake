@@ -120,17 +120,6 @@ procedure run_acats is
 	
 	-- test info
 	
-	type Ada_Spec is (Ada_95, Ada_2005);
-	
-	function Ada_Spec_Of_Test (Name : String) return Ada_Spec is
-	begin
-		if Ada.Strings.Equal_Case_Insensitive (Name, "c34008a") then
-			return Ada_95;
-		else
-			return Ada_2005;
-		end if;
-	end Ada_Spec_Of_Test;
-	
 	function Is_Only_Pragmas (Name : String) return Boolean is
 	begin
 		return Ada.Strings.Equal_Case_Insensitive (Name, "cxh30030.a")
@@ -228,12 +217,8 @@ procedure run_acats is
 	
 	function Expected_Result (Name : String) return Test_Result is
 	begin
-		if (Is_Error_Class (Name) and then not Is_No_Error (Name))
-			or else Ada.Strings.Equal_Case_Insensitive (Name, "cxb3006") -- ACATS is older than Ada2005 spec
-		then
+		if Is_Error_Class (Name) and then not Is_No_Error (Name) then
 			return Compile_Error;
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ca11023") then -- bug of ACATS
-			return Failed;
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "cz1101a")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "cz1103a")
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "e28002b")
@@ -362,7 +347,6 @@ procedure run_acats is
 	
 	procedure Compile (
 		Name : in String;
-		Spec : in Ada_Spec;
 		Stack_Check : in Boolean := False;
 		Overflow_Check : in Boolean := False;
 		Dynamic_Elaboration : in Boolean := False;
@@ -379,12 +363,7 @@ procedure run_acats is
 			Ada.Strings.Unbounded.Append (Command, " -I../"); -- relative path from Test_Dir
 			Ada.Strings.Unbounded.Append (Command, Support_Dir);
 		end if;
-		case Spec is
-			when Ada_95 =>
-				Ada.Strings.Unbounded.Append (Command, " -gnat95");
-			when Ada_2005 =>
-				Ada.Strings.Unbounded.Append (Command, " -gnat05");
-		end case;
+		Ada.Strings.Unbounded.Append (Command, " -gnat05"); -- default version
 		if Stack_Check then
 			Ada.Strings.Unbounded.Append (Command, " -fstack-check");
 		end if;
@@ -629,7 +608,6 @@ procedure run_acats is
 		Style : in Test_Style)
 	is
 		In_Error_Class : constant Boolean := Is_Error_Class (Name);
-		Spec : constant Ada_Spec := Ada_Spec_Of_Test (Name);
 		Main : Ada.Strings.Unbounded.Unbounded_String;
 		Link_With : Ada.Strings.Unbounded.Unbounded_String;
 		UTF_8 : Boolean := False;
@@ -790,7 +768,6 @@ procedure run_acats is
 					Ada.Text_IO.Close (File);
 					begin
 						Compile ("main.adb",
-							Spec => Spec,
 							UTF_8 => UTF_8,
 							RTS => RTS_Dir,
 							Save_Log => True,
@@ -834,7 +811,6 @@ procedure run_acats is
 				end if;
 				Compile (
 					+Main,
-					Spec => Spec,
 					Stack_Check => Stack_Check (Name),
 					Overflow_Check => Overflow_Check (Name),
 					Dynamic_Elaboration => Dynamic_Elaboration (Name),

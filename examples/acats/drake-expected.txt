@@ -3,7 +3,7 @@ a97106a C unimplemented tasking features (select)
 ac3207a C unimplemented tasking features (select)
 c250002 C on GNAT, it can not use non-ASCII source filename
 c34007j C unimplemented tasking features (select)
-c34008a C it requires Ada95 mode
+c34008a C unimplemented tasking features (select)
 c352001 F unicode ('Image of 16#80#..16#ff#)
 c380004 C unimplemented tasking features (select)
 c3a1002 C unimplemented tasking features (select)
@@ -11,6 +11,7 @@ c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows
 c59002c C unimplemented tasking features (select)
+c650002 C unimplemented tasking features (select)
 c74401k C unimplemented tasking features (select)
 c761007 C unimplemented tasking features (select)
 c85005a C unimplemented tasking features
@@ -28,7 +29,7 @@ c85014b C unimplemented tasking features (select)
 c85018a C unimplemented tasking features
 c85018b C unimplemented tasking features
 c91004b U unexpected deadlock
-c91004c U unexpected deadlock
+c91004c U deadlock, unimplemented tasking features (select)
 c92003a C unimplemented tasking features
 c930001 C unimplemented tasking features
 c93005a C unimplemented tasking features
@@ -171,6 +172,7 @@ c974014 A unimplemented tasking features (select)
 c980001 F unimplemented tasking features (select)
 c980002 F unimplemented tasking features (select)
 c980003 A unimplemented tasking features (select)
+C990001 A Segmentation fault
 c99005a C unimplemented tasking features
 c9a009a C unimplemented tasking features
 c9a009f C unimplemented tasking features
@@ -262,9 +264,10 @@ cxc3001 F Ada.Interrupts failed
 cxc3003 F Ada.Interrupts failed
 cxc3006 A Ada.Interrupts failed
 cxc3008 F Ada.Interrupts failed
-cxc6003 C unimplemented tasking features (protected.entry'Count)
+cxc6003 F unimplemented tasking features (requeue)
 cxc7001 C unimplemented tasking features (task.entry'Caller)
 cxc7004 C unimplemented tasking features
+cxc7006 C unimplemented tasking features (Ada.Task_Termination)
 cxd1001 C unimplemented tasking features
 cxd1002 C unimplemented tasking features
 cxd1003 F unimplemented tasking features (priority)
