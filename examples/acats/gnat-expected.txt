@@ -1,5 +1,4 @@
 c250002 C on GNAT, it can not use non-ASCII source filename
-c41306a U dead lock, rendezvous before return
 c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows
@@ -33,17 +32,11 @@ ce3102k N Out_File is supported in Text_IO
 ce3115a N multiple internal files are supported in Text_IO
 ce3304a N -1 not in Text_IO.Count
 ce3413b N Text_IO.Count'Last is too large for test
+cxaa020 F failed to layout with Ada.Text_IO.Enumeration_IO
 cxb4009 C it requites COBOL compiler
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
-cxc3001 F Annex C is not supported
-cxc3003 A Annex C is not supported
-cxc3004 A Annex C is not supported
-cxc3006 A Annex C is not supported
-cxc3007 F Annex C is not supported
-cxc3008 F Annex C is not supported
-cxc3009 A Annex C is not supported
-cxc6003 C cannot pack atomic components
+cxc7006 F failed to select the fallback handler with Ada.Task_Termination
 cxd1003 F failed to rendezvous
 cxd1004 F failed to rendezvous
 cxd1005 F failed to rendezvous
@@ -57,7 +50,6 @@ cxd3001 F pragma Locking_Policy is not working
 cxd3002 F pragma Locking_Policy is not working
 cxd6001 F failed to abort
 cxd6002 F failed to abort
-cxda004 A Annex C is not supported
 cxdb001 C Asynchronous_Task_Control is not supported
 cxdb002 C Asynchronous_Task_Control is not supported
 cxdb003 C Asynchronous_Task_Control is not supported
@@ -65,9 +57,6 @@ cxdb004 C Asynchronous_Task_Control is not supported
 cxe1001 U GLADE required for Annex E (RPC)
 cxe2001 U GLADE required for Annex E (RPC)
 cxe2002 U GLADE required for Annex E (RPC)
-cxe2003 U GLADE required for Annex E (RPC)
-cxe2004 U GLADE required for Annex E (RPC)
-cxe2005 U GLADE required for Annex E (RPC)
 cxe4001 U GLADE required for Annex E (RPC)
 cxe4002 U GLADE required for Annex E (RPC)
 cxe4003 U GLADE required for Annex E (RPC)
