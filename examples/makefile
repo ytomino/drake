@@ -22,15 +22,15 @@ endif
 ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*)
 
 ifeq ($(TARGET),$(HOST))
-TARGETSUFFIX=
+BINLN=bin
 else
-TARGETSUFFIX=-$(TARGET)
+BINLN=
 endif
 
-BUILDDIR=build$(TARGETSUFFIX)
+BUILDDIR=$(TARGET).build
 
-ifneq ($(wildcard import$(TARGETSUFFIX)),)
-IMPORTDIR=$(abspath import$(TARGETSUFFIX))
+ifneq ($(wildcard import/$(TARGET)),)
+IMPORTDIR=$(abspath import/$(TARGET))
 endif
 
 ifneq ($(IMPORTDIR),)
@@ -49,6 +49,8 @@ else
 MFLAGS=-a
 endif
 
+CFLAGS=-gnatef
+
 ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS=-licucore
 endif
@@ -60,10 +62,10 @@ LFLAGS=-lm -lpthread -ldl
 endif
 
 ifneq ($(DEBUG),0)
-CFLAGS=-gnatf -gnatwIj -g -gnata
+CFLAGS+=-gnatf -gnatwIj -g -gnata
 BFLAGS=-E
 else
-CFLAGS=-gnatf -gnatwIj
+CFLAGS+=-gnatf -gnatwIj
 BFLAGS=
 ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS=-Wl,-dead_strip
@@ -79,7 +81,10 @@ endif
 
 .PHONY: all clean
 
-all: $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
+all: $(BINLN) $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
+
+$(BINLN):
+	ln -s $(BUILDDIR) $(BINLN)
 
 $(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
 	make -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
@@ -87,9 +92,9 @@ $(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
 	-rm $(EXAMPLES) 2> /dev/null
 
 $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
-	cd $(BUILDDIR) && $(GNATMAKE) --RTS=. -D . $(MFLAGS) $(CFLAGS) -o ../$@ ../$< -bargs $(BFLAGS) -largs $(LFLAGS)
+	cd $(BUILDDIR) && $(GNATMAKE) --RTS=$(abspath $(BUILDDIR)) -D . $(MFLAGS) $(CFLAGS) -o ../$@ ../$< -bargs $(BFLAGS) -largs $(LFLAGS)
 
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT)
 
 clean:
-	-rm -rf build*
+	-rm -rf $(BINLN) *.build

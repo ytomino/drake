@@ -1,5 +1,5 @@
---- support/report.adb.orig	2012-01-24 18:46:10.000000000 +0900
-+++ support/report.adb	2012-01-24 18:47:58.000000000 +0900
+--- support.build/report.adb.orig	2012-01-24 18:46:10.000000000 +0900
++++ support.build/report.adb	2012-01-24 18:47:58.000000000 +0900
 @@ -61,6 +61,7 @@
  --      RLB  3/06/07  UPDATED ACATS VERSION STRING TO "2.6".
  --      RLB  3/22/07  UPDATED ACATS VERSION STRING TO "3.0".

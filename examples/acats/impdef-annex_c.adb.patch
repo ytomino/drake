@@ -1,5 +1,5 @@
---- support/impdef-annex_c.adb.orig	2013-04-06 09:14:25.000000000 +0900
-+++ support/impdef-annex_c.adb	2013-04-06 09:15:31.000000000 +0900
+--- support.build/impdef-annex_c.adb.orig	2013-04-06 09:14:25.000000000 +0900
++++ support.build/impdef-annex_c.adb	2013-04-06 09:15:31.000000000 +0900
 @@ -42,8 +42,10 @@
     -- possibility.
  

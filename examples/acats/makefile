@@ -4,11 +4,7 @@
 export HOST=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
-ifeq ($(TARGET),$(HOST))
-BUILDDIR_NAME=build
-else
-BUILDDIR_NAME=build-$(TARGET)
-endif
+BUILDDIR_NAME=$(TARGET).build
 BUILDDIR_REL=../$(BUILDDIR_NAME)
 
 SOURCES=$(wildcard ../../source/*.ad?) $(wildcard ../../source/*/*.ad?) $(wildcard ../../source/*/*/*.ad?)
@@ -16,9 +12,11 @@ SOURCES=$(wildcard ../../source/*.ad?) $(wildcard ../../source/*/*.ad?) $(wildca
 # if RTSDIR is empty, test with GNAT runtime
 export RTSDIR=$(abspath $(BUILDDIR_REL))
 
-export ACATSDIR=acats_30
-export SUPPORTDIR=support
-export TESTDIR=test
+ACATSARCHIVE=acats_31.tar.Z
+
+export ACATSDIR=acats_31
+export SUPPORTDIR=support.build
+export TESTDIR=test.build
 
 MACROSUB=$(SUPPORTDIR)/macrosub
 RUN_ACATS=$(SUPPORTDIR)/run_acats
@@ -37,10 +35,12 @@ SUPPORT_SOURCES=\
 	$(SUPPORTDIR)/f393a00_0.ads \
 	$(SUPPORTDIR)/f393b00.ads \
 	$(SUPPORTDIR)/f394a00.ads \
+	$(SUPPORTDIR)/f3a1a00.ads \
 	$(SUPPORTDIR)/f3a2a00.ads \
 	$(SUPPORTDIR)/f431a00.ads \
 	$(SUPPORTDIR)/f433a00.ads \
 	$(SUPPORTDIR)/f460a00.ads \
+	$(SUPPORTDIR)/f650a00.ads \
 	$(SUPPORTDIR)/f730a000.ads \
 	$(SUPPORTDIR)/f730a001.ads \
 	$(SUPPORTDIR)/f731a00.ads \
@@ -126,17 +126,20 @@ $(MACROSUB): $(SUPPORTDIR)/macrosub.adb
 $(RUN_ACATS): run_acats.adb
 	gnatmake -o $@ -D $(SUPPORTDIR) $(MARGS) $(CARGS) $< $(BARGS)
 
-$(ACATSDIR): acats_30.tar.Z
+$(ACATSDIR): $(ACATSARCHIVE)
 	mkdir $(ACATSDIR)
 	cd $(ACATSDIR) && tar -zxf ../$<
 
-acats_30.tar.Z:
-	wget http://www.ada-auth.org/acats-files/3.0/acats_30.tar.Z
+$(ACATSARCHIVE):
+	wget http://www.ada-auth.org/acats-files/3.1/$(ACATSARCHIVE)
 
 $(SUPPORTDIR)/b730006_0-child1.adb: b730006_0-child1.adb
 	ln -s ../$< $@
 
 $(SUPPORTDIR)/%.ads: $(ACATSDIR)/support/%.a
+	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+
+$(SUPPORTDIR)/f340a000.ads: $(ACATSDIR)/support/f340a000.a
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/f341a00_0.ads: $(ACATSDIR)/support/f341a00.a
@@ -177,6 +180,7 @@ $(SUPPORTDIR)/fcndecl.ads: gcc_support/fcndecl.ada
 
 $(SUPPORTDIR)/impdef.adb: gcc_support/impdef.a $(SUPPORTDIR)/report.ads
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	patch -p0 < impdef.ads.patch
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
 $(SUPPORTDIR)/impdef-annex_c.adb: $(ACATSDIR)/support/impdefc.a

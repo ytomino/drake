@@ -1,5 +1,5 @@
---- support/impdef-annex_c.ads.orig	2013-03-07 02:58:47.000000000 +0900
-+++ support/impdef-annex_c.ads	2013-03-07 02:59:52.000000000 +0900
+--- support.build/impdef-annex_c.ads.orig	2013-03-07 02:58:47.000000000 +0900
++++ support.build/impdef-annex_c.ads	2013-03-07 02:59:52.000000000 +0900
 @@ -52,7 +52,7 @@
     -- (as specified by the constant Wait_For_Interrupt) during testing.
  

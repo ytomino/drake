@@ -66,7 +66,7 @@ Short example
 2. Build drake. ::
    
     $ make -C ~/Downloads/drake/source \ # drake source path
-      IMPORTDIR=~/Downloads/import-i686-apple-darwin9 \ # translated headers path
+      IMPORTDIR=~/Downloads/i686-apple-darwin9 \ # translated headers path
       RTSDIR=$PWD/rts-drake # destination path
 
 3. Build the sample application. ::

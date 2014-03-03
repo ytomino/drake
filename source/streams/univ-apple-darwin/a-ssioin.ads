@@ -143,7 +143,7 @@ package Ada.Streams.Stream_IO.Inside is
 private
 
    type Stream_Kind is (
-      Normal,
+      Ordinary,
       Temporary,
       External,
       External_No_Close,
