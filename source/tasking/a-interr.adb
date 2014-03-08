@@ -34,7 +34,9 @@ package body Ada.Interrupts is
       New_Handler : Parameterless_Handler;
       Interrupt : Interrupt_Id) is
    begin
-      if Is_Reserved (Interrupt)
+      Old_Handler := Current_Handler (Interrupt);
+      if (Old_Handler /= null
+         and then System.Interrupt_Handlers.Is_Static_Handler (Old_Handler))
          or else (
             New_Handler /= null
             and then System.Interrupt_Handlers.Is_Static_Handler (New_Handler))

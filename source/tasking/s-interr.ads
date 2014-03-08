@@ -7,16 +7,16 @@ with System.Tasking.Protected_Objects.Entries;
 package System.Interrupts is
    pragma Elaborate_Body;
 
---  type Previous_Handler_Item is record
---    Interrupt : Ada.Interrupts.Interrupt_Id;
---    Handler : Ada.Interrupts.Parameterless_Handler;
+   type Previous_Handler_Item is record
+      Interrupt : Ada.Interrupts.Interrupt_Id;
+      Handler : Ada.Interrupts.Parameterless_Handler;
 --    Static : Boolean;
---  end record;
---  pragma Suppress_Initialization (Previous_Handler_Item);
+   end record;
+   pragma Suppress_Initialization (Previous_Handler_Item);
 
---  type Previous_Handler_Array is
---    array (Positive range <>) of Previous_Handler_Item;
---  pragma Suppress_Initialization (Previous_Handler_Array);
+   type Previous_Handler_Array is
+      array (Positive range <>) of Previous_Handler_Item;
+   pragma Suppress_Initialization (Previous_Handler_Array);
 
    type New_Handler_Item is record
       Interrupt : Ada.Interrupts.Interrupt_Id;
@@ -39,11 +39,7 @@ package System.Interrupts is
    type Static_Interrupt_Protection (
       Num_Entries : Tasking.Protected_Objects.Protected_Entry_Index;
       Num_Attach_Handler : Natural) is
-      new Tasking.Protected_Objects.Entries.Protection_Entries (
-         Num_Entries) with null record;
---  record
---    Previous_Handlers : Previous_Handler_Array (1 .. Num_Attach_Handler);
---  end record;
+      new Tasking.Protected_Objects.Entries.Protection_Entries with private;
 
    procedure Register_Interrupt_Handler (Handler_Addr : Address)
       renames Interrupt_Handlers.Register_Interrupt_Handler;
@@ -59,5 +55,19 @@ package System.Interrupts is
    --  unimplemented subprograms required by compiler
    --  Bind_Interrupt_To_Entry
    --  Install_Restricted_Handlers
+
+private
+
+   type Static_Interrupt_Protection (
+      Num_Entries : Tasking.Protected_Objects.Protected_Entry_Index;
+      Num_Attach_Handler : Natural) is
+      new Tasking.Protected_Objects.Entries.Protection_Entries (
+         Num_Entries) with
+    record
+       Previous_Handlers : Previous_Handler_Array (1 .. Num_Attach_Handler);
+    end record;
+
+   overriding procedure Finalize (
+      Object : in out Static_Interrupt_Protection);
 
 end System.Interrupts;

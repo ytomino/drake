@@ -10,6 +10,11 @@ package System.Interrupt_Handlers is
    procedure Register_Interrupt_Handler (
       Handler : Ada.Interrupts.Parameterless_Handler);
 
+   procedure Set_Static_Handler (
+      Code_Address : Address);
+   procedure Set_Static_Handler (
+      Handler : Ada.Interrupts.Parameterless_Handler);
+
    function Is_Static_Handler (
       Code_Address : Address)
       return Boolean;
