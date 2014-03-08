@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Darwin (or Linux)
 package Ada.Calendar.Inside.Time_Zones is
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset;
