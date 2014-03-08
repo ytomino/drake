@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 with Ada.Directories.Volumes;
-package Ada.Directories.Inside.File_Names is
+private package Ada.Directories.File_Names is
 
    --  compare file names with normalization and case-insensitive, if HFS+
    function Equal_File_Names (
@@ -13,4 +13,4 @@ package Ada.Directories.Inside.File_Names is
       Left, Right : String)
       return Boolean;
 
-end Ada.Directories.Inside.File_Names;
+end Ada.Directories.File_Names;

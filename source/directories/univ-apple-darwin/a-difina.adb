@@ -12,7 +12,7 @@ with System.Storage_Elements;
 with System.UTF_Conversions;
 with C.hfs_casetables;
 with C.vfs_utfconvdata;
-package body Ada.Directories.Inside.File_Names is
+package body Ada.Directories.File_Names is
    use type System.Formatting.Digit;
    use type System.Storage_Elements.Integer_Address;
    use type System.Storage_Elements.Storage_Offset;
@@ -528,4 +528,4 @@ package body Ada.Directories.Inside.File_Names is
       end if;
    end Less_File_Names;
 
-end Ada.Directories.Inside.File_Names;
+end Ada.Directories.File_Names;

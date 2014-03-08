@@ -2,7 +2,7 @@ with System.Zero_Terminated_WStrings;
 with C.string;
 with C.winnls;
 with C.winnt;
-package body Ada.Directories.Inside.File_Names is
+package body Ada.Directories.File_Names is
    use type C.size_t;
 
    --  see http://blogs.msdn.com/b/michkap/archive/2005/10/17/481600.aspx
@@ -87,4 +87,4 @@ package body Ada.Directories.Inside.File_Names is
       end if;
    end Less_File_Names;
 
-end Ada.Directories.Inside.File_Names;
+end Ada.Directories.File_Names;

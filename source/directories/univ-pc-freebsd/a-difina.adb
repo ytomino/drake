@@ -1,4 +1,4 @@
-package body Ada.Directories.Inside.File_Names is
+package body Ada.Directories.File_Names is
 
    --  implementation
 
@@ -22,4 +22,4 @@ package body Ada.Directories.Inside.File_Names is
       return Left < Right;
    end Less_File_Names;
 
-end Ada.Directories.Inside.File_Names;
+end Ada.Directories.File_Names;
