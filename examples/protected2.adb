@@ -5,7 +5,7 @@ procedure protected2 is
 	pragma Atomic (Break);
 	protected Handlers is
 		procedure Handle_Break;
---		pragma Attach_Handler (Handle_Break, Ada.Interrupts.Names.SIGINT);
+--		pragma Interrupt_Handler (Handle_Break);
 	end Handlers;
 	protected body Handlers is
 		procedure Handle_Break is
@@ -15,7 +15,7 @@ procedure protected2 is
 		end Handle_Break;
 	end Handlers;
 begin
-	Ada.Interrupts.Attach_Handler (Handlers.Handle_Break'Unrestricted_Access, Ada.Interrupts.Names.SIGINT);
+	Ada.Interrupts.Unchecked_Attach_Handler (Handlers.Handle_Break'Unrestricted_Access, Ada.Interrupts.Names.SIGINT);
 	Put_Line ("press ^C");
 	for I in 1 .. 10 loop
 		delay 1.0;

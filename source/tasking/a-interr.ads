@@ -14,7 +14,6 @@ package Ada.Interrupts is
 
    function Current_Handler (Interrupt : Interrupt_Id)
       return Parameterless_Handler;
-   pragma Inline (Current_Handler); -- renamed
 
    procedure Attach_Handler (
       New_Handler : Parameterless_Handler;
@@ -25,10 +24,24 @@ package Ada.Interrupts is
       Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
       Interrupt : Interrupt_Id);
-   pragma Inline (Exchange_Handler); -- renamed
 
    procedure Detach_Handler (Interrupt : Interrupt_Id);
    pragma Inline (Detach_Handler);
+
+   --  extended
+   --  Unchecked version of Attach_Handler.
+   procedure Unchecked_Attach_Handler (
+      New_Handler : Parameterless_Handler;
+      Interrupt : Interrupt_Id);
+   pragma Inline (Unchecked_Attach_Handler);
+
+   --  extended
+   --  Unchecked version of Exchange_Handler.
+   procedure Unchecked_Exchange_Handler (
+      Old_Handler : out Parameterless_Handler;
+      New_Handler : Parameterless_Handler;
+      Interrupt : Interrupt_Id);
+   pragma Inline (Unchecked_Exchange_Handler); -- renamed
 
 --  function Reference (Interrupt : Interrupt_Id) return System.Address;
 

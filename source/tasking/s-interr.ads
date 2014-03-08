@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
 with Ada.Interrupts;
+with System.Interrupt_Handlers;
 with System.Tasking.Protected_Objects;
 with System.Tasking.Protected_Objects.Entries;
 package System.Interrupts is
@@ -44,8 +45,8 @@ package System.Interrupts is
 --    Previous_Handlers : Previous_Handler_Array (1 .. Num_Attach_Handler);
 --  end record;
 
-   procedure Register_Interrupt_Handler (Handler_Addr : Address) is
-      null;
+   procedure Register_Interrupt_Handler (Handler_Addr : Address)
+      renames Interrupt_Handlers.Register_Interrupt_Handler;
 
    procedure Install_Handlers (
       Object : not null access Static_Interrupt_Protection;
