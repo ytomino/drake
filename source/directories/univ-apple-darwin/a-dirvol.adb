@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Permissions.Inside;
+with System.Native_Credentials;
 with System.Zero_Terminated_Strings;
 with C.stdint;
 package body Ada.Directories.Volumes is
@@ -34,7 +34,7 @@ package body Ada.Directories.Volumes is
 
    function Owner (FS : File_System) return String is
    begin
-      return Permissions.Inside.User_Name (FS.f_owner);
+      return System.Native_Credentials.User_Name (FS.f_owner);
    end Owner;
 
    function Format_Name (FS : File_System) return String is

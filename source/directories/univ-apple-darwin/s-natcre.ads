@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  implementation unit
 with C.sys.types;
 with C.unistd;
-package Ada.Permissions.Inside is
+package System.Native_Credentials is
    pragma Preelaborate;
 
    subtype User_Id is C.sys.types.uid_t;
@@ -14,4 +14,4 @@ package Ada.Permissions.Inside is
    function User_Name (Id : User_Id := Current_User) return String;
    function Group_Name (Id : Group_Id := Current_User) return String;
 
-end Ada.Permissions.Inside;
+end System.Native_Credentials;
