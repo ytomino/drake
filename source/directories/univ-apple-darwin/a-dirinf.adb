@@ -1,9 +1,9 @@
 with Ada.Exceptions.Finally;
 with Ada.Directories.Inside;
 with Ada.Exception_Identification.From_Here;
-with Ada.Permissions.Inside;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
+with System.Native_Credentials;
 with System.Native_Time;
 with System.Standard_Allocators;
 with System.Storage_Elements;
@@ -58,13 +58,13 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
-      return Permissions.Inside.Group_Name (Information.st_gid);
+      return System.Native_Credentials.Group_Name (Information.st_gid);
    end Group;
 
    function Group (Directory_Entry : Directory_Entry_Type) return String is
    begin
       Fill (Directory_Entry'Unrestricted_Access);
-      return Permissions.Inside.Group_Name (
+      return System.Native_Credentials.Group_Name (
          Directory_Entry.Additional.Information.st_gid);
    end Group;
 
@@ -190,13 +190,13 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information'Access);
-      return Permissions.Inside.User_Name (Information.st_uid);
+      return System.Native_Credentials.User_Name (Information.st_uid);
    end Owner;
 
    function Owner (Directory_Entry : Directory_Entry_Type) return String is
    begin
       Fill (Directory_Entry'Unrestricted_Access);
-      return Permissions.Inside.User_Name (
+      return System.Native_Credentials.User_Name (
          Directory_Entry.Additional.Information.st_uid);
    end Owner;
 

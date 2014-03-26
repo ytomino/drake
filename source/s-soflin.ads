@@ -1,34 +1,16 @@
 pragma License (Unrestricted);
 --  runtime unit required by compiler
 with Ada.Exceptions;
-with System.Unwind;
 package System.Soft_Links is
    pragma Preelaborate;
 
-   --  equivalent to TSD (s-soflin.ads)
-   type Task_Local_Storage is record
-      Secondary_Stack : Address;
-      Overlaid_Allocation : Address; -- for System.Storage_Pools.Overlaps
-      Current_Exception : aliased Unwind.Exception_Occurrence;
-   end record;
-   pragma Suppress_Initialization (Task_Local_Storage);
-   type Task_Local_Storage_Access is access all Task_Local_Storage;
-
-   function Get_Main_Task_Local_Storage
-      return not null Task_Local_Storage_Access;
-
-   Get_Task_Local_Storage : not null access function
-      return not null Task_Local_Storage_Access :=
-      Get_Main_Task_Local_Storage'Access;
-   pragma Suppress (Access_Check, Get_Task_Local_Storage);
-
    --  required for getting "Ada.Exceptions".Exception_Occurrence
    --    by compiler (s-soflin.ads)
-   function Get_Main_Current_Excep
+   function Do_Get_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access;
-   Get_Current_Excep : not null access function
+   Get_Current_Excep : constant not null access function
       return Ada.Exceptions.Exception_Occurrence_Access :=
-      Get_Main_Current_Excep'Access;
+      Do_Get_Current_Excep'Access;
    pragma Suppress (Access_Check, Get_Current_Excep);
 
    --  required for entry of task by compiler (s-soflin.ads)
@@ -36,14 +18,6 @@ package System.Soft_Links is
    pragma Inline (Get_GNAT_Exception);
 
    --  required for library-level controlled object by compiler (s-soflin.ads)
-   type Uninitialized_Exception_Occurrence is record
-      X : Unwind.Exception_Occurrence;
-   end record;
-   pragma Suppress_Initialization (Uninitialized_Exception_Occurrence);
-   Library_Exception : Uninitialized_Exception_Occurrence;
-   pragma Export (Ada, Library_Exception, "__gnat_library_exception");
-   Library_Exception_Set : Boolean;
-   pragma Export (Ada, Library_Exception_Set, "__gnat_library_exception_set");
    procedure Save_Library_Occurrence (
       E : Ada.Exceptions.Exception_Occurrence);
 

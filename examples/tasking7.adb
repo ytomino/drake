@@ -1,6 +1,5 @@
 with Ada.Calendar;
 with Ada.Synchronous_Task_Control;
-with System.Soft_Links;
 with System.Tasking.Tasks;
 with System.Tasking.Yield;
 procedure tasking7 is

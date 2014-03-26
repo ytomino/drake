@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Permissions.Inside is
+package System.Native_Credentials is
    pragma Preelaborate;
 
    function User_Name return String;
 
-end Ada.Permissions.Inside;
+end System.Native_Credentials;

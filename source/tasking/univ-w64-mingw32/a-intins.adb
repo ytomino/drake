@@ -97,41 +97,33 @@ package body Ada.Interrupts.Inside is
    function Current_Handler (Interrupt : Interrupt_Id)
       return Parameterless_Handler is
    begin
-      if Is_Reserved (Interrupt) then
-         raise Program_Error;
-      end if;
       return Table (Interrupt).Installed_Handler;
    end Current_Handler;
 
    procedure Exchange_Handler (
       Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
-      Interrupt : Interrupt_Id) is
+      Interrupt : Interrupt_Id)
+   is
+      Item : Signal_Rec
+         renames Table (Interrupt);
    begin
-      if Is_Reserved (Interrupt) then
-         raise Program_Error;
-      end if;
-      declare
-         Item : Signal_Rec
-            renames Table (Interrupt);
-      begin
-         Old_Handler := Item.Installed_Handler;
-         if Old_Handler = null and then New_Handler /= null then
-            Item.Saved := C.signal.signal (
+      Old_Handler := Item.Installed_Handler;
+      if Old_Handler = null and then New_Handler /= null then
+         Item.Saved := C.signal.signal (
+            C.signed_int (Interrupt),
+            Handler'Access);
+      elsif Old_Handler /= null and then New_Handler = null then
+         declare
+            Old_Action : C.signal.p_sig_fn_t;
+            pragma Unreferenced (Old_Action);
+         begin
+            Old_Action := C.signal.signal (
                C.signed_int (Interrupt),
-               Handler'Access);
-         elsif Old_Handler /= null and then New_Handler = null then
-            declare
-               Old_Action : C.signal.p_sig_fn_t;
-               pragma Unreferenced (Old_Action);
-            begin
-               Old_Action := C.signal.signal (
-                  C.signed_int (Interrupt),
-                  Item.Saved);
-            end;
-         end if;
-         Item.Installed_Handler := New_Handler;
-      end;
+               Item.Saved);
+         end;
+      end if;
+      Item.Installed_Handler := New_Handler;
    end Exchange_Handler;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id) is

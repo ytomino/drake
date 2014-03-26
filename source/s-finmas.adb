@@ -2,19 +2,19 @@ with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Shared_Locking;
-with System.Standard_Library;
+with System.Startup;
 package body System.Finalization_Masters is
    pragma Suppress (All_Checks);
+   use type Startup.Finalize_Library_Objects_Handler;
 
    procedure Finalize_Library_Objects;
    pragma Linker_Destructor (Finalize_Library_Objects);
    --  __attribute__((destructor)) is invoked after atexit.
 
    procedure Finalize_Library_Objects is
-      use Standard_Library; -- operator is not visible ???
    begin
-      if Standard_Library.Finalize_Library_Objects /= null then
-         Standard_Library.Finalize_Library_Objects.all;
+      if Startup.Finalize_Library_Objects /= null then
+         Startup.Finalize_Library_Objects.all;
       end if;
    end Finalize_Library_Objects;
 

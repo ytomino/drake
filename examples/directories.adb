@@ -2,17 +2,17 @@
 pragma Ada_2012;
 with Ada.Calendar;
 with Ada.Command_Line;
+with Ada.Credentials;
 with Ada.Directories;
 with Ada.Directories.Information;
 with Ada.Directories.Temporary;
 with Ada.Directories.Volumes;
-with Ada.Permissions;
 with Ada.Text_IO;
 procedure directories is
 	use type Ada.Calendar.Time;
 begin
 	Ada.Debug.Put ("**** user");
-	Ada.Debug.Put ("current user: " & Ada.Permissions.User_Name);
+	Ada.Debug.Put ("current user: " & Ada.Credentials.User_Name);
 	-- iteration (closure style)
 	Ada.Debug.Put ("**** iterate 1");
 	declare

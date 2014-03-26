@@ -1,5 +1,5 @@
 with System.Address_To_Named_Access_Conversions;
-with System.Soft_Links;
+with System.Runtime_Context;
 with System.Standard_Allocators;
 package body System.Secondary_Stack is
    pragma Suppress (All_Checks);
@@ -43,8 +43,8 @@ package body System.Secondary_Stack is
    is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
-      TLS : constant Soft_Links.Task_Local_Storage_Access :=
-         Soft_Links.Get_Task_Local_Storage.all;
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
       Top : constant Address := TLS.Secondary_Stack;
       Alignment : Storage_Elements.Integer_Address;
       Mask : Storage_Elements.Integer_Address;
@@ -150,8 +150,9 @@ package body System.Secondary_Stack is
    function SS_Mark return Mark_Id is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
-      Top : constant Address :=
-         Soft_Links.Get_Task_Local_Storage.all.Secondary_Stack;
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
+      Top : constant Address := TLS.Secondary_Stack;
    begin
       if Top = Null_Address then
          return (Sstk => Null_Address, Sptr => 0);
@@ -173,8 +174,8 @@ package body System.Secondary_Stack is
    procedure SS_Release (M : Mark_Id) is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
-      TLS : constant Soft_Links.Task_Local_Storage_Access :=
-         Soft_Links.Get_Task_Local_Storage.all;
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
    begin
       if TLS.Secondary_Stack /= Null_Address then
          loop
@@ -200,8 +201,8 @@ package body System.Secondary_Stack is
    end SS_Release;
 
    procedure Clear is
-      TLS : constant Soft_Links.Task_Local_Storage_Access :=
-         Soft_Links.Get_Task_Local_Storage.all;
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
    begin
       while TLS.Secondary_Stack /= Null_Address loop
          declare

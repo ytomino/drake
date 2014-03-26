@@ -2,7 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with System.Native_Time;
 with C.time;
 with C.sys.types;
-package body Ada.Calendar.Inside.Time_Zones is
+package body Ada.Calendar.Time_Zones.Inside is
    pragma Suppress (All_Checks);
    use Exception_Identification.From_Here;
    use type C.sys.types.time_t;
@@ -26,4 +26,4 @@ package body Ada.Calendar.Inside.Time_Zones is
 
 begin
    C.time.tzset;
-end Ada.Calendar.Inside.Time_Zones;
+end Ada.Calendar.Time_Zones.Inside;

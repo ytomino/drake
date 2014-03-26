@@ -2,7 +2,7 @@ with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.windef;
 with C.winnt;
-package body Ada.Permissions.Inside is
+package body System.Native_Credentials is
    pragma Suppress (All_Checks);
    use type C.size_t;
    use type C.windef.WINBOOL;
@@ -22,4 +22,4 @@ package body Ada.Permissions.Inside is
          C.size_t (Length) - 1);
    end User_Name;
 
-end Ada.Permissions.Inside;
+end System.Native_Credentials;

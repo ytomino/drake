@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  optional runtime unit
-package System.wmain is
+package System.Wide_Startup is
    pragma Preelaborate;
    pragma Linker_Options ("-municode");
 
@@ -17,4 +17,4 @@ package System.wmain is
       return Integer;
    pragma Export (C, wmain, "wmain");
 
-end System.wmain;
+end System.Wide_Startup;

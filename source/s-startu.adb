@@ -1,4 +1,4 @@
-package body System.Standard_Library is
+package body System.Startup is
    pragma Suppress (All_Checks);
 
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
@@ -17,4 +17,4 @@ package body System.Standard_Library is
       end if;
    end Initialize;
 
-end System.Standard_Library;
+end System.Startup;

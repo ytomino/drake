@@ -106,57 +106,49 @@ package body Ada.Interrupts.Inside is
    function Current_Handler (Interrupt : Interrupt_Id)
       return Parameterless_Handler is
    begin
-      if Is_Reserved (Interrupt) then
-         raise Program_Error;
-      end if;
       return Table (Interrupt).Installed_Handler;
    end Current_Handler;
 
    procedure Exchange_Handler (
       Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
-      Interrupt : Interrupt_Id) is
+      Interrupt : Interrupt_Id)
+   is
+      Item : Signal_Rec
+         renames Table (Interrupt);
    begin
-      if Is_Reserved (Interrupt) then
-         raise Program_Error;
+      Old_Handler := Item.Installed_Handler;
+      if Old_Handler = null and then New_Handler /= null then
+         declare
+            Dummy : C.signed_int;
+            pragma Unreferenced (Dummy);
+            Action : aliased C.signal.struct_sigaction := (
+               (Unchecked_Tag => 1, sa_sigaction => Handler'Access),
+               others => <>); -- uninitialized
+         begin
+            Action.sa_flags := C.signed_int (C.unsigned_int'(
+               C.signal.SA_SIGINFO
+               or C.signal.SA_RESTART));
+            Dummy := C.signal.sigemptyset (Action.sa_mask'Access);
+            Dummy := C.signal.sigaction (
+               C.signed_int (Interrupt),
+               Action'Access,
+               Item.Saved'Access);
+         end;
+      elsif Old_Handler /= null and then New_Handler = null then
+         declare
+            Dummy : C.signed_int;
+            pragma Unreferenced (Dummy);
+            Old_Action : aliased C.signal.struct_sigaction :=
+               (others => <>); -- uninitialized
+         begin
+            Dummy := C.signal.sigaction (
+               C.signed_int (Interrupt),
+               Item.Saved'Access,
+               Old_Action'Access);
+         end;
       end if;
-      declare
-         Item : Signal_Rec
-            renames Table (Interrupt);
-      begin
-         Old_Handler := Item.Installed_Handler;
-         if Old_Handler = null and then New_Handler /= null then
-            declare
-               Dummy : C.signed_int;
-               pragma Unreferenced (Dummy);
-               Action : aliased C.signal.struct_sigaction := (
-                  (Unchecked_Tag => 1, sa_sigaction => Handler'Access),
-                  others => <>); -- uninitialized
-            begin
-               Action.sa_flags := C.signed_int (C.unsigned_int'(
-                  C.signal.SA_SIGINFO
-                  or C.signal.SA_RESTART));
-               Dummy := C.signal.sigemptyset (Action.sa_mask'Access);
-               Dummy := C.signal.sigaction (
-                  C.signed_int (Interrupt),
-                  Action'Access,
-                  Item.Saved'Access);
-            end;
-         elsif Old_Handler /= null and then New_Handler = null then
-            declare
-               Dummy : C.signed_int;
-               pragma Unreferenced (Dummy);
-               Old_Action : aliased C.signal.struct_sigaction :=
-                  (others => <>); -- uninitialized
-            begin
-               Dummy := C.signal.sigaction (
-                  C.signed_int (Interrupt),
-                  Item.Saved'Access,
-                  Old_Action'Access);
-            end;
-         end if;
-         Item.Installed_Handler := New_Handler;
-      end;
+      Item.Installed_Handler := New_Handler;
    end Exchange_Handler;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id) is

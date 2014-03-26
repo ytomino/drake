@@ -1,5 +1,5 @@
 with Ada.Command_Line.Inside;
-with System.Standard_Library;
+with System.Startup;
 package body Ada.Command_Line is
    pragma Suppress (All_Checks);
 
@@ -24,7 +24,7 @@ package body Ada.Command_Line is
 
    procedure Set_Exit_Status (Code : Exit_Status) is
    begin
-      System.Standard_Library.gnat_exit_status := Integer (Code);
+      System.Startup.Exit_Status := Integer (Code);
    end Set_Exit_Status;
 
 end Ada.Command_Line;

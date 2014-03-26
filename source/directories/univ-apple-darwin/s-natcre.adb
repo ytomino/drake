@@ -1,7 +1,7 @@
 with System.Zero_Terminated_Strings;
 with C.pwd;
 with C.grp;
-package body Ada.Permissions.Inside is
+package body System.Native_Credentials is
    pragma Suppress (All_Checks);
    use type C.pwd.struct_passwd_ptr;
    use type C.grp.struct_group_ptr;
@@ -28,4 +28,4 @@ package body Ada.Permissions.Inside is
       end if;
    end Group_Name;
 
-end Ada.Permissions.Inside;
+end System.Native_Credentials;

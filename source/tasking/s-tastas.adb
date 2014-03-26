@@ -6,9 +6,9 @@ with System.Address_To_Named_Access_Conversions;
 with System.Native_Stack;
 with System.Native_Time;
 with System.Once;
+with System.Runtime_Context;
 with System.Secondary_Stack;
 with System.Shared_Locking;
-with System.Soft_Links;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Tasking.Synchronous_Objects.Abortable;
@@ -273,26 +273,18 @@ package body System.Tasking.Tasks is
 
    Main_Task_Record : aliased Task_Record (Main);
 
-   --  secondary stack and exception occurrence
+   --  task local storage (secondary stack and exception occurrence)
 
-   TLS_Stack : Soft_Links.Task_Local_Storage_Access := null;
-   pragma Thread_Local_Storage (TLS_Stack);
+   TLS_Data : Runtime_Context.Task_Local_Storage_Access := null;
+   pragma Thread_Local_Storage (TLS_Data);
 
-   function Get_SS return not null Soft_Links.Task_Local_Storage_Access;
-   function Get_SS return not null Soft_Links.Task_Local_Storage_Access is
+   function Get_TLS
+      return not null Runtime_Context.Task_Local_Storage_Access;
+   function Get_TLS
+      return not null Runtime_Context.Task_Local_Storage_Access is
    begin
-      return TLS_Stack;
-   end Get_SS;
-
-   function Get_CE return Ada.Exceptions.Exception_Occurrence_Access;
-   function Get_CE return Ada.Exceptions.Exception_Occurrence_Access is
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            Unwind.Exception_Occurrence_Access,
-            Ada.Exceptions.Exception_Occurrence_Access);
-   begin
-      return Cast (Get_SS.Current_Exception'Access);
-   end Get_CE;
+      return TLS_Data;
+   end Get_TLS;
 
    --  name
 
@@ -353,10 +345,9 @@ package body System.Tasking.Tasks is
       --  attribute indexes
       Synchronous_Objects.Finalize (Attribute_Indexes_Lock);
       Attribute_Index_Sets.Clear (Attribute_Indexes, Attribute_Indexes_Length);
-      --  secondary stack and exception occurrenc
-      Soft_Links.Get_Task_Local_Storage :=
-         Soft_Links.Get_Main_Task_Local_Storage'Access;
-      Soft_Links.Get_Current_Excep := Soft_Links.Get_Main_Current_Excep'Access;
+      --  task local storage (secondary stack and exception occurrence)
+      Runtime_Context.Get_Task_Local_Storage_Hook :=
+         Runtime_Context.Get_Main_Task_Local_Storage'Access;
       --  main thread id
       Native_Tasks.Finalize (Main_Task_Record.Abort_Attribute);
       --  signal handler
@@ -385,10 +376,9 @@ package body System.Tasking.Tasks is
          Native_Time.Delay_Until_Hook := Delay_Until'Access;
          --  attribute indexes
          Synchronous_Objects.Initialize (Attribute_Indexes_Lock);
-         --  secondary stack and exception occurrence
-         TLS_Stack := Soft_Links.Get_Main_Task_Local_Storage;
-         Soft_Links.Get_Task_Local_Storage := Get_SS'Access;
-         Soft_Links.Get_Current_Excep := Get_CE'Access;
+         --  task local storage (secondary stack and exception occurrence)
+         TLS_Data := Runtime_Context.Get_Main_Task_Local_Storage;
+         Runtime_Context.Get_Task_Local_Storage_Hook := Get_TLS'Access;
          --  main thread id
          TLS_Current_Task_Id := Main_Task_Record'Access;
          Main_Task_Record.Handle := Native_Tasks.Current;
@@ -469,7 +459,7 @@ package body System.Tasking.Tasks is
             Native_Tasks.Parameter_Type,
             Native_Tasks.Result_Type);
       Result : Native_Tasks.Result_Type;
-      Local : aliased Soft_Links.Task_Local_Storage;
+      Local : aliased Runtime_Context.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
       No_Detached : Boolean;
    begin
@@ -482,7 +472,7 @@ package body System.Tasking.Tasks is
       Local.Secondary_Stack := Null_Address;
       Local.Overlaid_Allocation := Null_Address;
       Local.Current_Exception.Id := null;
-      TLS_Stack := Local'Unchecked_Access;
+      TLS_Data := Local'Unchecked_Access;
       --  setup signal stack
       Termination.Set_Signal_Stack (T.Signal_Stack'Access);
       --  setup native stack
