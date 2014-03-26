@@ -1,29 +1,25 @@
 with Ada.Unchecked_Conversion;
+with System.Runtime_Context;
+with System.Startup;
+with System.Unwind;
 package body System.Soft_Links is
    pragma Suppress (All_Checks);
    use type Ada.Exceptions.Exception_Occurrence_Access;
 
-   --  I hope it will be zero-initialized...
-   Main_Task_Local_Storage : aliased Task_Local_Storage;
-
    --  implementation
 
-   function Get_Main_Task_Local_Storage
-      return not null Task_Local_Storage_Access is
-   begin
-      return Main_Task_Local_Storage'Access;
-   end Get_Main_Task_Local_Storage;
-
-   function Get_Main_Current_Excep
+   function Do_Get_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access
    is
       function Cast is
          new Ada.Unchecked_Conversion (
             Unwind.Exception_Occurrence_Access,
             Ada.Exceptions.Exception_Occurrence_Access);
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
    begin
-      return Cast (Main_Task_Local_Storage.Current_Exception'Access);
-   end Get_Main_Current_Excep;
+      return Cast (TLS.Current_Exception'Access);
+   end Do_Get_Current_Excep;
 
    function Get_GNAT_Exception return Ada.Exceptions.Exception_Id is
       function Cast is
@@ -46,10 +42,10 @@ package body System.Soft_Links is
             Ada.Exceptions.Exception_Occurrence_Access,
             Unwind.Exception_Occurrence_Access);
    begin
-      if not Library_Exception_Set then
-         Library_Exception_Set := True;
+      if not Startup.Library_Exception_Set then
+         Startup.Library_Exception_Set := True;
          if E /= null then
-            Unwind.Save_Occurrence (Library_Exception.X, Cast (E).all);
+            Unwind.Save_Occurrence (Startup.Library_Exception.X, Cast (E).all);
          end if;
       end if;
    end Save_Library_Occurrence;

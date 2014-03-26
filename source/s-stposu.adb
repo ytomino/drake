@@ -1,8 +1,8 @@
 pragma Check_Policy (Validate, Off);
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
+with System.Runtime_Context;
 with System.Shared_Locking;
-with System.Soft_Links;
 package body System.Storage_Pools.Subpools is
    pragma Suppress (All_Checks);
    use type Finalization_Masters.Finalization_Master_Ptr;
@@ -287,8 +287,13 @@ package body System.Storage_Pools.Subpools is
          else
             Header_And_Padding := Header_Size_With_Padding (Alignment);
             Actual_Size := Storage_Size + Header_And_Padding;
-            Overlaid_Allocation :=
-               Soft_Links.Get_Task_Local_Storage.all.Overlaid_Allocation;
+            declare
+               TLS : constant
+                  not null Runtime_Context.Task_Local_Storage_Access :=
+                  Runtime_Context.Get_Task_Local_Storage;
+            begin
+               Overlaid_Allocation := TLS.Overlaid_Allocation;
+            end;
          end if;
       else
          Actual_Size := Storage_Size;
@@ -346,7 +351,7 @@ package body System.Storage_Pools.Subpools is
       --  fix address
       if Is_Controlled
          and then -- for System.Storage_Pools.Overlaps
-            Soft_Links.Get_Task_Local_Storage.all.Overlaid_Allocation /= Addr
+            Runtime_Context.Get_Task_Local_Storage.Overlaid_Allocation /= Addr
       then
          Shared_Locking.Enter;
          declare

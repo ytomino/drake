@@ -1,6 +1,6 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address_Image;
-with System.Soft_Links;
+with System.Runtime_Context;
 with System.Termination;
 package body System.Secondary_Stack.Debug is
    pragma Suppress (All_Checks);
@@ -27,8 +27,8 @@ package body System.Secondary_Stack.Debug is
    procedure Dump is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
-      TLS : constant Soft_Links.Task_Local_Storage_Access :=
-         Soft_Links.Get_Task_Local_Storage.all;
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
    begin
       Termination.Error_Put ("Secondary Stack:");
       Termination.Error_New_Line;

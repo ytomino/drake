@@ -1,12 +1,12 @@
-with System.Soft_Links;
+with System.Runtime_Context;
 package body System.Storage_Pools.Overlaps is
    pragma Suppress (All_Checks);
 
    --  implementation
 
    procedure Set_Address (Storage_Address : Address) is
-      TLS : constant not null Soft_Links.Task_Local_Storage_Access :=
-         Soft_Links.Get_Task_Local_Storage.all;
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
    begin
       TLS.Overlaid_Allocation := Storage_Address;
    end Set_Address;
@@ -20,8 +20,8 @@ package body System.Storage_Pools.Overlaps is
       pragma Unreferenced (Pool);
       pragma Unreferenced (Size_In_Storage_Elements);
       pragma Unreferenced (Alignment);
-      TLS : constant not null Soft_Links.Task_Local_Storage_Access :=
-         Soft_Links.Get_Task_Local_Storage.all;
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
    begin
       Storage_Address := TLS.Overlaid_Allocation;
       TLS.Overlaid_Allocation := Null_Address;
@@ -36,8 +36,8 @@ package body System.Storage_Pools.Overlaps is
       pragma Unreferenced (Pool);
       pragma Unreferenced (Size_In_Storage_Elements);
       pragma Unreferenced (Alignment);
-      TLS : constant not null Soft_Links.Task_Local_Storage_Access :=
-         Soft_Links.Get_Task_Local_Storage.all;
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
    begin
       pragma Assert (Storage_Address = TLS.Overlaid_Allocation);
       TLS.Overlaid_Allocation := Null_Address;

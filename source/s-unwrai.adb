@@ -1,6 +1,8 @@
 pragma Check_Policy (Trace, Off);
 with System.Formatting;
+with System.Runtime_Context;
 with System.Soft_Links;
+with System.Startup;
 with System.Storage_Elements;
 with System.Termination;
 with System.Unwind.Standard;
@@ -319,10 +321,10 @@ package body System.Unwind.Raising is
 
    procedure Reraise_Library_Exception_If_Any is
    begin
-      if Soft_Links.Library_Exception_Set then
+      if Startup.Library_Exception_Set then
          declare
             X : Exception_Occurrence
-               renames Soft_Links.Library_Exception.X;
+               renames Startup.Library_Exception.X;
          begin
             if X.Id = null then
                Raise_Exception_No_Defer (
@@ -611,8 +613,10 @@ package body System.Unwind.Raising is
    end ZZZ;
 
    function Triggered_By_Abort return Boolean is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
       X : constant not null Exception_Occurrence_Access :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+         TLS.Current_Exception'Access;
    begin
       return X.Id = Standard.Abort_Signal'Access;
    end Triggered_By_Abort;

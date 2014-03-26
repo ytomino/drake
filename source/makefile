@@ -151,6 +151,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-format.o \
 	s-maccod.o \
 	s-natsta.o \
+	s-runcon.o \
 	s-shaloc.o \
 	s-soflin.o \
 	s-staall.o \

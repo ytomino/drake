@@ -67,10 +67,12 @@ package body Separated is
 
    procedure Setup_Current_Excep (
       GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
-      Current : out Exception_Occurrence_Access) is
+      Current : out Exception_Occurrence_Access)
+   is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
    begin
-      Current :=
-         Soft_Links.Get_Task_Local_Storage.all.Current_Exception'Access;
+      Current := TLS.Current_Exception'Access;
       if GCC_Exception.Header.exception_class =
          Handling.GNAT_Exception_Class
       then
