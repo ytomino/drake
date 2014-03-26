@@ -155,6 +155,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-soflin.o \
 	s-staall.o \
 	s-stalib.o \
+	s-startu.o \
 	s-stoele.o \
 	s-termin.o \
 	s-unstyp.o \
