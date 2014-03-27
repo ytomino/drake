@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  Ada 2005
 with Ada.Iterator_Interfaces;
-private with Ada.Containers.Inside.Copy_On_Write;
-private with Ada.Containers.Inside.Hash_Tables;
+private with Ada.Containers.Copy_On_Write;
+private with Ada.Containers.Hash_Tables;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -235,9 +235,6 @@ package Ada.Containers.Indefinite_Hashed_Sets is
 --
 
 private
-
-   package Hash_Tables renames Containers.Inside.Hash_Tables;
-   package Copy_On_Write renames Containers.Inside.Copy_On_Write;
 
    type Element_Access is access Element_Type;
 

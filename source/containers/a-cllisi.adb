@@ -1,4 +1,4 @@
-package body Ada.Containers.Inside.Linked_Lists.Singly is
+package body Ada.Containers.Linked_Lists.Singly is
 
    function Is_Before (Before, After : Node_Access) return Boolean is
       I : Node_Access;
@@ -67,4 +67,4 @@ package body Ada.Containers.Inside.Linked_Lists.Singly is
       Length := Length - 1;
    end Remove;
 
-end Ada.Containers.Inside.Linked_Lists.Singly;
+end Ada.Containers.Linked_Lists.Singly;

@@ -1,4 +1,4 @@
-with Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug;
+with Ada.Containers.Binary_Trees.Arne_Andersson.Debug;
 with Ada.Unchecked_Conversion;
 package body Ada.Containers.Ordered_Sets.Debug is
 

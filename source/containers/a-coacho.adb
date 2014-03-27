@@ -2,7 +2,7 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Access_Holders is
-   use type Containers.Inside.Weak_Access_Holders.Data_Access;
+   use type Weak_Access_Holders.Data_Access;
    use type System.Reference_Counting.Counter;
 
    subtype Not_Null_Data_Access is not null Data_Access;
@@ -19,7 +19,7 @@ package body Ada.Containers.Access_Holders is
          new Unchecked_Deallocation (Data, Data_Access);
       Y : Data_Access := Data_Cast.To_Pointer (X);
    begin
-      Containers.Inside.Weak_Access_Holders.Clear_Weaks (
+      Weak_Access_Holders.Clear_Weaks (
          Y.Super,
          Null_Data.Super'Unchecked_Access);
       Free (Y.Item);
@@ -121,7 +121,7 @@ package body Ada.Containers.Access_Holders is
 
       function Downcast is
          new Unchecked_Conversion (
-            Containers.Inside.Weak_Access_Holders.Data_Access,
+            Weak_Access_Holders.Data_Access,
             Data_Access);
 
       function "=" (Left, Right : Weak_Holder) return Boolean is
@@ -195,16 +195,14 @@ package body Ada.Containers.Access_Holders is
       overriding procedure Adjust (Object : in out Weak_Holder) is
       begin
          if not Is_Null (Object) then
-            Containers.Inside.Weak_Access_Holders.Add_Weak (
-               Object.Super'Unchecked_Access);
+            Weak_Access_Holders.Add_Weak (Object.Super'Unchecked_Access);
          end if;
       end Adjust;
 
       overriding procedure Finalize (Object : in out Weak_Holder) is
       begin
          if not Is_Null (Object) then
-            Containers.Inside.Weak_Access_Holders.Remove_Weak (
-               Object.Super'Unchecked_Access);
+            Weak_Access_Holders.Remove_Weak (Object.Super'Unchecked_Access);
          end if;
       end Finalize;
 

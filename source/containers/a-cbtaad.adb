@@ -1,7 +1,7 @@
 with Ada.Unchecked_Conversion;
 with System.Secondary_Stack.Debug; -- Error_Put for System.Address
 with System.Termination;
-package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
+package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
 
    type AA_Node_Access is access Node;
 
@@ -141,4 +141,4 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
       return True;
    end Validate;
 
-end Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug;
+end Ada.Containers.Binary_Trees.Arne_Andersson.Debug;

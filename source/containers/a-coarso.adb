@@ -1,7 +1,7 @@
 --  reference:
 --  http://thomas.baudel.name/Visualisation/VisuTri/inplacestablesort.html
 pragma Check_Policy (Trace, Off);
-package body Ada.Containers.Inside.Array_Sorting is
+package body Ada.Containers.Array_Sorting is
 
    function GCD (X, Y : Positive) return Positive;
    function GCD (X, Y : Positive) return Positive is
@@ -247,4 +247,4 @@ package body Ada.Containers.Inside.Array_Sorting is
       end if;
    end Juggling_Rotate;
 
-end Ada.Containers.Inside.Array_Sorting;
+end Ada.Containers.Array_Sorting;

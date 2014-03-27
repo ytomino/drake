@@ -1,4 +1,4 @@
-package body Ada.Containers.Inside.Binary_Trees is
+package body Ada.Containers.Binary_Trees is
 
    function First (Container : Node_Access) return Node_Access is
    begin
@@ -370,4 +370,4 @@ package body Ada.Containers.Inside.Binary_Trees is
       end if;
    end Merge;
 
-end Ada.Containers.Inside.Binary_Trees;
+end Ada.Containers.Binary_Trees;

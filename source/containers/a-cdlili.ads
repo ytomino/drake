@@ -1,8 +1,9 @@
 pragma License (Unrestricted);
 --  Ada 2005
 with Ada.Iterator_Interfaces;
-private with Ada.Containers.Inside.Copy_On_Write;
-private with Ada.Containers.Inside.Linked_Lists.Doubly;
+private with Ada.Containers.Copy_On_Write;
+private with Ada.Containers.Linked_Lists;
+private with Ada.Containers.Linked_Lists.Doubly;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -242,9 +243,7 @@ package Ada.Containers.Doubly_Linked_Lists is
 
 private
 
-   package Linked_Lists renames Containers.Inside.Linked_Lists;
    package Base renames Linked_Lists.Doubly;
-   package Copy_On_Write renames Containers.Inside.Copy_On_Write;
 
 --  diff (Element_Access)
 

@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Containers.Inside.Copy_On_Write is
+private package Ada.Containers.Copy_On_Write is
    pragma Preelaborate;
 
    type Container;
@@ -130,4 +130,4 @@ package Ada.Containers.Inside.Copy_On_Write is
          Capacity : Count_Type);
       Free : not null access procedure (Object : in out Data_Access));
 
-end Ada.Containers.Inside.Copy_On_Write;
+end Ada.Containers.Copy_On_Write;

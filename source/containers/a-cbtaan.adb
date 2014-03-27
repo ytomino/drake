@@ -4,9 +4,9 @@
 pragma Check_Policy (Dump, Disable);
 pragma Check_Policy (Dump_On_Removing, Disable);
 pragma Check_Policy (Validate, Disable);
---  with Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug;
+--  with Ada.Containers.Binary_Trees.Arne_Andersson.Debug;
 with Ada.Unchecked_Conversion;
-package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
+package body Ada.Containers.Binary_Trees.Arne_Andersson is
 
    type AA_Node_Access is access Node;
 
@@ -311,4 +311,4 @@ package body Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
       Process (Target, null, Source);
    end Copy;
 
-end Ada.Containers.Inside.Binary_Trees.Arne_Andersson;
+end Ada.Containers.Binary_Trees.Arne_Andersson;

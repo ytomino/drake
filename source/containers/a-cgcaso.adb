@@ -1,4 +1,4 @@
-with Ada.Containers.Inside.Array_Sorting;
+with Ada.Containers.Array_Sorting;
 with System;
 procedure Ada.Containers.Generic_Constrained_Array_Sort (
    Container : in out Array_Type)
@@ -31,7 +31,7 @@ is
    end Swap;
    Context : Context_Type := (Container => Container'Unrestricted_Access);
 begin
-   Inside.Array_Sorting.In_Place_Merge_Sort (
+   Array_Sorting.In_Place_Merge_Sort (
       Index_Type'Pos (Container'First),
       Index_Type'Pos (Container'Last),
       Context'Address,

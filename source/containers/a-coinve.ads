@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  Ada 2005
 with Ada.Iterator_Interfaces;
 --  diff (Ada.References)
-private with Ada.Containers.Inside.Copy_On_Write;
+private with Ada.Containers.Copy_On_Write;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -369,8 +369,6 @@ package Ada.Containers.Indefinite_Vectors is
 --
 
 private
-
-   package Copy_On_Write renames Containers.Inside.Copy_On_Write;
 
    type Element_Access is access Element_Type;
    type Element_Array is array (Index_Type range <>) of Element_Access;

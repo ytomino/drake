@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 with System;
-package Ada.Containers.Inside.Array_Sorting is
+private package Ada.Containers.Array_Sorting is
    pragma Pure;
 
    function Is_Sorted (
@@ -73,4 +73,4 @@ package Ada.Containers.Inside.Array_Sorting is
          I, J : Integer;
          Params : System.Address));
 
-end Ada.Containers.Inside.Array_Sorting;
+end Ada.Containers.Array_Sorting;

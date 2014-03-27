@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 with System;
-package Ada.Containers.Inside.Binary_Trees is
+private package Ada.Containers.Binary_Trees is
    pragma Preelaborate;
 
    type Node;
@@ -120,4 +120,4 @@ package Ada.Containers.Inside.Binary_Trees is
          Before : Node_Access;
          New_Item : not null Node_Access));
 
-end Ada.Containers.Inside.Binary_Trees;
+end Ada.Containers.Binary_Trees;

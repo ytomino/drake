@@ -1,4 +1,4 @@
-with Ada.Containers.Inside.Array_Sorting;
+with Ada.Containers.Array_Sorting;
 with System;
 package body Ada.Containers.Generic_Arrays is
 
@@ -426,7 +426,7 @@ package body Ada.Containers.Generic_Arrays is
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin
-         Inside.Array_Sorting.In_Place_Reverse (
+         Array_Sorting.In_Place_Reverse (
             Index_Type'Pos (Container'First),
             Index_Type'Pos (Container'Last),
             Context'Address,
@@ -440,7 +440,7 @@ package body Ada.Containers.Generic_Arrays is
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin
-         Inside.Array_Sorting.Reverse_Rotate (
+         Array_Sorting.Reverse_Rotate (
             Index_Type'Pos (Container'First),
             Index_Type'Pos (Before) - 1,
             Index_Type'Pos (Container'Last),
@@ -455,7 +455,7 @@ package body Ada.Containers.Generic_Arrays is
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin
-         Inside.Array_Sorting.Juggling_Rotate (
+         Array_Sorting.Juggling_Rotate (
             Index_Type'Pos (Container'First),
             Index_Type'Pos (Before) - 1,
             Index_Type'Pos (Container'Last),
@@ -499,7 +499,7 @@ package body Ada.Containers.Generic_Arrays is
       begin
          return Container = null
             or else
-               Inside.Array_Sorting.Is_Sorted (
+               Array_Sorting.Is_Sorted (
                   Index_Type'Pos (Container'First),
                   Index_Type'Pos (Container'Last),
                   Context'Address,
@@ -511,7 +511,7 @@ package body Ada.Containers.Generic_Arrays is
          Context : Context_Type := (Container => Container);
       begin
          if Container /= null then
-            Inside.Array_Sorting.Insertion_Sort (
+            Array_Sorting.Insertion_Sort (
                Index_Type'Pos (Container'First),
                Index_Type'Pos (Container'Last),
                Context'Address,
@@ -525,7 +525,7 @@ package body Ada.Containers.Generic_Arrays is
          Context : Context_Type := (Container => Container);
       begin
          if Container /= null then
-            Inside.Array_Sorting.In_Place_Merge_Sort (
+            Array_Sorting.In_Place_Merge_Sort (
                Index_Type'Pos (Container'First),
                Index_Type'Pos (Container'Last),
                Context'Address,
@@ -548,7 +548,7 @@ package body Ada.Containers.Generic_Arrays is
             begin
                Append (Target, Source);
                Free (Source);
-               Inside.Array_Sorting.In_Place_Merge (
+               Array_Sorting.In_Place_Merge (
                   Index_Type'Pos (Target'First),
                   Integer (Target'First + Index_Type'Base (Old_Length) - 1),
                   Index_Type'Pos (Target'Last),

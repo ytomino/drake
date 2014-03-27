@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation;
-package body Ada.Containers.Inside.Hash_Tables is
+package body Ada.Containers.Hash_Tables is
 
    procedure Free is new Unchecked_Deallocation (Table, Table_Access);
 
@@ -533,4 +533,4 @@ package body Ada.Containers.Inside.Hash_Tables is
       end if;
    end Merge;
 
-end Ada.Containers.Inside.Hash_Tables;
+end Ada.Containers.Hash_Tables;

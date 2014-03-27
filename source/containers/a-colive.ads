@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.Iterator_Interfaces;
 --  diff (Ada.References)
---  diff (Ada.Containers.Inside.Copy_On_Write)
+--  diff (Ada.Containers.Copy_On_Write)
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -369,8 +369,6 @@ package Ada.Containers.Limited_Vectors is
 --
 
 private
-
---  diff (Copy_On_Write)
 
    type Element_Access is access Element_Type;
    type Element_Array is array (Index_Type range <>) of Element_Access;
