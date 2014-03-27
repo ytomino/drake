@@ -1,4 +1,4 @@
-with Ada.Containers.Inside.Array_Sorting;
+with Ada.Containers.Array_Sorting;
 with System;
 procedure Ada.Containers.Generic_Sort (First, Last : Index_Type'Base) is
    function LT (Left, Right : Integer; Params : System.Address)
@@ -17,7 +17,7 @@ procedure Ada.Containers.Generic_Sort (First, Last : Index_Type'Base) is
       Swap (Index_Type'Val (Left), Index_Type'Val (Right));
    end Swap;
 begin
-   Inside.Array_Sorting.In_Place_Merge_Sort (
+   Array_Sorting.In_Place_Merge_Sort (
       Index_Type'Pos (First),
       Index_Type'Pos (Last),
       System.Null_Address,

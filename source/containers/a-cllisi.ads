@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Containers.Inside.Linked_Lists.Singly is
+package Ada.Containers.Linked_Lists.Singly is
    pragma Preelaborate;
 
    Node_Size : constant := Standard'Address_Size;
@@ -25,4 +25,4 @@ package Ada.Containers.Inside.Linked_Lists.Singly is
       Position : not null Node_Access;
       Next : Node_Access);
 
-end Ada.Containers.Inside.Linked_Lists.Singly;
+end Ada.Containers.Linked_Lists.Singly;

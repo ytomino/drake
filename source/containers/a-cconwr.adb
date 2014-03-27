@@ -1,7 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Shared_Locking;
-package body Ada.Containers.Inside.Copy_On_Write is
+package body Ada.Containers.Copy_On_Write is
 
    procedure Follow (
       Target : not null access Container;
@@ -364,4 +364,4 @@ package body Ada.Containers.Inside.Copy_On_Write is
       end if;
    end Set_Length;
 
-end Ada.Containers.Inside.Copy_On_Write;
+end Ada.Containers.Copy_On_Write;

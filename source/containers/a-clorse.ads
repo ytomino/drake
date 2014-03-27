@@ -1,8 +1,9 @@
 pragma License (Unrestricted);
 --  extended unit
 with Ada.Iterator_Interfaces;
+private with Ada.Containers.Binary_Trees;
+private with Ada.Containers.Binary_Trees.Arne_Andersson;
 --  diff (Copy_On_Write)
-private with Ada.Containers.Inside.Binary_Trees.Arne_Andersson;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -262,9 +263,7 @@ package Ada.Containers.Limited_Ordered_Sets is
 
 private
 
-   package Binary_Trees renames Containers.Inside.Binary_Trees;
    package Base renames Binary_Trees.Arne_Andersson;
---  diff (Copy_On_Write)
 
    type Element_Access is access Element_Type;
 

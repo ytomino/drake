@@ -1,5 +1,5 @@
 with Ada.Unchecked_Conversion;
-package body Ada.Containers.Inside.Linked_Lists.Doubly is
+package body Ada.Containers.Linked_Lists.Doubly is
 
    type Doubly_Node_Access is access Node;
 
@@ -250,4 +250,4 @@ package body Ada.Containers.Inside.Linked_Lists.Doubly is
       end if;
    end Split;
 
-end Ada.Containers.Inside.Linked_Lists.Doubly;
+end Ada.Containers.Linked_Lists.Doubly;

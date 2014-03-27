@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  Ada 2012
-private with Ada.Containers.Inside.Copy_On_Write;
+private with Ada.Containers.Copy_On_Write;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -67,8 +67,6 @@ package Ada.Containers.Indefinite_Holders is
    procedure Move (Target : in out Holder; Source : in out Holder);
 
 private
-
-   package Copy_On_Write renames Containers.Inside.Copy_On_Write;
 
    type Element_Access is access Element_Type;
 

@@ -1,6 +1,6 @@
+with Ada.Containers.Array_Sorting;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Containers.Inside.Array_Sorting;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Vectors is
    use type Copy_On_Write.Data_Access;
@@ -715,7 +715,7 @@ package body Ada.Containers.Vectors is
    procedure Reverse_Elements (Container : in out Vector) is
    begin
       Unique (Container, True);
-      Inside.Array_Sorting.In_Place_Reverse (
+      Array_Sorting.In_Place_Reverse (
          Index_Type'Pos (Index_Type'First),
          Index_Type'Pos (Last_Index (Container)),
          Data_Cast.To_Address (Downcast (Container.Super.Data)),
@@ -890,7 +890,7 @@ package body Ada.Containers.Vectors is
 
       function Is_Sorted (Container : Vector) return Boolean is
       begin
-         return Inside.Array_Sorting.Is_Sorted (
+         return Array_Sorting.Is_Sorted (
             Index_Type'Pos (Index_Type'First),
             Index_Type'Pos (Last_Index (Container)),
             Data_Cast.To_Address (Downcast (Container.Super.Data)),
@@ -900,7 +900,7 @@ package body Ada.Containers.Vectors is
       procedure Sort (Container : in out Vector) is
       begin
          Unique (Container, True);
-         Inside.Array_Sorting.In_Place_Merge_Sort (
+         Array_Sorting.In_Place_Merge_Sort (
             Index_Type'Pos (Index_Type'First),
             Index_Type'Pos (Last_Index (Container)),
             Data_Cast.To_Address (Downcast (Container.Super.Data)),
@@ -927,7 +927,7 @@ package body Ada.Containers.Vectors is
 --  diff
 --  diff
                   Set_Length (Source, 0);
-                  Inside.Array_Sorting.In_Place_Merge (
+                  Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Index_Type'First),
                      Integer (Index_Type'First) - 1 + Integer (Old_Length),
                      Index_Type'Pos (Last_Index (Target)),

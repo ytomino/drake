@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
+package Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
    pragma Preelaborate;
 
    function Dump (
@@ -15,4 +15,4 @@ package Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug is
       Level_Check : Boolean := True)
       return Boolean;
 
-end Ada.Containers.Inside.Binary_Trees.Arne_Andersson.Debug;
+end Ada.Containers.Binary_Trees.Arne_Andersson.Debug;

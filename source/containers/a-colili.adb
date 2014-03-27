@@ -1,4 +1,4 @@
-package body Ada.Containers.Inside.Linked_Lists is
+package body Ada.Containers.Linked_Lists is
 
    procedure Reverse_Iterate (
       Last : Node_Access;
@@ -288,4 +288,4 @@ package body Ada.Containers.Inside.Linked_Lists is
       end loop;
    end Merge;
 
-end Ada.Containers.Inside.Linked_Lists;
+end Ada.Containers.Linked_Lists;

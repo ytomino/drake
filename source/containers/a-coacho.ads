@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-private with Ada.Containers.Inside.Weak_Access_Holders;
+private with Ada.Containers.Weak_Access_Holders;
 private with Ada.Finalization;
 private with Ada.Streams;
 private with System.Reference_Counting;
@@ -87,7 +87,7 @@ package Ada.Containers.Access_Holders is
    private
 
       type Weak_Holder is new Finalization.Controlled with record
-         Super : aliased Containers.Inside.Weak_Access_Holders.Weak_Holder;
+         Super : aliased Weak_Access_Holders.Weak_Holder;
       end record;
 
       overriding procedure Initialize (Object : in out Weak_Holder);
@@ -99,15 +99,13 @@ package Ada.Containers.Access_Holders is
 private
 
    type Data is limited record
-      Super : aliased Containers.Inside.Weak_Access_Holders.Data;
+      Super : aliased Weak_Access_Holders.Data;
       Item : aliased Name;
    end record;
    pragma Suppress_Initialization (Data);
 
    for Data use record
-      Super at 0 range
-         0 ..
-         Containers.Inside.Weak_Access_Holders.Data_Size - 1;
+      Super at 0 range 0 .. Weak_Access_Holders.Data_Size - 1;
    end record;
 
    Null_Data : aliased Data := (

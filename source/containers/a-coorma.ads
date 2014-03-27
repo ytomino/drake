@@ -1,8 +1,9 @@
 pragma License (Unrestricted);
 --  Ada 2005
 with Ada.Iterator_Interfaces;
-private with Ada.Containers.Inside.Copy_On_Write;
-private with Ada.Containers.Inside.Binary_Trees.Arne_Andersson;
+private with Ada.Containers.Binary_Trees;
+private with Ada.Containers.Binary_Trees.Arne_Andersson;
+private with Ada.Containers.Copy_On_Write;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -211,9 +212,7 @@ package Ada.Containers.Ordered_Maps is
 
 private
 
-   package Binary_Trees renames Containers.Inside.Binary_Trees;
    package Base renames Binary_Trees.Arne_Andersson;
-   package Copy_On_Write renames Containers.Inside.Copy_On_Write;
 
 --  diff (Key_Access)
 --  diff (Element_Access)

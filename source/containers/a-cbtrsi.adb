@@ -1,4 +1,4 @@
-package body Ada.Containers.Inside.Binary_Trees.Simple is
+package body Ada.Containers.Binary_Trees.Simple is
 
    procedure Insert (
       Container : in out Node_Access;
@@ -99,4 +99,4 @@ package body Ada.Containers.Inside.Binary_Trees.Simple is
       Process (Target, null, Source);
    end Copy;
 
-end Ada.Containers.Inside.Binary_Trees.Simple;
+end Ada.Containers.Binary_Trees.Simple;

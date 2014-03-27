@@ -1,4 +1,4 @@
-package body Ada.Containers.Inside.Weak_Access_Holders is
+package body Ada.Containers.Weak_Access_Holders is
 
    procedure Add_Weak (Item : Weak_Holder_Access) is
    begin
@@ -43,4 +43,4 @@ package body Ada.Containers.Inside.Weak_Access_Holders is
       end loop;
    end Clear_Weaks;
 
-end Ada.Containers.Inside.Weak_Access_Holders;
+end Ada.Containers.Weak_Access_Holders;

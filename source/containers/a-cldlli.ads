@@ -2,7 +2,8 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.Iterator_Interfaces;
 --  diff (Copy_On_Write)
-private with Ada.Containers.Inside.Linked_Lists.Doubly;
+private with Ada.Containers.Linked_Lists;
+private with Ada.Containers.Linked_Lists.Doubly;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -242,9 +243,7 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 
 private
 
-   package Linked_Lists renames Containers.Inside.Linked_Lists;
    package Base renames Linked_Lists.Doubly;
---  diff (Copy_On_Write)
 
    type Element_Access is access Element_Type;
 

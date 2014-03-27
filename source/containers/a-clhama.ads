@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.Iterator_Interfaces;
 --  diff (Copy_On_Write)
-private with Ada.Containers.Inside.Hash_Tables;
+private with Ada.Containers.Hash_Tables;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -179,9 +179,6 @@ package Ada.Containers.Limited_Hashed_Maps is
    end Equivalent;
 
 private
-
-   package Hash_Tables renames Containers.Inside.Hash_Tables;
---  diff (Copy_On_Write)
 
    type Key_Access is access Key_Type;
    type Element_Access is access Element_Type;

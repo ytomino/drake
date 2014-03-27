@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
+package Ada.Containers.Binary_Trees.Arne_Andersson is
    pragma Preelaborate;
 
    subtype Level_Type is Long_Integer; -- address size integer
@@ -33,4 +33,4 @@ package Ada.Containers.Inside.Binary_Trees.Arne_Andersson is
          Target : out Node_Access;
          Source : not null Node_Access));
 
-end Ada.Containers.Inside.Binary_Trees.Arne_Andersson;
+end Ada.Containers.Binary_Trees.Arne_Andersson;

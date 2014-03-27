@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit for Ada.Containers.Counted_Access_Holders
 with System.Reference_Counting;
-package Ada.Containers.Inside.Weak_Access_Holders is
+private package Ada.Containers.Weak_Access_Holders is
    pragma Preelaborate;
 
    type Data;
@@ -40,4 +40,4 @@ package Ada.Containers.Inside.Weak_Access_Holders is
 
    pragma Compile_Time_Error (Data'Size /= Data_Size, "bad Data_Size");
 
-end Ada.Containers.Inside.Weak_Access_Holders;
+end Ada.Containers.Weak_Access_Holders;

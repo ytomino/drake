@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 with System;
-package Ada.Containers.Inside.Linked_Lists is
+private package Ada.Containers.Linked_Lists is
    pragma Preelaborate;
 
    type Node;
@@ -147,4 +147,4 @@ package Ada.Containers.Inside.Linked_Lists is
          Position : not null Node_Access;
          Next : Node_Access));
 
-end Ada.Containers.Inside.Linked_Lists;
+end Ada.Containers.Linked_Lists;

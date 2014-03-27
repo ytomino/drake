@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  Ada 2005
 with Ada.Iterator_Interfaces;
 with Ada.References;
-private with Ada.Containers.Inside.Copy_On_Write;
+private with Ada.Containers.Copy_On_Write;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -369,8 +369,6 @@ package Ada.Containers.Vectors is
    function Generic_Array_To_Vector (S : Element_Array) return Vector;
 
 private
-
-   package Copy_On_Write renames Containers.Inside.Copy_On_Write;
 
 --  diff (Element_Access)
 --  diff (Element_Array)

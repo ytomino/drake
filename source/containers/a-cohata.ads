@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 with System;
-package Ada.Containers.Inside.Hash_Tables is
+private package Ada.Containers.Hash_Tables is
    pragma Preelaborate;
 
    Node_Size : constant := Standard'Address_Size + Hash_Type'Size * 2;
@@ -150,4 +150,4 @@ package Ada.Containers.Inside.Hash_Tables is
          Target : out Node_Access;
          Source : not null Node_Access));
 
-end Ada.Containers.Inside.Hash_Tables;
+end Ada.Containers.Hash_Tables;

@@ -1,3 +1,4 @@
+with Ada.Containers.Binary_Trees; -- [gcc-4.7] can not search in private with
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Containers.Composites;

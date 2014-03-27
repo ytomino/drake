@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Containers.Inside.Linked_Lists.Doubly is
+package Ada.Containers.Linked_Lists.Doubly is
    pragma Preelaborate;
 
    Node_Size : constant := Standard'Address_Size * 2;
@@ -64,4 +64,4 @@ package Ada.Containers.Inside.Linked_Lists.Doubly is
       Source_Length : in out Count_Type;
       Count : Count_Type);
 
-end Ada.Containers.Inside.Linked_Lists.Doubly;
+end Ada.Containers.Linked_Lists.Doubly;
