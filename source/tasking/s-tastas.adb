@@ -7,12 +7,12 @@ with System.Native_Stack;
 with System.Native_Time;
 with System.Once;
 with System.Runtime_Context;
-with System.Secondary_Stack;
 with System.Shared_Locking;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Tasking.Synchronous_Objects.Abortable;
 with System.Tasking.Yield;
+with System.Unbounded_Stack_Allocators;
 with System.Unwind;
 package body System.Tasking.Tasks is
    pragma Suppress (All_Checks);
@@ -548,7 +548,7 @@ package body System.Tasking.Tasks is
          end if;
       end if;
       --  cleanup secondary stack
-      Secondary_Stack.Clear;
+      Unbounded_Stack_Allocators.Clear (Local.Secondary_Stack'Access);
       --  return
       return Result;
    end Thread;

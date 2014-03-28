@@ -1,6 +1,6 @@
 with Ada.Unchecked_Conversion;
-with System.Secondary_Stack.Debug; -- Error_Put for System.Address
 with System.Termination;
+with System.Unbounded_Stack_Allocators.Debug; -- Error_Put for System.Address
 package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
 
    type AA_Node_Access is access Node;
@@ -56,7 +56,8 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
          end if;
          System.Termination.Error_Put (Indent_S);
          System.Termination.Error_Put (" ");
-         System.Secondary_Stack.Debug.Error_Put (Current.all'Address);
+         System.Unbounded_Stack_Allocators.Debug.Error_Put (
+            Current.all'Address);
          System.Termination.Error_Put (" (level =");
          System.Termination.Error_Put (
             Level_Type'Image (Downcast (Current).Level));

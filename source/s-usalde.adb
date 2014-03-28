@@ -1,8 +1,7 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address_Image;
-with System.Runtime_Context;
 with System.Termination;
-package body System.Secondary_Stack.Debug is
+package body System.Unbounded_Stack_Allocators.Debug is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
    use type Storage_Elements.Storage_Offset;
@@ -24,11 +23,9 @@ package body System.Secondary_Stack.Debug is
       Termination.Error_Put (S);
    end Error_Put;
 
-   procedure Dump is
+   procedure Dump (Allocator : not null access Allocator_Type) is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
-      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
-         Runtime_Context.Get_Task_Local_Storage;
    begin
       Termination.Error_Put ("Secondary Stack:");
       Termination.Error_New_Line;
@@ -38,7 +35,7 @@ package body System.Secondary_Stack.Debug is
          Last : Natural;
          Error : Boolean;
          --  index
-         I : Address := TLS.Secondary_Stack;
+         I : Address := Allocator.all;
          Block_Number : Formatting.Unsigned := 0;
       begin
          while I /= Null_Address loop
@@ -88,4 +85,4 @@ package body System.Secondary_Stack.Debug is
       end;
    end Dump;
 
-end System.Secondary_Stack.Debug;
+end System.Unbounded_Stack_Allocators.Debug;
