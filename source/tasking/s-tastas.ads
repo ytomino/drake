@@ -57,8 +57,8 @@ package System.Tasking.Tasks is
    procedure Send_Abort (T : not null Task_Id);
    procedure Enable_Abort;
    procedure Disable_Abort (Aborted : Boolean); -- check and disable
-   procedure Enter_Unabortable;
-   procedure Leave_Unabortable;
+   procedure Lock_Abort;
+   procedure Unlock_Abort;
    function Is_Aborted return Boolean;
    function Abort_Attribute
       return access Native_Tasks.Task_Attribute_Of_Abort;

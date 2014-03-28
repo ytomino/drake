@@ -23,11 +23,11 @@ package body Ada.Directories.Volumes is
          C.winnt.LPWSTR);
 
    procedure GetVolumeInformation (
-      FS : not null access Non_Controlled_File_System;
+      FS : aliased in out Non_Controlled_File_System;
       FileSystemNameBuffer : access C.winnt.WCHAR;
       FileSystemNameSize : C.windef.DWORD);
    procedure GetVolumeInformation (
-      FS : not null access Non_Controlled_File_System;
+      FS : aliased in out Non_Controlled_File_System;
       FileSystemNameBuffer : access C.winnt.WCHAR;
       FileSystemNameSize : C.windef.DWORD) is
    begin
@@ -144,7 +144,7 @@ package body Ada.Directories.Volumes is
       FileSystem : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       GetVolumeInformation (
-         NC_FS,
+         NC_FS.all,
          FileSystem (0)'Access,
          FileSystem'Length);
       return System.Zero_Terminated_WStrings.Value (FileSystem (0)'Access);
@@ -185,7 +185,7 @@ package body Ada.Directories.Volumes is
       NC_FS : constant not null access Non_Controlled_File_System :=
          Reference (FS);
    begin
-      GetVolumeInformation (NC_FS, null, 0);
+      GetVolumeInformation (NC_FS.all, null, 0);
       return (NC_FS.FileSystemFlags and C.winbase.FS_CASE_IS_PRESERVED) /= 0;
    end Case_Preserving;
 
@@ -199,7 +199,7 @@ package body Ada.Directories.Volumes is
          if NC_FS.Is_NTFS then
             return False;
          else
-            GetVolumeInformation (NC_FS, null, 0);
+            GetVolumeInformation (NC_FS.all, null, 0);
             return (NC_FS.FileSystemFlags and C.winbase.FS_CASE_SENSITIVE) /=
                0;
          end if;
@@ -209,7 +209,7 @@ package body Ada.Directories.Volumes is
                C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
          begin
             GetVolumeInformation (
-               NC_FS,
+               NC_FS.all,
                FileSystem (0)'Access,
                FileSystem'Length);
          end;

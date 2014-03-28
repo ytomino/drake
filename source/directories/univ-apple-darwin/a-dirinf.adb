@@ -18,8 +18,8 @@ package body Ada.Directories.Information is
    use type C.sys.types.mode_t;
    use type C.sys.types.ssize_t;
 
-   procedure Fill (Directory_Entry : not null access Directory_Entry_Type);
-   procedure Fill (Directory_Entry : not null access Directory_Entry_Type) is
+   procedure Fill (Directory_Entry : aliased in out Directory_Entry_Type);
+   procedure Fill (Directory_Entry : aliased in out Directory_Entry_Type) is
    begin
       if Directory_Entry.Search = null then
          Raise_Exception (Status_Error'Identity);
@@ -28,7 +28,7 @@ package body Ada.Directories.Information is
          Directory_Searching.Get_Information (
             Directory_Entry.Search.Path.all,
             Directory_Entry.Data,
-            Directory_Entry.Additional.Information'Access);
+            Directory_Entry.Additional.Information);
          Directory_Entry.Additional.Filled := True;
       end if;
    end Fill;
@@ -57,13 +57,13 @@ package body Ada.Directories.Information is
    function Group (Name : String) return String is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return System.Native_Credentials.Group_Name (Information.st_gid);
    end Group;
 
    function Group (Directory_Entry : Directory_Entry_Type) return String is
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return System.Native_Credentials.Group_Name (
          Directory_Entry.Additional.Information.st_gid);
    end Group;
@@ -71,7 +71,7 @@ package body Ada.Directories.Information is
    function Is_Block_Special_File (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
@@ -79,7 +79,7 @@ package body Ada.Directories.Information is
    function Is_Block_Special_File (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return (Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
@@ -87,7 +87,7 @@ package body Ada.Directories.Information is
    function Is_Character_Special_File (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
@@ -95,7 +95,7 @@ package body Ada.Directories.Information is
    function Is_Character_Special_File (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return (Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
@@ -103,7 +103,7 @@ package body Ada.Directories.Information is
    function Is_FIFO (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFIFO;
    end Is_FIFO;
@@ -111,7 +111,7 @@ package body Ada.Directories.Information is
    function Is_FIFO (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return (Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFIFO;
    end Is_FIFO;
@@ -119,7 +119,7 @@ package body Ada.Directories.Information is
    function Is_Socket (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFSOCK;
    end Is_Socket;
@@ -127,7 +127,7 @@ package body Ada.Directories.Information is
    function Is_Socket (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return (Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFSOCK;
    end Is_Socket;
@@ -135,7 +135,7 @@ package body Ada.Directories.Information is
    function Is_Symbolic_Link (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
@@ -143,7 +143,7 @@ package body Ada.Directories.Information is
    function Is_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return (Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
@@ -152,7 +152,7 @@ package body Ada.Directories.Information is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return Cast (System.Native_Time.To_Time (Information.st_atimespec));
    end Last_Access_Time;
 
@@ -161,7 +161,7 @@ package body Ada.Directories.Information is
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return Cast (System.Native_Time.To_Time (
          Directory_Entry.Additional.Information.st_atimespec));
    end Last_Access_Time;
@@ -172,7 +172,7 @@ package body Ada.Directories.Information is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return Cast (System.Native_Time.To_Time (Information.st_ctimespec));
    end Last_Status_Change_Time;
 
@@ -181,7 +181,7 @@ package body Ada.Directories.Information is
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return Cast (System.Native_Time.To_Time (
          Directory_Entry.Additional.Information.st_ctimespec));
    end Last_Status_Change_Time;
@@ -189,13 +189,13 @@ package body Ada.Directories.Information is
    function Owner (Name : String) return String is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return System.Native_Credentials.User_Name (Information.st_uid);
    end Owner;
 
    function Owner (Directory_Entry : Directory_Entry_Type) return String is
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return System.Native_Credentials.User_Name (
          Directory_Entry.Additional.Information.st_uid);
    end Owner;
@@ -203,14 +203,14 @@ package body Ada.Directories.Information is
    function Permission_Set (Name : String) return Permission_Set_Type is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return To_Permission_Set (Information.st_mode);
    end Permission_Set;
 
    function Permission_Set (Directory_Entry : Directory_Entry_Type)
       return Permission_Set_Type is
    begin
-      Fill (Directory_Entry'Unrestricted_Access);
+      Fill (Directory_Entry'Unrestricted_Access.all);
       return To_Permission_Set (
          Directory_Entry.Additional.Information.st_mode);
    end Permission_Set;
@@ -283,7 +283,7 @@ package body Ada.Directories.Information is
    function Identity (Name : String) return File_Id is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return File_Id (Information.st_ino);
    end Identity;
 

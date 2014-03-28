@@ -45,16 +45,16 @@ package body Ada.Tags is
    pragma Suppress_Initialization (E_Node);
 
    procedure E_Insert (
-      Node : not null access E_Node_Access;
+      Node : in out E_Node_Access;
       T : Tag;
       External : String);
    procedure E_Insert (
-      Node : not null access E_Node_Access;
+      Node : in out E_Node_Access;
       T : Tag;
       External : String) is
    begin
-      if Node.all = null then
-         Node.all := new E_Node'(Left => null, Right => null, Tag => T);
+      if Node = null then
+         Node := new E_Node'(Left => null, Right => null, Tag => T);
       else
          declare
             TSD : constant Type_Specific_Data_Ptr :=
@@ -64,9 +64,9 @@ package body Ada.Tags is
                   TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
          begin
             if Node_External > External then
-               E_Insert (Node.all.Left'Access, T, External);
+               E_Insert (Node.Left, T, External);
             elsif Node_External < External then
-               E_Insert (Node.all.Right'Access, T, External);
+               E_Insert (Node.Right, T, External);
             else
                null; -- already added
             end if;
@@ -244,7 +244,7 @@ package body Ada.Tags is
          null; -- nested
       else
          System.Shared_Locking.Enter;
-         E_Insert (External_Map'Access, T, Result); -- library level
+         E_Insert (External_Map, T, Result); -- library level
          System.Shared_Locking.Leave;
       end if;
       return Result;

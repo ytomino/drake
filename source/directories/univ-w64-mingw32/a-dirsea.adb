@@ -11,11 +11,11 @@ package body Ada.Directory_Searching is
 
    function Match_Filter (
       Filter : Filter_Type;
-      Directory_Entry : not null access Directory_Entry_Type)
+      Directory_Entry : Directory_Entry_Type)
       return Boolean;
    function Match_Filter (
       Filter : Filter_Type;
-      Directory_Entry : not null access Directory_Entry_Type)
+      Directory_Entry : Directory_Entry_Type)
       return Boolean is
    begin
       return Filter (To_File_Kind (Directory_Entry.dwFileAttributes))
@@ -38,7 +38,7 @@ package body Ada.Directory_Searching is
       Directory : String;
       Pattern : String;
       Filter : Filter_Type;
-      Directory_Entry : not null access Directory_Entry_Type;
+      Directory_Entry : aliased out Directory_Entry_Type;
       Has_Next_Entry : out Boolean) is
    begin
       declare
@@ -68,7 +68,7 @@ package body Ada.Directory_Searching is
          --  start search
          Search.Handle := C.winbase.FindFirstFileW (
             Wildcard (0)'Access,
-            Directory_Entry);
+            Directory_Entry'Access);
       end;
       if Search.Handle = C.winbase.INVALID_HANDLE_VALUE then
          case C.winbase.GetLastError is
@@ -88,7 +88,7 @@ package body Ada.Directory_Searching is
             end if;
             if C.winbase.FindNextFileW (
                Search.Handle,
-               Directory_Entry) = 0
+               Directory_Entry'Access) = 0
             then
                Has_Next_Entry := False; -- end
                exit;
@@ -109,7 +109,7 @@ package body Ada.Directory_Searching is
 
    procedure Get_Next_Entry (
       Search : in out Search_Type;
-      Directory_Entry : not null access Directory_Entry_Type;
+      Directory_Entry : aliased out Directory_Entry_Type;
       Has_Next_Entry : out Boolean)
    is
       pragma Unmodified (Search);
@@ -117,7 +117,7 @@ package body Ada.Directory_Searching is
       loop
          if C.winbase.FindNextFileW (
             Search.Handle,
-            Directory_Entry) = 0
+            Directory_Entry'Access) = 0
          then
             Has_Next_Entry := False; -- end
             exit;
@@ -145,7 +145,7 @@ package body Ada.Directory_Searching is
    function Size (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Additional : not null access Directory_Entry_Additional_Type)
+      Additional : aliased in out Directory_Entry_Additional_Type)
       return Streams.Stream_Element_Count
    is
       pragma Unreferenced (Directory);
@@ -161,7 +161,7 @@ package body Ada.Directory_Searching is
    function Modification_Time (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Additional : not null access Directory_Entry_Additional_Type)
+      Additional : aliased in out Directory_Entry_Additional_Type)
       return System.Native_Time.Native_Time
    is
       pragma Unreferenced (Directory);

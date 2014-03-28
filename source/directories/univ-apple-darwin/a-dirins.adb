@@ -46,11 +46,11 @@ package body Ada.Directories.Inside is
 
    procedure Get_Information (
       Name : String;
-      Information : not null access Directory_Entry_Information_Type;
+      Information : aliased out Directory_Entry_Information_Type;
       Error : out Boolean);
    procedure Get_Information (
       Name : String;
-      Information : not null access Directory_Entry_Information_Type;
+      Information : aliased out Directory_Entry_Information_Type;
       Error : out Boolean)
    is
       C_Name : C.char_array (
@@ -58,7 +58,7 @@ package body Ada.Directories.Inside is
          Name'Length * System.Zero_Terminated_Strings.Expanding);
    begin
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
-      Error := C.sys.stat.lstat (C_Name (0)'Access, Information) < 0;
+      Error := C.sys.stat.lstat (C_Name (0)'Access, Information'Access) < 0;
    end Get_Information;
 
    --  implementation
@@ -233,13 +233,13 @@ package body Ada.Directories.Inside is
       Information : aliased Directory_Entry_Information_Type;
       Error : Boolean;
    begin
-      Get_Information (Name, Information'Access, Error);
+      Get_Information (Name, Information, Error);
       return not Error;
    end Exists;
 
    procedure Get_Information (
       Name : String;
-      Information : not null access Directory_Entry_Information_Type)
+      Information : aliased out Directory_Entry_Information_Type)
    is
       Error : Boolean;
    begin

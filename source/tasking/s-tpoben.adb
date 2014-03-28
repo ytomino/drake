@@ -64,4 +64,11 @@ package body System.Tasking.Protected_Objects.Entries is
       Synchronous_Objects.Cancel (Object.Calling, Cancel_Call'Access);
    end Cancel_Calls;
 
+   function Get_Ceiling (Object : not null access Protection_Entries'Class)
+      return Any_Priority is
+   begin
+      raise Program_Error; -- unimplemented
+      return Get_Ceiling (Object);
+   end Get_Ceiling;
+
 end System.Tasking.Protected_Objects.Entries;

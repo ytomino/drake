@@ -24,11 +24,11 @@ package Ada.Characters.Inside.Sets is
 
    function Is_In (
       Element : Character_Type;
-      Set : not null access constant Character_Set)
+      Set : Character_Set)
       return Boolean;
    function Is_In (
       Element : Character;
-      Set : not null access constant Character_Set)
+      Set : Character_Set)
       return Boolean;
 
    --  binary tree operations

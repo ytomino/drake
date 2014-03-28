@@ -93,7 +93,7 @@ package body Ada.Numerics.Distributions is
 
    --  Simple distributions for random number
 
-   function Linear_Discrete_Random (Gen : not null access Generator)
+   function Linear_Discrete_Random (Gen : aliased in out Generator)
       return Target
    is
       function To_Target is new Linear_Discrete (Source, Target);
@@ -103,7 +103,7 @@ package body Ada.Numerics.Distributions is
 
    --  Strict uniform distributions for random number
 
-   function Uniform_Discrete_Random (Gen : not null access Generator)
+   function Uniform_Discrete_Random (Gen : aliased in out Generator)
       return Target
    is
       type Longest_Unsigned is mod 2 ** Long_Long_Integer'Size;
@@ -175,7 +175,7 @@ package body Ada.Numerics.Distributions is
       end if;
    end Uniform_Discrete_Random;
 
-   function Uniform_Float_Random_0_To_1 (Gen : not null access Generator)
+   function Uniform_Float_Random_0_To_1 (Gen : aliased in out Generator)
       return Target is
    begin
       if Target'Machine_Mantissa <= 24 then -- Float'Machine_Mantissa
@@ -227,7 +227,7 @@ package body Ada.Numerics.Distributions is
    end Uniform_Float_Random_0_To_1;
 
    function Uniform_Float_Random_0_To_Less_Than_1 (
-      Gen : not null access Generator)
+      Gen : aliased in out Generator)
       return Target is
    begin
       if Target'Machine_Mantissa <= 24 then -- Float'Machine_Mantissa
@@ -267,7 +267,7 @@ package body Ada.Numerics.Distributions is
    end Uniform_Float_Random_0_To_Less_Than_1;
 
    function Uniform_Float_Random_Greater_Than_0_To_Less_Than_1 (
-      Gen : not null access Generator)
+      Gen : aliased in out Generator)
       return Target is
    begin
       if Target'Machine_Mantissa <= 24 then -- Float'Machine_Mantissa

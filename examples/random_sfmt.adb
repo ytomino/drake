@@ -86,7 +86,7 @@ procedure random_sfmt is
 					Ada.Text_IO.New_Line;
 				end if;
 			end if;
-			r32 := Random_32 (Gen'Access);
+			r32 := Random_32 (Gen);
 			if r32 /= array32 (i) then
 				raise Program_Error with "mismatch at" & Integer'Image (i)
 					& " array32:" & Hex_Image (array32 (i))
@@ -94,7 +94,7 @@ procedure random_sfmt is
 			end if;
 		end loop;
 		for i in 0 .. 700 - 1 loop
-			r32 := Random_32 (Gen'Access);
+			r32 := Random_32 (Gen);
 			if r32 /= array32_2 (i) then
 				raise Program_Error with "mismatch at" & Integer'Image (I)
 					& " array32_2:" & Hex_Image (array32_2 (i))
@@ -115,7 +115,7 @@ procedure random_sfmt is
 					Ada.Text_IO.New_Line;
 				end if;
 			end if;
-			r32 := Random_32 (Gen'Access);
+			r32 := Random_32 (Gen);
 			if r32 /= array32 (i) then
 				raise Program_Error with "mismatch at" & Integer'Image (I)
 					& " array32:" & Hex_Image (array32 (i))
@@ -123,7 +123,7 @@ procedure random_sfmt is
 			end if;
 		end loop;
 		for i in 0 .. 700 - 1 loop
-			r32 := Random_32 (Gen'Access);
+			r32 := Random_32 (Gen);
 			if r32 /= array32_2 (i) then
 				raise Program_Error with "mismatch at" & Integer'Image (I)
 					& " array32_2:" & Hex_Image (array32_2 (i))
@@ -168,7 +168,7 @@ procedure random_sfmt is
 		for i in 0 .. 10 - 1 loop
 			clo := Ada.Execution_Time.Clock;
 			for j in 0 .. BLOCK_SIZE * COUNT - 1 loop
-			 	Dummy := Random_32 (Gen'Access);
+			 	Dummy := Random_32 (Gen);
 			end loop;
 			clo_Span:= Ada.Execution_Time.Clock - clo;
 			if clo_Span < min then
@@ -208,7 +208,7 @@ procedure random_sfmt is
 					Ada.Text_IO.New_Line;
 				end if;
 			end if;
-			r := Random_64 (Gen'Access);
+			r := Random_64 (Gen);
 			if r /= array64 (i) then
 				raise Program_Error with "mismatch at" & Integer'Image (I)
 					& " array64:" & Hex_Image (array64 (i))
@@ -217,7 +217,7 @@ procedure random_sfmt is
 		end loop;
 		Ada.Text_IO.New_Line;
 		for i in 0 .. 700 - 1 loop
-			r := Random_64 (Gen'Access);
+			r := Random_64 (Gen);
 			if r /= array64_2 (i) then
 				raise Program_Error with "mismatch at" & Integer'Image (I)
 					& " array64_2:" & Hex_Image (array64_2 (i))
@@ -238,7 +238,7 @@ procedure random_sfmt is
 					Ada.Text_IO.New_Line;
 				end if;
 			end if;
-			r := Random_64 (Gen'Access);
+			r := Random_64 (Gen);
 			if r /= array64 (i) then
 				raise Program_Error with "mismatch at" & Integer'Image (I)
 					& " array64:" & Hex_Image (array64 (i))
@@ -247,7 +247,7 @@ procedure random_sfmt is
 		end loop;
 		Ada.Text_IO.New_Line;
 		for i in 0 .. 700 - 1 loop
-			r := Random_64 (Gen'Access);
+			r := Random_64 (Gen);
 			if r /= array64_2 (i) then
 				raise Program_Error with "mismatch at" & Integer'Image (I)
 					& " array64_2:" & Hex_Image (array64_2 (i))
@@ -290,7 +290,7 @@ procedure random_sfmt is
 		for i in 0 .. 10 - 1 loop
 			clo := Ada.Execution_Time.Clock;
 			for j in 0 .. BLOCK_SIZE64 * COUNT - 1 loop
-				Dummy := Random_64 (Gen'Access);
+				Dummy := Random_64 (Gen);
 			end loop;
 			clo_Span := Ada.Execution_Time.Clock - clo;
 			if clo_Span < min then

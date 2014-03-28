@@ -77,7 +77,7 @@ package body System.Tasking.Rendezvous is
       Synchronous_Objects.Set (Current_Call.Waiting);
       TLS_Current_Call := Current_Call.Previous;
       if not ZCX_By_Default then
-         Tasks.Leave_Unabortable;
+         Tasks.Unlock_Abort;
          --  Abort_Undefer will not be called by compiler
       end if;
       Ada.Exceptions.Reraise_Occurrence (X);

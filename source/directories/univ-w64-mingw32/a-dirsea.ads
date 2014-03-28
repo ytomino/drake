@@ -38,14 +38,14 @@ private package Ada.Directory_Searching is
       Directory : String;
       Pattern : String;
       Filter : Filter_Type;
-      Directory_Entry : not null access Directory_Entry_Type;
+      Directory_Entry : aliased out Directory_Entry_Type;
       Has_Next_Entry : out Boolean);
 
    procedure End_Search (Search : in out Search_Type);
 
    procedure Get_Next_Entry (
       Search : in out Search_Type;
-      Directory_Entry : not null access Directory_Entry_Type;
+      Directory_Entry : aliased out Directory_Entry_Type;
       Has_Next_Entry : out Boolean);
 
    function Simple_Name (Directory_Entry : Directory_Entry_Type)
@@ -57,13 +57,13 @@ private package Ada.Directory_Searching is
    function Size (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Additional : not null access Directory_Entry_Additional_Type)
+      Additional : aliased in out Directory_Entry_Additional_Type)
       return Streams.Stream_Element_Count;
 
    function Modification_Time (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Additional : not null access Directory_Entry_Additional_Type)
+      Additional : aliased in out Directory_Entry_Additional_Type)
       return System.Native_Time.Native_Time;
 
    Name_Error : exception

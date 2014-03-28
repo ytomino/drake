@@ -154,12 +154,12 @@ package body Ada.Text_IO is
 
    procedure Close (File : in out File_Type) is
    begin
-      Inside.Close (Reference (File), Raise_On_Error => True);
+      Inside.Close (Reference (File).all, Raise_On_Error => True);
    end Close;
 
    procedure Delete (File : in out File_Type) is
    begin
-      Inside.Delete (Reference (File));
+      Inside.Delete (Reference (File).all);
    end Delete;
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
@@ -171,7 +171,7 @@ package body Ada.Text_IO is
       then
          Raise_Exception (Mode_Error'Identity);
       else
-         Inside.Reset (Reference (File), Mode);
+         Inside.Reset (Reference (File).all, Mode);
       end if;
    end Reset;
 
@@ -784,7 +784,7 @@ package body Ada.Text_IO is
       overriding procedure Finalize (Object : in out File_Type) is
       begin
          pragma Check (Trace, Debug.Put ("enter"));
-         Inside.Close (Reference (Object), Raise_On_Error => False);
+         Inside.Close (Reference (Object).all, Raise_On_Error => False);
          pragma Check (Trace, Debug.Put ("leave"));
       end Finalize;
 

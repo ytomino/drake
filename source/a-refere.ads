@@ -17,7 +17,7 @@ package Ada.References is
          with Implicit_Dereference => Element;
 
       function Constant_Slice (
-         Item : not null access constant Array_Type;
+         Item : aliased Array_Type;
          First : Index_Type;
          Last : Index_Type'Base)
          return Constant_Reference_Type;
@@ -27,7 +27,7 @@ package Ada.References is
          with Implicit_Dereference => Element;
 
       function Slice (
-         Item : not null access Array_Type;
+         Item : aliased in out Array_Type;
          First : Index_Type;
          Last : Index_Type'Base)
          return Reference_Type;

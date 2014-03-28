@@ -1,5 +1,6 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
+with System.Synchronous_Control;
 with System.Tasking.Tasks;
 with System.Termination;
 package body System.Tasking.Stages is
@@ -27,11 +28,11 @@ package body System.Tasking.Stages is
    procedure Complete_Master
       renames Tasks.Leave_Master;
 
-   procedure Abort_Defer
-      renames Tasks.Enter_Unabortable;
+   procedure Unlock_Abort
+      renames Tasks.Unlock_Abort;
 
-   procedure Abort_Undefer
-      renames Tasks.Leave_Unabortable;
+   procedure Lock_Abort
+      renames Tasks.Lock_Abort;
 
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count;
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count is
@@ -162,8 +163,8 @@ begin
    Soft_Links.Current_Master := Current_Master'Access;
    Soft_Links.Enter_Master := Enter_Master'Access;
    Soft_Links.Complete_Master := Complete_Master'Access;
-   Soft_Links.Abort_Defer := Abort_Defer'Access;
-   Soft_Links.Abort_Undefer := Abort_Undefer'Access;
+   Synchronous_Control.Unlock_Abort_Hook := Unlock_Abort'Access;
+   Synchronous_Control.Lock_Abort_Hook := Lock_Abort'Access;
    Tasking.Storage_Size := Storage_Size'Access;
    Termination.Register_Exit (Unregister'Access);
 end System.Tasking.Stages;

@@ -16,7 +16,7 @@ package Ada.Task_Termination is
 --  function Current_Task_Fallback_Handler return Termination_Handler;
 
 --  procedure Set_Specific_Handler (
---    T       : Task_Identification.Task_Id;
+--    T : Task_Identification.Task_Id;
 --    Handler : Termination_Handler);
 --  function Specific_Handler (T : Task_Identification.Task_Id)
 --    return Termination_Handler;

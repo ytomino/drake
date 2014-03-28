@@ -44,13 +44,13 @@ package body System.Tasking.Native_Tasks is
    --  implementation of thread
 
    procedure Create (
-      Handle : not null access Handle_Type;
+      Handle : aliased out Handle_Type;
       Parameter : Parameter_Type;
       Thread_Body : Thread_Body_Type;
       Error : out Boolean) is
    begin
       Error := C.pthread.pthread_create (
-         Handle,
+         Handle'Access,
          null,
          Thread_Body.all'Access, -- type is different between platforms
          Parameter) /= 0;
@@ -59,12 +59,12 @@ package body System.Tasking.Native_Tasks is
    procedure Join (
       Handle : Handle_Type; -- of target thread
       Abort_Current : access Task_Attribute_Of_Abort; -- of current thread
-      Result : not null access Result_Type;
+      Result : aliased out Result_Type;
       Error : out Boolean)
    is
       pragma Unreferenced (Abort_Current);
    begin
-      Error := C.pthread.pthread_join (Handle, Result) /= 0;
+      Error := C.pthread.pthread_join (Handle, Result'Access) /= 0;
    end Join;
 
    procedure Detach (

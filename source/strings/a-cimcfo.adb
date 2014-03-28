@@ -9,11 +9,11 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
    Mapping_Flag : aliased System.Once.Flag := 0;
 
    procedure Decode (
-      Mapping : not null access Character_Mapping;
+      Mapping : in out Character_Mapping;
       I : in out Positive;
       Table : UCD.Map_16x1_Type);
    procedure Decode (
-      Mapping : not null access Character_Mapping;
+      Mapping : in out Character_Mapping;
       I : in out Positive;
       Table : UCD.Map_16x1_Type) is
    begin
@@ -29,12 +29,12 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
    end Decode;
 
    procedure Decode (
-      Mapping : not null access Character_Mapping;
+      Mapping : in out Character_Mapping;
       I : in out Positive;
       Table : UCD.Case_Folding.Compressed_Type;
       Offset : UCD.Difference_Base);
    procedure Decode (
-      Mapping : not null access Character_Mapping;
+      Mapping : in out Character_Mapping;
       I : in out Positive;
       Table : UCD.Case_Folding.Compressed_Type;
       Offset : UCD.Difference_Base) is
@@ -70,15 +70,32 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
          I : Positive := Mapping.From'First;
       begin
          --  16#0041# ..
-         Decode (Mapping, I, UCD.Case_Folding.C_Table_XXXXx1_Compressed, 0);
+         Decode (
+            Mapping.all,
+            I,
+            UCD.Case_Folding.C_Table_XXXXx1_Compressed,
+            Offset => 0);
          --  16#00B5# ..
-         Decode (Mapping, I, UCD.Case_Folding.C_Table_XXXXx1);
+         Decode (
+            Mapping.all,
+            I,
+            UCD.Case_Folding.C_Table_XXXXx1);
          --  16#1E9E# ..
-         Decode (Mapping, I, UCD.Case_Folding.S_Table_XXXXx1);
+         Decode (
+            Mapping.all,
+            I,
+            UCD.Case_Folding.S_Table_XXXXx1);
          --  16#1F88# ..
-         Decode (Mapping, I, UCD.Case_Folding.S_Table_XXXXx1_Compressed, 0);
+         Decode (
+            Mapping.all,
+            I,
+            UCD.Case_Folding.S_Table_XXXXx1_Compressed,
+            Offset => 0);
          --  16#10400# ..
-         Decode (Mapping, I, UCD.Case_Folding.C_Table_1XXXXx1_Compressed,
+         Decode (
+            Mapping.all,
+            I,
+            UCD.Case_Folding.C_Table_1XXXXx1_Compressed,
             Offset => 16#10000#);
          pragma Assert (I = Mapping.From'Last + 1);
       end;

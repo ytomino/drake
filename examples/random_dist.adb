@@ -43,7 +43,7 @@ begin
 		function To is new D.Linear_Discrete (S, T);
 		procedure Process (X : out T) is
 		begin
-			X := To (S'Mod (R.Random_32 (Gen'Access)));
+			X := To (S'Mod (R.Random_32 (Gen)));
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -57,7 +57,7 @@ begin
 		function To is new D.Linear_Discrete (S, T);
 		procedure Process (X : out T) is
 		begin
-			X := To (S'Mod (R.Random_32 (Gen'Access)));
+			X := To (S'Mod (R.Random_32 (Gen)));
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -71,7 +71,7 @@ begin
 		function To is new D.Linear_Discrete (S, T);
 		procedure Process (X : out T) is
 		begin
-			X := To (S'Mod (R.Random_32 (Gen'Access)));
+			X := To (S'Mod (R.Random_32 (Gen)));
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -85,7 +85,7 @@ begin
 		type T is range 0 .. 7;
 		procedure Process (X : out T) is
 		begin
-			X := T (To (S1'Mod (R.Random_64 (Gen'Access))) mod 8);
+			X := T (To (S1'Mod (R.Random_64 (Gen))) mod 8);
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -98,7 +98,7 @@ begin
 		type T is range 0 .. 10;
 		procedure Process (X : out T) is
 		begin
-			X := T (Long_Long_Float'Floor (To (S'Mod (R.Random_64 (Gen'Access))) * 10.0));
+			X := T (Long_Long_Float'Floor (To (S'Mod (R.Random_64 (Gen))) * 10.0));
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -137,7 +137,7 @@ begin
 		begin
 			loop
 				declare
-					F : Long_Long_Float'Base := To (R.Random_32 (Gen'Access)) * 2.5;
+					F : Long_Long_Float'Base := To (R.Random_32 (Gen)) * 2.5;
 				begin
 					pragma Assert (not Is_Infinity (F));
 					pragma Assert (not Is_NaN (F));
@@ -159,7 +159,7 @@ begin
 		function Random is new D.Uniform_Discrete_Random (R.Unsigned_32, T, R.Generator, R.Random_32);
 		procedure Process (X : out T) is
 		begin
-			X := Random (Gen'Access);
+			X := Random (Gen);
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -174,7 +174,7 @@ begin
 		type T is range 0 .. 7;
 		procedure Process (X : out T) is
 		begin
-			X := T (Random (Gen'Access) mod 8);
+			X := T (Random (Gen) mod 8);
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -186,7 +186,7 @@ begin
 		function Random is new D.Uniform_Discrete_Random (R.Unsigned_64, T, R.Generator, R.Random_64);
 		procedure Process (X : out T) is
 		begin
-			X := Random (Gen'Access);
+			X := Random (Gen);
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -199,7 +199,7 @@ begin
 		type T is range 0 .. 7;
 		procedure Process (X : out T) is
 		begin
-			X := T (Random (Gen'Access) mod 8);
+			X := T (Random (Gen) mod 8);
 		end Process;
 		procedure Check is new Generic_Check (T, Process);
 	begin
@@ -213,7 +213,7 @@ begin
 			Z : T'Base;
 		begin
 			loop
-				Z := T'Base (Float'Floor (Random (Gen'Access) * 10.0));
+				Z := T'Base (Float'Floor (Random (Gen) * 10.0));
 				exit when Z /= 10; -- 1.0 is a rare case
 			end loop;
 			X := Z;
@@ -226,13 +226,13 @@ begin
 	declare
 		function Random is new D.Uniform_Float_Random_0_To_Less_Than_1 (R.Unsigned_32, Long_Float'Base, R.Generator, R.Random_32);
 	begin
-		pragma Assert (Random (Gen'Access) < 1.0);
+		pragma Assert (Random (Gen) < 1.0);
 		null;
 	end;
 	Ada.Text_IO.Put_Line ("Uniform_Float_Random_Greater_Than_0_To_Less_Than_1");
 	declare
 		function Random is new D.Uniform_Float_Random_Greater_Than_0_To_Less_Than_1 (R.Unsigned_32, Long_Long_Float'Base, R.Generator, R.Random_32);
-		X : constant Long_Long_Float'Base := Random (Gen'Access);
+		X : constant Long_Long_Float'Base := Random (Gen);
 	begin
 		pragma Assert (X > 0.0 and then X < 1.0);
 		null;

@@ -88,7 +88,7 @@ package body Ada.Characters.Inside.Sets is
 
    function Is_In (
       Element : Character_Type;
-      Set : not null access constant Character_Set)
+      Set : Character_Set)
       return Boolean
    is
       Index : constant Integer := Search (Set.Items, Element, Element);
@@ -100,7 +100,7 @@ package body Ada.Characters.Inside.Sets is
 
    function Is_In (
       Element : Character;
-      Set : not null access constant Character_Set)
+      Set : Character_Set)
       return Boolean is
    begin
       return Is_In (To_Wide_Wide_Character (Element), Set);

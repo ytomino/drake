@@ -21,7 +21,7 @@ package System.Tasking.Protected_Objects is
    --  required by compiler
    type Entry_Body is record
       Barrier : Barrier_Function_Pointer;
-      Action  : Entry_Action_Pointer;
+      Action : Entry_Action_Pointer;
    end record;
    pragma Suppress_Initialization (Entry_Body);
 
@@ -44,6 +44,13 @@ package System.Tasking.Protected_Objects is
 
    --  required for protected procedure/function by compiler
    procedure Unlock (Object : not null access Protection);
+
+   --  required by compiler (s-taprob.ads)
+   function Get_Ceiling (Object : not null access Protection)
+      return Any_Priority;
+
+   --  unimplemented subprograms required by compiler
+   --  Set_Ceiling
 
    --  protected type be expanded below:
    --

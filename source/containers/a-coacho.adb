@@ -80,9 +80,9 @@ package body Ada.Containers.Access_Holders is
    begin
       System.Reference_Counting.Assign (
          Target => Upcast (Target.Data'Unchecked_Access),
-         Target_Reference_Count => Target.Data.Super.Reference_Count'Access,
+         Target_Reference_Count => Target.Data.Super.Reference_Count,
          Source => Upcast (Source.Data'Unrestricted_Access),
-         Source_Reference_Count => Source.Data.Super.Reference_Count'Access,
+         Source_Reference_Count => Source.Data.Super.Reference_Count,
          Free => Free_Data'Access);
    end Assign;
 
@@ -90,7 +90,7 @@ package body Ada.Containers.Access_Holders is
    begin
       System.Reference_Counting.Move (
          Target => Upcast (Target.Data'Unchecked_Access),
-         Target_Reference_Count => Target.Data.Super.Reference_Count'Access,
+         Target_Reference_Count => Target.Data.Super.Reference_Count,
          Source => Upcast (Source.Data'Unchecked_Access),
          Sentinel => Null_Data'Address,
          Free => Free_Data'Access);
@@ -105,15 +105,14 @@ package body Ada.Containers.Access_Holders is
 
    overriding procedure Adjust (Object : in out Holder) is
    begin
-      System.Reference_Counting.Adjust (
-         Object.Data.Super.Reference_Count'Access);
+      System.Reference_Counting.Adjust (Object.Data.Super.Reference_Count);
    end Adjust;
 
    overriding procedure Finalize (Object : in out Holder) is
    begin
       System.Reference_Counting.Clear (
          Target => Upcast (Object.Data'Unchecked_Access),
-         Reference_Count => Object.Data.Super.Reference_Count'Access,
+         Reference_Count => Object.Data.Super.Reference_Count,
          Free => Free_Data'Access);
    end Finalize;
 

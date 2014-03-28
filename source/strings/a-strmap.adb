@@ -218,7 +218,7 @@ package body Ada.Strings.Maps is
    is
       pragma Assert (Valid (Reference (Set)));
    begin
-      return Characters.Inside.Sets.Is_In (Element, Reference (Set));
+      return Characters.Inside.Sets.Is_In (Element, Reference (Set).all);
    end Overloaded_Is_In;
 
    function Overloaded_To_Ranges (Set : Character_Set)
@@ -573,10 +573,10 @@ package body Ada.Strings.Maps is
    begin
       if Left_Data.Length = 0 then
          Data := Right_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
+         System.Reference_Counting.Adjust (Data.Reference_Count);
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
+         System.Reference_Counting.Adjust (Data.Reference_Count);
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -610,10 +610,10 @@ package body Ada.Strings.Maps is
    begin
       if Left_Data.Length = 0 then
          Data := Right_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
+         System.Reference_Counting.Adjust (Data.Reference_Count);
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
+         System.Reference_Counting.Adjust (Data.Reference_Count);
       else
          declare
             Max : constant Natural := Left_Data.Length + Right_Data.Length;
@@ -658,7 +658,7 @@ package body Ada.Strings.Maps is
          Data := Empty_Set_Data'Unrestricted_Access;
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count'Access);
+         System.Reference_Counting.Adjust (Data.Reference_Count);
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -706,7 +706,7 @@ package body Ada.Strings.Maps is
 
       overriding procedure Adjust (Object : in out Character_Set) is
       begin
-         System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
+         System.Reference_Counting.Adjust (Object.Data.Reference_Count);
       end Adjust;
 
       overriding procedure Finalize (Object : in out Character_Set) is
@@ -720,7 +720,7 @@ package body Ada.Strings.Maps is
       begin
          System.Reference_Counting.Clear (
             Upcast (Object.Data'Access),
-            Object.Data.Reference_Count'Access,
+            Object.Data.Reference_Count,
             Free => Free_Set_Data'Access);
       end Finalize;
 
@@ -891,7 +891,7 @@ package body Ada.Strings.Maps is
       Element : Wide_Wide_Character)
       return Wide_Wide_Character is
    begin
-      return Characters.Inside.Maps.Value (Reference (Map), Element);
+      return Characters.Inside.Maps.Value (Reference (Map).all, Element);
    end Overloaded_Value;
 
    function "=" (Left, Right : Character_Mapping) return Boolean is
@@ -929,7 +929,7 @@ package body Ada.Strings.Maps is
 
       overriding procedure Adjust (Object : in out Character_Mapping) is
       begin
-         System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
+         System.Reference_Counting.Adjust (Object.Data.Reference_Count);
       end Adjust;
 
       overriding procedure Finalize (Object : in out Character_Mapping) is
@@ -943,7 +943,7 @@ package body Ada.Strings.Maps is
       begin
          System.Reference_Counting.Clear (
             Upcast (Object.Data'Access),
-            Object.Data.Reference_Count'Access,
+            Object.Data.Reference_Count,
             Free => Free_Map_Data'Access);
       end Finalize;
 

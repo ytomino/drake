@@ -292,7 +292,7 @@ package body Ada.Containers.Vectors is
       begin
          Data.Super.Is_Aliased := True;
          return Slicing.Constant_Slice (
-            Data.Items'Unrestricted_Access,
+            Data.Items,
             First_Index,
             Last_Index);
       end;
@@ -625,7 +625,7 @@ package body Ada.Containers.Vectors is
    procedure Query_Element (
       Container : Vector'Class;
       Index : Index_Type;
-      Process  : not null access procedure (Element : Element_Type)) is
+      Process : not null access procedure (Element : Element_Type)) is
    begin
       Process (Container.Constant_Reference (Index).Element.all);
    end Query_Element;
@@ -668,7 +668,7 @@ package body Ada.Containers.Vectors is
       begin
          Data.Super.Is_Aliased := True;
          return Slicing.Slice (
-            Data.Items'Unrestricted_Access,
+            Data.Items,
             First_Index,
             Last_Index);
       end;

@@ -7,12 +7,12 @@ with System.Native_Stack;
 with System.Native_Time;
 with System.Once;
 with System.Runtime_Context;
-with System.Secondary_Stack;
 with System.Shared_Locking;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Tasking.Synchronous_Objects.Abortable;
 with System.Tasking.Yield;
+with System.Unbounded_Stack_Allocators;
 with System.Unwind;
 package body System.Tasking.Tasks is
    pragma Suppress (All_Checks);
@@ -555,7 +555,7 @@ package body System.Tasking.Tasks is
          end if;
       end if;
       --  cleanup secondary stack
-      Secondary_Stack.Clear;
+      Unbounded_Stack_Allocators.Clear (Local.Secondary_Stack);
       --  return
       return Result;
    end Thread;
@@ -581,7 +581,7 @@ package body System.Tasking.Tasks is
          T.Termination_State := TS_Terminated; -- C9A004A
       else
          Native_Tasks.Create (
-            T.Handle'Access,
+            T.Handle,
             To_Parameter (Task_Record_Conv.To_Address (T)),
             Thread'Access,
             Error => Creation_Error);
@@ -607,7 +607,7 @@ package body System.Tasking.Tasks is
          Native_Tasks.Join (
             T.Handle,
             Abort_Attribute,
-            Rec'Access,
+            Rec,
             Error);
          if Error then
             raise Tasking_Error;
@@ -827,7 +827,7 @@ package body System.Tasking.Tasks is
    procedure When_Abort_Signal is
    begin
       if not ZCX_By_Default then
-         Leave_Unabortable;
+         Unlock_Abort;
       end if;
    end When_Abort_Signal;
 
@@ -1137,7 +1137,7 @@ package body System.Tasking.Tasks is
       end if;
    end Disable_Abort;
 
-   procedure Enter_Unabortable is
+   procedure Lock_Abort is
    begin
       if Registered_State = Registered then
          declare
@@ -1149,9 +1149,9 @@ package body System.Tasking.Tasks is
             T.Abort_Locking := T.Abort_Locking + 1;
          end;
       end if;
-   end Enter_Unabortable;
+   end Lock_Abort;
 
-   procedure Leave_Unabortable is
+   procedure Unlock_Abort is
    begin
       if Registered_State = Registered then
          declare
@@ -1163,7 +1163,7 @@ package body System.Tasking.Tasks is
             T.Abort_Locking := T.Abort_Locking - 1;
          end;
       end if;
-   end Leave_Unabortable;
+   end Unlock_Abort;
 
    function Is_Aborted return Boolean is
       T : constant Task_Id := TLS_Current_Task_Id;
@@ -1231,8 +1231,7 @@ package body System.Tasking.Tasks is
       end case;
    end Activate;
 
-   procedure Activate (T : not null Task_Id)
-   is
+   procedure Activate (T : not null Task_Id) is
       Error : Activation_Error;
    begin
       Activate (T, Error);
@@ -1515,7 +1514,7 @@ package body System.Tasking.Tasks is
          return 0;
       else
          return Synchronous_Objects.Count (
-            T.Rendezvous.Calling'Access,
+            T.Rendezvous.Calling,
             Params,
             Filter);
       end if;

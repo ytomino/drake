@@ -396,7 +396,7 @@ package body Interfaces.C is
       return char16_t_const_ptr
    is
       function "+" is
-         new  Pointer_Add (char16_t, char16_array, char16_t_const_ptr);
+         new Pointer_Add (char16_t, char16_array, char16_t_const_ptr);
       p : not null char16_t_const_ptr := s;
       r : size_t := n;
    begin
@@ -430,7 +430,7 @@ package body Interfaces.C is
       return char32_t_const_ptr
    is
       function "+" is
-         new  Pointer_Add (char32_t, char32_array, char32_t_const_ptr);
+         new Pointer_Add (char32_t, char32_array, char32_t_const_ptr);
       p : not null char32_t_const_ptr := s;
       r : size_t := n;
    begin

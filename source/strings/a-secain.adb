@@ -7,5 +7,5 @@ begin
          Characters.Inside.Maps.Compare (
             Left,
             Right,
-            Characters.Inside.Maps.Case_Folding.Case_Folding_Map) = 0;
+            Characters.Inside.Maps.Case_Folding.Case_Folding_Map.all) = 0;
 end Ada.Strings.Equal_Case_Insensitive;

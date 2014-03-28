@@ -58,7 +58,7 @@ begin
 	-- check Append_File
 	declare
 		Page_Size : constant Ada.Streams.Stream_Element_Positive_Count :=
-		   Ada.Streams.Stream_Element_Offset (System.Standard_Allocators.Page_Size);
+			Ada.Streams.Stream_Element_Offset (System.Standard_Allocators.Page_Size);
 		Test_File_Name : constant String := Ada.Command_Line.Command_Name & "-test";
 		File : Ada.Text_IO.File_Type;
 	begin

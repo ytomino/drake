@@ -576,21 +576,21 @@ package body Ada.Text_IO.Inside is
    end Open;
 
    procedure Close (
-      File : not null access Non_Controlled_File_Type;
+      File : aliased in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is
    begin
-      if Is_Open (File.all) then
+      if Is_Open (File) then
          declare
             Internal : aliased
                Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
                File.all.File;
          begin
             if not Streams.Stream_IO.Inside.Is_Standard (Internal) then
-               Free (File.all);
+               Free (File);
             end if;
             if Streams.Stream_IO.Inside.Is_Open (Internal) then
                Streams.Stream_IO.Inside.Close (
-                  Internal'Access,
+                  Internal,
                   Raise_On_Error => Raise_On_Error);
             end if;
          end;
@@ -599,24 +599,24 @@ package body Ada.Text_IO.Inside is
       end if;
    end Close;
 
-   procedure Delete (File : not null access Non_Controlled_File_Type) is
+   procedure Delete (File : aliased in out Non_Controlled_File_Type) is
    begin
-      Check_File_Open (File.all);
+      Check_File_Open (File);
       declare
          Internal : aliased
             Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
             File.all.File;
       begin
-         Free (File.all);
-         Streams.Stream_IO.Inside.Delete (Internal'Access);
+         Free (File);
+         Streams.Stream_IO.Inside.Delete (Internal);
       end;
    end Delete;
 
    procedure Reset (
-      File : not null access Non_Controlled_File_Type;
+      File : aliased in out Non_Controlled_File_Type;
       Mode : File_Mode)
    is
-      Current_Mode : constant File_Mode := Inside.Mode (File.all);
+      Current_Mode : constant File_Mode := Inside.Mode (File);
    begin
       if Current_Mode /= Mode
          and then Streams.Stream_IO.Inside.Is_Standard (File.all.File)
@@ -627,7 +627,7 @@ package body Ada.Text_IO.Inside is
          Raise_Exception (Status_Error'Identity);
       else
          if Current_Mode /= In_File then
-            Flush (File.all);
+            Flush (File);
          end if;
          declare
             package Holder is
@@ -635,9 +635,9 @@ package body Ada.Text_IO.Inside is
                   Non_Controlled_File_Type,
                   Finally);
          begin
-            Holder.Assign (File);
+            Holder.Assign (File'Access);
             Streams.Stream_IO.Inside.Reset (
-               File.all.File'Access,
+               File.all.File,
                Streams.Stream_IO.File_Mode (Mode));
             Holder.Clear;
          end;

@@ -63,7 +63,7 @@ package body Ada.Directories is
       --  search next
       Directory_Searching.Get_Next_Entry (
          Search.Search,
-         Search.Next_Directory_Entry.Data'Access,
+         Search.Next_Directory_Entry.Data,
          Search.Has_Next);
    end Next;
 
@@ -130,7 +130,7 @@ package body Ada.Directories is
       Old_Name : String;
       New_Name : String;
       Overwrite : Boolean := True)
-      renames  Inside.Rename;
+      renames Inside.Rename;
 
    procedure Copy_File (
       Source_Name : String;
@@ -165,14 +165,14 @@ package body Ada.Directories is
    function Kind (Name : String) return File_Kind is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return Inside.Kind (Information);
    end Kind;
 
    function Size (Name : String) return File_Size is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       if Inside.Kind (Information) /= Ordinary_File then
          raise Constraint_Error; -- implementation-defined
       else
@@ -184,7 +184,7 @@ package body Ada.Directories is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return Cast (System.Native_Time.To_Time (
          Inside.Modification_Time (Information)));
    end Modification_Time;
@@ -214,7 +214,7 @@ package body Ada.Directories is
          Directory,
          Pattern,
          Cast (Filter),
-         Search.Next_Directory_Entry.Data'Access,
+         Search.Next_Directory_Entry.Data,
          Search.Has_Next);
       Search.Path := new String'(Full_Name (Directory));
       Search.Count := 1;
@@ -382,7 +382,7 @@ package body Ada.Directories is
          return Directory_Searching.Size (
             Directory_Entry.Search.Path.all,
             Directory_Entry.Data,
-            Directory_Entry.Additional'Unrestricted_Access);
+            Directory_Entry.Additional'Unrestricted_Access.all);
       end if;
    end Size;
 
@@ -398,7 +398,7 @@ package body Ada.Directories is
          Directory_Searching.Modification_Time (
             Directory_Entry.Search.Path.all,
             Directory_Entry.Data,
-            Directory_Entry.Additional'Unrestricted_Access)));
+            Directory_Entry.Additional'Unrestricted_Access.all)));
    end Modification_Time;
 
 end Ada.Directories;

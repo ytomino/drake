@@ -236,7 +236,7 @@ package body Ada.Directories.Inside is
 
    procedure Get_Information (
       Name : String;
-      Information : not null access Directory_Entry_Information_Type)
+      Information : aliased out Directory_Entry_Information_Type)
    is
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
@@ -246,7 +246,7 @@ package body Ada.Directories.Inside is
       if C.winbase.GetFileAttributesEx (
          W_Name (0)'Access,
          C.winbase.GetFileExInfoStandard,
-         C.windef.LPVOID (Information.all'Address)) = 0
+         C.windef.LPVOID (Information'Address)) = 0
       then
          Raise_Exception (Name_Error'Identity);
       end if;

@@ -95,17 +95,17 @@ package body Ada.Streams.Stream_IO is
 
    procedure Close (File : in out File_Type) is
    begin
-      Inside.Close (Reference (File), Raise_On_Error => True);
+      Inside.Close (Reference (File).all, Raise_On_Error => True);
    end Close;
 
    procedure Delete (File : in out File_Type) is
    begin
-      Inside.Delete (Reference (File));
+      Inside.Delete (Reference (File).all);
    end Delete;
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
    begin
-      Inside.Reset (Reference (File), Mode);
+      Inside.Reset (Reference (File).all, Mode);
    end Reset;
 
    procedure Reset (File : in out File_Type) is
@@ -226,7 +226,7 @@ package body Ada.Streams.Stream_IO is
 
    procedure Set_Mode (File : in out File_Type; Mode : File_Mode) is
    begin
-      Inside.Set_Mode (Reference (File), Mode);
+      Inside.Set_Mode (Reference (File).all, Mode);
    end Set_Mode;
 
    procedure Flush (File : File_Type) is
@@ -244,9 +244,12 @@ package body Ada.Streams.Stream_IO is
       end Reference;
 
       overriding procedure Finalize (Object : in out File_Type) is
+         Non_Controlled_File : constant
+            not null access Inside.Non_Controlled_File_Type :=
+            Reference (Object);
       begin
-         if Inside.Is_Open (Reference (Object).all) then
-            Inside.Close (Reference (Object), Raise_On_Error => False);
+         if Inside.Is_Open (Non_Controlled_File.all) then
+            Inside.Close (Non_Controlled_File.all, Raise_On_Error => False);
          end if;
       end Finalize;
 

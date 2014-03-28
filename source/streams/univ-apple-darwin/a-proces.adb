@@ -1,7 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Inside;
 with Ada.Processes.Inside;
-with System.Soft_Links;
+with System.Synchronous_Control;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdlib;
@@ -79,12 +79,12 @@ package body Ada.Processes is
       Code : aliased C.signed_int;
    begin
       loop
-         System.Soft_Links.Abort_Undefer.all;
+         System.Synchronous_Control.Unlock_Abort;
          Result := C.sys.wait.waitpid (
             C.sys.types.pid_t (Child),
             Code'Access,
             0);
-         System.Soft_Links.Abort_Defer.all; -- raise an exception if aborted
+         System.Synchronous_Control.Lock_Abort; -- raise if aborted
          if Result < 0 then
             if C.errno.errno /= C.errno.EINTR then
                Raise_Exception (Use_Error'Identity);
