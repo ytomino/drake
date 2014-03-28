@@ -93,7 +93,7 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    procedure Delete (Container : in out Set; Item : Element_Type);
 
-   procedure Delete (Container : in out Set; Position  : in out Cursor);
+   procedure Delete (Container : in out Set; Position : in out Cursor);
 
 --  procedure Delete_First (Container : in out Set);
 

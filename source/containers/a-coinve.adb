@@ -607,7 +607,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Prepend (
       Container : in out Vector;
-      New_Item  : Element_Type;
+      New_Item : Element_Type;
       Count : Count_Type := 1) is
    begin
       Insert (Container, Index_Type'First, New_Item, Count);
@@ -625,7 +625,7 @@ package body Ada.Containers.Indefinite_Vectors is
    procedure Query_Element (
       Container : Vector'Class;
       Index : Index_Type;
-      Process  : not null access procedure (Element : Element_Type)) is
+      Process : not null access procedure (Element : Element_Type)) is
    begin
       Process (Container.Constant_Reference (Index).Element.all);
    end Query_Element;

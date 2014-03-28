@@ -108,7 +108,8 @@ package body Ada.Containers.Forward_Iterators is
    end Finalize;
 
    overriding function First (Object : Iterator) return Cursor is
-      Mutable_Object : Iterator renames Object'Unrestricted_Access.all;
+      Mutable_Object : Iterator
+         renames Object'Unrestricted_Access.all;
    begin
       if Mutable_Object.State /= First then
          raise Status_Error;
@@ -129,7 +130,8 @@ package body Ada.Containers.Forward_Iterators is
    overriding function Next (Object : Iterator; Position : Cursor)
       return Cursor
    is
-      Mutable_Object : Iterator renames Object'Unrestricted_Access.all;
+      Mutable_Object : Iterator
+         renames Object'Unrestricted_Access.all;
    begin
       return Result : Cursor do
          if Reference (Position).Next /= null then

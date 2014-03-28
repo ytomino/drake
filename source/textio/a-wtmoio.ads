@@ -26,7 +26,7 @@ package Ada.Wide_Text_IO.Modular_IO is
 --    Base : Number_Base := Default_Base);
 
 --  procedure Get (
---    From :  String;
+--    From : String;
 --    Item : out Num;
 --    Last : out Positive);
 --  procedure Put (

@@ -625,7 +625,7 @@ package body Ada.Containers.Limited_Vectors is
    procedure Query_Element (
       Container : Vector'Class;
       Index : Index_Type;
-      Process  : not null access procedure (Element : Element_Type)) is
+      Process : not null access procedure (Element : Element_Type)) is
    begin
       Process (Container.Constant_Reference (Index).Element.all);
    end Query_Element;
@@ -676,7 +676,7 @@ package body Ada.Containers.Limited_Vectors is
 
    procedure Replace_Element (
       Container : in out Vector;
-      Position  : Index_Type;
+      Position : Index_Type;
       New_Item : not null access function return Element_Type) is
    begin
       Free (Container.Data.Items (Position));

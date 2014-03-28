@@ -1221,8 +1221,7 @@ package body System.Tasking.Tasks is
       end case;
    end Activate;
 
-   procedure Activate (T : not null Task_Id)
-   is
+   procedure Activate (T : not null Task_Id) is
       Error : Activation_Error;
    begin
       Activate (T, Error);

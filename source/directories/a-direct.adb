@@ -130,7 +130,7 @@ package body Ada.Directories is
       Old_Name : String;
       New_Name : String;
       Overwrite : Boolean := True)
-      renames  Inside.Rename;
+      renames Inside.Rename;
 
    procedure Copy_File (
       Source_Name : String;

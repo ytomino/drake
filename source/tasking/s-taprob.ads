@@ -21,7 +21,7 @@ package System.Tasking.Protected_Objects is
    --  required by compiler
    type Entry_Body is record
       Barrier : Barrier_Function_Pointer;
-      Action  : Entry_Action_Pointer;
+      Action : Entry_Action_Pointer;
    end record;
    pragma Suppress_Initialization (Entry_Body);
 

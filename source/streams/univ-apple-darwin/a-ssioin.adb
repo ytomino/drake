@@ -1107,7 +1107,7 @@ package body Ada.Streams.Stream_IO.Inside is
          declare
             Z_Index : C.sys.types.off_t;
          begin
-            Z_Index :=  lseek (File.Handle, 0, C.unistd.SEEK_CUR)
+            Z_Index := lseek (File.Handle, 0, C.unistd.SEEK_CUR)
                + C.sys.types.off_t (Offset_Of_Buffer (File));
             return Z_Index >= Info.st_size;
             --  whether writing buffer will expand the file size or not

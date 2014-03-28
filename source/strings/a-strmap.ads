@@ -21,7 +21,7 @@ package Ada.Strings.Maps is
    pragma Inline (Is_Null);
 
    type Character_Range is record
-      Low  : Character;
+      Low : Character;
       High : Character;
    end record;
    --  Represents Character range Low..High

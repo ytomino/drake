@@ -217,7 +217,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Delete (Container, Position);
    end Delete;
 
-   procedure Delete (Container : in out Set; Position  : in out Cursor) is
+   procedure Delete (Container : in out Set; Position : in out Cursor) is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
 --  diff
@@ -601,7 +601,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    procedure Query_Element (
       Position : Cursor;
-      Process  : not null access procedure (Element : Element_Type)) is
+      Process : not null access procedure (Element : Element_Type)) is
    begin
       Process (Position.Element.all);
    end Query_Element;
@@ -637,7 +637,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
    end Reverse_Iterate;
 
---  diff  (Symmetric_Difference)
+--  diff (Symmetric_Difference)
 --
 --
 --
@@ -656,7 +656,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 
---  diff  (Symmetric_Difference)
+--  diff (Symmetric_Difference)
 --
 --
 --
@@ -916,7 +916,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
       procedure Update_Element_Preserving_Key (
          Container : in out Set;
-         Position  : Cursor;
+         Position : Cursor;
          Process : not null access procedure (Element : in out Element_Type))
          is
       begin

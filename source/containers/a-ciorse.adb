@@ -217,7 +217,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Delete (Container, Position);
    end Delete;
 
-   procedure Delete (Container : in out Set; Position  : in out Cursor) is
+   procedure Delete (Container : in out Set; Position : in out Cursor) is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
       Unique (Container, True);
@@ -601,7 +601,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    procedure Query_Element (
       Position : Cursor;
-      Process  : not null access procedure (Element : Element_Type)) is
+      Process : not null access procedure (Element : Element_Type)) is
    begin
       Process (Position.Element.all);
    end Query_Element;

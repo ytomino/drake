@@ -601,7 +601,7 @@ package body Ada.Containers.Ordered_Sets is
 
    procedure Query_Element (
       Position : Cursor;
-      Process  : not null access procedure (Element : Element_Type)) is
+      Process : not null access procedure (Element : Element_Type)) is
    begin
       Process (Position.Element);
    end Query_Element;

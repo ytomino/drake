@@ -625,7 +625,7 @@ package body Ada.Containers.Vectors is
    procedure Query_Element (
       Container : Vector'Class;
       Index : Index_Type;
-      Process  : not null access procedure (Element : Element_Type)) is
+      Process : not null access procedure (Element : Element_Type)) is
    begin
       Process (Container.Constant_Reference (Index).Element.all);
    end Query_Element;

@@ -30,9 +30,9 @@ package System.Soft_Links is
    pragma Suppress (Access_Check, Current_Master);
 
    --  required for task by compiler (s-soflin.ads)
-   Enter_Master : not null access procedure :=  Nop'Access;
+   Enter_Master : not null access procedure := Nop'Access;
    pragma Suppress (Access_Check, Enter_Master);
-   Complete_Master : not null access procedure :=  Nop'Access;
+   Complete_Master : not null access procedure := Nop'Access;
    pragma Suppress (Access_Check, Complete_Master);
 
    --  required for many times by compiler (s-soflin.ads)
