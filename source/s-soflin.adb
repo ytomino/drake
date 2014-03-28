@@ -55,9 +55,4 @@ package body System.Soft_Links is
       return 0;
    end Zero;
 
-   procedure Abort_Undefer_Direct is
-   begin
-      Abort_Undefer.all;
-   end Abort_Undefer_Direct;
-
 end System.Soft_Links;

@@ -1,9 +1,9 @@
 pragma Check_Policy (Trace, Off);
 with System.Formatting;
 with System.Runtime_Context;
-with System.Soft_Links;
 with System.Startup;
 with System.Storage_Elements;
+with System.Synchronous_Control;
 with System.Termination;
 with System.Unwind.Standard;
 package body System.Unwind.Raising is
@@ -235,7 +235,7 @@ package body System.Unwind.Raising is
    begin
       Set_Exception_Message (E, File, Line, Column, Message, X.X);
       if not ZCX_By_Default then
-         Soft_Links.Abort_Defer.all;
+         Synchronous_Control.Lock_Abort;
       end if;
       Separated.Propagate_Exception (X.X, Stack_Guard => Stack_Guard);
    end Raise_Exception;
@@ -278,7 +278,7 @@ package body System.Unwind.Raising is
    procedure Reraise (X : Exception_Occurrence) is
    begin
       if not ZCX_By_Default then
-         Soft_Links.Abort_Defer.all;
+         Synchronous_Control.Lock_Abort;
       end if;
       Reraise_No_Defer (X);
    end Reraise;

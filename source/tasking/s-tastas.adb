@@ -820,7 +820,7 @@ package body System.Tasking.Tasks is
    procedure When_Abort_Signal is
    begin
       if not ZCX_By_Default then
-         Leave_Unabortable;
+         Unlock_Abort;
       end if;
    end When_Abort_Signal;
 
@@ -1127,7 +1127,7 @@ package body System.Tasking.Tasks is
       end if;
    end Disable_Abort;
 
-   procedure Enter_Unabortable is
+   procedure Lock_Abort is
    begin
       if Registered_State = Registered then
          declare
@@ -1139,9 +1139,9 @@ package body System.Tasking.Tasks is
             T.Abort_Locking := T.Abort_Locking + 1;
          end;
       end if;
-   end Enter_Unabortable;
+   end Lock_Abort;
 
-   procedure Leave_Unabortable is
+   procedure Unlock_Abort is
    begin
       if Registered_State = Registered then
          declare
@@ -1153,7 +1153,7 @@ package body System.Tasking.Tasks is
             T.Abort_Locking := T.Abort_Locking - 1;
          end;
       end if;
-   end Leave_Unabortable;
+   end Unlock_Abort;
 
    function Is_Aborted return Boolean is
       T : constant Task_Id := TLS_Current_Task_Id;

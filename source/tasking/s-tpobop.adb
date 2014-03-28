@@ -1,6 +1,7 @@
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
+with System.Synchronous_Control;
 with System.Tasking.Synchronous_Objects.Abortable;
 package body System.Tasking.Protected_Objects.Operations is
    use type Ada.Exceptions.Exception_Id;
@@ -192,7 +193,7 @@ package body System.Tasking.Protected_Objects.Operations is
                Synchronous_Objects.Add (
                   Object.Calling,
                   The_Node.Super'Unchecked_Access);
-               Soft_Links.Abort_Undefer.all; -- Tasks.Enable_Abort;
+               Synchronous_Control.Unlock_Abort; -- Tasks.Enable_Abort;
                Invoke (Object);
                Synchronous_Objects.Abortable.Wait (
                   The_Node.Waiting,
@@ -211,7 +212,7 @@ package body System.Tasking.Protected_Objects.Operations is
                      end if;
                   end;
                end if;
-               Soft_Links.Abort_Defer.all; -- Tasks.Disable_Abort (Aborted);
+               Synchronous_Control.Lock_Abort; -- Disable_Abort (Aborted);
                if Aborted then
                   delay 0.0; -- if aborted, raise here
                end if;
