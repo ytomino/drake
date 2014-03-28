@@ -81,8 +81,11 @@ package System.Tasking.Protected_Objects.Entries is
    --  cancel all callings of entries
    procedure Cancel_Calls (Object : in out Protection_Entries'Class);
 
+   --  required by compiler (s-tpoben.ads)
+   function Get_Ceiling (Object : not null access Protection_Entries'Class)
+      return Any_Priority;
+
    --  unimplemented subprograms required by compiler
-   --  Get_Ceiling
    --  Set_Ceiling
 
 end System.Tasking.Protected_Objects.Entries;

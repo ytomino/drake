@@ -31,4 +31,11 @@ package body System.Tasking.Protected_Objects is
       Synchronous_Objects.Leave (Object.Lock);
    end Unlock;
 
+   function Get_Ceiling (Object : not null access Protection)
+      return Any_Priority is
+   begin
+      raise Program_Error; -- unimplemented
+      return Get_Ceiling (Object);
+   end Get_Ceiling;
+
 end System.Tasking.Protected_Objects;
