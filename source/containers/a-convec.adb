@@ -292,7 +292,7 @@ package body Ada.Containers.Vectors is
       begin
          Data.Super.Is_Aliased := True;
          return Slicing.Constant_Slice (
-            Data.Items'Unrestricted_Access,
+            Data.Items,
             First_Index,
             Last_Index);
       end;
@@ -668,7 +668,7 @@ package body Ada.Containers.Vectors is
       begin
          Data.Super.Is_Aliased := True;
          return Slicing.Slice (
-            Data.Items'Unrestricted_Access,
+            Data.Items,
             First_Index,
             Last_Index);
       end;

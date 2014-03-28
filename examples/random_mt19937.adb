@@ -58,7 +58,7 @@ begin
 	Ada.Text_IO.Put_Line ("1000 outputs of genrand_int32()");
 	for i in 0 .. 1000 - 1 loop
 		Cardinal_IO.Put (
-			Random_32 (Gen'Access),
+			Random_32 (Gen),
 			Width => 10);
 		Ada.Text_IO.Put (' ');
 		if i rem 5 = 4 then
@@ -69,7 +69,7 @@ begin
 	Ada.Text_IO.Put_Line ("1000 outputs of genrand_real2()");
 	for i in 0 .. 1000 - 1 loop
 		Ada.Long_Long_Float_Text_IO.Put (
-			Random_0_To_Less_Than_1 (Gen'Access),
+			Random_0_To_Less_Than_1 (Gen),
 			Fore => 0,
 			Aft => 8,
 			Exp => 0);

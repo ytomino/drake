@@ -7,6 +7,6 @@ package System.Unbounded_Stack_Allocators.Debug is
    procedure Error_Put (Item : Address);
 
    --  dump the secondary stack of current task
-   procedure Dump (Allocator : not null access Allocator_Type);
+   procedure Dump (Allocator : aliased in out Allocator_Type);
 
 end System.Unbounded_Stack_Allocators.Debug;

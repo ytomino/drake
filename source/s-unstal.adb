@@ -30,14 +30,14 @@ package body System.Unbounded_Stack_Allocators is
    --  implementation
 
    procedure Allocate (
-      Allocator : not null access Allocator_Type;
+      Allocator : aliased in out Allocator_Type;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
    is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
-      Top : constant Address := Allocator.all;
+      Top : constant Address := Allocator;
       Mask : constant Storage_Elements.Integer_Address :=
          Storage_Elements.Integer_Address (Alignment - 1);
       Aligned_Top_Used : Address;
@@ -58,7 +58,7 @@ package body System.Unbounded_Stack_Allocators is
                if Aligned_Previous_Used + Size_In_Storage_Elements <=
                   Cast (Previous).Limit
                then
-                  Allocator.all := Previous;
+                  Allocator := Previous;
                   Standard_Allocators.Unmap (Top, Cast (Top).Limit - Top);
                   Storage_Address := Aligned_Previous_Used;
                   Cast (Previous).Used :=
@@ -102,7 +102,7 @@ package body System.Unbounded_Stack_Allocators is
          end if;
          --  top block is not enough, then free it if unused
          if Cast (Top).Used = Top + Header_Size then
-            Allocator.all := Cast (Top).Previous;
+            Allocator := Cast (Top).Previous;
             Standard_Allocators.Unmap (Top, Cast (Top).Limit - Top);
          end if;
       end if;
@@ -120,20 +120,20 @@ package body System.Unbounded_Stack_Allocators is
                   Size_In_Storage_Elements + Aligned_Header_Size));
          New_Block : constant Address := Standard_Allocators.Map (Block_Size);
       begin
-         Cast (New_Block).Previous := Allocator.all;
-         Allocator.all := New_Block;
+         Cast (New_Block).Previous := Allocator;
+         Allocator := New_Block;
          Cast (New_Block).Limit := New_Block + Block_Size;
          Storage_Address := New_Block + Aligned_Header_Size;
          Cast (New_Block).Used := Storage_Address + Size_In_Storage_Elements;
       end;
    end Allocate;
 
-   function Mark (Allocator : not null access Allocator_Type)
+   function Mark (Allocator : aliased in out Allocator_Type)
       return Marker
    is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
-      Top : constant Address := Allocator.all;
+      Top : constant Address := Allocator;
    begin
       if Top = Null_Address then
          return (Top => Null_Address, Used => Null_Address);
@@ -153,16 +153,16 @@ package body System.Unbounded_Stack_Allocators is
    end Mark;
 
    procedure Release (
-      Allocator : not null access Allocator_Type;
+      Allocator : aliased in out Allocator_Type;
       Mark : Marker)
    is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
    begin
-      if Allocator.all /= Null_Address then
+      if Allocator /= Null_Address then
          loop
             declare
-               Top : constant Address := Allocator.all;
+               Top : constant Address := Allocator;
             begin
                if Top = Mark.Top then
                   Cast (Top).Used := Mark.Used;
@@ -175,20 +175,20 @@ package body System.Unbounded_Stack_Allocators is
                   Cast (Top).Used := Top + Header_Size;
                   exit;
                end if;
-               Allocator.all := Cast (Top).Previous;
+               Allocator := Cast (Top).Previous;
                Standard_Allocators.Unmap (Top, Cast (Top).Limit - Top);
             end;
          end loop;
       end if;
    end Release;
 
-   procedure Clear (Allocator : not null access Allocator_Type) is
+   procedure Clear (Allocator : aliased in out Allocator_Type) is
    begin
-      while Allocator.all /= Null_Address loop
+      while Allocator /= Null_Address loop
          declare
-            Top : constant Address := Allocator.all;
+            Top : constant Address := Allocator;
          begin
-            Allocator.all := Cast (Top).Previous;
+            Allocator := Cast (Top).Previous;
             Standard_Allocators.Unmap (Top, Cast (Top).Limit - Top);
          end;
       end loop;

@@ -183,7 +183,7 @@ package body Ada.Numerics.SFMT.Random is
 
    --  This function generates and returns 32-bit pseudorandom number.
    --  init_gen_rand or init_by_array must be called before this function.
-   function Random_32 (Gen : not null access Generator)
+   function Random_32 (Gen : aliased in out Generator)
       return Unsigned_32
    is
       psfmt32 : Unsigned_32_Array_N32;
@@ -204,7 +204,7 @@ package body Ada.Numerics.SFMT.Random is
    --  The function gen_rand64 should not be called after gen_rand32,
    --  unless an initialization is again executed.
    --  Note: This Ada version supports mixed callings with Random_32 (still).
-   function Random_64 (Gen : not null access Generator)
+   function Random_64 (Gen : aliased in out Generator)
       return Unsigned_64
    is
       psfmt32 : Unsigned_32_Array_N32;
@@ -250,7 +250,7 @@ package body Ada.Numerics.SFMT.Random is
    --  multiple of four.  The generation by this function is much faster
    --  than the following gen_rand function.
    procedure Fill_Random_32 (
-      Gen : in out Generator;
+      Gen : aliased in out Generator;
       Item : out Unsigned_32_Array)
    is
       size : constant Integer := Item'Length;
@@ -260,7 +260,7 @@ package body Ada.Numerics.SFMT.Random is
          or else size < N32
       then
          for I in Item'Range loop
-            Item (I) := Random_32 (Gen'Unrestricted_Access);
+            Item (I) := Random_32 (Gen);
          end loop;
       else
          declare
@@ -279,7 +279,7 @@ package body Ada.Numerics.SFMT.Random is
    --  multiple of two.  The generation by this function is much faster
    --  than the following gen_rand function.
    procedure Fill_Random_64 (
-      Gen : in out Generator;
+      Gen : aliased in out Generator;
       Item : out Unsigned_64_Array)
    is
       size : constant Integer := Item'Length;
@@ -289,7 +289,7 @@ package body Ada.Numerics.SFMT.Random is
          or else size < N64
       then
          for I in Item'Range loop
-            Item (I) := Random_64 (Gen'Unrestricted_Access);
+            Item (I) := Random_64 (Gen);
          end loop;
       else
          declare
@@ -606,7 +606,7 @@ package body Ada.Numerics.SFMT.Random is
    end To_0_To_1;
 
    --  generates a random number on [0,1]-real-interval
-   function Random_0_To_1 (Gen : not null access Generator)
+   function Random_0_To_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed is
    begin
       return To_0_To_1 (Random_32 (Gen));
@@ -621,7 +621,7 @@ package body Ada.Numerics.SFMT.Random is
    end To_0_To_Less_Than_1;
 
    --  generates a random number on [0,1)-real-interval
-   function Random_0_To_Less_Than_1 (Gen : not null access Generator)
+   function Random_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed is
    begin
       return To_0_To_Less_Than_1 (Random_32 (Gen));
@@ -637,7 +637,7 @@ package body Ada.Numerics.SFMT.Random is
 
    --  generates a random number on (0,1)-real-interval
    function Random_Greater_Than_0_To_Less_Than_1 (
-      Gen : not null access Generator)
+      Gen : aliased in out Generator)
       return Uniformly_Distributed is
    begin
       return To_Greater_Than_0_To_Less_Than_1 (Random_32 (Gen));
@@ -654,7 +654,7 @@ package body Ada.Numerics.SFMT.Random is
    end To_53_0_To_Less_Than_1;
 
    --  generates a random number on [0,1) with 53-bit resolution
-   function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed is
    begin
       return To_53_0_To_Less_Than_1 (Random_64 (Gen));

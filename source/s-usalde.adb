@@ -23,7 +23,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
       Termination.Error_Put (S);
    end Error_Put;
 
-   procedure Dump (Allocator : not null access Allocator_Type) is
+   procedure Dump (Allocator : aliased in out Allocator_Type) is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
    begin
@@ -35,7 +35,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
          Last : Natural;
          Error : Boolean;
          --  index
-         I : Address := Allocator.all;
+         I : Address := Allocator;
          Block_Number : Formatting.Unsigned := 0;
       begin
          while I /= Null_Address loop

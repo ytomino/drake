@@ -548,7 +548,7 @@ package body System.Tasking.Tasks is
          end if;
       end if;
       --  cleanup secondary stack
-      Unbounded_Stack_Allocators.Clear (Local.Secondary_Stack'Access);
+      Unbounded_Stack_Allocators.Clear (Local.Secondary_Stack);
       --  return
       return Result;
    end Thread;
@@ -574,7 +574,7 @@ package body System.Tasking.Tasks is
          T.Termination_State := TS_Terminated; -- C9A004A
       else
          Native_Tasks.Create (
-            T.Handle'Access,
+            T.Handle,
             To_Parameter (Task_Record_Conv.To_Address (T)),
             Thread'Access,
             Error => Creation_Error);
@@ -600,7 +600,7 @@ package body System.Tasking.Tasks is
          Native_Tasks.Join (
             T.Handle,
             Abort_Attribute,
-            Rec'Access,
+            Rec,
             Error);
          if Error then
             raise Tasking_Error;
@@ -1490,7 +1490,7 @@ package body System.Tasking.Tasks is
          return 0;
       else
          return Synchronous_Objects.Count (
-            T.Rendezvous.Calling'Access,
+            T.Rendezvous.Calling,
             Params,
             Filter);
       end if;

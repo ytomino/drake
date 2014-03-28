@@ -13,7 +13,7 @@ package body Ada.Numerics.MT19937 is
 
    --  implementation
 
-   function Random_32 (Gen : not null access Generator) return Cardinal is
+   function Random_32 (Gen : aliased in out Generator) return Cardinal is
       mag01 : constant array (Cardinal range 0 .. 1) of Cardinal :=
          (0, MATRIX_A);
       y : Cardinal;
@@ -219,14 +219,14 @@ package body Ada.Numerics.MT19937 is
       return Result;
    end Value;
 
-   function Random_0_To_1 (Gen : not null access Generator)
+   function Random_0_To_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed is
    begin
       return Uniformly_Distributed'Base (Random_32 (Gen))
          * (1.0 / 4294967295.0);
    end Random_0_To_1;
 
-   function Random_0_To_Less_Than_1 (Gen : not null access Generator)
+   function Random_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed is
    begin
       return Uniformly_Distributed'Base (Random_32 (Gen))
@@ -234,14 +234,14 @@ package body Ada.Numerics.MT19937 is
    end Random_0_To_Less_Than_1;
 
    function Random_Greater_Than_0_To_Less_Than_1 (
-      Gen : not null access Generator)
+      Gen : aliased in out Generator)
       return Uniformly_Distributed is
    begin
       return (Uniformly_Distributed'Base (Random_32 (Gen)) + 0.5)
          * (1.0 / 4294967296.0);
    end Random_Greater_Than_0_To_Less_Than_1;
 
-   function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed
    is
       A : constant Cardinal := Interfaces.Shift_Right (Random_32 (Gen), 5);

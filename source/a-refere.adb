@@ -6,13 +6,13 @@ package body Ada.References is
    package body Generic_Slicing is
 
       function Constant_Slice (
-         Item : not null access constant Array_Type;
+         Item : aliased Array_Type;
          First : Index_Type;
          Last : Index_Type'Base)
          return Constant_Reference_Type is
       begin
          return Result : Constant_Reference_Type := (
-            Element => Item, -- dummy, be overwritten
+            Element => Item'Access, -- dummy, be overwritten
             First => First,
             Last => Last)
          do
@@ -32,11 +32,12 @@ package body Ada.References is
       end Constant_Slice;
 
       function Slice (
-         Item : not null access Array_Type;
+         Item : aliased in out Array_Type;
          First : Index_Type;
          Last : Index_Type'Base)
          return Reference_Type
       is
+         pragma Unmodified (Item);
          function Cast is
             new Unchecked_Conversion (Constant_Reference_Type, Reference_Type);
       begin

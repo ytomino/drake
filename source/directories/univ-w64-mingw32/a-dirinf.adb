@@ -19,7 +19,7 @@ package body Ada.Directories.Information is
    function Creation_Time (Name : String) return Calendar.Time is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return Cast (System.Native_Time.To_Time (
          Information.ftCreationTime));
    end Creation_Time;
@@ -37,7 +37,7 @@ package body Ada.Directories.Information is
    function Last_Access_Time (Name : String) return Calendar.Time is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return Cast (System.Native_Time.To_Time (
          Information.ftLastAccessTime));
    end Last_Access_Time;
@@ -55,7 +55,7 @@ package body Ada.Directories.Information is
    function Is_Read_Only (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SPARSE_FILE) /= 0;
    end Is_Read_Only;
@@ -73,7 +73,7 @@ package body Ada.Directories.Information is
    function Needs_Archiving (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ARCHIVE) /= 0;
    end Needs_Archiving;
@@ -91,7 +91,7 @@ package body Ada.Directories.Information is
    function Is_Compressed (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_COMPRESSED) /= 0;
    end Is_Compressed;
@@ -109,7 +109,7 @@ package body Ada.Directories.Information is
    function Is_Encrypted (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ENCRYPTED) /= 0;
    end Is_Encrypted;
@@ -127,7 +127,7 @@ package body Ada.Directories.Information is
    function Is_Hidden (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_HIDDEN) /= 0;
    end Is_Hidden;
@@ -145,7 +145,7 @@ package body Ada.Directories.Information is
    function Is_System (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SYSTEM) /= 0;
    end Is_System;
@@ -163,7 +163,7 @@ package body Ada.Directories.Information is
    function Is_Offline (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_OFFLINE) /= 0;
    end Is_Offline;
@@ -181,7 +181,7 @@ package body Ada.Directories.Information is
    function Is_Temporary (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_TEMPORARY) /= 0;
    end Is_Temporary;
@@ -199,7 +199,7 @@ package body Ada.Directories.Information is
    function Is_Sparse (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SPARSE_FILE) /= 0;
    end Is_Sparse;
@@ -217,7 +217,7 @@ package body Ada.Directories.Information is
    function Is_Not_Indexed (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information'Access);
+      Inside.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) /= 0;
    end Is_Not_Indexed;

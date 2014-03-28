@@ -22,7 +22,7 @@ package System.Tasking.Native_Tasks is
    pragma Convention_Identifier (Thread_Body_CC, stdcall);
 
    procedure Create (
-      Handle : not null access Handle_Type;
+      Handle : aliased out Handle_Type;
       Parameter : Parameter_Type;
       Thread_Body : Thread_Body_Type;
       Error : out Boolean);
@@ -30,7 +30,7 @@ package System.Tasking.Native_Tasks is
    procedure Join (
       Handle : Handle_Type; -- of target thread
       Abort_Current : access Task_Attribute_Of_Abort; -- of current thread
-      Result : not null access Result_Type;
+      Result : aliased out Result_Type;
       Error : out Boolean);
    procedure Detach (
       Handle : in out Handle_Type;

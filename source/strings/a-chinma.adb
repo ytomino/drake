@@ -31,7 +31,7 @@ package body Ada.Characters.Inside.Maps is
    end To_Mapping;
 
    function Value (
-      Map : not null access constant Character_Mapping;
+      Map : Character_Mapping;
       Element : Character_Type)
       return Character_Type
    is
@@ -56,7 +56,7 @@ package body Ada.Characters.Inside.Maps is
    end Value;
 
    function Value (
-      Map : not null access constant Character_Mapping;
+      Map : Character_Mapping;
       Element : Character)
       return Character is
    begin
@@ -65,7 +65,7 @@ package body Ada.Characters.Inside.Maps is
 
    procedure Translate (
       Source : String;
-      Mapping : not null access constant Character_Mapping;
+      Mapping : Character_Mapping;
       Item : out String; -- Source'Length * 6, at least
       Last : out Natural)
    is
@@ -106,7 +106,7 @@ package body Ada.Characters.Inside.Maps is
    function Compare (
       Left : String;
       Right : String;
-      Mapping : not null access constant Character_Mapping)
+      Mapping : Character_Mapping)
       return Integer
    is
       I : Natural := Left'First;

@@ -40,7 +40,7 @@ package Ada.Directories.Inside is
 
    procedure Get_Information (
       Name : String;
-      Information : not null access Directory_Entry_Information_Type);
+      Information : aliased out Directory_Entry_Information_Type);
 
    function Kind (Information : Directory_Entry_Information_Type)
       return File_Kind;

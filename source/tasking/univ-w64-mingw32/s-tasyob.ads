@@ -53,7 +53,7 @@ package System.Tasking.Synchronous_Objects is
    procedure Finalize (
       Object : in out Queue);
    function Count (
-      Object : not null access Queue;
+      Object : Queue;
       Params : Address;
       Filter : Queue_Filter)
       return Natural;

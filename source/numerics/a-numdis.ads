@@ -42,8 +42,8 @@ package Ada.Numerics.Distributions is
       type Source is mod <>;
       type Target is (<>);
       type Generator (<>) is limited private;
-      with function Get (Gen : not null access Generator) return Source;
-   function Linear_Discrete_Random (Gen : not null access Generator)
+      with function Get (Gen : aliased in out Generator) return Source;
+   function Linear_Discrete_Random (Gen : aliased in out Generator)
       return Target;
 
    --  Strict uniform distributions for random number
@@ -52,8 +52,8 @@ package Ada.Numerics.Distributions is
       type Source is mod <>;
       type Target is (<>);
       type Generator (<>) is limited private;
-      with function Get (Gen : not null access Generator) return Source;
-   function Uniform_Discrete_Random (Gen : not null access Generator)
+      with function Get (Gen : aliased in out Generator) return Source;
+   function Uniform_Discrete_Random (Gen : aliased in out Generator)
       return Target;
 
    --  [0,1]
@@ -61,8 +61,8 @@ package Ada.Numerics.Distributions is
       type Source is mod <>;
       type Target is digits <>;
       type Generator (<>) is limited private;
-      with function Get (Gen : not null access Generator) return Source;
-   function Uniform_Float_Random_0_To_1 (Gen : not null access Generator)
+      with function Get (Gen : aliased in out Generator) return Source;
+   function Uniform_Float_Random_0_To_1 (Gen : aliased in out Generator)
       return Target;
 
    --  [0,1)
@@ -70,9 +70,9 @@ package Ada.Numerics.Distributions is
       type Source is mod <>;
       type Target is digits <>;
       type Generator (<>) is limited private;
-      with function Get (Gen : not null access Generator) return Source;
+      with function Get (Gen : aliased in out Generator) return Source;
    function Uniform_Float_Random_0_To_Less_Than_1 (
-      Gen : not null access Generator)
+      Gen : aliased in out Generator)
       return Target;
 
    --  (0,1)
@@ -80,9 +80,9 @@ package Ada.Numerics.Distributions is
       type Source is mod <>;
       type Target is digits <>;
       type Generator (<>) is limited private;
-      with function Get (Gen : not null access Generator) return Source;
+      with function Get (Gen : aliased in out Generator) return Source;
    function Uniform_Float_Random_Greater_Than_0_To_Less_Than_1 (
-      Gen : not null access Generator)
+      Gen : aliased in out Generator)
       return Target;
 
 end Ada.Numerics.Distributions;

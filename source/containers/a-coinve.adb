@@ -35,10 +35,10 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Replace_Element (
       Item : in out Element_Access;
-      New_Item : access constant Element_Type);
+      New_Item : Element_Access);
    procedure Replace_Element (
       Item : in out Element_Access;
-      New_Item : access constant Element_Type) is
+      New_Item : Element_Access) is
    begin
       Free (Item);
       if New_Item /= null then

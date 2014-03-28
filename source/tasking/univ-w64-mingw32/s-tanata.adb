@@ -9,27 +9,27 @@ package body System.Tasking.Native_Tasks is
    --  implementation of thread
 
    procedure Create (
-      Handle : not null access Handle_Type;
+      Handle : aliased out Handle_Type;
       Parameter : Parameter_Type;
       Thread_Body : Thread_Body_Type;
       Error : out Boolean)
    is
       Id : aliased C.windef.DWORD;
    begin
-      Handle.all := C.winbase.CreateThread (
+      Handle := C.winbase.CreateThread (
          lpThreadAttributes => null,
          dwStackSize => 0,
          lpStartAddress => Thread_Body,
          lpParameter => Parameter,
          dwCreationFlags => 0,
          lpThreadId => Id'Access);
-      Error := Handle.all = C.winbase.INVALID_HANDLE_VALUE;
+      Error := Handle = C.winbase.INVALID_HANDLE_VALUE;
    end Create;
 
    procedure Join (
       Handle : Handle_Type;
       Abort_Current : access Task_Attribute_Of_Abort;
-      Result : not null access Result_Type;
+      Result : aliased out Result_Type;
       Error : out Boolean)
    is
       R : C.windef.DWORD;
@@ -56,7 +56,7 @@ package body System.Tasking.Native_Tasks is
    <<Done>>
       case R is
          when C.winbase.WAIT_OBJECT_0 =>
-            if C.winbase.GetExitCodeThread (Handle, Result) = 0 then
+            if C.winbase.GetExitCodeThread (Handle, Result'Access) = 0 then
                Error := True;
             end if;
          when others =>

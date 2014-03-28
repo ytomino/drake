@@ -52,16 +52,16 @@ package Ada.Numerics.SFMT.Random is
 
    type Generator is limited private;
 
-   function Random_32 (Gen : not null access Generator) return Unsigned_32;
+   function Random_32 (Gen : aliased in out Generator) return Unsigned_32;
    pragma Inline (Random_32);
-   function Random_64 (Gen : not null access Generator) return Unsigned_64;
+   function Random_64 (Gen : aliased in out Generator) return Unsigned_64;
    pragma Inline (Random_64);
 
    procedure Fill_Random_32 (
-      Gen : in out Generator;
+      Gen : aliased in out Generator;
       Item : out Unsigned_32_Array);
    procedure Fill_Random_64 (
-      Gen : in out Generator;
+      Gen : aliased in out Generator;
       Item : out Unsigned_64_Array);
 
    function Initialize return Generator;
@@ -106,7 +106,7 @@ package Ada.Numerics.SFMT.Random is
       return Uniformly_Distributed;
    pragma Inline (To_0_To_1);
 
-   function Random_0_To_1 (Gen : not null access Generator)
+   function Random_0_To_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed;
    pragma Inline (Random_0_To_1);
 
@@ -114,7 +114,7 @@ package Ada.Numerics.SFMT.Random is
       return Uniformly_Distributed;
    pragma Inline (To_0_To_Less_Than_1);
 
-   function Random_0_To_Less_Than_1 (Gen : not null access Generator)
+   function Random_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed;
    pragma Inline (Random_0_To_Less_Than_1);
 
@@ -123,7 +123,7 @@ package Ada.Numerics.SFMT.Random is
    pragma Inline (To_Greater_Than_0_To_Less_Than_1);
 
    function Random_Greater_Than_0_To_Less_Than_1 (
-      Gen : not null access Generator)
+      Gen : aliased in out Generator)
       return Uniformly_Distributed;
    pragma Inline (Random_Greater_Than_0_To_Less_Than_1);
 
@@ -131,7 +131,7 @@ package Ada.Numerics.SFMT.Random is
       return Uniformly_Distributed;
    pragma Inline (To_53_0_To_Less_Than_1);
 
-   function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed;
    pragma Inline (Random_53_0_To_Less_Than_1);
 

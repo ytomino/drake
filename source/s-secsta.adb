@@ -42,7 +42,7 @@ package body System.Secondary_Stack is
          Alignment := Standard'Maximum_Alignment;
       end if;
       Unbounded_Stack_Allocators.Allocate (
-         TLS.Secondary_Stack'Access,
+         TLS.Secondary_Stack,
          Addr,
          Storage_Size,
          Alignment);
@@ -52,14 +52,14 @@ package body System.Secondary_Stack is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
    begin
-      return Unbounded_Stack_Allocators.Mark (TLS.Secondary_Stack'Access);
+      return Unbounded_Stack_Allocators.Mark (TLS.Secondary_Stack);
    end SS_Mark;
 
    procedure SS_Release (M : Mark_Id) is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
    begin
-      Unbounded_Stack_Allocators.Release (TLS.Secondary_Stack'Access, M);
+      Unbounded_Stack_Allocators.Release (TLS.Secondary_Stack, M);
    end SS_Release;
 
 end System.Secondary_Stack;

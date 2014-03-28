@@ -8,21 +8,21 @@ package System.Unbounded_Stack_Allocators is
    --  instead of Block_Access, for Runtime_Context and Secondary_Stack
 
    procedure Allocate (
-      Allocator : not null access Allocator_Type;
+      Allocator : aliased in out Allocator_Type;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count);
 
    type Marker is private;
 
-   function Mark (Allocator : not null access Allocator_Type)
+   function Mark (Allocator : aliased in out Allocator_Type)
       return Marker;
 
    procedure Release (
-      Allocator : not null access Allocator_Type;
+      Allocator : aliased in out Allocator_Type;
       Mark : Marker);
 
-   procedure Clear (Allocator : not null access Allocator_Type);
+   procedure Clear (Allocator : aliased in out Allocator_Type);
 
 private
 

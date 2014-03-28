@@ -23,7 +23,7 @@ begin
          --  update
          Result := Containers.Rotate_Left (Result, 5) xor
             Wide_Wide_Character'Pos (Characters.Inside.Maps.Value (
-               Characters.Inside.Maps.Case_Folding.Case_Folding_Map,
+               Characters.Inside.Maps.Case_Folding.Case_Folding_Map.all,
                Wide_Wide_Character'Val (Code)));
       end;
    end loop;

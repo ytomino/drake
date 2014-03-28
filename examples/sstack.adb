@@ -9,7 +9,7 @@ procedure sstack is
 	procedure Dump_Secondary_Stack is
 	begin
 		System.Unbounded_Stack_Allocators.Debug.Dump (
-			System.Runtime_Context.Get_Task_Local_Storage.Secondary_Stack'Access);
+			System.Runtime_Context.Get_Task_Local_Storage.Secondary_Stack);
 	end Dump_Secondary_Stack;
 	function Paren (S : String) return String is
 	begin

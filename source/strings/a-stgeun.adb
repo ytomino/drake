@@ -118,7 +118,7 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       System.Reference_Counting.Unique (
          Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Reference_Count => Item.Data.Reference_Count'Access,
+         Target_Reference_Count => Item.Data.Reference_Count,
          Target_Length => Item.Length,
          Target_Capacity => Generic_Unbounded.Capacity (Item),
          Max_Length => Item.Length,
@@ -143,9 +143,9 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       System.Reference_Counting.Assign (
          Upcast (Target.Data'Unchecked_Access),
-         Target.Data.Reference_Count'Access,
+         Target.Data.Reference_Count,
          Upcast (Source.Data'Unrestricted_Access),
-         Source.Data.Reference_Count'Access,
+         Source.Data.Reference_Count,
          Free => Free_Data'Access);
       Target.Length := Source.Length;
    end Assign;
@@ -173,9 +173,9 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       System.Reference_Counting.Set_Length (
          Target => Upcast (Source.Data'Unchecked_Access),
-         Target_Reference_Count => Source.Data.Reference_Count'Access,
+         Target_Reference_Count => Source.Data.Reference_Count,
          Target_Length => Source.Length,
-         Target_Max_Length => Source.Data.Max_Length'Access,
+         Target_Max_Length => Source.Data.Max_Length,
          Target_Capacity => Capacity (Source),
          New_Length => Length,
          Sentinel => Empty_Data'Address,
@@ -451,7 +451,7 @@ package body Ada.Strings.Generic_Unbounded is
       return Slicing.Constant_Reference_Type is
    begin
       return Slicing.Constant_Slice (
-         Source.Data.Items,
+         Source.Data.Items.all,
          First_Index,
          Last_Index);
    end Constant_Reference;
@@ -471,21 +471,21 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       Unique (Source);
       return Slicing.Slice (
-         Source.Data.Items,
+         Source.Data.Items.all,
          First_Index,
          Last_Index);
    end Reference;
 
    overriding procedure Adjust (Object : in out Unbounded_String) is
    begin
-      System.Reference_Counting.Adjust (Object.Data.Reference_Count'Access);
+      System.Reference_Counting.Adjust (Object.Data.Reference_Count);
    end Adjust;
 
    overriding procedure Finalize (Object : in out Unbounded_String) is
    begin
       System.Reference_Counting.Clear (
          Upcast (Object.Data'Unchecked_Access),
-         Object.Data.Reference_Count'Access,
+         Object.Data.Reference_Count,
          Free => Free_Data'Access);
       Object.Data := Empty_Data'Unrestricted_Access;
       Object.Length := 0;

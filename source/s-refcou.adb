@@ -63,18 +63,18 @@ package body System.Reference_Counting is
 
    --  not null because using sentinel (that means empty data block)
 
-   procedure Adjust (Reference_Count : not null access Counter) is
+   procedure Adjust (Reference_Count : aliased in out Counter) is
    begin
-      if Reference_Count.all /= Static then
-         sync_add_and_fetch_32 (Reference_Count, 1);
+      if Reference_Count /= Static then
+         sync_add_and_fetch_32 (Reference_Count'Access, 1);
       end if;
    end Adjust;
 
    procedure Assign (
       Target : not null access Address;
-      Target_Reference_Count : not null access Counter;
+      Target_Reference_Count : aliased in out Counter;
       Source : not null access constant Address;
-      Source_Reference_Count : not null access Counter;
+      Source_Reference_Count : aliased in out Counter;
       Free : not null access procedure (Object : Address)) is
    begin
       if Target.all /= Source.all then
@@ -86,11 +86,11 @@ package body System.Reference_Counting is
 
    procedure Clear (
       Target : not null access Address;
-      Reference_Count : not null access Counter;
+      Reference_Count : aliased in out Counter;
       Free : not null access procedure (Object : Address)) is
    begin
-      if Reference_Count.all /= Static then
-         if sync_sub_and_fetch_32 (Reference_Count, 1) = 0 then
+      if Reference_Count /= Static then
+         if sync_sub_and_fetch_32 (Reference_Count'Access, 1) = 0 then
             Free (Target.all);
          end if;
       end if;
@@ -98,7 +98,7 @@ package body System.Reference_Counting is
 
    procedure Move (
       Target : not null access Address;
-      Target_Reference_Count : not null access Counter;
+      Target_Reference_Count : aliased in out Counter;
       Source : not null access Address;
       Sentinel : Address;
       Free : not null access procedure (Object : Address)) is
@@ -112,7 +112,7 @@ package body System.Reference_Counting is
 
    procedure Unique (
       Target : not null access Address;
-      Target_Reference_Count : not null access Counter;
+      Target_Reference_Count : aliased in out Counter;
       Target_Length : Natural;
       Target_Capacity : Natural;
       Max_Length : Natural;
@@ -127,9 +127,8 @@ package body System.Reference_Counting is
       Free : not null access procedure (Object : Address)) is
    begin
       if Capacity /= Target_Capacity
-         or else ( -- static (excluding Sentinel) is True
-            Target.all /= Sentinel
-            and then Target_Reference_Count.all > 1)
+         or else -- static (excluding Sentinel) is True
+            (Target.all /= Sentinel and then Target_Reference_Count > 1)
       then
          declare
             Old : aliased Address := Target.all;
@@ -153,9 +152,9 @@ package body System.Reference_Counting is
 
    procedure Set_Length (
       Target : not null access Address;
-      Target_Reference_Count : not null access Counter;
+      Target_Reference_Count : aliased in out Counter;
       Target_Length : Natural;
-      Target_Max_Length : not null access Natural;
+      Target_Max_Length : aliased in out Natural;
       Target_Capacity : Natural;
       New_Length : Natural;
       Sentinel : Address;
@@ -189,12 +188,12 @@ package body System.Reference_Counting is
          else
             --  try to use reserved area
             if sync_bool_compare_and_swap (
-               Target_Max_Length,
+               Target_Max_Length'Access,
                Target_Length,
                New_Length)
             then
                null;
-            elsif Target_Reference_Count.all > 1 then
+            elsif Target_Reference_Count > 1 then
                Unique (
                   Target => Target,
                   Target_Reference_Count => Target_Reference_Count,
@@ -206,13 +205,13 @@ package body System.Reference_Counting is
                   Copy => Copy, -- Copy should set Max_Length
                   Free => Free);
             else -- reference count = 1
-               Target_Max_Length.all := New_Length;
+               Target_Max_Length := New_Length;
             end if;
          end if;
       else
          --  decreasing
-         if Target_Reference_Count.all = 1 then
-            Target_Max_Length.all := New_Length;
+         if Target_Reference_Count = 1 then
+            Target_Max_Length := New_Length;
          end if;
       end if;
    end Set_Length;

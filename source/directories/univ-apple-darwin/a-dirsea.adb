@@ -26,7 +26,7 @@ package body Ada.Directory_Searching is
       Directory : String;
       Pattern : String;
       Filter : Filter_Type;
-      Directory_Entry : not null access Directory_Entry_Type;
+      Directory_Entry : aliased out Directory_Entry_Type;
       Has_Next_Entry : out Boolean) is
    begin
       if Directory'Length = 0 then -- reject
@@ -72,7 +72,7 @@ package body Ada.Directory_Searching is
 
    procedure Get_Next_Entry (
       Search : in out Search_Type;
-      Directory_Entry : not null access Directory_Entry_Type;
+      Directory_Entry : aliased out Directory_Entry_Type;
       Has_Next_Entry : out Boolean) is
    begin
       loop
@@ -81,7 +81,7 @@ package body Ada.Directory_Searching is
          begin
             if C.dirent.readdir_r (
                Search.Handle,
-               Directory_Entry,
+               Directory_Entry'Access,
                Result'Access) < 0
                or else Result = null
             then
@@ -89,7 +89,7 @@ package body Ada.Directory_Searching is
                exit;
             end if;
          end;
-         if Search.Filter (Kind (Directory_Entry.all))
+         if Search.Filter (Kind (Directory_Entry))
             and then C.fnmatch.fnmatch (
                Search.Pattern,
                Directory_Entry.d_name (0)'Access, 0) = 0
@@ -126,14 +126,14 @@ package body Ada.Directory_Searching is
    function Size (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Additional : not null access Directory_Entry_Additional_Type)
+      Additional : aliased in out Directory_Entry_Additional_Type)
       return Streams.Stream_Element_Count is
    begin
       if not Additional.Filled then
          Get_Information (
             Directory,
             Directory_Entry,
-            Additional.Information'Access);
+            Additional.Information);
          Additional.Filled := True;
       end if;
       return Streams.Stream_Element_Offset (Additional.Information.st_size);
@@ -142,14 +142,14 @@ package body Ada.Directory_Searching is
    function Modification_Time (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Additional : not null access Directory_Entry_Additional_Type)
+      Additional : aliased in out Directory_Entry_Additional_Type)
       return System.Native_Time.Native_Time is
    begin
       if not Additional.Filled then
          Get_Information (
             Directory,
             Directory_Entry,
-            Additional.Information'Access);
+            Additional.Information);
          Additional.Filled := True;
       end if;
       return Additional.Information.st_mtimespec;
@@ -170,7 +170,7 @@ package body Ada.Directory_Searching is
    procedure Get_Information (
       Directory : String;
       Directory_Entry : Directory_Entry_Type;
-      Information : not null access C.sys.stat.struct_stat)
+      Information : aliased out C.sys.stat.struct_stat)
    is
       S_Length : constant C.size_t := C.size_t (Directory_Entry.d_namlen);
       Full_Name : C.char_array (
@@ -194,7 +194,7 @@ package body Ada.Directory_Searching is
       --  stat
       if C.sys.stat.lstat (
          Full_Name (0)'Access,
-         Information) < 0
+         Information'Access) < 0
       then
          Raise_Exception (Use_Error'Identity);
       end if;

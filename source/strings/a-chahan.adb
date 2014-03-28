@@ -9,83 +9,83 @@ package body Ada.Characters.Handling is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.General_Category.Control);
+         Inside.Sets.General_Category.Control.all);
    end Is_Control;
 
    function Is_Graphic (Item : Character) return Boolean is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.Constants.Graphic_Set);
+         Inside.Sets.Constants.Graphic_Set.all);
    end Is_Graphic;
 
    function Is_Letter (Item : Character) return Boolean is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.Constants.Letter_Set);
+         Inside.Sets.Constants.Letter_Set.all);
    end Is_Letter;
 
    function Is_Lower (Item : Character) return Boolean is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.General_Category.Lowercase_Letter);
+         Inside.Sets.General_Category.Lowercase_Letter.all);
    end Is_Lower;
 
    function Is_Upper (Item : Character) return Boolean is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.General_Category.Uppercase_Letter);
+         Inside.Sets.General_Category.Uppercase_Letter.all);
    end Is_Upper;
 
    function Is_Digit (Item : Character) return Boolean is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.Constants.Decimal_Digit_Set);
+         Inside.Sets.Constants.Decimal_Digit_Set.all);
    end Is_Digit;
 
    function Is_Hexadecimal_Digit (Item : Character) return Boolean is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.Constants.Hexadecimal_Digit_Set);
+         Inside.Sets.Constants.Hexadecimal_Digit_Set.all);
    end Is_Hexadecimal_Digit;
 
    function Is_Alphanumeric (Item : Character) return Boolean is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.Constants.Alphanumeric_Set);
+         Inside.Sets.Constants.Alphanumeric_Set.all);
    end Is_Alphanumeric;
 
    function Is_Special (Item : Character) return Boolean is
    begin
       return Inside.Sets.Is_In (
          Item,
-         Inside.Sets.Constants.Special_Set);
+         Inside.Sets.Constants.Special_Set.all);
    end Is_Special;
 
    function To_Lower (Item : Character) return Character is
    begin
       return Inside.Maps.Value (
-         Inside.Maps.Case_Mapping.Lower_Case_Map,
+         Inside.Maps.Case_Mapping.Lower_Case_Map.all,
          Item);
    end To_Lower;
 
    function To_Upper (Item : Character) return Character is
    begin
       return Inside.Maps.Value (
-         Inside.Maps.Case_Mapping.Upper_Case_Map,
+         Inside.Maps.Case_Mapping.Upper_Case_Map.all,
          Item);
    end To_Upper;
 
    function To_Case_Folding (Item : Character) return Character is
    begin
       return Inside.Maps.Value (
-         Inside.Maps.Case_Folding.Case_Folding_Map,
+         Inside.Maps.Case_Folding.Case_Folding_Map.all,
          Item);
    end To_Case_Folding;
 
@@ -97,7 +97,7 @@ package body Ada.Characters.Handling is
    begin
       Inside.Maps.Translate (
          Item,
-         Inside.Maps.Case_Mapping.Lower_Case_Map,
+         Inside.Maps.Case_Mapping.Lower_Case_Map.all,
          Result,
          Last);
       return Result (1 .. Last);
@@ -111,7 +111,7 @@ package body Ada.Characters.Handling is
    begin
       Inside.Maps.Translate (
          Item,
-         Inside.Maps.Case_Mapping.Upper_Case_Map,
+         Inside.Maps.Case_Mapping.Upper_Case_Map.all,
          Result,
          Last);
       return Result (1 .. Last);
@@ -125,7 +125,7 @@ package body Ada.Characters.Handling is
    begin
       Inside.Maps.Translate (
          Item,
-         Inside.Maps.Case_Folding.Case_Folding_Map,
+         Inside.Maps.Case_Folding.Case_Folding_Map.all,
          Result,
          Last);
       return Result (1 .. Last);

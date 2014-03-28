@@ -912,10 +912,10 @@ package body Ada.Streams.Stream_IO.Inside is
    end Open;
 
    procedure Close (
-      File : not null access Non_Controlled_File_Type;
+      File : aliased in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is
    begin
-      Check_File_Open (File.all);
+      Check_File_Open (File);
       declare
          use type C.winnt.HANDLE;
          package Holder is
@@ -924,7 +924,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Finally);
          Scoped : aliased Scoped_Handle_And_File :=
             (C.winbase.INVALID_HANDLE_VALUE, null);
-         Freeing_File : constant Non_Controlled_File_Type := File.all;
+         Freeing_File : constant Non_Controlled_File_Type := File;
          Kind : constant Stream_Kind := File.all.Kind;
       begin
          Holder.Assign (Scoped'Access);
@@ -934,7 +934,7 @@ package body Ada.Streams.Stream_IO.Inside is
             when Standard_Handle =>
                null; -- statically allocated
          end case;
-         File.all := null;
+         File := null;
          case Freeing_File.Kind is
             when Ordinary | Temporary | External =>
                Scoped.Handle := Freeing_File.Handle;
@@ -954,9 +954,9 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Close;
 
-   procedure Delete (File : not null access Non_Controlled_File_Type) is
+   procedure Delete (File : aliased in out Non_Controlled_File_Type) is
    begin
-      Check_File_Open (File.all);
+      Check_File_Open (File);
       case File.all.Kind is
          when Ordinary =>
             declare
@@ -986,10 +986,10 @@ package body Ada.Streams.Stream_IO.Inside is
    end Delete;
 
    procedure Reset (
-      File : not null access Non_Controlled_File_Type;
+      File : aliased in out Non_Controlled_File_Type;
       Mode : File_Mode) is
    begin
-      Check_File_Open (File.all);
+      Check_File_Open (File);
       declare
          package Holder is
             new Exceptions.Finally.Scoped_Holder (
@@ -1001,9 +1001,9 @@ package body Ada.Streams.Stream_IO.Inside is
          Holder.Assign (Scoped'Access);
          case File.all.Kind is
             when Ordinary =>
-               Scoped.Handle := File.all.Handle;
-               Scoped.File := File.all;
-               File.all := null;
+               Scoped.Handle := File.Handle;
+               Scoped.File := File;
+               File := null;
                Flush_Writing_Buffer (Scoped.File);
                --  close explicitly in below
                Scoped.Handle := C.winbase.INVALID_HANDLE_VALUE;
@@ -1023,9 +1023,9 @@ package body Ada.Streams.Stream_IO.Inside is
                   Set_Index_To_Append (Scoped.File);
                end if;
             when Temporary =>
-               Scoped.Handle := File.all.Handle;
-               Scoped.File := File.all;
-               File.all := null;
+               Scoped.Handle := File.Handle;
+               Scoped.File := File;
+               File := null;
                Scoped.File.Mode := Mode;
                if Mode = Append_File then
                   Flush_Writing_Buffer (Scoped.File);
@@ -1036,7 +1036,7 @@ package body Ada.Streams.Stream_IO.Inside is
             when External | External_No_Close | Standard_Handle =>
                Raise_Exception (Status_Error'Identity);
          end case;
-         File.all := Scoped.File;
+         File := Scoped.File;
          --  complete
          Holder.Clear;
       end;
@@ -1318,10 +1318,10 @@ package body Ada.Streams.Stream_IO.Inside is
    end Size;
 
    procedure Set_Mode (
-      File : not null access Non_Controlled_File_Type;
+      File : aliased in out Non_Controlled_File_Type;
       Mode : File_Mode) is
    begin
-      Check_File_Open (File.all);
+      Check_File_Open (File);
       declare
          package Holder is
             new Exceptions.Finally.Scoped_Holder (
@@ -1334,9 +1334,9 @@ package body Ada.Streams.Stream_IO.Inside is
          Holder.Assign (Scoped'Access);
          case File.all.Kind is
             when Ordinary =>
-               Scoped.Handle := File.all.Handle;
-               Scoped.File := File.all;
-               File.all := null;
+               Scoped.Handle := File.Handle;
+               Scoped.File := File;
+               File := null;
                Current := Index (Scoped.File);
                Flush_Writing_Buffer (Scoped.File);
                --  close explicitly in below
@@ -1351,9 +1351,9 @@ package body Ada.Streams.Stream_IO.Inside is
                Scoped.File.Handle := Scoped.Handle;
                Scoped.File.Mode := Mode;
             when Temporary =>
-               Scoped.Handle := File.all.Handle;
-               Scoped.File := File.all;
-               File.all := null;
+               Scoped.Handle := File.Handle;
+               Scoped.File := File;
+               File := null;
                Current := Index (Scoped.File);
                Flush_Writing_Buffer (Scoped.File);
                Scoped.File.Mode := Mode;
@@ -1365,7 +1365,7 @@ package body Ada.Streams.Stream_IO.Inside is
          else
             Set_Index (Scoped.File, Current);
          end if;
-         File.all := Scoped.File;
+         File := Scoped.File;
          --  complete
          Holder.Clear;
       end;

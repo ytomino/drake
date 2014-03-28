@@ -55,7 +55,7 @@ package Ada.Numerics.MT19937 is
 
    type Generator is limited private;
 
-   function Random_32 (Gen : not null access Generator) return Cardinal;
+   function Random_32 (Gen : aliased in out Generator) return Cardinal;
 
    function Initialize return Generator;
    function Initialize (Initiator : Cardinal) return Generator;
@@ -83,14 +83,14 @@ package Ada.Numerics.MT19937 is
 
    subtype Uniformly_Distributed is Long_Long_Float range 0.0 .. 1.0;
 
-   function Random_0_To_1 (Gen : not null access Generator)
+   function Random_0_To_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed;
-   function Random_0_To_Less_Than_1 (Gen : not null access Generator)
+   function Random_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed;
    function Random_Greater_Than_0_To_Less_Than_1 (
-      Gen : not null access Generator)
+      Gen : aliased in out Generator)
       return Uniformly_Distributed;
-   function Random_53_0_To_Less_Than_1 (Gen : not null access Generator)
+   function Random_53_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed;
 
    Use_Error : exception

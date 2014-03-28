@@ -126,7 +126,7 @@ package body System.Tasking.Synchronous_Objects is
    end Finalize;
 
    function Count (
-      Object : not null access Queue;
+      Object : Queue;
       Params : Address;
       Filter : Queue_Filter)
       return Natural

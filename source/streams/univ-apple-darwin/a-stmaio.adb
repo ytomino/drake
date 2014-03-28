@@ -71,7 +71,7 @@ package body Ada.Storage_Mapped_IO is
       --  close file
       if Streams.Stream_IO.Inside.Is_Open (Object.File) then
          Streams.Stream_IO.Inside.Close (
-            Object.File'Access,
+            Object.File,
             Raise_On_Error => Raise_On_Error);
       end if;
    end Unmap;
