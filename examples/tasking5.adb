@@ -1,13 +1,13 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Task_Identification;
-with System.Tasking.Tasks;
+with System.Tasks;
 procedure tasking5 is
 	function Cast is new Ada.Unchecked_Conversion (
 		Ada.Task_Identification.Task_Id,
-		System.Tasking.Tasks.Task_Id);
+		System.Tasks.Task_Id);
 	function Cast is new Ada.Unchecked_Conversion (
-		System.Tasking.Tasks.Task_Id,
+		System.Tasks.Task_Id,
 		Ada.Task_Identification.Task_Id);
 	Joined : Boolean;
 	pragma Volatile (Joined);
@@ -43,9 +43,9 @@ begin
 				& Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
 			Ada.Debug.Put ("parent of nested: "
 				& Ada.Task_Identification.Image (
-					Cast (System.Tasking.Tasks.Parent (Cast (Ada.Task_Identification.Current_Task)))));
+					Cast (System.Tasks.Parent (Cast (Ada.Task_Identification.Current_Task)))));
 			Ada.Debug.Put ("master level of nested: "
-				& Integer'Image (System.Tasking.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
+				& Integer'Image (System.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
 			Joined := True;
 		end Nested_Task;
 		task T2 is
@@ -56,9 +56,9 @@ begin
 				& Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
 			Ada.Debug.Put ("parent of T2: "
 				& Ada.Task_Identification.Image (
-					Cast (System.Tasking.Tasks.Parent (Cast (Ada.Task_Identification.Current_Task)))));
+					Cast (System.Tasks.Parent (Cast (Ada.Task_Identification.Current_Task)))));
 			Ada.Debug.Put ("master level of T2: "
-				& Integer'Image (System.Tasking.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
+				& Integer'Image (System.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
 			declare
 				A : Nested_Task;
 			begin
@@ -71,7 +71,7 @@ begin
 		Ada.Debug.Put ("main: "
 			& Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
 		Ada.Debug.Put ("master level of main: "
-			& Integer'Image (System.Tasking.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
+			& Integer'Image (System.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
 	end;
 	pragma Assert (Joined);
 	Ada.Debug.Put ("*** test for dynamic allocation ***");
@@ -84,9 +84,9 @@ begin
 				& Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
 			Ada.Debug.Put ("parent of dynamic: "
 				& Ada.Task_Identification.Image (
-					Cast (System.Tasking.Tasks.Parent (Cast (Ada.Task_Identification.Current_Task)))));
+					Cast (System.Tasks.Parent (Cast (Ada.Task_Identification.Current_Task)))));
 			Ada.Debug.Put ("master level of dynamic: "
-				& Integer'Image (System.Tasking.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
+				& Integer'Image (System.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
 			Joined := True;
 		end Dynamic_Task;
 		type DA is access Dynamic_Task;
@@ -99,9 +99,9 @@ begin
 				& Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
 			Ada.Debug.Put ("parent of T3: "
 				& Ada.Task_Identification.Image (
-					Cast (System.Tasking.Tasks.Parent (Cast (Ada.Task_Identification.Current_Task)))));
+					Cast (System.Tasks.Parent (Cast (Ada.Task_Identification.Current_Task)))));
 			Ada.Debug.Put ("master level of T3: "
-				& Integer'Image (System.Tasking.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
+				& Integer'Image (System.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
 			D := new Dynamic_Task;
 			pragma Assert (not Joined);
 		end T3;
@@ -110,7 +110,7 @@ begin
 		Ada.Debug.Put ("main: "
 			& Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
 		Ada.Debug.Put ("master level of main: "
-			& Integer'Image (System.Tasking.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
+			& Integer'Image (System.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
 		-- wait end of T3 and Dynamic_Task here
 		-- memory of Dynamic_Task be leak !!!
 	end;

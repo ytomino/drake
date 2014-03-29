@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
-private with System.Tasking.Tasks;
+private with System.Tasks;
 package Ada.Task_Identification is
    pragma Preelaborate;
 
@@ -30,7 +30,7 @@ package Ada.Task_Identification is
 
 private
 
-   type Task_Id is new System.Tasking.Tasks.Task_Id;
+   type Task_Id is new System.Tasks.Task_Id;
 
    Null_Task_Id : constant Task_Id := null;
 

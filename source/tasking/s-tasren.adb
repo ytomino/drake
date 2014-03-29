@@ -2,9 +2,9 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
-with System.Tasking.Synchronous_Objects;
-with System.Tasking.Synchronous_Objects.Abortable;
-with System.Tasking.Tasks;
+with System.Synchronous_Objects;
+with System.Synchronous_Objects.Abortable;
+with System.Tasks;
 package body System.Tasking.Rendezvous is
    pragma Suppress (All_Checks);
    use type Ada.Exceptions.Exception_Id;
