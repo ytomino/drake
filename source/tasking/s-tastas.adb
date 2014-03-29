@@ -5,11 +5,11 @@ with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Native_Stack;
 with System.Native_Time;
-with System.Once;
 with System.Runtime_Context;
 with System.Shared_Locking;
 with System.Standard_Allocators;
 with System.Storage_Elements;
+with System.Synchronous_Control;
 with System.Tasking.Synchronous_Objects.Abortable;
 with System.Tasking.Yield;
 with System.Unbounded_Stack_Allocators;
@@ -330,8 +330,8 @@ package body System.Tasking.Tasks is
       Synchronous_Objects.Finalize (Shared_Lock);
       Shared_Locking.Enter_Hook := Shared_Locking.Nop'Access;
       Shared_Locking.Leave_Hook := Shared_Locking.Nop'Access;
-      --  once
-      Once.Yield_Hook := Once.Nop'Access;
+      --  yield
+      Synchronous_Control.Yield_Hook := Synchronous_Control.Nop'Access;
       --  delay statement
       Native_Time.Delay_For_Hook := Native_Time.Simple_Delay_For'Access;
       Native_Time.Delay_Until_Hook := Native_Time.Simple_Delay_Until'Access;
@@ -362,8 +362,8 @@ package body System.Tasking.Tasks is
          Synchronous_Objects.Initialize (Shared_Lock);
          Shared_Locking.Enter_Hook := Shared_Lock_Enter'Access;
          Shared_Locking.Leave_Hook := Shared_Lock_Leave'Access;
-         --  once
-         Once.Yield_Hook := Yield'Access;
+         --  yield
+         Synchronous_Control.Yield_Hook := Yield'Access;
          --  delay statement
          Native_Time.Delay_For_Hook := Delay_For'Access;
          Native_Time.Delay_Until_Hook := Delay_Until'Access;

@@ -1,6 +1,11 @@
 package body System.Synchronous_Control is
    pragma Suppress (All_Checks);
 
+   procedure Yield is
+   begin
+      Yield_Hook.all;
+   end Yield;
+
    procedure Unlock_Abort is
    begin
       Unlock_Abort_Hook.all;

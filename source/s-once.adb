@@ -1,3 +1,4 @@
+with System.Synchronous_Control;
 package body System.Once is
    pragma Suppress (All_Checks);
 
@@ -26,7 +27,7 @@ package body System.Once is
             Flag.all := Done;
          when Start => -- wait
             loop
-               Yield_Hook.all;
+               Synchronous_Control.Yield;
                exit when Flag.all = Done;
             end loop;
          when others => -- done
