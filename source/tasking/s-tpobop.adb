@@ -2,7 +2,7 @@ with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
 with System.Synchronous_Control;
-with System.Tasking.Synchronous_Objects.Abortable;
+with System.Synchronous_Objects.Abortable;
 package body System.Tasking.Protected_Objects.Operations is
    use type Ada.Exceptions.Exception_Id;
    use type Synchronous_Objects.Queue_Node_Access;

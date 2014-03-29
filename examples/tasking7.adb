@@ -1,7 +1,7 @@
 with Ada.Calendar;
 with Ada.Synchronous_Task_Control;
-with System.Tasking.Tasks;
-with System.Tasking.Yield;
+with System.Native_Tasks.Yield;
+with System.Tasks;
 procedure tasking7 is
 	use type Ada.Calendar.Time;
 begin
@@ -13,7 +13,7 @@ begin
 		begin
 			-- force switching to main thread
 			for I in 1 .. 500 loop
-				System.Tasking.Yield;
+				System.Native_Tasks.Yield;
 			end loop;
 			Ada.Debug.Put ("before wait in task");
 			Ada.Synchronous_Task_Control.Suspend_Until_True (ev);
@@ -32,7 +32,7 @@ begin
 		begin
 			-- force switching to main thread
 			for I in 1 .. 500 loop
-				System.Tasking.Yield;
+				System.Native_Tasks.Yield;
 			end loop;
 			Ada.Debug.Put ("before wait in task");
 			delay until Ada.Calendar.Clock + 999.9;
@@ -58,7 +58,7 @@ begin
 				raise Program_Error; -- it does not come here
 			exception
 				when Standard'Abort_Signal =>
-					System.Tasking.Tasks.When_Abort_Signal;
+					System.Tasks.When_Abort_Signal;
 					Ada.Debug.Put ("aborted in nested task");
 					raise;
 			end T3_Child;
@@ -69,7 +69,7 @@ begin
 			raise Program_Error; -- it does not come here
 		exception
 			when Standard'Abort_Signal =>
-				System.Tasking.Tasks.When_Abort_Signal;
+				System.Tasks.When_Abort_Signal;
 				Ada.Debug.Put ("aborted in task");
 				raise;
 		end T3;
@@ -94,7 +94,7 @@ begin
 					raise Program_Error; -- it does not come here
 				exception
 					when Standard'Abort_Signal =>
-						System.Tasking.Tasks.When_Abort_Signal;
+						System.Tasks.When_Abort_Signal;
 						Ada.Debug.Put ("aborted in nested task");
 						raise;
 				end T4_Child;
@@ -106,7 +106,7 @@ begin
 			raise Program_Error; -- it does not come here
 		exception
 			when Standard'Abort_Signal =>
-				System.Tasking.Tasks.When_Abort_Signal;
+				System.Tasks.When_Abort_Signal;
 				Ada.Debug.Put ("aborted in task");
 				raise;
 		end T4;

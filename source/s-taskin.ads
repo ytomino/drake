@@ -20,12 +20,16 @@ package System.Tasking is
    subtype Task_Id is Address; -- Inside.Task_Id
 
    --  required for task by compiler (s-taskin.ads)
+   --  "limited" is important to force pass-by-reference for Stages.Create_Task
    type Activation_Chain is limited record
       Data : Address := Null_Address;
    end record;
+   for Activation_Chain'Size use Standard'Address_Size;
 
    --  required for build-in-place of task by compiler (s-taskin.ads)
    type Activation_Chain_Access is access all Activation_Chain;
+   for Activation_Chain_Access'Storage_Size use 0;
+   pragma No_Strict_Aliasing (Activation_Chain_Access);
 
    --  required for task by compiler (s-taskin.ads)
    Unspecified_Priority : constant Integer := Priority'First - 1;
@@ -36,8 +40,8 @@ package System.Tasking is
    Cancelled_Entry : constant := -1;
    Null_Entry : constant := 0;
    Max_Entry : constant := Integer'Last;
-   type Entry_Index is range Interrupt_Entry .. Max_Entry;
-   type Task_Entry_Index is new Entry_Index range Null_Entry .. Max_Entry;
+   subtype Entry_Index is Integer range Interrupt_Entry .. Max_Entry;
+   subtype Task_Entry_Index is Entry_Index range Null_Entry .. Max_Entry;
 
    --  required for select when or by compiler (s-taskin.ads)
    Null_Task_Entry : constant := Null_Entry;

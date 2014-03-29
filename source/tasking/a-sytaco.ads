@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 private with Ada.Finalization;
-private with System.Tasking.Synchronous_Objects;
+private with System.Synchronous_Objects;
 package Ada.Synchronous_Task_Control is
    pragma Preelaborate;
 
@@ -20,7 +20,7 @@ private
    pragma Atomic (Flag);
 
    type Suspension_Object is new Finalization.Limited_Controlled with record
-      Object : System.Tasking.Synchronous_Objects.Event;
+      Object : System.Synchronous_Objects.Event;
       Waiting : aliased Flag; -- for CXDA002
    end record;
 

@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
-with System.Tasking.Synchronous_Objects;
+with System.Synchronous_Objects;
 package System.Tasking.Protected_Objects is
 
    --  required by compiler

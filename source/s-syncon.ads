@@ -6,6 +6,16 @@ package System.Synchronous_Control is
    --  no-operation
    procedure Nop is null;
 
+   --  yield
+
+   type Yield_Handler is access procedure;
+   pragma Suppress (Access_Check, Yield_Handler);
+
+   Yield_Hook : not null Yield_Handler := Nop'Access;
+   pragma Suppress (Access_Check, Yield_Hook);
+
+   procedure Yield;
+
    --  abortable region control
 
    type Unlock_Abort_Handler is access procedure;

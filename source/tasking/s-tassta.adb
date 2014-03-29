@@ -1,7 +1,8 @@
+with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
 with System.Synchronous_Control;
-with System.Tasking.Tasks;
+with System.Tasks;
 with System.Termination;
 package body System.Tasking.Stages is
    pragma Suppress (All_Checks);
@@ -69,6 +70,10 @@ package body System.Tasking.Stages is
       pragma Unreferenced (Relative_Deadline);
       pragma Unreferenced (Domain);
       pragma Unreferenced (Build_Entry_Names);
+      function To_Tasks_AC is
+         new Ada.Unchecked_Conversion (
+            Activation_Chain_Access,
+            Tasks.Activation_Chain_Access);
       Master_Of_Parent : constant Tasks.Master_Access :=
          Tasks.Master_Of_Parent (Master);
       New_Task_Id : Tasks.Task_Id;
@@ -78,7 +83,7 @@ package body System.Tasking.Stages is
          Discriminants,
          State,
          Name => Task_Image,
-         Chain => Chain'Unrestricted_Access,
+         Chain => To_Tasks_AC (Chain'Unrestricted_Access),
          Elaborated => Elaborated,
          Master => Master_Of_Parent,
          Entry_Last_Index => Num_Entries);
@@ -107,10 +112,14 @@ package body System.Tasking.Stages is
    procedure Activate_Tasks (
       Chain_Access : not null access Activation_Chain)
    is
+      function To_Tasks_AC is
+         new Ada.Unchecked_Conversion (
+            Activation_Chain_Access,
+            Tasks.Activation_Chain_Access);
       Aborted : Boolean; -- ignore abort
       pragma Unreferenced (Aborted);
    begin
-      Tasks.Activate (Chain_Access, Aborted => Aborted);
+      Tasks.Activate (To_Tasks_AC (Chain_Access), Aborted => Aborted);
    end Activate_Tasks;
 
    procedure Free_Task (T : Task_Id) is
@@ -133,10 +142,14 @@ package body System.Tasking.Stages is
       From, To : Activation_Chain_Access;
       New_Master : Master_ID)
    is
+      function To_Tasks_AC is
+         new Ada.Unchecked_Conversion (
+            Activation_Chain_Access,
+            Tasks.Activation_Chain_Access);
       New_Master_Of_Parent : constant Tasks.Master_Access :=
          Tasks.Master_Of_Parent (New_Master);
    begin
-      Tasks.Move (From, To, New_Master_Of_Parent);
+      Tasks.Move (To_Tasks_AC (From), To_Tasks_AC (To), New_Master_Of_Parent);
    end Move_Activation_Chain;
 
    procedure Set_Entry_Name (
@@ -144,13 +157,16 @@ package body System.Tasking.Stages is
       Pos : Task_Entry_Index;
       Val : Entry_Name_Access) is
    begin
-      Tasks.Set_Entry_Name (Task_Record_Conv.To_Pointer (T), Pos, Val);
+      Tasks.Set_Entry_Name (
+         Task_Record_Conv.To_Pointer (T),
+         Pos,
+         Tasks.Entry_Name_Access (Val));
    end Set_Entry_Name;
 
    procedure Abort_Tasks (Tasks : Task_List) is
    begin
       for I in Tasks'Range loop
-         Tasking.Tasks.Send_Abort (Task_Record_Conv.To_Pointer (Tasks (I)));
+         System.Tasks.Send_Abort (Task_Record_Conv.To_Pointer (Tasks (I)));
       end loop;
    end Abort_Tasks;
 

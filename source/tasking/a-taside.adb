@@ -11,7 +11,7 @@ package body Ada.Task_Identification is
          declare
             package Conv is
                new System.Address_To_Named_Access_Conversions (
-                  System.Tasking.Tasks.Task_Record,
+                  System.Tasks.Task_Record,
                   Task_Id);
             Width : constant Natural := (Standard'Address_Size + 3) / 4;
             N : constant not null access constant String := Name (T);
