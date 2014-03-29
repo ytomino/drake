@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for FreeBSD (or Linux)
 procedure System.Tasking.Yield;
+--  Yield forces the running task to relinquish the processor for an instant.
 pragma Preelaborate (System.Tasking.Yield);
