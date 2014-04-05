@@ -13,7 +13,8 @@ package Ada.Containers.Limited_Vectors is
    pragma Preelaborate;
    pragma Remote_Types;
 
-   subtype Extended_Index is Index_Type'Base range
+   subtype Extended_Index is
+      Index_Type'Base range
          Index_Type'First - 1 ..
          Index_Type'Min (Index_Type'Base'Last - 1, Index_Type'Last) + 1;
    No_Index : constant Extended_Index := Extended_Index'First;

@@ -18,10 +18,12 @@ private package Ada.Containers.Weak_Access_Holders is
    end record;
    for Data'Size use Data_Size;
    for Data use record
-      Reference_Count at 0
-         range 0 .. System.Reference_Counting.Counter'Size - 1;
-      Weak_List at 0
-         range Standard'Address_Size .. Standard'Address_Size * 2 - 1;
+      Reference_Count at 0 range
+         0 ..
+         System.Reference_Counting.Counter'Size - 1;
+      Weak_List at 0 range
+         Standard'Address_Size ..
+         Standard'Address_Size * 2 - 1;
    end record;
    pragma Suppress_Initialization (Data);
 

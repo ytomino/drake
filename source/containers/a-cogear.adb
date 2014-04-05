@@ -302,9 +302,11 @@ package body Ada.Containers.Generic_Arrays is
          Space : Count_Type)
          return New_Array_1
       is
-         subtype Space_Range is Index_Type range
-            Index_Type'First ..
-            Extended_Index'Val (Index_Type'Pos (Index_Type'First) + Space - 1);
+         subtype Space_Range is
+            Index_Type range
+               Index_Type'First ..
+               Extended_Index'Val (
+                  Index_Type'Pos (Index_Type'First) + Space - 1);
       begin
          if Left = null then
             return (
@@ -338,10 +340,11 @@ package body Ada.Containers.Generic_Arrays is
             return (Data => Left.Data, Last => Left.Last + 1);
          else
             declare
-               subtype Space_Range is Index_Type range
-                  Index_Type'First ..
-                  Extended_Index'Val (
-                     Index_Type'Pos (Index_Type'First) + Space - 1);
+               subtype Space_Range is
+                  Index_Type range
+                     Index_Type'First ..
+                     Extended_Index'Val (
+                        Index_Type'Pos (Index_Type'First) + Space - 1);
             begin
                return Result : constant New_Array_1 := (
                   Data => new Array_Type'(

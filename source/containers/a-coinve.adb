@@ -88,9 +88,10 @@ package body Ada.Containers.Indefinite_Vectors is
          Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
          Super => <>,
          Items => <>);
-      subtype R is Extended_Index range
-         Index_Type'First ..
-         Index_Type'First - 1 + Index_Type'Base (Length);
+      subtype R is
+         Extended_Index range
+            Index_Type'First ..
+            Index_Type'First - 1 + Index_Type'Base (Length);
    begin
       for I in R loop
          T.Items (I) := S.Items (I);
@@ -116,9 +117,10 @@ package body Ada.Containers.Indefinite_Vectors is
          Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
          Super => <>,
          Items => <>);
-      subtype R is Extended_Index range
-         Index_Type'First ..
-         Index_Type'First - 1 + Index_Type'Base (Length);
+      subtype R is
+         Extended_Index range
+            Index_Type'First ..
+            Index_Type'First - 1 + Index_Type'Base (Length);
    begin
       for I in R loop
          if S.Items (I) /= null then
@@ -205,6 +207,8 @@ package body Ada.Containers.Indefinite_Vectors is
                Assign (Container, New_Item);
             else
                Set_Length (Container, Old_Length + New_Item.Length);
+--  diff
+--  diff
 --  diff
 --  diff
                for I in

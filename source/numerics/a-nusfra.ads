@@ -34,14 +34,14 @@ package Ada.Numerics.SFMT.Random is
 
    subtype Unsigned_32 is Interfaces.Unsigned_32;
 
-   type Unsigned_32_Array is array (Natural range <>) of
-      aliased Interfaces.Unsigned_32;
+   type Unsigned_32_Array is
+      array (Natural range <>) of aliased Interfaces.Unsigned_32;
    for Unsigned_32_Array'Alignment use 16;
 
    subtype Unsigned_64 is Interfaces.Unsigned_64;
 
-   type Unsigned_64_Array is array (Natural range <>) of
-      aliased Interfaces.Unsigned_64;
+   type Unsigned_64_Array is
+      array (Natural range <>) of aliased Interfaces.Unsigned_64;
    for Unsigned_64_Array'Alignment use 16;
 
    --  Identification string

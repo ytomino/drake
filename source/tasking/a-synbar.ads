@@ -5,8 +5,8 @@ private with System.Synchronous_Objects;
 package Ada.Synchronous_Barriers is
    pragma Preelaborate;
 
-   subtype Barrier_Limit is Positive
-      range 1 .. Natural'Last; -- implementation-defined
+   subtype Barrier_Limit is
+      Positive range 1 .. Natural'Last; -- implementation-defined
 
    type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
       limited private;

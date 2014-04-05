@@ -21,9 +21,8 @@ package Ada.Wide_Text_IO is
    subtype Positive_Count is Count range 1 .. Count'Last;
    Unbounded : constant Count := 0;
 
-   subtype Field is Integer range
-      0 ..
-      Text_IO.Field'Last; -- implementation-defined
+   subtype Field is
+      Integer range 0 .. Text_IO.Field'Last; -- implementation-defined
    subtype Number_Base is Integer range 2 .. 16;
 
 --  type Type_Set is (Lower_Case, Upper_Case);

@@ -99,8 +99,10 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
 
 --  diff (Copy_Data)
+--
 --
 --
 --
@@ -196,6 +198,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Append)
+--
+--
 --
 --
 --
