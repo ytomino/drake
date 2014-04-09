@@ -328,6 +328,7 @@ package body Ada.Containers.Copy_On_Write is
                and then not Downcast (Target.Data).Is_Aliased
             then
                declare
+                  pragma Suppress (Accessibility_Check);
                   Source : constant not null access Container :=
                      Target.Data.Follower;
                   To_Free : Data_Access;
