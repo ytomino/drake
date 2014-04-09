@@ -5,7 +5,6 @@
 #define st_ctimespec st_ctim
 #elif defined(__FreeBSD__)
 #define _DONT_USE_CTYPE_INLINE_
-#define _STDSTREAM_DECLARED
 #define d_fileno d_ino
 #define st_atimespec st_atim
 #define st_mtimespec st_mtim
@@ -55,10 +54,13 @@
 #include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
 #include <dlfcn.h>
-#include <iconv.h>
 #if !defined(__linux__)
-#include <wchar.h> /* after malloc.h in Linux */
+#if defined(__FreeBSD__)
+#include <stdio.h> /* before wchar.h in FreeBSD */
 #endif
+#include <wchar.h> /* before iconv.h in FreeBSD, after malloc.h in Linux */
+#endif
+#include <iconv.h>
 #endif
 #if defined(__APPLE__)
 #undef _DONT_USE_CTYPE_INLINE_
@@ -74,7 +76,6 @@
 #include <copyfile.h> /* copyfile */
 #elif defined(__FreeBSD__)
 #undef _DONT_USE_CTYPE_INLINE_
-#undef _STDSTREAM_DECLARED
 #undef d_fileno
 #undef st_atimespec
 #undef st_mtimespec
@@ -181,6 +182,12 @@
 #pragma for Ada "time.h" include "sys/timespec.h" /* timespec */
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
 #pragma for Ada "unistd.h" include "sys/unistd.h"
+#if __FreeBSD__ >= 9
+#pragma for Ada "pthread.h" include "signal.h" /* pthread_kill */
+#pragma for Ada "stdint.h" include "machine/_types.h"
+#pragma for Ada "termios.h" include "sys/_termios.h"
+#pragma for Ada "time.h" include "sys/_timespec.h" /* struct timespec */
+#endif
 #elif defined(__linux__)
 #undef si_value /* cannot inline returning unchecked union */
 #pragma for Ada overload int open(const char *, int, __mode_t)
