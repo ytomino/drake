@@ -152,7 +152,7 @@ package body Ada.Directory_Searching is
             Additional.Information);
          Additional.Filled := True;
       end if;
-      return Additional.Information.st_mtimespec;
+      return Additional.Information.st_mtim;
    end Modification_Time;
 
    function To_File_Kind (mode : C.sys.types.mode_t) return File_Kind is

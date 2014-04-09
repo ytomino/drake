@@ -265,7 +265,7 @@ package body Ada.Directories.Inside is
    function Modification_Time (Information : Directory_Entry_Information_Type)
       return System.Native_Time.Native_Time is
    begin
-      return Information.st_mtimespec;
+      return Information.st_mtim;
    end Modification_Time;
 
    procedure Set_Modification_Time (
@@ -291,7 +291,7 @@ package body Ada.Directories.Inside is
       if C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) < 0 then
          Raise_Exception (Name_Error'Identity);
       end if;
-      Times (0) := To_timeval (Attributes.st_atimespec);
+      Times (0) := To_timeval (Attributes.st_atim);
       Times (1) := To_timeval (Time);
       if C.sys.time.lutimes (C_Name (0)'Access, Times (0)'Access) < 0 then
          Raise_Exception (Use_Error'Identity);

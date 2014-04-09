@@ -153,7 +153,7 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Time.To_Time (Information.st_atimespec));
+      return Cast (System.Native_Time.To_Time (Information.st_atim));
    end Last_Access_Time;
 
    function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
@@ -163,7 +163,7 @@ package body Ada.Directories.Information is
    begin
       Fill (Directory_Entry'Unrestricted_Access.all);
       return Cast (System.Native_Time.To_Time (
-         Directory_Entry.Additional.Information.st_atimespec));
+         Directory_Entry.Additional.Information.st_atim));
    end Last_Access_Time;
 
    function Last_Status_Change_Time (Name : String)
@@ -173,7 +173,7 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Time.To_Time (Information.st_ctimespec));
+      return Cast (System.Native_Time.To_Time (Information.st_ctim));
    end Last_Status_Change_Time;
 
    function Last_Status_Change_Time (Directory_Entry : Directory_Entry_Type)
@@ -183,7 +183,7 @@ package body Ada.Directories.Information is
    begin
       Fill (Directory_Entry'Unrestricted_Access.all);
       return Cast (System.Native_Time.To_Time (
-         Directory_Entry.Additional.Information.st_ctimespec));
+         Directory_Entry.Additional.Information.st_ctim));
    end Last_Status_Change_Time;
 
    function Owner (Name : String) return String is
