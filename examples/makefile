@@ -81,13 +81,13 @@ endif
 
 .PHONY: all clean
 
-all: $(BINLN) $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
+all: $(BUILDDIR)/adalib/libgnat.a $(BINLN) $(EXAMPLES)
 
 $(BINLN):
 	ln -s $(BUILDDIR) $(BINLN)
 
 $(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
-	make -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
+	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	touch $@
 	-rm $(EXAMPLES) 2> /dev/null
 

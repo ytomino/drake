@@ -239,8 +239,8 @@ CFLAGS_FOR_COMPILER_UNIT=-nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP
 all: $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
 
 $(RTSDIR)/adalib/libgnat.a: \
-		$(RTSDIR)/adainclude/ \
-		$(RTSDIR)/adalib/ \
+		$(RTSDIR)/adainclude \
+		$(RTSDIR)/adalib \
 		$(BUILDDIR) \
 		$(RTSDIR)/adainclude/system.ads \
 		$(LIBRARY_SRCS) \
@@ -484,7 +484,7 @@ else
 # make will expand wildcard at first, generated file may not be included
 
 import_objs: $(IMPORTDIR)/c.ads
-	make import_objs PHASE=2
+	$(MAKE) import_objs PHASE=2
 
 endif
 
