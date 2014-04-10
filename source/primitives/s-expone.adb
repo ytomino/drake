@@ -105,4 +105,25 @@ package body System.Exponentiations is
       end if;
    end Generic_Exp_Unsigned;
 
+   function Generic_Exp_Modular (Left, Modulus : Integer_Type; Right : Natural)
+      return Integer_Type
+   is
+      M : constant Long_Long_Integer := Long_Long_Integer (Modulus);
+      Result : Integer_Type := 1;
+      Factor : Integer_Type := Left;
+      Exponent : Natural := Right;
+   begin
+      loop
+         if Exponent rem 2 /= 0 then
+            Result := Integer_Type (
+               Long_Long_Integer (Result) * Long_Long_Integer (Factor) mod M);
+         end if;
+         Exponent := Exponent / 2;
+         exit when Exponent = 0;
+         Factor := Integer_Type (
+            Long_Long_Integer (Factor) * Long_Long_Integer (Factor) mod M);
+      end loop;
+      return Result;
+   end Generic_Exp_Modular;
+
 end System.Exponentiations;

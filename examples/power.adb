@@ -53,6 +53,8 @@ procedure power is
 	procedure Unsigned_Test is new Generic_Unsigned_Test (System.Unsigned_Types.Unsigned);
 	procedure Long_Unsigned_Test is new Generic_Unsigned_Test (System.Unsigned_Types.Long_Unsigned);
 	procedure Long_Long_Unsigned_Test is new Generic_Unsigned_Test (System.Unsigned_Types.Long_Long_Unsigned);
+	type Mod_100 is mod 100;
+	procedure Mod_100_Test is new Generic_Unsigned_Test (Mod_100);
 begin
 	Integer_Test;
 	Long_Integer_Test;
@@ -60,5 +62,6 @@ begin
 	Unsigned_Test;
 	Long_Unsigned_Test;
 	Long_Long_Unsigned_Test;
+	Mod_100_Test;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end power;
