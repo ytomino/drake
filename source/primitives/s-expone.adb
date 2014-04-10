@@ -105,25 +105,42 @@ package body System.Exponentiations is
       end if;
    end Generic_Exp_Unsigned;
 
-   function Generic_Exp_Modular (Left, Modulus : Integer_Type; Right : Natural)
+   function Generic_Exp_Modular (
+      Left : Integer_Type;
+      Modulus : Unsigned_Type;
+      Right : Natural)
       return Integer_Type
    is
-      M : constant Long_Long_Integer := Long_Long_Integer (Modulus);
-      Result : Integer_Type := 1;
-      Factor : Integer_Type := Left;
-      Exponent : Natural := Right;
+      pragma Compile_Time_Error (Integer_Type'Size /= Unsigned_Type'Size,
+         "size mismatch");
+      pragma Suppress (Range_Check);
    begin
-      loop
-         if Exponent rem 2 /= 0 then
-            Result := Integer_Type (
-               Long_Long_Integer (Result) * Long_Long_Integer (Factor) mod M);
-         end if;
-         Exponent := Exponent / 2;
-         exit when Exponent = 0;
-         Factor := Integer_Type (
-            Long_Long_Integer (Factor) * Long_Long_Integer (Factor) mod M);
-      end loop;
-      return Result;
+      if Left = 2 and then Right < Unsigned_Type'Size then
+         return Integer_Type (Shift_Left (1, Right) mod Modulus);
+      else
+         declare
+            type Long_Long_Unsigned is mod 2 ** Long_Long_Integer'Size;
+            Result : Unsigned_Type := 1;
+            Factor : Unsigned_Type := Unsigned_Type'Mod (Left);
+            Exponent : Natural := Right;
+         begin
+            loop
+               if Exponent rem 2 /= 0 then
+                  Result := Unsigned_Type'Mod (
+                     Long_Long_Unsigned'Mod (Result)
+                     * Long_Long_Unsigned'Mod (Factor)
+                     mod Long_Long_Unsigned'Mod (Modulus));
+               end if;
+               Exponent := Exponent / 2;
+               exit when Exponent = 0;
+               Factor := Unsigned_Type'Mod (
+                  Long_Long_Unsigned'Mod (Factor)
+                  * Long_Long_Unsigned'Mod (Factor)
+                  mod Long_Long_Unsigned'Mod (Modulus));
+            end loop;
+            return Integer_Type (Result);
+         end;
+      end if;
    end Generic_Exp_Modular;
 
 end System.Exponentiations;
