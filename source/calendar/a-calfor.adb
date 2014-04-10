@@ -537,18 +537,19 @@ package body Ada.Calendar.Formatting is
    function Value (Elapsed_Time : String) return Duration is
       Last : Natural := Elapsed_Time'First - 1;
       P : Natural;
-      Sign : Duration := 1.0;
+      Minus : Boolean := False;
       Hour : System.Formatting.Unsigned;
       Minute : System.Formatting.Unsigned;
       Second : System.Formatting.Unsigned;
       Sub_Second_I : System.Formatting.Unsigned;
       Sub_Second : Second_Duration;
       Error : Boolean;
+      Result : Duration;
    begin
       if Elapsed_Time'First <= Elapsed_Time'Last
          and then Elapsed_Time (Elapsed_Time'First) = '-'
       then
-         Sign := -1.0;
+         Minus := True;
          Last := Elapsed_Time'First;
       end if;
       System.Formatting.Value (
@@ -608,11 +609,15 @@ package body Ada.Calendar.Formatting is
       if Last /= Elapsed_Time'Last then
          raise Constraint_Error;
       end if;
-      return Sign * Seconds_Of (
+      Result := Seconds_Of (
          Hour_Number (Hour),
          Minute_Number (Minute),
          Second_Number (Second),
          Sub_Second);
+      if Minus then
+         Result := -Result;
+      end if;
+      return Result;
    end Value;
 
    function Image (Time_Zone : Time_Zones.Time_Offset) return String is
