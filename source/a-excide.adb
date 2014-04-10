@@ -1,4 +1,5 @@
 package body Ada.Exception_Identification is
+   pragma Suppress (All_Checks);
 
    function Exception_Name (Id : Exception_Id) return String is
    begin

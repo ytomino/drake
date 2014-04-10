@@ -14,7 +14,6 @@ with System.Synchronous_Objects.Abortable;
 with System.Unbounded_Stack_Allocators;
 with System.Unwind;
 package body System.Tasks is
-   pragma Suppress (All_Checks);
    use type Synchronous_Objects.Queue_Node_Access;
    use type Storage_Elements.Storage_Offset;
 

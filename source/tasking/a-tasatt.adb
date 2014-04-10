@@ -3,7 +3,6 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Tasks;
 package body Ada.Task_Attributes is
-   pragma Suppress (All_Checks);
    use type System.Address;
 
    Index : System.Tasks.Attribute_Index;

@@ -1,7 +1,6 @@
 with System.Synchronous_Objects.Abortable;
 with System.Tasks;
 package body Ada.Synchronous_Task_Control is
-   pragma Suppress (All_Checks);
 
    function sync_bool_compare_and_swap (
       A1 : not null access Flag;

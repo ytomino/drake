@@ -173,7 +173,6 @@ package body System.Native_Encoding is
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Continuing_Status_Type)
    is
-      pragma Suppress (All_Checks);
       package C_Conv is
          new Address_To_Constant_Access_Conversions (C.char, C.char_const_ptr);
       package V_Conv is
@@ -220,7 +219,6 @@ package body System.Native_Encoding is
       Finish : True_Only;
       Status : out Finishing_Status_Type)
    is
-      pragma Suppress (All_Checks);
       pragma Unreferenced (Finish);
       package V_Conv is
          new Address_To_Named_Access_Conversions (C.char, C.char_ptr);

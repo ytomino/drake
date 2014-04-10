@@ -6,7 +6,6 @@ with System.Synchronous_Objects;
 with System.Synchronous_Objects.Abortable;
 with System.Tasks;
 package body System.Tasking.Rendezvous is
-   pragma Suppress (All_Checks);
    use type Ada.Exceptions.Exception_Id;
 
    package Task_Record_Conv is

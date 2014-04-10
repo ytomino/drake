@@ -1,7 +1,6 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address_Image;
 package body Ada.Task_Identification is
-   pragma Suppress (All_Checks);
 
    function Image (T : Task_Id) return String is
    begin

@@ -190,7 +190,6 @@ package body System.Native_Encoding is
       Finish : Boolean;
       Status : out Subsequence_Status_Type)
    is
-      pragma Suppress (All_Checks);
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);
       Unused_Buffer_Limit : constant C.icucore.UChar_const_ptr :=
@@ -307,7 +306,6 @@ package body System.Native_Encoding is
       Finish : True_Only;
       Status : out Finishing_Status_Type)
    is
-      pragma Suppress (All_Checks);
       pragma Unreferenced (Finish);
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);

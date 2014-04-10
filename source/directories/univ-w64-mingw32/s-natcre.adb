@@ -3,7 +3,6 @@ with C.winbase;
 with C.windef;
 with C.winnt;
 package body System.Native_Credentials is
-   pragma Suppress (All_Checks);
    use type C.size_t;
    use type C.windef.WINBOOL;
 
