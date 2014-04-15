@@ -1,7 +1,6 @@
 with Ada;
-with System.Unsigned_Types;
+with Interfaces;
 procedure arrayop is
-	use System.Unsigned_Types;
 	generic
 		type e is new Boolean;
 		type a is array (Positive range <>) of e;
@@ -90,38 +89,24 @@ procedure arrayop is
 	pragma Debug (tb_ba32);
 	procedure tc_ba32 is new Generic_Test_Comparison (Boolean_32, ba32);
 	pragma Debug (tc_ba32);
-	-- integers
-	type ssa is array (Positive range <>) of Short_Short_Integer;
-	procedure tc_ssa is new Generic_Test_Comparison (Short_Short_Integer, ssa);
-	pragma Debug (tc_ssa);
-	type sa is array (Positive range <>) of Short_Integer;
-	procedure tc_sa is new Generic_Test_Comparison (Short_Integer, sa);
-	pragma Debug (tc_sa);
-	type a is array (Positive range <>) of Integer;
-	procedure tc_a is new Generic_Test_Comparison (Integer, a);
-	pragma Debug (tc_a);
-	type la is array (Positive range <>) of Long_Integer;
-	procedure tc_la is new Generic_Test_Comparison (Long_Integer, la);
-	pragma Debug (tc_la);
-	type lla is array (Positive range <>) of Long_Long_Integer;
-	procedure tc_lla is new Generic_Test_Comparison (Long_Long_Integer, lla);
-	pragma Debug (tc_lla);
+	-- signed integers
+	-- 8-bit width signed integers
+	type s8a is array (Positive range <>) of Interfaces.Integer_8;
+	procedure tc_s8a is new Generic_Test_Comparison (Interfaces.Integer_8, s8a);
+	pragma Debug (tc_s8a);
+	-- 16-bit width signed integers
+	type s16a is array (Positive range <>) of Interfaces.Integer_16;
+	procedure tc_s16a is new Generic_Test_Comparison (Interfaces.Integer_16, s16a);
+	pragma Debug (tc_s16a);
+	-- 32-bit width signed integers
+	type s32a is array (Positive range <>) of Interfaces.Integer_32;
+	procedure tc_s32a is new Generic_Test_Comparison (Interfaces.Integer_32, s32a);
+	pragma Debug (tc_s32a);
+	-- 64-bit width signed integers
+	type s64a is array (Positive range <>) of Interfaces.Integer_64;
+	procedure tc_s64a is new Generic_Test_Comparison (Interfaces.Integer_64, s64a);
+	pragma Debug (tc_s64a);
 	-- unsigned integers
-	type ssua is array (Positive range <>) of Short_Short_Unsigned;
-	procedure tc_ssua is new Generic_Test_Comparison (Short_Short_Unsigned, ssua);
-	pragma Debug (tc_ssua);
-	type sua is array (Positive range <>) of Short_Unsigned;
-	procedure tc_sua is new Generic_Test_Comparison (Short_Unsigned, sua);
-	pragma Debug (tc_sua);
-	type ua is array (Positive range <>) of Unsigned;
-	procedure tc_ua is new Generic_Test_Comparison (Unsigned, ua);
-	pragma Debug (tc_ua);
-	type lua is array (Positive range <>) of Long_Unsigned;
-	procedure tc_lua is new Generic_Test_Comparison (Long_Unsigned, lua);
-	pragma Debug (tc_lua);
-	type llua is array (Positive range <>) of Long_Long_Unsigned;
-	procedure tc_llua is new Generic_Test_Comparison (Long_Long_Unsigned, llua);
-	pragma Debug (tc_llua);
 	-- 1-bit width unsigned integers
 	type u1 is mod 2;
 	for u1'Size use 1;
@@ -172,11 +157,8 @@ procedure arrayop is
 	procedure tc_u7a is new Generic_Test_Comparison (u7, u7a);
 	pragma Debug (tc_u7a);
 	-- 8-bit width unsigned integers
-	type u8 is mod 2 ** 8;
-	for u8'Size use 8;
-	type u8a is array (Positive range <>) of u8;
-	for u8a'Component_Size use 8;
-	procedure tc_u8a is new Generic_Test_Comparison (u8, u8a);
+	type u8a is array (Positive range <>) of Interfaces.Unsigned_8;
+	procedure tc_u8a is new Generic_Test_Comparison (Interfaces.Unsigned_8, u8a);
 	pragma Debug (tc_u8a);
 	-- 9-bit width unsigned integers
 	type u9 is mod 2 ** 9;
@@ -227,6 +209,18 @@ procedure arrayop is
 	for u15a'Component_Size use 15;
 	procedure tc_u15a is new Generic_Test_Comparison (u15, u15a);
 	pragma Debug (tc_u15a);
+	-- 16-bit width signed integers
+	type u16a is array (Positive range <>) of Interfaces.Unsigned_16;
+	procedure tc_u16a is new Generic_Test_Comparison (Interfaces.Unsigned_16, u16a);
+	pragma Debug (tc_u16a);
+	-- 32-bit width signed integers
+	type u32a is array (Positive range <>) of Interfaces.Unsigned_32;
+	procedure tc_u32a is new Generic_Test_Comparison (Interfaces.Unsigned_32, u32a);
+	pragma Debug (tc_u32a);
+	-- 64-bit width signed integers
+	type u64a is array (Positive range <>) of Interfaces.Unsigned_64;
+	procedure tc_u64a is new Generic_Test_Comparison (Interfaces.Unsigned_64, u64a);
+	pragma Debug (tc_u64a);
 begin
 	pragma Assert (Ada.Debug.Put ("OK"));
 	null;
