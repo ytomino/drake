@@ -24,9 +24,7 @@ package body System.Arith_64 is
          if Y > 0 then
             return X < Interfaces.Integer_64'First / Y; -- Y > 0
          elsif Y < 0 then
-            return -X > Interfaces.Integer_64'Last / (-Y) -- (-Y) > 0
-               or else X = Interfaces.Integer_64'First
-               or else Y = Interfaces.Integer_64'First;
+            return X < Interfaces.Integer_64'Last / Y; -- Y < 0
          else
             return False; -- Y = 0
          end if;
