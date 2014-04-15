@@ -632,10 +632,11 @@ package body System.Tasks is
    procedure Remove_From_Merged_Activation_Chain_List (
       C : not null Activation_Chain)
    is
+      pragma Suppress (Accessibility_Check);
       Chain : constant access Activation_Chain := C.Self;
    begin
       if Chain.all = C then
-         Chain.all := null;
+         Chain.all := Chain.all.Merged;
       else
          declare
             I : Activation_Chain := Chain.all;
@@ -852,6 +853,7 @@ package body System.Tasks is
       if Chain /= null then
          Chain_Data := Chain.all;
          if Chain_Data = null then
+            pragma Check (Trace, Ada.Debug.Put ("new chain"));
             Chain_Data := new Activation_Chain_Data'(
                List => null,
                Task_Count => 0,
@@ -919,6 +921,7 @@ package body System.Tasks is
       --  for activation
       if Chain_Data /= null then
          --  apeend to activation chain
+         pragma Check (Trace, Ada.Debug.Put ("append to the chain"));
          T.Activation_Chain_Living := True;
          T.Next_Of_Activation_Chain := Chain_Data.List;
          Chain_Data.List := T;
@@ -1201,6 +1204,7 @@ package body System.Tasks is
    is
       Error : Activation_Error;
    begin
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Activate (Chain, Error, Aborted => Aborted);
       case Error is
          when None =>
@@ -1210,6 +1214,7 @@ package body System.Tasks is
          when Any_Exception =>
             raise Tasking_Error; -- C93004A
       end case;
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Activate;
 
    procedure Activate (T : not null Task_Id) is
@@ -1230,6 +1235,7 @@ package body System.Tasks is
       From, To : not null access Activation_Chain;
       New_Master : Master_Access) is
    begin
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       --  note: keep master level of tasks because it's meaningless
       if From.all /= null then
          --  change completion lists
@@ -1268,6 +1274,7 @@ package body System.Tasks is
          end if;
          From.all := null;
       end if;
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Move;
 
    function Parent (T : not null Task_Id) return Task_Id is
