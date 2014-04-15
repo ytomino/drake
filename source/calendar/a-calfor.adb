@@ -558,6 +558,7 @@ package body Ada.Calendar.Formatting is
          Hour,
          Error => Error);
       if Error
+         or else Hour_Number'Base (Hour) not in Hour_Number
          or else Last >= Elapsed_Time'Last
          or else Elapsed_Time (Last + 1) /= ':'
       then
@@ -570,6 +571,7 @@ package body Ada.Calendar.Formatting is
          Minute,
          Error => Error);
       if Error
+         or else Minute_Number'Base (Minute) not in Minute_Number
          or else Last >= Elapsed_Time'Last
          or else Elapsed_Time (Last + 1) /= ':'
       then
@@ -581,7 +583,9 @@ package body Ada.Calendar.Formatting is
          Last,
          Second,
          Error => Error);
-      if Error then
+      if Error
+         or else Second_Number'Base (Second) not in Second_Number
+      then
          raise Constraint_Error;
       end if;
       if Last < Elapsed_Time'Last and then Elapsed_Time (Last + 1) = '.' then
@@ -601,7 +605,11 @@ package body Ada.Calendar.Formatting is
             Sub_Second := Duration (Sub_Second_I);
          end;
          for I in P .. Last loop
-            Sub_Second := Sub_Second / 10;
+            declare
+               pragma Suppress (Range_Check); -- [gcc-4.8] a buggy check
+            begin
+               Sub_Second := Sub_Second / 10;
+            end;
          end loop;
       else
          Sub_Second := 0.0;
