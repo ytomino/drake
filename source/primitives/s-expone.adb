@@ -12,8 +12,15 @@ package body System.Exponentiations is
          else
             return Shift_Left (1, Right);
          end if;
+      elsif Left = 0 then
+         if Right > 0 then
+            return 0;
+         else -- Right = 0
+            return 1;
+         end if;
       else
          declare
+            pragma Suppress (Division_Check); -- Left /= 0
             Result : Integer_Type := 1;
             Factor : Integer_Type := Left;
             Exponent : Natural := Right;
@@ -114,6 +121,7 @@ package body System.Exponentiations is
       pragma Compile_Time_Error (Integer_Type'Size /= Unsigned_Type'Size,
          "size mismatch");
       pragma Suppress (Range_Check);
+      pragma Suppress (Division_Check); -- Modulus > 0
    begin
       if Left = 2 and then Right < Unsigned_Type'Size then
          return Integer_Type (Shift_Left (1, Right) mod Modulus);

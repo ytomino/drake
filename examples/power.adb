@@ -15,9 +15,13 @@ procedure power is
 			return X ** Y;
 		end P;
 	begin
+		pragma Assert (N (0, 0) = 1);
+		pragma Assert (N (0, 1) = 0);
 		pragma Assert (N (2, 3) = 8);
 		pragma Assert (N (3, 3) = 27);
 		pragma Assert (N (-3, 3) = -27);
+		pragma Assert (P (0, 0) = 1);
+		pragma Assert (P (0, 1) = 0);
 		pragma Assert (P (2, 3) = 8);
 		pragma Assert (P (3, 3) = 27);
 		pragma Assert (P (-3, 3) = -27);
@@ -40,9 +44,13 @@ procedure power is
 			return X ** Y;
 		end P;
 	begin
+		pragma Assert (N (0, 0) = 1);
+		pragma Assert (N (0, 1) = 0);
 		pragma Assert (N (2, 3) = 8);
 		pragma Assert (N (3, 3) = 27);
 		pragma Assert (N (-3, 3) = -27);
+		pragma Assert (P (0, 0) = 1);
+		pragma Assert (P (0, 1) = 0);
 		pragma Assert (P (2, 3) = 8);
 		pragma Assert (P (3, 3) = 27);
 		if T'Modulus not in 2 ** (Integer'Size - 1) + 1 .. 2 ** Integer'Size - 1 then
