@@ -1,3 +1,4 @@
+with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
@@ -6,6 +7,7 @@ with System.Synchronous_Objects;
 with System.Synchronous_Objects.Abortable;
 with System.Tasks;
 package body System.Tasking.Rendezvous is
+   use Ada.Exception_Identification.From_Here;
    use type Ada.Exceptions.Exception_Id;
 
    package Task_Record_Conv is
@@ -203,11 +205,18 @@ package body System.Tasking.Rendezvous is
             end;
          end if;
          Tasks.Disable_Abort (Aborted); -- if aborted, raise here
-         if Ada.Exceptions.Exception_Identity (The_Node.X) /=
-            Ada.Exceptions.Null_Id
-         then
-            Ada.Exceptions.Reraise_Occurrence (The_Node.X);
-         end if;
+         declare
+            X_Id : constant Ada.Exceptions.Exception_Id :=
+               Ada.Exceptions.Exception_Identity (The_Node.X);
+         begin
+            if X_Id /= Ada.Exceptions.Null_Id then
+               if X_Id = Standard'Abort_Signal'Identity then
+                  Raise_Exception (Tasking_Error'Identity); -- C9A011A
+               else
+                  Ada.Exceptions.Reraise_Occurrence (The_Node.X);
+               end if;
+            end if;
+         end;
       end;
    end Call_Simple;
 
