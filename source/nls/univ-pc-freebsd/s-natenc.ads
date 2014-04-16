@@ -160,7 +160,7 @@ package System.Native_Encoding is
 --    Last : out Ada.Streams.Stream_Element_Offset;
 --    Out_Item : out Ada.Streams.Stream_Element_Array;
 --    Out_Last : out Ada.Streams.Stream_Element_Offset;
---    Finished : True_Only;
+--    Finish : True_Only;
 --    Status : out Status_Type);
 
    --  convert all character sequence with substitute

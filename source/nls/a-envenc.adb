@@ -109,7 +109,7 @@ package body Ada.Environment_Encoding is
       Last : out Streams.Stream_Element_Offset;
       Out_Item : out Streams.Stream_Element_Array;
       Out_Last : out Streams.Stream_Element_Offset;
-      Finished : True_Only;
+      Finish : True_Only;
       Status : out Status_Type)
    is
       Subsequence_Status : Subsequence_Status_Type;
@@ -120,7 +120,7 @@ package body Ada.Environment_Encoding is
          Last,
          Out_Item,
          Out_Last,
-         Finished,
+         Finish,
          Subsequence_Status);
       pragma Assert (Subsequence_Status in
          Subsequence_Status_Type (Status_Type'First) ..
