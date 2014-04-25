@@ -1,4 +1,3 @@
-with System.Long_Long_Float_Attributes;
 package body System.Fat_Sflt is
    pragma Suppress (All_Checks);
 
@@ -61,8 +60,7 @@ package body System.Fat_Sflt is
 
       function Unbiased_Rounding (X : Short_Float) return Short_Float is
       begin
-         return Short_Float (Long_Long_Float_Attributes.Unbiased_Rounding (
-            Long_Long_Float (X)));
+         return X - Remainder (X, 1.0);
       end Unbiased_Rounding;
 
       function Valid (X : not null access Short_Float) return Boolean is

@@ -1,11 +1,14 @@
 package body System.Long_Long_Float_Attributes is
    pragma Suppress (All_Checks);
 
+   function copysignl (X, Y : Long_Long_Float) return Long_Long_Float;
+   pragma Import (Intrinsic, copysignl, "__builtin_copysignl");
+
+   function ldexpl (X : Long_Long_Float; N : Integer) return Long_Long_Float;
+   pragma Import (Intrinsic, ldexpl, "__builtin_ldexpl");
+
    function roundl (X : Long_Long_Float) return Long_Long_Float;
    pragma Import (Intrinsic, roundl, "__builtin_roundl");
-
-   function truncl (X : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, truncl, "__builtin_truncl");
 
    --  implementation
 
@@ -21,16 +24,16 @@ package body System.Long_Long_Float_Attributes is
       Result : Long_Long_Float := roundl (X);
       Diff : constant Long_Long_Float := Result - X;
    begin
-      if Diff = 0.5 then
+      if abs Diff = 0.5 then
          --  1.5 -> 2.0, 2.5 -> 3.0, ...
-         if truncl (Result / 2.0) * 2.0 /= Result then
-            Result := Result - 1.0;
-         end if;
-      elsif Diff = -0.5 then
          --  -1.5 -> -2.0, -2.5 -> -3.0, ...
-         if truncl (Result / 2.0) * 2.0 /= Result then
-            Result := Result + 1.0;
-         end if;
+         declare
+            Half_Result : constant Long_Long_Float := ldexpl (Result, -1);
+         begin
+            if roundl (Half_Result) /= Half_Result then
+               Result := Result - copysignl (1.0, Diff);
+            end if;
+         end;
       end if;
       return Result;
    end Unbiased_Rounding;

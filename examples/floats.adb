@@ -49,9 +49,21 @@ procedure floats is
 		pragma Assert (T'Rounding (X + 0.9) = 3.0);
 		pragma Assert (T'Succ (X) > X);
 		pragma Assert (T'Floor (T'Succ (X)) = X);
+		pragma Assert (T'Scaling (X, 1) = 4.0);
+		pragma Assert (T'Scaling (X, -1) = 1.0);
 		pragma Assert (T'Truncation (X + 0.9) = 2.0);
+		pragma Assert (T'Unbiased_Rounding (X + 1.5) = 4.0);
+		pragma Assert (T'Unbiased_Rounding (X + 1.4) = 3.0);
+		pragma Assert (T'Unbiased_Rounding (X + 0.6) = 3.0);
 		pragma Assert (T'Unbiased_Rounding (X + 0.5) = 2.0);
 		pragma Assert (T'Unbiased_Rounding (X - 0.5) = 2.0);
+		pragma Assert (T'Unbiased_Rounding (X - 0.6) = 1.0);
+		pragma Assert (T'Unbiased_Rounding (X - 1.4) = 1.0);
+		pragma Assert (T'Unbiased_Rounding (X - 1.5) = 0.0);
+		pragma Assert (T'Unbiased_Rounding (X - 2.5) = 0.0);
+		pragma Assert (T'Unbiased_Rounding (X - 2.6) = -1.0);
+		pragma Assert (T'Unbiased_Rounding (X - 3.4) = -1.0);
+		pragma Assert (T'Unbiased_Rounding (X - 3.5) = -2.0);
 		pragma Assert (X'Valid);
 		pragma Assert (Y.Value'Valid); -- Unaligned_Valid
 		null;
