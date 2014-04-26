@@ -2,9 +2,9 @@ export HOST=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
 ifeq ($(TARGET),$(HOST))
-GNATMAKE=gnatmake
+GNATPREFIX=
 else
-GNATMAKE=$(TARGET)-gnatmake
+GNATPREFIX=$(TARGET)-
 endif
 
 ifneq ($(findstring mingw,$(TARGET)),)
@@ -43,10 +43,11 @@ export WITHI=0
 export WITHS=0
 export DEBUG=2
 
-ifneq ($(WITHA),0)
-MFLAGS=
-else
-MFLAGS=-a
+GFLAGS=--RTS=$(abspath $(BUILDDIR))
+MFLAGS=-D $(BUILDDIR)
+
+ifeq ($(WITHA),0)
+MFLAGS+=-a
 endif
 
 CFLAGS=-gnatef
@@ -64,6 +65,7 @@ endif
 ifneq ($(DEBUG),0)
 CFLAGS+=-gnatf -gnatwIj -g -gnata
 BFLAGS=-E
+LFLAGS+=-g
 else
 CFLAGS+=-gnatf -gnatwIj
 BFLAGS=
@@ -92,7 +94,9 @@ $(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
 	-rm $(EXAMPLES) 2> /dev/null
 
 $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
-	cd $(BUILDDIR) && $(GNATMAKE) --RTS=$(abspath $(BUILDDIR)) -D . $(MFLAGS) $(CFLAGS) -o ../$@ ../$< -bargs $(BFLAGS) -largs $(LFLAGS)
+	$(GNATPREFIX)gnatmake -c $< $(GFLAGS) $(MFLAGS) -cargs $(CFLAGS)
+	cd $(BUILDDIR) && $(GNATPREFIX)gnatbind $(basename $(notdir $<)).ali $(GFLAGS) $(BFLAGS)
+	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS) $(LFLAGS)
 
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT)
 
