@@ -607,6 +607,34 @@ package body System.Tasks is
       end if;
    end Wait;
 
+   --  abort
+
+   procedure Set_Abort_Recursively (T : Task_Id);
+   procedure Set_Abort_Recursively (T : Task_Id) is
+   begin
+      T.Aborted := True;
+      declare
+         M : Master_Access := T.Master_Top;
+      begin
+         while M /= null loop
+            Synchronous_Objects.Enter (M.Mutex);
+            declare
+               L : Task_Id := M.List;
+            begin
+               if L /= null then
+                  loop
+                     Set_Abort_Recursively (L);
+                     L := L.Next_At_Same_Level;
+                     exit when L = M.List;
+                  end loop;
+               end if;
+            end;
+            Synchronous_Objects.Leave (M.Mutex);
+            M := M.Previous;
+         end loop;
+      end;
+   end Set_Abort_Recursively;
+
    procedure Abort_Handler_On_Leave_Master (T : Task_Id);
    procedure Abort_Handler_On_Leave_Master (T : Task_Id) is
       M : constant Master_Access := T.Master_Top;
@@ -1059,8 +1087,10 @@ package body System.Tasks is
       Current_Task_Id : constant Task_Id := TLS_Current_Task_Id;
       Error : Boolean;
    begin
+      pragma Check (Trace, Ada.Debug.Put (
+         Name (Current_Task_Id).all & " aborts " & Name (T).all));
       if T = Current_Task_Id then
-         T.Aborted := True;
+         Set_Abort_Recursively (T);
          raise Standard'Abort_Signal;
       elsif T.Activation_State = AS_Suspended then
          T.Aborted := True;
@@ -1069,7 +1099,7 @@ package body System.Tasks is
          if Error then
             raise Tasking_Error;
          end if;
-         T.Aborted := True; -- set 'Callable to false, C9A009H
+         Set_Abort_Recursively (T); -- set 'Callable to false, C9A009H
          --  abort myself if parent task is aborted, C9A007A
          declare
             P : Task_Id := Current_Task_Id;
@@ -1078,7 +1108,7 @@ package body System.Tasks is
                P := Parent (P);
                exit when P = null;
                if P = T then
-                  Current_Task_Id.Aborted := True;
+                  pragma Assert (Current_Task_Id.Aborted);
                   raise Standard'Abort_Signal;
                end if;
             end loop;
