@@ -93,8 +93,8 @@ package Ada.Strings.Wide_Wide_Maps is
       return Boolean is abstract;
    function To_Set (Sequence : Maps.Character_Sequence)
       return Wide_Wide_Character_Set is abstract;
-   function To_Set (Singleton : Character) return Wide_Wide_Character_Set is
-      abstract;
+   function To_Set (Singleton : Character)
+      return Wide_Wide_Character_Set is abstract;
    function To_Sequence (Set : Wide_Wide_Character_Set)
       return Maps.Character_Sequence is abstract;
 
