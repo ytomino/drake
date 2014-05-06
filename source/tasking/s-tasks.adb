@@ -866,6 +866,8 @@ package body System.Tasks is
       Master : Master_Access := null;
       Entry_Last_Index : Task_Entry_Index := 0)
    is
+      function To_Process_Handler is
+         new Ada.Unchecked_Conversion (Address, Process_Handler);
       Name_Data : String_Access := null;
       Chain_Data : Activation_Chain := null;
       Level : Master_Level := Library_Task_Level;
@@ -926,7 +928,7 @@ package body System.Tasks is
          Master_Level => Level,
          Master_Top => null,
          Params => Params,
-         Process => Process.all'Unrestricted_Access,
+         Process => To_Process_Handler (Process.all'Address),
          Preferred_Free_Mode => Detach,
          Name => Name_Data,
          Activation_Chain => Chain_Data,
@@ -1626,7 +1628,10 @@ package body System.Tasks is
       T : not null Task_Id;
       Index : in out Attribute_Index;
       New_Item : not null access function return Address;
-      Finalize : not null access procedure (Item : Address)) is
+      Finalize : not null access procedure (Item : Address))
+   is
+      function To_Finalize_Handler is
+         new Ada.Unchecked_Conversion (Address, Finalize_Handler);
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
@@ -1642,7 +1647,7 @@ package body System.Tasks is
             A.Finalize (A.Item);
          end if;
          A.Item := New_Item.all;
-         A.Finalize := Finalize.all'Access;
+         A.Finalize := To_Finalize_Handler (Finalize.all'Address);
          if A.Index /= Index'Unrestricted_Access then
             A.Index := Index'Unrestricted_Access;
             A.Previous := null;
@@ -1661,7 +1666,10 @@ package body System.Tasks is
       Index : in out Attribute_Index;
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address);
-      Result : out Address) is
+      Result : out Address)
+   is
+      function To_Finalize_Handler is
+         new Ada.Unchecked_Conversion (Address, Finalize_Handler);
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
@@ -1675,7 +1683,7 @@ package body System.Tasks is
       begin
          if A.Index /= Index'Unrestricted_Access then
             A.Item := New_Item.all;
-            A.Finalize := Finalize.all'Access;
+            A.Finalize := To_Finalize_Handler (Finalize.all'Address);
             if A.Index /= Index'Unrestricted_Access then
                A.Index := Index'Unrestricted_Access;
                A.Previous := null;
