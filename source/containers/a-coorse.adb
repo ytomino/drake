@@ -105,7 +105,7 @@ package body Ada.Containers.Ordered_Sets is
    is
       pragma Unreferenced (Length);
       pragma Unreferenced (Capacity);
-      New_Data : Data_Access := new Data'(
+      New_Data : constant Data_Access := new Data'(
          Super => <>,
          Root => null,
          Length => 0);

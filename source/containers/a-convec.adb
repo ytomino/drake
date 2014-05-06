@@ -18,7 +18,7 @@ package body Ada.Containers.Vectors is
 
    procedure Swap_Element (I, J : Integer; Params : System.Address);
    procedure Swap_Element (I, J : Integer; Params : System.Address) is
-      Data : Data_Access := Data_Cast.To_Pointer (Params);
+      Data : constant Data_Access := Data_Cast.To_Pointer (Params);
       Temp : constant Element_Type := Data.Items (Index_Type'Val (I));
    begin
       Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
@@ -113,7 +113,7 @@ package body Ada.Containers.Vectors is
       Capacity : Natural)
    is
       S : constant not null Data_Access := Downcast (Source);
-      T : not null Data_Access := new Data'(
+      T : constant not null Data_Access := new Data'(
          Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
          Super => <>,
          Items => <>);
