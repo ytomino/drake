@@ -278,13 +278,14 @@ package body Ada.Containers.Generic_Arrays is
    end Set_Length;
 
    procedure Swap (Container : in out Array_Access; I, J : Index_Type) is
+      pragma Unmodified (Container);
    begin
       if I /= J then
          declare
             Temp : constant Element_Type := Container (I);
          begin
-            Container (I) := Container (J);
-            Container (J) := Temp;
+            Container.all (I) := Container (J);
+            Container.all (J) := Temp;
          end;
       end if;
    end Swap;
