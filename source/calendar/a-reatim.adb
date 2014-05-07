@@ -1,5 +1,6 @@
 package body Ada.Real_Time is
    pragma Suppress (All_Checks);
+   use type System.Native_Time.Nanosecond_Number;
 
    function Clock return Time is
    begin
@@ -77,8 +78,13 @@ package body Ada.Real_Time is
    end "*";
 
    function "/" (Left, Right : Time_Span) return Integer is
+      --  not to depend on System.Arith_64
+      Left_Rep : constant System.Native_Time.Nanosecond_Number :=
+         System.Native_Time.Nanosecond_Number'Integer_Value (Left);
+      Right_Rep : constant System.Native_Time.Nanosecond_Number :=
+         System.Native_Time.Nanosecond_Number'Integer_Value (Right);
    begin
-      return Integer (Duration (Left) / Duration (Right));
+      return Integer (Left_Rep / Right_Rep);
    end "/";
 
    function "/" (Left : Time_Span; Right : Integer) return Time_Span is

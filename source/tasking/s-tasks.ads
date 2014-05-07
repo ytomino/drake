@@ -185,17 +185,19 @@ private
    type Task_Kind is (Main, Sub);
    pragma Discard_Names (Task_Kind);
 
+   type Finalize_Handler is access procedure (Params : Address);
+
    type Attribute is record
       Index : access Attribute_Index;
       Item : Address;
-      Finalize : access procedure (Item : Address);
+      Finalize : Finalize_Handler;
       Previous : Task_Id;
       Next : Task_Id;
    end record;
    pragma Suppress_Initialization (Attribute);
    type Attribute_Array is array (Natural) of Attribute;
    pragma Suppress_Initialization (Attribute_Array);
-   type Attribute_Array_Access is access Attribute_Array;
+   type Attribute_Array_Access is access all Attribute_Array;
 
    type Activation_State is range 0 .. 4;
    for Activation_State'Size use 8;
@@ -228,6 +230,7 @@ private
    type Rendezvous_Access is access Rendezvous_Record;
 
    type Abort_Handler is access procedure (T : Task_Id);
+   type Process_Handler is access procedure (Params : Address);
 
    type Task_Record (Kind : Task_Kind) is limited record
       Handle : aliased Native_Tasks.Handle_Type;
@@ -251,7 +254,7 @@ private
             null;
          when Sub =>
             Params : Address;
-            Process : not null access procedure (Params : Address);
+            Process : not null Process_Handler;
             --  free mode
             Preferred_Free_Mode : Free_Mode;
             --  name

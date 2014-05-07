@@ -14,7 +14,6 @@ with System.Synchronous_Objects.Abortable;
 with System.Unbounded_Stack_Allocators;
 with System.Unwind;
 package body System.Tasks is
-   pragma Suppress (All_Checks);
    use type Synchronous_Objects.Queue_Node_Access;
    use type Storage_Elements.Storage_Offset;
 
@@ -89,7 +88,7 @@ package body System.Tasks is
    generic
       type Element_Type is private;
       type Array_Type is array (Natural) of Element_Type;
-      type Array_Access is access Array_Type;
+      type Array_Access is access all Array_Type;
    package Simple_Vectors is
 
       procedure Expand (
@@ -104,19 +103,21 @@ package body System.Tasks is
 
    package body Simple_Vectors is
 
+      package AA_Conv is
+         new Address_To_Named_Access_Conversions (Array_Type, Array_Access);
+
       procedure Expand (
          Data : in out Array_Access;
          Length : in out Natural;
          New_Length : Natural;
-         New_Item : Element_Type)
-      is
-         function Cast is new Ada.Unchecked_Conversion (Address, Array_Access);
+         New_Item : Element_Type) is
       begin
          if New_Length > Length then
-            Data := Cast (Standard_Allocators.Reallocate (
-               Data.all'Address,
-               Storage_Elements.Storage_Count (
-                  Array_Type'Component_Size * New_Length)));
+            Data := AA_Conv.To_Pointer (
+               Standard_Allocators.Reallocate (
+                  AA_Conv.To_Address (Data),
+                  Storage_Elements.Storage_Count (New_Length)
+                     * (Array_Type'Component_Size / Standard'Storage_Unit)));
             for I in Length .. New_Length - 1 loop
                Data (I) := New_Item;
             end loop;
@@ -126,7 +127,7 @@ package body System.Tasks is
 
       procedure Clear (Data : in out Array_Access; Length : in out Natural) is
       begin
-         Standard_Allocators.Free (Data.all'Address);
+         Standard_Allocators.Free (AA_Conv.To_Address (Data));
          Data := null;
          Length := 0;
       end Clear;
@@ -156,7 +157,7 @@ package body System.Tasks is
 
    type Attribute_Index_Set is array (Natural) of Word;
    pragma Suppress_Initialization (Attribute_Index_Set);
-   type Attribute_Index_Set_Access is access Attribute_Index_Set;
+   type Attribute_Index_Set_Access is access all Attribute_Index_Set;
 
    Attribute_Indexes : Attribute_Index_Set_Access := null;
    Attribute_Indexes_Length : Natural := 0;
@@ -615,6 +616,34 @@ package body System.Tasks is
       end if;
    end Wait;
 
+   --  abort
+
+   procedure Set_Abort_Recursively (T : Task_Id);
+   procedure Set_Abort_Recursively (T : Task_Id) is
+   begin
+      T.Aborted := True;
+      declare
+         M : Master_Access := T.Master_Top;
+      begin
+         while M /= null loop
+            Synchronous_Objects.Enter (M.Mutex);
+            declare
+               L : Task_Id := M.List;
+            begin
+               if L /= null then
+                  loop
+                     Set_Abort_Recursively (L);
+                     L := L.Next_At_Same_Level;
+                     exit when L = M.List;
+                  end loop;
+               end if;
+            end;
+            Synchronous_Objects.Leave (M.Mutex);
+            M := M.Previous;
+         end loop;
+      end;
+   end Set_Abort_Recursively;
+
    procedure Abort_Handler_On_Leave_Master (T : Task_Id);
    procedure Abort_Handler_On_Leave_Master (T : Task_Id) is
       M : constant Master_Access := T.Master_Top;
@@ -640,10 +669,11 @@ package body System.Tasks is
    procedure Remove_From_Merged_Activation_Chain_List (
       C : not null Activation_Chain)
    is
+      pragma Suppress (Accessibility_Check);
       Chain : constant access Activation_Chain := C.Self;
    begin
       if Chain.all = C then
-         Chain.all := null;
+         Chain.all := Chain.all.Merged;
       else
          declare
             I : Activation_Chain := Chain.all;
@@ -845,6 +875,8 @@ package body System.Tasks is
       Master : Master_Access := null;
       Entry_Last_Index : Task_Entry_Index := 0)
    is
+      function To_Process_Handler is
+         new Ada.Unchecked_Conversion (Address, Process_Handler);
       Name_Data : String_Access := null;
       Chain_Data : Activation_Chain := null;
       Level : Master_Level := Library_Task_Level;
@@ -860,6 +892,7 @@ package body System.Tasks is
       if Chain /= null then
          Chain_Data := Chain.all;
          if Chain_Data = null then
+            pragma Check (Trace, Ada.Debug.Put ("new chain"));
             Chain_Data := new Activation_Chain_Data'(
                List => null,
                Task_Count => 0,
@@ -907,7 +940,7 @@ package body System.Tasks is
          Master_Level => Level,
          Master_Top => null,
          Params => Params,
-         Process => Process.all'Unrestricted_Access,
+         Process => To_Process_Handler (Process.all'Address),
          Preferred_Free_Mode => Detach,
          Name => Name_Data,
          Activation_Chain => Chain_Data,
@@ -930,6 +963,7 @@ package body System.Tasks is
       --  for activation
       if Chain_Data /= null then
          --  apeend to activation chain
+         pragma Check (Trace, Ada.Debug.Put ("append to the chain"));
          T.Activation_Chain_Living := True;
          T.Next_Of_Activation_Chain := Chain_Data.List;
          Chain_Data.List := T;
@@ -1067,8 +1101,10 @@ package body System.Tasks is
       Current_Task_Id : constant Task_Id := TLS_Current_Task_Id;
       Error : Boolean;
    begin
+      pragma Check (Trace, Ada.Debug.Put (
+         Name (Current_Task_Id).all & " aborts " & Name (T).all));
       if T = Current_Task_Id then
-         T.Aborted := True;
+         Set_Abort_Recursively (T);
          raise Standard'Abort_Signal;
       elsif T.Activation_State = AS_Suspended then
          T.Aborted := True;
@@ -1077,7 +1113,7 @@ package body System.Tasks is
          if Error then
             raise Tasking_Error;
          end if;
-         T.Aborted := True; -- set 'Callable to false, C9A009H
+         Set_Abort_Recursively (T); -- set 'Callable to false, C9A009H
          --  abort myself if parent task is aborted, C9A007A
          declare
             P : Task_Id := Current_Task_Id;
@@ -1086,7 +1122,7 @@ package body System.Tasks is
                P := Parent (P);
                exit when P = null;
                if P = T then
-                  Current_Task_Id.Aborted := True;
+                  pragma Assert (Current_Task_Id.Aborted);
                   raise Standard'Abort_Signal;
                end if;
             end loop;
@@ -1212,6 +1248,7 @@ package body System.Tasks is
    is
       Error : Activation_Error;
    begin
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Activate (Chain, Error, Aborted => Aborted);
       case Error is
          when None =>
@@ -1221,6 +1258,7 @@ package body System.Tasks is
          when Any_Exception =>
             raise Tasking_Error; -- C93004A
       end case;
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Activate;
 
    procedure Activate (T : not null Task_Id) is
@@ -1241,6 +1279,7 @@ package body System.Tasks is
       From, To : not null access Activation_Chain;
       New_Master : Master_Access) is
    begin
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       --  note: keep master level of tasks because it's meaningless
       if From.all /= null then
          --  change completion lists
@@ -1279,6 +1318,7 @@ package body System.Tasks is
          end if;
          From.all := null;
       end if;
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Move;
 
    function Parent (T : not null Task_Id) return Task_Id is
@@ -1615,7 +1655,10 @@ package body System.Tasks is
       T : not null Task_Id;
       Index : in out Attribute_Index;
       New_Item : not null access function return Address;
-      Finalize : not null access procedure (Item : Address)) is
+      Finalize : not null access procedure (Item : Address))
+   is
+      function To_Finalize_Handler is
+         new Ada.Unchecked_Conversion (Address, Finalize_Handler);
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
@@ -1631,7 +1674,7 @@ package body System.Tasks is
             A.Finalize (A.Item);
          end if;
          A.Item := New_Item.all;
-         A.Finalize := Finalize.all'Access;
+         A.Finalize := To_Finalize_Handler (Finalize.all'Address);
          if A.Index /= Index'Unrestricted_Access then
             A.Index := Index'Unrestricted_Access;
             A.Previous := null;
@@ -1650,7 +1693,10 @@ package body System.Tasks is
       Index : in out Attribute_Index;
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address);
-      Result : out Address) is
+      Result : out Address)
+   is
+      function To_Finalize_Handler is
+         new Ada.Unchecked_Conversion (Address, Finalize_Handler);
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
@@ -1664,7 +1710,7 @@ package body System.Tasks is
       begin
          if A.Index /= Index'Unrestricted_Access then
             A.Item := New_Item.all;
-            A.Finalize := Finalize.all'Access;
+            A.Finalize := To_Finalize_Handler (Finalize.all'Address);
             if A.Index /= Index'Unrestricted_Access then
                A.Index := Index'Unrestricted_Access;
                A.Previous := null;

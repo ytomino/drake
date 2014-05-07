@@ -1,6 +1,5 @@
 with System.Native_Credentials;
 package body Ada.Credentials is
-   pragma Suppress (All_Checks);
 
    function User_Name return String is
    begin

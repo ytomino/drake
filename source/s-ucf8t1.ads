@@ -3,6 +3,8 @@ pragma License (Unrestricted);
 package System.UTF_Conversions.From_8_To_16 is
    pragma Pure;
 
+   pragma Suppress (All_Checks); -- for instantiation
+
    procedure Convert is
       new Convert_Procedure (
          Character,

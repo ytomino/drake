@@ -106,6 +106,11 @@ package body System.Tasking.Protected_Objects.Operations is
    procedure Invoke (
       Object : not null access Entries.Protection_Entries'Class)
    is
+      type PE_Access is access all Entries.Protection_Entries'Class;
+      package PEA_Conv is
+         new Address_To_Named_Access_Conversions (
+            Entries.Protection_Entries'Class,
+            PE_Access);
       Taken : Synchronous_Objects.Queue_Node_Access;
    begin
       pragma Assert (Object.Entry_Bodies'First = 1);
@@ -113,7 +118,7 @@ package body System.Tasking.Protected_Objects.Operations is
          Synchronous_Objects.Take (
             Object.Calling,
             Taken,
-            Object.all'Address,
+            PEA_Conv.To_Address (Object),
             Invoke_Filter'Access);
          exit when Taken = null;
          declare

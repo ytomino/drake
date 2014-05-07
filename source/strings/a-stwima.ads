@@ -77,16 +77,16 @@ package Ada.Strings.Wide_Maps is
    --  hiding
    function To_Set (Ranges : Maps.Character_Ranges)
       return Wide_Character_Set is abstract;
-   function To_Set (Span : Maps.Character_Range) return Wide_Character_Set is
-      abstract;
+   function To_Set (Span : Maps.Character_Range)
+      return Wide_Character_Set is abstract;
    function To_Ranges (Set : Wide_Character_Set)
       return Maps.Character_Ranges is abstract;
    function Is_In (Element : Character; Set : Wide_Character_Set)
       return Boolean is abstract;
    function To_Set (Sequence : Maps.Character_Sequence)
       return Wide_Character_Set is abstract;
-   function To_Set (Singleton : Character) return Wide_Character_Set is
-      abstract;
+   function To_Set (Singleton : Character)
+      return Wide_Character_Set is abstract;
    function To_Sequence (Set : Wide_Character_Set)
       return Maps.Character_Sequence is abstract;
 

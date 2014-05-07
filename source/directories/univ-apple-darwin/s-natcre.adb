@@ -2,7 +2,6 @@ with System.Zero_Terminated_Strings;
 with C.pwd;
 with C.grp;
 package body System.Native_Credentials is
-   pragma Suppress (All_Checks);
    use type C.pwd.struct_passwd_ptr;
    use type C.grp.struct_group_ptr;
 

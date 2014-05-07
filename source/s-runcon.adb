@@ -1,4 +1,5 @@
 package body System.Runtime_Context is
+   pragma Suppress (All_Checks);
 
    --  I hope it will be zero-initialized...
    Main_Task_Local_Storage : aliased Task_Local_Storage;

@@ -537,18 +537,19 @@ package body Ada.Calendar.Formatting is
    function Value (Elapsed_Time : String) return Duration is
       Last : Natural := Elapsed_Time'First - 1;
       P : Natural;
-      Sign : Duration := 1.0;
+      Minus : Boolean := False;
       Hour : System.Formatting.Unsigned;
       Minute : System.Formatting.Unsigned;
       Second : System.Formatting.Unsigned;
       Sub_Second_I : System.Formatting.Unsigned;
       Sub_Second : Second_Duration;
       Error : Boolean;
+      Result : Duration;
    begin
       if Elapsed_Time'First <= Elapsed_Time'Last
          and then Elapsed_Time (Elapsed_Time'First) = '-'
       then
-         Sign := -1.0;
+         Minus := True;
          Last := Elapsed_Time'First;
       end if;
       System.Formatting.Value (
@@ -557,6 +558,7 @@ package body Ada.Calendar.Formatting is
          Hour,
          Error => Error);
       if Error
+         or else Hour_Number'Base (Hour) not in Hour_Number
          or else Last >= Elapsed_Time'Last
          or else Elapsed_Time (Last + 1) /= ':'
       then
@@ -569,6 +571,7 @@ package body Ada.Calendar.Formatting is
          Minute,
          Error => Error);
       if Error
+         or else Minute_Number'Base (Minute) not in Minute_Number
          or else Last >= Elapsed_Time'Last
          or else Elapsed_Time (Last + 1) /= ':'
       then
@@ -580,7 +583,9 @@ package body Ada.Calendar.Formatting is
          Last,
          Second,
          Error => Error);
-      if Error then
+      if Error
+         or else Second_Number'Base (Second) not in Second_Number
+      then
          raise Constraint_Error;
       end if;
       if Last < Elapsed_Time'Last and then Elapsed_Time (Last + 1) = '.' then
@@ -600,7 +605,11 @@ package body Ada.Calendar.Formatting is
             Sub_Second := Duration (Sub_Second_I);
          end;
          for I in P .. Last loop
-            Sub_Second := Sub_Second / 10;
+            declare
+               pragma Suppress (Range_Check); -- [gcc-4.8] a buggy check
+            begin
+               Sub_Second := Sub_Second / 10;
+            end;
          end loop;
       else
          Sub_Second := 0.0;
@@ -608,11 +617,15 @@ package body Ada.Calendar.Formatting is
       if Last /= Elapsed_Time'Last then
          raise Constraint_Error;
       end if;
-      return Sign * Seconds_Of (
+      Result := Seconds_Of (
          Hour_Number (Hour),
          Minute_Number (Minute),
          Second_Number (Second),
          Sub_Second);
+      if Minus then
+         Result := -Result;
+      end if;
+      return Result;
    end Value;
 
    function Image (Time_Zone : Time_Zones.Time_Offset) return String is

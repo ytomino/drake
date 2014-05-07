@@ -30,8 +30,8 @@ package Ada.Streams is
       abstract limited new Root_Stream_Type with private;
    pragma Preelaborable_Initialization (Seekable_Stream_Type);
 
-   subtype Stream_Element_Positive_Count is Stream_Element_Count
-      range 1 .. Stream_Element_Count'Last;
+   subtype Stream_Element_Positive_Count is
+      Stream_Element_Count range 1 .. Stream_Element_Count'Last;
 
    procedure Set_Index (
       Stream : in out Seekable_Stream_Type;

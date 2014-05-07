@@ -3,6 +3,8 @@ pragma License (Unrestricted);
 package System.UTF_Conversions.From_32_To_8 is
    pragma Pure;
 
+   pragma Suppress (All_Checks); -- for instantiation
+
    procedure Convert is
       new Convert_Procedure (
          Wide_Wide_Character,

@@ -18,7 +18,7 @@ package body Ada.Containers.Vectors is
 
    procedure Swap_Element (I, J : Integer; Params : System.Address);
    procedure Swap_Element (I, J : Integer; Params : System.Address) is
-      Data : Data_Access := Data_Cast.To_Pointer (Params);
+      Data : constant Data_Access := Data_Cast.To_Pointer (Params);
       Temp : constant Element_Type := Data.Items (Index_Type'Val (I));
    begin
       Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
@@ -99,6 +99,7 @@ package body Ada.Containers.Vectors is
 --
 --
 --
+--
 
    procedure Copy_Data (
       Target : out Copy_On_Write.Data_Access;
@@ -112,13 +113,14 @@ package body Ada.Containers.Vectors is
       Capacity : Natural)
    is
       S : constant not null Data_Access := Downcast (Source);
-      T : not null Data_Access := new Data'(
+      T : constant not null Data_Access := new Data'(
          Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
          Super => <>,
          Items => <>);
-      subtype R is Extended_Index range
-         Index_Type'First ..
-         Index_Type'First - 1 + Index_Type'Base (Length);
+      subtype R is
+         Extended_Index range
+            Index_Type'First ..
+            Index_Type'First - 1 + Index_Type'Base (Length);
    begin
       T.Items (R) := S.Items (R);
 --  diff
@@ -206,12 +208,14 @@ package body Ada.Containers.Vectors is
             else
                Set_Length (Container, Old_Length + New_Item.Length);
                declare
-                  subtype R1 is Index_Type range
-                     Index_Type'First + Index_Type'Base (Old_Length) ..
-                     Last_Index (Container);
-                  subtype R2 is Index_Type range
-                     Index_Type'First ..
-                     Last_Index (New_Item);
+                  subtype R1 is
+                     Index_Type range
+                        Index_Type'First + Index_Type'Base (Old_Length) ..
+                        Last_Index (Container);
+                  subtype R2 is
+                     Index_Type range
+                        Index_Type'First ..
+                        Last_Index (New_Item);
                begin
                   Downcast (Container.Super.Data).Items (R1) :=
                      Downcast (New_Item.Super.Data).Items (R2);

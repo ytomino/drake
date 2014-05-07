@@ -165,9 +165,10 @@ package body Ada.Text_IO.Inside is
       Result : out Streams.Stream_IO.Inside.Form_String;
       Last : out Natural)
    is
-      subtype Not_CR_LF is IO_Text_Modes.File_New_Line range
-         IO_Text_Modes.LF ..
-         IO_Text_Modes.CR;
+      subtype Not_CR_LF is
+         IO_Text_Modes.File_New_Line range
+            IO_Text_Modes.LF ..
+            IO_Text_Modes.CR;
       New_Last : Natural;
    begin
       Streams.Stream_IO.Inside.Unpack (Form.Stream_Form, Result, Last);

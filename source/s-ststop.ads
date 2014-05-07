@@ -7,6 +7,8 @@ with Ada.Streams.Block_Transmission.Wide_Wide_Strings;
 package System.Strings.Stream_Ops is
    pragma Pure;
 
+   pragma Suppress (All_Checks); -- for instantiation
+
    --  required for String'Read by compiler (s-ststop.ads)
    procedure String_Read_Blk_IO (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;

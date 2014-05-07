@@ -1,4 +1,5 @@
 package body System.Form_Parameters is
+   pragma Suppress (All_Checks);
 
    --  parsing form parameter
 

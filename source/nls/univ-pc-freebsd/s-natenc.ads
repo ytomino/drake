@@ -56,18 +56,22 @@ package System.Native_Encoding is
    pragma Discard_Names (Subsequence_Status_Type);
 
    type Continuing_Status_Type is
-      new Subsequence_Status_Type
-         range Success .. Subsequence_Status_Type'Last;
+      new Subsequence_Status_Type range
+         Success ..
+         Subsequence_Status_Type'Last;
    type Finishing_Status_Type is
-      new Subsequence_Status_Type
-         range Finished .. Overflow;
+      new Subsequence_Status_Type range
+         Finished ..
+         Overflow;
    type Status_Type is
-      new Subsequence_Status_Type
-         range Finished .. Illegal_Sequence;
+      new Subsequence_Status_Type range
+         Finished ..
+         Illegal_Sequence;
 
    type Substituting_Status_Type is
-      new Status_Type
-         range Finished .. Overflow;
+      new Status_Type range
+         Finished ..
+         Overflow;
 
    subtype True_Only is Boolean range True .. True;
 
@@ -156,7 +160,7 @@ package System.Native_Encoding is
 --    Last : out Ada.Streams.Stream_Element_Offset;
 --    Out_Item : out Ada.Streams.Stream_Element_Array;
 --    Out_Last : out Ada.Streams.Stream_Element_Offset;
---    Finished : True_Only;
+--    Finish : True_Only;
 --    Status : out Status_Type);
 
    --  convert all character sequence with substitute

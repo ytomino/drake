@@ -278,13 +278,14 @@ package body Ada.Containers.Generic_Arrays is
    end Set_Length;
 
    procedure Swap (Container : in out Array_Access; I, J : Index_Type) is
+      pragma Unmodified (Container);
    begin
       if I /= J then
          declare
             Temp : constant Element_Type := Container (I);
          begin
-            Container (I) := Container (J);
-            Container (J) := Temp;
+            Container.all (I) := Container (J);
+            Container.all (J) := Temp;
          end;
       end if;
    end Swap;
@@ -302,9 +303,11 @@ package body Ada.Containers.Generic_Arrays is
          Space : Count_Type)
          return New_Array_1
       is
-         subtype Space_Range is Index_Type range
-            Index_Type'First ..
-            Extended_Index'Val (Index_Type'Pos (Index_Type'First) + Space - 1);
+         subtype Space_Range is
+            Index_Type range
+               Index_Type'First ..
+               Extended_Index'Val (
+                  Index_Type'Pos (Index_Type'First) + Space - 1);
       begin
          if Left = null then
             return (
@@ -338,10 +341,11 @@ package body Ada.Containers.Generic_Arrays is
             return (Data => Left.Data, Last => Left.Last + 1);
          else
             declare
-               subtype Space_Range is Index_Type range
-                  Index_Type'First ..
-                  Extended_Index'Val (
-                     Index_Type'Pos (Index_Type'First) + Space - 1);
+               subtype Space_Range is
+                  Index_Type range
+                     Index_Type'First ..
+                     Extended_Index'Val (
+                        Index_Type'Pos (Index_Type'First) + Space - 1);
             begin
                return Result : constant New_Array_1 := (
                   Data => new Array_Type'(

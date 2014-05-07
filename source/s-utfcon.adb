@@ -125,7 +125,7 @@ package body System.UTF_Conversions is
       --  trailing bytes
       for J in 2 .. Length loop
          if I >= Data'Last then
-            Code := Shift_Left (Code, 6 * (Length - J + 1));
+            Code := Code * 2 ** (6 * (Length - J + 1));
             Status := Truncated; -- trailing byte is nothing
             exit;
          else
@@ -135,7 +135,7 @@ package body System.UTF_Conversions is
                Character'Val (2#10000000#) .. Character'Val (2#10111111#)
             then
                I := I - 1;
-               Code := Shift_Left (Code, 6 * (Length - J + 1));
+               Code := Code * 2 ** (6 * (Length - J + 1));
                Status := Illegal_Sequence; -- trailing byte is invalid
                exit;
             end if;

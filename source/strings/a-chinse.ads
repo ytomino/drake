@@ -43,8 +43,8 @@ package Ada.Characters.Inside.Sets is
       Last : out Natural;
       Left, Right : Character_Ranges);
 
-   type Character_Ranges_Array is array (Positive range <>) of
-      not null access constant Character_Ranges;
+   type Character_Ranges_Array is
+      array (Positive range <>) of not null access constant Character_Ranges;
    pragma Suppress_Initialization (Character_Ranges_Array);
 
    procedure Merge (

@@ -5,7 +5,6 @@ with System.Synchronous_Control;
 with System.Tasks;
 with System.Termination;
 package body System.Tasking.Stages is
-   pragma Suppress (All_Checks);
 
    package Task_Record_Conv is
       new Address_To_Named_Access_Conversions (

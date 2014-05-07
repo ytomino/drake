@@ -584,8 +584,11 @@ package body Ada.Streams.Stream_IO.Inside is
       if Shared /= IO_Modes.Allow then
          if Form.Wait then
             declare
-               Lock_Flags : constant array (IO_Modes.File_Shared range
-                  IO_Modes.Read_Only .. IO_Modes.Deny) of C.unsigned_int := (
+               Lock_Flags : constant array (
+                  IO_Modes.File_Shared range
+                     IO_Modes.Read_Only ..
+                     IO_Modes.Deny) of
+                  C.unsigned_int := (
                      IO_Modes.Read_Only => C.fcntl.O_SHLOCK,
                      IO_Modes.Deny => C.fcntl.O_EXLOCK);
             begin
@@ -633,8 +636,11 @@ package body Ada.Streams.Stream_IO.Inside is
          pragma Warnings (Off, O_EXLOCK_Is_Missing);
          Race_Is_Raising : constant Boolean := not Form.Wait;
          pragma Warnings (Off, Race_Is_Raising);
-         Operation_Table : constant array (IO_Modes.File_Shared range
-            IO_Modes.Read_Only .. IO_Modes.Deny) of C.unsigned_int := (
+         Operation_Table : constant array (
+            IO_Modes.File_Shared range
+               IO_Modes.Read_Only ..
+               IO_Modes.Deny) of
+            C.unsigned_int := (
                IO_Modes.Read_Only => C.sys.file.LOCK_SH,
                IO_Modes.Deny => C.sys.file.LOCK_EX);
          operation : C.unsigned_int;

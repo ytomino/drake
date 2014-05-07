@@ -4,8 +4,8 @@ package System.Formatting.Float is
    pragma Pure;
 
    subtype Longest_Float is Long_Long_Float;
-   subtype Longest_Unsigned_Float is Long_Long_Float
-      range 0.0 .. Long_Long_Float'Last;
+   subtype Longest_Unsigned_Float is
+      Long_Long_Float range 0.0 .. Long_Long_Float'Last;
 
    --  decimal part for floating-point format = Aft / Base ** Exponent
 

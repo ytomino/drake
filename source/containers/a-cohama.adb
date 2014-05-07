@@ -93,7 +93,7 @@ package body Ada.Containers.Hashed_Maps is
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
-      New_Data : Data_Access := new Data'(
+      New_Data : constant Data_Access := new Data'(
          Super => <>,
          Table => null,
          Length => 0);

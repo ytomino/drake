@@ -12,9 +12,10 @@ package Ada.Containers.Generic_Arrays is
 
    type New_Array (<>) is limited private;
 
-   subtype Extended_Index is Index_Type'Base range
-      Index_Type'Base'Pred (Index_Type'First) ..
-      Index_Type'Last;
+   subtype Extended_Index is
+      Index_Type'Base range
+         Index_Type'Base'Pred (Index_Type'First) ..
+         Index_Type'Last;
 
    function Length (Container : Array_Access) return Count_Type;
 

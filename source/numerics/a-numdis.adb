@@ -1,5 +1,6 @@
 with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Distributions is
+   pragma Suppress (All_Checks);
 
    --  Simple distributions
 

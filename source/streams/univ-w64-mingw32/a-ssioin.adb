@@ -549,8 +549,11 @@ package body Ada.Streams.Stream_IO.Inside is
             ShareMode := C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
          else
             declare
-               Lock_Flags : constant array (IO_Modes.File_Shared range
-                  IO_Modes.Read_Only .. IO_Modes.Deny) of C.windef.DWORD := (
+               Lock_Flags : constant array (
+                  IO_Modes.File_Shared range
+                     IO_Modes.Read_Only ..
+                     IO_Modes.Deny) of
+                  C.windef.DWORD := (
                      IO_Modes.Read_Only => C.winnt.FILE_SHARE_READ,
                      IO_Modes.Deny => 0);
             begin
@@ -587,8 +590,11 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
       if Shared /= IO_Modes.Allow and then Form.Wait then
          declare
-            Flags : constant array (IO_Modes.File_Shared range
-               IO_Modes.Read_Only .. IO_Modes.Deny) of C.windef.DWORD := (
+            Flags : constant array (
+               IO_Modes.File_Shared range
+                  IO_Modes.Read_Only ..
+                  IO_Modes.Deny) of
+               C.windef.DWORD := (
                   IO_Modes.Read_Only => 0,
                   IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
             Overlapped : aliased C.winbase.OVERLAPPED := (

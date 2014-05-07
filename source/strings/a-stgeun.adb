@@ -36,7 +36,9 @@ package body Ada.Strings.Generic_Unbounded is
             M : constant System.Address :=
                System.Standard_Allocators.Allocate (Header_Size + Use_Size);
          begin
-            return Result : not null Data_Access := Data_Cast.To_Pointer (M) do
+            return Result : constant not null Data_Access :=
+               Data_Cast.To_Pointer (M)
+            do
                Result.Reference_Count := 1;
                Result.Max_Length := Max_Length;
                declare
@@ -102,7 +104,8 @@ package body Ada.Strings.Generic_Unbounded is
       Max_Length : Natural;
       Capacity : Natural)
    is
-      Data : not null Data_Access := Allocate_Data (Max_Length, Capacity);
+      Data : constant not null Data_Access :=
+         Allocate_Data (Max_Length, Capacity);
       subtype R is Integer range 1 .. Length;
    begin
       Data.Items (R) := Data_Cast.To_Pointer (Source).Items (R);
@@ -760,7 +763,9 @@ package body Ada.Strings.Generic_Unbounded is
       function "*" (Left : Natural; Right : Character_Type)
          return Unbounded_String is
       begin
-         return Result : Unbounded_String := To_Unbounded_String (Left) do
+         return Result : constant Unbounded_String :=
+            To_Unbounded_String (Left)
+         do
             for I in 1 .. Left loop
                Result.Data.Items (I) := Right;
             end loop;
@@ -770,7 +775,7 @@ package body Ada.Strings.Generic_Unbounded is
       function "*" (Left : Natural; Right : String_Type)
          return Unbounded_String is
       begin
-         return Result : Unbounded_String :=
+         return Result : constant Unbounded_String :=
             To_Unbounded_String (Left * Right'Length)
          do
             declare

@@ -18,7 +18,7 @@ package body Ada.Containers.Limited_Vectors is
 
    procedure Swap_Element (I, J : Integer; Params : System.Address);
    procedure Swap_Element (I, J : Integer; Params : System.Address) is
-      Data : Data_Access := Data_Cast.To_Pointer (Params);
+      Data : constant Data_Access := Data_Cast.To_Pointer (Params);
       Temp : constant Element_Access := Data.Items (Index_Type'Val (I));
    begin
       Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
@@ -99,8 +99,10 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
 
 --  diff (Copy_Data)
+--
 --
 --
 --
@@ -196,6 +198,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Append)
+--
+--
 --
 --
 --

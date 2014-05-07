@@ -91,7 +91,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    is
       pragma Unreferenced (Length);
       pragma Unreferenced (Capacity);
-      New_Data : Data_Access := new Data'(
+      New_Data : constant Data_Access := new Data'(
          Super => <>,
          First => null,
          Last => null,
