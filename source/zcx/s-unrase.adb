@@ -1,5 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
+with System.Address_To_Named_Access_Conversions;
 with System.Unwind.Handling;
 with C.unwind;
 separate (System.Unwind.Raising)
@@ -69,6 +70,10 @@ package body Separated is
       GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
       Current : out Exception_Occurrence_Access)
    is
+      package GGEA_Conv is
+         new Address_To_Named_Access_Conversions (
+            Handling.GNAT_GCC_Exception,
+            Handling.GNAT_GCC_Exception_Access);
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
    begin
@@ -79,7 +84,7 @@ package body Separated is
          Current.all := GCC_Exception.Occurrence;
       else
          Current.Id := Foreign_Exception'Access;
-         Current.Machine_Occurrence := GCC_Exception.all'Address;
+         Current.Machine_Occurrence := GGEA_Conv.To_Address (GCC_Exception);
          Current.Msg_Length := 0;
          Current.Exception_Raised := True;
          Current.Pid := Local_Partition_ID;

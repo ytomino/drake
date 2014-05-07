@@ -88,7 +88,7 @@ package body System.Tasks is
    generic
       type Element_Type is private;
       type Array_Type is array (Natural) of Element_Type;
-      type Array_Access is access Array_Type;
+      type Array_Access is access all Array_Type;
    package Simple_Vectors is
 
       procedure Expand (
@@ -103,19 +103,21 @@ package body System.Tasks is
 
    package body Simple_Vectors is
 
+      package AA_Conv is
+         new Address_To_Named_Access_Conversions (Array_Type, Array_Access);
+
       procedure Expand (
          Data : in out Array_Access;
          Length : in out Natural;
          New_Length : Natural;
-         New_Item : Element_Type)
-      is
-         function Cast is new Ada.Unchecked_Conversion (Address, Array_Access);
+         New_Item : Element_Type) is
       begin
          if New_Length > Length then
-            Data := Cast (Standard_Allocators.Reallocate (
-               Data.all'Address,
-               Storage_Elements.Storage_Count (New_Length)
-                  * (Array_Type'Component_Size / Standard'Storage_Unit)));
+            Data := AA_Conv.To_Pointer (
+               Standard_Allocators.Reallocate (
+                  AA_Conv.To_Address (Data),
+                  Storage_Elements.Storage_Count (New_Length)
+                     * (Array_Type'Component_Size / Standard'Storage_Unit)));
             for I in Length .. New_Length - 1 loop
                Data (I) := New_Item;
             end loop;
@@ -125,7 +127,7 @@ package body System.Tasks is
 
       procedure Clear (Data : in out Array_Access; Length : in out Natural) is
       begin
-         Standard_Allocators.Free (Data.all'Address);
+         Standard_Allocators.Free (AA_Conv.To_Address (Data));
          Data := null;
          Length := 0;
       end Clear;
@@ -155,7 +157,7 @@ package body System.Tasks is
 
    type Attribute_Index_Set is array (Natural) of Word;
    pragma Suppress_Initialization (Attribute_Index_Set);
-   type Attribute_Index_Set_Access is access Attribute_Index_Set;
+   type Attribute_Index_Set_Access is access all Attribute_Index_Set;
 
    Attribute_Indexes : Attribute_Index_Set_Access := null;
    Attribute_Indexes_Length : Natural := 0;
