@@ -114,8 +114,8 @@ package body System.Tasks is
          if New_Length > Length then
             Data := Cast (Standard_Allocators.Reallocate (
                Data.all'Address,
-               Storage_Elements.Storage_Count (
-                  Array_Type'Component_Size * New_Length)));
+               Storage_Elements.Storage_Count (New_Length)
+                  * (Array_Type'Component_Size / Standard'Storage_Unit)));
             for I in Length .. New_Length - 1 loop
                Data (I) := New_Item;
             end loop;
