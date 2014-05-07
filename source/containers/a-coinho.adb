@@ -108,7 +108,7 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       Unique (Container'Unrestricted_Access.all, False);
       return (Element =>
-         Downcast (Container.Super.Data).Element.all'Unrestricted_Access);
+         Downcast (Container.Super.Data).Element.all'Access);
    end Constant_Reference;
 
    function Copy (Source : Holder) return Holder is
@@ -158,7 +158,7 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       Unique (Container, True);
       return (Element =>
-         Downcast (Container.Super.Data).Element.all'Unrestricted_Access);
+         Downcast (Container.Super.Data).Element.all'Access);
    end Reference;
 
    procedure Replace_Element (
