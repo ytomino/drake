@@ -18,19 +18,8 @@ package body Ada.Streams.Block_Transmission is
                Streams.Stream_Element_Offset (
                   (Element_Type'Stream_Size / Stream_Element'Size) * Length));
             for Item_As'Address use Item'Address;
-            Previous_Last : Stream_Element_Offset;
-            Last : Stream_Element_Offset := 0;
          begin
-            while Last < Item_As'Last loop
-               Previous_Last := Last;
-               Read (
-                  Stream.all,
-                  Item_As (Previous_Last + 1 .. Item_As'Last),
-                  Last);
-               if Last <= Previous_Last then
-                  Raise_Exception (End_Error'Identity);
-               end if;
-            end loop;
+            Stream_Element_Arrays.Read (Stream, Item_As);
          end;
       else
          Array_Type'Read (Stream, Item);
@@ -52,7 +41,7 @@ package body Ada.Streams.Block_Transmission is
                   (Element_Type'Stream_Size / Stream_Element'Size) * Length));
             for Item_As'Address use Item'Address;
          begin
-            Write (Stream.all, Item_As);
+            Stream_Element_Arrays.Write (Stream, Item_As);
          end;
       else
          Array_Type'Write (Stream, Item);
@@ -83,5 +72,35 @@ package body Ada.Streams.Block_Transmission is
       Index_Type'Write (Stream, Item'Last);
       Write (Stream, Item);
    end Output;
+
+   package body Stream_Element_Arrays is
+
+      procedure Read (
+         Stream : not null access Root_Stream_Type'Class;
+         Item : out Stream_Element_Array)
+      is
+         Previous_Last : Stream_Element_Offset;
+         Last : Stream_Element_Offset := Item'First - 1;
+      begin
+         while Last < Item'Last loop
+            Previous_Last := Last;
+            Streams.Read (
+               Stream.all,
+               Item (Previous_Last + 1 .. Item'Last),
+               Last);
+            if Last <= Previous_Last then
+               Raise_Exception (End_Error'Identity);
+            end if;
+         end loop;
+      end Read;
+
+      procedure Write (
+         Stream : not null access Root_Stream_Type'Class;
+         Item : Stream_Element_Array) is
+      begin
+         Streams.Write (Stream.all, Item);
+      end Write;
+
+   end Stream_Element_Arrays;
 
 end Ada.Streams.Block_Transmission;

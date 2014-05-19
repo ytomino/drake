@@ -43,6 +43,19 @@ package Ada.Streams.Block_Transmission is
       Stream : not null access Root_Stream_Type'Class;
       Item : Array_Type);
 
+   --  for Stream_Element_Array
+   package Stream_Element_Arrays is
+
+      procedure Read (
+         Stream : not null access Root_Stream_Type'Class;
+         Item : out Stream_Element_Array);
+
+      procedure Write (
+         Stream : not null access Root_Stream_Type'Class;
+         Item : Stream_Element_Array);
+
+   end Stream_Element_Arrays;
+
    --  for shorthand
    End_Error : exception
       renames IO_Exceptions.End_Error;
