@@ -21,7 +21,6 @@ package body Separated is
          C.unwind.struct_Unwind_Exception_ptr,
          Handling.GNAT_GCC_Exception_Access);
 
-   --  (a-exexpr-gcc.adb)
    --  set current occurrence or Foreign_Exception (a-exexpr-gcc.adb)
    procedure Setup_Current_Excep (
       GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
