@@ -2,7 +2,6 @@ with Ada.Exception_Identification.From_Here;
 package body Ada.Streams.Block_Transmission is
    pragma Suppress (All_Checks);
    use Exception_Identification.From_Here;
-   use type Streams.Stream_Element_Offset;
 
    procedure Read (
       Stream : not null access Root_Stream_Type'Class;
@@ -15,7 +14,7 @@ package body Ada.Streams.Block_Transmission is
             Length : constant Natural := Item'Length;
             Item_As : Stream_Element_Array (
                1 ..
-               Streams.Stream_Element_Offset (
+               Stream_Element_Offset (
                   (Element_Type'Stream_Size / Stream_Element'Size) * Length));
             for Item_As'Address use Item'Address;
          begin
@@ -37,7 +36,7 @@ package body Ada.Streams.Block_Transmission is
             Length : constant Natural := Item'Length;
             Item_As : Stream_Element_Array (
                1 ..
-               Streams.Stream_Element_Offset (
+               Stream_Element_Offset (
                   (Element_Type'Stream_Size / Stream_Element'Size) * Length));
             for Item_As'Address use Item'Address;
          begin
