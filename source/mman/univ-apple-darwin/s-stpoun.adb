@@ -1,4 +1,3 @@
-with Ada.Unchecked_Conversion;
 package body System.Storage_Pools.Unbounded is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
@@ -17,11 +16,9 @@ package body System.Storage_Pools.Unbounded is
       Pool : in out Unbounded_Pool;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
-      Alignment : Storage_Elements.Storage_Count)
-   is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      Alignment : Storage_Elements.Storage_Count) is
    begin
-      Storage_Address := Cast (C.malloc.malloc.malloc_zone_malloc (
+      Storage_Address := Address (C.malloc.malloc.malloc_zone_malloc (
          Pool.Zone,
          C.size_t (Size_In_Storage_Elements)));
       if Storage_Address = Null_Address then

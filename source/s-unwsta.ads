@@ -12,7 +12,7 @@ package System.Unwind.Standard is
       Name_Length => Constraint_Error_Name'Length,
       Full_Name => Constraint_Error_Name'Address,
       HTable_Ptr => null,
-      Import_Code => 0,
+      Foreign_Data => Null_Address,
       Raise_Hook => null);
    pragma Export (Ada, Constraint_Error, "constraint_error");
 
@@ -25,7 +25,7 @@ package System.Unwind.Standard is
       Name_Length => Program_Error_Name'Length,
       Full_Name => Program_Error_Name'Address,
       HTable_Ptr => null,
-      Import_Code => 0,
+      Foreign_Data => Null_Address,
       Raise_Hook => null);
    pragma Export (Ada, Program_Error, "program_error");
 
@@ -38,7 +38,7 @@ package System.Unwind.Standard is
       Name_Length => Storage_Error_Name'Length,
       Full_Name => Storage_Error_Name'Address,
       HTable_Ptr => null,
-      Import_Code => 0,
+      Foreign_Data => Null_Address,
       Raise_Hook => null);
    pragma Export (Ada, Storage_Error, "storage_error");
 
@@ -51,7 +51,7 @@ package System.Unwind.Standard is
       Name_Length => Tasking_Error_Name'Length,
       Full_Name => Tasking_Error_Name'Address,
       HTable_Ptr => null,
-      Import_Code => 0,
+      Foreign_Data => Null_Address,
       Raise_Hook => null);
    pragma Export (Ada, Tasking_Error, "tasking_error");
 
@@ -64,7 +64,7 @@ package System.Unwind.Standard is
       Name_Length => Abort_Signal_Name'Length,
       Full_Name => Abort_Signal_Name'Address,
       HTable_Ptr => null,
-      Import_Code => 0,
+      Foreign_Data => Null_Address,
       Raise_Hook => null);
    pragma Export (Ada, Abort_Signal, "_abort_signal");
 

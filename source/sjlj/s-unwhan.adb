@@ -216,11 +216,9 @@ package body System.Unwind.Handling is
                               new Ada.Unchecked_Conversion (
                                  Exception_Data_Access,
                                  C.unwind.Unwind_Ptr);
-                           type Unwind_Ptr_Ptr is
-                              access constant C.unwind.Unwind_Ptr;
                            function Cast is
                               new Ada.Unchecked_Conversion (
-                                 Unwind_Ptr_Ptr,
+                                 C.char_const_ptr,
                                  C.unwind.Unwind_Ptr);
                            filter : constant C.ptrdiff_t :=
                               C.ptrdiff_t (ar_filter)

@@ -5,8 +5,6 @@ package System.Unwind is
 
    --  exception data type (s-stalib.ads)
    type Raise_Action is access procedure;
-   type Exception_Code is mod 2 ** Integer'Size;
-   for Exception_Code'Size use Integer'Size;
    type Exception_Data;
    type Exception_Data_Access is access constant Exception_Data;
    for Exception_Data_Access'Storage_Size use 0;
@@ -16,7 +14,7 @@ package System.Unwind is
       Name_Length : Natural;
       Full_Name : Address;
       HTable_Ptr : Exception_Data_Access;
-      Import_Code : Exception_Code;
+      Foreign_Data : Address;
       Raise_Hook : Raise_Action;
    end record;
    pragma Suppress_Initialization (Exception_Data);

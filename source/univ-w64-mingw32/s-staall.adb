@@ -1,4 +1,4 @@
-with Ada.Unchecked_Conversion;
+with Ada;
 with System.Unwind.Raising; -- raising exception in compiler unit
 with System.Unwind.Standard;
 with C.basetsd;
@@ -25,7 +25,6 @@ package body System.Standard_Allocators is
    function Allocate (Size : Storage_Elements.Storage_Count)
       return Address
    is
-      function Cast is new Ada.Unchecked_Conversion (C.windef.LPVOID, Address);
       Actual_Size : C.basetsd.SIZE_T := C.basetsd.SIZE_T (Size);
    begin
       --  do round up here since HeapSize always returns the same size
@@ -36,7 +35,7 @@ package body System.Standard_Allocators is
       else
          Actual_Size := (Actual_Size + 7) and not 7;
       end if;
-      return Result : constant Address := Cast (C.winbase.HeapAlloc (
+      return Result : constant Address := Address (C.winbase.HeapAlloc (
          C.winbase.GetProcessHeap,
          0,
          Actual_Size))
@@ -62,11 +61,9 @@ package body System.Standard_Allocators is
    function Reallocate (
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
-      return Address
-   is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      return Address is
    begin
-      return Result : Address := Cast (C.winbase.HeapReAlloc (
+      return Result : Address := Address (C.winbase.HeapReAlloc (
          C.winbase.GetProcessHeap,
          0,
          C.windef.LPVOID (Storage_Address),
@@ -98,7 +95,6 @@ package body System.Standard_Allocators is
       Raise_On_Error : Boolean := True)
       return Address
    is
-      function Cast is new Ada.Unchecked_Conversion (C.windef.LPVOID, Address);
       Mapped_Address : C.windef.LPVOID;
    begin
       Mapped_Address := C.winbase.VirtualAlloc (
@@ -113,7 +109,7 @@ package body System.Standard_Allocators is
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);
       end if;
-      return Cast (Mapped_Address);
+      return Address (Mapped_Address);
    end Map;
 
    function Map (

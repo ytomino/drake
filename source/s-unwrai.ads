@@ -143,46 +143,46 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_15);
    pragma Export (C, rcheck_15, "__gnat_rcheck_PE_Accessibility_Check");
 
-   procedure rcheck_21 (File : not null access Character; Line : Integer);
-   pragma No_Return (rcheck_21);
-   pragma Export (C, rcheck_21, "__gnat_rcheck_PE_Explicit_Raise");
-
    procedure rcheck_22 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_22);
-   pragma Export (C, rcheck_22, "__gnat_rcheck_PE_Finalize_Raised_Exception");
+   pragma Export (C, rcheck_22, "__gnat_rcheck_PE_Explicit_Raise");
 
    procedure rcheck_23 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_23);
-   pragma Export (C, rcheck_23, "__gnat_rcheck_PE_Implicit_Return");
+   pragma Export (C, rcheck_23, "__gnat_rcheck_PE_Finalize_Raised_Exception");
 
    procedure rcheck_24 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_24);
-   pragma Export (C, rcheck_24, "__gnat_rcheck_PE_Misaligned_Address_Value");
+   pragma Export (C, rcheck_24, "__gnat_rcheck_PE_Implicit_Return");
 
    procedure rcheck_25 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_25);
-   pragma Export (C, rcheck_25, "__gnat_rcheck_PE_Missing_Return");
+   pragma Export (C, rcheck_25, "__gnat_rcheck_PE_Misaligned_Address_Value");
 
    procedure rcheck_26 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_26);
-   pragma Export (C, rcheck_26, "__gnat_rcheck_PE_Overlaid_Controlled_Object");
+   pragma Export (C, rcheck_26, "__gnat_rcheck_PE_Missing_Return");
 
-   procedure rcheck_29 (File : not null access Character; Line : Integer);
-   pragma No_Return (rcheck_29);
-   pragma Export (C, rcheck_29,
+   procedure rcheck_27 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_27);
+   pragma Export (C, rcheck_27, "__gnat_rcheck_PE_Overlaid_Controlled_Object");
+
+   procedure rcheck_30 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_30);
+   pragma Export (C, rcheck_30,
       "__gnat_rcheck_PE_Unchecked_Union_Restriction");
-
-   procedure rcheck_31 (File : not null access Character; Line : Integer);
-   pragma No_Return (rcheck_31);
-   pragma Export (C, rcheck_31, "__gnat_rcheck_SE_Empty_Storage_Pool");
 
    procedure rcheck_32 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_32);
-   pragma Export (C, rcheck_32, "__gnat_rcheck_SE_Explicit_Raise");
+   pragma Export (C, rcheck_32, "__gnat_rcheck_SE_Empty_Storage_Pool");
 
-   procedure rcheck_34 (File : not null access Character; Line : Integer);
-   pragma No_Return (rcheck_34);
-   pragma Export (C, rcheck_34, "__gnat_rcheck_SE_Object_Too_Large");
+   procedure rcheck_33 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_33);
+   pragma Export (C, rcheck_33, "__gnat_rcheck_SE_Explicit_Raise");
+
+   procedure rcheck_35 (File : not null access Character; Line : Integer);
+   pragma No_Return (rcheck_35);
+   pragma Export (C, rcheck_35, "__gnat_rcheck_SE_Object_Too_Large");
 
    --  excluding code range
    function AAA return Address;

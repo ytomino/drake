@@ -506,16 +506,16 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_15;
 
-   procedure rcheck_21 (File : not null access Character; Line : Integer) is
+   procedure rcheck_22 (File : not null access Character; Line : Integer) is
    begin
       Raise_From_rcheck (
          File,
          Line,
          Unwind.Standard.Program_Error'Access,
          Explicit_Raise);
-   end rcheck_21;
+   end rcheck_22;
 
-   procedure rcheck_22 (File : not null access Character; Line : Integer) is
+   procedure rcheck_23 (File : not null access Character; Line : Integer) is
       File_S : String (1 .. Natural (strlen (File)));
       for File_S'Address use File.all'Address;
    begin
@@ -524,20 +524,10 @@ package body System.Unwind.Raising is
          File_S,
          Line,
          Message => From_Finalize);
-   end rcheck_22;
-
-   procedure rcheck_23 (File : not null access Character; Line : Integer) is
-      Message : constant String := "implicit return with No_Return";
-   begin
-      Raise_From_rcheck (
-         File,
-         Line,
-         Unwind.Standard.Program_Error'Access,
-         Message);
    end rcheck_23;
 
    procedure rcheck_24 (File : not null access Character; Line : Integer) is
-      Message : constant String := "misaligned address value";
+      Message : constant String := "implicit return with No_Return";
    begin
       Raise_From_rcheck (
          File,
@@ -547,7 +537,7 @@ package body System.Unwind.Raising is
    end rcheck_24;
 
    procedure rcheck_25 (File : not null access Character; Line : Integer) is
-      Message : constant String := "missing return";
+      Message : constant String := "misaligned address value";
    begin
       Raise_From_rcheck (
          File,
@@ -557,7 +547,7 @@ package body System.Unwind.Raising is
    end rcheck_25;
 
    procedure rcheck_26 (File : not null access Character; Line : Integer) is
-      Message : constant String := "overlaid controlled object";
+      Message : constant String := "missing return";
    begin
       Raise_From_rcheck (
          File,
@@ -566,7 +556,17 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_26;
 
-   procedure rcheck_29 (File : not null access Character; Line : Integer) is
+   procedure rcheck_27 (File : not null access Character; Line : Integer) is
+      Message : constant String := "overlaid controlled object";
+   begin
+      Raise_From_rcheck (
+         File,
+         Line,
+         Unwind.Standard.Program_Error'Access,
+         Message);
+   end rcheck_27;
+
+   procedure rcheck_30 (File : not null access Character; Line : Integer) is
       Message : constant String := "unchecked union restriction";
    begin
       Raise_From_rcheck (
@@ -574,9 +574,9 @@ package body System.Unwind.Raising is
          Line,
          Unwind.Standard.Program_Error'Access,
          Message);
-   end rcheck_29;
+   end rcheck_30;
 
-   procedure rcheck_31 (File : not null access Character; Line : Integer) is
+   procedure rcheck_32 (File : not null access Character; Line : Integer) is
       Message : constant String := "empty storage pool";
    begin
       Raise_From_rcheck (
@@ -584,18 +584,18 @@ package body System.Unwind.Raising is
          Line,
          Unwind.Standard.Storage_Error'Access,
          Message);
-   end rcheck_31;
+   end rcheck_32;
 
-   procedure rcheck_32 (File : not null access Character; Line : Integer) is
+   procedure rcheck_33 (File : not null access Character; Line : Integer) is
    begin
       Raise_From_rcheck (
          File,
          Line,
          Unwind.Standard.Storage_Error'Access,
          Explicit_Raise);
-   end rcheck_32;
+   end rcheck_33;
 
-   procedure rcheck_34 (File : not null access Character; Line : Integer) is
+   procedure rcheck_35 (File : not null access Character; Line : Integer) is
       Message : constant String := "object too large";
    begin
       Raise_From_rcheck (
@@ -603,7 +603,7 @@ package body System.Unwind.Raising is
          Line,
          Unwind.Standard.Storage_Error'Access,
          Message);
-   end rcheck_34;
+   end rcheck_35;
 
    --  at last of exclusion
    function ZZZ return Address is

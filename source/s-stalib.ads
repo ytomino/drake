@@ -10,7 +10,6 @@ package System.Standard_Library is
       "system__standard_library__abort_undefer_direct");
 
    --  required by compiler (s-stalib.ads)
-   subtype Exception_Code is Unwind.Exception_Code;
    subtype Exception_Data_Ptr is Unwind.Exception_Data_Access;
 
 end System.Standard_Library;

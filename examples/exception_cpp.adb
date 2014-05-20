@@ -1,10 +1,9 @@
 with Ada;
--- with Ada.Exceptions;
--- with Ada.Unchecked_Conversion;
+with Ada.Exceptions;
+with Ada.Unchecked_Conversion;
 with C.unwind;
 with Interfaces.C.Strings;
 with System.Address_To_Access_Conversions;
-with System.Runtime_Context;
 with System.Storage_Elements;
 with System.Unwind.Foreign;
 procedure exception_cpp is
@@ -43,15 +42,12 @@ begin
 exception
 	when E : System.Unwind.Foreign.Foreign_Exception =>
 		declare
-			-- [gcc-4.8] Save_Occurrence does not copy Machine_Occurrence
---			function To_Repr is
---				new Ada.Unchecked_Conversion (
---					Ada.Exceptions.Exception_Occurrence_Access,
---					System.Unwind.Exception_Occurrence_Access);
---			GCC_Exception : constant System.Address :=
---				To_Repr (E'Unrestricted_Access).Machine_Occurrence;
+			function To_Repr is
+				new Ada.Unchecked_Conversion (
+					Ada.Exceptions.Exception_Occurrence_Access,
+					System.Unwind.Exception_Occurrence_Access);
 			GCC_Exception : constant System.Address :=
-				System.Runtime_Context.Get_Task_Local_Storage.Current_Exception.Machine_Occurrence;
+				To_Repr (E'Unrestricted_Access).Machine_Occurrence;
 			Cpp_Exception : constant System.Address :=
 				GCC_Exception + C.unwind.struct_Unwind_Exception'Max_Size_In_Storage_Elements;
 		begin

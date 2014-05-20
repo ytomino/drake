@@ -1,5 +1,5 @@
 pragma Check_Policy (Trace, Off);
-with Ada.Unchecked_Conversion;
+with Ada;
 with System.Unwind.Raising; -- raising exception in compiler unit
 with System.Unwind.Standard;
 with C.stdlib;
@@ -22,11 +22,9 @@ package body System.Standard_Allocators is
    --  implementation
 
    function Allocate (Size : Storage_Elements.Storage_Count)
-      return Address
-   is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      return Address is
    begin
-      return Result : constant Address := Cast (C.stdlib.malloc (
+      return Result : constant Address := Address (C.stdlib.malloc (
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
@@ -45,11 +43,9 @@ package body System.Standard_Allocators is
    function Reallocate (
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
-      return Address
-   is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      return Address is
    begin
-      return Result : constant Address := Cast (C.stdlib.realloc (
+      return Result : constant Address := Address (C.stdlib.realloc (
          C.void_ptr (Storage_Address),
          C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
@@ -73,7 +69,6 @@ package body System.Standard_Allocators is
       Raise_On_Error : Boolean := True)
       return Address
    is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Mapped_Address : C.void_ptr;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
@@ -92,7 +87,7 @@ package body System.Standard_Allocators is
             Message => Page_Exhausted);
       end if;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
-      return Cast (Mapped_Address);
+      return Address (Mapped_Address);
    end Map;
 
    function Map (
@@ -101,7 +96,6 @@ package body System.Standard_Allocators is
       Raise_On_Error : Boolean := True)
       return Address
    is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Mapped_Address : C.void_ptr;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
@@ -120,7 +114,7 @@ package body System.Standard_Allocators is
             Message => Page_Exhausted);
       end if;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
-      return Cast (Mapped_Address);
+      return Address (Mapped_Address);
    end Map;
 
    procedure Unmap (

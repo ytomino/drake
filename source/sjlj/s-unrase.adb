@@ -21,6 +21,11 @@ package body Separated is
          C.unwind.struct_Unwind_Exception_ptr,
          Handling.GNAT_GCC_Exception_Access);
 
+   --  (a-exexpr-gcc.adb)
+   procedure Set_Foreign_Occurrence (
+      Current : not null Exception_Occurrence_Access;
+      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access);
+
    --  set current occurrence or Foreign_Exception (a-exexpr-gcc.adb)
    procedure Setup_Current_Excep (
       GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
@@ -63,16 +68,36 @@ package body Separated is
       GCC_Exception : not null Handling.GNAT_GCC_Exception_Access);
    pragma Export (C, Reraise_GCC_Exception, "__gnat_reraise_zcx");
 
+   --  when E : others (a-exexpr-gcc.adb)
+   procedure Set_Exception_Parameter (
+      Current : not null Exception_Occurrence_Access;
+      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access);
+   pragma Export (C, Set_Exception_Parameter,
+      "__gnat_set_exception_parameter");
+
    --  implementation
 
-   procedure Setup_Current_Excep (
-      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
-      Current : out Exception_Occurrence_Access)
+   procedure Set_Foreign_Occurrence (
+      Current : not null Exception_Occurrence_Access;
+      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access)
    is
       package GGEA_Conv is
          new Address_To_Named_Access_Conversions (
             Handling.GNAT_GCC_Exception,
             Handling.GNAT_GCC_Exception_Access);
+   begin
+      Current.Id := Foreign_Exception'Access;
+      Current.Machine_Occurrence := GGEA_Conv.To_Address (GCC_Exception);
+      Current.Msg_Length := 0;
+      Current.Exception_Raised := True;
+      Current.Pid := Local_Partition_ID;
+      Current.Num_Tracebacks := 0;
+   end Set_Foreign_Occurrence;
+
+   procedure Setup_Current_Excep (
+      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
+      Current : out Exception_Occurrence_Access)
+   is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
    begin
@@ -82,12 +107,7 @@ package body Separated is
       then
          Current.all := GCC_Exception.Occurrence;
       else
-         Current.Id := Foreign_Exception'Access;
-         Current.Machine_Occurrence := GGEA_Conv.To_Address (GCC_Exception);
-         Current.Msg_Length := 0;
-         Current.Exception_Raised := True;
-         Current.Pid := Local_Partition_ID;
-         Current.Num_Tracebacks := 0;
+         Set_Foreign_Occurrence (Current, GCC_Exception);
       end if;
    end Setup_Current_Excep;
 
@@ -217,5 +237,18 @@ package body Separated is
    begin
       Propagate_GCC_Exception (GCC_Exception);
    end Reraise_GCC_Exception;
+
+   procedure Set_Exception_Parameter (
+      Current : not null Exception_Occurrence_Access;
+      GCC_Exception : not null Handling.GNAT_GCC_Exception_Access) is
+   begin
+      if GCC_Exception.Header.exception_class =
+         Handling.GNAT_Exception_Class
+      then
+         Save_Occurrence (Current.all, GCC_Exception.Occurrence);
+      else
+         Set_Foreign_Occurrence (Current, GCC_Exception);
+      end if;
+   end Set_Exception_Parameter;
 
 end Separated;
