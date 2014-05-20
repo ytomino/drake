@@ -15,6 +15,9 @@ endif
 
 EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
 
+ifneq ($(TARGET),$(HOST))
+EXAMPLES:=$(filter-out exception_cpp,$(EXAMPLES))
+endif
 ifeq ($(findstring darwin,$(TARGET)),)
 EXAMPLES:=$(filter-out diff_ucd_hfs,$(EXAMPLES))
 endif
