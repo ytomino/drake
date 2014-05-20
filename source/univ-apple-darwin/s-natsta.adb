@@ -1,4 +1,3 @@
-with Ada.Unchecked_Conversion;
 with C.sys.syscall;
 with C.unistd;
 package body System.Native_Stack is
@@ -7,11 +6,9 @@ package body System.Native_Stack is
 
    procedure Get (
       Thread : C.pthread.pthread_t := C.pthread.pthread_self;
-      Top, Bottom : out Address)
-   is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      Top, Bottom : out Address) is
    begin
-      Bottom := Cast (C.pthread.pthread_get_stackaddr_np (Thread));
+      Bottom := Address (C.pthread.pthread_get_stackaddr_np (Thread));
       Top := Bottom - Address (C.pthread.pthread_get_stacksize_np (Thread));
    end Get;
 

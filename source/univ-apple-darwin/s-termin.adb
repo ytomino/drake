@@ -57,7 +57,6 @@ package body System.Termination is
    is
       pragma Unreferenced (Info);
 --    pragma Unreferenced (Context);
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       C_Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
       subtype Fixed_String is String (Positive);
       Message : Fixed_String;
@@ -75,7 +74,7 @@ package body System.Termination is
             declare
                uc : C.sys.ucontext.ucontext_t;
                pragma Import (C, uc);
-               for uc'Address use Cast (Context);
+               for uc'Address use Address (Context);
                pragma Inspection_Point (uc);
             begin
                null; -- probe uc for debugging

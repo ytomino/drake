@@ -25,9 +25,8 @@ package body Separated is
       Argument : C.void_ptr)
       return C.unwind.Unwind_Reason_Code
    is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       D : Data;
-      for D'Address use Cast (Argument);
+      for D'Address use Address (Argument);
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       if D.Skip_Frames > 0 then

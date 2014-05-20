@@ -1,4 +1,3 @@
-with Ada.Unchecked_Conversion;
 with C.basetsd;
 with C.winbase;
 with C.windef;
@@ -33,11 +32,9 @@ package body System.Storage_Pools.Unbounded is
       Pool : in out Unbounded_Pool;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
-      Alignment : Storage_Elements.Storage_Count)
-   is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      Alignment : Storage_Elements.Storage_Count) is
    begin
-      Storage_Address := Cast (C.winbase.HeapAlloc (
+      Storage_Address := Address (C.winbase.HeapAlloc (
          Pool.Heap,
          0,
          C.basetsd.SIZE_T (Size_In_Storage_Elements)));

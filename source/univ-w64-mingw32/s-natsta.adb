@@ -7,13 +7,11 @@ package body System.Native_Stack is
       Top, Bottom : out Address)
    is
       function Cast is new
-         Ada.Unchecked_Conversion (C.winnt.PVOID, Address);
-      function Cast is new
          Ada.Unchecked_Conversion (C.winnt.struct_TEB_ptr, C.winnt.NT_TIB_ptr);
       TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
    begin
-      Top := Cast (TIB.StackLimit);
-      Bottom := Cast (TIB.StackBase);
+      Top := Address (TIB.StackLimit);
+      Bottom := Address (TIB.StackBase);
    end Get;
 
 end System.Native_Stack;

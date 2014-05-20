@@ -23,5 +23,6 @@ private
    --  required by compiler ??? (s-auxdec.ads)
 --  No_AST_Handler : constant AST_Handler;
 --  function Import_Value (Symbol : String) return Unsigned_32;
+--  function Import_Address (Symbol : String) return Address;
 
 end System.Aux_Dec;

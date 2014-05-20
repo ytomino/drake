@@ -1,4 +1,3 @@
-with Ada.Unchecked_Conversion;
 with C.pthread_np;
 package body System.Native_Stack is
    pragma Suppress (All_Checks);
@@ -8,7 +7,6 @@ package body System.Native_Stack is
       Thread : C.pthread.pthread_t := C.pthread.pthread_self;
       Top, Bottom : out Address)
    is
-      function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Attr : aliased C.pthread.pthread_attr_t;
       C_Addr : aliased C.void_ptr;
       C_Size : aliased C.size_t;
@@ -28,7 +26,7 @@ package body System.Native_Stack is
          Top := Null_Address;
          Bottom := Null_Address;
       else
-         Top := Cast (C_Addr);
+         Top := Address (C_Addr);
          Bottom := Top + Address (C_Size);
       end if;
    end Get;
