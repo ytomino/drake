@@ -1,10 +1,8 @@
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
-with System.Aux_Dec;
 with System.Storage_Pools.Overlaps;
 package body System.Initialization is
    pragma Suppress (All_Checks);
-   use Aux_Dec;
 
    type Object_Access is access all Object;
    for Object_Access'Storage_Pool use Storage_Pools.Overlaps.Pool;
@@ -29,14 +27,22 @@ package body System.Initialization is
    begin
       if Object'Has_Access_Values
          or else Object'Has_Tagged_Values
-         or else Object'Type_Class = Type_Class_Task
+         or else Object'Size > Standard'Word_Size * 8 -- large object
       then
          Storage_Pools.Overlaps.Set_Address (
             S_Conv.To_Address (Storage_Access (Storage)));
          return Object_Pointer (Object_Access'(new Object));
       else
-         return Object_Pointer (
-            O_Conv.To_Pointer (S_Conv.To_Address (Storage_Access (Storage))));
+         return Result : constant Object_Pointer := Object_Pointer (
+            O_Conv.To_Pointer (S_Conv.To_Address (Storage_Access (Storage))))
+         do
+            declare
+               Item : Object; -- default initialized
+               pragma Unmodified (Item);
+            begin
+               Result.all := Item;
+            end;
+         end return;
       end if;
    end New_Object;
 
@@ -54,7 +60,6 @@ package body System.Initialization is
    begin
       if Object'Has_Access_Values
          or else Object'Has_Tagged_Values
-         or else Object'Type_Class = Type_Class_Task
       then
          Storage_Pools.Overlaps.Set_Address (
             S_Conv.To_Address (Storage_Access (Storage)));
@@ -78,7 +83,6 @@ package body System.Initialization is
    begin
       if Object'Has_Access_Values
          or else Object'Has_Tagged_Values
-         or else Object'Type_Class = Type_Class_Task
       then
          declare
             A : constant Address :=
