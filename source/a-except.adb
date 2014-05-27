@@ -26,26 +26,37 @@ package body Ada.Exceptions is
                + System.Unwind.Exception_Msg_Max_Length
                + System.Unwind.Max_Tracebacks
                   * (3 + (Standard'Address_Size + 3) / 4);
-            Result : String (1 .. Max_Length);
-            Last : Natural := 0;
-            procedure Put (S : String);
-            procedure Put (S : String) is
-               First : constant Positive := Last + 1;
+            type Result_Type is record
+               Item : String (1 .. Max_Length);
+               Last : Natural;
+            end record;
+            pragma Suppress_Initialization (Result_Type);
+            procedure Put (S : String; Params : System.Address);
+            procedure Put (S : String; Params : System.Address) is
+               Result : Result_Type;
+               for Result'Address use Params;
+               First : constant Positive := Result.Last + 1;
             begin
-               Last := Last + S'Length;
-               Result (First .. Last) := S;
+               Result.Last := Result.Last + S'Length;
+               Result.Item (First .. Result.Last) := S;
             end Put;
-            procedure New_Line;
-            procedure New_Line is
+            procedure New_Line (Params : System.Address);
+            procedure New_Line (Params : System.Address) is
+               Result : Result_Type;
+               for Result'Address use Params;
             begin
-               Last := Last + 1;
-               Result (Last) := Character'Val (10);
+               Result.Last := Result.Last + 1;
+               Result.Item (Result.Last) := Character'Val (10);
             end New_Line;
-            procedure Fill is
-               new System.Unwind.Exception_Information (Put, New_Line);
+            Result : aliased Result_Type;
          begin
-            Fill (System.Unwind.Exception_Occurrence (X));
-            return Result (1 .. Last);
+            Result.Last := 0;
+            System.Unwind.Exception_Information (
+               System.Unwind.Exception_Occurrence (X),
+               Result'Address,
+               Put => Put'Access,
+               New_Line => New_Line'Access);
+            return Result.Item (1 .. Result.Last);
          end;
       end if;
    end Exception_Information;
