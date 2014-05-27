@@ -3,6 +3,7 @@ with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
+with System.Formatting.Address_Image;
 with System.Native_Stack;
 with System.Native_Tasks.Yield;
 with System.Native_Time;
@@ -393,6 +394,24 @@ package body System.Tasks is
 
    --  thread body
 
+   procedure Error_Put_Name (T : not null Task_Id);
+   procedure Error_Put_Name (T : not null Task_Id) is
+      Width : constant Natural := (Standard'Address_Size + 3) / 4;
+      S : String (1 .. Width);
+      Last : Natural;
+   begin
+      if T.Name /= null then
+         Termination.Error_Put (T.Name.all);
+         Termination.Error_Put (":");
+      end if;
+      Formatting.Address_Image (
+         Task_Record_Conv.To_Address (T),
+         S,
+         Last,
+         Set => Formatting.Upper_Case);
+      Termination.Error_Put (S);
+   end Error_Put_Name;
+
    procedure Report (
       T : not null Task_Id;
       Current : Ada.Exceptions.Exception_Occurrence);
@@ -412,21 +431,14 @@ package body System.Tasks is
       if Cast (Current).Num_Tracebacks > 0
          and then Report_Traceback'Address /= Null_Address
       then
-         if T.Name = null then
-            Termination.Error_Put ("One task");
-         else
-            Termination.Error_Put (T.Name.all);
-         end if;
+         Termination.Error_Put ("Task ");
+         Error_Put_Name (T);
          Termination.Error_Put (" terminated by unhandled exception");
          Termination.Error_New_Line;
          Report_Traceback (Current);
       else
          Termination.Error_Put ("in ");
-         if T.Name = null then
-            Termination.Error_Put ("one task");
-         else
-            Termination.Error_Put (T.Name.all);
-         end if;
+         Error_Put_Name (T);
          Termination.Error_Put (", raised ");
          Termination.Error_Put (
             Full_Name (1 .. Cast (Current).Id.Name_Length - 1));
