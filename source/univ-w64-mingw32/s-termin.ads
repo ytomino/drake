@@ -17,8 +17,6 @@ package System.Termination is
 
    --  register signal handler (init.c/seh_init.c)
    procedure Install_Exception_Handler (SEH : Address);
-   pragma Export (Ada, Install_Exception_Handler,
-      "__drake_install_exception_handler");
 
    procedure Reinstall_Exception_Handler;
 
