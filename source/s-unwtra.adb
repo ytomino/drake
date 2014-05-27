@@ -17,10 +17,21 @@ package body System.Unwind.Traceback is
 
    package body Separated is separate;
 
-   procedure Put_Exception_Information is
-      new Exception_Information (
-         Termination.Error_Put,
-         Termination.Error_New_Line);
+   procedure Put (S : String; Params : Address);
+   procedure Put (S : String; Params : Address) is
+      pragma Unreferenced (Params);
+   begin
+      Termination.Error_Put (S);
+   end Put;
+
+   procedure New_Line (Params : Address);
+   procedure New_Line (Params : Address) is
+      pragma Unreferenced (Params);
+   begin
+      Termination.Error_New_Line;
+   end New_Line;
+
+   --  implementation
 
    procedure Call_Chain (Current : not null Exception_Occurrence_Access) is
    begin
@@ -34,7 +45,13 @@ package body System.Unwind.Traceback is
       end if;
    end Call_Chain;
 
-   procedure Report_Traceback (Current : Exception_Occurrence)
-      renames Put_Exception_Information;
+   procedure Report_Traceback (Current : Exception_Occurrence) is
+   begin
+      Exception_Information (
+         Current,
+         Null_Address,
+         Put => Put'Access,
+         New_Line => New_Line'Access);
+   end Report_Traceback;
 
 end System.Unwind.Traceback;
