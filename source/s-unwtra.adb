@@ -1,5 +1,4 @@
 with System.Formatting.Address_Image;
-with System.Termination;
 with System.Unwind.Raising;
 package body System.Unwind.Traceback is
    pragma Suppress (All_Checks);
@@ -18,20 +17,6 @@ package body System.Unwind.Traceback is
 
    package body Separated is separate;
 
-   procedure Put (S : String; Params : Address);
-   procedure Put (S : String; Params : Address) is
-      pragma Unreferenced (Params);
-   begin
-      Termination.Error_Put (S);
-   end Put;
-
-   procedure New_Line (Params : Address);
-   procedure New_Line (Params : Address) is
-      pragma Unreferenced (Params);
-   begin
-      Termination.Error_New_Line;
-   end New_Line;
-
    --  implementation
 
    procedure Call_Chain (Current : not null Exception_Occurrence_Access) is
@@ -45,15 +30,6 @@ package body System.Unwind.Traceback is
             3); -- Propagate_Exception, Call_Chain, Get_Traceback
       end if;
    end Call_Chain;
-
-   procedure Report_Traceback (Current : Exception_Occurrence) is
-   begin
-      Exception_Information (
-         Current,
-         Null_Address,
-         Put => Put'Access,
-         New_Line => New_Line'Access);
-   end Report_Traceback;
 
    procedure Traceback_Information (
       X : Exception_Occurrence;

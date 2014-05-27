@@ -2,18 +2,12 @@ with Ada.Unchecked_Conversion;
 with Ada.Exceptions;
 with Ada.Interrupts.Names;
 with System.Formatting;
-with System.Termination;
-with System.Unwind;
+with System.Unwind.Raising;
 with C.signal;
 package body Ada.Interrupts.Inside is
    use type System.Address;
    use type C.signed_int;
    use type C.unsigned_int;
-
-   Report_Traceback : access procedure (
-      Current : Exceptions.Exception_Occurrence);
-   pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
-   pragma Weak_External (Report_Traceback);
 
    procedure Report (
       Interrupt : Interrupt_Id;
@@ -26,40 +20,18 @@ package body Ada.Interrupts.Inside is
          new Unchecked_Conversion (
             Exceptions.Exception_Occurrence,
             System.Unwind.Exception_Occurrence);
-      subtype Fixed_String is String (Positive);
-      Full_Name : Fixed_String;
-      for Full_Name'Address use Cast (Current).Id.Full_Name;
-      Name : String (1 .. Interrupt_Id'Width);
+      Name_Prefix : constant String := "interrupt ";
+      Name : String (1 .. Name_Prefix'Length + Interrupt_Id'Width);
       Name_Last : Natural;
       Error : Boolean;
    begin
+      Name (1 .. Name_Prefix'Length) := Name_Prefix;
       System.Formatting.Image (
          System.Formatting.Unsigned (Interrupt),
-         Name,
+         Name (Name_Prefix'Length + 1 .. Name'Last),
          Name_Last,
          Error => Error);
-      System.Termination.Error_New_Line;
-      if Cast (Current).Num_Tracebacks > 0
-         and then Report_Traceback'Address /= System.Null_Address
-      then
-         System.Termination.Error_Put ("Interrupt ");
-         System.Termination.Error_Put (Name (Name'First .. Name_Last));
-         System.Termination.Error_Put (" terminated by unhandled exception");
-         System.Termination.Error_New_Line;
-         Report_Traceback (Current);
-      else
-         System.Termination.Error_Put ("in interrupt ");
-         System.Termination.Error_Put (Name (Name'First .. Name_Last));
-         System.Termination.Error_Put (", raised ");
-         System.Termination.Error_Put (
-            Full_Name (1 .. Cast (Current).Id.Name_Length - 1));
-         if Cast (Current).Msg_Length > 0 then
-            System.Termination.Error_Put (" : ");
-            System.Termination.Error_Put (
-               Cast (Current).Msg (1 .. Cast (Current).Msg_Length));
-         end if;
-         System.Termination.Error_New_Line;
-      end if;
+      System.Unwind.Raising.Report (Cast (Current), Name (1 .. Name_Last));
    end Report;
 
    type Signal_Rec is record
