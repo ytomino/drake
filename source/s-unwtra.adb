@@ -1,3 +1,4 @@
+with System.Formatting.Address_Image;
 with System.Termination;
 with System.Unwind.Raising;
 package body System.Unwind.Traceback is
@@ -53,5 +54,35 @@ package body System.Unwind.Traceback is
          Put => Put'Access,
          New_Line => New_Line'Access);
    end Report_Traceback;
+
+   procedure Traceback_Information (
+      X : Exception_Occurrence;
+      Params : Address;
+      Put : not null access procedure (S : String; Params : Address);
+      New_Line : not null access procedure (Params : Address)) is
+   begin
+      Put ("Call stack traceback locations:", Params);
+      New_Line (Params);
+      for I in 1 .. X.Num_Tracebacks loop
+         Put ("0x", Params);
+         declare
+            Item : constant Address := X.Tracebacks (I);
+            Width : constant Natural := (Standard'Address_Size + 3) / 4;
+            S : String (1 .. Width);
+            Last : Natural;
+         begin
+            Formatting.Address_Image (
+               Item,
+               S,
+               Last,
+               Set => Formatting.Lower_Case);
+            Put (S, Params);
+         end;
+         if I < X.Num_Tracebacks then
+            Put (" ", Params);
+         end if;
+      end loop;
+      New_Line (Params);
+   end Traceback_Information;
 
 end System.Unwind.Traceback;

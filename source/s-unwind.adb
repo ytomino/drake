@@ -1,6 +1,15 @@
-with System.Formatting.Address_Image;
 package body System.Unwind is
    pragma Suppress (All_Checks);
+
+   type Traceback_Information_Handler is access procedure (
+      X : Exception_Occurrence;
+      Params : Address;
+      Put : not null access procedure (S : String; Params : Address);
+      New_Line : not null access procedure (Params : Address));
+   Traceback_Information : constant Traceback_Information_Handler;
+   pragma Import (Ada, Traceback_Information,
+      "__drake_ref_traceback_information");
+   pragma Weak_External (Traceback_Information);
 
    procedure Exception_Information (
       X : Exception_Occurrence;
@@ -22,29 +31,14 @@ package body System.Unwind is
          --  output X.Pid is unimplemented
          null;
       end if;
-      if X.Num_Tracebacks > 0 then
-         Put ("Call stack traceback locations:", Params);
-         New_Line (Params);
-         for I in 1 .. X.Num_Tracebacks loop
-            Put ("0x", Params);
-            declare
-               Item : constant Address := X.Tracebacks (I);
-               Width : constant Natural := (Standard'Address_Size + 3) / 4;
-               S : String (1 .. Width);
-               Last : Natural;
-            begin
-               Formatting.Address_Image (
-                  Item,
-                  S,
-                  Last,
-                  Set => Formatting.Lower_Case);
-               Put (S, Params);
-            end;
-            if I < X.Num_Tracebacks then
-               Put (" ", Params);
-            end if;
-         end loop;
-         New_Line (Params);
+      if X.Num_Tracebacks > 0
+         and then Traceback_Information'Address /= Null_Address
+      then
+         Traceback_Information (
+            X,
+            Params,
+            Put => Put,
+            New_Line => New_Line);
       end if;
    end Exception_Information;
 
