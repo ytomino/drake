@@ -193,6 +193,10 @@ package System.Unwind.Raising is
    pragma Export (Ada, Triggered_By_Abort,
       "ada__exceptions__triggered_by_abort");
 
+   --  output the information of unhandled exception
+   procedure Report (X : Exception_Occurrence; Where : String);
+   procedure Report_Traceback (X : Exception_Occurrence);
+
    --  gdb knows below names for "catch exception" command
    --  but, if those symbols are existing, gdb may report another error.
    --  this is not a problem of drake,

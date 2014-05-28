@@ -3,6 +3,7 @@ with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
+with System.Formatting.Address_Image;
 with System.Native_Stack;
 with System.Native_Tasks.Yield;
 with System.Native_Time;
@@ -12,7 +13,7 @@ with System.Standard_Allocators;
 with System.Synchronous_Control;
 with System.Synchronous_Objects.Abortable;
 with System.Unbounded_Stack_Allocators;
-with System.Unwind;
+with System.Unwind.Raising;
 package body System.Tasks is
    use type Synchronous_Objects.Queue_Node_Access;
    use type Storage_Elements.Storage_Offset;
@@ -37,11 +38,6 @@ package body System.Tasks is
       A2 : Counter)
       return Counter;
    pragma Import (Intrinsic, sync_add_and_fetch, "__sync_add_and_fetch_4");
-
-   Report_Traceback : access procedure (
-      Current : Ada.Exceptions.Exception_Occurrence);
-   pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
-   pragma Weak_External (Report_Traceback);
 
    --  delay statement
 
@@ -404,39 +400,27 @@ package body System.Tasks is
          new Ada.Unchecked_Conversion (
             Ada.Exceptions.Exception_Occurrence,
             Unwind.Exception_Occurrence);
-      subtype Fixed_String is String (Positive);
-      Full_Name : Fixed_String;
-      for Full_Name'Address use Cast (Current).Id.Full_Name;
+      Name_Prefix : constant String := "task ";
+      Name : String (
+         1 ..
+         Name_Prefix'Length
+            + (if T.Name /= null then T.Name'Length + 1 else 0)
+            + (Standard'Address_Size + 3) / 4);
+      Name_Last : Natural;
    begin
-      Termination.Error_New_Line;
-      if Cast (Current).Num_Tracebacks > 0
-         and then Report_Traceback'Address /= Null_Address
-      then
-         if T.Name = null then
-            Termination.Error_Put ("One task");
-         else
-            Termination.Error_Put (T.Name.all);
-         end if;
-         Termination.Error_Put (" terminated by unhandled exception");
-         Termination.Error_New_Line;
-         Report_Traceback (Current);
-      else
-         Termination.Error_Put ("in ");
-         if T.Name = null then
-            Termination.Error_Put ("one task");
-         else
-            Termination.Error_Put (T.Name.all);
-         end if;
-         Termination.Error_Put (", raised ");
-         Termination.Error_Put (
-            Full_Name (1 .. Cast (Current).Id.Name_Length - 1));
-         if Cast (Current).Msg_Length > 0 then
-            Termination.Error_Put (" : ");
-            Termination.Error_Put (
-               Cast (Current).Msg (1 .. Cast (Current).Msg_Length));
-         end if;
-         Termination.Error_New_Line;
+      Name_Last := Name_Prefix'Length;
+      Name (1 .. Name_Last) := Name_Prefix;
+      if T.Name /= null then
+         Name (Name_Last + 1 .. Name_Last + T.Name'Length) := T.Name.all;
+         Name_Last := Name_Last + T.Name'Length + 1;
+         Name (Name_Last) := ':';
       end if;
+      Formatting.Address_Image (
+         Task_Record_Conv.To_Address (T),
+         Name (Name_Last + 1 .. Name'Last),
+         Name_Last,
+         Set => Formatting.Upper_Case);
+      Unwind.Raising.Report (Cast (Current), Name (1 .. Name_Last));
    end Report;
 
    function Thread (Rec : Native_Tasks.Parameter_Type)

@@ -1,4 +1,5 @@
-with System.Termination;
+with System.Formatting.Address_Image;
+with System.Runtime_Information;
 with System.Unwind.Raising;
 package body System.Unwind.Traceback is
    pragma Suppress (All_Checks);
@@ -17,10 +18,7 @@ package body System.Unwind.Traceback is
 
    package body Separated is separate;
 
-   procedure Put_Exception_Information is
-      new Exception_Information (
-         Termination.Error_Put,
-         Termination.Error_New_Line);
+   --  implementation
 
    procedure Call_Chain (Current : not null Exception_Occurrence_Access) is
    begin
@@ -34,7 +32,47 @@ package body System.Unwind.Traceback is
       end if;
    end Call_Chain;
 
-   procedure Report_Traceback (Current : Exception_Occurrence)
-      renames Put_Exception_Information;
+   procedure Traceback_Information (
+      X : Exception_Occurrence;
+      Params : Address;
+      Put : not null access procedure (S : String; Params : Address);
+      New_Line : not null access procedure (Params : Address))
+   is
+      Width : constant Natural := (Standard'Address_Size + 3) / 4;
+      S : String (1 .. Width);
+      Last : Natural;
+   begin
+      Put ("Load address: 0x", Params);
+      declare
+         Item : constant Address := Runtime_Information.Load_Address;
+      begin
+         Formatting.Address_Image (
+            Item,
+            S,
+            Last,
+            Set => Formatting.Lower_Case);
+         Put (S, Params);
+      end;
+      New_Line (Params);
+      Put ("Call stack traceback locations:", Params);
+      New_Line (Params);
+      for I in 1 .. X.Num_Tracebacks loop
+         Put ("0x", Params);
+         declare
+            Item : constant Address := X.Tracebacks (I);
+         begin
+            Formatting.Address_Image (
+               Item,
+               S,
+               Last,
+               Set => Formatting.Lower_Case);
+            Put (S, Params);
+         end;
+         if I < X.Num_Tracebacks then
+            Put (" ", Params);
+         end if;
+      end loop;
+      New_Line (Params);
+   end Traceback_Information;
 
 end System.Unwind.Traceback;

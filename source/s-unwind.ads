@@ -56,9 +56,10 @@ package System.Unwind is
       "ada__exceptions__save_occurrence");
 
    --  equivalent to Append_Info_Exception_Information (a-exexda.adb)
-   generic
-      with procedure Put (S : String);
-      with procedure New_Line;
-   procedure Exception_Information (X : Exception_Occurrence);
+   procedure Exception_Information (
+      X : Exception_Occurrence;
+      Params : Address;
+      Put : not null access procedure (S : String; Params : Address);
+      New_Line : not null access procedure (Params : Address));
 
 end System.Unwind;

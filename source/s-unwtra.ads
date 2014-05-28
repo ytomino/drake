@@ -11,9 +11,12 @@ package System.Unwind.Traceback is
    procedure Call_Chain (Current : not null Exception_Occurrence_Access);
    pragma Export (Ada, Call_Chain, "ada__exceptions__call_chain");
 
-   --  equivalent to Append_Info_Exception_Information (a-exexda.adb)
-   procedure Report_Traceback (Current : Exception_Occurrence);
-   pragma Export (Ada, Report_Traceback, "ada__exceptions__report_traceback");
+   --  equivalent to Append_Info_Basic_Exception_Traceback (a-exexda.adb)
+   procedure Traceback_Information (
+      X : Exception_Occurrence;
+      Params : Address;
+      Put : not null access procedure (S : String; Params : Address);
+      New_Line : not null access procedure (Params : Address));
 
 private
 
@@ -25,10 +28,15 @@ private
    Call_Chain_Ref : constant not null Call_Chain_Handler := Call_Chain'Access;
    pragma Export (Ada, Call_Chain_Ref, "__drake_ref_call_chain");
 
-   type Report_Traceback_Handler is
-      access procedure (Current : Exception_Occurrence);
-   Report_Traceback_Ref : constant not null Report_Traceback_Handler :=
-      Report_Traceback'Access;
-   pragma Export (Ada, Report_Traceback_Ref, "__drake_ref_report_traceback");
+   type Traceback_Information_Handler is access procedure (
+      X : Exception_Occurrence;
+      Params : Address;
+      Put : not null access procedure (S : String; Params : Address);
+      New_Line : not null access procedure (Params : Address));
+   Traceback_Information_Ref : constant
+      not null Traceback_Information_Handler :=
+         Traceback_Information'Access;
+   pragma Export (Ada, Traceback_Information_Ref,
+      "__drake_ref_traceback_information");
 
 end System.Unwind.Traceback;

@@ -29,45 +29,18 @@ package body System.Unwind.Raising is
       Current : not null Exception_Occurrence_Access);
    pragma Import (Ada, Call_Chain, "__drake_ref_call_chain");
    pragma Weak_External (Call_Chain);
-   Report_Traceback : access procedure (
-      Current : Exception_Occurrence);
-   pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
-   pragma Weak_External (Report_Traceback);
 
    --  (a-elchha.ads)
    procedure Last_Chance_Handler (
       Current : Exception_Occurrence);
    pragma No_Return (Last_Chance_Handler);
    procedure Last_Chance_Handler (
-      Current : Exception_Occurrence)
-   is
-      subtype Fixed_String is String (Positive);
-      Full_Name : Fixed_String;
-      for Full_Name'Address use Current.Id.Full_Name;
+      Current : Exception_Occurrence) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       --  in GNAT runtime, task termination handler will be unset
       --  and Standard_Library.AdaFinal will be called here
-      Termination.Error_New_Line;
-      if Full_Name (1) = '_' then -- Standard'Abort_Signal
-         Termination.Error_Put (
-            "Execution terminated by abort of environment task");
-         Termination.Error_New_Line;
-      elsif Current.Num_Tracebacks > 0
-         and then Report_Traceback'Address /= Null_Address
-      then
-         Termination.Error_Put ("Execution terminated by unhandled exception");
-         Termination.Error_New_Line;
-         Report_Traceback (Current);
-      else
-         Termination.Error_Put ("raised ");
-         Termination.Error_Put (Full_Name (1 .. Current.Id.Name_Length - 1));
-         if Current.Msg_Length > 0 then
-            Termination.Error_Put (" : ");
-            Termination.Error_Put (Current.Msg (1 .. Current.Msg_Length));
-         end if;
-         Termination.Error_New_Line;
-      end if;
+      Report (Current, "");
       Termination.Force_Abort;
    end Last_Chance_Handler;
 
@@ -620,5 +593,74 @@ package body System.Unwind.Raising is
    begin
       return X.Id = Standard.Abort_Signal'Access;
    end Triggered_By_Abort;
+
+   procedure Report (X : Exception_Occurrence; Where : String) is
+      procedure Put_Upper;
+      procedure Put_Upper is
+         type Character_Code is mod 2 ** Character'Size;
+      begin
+         if Where'Length > 0 then
+            Termination.Error_Put (
+               String'(1 => Character'Val (
+                  Character_Code'(Character'Pos (Where (Where'First)))
+                  and not 16#20#))); -- upper-case
+            Termination.Error_Put (Where (Where'First + 1 .. Where'Last));
+         else
+            Termination.Error_Put ("Execution");
+         end if;
+      end Put_Upper;
+      subtype Fixed_String is String (Positive);
+      Full_Name : Fixed_String;
+      for Full_Name'Address use X.Id.Full_Name;
+   begin
+      Termination.Error_New_Line;
+      if Full_Name (1) = '_' then -- Standard'Abort_Signal
+         Put_Upper;
+         Termination.Error_Put (" terminated by abort");
+         if Where'Length = 0 then
+            Termination.Error_Put (" of environment task");
+         end if;
+         Termination.Error_New_Line;
+      elsif X.Num_Tracebacks > 0 then
+         Put_Upper;
+         Termination.Error_Put (" terminated by unhandled exception");
+         Termination.Error_New_Line;
+         Report_Traceback (X);
+      else
+         if Where'Length > 0 then
+            Termination.Error_Put ("in ");
+            Termination.Error_Put (Where);
+            Termination.Error_Put (", ");
+         end if;
+         Termination.Error_Put ("raised ");
+         Termination.Error_Put (Full_Name (1 .. X.Id.Name_Length - 1));
+         if X.Msg_Length > 0 then
+            Termination.Error_Put (" : ");
+            Termination.Error_Put (X.Msg (1 .. X.Msg_Length));
+         end if;
+         Termination.Error_New_Line;
+      end if;
+   end Report;
+
+   procedure Report_Traceback (X : Exception_Occurrence) is
+      procedure Put (S : String; Params : Address);
+      procedure Put (S : String; Params : Address) is
+         pragma Unreferenced (Params);
+      begin
+         Termination.Error_Put (S);
+      end Put;
+      procedure New_Line (Params : Address);
+      procedure New_Line (Params : Address) is
+         pragma Unreferenced (Params);
+      begin
+         Termination.Error_New_Line;
+      end New_Line;
+   begin
+      Exception_Information (
+         X,
+         Null_Address,
+         Put => Put'Access,
+         New_Line => New_Line'Access);
+   end Report_Traceback;
 
 end System.Unwind.Raising;
