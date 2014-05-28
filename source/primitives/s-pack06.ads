@@ -1,13 +1,13 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
-with System.Generic_Packed_Arrays;
+with System.Packed_Arrays;
 package System.Pack_06 is
    pragma Pure;
 
    type Bits_06 is mod 2 ** 6;
    for Bits_06'Size use 6;
 
-   package Arrays is new Generic_Packed_Arrays (Bits_06);
+   package Arrays is new Packed_Arrays (Bits_06);
 
    --  required for accessing aligned arrays by compiler
    function Get_06 (Arr : Address; N : Natural) return Bits_06
