@@ -2,7 +2,7 @@ pragma Check_Policy (Trace, Off);
 with Ada.Exception_Identification.From_Here;
 with Ada.Text_IO.Inside.Formatting;
 with System.Formatting.Decimal_Image;
-with System.Val_Uns;
+with System.Formatting.Literals;
 package body Ada.Text_IO.Editing is
    use Exception_Identification.From_Here;
    use type System.Formatting.Unsigned;
@@ -60,7 +60,7 @@ package body Ada.Text_IO.Editing is
                   Inside.Formatting.Get_Tail (
                      Pic_String (I + 1 .. Pic_String'Last),
                      First => Count_First);
-                  System.Val_Uns.Get_Unsigned_Literal (
+                  System.Formatting.Literals.Get_Literal (
                      Pic_String (Count_First .. Pic_String'Last),
                      Count_Last,
                      Count,

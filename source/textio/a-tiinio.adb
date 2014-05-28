@@ -1,6 +1,5 @@
 with Ada.Text_IO.Inside.Formatting;
-with System.Val_Int;
-with System.Val_LLI;
+with System.Formatting.Literals;
 package body Ada.Text_IO.Integer_IO is
 
    procedure Put_To_Field (
@@ -48,10 +47,10 @@ package body Ada.Text_IO.Integer_IO is
    begin
       if Num'Size > Integer'Size then
          declare
-            Result : Long_Long_Integer;
+            Result : System.Formatting.Literals.Longest_Integer;
             Error : Boolean;
          begin
-            System.Val_LLI.Get_Long_Long_Integer_Literal (
+            System.Formatting.Literals.Get_Literal (
                From,
                Last,
                Result,
@@ -70,7 +69,7 @@ package body Ada.Text_IO.Integer_IO is
             Result : Integer;
             Error : Boolean;
          begin
-            System.Val_Int.Get_Integer_Literal (
+            System.Formatting.Literals.Get_Literal (
                From,
                Last,
                Result,

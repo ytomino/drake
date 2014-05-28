@@ -6,11 +6,4 @@ package System.Val_Int is
    --  required for Integer'Value by compiler (s-valint.ads)
    function Value_Integer (Str : String) return Integer;
 
-   --  helper
-   procedure Get_Integer_Literal (
-      S : String;
-      Last : out Natural;
-      Result : out Integer;
-      Error : out Boolean);
-
 end System.Val_Int;

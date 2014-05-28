@@ -1,7 +1,7 @@
 with Ada.Text_IO.Inside.Formatting;
 with System.Formatting.Fixed_Image;
 with System.Formatting.Float_Image;
-with System.Val_Real;
+with System.Formatting.Literals.Float;
 package body Ada.Text_IO.Float_IO is
 
    procedure Put_To_Field (
@@ -51,7 +51,7 @@ package body Ada.Text_IO.Float_IO is
       Result : Long_Long_Float;
       Error : Boolean;
    begin
-      System.Val_Real.Get_Float_Literal (
+      System.Formatting.Literals.Float.Get_Literal (
          From,
          Last,
          Result,
