@@ -1,5 +1,4 @@
-with System.Val_Real;
-with System.Val_Uns;
+with System.Formatting.Literals.Float;
 with System.Value_Error;
 package body System.Val_LLD is
    pragma Suppress (All_Checks);
@@ -11,9 +10,9 @@ package body System.Val_LLD is
       Result : Long_Long_Float;
       Error : Boolean;
    begin
-      Val_Real.Get_Float_Literal (Str, Last, Result, Error);
+      System.Formatting.Literals.Float.Get_Literal (Str, Last, Result, Error);
       if not Error then
-         Val_Uns.Check_Last (Str, Last, Error);
+         System.Formatting.Literals.Check_Last (Str, Last, Error);
          if not Error then
             return Long_Long_Integer (Result * 10.0 ** Scale);
          end if;

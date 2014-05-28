@@ -1,7 +1,7 @@
 with Ada.Text_IO.Inside.Formatting;
 with System.Formatting.Decimal_Image;
 with System.Formatting.Float_Image;
-with System.Val_Real;
+with System.Formatting.Literals.Float;
 package body Ada.Text_IO.Decimal_IO is
 
    procedure Put_To_Field (
@@ -52,7 +52,7 @@ package body Ada.Text_IO.Decimal_IO is
       Error : Boolean;
    begin
       --  decimal version should be implemented...
-      System.Val_Real.Get_Float_Literal (
+      System.Formatting.Literals.Float.Get_Literal (
          From,
          Last,
          Result,

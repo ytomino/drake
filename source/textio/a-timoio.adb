@@ -1,7 +1,5 @@
 with Ada.Text_IO.Inside.Formatting;
-with System.Formatting;
-with System.Val_LLU;
-with System.Val_Uns;
+with System.Formatting.Literals;
 package body Ada.Text_IO.Modular_IO is
    use type System.Formatting.Longest_Unsigned;
    use type System.Formatting.Unsigned;
@@ -54,7 +52,7 @@ package body Ada.Text_IO.Modular_IO is
             Result : System.Formatting.Longest_Unsigned;
             Error : Boolean;
          begin
-            System.Val_LLU.Get_Longest_Unsigned_Literal (
+            System.Formatting.Literals.Get_Literal (
                From,
                Last,
                Result,
@@ -71,7 +69,7 @@ package body Ada.Text_IO.Modular_IO is
             Result : System.Formatting.Unsigned;
             Error : Boolean;
          begin
-            System.Val_Uns.Get_Unsigned_Literal (
+            System.Formatting.Literals.Get_Literal (
                From,
                Last,
                Result,
