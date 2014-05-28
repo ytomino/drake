@@ -74,6 +74,9 @@
 #include <malloc/malloc.h> /* malloc_size */
 #include <spawn.h> /* spawn */
 #include <copyfile.h> /* copyfile */
+#define _ARCHITECTURE_BYTE_ORDER_H_ /* headmaster can not translate some inline functions */
+#include <mach-o/dyld.h>
+#undef _ARCHITECTURE_BYTE_ORDER_H_
 #elif defined(__FreeBSD__)
 #undef _DONT_USE_CTYPE_INLINE_
 #undef d_fileno
@@ -86,9 +89,11 @@
 #include <sys/param.h> /* PAGE_SIZE */
 #include <malloc_np.h> /* malloc_usable_size */
 #include <pthread_np.h> /* pthread_attr_get_np */
+#include <link.h>
 #elif defined(__linux__)
 #include <sys/statvfs.h> /* filesystem */
 #include <spawn.h> /* spawn */
+#include <link.h>
 #undef _GNU_SOURCE
 #undef __USE_GNU /* avoiding circular dependency between libio.h and stdio.h */
 #undef _SC_NPROCESSORS_ONLN
@@ -122,6 +127,7 @@
 #include <winsock2.h> /* before windows.h */
 #undef h_errno /* headmaster can not translate it */
 #include <windows.h>
+#include <winternl.h> /* before wincrypt.h */
 #include <wincrypt.h> /* random */
 #include <ws2tcpip.h>
 #undef _S6_un /* false positive warning of gcc */
