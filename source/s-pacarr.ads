@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  implementation unit
 generic
    type Bits_Type is mod <>;
-package System.Generic_Packed_Arrays is
+package System.Packed_Arrays is
    pragma Pure;
 
    function Get (Arr : Address; N : Natural) return Bits_Type;
@@ -11,4 +11,4 @@ package System.Generic_Packed_Arrays is
    procedure Set (Arr : Address; N : Natural; E : Bits_Type);
    pragma Inline (Set);
 
-end System.Generic_Packed_Arrays;
+end System.Packed_Arrays;

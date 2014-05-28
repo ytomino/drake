@@ -1,4 +1,4 @@
-package body System.Generic_Packed_Arrays is
+package body System.Packed_Arrays is
    pragma Suppress (All_Checks);
 
    subtype Rem_8 is Natural range 0 .. 7;
@@ -49,4 +49,4 @@ package body System.Generic_Packed_Arrays is
       end case;
    end Set;
 
-end System.Generic_Packed_Arrays;
+end System.Packed_Arrays;

@@ -1,13 +1,13 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
-with System.Generic_Packed_Arrays;
+with System.Packed_Arrays;
 package System.Pack_05 is
    pragma Pure;
 
    type Bits_05 is mod 2 ** 5;
    for Bits_05'Size use 5;
 
-   package Arrays is new Generic_Packed_Arrays (Bits_05);
+   package Arrays is new Packed_Arrays (Bits_05);
 
    --  required for accessing arrays by compiler
    function Get_05 (Arr : Address; N : Natural) return Bits_05
