@@ -7,12 +7,12 @@ package System.Pack_13 is
    type Bits_13 is mod 2 ** 13;
    for Bits_13'Size use 13;
 
-   package Arrays is new Packed_Arrays (Bits_13);
+   package Indexing is new Packed_Arrays.Indexing (Bits_13);
 
    --  required for accessing arrays by compiler
    function Get_13 (Arr : Address; N : Natural) return Bits_13
-      renames Arrays.Get;
+      renames Indexing.Get;
    procedure Set_13 (Arr : Address; N : Natural; E : Bits_13)
-      renames Arrays.Set;
+      renames Indexing.Set;
 
 end System.Pack_13;
