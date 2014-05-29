@@ -1,1 +1,0 @@
-../univ-apple-darwin/s-natcre.ads

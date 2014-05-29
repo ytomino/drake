@@ -1,1 +1,0 @@
-../univ-apple-darwin/a-dirsea.adb

@@ -78,17 +78,17 @@ SUBDIRS=ada83 calendar containers directories distributed environment image inte
 
 ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
-TARGETSUBDIR=univ-apple-darwin
+TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
 else
 ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
-TARGETSUBDIR=univ-pc-freebsd
+TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
 else
 ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
-TARGETSUBDIR=univ-pc-linux-gnu
+TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
 else
 ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
@@ -97,7 +97,7 @@ EH=seh
 else
 EH=sjlj
 endif
-TARGETSUBDIR=univ-w64-mingw32
+TARGETSUBDIR=machine-w64-mingw32
 OBJFMT=COFF
 else # others
 EH=zcx
