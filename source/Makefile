@@ -74,7 +74,7 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib/build
 
-SUBDIRS=ada83 calendar containers directories distributed environment image interfaces mman nls numerics streams strings tasking textio $(EH)
+SUBDIRS=ada83 calendar containers directories distributed environment image interfaces nls numerics pools streams strings tasking textio $(EH)
 
 ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
@@ -117,9 +117,9 @@ endif
 # distributed :                                # Annex E, Distributed Systems
 # image       :                                # support for 'Image and 'Value attributes
 # interfaces  :                                # Interfaces.C and Interfaces.COBOL
-# mman        :                                # support for 'Storage_Size and custom Storage_Pools
 # nls         :                                # System.Native_Encoding
 # numerics    :                                # support for float attributes, Ada.Numerics and Interfaces.Fortran
+# pools       :                                # support for 'Storage_Size and custom Storage_Pools
 # streams     :                                # all *_IO packages (including Text_IO)
 # strings     :                                # Ada.Characters and Ada.Strings
 # tasking     : calendar                       # support for task and protected syntax and all tasking packages
@@ -370,24 +370,6 @@ $(RTSDIR)/adainclude/%.ads: interfaces/$(TARGETSUBDIR)/%.ads
 $(RTSDIR)/adainclude/%.adb: interfaces/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
-$(RTSDIR)/adainclude/%.ads: mman/%.ads
-	$(INSTALL) $(abspath $<) $@
-
-$(RTSDIR)/adainclude/%.adb: mman/%.adb
-	$(INSTALL) $(abspath $<) $@
-
-$(RTSDIR)/adainclude/%.ads: mman/$(TARGETSUBDIR)/%.ads
-	$(INSTALL) $(abspath $<) $@
-
-$(RTSDIR)/adainclude/%.adb: mman/$(TARGETSUBDIR)/%.adb
-	$(INSTALL) $(abspath $<) $@
-
-$(RTSDIR)/adainclude/%.ads: mman/required/%.ads
-	$(INSTALL) $(abspath $<) $@
-
-$(RTSDIR)/adainclude/%.adb: mman/required/%.adb
-	$(INSTALL) $(abspath $<) $@
-
 $(RTSDIR)/adainclude/%.ads: nls/%.ads
 	$(INSTALL) $(abspath $<) $@
 
@@ -416,6 +398,24 @@ $(RTSDIR)/adainclude/%.ads: numerics/required/%.ads
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: numerics/required/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: pools/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: pools/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: pools/$(TARGETSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: pools/$(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: pools/required/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: pools/required/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: streams/%.ads
