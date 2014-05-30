@@ -12,6 +12,7 @@ with System.Shared_Locking;
 with System.Standard_Allocators;
 with System.Synchronous_Control;
 with System.Synchronous_Objects.Abortable;
+with System.Termination;
 with System.Unbounded_Stack_Allocators;
 with System.Unwind.Raising;
 package body System.Tasks is
@@ -451,7 +452,7 @@ package body System.Tasks is
       Local.Current_Exception.Id := null;
       TLS_Data := Local'Unchecked_Access;
       --  setup signal stack
-      Termination.Set_Signal_Stack (T.Signal_Stack'Access);
+      Unwind.Mapping.Set_Signal_Stack (T.Signal_Stack'Access);
       --  setup native stack
       Native_Tasks.Initialize (T.Stack_Attribute);
       --  execute
