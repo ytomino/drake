@@ -108,6 +108,16 @@ endif
 endif
 endif
 
+ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
+CPUSUBDIR=x86_64
+else
+ifneq ($(findstring i386,$(TARGET))$(findstring i686,$(TARGET)),) # i386-*-*
+CPUSUBDIR=i386
+else
+CPUSUBDIR=unknown
+endif
+endif
+
 # relation of sub directoris
 # (root) + zcx or sjlj -- minimum runtime
 # ada83       : calendar stream text_io        # Ada 83 names
@@ -125,7 +135,7 @@ endif
 # tasking     : calendar                       # support for task and protected syntax and all tasking packages
 # text_io     : image numerics streams strings # child packages of Text_IO
 
-SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard required/*.ad[sb]) \
+SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGETSUBDIR)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard required/*.ad[sb]) \
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]))
 
 SEPARATED=$(EH)/s-unrase.adb $(EH)/s-untrse.adb
@@ -164,6 +174,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-unwfor.o \
 	s-unwhan.o \
 	s-unwind.o \
+	s-unwmap.o \
 	s-unwrai.o \
 	s-unwsta.o \
 	s-unwtra.o)
@@ -272,6 +283,12 @@ $(RTSDIR)/adainclude/%.ads: $(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: $(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: $(TARGETSUBDIR)/$(CPUSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: $(TARGETSUBDIR)/$(CPUSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: required/%.ads

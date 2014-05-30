@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 with System.Native_Tasks;
 with System.Storage_Elements;
 with System.Synchronous_Objects;
-private with System.Termination;
+private with System.Unwind.Mapping;
 package System.Tasks is
    pragma Preelaborate;
 
@@ -261,7 +261,7 @@ private
             --  stack
             Stack_Attribute : Native_Tasks.Task_Attribute_Of_Stack;
             --  signal alt stack
-            Signal_Stack : aliased Termination.Signal_Stack_Type;
+            Signal_Stack : aliased Unwind.Mapping.Signal_Stack_Type;
       end case;
    end record;
    pragma Suppress_Initialization (Task_Record);

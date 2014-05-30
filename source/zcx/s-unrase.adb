@@ -2,6 +2,7 @@ pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Unwind.Handling;
+with System.Unwind.Mapping;
 with C.unwind;
 separate (System.Unwind.Raising)
 package body Separated is
@@ -133,7 +134,7 @@ package body Separated is
       else
          C.unwind.Unwind_DeleteException (GCC_Exception.Header'Access);
          --  in Win32 SEH, the chain may be rollback, so restore it
-         Termination.Reinstall_Exception_Handler;
+         Mapping.Reinstall_Exception_Handler;
       end if;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end End_Handler;
