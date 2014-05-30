@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit required by compiler
 package System.Tasking.Async_Delays is
 
    --  required for select delay then abort by compiler (s-parame.ads)
