@@ -50,11 +50,6 @@ package body System.Termination is
 
    SEH_In_Main : C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr;
 
-   A_NTDLL_DLL : aliased constant Wide_String (1 .. 10) :=
-      "NTDLL.DLL" & Wide_Character'Val (0);
-   C_NTDLL_DLL : aliased C.wchar_t_array (0 .. A_NTDLL_DLL'Length - 1);
-   for C_NTDLL_DLL'Address use A_NTDLL_DLL'Address;
-
    --  implementation
 
    procedure Error_Put (S : String) is
@@ -182,8 +177,7 @@ package body System.Termination is
       end case;
       if Eexception_Id /= null then
          declare
-            NTDLL_Handle : constant C.windef.HMODULE :=
-               C.winbase.GetModuleHandle (C_NTDLL_DLL (0)'Access);
+            NTDLL_Handle : constant C.windef.HMODULE := Native_Stack.NTDLL;
             Message : String (1 .. 256);
             Message_Last : Natural;
             C_Wide_Buf : aliased C.winnt.LPWSTR;
