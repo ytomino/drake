@@ -93,7 +93,7 @@ OBJFMT=ELF
 else
 ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
 ifneq ($(findstring x86_64,$(TARGET)),)
-EH=seh
+EH=machine-w64-mingw32/x86_64/seh
 else
 EH=sjlj
 endif
@@ -142,14 +142,10 @@ SEPARATED=$(EH)/s-unrase.adb $(EH)/s-untrse.adb
 
 LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 
-ifeq ($(EH),zcx)
+ifdef EH # all mechanisms (zcx, sjlj, seh)
 EH_OBJS=c-unwind_pe.o
-else
-ifeq ($(EH),sjlj)
-EH_OBJS=c-unwind_pe.o
-else
+else # unknown mechanism
 EH_OBJS=
-endif
 endif
 
 COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \

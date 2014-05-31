@@ -9,7 +9,8 @@ package body System.Standard_Allocators is
    pragma Suppress (All_Checks);
    use type C.void_ptr;
    use type C.windef.WINBOOL;
-   use type C.windef.DWORD;
+--  use type C.basetsd.SIZE_T;
+--  use type C.windef.DWORD;
 
    procedure Runtime_Error (
       Condition : Boolean;
@@ -25,6 +26,7 @@ package body System.Standard_Allocators is
    function Allocate (Size : Storage_Elements.Storage_Count)
       return Address
    is
+      use type C.basetsd.SIZE_T;
       Actual_Size : C.basetsd.SIZE_T := C.basetsd.SIZE_T (Size);
    begin
       --  do round up here since HeapSize always returns the same size
@@ -95,6 +97,7 @@ package body System.Standard_Allocators is
       Raise_On_Error : Boolean := True)
       return Address
    is
+      use type C.windef.DWORD;
       Mapped_Address : C.windef.LPVOID;
    begin
       Mapped_Address := C.winbase.VirtualAlloc (

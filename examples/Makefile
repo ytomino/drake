@@ -22,7 +22,7 @@ ifeq ($(findstring darwin,$(TARGET)),)
 EXAMPLES:=$(filter-out diff_ucd_hfs,$(EXAMPLES))
 endif
 
-ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*)
+ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*) $(wildcard ../source/*/*/*/*)
 
 ifeq ($(TARGET),$(HOST))
 BINLN=bin

@@ -13,8 +13,8 @@ Environment
 
 - Darwin (from 10.5, x86, 32bit/64bit)
 - FreeBSD (from 7, x86, 32bit/64bit)
-- Linux (from 2.6, x86, 32bit/64bit) [#experimental]_
-- Windows (from XP, x86, 32bit only) [#experimental]_
+- Linux (from 2.6, x86, 32bit/64bit)
+- Windows (from XP, x86, 32bit/64bit) [#experimental]_
 
 Depending tools and libraries
 -----------------------------
@@ -91,5 +91,5 @@ See `incompatibility features page`_.
 .. _`pre-translated headers page`: https://github.com/ytomino/drake/wiki/Pre-translated-headers
 .. _`build page`: https://github.com/ytomino/drake/wiki/Build
 .. _`incompatibility features page`: https://github.com/ytomino/drake/wiki/Incompatibility
-.. [#experimental] Linux and Windows support is under construction,
+.. [#experimental] 64bit Windows support is under construction,
                    limited and experimental.
