@@ -16,7 +16,7 @@ package body System.Dynamic_Libraries is
       ProcessInformationLength : C.windef.ULONG;
       ReturnLength : access C.windef.ULONG)
       return C.winternl.NTSTATUS;
-   pragma Convention (stdcall, NtQueryInformationProcess_Type);
+   pragma Convention (WINAPI, NtQueryInformationProcess_Type);
 
    NtQueryInformationProcess_Name : constant C.char_array (0 .. 25) :=
       "NtQueryInformationProcess" & C.char'Val (0);

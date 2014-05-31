@@ -424,6 +424,9 @@ package body System.Tasks is
       Unwind.Raising.Report (Cast (Current), Name (1 .. Name_Last));
    end Report;
 
+   TR_Freed : constant Native_Tasks.Result_Type := 0;
+   TR_Not_Freed : constant Native_Tasks.Result_Type := 1;
+
    function Thread (Rec : Native_Tasks.Parameter_Type)
       return Native_Tasks.Result_Type;
    pragma Convention (Thread_Body_CC, Thread);
@@ -432,10 +435,6 @@ package body System.Tasks is
    is
       function To_Address is
          new Ada.Unchecked_Conversion (Native_Tasks.Parameter_Type, Address);
-      function To_Result is
-         new Ada.Unchecked_Conversion (
-            Native_Tasks.Parameter_Type,
-            Native_Tasks.Result_Type);
       Result : Native_Tasks.Result_Type;
       Local : aliased Runtime_Context.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
@@ -501,7 +500,7 @@ package body System.Tasks is
       Native_Tasks.Finalize (T.Stack_Attribute);
       --  free
       if No_Detached then
-         Result := To_Result (Rec); -- caller or master may wait
+         Result := TR_Not_Freed; -- caller or master may wait
       else -- detached
          if T.Master_Of_Parent /= null then
             declare
@@ -522,14 +521,14 @@ package body System.Tasks is
                Synchronous_Objects.Leave (Mutex_Ref.all);
             end;
             if not T.Auto_Detach then
-               Result := To_Result (Rec); -- master already has been waiting
+               Result := TR_Not_Freed; -- master already has been waiting
             else
                Free (T);
-               Result := Native_Tasks.Result_Type (Null_Address);
+               Result := TR_Freed;
             end if;
          else
             Free (T);
-            Result := Native_Tasks.Result_Type (Null_Address);
+            Result := TR_Freed;
          end if;
       end if;
       --  cleanup secondary stack
@@ -574,8 +573,6 @@ package body System.Tasks is
 
    procedure Wait (T : Task_Id; Free_Task_Id : out Task_Id);
    procedure Wait (T : Task_Id; Free_Task_Id : out Task_Id) is
-      function To_Address is
-         new Ada.Unchecked_Conversion (Native_Tasks.Result_Type, Address);
       Rec : aliased Native_Tasks.Result_Type;
       Error : Boolean;
    begin
@@ -590,7 +587,12 @@ package body System.Tasks is
          if Error then
             raise Tasking_Error;
          end if;
-         Free_Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
+         case Rec is
+            when TR_Freed =>
+               Free_Task_Id := null;
+            when others => -- TR_Not_Freed
+               Free_Task_Id := T;
+         end case;
       end if;
    end Wait;
 

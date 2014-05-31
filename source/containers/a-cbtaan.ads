@@ -3,9 +3,13 @@ pragma License (Unrestricted);
 package Ada.Containers.Binary_Trees.Arne_Andersson is
    pragma Preelaborate;
 
-   subtype Level_Type is Long_Integer; -- address size integer
+   subtype Level_Type is Count_Type'Base;
 
-   Node_Size : constant := Standard'Address_Size * 3 + Level_Type'Size;
+   Node_Size : constant :=
+      Standard'Address_Size * 3
+      + (Level_Type'Size + Standard'Word_Size - 1)
+         / Standard'Word_Size
+         * Standard'Word_Size;
 
    type Node is limited record
       Super : aliased Binary_Trees.Node;
