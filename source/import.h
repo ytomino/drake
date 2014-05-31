@@ -231,6 +231,8 @@
 #endif
 
 #if defined(__WINNT__)
+#include "fix-windef.h"
+#pragma for Ada "windef.h" monolithic_include "fix-windef.h"
 #pragma instance DWORD "INFINITE" /* winbase.h */
 #pragma instance DWORD "CRYPT_VERIFYCONTEXT" /* wincrypt.h */
 #pragma instance DWORD "GENERIC_READ" /* winnt.h */

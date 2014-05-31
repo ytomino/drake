@@ -1,1 +1,0 @@
-../univ-apple-darwin/s-staall.adb

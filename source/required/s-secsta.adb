@@ -1,13 +1,12 @@
 with System.Runtime_Context;
 package body System.Secondary_Stack is
    pragma Suppress (All_Checks);
-   use type Storage_Elements.Integer_Address;
    use type Storage_Elements.Storage_Offset;
 
    type Unsigned is mod 2 ** Integer'Size;
 
-   function clz (X : Storage_Elements.Integer_Address) return Unsigned;
-   pragma Import (Intrinsic, clz, "__builtin_clzl");
+   function clz (X : Unsigned) return Unsigned;
+   pragma Import (Intrinsic, clz, "__builtin_clz");
 
    procedure unreachable;
    pragma Import (Intrinsic, unreachable, "__builtin_unreachable");
@@ -25,11 +24,11 @@ package body System.Secondary_Stack is
       --  alignment
       if Storage_Size <= Standard'Maximum_Alignment / 2 then
          declare
---          H : constant Integer := Standard'Address_Size - 1 - Integer (
---             clz (Storage_Elements.Integer_Address (Storage_Size) * 2 - 1));
+--          H : constant Integer := Unsigned'Size - 1 - Integer (
+--             clz (Unsigned (Storage_Size) * 2 - 1));
             H : constant Integer := Integer (
-               clz (Storage_Elements.Integer_Address (Storage_Size) * 2 - 1)
-               xor (Standard'Address_Size - 1)); -- cancel wordy xor
+               clz (Unsigned (Storage_Size) * 2 - 1)
+               xor (Unsigned'Size - 1)); -- cancel wordy xor
          begin
             if H not in 0 .. Standard'Address_Size - 1 then
                unreachable; -- assume H is in address-width
