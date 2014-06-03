@@ -9,7 +9,6 @@ package body System.Unwind.Handling is
    pragma Suppress (All_Checks);
    use type C.ptrdiff_t;
    use type C.signed_int;
-   use type C.signed_long_long;
    use type C.size_t;
    use type C.unsigned_char;
    use type C.unsigned_char_const_ptr;
@@ -17,7 +16,7 @@ package body System.Unwind.Handling is
    use type C.unsigned_long;
    use type C.unsigned_long_long;
    use type C.void_ptr;
-   use type C.unwind_pe.sleb128_t;
+   use type C.unwind.sleb128_t;
    use type C.winnt.PRUNTIME_FUNCTION;
 
    Foreign_Exception : aliased Exception_Data;
@@ -233,7 +232,7 @@ package body System.Unwind.Handling is
                      C.void_ptr,
                      C.unsigned_char_const_ptr);
                p : C.unsigned_char_const_ptr := Cast (lsda);
-               tmp : aliased C.unwind_pe.uleb128_t;
+               tmp : aliased C.unwind.uleb128_t;
                lpbase_encoding : C.unsigned_char;
             begin
                lpbase_encoding := p.all;
@@ -283,7 +282,7 @@ package body System.Unwind.Handling is
                   end if;
                   declare
                      cs_start, cs_len, cs_lp : aliased C.unwind.Unwind_Ptr;
-                     cs_action : aliased C.unwind_pe.uleb128_t;
+                     cs_action : aliased C.unwind.uleb128_t;
                   begin
                      p := C.unwind_pe.read_encoded_value (
                         null,
@@ -332,7 +331,7 @@ package body System.Unwind.Handling is
             else
                declare
                   p : C.unsigned_char_const_ptr := table_entry;
-                  ar_filter, ar_disp : aliased C.unwind_pe.sleb128_t;
+                  ar_filter, ar_disp : aliased C.unwind.sleb128_t;
                   Dummy : C.unsigned_char_const_ptr;
                   pragma Unreferenced (Dummy);
                begin

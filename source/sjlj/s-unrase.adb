@@ -1,6 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
+with System.Standard_Allocators;
 with System.Unwind.Handling;
 with System.Unwind.Mapping;
 with C.unwind;
@@ -8,6 +9,7 @@ separate (System.Unwind.Raising)
 package body Separated is
    pragma Suppress (All_Checks);
    use type Handling.GNAT_GCC_Exception_Access;
+   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
    use type C.unsigned_int; -- Unwind_Ptr (32bit)
    use type C.unsigned_long; -- Unwind_Ptr and Unwind_Exception_Class (64bit)
@@ -16,6 +18,12 @@ package body Separated is
    Foreign_Exception : aliased Exception_Data;
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
+
+   procedure memset (
+      b : Address;
+      c : Integer;
+      n : Storage_Elements.Storage_Count);
+   pragma Import (Intrinsic, memset, "__builtin_memset");
 
    function To_GNAT is
       new Ada.Unchecked_Conversion (
@@ -31,6 +39,16 @@ package body Separated is
    procedure Setup_Current_Excep (
       GCC_Exception : not null Handling.GNAT_GCC_Exception_Access;
       Current : out Exception_Occurrence_Access);
+
+   --  64bit Windows only, equivalent to
+   --    Create_Machine_Occurrence_From_Signal_Handler (a-except-2005.adb)
+   function New_Machine_Occurrence (
+      E : Exception_Data_Access;
+      Message : String;
+      Stack_Guard : Address)
+      return Handling.GNAT_GCC_Exception_Access;
+   pragma Export (Ada, New_Machine_Occurrence,
+      "__drake_new_machine_occurrence");
 
    --  hook for entering an exception handler (a-exexpr-gcc.adb)
    procedure Begin_Handler (
@@ -112,6 +130,64 @@ package body Separated is
       end if;
    end Setup_Current_Excep;
 
+   function New_Machine_Occurrence (
+      E : Exception_Data_Access;
+      Message : String;
+      Stack_Guard : Address)
+      return Handling.GNAT_GCC_Exception_Access
+   is
+      package GGEA_Conv is
+         new Address_To_Named_Access_Conversions (
+            Handling.GNAT_GCC_Exception,
+            Handling.GNAT_GCC_Exception_Access);
+      GCC_Exception : Handling.GNAT_GCC_Exception_Access;
+   begin
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
+      GCC_Exception := GGEA_Conv.To_Pointer (
+         Standard_Allocators.Allocate (
+            Handling.GNAT_GCC_Exception'Size / Standard'Storage_Unit));
+      GCC_Exception.Header.exception_class := Handling.GNAT_Exception_Class;
+      GCC_Exception.Header.exception_cleanup :=
+         GNAT_GCC_Exception_Cleanup'Access;
+      GCC_Exception.Stack_Guard := Stack_Guard;
+      --  fill 0 to private area
+      memset (
+         GCC_Exception.Header.exception_cleanup'Address
+            + Storage_Elements.Storage_Offset'(
+               C.unwind.Unwind_Exception_Cleanup_Fn'Size
+               / Standard'Storage_Unit),
+         0,
+         C.unwind.struct_Unwind_Exception'Size / Standard'Storage_Unit
+            - Storage_Elements.Storage_Offset'(
+               C.unwind.Unwind_Exception_Class'Size
+                  / Standard'Storage_Unit
+               + C.unwind.Unwind_Exception_Cleanup_Fn'Size
+                  / Standard'Storage_Unit));
+      Set_Exception_Message (
+         Id => E,
+         File => "",
+         Line => 0,
+         Column => 0,
+         Message => Message,
+         X => GCC_Exception.Occurrence);
+      if Call_Chain'Address /= Null_Address then
+         Call_Chain (GCC_Exception.Occurrence'Access);
+         declare
+            function Report return Boolean;
+            function Report return Boolean is
+            begin
+               Report_Traceback (GCC_Exception.Occurrence);
+               return True;
+            end Report;
+         begin
+            pragma Check (Trace, Ada.Debug.Put ("info..."));
+            pragma Check (Trace, Report);
+         end;
+      end if;
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
+      return GCC_Exception;
+   end New_Machine_Occurrence;
+
    procedure Begin_Handler (
       GCC_Exception : Handling.GNAT_GCC_Exception_Access)
    is
@@ -171,10 +247,13 @@ package body Separated is
       Exception_Object : access C.unwind.struct_Unwind_Exception)
    is
       pragma Unreferenced (Reason);
-      Copy : Handling.GNAT_GCC_Exception_Access := To_GNAT (Exception_Object);
+      package Conv is
+         new Address_To_Named_Access_Conversions (
+            C.unwind.struct_Unwind_Exception,
+            C.unwind.struct_Unwind_Exception_ptr);
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Handling.Free (Copy);
+      Standard_Allocators.Free (Conv.To_Address (Exception_Object));
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end GNAT_GCC_Exception_Cleanup;
 
@@ -183,18 +262,33 @@ package body Separated is
       X : Exception_Occurrence;
       Stack_Guard : Address)
    is
+      package GGEA_Conv is
+         new Address_To_Named_Access_Conversions (
+            Handling.GNAT_GCC_Exception,
+            Handling.GNAT_GCC_Exception_Access);
       GCC_Exception : Handling.GNAT_GCC_Exception_Access;
    begin
-      GCC_Exception := new Handling.GNAT_GCC_Exception'(
-         Header => (
-            exception_class => Handling.GNAT_Exception_Class,
-            exception_cleanup => GNAT_GCC_Exception_Cleanup'Access,
-            private_1 => 0,
-            private_2 => 0),
-         Occurrence => X,
-         Stack_Guard => Stack_Guard,
-         landing_pad => <>,
-         ttype_filter => <>);
+      GCC_Exception := GGEA_Conv.To_Pointer (
+         Standard_Allocators.Allocate (
+            Handling.GNAT_GCC_Exception'Size / Standard'Storage_Unit));
+      GCC_Exception.Header.exception_class := Handling.GNAT_Exception_Class;
+      GCC_Exception.Header.exception_cleanup :=
+         GNAT_GCC_Exception_Cleanup'Access;
+      GCC_Exception.Occurrence := X;
+      GCC_Exception.Stack_Guard := Stack_Guard;
+      --  fill 0 to private area
+      memset (
+         GCC_Exception.Header.exception_cleanup'Address
+            + Storage_Elements.Storage_Offset'(
+               C.unwind.Unwind_Exception_Cleanup_Fn'Size
+               / Standard'Storage_Unit),
+         0,
+         C.unwind.struct_Unwind_Exception'Size / Standard'Storage_Unit
+            - Storage_Elements.Storage_Offset'(
+               C.unwind.Unwind_Exception_Class'Size
+                  / Standard'Storage_Unit
+               + C.unwind.Unwind_Exception_Cleanup_Fn'Size
+                  / Standard'Storage_Unit));
       if Call_Chain'Address /= Null_Address then
          Call_Chain (GCC_Exception.Occurrence'Access);
          declare
