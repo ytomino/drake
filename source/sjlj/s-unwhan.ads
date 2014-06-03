@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  runtime unit
-with Ada.Unchecked_Deallocation;
 with C.unwind;
 package System.Unwind.Handling is
    pragma Preelaborate;
@@ -27,10 +26,7 @@ package System.Unwind.Handling is
    pragma Suppress_Initialization (GNAT_GCC_Exception);
 
    type GNAT_GCC_Exception_Access is access all GNAT_GCC_Exception;
-   procedure Free is
-      new Ada.Unchecked_Deallocation (
-         GNAT_GCC_Exception,
-         GNAT_GCC_Exception_Access);
+   for GNAT_GCC_Exception_Access'Storage_Size use 0;
 
    --  personality function (raise-gcc.c)
    function Personality (
