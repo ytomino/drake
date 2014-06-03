@@ -371,14 +371,23 @@ package body System.Unwind.Handling is
                               ttype_table + (-filter),
                               choice'Access);
                            if Exception_Class = GNAT_Exception_Class then
-                              is_handled :=
-                                 choice = Cast (GCC_Exception.Occurrence.Id)
-                                 or else
-                                    (choice = Cast (Others_Value'Access)
-                                    and then not GCC_Exception.Occurrence.Id.
-                                       Not_Handled_By_Others)
-                                 or else
-                                    choice = Cast (All_Others_Value'Access);
+                              if choice =
+                                 Cast (Unhandled_Others_Value'Access)
+                              then
+                                 pragma Check (Trace, Ada.Debug.Put (
+                                    "unhandled exception"));
+                                 is_handled := True;
+                              else
+                                 is_handled :=
+                                    choice = Cast (GCC_Exception.Occurrence.Id)
+                                    or else
+                                       (choice = Cast (Others_Value'Access)
+                                       and then
+                                          not GCC_Exception.Occurrence.Id.
+                                             Not_Handled_By_Others)
+                                    or else
+                                       choice = Cast (All_Others_Value'Access);
+                              end if;
                            else
                               pragma Check (Trace, Ada.Debug.Put (
                                  "foreign exception"));

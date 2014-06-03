@@ -16,7 +16,7 @@ package System.Unwind.Handling is
    All_Others_Value : aliased constant C.char := 'A';
    pragma Export (C, All_Others_Value, "__gnat_all_others_value");
 
-   Unhandled_Others_Value : constant C.char := 'U'; -- SEH only
+   Unhandled_Others_Value : aliased constant C.char := 'U'; -- SEH only
    pragma Export (C, Unhandled_Others_Value, "__gnat_unhandled_others_value");
 
    --  body of struct Unwind_Exception (a-exexpr-gcc.adb)
