@@ -60,7 +60,7 @@ begin
 		end T2;
 		function F return T2 is
 		begin
-			Ada.Debug.Put ("*** rendezvous in build-in-place ***");
+			Ada.Debug.Put ("*** rendezvous in built-in-place ***");
 			return Result : T2 do
 				Ada.Debug.Put ("before");
 				Result.E1;
