@@ -129,7 +129,7 @@ begin
 	begin
 		Free (D);
 	end;
-	Ada.Debug.Put ("*** test for build-in-place ***");
+	Ada.Debug.Put ("*** test for built-in-place ***");
 	Joined := False;
 	declare
 		task type Limited_Task;

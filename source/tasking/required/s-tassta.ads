@@ -39,7 +39,7 @@ package System.Tasking.Stages is
    --  required for dynamic deallocation of task by compiler (s-tassta.ads)
    procedure Free_Task (T : Task_Id);
 
-   --  required for build-in-place of task by compiler (s-tassta.ads)
+   --  required for built-in-place of task by compiler (s-tassta.ads)
    procedure Move_Activation_Chain (
       From, To : Activation_Chain_Access;
       New_Master : Master_ID);
