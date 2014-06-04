@@ -22,8 +22,6 @@ ifeq ($(findstring darwin,$(TARGET)),)
 EXAMPLES:=$(filter-out diff_ucd_hfs,$(EXAMPLES))
 endif
 
-ALLSOURCES=$(wildcard ../source/*) $(wildcard ../source/*/*) $(wildcard ../source/*/*/*) $(wildcard ../source/*/*/*/*)
-
 ifeq ($(TARGET),$(HOST))
 BINLN=bin
 else
@@ -91,10 +89,9 @@ all: $(BUILDDIR)/adalib/libgnat.a $(BINLN) $(EXAMPLES)
 $(BINLN):
 	ln -s $(BUILDDIR) $(BINLN)
 
-$(BUILDDIR)/adalib/libgnat.a: $(ALLSOURCES)
+$(BUILDDIR)/adalib/libgnat.a: $(wildcard $(BUILDDIR)/adainclude/*.ad?)
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	touch $@
-	-rm $(EXAMPLES) 2> /dev/null
 
 $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
 	$(GNATPREFIX)gnatmake -c $< $(GFLAGS) $(MFLAGS) -cargs $(CFLAGS)
