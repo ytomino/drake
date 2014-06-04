@@ -59,89 +59,6 @@ package body System.Unwind.Raising is
    end record;
    pragma Suppress_Initialization (Uninitialized_Exception_Occurrence);
 
-   --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
-   procedure Set_Exception_Message (
-      Id : Exception_Data_Access;
-      File : String;
-      Line : Integer;
-      Column : Integer;
-      Message : String;
-      X : in out Exception_Occurrence);
-   procedure Set_Exception_Message (
-      Id : Exception_Data_Access;
-      File : String;
-      Line : Integer;
-      Column : Integer;
-      Message : String;
-      X : in out Exception_Occurrence) is
-   begin
-      X.Id := Id;
-      declare
-         File_Length : constant Natural := File'Length;
-         Last : Natural := 0;
-      begin
-         if File_Length > 0 then
-            X.Msg (1 .. File_Length) := File;
-            Last := File_Length + 1;
-            X.Msg (Last) := ':';
-         end if;
-         if Line > 0 then
-            declare
-               Error : Boolean;
-            begin
-               Formatting.Image (
-                  Formatting.Unsigned (Line),
-                  X.Msg (Last + 1 .. X.Msg'Last),
-                  Last,
-                  Error => Error);
-               if not Error and then Last < X.Msg'Last then
-                  Last := Last + 1;
-                  X.Msg (Last) := ':';
-               end if;
-            end;
-         end if;
-         if Column > 0 then
-            declare
-               Error : Boolean;
-            begin
-               Formatting.Image (
-                  Formatting.Unsigned (Column),
-                  X.Msg (Last + 1 .. X.Msg'Last),
-                  Last,
-                  Error => Error);
-               if not Error and then Last < X.Msg'Last then
-                  Last := Last + 1;
-                  X.Msg (Last) := ':';
-               end if;
-            end;
-         end if;
-         if (File_Length > 0 or else Line > 0 or else Column > 0)
-            and then Last < X.Msg'Last
-         then
-            Last := Last + 1;
-            X.Msg (Last) := ' ';
-         end if;
-         declare
-            Copy_Length : constant Natural := Integer'Min (
-               Message'Length,
-               X.Msg'Length - Last);
-         begin
-            X.Msg (Last + 1 .. Last + Copy_Length) :=
-            Message (Message'First .. Message'First + Copy_Length - 1);
-            Last := Last + Copy_Length;
-         end;
-         if Last < X.Msg'Last then
-            --  no necessary
-            X.Msg (Last + 1) := Character'Val (0);
-         end if;
-         X.Msg_Length := Last;
-      end;
-      X.Machine_Occurrence := Null_Address;
-      X.Exception_Raised := False;
-      X.Pid := Local_Partition_ID;
-      X.Num_Tracebacks := 0;
-   end Set_Exception_Message;
-
    --  not calling Abort_Defer
 
    --  equivalent to Raise_Exception_No_Defer (a-except-2005.adb)
@@ -593,6 +510,81 @@ package body System.Unwind.Raising is
    begin
       return X.Id = Standard.Abort_Signal'Access;
    end Triggered_By_Abort;
+
+   procedure Set_Exception_Message (
+      Id : not null Exception_Data_Access;
+      File : String := "";
+      Line : Integer := 0;
+      Column : Integer := 0;
+      Message : String;
+      X : in out Exception_Occurrence) is
+   begin
+      X.Id := Id;
+      declare
+         File_Length : constant Natural := File'Length;
+         Last : Natural := 0;
+      begin
+         if File_Length > 0 then
+            X.Msg (1 .. File_Length) := File;
+            Last := File_Length + 1;
+            X.Msg (Last) := ':';
+         end if;
+         if Line > 0 then
+            declare
+               Error : Boolean;
+            begin
+               Formatting.Image (
+                  Formatting.Unsigned (Line),
+                  X.Msg (Last + 1 .. X.Msg'Last),
+                  Last,
+                  Error => Error);
+               if not Error and then Last < X.Msg'Last then
+                  Last := Last + 1;
+                  X.Msg (Last) := ':';
+               end if;
+            end;
+         end if;
+         if Column > 0 then
+            declare
+               Error : Boolean;
+            begin
+               Formatting.Image (
+                  Formatting.Unsigned (Column),
+                  X.Msg (Last + 1 .. X.Msg'Last),
+                  Last,
+                  Error => Error);
+               if not Error and then Last < X.Msg'Last then
+                  Last := Last + 1;
+                  X.Msg (Last) := ':';
+               end if;
+            end;
+         end if;
+         if (File_Length > 0 or else Line > 0 or else Column > 0)
+            and then Last < X.Msg'Last
+         then
+            Last := Last + 1;
+            X.Msg (Last) := ' ';
+         end if;
+         declare
+            Copy_Length : constant Natural := Integer'Min (
+               Message'Length,
+               X.Msg'Length - Last);
+         begin
+            X.Msg (Last + 1 .. Last + Copy_Length) :=
+            Message (Message'First .. Message'First + Copy_Length - 1);
+            Last := Last + Copy_Length;
+         end;
+         if Last < X.Msg'Last then
+            --  no necessary
+            X.Msg (Last + 1) := Character'Val (0);
+         end if;
+         X.Msg_Length := Last;
+      end;
+      X.Machine_Occurrence := Null_Address;
+      X.Exception_Raised := False;
+      X.Pid := Local_Partition_ID;
+      X.Num_Tracebacks := 0;
+   end Set_Exception_Message;
 
    procedure Report (X : Exception_Occurrence; Where : String) is
       procedure Put_Upper;
