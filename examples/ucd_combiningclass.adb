@@ -1,5 +1,5 @@
 -- convert UCD/extracted/DerivedCombiningClass.txt
--- build/ucd_combiningclass $UCD/extracted/DerivedCombiningClass.txt > ../source/strings/a-uccocl.ads
+-- bin/ucd_combiningclass $UCD/extracted/DerivedCombiningClass.txt > ../source/strings/a-uccocl.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Ordered_Maps;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;

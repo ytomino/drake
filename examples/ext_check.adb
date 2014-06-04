@@ -74,7 +74,7 @@ procedure ext_check is
 	Units, Used, Unused : aliased String_Sets.Set;
 begin
 	Process_Source_Dir ("../source", Units);
-	Process_Build_Dir ("build", Used);
+	Process_Build_Dir ("bin", Used);
 	Unused := String_Sets.Difference (Units, Used);
 	declare
 		I : String_Sets.Cursor := Unused.First;

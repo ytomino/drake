@@ -1,5 +1,5 @@
 -- convert UCD/extracted/DerivedGeneralCategory.txt
--- build/ucd_generalcategory $UCD/extracted/DerivedGeneralCategory.txt > ../source/strings/a-ucgeca.ads
+-- bin/ucd_generalcategory $UCD/extracted/DerivedGeneralCategory.txt > ../source/strings/a-ucgeca.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;

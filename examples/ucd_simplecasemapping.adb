@@ -1,5 +1,5 @@
 -- convert UCD/UnicodeData.txt (13, 14)
--- build/ucd_simplecasemapping $UCD/UnicodeData.txt > ../source/strings/a-uscama.ads
+-- bin/ucd_simplecasemapping $UCD/UnicodeData.txt > ../source/strings/a-uscama.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Ordered_Maps;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
