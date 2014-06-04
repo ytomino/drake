@@ -1,6 +1,6 @@
 -- convert UCD/UnicodeData.txt, UCD/CompositionExclusions.txt
--- build/ucd_normalization -r $UCD/UnicodeData.txt $UCD/CompositionExclusions.txt > ../source/strings/a-ucdnor.ads
--- build/ucd_normalization -u $UCD/UnicodeData.txt $UCD/CompositionExclusions.txt > ../source/strings/a-ucnoun.ads
+-- bin/ucd_normalization -r $UCD/UnicodeData.txt $UCD/CompositionExclusions.txt > ../source/strings/a-ucdnor.ads
+-- bin/ucd_normalization -u $UCD/UnicodeData.txt $UCD/CompositionExclusions.txt > ../source/strings/a-ucnoun.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;

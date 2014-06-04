@@ -1,5 +1,5 @@
 -- convert UCD/extracted/DerivedEastAsianWidth.txt
--- build/ucd_eastasianwidth $UCD/extracted/DerivedEastAsianWidth.txt > ../source/strings/a-ueaswi.ads
+-- bin/ucd_eastasianwidth $UCD/extracted/DerivedEastAsianWidth.txt > ../source/strings/a-ueaswi.ads
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Containers.Ordered_Maps;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
