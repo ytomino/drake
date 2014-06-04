@@ -1,36 +1,27 @@
 pragma License (Unrestricted);
 --  runtime unit
-with Ada.Unchecked_Deallocation;
 with C.unwind;
 package System.Unwind.Handling is
    pragma Preelaborate;
 
-   --  (a-exexpr-gcc.adb)
-   GNAT_Exception_Class : constant := 16#474e552d41646100#;
+   function Unwind_RaiseException (
+      exc : access C.unwind.struct_Unwind_Exception)
+      return C.unwind.Unwind_Reason_Code
+      renames C.unwind.Unwind_SjLj_RaiseException;
 
+   function Unwind_ForcedUnwind (
+      exc : access C.unwind.struct_Unwind_Exception;
+      stop : C.unwind.Unwind_Stop_Fn;
+      stop_argument : C.void_ptr)
+      return C.unwind.Unwind_Reason_Code
+      renames C.unwind.Unwind_SjLj_ForcedUnwind;
+
+   --  (a-exexpr-gcc.adb)
    Others_Value : aliased constant C.unwind.Unwind_Ptr := 16#7FFF#;
    pragma Export (C, Others_Value, "__gnat_others_value");
 
    All_Others_Value : aliased constant C.unwind.Unwind_Ptr := 16#7FFF#;
    pragma Export (C, All_Others_Value, "__gnat_all_others_value");
-
-   --  body of struct Unwind_Exception (a-exexpr-gcc.adb)
-   type GNAT_GCC_Exception is record
-      Header : aliased C.unwind.struct_Unwind_Exception;
-      Occurrence : aliased Exception_Occurrence;
-      Stack_Guard : Address; -- for skipping on stack overflow
-      --  shortcut for phase2 (see exception.c in libobjc)
-      landing_pad : C.unwind.Unwind_Ptr;
-      ttype_filter : C.unwind.Unwind_Sword;
-   end record;
-   pragma Convention (C, GNAT_GCC_Exception);
-   pragma Suppress_Initialization (GNAT_GCC_Exception);
-
-   type GNAT_GCC_Exception_Access is access all GNAT_GCC_Exception;
-   procedure Free is
-      new Ada.Unchecked_Deallocation (
-         GNAT_GCC_Exception,
-         GNAT_GCC_Exception_Access);
 
    --  personality function (raise-gcc.c)
    function Personality (
@@ -44,35 +35,5 @@ package System.Unwind.Handling is
    pragma Compile_Time_Error (
       Personality'Access = C.unwind.Unwind_Personality_Fn'(null),
       "this expression is always false, for type check purpose");
-
-   --  by -fdump-tree-all, try ... exception be expanded below:
-   --  try
-   --    {
-   --      ... user code ...
-   --    }
-   --  catch
-   --    {
-   --      ... .builtin_eh_filter ...
-   --      catch (&exception_name ex. program_error)
-   --        {
-   --          {
-   --            void * EXPTR = .builtin_eh_pointer (0);
-   --            try
-   --              {
-   --                void * EXPTR = .builtin_eh_pointer (0);
-   --                .gnat_begin_handler (EXPTR);
-   --                --  system.soft_links.abort_undefer ();
-   --                --  [gcc-4.7] abort_undefer is not called if zcx
-   --                ... user code ...
-   --              }
-   --            finally
-   --              {
-   --                .gnat_end_handler (EXPTR);
-   --                ... builtin_unwind_resume ...
-   --              }
-   --          }
-   --        }
-   --      ... builtin_unwind_resume ...
-   --    }
 
 end System.Unwind.Handling;

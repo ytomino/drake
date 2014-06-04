@@ -74,20 +74,20 @@ package body C.unwind_pe is
 
    function read_uleb128 (
       p : access constant unsigned_char;
-      val : access uleb128_t)
+      val : access unwind.uleb128_t)
       return unsigned_char_const_ptr
    is
       Mutable_p : unsigned_char_const_ptr := unsigned_char_const_ptr (p);
       shift : unsigned_int := 0;
       byte : unsigned_char;
-      result : uleb128_t;
+      result : unwind.uleb128_t;
    begin
       result := 0;
       loop
          byte := Mutable_p.all;
          Increment (Mutable_p);
          result := result or
-            Shift_Left (uleb128_t (byte) and 16#7f#, Natural (shift));
+            Shift_Left (unwind.uleb128_t (byte) and 16#7f#, Natural (shift));
          shift := shift + 7;
          exit when not ((byte and 16#80#) /= 0);
       end loop;
@@ -97,27 +97,27 @@ package body C.unwind_pe is
 
    function read_sleb128 (
       p : access constant unsigned_char;
-      val : access sleb128_t)
+      val : access unwind.sleb128_t)
       return unsigned_char_const_ptr
    is
       Mutable_p : unsigned_char_const_ptr := unsigned_char_const_ptr (p);
       shift : unsigned_int := 0;
       byte : unsigned_char;
-      result : uleb128_t;
+      result : unwind.uleb128_t;
    begin
       result := 0;
       loop
          byte := Mutable_p.all;
          Increment (Mutable_p);
          result := result or
-            Shift_Left (uleb128_t (byte) and 16#7f#, Natural (shift));
+            Shift_Left (unwind.uleb128_t (byte) and 16#7f#, Natural (shift));
          shift := shift + 7;
          exit when not ((byte and 16#80#) /= 0);
       end loop;
       if shift < result'Size and then (byte and 16#40#) /= 0 then
          result := result or (-Shift_Left (1, Natural (shift)));
       end if;
-      val.all := sleb128_t (result);
+      val.all := unwind.sleb128_t (result);
       return Mutable_p;
    end read_sleb128;
 
@@ -189,14 +189,14 @@ package body C.unwind_pe is
                Mutable_p := Mutable_p + void_ptr'Size / Standard'Storage_Unit;
             when DW_EH_PE_uleb128 =>
                declare
-                  tmp : aliased uleb128_t;
+                  tmp : aliased unwind.uleb128_t;
                begin
                   Mutable_p := read_uleb128 (Mutable_p, tmp'Access);
                   result := unwind.Unwind_Internal_Ptr (tmp);
                end;
             when DW_EH_PE_sleb128 =>
                declare
-                  tmp : aliased sleb128_t;
+                  tmp : aliased unwind.sleb128_t;
                begin
                   Mutable_p := read_sleb128 (Mutable_p, tmp'Access);
                   result := unwind.Unwind_Internal_Ptr (tmp);

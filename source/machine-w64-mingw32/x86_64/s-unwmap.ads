@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  runtime unit
-with System.Unwind.Handling;
+with System.Unwind.Representation;
 with C.winnt;
 package System.Unwind.Mapping is
    pragma Preelaborate;
@@ -18,7 +18,7 @@ package System.Unwind.Mapping is
    --    and Create_Machine_Occurrence_From_Signal_Handler (a-except-2005.adb)
    function New_Machine_Occurrence_From_SEH (
       Exception_Record : C.winnt.struct_EXCEPTION_RECORD_ptr)
-      return Handling.GNAT_GCC_Exception_Access;
+      return Representation.Machine_Occurrence_Access;
 
 private
 

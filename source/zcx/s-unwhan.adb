@@ -1,6 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
+with System.Unwind.Representation;
 with C.unwind_pe;
 package body System.Unwind.Handling is
    pragma Suppress (All_Checks);
@@ -13,7 +14,7 @@ package body System.Unwind.Handling is
    use type C.unsigned_long;
    use type C.unsigned_long_long;
    use type C.void_ptr;
-   use type C.unwind_pe.sleb128_t;
+   use type C.unwind.sleb128_t;
 
    Foreign_Exception : aliased Exception_Data;
    pragma Import (Ada, Foreign_Exception,
@@ -71,7 +72,7 @@ package body System.Unwind.Handling is
       function To_GNAT is
          new Ada.Unchecked_Conversion (
             C.unwind.struct_Unwind_Exception_ptr,
-            GNAT_GCC_Exception_Access);
+            Representation.Machine_Occurrence_Access);
       function Cast is
          new Ada.Unchecked_Conversion (
             C.unwind.struct_Unwind_Exception_ptr,
@@ -80,7 +81,7 @@ package body System.Unwind.Handling is
          new Ada.Unchecked_Conversion (
             C.unwind.Unwind_Sword,
             C.unwind.Unwind_Word);
-      GCC_Exception : constant GNAT_GCC_Exception_Access :=
+      GCC_Exception : constant Representation.Machine_Occurrence_Access :=
          To_GNAT (Exception_Object);
       landing_pad : C.unwind.Unwind_Ptr;
       ttype_filter : C.unwind.Unwind_Sword; -- 0 => finally, others => handler
@@ -90,7 +91,7 @@ package body System.Unwind.Handling is
          pragma Check (Trace, Ada.Debug.Put ("leave, ABI_Version /= 1"));
          return C.unwind.URC_FATAL_PHASE1_ERROR;
       end if;
-      if Exception_Class = GNAT_Exception_Class
+      if Exception_Class = Representation.GNAT_Exception_Class
          and then C.unsigned_int (Phases) =
             (C.unwind.UA_CLEANUP_PHASE or C.unwind.UA_HANDLER_FRAME)
       then
@@ -129,7 +130,7 @@ package body System.Unwind.Handling is
                      C.void_ptr,
                      C.unsigned_char_const_ptr);
                p : C.unsigned_char_const_ptr := Cast (lsda);
-               tmp : aliased C.unwind_pe.uleb128_t;
+               tmp : aliased C.unwind.uleb128_t;
                lpbase_encoding : C.unsigned_char;
             begin
                lpbase_encoding := p.all;
@@ -179,7 +180,7 @@ package body System.Unwind.Handling is
                   end if;
                   declare
                      cs_start, cs_len, cs_lp : aliased C.unwind.Unwind_Ptr;
-                     cs_action : aliased C.unwind_pe.uleb128_t;
+                     cs_action : aliased C.unwind.uleb128_t;
                   begin
                      p := C.unwind_pe.read_encoded_value (
                         null,
@@ -228,7 +229,7 @@ package body System.Unwind.Handling is
             else
                declare
                   p : C.unsigned_char_const_ptr := table_entry;
-                  ar_filter, ar_disp : aliased C.unwind_pe.sleb128_t;
+                  ar_filter, ar_disp : aliased C.unwind.sleb128_t;
                   Dummy : C.unsigned_char_const_ptr;
                   pragma Unreferenced (Dummy);
                begin
@@ -269,7 +270,9 @@ package body System.Unwind.Handling is
                               ttype_base,
                               ttype_table + (-filter),
                               choice'Access);
-                           if Exception_Class = GNAT_Exception_Class then
+                           if Exception_Class =
+                              Representation.GNAT_Exception_Class
+                           then
                               is_handled :=
                                  choice = Cast (GCC_Exception.Occurrence.Id)
                                  or else
@@ -320,7 +323,7 @@ package body System.Unwind.Handling is
                   --  Setup_Current_Excep (GCC_Exception);
                   null; -- exception tracing (a-exextr.adb) is not implementd.
                   --  shortcut for phase2
-                  if Exception_Class = GNAT_Exception_Class then
+                  if Exception_Class = Representation.GNAT_Exception_Class then
                      pragma Check (Trace, Ada.Debug.Put ("save for shortcut"));
                      GCC_Exception.landing_pad := landing_pad;
                      GCC_Exception.ttype_filter := ttype_filter;
@@ -331,7 +334,8 @@ package body System.Unwind.Handling is
                end if;
             elsif Phases = C.unwind.UA_CLEANUP_PHASE then
                if ttype_filter = 0
-                  and then Exception_Class = GNAT_Exception_Class
+                  and then Exception_Class =
+                     Representation.GNAT_Exception_Class
                   and then GCC_Exception.Stack_Guard /= Null_Address
                then
                   declare

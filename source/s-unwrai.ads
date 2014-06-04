@@ -193,6 +193,15 @@ package System.Unwind.Raising is
    pragma Export (Ada, Triggered_By_Abort,
       "ada__exceptions__triggered_by_abort");
 
+   --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
+   procedure Set_Exception_Message (
+      Id : not null Exception_Data_Access;
+      File : String := "";
+      Line : Integer := 0;
+      Column : Integer := 0;
+      Message : String;
+      X : in out Exception_Occurrence);
+
    --  output the information of unhandled exception
    procedure Report (X : Exception_Occurrence; Where : String);
    procedure Report_Traceback (X : Exception_Occurrence);

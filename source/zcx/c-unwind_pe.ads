@@ -5,9 +5,6 @@ with C.unwind;
 package C.unwind_pe is
    pragma Preelaborate;
 
-   subtype sleb128_t is signed_long;
-   subtype uleb128_t is unsigned_long;
-
    procedure gxx_abort
       renames stdlib.C_abort;
 
@@ -42,12 +39,12 @@ package C.unwind_pe is
 
    function read_uleb128 (
       p : access constant unsigned_char;
-      val : access uleb128_t)
+      val : access unwind.uleb128_t)
       return unsigned_char_const_ptr;
 
    function read_sleb128 (
       p : access constant unsigned_char;
-      val : access sleb128_t)
+      val : access unwind.sleb128_t)
       return unsigned_char_const_ptr;
 
    function read_encoded_value_with_base (

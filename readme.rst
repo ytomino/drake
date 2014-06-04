@@ -6,6 +6,9 @@ What's this?
 
 Drake is a runtime library written in 100% Ada to replace GNAT runtime.
 
+A project goal is re-implementing `Predefined Language Environment`_ in Annex A,
+for real world applications.
+
 Please, read wiki_ for more information.
 
 Environment
@@ -85,6 +88,7 @@ Many many features are unimplemented !!!
 And there are several intentional ACATS violations for usability.
 See `incompatibility features page`_.
 
+.. _`Predefined Language Environment`: http://www.adaic.org/resources/add_content/standards/12rm/html/RM-A.html
 .. _gcc: http://gcc.gnu.org/
 .. _headmaster: http://github.com/ytomino/headmaster
 .. _wiki: https://github.com/ytomino/drake/wiki
