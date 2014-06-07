@@ -1,9 +1,10 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Unchecked_Conversion;
 with System.Zero_Terminated_Strings;
 with C.dlfcn;
-package body Ada.Dynamic_Linking is
+package body System.Program.Dynamic_Linking is
    pragma Suppress (All_Checks);
-   use Exception_Identification.From_Here;
+   use Ada.Exception_Identification.From_Here;
    use type C.size_t;
    use type C.void_ptr;
 
@@ -11,12 +12,12 @@ package body Ada.Dynamic_Linking is
    procedure Open (Handle : out C.void_ptr; Name : String) is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
       Result : C.void_ptr;
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       Result := C.dlfcn.dlopen (C_Name (0)'Access, 0);
-      if Result = C.void_ptr (System.Null_Address) then
+      if Result = C.void_ptr (Null_Address) then
          Raise_Exception (Name_Error'Identity);
       else
          Handle := Result;
@@ -28,7 +29,7 @@ package body Ada.Dynamic_Linking is
       Dummy : C.signed_int;
       pragma Unreferenced (Dummy);
    begin
-      if Handle /= C.void_ptr (System.Null_Address) then
+      if Handle /= C.void_ptr (Null_Address) then
          Dummy := C.dlfcn.dlclose (Handle);
       end if;
    end Close;
@@ -38,7 +39,7 @@ package body Ada.Dynamic_Linking is
    procedure Open (Lib : in out Library; Name : String) is
       Handle : constant not null access C.void_ptr := Reference (Lib);
    begin
-      if Handle.all /= C.void_ptr (System.Null_Address) then
+      if Handle.all /= C.void_ptr (Null_Address) then
          Raise_Exception (Status_Error'Identity);
       else
          Open (Handle.all, Name);
@@ -56,32 +57,34 @@ package body Ada.Dynamic_Linking is
       Handle : constant not null access C.void_ptr := Reference (Lib);
    begin
       Close (Handle.all);
-      Handle.all := C.void_ptr (System.Null_Address);
+      Handle.all := C.void_ptr (Null_Address);
    end Close;
 
    function Is_Open (Lib : Library) return Boolean is
    begin
-      return Reference (Lib).all /= C.void_ptr (System.Null_Address);
+      return Reference (Lib).all /= C.void_ptr (Null_Address);
    end Is_Open;
 
-   function Import (Lib : Library; Symbol : String) return System.Address is
+   function Import (Lib : Library; Symbol : String) return Address is
+      function To_Address is
+         new Ada.Unchecked_Conversion (C.void_ptr, Address);
       Handle : constant C.void_ptr := Reference (Lib).all;
    begin
-      if Handle = C.void_ptr (System.Null_Address) then
+      if Handle = C.void_ptr (Null_Address) then
          Raise_Exception (Status_Error'Identity);
       else
          declare
             C_Symbol : C.char_array (
                0 ..
-               Symbol'Length * System.Zero_Terminated_Strings.Expanding);
+               Symbol'Length * Zero_Terminated_Strings.Expanding);
             Result : C.void_ptr;
          begin
-            System.Zero_Terminated_Strings.To_C (Symbol, C_Symbol (0)'Access);
+            Zero_Terminated_Strings.To_C (Symbol, C_Symbol (0)'Access);
             Result := C.dlfcn.dlsym (Handle, C_Symbol (0)'Access);
-            if Result = C.void_ptr (System.Null_Address) then
+            if Result = C.void_ptr (Null_Address) then
                Raise_Exception (Data_Error'Identity);
             else
-               return System.Address (Result);
+               return To_Address (Result);
             end if;
          end;
       end if;
@@ -101,4 +104,4 @@ package body Ada.Dynamic_Linking is
 
    end Controlled;
 
-end Ada.Dynamic_Linking;
+end System.Program.Dynamic_Linking;

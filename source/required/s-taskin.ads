@@ -26,7 +26,7 @@ package System.Tasking is
    end record;
    for Activation_Chain'Size use Standard'Address_Size;
 
-   --  required for build-in-place of task by compiler (s-taskin.ads)
+   --  required for built-in-place of task by compiler (s-taskin.ads)
    type Activation_Chain_Access is access all Activation_Chain;
    for Activation_Chain_Access'Storage_Size use 0;
    pragma No_Strict_Aliasing (Activation_Chain_Access);

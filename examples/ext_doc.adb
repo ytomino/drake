@@ -86,7 +86,9 @@ procedure ext_doc is
 							exit;
 						elsif Start_With (Line, "--  extended ") then
 							Kind := Extended_Unit;
-							if Line /= "--  extended unit" then
+							if Line /= "--  extended unit"
+								and then not Start_With (Line, "--  extended unit specialized ")
+							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);
 							end if;
