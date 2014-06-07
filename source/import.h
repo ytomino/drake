@@ -29,6 +29,10 @@
 #include <signal.h> /* before unistd.h */
 #include <string.h> /* strsignal */
 #include <sys/syscall.h> /* sigreturn */
+#if defined(__APPLE__)
+#include <sys/vm.h> /* before sys/vm.h */
+#endif
+#include <sys/sysctl.h>
 #include <sys/ucontext.h>
 #include <sys/mman.h> /* low-level memory op */
 #include <unistd.h> /* low-level I/O */
