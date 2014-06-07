@@ -1,10 +1,9 @@
 pragma License (Unrestricted);
 --  extended unit
 with Ada.IO_Exceptions;
-with System;
 private with Ada.Finalization;
 private with C;
-package Ada.Dynamic_Linking is
+package System.Program.Dynamic_Linking is
    --  Loading dynamic-link library.
    pragma Preelaborate;
 
@@ -19,14 +18,14 @@ package Ada.Dynamic_Linking is
    function Is_Open (Lib : Library) return Boolean;
    pragma Inline (Is_Open);
 
-   function Import (Lib : Library; Symbol : String) return System.Address;
+   function Import (Lib : Library; Symbol : String) return Address;
 
    Status_Error : exception
-      renames IO_Exceptions.Status_Error;
+      renames Ada.IO_Exceptions.Status_Error;
    Name_Error : exception
-      renames IO_Exceptions.Name_Error;
+      renames Ada.IO_Exceptions.Name_Error;
    Data_Error : exception
-      renames IO_Exceptions.Data_Error;
+      renames Ada.IO_Exceptions.Data_Error;
 
 private
 
@@ -39,8 +38,8 @@ private
 
    private
 
-      type Library is new Finalization.Limited_Controlled with record
-         Handle : aliased C.void_ptr := C.void_ptr (System.Null_Address);
+      type Library is new Ada.Finalization.Limited_Controlled with record
+         Handle : aliased C.void_ptr := C.void_ptr (Null_Address);
       end record;
 
       overriding procedure Finalize (Object : in out Library);
@@ -49,4 +48,4 @@ private
 
    type Library is new Controlled.Library;
 
-end Ada.Dynamic_Linking;
+end System.Program.Dynamic_Linking;
