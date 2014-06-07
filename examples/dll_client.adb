@@ -1,8 +1,12 @@
 with Ada.Dynamic_Linking;
 with Ada.IO_Exceptions;
 with Interfaces.C.Strings;
+with System.Program;
+with System.Storage_Elements.Formatting;
 procedure dll_client is
 begin
+	Ada.Debug.Put (System.Program.Full_Name);
+	Ada.Debug.Put (System.Storage_Elements.Formatting.Image (System.Program.Load_Address));
 	use_zlib : declare
 		zlib : Ada.Dynamic_Linking.Library;
 	begin
