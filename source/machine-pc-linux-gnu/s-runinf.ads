@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  runtime unit specialized for Linux
-package System.Dynamic_Libraries is
+package System.Runtime_Information is
    pragma Preelaborate;
 
    function Load_Address return Address;
 
-end System.Dynamic_Libraries;
+end System.Runtime_Information;

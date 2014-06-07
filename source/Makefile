@@ -152,13 +152,13 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	$(EH_OBJS) \
 	system.o \
 	s-debug.o \
-	s-dynlib.o \
 	s-exctab.o \
 	s-foadim.o \
 	s-format.o \
 	s-maccod.o \
 	s-natsta.o \
 	s-runcon.o \
+	s-runinf.o \
 	s-shaloc.o \
 	s-staall.o \
 	s-stalib.o \

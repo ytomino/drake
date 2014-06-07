@@ -1,5 +1,5 @@
-with System.Dynamic_Libraries;
 with System.Formatting.Address_Image;
+with System.Runtime_Information;
 with System.Unwind.Raising;
 package body System.Unwind.Traceback is
    pragma Suppress (All_Checks);
@@ -44,7 +44,7 @@ package body System.Unwind.Traceback is
    begin
       Put ("Load address: 0x", Params);
       declare
-         Item : constant Address := Dynamic_Libraries.Load_Address;
+         Item : constant Address := Runtime_Information.Load_Address;
       begin
          Formatting.Address_Image (
             Item,

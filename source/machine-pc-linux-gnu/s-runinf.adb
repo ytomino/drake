@@ -1,6 +1,6 @@
 with C.elf;
 with C.link;
-package body System.Dynamic_Libraries is
+package body System.Runtime_Information is
    pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.size_t;
@@ -82,4 +82,4 @@ package body System.Dynamic_Libraries is
       return R.First_Load_Address;
    end Load_Address;
 
-end System.Dynamic_Libraries;
+end System.Runtime_Information;

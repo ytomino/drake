@@ -1,7 +1,7 @@
 with System.Address_To_Named_Access_Conversions;
 with C.dlfcn;
 with C.sys.link_elf;
-package body System.Dynamic_Libraries is
+package body System.Runtime_Information is
    pragma Suppress (All_Checks);
    use type C.signed_int;
 
@@ -25,4 +25,4 @@ package body System.Dynamic_Libraries is
       return Conv.To_Address (Map.l_addr);
    end Load_Address;
 
-end System.Dynamic_Libraries;
+end System.Runtime_Information;

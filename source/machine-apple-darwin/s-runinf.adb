@@ -1,7 +1,7 @@
 with System.Address_To_Constant_Access_Conversions;
 with C.mach_o.dyld;
 with C.mach_o.loader;
-package body System.Dynamic_Libraries is
+package body System.Runtime_Information is
    pragma Suppress (All_Checks);
 
    function Load_Address return Address is
@@ -13,4 +13,4 @@ package body System.Dynamic_Libraries is
       return Conv.To_Address (C.mach_o.dyld.dyld_get_image_header (0));
    end Load_Address;
 
-end System.Dynamic_Libraries;
+end System.Runtime_Information;
