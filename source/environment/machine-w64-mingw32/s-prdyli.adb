@@ -3,9 +3,9 @@ with Ada.Unchecked_Conversion;
 with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winnt;
-package body Ada.Dynamic_Linking is
+package body System.Program.Dynamic_Linking is
    pragma Suppress (All_Checks);
-   use Exception_Identification.From_Here;
+   use Ada.Exception_Identification.From_Here;
    use type C.size_t;
    use type C.windef.FARPROC;
    use type C.windef.HMODULE;
@@ -14,10 +14,10 @@ package body Ada.Dynamic_Linking is
    procedure Open (Handle : out C.windef.HMODULE; Name : String) is
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
-         Name'Length * System.Zero_Terminated_WStrings.Expanding);
+         Name'Length * Zero_Terminated_WStrings.Expanding);
       Result : C.windef.HMODULE;
    begin
-      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Result := C.winbase.LoadLibrary (W_Name (0)'Access);
       if Result = null then
          Raise_Exception (Name_Error'Identity);
@@ -67,7 +67,7 @@ package body Ada.Dynamic_Linking is
       return Reference (Lib).all /= null;
    end Is_Open;
 
-   function Import (Lib : Library; Symbol : String) return System.Address is
+   function Import (Lib : Library; Symbol : String) return Address is
       Handle : constant C.windef.HMODULE := Reference (Lib).all;
    begin
       if Handle = null then
@@ -75,7 +75,7 @@ package body Ada.Dynamic_Linking is
       else
          declare
             function Cast is
-               new Unchecked_Conversion (C.windef.FARPROC, System.Address);
+               new Ada.Unchecked_Conversion (C.windef.FARPROC, Address);
             Z_Symbol : String := Symbol & Character'Val (0);
             C_Symbol : C.char_array (C.size_t);
             for C_Symbol'Address use Z_Symbol'Address;
@@ -106,4 +106,4 @@ package body Ada.Dynamic_Linking is
 
    end Controlled;
 
-end Ada.Dynamic_Linking;
+end System.Program.Dynamic_Linking;

@@ -1,26 +1,25 @@
-with Ada.Dynamic_Linking;
 with Ada.IO_Exceptions;
 with Interfaces.C.Strings;
-with System.Program;
+with System.Program.Dynamic_Linking;
 with System.Storage_Elements.Formatting;
 procedure dll_client is
 begin
 	Ada.Debug.Put (System.Program.Full_Name);
 	Ada.Debug.Put (System.Storage_Elements.Formatting.Image (System.Program.Load_Address));
 	use_zlib : declare
-		zlib : Ada.Dynamic_Linking.Library;
+		zlib : System.Program.Dynamic_Linking.Library;
 	begin
 		begin
-			Ada.Dynamic_Linking.Open (zlib, "libz.so");
+			System.Program.Dynamic_Linking.Open (zlib, "libz.so");
 			pragma Debug (Ada.Debug.Put ("in BSD or Linux"));
 		exception
 			when Ada.IO_Exceptions.Name_Error =>
 				begin
-					Ada.Dynamic_Linking.Open (zlib, "libz.dylib");
+					System.Program.Dynamic_Linking.Open (zlib, "libz.dylib");
 					pragma Debug (Ada.Debug.Put ("in Darwin"));
 				exception
 					when Ada.IO_Exceptions.Name_Error =>
-						Ada.Dynamic_Linking.Open (zlib, "libz.dll");
+						System.Program.Dynamic_Linking.Open (zlib, "libz.dll");
 						pragma Debug (Ada.Debug.Put ("in Windows"));
 				end;
 		end;
@@ -28,7 +27,7 @@ begin
 			function zlibVersion return Interfaces.C.Strings.const_chars_ptr;
 			pragma Import (C, zlibVersion);
 			for zlibVersion'Address use
-				Ada.Dynamic_Linking.Import (zlib, "zlibVersion");
+				System.Program.Dynamic_Linking.Import (zlib, "zlibVersion");
 		begin
 			Ada.Debug.Put (Interfaces.C.Strings.Value (zlibVersion));
 		end;
