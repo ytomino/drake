@@ -8,9 +8,9 @@ with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.string;
 with C.winbase;
-with C.wincon;
 with C.windef;
 with C.winerror;
+with C.winnt;
 package body Ada.Streams.Stream_IO.Inside is
    use Exception_Identification.From_Here;
    use type IO_Modes.File_Shared;
@@ -132,10 +132,10 @@ package body Ada.Streams.Stream_IO.Inside is
    --  handle
 
    procedure CloseHandle (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Raise_On_Error : Boolean);
    procedure CloseHandle (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Raise_On_Error : Boolean)
    is
       Error : Boolean;
@@ -188,42 +188,11 @@ package body Ada.Streams.Stream_IO.Inside is
       FileSize := liFileSize.QuadPart;
    end GetFileSizeEx;
 
-   --  implementation of handle
-
-   function Is_Terminal (Handle : Handle_Type) return Boolean is
-      Mode : aliased C.windef.DWORD;
-   begin
-      return C.winbase.GetFileType (Handle) = C.winbase.FILE_TYPE_CHAR
-         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0;
-   end Is_Terminal;
-
-   function Is_Seekable (Handle : Handle_Type) return Boolean is
-   begin
-      return C.winbase.SetFilePointerEx (
-         Handle,
-         (Unchecked_Tag => 2, QuadPart => 0),
-         null,
-         C.winbase.FILE_CURRENT) /= 0;
-   end Is_Seekable;
-
-   procedure Initialize (
-      Standard_Input_Handle : aliased in out Handle_Type;
-      Standard_Output_Handle : aliased in out Handle_Type;
-      Standard_Error_Handle : aliased in out Handle_Type) is
-   begin
-      Standard_Input_Handle :=
-         C.winbase.GetStdHandle (C.winbase.STD_INPUT_HANDLE);
-      Standard_Output_Handle :=
-         C.winbase.GetStdHandle (C.winbase.STD_OUTPUT_HANDLE);
-      Standard_Error_Handle :=
-         C.winbase.GetStdHandle (C.winbase.STD_ERROR_HANDLE);
-   end Initialize;
-
    --  implementation of handle for controlled
 
    procedure Open (
       File : in out File_Type;
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
       Form : Packed_Form := Default_Form;
@@ -238,7 +207,7 @@ package body Ada.Streams.Stream_IO.Inside is
          To_Close => To_Close);
    end Open;
 
-   function Handle (File : File_Type) return Handle_Type is
+   function Handle (File : File_Type) return System.Native_IO.Handle_Type is
    begin
       return Handle (Reference (File).all);
    end Handle;
@@ -263,7 +232,7 @@ package body Ada.Streams.Stream_IO.Inside is
    end Finally;
 
    function Allocate (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
       Name : C.winnt.LPWSTR;
@@ -271,7 +240,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Form : Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
       Name : C.winnt.LPWSTR;
@@ -311,7 +280,7 @@ package body Ada.Streams.Stream_IO.Inside is
    end Free;
 
    type Scoped_Handle_And_File is record
-      Handle : aliased Handle_Type;
+      Handle : aliased System.Native_IO.Handle_Type;
       File : aliased Non_Controlled_File_Type;
    end record;
    pragma Suppress_Initialization (Scoped_Handle_And_File);
@@ -374,11 +343,11 @@ package body Ada.Streams.Stream_IO.Inside is
       C.winnt.WCHAR'Val (0));
 
    procedure Open_Temporary_File (
-      Handle : aliased out Handle_Type; -- held
+      Handle : aliased out System.Native_IO.Handle_Type; -- held
       Full_Name : aliased out C.winnt.LPWSTR; -- held
       Full_Name_Length : out C.size_t);
    procedure Open_Temporary_File (
-      Handle : aliased out Handle_Type;
+      Handle : aliased out System.Native_IO.Handle_Type;
       Full_Name : aliased out C.winnt.LPWSTR;
       Full_Name_Length : out C.size_t)
    is
@@ -480,13 +449,13 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Open_Ordinary (
       Method : Open_Method;
-      Handle : aliased out Handle_Type; -- held
+      Handle : aliased out System.Native_IO.Handle_Type; -- held
       Mode : File_Mode;
       Name : not null C.winnt.LPWSTR;
       Form : Packed_Form);
    procedure Open_Ordinary (
       Method : Open_Method;
-      Handle : aliased out Handle_Type;
+      Handle : aliased out System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : not null C.winnt.LPWSTR;
       Form : Packed_Form)
@@ -1124,7 +1093,7 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File);
       if File.Dispatcher.Tag = Tags.No_Tag then
-         if not Is_Seekable (File.Handle) then
+         if not System.Native_IO.Is_Seekable (File.Handle) then
             File.Dispatcher.Tag := Dispatchers.Root_Dispatcher'Tag;
          else
             File.Dispatcher.Tag := Dispatchers.Seekable_Dispatcher'Tag;
@@ -1406,7 +1375,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
       Form : Packed_Form := Default_Form;
@@ -1451,7 +1420,8 @@ package body Ada.Streams.Stream_IO.Inside is
       Name_Holder.Clear;
    end Open;
 
-   function Handle (File : Non_Controlled_File_Type) return Handle_Type is
+   function Handle (File : Non_Controlled_File_Type)
+      return System.Native_IO.Handle_Type is
    begin
       Check_File_Open (File);
       return File.Handle;

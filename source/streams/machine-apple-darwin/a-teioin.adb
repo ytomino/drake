@@ -3,6 +3,7 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.Form_Parameters;
 with System.Formatting;
+with System.Native_IO;
 with System.UTF_Conversions;
 with C.sys.types;
 with C.termios;
@@ -14,8 +15,8 @@ package body Ada.Text_IO.Inside is
    use type IO_Text_Modes.File_SUB;
    use type Streams.Stream_Element;
    use type Streams.Stream_Element_Offset;
-   use type Streams.Stream_IO.Inside.Handle_Type;
    use type Streams.Stream_IO.Stream_Access;
+   use type C.signed_int;
    use type C.unsigned_int;
    use type C.unsigned_long;
    pragma Warnings (Off); -- ssize_t = Handle_Type = int in some platforms
@@ -23,12 +24,12 @@ package body Ada.Text_IO.Inside is
    pragma Warnings (On);
 
    procedure tcgetsetattr (
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mask : C.termios.tcflag_t;
       Min : C.termios.cc_t;
       Saved_Settings : not null access C.termios.struct_termios);
    procedure tcgetsetattr (
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mask : C.termios.tcflag_t;
       Min : C.termios.cc_t;
       Saved_Settings : not null access C.termios.struct_termios)
@@ -51,10 +52,10 @@ package body Ada.Text_IO.Inside is
    end tcgetsetattr;
 
    procedure write (
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Item : String);
    procedure write (
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Item : String) is
    begin
       if C.unistd.write (
@@ -67,12 +68,12 @@ package body Ada.Text_IO.Inside is
    end write;
 
    procedure read_Escape_Sequence (
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Item : out String;
       Last : out Natural;
       Read_Until : Character);
    procedure read_Escape_Sequence (
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Item : out String;
       Last : out Natural;
       Read_Until : Character) is
@@ -353,7 +354,7 @@ package body Ada.Text_IO.Inside is
          Form => Form.Stream_Form);
       New_File.Stream := Streams.Stream_IO.Inside.Stream (New_File.File);
       --  select encoding
-      if Streams.Stream_IO.Inside.Is_Terminal (
+      if System.Native_IO.Is_Terminal (
          Streams.Stream_IO.Inside.Handle (New_File.File))
       then
          New_File.External := IO_Text_Modes.Terminal;
@@ -776,7 +777,7 @@ package body Ada.Text_IO.Inside is
    is
       Seq : constant String (1 .. 5) := (
          Character'Val (16#1b#), '[', '1', '8', 't');
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Old_Settings : aliased C.termios.struct_termios;
       Buffer : String (1 .. 256);
       Last : Natural;
@@ -1109,7 +1110,7 @@ package body Ada.Text_IO.Inside is
    is
       Seq : constant String (1 .. 4) := (
          Character'Val (16#1b#), '[', '6', 'n');
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Old_Settings : aliased C.termios.struct_termios;
       Buffer : String (1 .. 256);
       Last : Natural;
@@ -1426,7 +1427,7 @@ package body Ada.Text_IO.Inside is
    begin
       File.Stream := Streams.Stream_IO.Inside.Stream (File.File);
       File.External := IO_Text_Modes.File_External'Val (Boolean'Pos (
-         not Streams.Stream_IO.Inside.Is_Terminal (
+         not System.Native_IO.Is_Terminal (
             Streams.Stream_IO.Inside.Handle (File.File))));
    end Init_Standard_File;
 

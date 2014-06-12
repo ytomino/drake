@@ -2,6 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Inside;
 with System.Zero_Terminated_Strings;
 with System.Formatting;
+with System.Native_IO;
 with C.netinet.in_h;
 with C.sys.socket;
 with C.unistd;
@@ -103,7 +104,7 @@ package body Ada.Streams.Stream_IO.Sockets is
    end Resolve;
 
    procedure Connect (File : in out File_Type; Peer : End_Point) is
-      Handle : Inside.Handle_Type := -1;
+      Handle : System.Native_IO.Handle_Type := -1;
       I : C.netdb.struct_addrinfo_ptr := Reference (Peer).all;
    begin
       while I /= null loop
@@ -129,7 +130,7 @@ package body Ada.Streams.Stream_IO.Sockets is
       if Handle < 0 then
          Raise_Exception (Use_Error'Identity);
       else
-         Inside.Set_Close_On_Exec (Handle);
+         System.Native_IO.Set_Close_On_Exec (Handle);
          Inside.Open (
             File,
             Handle,

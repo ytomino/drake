@@ -3,6 +3,7 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
+with System.Native_IO;
 with System.UTF_Conversions;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_16_To_8;
@@ -17,12 +18,12 @@ package body Ada.Text_IO.Inside is
    use type IO_Text_Modes.File_New_Line;
    use type IO_Text_Modes.File_SUB;
    use type Streams.Stream_Element_Offset;
-   use type Streams.Stream_IO.Inside.Handle_Type;
    use type Streams.Stream_IO.Stream_Access;
    use type C.size_t;
    use type C.windef.WORD;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
+   use type C.winnt.HANDLE;
    use type C.winnt.SHORT;
    use type C.winnt.WCHAR;
 
@@ -339,7 +340,7 @@ package body Ada.Text_IO.Inside is
          Form => Form.Stream_Form);
       New_File.Stream := Streams.Stream_IO.Inside.Stream (New_File.File);
       --  select encoding
-      if Streams.Stream_IO.Inside.Is_Terminal (
+      if System.Native_IO.Is_Terminal (
          Streams.Stream_IO.Inside.Handle (New_File.File))
       then
          New_File.External := IO_Text_Modes.Terminal;
@@ -361,7 +362,7 @@ package body Ada.Text_IO.Inside is
       if File.External = IO_Text_Modes.Terminal then
          declare -- clear screen
             Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
-            Handle : constant Streams.Stream_IO.Inside.Handle_Type :=
+            Handle : constant System.Native_IO.Handle_Type :=
                Streams.Stream_IO.Inside.Handle (File.File);
          begin
             GetConsoleScreenBufferInfo (
@@ -541,7 +542,7 @@ package body Ada.Text_IO.Inside is
    end Read_Buffer;
 
    procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type) is
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Event_Count : aliased C.windef.DWORD;
       Read_Size : aliased C.windef.DWORD;
       Event : aliased C.wincon.INPUT_RECORD;
@@ -910,7 +911,7 @@ package body Ada.Text_IO.Inside is
       File : Non_Controlled_File_Type;
       Line_Length, Page_Length : Count)
    is
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
    begin
       Check_File_Mode (File, Out_File);
       if File.External = IO_Text_Modes.Terminal then
@@ -1114,7 +1115,7 @@ package body Ada.Text_IO.Inside is
       Col, Line : Count)
    is
       Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
    begin
       Check_File_Mode (File, Out_File);
       if File.External = IO_Text_Modes.Terminal then
@@ -1458,7 +1459,7 @@ package body Ada.Text_IO.Inside is
       Wait : Boolean)
    is
       Console_Mode : aliased C.windef.DWORD;
-      Handle : Streams.Stream_IO.Inside.Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
    begin
       Check_File_Mode (File, In_File);
       if File.External = IO_Text_Modes.Terminal then
@@ -1514,7 +1515,7 @@ package body Ada.Text_IO.Inside is
    begin
       File.Stream := Streams.Stream_IO.Inside.Stream (File.File);
       File.External := IO_Text_Modes.File_External'Val (Boolean'Pos (
-         not Streams.Stream_IO.Inside.Is_Terminal (
+         not System.Native_IO.Is_Terminal (
             Streams.Stream_IO.Inside.Handle (File.File))));
    end Init_Standard_File;
 
