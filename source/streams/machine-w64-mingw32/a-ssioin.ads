@@ -38,6 +38,11 @@ package Ada.Streams.Stream_IO.Inside is
    function Is_Terminal (Handle : Handle_Type) return Boolean;
    function Is_Seekable (Handle : Handle_Type) return Boolean;
 
+   procedure Initialize (
+      Standard_Input_Handle : aliased in out Handle_Type;
+      Standard_Output_Handle : aliased in out Handle_Type;
+      Standard_Error_Handle : aliased in out Handle_Type);
+
    --  handle for controlled
 
    procedure Open (
@@ -152,7 +157,7 @@ private
    Uninitialized_Buffer : constant := -1;
 
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
-      Handle : C.winnt.HANDLE;
+      Handle : aliased C.winnt.HANDLE;
       Mode : File_Mode;
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;

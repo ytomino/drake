@@ -206,6 +206,19 @@ package body Ada.Streams.Stream_IO.Inside is
          C.winbase.FILE_CURRENT) /= 0;
    end Is_Seekable;
 
+   procedure Initialize (
+      Standard_Input_Handle : aliased in out Handle_Type;
+      Standard_Output_Handle : aliased in out Handle_Type;
+      Standard_Error_Handle : aliased in out Handle_Type) is
+   begin
+      Standard_Input_Handle :=
+         C.winbase.GetStdHandle (C.winbase.STD_INPUT_HANDLE);
+      Standard_Output_Handle :=
+         C.winbase.GetStdHandle (C.winbase.STD_OUTPUT_HANDLE);
+      Standard_Error_Handle :=
+         C.winbase.GetStdHandle (C.winbase.STD_ERROR_HANDLE);
+   end Initialize;
+
    --  implementation of handle for controlled
 
    procedure Open (
