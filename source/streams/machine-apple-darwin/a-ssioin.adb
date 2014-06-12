@@ -159,12 +159,12 @@ package body Ada.Streams.Stream_IO.Inside is
    end C_close;
 
    function lseek (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       offset : C.sys.types.off_t;
       whence : C.signed_int)
       return C.sys.types.off_t;
    function lseek (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       offset : C.sys.types.off_t;
       whence : C.signed_int)
       return C.sys.types.off_t
@@ -179,10 +179,10 @@ package body Ada.Streams.Stream_IO.Inside is
    end lseek;
 
    procedure fstat (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       buf : not null access C.sys.stat.struct_stat);
    procedure fstat (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       buf : not null access C.sys.stat.struct_stat) is
    begin
       if C.sys.stat.fstat (Handle, buf) < 0 then
@@ -190,38 +190,11 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end fstat;
 
-   --  implementation of handle
-
-   function Is_Terminal (Handle : Handle_Type) return Boolean is
-   begin
-      return C.unistd.isatty (Handle) /= 0;
-   end Is_Terminal;
-
-   function Is_Seekable (Handle : Handle_Type) return Boolean is
-   begin
-      return C.unistd.lseek (
-         Handle,
-         0,
-         C.unistd.SEEK_CUR) >= 0;
-   end Is_Seekable;
-
-   procedure Set_Close_On_Exec (Handle : Handle_Type) is
-      Error : Boolean;
-   begin
-      Error := C.fcntl.fcntl (
-         Handle,
-         C.fcntl.F_SETFD,
-         C.fcntl.FD_CLOEXEC) < 0;
-      if Error then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-   end Set_Close_On_Exec;
-
    --  implementation of handle for controlled
 
    procedure Open (
       File : in out File_Type;
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
       Form : Packed_Form := Default_Form;
@@ -236,7 +209,7 @@ package body Ada.Streams.Stream_IO.Inside is
          To_Close => To_Close);
    end Open;
 
-   function Handle (File : File_Type) return Handle_Type is
+   function Handle (File : File_Type) return System.Native_IO.Handle_Type is
    begin
       return Handle (Reference (File).all);
    end Handle;
@@ -259,7 +232,7 @@ package body Ada.Streams.Stream_IO.Inside is
    end Finally;
 
    function Allocate (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
       Name : C.char_ptr;
@@ -267,7 +240,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Form : Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
       Name : C.char_ptr;
@@ -306,7 +279,7 @@ package body Ada.Streams.Stream_IO.Inside is
    end Free;
 
    type Scoped_Handle_And_File is record
-      Handle : aliased Handle_Type;
+      Handle : aliased System.Native_IO.Handle_Type;
       File : aliased Non_Controlled_File_Type;
    end record;
    pragma Suppress_Initialization (Scoped_Handle_And_File);
@@ -375,11 +348,11 @@ package body Ada.Streams.Stream_IO.Inside is
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
 
    procedure Open_Temporary_File (
-      Handle : aliased out Handle_Type; -- held
+      Handle : aliased out System.Native_IO.Handle_Type; -- held
       Full_Name : aliased out C.char_ptr; -- held
       Full_Name_Length : out C.size_t);
    procedure Open_Temporary_File (
-      Handle : aliased out Handle_Type;
+      Handle : aliased out System.Native_IO.Handle_Type;
       Full_Name : aliased out C.char_ptr;
       Full_Name_Length : out C.size_t)
    is
@@ -449,7 +422,7 @@ package body Ada.Streams.Stream_IO.Inside is
       if Handle < 0 then
          Raise_Exception (Use_Error'Identity);
       end if;
-      Set_Close_On_Exec (Handle);
+      System.Native_IO.Set_Close_On_Exec (Handle);
    end Open_Temporary_File;
 
    procedure Compose_File_Name (
@@ -518,13 +491,13 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Open_Ordinary (
       Method : Open_Method;
-      Handle : aliased out Handle_Type; -- held
+      Handle : aliased out System.Native_IO.Handle_Type; -- held
       Mode : File_Mode;
       Name : not null C.char_ptr;
       Form : Packed_Form);
    procedure Open_Ordinary (
       Method : Open_Method;
-      Handle : aliased out Handle_Type;
+      Handle : aliased out System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : not null C.char_ptr;
       Form : Packed_Form)
@@ -627,7 +600,7 @@ package body Ada.Streams.Stream_IO.Inside is
       begin
          if O_CLOEXEC_Is_Missing then
             --  set FD_CLOEXEC if O_CLOEXEC is missing
-            Set_Close_On_Exec (Handle);
+            System.Native_IO.Set_Close_On_Exec (Handle);
          end if;
       end;
       declare
@@ -741,7 +714,7 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Get_Buffer (File : not null Non_Controlled_File_Type) is
    begin
       if File.Buffer_Length = Uninitialized_Buffer then
-         if Is_Terminal (File.Handle) then
+         if System.Native_IO.Is_Terminal (File.Handle) then
             File.Buffer_Length := 0; -- no buffering for terminal
          else
             declare
@@ -1129,7 +1102,7 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File);
       if File.Dispatcher.Tag = Tags.No_Tag then
-         if not Is_Seekable (File.Handle) then
+         if not System.Native_IO.Is_Seekable (File.Handle) then
             File.Dispatcher.Tag := Dispatchers.Root_Dispatcher'Tag;
          else
             File.Dispatcher.Tag := Dispatchers.Seekable_Dispatcher'Tag;
@@ -1403,7 +1376,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
       Form : Packed_Form := Default_Form;
@@ -1450,7 +1423,8 @@ package body Ada.Streams.Stream_IO.Inside is
       Name_Holder.Clear;
    end Open;
 
-   function Handle (File : Non_Controlled_File_Type) return Handle_Type is
+   function Handle (File : Non_Controlled_File_Type)
+      return System.Native_IO.Handle_Type is
    begin
       Check_File_Open (File);
       return File.Handle;

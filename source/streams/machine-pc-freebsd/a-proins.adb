@@ -12,9 +12,9 @@ package body Ada.Processes.Inside is
       Command_Line : String;
       Directory : String;
       Search_Path : Boolean;
-      Input : Streams.Stream_IO.Inside.Handle_Type;
-      Output : Streams.Stream_IO.Inside.Handle_Type;
-      Error : Streams.Stream_IO.Inside.Handle_Type) is
+      Input : System.Native_IO.Handle_Type;
+      Output : System.Native_IO.Handle_Type;
+      Error : System.Native_IO.Handle_Type) is
    begin
       Child := C.unistd.fork;
       if Child < 0 then
@@ -40,9 +40,9 @@ package body Ada.Processes.Inside is
                0 ..
                Command_Line'Length * System.Zero_Terminated_Strings.Expanding);
             Arguments : C.char_ptr_array (0 .. 255);
-            Duplicated_Input : Streams.Stream_IO.Inside.Handle_Type;
-            Duplicated_Output : Streams.Stream_IO.Inside.Handle_Type;
-            Duplicated_Error : Streams.Stream_IO.Inside.Handle_Type;
+            Duplicated_Input : System.Native_IO.Handle_Type;
+            Duplicated_Output : System.Native_IO.Handle_Type;
+            Duplicated_Error : System.Native_IO.Handle_Type;
             Dummy : C.signed_int;
             pragma Unreferenced (Dummy);
          begin
