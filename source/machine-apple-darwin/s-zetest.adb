@@ -36,7 +36,7 @@ package body System.Zero_Terminated_Strings is
 
    procedure To_C (
       Source : String;
-      Result : not null access constant C.char)
+      Result : not null access C.char)
    is
       Dummy : C.size_t;
       pragma Unreferenced (Dummy);
@@ -46,7 +46,7 @@ package body System.Zero_Terminated_Strings is
 
    procedure To_C (
       Source : String;
-      Result : not null access constant C.char;
+      Result : not null access C.char;
       Result_Length : out C.size_t)
    is
       --  Source and Result should not be overlapped
