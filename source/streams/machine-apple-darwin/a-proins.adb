@@ -18,9 +18,9 @@ package body Ada.Processes.Inside is
       Command_Line : String;
       Directory : String;
       Search_Path : Boolean;
-      Input : Streams.Stream_IO.Inside.Handle_Type;
-      Output : Streams.Stream_IO.Inside.Handle_Type;
-      Error : Streams.Stream_IO.Inside.Handle_Type)
+      Input : System.Native_IO.Handle_Type;
+      Output : System.Native_IO.Handle_Type;
+      Error : System.Native_IO.Handle_Type)
    is
       package char_ptr_Conv is
          new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);

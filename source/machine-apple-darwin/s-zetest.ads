@@ -14,10 +14,10 @@ package System.Zero_Terminated_Strings is
 
    procedure To_C (
       Source : String;
-      Result : not null access constant C.char);
+      Result : not null access C.char);
    procedure To_C (
       Source : String;
-      Result : not null access constant C.char;
+      Result : not null access C.char;
       Result_Length : out C.size_t);
 
    Expanding : constant := 1; -- UTF-8 to UTF-8

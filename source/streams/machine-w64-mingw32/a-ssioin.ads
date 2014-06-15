@@ -1,8 +1,7 @@
 pragma License (Unrestricted);
---  implementation unit
-with Ada.Tags;
-with C.winnt;
-private with System;
+--  implementation unit specialized for Windows
+with System.Native_IO;
+private with Ada.Tags;
 package Ada.Streams.Stream_IO.Inside is
    pragma Preelaborate;
 
@@ -31,24 +30,17 @@ package Ada.Streams.Stream_IO.Inside is
       Result : out Form_String;
       Last : out Natural);
 
-   --  handle
-
-   subtype Handle_Type is C.winnt.HANDLE;
-
-   function Is_Terminal (Handle : Handle_Type) return Boolean;
-   function Is_Seekable (Handle : Handle_Type) return Boolean;
-
    --  handle for controlled
 
    procedure Open (
       File : in out File_Type;
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
       Form : Packed_Form := Default_Form;
       To_Close : Boolean := False);
 
-   function Handle (File : File_Type) return Handle_Type;
+   function Handle (File : File_Type) return System.Native_IO.Handle_Type;
    pragma Inline (Handle);
 
    type Non_Controlled_File_Type; -- forward
@@ -127,13 +119,14 @@ package Ada.Streams.Stream_IO.Inside is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
       Form : Packed_Form := Default_Form;
       To_Close : Boolean := False);
 
-   function Handle (File : Non_Controlled_File_Type) return Handle_Type;
+   function Handle (File : Non_Controlled_File_Type)
+      return System.Native_IO.Handle_Type;
    pragma Inline (Handle);
 
    function Is_Standard (File : Non_Controlled_File_Type) return Boolean;
@@ -152,12 +145,12 @@ private
    Uninitialized_Buffer : constant := -1;
 
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
-      Handle : C.winnt.HANDLE;
+      Handle : aliased System.Native_IO.Handle_Type; -- file descripter
       Mode : File_Mode;
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
-      Name : C.winnt.LPWSTR;
-      Name_Length : C.size_t;
+      Name : System.Native_IO.Name_Pointer;
+      Name_Length : System.Native_IO.Name_Length;
       Form : Packed_Form;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;

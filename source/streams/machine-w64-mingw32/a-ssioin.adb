@@ -5,12 +5,11 @@ with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.Standard_Allocators;
 with System.Storage_Elements;
-with System.Zero_Terminated_WStrings;
 with C.string;
 with C.winbase;
-with C.wincon;
 with C.windef;
 with C.winerror;
+with C.winnt;
 package body Ada.Streams.Stream_IO.Inside is
    use Exception_Identification.From_Here;
    use type IO_Modes.File_Shared;
@@ -132,10 +131,10 @@ package body Ada.Streams.Stream_IO.Inside is
    --  handle
 
    procedure CloseHandle (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Raise_On_Error : Boolean);
    procedure CloseHandle (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Raise_On_Error : Boolean)
    is
       Error : Boolean;
@@ -188,29 +187,11 @@ package body Ada.Streams.Stream_IO.Inside is
       FileSize := liFileSize.QuadPart;
    end GetFileSizeEx;
 
-   --  implementation of handle
-
-   function Is_Terminal (Handle : Handle_Type) return Boolean is
-      Mode : aliased C.windef.DWORD;
-   begin
-      return C.winbase.GetFileType (Handle) = C.winbase.FILE_TYPE_CHAR
-         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0;
-   end Is_Terminal;
-
-   function Is_Seekable (Handle : Handle_Type) return Boolean is
-   begin
-      return C.winbase.SetFilePointerEx (
-         Handle,
-         (Unchecked_Tag => 2, QuadPart => 0),
-         null,
-         C.winbase.FILE_CURRENT) /= 0;
-   end Is_Seekable;
-
    --  implementation of handle for controlled
 
    procedure Open (
       File : in out File_Type;
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
       Form : Packed_Form := Default_Form;
@@ -225,7 +206,7 @@ package body Ada.Streams.Stream_IO.Inside is
          To_Close => To_Close);
    end Open;
 
-   function Handle (File : File_Type) return Handle_Type is
+   function Handle (File : File_Type) return System.Native_IO.Handle_Type is
    begin
       return Handle (Reference (File).all);
    end Handle;
@@ -243,26 +224,26 @@ package body Ada.Streams.Stream_IO.Inside is
          C.winnt.WCHAR,
          C.winnt.LPWSTR);
 
-   procedure Finally (X : not null access C.winnt.LPWSTR);
-   procedure Finally (X : not null access C.winnt.LPWSTR) is
+   procedure Finally (X : not null access System.Native_IO.Name_Pointer);
+   procedure Finally (X : not null access System.Native_IO.Name_Pointer) is
    begin
-      System.Standard_Allocators.Free (LPWSTR_Conv.To_Address (X.all));
+      System.Native_IO.Free (X.all);
    end Finally;
 
    function Allocate (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Name : C.winnt.LPWSTR;
-      Name_Length : C.size_t;
+      Name : System.Native_IO.Name_Pointer;
+      Name_Length : System.Native_IO.Name_Length;
       Form : Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Kind : Stream_Kind;
-      Name : C.winnt.LPWSTR;
-      Name_Length : C.size_t;
+      Name : System.Native_IO.Name_Pointer;
+      Name_Length : System.Native_IO.Name_Length;
       Form : Packed_Form)
       return Non_Controlled_File_Type is
    begin
@@ -293,12 +274,12 @@ package body Ada.Streams.Stream_IO.Inside is
       if File.Buffer /= File.Buffer_Inline'Address then
          System.Standard_Allocators.Free (File.Buffer);
       end if;
-      System.Standard_Allocators.Free (LPWSTR_Conv.To_Address (File.Name));
+      System.Native_IO.Free (File.Name);
       Raw_Free (File);
    end Free;
 
    type Scoped_Handle_And_File is record
-      Handle : aliased Handle_Type;
+      Handle : aliased System.Native_IO.Handle_Type;
       File : aliased Non_Controlled_File_Type;
    end record;
    pragma Suppress_Initialization (Scoped_Handle_And_File);
@@ -317,7 +298,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    type Scoped_Handle_And_File_And_Name is record
       Super : aliased Scoped_Handle_And_File;
-      Name : aliased C.winnt.LPWSTR;
+      Name : aliased System.Native_IO.Name_Pointer;
    end record;
    pragma Suppress_Initialization (Scoped_Handle_And_File_And_Name);
 
@@ -361,11 +342,11 @@ package body Ada.Streams.Stream_IO.Inside is
       C.winnt.WCHAR'Val (0));
 
    procedure Open_Temporary_File (
-      Handle : aliased out Handle_Type; -- held
+      Handle : aliased out System.Native_IO.Handle_Type; -- held
       Full_Name : aliased out C.winnt.LPWSTR; -- held
       Full_Name_Length : out C.size_t);
    procedure Open_Temporary_File (
-      Handle : aliased out Handle_Type;
+      Handle : aliased out System.Native_IO.Handle_Type;
       Full_Name : aliased out C.winnt.LPWSTR;
       Full_Name_Length : out C.size_t)
    is
@@ -418,62 +399,18 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Open_Temporary_File;
 
-   procedure Compose_File_Name (
-      Name : String;
-      Full_Name : aliased out C.winnt.LPWSTR; -- held
-      Full_Name_Length : out C.size_t);
-   procedure Compose_File_Name (
-      Name : String;
-      Full_Name : aliased out C.winnt.LPWSTR;
-      Full_Name_Length : out C.size_t)
-   is
-      W_Name : C.winnt.WCHAR_array (
-         0 ..
-         Name'Length * System.Zero_Terminated_WStrings.Expanding);
-      W_Name_Length : C.size_t;
-      Full_Path : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
-      Full_Path_Length : C.size_t;
-   begin
-      System.Zero_Terminated_WStrings.To_C (
-         Name,
-         W_Name (0)'Access,
-         W_Name_Length);
-      Full_Path_Length := C.size_t (C.winbase.GetFullPathName (
-         W_Name (0)'Access,
-         Full_Path'Length,
-         Full_Path (0)'Access,
-         null));
-      if Full_Path_Length = 0 then
-         Full_Path_Length := W_Name_Length;
-         Full_Path (0 .. Full_Path_Length) := W_Name (0 .. W_Name_Length);
-      end if;
-      --  allocate filename
-      Full_Name_Length := Full_Path_Length;
-      Full_Name := LPWSTR_Conv.To_Pointer (
-         System.Standard_Allocators.Allocate (
-            System.Storage_Elements.Storage_Offset (Full_Name_Length + 1)
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
-      declare
-         Full_Name_A : C.winnt.WCHAR_array (C.size_t);
-         for Full_Name_A'Address use LPWSTR_Conv.To_Address (Full_Name);
-      begin
-         Full_Name_A (0 .. Full_Name_Length) :=
-            Full_Path (0 .. Full_Name_Length);
-      end;
-   end Compose_File_Name;
-
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
 
    procedure Open_Ordinary (
       Method : Open_Method;
-      Handle : aliased out Handle_Type; -- held
+      Handle : aliased out System.Native_IO.Handle_Type; -- held
       Mode : File_Mode;
       Name : not null C.winnt.LPWSTR;
       Form : Packed_Form);
    procedure Open_Ordinary (
       Method : Open_Method;
-      Handle : aliased out Handle_Type;
+      Handle : aliased out System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : not null C.winnt.LPWSTR;
       Form : Packed_Form)
@@ -645,10 +582,13 @@ package body Ada.Streams.Stream_IO.Inside is
          Kind := Temporary;
       end if;
       declare
-         Full_Name_Length : C.size_t;
+         Full_Name_Length : System.Native_IO.Name_Length;
       begin
          if Kind = Ordinary then
-            Compose_File_Name (Name, Scoped.Name, Full_Name_Length);
+            System.Native_IO.New_Full_Name (
+               Name,
+               Scoped.Name,
+               Full_Name_Length);
             Open_Ordinary (
                Method => Method,
                Handle => Scoped.Super.Handle,
@@ -1057,7 +997,7 @@ package body Ada.Streams.Stream_IO.Inside is
    function Name (File : Non_Controlled_File_Type) return String is
    begin
       Check_File_Open (File);
-      return System.Zero_Terminated_WStrings.Value (
+      return System.Native_IO.Value (
          File.Name,
          File.Name_Length);
    end Name;
@@ -1111,7 +1051,7 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File);
       if File.Dispatcher.Tag = Tags.No_Tag then
-         if not Is_Seekable (File.Handle) then
+         if not System.Native_IO.Is_Seekable (File.Handle) then
             File.Dispatcher.Tag := Dispatchers.Root_Dispatcher'Tag;
          else
             File.Dispatcher.Tag := Dispatchers.Seekable_Dispatcher'Tag;
@@ -1393,17 +1333,19 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Handle : Handle_Type;
+      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
       Form : Packed_Form := Default_Form;
       To_Close : Boolean := False)
    is
       package Name_Holder is
-         new Exceptions.Finally.Scoped_Holder (C.winnt.LPWSTR, Finally);
+         new Exceptions.Finally.Scoped_Holder (
+            System.Native_IO.Name_Pointer,
+            Finally);
       Kind : Stream_Kind;
-      Full_Name : aliased C.winnt.LPWSTR;
-      Full_Name_Length : C.size_t;
+      Full_Name : aliased System.Native_IO.Name_Pointer;
+      Full_Name_Length : System.Native_IO.Name_Length;
    begin
       if File /= null then
          Raise_Exception (Status_Error'Identity);
@@ -1413,20 +1355,11 @@ package body Ada.Streams.Stream_IO.Inside is
       else
          Kind := External_No_Close;
       end if;
-      Full_Name := LPWSTR_Conv.To_Pointer (
-         System.Standard_Allocators.Allocate (
-            (Name'Length * System.Zero_Terminated_WStrings.Expanding
-               + 2) -- '*' & NUL
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
-      Full_Name_Length := Name'Length + 1;
       Name_Holder.Assign (Full_Name'Access);
-      declare
-         Full_Name_A : C.winnt.WCHAR_array (C.size_t);
-         for Full_Name_A'Address use LPWSTR_Conv.To_Address (Full_Name);
-      begin
-         Full_Name_A (0) := C.winnt.WCHAR'Val (Wide_Character'Pos ('*'));
-         System.Zero_Terminated_WStrings.To_C (Name, Full_Name_A (1)'Access);
-      end;
+      System.Native_IO.New_External_Name (
+         Name,
+         Full_Name, -- '*' & Name & NUL
+         Full_Name_Length);
       File := Allocate (
          Handle => Handle,
          Mode => Mode,
@@ -1438,7 +1371,8 @@ package body Ada.Streams.Stream_IO.Inside is
       Name_Holder.Clear;
    end Open;
 
-   function Handle (File : Non_Controlled_File_Type) return Handle_Type is
+   function Handle (File : Non_Controlled_File_Type)
+      return System.Native_IO.Handle_Type is
    begin
       Check_File_Open (File);
       return File.Handle;

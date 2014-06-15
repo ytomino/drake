@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with Ada.Streams.Stream_IO.Inside;
+with System.Native_IO;
 with C.sys.types;
 package Ada.Processes.Inside is
 
@@ -9,8 +9,8 @@ package Ada.Processes.Inside is
       Command_Line : String;
       Directory : String;
       Search_Path : Boolean;
-      Input : Streams.Stream_IO.Inside.Handle_Type;
-      Output : Streams.Stream_IO.Inside.Handle_Type;
-      Error : Streams.Stream_IO.Inside.Handle_Type);
+      Input : System.Native_IO.Handle_Type;
+      Output : System.Native_IO.Handle_Type;
+      Error : System.Native_IO.Handle_Type);
 
 end Ada.Processes.Inside;

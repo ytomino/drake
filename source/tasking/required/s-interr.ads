@@ -5,7 +5,6 @@ with System.Interrupt_Handlers;
 with System.Tasking.Protected_Objects;
 with System.Tasking.Protected_Objects.Entries;
 package System.Interrupts is
-   pragma Elaborate_Body;
 
    type Previous_Handler_Item is record
       Interrupt : Ada.Interrupts.Interrupt_Id;

@@ -1,19 +1,25 @@
 pragma License (Unrestricted);
 --  implementation unit
 package Ada.Streams.Stream_IO.Inside.Standard_Files is
+   pragma Elaborate_Body;
 
    Standard_Input : constant Non_Controlled_File_Type;
    Standard_Output : constant Non_Controlled_File_Type;
    Standard_Error : constant Non_Controlled_File_Type;
 
 private
-   use type C.char_array;
 
-   Standard_Input_Name : aliased C.char_array (0 .. 6) :=
-      "*stdin" & C.char'Val (0);
+   Standard_Input_Name : aliased System.Native_IO.Name_String (0 .. 6) := (
+      System.Native_IO.Name_Character'Val (Character'Pos ('*')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('s')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('t')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('d')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('i')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('n')),
+      System.Native_IO.Name_Character'Val (0));
 
    Standard_Input_Stream : aliased Stream_Type := (
-      Handle => 0,
+      Handle => System.Native_IO.Uninitialized_Standard_Input,
       Mode => In_File,
       Kind => Standard_Handle,
       Name => Standard_Input_Name (0)'Access,
@@ -27,11 +33,18 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Output_Name : aliased C.char_array (0 .. 7) :=
-      "*stdout" & C.char'Val (0);
+   Standard_Output_Name : aliased System.Native_IO.Name_String (0 .. 7) := (
+      System.Native_IO.Name_Character'Val (Character'Pos ('*')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('s')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('t')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('d')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('o')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('u')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('t')),
+      System.Native_IO.Name_Character'Val (0));
 
    Standard_Output_Stream : aliased Stream_Type := (
-      Handle => 1,
+      Handle => System.Native_IO.Uninitialized_Standard_Output,
       Mode => Out_File,
       Kind => Standard_Handle,
       Name => Standard_Output_Name (0)'Access,
@@ -45,11 +58,18 @@ private
       Writing_Index => 0,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Error_Name : aliased C.char_array (0 .. 7) :=
-      "*stderr" & C.char'Val (0);
+   Standard_Error_Name : aliased System.Native_IO.Name_String (0 .. 7) := (
+      System.Native_IO.Name_Character'Val (Character'Pos ('*')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('s')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('t')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('d')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('e')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('r')),
+      System.Native_IO.Name_Character'Val (Character'Pos ('r')),
+      System.Native_IO.Name_Character'Val (0));
 
    Standard_Error_Stream : aliased Stream_Type := (
-      Handle => 2,
+      Handle => System.Native_IO.Uninitialized_Standard_Error,
       Mode => Out_File,
       Kind => Standard_Handle,
       Name => Standard_Error_Name (0)'Access,

@@ -6,7 +6,6 @@ with System.Task_Info;
 package System.Tasking.Stages is
    --  the body must be elaborated before library level task objects.
    --  this pragma controls elaboration order.
-   pragma Elaborate_Body;
 
    --  required for task by compiler (s-tassta.ads)
    procedure Create_Task (
