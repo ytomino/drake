@@ -1,12 +1,13 @@
 pragma License (Unrestricted);
 --  implementation unit
 with Ada.Streams.Stream_IO.Inside.Standard_Files;
+with System.Native_IO;
 package Ada.Text_IO.Inside is
 
    --  the parameter Form
 
    type Packed_Form is record
-      Stream_Form : Streams.Stream_IO.Inside.Packed_Form;
+      Stream_Form : System.Native_IO.Packed_Form;
       External : IO_Text_Modes.File_External_Encoding;
       New_Line : IO_Text_Modes.File_New_Line;
       SUB : IO_Text_Modes.File_SUB;

@@ -1,10 +1,12 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with Ada.IO_Exceptions;
+with Ada.IO_Modes;
 with System.Zero_Terminated_Strings;
 with C;
 package System.Native_IO is
    pragma Preelaborate;
+   use type C.signed_int;
 
    subtype Name_Length is C.size_t;
    subtype Name_Character is C.char;
@@ -12,6 +14,8 @@ package System.Native_IO is
    subtype Name_Pointer is C.char_ptr;
 
    subtype Handle_Type is C.signed_int;
+
+   Invalid_Handle : constant Handle_Type := -1;
 
    --  name
 
@@ -34,6 +38,45 @@ package System.Native_IO is
       Out_Length : out Name_Length);
 
    --  file management
+
+   procedure Open_Temporary (
+      Handle : aliased out Handle_Type;
+      Out_Item : aliased out Name_Pointer;
+      Out_Length : out Name_Length);
+
+   type Open_Method is (Open, Create, Reset);
+   pragma Discard_Names (Open_Method);
+
+   type Packed_Form is record
+      Shared : Ada.IO_Modes.File_Shared_Spec;
+      Wait : Boolean;
+      Overwrite : Boolean;
+   end record;
+   pragma Suppress_Initialization (Packed_Form);
+   pragma Pack (Packed_Form);
+   pragma Compile_Time_Error (Packed_Form'Size /= 4, "not packed");
+
+   procedure Open_Ordinary (
+      Method : Open_Method;
+      Handle : aliased out Handle_Type;
+      Mode : Ada.IO_Modes.File_Mode;
+      Name : not null Name_Pointer;
+      Form : Packed_Form);
+
+   procedure Close_Temporary (
+      Handle : Handle_Type;
+      Name : not null Name_Pointer;
+      Raise_On_Error : Boolean);
+
+   procedure Close_Ordinary (
+      Handle : Handle_Type;
+      Raise_On_Error : Boolean);
+
+   procedure Delete_Ordinary (
+      Handle : Handle_Type;
+      Name : not null Name_Pointer;
+      Raise_On_Error : Boolean)
+      renames Close_Temporary;
 
    procedure Set_Close_On_Exec (Handle : Handle_Type);
 
@@ -60,6 +103,8 @@ package System.Native_IO is
 
    --  exceptions
 
+   Name_Error : exception
+      renames Ada.IO_Exceptions.Name_Error;
    Use_Error : exception
       renames Ada.IO_Exceptions.Use_Error;
 
