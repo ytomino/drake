@@ -3,7 +3,6 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
-with System.Native_IO;
 with System.UTF_Conversions;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_16_To_8;
@@ -302,7 +301,7 @@ package body Ada.Text_IO.Inside is
       File : in out Streams.Stream_IO.Inside.Non_Controlled_File_Type;
       Mode : Streams.Stream_IO.File_Mode;
       Name : String;
-      Form : Streams.Stream_IO.Inside.Packed_Form);
+      Form : System.Native_IO.Packed_Form);
 
    procedure Open_File (
       Open_Proc : Open_Access;
@@ -869,7 +868,7 @@ package body Ada.Text_IO.Inside is
    begin
       Check_File_Open (File);
       declare
-         Stream_Form : Streams.Stream_IO.Inside.Packed_Form;
+         Stream_Form : System.Native_IO.Packed_Form;
       begin
          if Streams.Stream_IO.Inside.Is_Open (File.File) then
             Stream_Form := Streams.Stream_IO.Inside.Form (File.File);
