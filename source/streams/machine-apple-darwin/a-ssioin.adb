@@ -6,23 +6,16 @@ with System.Form_Parameters;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with C.errno;
-with C.fcntl;
-with C.stdlib;
-with C.string;
-with C.sys.file;
 with C.sys.stat;
 with C.sys.types;
 with C.unistd;
 package body Ada.Streams.Stream_IO.Inside is
    use Exception_Identification.From_Here;
-   use type IO_Modes.File_Shared;
    use type IO_Modes.File_Shared_Spec;
    use type Tags.Tag;
-   use type System.Address;
+--  use type System.Address;
+--  use type System.Native_IO.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
-   use type C.char;
-   use type C.char_array;
-   use type C.char_ptr;
    use type C.signed_int; -- ssize_t is signed int or signed long
    use type C.signed_long;
    use type C.signed_long_long; -- 64bit off_t in Darwin
@@ -35,7 +28,10 @@ package body Ada.Streams.Stream_IO.Inside is
 
    --  the parameter Form
 
-   procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
+   procedure Set (
+      Form : in out System.Native_IO.Packed_Form;
+      Keyword : String;
+      Item : String) is
    begin
       if Keyword = "shared" then
          if Item'Length > 0
@@ -66,14 +62,14 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Set;
 
-   function Pack (Form : String) return Packed_Form is
+   function Pack (Form : String) return System.Native_IO.Packed_Form is
       Keyword_First : Positive;
       Keyword_Last : Natural;
       Item_First : Positive;
       Item_Last : Natural;
       Last : Natural;
    begin
-      return Result : Packed_Form := Default_Form do
+      return Result : System.Native_IO.Packed_Form := Default_Form do
          Last := Form'First - 1;
          while Last < Form'Last loop
             System.Form_Parameters.Get (
@@ -92,7 +88,7 @@ package body Ada.Streams.Stream_IO.Inside is
    end Pack;
 
    procedure Unpack (
-      Form : Packed_Form;
+      Form : System.Native_IO.Packed_Form;
       Result : out Form_String;
       Last : out Natural)
    is
@@ -139,24 +135,6 @@ package body Ada.Streams.Stream_IO.Inside is
 
    --  handle
 
-   procedure C_close (
-      File : not null Non_Controlled_File_Type; -- close only handle
-      Raise_On_Error : Boolean);
-   procedure C_close (
-      File : not null Non_Controlled_File_Type;
-      Raise_On_Error : Boolean)
-   is
-      Error : Boolean;
-   begin
-      Error := C.unistd.close (File.Handle) < 0;
-      if not Error and then File.Kind = Temporary then
-         Error := C.unistd.unlink (File.Name) < 0;
-      end if;
-      if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-   end C_close;
-
    function lseek (
       Handle : System.Native_IO.Handle_Type;
       offset : C.sys.types.off_t;
@@ -196,7 +174,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
-      Form : Packed_Form := Default_Form;
+      Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False) is
    begin
       Open (
@@ -221,9 +199,6 @@ package body Ada.Streams.Stream_IO.Inside is
 
    --  non-controlled
 
-   package char_ptr_Conv is
-      new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
-
    procedure Finally (X : not null access System.Native_IO.Name_Pointer);
    procedure Finally (X : not null access System.Native_IO.Name_Pointer) is
    begin
@@ -236,7 +211,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Kind : Stream_Kind;
       Name : System.Native_IO.Name_Pointer;
       Name_Length : System.Native_IO.Name_Length;
-      Form : Packed_Form)
+      Form : System.Native_IO.Packed_Form)
       return Non_Controlled_File_Type;
    function Allocate (
       Handle : System.Native_IO.Handle_Type;
@@ -244,7 +219,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Kind : Stream_Kind;
       Name : System.Native_IO.Name_Pointer;
       Name_Length : System.Native_IO.Name_Length;
-      Form : Packed_Form)
+      Form : System.Native_IO.Packed_Form)
       return Non_Controlled_File_Type is
    begin
       return new Stream_Type'(
@@ -267,6 +242,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Free (File : in out Non_Controlled_File_Type);
    procedure Free (File : in out Non_Controlled_File_Type) is
+      use type System.Address;
       procedure Raw_Free is
          new Unchecked_Deallocation (Stream_Type, Non_Controlled_File_Type);
    begin
@@ -286,17 +262,17 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Finally (X : not null access Scoped_Handle_And_File);
    procedure Finally (X : not null access Scoped_Handle_And_File) is
    begin
-      if X.Handle >= 0 then
-         if X.File /= null then
+      if X.Handle /= System.Native_IO.Invalid_Handle then
+         if X.File /= null and then X.File.Kind = Temporary then
             --  close and remove the temporary file
-            C_close (X.File, Raise_On_Error => False);
+            System.Native_IO.Close_Temporary (
+               X.Handle,
+               X.File.Name,
+               Raise_On_Error => False);
          else
-            declare
-               Dummy : C.signed_int;
-               pragma Unreferenced (Dummy);
-            begin
-               Dummy := C.unistd.close (X.Handle);
-            end;
+            System.Native_IO.Close_Ordinary (
+               X.Handle,
+               Raise_On_Error => False);
          end if;
       end if;
       if X.File /= null then
@@ -343,260 +319,25 @@ package body Ada.Streams.Stream_IO.Inside is
       Set_Buffer_Index (File, Stream_Element_Offset (Z_Index));
    end Set_Index_To_Append;
 
-   Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
-   Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
-
-   procedure Open_Temporary_File (
-      Handle : aliased out System.Native_IO.Handle_Type; -- held
-      Full_Name : aliased out C.char_ptr; -- held
-      Full_Name_Length : out C.size_t);
-   procedure Open_Temporary_File (
-      Handle : aliased out System.Native_IO.Handle_Type;
-      Full_Name : aliased out C.char_ptr;
-      Full_Name_Length : out C.size_t)
-   is
-      Temp_Template_Length : constant C.size_t := Temp_Template'Length - 1;
-      Temp_Dir : C.char_ptr;
-   begin
-      --  compose template
-      Temp_Dir := C.stdlib.getenv (Temp_Variable (0)'Access);
-      if Temp_Dir /= null then
-         --  environment variable TMPDIR
-         Full_Name_Length := C.string.strlen (Temp_Dir);
-         Full_Name := char_ptr_Conv.To_Pointer (
-            System.Address (
-               C.stdlib.malloc (
-                  Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
-         if Full_Name = null then
-            raise Storage_Error;
-         end if;
-         declare
-            Temp_Dir_A : C.char_array (C.size_t);
-            for Temp_Dir_A'Address use char_ptr_Conv.To_Address (Temp_Dir);
-            Full_Name_A : C.char_array (C.size_t);
-            for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
-         begin
-            Full_Name_A (0 .. Full_Name_Length - 1) :=
-               Temp_Dir_A (0 .. Full_Name_Length - 1);
-         end;
-      else
-         --  current directory
-         Full_Name := C.unistd.getcwd (null, 0);
-         Full_Name_Length := C.string.strlen (Full_Name);
-         --  reuse the memory from malloc (similar to reallocf)
-         declare
-            New_Full_Name : constant C.char_ptr :=
-               char_ptr_Conv.To_Pointer (System.Address (C.stdlib.realloc (
-                  C.void_ptr (char_ptr_Conv.To_Address (Full_Name)),
-                  Full_Name_Length + Temp_Template_Length + 2))); -- '/' & NUL
-         begin
-            if New_Full_Name = null then
-               raise Storage_Error;
-            end if;
-            Full_Name := New_Full_Name;
-         end;
-      end if;
-      declare
-         Full_Name_A : C.char_array (C.size_t);
-         for Full_Name_A'Address use char_ptr_Conv.To_Address (Full_Name);
-      begin
-         --  append slash
-         if Full_Name_A (Full_Name_Length - 1) /= '/' then
-            Full_Name_A (Full_Name_Length) := '/';
-            Full_Name_Length := Full_Name_Length + 1;
-         end if;
-         --  append template
-         Full_Name_A (
-            Full_Name_Length ..
-            Full_Name_Length + Temp_Template_Length) := Temp_Template; -- NUL
-         Full_Name_Length := Full_Name_Length + Temp_Template_Length;
-      end;
-      --  open
-      declare
-         use C.stdlib; -- Linux, POSIX.1-2008
-         use C.unistd; -- Darwin, FreeBSD
-      begin
-         Handle := mkstemp (Full_Name);
-      end;
-      if Handle < 0 then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      System.Native_IO.Set_Close_On_Exec (Handle);
-   end Open_Temporary_File;
-
-   type Open_Method is (Open, Create, Reset);
-   pragma Discard_Names (Open_Method);
-
-   procedure Open_Ordinary (
-      Method : Open_Method;
-      Handle : aliased out System.Native_IO.Handle_Type; -- held
-      Mode : File_Mode;
-      Name : not null C.char_ptr;
-      Form : Packed_Form);
-   procedure Open_Ordinary (
-      Method : Open_Method;
-      Handle : aliased out System.Native_IO.Handle_Type;
-      Mode : File_Mode;
-      Name : not null C.char_ptr;
-      Form : Packed_Form)
-   is
-      Flags : C.unsigned_int;
-      Modes : constant := 8#644#;
-      Shared : IO_Modes.File_Shared;
-      errno : C.signed_int;
-   begin
-      --  Flags, Append_File always has read and write access for Inout_File
-      if Form.Shared /= IO_Modes.By_Mode then
-         Shared := IO_Modes.File_Shared (Form.Shared);
-      else
-         case Mode is
-            when In_File =>
-               Shared := IO_Modes.Read_Only;
-            when Out_File | Append_File =>
-               Shared := IO_Modes.Deny;
-         end case;
-      end if;
-      case Method is
-         when Create =>
-            declare
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDWR or O_CREAT or O_TRUNC,
-                  Out_File => O_WRONLY or O_CREAT or O_TRUNC,
-                  Append_File => O_RDWR or O_CREAT); -- no truncation
-            begin
-               Flags := Table (Mode);
-               Shared := IO_Modes.Deny;
-               if not Form.Overwrite then
-                  Flags := Flags or O_EXCL;
-               end if;
-            end;
-         when Open =>
-            declare
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDONLY,
-                  Out_File => O_WRONLY or O_TRUNC,
-                  Append_File => O_RDWR); -- O_APPEND ignores lseek
-            begin
-               Flags := Table (Mode);
-            end;
-         when Reset =>
-            declare
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDONLY,
-                  Out_File => O_WRONLY,
-                  Append_File => O_RDWR); -- O_APPEND ignores lseek
-            begin
-               Flags := Table (Mode);
-            end;
-      end case;
-      if Shared /= IO_Modes.Allow then
-         if Form.Wait then
-            declare
-               Lock_Flags : constant array (
-                  IO_Modes.File_Shared range
-                     IO_Modes.Read_Only ..
-                     IO_Modes.Deny) of
-                  C.unsigned_int := (
-                     IO_Modes.Read_Only => C.fcntl.O_SHLOCK,
-                     IO_Modes.Deny => C.fcntl.O_EXLOCK);
-            begin
-               Flags := Flags or Lock_Flags (Shared);
-            end;
-         else
-            null; -- use flock
-         end if;
-      else
-         null; -- use flock
-      end if;
-      Flags := Flags or C.fcntl.O_CLOEXEC;
-      --  open
-      Handle := C.fcntl.open (Name, C.signed_int (Flags), Modes);
-      if Handle < 0 then
-         errno := C.errno.errno;
-         case errno is
-            when C.errno.ENOTDIR
-               | C.errno.ENAMETOOLONG
-               | C.errno.ENOENT
-               | C.errno.EACCES
-               | C.errno.EEXIST -- O_EXCL
-               | C.errno.EISDIR
-               | C.errno.EROFS =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
-      end if;
-      declare
-         O_CLOEXEC_Is_Missing : constant Boolean :=
-            C.fcntl.O_CLOEXEC = 0;
-         pragma Warnings (Off, O_CLOEXEC_Is_Missing);
-         Dummy : C.signed_int;
-         pragma Unreferenced (Dummy);
-      begin
-         if O_CLOEXEC_Is_Missing then
-            --  set FD_CLOEXEC if O_CLOEXEC is missing
-            System.Native_IO.Set_Close_On_Exec (Handle);
-         end if;
-      end;
-      declare
-         O_EXLOCK_Is_Missing : constant Boolean :=
-            C.fcntl.O_EXLOCK = 0;
-         pragma Warnings (Off, O_EXLOCK_Is_Missing);
-         Race_Is_Raising : constant Boolean := not Form.Wait;
-         pragma Warnings (Off, Race_Is_Raising);
-         Operation_Table : constant array (
-            IO_Modes.File_Shared range
-               IO_Modes.Read_Only ..
-               IO_Modes.Deny) of
-            C.unsigned_int := (
-               IO_Modes.Read_Only => C.sys.file.LOCK_SH,
-               IO_Modes.Deny => C.sys.file.LOCK_EX);
-         operation : C.unsigned_int;
-         Dummy : C.signed_int;
-         pragma Unreferenced (Dummy);
-      begin
-         if Shared /= IO_Modes.Allow
-            and then (O_EXLOCK_Is_Missing or else Race_Is_Raising)
-         then
-            operation := Operation_Table (Shared);
-            if Race_Is_Raising then
-               operation := operation or C.sys.file.LOCK_NB;
-            end if;
-            if C.sys.file.flock (Handle, C.signed_int (operation)) < 0 then
-               errno := C.errno.errno;
-               case errno is
-                  when C.errno.EWOULDBLOCK =>
-                     Raise_Exception (Tasking_Error'Identity);
-                     --  Is Tasking_Error suitable?
-                  when others =>
-                     Raise_Exception (Use_Error'Identity);
-               end case;
-            end if;
-         end if;
-      end;
-   end Open_Ordinary;
-
    procedure Allocate_And_Open (
-      Method : Open_Method;
+      Method : System.Native_IO.Open_Method;
       File : out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : Packed_Form);
+      Form : System.Native_IO.Packed_Form);
    procedure Allocate_And_Open (
-      Method : Open_Method;
+      Method : System.Native_IO.Open_Method;
       File : out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : Packed_Form)
+      Form : System.Native_IO.Packed_Form)
    is
       package Holder is
          new Exceptions.Finally.Scoped_Holder (
             Scoped_Handle_And_File_And_Name,
             Finally);
-      Scoped : aliased Scoped_Handle_And_File_And_Name := ((-1, null), null);
+      Scoped : aliased Scoped_Handle_And_File_And_Name :=
+         ((System.Native_IO.Invalid_Handle, null), null);
       Kind : Stream_Kind;
    begin
       Holder.Assign (Scoped'Access);
@@ -613,17 +354,17 @@ package body Ada.Streams.Stream_IO.Inside is
                Name,
                Scoped.Name,
                Full_Name_Length);
-            Open_Ordinary (
+            System.Native_IO.Open_Ordinary (
                Method => Method,
                Handle => Scoped.Super.Handle,
-               Mode => Mode,
+               Mode => Ada.IO_Modes.File_Mode (Mode),
                Name => Scoped.Name,
                Form => Form);
          else
-            Open_Temporary_File (
-               Handle => Scoped.Super.Handle,
-               Full_Name => Scoped.Name,
-               Full_Name_Length => Full_Name_Length);
+            System.Native_IO.Open_Temporary (
+               Scoped.Super.Handle,
+               Scoped.Name,
+               Full_Name_Length);
          end if;
          Scoped.Super.File := Allocate (
             Handle => Scoped.Super.Handle,
@@ -837,19 +578,77 @@ package body Ada.Streams.Stream_IO.Inside is
       File.Writing_Index := File.Writing_Index + Taking_Length;
    end Write_To_Buffer;
 
+   procedure Close_And_Deallocate (
+      File : aliased in out Non_Controlled_File_Type;
+      Delete : Boolean;
+      Raise_On_Error : Boolean);
+   procedure Close_And_Deallocate (
+      File : aliased in out Non_Controlled_File_Type;
+      Delete : Boolean;
+      Raise_On_Error : Boolean)
+   is
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Scoped_Handle_And_File,
+            Finally);
+      Scoped : aliased Scoped_Handle_And_File :=
+         (System.Native_IO.Invalid_Handle, null);
+      Freeing_File : constant Non_Controlled_File_Type := File;
+      Kind : constant Stream_Kind := File.all.Kind;
+   begin
+      Holder.Assign (Scoped'Access);
+      case Kind is
+         when Ordinary | Temporary | External | External_No_Close =>
+            Scoped.File := Freeing_File;
+         when Standard_Handle =>
+            null; -- statically allocated
+      end case;
+      File := null;
+      case Freeing_File.Kind is
+         when Ordinary | Temporary | External =>
+            Scoped.Handle := Freeing_File.Handle;
+         when External_No_Close | Standard_Handle =>
+            null;
+      end case;
+      if Freeing_File.Kind /= Temporary then
+         Flush_Writing_Buffer (
+            Freeing_File,
+            Raise_On_Error => Raise_On_Error);
+      end if;
+      if Scoped.Handle /= System.Native_IO.Invalid_Handle then
+         --  close explicitly in below
+         Scoped.Handle := System.Native_IO.Invalid_Handle;
+         if Freeing_File.Kind = Temporary then
+            System.Native_IO.Close_Temporary (
+               Freeing_File.Handle,
+               Freeing_File.Name,
+               Raise_On_Error => True);
+         elsif Delete then
+            System.Native_IO.Delete_Ordinary (
+               Freeing_File.Handle,
+               Freeing_File.Name,
+               Raise_On_Error => True);
+         else
+            System.Native_IO.Close_Ordinary (
+               Freeing_File.Handle,
+               Raise_On_Error => True);
+         end if;
+      end if;
+   end Close_And_Deallocate;
+
    --  implementation of non-controlled
 
    procedure Create (
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : Packed_Form := Default_Form) is
+      Form : System.Native_IO.Packed_Form := Default_Form) is
    begin
       if File /= null then
          Raise_Exception (Status_Error'Identity);
       end if;
       Allocate_And_Open (
-         Method => Create,
+         Method => System.Native_IO.Create,
          File => File,
          Mode => Mode,
          Name => Name,
@@ -860,13 +659,13 @@ package body Ada.Streams.Stream_IO.Inside is
       File : in out Non_Controlled_File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : Packed_Form := Default_Form) is
+      Form : System.Native_IO.Packed_Form := Default_Form) is
    begin
       if File /= null then
          Raise_Exception (Status_Error'Identity);
       end if;
       Allocate_And_Open (
-         Method => Open,
+         Method => System.Native_IO.Open,
          File => File,
          Mode => Mode,
          Name => Name,
@@ -878,48 +677,26 @@ package body Ada.Streams.Stream_IO.Inside is
       Raise_On_Error : Boolean := True) is
    begin
       Check_File_Open (File);
-      declare
-         package Holder is
-            new Exceptions.Finally.Scoped_Holder (
-               Scoped_Handle_And_File,
-               Finally);
-         Scoped : aliased Scoped_Handle_And_File := (-1, null);
-         Freeing_File : constant Non_Controlled_File_Type := File;
-         Kind : constant Stream_Kind := File.all.Kind;
-      begin
-         Holder.Assign (Scoped'Access);
-         case Kind is
-            when Ordinary | Temporary | External | External_No_Close =>
-               Scoped.File := Freeing_File;
-            when Standard_Handle =>
-               null; -- statically allocated
-         end case;
-         File := null;
-         case Freeing_File.Kind is
-            when Ordinary | Temporary | External =>
-               Scoped.Handle := Freeing_File.Handle;
-            when External_No_Close | Standard_Handle =>
-               null;
-         end case;
-         if Freeing_File.Kind /= Temporary then
-            Flush_Writing_Buffer (
-               Freeing_File,
-               Raise_On_Error => Raise_On_Error);
-         end if;
-         if Scoped.Handle >= 0 then
-            Scoped.Handle := -1; -- close explicitly in below
-            C_close (Freeing_File, Raise_On_Error => True);
-         end if;
-      end;
+      Close_And_Deallocate (
+         File,
+         Delete => False,
+         Raise_On_Error => Raise_On_Error);
    end Close;
 
    procedure Delete (File : aliased in out Non_Controlled_File_Type) is
    begin
       Check_File_Open (File);
       case File.Kind is
-         when Ordinary | Temporary =>
-            File.all.Kind := Temporary;
-            Close (File, Raise_On_Error => True);
+         when Ordinary =>
+            Close_And_Deallocate (
+               File,
+               Delete => True,
+               Raise_On_Error => True);
+         when Temporary =>
+            Close_And_Deallocate (
+               File,
+               Delete => False,
+               Raise_On_Error => True);
          when External | External_No_Close | Standard_Handle =>
             Raise_Exception (Status_Error'Identity);
       end case;
@@ -935,7 +712,8 @@ package body Ada.Streams.Stream_IO.Inside is
             new Exceptions.Finally.Scoped_Holder (
                Scoped_Handle_And_File,
                Finally);
-         Scoped : aliased Scoped_Handle_And_File := (-1, null);
+         Scoped : aliased Scoped_Handle_And_File :=
+            (System.Native_IO.Invalid_Handle, null);
       begin
          Holder.Assign (Scoped'Access);
          case File.all.Kind is
@@ -944,15 +722,18 @@ package body Ada.Streams.Stream_IO.Inside is
                Scoped.File := File;
                File := null;
                Flush_Writing_Buffer (Scoped.File);
-               Scoped.Handle := -1; -- close explicitly in below
-               C_close (Scoped.File, Raise_On_Error => True);
+               --  close explicitly in below
+               Scoped.Handle := System.Native_IO.Invalid_Handle;
+               System.Native_IO.Close_Ordinary (
+                  Scoped.File.Handle,
+                  Raise_On_Error => True);
                Scoped.File.Buffer_Index := 0;
                Scoped.File.Reading_Index := Scoped.File.Buffer_Index;
                Scoped.File.Writing_Index := Scoped.File.Buffer_Index;
-               Open_Ordinary (
-                  Method => Reset,
+               System.Native_IO.Open_Ordinary (
+                  Method => System.Native_IO.Reset,
                   Handle => Scoped.Handle,
-                  Mode => Mode,
+                  Mode => Ada.IO_Modes.File_Mode (Mode),
                   Name => Scoped.File.Name,
                   Form => Scoped.File.Form);
                Scoped.File.Handle := Scoped.Handle;
@@ -994,7 +775,8 @@ package body Ada.Streams.Stream_IO.Inside is
          File.Name_Length);
    end Name;
 
-   function Form (File : Non_Controlled_File_Type) return Packed_Form is
+   function Form (File : Non_Controlled_File_Type)
+      return System.Native_IO.Packed_Form is
    begin
       Check_File_Open (File);
       return File.Form;
@@ -1259,7 +1041,8 @@ package body Ada.Streams.Stream_IO.Inside is
             new Exceptions.Finally.Scoped_Holder (
                Scoped_Handle_And_File,
                Finally);
-         Scoped : aliased Scoped_Handle_And_File := (-1, null);
+         Scoped : aliased Scoped_Handle_And_File :=
+            (System.Native_IO.Invalid_Handle, null);
          Current : Positive_Count;
       begin
          Holder.Assign (Scoped'Access);
@@ -1270,12 +1053,15 @@ package body Ada.Streams.Stream_IO.Inside is
                File := null;
                Current := Index (Scoped.File);
                Flush_Writing_Buffer (Scoped.File);
-               Scoped.Handle := -1; -- close explicitly in below
-               C_close (Scoped.File, Raise_On_Error => True);
-               Open_Ordinary (
-                  Method => Reset,
+               --  close explicitly in below
+               Scoped.Handle := System.Native_IO.Invalid_Handle;
+               System.Native_IO.Close_Ordinary (
+                  Scoped.File.Handle,
+                  Raise_On_Error => True);
+               System.Native_IO.Open_Ordinary (
+                  Method => System.Native_IO.Reset,
                   Handle => Scoped.Handle,
-                  Mode => Mode,
+                  Mode => Ada.IO_Modes.File_Mode (Mode),
                   Name => Scoped.File.Name,
                   Form => Scoped.File.Form);
                Scoped.File.Handle := Scoped.Handle;
@@ -1320,7 +1106,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
       Name : String := "";
-      Form : Packed_Form := Default_Form;
+      Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False)
    is
       package Name_Holder is
