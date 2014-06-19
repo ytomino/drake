@@ -2,8 +2,9 @@ pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
+with Ada.Streams;
 with System.Zero_Terminated_Strings;
-with C;
+with C.unistd;
 package System.Native_IO is
    pragma Preelaborate;
    use type C.signed_int;
@@ -83,6 +84,45 @@ package System.Native_IO is
    function Is_Terminal (Handle : Handle_Type) return Boolean;
    function Is_Seekable (Handle : Handle_Type) return Boolean;
 
+   function Block_Size (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Count;
+
+   --  read from file
+
+   procedure Read (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset); -- -1 when error
+
+   --  write into file
+
+   procedure Write (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset); -- -1 when error
+
+   procedure Flush (Handle : Handle_Type);
+
+   --  position within file
+
+   From_Begin : constant := C.unistd.SEEK_SET;
+   From_Current : constant := C.unistd.SEEK_CUR;
+   From_End : constant := C.unistd.SEEK_END;
+
+   procedure Set_Relative_Index (
+      Handle : Handle_Type;
+      Relative_To : Ada.Streams.Stream_Element_Offset; -- 0-origin
+      Whence : C.signed_int;
+      New_Index : out Ada.Streams.Stream_Element_Offset); -- 1-origin
+
+   function Index (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Offset; -- 1-origin
+
+   function Size (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Count;
+
    --  default input and output files
 
    Standard_Input : constant Handle_Type := 0;
@@ -107,5 +147,7 @@ package System.Native_IO is
       renames Ada.IO_Exceptions.Name_Error;
    Use_Error : exception
       renames Ada.IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames Ada.IO_Exceptions.Device_Error;
 
 end System.Native_IO;
