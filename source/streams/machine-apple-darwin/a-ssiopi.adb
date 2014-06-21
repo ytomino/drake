@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Stream_IO.Inside;
+with Ada.Streams.Stream_IO.Naked;
 with System.Native_IO;
 with C.unistd;
 package body Ada.Streams.Stream_IO.Pipes is
@@ -13,13 +13,13 @@ package body Ada.Streams.Stream_IO.Pipes is
          Raise_Exception (Use_Error'Identity);
       else
          System.Native_IO.Set_Close_On_Exec (Handles (0));
-         Inside.Open (
+         Naked.Open (
             Reading,
             Handles (0),
             In_File,
             To_Close => True);
          System.Native_IO.Set_Close_On_Exec (Handles (1));
-         Inside.Open (
+         Naked.Open (
             Writing,
             Handles (1),
             Out_File,

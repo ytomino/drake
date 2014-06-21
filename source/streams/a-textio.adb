@@ -21,7 +21,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
-with Ada.Streams.Stream_IO.Inside;
+with Ada.Streams.Naked_Stream_IO;
 with Ada.Text_IO.Inside; -- full view
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -198,7 +198,7 @@ package body Ada.Text_IO is
    function Form (File : File_Type) return String is
       Non_Controlled_File : constant Inside.Non_Controlled_File_Type :=
          Reference (File).all;
-      Result : Streams.Stream_IO.Inside.Form_String;
+      Result : Streams.Naked_Stream_IO.Form_String;
       Last : Natural;
    begin
       Inside.Unpack (Inside.Form (Non_Controlled_File), Result, Last);

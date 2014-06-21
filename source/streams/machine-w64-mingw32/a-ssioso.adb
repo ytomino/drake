@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Stream_IO.Inside;
+with Ada.Streams.Stream_IO.Naked;
 with Ada.Unchecked_Conversion;
 with System.Formatting;
 with System.Once;
@@ -189,7 +189,7 @@ package body Ada.Streams.Stream_IO.Sockets is
       if Socket = C.psdk_inc.qsocket_types.INVALID_SOCKET then
          Raise_Exception (Use_Error'Identity);
       else
-         Inside.Open (
+         Naked.Open (
             File,
             Cast (Socket),
             Append_File, -- Inout

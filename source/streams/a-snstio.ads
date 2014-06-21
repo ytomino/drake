@@ -1,8 +1,10 @@
 pragma License (Unrestricted);
 --  implementation unit
+with Ada.IO_Exceptions;
+with Ada.IO_Modes;
 with System.Native_IO;
 private with Ada.Tags;
-package Ada.Streams.Stream_IO.Inside is
+package Ada.Streams.Naked_Stream_IO is
    pragma Preelaborate;
 
    --  the parameter Form
@@ -24,25 +26,6 @@ package Ada.Streams.Stream_IO.Inside is
       Result : out Form_String;
       Last : out Natural);
 
-   --  handle for controlled
-
-   procedure Open (
-      File : in out File_Type;
-      Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
-      Name : String := "";
-      Form : System.Native_IO.Packed_Form := Default_Form;
-      To_Close : Boolean := False);
-
-   function Handle (File : File_Type) return System.Native_IO.Handle_Type;
-   pragma Inline (Handle);
-
-   type Non_Controlled_File_Type; -- forward
-
-   function Non_Controlled (File : File_Type)
-      return not null access Non_Controlled_File_Type;
-   pragma Inline (Non_Controlled);
-
    --  non-controlled
 
    type Stream_Type (<>) is limited private;
@@ -53,13 +36,13 @@ package Ada.Streams.Stream_IO.Inside is
 
    procedure Create (
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode := Out_File;
+      Mode : IO_Modes.File_Mode := IO_Modes.Out_File;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form);
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form := Default_Form);
 
@@ -69,9 +52,9 @@ package Ada.Streams.Stream_IO.Inside is
    procedure Delete (File : aliased in out Non_Controlled_File_Type);
    procedure Reset (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : File_Mode);
+      Mode : IO_Modes.File_Mode);
 
-   function Mode (File : Non_Controlled_File_Type) return File_Mode;
+   function Mode (File : Non_Controlled_File_Type) return IO_Modes.File_Mode;
    pragma Inline (Mode);
    function Name (File : Non_Controlled_File_Type) return String;
    pragma Inline (Name);
@@ -83,7 +66,8 @@ package Ada.Streams.Stream_IO.Inside is
    pragma Inline (Is_Open);
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean;
 
-   function Stream (File : Non_Controlled_File_Type) return Stream_Access;
+   function Stream (File : Non_Controlled_File_Type)
+      return not null access Root_Stream_Type'Class;
    pragma Inline (Stream);
 
    procedure Read (
@@ -97,16 +81,16 @@ package Ada.Streams.Stream_IO.Inside is
 
    procedure Set_Index (
       File : not null Non_Controlled_File_Type;
-      To : Positive_Count);
+      To : Stream_Element_Positive_Count);
 
    function Index (File : not null Non_Controlled_File_Type)
-      return Positive_Count;
+      return Stream_Element_Positive_Count;
    function Size (File : not null Non_Controlled_File_Type)
-      return Count;
+      return Stream_Element_Count;
 
    procedure Set_Mode (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : File_Mode);
+      Mode : IO_Modes.File_Mode);
 
    procedure Flush (File : Non_Controlled_File_Type);
 
@@ -115,7 +99,7 @@ package Ada.Streams.Stream_IO.Inside is
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False);
@@ -127,7 +111,72 @@ package Ada.Streams.Stream_IO.Inside is
    function Is_Standard (File : Non_Controlled_File_Type) return Boolean;
    pragma Inline (Is_Standard);
 
+   --  exceptions
+
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
+   Mode_Error : exception
+      renames IO_Exceptions.Mode_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames IO_Exceptions.Device_Error;
+   End_Error : exception
+      renames IO_Exceptions.End_Error;
+
 private
+
+   package Dispatchers is
+
+      type Root_Dispatcher is new Root_Stream_Type with record
+         File : Non_Controlled_File_Type;
+      end record;
+      pragma Suppress_Initialization (Root_Dispatcher);
+
+      overriding procedure Read (
+         Stream : in out Root_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset);
+
+      overriding procedure Write (
+         Stream : in out Root_Dispatcher;
+         Item : Stream_Element_Array);
+
+      type Seekable_Dispatcher is new Seekable_Stream_Type with record
+         File : Non_Controlled_File_Type;
+      end record;
+      pragma Suppress_Initialization (Seekable_Dispatcher);
+
+      overriding procedure Read (
+         Stream : in out Seekable_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset);
+
+      overriding procedure Write (
+         Stream : in out Seekable_Dispatcher;
+         Item : Stream_Element_Array);
+
+      overriding procedure Set_Index (
+         Stream : in out Seekable_Dispatcher;
+         To : Stream_Element_Positive_Count);
+
+      overriding function Index (Stream : Seekable_Dispatcher)
+         return Stream_Element_Positive_Count;
+      overriding function Size (Stream : Seekable_Dispatcher)
+         return Stream_Element_Count;
+
+      type Dispatcher is record
+         Tag : Tags.Tag := Tags.No_Tag;
+         File : Non_Controlled_File_Type := null;
+      end record;
+      pragma Suppress_Initialization (Dispatcher);
+
+      pragma Compile_Time_Error (
+         Seekable_Dispatcher'Size /= Root_Dispatcher'Size
+         or else Dispatcher'Size /= Root_Dispatcher'Size,
+         "size mismatch");
+
+   end Dispatchers;
 
    type Stream_Kind is (
       Ordinary,
@@ -141,7 +190,7 @@ private
 
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
       Handle : aliased System.Native_IO.Handle_Type; -- file descripter
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
       Name : System.Native_IO.Name_Pointer;
@@ -158,4 +207,4 @@ private
    end record;
    pragma Suppress_Initialization (Stream_Type);
 
-end Ada.Streams.Stream_IO.Inside;
+end Ada.Streams.Naked_Stream_IO;

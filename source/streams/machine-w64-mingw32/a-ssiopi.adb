@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Stream_IO.Inside;
+with Ada.Streams.Stream_IO.Naked;
 with System;
 with C.winbase;
 with C.windef;
@@ -28,12 +28,12 @@ package body Ada.Streams.Stream_IO.Pipes is
       then
          Raise_Exception (Use_Error'Identity);
       else
-         Inside.Open (
+         Naked.Open (
             Reading,
             Reading_Handle,
             In_File,
             To_Close => True);
-         Inside.Open (
+         Naked.Open (
             Writing,
             Writing_Handle,
             Out_File,

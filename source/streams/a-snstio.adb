@@ -1,12 +1,12 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
-with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.Standard_Allocators;
 with System.Storage_Elements;
-package body Ada.Streams.Stream_IO.Inside is
+package body Ada.Streams.Naked_Stream_IO is
    use Exception_Identification.From_Here;
+   use type IO_Modes.File_Mode;
    use type IO_Modes.File_Shared_Spec;
    use type Tags.Tag;
 --  use type System.Address;
@@ -120,36 +120,6 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Unpack;
 
-   --  implementation of handle for controlled
-
-   procedure Open (
-      File : in out File_Type;
-      Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
-      Name : String := "";
-      Form : System.Native_IO.Packed_Form := Default_Form;
-      To_Close : Boolean := False) is
-   begin
-      Open (
-         Reference (File).all,
-         Handle,
-         Mode,
-         Name => Name,
-         Form => Form,
-         To_Close => To_Close);
-   end Open;
-
-   function Handle (File : File_Type) return System.Native_IO.Handle_Type is
-   begin
-      return Handle (Reference (File).all);
-   end Handle;
-
-   function Non_Controlled (File : File_Type)
-      return not null access Non_Controlled_File_Type is
-   begin
-      return Reference (File);
-   end Non_Controlled;
-
    --  non-controlled
 
    procedure Finally (X : not null access System.Native_IO.Name_Pointer);
@@ -160,7 +130,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    function Allocate (
       Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Name : System.Native_IO.Name_Pointer;
       Name_Length : System.Native_IO.Name_Length;
@@ -168,7 +138,7 @@ package body Ada.Streams.Stream_IO.Inside is
       return Non_Controlled_File_Type;
    function Allocate (
       Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Name : System.Native_IO.Name_Pointer;
       Name_Length : System.Native_IO.Name_Length;
@@ -280,13 +250,13 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Allocate_And_Open (
       Method : System.Native_IO.Open_Method;
       File : out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form);
    procedure Allocate_And_Open (
       Method : System.Native_IO.Open_Method;
       File : out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form)
    is
@@ -315,7 +285,7 @@ package body Ada.Streams.Stream_IO.Inside is
             System.Native_IO.Open_Ordinary (
                Method => Method,
                Handle => Scoped.Super.Handle,
-               Mode => Ada.IO_Modes.File_Mode (Mode),
+               Mode => Mode,
                Name => Scoped.Name,
                Form => Form);
          else
@@ -334,7 +304,7 @@ package body Ada.Streams.Stream_IO.Inside is
          --  Scoped.Super.File holds Scoped.Name
          Scoped.Name := null;
       end;
-      if Kind = Ordinary and then Mode = Append_File then
+      if Kind = Ordinary and then Mode = IO_Modes.Append_File then
          Set_Index_To_Append (Scoped.Super.File); -- sets index to the last
       end if;
       File := Scoped.Super.File;
@@ -574,7 +544,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Create (
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode := Out_File;
+      Mode : IO_Modes.File_Mode := IO_Modes.Out_File;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form) is
    begin
@@ -591,7 +561,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form := Default_Form) is
    begin
@@ -638,7 +608,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Reset (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : File_Mode) is
+      Mode : IO_Modes.File_Mode) is
    begin
       Check_File_Open (File);
       declare
@@ -667,12 +637,12 @@ package body Ada.Streams.Stream_IO.Inside is
                System.Native_IO.Open_Ordinary (
                   Method => System.Native_IO.Reset,
                   Handle => Scoped.Handle,
-                  Mode => Ada.IO_Modes.File_Mode (Mode),
+                  Mode => Mode,
                   Name => Scoped.File.Name,
                   Form => Scoped.File.Form);
                Scoped.File.Handle := Scoped.Handle;
                Scoped.File.Mode := Mode;
-               if Mode = Append_File then
+               if Mode = IO_Modes.Append_File then
                   Set_Index_To_Append (Scoped.File);
                end if;
             when Temporary =>
@@ -680,7 +650,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Scoped.File := File;
                File := null;
                Scoped.File.Mode := Mode;
-               if Mode = Append_File then
+               if Mode = IO_Modes.Append_File then
                   Flush_Writing_Buffer (Scoped.File);
                   Set_Index_To_Append (Scoped.File);
                else
@@ -695,7 +665,7 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Reset;
 
-   function Mode (File : Non_Controlled_File_Type) return File_Mode is
+   function Mode (File : Non_Controlled_File_Type) return IO_Modes.File_Mode is
    begin
       Check_File_Open (File);
       return File.Mode;
@@ -751,11 +721,8 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end End_Of_File;
 
-   function Stream (File : Non_Controlled_File_Type) return Stream_Access is
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Root_Stream_Type'Class,
-            Stream_Access);
+   function Stream (File : Non_Controlled_File_Type)
+      return not null access Root_Stream_Type'Class is
    begin
       Check_File_Open (File);
       if File.Dispatcher.Tag = Tags.No_Tag then
@@ -766,7 +733,13 @@ package body Ada.Streams.Stream_IO.Inside is
          end if;
          File.Dispatcher.File := File;
       end if;
-      return Conv.To_Pointer (File.Dispatcher'Address);
+      declare
+         S : aliased Dispatchers.Root_Dispatcher;
+         pragma Import (Ada, S);
+         for S'Address use File.Dispatcher'Address;
+      begin
+         return S'Unchecked_Access;
+      end;
    end Stream;
 
    procedure Read (
@@ -774,7 +747,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset) is
    begin
-      if File.Mode = Out_File then
+      if File.Mode = IO_Modes.Out_File then
          Raise_Exception (Mode_Error'Identity);
       end if;
       Last := Item'First - 1;
@@ -862,7 +835,7 @@ package body Ada.Streams.Stream_IO.Inside is
    is
       First : Stream_Element_Offset;
    begin
-      if File.Mode = In_File then
+      if File.Mode = IO_Modes.In_File then
          Raise_Exception (Mode_Error'Identity);
       end if;
       First := Item'First;
@@ -964,7 +937,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Set_Mode (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : File_Mode) is
+      Mode : IO_Modes.File_Mode) is
    begin
       Check_File_Open (File);
       declare
@@ -974,7 +947,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Finally);
          Scoped : aliased Scoped_Handle_And_File :=
             (System.Native_IO.Invalid_Handle, null);
-         Current : Positive_Count;
+         Current : Stream_Element_Positive_Count;
       begin
          Holder.Assign (Scoped'Access);
          case File.all.Kind is
@@ -992,7 +965,7 @@ package body Ada.Streams.Stream_IO.Inside is
                System.Native_IO.Open_Ordinary (
                   Method => System.Native_IO.Reset,
                   Handle => Scoped.Handle,
-                  Mode => Ada.IO_Modes.File_Mode (Mode),
+                  Mode => Mode,
                   Name => Scoped.File.Name,
                   Form => Scoped.File.Form);
                Scoped.File.Handle := Scoped.Handle;
@@ -1007,7 +980,7 @@ package body Ada.Streams.Stream_IO.Inside is
             when External | External_No_Close | Standard_Handle =>
                Raise_Exception (Status_Error'Identity);
          end case;
-         if Mode = Append_File then
+         if Mode = IO_Modes.Append_File then
             Set_Index_To_Append (Scoped.File);
          else
             Set_Index (Scoped.File, Current);
@@ -1030,7 +1003,7 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False)
@@ -1079,4 +1052,57 @@ package body Ada.Streams.Stream_IO.Inside is
       return File /= null and then File.Kind = Standard_Handle;
    end Is_Standard;
 
-end Ada.Streams.Stream_IO.Inside;
+   package body Dispatchers is
+
+      overriding procedure Read (
+         Stream : in out Root_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset) is
+      begin
+         Read (Stream.File, Item, Last);
+      end Read;
+
+      overriding procedure Write (
+         Stream : in out Root_Dispatcher;
+         Item : Stream_Element_Array) is
+      begin
+         Write (Stream.File, Item);
+      end Write;
+
+      overriding procedure Read (
+         Stream : in out Seekable_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset) is
+      begin
+         Read (Stream.File, Item, Last);
+      end Read;
+
+      overriding procedure Write (
+         Stream : in out Seekable_Dispatcher;
+         Item : Stream_Element_Array) is
+      begin
+         Write (Stream.File, Item);
+      end Write;
+
+      overriding procedure Set_Index (
+         Stream : in out Seekable_Dispatcher;
+         To : Stream_Element_Positive_Count) is
+      begin
+         Set_Index (Stream.File, To);
+      end Set_Index;
+
+      overriding function Index (Stream : Seekable_Dispatcher)
+         return Stream_Element_Positive_Count is
+      begin
+         return Index (Stream.File);
+      end Index;
+
+      overriding function Size (Stream : Seekable_Dispatcher)
+         return Stream_Element_Count is
+      begin
+         return Size (Stream.File);
+      end Size;
+
+   end Dispatchers;
+
+end Ada.Streams.Naked_Stream_IO;
