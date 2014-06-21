@@ -193,10 +193,10 @@ package System.Native_Encoding is
 
    --  exceptions
 
-   Name_Error : exception
-      renames Ada.IO_Exceptions.Name_Error;
    Status_Error : exception
       renames Ada.IO_Exceptions.Status_Error;
+   Name_Error : exception
+      renames Ada.IO_Exceptions.Name_Error;
    Use_Error : exception
       renames Ada.IO_Exceptions.Use_Error;
 
