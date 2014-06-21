@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
 with Ada.Exceptions;
-limited with System.Tasking.Protected_Objects.Entries;
+with System.Tasking.Protected_Objects.Entries;
 package System.Tasking.Rendezvous is
 
    --  required for accept statement by compiler (s-tasren.ads)
@@ -92,7 +92,8 @@ package System.Tasking.Rendezvous is
 
    --  required for synchronized interface by compiler (s-tasren.ads)
    procedure Requeue_Protected_To_Task_Entry (
-      Object : not null access Entries.Protection_Entries'Class;
+      Object : not null access
+         Protected_Objects.Entries.Protection_Entries'Class;
       Acceptor : Task_Id;
       E : Task_Entry_Index;
       With_Abort : Boolean);
