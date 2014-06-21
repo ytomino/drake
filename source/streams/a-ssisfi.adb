@@ -1,4 +1,4 @@
-with Ada.Streams.Stream_IO.Inside.Standard_Files;
+with Ada.Streams.Naked_Stream_IO.Standard_Files;
 package body Ada.Streams.Stream_IO.Standard_Files is
 
    Standard_Input_Object : aliased File_Type;
@@ -24,9 +24,9 @@ package body Ada.Streams.Stream_IO.Standard_Files is
 
 begin
    Reference (Standard_Input_Object).all :=
-      Inside.Standard_Files.Standard_Input;
+      Naked_Stream_IO.Standard_Files.Standard_Input;
    Reference (Standard_Output_Object).all :=
-      Inside.Standard_Files.Standard_Output;
+      Naked_Stream_IO.Standard_Files.Standard_Output;
    Reference (Standard_Error_Object).all :=
-      Inside.Standard_Files.Standard_Error;
+      Naked_Stream_IO.Standard_Files.Standard_Error;
 end Ada.Streams.Stream_IO.Standard_Files;

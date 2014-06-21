@@ -1,4 +1,6 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.IO_Modes;
+with Ada.Streams.Stream_IO.Naked;
 with C.basetsd;
 with C.windef;
 package body Ada.Storage_Mapped_IO is
@@ -11,13 +13,13 @@ package body Ada.Storage_Mapped_IO is
 
    procedure Map (
       Object : in out Non_Controlled_Mapping;
-      File : Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      File : Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Offset : Streams.Stream_IO.Positive_Count;
       Size : Streams.Stream_IO.Count;
       Writable : Boolean);
    procedure Map (
       Object : in out Non_Controlled_Mapping;
-      File : Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      File : Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Offset : Streams.Stream_IO.Positive_Count;
       Size : Streams.Stream_IO.Count;
       Writable : Boolean)
@@ -37,11 +39,11 @@ package body Ada.Storage_Mapped_IO is
       Mapped_Size.QuadPart := C.winnt.ULONGLONG (Size);
       if Mapped_Size.QuadPart = 0 then
          Mapped_Size.QuadPart :=
-            C.winnt.ULONGLONG (Streams.Stream_IO.Inside.Size (File))
+            C.winnt.ULONGLONG (Streams.Naked_Stream_IO.Size (File))
             - Mapped_Offset.QuadPart;
       end if;
       File_Mapping := C.winbase.CreateFileMapping (
-         Streams.Stream_IO.Inside.Handle (File),
+         Streams.Naked_Stream_IO.Handle (File),
          null,
          Protects (Writable),
          Mapped_Size.HighPart,
@@ -94,8 +96,8 @@ package body Ada.Storage_Mapped_IO is
       --  reset
       Object.Address := System.Null_Address;
       --  close file
-      if Streams.Stream_IO.Inside.Is_Open (Object.File) then
-         Streams.Stream_IO.Inside.Close (
+      if Streams.Naked_Stream_IO.Is_Open (Object.File) then
+         Streams.Naked_Stream_IO.Close (
             Object.File,
             Raise_On_Error => Raise_On_Error);
       end if;
@@ -129,7 +131,7 @@ package body Ada.Storage_Mapped_IO is
       --  map
       Map (
          NC_Mapping.all,
-         Streams.Stream_IO.Inside.Non_Controlled (File).all,
+         Streams.Stream_IO.Naked.Non_Controlled (File).all,
          Offset,
          Size,
          Writable => Streams.Stream_IO.Mode (File) /= In_File);
@@ -154,11 +156,11 @@ package body Ada.Storage_Mapped_IO is
       end if;
       --  open file
       --  this file will be closed in Finalize even if any exception is raised
-      Streams.Stream_IO.Inside.Open (
+      Streams.Naked_Stream_IO.Open (
          NC_Mapping.File,
-         Mode,
+         IO_Modes.File_Mode (Mode),
          Name,
-         Streams.Stream_IO.Inside.Pack (Form));
+         Streams.Naked_Stream_IO.Pack (Form));
       Map (
          NC_Mapping.all,
          NC_Mapping.File,

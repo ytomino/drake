@@ -131,7 +131,7 @@ package body Ada.Text_IO.Inside is
             Form.SUB := IO_Text_Modes.Ordinary;
          end if;
       else
-         Streams.Stream_IO.Inside.Set (Form.Stream_Form, Keyword, Item);
+         Streams.Naked_Stream_IO.Set (Form.Stream_Form, Keyword, Item);
       end if;
    end Set;
 
@@ -162,7 +162,7 @@ package body Ada.Text_IO.Inside is
 
    procedure Unpack (
       Form : Packed_Form;
-      Result : out Streams.Stream_IO.Inside.Form_String;
+      Result : out Streams.Naked_Stream_IO.Form_String;
       Last : out Natural)
    is
       subtype Not_CR_LF is
@@ -171,9 +171,9 @@ package body Ada.Text_IO.Inside is
             IO_Text_Modes.CR;
       New_Last : Natural;
    begin
-      Streams.Stream_IO.Inside.Unpack (Form.Stream_Form, Result, Last);
+      Streams.Naked_Stream_IO.Unpack (Form.Stream_Form, Result, Last);
       if Form.External = IO_Text_Modes.UTF_8 then
-         if Last /= Streams.Stream_IO.Inside.Form_String'First - 1 then
+         if Last /= Streams.Naked_Stream_IO.Form_String'First - 1 then
             New_Last := Last + 1;
             Result (New_Last) := ',';
             Last := New_Last;
@@ -183,7 +183,7 @@ package body Ada.Text_IO.Inside is
          Last := New_Last;
       end if;
       if Form.New_Line /= IO_Text_Modes.CR_LF then
-         if Last /= Streams.Stream_IO.Inside.Form_String'First - 1 then
+         if Last /= Streams.Naked_Stream_IO.Form_String'First - 1 then
             New_Last := Last + 1;
             Result (New_Last) := ',';
             Last := New_Last;
@@ -200,7 +200,7 @@ package body Ada.Text_IO.Inside is
          end case;
       end if;
       if Form.SUB /= IO_Text_Modes.Ordinary then
-         if Last /= Streams.Stream_IO.Inside.Form_String'First - 1 then
+         if Last /= Streams.Naked_Stream_IO.Form_String'First - 1 then
             New_Last := Last + 1;
             Result (New_Last) := ',';
             Last := New_Last;
@@ -250,7 +250,7 @@ package body Ada.Text_IO.Inside is
 
    function Stream_IO (File : File_Type)
       return not null access
-         Streams.Stream_IO.Inside.Non_Controlled_File_Type is
+         Streams.Naked_Stream_IO.Non_Controlled_File_Type is
    begin
       return Stream_IO (Reference (File).all);
    end Stream_IO;
@@ -291,15 +291,15 @@ package body Ada.Text_IO.Inside is
    procedure Check_Stream_IO_Open (File : Non_Controlled_File_Type) is
    begin
       if not Is_Open (File)
-         or else not Streams.Stream_IO.Inside.Is_Open (File.File)
+         or else not Streams.Naked_Stream_IO.Is_Open (File.File)
       then
          Raise_Exception (Status_Error'Identity);
       end if;
    end Check_Stream_IO_Open;
 
    type Open_Access is not null access procedure (
-      File : in out Streams.Stream_IO.Inside.Non_Controlled_File_Type;
-      Mode : Streams.Stream_IO.File_Mode;
+      File : in out Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form);
 
@@ -334,13 +334,13 @@ package body Ada.Text_IO.Inside is
       --  open
       Open_Proc.all (
          File => New_File.File,
-         Mode => Streams.Stream_IO.File_Mode (Mode),
+         Mode => IO_Modes.File_Mode (Mode),
          Name => Name,
          Form => Form.Stream_Form);
-      New_File.Stream := Streams.Stream_IO.Inside.Stream (New_File.File);
+      New_File.Stream := Streams.Naked_Stream_IO.Stream (New_File.File);
       --  select encoding
       if System.Native_IO.Is_Terminal (
-         Streams.Stream_IO.Inside.Handle (New_File.File))
+         Streams.Naked_Stream_IO.Handle (New_File.File))
       then
          New_File.External := IO_Text_Modes.Terminal;
          New_File.New_Line := IO_Text_Modes.CR_LF;
@@ -362,7 +362,7 @@ package body Ada.Text_IO.Inside is
          declare -- clear screen
             Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
             Handle : constant System.Native_IO.Handle_Type :=
-               Streams.Stream_IO.Inside.Handle (File.File);
+               Streams.Naked_Stream_IO.Handle (File.File);
          begin
             GetConsoleScreenBufferInfo (
                Handle,
@@ -479,7 +479,7 @@ package body Ada.Text_IO.Inside is
          File.Converted := False;
          if File.External = IO_Text_Modes.Terminal
             and then C.wincon.ReadConsole (
-               hConsoleInput => Streams.Stream_IO.Inside.Handle (File.File),
+               hConsoleInput => Streams.Naked_Stream_IO.Handle (File.File),
                lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
                nNumberOfCharsToRead => 1,
                lpNumberOfCharsRead => Read_Size'Access,
@@ -549,7 +549,7 @@ package body Ada.Text_IO.Inside is
       if not File.End_Of_File
          and then (File.Last = 0 or else not File.Converted)
       then
-         Handle := Streams.Stream_IO.Inside.Handle (File.File);
+         Handle := Streams.Naked_Stream_IO.Handle (File.File);
          if C.wincon.GetNumberOfConsoleInputEvents (
             Handle,
             Event_Count'Access) /= 0
@@ -593,7 +593,7 @@ package body Ada.Text_IO.Inside is
             Sequence_Status);
          if UTF_16_Seq = 2
             and then C.wincon.ReadConsoleW (
-               hConsoleInput => Streams.Stream_IO.Inside.Handle (File.File),
+               hConsoleInput => Streams.Naked_Stream_IO.Handle (File.File),
                lpBuffer => C.windef.LPVOID (W_Buffer (1)'Address),
                nNumberOfCharsToRead => 1,
                lpNumberOfCharsRead => Read_Size'Access,
@@ -661,7 +661,7 @@ package body Ada.Text_IO.Inside is
          Ada_Buffer_Last);
       if File.External = IO_Text_Modes.Terminal
          and then C.wincon.WriteConsoleW (
-            hConsoleOutput => Streams.Stream_IO.Inside.Handle (File.File),
+            hConsoleOutput => Streams.Naked_Stream_IO.Handle (File.File),
             lpBuffer => C.windef.LPCVOID (Ada_Buffer (1)'Address),
             nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
             lpNumberOfCharsWritten => Written'Access,
@@ -739,7 +739,7 @@ package body Ada.Text_IO.Inside is
          Raise_Exception (Status_Error'Identity);
       end if;
       Open_File (
-         Open_Proc => Streams.Stream_IO.Inside.Create'Access,
+         Open_Proc => Streams.Naked_Stream_IO.Create'Access,
          File => File,
          Mode => Mode,
          Name => Name,
@@ -756,7 +756,7 @@ package body Ada.Text_IO.Inside is
          Raise_Exception (Status_Error'Identity);
       end if;
       Open_File (
-         Open_Proc => Streams.Stream_IO.Inside.Open'Access,
+         Open_Proc => Streams.Naked_Stream_IO.Open'Access,
          File => File,
          Mode => Mode,
          Name => Name,
@@ -770,14 +770,14 @@ package body Ada.Text_IO.Inside is
       if Is_Open (File) then
          declare
             Internal : aliased
-               Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
+               Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
                File.all.File;
          begin
-            if not Streams.Stream_IO.Inside.Is_Standard (Internal) then
+            if not Streams.Naked_Stream_IO.Is_Standard (Internal) then
                Free (File);
             end if;
-            if Streams.Stream_IO.Inside.Is_Open (Internal) then
-               Streams.Stream_IO.Inside.Close (
+            if Streams.Naked_Stream_IO.Is_Open (Internal) then
+               Streams.Naked_Stream_IO.Close (
                   Internal,
                   Raise_On_Error => Raise_On_Error);
             end if;
@@ -792,11 +792,11 @@ package body Ada.Text_IO.Inside is
       Check_File_Open (File);
       declare
          Internal : aliased
-            Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
+            Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
             File.File;
       begin
          Free (File);
-         Streams.Stream_IO.Inside.Delete (Internal);
+         Streams.Naked_Stream_IO.Delete (Internal);
       end;
    end Delete;
 
@@ -807,10 +807,10 @@ package body Ada.Text_IO.Inside is
       Current_Mode : constant File_Mode := Inside.Mode (File);
    begin
       if Current_Mode /= Mode
-         and then Streams.Stream_IO.Inside.Is_Standard (File.all.File)
+         and then Streams.Naked_Stream_IO.Is_Standard (File.all.File)
       then
          Raise_Exception (Mode_Error'Identity);
-      elsif not Streams.Stream_IO.Inside.Is_Open (File.all.File) then
+      elsif not Streams.Naked_Stream_IO.Is_Open (File.all.File) then
          --  External stream mode
          Raise_Exception (Status_Error'Identity);
       else
@@ -824,12 +824,12 @@ package body Ada.Text_IO.Inside is
                   Finally);
          begin
             Holder.Assign (File'Access);
-            Streams.Stream_IO.Inside.Reset (
+            Streams.Naked_Stream_IO.Reset (
                File.File,
-               Streams.Stream_IO.File_Mode (Mode));
+               IO_Modes.File_Mode (Mode));
             Holder.Clear;
          end;
-         File.all.Stream := Streams.Stream_IO.Inside.Stream (File.all.File);
+         File.all.Stream := Streams.Naked_Stream_IO.Stream (File.all.File);
          File.all.Page := 1;
          File.all.Line := 1;
          File.all.Col := 1;
@@ -847,8 +847,8 @@ package body Ada.Text_IO.Inside is
    function Mode (File : Non_Controlled_File_Type) return File_Mode is
    begin
       Check_File_Open (File);
-      if Streams.Stream_IO.Inside.Is_Open (File.File) then
-         return File_Mode (Streams.Stream_IO.Inside.Mode (File.File));
+      if Streams.Naked_Stream_IO.Is_Open (File.File) then
+         return File_Mode (Streams.Naked_Stream_IO.Mode (File.File));
       else
          return File.Mode;
       end if;
@@ -857,8 +857,8 @@ package body Ada.Text_IO.Inside is
    function Name (File : Non_Controlled_File_Type) return String is
    begin
       Check_File_Open (File);
-      if Streams.Stream_IO.Inside.Is_Open (File.File) then
-         return Streams.Stream_IO.Inside.Name (File.File);
+      if Streams.Naked_Stream_IO.Is_Open (File.File) then
+         return Streams.Naked_Stream_IO.Name (File.File);
       else
          return File.Name;
       end if;
@@ -870,10 +870,10 @@ package body Ada.Text_IO.Inside is
       declare
          Stream_Form : System.Native_IO.Packed_Form;
       begin
-         if Streams.Stream_IO.Inside.Is_Open (File.File) then
-            Stream_Form := Streams.Stream_IO.Inside.Form (File.File);
+         if Streams.Naked_Stream_IO.Is_Open (File.File) then
+            Stream_Form := Streams.Naked_Stream_IO.Form (File.File);
          else
-            Stream_Form := Streams.Stream_IO.Inside.Default_Form;
+            Stream_Form := Streams.Naked_Stream_IO.Default_Form;
          end if;
          return (Stream_Form, IO_Text_Modes.UTF_8, File.New_Line, File.SUB);
       end;
@@ -898,11 +898,11 @@ package body Ada.Text_IO.Inside is
          Write_Buffer (File, File.Last);
          File.Col := File.Col + File.Buffer_Col;
       end if;
-      if Streams.Stream_IO.Inside.Is_Open (File.File)
+      if Streams.Naked_Stream_IO.Is_Open (File.File)
          and then File.External /=
             IO_Text_Modes.Terminal -- console can not flush
       then
-         Streams.Stream_IO.Inside.Flush (File.File);
+         Streams.Naked_Stream_IO.Flush (File.File);
       end if;
    end Flush;
 
@@ -914,7 +914,7 @@ package body Ada.Text_IO.Inside is
    begin
       Check_File_Mode (File, Out_File);
       if File.External = IO_Text_Modes.Terminal then
-         Handle := Streams.Stream_IO.Inside.Handle (File.File);
+         Handle := Streams.Naked_Stream_IO.Handle (File.File);
          SetConsoleScreenBufferSize_With_Adjusting (
             Handle,
             C.wincon.COORD'(
@@ -946,7 +946,7 @@ package body Ada.Text_IO.Inside is
       Check_File_Mode (File, Out_File);
       if File.External = IO_Text_Modes.Terminal then
          GetConsoleScreenBufferInfo (
-            Streams.Stream_IO.Inside.Handle (File.File),
+            Streams.Naked_Stream_IO.Handle (File.File),
             Info'Access);
          Line_Length := Count (Info.dwSize.X);
          Page_Length := Count (Info.dwSize.Y);
@@ -1097,7 +1097,7 @@ package body Ada.Text_IO.Inside is
       Check_File_Mode (File, In_File);
       if File.Last > 0 then
          return False;
-      elsif not Streams.Stream_IO.Inside.Is_Open (File.File)
+      elsif not Streams.Naked_Stream_IO.Is_Open (File.File)
          or else File.External = IO_Text_Modes.Terminal
       then
          Read_Buffer (File);
@@ -1105,7 +1105,7 @@ package body Ada.Text_IO.Inside is
       else
          Read_Buffer (File);
          return File.Last = 0
-            and then Streams.Stream_IO.Inside.End_Of_File (File.File);
+            and then Streams.Naked_Stream_IO.End_Of_File (File.File);
       end if;
    end End_Of_File;
 
@@ -1118,7 +1118,7 @@ package body Ada.Text_IO.Inside is
    begin
       Check_File_Mode (File, Out_File);
       if File.External = IO_Text_Modes.Terminal then
-         Handle := Streams.Stream_IO.Inside.Handle (File.File);
+         Handle := Streams.Naked_Stream_IO.Handle (File.File);
          GetConsoleScreenBufferInfo (
             Handle,
             Info'Access);
@@ -1212,7 +1212,7 @@ package body Ada.Text_IO.Inside is
       Check_File_Open (File);
       if File.External = IO_Text_Modes.Terminal then
          GetConsoleScreenBufferInfo (
-            Streams.Stream_IO.Inside.Handle (File.File),
+            Streams.Naked_Stream_IO.Handle (File.File),
             Info'Access);
          Col := Positive_Count (Info.dwCursorPosition.X + 1);
          Line := Positive_Count (Info.dwCursorPosition.Y + 1);
@@ -1362,7 +1362,7 @@ package body Ada.Text_IO.Inside is
       Check_File_Mode (File, Out_File);
       if File.External = IO_Text_Modes.Terminal then
          GetConsoleScreenBufferInfo (
-            Streams.Stream_IO.Inside.Handle (File.File),
+            Streams.Naked_Stream_IO.Handle (File.File),
             Info'Access);
          Left := Positive_Count (Info.srWindow.Left + 1);
          Top := Positive_Count (Info.srWindow.Top + 1);
@@ -1405,7 +1405,7 @@ package body Ada.Text_IO.Inside is
 
    function Stream_IO (File : Non_Controlled_File_Type)
       return not null access
-         Streams.Stream_IO.Inside.Non_Controlled_File_Type is
+         Streams.Naked_Stream_IO.Non_Controlled_File_Type is
    begin
       Check_Stream_IO_Open (File);
       return File.File'Access;
@@ -1462,7 +1462,7 @@ package body Ada.Text_IO.Inside is
    begin
       Check_File_Mode (File, In_File);
       if File.External = IO_Text_Modes.Terminal then
-         Handle := Streams.Stream_IO.Inside.Handle (File.File);
+         Handle := Streams.Naked_Stream_IO.Handle (File.File);
          --  get and unset line-input mode
          if C.wincon.GetConsoleMode (
             Handle,
@@ -1512,10 +1512,10 @@ package body Ada.Text_IO.Inside is
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type);
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type) is
    begin
-      File.Stream := Streams.Stream_IO.Inside.Stream (File.File);
+      File.Stream := Streams.Naked_Stream_IO.Stream (File.File);
       File.External := IO_Text_Modes.File_External'Val (Boolean'Pos (
          not System.Native_IO.Is_Terminal (
-            Streams.Stream_IO.Inside.Handle (File.File))));
+            Streams.Naked_Stream_IO.Handle (File.File))));
    end Init_Standard_File;
 
 begin

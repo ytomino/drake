@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Stream_IO.Inside;
+with Ada.Streams.Stream_IO.Naked;
 with Ada.Processes.Inside;
 with System.Synchronous_Control;
 with System.Zero_Terminated_Strings;
@@ -45,9 +45,9 @@ package body Ada.Processes is
          Command_Line,
          Directory,
          Search_Path,
-         Streams.Stream_IO.Inside.Handle (Input),
-         Streams.Stream_IO.Inside.Handle (Output),
-         Streams.Stream_IO.Inside.Handle (Error));
+         Streams.Stream_IO.Naked.Handle (Input),
+         Streams.Stream_IO.Naked.Handle (Output),
+         Streams.Stream_IO.Naked.Handle (Error));
    end Create;
 
    function Create (

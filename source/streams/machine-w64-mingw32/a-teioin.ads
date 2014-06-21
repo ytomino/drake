@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
-with Ada.Streams.Stream_IO.Inside.Standard_Files;
+with Ada.Streams.Naked_Stream_IO.Standard_Files;
+with Ada.Streams.Stream_IO;
 with System.Native_IO;
 package Ada.Text_IO.Inside is
 
@@ -17,7 +18,7 @@ package Ada.Text_IO.Inside is
    pragma Compile_Time_Error (Packed_Form'Size /= 4, "not packed");
 
    Default_Form : constant Packed_Form := (
-      Stream_Form => Streams.Stream_IO.Inside.Default_Form,
+      Stream_Form => Streams.Naked_Stream_IO.Default_Form,
       External => IO_Text_Modes.Locale,
       New_Line => IO_Text_Modes.By_Target,
       SUB => IO_Text_Modes.Ordinary);
@@ -26,7 +27,7 @@ package Ada.Text_IO.Inside is
    function Pack (Form : String) return Packed_Form;
    procedure Unpack (
       Form : Packed_Form;
-      Result : out Streams.Stream_IO.Inside.Form_String;
+      Result : out Streams.Naked_Stream_IO.Form_String;
       Last : out Natural);
 
    --  handle of stream
@@ -47,7 +48,8 @@ package Ada.Text_IO.Inside is
    function Stream (File : File_Type) return Streams.Stream_IO.Stream_Access;
    pragma Inline (Stream);
    function Stream_IO (File : File_Type)
-      return not null access Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      return not null access
+         Streams.Naked_Stream_IO.Non_Controlled_File_Type;
    pragma Inline (Stream_IO);
 
    --  non-controlled
@@ -173,7 +175,8 @@ package Ada.Text_IO.Inside is
    function Stream (File : Non_Controlled_File_Type)
       return Streams.Stream_IO.Stream_Access;
    function Stream_IO (File : Non_Controlled_File_Type)
-      return not null access Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      return not null access
+         Streams.Naked_Stream_IO.Non_Controlled_File_Type;
 
    --  standard I/O
 
@@ -190,7 +193,7 @@ private
       Name_Length : Natural) is -- "limited" prevents No_Elaboration_Code
    record
       Stream : Streams.Stream_IO.Stream_Access; -- internal stream
-      File : aliased Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      File : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Page : Count := 1;
       Line : Count := 1;
       Col : Count := 1;
@@ -213,7 +216,7 @@ private
    Standard_Input_Text : aliased Text_Type := (
       Name_Length => 0,
       Stream => null, -- overwrite when initialization
-      File => Streams.Stream_IO.Inside.Standard_Files.Standard_Input,
+      File => Streams.Naked_Stream_IO.Standard_Files.Standard_Input,
       Page => 1,
       Line => 1,
       Col => 1,
@@ -234,7 +237,7 @@ private
    Standard_Output_Text : aliased Text_Type := (
       Name_Length => 0,
       Stream => null, -- overwrite when initialization
-      File => Streams.Stream_IO.Inside.Standard_Files.Standard_Output,
+      File => Streams.Naked_Stream_IO.Standard_Files.Standard_Output,
       Page => 1,
       Line => 1,
       Col => 1,
@@ -255,7 +258,7 @@ private
    Standard_Error_Text : aliased Text_Type := (
       Name_Length => 0,
       Stream => null, -- overwrite when initialization
-      File => Streams.Stream_IO.Inside.Standard_Files.Standard_Error,
+      File => Streams.Naked_Stream_IO.Standard_Files.Standard_Error,
       Page => 1,
       Line => 1,
       Col => 1,

@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Stream_IO.Inside;
+with Ada.Streams.Stream_IO.Naked;
 with System.Zero_Terminated_WStrings;
 with C.windef;
 package body Ada.Processes is
@@ -41,9 +41,9 @@ package body Ada.Processes is
       C.winbase.GetStartupInfo (Startup_Info'Access);
       Startup_Info.dwFlags := C.winbase.STARTF_USESTDHANDLES
          or C.winbase.STARTF_FORCEOFFFEEDBACK;
-      Startup_Info.hStdInput := Streams.Stream_IO.Inside.Handle (Input);
-      Startup_Info.hStdOutput := Streams.Stream_IO.Inside.Handle (Output);
-      Startup_Info.hStdError := Streams.Stream_IO.Inside.Handle (Error);
+      Startup_Info.hStdInput := Streams.Stream_IO.Naked.Handle (Input);
+      Startup_Info.hStdOutput := Streams.Stream_IO.Naked.Handle (Output);
+      Startup_Info.hStdError := Streams.Stream_IO.Naked.Handle (Error);
       System.Zero_Terminated_WStrings.To_C (
          Command_Line,
          W_Command_Line (0)'Access);
