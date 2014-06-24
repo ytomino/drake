@@ -65,7 +65,8 @@ package body Ada.Wide_Wide_Text_IO is
    begin
       Text_IO.Inside.Wide.Get_Immediate (
          Text_IO.File_Type (File),
-         Item, Available);
+         Item,
+         Available);
    end Get_Immediate;
 
    procedure Get_Immediate (
@@ -143,7 +144,8 @@ package body Ada.Wide_Wide_Text_IO is
    begin
       Text_IO.Inside.Wide.Look_Ahead (
          Text_IO.File_Type (File),
-         Item, End_Of_Line);
+         Item,
+         End_Of_Line);
    end Look_Ahead;
 
    procedure Look_Ahead (
