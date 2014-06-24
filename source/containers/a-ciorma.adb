@@ -1,7 +1,7 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Containers.Composites;
-with System.Address_To_Named_Access_Conversions;
+with System;
 package body Ada.Containers.Indefinite_Ordered_Maps is
    use type Binary_Trees.Node_Access;
    use type Copy_On_Write.Data_Access;
@@ -642,12 +642,12 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Map)
       is
-         type Stream_Access is access all Streams.Root_Stream_Type'Class;
-         for Stream_Access'Storage_Size use 0;
-         package Stream_Cast is
-            new System.Address_To_Named_Access_Conversions (
-               Streams.Root_Stream_Type'Class,
-               Stream_Access);
+         function To_Pointer (Value : System.Address)
+            return access Streams.Root_Stream_Type'Class;
+         pragma Import (Intrinsic, To_Pointer);
+         function To_Address (Value : access Streams.Root_Stream_Type'Class)
+            return System.Address;
+         pragma Import (Intrinsic, To_Address);
          procedure Process (
             Position : not null Binary_Trees.Node_Access;
             Params : System.Address);
@@ -656,10 +656,10 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
             Params : System.Address) is
          begin
             Key_Type'Output (
-               Stream_Cast.To_Pointer (Params),
+               To_Pointer (Params),
                Downcast (Position).Key.all);
             Element_Type'Output (
-               Stream_Cast.To_Pointer (Params),
+               To_Pointer (Params),
                Downcast (Position).Element.all);
          end Process;
       begin
@@ -667,7 +667,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          if Item.Length > 0 then
             Binary_Trees.Iterate (
                Downcast (Item.Super.Data).Root,
-               Stream_Cast.To_Address (Stream),
+               To_Address (Stream),
                Process => Process'Access);
          end if;
       end Write;

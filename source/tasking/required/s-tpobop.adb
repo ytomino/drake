@@ -57,13 +57,11 @@ package body System.Tasking.Protected_Objects.Operations is
       Node : constant not null Entries.Node_Access :=
          Entries.Downcast (The_Node);
       --  Params to access Entries.Protection_Entries'Class
-      type P is access all Entries.Protection_Entries'Class;
-      for P'Storage_Size use 0;
-      package Object_Conv is
-         new Address_To_Named_Access_Conversions (
-            Entries.Protection_Entries'Class,
-            P);
-      Object : constant not null P := Object_Conv.To_Pointer (Params);
+      function To_Pointer (Value : Address)
+         return access Entries.Protection_Entries'Class;
+      pragma Import (Intrinsic, To_Pointer);
+      Object : constant not null access Entries.Protection_Entries'Class :=
+         To_Pointer (Params);
       Index : constant Positive_Protected_Entry_Index :=
          Object.Find_Body_Index (
             Object.Compiler_Info,
@@ -106,11 +104,9 @@ package body System.Tasking.Protected_Objects.Operations is
    procedure Invoke (
       Object : not null access Entries.Protection_Entries'Class)
    is
-      type PE_Access is access all Entries.Protection_Entries'Class;
-      package PEA_Conv is
-         new Address_To_Named_Access_Conversions (
-            Entries.Protection_Entries'Class,
-            PE_Access);
+      function To_Address (Value : access Entries.Protection_Entries'Class)
+         return Address;
+      pragma Import (Intrinsic, To_Address);
       Taken : Synchronous_Objects.Queue_Node_Access;
    begin
       pragma Assert (Object.Entry_Bodies'First = 1);
@@ -118,7 +114,7 @@ package body System.Tasking.Protected_Objects.Operations is
          Synchronous_Objects.Take (
             Object.Calling,
             Taken,
-            PEA_Conv.To_Address (Object),
+            To_Address (Object),
             Invoke_Filter'Access);
          exit when Taken = null;
          declare

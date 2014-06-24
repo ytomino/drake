@@ -294,14 +294,11 @@ package body Ada.Naked_Text_IO is
          Name => Name,
          Form => Form.Stream_Form);
       declare
-         type Stream_Access is access all Streams.Root_Stream_Type'Class;
-         for Stream_Access'Storage_Size use 0;
-         package Conv is
-            new System.Address_To_Named_Access_Conversions (
-               Streams.Root_Stream_Type'Class,
-               Stream_Access);
+         function To_Address (Value : access Streams.Root_Stream_Type'Class)
+            return System.Address;
+         pragma Import (Intrinsic, To_Address);
       begin
-         New_File.Stream := Conv.To_Address (
+         New_File.Stream := To_Address (
             Streams.Naked_Stream_IO.Stream (New_File.File));
       end;
       --  select encoding
@@ -326,14 +323,11 @@ package body Ada.Naked_Text_IO is
    function Unchecked_Stream (File : Non_Controlled_File_Type)
       return not null access Streams.Root_Stream_Type'Class
    is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Pointer (Value : System.Address)
+         return access Streams.Root_Stream_Type'Class;
+      pragma Import (Intrinsic, To_Pointer);
    begin
-      return Conv.To_Pointer (File.Stream).all'Unchecked_Access;
+      return To_Pointer (File.Stream).all'Unchecked_Access;
    end Unchecked_Stream;
 
    procedure Raw_New_Page (File : Non_Controlled_File_Type);
@@ -809,14 +803,11 @@ package body Ada.Naked_Text_IO is
             Holder.Clear;
          end;
          declare
-            type Stream_Access is access all Streams.Root_Stream_Type'Class;
-            for Stream_Access'Storage_Size use 0;
-            package Conv is
-               new System.Address_To_Named_Access_Conversions (
-                  Streams.Root_Stream_Type'Class,
-                  Stream_Access);
+            function To_Address (Value : access Streams.Root_Stream_Type'Class)
+               return System.Address;
+            pragma Import (Intrinsic, To_Address);
          begin
-            File.Stream := Conv.To_Address (
+            File.Stream := To_Address (
                Streams.Naked_Stream_IO.Stream (File.File));
          end;
          File.all.Page := 1;
@@ -1371,19 +1362,16 @@ package body Ada.Naked_Text_IO is
       Name : String := "";
       Form : Packed_Form := Default_Form)
    is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Address (Value : access Streams.Root_Stream_Type'Class)
+         return System.Address;
+      pragma Import (Intrinsic, To_Address);
    begin
       if Is_Open (File) then
          Raise_Exception (Status_Error'Identity);
       end if;
       File := new Text_Type'(
          Name_Length => Name'Length + 1,
-         Stream => Conv.To_Address (Stream),
+         Stream => To_Address (Stream),
          Mode => Mode,
          External => IO_Text_Modes.File_External (Form.External),
          New_Line => Form.New_Line,
@@ -1507,15 +1495,11 @@ package body Ada.Naked_Text_IO is
 
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type);
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type) is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Address (Value : access Streams.Root_Stream_Type'Class)
+         return System.Address;
+      pragma Import (Intrinsic, To_Address);
    begin
-      File.Stream := Conv.To_Address (
-         Streams.Naked_Stream_IO.Stream (File.File));
+      File.Stream := To_Address (Streams.Naked_Stream_IO.Stream (File.File));
       File.External := IO_Text_Modes.File_External'Val (Boolean'Pos (
          not System.Native_IO.Is_Terminal (
             Streams.Naked_Stream_IO.Handle (File.File))));
