@@ -1,4 +1,4 @@
-with Ada.Text_IO.Inside.Formatting;
+with Ada.Text_IO.Formatting;
 package body Ada.Text_IO.Enumeration_IO is
 
    procedure Put_To_Field (
@@ -53,7 +53,7 @@ package body Ada.Text_IO.Enumeration_IO is
       File : File_Type;
       Item : out Enum)
    is
-      S : constant String := Inside.Formatting.Get_Enum_Literal (File);
+      S : constant String := Formatting.Get_Enum_Literal (File);
    begin
       Get_From_Field (S, Item);
    end Get;
@@ -81,7 +81,7 @@ package body Ada.Text_IO.Enumeration_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Set);
-      Inside.Formatting.Head (File, S (1 .. Last), Width);
+      Formatting.Head (File, S (1 .. Last), Width);
    end Put;
 
    procedure Put (
@@ -108,7 +108,7 @@ package body Ada.Text_IO.Enumeration_IO is
    is
       First : Positive;
    begin
-      Inside.Formatting.Get_Head (From, First, Last);
+      Formatting.Get_Head (From, First, Last);
       Get_From_Field (From (First .. Last), Item);
    end Get;
 
@@ -121,7 +121,7 @@ package body Ada.Text_IO.Enumeration_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Set);
-      Inside.Formatting.Head (To, S (1 .. Last));
+      Formatting.Head (To, S (1 .. Last));
    end Put;
 
 end Ada.Text_IO.Enumeration_IO;

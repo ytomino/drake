@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 with System.Formatting;
-package Ada.Text_IO.Inside.Formatting is
+private package Ada.Text_IO.Formatting is
 
    --  for Integer_IO
    procedure Integer_Image (
@@ -74,4 +74,4 @@ package Ada.Text_IO.Inside.Formatting is
       Source : String;
       Padding : Character := ' ');
 
-end Ada.Text_IO.Inside.Formatting;
+end Ada.Text_IO.Formatting;

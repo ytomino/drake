@@ -1,5 +1,6 @@
 with Ada.Exceptions.Finally;
-with Ada.Text_IO.Inside.Wide;
+with Ada.Naked_Text_IO.Wide;
+with Ada.Text_IO.Naked;
 with Ada.Unchecked_Deallocation;
 package body Ada.Wide_Wide_Text_IO is
 
@@ -26,7 +27,9 @@ package body Ada.Wide_Wide_Text_IO is
 
    procedure Get (File : File_Type; Item : out Wide_Wide_Character) is
    begin
-      Text_IO.Inside.Wide.Get (Text_IO.File_Type (File), Item);
+      Naked_Text_IO.Wide.Get (
+         Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
+         Item);
    end Get;
 
    procedure Get (Item : out Wide_Wide_Character) is
@@ -50,7 +53,9 @@ package body Ada.Wide_Wide_Text_IO is
       File : File_Type;
       Item : out Wide_Wide_Character) is
    begin
-      Text_IO.Inside.Wide.Get_Immediate (Text_IO.File_Type (File), Item);
+      Naked_Text_IO.Wide.Get_Immediate (
+         Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
+         Item);
    end Get_Immediate;
 
    procedure Get_Immediate (Item : out Wide_Wide_Character) is
@@ -63,8 +68,8 @@ package body Ada.Wide_Wide_Text_IO is
       Item : out Wide_Wide_Character;
       Available : out Boolean) is
    begin
-      Text_IO.Inside.Wide.Get_Immediate (
-         Text_IO.File_Type (File),
+      Naked_Text_IO.Wide.Get_Immediate (
+         Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
          Item,
          Available);
    end Get_Immediate;
@@ -142,8 +147,8 @@ package body Ada.Wide_Wide_Text_IO is
       Item : out Wide_Wide_Character;
       End_Of_Line : out Boolean) is
    begin
-      Text_IO.Inside.Wide.Look_Ahead (
-         Text_IO.File_Type (File),
+      Naked_Text_IO.Wide.Look_Ahead (
+         Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
          Item,
          End_Of_Line);
    end Look_Ahead;
@@ -157,7 +162,9 @@ package body Ada.Wide_Wide_Text_IO is
 
    procedure Put (File : File_Type; Item : Wide_Wide_Character) is
    begin
-      Text_IO.Inside.Wide.Put (Text_IO.File_Type (File), Item);
+      Naked_Text_IO.Wide.Put (
+         Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
+         Item);
    end Put;
 
    procedure Put (Item : Wide_Wide_Character) is

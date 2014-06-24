@@ -1,4 +1,4 @@
-with Ada.Text_IO.Inside.Formatting;
+with Ada.Text_IO.Formatting;
 with System.Formatting.Literals;
 package body Ada.Text_IO.Modular_IO is
    use type System.Formatting.Longest_Unsigned;
@@ -20,7 +20,7 @@ package body Ada.Text_IO.Modular_IO is
       Padding_Width : Field) is
    begin
       if Num'Size > System.Formatting.Unsigned'Size then
-         Inside.Formatting.Modular_Image (
+         Formatting.Modular_Image (
             To,
             Last,
             System.Formatting.Longest_Unsigned (Item),
@@ -28,7 +28,7 @@ package body Ada.Text_IO.Modular_IO is
             Padding,
             Padding_Width);
       else
-         Inside.Formatting.Modular_Image (
+         Formatting.Modular_Image (
             To,
             Last,
             System.Formatting.Unsigned (Item),
@@ -97,7 +97,7 @@ package body Ada.Text_IO.Modular_IO is
             Last_1 : Natural;
             Last_2 : Natural;
          begin
-            Inside.Formatting.Get_Field (File, S, Last_1);
+            Formatting.Get_Field (File, S, Last_1);
             Get_From_Field (S (1 .. Last_1), Item, Last_2);
             if Last_2 /= Last_1 then
                raise Data_Error;
@@ -106,7 +106,7 @@ package body Ada.Text_IO.Modular_IO is
       else
          declare
             S : constant String :=
-               Inside.Formatting.Get_Numeric_Literal (File, Real => False);
+               Formatting.Get_Numeric_Literal (File, Real => False);
             Last : Natural;
          begin
             Get_From_Field (S, Item, Last);
@@ -135,7 +135,7 @@ package body Ada.Text_IO.Modular_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Base, Padding, Width);
-      Inside.Formatting.Tail (File, S (1 .. Last), Width);
+      Formatting.Tail (File, S (1 .. Last), Width);
    end Put;
 
    procedure Put (
@@ -152,7 +152,7 @@ package body Ada.Text_IO.Modular_IO is
       Item : out Num;
       Last : out Positive) is
    begin
-      Inside.Formatting.Get_Tail (From, First => Last);
+      Formatting.Get_Tail (From, First => Last);
       Get_From_Field (From (Last .. From'Last), Item, Last);
    end Get;
 
@@ -166,7 +166,7 @@ package body Ada.Text_IO.Modular_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Base, Padding, To'Length);
-      Inside.Formatting.Tail (To, S (1 .. Last));
+      Formatting.Tail (To, S (1 .. Last));
    end Put;
 
 end Ada.Text_IO.Modular_IO;

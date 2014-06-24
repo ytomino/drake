@@ -1,6 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Exception_Identification.From_Here;
-with Ada.Text_IO.Inside.Formatting;
+with Ada.Text_IO.Formatting;
 with System.Formatting.Decimal_Image;
 with System.Formatting.Literals;
 package body Ada.Text_IO.Editing is
@@ -57,7 +57,7 @@ package body Ada.Text_IO.Editing is
                   Count_Last : Natural;
                   Count : System.Formatting.Unsigned;
                begin
-                  Inside.Formatting.Get_Tail (
+                  Formatting.Get_Tail (
                      Pic_String (I + 1 .. Pic_String'Last),
                      First => Count_First);
                   System.Formatting.Literals.Get_Literal (
@@ -723,7 +723,7 @@ package body Ada.Text_IO.Editing is
          Separator : Character := Default_Separator;
          Radix_Mark : Character := Default_Radix_Mark) is
       begin
-         Inside.Formatting.Tail (
+         Formatting.Tail (
             To,
             Image (Item, Pic, Currency, Fill, Separator, Radix_Mark));
       end Put;

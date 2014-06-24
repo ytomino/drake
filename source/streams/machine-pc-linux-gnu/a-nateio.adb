@@ -1,0 +1,1 @@
+../machine-apple-darwin/a-nateio.adb
