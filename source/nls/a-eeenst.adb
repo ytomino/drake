@@ -1,5 +1,4 @@
 with Ada.Exception_Identification.From_Here;
-with System.Address_To_Named_Access_Conversions;
 package body Ada.Environment_Encoding.Encoding_Streams is
    use Exception_Identification.From_Here;
    use type Streams.Stream_Element;
@@ -368,15 +367,12 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return In_Type
    is
       pragma Suppress (Accessibility_Check);
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Address (Value : access Streams.Root_Stream_Type'Class)
+         return System.Address;
+      pragma Import (Intrinsic, To_Address);
    begin
       return Result : In_Type do
-         Result.Stream := Conv.To_Address (Stream);
+         Result.Stream := To_Address (Stream);
          Result.Reading_Converter := Decoder'Unrestricted_Access;
          Initialize (Result.Reading_Context);
       end return;
@@ -401,15 +397,12 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Item : out Streams.Stream_Element_Array;
       Last : out Streams.Stream_Element_Offset)
    is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Pointer (Value : System.Address)
+         return access Streams.Root_Stream_Type'Class;
+      pragma Import (Intrinsic, To_Pointer);
    begin
       Read (
-         Conv.To_Pointer (Object.Stream),
+         To_Pointer (Object.Stream),
          Item,
          Last,
          Object.Reading_Converter.all,
@@ -424,15 +417,12 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return Out_Type
    is
       pragma Suppress (Accessibility_Check);
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Address (Value : access Streams.Root_Stream_Type'Class)
+         return System.Address;
+      pragma Import (Intrinsic, To_Address);
    begin
       return Result : Out_Type do
-         Result.Stream := Conv.To_Address (Stream);
+         Result.Stream := To_Address (Stream);
          Result.Writing_Converter := Encoder'Unrestricted_Access;
          Initialize (Result.Writing_Context);
       end return;
@@ -453,18 +443,15 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    end Stream;
 
    procedure Finish (Object : in out Out_Type) is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Pointer (Value : System.Address)
+         return access Streams.Root_Stream_Type'Class;
+      pragma Import (Intrinsic, To_Pointer);
    begin
       if not Is_Open (Object) then
          Raise_Exception (Status_Error'Identity);
       end if;
       Finish (
-         Conv.To_Pointer (Object.Stream),
+         To_Pointer (Object.Stream),
          Object.Writing_Converter.all,
          Object.Writing_Context);
    end Finish;
@@ -473,15 +460,12 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : in out Out_Type;
       Item : Streams.Stream_Element_Array)
    is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Pointer (Value : System.Address)
+         return access Streams.Root_Stream_Type'Class;
+      pragma Import (Intrinsic, To_Pointer);
    begin
       Write (
-         Conv.To_Pointer (Object.Stream),
+         To_Pointer (Object.Stream),
          Item,
          Object.Writing_Converter.all,
          Object.Writing_Context);
@@ -496,17 +480,14 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return Inout_Type
    is
       pragma Suppress (Accessibility_Check);
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Address (Value : access Streams.Root_Stream_Type'Class)
+         return System.Address;
+      pragma Import (Intrinsic, To_Address);
    begin
       return Result : Inout_Type do
          Result.Internal := Internal;
          Result.External := External;
-         Result.Stream := Conv.To_Address (Stream);
+         Result.Stream := To_Address (Stream);
          Result.Substitute_Length := -1;
          Initialize (Result.Reading_Context);
          Initialize (Result.Writing_Context);
@@ -560,19 +541,16 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    end Stream;
 
    procedure Finish (Object : in out Inout_Type) is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Pointer (Value : System.Address)
+         return access Streams.Root_Stream_Type'Class;
+      pragma Import (Intrinsic, To_Pointer);
    begin
       if not Is_Open (Object) then
          Raise_Exception (Status_Error'Identity);
       end if;
       if Is_Open (Object.Writing_Converter) then
          Finish (
-            Conv.To_Pointer (Object.Stream),
+            To_Pointer (Object.Stream),
             Object.Writing_Converter,
             Object.Writing_Context);
       end if;
@@ -583,12 +561,9 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Item : out Streams.Stream_Element_Array;
       Last : out Streams.Stream_Element_Offset)
    is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Pointer (Value : System.Address)
+         return access Streams.Root_Stream_Type'Class;
+      pragma Import (Intrinsic, To_Pointer);
    begin
       if not Is_Open (Object.Reading_Converter) then
          Open (
@@ -602,7 +577,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          end if;
       end if;
       Read (
-         Conv.To_Pointer (Object.Stream),
+         To_Pointer (Object.Stream),
          Item,
          Last,
          Object.Reading_Converter,
@@ -613,12 +588,9 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : in out Inout_Type;
       Item : Streams.Stream_Element_Array)
    is
-      type Stream_Access is access all Streams.Root_Stream_Type'Class;
-      for Stream_Access'Storage_Size use 0;
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Streams.Root_Stream_Type'Class,
-            Stream_Access);
+      function To_Pointer (Value : System.Address)
+         return access Streams.Root_Stream_Type'Class;
+      pragma Import (Intrinsic, To_Pointer);
    begin
       if not Is_Open (Object.Writing_Converter) then
          Open (
@@ -632,7 +604,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          end if;
       end if;
       Write (
-         Conv.To_Pointer (Object.Stream),
+         To_Pointer (Object.Stream),
          Item,
          Object.Writing_Converter,
          Object.Writing_Context);
