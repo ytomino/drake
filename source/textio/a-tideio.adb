@@ -1,4 +1,4 @@
-with Ada.Text_IO.Inside.Formatting;
+with Ada.Text_IO.Formatting;
 with System.Formatting.Decimal_Image;
 with System.Formatting.Float_Image;
 with System.Formatting.Literals.Float;
@@ -80,7 +80,7 @@ package body Ada.Text_IO.Decimal_IO is
             Last_1 : Natural;
             Last_2 : Natural;
          begin
-            Inside.Formatting.Get_Field (File, S, Last_1);
+            Formatting.Get_Field (File, S, Last_1);
             Get_From_Field (S (1 .. Last_1), Item, Last_2);
             if Last_2 /= Last_1 then
                raise Data_Error;
@@ -89,7 +89,7 @@ package body Ada.Text_IO.Decimal_IO is
       else
          declare
             S : constant String :=
-               Inside.Formatting.Get_Numeric_Literal (File, Real => True);
+               Formatting.Get_Numeric_Literal (File, Real => True);
             Last : Natural;
          begin
             Get_From_Field (S, Item, Last);
@@ -120,7 +120,7 @@ package body Ada.Text_IO.Decimal_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Aft, Exp);
-      Inside.Formatting.Tail (File, S (1 .. Last), Fore + Aft + Exp + 1);
+      Formatting.Tail (File, S (1 .. Last), Fore + Aft + Exp + 1);
    end Put;
 
    procedure Put (
@@ -137,7 +137,7 @@ package body Ada.Text_IO.Decimal_IO is
       Item : out Num;
       Last : out Positive) is
    begin
-      Inside.Formatting.Get_Tail (From, First => Last);
+      Formatting.Get_Tail (From, First => Last);
       Get_From_Field (From (Last .. From'Last), Item, Last);
    end Get;
 
@@ -153,7 +153,7 @@ package body Ada.Text_IO.Decimal_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Aft, Exp);
-      Inside.Formatting.Tail (To, S (1 .. Last));
+      Formatting.Tail (To, S (1 .. Last));
    end Put;
 
 end Ada.Text_IO.Decimal_IO;

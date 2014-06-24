@@ -2,7 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.UTF_Conversions;
-package body Ada.Text_IO.Inside.Formatting is
+package body Ada.Text_IO.Formatting is
    use Exception_Identification.From_Here;
 
    type String_Access is access String;
@@ -543,4 +543,4 @@ package body Ada.Text_IO.Inside.Formatting is
       Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
    end Tail;
 
-end Ada.Text_IO.Inside.Formatting;
+end Ada.Text_IO.Formatting;

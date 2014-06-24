@@ -1,5 +1,5 @@
 with Ada.Text_IO.Float_IO;
-with Ada.Text_IO.Inside.Formatting;
+with Ada.Text_IO.Formatting;
 package body Ada.Text_IO.Complex_IO is
 
    package Real_IO is new Float_IO (Complex_Types.Real);
@@ -15,19 +15,19 @@ package body Ada.Text_IO.Complex_IO is
    is
       Paren : Boolean;
    begin
-      Inside.Formatting.Get_Tail (From, Last);
+      Formatting.Get_Tail (From, Last);
       Paren := From (Last) = '(';
       if Paren then
          Last := Last + 1;
       end if;
       Real_IO.Get (From (Last .. From'Last), Item.Re, Last);
-      Inside.Formatting.Get_Tail (From (Last + 1 .. From'Last), Last);
+      Formatting.Get_Tail (From (Last + 1 .. From'Last), Last);
       if From (Last) = ',' then
          Last := Last + 1;
       end if;
       Real_IO.Get (From (Last .. From'Last), Item.Im, Last);
       if Paren then
-         Inside.Formatting.Get_Tail (From (Last + 1 .. From'Last), Last);
+         Formatting.Get_Tail (From (Last + 1 .. From'Last), Last);
          if From (Last) /= ')' then
             raise Data_Error;
          end if;
@@ -47,7 +47,7 @@ package body Ada.Text_IO.Complex_IO is
             Last_1 : Natural;
             Last_2 : Natural;
          begin
-            Inside.Formatting.Get_Field (File, S, Last_1);
+            Formatting.Get_Field (File, S, Last_1);
             Get_From_Field (S (1 .. Last_1), Item, Last_2);
             if Last_2 /= Last_1 then
                raise Data_Error;
@@ -55,8 +55,7 @@ package body Ada.Text_IO.Complex_IO is
          end;
       else
          declare
-            S : constant String :=
-               Inside.Formatting.Get_Complex_Literal (File);
+            S : constant String := Formatting.Get_Complex_Literal (File);
             Last : Natural;
          begin
             Get_From_Field (S, Item, Last);

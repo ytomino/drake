@@ -4,7 +4,7 @@ with Ada.IO_Exceptions;
 with Ada.IO_Modes;
 with Ada.IO_Text_Modes;
 private with Ada.Finalization;
-limited private with Ada.Text_IO.Inside;
+private with Ada.Naked_Text_IO;
 package Ada.Text_IO is
 
    type File_Type is limited private;
@@ -325,7 +325,7 @@ private
       pragma Inline (Reference_Current_Error);
 
       function Reference (File : File_Type)
-         return access Inside.Non_Controlled_File_Type;
+         return not null access Naked_Text_IO.Non_Controlled_File_Type;
       pragma Inline (Reference);
 
    private
@@ -333,7 +333,7 @@ private
       type File_Type is
          limited new Finalization.Limited_Controlled with
       record
-         Text : access Inside.Text_Type;
+         Text : aliased Naked_Text_IO.Non_Controlled_File_Type;
       end record;
 
       overriding procedure Finalize (Object : in out File_Type);
