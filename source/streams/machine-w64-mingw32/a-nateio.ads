@@ -189,7 +189,8 @@ private
    type Text_Type (
       Name_Length : Natural) is -- "limited" prevents No_Elaboration_Code
    record
-      Stream : access Streams.Root_Stream_Type'Class; -- internal stream
+      Stream : System.Address := -- access Streams.Root_Stream_Type'Class
+         System.Null_Address;
       File : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Page : Natural := 1;
       Line : Natural := 1;
@@ -212,7 +213,7 @@ private
 
    Standard_Input_Text : aliased Text_Type := (
       Name_Length => 0,
-      Stream => null, -- overwrite when initialization
+      Stream => System.Null_Address, -- overwrite when initialization
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Input,
       Page => 1,
       Line => 1,
@@ -233,7 +234,7 @@ private
 
    Standard_Output_Text : aliased Text_Type := (
       Name_Length => 0,
-      Stream => null, -- overwrite when initialization
+      Stream => System.Null_Address, -- overwrite when initialization
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Output,
       Page => 1,
       Line => 1,
@@ -254,7 +255,7 @@ private
 
    Standard_Error_Text : aliased Text_Type := (
       Name_Length => 0,
-      Stream => null, -- overwrite when initialization
+      Stream => System.Null_Address, -- overwrite when initialization
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Error,
       Page => 1,
       Line => 1,
