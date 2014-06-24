@@ -43,14 +43,20 @@ package body Ada.Text_IO.Inside.Wide is
 
    --  implementation
 
-   procedure Get (File : File_Type; Item : out Wide_Character) is
+   procedure Get (
+      File : File_Type;
+      Item : out Wide_Character)
+   is
       C : Wide_Wide_Character;
    begin
       Get (File, C); -- Wide_Wide
       Store_Second (File, C, Item);
    end Get;
 
-   procedure Get (File : File_Type; Item : out Wide_Wide_Character) is
+   procedure Get (
+      File : File_Type;
+      Item : out Wide_Wide_Character)
+   is
       S : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
       Length : Natural;
       From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
@@ -73,7 +79,10 @@ package body Ada.Text_IO.Inside.Wide is
       end;
    end Get;
 
-   procedure Get_Immediate (File : File_Type; Item : out Wide_Character) is
+   procedure Get_Immediate (
+      File : File_Type;
+      Item : out Wide_Character)
+   is
       Available : Boolean;
    begin
       Get_Immediate (File, Item, Available, Wait => True);
@@ -217,7 +226,10 @@ package body Ada.Text_IO.Inside.Wide is
       end if;
    end Look_Ahead;
 
-   procedure Put (File : File_Type; Item : Wide_Character) is
+   procedure Put (
+      File : File_Type;
+      Item : Wide_Character)
+   is
       Ref_Text : constant access Text_Type := Reference (File).all;
       From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
    begin
@@ -284,7 +296,10 @@ package body Ada.Text_IO.Inside.Wide is
       end if;
    end Put;
 
-   procedure Put (File : File_Type; Item : Wide_Wide_Character) is
+   procedure Put (
+      File : File_Type;
+      Item : Wide_Wide_Character)
+   is
       Ref_Text : constant access Text_Type := Reference (File).all;
    begin
       if Ref_Text.Last > 0 then
