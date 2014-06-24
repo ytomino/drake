@@ -1,6 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
+with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.Formatting;
 with System.UTF_Conversions;
@@ -307,7 +308,17 @@ package body Ada.Naked_Text_IO is
          Mode => Mode,
          Name => Name,
          Form => Form.Stream_Form);
-      New_File.Stream := Streams.Naked_Stream_IO.Stream (New_File.File);
+      declare
+         type Stream_Access is access all Streams.Root_Stream_Type'Class;
+         for Stream_Access'Storage_Size use 0;
+         package Conv is
+            new System.Address_To_Named_Access_Conversions (
+               Streams.Root_Stream_Type'Class,
+               Stream_Access);
+      begin
+         New_File.Stream := Conv.To_Address (
+            Streams.Naked_Stream_IO.Stream (New_File.File));
+      end;
       --  select encoding
       if System.Native_IO.Is_Terminal (
          Streams.Naked_Stream_IO.Handle (New_File.File))
@@ -324,6 +335,21 @@ package body Ada.Naked_Text_IO is
       Holder.Clear;
       File := New_File;
    end Open_File;
+
+   function Unchecked_Stream (File : Non_Controlled_File_Type)
+      return not null access Streams.Root_Stream_Type'Class;
+   function Unchecked_Stream (File : Non_Controlled_File_Type)
+      return not null access Streams.Root_Stream_Type'Class
+   is
+      type Stream_Access is access all Streams.Root_Stream_Type'Class;
+      for Stream_Access'Storage_Size use 0;
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (
+            Streams.Root_Stream_Type'Class,
+            Stream_Access);
+   begin
+      return Conv.To_Pointer (File.Stream).all'Unchecked_Access;
+   end Unchecked_Stream;
 
    procedure Raw_New_Page (File : Non_Controlled_File_Type);
    procedure Raw_New_Page (File : Non_Controlled_File_Type) is
@@ -342,13 +368,13 @@ package body Ada.Naked_Text_IO is
                Character'Pos ('0'),
                Character'Pos ('H'));
          begin
-            Streams.Write (File.Stream.all, Code);
+            Streams.Write (Unchecked_Stream (File).all, Code);
          end;
       else
          declare
             Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
          begin
-            Streams.Write (File.Stream.all, Code);
+            Streams.Write (Unchecked_Stream (File).all, Code);
          end;
       end if;
       File.Page := File.Page + 1;
@@ -369,7 +395,7 @@ package body Ada.Naked_Text_IO is
          begin
             F := Boolean'Pos (File.New_Line = IO_Text_Modes.LF);
             L := Boolean'Pos (File.New_Line /= IO_Text_Modes.CR);
-            Streams.Write (File.Stream.all, Line_Mark (F .. L));
+            Streams.Write (Unchecked_Stream (File).all, Line_Mark (F .. L));
          end;
          File.Line := File.Line + 1;
          File.Col := 1;
@@ -425,7 +451,7 @@ package body Ada.Naked_Text_IO is
             Last : Streams.Stream_Element_Offset := 0;
          begin
             begin
-               Streams.Read (File.Stream.all, Buffer, Last);
+               Streams.Read (Unchecked_Stream (File).all, Buffer, Last);
             exception
                when End_Error =>
                   File.End_Of_File := True;
@@ -488,7 +514,7 @@ package body Ada.Naked_Text_IO is
             Streams.Stream_Element_Offset (Sequence_Length));
          for Buffer'Address use File.Buffer'Address;
       begin
-         Streams.Write (File.Stream.all, Buffer);
+         Streams.Write (Unchecked_Stream (File).all, Buffer);
       end;
       File.Buffer_Col := Sequence_Length;
       File.Last := Length - Sequence_Length;
@@ -596,7 +622,17 @@ package body Ada.Naked_Text_IO is
             Streams.Naked_Stream_IO.Reset (File.File, Mode);
             Holder.Clear;
          end;
-         File.all.Stream := Streams.Naked_Stream_IO.Stream (File.all.File);
+         declare
+            type Stream_Access is access all Streams.Root_Stream_Type'Class;
+            for Stream_Access'Storage_Size use 0;
+            package Conv is
+               new System.Address_To_Named_Access_Conversions (
+                  Streams.Root_Stream_Type'Class,
+                  Stream_Access);
+         begin
+            File.Stream := Conv.To_Address (
+               Streams.Naked_Stream_IO.Stream (File.File));
+         end;
          File.all.Page := 1;
          File.all.Line := 1;
          File.all.Col := 1;
@@ -705,7 +741,7 @@ package body Ada.Naked_Text_IO is
                   Streams.Stream_Element_Offset (Last));
                for Item'Address use Seq'Address;
             begin
-               Streams.Write (File.Stream.all, Item);
+               Streams.Write (Unchecked_Stream (File).all, Item);
             end;
          end;
       else
@@ -953,7 +989,7 @@ package body Ada.Naked_Text_IO is
                   Streams.Stream_Element_Offset (Last));
                for Item'Address use Seq'Address;
             begin
-               Streams.Write (File.Stream.all, Item);
+               Streams.Write (Unchecked_Stream (File).all, Item);
             end;
          end;
       else
@@ -988,7 +1024,7 @@ package body Ada.Naked_Text_IO is
                   Streams.Stream_Element_Offset (Last));
                for Item'Address use Seq'Address;
             begin
-               Streams.Write (File.Stream.all, Item);
+               Streams.Write (Unchecked_Stream (File).all, Item);
             end;
          end;
       else
@@ -1254,14 +1290,21 @@ package body Ada.Naked_Text_IO is
       Stream : not null access Streams.Root_Stream_Type'Class;
       Mode : IO_Modes.File_Mode;
       Name : String := "";
-      Form : Packed_Form := Default_Form) is
+      Form : Packed_Form := Default_Form)
+   is
+      type Stream_Access is access all Streams.Root_Stream_Type'Class;
+      for Stream_Access'Storage_Size use 0;
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (
+            Streams.Root_Stream_Type'Class,
+            Stream_Access);
    begin
       if Is_Open (File) then
          Raise_Exception (Status_Error'Identity);
       end if;
       File := new Text_Type'(
          Name_Length => Name'Length + 1,
-         Stream => Stream,
+         Stream => Conv.To_Address (Stream),
          Mode => Mode,
          External => IO_Text_Modes.File_External (Form.External),
          New_Line => Form.New_Line,
@@ -1274,7 +1317,7 @@ package body Ada.Naked_Text_IO is
       return not null access Streams.Root_Stream_Type'Class is
    begin
       Check_Stream_IO_Open (File);
-      return File.Stream;
+      return Unchecked_Stream (File);
    end Stream;
 
    function Stream_IO (File : Non_Controlled_File_Type)
@@ -1377,8 +1420,15 @@ package body Ada.Naked_Text_IO is
 
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type);
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type) is
+      type Stream_Access is access all Streams.Root_Stream_Type'Class;
+      for Stream_Access'Storage_Size use 0;
+      package Conv is
+         new System.Address_To_Named_Access_Conversions (
+            Streams.Root_Stream_Type'Class,
+            Stream_Access);
    begin
-      File.Stream := Streams.Naked_Stream_IO.Stream (File.File);
+      File.Stream := Conv.To_Address (
+         Streams.Naked_Stream_IO.Stream (File.File));
       File.External := IO_Text_Modes.File_External'Val (Boolean'Pos (
          not System.Native_IO.Is_Terminal (
             Streams.Naked_Stream_IO.Handle (File.File))));
