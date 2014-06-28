@@ -6,9 +6,11 @@
 #elif defined(__FreeBSD__)
 #define _DONT_USE_CTYPE_INLINE_
 #define d_fileno d_ino
+#if __FreeBSD__ < 9
 #define st_atimespec st_atim
 #define st_mtimespec st_mtim
 #define st_ctimespec st_ctim
+#endif
 #elif defined(__linux__)
 #define _GNU_SOURCE /* use GNU extension */
 #define _FILE_OFFSET_BITS 64
@@ -58,6 +60,9 @@
 #include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
 #include <dlfcn.h>
+#if !defined(__FreeBSD__) || __FreeBSD__ >= 8
+#include <spawn.h> /* spawn */
+#endif
 #if !defined(__linux__)
 #if defined(__FreeBSD__)
 #include <stdio.h> /* before wchar.h in FreeBSD */
@@ -76,7 +81,6 @@
 #undef st_ctime
 #include <crt_externs.h> /* environment variable */
 #include <malloc/malloc.h> /* malloc_size */
-#include <spawn.h> /* spawn */
 #include <copyfile.h> /* copyfile */
 #define _ARCHITECTURE_BYTE_ORDER_H_ /* headmaster can not translate some inline functions */
 #include <mach-o/dyld.h>
@@ -84,9 +88,11 @@
 #elif defined(__FreeBSD__)
 #undef _DONT_USE_CTYPE_INLINE_
 #undef d_fileno
+#if __FreeBSD__ < 9
 #undef st_atimespec
 #undef st_mtimespec
 #undef st_ctimespec
+#endif
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
@@ -95,8 +101,10 @@
 #include <pthread_np.h> /* pthread_attr_get_np */
 #include <link.h>
 #elif defined(__linux__)
+#undef st_atime
+#undef st_mtime
+#undef st_ctime
 #include <sys/statvfs.h> /* filesystem */
-#include <spawn.h> /* spawn */
 #include <link.h>
 #undef _GNU_SOURCE
 #undef __USE_GNU /* avoiding circular dependency between libio.h and stdio.h */
@@ -192,11 +200,13 @@
 #pragma for Ada "time.h" include "sys/timespec.h" /* timespec */
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
 #pragma for Ada "unistd.h" include "sys/unistd.h"
-#if __FreeBSD__ >= 9
+#if __FreeBSD__ >= 8
 #pragma for Ada "pthread.h" include "signal.h" /* pthread_kill */
+#pragma for Ada "time.h" include "sys/_timespec.h" /* struct timespec */
+#endif
+#if __FreeBSD__ >= 9
 #pragma for Ada "stdint.h" include "machine/_types.h"
 #pragma for Ada "termios.h" include "sys/_termios.h"
-#pragma for Ada "time.h" include "sys/_timespec.h" /* struct timespec */
 #endif
 #elif defined(__linux__)
 #undef si_value /* cannot inline returning unchecked union */
