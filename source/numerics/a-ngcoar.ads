@@ -11,8 +11,10 @@ package Ada.Numerics.Generic_Complex_Arrays is
    --  Types
 
    type Complex_Vector is array (Integer range <>) of Complex;
+   for Complex_Vector'Alignment use Standard'Maximum_Alignment;
    type Complex_Matrix is
       array (Integer range <>, Integer range <>) of Complex;
+   for Complex_Matrix'Alignment use Standard'Maximum_Alignment;
 
    --  Subprograms for Complex_Vector types
 

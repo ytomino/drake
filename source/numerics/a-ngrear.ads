@@ -7,7 +7,9 @@ package Ada.Numerics.Generic_Real_Arrays is
    --  Types
 
    type Real_Vector is array (Integer range <>) of Real'Base;
+   for Real_Vector'Alignment use Standard'Maximum_Alignment;
    type Real_Matrix is array (Integer range <>, Integer range <>) of Real'Base;
+   for Real_Matrix'Alignment use Standard'Maximum_Alignment;
 
    --  Subprograms for Real_Vector types
 

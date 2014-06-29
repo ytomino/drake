@@ -24,10 +24,34 @@ procedure num_real is
 		pragma Assert (10.0 ** 2.0 = 100.0);
 		pragma Assert (2.0 ** 3.0 = 8.0);
 		-- arrays
+		for I in 0 .. 9 loop
+			declare
+				X : Real_Vector (11 .. 10 + I);
+				Y : Real_Vector (21 .. 20 + I);
+			begin
+				for J in X'Range loop
+					X (J) := T (J);
+				end loop;
+				for J in Y'Range loop
+					Y (J) := T (J);
+				end loop;
+				declare
+					Z : Real_Vector := X + Y;
+				begin
+					pragma Assert (Z'First = X'First);
+					pragma Assert (Z'Last = X'Last);
+					for J in Z'Range loop
+						pragma Assert (Z (J) = T (J) * 2.0 + 10.0);
+						null;
+					end loop;
+				end;
+			end;
+		end loop;
 		declare
 			Data1 : Real_Vector := (3.0, 4.0);
 			Data2 : Real_Vector := (-1.0, 1.0);
 			DataM : Real_Matrix := ((-1.0, 1.0), (2.0, -2.0));
+			V : Real_Vector (1 .. 2);
 			M : Real_Matrix (1 .. 2, 1 .. 2);
 			Data33 : Real_Matrix := (
 				(0.0, -2.0, 0.0),
@@ -64,6 +88,10 @@ procedure num_real is
 				and then M (1, 2) = 0.0
 				and then abs M (2, 1) < 1.0e-5
 				and then abs (M (2, 2) - 1.0) < 1.0e-5);
+			V := DataM * Data1;
+			pragma Assert (V = (1.0, -2.0));
+			V := Data1 * DataM;
+			pragma Assert (V = (5.0, -5.0));
 		end;
 	end Test;
 begin
