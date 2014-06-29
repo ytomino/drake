@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
+with Ada.Exception_Identification;
 with Ada.Streams;
 with System.Zero_Terminated_Strings;
 with C.unistd;
@@ -142,6 +143,9 @@ package System.Native_IO is
       Standard_Error_Handle : aliased in out Handle_Type) is null;
 
    --  exceptions
+
+   function IO_Exception_Id (errno : C.signed_int)
+      return Ada.Exception_Identification.Exception_Id;
 
    Name_Error : exception
       renames Ada.IO_Exceptions.Name_Error;

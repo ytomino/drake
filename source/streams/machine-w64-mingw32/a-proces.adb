@@ -1,7 +1,9 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Stream_IO.Naked;
+with System.Native_IO;
 with System.Zero_Terminated_WStrings;
 with C.windef;
+with C.winerror;
 package body Ada.Processes is
    use Exception_Identification.From_Here;
    use type C.size_t;
@@ -68,7 +70,18 @@ package body Ada.Processes is
          lpStartupInfo => Startup_Info'Access,
          lpProcessInformation => Process_Info'Access) = 0
       then
-         Raise_Exception (Name_Error'Identity);
+         declare
+            Error : constant C.windef.DWORD := C.winbase.GetLastError;
+         begin
+            case Error is
+               when C.winerror.ERROR_FILE_NOT_FOUND
+                  | C.winerror.ERROR_PATH_NOT_FOUND
+                  | C.winerror.ERROR_INVALID_NAME =>
+                  Raise_Exception (Name_Error'Identity);
+               when others =>
+                  Raise_Exception (System.Native_IO.IO_Exception_Id (Error));
+            end case;
+         end;
       else
          if C.winbase.CloseHandle (Process_Info.hThread) = 0 then
             Raise_Exception (Use_Error'Identity);

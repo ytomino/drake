@@ -32,6 +32,13 @@ package body System.Native_IO is
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
 
+   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line);
+   pragma No_Return (Raise_IO_Exception);
+   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line) is
+   begin
+      Raise_Exception (IO_Exception_Id (C.errno.errno), Line => Line);
+   end Raise_IO_Exception;
+
    --  implementation
 
    procedure Free (Item : in out Name_Pointer) is
@@ -197,7 +204,7 @@ package body System.Native_IO is
          Handle := mkstemp (Out_Item);
       end;
       if Handle < 0 then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
       Set_Close_On_Exec (Handle);
    end Open_Temporary;
@@ -298,7 +305,7 @@ package body System.Native_IO is
                | C.errno.EROFS =>
                Raise_Exception (Name_Error'Identity);
             when others =>
-               Raise_Exception (Use_Error'Identity);
+               Raise_Exception (IO_Exception_Id (errno));
          end case;
       end if;
       declare
@@ -363,7 +370,7 @@ package body System.Native_IO is
          Error := C.unistd.unlink (Name) < 0;
       end if;
       if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
    end Close_Temporary;
 
@@ -375,7 +382,7 @@ package body System.Native_IO is
    begin
       Error := C.unistd.close (Handle) < 0;
       if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
    end Close_Ordinary;
 
@@ -525,5 +532,16 @@ package body System.Native_IO is
       end if;
       return Ada.Streams.Stream_Element_Offset (Info.st_size);
    end Size;
+
+   function IO_Exception_Id (errno : C.signed_int)
+      return Ada.Exception_Identification.Exception_Id is
+   begin
+      case errno is
+         when C.errno.EIO =>
+            return Device_Error'Identity;
+         when others =>
+            return Use_Error'Identity;
+      end case;
+   end IO_Exception_Id;
 
 end System.Native_IO;
