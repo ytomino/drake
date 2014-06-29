@@ -6,6 +6,7 @@ package body Ada.Numerics.Generic_Arrays is
    begin
       return Result : Result_Vector (Right'Range) do
          for I in Result'Range loop
+            pragma Loop_Optimize (Vector);
             Result (I) := Operator (Right (I));
          end loop;
       end return;
@@ -16,6 +17,7 @@ package body Ada.Numerics.Generic_Arrays is
       return Result : Result_Matrix (Right'Range (1), Right'Range (2)) do
          for I in Result'Range (1) loop
             for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
                Result (I, J) := Operator (Right (I, J));
             end loop;
          end loop;
@@ -27,6 +29,7 @@ package body Ada.Numerics.Generic_Arrays is
    begin
       return Result : Result_Vector (X'Range) do
          for I in Result'Range loop
+            pragma Loop_Optimize (Vector);
             Result (I) := Operator (X (I), Y);
          end loop;
       end return;
@@ -38,6 +41,7 @@ package body Ada.Numerics.Generic_Arrays is
       return Result : Result_Matrix (X'Range (1), X'Range (2)) do
          for I in Result'Range (1) loop
             for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
                Result (I, J) := Operator (X (I, J), Y);
             end loop;
          end loop;
@@ -48,11 +52,15 @@ package body Ada.Numerics.Generic_Arrays is
       return Result_Vector is
    begin
       return Result : Result_Vector (Left'Range) do
-         for I in Result'Range loop
-            Result (I) := Operator (
-               Left (I),
-               Right (Right'First - Left'First + I));
-         end loop;
+         declare
+            Length : constant Integer := Result'Length;
+         begin
+            for I in 0 .. Length - 1 loop
+               pragma Loop_Optimize (Vector);
+               Result (Result'First + I) :=
+                  Operator (Left (Left'First + I), Right (Right'First + I));
+            end loop;
+         end;
       end return;
    end Operator_Vector_Vector;
 
@@ -60,14 +68,20 @@ package body Ada.Numerics.Generic_Arrays is
       return Result_Matrix is
    begin
       return Result : Result_Matrix (Left'Range (1), Left'Range (2)) do
-         for I in Result'Range (1) loop
-            for J in Result'Range (2) loop
-               Result (I, J) := Operator (
-                  Left (I, J),
-                  Right (Right'First (1) - Left'First (1) + I,
-                     Right'First (2) - Left'First (2) + J));
+         declare
+            Length_1 : constant Integer := Result'Length (1);
+            Length_2 : constant Integer := Result'Length (2);
+         begin
+            for I in 0 .. Length_1 - 1 loop
+               for J in 0 .. Length_2 - 1 loop
+                  pragma Loop_Optimize (Vector);
+                  Result (Result'First (1) + I, Result'First (2) + J) :=
+                     Operator (
+                        Left (Left'First (1) + I, Left'First (2) + J),
+                        Right (Right'First (1) + I, Right'First (2) + J));
+               end loop;
             end loop;
-         end loop;
+         end;
       end return;
    end Operator_Matrix_Matrix;
 
@@ -75,9 +89,15 @@ package body Ada.Numerics.Generic_Arrays is
       return Result_Vector is
    begin
       return Result : Result_Vector (X'Range) do
-         for I in Result'Range loop
-            Result (I) := Operator (X (I), Y (Y'First - X'First + I), Z);
-         end loop;
+         declare
+            Length : constant Integer := Result'Length;
+         begin
+            for I in 0 .. Length - 1 loop
+               pragma Loop_Optimize (Vector);
+               Result (Result'First + I) :=
+                  Operator (X (X'First + I), Y (Y'First + I), Z);
+            end loop;
+         end;
       end return;
    end Operator_Vector_Vector_Param;
 
@@ -85,35 +105,43 @@ package body Ada.Numerics.Generic_Arrays is
       return Result_Matrix is
    begin
       return Result : Result_Matrix (X'Range (1), X'Range (2)) do
-         for I in Result'Range (1) loop
-            for J in Result'Range (2) loop
-               Result (I, J) := Operator (
-                  X (I, J),
-                  Y (
-                     Y'First (1) - X'First (1) + I,
-                     Y'First (2) - X'First (2) + J),
-                  Z);
+         declare
+            Length_1 : constant Integer := Result'Length (1);
+            Length_2 : constant Integer := Result'Length (2);
+         begin
+            for I in 0 .. Length_1 - 1 loop
+               for J in 0 .. Length_2 - 1 loop
+                  pragma Loop_Optimize (Vector);
+                  Result (Result'First (1) + I, Result'First (2) + J) :=
+                     Operator (
+                        X (X'First (1) + I, X'First (2) + J),
+                        Y (Y'First (1) + I, Y'First (2) + J),
+                        Z);
+               end loop;
             end loop;
-         end loop;
+         end;
       end return;
    end Operator_Matrix_Matrix_Param;
 
    procedure Apply_Vector (X : in out Vector; Param : Parameter_Vector) is
+      Length : constant Integer := X'Length;
    begin
-      for I in X'Range loop
-         Apply (X (I), Param (Param'First - X'First + I));
+      for I in 0 .. Length - 1 loop
+         pragma Loop_Optimize (Vector);
+         Apply (X (X'First + I), Param (Param'First + I));
       end loop;
    end Apply_Vector;
 
    procedure Apply_Matrix (X : in out Matrix; Param : Parameter_Matrix) is
+      Length_1 : constant Integer := X'Length (1);
+      Length_2 : constant Integer := X'Length (2);
    begin
-      for I in X'Range (1) loop
-         for J in X'Range (1) loop
+      for I in 0 .. Length_1 - 1 loop
+         for J in 0 .. Length_2 - 1 loop
+            pragma Loop_Optimize (Vector);
             Apply (
-               X (I, J),
-               Param (
-                  Param'First (1) - X'First (1) + I,
-                  Param'First (2) - X'First (2) + J));
+               X (X'First (1) + I, X'First (2) + J),
+               Param (Param'First (1) + I, Param'First (2) + J));
          end loop;
       end loop;
    end Apply_Matrix;
@@ -126,17 +154,21 @@ package body Ada.Numerics.Generic_Arrays is
       do
          for I2 in Result'First (1) .. I loop
             for J2 in Result'First (2) .. J loop
+               pragma Loop_Optimize (Vector);
                Result (I2, J2) := A (I2 - 1, J2 - 1);
             end loop;
             for J2 in J + 1 .. Result'Last (2) loop
+               pragma Loop_Optimize (Vector);
                Result (I2, J2) := A (I2 - 1, J2);
             end loop;
          end loop;
          for I2 in I + 1 .. Result'Last (1) loop
             for J2 in Result'First (2) .. J loop
+               pragma Loop_Optimize (Vector);
                Result (I2, J2) := A (I2, J2 - 1);
             end loop;
             for J2 in J + 1 .. Result'Last (2) loop
+               pragma Loop_Optimize (Vector);
                Result (I2, J2) := A (I2, J2);
             end loop;
          end loop;
@@ -157,6 +189,7 @@ package body Ada.Numerics.Generic_Arrays is
                Sign : Number := One;
             begin
                for X in A'Range (1) loop
+                  pragma Loop_Optimize (Vector);
                   Result := Result
                      + Sign
                         * A (X, A'First (2))
@@ -185,10 +218,12 @@ package body Ada.Numerics.Generic_Arrays is
    begin
       for i in eigenvecs'Range (1) loop
          for j in eigenvecs'Range (2) loop
+            pragma Loop_Optimize (Vector);
             eigenvecs (i, j) := Zero;
          end loop;
       end loop;
       for i in 0 .. eigenvecs'Length (1) - 1 loop
+         pragma Loop_Optimize (Vector);
          eigenvecs (eigenvecs'First (1) + i, eigenvecs'First (2) + i) := One;
       end loop;
       for l in 0 .. 99 loop
@@ -224,6 +259,7 @@ package body Ada.Numerics.Generic_Arrays is
                   y22 := y22 / y;
                   --  V^T A V = V^T G^{-1} . (G^T A G) . G^{-1} V
                   for k in 0 .. n - 1 loop
+                     pragma Loop_Optimize (Vector);
                      v1 := mat (mat'First (1) + k, mat'First (2) + i);
                      v2 := mat (mat'First (1) + k, mat'First (2) + j);
                      mat (mat'First (1) + k, mat'First (2) + i) :=
@@ -232,6 +268,7 @@ package body Ada.Numerics.Generic_Arrays is
                         v1 * y21 + v2 * y22;
                   end loop;
                   for k in 0 .. n - 1 loop
+                     pragma Loop_Optimize (Vector);
                      v1 := mat (mat'First (1) + i, mat'First (2) + k);
                      v2 := mat (mat'First (1) + j, mat'First (2) + k);
                      mat (mat'First (1) + i, mat'First (2) + k) :=
@@ -242,6 +279,7 @@ package body Ada.Numerics.Generic_Arrays is
                   mat (mat'First (1) + i, mat'First (2) + j) := Zero;
                   mat (mat'First (1) + j, mat'First (2) + i) := Zero;
                   for k in 0 .. n - 1 loop
+                     pragma Loop_Optimize (Vector);
                      v1 := eigenvecs (
                         eigenvecs'First (1) + i,
                         eigenvecs'First (2) + k);
@@ -259,11 +297,15 @@ package body Ada.Numerics.Generic_Arrays is
             end loop;
          end loop;
       end loop;
-      for i in lami'Range loop
-         lami (i) := To_Real (mat (
-            mat'First (1) - lami'First + i,
-            mat'First (2) - lami'First + i));
-      end loop;
+      declare
+         Length : constant Integer := lami'Length;
+      begin
+         for i in 0 .. Length - 1 loop
+            pragma Loop_Optimize (Vector);
+            lami (lami'First + i) :=
+               To_Real (mat (mat'First (1) + i, mat'First (2) + i));
+         end loop;
+      end;
    end Eigensystem;
 
    function Inverse (A : Matrix) return Matrix is
@@ -272,19 +314,24 @@ package body Ada.Numerics.Generic_Arrays is
       Sign : Number;
    begin
       return Result : Matrix (A'Range (1), A'Range (2)) do
-         for I in Result'Range (1) loop
-            Sign := Master_Sign;
-            for J in Result'Range (2) loop
-               Result (I, J) := Sign
-                  * Determinant (Minor (
-                     A,
-                     Result'First (1) - Result'First (2) + J,
-                     Result'First (2) - Result'First (1) + I))
-                  / detA;
-               Sign := -Sign;
+         declare
+            Length_1 : constant Integer := Result'Length (1);
+            Length_2 : constant Integer := Result'Length (2);
+         begin
+            for I in 0 .. Length_1 - 1 loop
+               Sign := Master_Sign;
+               for J in 0 .. Length_2 - 1 loop
+                  pragma Loop_Optimize (Vector);
+                  Result (Result'First (1) + I, Result'First (2) + J) :=
+                     Sign
+                     * Determinant (
+                        Minor (A, Result'First (1) + J, Result'First (2) + I))
+                     / detA;
+                  Sign := -Sign;
+               end loop;
+               Master_Sign := -Master_Sign;
             end loop;
-            Master_Sign := -Master_Sign;
-         end loop;
+         end;
       end return;
    end Inverse;
 
@@ -293,6 +340,7 @@ package body Ada.Numerics.Generic_Arrays is
       return Result : Matrix (X'Range (2), X'Range (1)) do
          for I in Result'Range (1) loop
             for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
                Result (I, J) := X (J, I);
             end loop;
          end loop;
@@ -306,9 +354,16 @@ package body Ada.Numerics.Generic_Arrays is
    begin
       return Result : Matrix (
          First_1 .. First_1 + Order - 1,
-         First_2 .. First_2 + Order - 1) := (others => (others => Zero))
+         First_2 .. First_2 + Order - 1)
       do
+         for I in Result'Range (1) loop
+            for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
+               Result (I, J) := Zero;
+            end loop;
+         end loop;
          for I in 0 .. Order - 1 loop
+            pragma Loop_Optimize (Vector);
             Result (First_1 + I, First_2 + I) := One;
          end loop;
       end return;
@@ -320,9 +375,11 @@ package body Ada.Numerics.Generic_Arrays is
       First : Integer := 1)
       return Vector is
    begin
-      return Result : Vector (First .. First + Order - 1) :=
-         (others => Zero)
-      do
+      return Result : Vector (First .. First + Order - 1) do
+         for I in Result'Range loop
+            pragma Loop_Optimize (Vector);
+            Result (I) := Zero;
+         end loop;
          Result (Index) := One;
       end return;
    end Unit_Vector;
@@ -331,6 +388,7 @@ package body Ada.Numerics.Generic_Arrays is
       Result : Result_Type := Zero;
    begin
       for I in Right'Range loop
+         pragma Loop_Optimize (Vector);
          declare
             X : constant Result_Type := abs Right (I);
          begin
@@ -344,9 +402,11 @@ package body Ada.Numerics.Generic_Arrays is
       return Result_Type
    is
       Result : Result_Type := Zero;
+      Length : constant Integer := Left'Length;
    begin
-      for I in Left'Range loop
-         Result := Result + Left (I) * Right (Right'First - Left'First + I);
+      for I in 0 .. Length - 1 loop
+         pragma Loop_Optimize (Vector);
+         Result := Result + Left (Left'First + I) * Right (Right'First + I);
       end loop;
       return Result;
    end Inner_Production;
@@ -355,20 +415,25 @@ package body Ada.Numerics.Generic_Arrays is
       return Result_Matrix is
    begin
       return Result : Result_Matrix (Left'Range (1), Right'Range (2)) do
-         for I in Result'Range (1) loop
-            for J in Result'Range (2) loop
-               declare
-                  Z : Result_Type := Zero;
-               begin
-                  for K in Left'Range (2) loop
-                     Z := Z
-                        + Left (I, K) *
-                           Right (Right'First (1) - Left'First (2) + K, J);
-                  end loop;
-                  Result (I, J) := Z;
-               end;
+         declare
+            Length_Folded : constant Integer := Left'Length (2);
+         begin
+            for I in Result'Range (1) loop
+               for J in Result'Range (2) loop
+                  declare
+                     Z : Result_Type := Zero;
+                  begin
+                     for K in 0 .. Length_Folded - 1 loop
+                        pragma Loop_Optimize (Vector);
+                        Z := Z
+                           + Left (I, Left'First (2) + K)
+                              * Right (Right'First (1) + K, J);
+                     end loop;
+                     Result (I, J) := Z;
+                  end;
+               end loop;
             end loop;
-         end loop;
+         end;
       end return;
    end Multiply_Matrix_Matrix;
 
@@ -378,6 +443,7 @@ package body Ada.Numerics.Generic_Arrays is
       return Result : Result_Matrix (Left'Range, Right'Range) do
          for I in Result'Range (1) loop
             for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
                Result (I, J) := Left (I) * Right (J);
             end loop;
          end loop;
@@ -388,17 +454,23 @@ package body Ada.Numerics.Generic_Arrays is
       return Result_Vector is
    begin
       return Result : Result_Vector (Right'Range (2)) do
-         for J in Result'Range loop
-            declare
-               Z : Result_Type := Zero;
-            begin
-               for K in Left'Range loop
-                  Z := Z
-                     + Left (K) * Right (Right'First (1) - Left'First + K, J);
-               end loop;
-               Result (J) := Z;
-            end;
-         end loop;
+         declare
+            Length_Folded : constant Integer := Left'Length;
+         begin
+            for J in Result'Range loop
+               declare
+                  Z : Result_Type := Zero;
+               begin
+                  for K in 0 .. Length_Folded - 1 loop
+                     pragma Loop_Optimize (Vector);
+                     Z := Z
+                        + Left (Left'First + K)
+                           * Right (Right'First (1) + K, J);
+                  end loop;
+                  Result (J) := Z;
+               end;
+            end loop;
+         end;
       end return;
    end Multiply_Vector_Matrix;
 
@@ -406,17 +478,23 @@ package body Ada.Numerics.Generic_Arrays is
       return Result_Vector is
    begin
       return Result : Result_Vector (Left'Range (1)) do
-         for I in Result'Range loop
-            declare
-               Z : Result_Type := Zero;
-            begin
-               for K in Left'Range (2) loop
-                  Z := Z
-                     + Left (I, K) * Right (Right'First - Left'First (2) + K);
-               end loop;
-               Result (I) := Z;
-            end;
-         end loop;
+         declare
+            Length_Folded : constant Integer := Right'Length;
+         begin
+            for I in Result'Range loop
+               declare
+                  Z : Result_Type := Zero;
+               begin
+                  for K in 0 .. Length_Folded - 1 loop
+                     pragma Loop_Optimize (Vector);
+                     Z := Z
+                        + Left (I, Left'First (2) + K)
+                           * Right (Right'First + K);
+                  end loop;
+                  Result (I) := Z;
+               end;
+            end loop;
+         end;
       end return;
    end Multiply_Matrix_Vector;
 
