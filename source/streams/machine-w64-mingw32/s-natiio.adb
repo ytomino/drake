@@ -25,6 +25,13 @@ package body System.Native_IO is
       C.winnt.WCHAR'Val (Wide_Character'Pos ('A')),
       C.winnt.WCHAR'Val (0));
 
+   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line);
+   pragma No_Return (Raise_IO_Exception);
+   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line) is
+   begin
+      Raise_Exception (IO_Exception_Id (C.winbase.GetLastError), Line => Line);
+   end Raise_IO_Exception;
+
    --  implementation
 
    procedure Free (Item : in out Name_Pointer) is
@@ -139,7 +146,7 @@ package body System.Native_IO is
             or C.winbase.FILE_FLAG_DELETE_ON_CLOSE,
          hTemplateFile => C.winnt.HANDLE (Null_Address));
       if Handle = C.winbase.INVALID_HANDLE_VALUE then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
       --  allocate filename
       Out_Length := C.string.wcslen (Temp_Name (0)'Access);
@@ -274,7 +281,7 @@ package body System.Native_IO is
                Raise_Exception (Tasking_Error'Identity);
                --  Is Tasking_Error suitable?
             when others =>
-               Raise_Exception (Use_Error'Identity);
+               Raise_Exception (IO_Exception_Id (Error));
          end case;
       end if;
       if Shared /= Ada.IO_Modes.Allow and then Form.Wait then
@@ -325,7 +332,7 @@ package body System.Native_IO is
    begin
       Error := C.winbase.CloseHandle (Handle) = 0;
       if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
    end Close_Ordinary;
 
@@ -341,7 +348,7 @@ package body System.Native_IO is
          Error := C.winbase.DeleteFile (Name) = 0;
       end if;
       if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
    end Delete_Ordinary;
 
@@ -523,5 +530,19 @@ package body System.Native_IO is
       Standard_Output_Handle := Standard_Output;
       Standard_Error_Handle := Standard_Error;
    end Initialize;
+
+   function IO_Exception_Id (Error : C.windef.DWORD)
+      return Ada.Exception_Identification.Exception_Id is
+   begin
+      case Error is
+         when C.winerror.ERROR_WRITE_FAULT
+            | C.winerror.ERROR_READ_FAULT
+            | C.winerror.ERROR_GEN_FAILURE
+            | C.winerror.ERROR_IO_DEVICE =>
+            return Device_Error'Identity;
+         when others =>
+            return Use_Error'Identity;
+      end case;
+   end IO_Exception_Id;
 
 end System.Native_IO;
