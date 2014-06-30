@@ -1,10 +1,21 @@
-with Ada.Unchecked_Conversion;
+--  with System.Address_To_Constant_Access_Conversions; -- Preelaborate unit
+--  with System.Address_To_Named_Access_Conversions;
+with System.Storage_Elements;
 package body Interfaces.C.Pointers is
    pragma Suppress (All_Checks);
+   use type System.Storage_Elements.Storage_Offset;
 
-   generic function C renames Ada.Unchecked_Conversion;
-   subtype A is Element_Array;
-   Storage_Unit : constant := Standard'Storage_Unit;
+--  package Conv is
+--    new System.Address_To_Named_Access_Conversions (Element, Pointer);
+--  package const_Conv is
+--    new System.Address_To_Constant_Access_Conversions (
+--       Element,
+--       Constant_Pointer);
+
+   function To_Pointer (Value : System.Address) return access Element;
+   pragma Import (Intrinsic, To_Pointer);
+   function To_Address (Value : access constant Element) return System.Address;
+   pragma Import (Intrinsic, To_Address);
 
    --  implementation
 
@@ -31,26 +42,26 @@ package body Interfaces.C.Pointers is
    function "+" (
       Left : Pointer;
       Right : ptrdiff_t)
-      return not null Pointer
-   is
-      function I is new C (Pointer, ptrdiff_t);
-      function P is new C (ptrdiff_t, Pointer);
+      return not null Pointer is
    begin
       if not Standard'Fast_Math and then Left = null then
          raise Pointer_Error; -- CXB3015
       end if;
-      return P (I (Left) + Right * (A'Component_Size / Storage_Unit));
+      return To_Pointer (
+         To_Address (Left)
+         + System.Storage_Elements.Storage_Offset (Right)
+            * (Element_Array'Component_Size / Standard'Storage_Unit));
    end "+";
 
    function "+" (
       Left : not null Constant_Pointer;
       Right : ptrdiff_t)
-      return not null Constant_Pointer
-   is
-      function I is new C (Constant_Pointer, ptrdiff_t);
-      function P is new C (ptrdiff_t, Constant_Pointer);
+      return not null Constant_Pointer is
    begin
-      return P (I (Left) + Right * (A'Component_Size / Storage_Unit));
+      return To_Pointer (
+         To_Address (Left)
+         + System.Storage_Elements.Storage_Offset (Right)
+            * (Element_Array'Component_Size / Standard'Storage_Unit));
    end "+";
 
    function "+" (
@@ -72,26 +83,26 @@ package body Interfaces.C.Pointers is
    function "-" (
       Left : Pointer;
       Right : ptrdiff_t)
-      return not null Pointer
-   is
-      function I is new C (Pointer, ptrdiff_t);
-      function P is new C (ptrdiff_t, Pointer);
+      return not null Pointer is
    begin
       if not Standard'Fast_Math and then Left = null then
          raise Pointer_Error; -- CXB3015
       end if;
-      return P (I (Left) - Right * (A'Component_Size / Storage_Unit));
+      return To_Pointer (
+         To_Address (Left)
+         - System.Storage_Elements.Storage_Offset (Right)
+            * (Element_Array'Component_Size / Standard'Storage_Unit));
    end "-";
 
    function "-" (
       Left : not null Constant_Pointer;
       Right : ptrdiff_t)
-      return not null Constant_Pointer
-   is
-      function I is new C (Constant_Pointer, ptrdiff_t);
-      function P is new C (ptrdiff_t, Constant_Pointer);
+      return not null Constant_Pointer　is
    begin
-      return P (I (Left) - Right * (A'Component_Size / Storage_Unit));
+      return To_Pointer (
+         To_Address (Left)
+         - System.Storage_Elements.Storage_Offset (Right)
+            * (Element_Array'Component_Size / Standard'Storage_Unit));
    end "-";
 
    function "-" (
@@ -105,12 +116,11 @@ package body Interfaces.C.Pointers is
    function "-" (
       Left : not null Constant_Pointer;
       Right : not null access constant Element)
-      return ptrdiff_t
-   is
-      function I is new C (Constant_Pointer, ptrdiff_t);
+      return ptrdiff_t is
    begin
-      return (I (Left) - I (Constant_Pointer (Right)))
-         / (A'Component_Size / Storage_Unit);
+      return ptrdiff_t (
+         (To_Address (Left) - To_Address (Right))
+         / (Element_Array'Component_Size / Standard'Storage_Unit));
    end "-";
 
 end Interfaces.C.Pointers;
