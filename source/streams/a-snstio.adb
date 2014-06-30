@@ -1,26 +1,17 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
-with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.Standard_Allocators;
 with System.Storage_Elements;
-with C.winbase;
-with C.windef;
-with C.winerror;
-with C.winnt;
-package body Ada.Streams.Stream_IO.Inside is
+package body Ada.Streams.Naked_Stream_IO is
    use Exception_Identification.From_Here;
+   use type IO_Modes.File_Mode;
    use type IO_Modes.File_Shared_Spec;
    use type Tags.Tag;
 --  use type System.Address;
 --  use type System.Native_IO.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
-   use type C.size_t;
-   use type C.windef.DWORD;
-   use type C.windef.UINT;
-   use type C.windef.WINBOOL;
-   use type C.winnt.LONGLONG;
 
    --  the parameter Form
 
@@ -129,79 +120,6 @@ package body Ada.Streams.Stream_IO.Inside is
       end if;
    end Unpack;
 
-   --  handle
-
-   procedure SetFilePointerEx (
-      Handle : C.winnt.HANDLE;
-      DistanceToMove : C.winnt.LONGLONG;
-      NewFilePointer : out C.winnt.LONGLONG;
-      MoveMethod : C.windef.DWORD);
-   procedure SetFilePointerEx (
-      Handle : C.winnt.HANDLE;
-      DistanceToMove : C.winnt.LONGLONG;
-      NewFilePointer : out C.winnt.LONGLONG;
-      MoveMethod : C.windef.DWORD)
-   is
-      liDistanceToMove : C.winnt.LARGE_INTEGER;
-      liNewFilePointer : aliased C.winnt.LARGE_INTEGER;
-   begin
-      liDistanceToMove.QuadPart := DistanceToMove;
-      if C.winbase.SetFilePointerEx (
-         Handle,
-         liDistanceToMove,
-         liNewFilePointer'Access,
-         MoveMethod) = 0
-      then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      NewFilePointer := liNewFilePointer.QuadPart;
-   end SetFilePointerEx;
-
-   procedure GetFileSizeEx (
-      Handle : C.winnt.HANDLE;
-      FileSize : out C.winnt.LONGLONG);
-   procedure GetFileSizeEx (
-      Handle : C.winnt.HANDLE;
-      FileSize : out C.winnt.LONGLONG)
-   is
-      liFileSize : aliased C.winnt.LARGE_INTEGER;
-   begin
-      if C.winbase.GetFileSizeEx (Handle, liFileSize'Access) = 0 then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      FileSize := liFileSize.QuadPart;
-   end GetFileSizeEx;
-
-   --  implementation of handle for controlled
-
-   procedure Open (
-      File : in out File_Type;
-      Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
-      Name : String := "";
-      Form : System.Native_IO.Packed_Form := Default_Form;
-      To_Close : Boolean := False) is
-   begin
-      Open (
-         Reference (File).all,
-         Handle,
-         Mode,
-         Name => Name,
-         Form => Form,
-         To_Close => To_Close);
-   end Open;
-
-   function Handle (File : File_Type) return System.Native_IO.Handle_Type is
-   begin
-      return Handle (Reference (File).all);
-   end Handle;
-
-   function Non_Controlled (File : File_Type)
-      return not null access Non_Controlled_File_Type is
-   begin
-      return Reference (File);
-   end Non_Controlled;
-
    --  non-controlled
 
    procedure Finally (X : not null access System.Native_IO.Name_Pointer);
@@ -212,7 +130,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    function Allocate (
       Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Name : System.Native_IO.Name_Pointer;
       Name_Length : System.Native_IO.Name_Length;
@@ -220,7 +138,7 @@ package body Ada.Streams.Stream_IO.Inside is
       return Non_Controlled_File_Type;
    function Allocate (
       Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Name : System.Native_IO.Name_Pointer;
       Name_Length : System.Native_IO.Name_Length;
@@ -319,22 +237,26 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Set_Index_To_Append (File : not null Non_Controlled_File_Type);
    procedure Set_Index_To_Append (File : not null Non_Controlled_File_Type) is
-      Z_Index : C.winnt.LONGLONG;
+      New_Index : Stream_Element_Offset;
    begin
-      SetFilePointerEx (File.Handle, 0, Z_Index, C.winbase.FILE_END);
-      Set_Buffer_Index (File, Stream_Element_Offset (Z_Index));
+      System.Native_IO.Set_Relative_Index (
+         File.Handle,
+         0,
+         System.Native_IO.From_End,
+         New_Index);
+      Set_Buffer_Index (File, New_Index);
    end Set_Index_To_Append;
 
    procedure Allocate_And_Open (
       Method : System.Native_IO.Open_Method;
       File : out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form);
    procedure Allocate_And_Open (
       Method : System.Native_IO.Open_Method;
       File : out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form)
    is
@@ -363,7 +285,7 @@ package body Ada.Streams.Stream_IO.Inside is
             System.Native_IO.Open_Ordinary (
                Method => Method,
                Handle => Scoped.Super.Handle,
-               Mode => Ada.IO_Modes.File_Mode (Mode),
+               Mode => Mode,
                Name => Scoped.Name,
                Form => Form);
          else
@@ -382,7 +304,7 @@ package body Ada.Streams.Stream_IO.Inside is
          --  Scoped.Super.File holds Scoped.Name
          Scoped.Name := null;
       end;
-      if Kind = Ordinary and then Mode = Append_File then
+      if Kind = Ordinary and then Mode = IO_Modes.Append_File then
          Set_Index_To_Append (Scoped.Super.File); -- sets index to the last
       end if;
       File := Scoped.Super.File;
@@ -402,19 +324,7 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Get_Buffer (File : not null Non_Controlled_File_Type) is
    begin
       if File.Buffer_Length = Uninitialized_Buffer then
-         declare
-            File_Type : C.windef.DWORD;
-         begin
-            File_Type := C.winbase.GetFileType (File.Handle);
-            if File_Type /= C.winbase.FILE_TYPE_DISK then
-               --  no buffering for terminal, pipe and unknown device
-               File.Buffer_Length := 0;
-            else
-               --  disk file
-               File.Buffer_Length :=
-                  Stream_Element_Offset (System.Standard_Allocators.Page_Size);
-            end if;
-         end;
+         File.Buffer_Length := System.Native_IO.Block_Size (File.Handle);
          if File.Buffer_Length = 0 then
             File.Buffer := File.Buffer_Inline'Address;
             File.Buffer_Index := 0;
@@ -442,30 +352,17 @@ package body Ada.Streams.Stream_IO.Inside is
       File.Buffer_Index := File.Buffer_Index rem Buffer_Length;
       File.Reading_Index := File.Buffer_Index;
       declare
-         Read_Size : aliased C.windef.DWORD;
+         Read_Length : Stream_Element_Offset;
       begin
-         Error := C.winbase.ReadFile (
+         System.Native_IO.Read (
             File.Handle,
-            C.windef.LPVOID (File.Buffer
-               + System.Storage_Elements.Storage_Offset (
-                  File.Buffer_Index)),
-            C.windef.DWORD (Buffer_Length - File.Buffer_Index),
-            Read_Size'Access,
-            lpOverlapped => null) = 0;
-         if Error then
-            case C.winbase.GetLastError is
-               when C.winerror.ERROR_BROKEN_PIPE
-                  | C.winerror.ERROR_NO_DATA =>
-                  --  closed pipe
-                  --  this subprogram is called from End_Of_File
-                  --  because no buffering on pipe
-                  Error := False;
-               when others =>
-                  null;
-            end case;
-         else
-            File.Buffer_Index :=
-               File.Buffer_Index + Stream_Element_Offset (Read_Size);
+            File.Buffer
+               + System.Storage_Elements.Storage_Offset (File.Buffer_Index),
+            Buffer_Length - File.Buffer_Index,
+            Read_Length);
+         Error := Read_Length < 0;
+         if not Error then
+            File.Buffer_Index := File.Buffer_Index + Read_Length;
          end if;
       end;
       File.Writing_Index := File.Buffer_Index;
@@ -473,14 +370,14 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type);
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type) is
-      Dummy : C.winnt.LONGLONG;
-      pragma Unreferenced (Dummy);
+      New_Index : Stream_Element_Offset;
+      pragma Unreferenced (New_Index);
    begin
-      SetFilePointerEx (
+      System.Native_IO.Set_Relative_Index (
          File.Handle,
-         C.winnt.LONGLONG (File.Reading_Index - File.Buffer_Index),
-         Dummy,
-         C.winbase.FILE_CURRENT);
+         File.Reading_Index - File.Buffer_Index,
+         System.Native_IO.From_Current,
+         New_Index);
       File.Buffer_Index := File.Reading_Index;
       File.Writing_Index := File.Buffer_Index;
    end Reset_Reading_Buffer;
@@ -504,27 +401,19 @@ package body Ada.Streams.Stream_IO.Inside is
       if File.Writing_Index > File.Buffer_Index then
          declare
             Error : Boolean := False;
-            Written : aliased C.windef.DWORD;
+            Written_Length : Stream_Element_Offset;
          begin
-            if C.winbase.WriteFile (
+            System.Native_IO.Write (
                File.Handle,
-               C.windef.LPCVOID (File.Buffer
-                  + System.Storage_Elements.Storage_Offset (
-                     File.Buffer_Index)),
-               C.windef.DWORD (File.Writing_Index - File.Buffer_Index),
-               Written'Access,
-               lpOverlapped => null) = 0
-            then
-               case C.winbase.GetLastError is
-                  when C.winerror.ERROR_BROKEN_PIPE
-                     | C.winerror.ERROR_NO_DATA =>
-                     null;
-                  when others =>
-                     if Raise_On_Error then
-                        Raise_Exception (Device_Error'Identity);
-                     end if;
-                     Error := True;
-               end case;
+               File.Buffer
+                  + System.Storage_Elements.Storage_Offset (File.Buffer_Index),
+               File.Writing_Index - File.Buffer_Index,
+               Written_Length);
+            if Written_Length < 0 then
+               if Raise_On_Error then
+                  Raise_Exception (Device_Error'Identity);
+               end if;
+               Error := True;
             end if;
             if not Error then
                File.Buffer_Index := File.Writing_Index rem File.Buffer_Length;
@@ -655,7 +544,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Create (
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode := Out_File;
+      Mode : IO_Modes.File_Mode := IO_Modes.Out_File;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form) is
    begin
@@ -672,7 +561,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form := Default_Form) is
    begin
@@ -719,7 +608,7 @@ package body Ada.Streams.Stream_IO.Inside is
 
    procedure Reset (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : File_Mode) is
+      Mode : IO_Modes.File_Mode) is
    begin
       Check_File_Open (File);
       declare
@@ -748,12 +637,12 @@ package body Ada.Streams.Stream_IO.Inside is
                System.Native_IO.Open_Ordinary (
                   Method => System.Native_IO.Reset,
                   Handle => Scoped.Handle,
-                  Mode => Ada.IO_Modes.File_Mode (Mode),
+                  Mode => Mode,
                   Name => Scoped.File.Name,
                   Form => Scoped.File.Form);
                Scoped.File.Handle := Scoped.Handle;
                Scoped.File.Mode := Mode;
-               if Mode = Append_File then
+               if Mode = IO_Modes.Append_File then
                   Set_Index_To_Append (Scoped.File);
                end if;
             when Temporary =>
@@ -761,7 +650,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Scoped.File := File;
                File := null;
                Scoped.File.Mode := Mode;
-               if Mode = Append_File then
+               if Mode = IO_Modes.Append_File then
                   Flush_Writing_Buffer (Scoped.File);
                   Set_Index_To_Append (Scoped.File);
                else
@@ -776,7 +665,7 @@ package body Ada.Streams.Stream_IO.Inside is
       end;
    end Reset;
 
-   function Mode (File : Non_Controlled_File_Type) return File_Mode is
+   function Mode (File : Non_Controlled_File_Type) return IO_Modes.File_Mode is
    begin
       Check_File_Open (File);
       return File.Mode;
@@ -805,8 +694,8 @@ package body Ada.Streams.Stream_IO.Inside is
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
    begin
       Check_File_Open (File);
-      Get_Buffer (File); -- call GetFileType
-      if File.Buffer_Length = 0 then -- not disk file
+      Get_Buffer (File);
+      if File.Buffer_Length = 0 then -- not ordinary file
          if File.Reading_Index = File.Buffer_Index then
             declare
                Error : Boolean;
@@ -820,23 +709,20 @@ package body Ada.Streams.Stream_IO.Inside is
          return File.Reading_Index = File.Buffer_Index;
       else
          declare
-            Size : C.winnt.LONGLONG;
-            Z_Index : C.winnt.LONGLONG;
+            Size : Stream_Element_Count;
+            Index : Stream_Element_Offset;
          begin
-            GetFileSizeEx (File.Handle, Size);
-            SetFilePointerEx (File.Handle, 0, Z_Index, C.winbase.FILE_CURRENT);
-            Z_Index := Z_Index + C.winnt.LONGLONG (Offset_Of_Buffer (File));
-            return Z_Index >= Size;
+            Size := System.Native_IO.Size (File.Handle);
+            Index := System.Native_IO.Index (File.Handle)
+               + Offset_Of_Buffer (File);
+            return Index > Size;
             --  whether writing buffer will expand the file size or not
          end;
       end if;
    end End_Of_File;
 
-   function Stream (File : Non_Controlled_File_Type) return Stream_Access is
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Root_Stream_Type'Class,
-            Stream_Access);
+   function Stream (File : Non_Controlled_File_Type)
+      return not null access Root_Stream_Type'Class is
    begin
       Check_File_Open (File);
       if File.Dispatcher.Tag = Tags.No_Tag then
@@ -847,7 +733,13 @@ package body Ada.Streams.Stream_IO.Inside is
          end if;
          File.Dispatcher.File := File;
       end if;
-      return Conv.To_Pointer (File.Dispatcher'Address);
+      declare
+         S : aliased Dispatchers.Root_Dispatcher;
+         pragma Import (Ada, S);
+         for S'Address use File.Dispatcher'Address;
+      begin
+         return S'Unchecked_Access;
+      end;
    end Stream;
 
    procedure Read (
@@ -855,7 +747,7 @@ package body Ada.Streams.Stream_IO.Inside is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset) is
    begin
-      if File.Mode = Out_File then
+      if File.Mode = IO_Modes.Out_File then
          Raise_Exception (Mode_Error'Identity);
       end if;
       Last := Item'First - 1;
@@ -876,7 +768,6 @@ package body Ada.Streams.Stream_IO.Inside is
          begin
             declare
                Taking_Length : Stream_Element_Count;
-               Read_Size : aliased C.windef.DWORD;
             begin
                Taking_Length := Item'Last - Last;
                if Buffer_Length > 0 then
@@ -895,26 +786,29 @@ package body Ada.Streams.Stream_IO.Inside is
                   end;
                end if;
                if Taking_Length > 0 then
-                  Error := C.winbase.ReadFile (
-                     File.Handle,
-                     C.windef.LPVOID (Item (Last + 1)'Address),
-                     C.windef.DWORD (Taking_Length),
-                     Read_Size'Access,
-                     lpOverlapped => null) = 0;
-                  if not Error then
-                     Last := Last + Stream_Element_Offset (Read_Size);
-                     --  update indexes
-                     if Buffer_Length > 0 then
-                        File.Buffer_Index :=
-                           (File.Buffer_Index
-                              + Stream_Element_Offset (Read_Size))
-                           rem Buffer_Length;
-                     else
-                        File.Buffer_Index := 0;
+                  declare
+                     Read_Size : Stream_Element_Offset;
+                  begin
+                     System.Native_IO.Read (
+                        File.Handle,
+                        Item (Last + 1)'Address,
+                        Taking_Length,
+                        Read_Size);
+                     Error := Read_Size < 0;
+                     if not Error then
+                        Last := Last + Read_Size;
+                        --  update indexes
+                        if Buffer_Length > 0 then
+                           File.Buffer_Index :=
+                              (File.Buffer_Index + Read_Size)
+                              rem Buffer_Length;
+                        else
+                           File.Buffer_Index := 0;
+                        end if;
+                        File.Reading_Index := File.Buffer_Index;
+                        File.Writing_Index := File.Buffer_Index;
                      end if;
-                     File.Reading_Index := File.Buffer_Index;
-                     File.Writing_Index := File.Buffer_Index;
-                  end if;
+                  end;
                end if;
             end;
             if not Error
@@ -941,7 +835,7 @@ package body Ada.Streams.Stream_IO.Inside is
    is
       First : Stream_Element_Offset;
    begin
-      if File.Mode = In_File then
+      if File.Mode = IO_Modes.In_File then
          Raise_Exception (Mode_Error'Identity);
       end if;
       First := Item'First;
@@ -963,7 +857,6 @@ package body Ada.Streams.Stream_IO.Inside is
          begin
             declare
                Taking_Length : Stream_Element_Count;
-               Written : aliased C.windef.DWORD;
             begin
                Taking_Length := Item'Last - First + 1;
                if Buffer_Length > 0 then
@@ -982,21 +875,18 @@ package body Ada.Streams.Stream_IO.Inside is
                   end;
                end if;
                if Taking_Length > 0 then
-                  if C.winbase.WriteFile (
-                     File.Handle,
-                     C.windef.LPCVOID (Item (First)'Address),
-                     C.windef.DWORD (Taking_Length),
-                     Written'Access,
-                     lpOverlapped => null) = 0
-                  then
-                     case C.winbase.GetLastError is
-                        when C.winerror.ERROR_BROKEN_PIPE
-                           | C.winerror.ERROR_NO_DATA =>
-                           null;
-                        when others =>
-                           Raise_Exception (Use_Error'Identity);
-                     end case;
-                  end if;
+                  declare
+                     Written_Length : Stream_Element_Offset;
+                  begin
+                     System.Native_IO.Write (
+                        File.Handle,
+                        Item (First)'Address,
+                        Taking_Length,
+                        Written_Length);
+                     if Written_Length < 0 then
+                        Raise_Exception (Use_Error'Identity);
+                     end if;
+                  end;
                   First := First + Taking_Length;
                   --  update indexes
                   if Buffer_Length > 0 then
@@ -1019,42 +909,35 @@ package body Ada.Streams.Stream_IO.Inside is
       File : not null Non_Controlled_File_Type;
       To : Stream_Element_Positive_Count)
    is
-      Dummy : C.winnt.LONGLONG;
-      pragma Unreferenced (Dummy);
+      New_Index : Stream_Element_Offset;
+      pragma Unreferenced (New_Index);
       Z_Index : constant Stream_Element_Offset := To - 1; -- zero based
    begin
       Flush_Writing_Buffer (File);
-      SetFilePointerEx (
+      System.Native_IO.Set_Relative_Index (
          File.Handle,
-         C.winnt.LONGLONG (Z_Index),
-         Dummy,
-         C.winbase.FILE_BEGIN);
+         Z_Index,
+         System.Native_IO.From_Begin,
+         New_Index);
       Set_Buffer_Index (File, Z_Index);
    end Set_Index;
 
    function Index (File : not null Non_Controlled_File_Type)
-      return Stream_Element_Positive_Count
-   is
-      Result : C.winnt.LONGLONG;
+      return Stream_Element_Positive_Count is
    begin
-      SetFilePointerEx (File.Handle, 0, Result, C.winbase.FILE_CURRENT);
-      return Stream_Element_Positive_Count (Result + 1)
-         + Offset_Of_Buffer (File);
+      return System.Native_IO.Index (File.Handle) + Offset_Of_Buffer (File);
    end Index;
 
    function Size (File : not null Non_Controlled_File_Type)
-      return Stream_Element_Count
-   is
-      Size : C.winnt.LONGLONG;
+      return Stream_Element_Count is
    begin
       Flush_Writing_Buffer (File);
-      GetFileSizeEx (File.Handle, Size);
-      return Count (Size);
+      return System.Native_IO.Size (File.Handle);
    end Size;
 
    procedure Set_Mode (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : File_Mode) is
+      Mode : IO_Modes.File_Mode) is
    begin
       Check_File_Open (File);
       declare
@@ -1064,7 +947,7 @@ package body Ada.Streams.Stream_IO.Inside is
                Finally);
          Scoped : aliased Scoped_Handle_And_File :=
             (System.Native_IO.Invalid_Handle, null);
-         Current : Positive_Count;
+         Current : Stream_Element_Positive_Count;
       begin
          Holder.Assign (Scoped'Access);
          case File.all.Kind is
@@ -1082,7 +965,7 @@ package body Ada.Streams.Stream_IO.Inside is
                System.Native_IO.Open_Ordinary (
                   Method => System.Native_IO.Reset,
                   Handle => Scoped.Handle,
-                  Mode => Ada.IO_Modes.File_Mode (Mode),
+                  Mode => Mode,
                   Name => Scoped.File.Name,
                   Form => Scoped.File.Form);
                Scoped.File.Handle := Scoped.Handle;
@@ -1097,7 +980,7 @@ package body Ada.Streams.Stream_IO.Inside is
             when External | External_No_Close | Standard_Handle =>
                Raise_Exception (Status_Error'Identity);
          end case;
-         if Mode = Append_File then
+         if Mode = IO_Modes.Append_File then
             Set_Index_To_Append (Scoped.File);
          else
             Set_Index (Scoped.File, Current);
@@ -1112,12 +995,7 @@ package body Ada.Streams.Stream_IO.Inside is
    begin
       Check_File_Open (File);
       Flush_Writing_Buffer (File);
-      if C.winbase.FlushFileBuffers (File.Handle) = 0 then
-         --  ERROR_INVALID_HANDLE means fd is not file but terminal, pipe, etc
-         if C.winbase.GetLastError /= C.winerror.ERROR_INVALID_HANDLE then
-            Raise_Exception (Device_Error'Identity);
-         end if;
-      end if;
+      System.Native_IO.Flush (File.Handle);
    end Flush;
 
    --  implementation of handle for non-controlled
@@ -1125,7 +1003,7 @@ package body Ada.Streams.Stream_IO.Inside is
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Handle : System.Native_IO.Handle_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False)
@@ -1174,4 +1052,57 @@ package body Ada.Streams.Stream_IO.Inside is
       return File /= null and then File.Kind = Standard_Handle;
    end Is_Standard;
 
-end Ada.Streams.Stream_IO.Inside;
+   package body Dispatchers is
+
+      overriding procedure Read (
+         Stream : in out Root_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset) is
+      begin
+         Read (Stream.File, Item, Last);
+      end Read;
+
+      overriding procedure Write (
+         Stream : in out Root_Dispatcher;
+         Item : Stream_Element_Array) is
+      begin
+         Write (Stream.File, Item);
+      end Write;
+
+      overriding procedure Read (
+         Stream : in out Seekable_Dispatcher;
+         Item : out Stream_Element_Array;
+         Last : out Stream_Element_Offset) is
+      begin
+         Read (Stream.File, Item, Last);
+      end Read;
+
+      overriding procedure Write (
+         Stream : in out Seekable_Dispatcher;
+         Item : Stream_Element_Array) is
+      begin
+         Write (Stream.File, Item);
+      end Write;
+
+      overriding procedure Set_Index (
+         Stream : in out Seekable_Dispatcher;
+         To : Stream_Element_Positive_Count) is
+      begin
+         Set_Index (Stream.File, To);
+      end Set_Index;
+
+      overriding function Index (Stream : Seekable_Dispatcher)
+         return Stream_Element_Positive_Count is
+      begin
+         return Index (Stream.File);
+      end Index;
+
+      overriding function Size (Stream : Seekable_Dispatcher)
+         return Stream_Element_Count is
+      begin
+         return Size (Stream.File);
+      end Size;
+
+   end Dispatchers;
+
+end Ada.Streams.Naked_Stream_IO;

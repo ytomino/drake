@@ -1,6 +1,5 @@
 with Ada.Unchecked_Conversion;
 with Ada.Finalization;
-with System.Address_To_Access_Conversions;
 package body Ada.Exceptions.Finally is
    pragma Suppress (All_Checks);
    use type System.Address;
@@ -26,8 +25,6 @@ package body Ada.Exceptions.Finally is
 
    package body Scoped_Holder is
 
-      package Conv is new System.Address_To_Access_Conversions (Parameters);
-
       Object : Finalizer := (
          Finalization.Limited_Controlled with
          Params => System.Null_Address,
@@ -35,8 +32,10 @@ package body Ada.Exceptions.Finally is
       pragma Unreferenced (Object);
 
       procedure Assign (Item : access Parameters) is
+         function To_Address (Value : access Parameters) return System.Address;
+         pragma Import (Intrinsic, To_Address);
       begin
-         Object.Params := Conv.To_Address (Conv.Object_Pointer (Item));
+         Object.Params := To_Address (Item);
       end Assign;
 
       procedure Clear is

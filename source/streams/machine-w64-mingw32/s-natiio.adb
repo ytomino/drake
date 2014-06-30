@@ -4,12 +4,12 @@ with System.Standard_Allocators;
 with System.Storage_Elements;
 with C.string;
 with C.wincon;
-with C.windef;
 with C.winerror;
 package body System.Native_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.IO_Modes.File_Shared;
    use type Ada.IO_Modes.File_Shared_Spec;
+   use type Ada.Streams.Stream_Element_Offset;
    use type Storage_Elements.Storage_Offset;
    use type C.size_t; -- Name_Length
    use type C.windef.DWORD;
@@ -24,6 +24,13 @@ package body System.Native_IO is
       C.winnt.WCHAR'Val (Wide_Character'Pos ('D')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('A')),
       C.winnt.WCHAR'Val (0));
+
+   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line);
+   pragma No_Return (Raise_IO_Exception);
+   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line) is
+   begin
+      Raise_Exception (IO_Exception_Id (C.winbase.GetLastError), Line => Line);
+   end Raise_IO_Exception;
 
    --  implementation
 
@@ -139,7 +146,7 @@ package body System.Native_IO is
             or C.winbase.FILE_FLAG_DELETE_ON_CLOSE,
          hTemplateFile => C.winnt.HANDLE (Null_Address));
       if Handle = C.winbase.INVALID_HANDLE_VALUE then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
       --  allocate filename
       Out_Length := C.string.wcslen (Temp_Name (0)'Access);
@@ -274,7 +281,7 @@ package body System.Native_IO is
                Raise_Exception (Tasking_Error'Identity);
                --  Is Tasking_Error suitable?
             when others =>
-               Raise_Exception (Use_Error'Identity);
+               Raise_Exception (IO_Exception_Id (Error));
          end case;
       end if;
       if Shared /= Ada.IO_Modes.Allow and then Form.Wait then
@@ -325,7 +332,7 @@ package body System.Native_IO is
    begin
       Error := C.winbase.CloseHandle (Handle) = 0;
       if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
    end Close_Ordinary;
 
@@ -341,7 +348,7 @@ package body System.Native_IO is
          Error := C.winbase.DeleteFile (Name) = 0;
       end if;
       if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
    end Delete_Ordinary;
 
@@ -360,6 +367,144 @@ package body System.Native_IO is
          null,
          C.winbase.FILE_CURRENT) /= 0;
    end Is_Seekable;
+
+   function Block_Size (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Count
+   is
+      File_Type : C.windef.DWORD;
+      Result : Ada.Streams.Stream_Element_Count;
+   begin
+      File_Type := C.winbase.GetFileType (Handle);
+      if File_Type /= C.winbase.FILE_TYPE_DISK then
+         --  no buffering for terminal, pipe and unknown device
+         Result := 0;
+      else
+         --  disk file
+         Result := Ada.Streams.Stream_Element_Offset (
+            Standard_Allocators.Page_Size);
+      end if;
+      return Result;
+   end Block_Size;
+
+   procedure Read (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset)
+   is
+      Read_Size : aliased C.windef.DWORD;
+      ReadFile_Result : C.windef.WINBOOL;
+   begin
+      ReadFile_Result := C.winbase.ReadFile (
+         Handle,
+         C.windef.LPVOID (Item),
+         C.windef.DWORD (Length),
+         Read_Size'Access,
+         lpOverlapped => null);
+      Out_Length := Ada.Streams.Stream_Element_Offset (Read_Size);
+      if ReadFile_Result = 0 then
+         case C.winbase.GetLastError is
+            when C.winerror.ERROR_BROKEN_PIPE
+               | C.winerror.ERROR_NO_DATA =>
+               --  closed pipe
+               --  this subprogram is called from End_Of_File
+               --  because no buffering on pipe
+               Out_Length := 0;
+            when others =>
+               Out_Length := -1;
+         end case;
+      end if;
+   end Read;
+
+   procedure Write (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset)
+   is
+      Written_Size : aliased C.windef.DWORD;
+      WriteFile_Result : C.windef.WINBOOL;
+   begin
+      WriteFile_Result := C.winbase.WriteFile (
+         Handle,
+         C.windef.LPCVOID (Item),
+         C.windef.DWORD (Length),
+         Written_Size'Access,
+         lpOverlapped => null);
+      Out_Length := Ada.Streams.Stream_Element_Offset (Written_Size);
+      if WriteFile_Result = 0 then
+         case C.winbase.GetLastError is
+            when C.winerror.ERROR_BROKEN_PIPE
+               | C.winerror.ERROR_NO_DATA =>
+               Out_Length := 0;
+            when others =>
+               Out_Length := -1;
+         end case;
+      end if;
+   end Write;
+
+   procedure Flush (Handle : Handle_Type) is
+   begin
+      if C.winbase.FlushFileBuffers (Handle) = 0 then
+         case C.winbase.GetLastError is
+            when C.winerror.ERROR_INVALID_HANDLE =>
+               null; -- means fd is not file but terminal, pipe, etc
+            when others =>
+               Raise_Exception (Device_Error'Identity);
+         end case;
+      end if;
+   end Flush;
+
+   procedure Set_Relative_Index (
+      Handle : Handle_Type;
+      Relative_To : Ada.Streams.Stream_Element_Offset;
+      Whence : C.windef.DWORD;
+      New_Index : out Ada.Streams.Stream_Element_Offset)
+   is
+      liDistanceToMove : C.winnt.LARGE_INTEGER;
+      liNewFilePointer : aliased C.winnt.LARGE_INTEGER;
+   begin
+      liDistanceToMove.QuadPart := C.winnt.LONGLONG (Relative_To);
+      if C.winbase.SetFilePointerEx (
+         Handle,
+         liDistanceToMove,
+         liNewFilePointer'Access,
+         Whence) = 0
+      then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      New_Index :=
+         Ada.Streams.Stream_Element_Offset (liNewFilePointer.QuadPart) + 1;
+   end Set_Relative_Index;
+
+   function Index (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Offset
+   is
+      liDistanceToMove : C.winnt.LARGE_INTEGER;
+      liNewFilePointer : aliased C.winnt.LARGE_INTEGER;
+   begin
+      liDistanceToMove.QuadPart := 0;
+      if C.winbase.SetFilePointerEx (
+         Handle,
+         liDistanceToMove,
+         liNewFilePointer'Access,
+         C.winbase.FILE_CURRENT) = 0
+      then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      return Ada.Streams.Stream_Element_Offset (liNewFilePointer.QuadPart) + 1;
+   end Index;
+
+   function Size (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Count
+   is
+      liFileSize : aliased C.winnt.LARGE_INTEGER;
+   begin
+      if C.winbase.GetFileSizeEx (Handle, liFileSize'Access) = 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      return Ada.Streams.Stream_Element_Offset (liFileSize.QuadPart);
+   end Size;
 
    function Standard_Input return Handle_Type is
    begin
@@ -385,5 +530,19 @@ package body System.Native_IO is
       Standard_Output_Handle := Standard_Output;
       Standard_Error_Handle := Standard_Error;
    end Initialize;
+
+   function IO_Exception_Id (Error : C.windef.DWORD)
+      return Ada.Exception_Identification.Exception_Id is
+   begin
+      case Error is
+         when C.winerror.ERROR_WRITE_FAULT
+            | C.winerror.ERROR_READ_FAULT
+            | C.winerror.ERROR_GEN_FAILURE
+            | C.winerror.ERROR_IO_DEVICE =>
+            return Device_Error'Identity;
+         when others =>
+            return Use_Error'Identity;
+      end case;
+   end IO_Exception_Id;
 
 end System.Native_IO;

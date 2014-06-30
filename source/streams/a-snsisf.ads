@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Streams.Stream_IO.Inside.Standard_Files is
+package Ada.Streams.Naked_Stream_IO.Standard_Files is
    pragma Elaborate_Body;
 
    Standard_Input : constant Non_Controlled_File_Type;
@@ -20,7 +20,7 @@ private
 
    Standard_Input_Stream : aliased Stream_Type := (
       Handle => System.Native_IO.Uninitialized_Standard_Input,
-      Mode => In_File,
+      Mode => IO_Modes.In_File,
       Kind => Standard_Handle,
       Name => Standard_Input_Name (0)'Access,
       Name_Length => 6,
@@ -45,7 +45,7 @@ private
 
    Standard_Output_Stream : aliased Stream_Type := (
       Handle => System.Native_IO.Uninitialized_Standard_Output,
-      Mode => Out_File,
+      Mode => IO_Modes.Out_File,
       Kind => Standard_Handle,
       Name => Standard_Output_Name (0)'Access,
       Name_Length => 7,
@@ -70,7 +70,7 @@ private
 
    Standard_Error_Stream : aliased Stream_Type := (
       Handle => System.Native_IO.Uninitialized_Standard_Error,
-      Mode => Out_File,
+      Mode => IO_Modes.Out_File,
       Kind => Standard_Handle,
       Name => Standard_Error_Name (0)'Access,
       Name_Length => 7,
@@ -90,4 +90,4 @@ private
    Standard_Error : constant Non_Controlled_File_Type :=
       Standard_Error_Stream'Access;
 
-end Ada.Streams.Stream_IO.Inside.Standard_Files;
+end Ada.Streams.Naked_Stream_IO.Standard_Files;

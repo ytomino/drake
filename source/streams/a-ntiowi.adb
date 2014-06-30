@@ -1,15 +1,15 @@
 with Ada.Exception_Identification.From_Here;
 with System.UTF_Conversions;
-package body Ada.Text_IO.Inside.Wide is
+package body Ada.Naked_Text_IO.Wide is
    use Exception_Identification.From_Here;
    use type System.UTF_Conversions.UCS_4;
 
    procedure Store_Second (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       C : Wide_Wide_Character;
       Item : out Wide_Character);
    procedure Store_Second (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       C : Wide_Wide_Character;
       Item : out Wide_Character)
    is
@@ -28,29 +28,34 @@ package body Ada.Text_IO.Inside.Wide is
          declare
             Buffer : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
             Last : Natural;
-            Ref_Text : constant access Text_Type := Reference (File).all;
          begin
             System.UTF_Conversions.To_UTF_8 (
                Wide_Character'Pos (W_Buffer (2)),
                Buffer,
                Last,
                To_Status);
-            Ref_Text.Last := Last;
-            Ref_Text.Buffer (1 .. Last) := Buffer (1 .. Last);
+            File.Last := Last;
+            File.Buffer (1 .. Last) := Buffer (1 .. Last);
          end;
       end if;
    end Store_Second;
 
    --  implementation
 
-   procedure Get (File : File_Type; Item : out Wide_Character) is
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character)
+   is
       C : Wide_Wide_Character;
    begin
       Get (File, C); -- Wide_Wide
       Store_Second (File, C, Item);
    end Get;
 
-   procedure Get (File : File_Type; Item : out Wide_Wide_Character) is
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character)
+   is
       S : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
       Length : Natural;
       From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
@@ -62,7 +67,9 @@ package body Ada.Text_IO.Inside.Wide is
          Code : System.UTF_Conversions.UCS_4;
       begin
          if Length >= 2 then
-            Get (File, S (2 .. Length));
+            for I in 2 .. Length loop
+               Get (File, S (I));
+            end loop;
          end if;
          System.UTF_Conversions.From_UTF_8 (
             S (1 .. Length),
@@ -73,14 +80,17 @@ package body Ada.Text_IO.Inside.Wide is
       end;
    end Get;
 
-   procedure Get_Immediate (File : File_Type; Item : out Wide_Character) is
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character)
+   is
       Available : Boolean;
    begin
       Get_Immediate (File, Item, Available, Wait => True);
    end Get_Immediate;
 
    procedure Get_Immediate (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       Item : out Wide_Wide_Character)
    is
       Available : Boolean;
@@ -89,7 +99,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Get_Immediate;
 
    procedure Get_Immediate (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       Item : out Wide_Character;
       Available : out Boolean) is
    begin
@@ -97,7 +107,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Get_Immediate;
 
    procedure Get_Immediate (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       Item : out Wide_Wide_Character;
       Available : out Boolean) is
    begin
@@ -105,7 +115,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Get_Immediate;
 
    procedure Get_Immediate (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       Item : out Wide_Character;
       Available : out Boolean;
       Wait : Boolean)
@@ -119,7 +129,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Get_Immediate;
 
    procedure Get_Immediate (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       Item : out Wide_Wide_Character;
       Available : out Boolean;
       Wait : Boolean)
@@ -130,7 +140,7 @@ package body Ada.Text_IO.Inside.Wide is
       From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
    begin
       Get_Immediate (
-         Reference (File).all,
+         File,
          S (1 .. 1),
          Read_Last,
          Wait);
@@ -142,7 +152,7 @@ package body Ada.Text_IO.Inside.Wide is
       begin
          if Length >= 2 then
             Get_Immediate (
-               Reference (File).all,
+               File,
                S (2 .. Length),
                Read_Last,
                Wait => True);
@@ -157,7 +167,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Get_Immediate;
 
    procedure Look_Ahead (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       Item : out Wide_Character;
       End_Of_Line : out Boolean)
    is
@@ -183,7 +193,7 @@ package body Ada.Text_IO.Inside.Wide is
    end Look_Ahead;
 
    procedure Look_Ahead (
-      File : File_Type;
+      File : Non_Controlled_File_Type;
       Item : out Wide_Wide_Character;
       End_Of_Line : out Boolean)
    is
@@ -205,7 +215,7 @@ package body Ada.Text_IO.Inside.Wide is
                Conv_Last : Natural;
                Code : System.UTF_Conversions.UCS_4;
             begin
-               Look_Ahead (Reference (File).all, S, Last, EOL);
+               Look_Ahead (File, S, Last, EOL);
                System.UTF_Conversions.From_UTF_8 (
                   S (1 .. Last),
                   Conv_Last,
@@ -217,11 +227,13 @@ package body Ada.Text_IO.Inside.Wide is
       end if;
    end Look_Ahead;
 
-   procedure Put (File : File_Type; Item : Wide_Character) is
-      Ref_Text : constant access Text_Type := Reference (File).all;
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Wide_Character)
+   is
       From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
    begin
-      if Ref_Text.Last > 0 then
+      if File.Last > 0 then
          declare
             First : System.UTF_Conversions.UCS_4;
             Code : System.UTF_Conversions.UCS_4;
@@ -232,7 +244,7 @@ package body Ada.Text_IO.Inside.Wide is
             begin
                --  restore first of surrogate pair
                System.UTF_Conversions.From_UTF_8 (
-                  Ref_Text.Buffer (1 .. Ref_Text.Last),
+                  File.Buffer (1 .. File.Last),
                   Last,
                   First,
                   From_Status);
@@ -242,7 +254,7 @@ package body Ada.Text_IO.Inside.Wide is
                   From_Status);
                if Length /= 2
                   or else First >= 16#ffff#
-                  or else Last /= Ref_Text.Last
+                  or else Last /= File.Last
                then
                   --  previous data is wrong
                   Raise_Exception (Data_Error'Identity);
@@ -260,7 +272,7 @@ package body Ada.Text_IO.Inside.Wide is
                   Code,
                   From_Status);
             end;
-            Ref_Text.Last := 0;
+            File.Last := 0;
             Put (File, Wide_Wide_Character'Val (Code));
          end;
       else
@@ -273,8 +285,8 @@ package body Ada.Text_IO.Inside.Wide is
                --  store first of surrogate pair
                System.UTF_Conversions.To_UTF_8 (
                   Wide_Character'Pos (Item),
-                  Ref_Text.Buffer,
-                  Ref_Text.Last,
+                  File.Buffer,
+                  File.Last,
                   To_Status);
             else
                --  single character
@@ -284,10 +296,11 @@ package body Ada.Text_IO.Inside.Wide is
       end if;
    end Put;
 
-   procedure Put (File : File_Type; Item : Wide_Wide_Character) is
-      Ref_Text : constant access Text_Type := Reference (File).all;
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Wide_Wide_Character) is
    begin
-      if Ref_Text.Last > 0 then
+      if File.Last > 0 then
          --  previous data is rested
          Raise_Exception (Data_Error'Identity);
       else
@@ -301,9 +314,11 @@ package body Ada.Text_IO.Inside.Wide is
                Buffer,
                Last,
                To_Status);
-            Put (File, Buffer (1 .. Last));
+            for I in 1 .. Last loop
+               Put (File, Buffer (I));
+            end loop;
          end;
       end if;
    end Put;
 
-end Ada.Text_IO.Inside.Wide;
+end Ada.Naked_Text_IO.Wide;

@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Stream_IO.Inside;
+with Ada.Streams.Stream_IO.Naked;
 with System.Zero_Terminated_Strings;
 with System.Formatting;
 with System.Native_IO;
@@ -131,7 +131,7 @@ package body Ada.Streams.Stream_IO.Sockets is
          Raise_Exception (Use_Error'Identity);
       else
          System.Native_IO.Set_Close_On_Exec (Handle);
-         Inside.Open (
+         Naked.Open (
             File,
             Handle,
             Append_File, -- Inout

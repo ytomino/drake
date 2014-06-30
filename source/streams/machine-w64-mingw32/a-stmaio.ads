@@ -4,7 +4,7 @@ with Ada.IO_Exceptions;
 with Ada.Streams.Stream_IO;
 with System.Storage_Elements;
 private with Ada.Finalization;
-private with Ada.Streams.Stream_IO.Inside;
+private with Ada.Streams.Naked_Stream_IO;
 private with C.winbase;
 private with C.winnt;
 package Ada.Storage_Mapped_IO is
@@ -56,7 +56,7 @@ private
       Address : System.Address := System.Null_Address;
       Size : System.Storage_Elements.Storage_Count;
       File_Mapping : C.winnt.HANDLE;
-      File : aliased Streams.Stream_IO.Inside.Non_Controlled_File_Type;
+      File : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type;
    end record;
    pragma Suppress_Initialization (Non_Controlled_Mapping);
 

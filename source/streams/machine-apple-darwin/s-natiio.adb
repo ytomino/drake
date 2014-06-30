@@ -5,18 +5,24 @@ with C.errno;
 with C.fcntl;
 with C.stdlib;
 with C.sys.file;
+with C.sys.stat;
 with C.sys.types;
-with C.unistd;
 package body System.Native_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.IO_Modes.File_Shared;
    use type Ada.IO_Modes.File_Shared_Spec;
+   use type Ada.Streams.Stream_Element_Offset;
    use type C.char; -- Name_Character
    use type C.char_array; -- Name_String
    use type C.char_ptr; -- Name_Pointer
+   use type C.signed_long;
+   use type C.signed_long_long;
    use type C.size_t; -- Name_Length
-   use type C.sys.types.off_t;
    use type C.unsigned_int;
+   use type C.unsigned_short;
+
+   pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
+      "off_t is not 64bit");
 
    function strlen (Item : not null access constant C.char) return C.size_t;
    pragma Import (Intrinsic, strlen, "__builtin_strlen");
@@ -26,6 +32,13 @@ package body System.Native_IO is
 
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
+
+   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line);
+   pragma No_Return (Raise_IO_Exception);
+   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line) is
+   begin
+      Raise_Exception (IO_Exception_Id (C.errno.errno), Line => Line);
+   end Raise_IO_Exception;
 
    --  implementation
 
@@ -200,7 +213,7 @@ package body System.Native_IO is
          Handle := mkstemp (Out_Item);
       end;
       if Handle < 0 then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
       Set_Close_On_Exec (Handle);
    end Open_Temporary;
@@ -301,7 +314,7 @@ package body System.Native_IO is
                | C.errno.EROFS =>
                Raise_Exception (Name_Error'Identity);
             when others =>
-               Raise_Exception (Use_Error'Identity);
+               Raise_Exception (IO_Exception_Id (errno));
          end case;
       end if;
       declare
@@ -366,7 +379,7 @@ package body System.Native_IO is
          Error := C.unistd.unlink (Name) < 0;
       end if;
       if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
    end Close_Temporary;
 
@@ -378,7 +391,7 @@ package body System.Native_IO is
    begin
       Error := C.unistd.close (Handle) < 0;
       if Error and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
+         Raise_IO_Exception;
       end if;
    end Close_Ordinary;
 
@@ -406,5 +419,138 @@ package body System.Native_IO is
          0,
          C.unistd.SEEK_CUR) >= 0;
    end Is_Seekable;
+
+   function Block_Size (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Count
+   is
+      Result : Ada.Streams.Stream_Element_Count;
+   begin
+      if Is_Terminal (Handle) then
+         Result := 0; -- no buffering for terminal
+      else
+         declare
+            Info : aliased C.sys.stat.struct_stat;
+            File_Type : C.sys.types.mode_t;
+         begin
+            if C.sys.stat.fstat (Handle, Info'Access) < 0 then
+               Raise_Exception (Use_Error'Identity);
+            end if;
+            File_Type := Info.st_mode and C.sys.stat.S_IFMT;
+            if File_Type = C.sys.stat.S_IFIFO
+               or else File_Type = C.sys.stat.S_IFSOCK
+            then
+               Result := 0; -- no buffering for pipe and socket
+            else
+               --  disk file
+               Result := Ada.Streams.Stream_Element_Offset'Max (
+                  2, -- Buffer_Length /= 1
+                  Ada.Streams.Stream_Element_Offset (Info.st_blksize));
+            end if;
+         end;
+      end if;
+      return Result;
+   end Block_Size;
+
+   procedure Read (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset)
+   is
+      Read_Size : C.sys.types.ssize_t;
+   begin
+      Read_Size := C.unistd.read (
+         Handle,
+         C.void_ptr (Item),
+         C.size_t (Length));
+      Out_Length := Ada.Streams.Stream_Element_Offset (Read_Size);
+   end Read;
+
+   procedure Write (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset)
+   is
+      Written_Size : C.sys.types.ssize_t;
+   begin
+      Written_Size := C.unistd.write (
+         Handle,
+         C.void_const_ptr (Item),
+         C.size_t (Length));
+      Out_Length := Ada.Streams.Stream_Element_Offset (Written_Size);
+      if Out_Length < 0 then
+         case C.errno.errno is
+            when C.errno.EPIPE =>
+               Out_Length := 0;
+            when others =>
+               null;
+         end case;
+      end if;
+   end Write;
+
+   procedure Flush (Handle : Handle_Type) is
+   begin
+      if C.unistd.fsync (Handle) < 0 then
+         case C.errno.errno is
+            when C.errno.EINVAL =>
+               null; -- means fd is not file but FIFO, etc.
+            when others =>
+               Raise_Exception (Device_Error'Identity);
+         end case;
+      end if;
+   end Flush;
+
+   procedure Set_Relative_Index (
+      Handle : Handle_Type;
+      Relative_To : Ada.Streams.Stream_Element_Offset;
+      Whence : C.signed_int;
+      New_Index : out Ada.Streams.Stream_Element_Offset)
+   is
+      Result : C.sys.types.off_t;
+   begin
+      Result := C.unistd.lseek (
+         Handle,
+         C.sys.types.off_t (Relative_To),
+         Whence);
+      if Result < 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      New_Index := Ada.Streams.Stream_Element_Offset (Result) + 1;
+   end Set_Relative_Index;
+
+   function Index (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Offset
+   is
+      Result : C.sys.types.off_t;
+   begin
+      Result := C.unistd.lseek (Handle, 0, C.unistd.SEEK_CUR);
+      if Result < 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      return Ada.Streams.Stream_Element_Offset (Result) + 1;
+   end Index;
+
+   function Size (Handle : Handle_Type)
+      return Ada.Streams.Stream_Element_Count
+   is
+      Info : aliased C.sys.stat.struct_stat;
+   begin
+      if C.sys.stat.fstat (Handle, Info'Access) < 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      return Ada.Streams.Stream_Element_Offset (Info.st_size);
+   end Size;
+
+   function IO_Exception_Id (errno : C.signed_int)
+      return Ada.Exception_Identification.Exception_Id is
+   begin
+      case errno is
+         when C.errno.EIO =>
+            return Device_Error'Identity;
+         when others =>
+            return Use_Error'Identity;
+      end case;
+   end IO_Exception_Id;
 
 end System.Native_IO;

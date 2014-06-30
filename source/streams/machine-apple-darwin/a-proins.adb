@@ -108,12 +108,13 @@ package body Ada.Processes.Inside is
                Exception_Id := Constraint_Error'Identity;
             when C.errno.ENOMEM =>
                Exception_Id := Storage_Error'Identity;
-            when C.errno.EINVAL => -- file descriptor
-               Exception_Id := Use_Error'Identity;
-            when C.errno.EIO =>
-               Exception_Id := Device_Error'Identity;
-            when others =>
+            when C.errno.ENOTDIR
+               | C.errno.ENAMETOOLONG
+               | C.errno.ENOENT
+               | C.errno.EACCES => -- implies the command is a directory
                Exception_Id := Name_Error'Identity;
+            when others =>
+               Exception_Id := System.Native_IO.IO_Exception_Id (Error);
          end case;
       end;
    <<Cleanup>>

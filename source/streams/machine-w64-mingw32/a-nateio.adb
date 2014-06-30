@@ -1,146 +1,122 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
+with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
-with System.Formatting;
 with System.UTF_Conversions;
-with C.sys.types;
-with C.termios;
-with C.unistd;
-package body Ada.Text_IO.Inside is
+with System.UTF_Conversions.From_8_To_16;
+with System.UTF_Conversions.From_16_To_8;
+with C.windef;
+with C.wincon;
+with C.winnls;
+with C.winnt;
+package body Ada.Naked_Text_IO is
    use Exception_Identification.From_Here;
+   use type IO_Modes.File_Mode;
    use type IO_Text_Modes.File_External;
+   use type IO_Text_Modes.File_External_Encoding;
    use type IO_Text_Modes.File_New_Line;
    use type IO_Text_Modes.File_SUB;
-   use type Streams.Stream_Element;
    use type Streams.Stream_Element_Offset;
-   use type Streams.Stream_IO.Stream_Access;
-   use type C.signed_int;
-   use type C.unsigned_int;
-   use type C.unsigned_long;
-   pragma Warnings (Off); -- ssize_t = Handle_Type = int in some platforms
-   use type C.sys.types.ssize_t;
-   pragma Warnings (On);
+   use type C.size_t;
+   use type C.windef.WORD;
+   use type C.windef.DWORD;
+   use type C.windef.WINBOOL;
+   use type C.winnt.HANDLE;
+   use type C.winnt.SHORT;
+   use type C.winnt.WCHAR;
 
-   procedure tcgetsetattr (
-      Handle : System.Native_IO.Handle_Type;
-      Mask : C.termios.tcflag_t;
-      Min : C.termios.cc_t;
-      Saved_Settings : not null access C.termios.struct_termios);
-   procedure tcgetsetattr (
-      Handle : System.Native_IO.Handle_Type;
-      Mask : C.termios.tcflag_t;
-      Min : C.termios.cc_t;
-      Saved_Settings : not null access C.termios.struct_termios)
-   is
-      Settings : aliased C.termios.struct_termios;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-   begin
-      --  get current terminal mode
-      Dummy := C.termios.tcgetattr (Handle, Saved_Settings);
-      --  set non-canonical mode
-      Settings := Saved_Settings.all;
-      Settings.c_lflag := Settings.c_lflag and Mask;
-      Settings.c_cc (C.termios.VTIME) := 0; -- wait 0.0 sec
-      Settings.c_cc (C.termios.VMIN) := Min; -- wait Min bytes
-      Dummy := C.termios.tcsetattr (
-         Handle,
-         C.termios.TCSAFLUSH,
-         Settings'Access);
-   end tcgetsetattr;
+   pragma Compile_Time_Error (Wide_Character'Size /= C.winnt.WCHAR'Size,
+      "WCHAR'Size is mismatch");
 
-   procedure write (
-      Handle : System.Native_IO.Handle_Type;
-      Item : String);
-   procedure write (
-      Handle : System.Native_IO.Handle_Type;
-      Item : String) is
+   package LPSTR_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.winnt.CCHAR,
+         C.winnt.LPSTR);
+
+   procedure GetConsoleScreenBufferInfo (
+      ConsoleOutput : C.winnt.HANDLE;
+      ConsoleScreenBufferInfo : access C.wincon.CONSOLE_SCREEN_BUFFER_INFO);
+   procedure GetConsoleScreenBufferInfo (
+      ConsoleOutput : C.winnt.HANDLE;
+      ConsoleScreenBufferInfo : access C.wincon.CONSOLE_SCREEN_BUFFER_INFO) is
    begin
-      if C.unistd.write (
-         Handle,
-         C.void_const_ptr (Item'Address),
-         Item'Length) < 0
+      if C.wincon.GetConsoleScreenBufferInfo (
+         ConsoleOutput,
+         ConsoleScreenBufferInfo) = 0
       then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (Device_Error'Identity);
       end if;
-   end write;
+   end GetConsoleScreenBufferInfo;
 
-   procedure read_Escape_Sequence (
-      Handle : System.Native_IO.Handle_Type;
-      Item : out String;
-      Last : out Natural;
-      Read_Until : Character);
-   procedure read_Escape_Sequence (
-      Handle : System.Native_IO.Handle_Type;
-      Item : out String;
-      Last : out Natural;
-      Read_Until : Character) is
-   begin
-      Last := Item'First - 1;
-      while C.unistd.read (
-         Handle,
-         C.void_ptr (Item (Last + 1)'Address),
-         1) = 1
-      loop
-         if Last < Item'First then
-            if Item (Last + 1) = Character'Val (16#1b#) then
-               Last := Last + 1;
-            end if;
-         else
-            Last := Last + 1;
-            exit when Item (Last) = Read_Until or else Last >= Item'Last;
-         end if;
-      end loop;
-   end read_Escape_Sequence;
-
-   procedure Parse_Escape_Sequence (
-      Item : String;
-      Prefix : String;
-      Postfix : Character;
-      X1, X2 : out System.Formatting.Unsigned);
-   procedure Parse_Escape_Sequence (
-      Item : String;
-      Prefix : String;
-      Postfix : Character;
-      X1, X2 : out System.Formatting.Unsigned)
+   procedure SetConsoleScreenBufferSize_With_Adjusting (
+      ConsoleOutput : C.winnt.HANDLE;
+      Size : C.wincon.COORD;
+      Current : C.winnt.HANDLE);
+   procedure SetConsoleScreenBufferSize_With_Adjusting (
+      ConsoleOutput : C.winnt.HANDLE;
+      Size : C.wincon.COORD;
+      Current : C.winnt.HANDLE)
    is
-      P : Natural;
-      Error : Boolean;
+      Info, Old_Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+      Old_Size : C.wincon.COORD;
+      Rect : aliased C.wincon.SMALL_RECT;
    begin
-      if Item'Length >= Prefix'Length
-         and then Item (Item'First .. Item'First + Prefix'Length - 1) = Prefix
-      then
-         System.Formatting.Value (
-            Item (Item'First + Prefix'Length .. Item'Last),
-            P,
-            X1,
-            Error => Error);
-         if not Error
-            and then P < Item'Last
-            and then Item (P + 1) = ';'
+      --  resize viewport to smaller than current window
+      GetConsoleScreenBufferInfo (Current, Old_Info'Access);
+      Old_Size.X := Old_Info.srWindow.Right - Old_Info.srWindow.Left + 1;
+      Old_Size.Y := Old_Info.srWindow.Bottom - Old_Info.srWindow.Top + 1;
+      if Size.X < Old_Size.X or else Size.Y < Old_Size.Y then
+         Rect.Left := 0;
+         Rect.Top := 0;
+         Rect.Right := C.winnt.SHORT'Min (Size.X, Old_Size.X) - 1;
+         Rect.Bottom := C.winnt.SHORT'Min (Size.Y, Old_Size.Y) - 1;
+         if C.wincon.SetConsoleWindowInfo (
+            ConsoleOutput,
+            1,
+            Rect'Access) = 0
          then
-            System.Formatting.Value (
-               Item (P + 2 .. Item'Last),
-               P,
-               X2,
-               Error => Error);
-            if not Error
-               and then P + 1 = Item'Last
-               and then Item (P + 1) = Postfix
-            then
-               return;
-            end if;
+            Raise_Exception (Device_Error'Identity);
          end if;
       end if;
-      Raise_Exception (Data_Error'Identity);
-   end Parse_Escape_Sequence;
+      --  resize screen buffer
+      if C.wincon.SetConsoleScreenBufferSize (ConsoleOutput, Size) = 0 then
+         Raise_Exception (Device_Error'Identity);
+      end if;
+      --  maximize viewport
+      GetConsoleScreenBufferInfo (ConsoleOutput, Info'Access);
+      Rect.Left := 0;
+      Rect.Top := 0;
+      Rect.Right := Info.dwMaximumWindowSize.X - 1;
+      Rect.Bottom := Info.dwMaximumWindowSize.Y - 1;
+      if C.wincon.SetConsoleWindowInfo (
+         ConsoleOutput,
+         1,
+         Rect'Access) = 0
+      then
+         Raise_Exception (Device_Error'Identity);
+      end if;
+   end SetConsoleScreenBufferSize_With_Adjusting;
 
    --  implementation of the parameter Form
 
    procedure Set (Form : in out Packed_Form; Keyword, Item : String) is
    begin
-      if Keyword = "nl" then -- abbr or new_line
+      if Keyword = "external" then
+         if Item'Length > 0 and then Item (Item'First) = 'd' then -- dbcs
+            Form.External := IO_Text_Modes.Locale;
+         elsif Item'Length > 0
+            and then Item (Item'First) = 'u'
+            and then Item (Item'Last) = '8'
+         then -- utf-8
+            Form.External := IO_Text_Modes.UTF_8;
+         end if;
+      elsif Keyword = "wcem" then
+         --  compatibility with GNAT runtime
+         if Item'Length > 0 and then Item (Item'First) = '8' then
+            Form.External := IO_Text_Modes.UTF_8;
+         end if;
+      elsif Keyword = "nl" then -- abbr or new_line
          if Item'Length > 0 and then Item (Item'First) = 'l' then -- lf
             Form.New_Line := IO_Text_Modes.LF;
          elsif Item'Length > 0 and then Item (Item'First) = 'c' then -- cr
@@ -155,7 +131,7 @@ package body Ada.Text_IO.Inside is
             Form.SUB := IO_Text_Modes.Ordinary;
          end if;
       else
-         Streams.Stream_IO.Inside.Set (Form.Stream_Form, Keyword, Item);
+         Streams.Naked_Stream_IO.Set (Form.Stream_Form, Keyword, Item);
       end if;
    end Set;
 
@@ -186,35 +162,45 @@ package body Ada.Text_IO.Inside is
 
    procedure Unpack (
       Form : Packed_Form;
-      Result : out Streams.Stream_IO.Inside.Form_String;
+      Result : out Streams.Naked_Stream_IO.Form_String;
       Last : out Natural)
    is
-      subtype Not_LF is
+      subtype Not_CR_LF is
          IO_Text_Modes.File_New_Line range
-            IO_Text_Modes.CR ..
-            IO_Text_Modes.CR_LF;
+            IO_Text_Modes.LF ..
+            IO_Text_Modes.CR;
       New_Last : Natural;
    begin
-      Streams.Stream_IO.Inside.Unpack (Form.Stream_Form, Result, Last);
-      if Form.New_Line /= IO_Text_Modes.LF then
-         if Last /= Streams.Stream_IO.Inside.Form_String'First - 1 then
+      Streams.Naked_Stream_IO.Unpack (Form.Stream_Form, Result, Last);
+      if Form.External = IO_Text_Modes.UTF_8 then
+         if Last /= Streams.Naked_Stream_IO.Form_String'First - 1 then
             New_Last := Last + 1;
             Result (New_Last) := ',';
             Last := New_Last;
          end if;
-         case Not_LF (Form.New_Line) is
+         New_Last := Last + 14;
+         Result (Last + 1 .. New_Last) := "external=utf-8";
+         Last := New_Last;
+      end if;
+      if Form.New_Line /= IO_Text_Modes.CR_LF then
+         if Last /= Streams.Naked_Stream_IO.Form_String'First - 1 then
+            New_Last := Last + 1;
+            Result (New_Last) := ',';
+            Last := New_Last;
+         end if;
+         case Not_CR_LF (Form.New_Line) is
+            when IO_Text_Modes.LF =>
+               New_Last := Last + 5;
+               Result (Last + 1 .. New_Last) := "lm=lf";
+               Last := New_Last;
             when IO_Text_Modes.CR =>
                New_Last := Last + 5;
                Result (Last + 1 .. New_Last) := "lm=cr";
                Last := New_Last;
-            when IO_Text_Modes.CR_LF =>
-               New_Last := Last + 4;
-               Result (Last + 1 .. New_Last) := "lm=m";
-               Last := New_Last;
          end case;
       end if;
       if Form.SUB /= IO_Text_Modes.Ordinary then
-         if Last /= Streams.Stream_IO.Inside.Form_String'First - 1 then
+         if Last /= Streams.Naked_Stream_IO.Form_String'First - 1 then
             New_Last := Last + 1;
             Result (New_Last) := ',';
             Last := New_Last;
@@ -224,50 +210,6 @@ package body Ada.Text_IO.Inside is
          Last := New_Last;
       end if;
    end Unpack;
-
-   --  implementation of handle of stream
-
-   procedure Open (
-      File : in out File_Type;
-      Stream : Streams.Stream_IO.Stream_Access;
-      Mode : File_Mode;
-      Name : String := "";
-      Form : String) is
-   begin
-      Open (
-         File => Reference (File).all,
-         Stream => Stream,
-         Mode => Mode,
-         Name => Name,
-         Form => Pack (Form));
-   end Open;
-
-   procedure Open (
-      File : in out File_Type;
-      Stream : Streams.Stream_IO.Stream_Access;
-      Mode : File_Mode;
-      Name : String := "";
-      Form : Packed_Form := Default_Form) is
-   begin
-      Open (
-         File => Reference (File).all,
-         Stream => Stream,
-         Mode => Mode,
-         Name => Name,
-         Form => Form);
-   end Open;
-
-   function Stream (File : File_Type) return Streams.Stream_IO.Stream_Access is
-   begin
-      return Stream (Reference (File).all);
-   end Stream;
-
-   function Stream_IO (File : File_Type)
-      return not null access
-         Streams.Stream_IO.Inside.Non_Controlled_File_Type is
-   begin
-      return Stream_IO (Reference (File).all);
-   end Stream_IO;
 
    --  non-controlled
 
@@ -282,15 +224,15 @@ package body Ada.Text_IO.Inside is
 
    procedure Check_File_Mode (
       File : Non_Controlled_File_Type;
-      Expected : File_Mode);
+      Expected : IO_Modes.File_Mode);
    procedure Check_File_Open (File : Non_Controlled_File_Type);
    procedure Check_Stream_IO_Open (File : Non_Controlled_File_Type);
 
    procedure Check_File_Mode (
       File : Non_Controlled_File_Type;
-      Expected : File_Mode) is
+      Expected : IO_Modes.File_Mode) is
    begin
-      if (Mode (File) = In_File) /= (Expected = In_File) then
+      if (Mode (File) = IO_Modes.In_File) /= (Expected = IO_Modes.In_File) then
          Raise_Exception (Mode_Error'Identity);
       end if;
    end Check_File_Mode;
@@ -305,28 +247,28 @@ package body Ada.Text_IO.Inside is
    procedure Check_Stream_IO_Open (File : Non_Controlled_File_Type) is
    begin
       if not Is_Open (File)
-         or else not Streams.Stream_IO.Inside.Is_Open (File.File)
+         or else not Streams.Naked_Stream_IO.Is_Open (File.File)
       then
          Raise_Exception (Status_Error'Identity);
       end if;
    end Check_Stream_IO_Open;
 
    type Open_Access is not null access procedure (
-      File : in out Streams.Stream_IO.Inside.Non_Controlled_File_Type;
-      Mode : Streams.Stream_IO.File_Mode;
+      File : in out Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form);
 
    procedure Open_File (
       Open_Proc : Open_Access;
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : Packed_Form);
    procedure Open_File (
       Open_Proc : Open_Access;
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : Packed_Form)
    is
@@ -348,19 +290,26 @@ package body Ada.Text_IO.Inside is
       --  open
       Open_Proc.all (
          File => New_File.File,
-         Mode => Streams.Stream_IO.File_Mode (Mode),
+         Mode => Mode,
          Name => Name,
          Form => Form.Stream_Form);
-      New_File.Stream := Streams.Stream_IO.Inside.Stream (New_File.File);
+      declare
+         function To_Address (Value : access Streams.Root_Stream_Type'Class)
+            return System.Address;
+         pragma Import (Intrinsic, To_Address);
+      begin
+         New_File.Stream := To_Address (
+            Streams.Naked_Stream_IO.Stream (New_File.File));
+      end;
       --  select encoding
       if System.Native_IO.Is_Terminal (
-         Streams.Stream_IO.Inside.Handle (New_File.File))
+         Streams.Naked_Stream_IO.Handle (New_File.File))
       then
          New_File.External := IO_Text_Modes.Terminal;
-         New_File.New_Line := IO_Text_Modes.LF;
+         New_File.New_Line := IO_Text_Modes.CR_LF;
          New_File.SUB := IO_Text_Modes.Ordinary;
       else
-         New_File.External := IO_Text_Modes.UTF_8;
+         New_File.External := IO_Text_Modes.File_External (Form.External);
          New_File.New_Line := Form.New_Line;
          New_File.SUB := Form.SUB;
       end if;
@@ -369,30 +318,68 @@ package body Ada.Text_IO.Inside is
       File := New_File;
    end Open_File;
 
+   function Unchecked_Stream (File : Non_Controlled_File_Type)
+      return not null access Streams.Root_Stream_Type'Class;
+   function Unchecked_Stream (File : Non_Controlled_File_Type)
+      return not null access Streams.Root_Stream_Type'Class
+   is
+      function To_Pointer (Value : System.Address)
+         return access Streams.Root_Stream_Type'Class;
+      pragma Import (Intrinsic, To_Pointer);
+   begin
+      return To_Pointer (File.Stream).all'Unchecked_Access;
+   end Unchecked_Stream;
+
    procedure Raw_New_Page (File : Non_Controlled_File_Type);
    procedure Raw_New_Page (File : Non_Controlled_File_Type) is
    begin
       if File.External = IO_Text_Modes.Terminal then
          declare -- clear screen
-            Code : constant Streams.Stream_Element_Array := (
-               16#1b#,
-               Character'Pos ('['),
-               Character'Pos ('2'),
-               Character'Pos ('J'),
-               16#1b#,
-               Character'Pos ('['),
-               Character'Pos ('0'),
-               Character'Pos (';'),
-               Character'Pos ('0'),
-               Character'Pos ('H'));
+            Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+            Handle : constant System.Native_IO.Handle_Type :=
+               Streams.Naked_Stream_IO.Handle (File.File);
          begin
-            Streams.Write (File.Stream.all, Code);
+            GetConsoleScreenBufferInfo (
+               Handle,
+               Info'Access);
+            declare
+               Clear_Char_Info : constant C.wincon.CHAR_INFO := (
+                  Char => (
+                     Unchecked_Tag => 0,
+                     UnicodeChar => C.winnt.WCHAR'Val (16#20#)),
+                  Attributes => Info.wAttributes);
+               Buffer : aliased constant array (
+                  0 .. Info.dwSize.Y - 1,
+                  0 .. Info.dwSize.X - 1) of aliased C.wincon.CHAR_INFO := (
+                     others => (others => Clear_Char_Info));
+               Region : aliased C.wincon.SMALL_RECT;
+            begin
+               Region.Left := 0;
+               Region.Top := 0;
+               Region.Right := Info.dwSize.X - 1;
+               Region.Bottom := Info.dwSize.Y - 1;
+               if C.wincon.WriteConsoleOutputW (
+                  hConsoleOutput => Handle,
+                  lpBuffer => Buffer (0, 0)'Access,
+                  dwBufferSize => Info.dwSize,
+                  dwBufferCoord => (X => 0, Y => 0),
+                  lpWriteRegion => Region'Access) = 0
+               then
+                  Raise_Exception (Device_Error'Identity);
+               end if;
+            end;
+            if C.wincon.SetConsoleCursorPosition (
+               Handle,
+               (X => 0, Y => 0)) = 0
+            then
+               Raise_Exception (Device_Error'Identity);
+            end if;
          end;
       else
          declare
             Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
          begin
-            Streams.Write (File.Stream.all, Code);
+            Streams.Write (Unchecked_Stream (File).all, Code);
          end;
       end if;
       File.Page := File.Page + 1;
@@ -413,7 +400,7 @@ package body Ada.Text_IO.Inside is
          begin
             F := Boolean'Pos (File.New_Line = IO_Text_Modes.LF);
             L := Boolean'Pos (File.New_Line /= IO_Text_Modes.CR);
-            Streams.Write (File.Stream.all, Line_Mark (F .. L));
+            Streams.Write (Unchecked_Stream (File).all, Line_Mark (F .. L));
          end;
          File.Line := File.Line + 1;
          File.Col := 1;
@@ -422,19 +409,21 @@ package body Ada.Text_IO.Inside is
 
    procedure Raw_New_Line (
       File : Non_Controlled_File_Type;
-      Spacing : Positive_Count);
+      Spacing : Positive);
    procedure Raw_New_Line (
       File : Non_Controlled_File_Type;
-      Spacing : Positive_Count) is
+      Spacing : Positive) is
    begin
       for I in 1 .. Spacing loop
          Raw_New_Line (File);
       end loop;
    end Raw_New_Line;
 
-   procedure Read_Buffer (
+   procedure Read_Buffer (File : Non_Controlled_File_Type);
+   procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type);
+   procedure Read_Buffer_Trailing_From_Terminal (
       File : Non_Controlled_File_Type;
-      Wanted : Natural := 1);
+      Leading : C.winnt.WCHAR);
    procedure Take_Buffer (File : Non_Controlled_File_Type);
    procedure Take_Page (File : Non_Controlled_File_Type);
    procedure Take_Line (File : Non_Controlled_File_Type);
@@ -451,37 +440,152 @@ package body Ada.Text_IO.Inside is
    --  * Write_Buffer sets Buffer_Col to written width.
    --  * Put adds Buffer_Col to current Col.
 
-   procedure Read_Buffer (
-      File : Non_Controlled_File_Type;
-      Wanted : Natural := 1)
-   is
-      Wanted_or_1 : constant Positive := Integer'Max (1, Wanted);
+   procedure Read_Buffer (File : Non_Controlled_File_Type) is
+      Ada_Buffer : Wide_String (1 .. 2);
+      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
+      for W_Buffer'Address use Ada_Buffer'Address;
+      W_Buffer_Length : C.size_t;
+      Read_Size : aliased C.windef.DWORD;
+      DBCS_Seq : Natural;
    begin
-      if not File.End_Of_File and then File.Last < Wanted_or_1 then
-         declare
-            Old_Last : constant Natural := File.Last;
-            --  read next single character
-            Buffer : Streams.Stream_Element_Array (
-               Streams.Stream_Element_Offset (Old_Last + 1) ..
-               Streams.Stream_Element_Offset (Wanted_or_1));
-            for Buffer'Address use
-               File.Buffer (Old_Last + 1 .. Wanted_or_1)'Address;
-            Last : Streams.Stream_Element_Offset := 0;
-         begin
+      if File.End_Of_File then
+         null;
+      elsif File.Last = 0 or else not File.Converted then
+         File.Converted := False;
+         if File.External = IO_Text_Modes.Terminal
+            and then C.wincon.ReadConsole (
+               hConsoleInput => Streams.Naked_Stream_IO.Handle (File.File),
+               lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
+               nNumberOfCharsToRead => 1,
+               lpNumberOfCharsRead => Read_Size'Access,
+               lpReserved => C.windef.LPVOID (System.Null_Address)) /= 0
+            and then Read_Size > 0
+         then
+            Read_Buffer_Trailing_From_Terminal (
+               File,
+               W_Buffer (0));
+         else
+            declare
+               Buffer : Streams.Stream_Element_Array (1 .. 1);
+               for Buffer'Address use File.Buffer (File.Last + 1)'Address;
+               Last : Streams.Stream_Element_Offset;
             begin
-               Streams.Read (File.Stream.all, Buffer, Last);
-            exception
-               when End_Error =>
+               begin
+                  Streams.Read (Unchecked_Stream (File).all, Buffer, Last);
+               exception
+                  when End_Error => Last := 0;
+               end;
+               File.Last := File.Last + Natural (Last);
+               if Last = 0 then
                   File.End_Of_File := True;
+               end if;
             end;
-            if Integer (Last) < Wanted then
-               File.End_Of_File := True;
+            if File.Last = 0 then
+               null; -- read 0 byte
+            elsif File.External = IO_Text_Modes.Locale
+               and then File.Buffer (1) >= Character'Val (16#80#)
+            then
+               DBCS_Seq := 1 + Boolean'Pos (
+                  C.winnls.IsDBCSLeadByte (
+                     C.windef.BYTE'(Character'Pos (File.Buffer (1)))) /= 0);
+               if File.Last = DBCS_Seq then
+                  W_Buffer_Length := C.size_t (C.winnls.MultiByteToWideChar (
+                     C.winnls.CP_ACP,
+                     0,
+                     LPSTR_Conv.To_Pointer (File.Buffer (1)'Address),
+                     C.signed_int (File.Last),
+                     W_Buffer (0)'Access,
+                     2));
+                  System.UTF_Conversions.From_16_To_8.Convert (
+                     Ada_Buffer (1 .. Natural (W_Buffer_Length)),
+                     File.Buffer,
+                     File.Last);
+                  File.Converted := True;
+                  File.Buffer_Col := 2;
+               else
+                  null; -- No converted
+               end if;
+            else
+               File.Converted := True;
+               File.Buffer_Col := 1;
             end if;
-            File.Last := Integer (Last);
-            File.Buffer_Col := Count (Integer (Last) - Old_Last);
-         end;
+         end if;
+      else
+         null; -- No filled
       end if;
    end Read_Buffer;
+
+   procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type) is
+      Handle : System.Native_IO.Handle_Type;
+      Event_Count : aliased C.windef.DWORD;
+      Read_Size : aliased C.windef.DWORD;
+      Event : aliased C.wincon.INPUT_RECORD;
+   begin
+      if not File.End_Of_File
+         and then (File.Last = 0 or else not File.Converted)
+      then
+         Handle := Streams.Naked_Stream_IO.Handle (File.File);
+         if C.wincon.GetNumberOfConsoleInputEvents (
+            Handle,
+            Event_Count'Access) /= 0
+            and then Event_Count > 0
+            and then C.wincon.ReadConsoleInput (
+               hConsoleInput => Handle,
+               lpBuffer => Event'Access,
+               nLength => 1,
+               lpNumberOfEventsRead => Read_Size'Access) /= 0
+            and then Read_Size > 0
+         then
+            if Event.EventType = C.wincon.KEY_EVENT
+               and then Event.Event.KeyEvent.bKeyDown /= 0
+            then
+               Read_Buffer_Trailing_From_Terminal (
+                  File,
+                  Event.Event.KeyEvent.uChar.UnicodeChar);
+            end if;
+         end if;
+      end if;
+   end Read_Buffer_From_Event;
+
+   procedure Read_Buffer_Trailing_From_Terminal (
+      File : Non_Controlled_File_Type;
+      Leading : C.winnt.WCHAR)
+   is
+      Ada_Buffer : Wide_String (1 .. 2);
+      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
+      for W_Buffer'Address use Ada_Buffer'Address;
+      W_Buffer_Length : C.size_t;
+      Read_Size : aliased C.windef.DWORD;
+      UTF_16_Seq : Natural;
+      Sequence_Status : System.UTF_Conversions.Sequence_Status_Type; -- ignore
+   begin
+      W_Buffer (0) := Leading;
+      if W_Buffer (0) /= C.winnt.WCHAR'Val (0) then
+         W_Buffer_Length := 1;
+         System.UTF_Conversions.UTF_16_Sequence (
+            Wide_Character'Val (C.winnt.WCHAR'Pos (W_Buffer (0))),
+            UTF_16_Seq,
+            Sequence_Status);
+         if UTF_16_Seq = 2
+            and then C.wincon.ReadConsoleW (
+               hConsoleInput => Streams.Naked_Stream_IO.Handle (File.File),
+               lpBuffer => C.windef.LPVOID (W_Buffer (1)'Address),
+               nNumberOfCharsToRead => 1,
+               lpNumberOfCharsRead => Read_Size'Access,
+               lpReserved =>
+                  C.windef.LPVOID (System.Null_Address)) /= 0
+            and then Read_Size > 0
+         then
+            W_Buffer_Length := W_Buffer_Length + C.size_t (Read_Size);
+         end if;
+         System.UTF_Conversions.From_16_To_8.Convert (
+            Ada_Buffer (1 .. Natural (W_Buffer_Length)),
+            File.Buffer,
+            File.Last);
+         File.Converted := True;
+         File.Buffer_Col := 0; -- unused
+      end if;
+   end Read_Buffer_Trailing_From_Terminal;
 
    procedure Take_Buffer (File : Non_Controlled_File_Type) is
       New_Last : constant Natural := File.Last - 1;
@@ -519,22 +623,80 @@ package body Ada.Text_IO.Inside is
       File : Non_Controlled_File_Type;
       Sequence_Length : Natural)
    is
+      Ada_Buffer : Wide_String (1 .. 2);
+      Ada_Buffer_Last : Natural;
+      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
+      for W_Buffer'Address use Ada_Buffer'Address;
+      Written : aliased C.windef.DWORD;
       Length : constant Natural := File.Last; -- >= Sequence_Length
    begin
-      if File.Line_Length /= 0
-         and then File.Col + Count (Sequence_Length - 1) > File.Line_Length
+      System.UTF_Conversions.From_8_To_16.Convert (
+         File.Buffer (1 .. Sequence_Length),
+         Ada_Buffer,
+         Ada_Buffer_Last);
+      if File.External = IO_Text_Modes.Terminal
+         and then C.wincon.WriteConsoleW (
+            hConsoleOutput => Streams.Naked_Stream_IO.Handle (File.File),
+            lpBuffer => C.windef.LPCVOID (Ada_Buffer (1)'Address),
+            nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
+            lpNumberOfCharsWritten => Written'Access,
+            lpReserved => C.windef.LPVOID (System.Null_Address)) /= 0
+         and then Written = C.windef.DWORD (Ada_Buffer_Last)
       then
-         Raw_New_Line (File);
+         File.Buffer_Col := 0; -- unused
+      elsif File.External = IO_Text_Modes.UTF_8
+         or else (
+            Sequence_Length = 1
+            and then File.Buffer (1) < Character'Val (16#80#))
+      then
+         if File.Line_Length /= 0
+            and then File.Col + Sequence_Length - 1 > File.Line_Length
+         then
+            Raw_New_Line (File);
+         end if;
+         declare
+            Buffer : Streams.Stream_Element_Array (
+               1 ..
+               Streams.Stream_Element_Offset (Sequence_Length));
+            for Buffer'Address use File.Buffer'Address;
+         begin
+            Streams.Write (Unchecked_Stream (File).all, Buffer);
+         end;
+         File.Buffer_Col := Sequence_Length;
+      else
+         declare
+            DBCS_Buffer : String (1 .. 2);
+            DBCS_Last : Natural;
+         begin
+            DBCS_Last := Natural (C.winnls.WideCharToMultiByte (
+               C.winnls.CP_ACP,
+               0,
+               W_Buffer (0)'Access,
+               C.signed_int (Ada_Buffer_Last),
+               LPSTR_Conv.To_Pointer (DBCS_Buffer (1)'Address),
+               DBCS_Buffer'Length,
+               null,
+               null));
+            if DBCS_Last = 0 then
+               DBCS_Buffer (1) := '?';
+               DBCS_Last := 1;
+            end if;
+            if File.Line_Length /= 0
+               and then File.Col + Natural (DBCS_Last - 1) > File.Line_Length
+            then
+               Raw_New_Line (File);
+            end if;
+            declare
+               Buffer : Streams.Stream_Element_Array (
+                  1 ..
+                  Streams.Stream_Element_Offset (DBCS_Last));
+               for Buffer'Address use DBCS_Buffer'Address;
+            begin
+               Streams.Write (Unchecked_Stream (File).all, Buffer);
+            end;
+            File.Buffer_Col := DBCS_Last;
+         end;
       end if;
-      declare
-         Buffer : Streams.Stream_Element_Array (
-            1 ..
-            Streams.Stream_Element_Offset (Sequence_Length));
-         for Buffer'Address use File.Buffer'Address;
-      begin
-         Streams.Write (File.Stream.all, Buffer);
-      end;
-      File.Buffer_Col := Count (Sequence_Length);
       File.Last := Length - Sequence_Length;
       File.Buffer (1 .. File.Last) :=
          File.Buffer (Sequence_Length + 1 .. Length);
@@ -544,7 +706,7 @@ package body Ada.Text_IO.Inside is
 
    procedure Create (
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode := Out_File;
+      Mode : IO_Modes.File_Mode := IO_Modes.Out_File;
       Name : String := "";
       Form : Packed_Form := Default_Form) is
    begin
@@ -552,7 +714,7 @@ package body Ada.Text_IO.Inside is
          Raise_Exception (Status_Error'Identity);
       end if;
       Open_File (
-         Open_Proc => Streams.Stream_IO.Inside.Create'Access,
+         Open_Proc => Streams.Naked_Stream_IO.Create'Access,
          File => File,
          Mode => Mode,
          Name => Name,
@@ -561,7 +723,7 @@ package body Ada.Text_IO.Inside is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Mode : File_Mode;
+      Mode : IO_Modes.File_Mode;
       Name : String;
       Form : Packed_Form := Default_Form) is
    begin
@@ -569,7 +731,7 @@ package body Ada.Text_IO.Inside is
          Raise_Exception (Status_Error'Identity);
       end if;
       Open_File (
-         Open_Proc => Streams.Stream_IO.Inside.Open'Access,
+         Open_Proc => Streams.Naked_Stream_IO.Open'Access,
          File => File,
          Mode => Mode,
          Name => Name,
@@ -583,14 +745,14 @@ package body Ada.Text_IO.Inside is
       if Is_Open (File) then
          declare
             Internal : aliased
-               Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
+               Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
                File.all.File;
          begin
-            if not Streams.Stream_IO.Inside.Is_Standard (Internal) then
+            if not Streams.Naked_Stream_IO.Is_Standard (Internal) then
                Free (File);
             end if;
-            if Streams.Stream_IO.Inside.Is_Open (Internal) then
-               Streams.Stream_IO.Inside.Close (
+            if Streams.Naked_Stream_IO.Is_Open (Internal) then
+               Streams.Naked_Stream_IO.Close (
                   Internal,
                   Raise_On_Error => Raise_On_Error);
             end if;
@@ -605,29 +767,29 @@ package body Ada.Text_IO.Inside is
       Check_File_Open (File);
       declare
          Internal : aliased
-            Streams.Stream_IO.Inside.Non_Controlled_File_Type :=
-            File.all.File;
+            Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
+            File.File;
       begin
          Free (File);
-         Streams.Stream_IO.Inside.Delete (Internal);
+         Streams.Naked_Stream_IO.Delete (Internal);
       end;
    end Delete;
 
    procedure Reset (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : File_Mode)
+      Mode : IO_Modes.File_Mode)
    is
-      Current_Mode : constant File_Mode := Inside.Mode (File);
+      Current_Mode : constant IO_Modes.File_Mode := Naked_Text_IO.Mode (File);
    begin
       if Current_Mode /= Mode
-         and then Streams.Stream_IO.Inside.Is_Standard (File.all.File)
+         and then Streams.Naked_Stream_IO.Is_Standard (File.all.File)
       then
          Raise_Exception (Mode_Error'Identity);
-      elsif not Streams.Stream_IO.Inside.Is_Open (File.all.File) then
+      elsif not Streams.Naked_Stream_IO.Is_Open (File.all.File) then
          --  External stream mode
          Raise_Exception (Status_Error'Identity);
       else
-         if Current_Mode /= In_File then
+         if Current_Mode /= IO_Modes.In_File then
             Flush (File);
          end if;
          declare
@@ -637,12 +799,17 @@ package body Ada.Text_IO.Inside is
                   Finally);
          begin
             Holder.Assign (File'Access);
-            Streams.Stream_IO.Inside.Reset (
-               File.all.File,
-               Streams.Stream_IO.File_Mode (Mode));
+            Streams.Naked_Stream_IO.Reset (File.File, Mode);
             Holder.Clear;
          end;
-         File.all.Stream := Streams.Stream_IO.Inside.Stream (File.all.File);
+         declare
+            function To_Address (Value : access Streams.Root_Stream_Type'Class)
+               return System.Address;
+            pragma Import (Intrinsic, To_Address);
+         begin
+            File.Stream := To_Address (
+               Streams.Naked_Stream_IO.Stream (File.File));
+         end;
          File.all.Page := 1;
          File.all.Line := 1;
          File.all.Col := 1;
@@ -650,17 +817,18 @@ package body Ada.Text_IO.Inside is
          File.all.Page_Length := 0;
          File.all.Buffer_Col := 0;
          File.all.Last := 0;
+         File.all.Converted := False;
          File.all.End_Of_File := False;
          File.all.Dummy_Mark := None;
          File.all.Mode := Mode;
       end if;
    end Reset;
 
-   function Mode (File : Non_Controlled_File_Type) return File_Mode is
+   function Mode (File : Non_Controlled_File_Type) return IO_Modes.File_Mode is
    begin
       Check_File_Open (File);
-      if Streams.Stream_IO.Inside.Is_Open (File.File) then
-         return File_Mode (Streams.Stream_IO.Inside.Mode (File.File));
+      if Streams.Naked_Stream_IO.Is_Open (File.File) then
+         return Streams.Naked_Stream_IO.Mode (File.File);
       else
          return File.Mode;
       end if;
@@ -669,8 +837,8 @@ package body Ada.Text_IO.Inside is
    function Name (File : Non_Controlled_File_Type) return String is
    begin
       Check_File_Open (File);
-      if Streams.Stream_IO.Inside.Is_Open (File.File) then
-         return Streams.Stream_IO.Inside.Name (File.File);
+      if Streams.Naked_Stream_IO.Is_Open (File.File) then
+         return Streams.Naked_Stream_IO.Name (File.File);
       else
          return File.Name;
       end if;
@@ -682,10 +850,10 @@ package body Ada.Text_IO.Inside is
       declare
          Stream_Form : System.Native_IO.Packed_Form;
       begin
-         if Streams.Stream_IO.Inside.Is_Open (File.File) then
-            Stream_Form := Streams.Stream_IO.Inside.Form (File.File);
+         if Streams.Naked_Stream_IO.Is_Open (File.File) then
+            Stream_Form := Streams.Naked_Stream_IO.Form (File.File);
          else
-            Stream_Form := Streams.Stream_IO.Inside.Default_Form;
+            Stream_Form := Streams.Naked_Stream_IO.Default_Form;
          end if;
          return (Stream_Form, IO_Text_Modes.UTF_8, File.New_Line, File.SUB);
       end;
@@ -705,124 +873,89 @@ package body Ada.Text_IO.Inside is
 
    procedure Flush (File : Non_Controlled_File_Type) is
    begin
-      Check_File_Mode (File, Out_File);
+      Check_File_Mode (File, IO_Modes.Out_File);
       if File.Last > 0 then
          Write_Buffer (File, File.Last);
          File.Col := File.Col + File.Buffer_Col;
       end if;
-      if Streams.Stream_IO.Inside.Is_Open (File.File) then
-         Streams.Stream_IO.Inside.Flush (File.File);
+      if Streams.Naked_Stream_IO.Is_Open (File.File)
+         and then File.External /=
+            IO_Text_Modes.Terminal -- console can not flush
+      then
+         Streams.Naked_Stream_IO.Flush (File.File);
       end if;
    end Flush;
 
    procedure Set_Size (
       File : Non_Controlled_File_Type;
-      Line_Length, Page_Length : Count) is
+      Line_Length, Page_Length : Natural)
+   is
+      Handle : System.Native_IO.Handle_Type;
    begin
-      Check_File_Mode (File, Out_File);
+      Check_File_Mode (File, IO_Modes.Out_File);
       if File.External = IO_Text_Modes.Terminal then
-         declare
-            Seq : String (1 .. 256);
-            Last : Natural := 0;
-            Error : Boolean;
-         begin
-            Seq (1) := Character'Val (16#1b#);
-            Seq (2) := '[';
-            Seq (3) := '8';
-            Seq (4) := ';';
-            Last := 4;
-            System.Formatting.Image (
-               System.Formatting.Unsigned (Page_Length),
-               Seq (Last + 1 .. Seq'Last),
-               Last,
-               Error => Error);
-            Last := Last + 1;
-            Seq (Last) := ';';
-            System.Formatting.Image (
-               System.Formatting.Unsigned (Line_Length),
-               Seq (Last + 1 .. Seq'Last),
-               Last,
-               Error => Error);
-            Last := Last + 1;
-            Seq (Last) := 't';
-            declare
-               Item : Streams.Stream_Element_Array (
-                  1 ..
-                  Streams.Stream_Element_Offset (Last));
-               for Item'Address use Seq'Address;
-            begin
-               Streams.Write (File.Stream.all, Item);
-            end;
-         end;
+         if Line_Length = 0 or else Page_Length = 0 then
+            Raise_Exception (Device_Error'Identity);
+         end if;
+         Handle := Streams.Naked_Stream_IO.Handle (File.File);
+         SetConsoleScreenBufferSize_With_Adjusting (
+            Handle,
+            C.wincon.COORD'(
+               X => C.winnt.SHORT (Line_Length),
+               Y => C.winnt.SHORT (Page_Length)),
+            Handle);
       else
          File.Line_Length := Line_Length;
          File.Page_Length := Page_Length;
       end if;
    end Set_Size;
 
-   procedure Set_Line_Length (File : Non_Controlled_File_Type; To : Count) is
+   procedure Set_Line_Length (File : Non_Controlled_File_Type; To : Natural) is
+      Current_Line_Length, Current_Page_Length : Natural;
    begin
-      Set_Size (File, To, Page_Length (File));
+      Size (File, Current_Line_Length, Current_Page_Length);
+      if File.External /= IO_Text_Modes.Terminal or else To > 0 then
+         Set_Size (File, To, Current_Page_Length);
+      end if;
    end Set_Line_Length;
 
-   procedure Set_Page_Length (File : Non_Controlled_File_Type; To : Count) is
+   procedure Set_Page_Length (File : Non_Controlled_File_Type; To : Natural) is
+      Current_Line_Length, Current_Page_Length : Natural;
    begin
-      Set_Size (File, Line_Length (File), To);
+      Size (File, Current_Line_Length, Current_Page_Length);
+      if File.External /= IO_Text_Modes.Terminal or else To > 0 then
+         Set_Size (File, Current_Line_Length, To);
+      end if;
    end Set_Page_Length;
 
    procedure Size (
       File : Non_Controlled_File_Type;
-      Line_Length, Page_Length : out Count)
+      Line_Length, Page_Length : out Natural)
    is
-      Seq : constant String (1 .. 5) := (
-         Character'Val (16#1b#), '[', '1', '8', 't');
-      Handle : System.Native_IO.Handle_Type;
-      Old_Settings : aliased C.termios.struct_termios;
-      Buffer : String (1 .. 256);
-      Last : Natural;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
-      Check_File_Mode (File, Out_File);
+      Check_File_Mode (File, IO_Modes.Out_File);
       if File.External = IO_Text_Modes.Terminal then
-         --  non-canonical mode and disable echo
-         Handle := Streams.Stream_IO.Inside.Handle (File.File);
-         tcgetsetattr (
-            Handle,
-            not (C.termios.ECHO or C.termios.ICANON),
-            1,
-            Old_Settings'Access);
-         --  output
-         write (Handle, Seq);
-         --  input
-         read_Escape_Sequence (Handle, Buffer, Last, 't');
-         --  restore terminal mode
-         Dummy := C.termios.tcsetattr (
-            Streams.Stream_IO.Inside.Handle (File.File),
-            C.termios.TCSANOW,
-            Old_Settings'Access);
-         --  parse
-         Parse_Escape_Sequence (
-            Buffer (1 .. Last),
-            Character'Val (16#1b#) & "[8;",
-            't',
-            System.Formatting.Unsigned (Page_Length),
-            System.Formatting.Unsigned (Line_Length));
+         GetConsoleScreenBufferInfo (
+            Streams.Naked_Stream_IO.Handle (File.File),
+            Info'Access);
+         Line_Length := Natural (Info.dwSize.X);
+         Page_Length := Natural (Info.dwSize.Y);
       else
          Line_Length := File.Line_Length;
          Page_Length := File.Page_Length;
       end if;
    end Size;
 
-   function Line_Length (File : Non_Controlled_File_Type) return Count is
-      Line_Length, Page_Length : Count;
+   function Line_Length (File : Non_Controlled_File_Type) return Natural is
+      Line_Length, Page_Length : Natural;
    begin
       Size (File, Line_Length, Page_Length);
       return Line_Length;
    end Line_Length;
 
-   function Page_Length (File : Non_Controlled_File_Type) return Count is
-      Line_Length, Page_Length : Count;
+   function Page_Length (File : Non_Controlled_File_Type) return Natural is
+      Line_Length, Page_Length : Natural;
    begin
       Size (File, Line_Length, Page_Length);
       return Page_Length;
@@ -830,9 +963,9 @@ package body Ada.Text_IO.Inside is
 
    procedure New_Line (
       File : Non_Controlled_File_Type;
-      Spacing : Positive_Count := 1) is
+      Spacing : Positive := 1) is
    begin
-      Check_File_Mode (File, Out_File);
+      Check_File_Mode (File, IO_Modes.Out_File);
       if File.Last > 0 then
          Write_Buffer (File, File.Last);
       end if;
@@ -841,9 +974,9 @@ package body Ada.Text_IO.Inside is
 
    procedure Skip_Line (
       File : Non_Controlled_File_Type;
-      Spacing : Positive_Count := 1) is
+      Spacing : Positive := 1) is
    begin
-      Check_File_Mode (File, In_File);
+      Check_File_Mode (File, IO_Modes.In_File);
       for I in 1 .. Spacing loop
          loop
             Read_Buffer (File);
@@ -857,7 +990,7 @@ package body Ada.Text_IO.Inside is
                else
                   Raise_Exception (End_Error'Identity);
                end if;
-            elsif File.Last > 0 then
+            elsif File.Last > 0 then -- ASCII
                declare
                   C : constant Character := File.Buffer (1);
                begin
@@ -892,7 +1025,7 @@ package body Ada.Text_IO.Inside is
          return True;
       else
          Read_Buffer (File);
-         return File.Last > 0 and then (
+         return File.Last > 0 and then ( -- line mark is ASCII
             File.Buffer (1) = Character'Val (16#0d#)
             or else File.Buffer (1) = Character'Val (16#0a#)
             or else File.Buffer (1) = Character'Val (16#0c#)
@@ -904,7 +1037,7 @@ package body Ada.Text_IO.Inside is
 
    procedure New_Page (File : Non_Controlled_File_Type) is
    begin
-      Check_File_Mode (File, Out_File);
+      Check_File_Mode (File, IO_Modes.Out_File);
       if File.Last > 0 then
          Write_Buffer (File, File.Last);
       end if;
@@ -913,7 +1046,7 @@ package body Ada.Text_IO.Inside is
 
    procedure Skip_Page (File : Non_Controlled_File_Type) is
    begin
-      Check_File_Mode (File, In_File);
+      Check_File_Mode (File, IO_Modes.In_File);
       while not End_Of_Page (File) loop
          Skip_Line (File);
       end loop;
@@ -945,63 +1078,49 @@ package body Ada.Text_IO.Inside is
          return True;
       else
          Read_Buffer (File);
-         return File.Last > 0
+         return File.Last > 0 -- page mark is ASCII
             and then File.Buffer (1) = Character'Val (16#0c#);
       end if;
    end End_Of_Page;
 
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
    begin
-      Check_File_Mode (File, In_File);
+      Check_File_Mode (File, IO_Modes.In_File);
       if File.Last > 0 then
          return False;
-      elsif not Streams.Stream_IO.Inside.Is_Open (File.File) then
+      elsif not Streams.Naked_Stream_IO.Is_Open (File.File)
+         or else File.External = IO_Text_Modes.Terminal
+      then
          Read_Buffer (File);
          return File.End_Of_File;
       else
          Read_Buffer (File);
          return File.Last = 0
-            and then Streams.Stream_IO.Inside.End_Of_File (File.File);
+            and then Streams.Naked_Stream_IO.End_Of_File (File.File);
       end if;
    end End_Of_File;
 
    procedure Set_Position_Within_Terminal (
       File : Non_Controlled_File_Type;
-      Col, Line : Positive_Count) is
+      Col, Line : Positive)
+   is
+      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+      Handle : System.Native_IO.Handle_Type;
    begin
-      Check_File_Mode (File, Out_File);
+      Check_File_Mode (File, IO_Modes.Out_File);
       if File.External = IO_Text_Modes.Terminal then
-         declare
-            Seq : String (1 .. 256);
-            Last : Natural := 0;
-            Error : Boolean;
-         begin
-            Seq (1) := Character'Val (16#1b#);
-            Seq (2) := '[';
-            Last := 2;
-            System.Formatting.Image (
-               System.Formatting.Unsigned (Line),
-               Seq (Last + 1 .. Seq'Last),
-               Last,
-               Error => Error);
-            Last := Last + 1;
-            Seq (Last) := ';';
-            System.Formatting.Image (
-               System.Formatting.Unsigned (Col),
-               Seq (Last + 1 .. Seq'Last),
-               Last,
-               Error => Error);
-            Last := Last + 1;
-            Seq (Last) := 'H';
-            declare
-               Item : Streams.Stream_Element_Array (
-                  1 ..
-                  Streams.Stream_Element_Offset (Last));
-               for Item'Address use Seq'Address;
-            begin
-               Streams.Write (File.Stream.all, Item);
-            end;
-         end;
+         Handle := Streams.Naked_Stream_IO.Handle (File.File);
+         GetConsoleScreenBufferInfo (
+            Handle,
+            Info'Access);
+         if C.wincon.SetConsoleCursorPosition (
+            Handle,
+            C.wincon.COORD'(
+               X => C.winnt.SHORT (Col) - 1,
+               Y => C.winnt.SHORT (Line) - 1)) = 0
+         then
+            Raise_Exception (Layout_Error'Identity);
+         end if;
       else
          Raise_Exception (Device_Error'Identity);
       end if;
@@ -1009,42 +1128,14 @@ package body Ada.Text_IO.Inside is
 
    procedure Set_Col_Within_Terminal (
       File : Non_Controlled_File_Type;
-      To : Positive_Count) is
+      To : Positive) is
    begin
-      Check_File_Mode (File, Out_File);
-      if File.External = IO_Text_Modes.Terminal then
-         declare
-            Seq : String (1 .. 256);
-            Last : Natural := 0;
-            Error : Boolean;
-         begin
-            Seq (1) := Character'Val (16#1b#);
-            Seq (2) := '[';
-            Last := 2;
-            System.Formatting.Image (
-               System.Formatting.Unsigned (To),
-               Seq (Last + 1 .. Seq'Last),
-               Last,
-               Error => Error);
-            Last := Last + 1;
-            Seq (Last) := 'G';
-            declare
-               Item : Streams.Stream_Element_Array (
-                  1 ..
-                  Streams.Stream_Element_Offset (Last));
-               for Item'Address use Seq'Address;
-            begin
-               Streams.Write (File.Stream.all, Item);
-            end;
-         end;
-      else
-         Raise_Exception (Device_Error'Identity);
-      end if;
+      Set_Position_Within_Terminal (File, To, Line (File));
    end Set_Col_Within_Terminal;
 
-   procedure Set_Col (File : Non_Controlled_File_Type; To : Positive_Count) is
+   procedure Set_Col (File : Non_Controlled_File_Type; To : Positive) is
    begin
-      if Mode (File) = In_File then
+      if Mode (File) = IO_Modes.In_File then
          --  In_File
          loop
             if End_Of_Page (File) then
@@ -1078,9 +1169,9 @@ package body Ada.Text_IO.Inside is
       end if;
    end Set_Col;
 
-   procedure Set_Line (File : Non_Controlled_File_Type; To : Positive_Count) is
+   procedure Set_Line (File : Non_Controlled_File_Type; To : Positive) is
    begin
-      if Mode (File) = In_File then
+      if Mode (File) = IO_Modes.In_File then
          --  In_File
          while To /= File.Line or else End_Of_Page (File) loop
             Skip_Line (File);
@@ -1105,63 +1196,38 @@ package body Ada.Text_IO.Inside is
 
    procedure Position (
       File : Non_Controlled_File_Type;
-      Col, Line : out Positive_Count)
+      Col, Line : out Positive)
    is
-      Seq : constant String (1 .. 4) := (
-         Character'Val (16#1b#), '[', '6', 'n');
-      Handle : System.Native_IO.Handle_Type;
-      Old_Settings : aliased C.termios.struct_termios;
-      Buffer : String (1 .. 256);
-      Last : Natural;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
       Check_File_Open (File);
       if File.External = IO_Text_Modes.Terminal then
-         --  non-canonical mode and disable echo
-         Handle := Streams.Stream_IO.Inside.Handle (File.File);
-         tcgetsetattr (
-            Handle,
-            not (C.termios.ECHO or C.termios.ICANON),
-            1,
-            Old_Settings'Access);
-         --  output
-         write (Handle, Seq);
-         --  input
-         read_Escape_Sequence (Handle, Buffer, Last, 'R');
-         --  restore terminal mode
-         Dummy := C.termios.tcsetattr (
-            Streams.Stream_IO.Inside.Handle (File.File),
-            C.termios.TCSANOW,
-            Old_Settings'Access);
-         --  parse
-         Parse_Escape_Sequence (
-            Buffer (1 .. Last),
-            Character'Val (16#1b#) & "[",
-            'R',
-            System.Formatting.Unsigned (Line),
-            System.Formatting.Unsigned (Col));
+         GetConsoleScreenBufferInfo (
+            Streams.Naked_Stream_IO.Handle (File.File),
+            Info'Access);
+         Col := Positive (Info.dwCursorPosition.X + 1);
+         Line := Positive (Info.dwCursorPosition.Y + 1);
       else
          Col := File.Col;
          Line := File.Line;
       end if;
    end Position;
 
-   function Col (File : Non_Controlled_File_Type) return Positive_Count is
-      Col, Line : Positive_Count;
+   function Col (File : Non_Controlled_File_Type) return Positive is
+      Col, Line : Positive;
    begin
       Position (File, Col, Line);
       return Col;
    end Col;
 
-   function Line (File : Non_Controlled_File_Type) return Positive_Count is
-      Col, Line : Positive_Count;
+   function Line (File : Non_Controlled_File_Type) return Positive is
+      Col, Line : Positive;
    begin
       Position (File, Col, Line);
       return Line;
    end Line;
 
-   function Page (File : Non_Controlled_File_Type) return Positive_Count is
+   function Page (File : Non_Controlled_File_Type) return Positive is
    begin
       Check_File_Open (File);
       return File.Page;
@@ -1169,12 +1235,12 @@ package body Ada.Text_IO.Inside is
 
    procedure Get (File : Non_Controlled_File_Type; Item : out Character) is
    begin
-      Check_File_Mode (File, In_File);
+      Check_File_Mode (File, IO_Modes.In_File);
       loop
          Read_Buffer (File);
          if End_Of_File (File) then
             Raise_Exception (End_Error'Identity);
-         elsif File.Last > 0 then
+         elsif File.Last > 0 and then File.Converted then
             declare
                C : constant Character := File.Buffer (1);
             begin
@@ -1210,8 +1276,7 @@ package body Ada.Text_IO.Inside is
    begin
       Check_File_Open (File);
       --  if Item is not trailing byte, flush the buffer
-      if File.Line_Length /= 0
-         and then File.Last > 0
+      if File.Last > 0
          and then Character'Pos (Item) not in 2#10000000# .. 2#10111111#
       then
          Write_Buffer (File, File.Last);
@@ -1220,17 +1285,12 @@ package body Ada.Text_IO.Inside is
       --  write to the buffer
       File.Last := File.Last + 1;
       File.Buffer (File.Last) := Item;
-      if File.Line_Length /= 0 then
-         System.UTF_Conversions.UTF_8_Sequence (
-            File.Buffer (1),
-            Sequence_Length,
-            Sequence_Status);
-         if File.Last >= Sequence_Length then
-            Write_Buffer (File, Sequence_Length);
-            File.Col := File.Col + File.Buffer_Col;
-         end if;
-      else
-         Write_Buffer (File, File.Last);
+      System.UTF_Conversions.UTF_8_Sequence (
+         File.Buffer (1),
+         Sequence_Length,
+         Sequence_Status);
+      if File.Last >= Sequence_Length then
+         Write_Buffer (File, Sequence_Length);
          File.Col := File.Col + File.Buffer_Col;
       end if;
    end Put;
@@ -1243,11 +1303,11 @@ package body Ada.Text_IO.Inside is
       Check_File_Open (File);
       loop
          Read_Buffer (File);
-         if Inside.End_Of_Line (File) then
+         if Naked_Text_IO.End_Of_Line (File) then
             End_Of_Line := True;
             Item := Character'Val (0);
             exit;
-         elsif File.Last > 0 then
+         elsif File.Last > 0 and then File.Converted then
             End_Of_Line := False;
             Item := File.Buffer (1);
             exit;
@@ -1285,29 +1345,44 @@ package body Ada.Text_IO.Inside is
 
    procedure View (
       File : Non_Controlled_File_Type;
-      Left, Top : out Positive_Count;
-      Right, Bottom : out Count) is
+      Left, Top : out Positive;
+      Right, Bottom : out Natural)
+   is
+      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
-      Size (File, Right, Bottom);
-      Left := 1;
-      Top := 1;
+      Check_File_Mode (File, IO_Modes.Out_File);
+      if File.External = IO_Text_Modes.Terminal then
+         GetConsoleScreenBufferInfo (
+            Streams.Naked_Stream_IO.Handle (File.File),
+            Info'Access);
+         Left := Positive (Info.srWindow.Left + 1);
+         Top := Positive (Info.srWindow.Top + 1);
+         Right := Natural (Info.srWindow.Right + 1);
+         Bottom := Natural (Info.srWindow.Bottom + 1);
+      else
+         Raise_Exception (Device_Error'Identity);
+      end if;
    end View;
 
    --  implementation of handle of stream for non-controlled
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Stream : Streams.Stream_IO.Stream_Access;
-      Mode : File_Mode;
+      Stream : not null access Streams.Root_Stream_Type'Class;
+      Mode : IO_Modes.File_Mode;
       Name : String := "";
-      Form : Packed_Form := Default_Form) is
+      Form : Packed_Form := Default_Form)
+   is
+      function To_Address (Value : access Streams.Root_Stream_Type'Class)
+         return System.Address;
+      pragma Import (Intrinsic, To_Address);
    begin
       if Is_Open (File) then
          Raise_Exception (Status_Error'Identity);
       end if;
       File := new Text_Type'(
          Name_Length => Name'Length + 1,
-         Stream => Stream,
+         Stream => To_Address (Stream),
          Mode => Mode,
          External => IO_Text_Modes.File_External (Form.External),
          New_Line => Form.New_Line,
@@ -1317,15 +1392,15 @@ package body Ada.Text_IO.Inside is
    end Open;
 
    function Stream (File : Non_Controlled_File_Type)
-      return Streams.Stream_IO.Stream_Access is
+      return not null access Streams.Root_Stream_Type'Class is
    begin
       Check_Stream_IO_Open (File);
-      return File.Stream;
+      return Unchecked_Stream (File);
    end Stream;
 
    function Stream_IO (File : Non_Controlled_File_Type)
       return not null access
-         Streams.Stream_IO.Inside.Non_Controlled_File_Type is
+         Streams.Naked_Stream_IO.Non_Controlled_File_Type is
    begin
       Check_Stream_IO_Open (File);
       return File.File'Access;
@@ -1335,19 +1410,19 @@ package body Ada.Text_IO.Inside is
 
    procedure Look_Ahead (
       File : Non_Controlled_File_Type;
-      Item : out String;
+      Item : out String; -- 1 .. 6
       Last : out Natural;
       End_Of_Line : out Boolean)
    is
-      Wanted_Length : constant Natural := Item'Length;
       Buffer_Last : Natural;
    begin
       Check_File_Open (File);
       loop
-         Read_Buffer (File, Wanted_Length);
-         exit when File.Last = Wanted_Length or else File.End_Of_File;
+         Read_Buffer (File);
+         exit when (File.Last > 0 and then File.Converted)
+            or else File.End_Of_File;
       end loop;
-      if File.Last = 0 then
+      if not (File.Last > 0 and then File.Converted) then
          Last := Item'First - 1;
          End_Of_Line := True;
       else
@@ -1377,28 +1452,34 @@ package body Ada.Text_IO.Inside is
       Last : out Natural;
       Wait : Boolean)
    is
-      Wanted : Natural := 1;
-      Old_Settings : aliased C.termios.struct_termios;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      Console_Mode : aliased C.windef.DWORD;
+      Handle : System.Native_IO.Handle_Type;
    begin
-      Check_File_Mode (File, In_File);
+      Check_File_Mode (File, IO_Modes.In_File);
       if File.External = IO_Text_Modes.Terminal then
-         if not Wait then
-            Wanted := 0;
+         Handle := Streams.Naked_Stream_IO.Handle (File.File);
+         --  get and unset line-input mode
+         if C.wincon.GetConsoleMode (
+            Handle,
+            Console_Mode'Access) = 0
+            or else C.wincon.SetConsoleMode (
+               Handle,
+               Console_Mode and not (
+                  C.wincon.ENABLE_ECHO_INPUT
+                  or C.wincon.ENABLE_LINE_INPUT)) = 0
+         then
+            Raise_Exception (Device_Error'Identity);
          end if;
-         --  non-canonical mode
-         tcgetsetattr (
-            Streams.Stream_IO.Inside.Handle (File.File),
-            not C.termios.ICANON,
-            C.termios.cc_t (Wanted),
-            Old_Settings'Access);
       end if;
       Last := Item'First - 1;
       Multi_Character : for I in Item'Range loop
          Single_Character : loop
-            Read_Buffer (File, Wanted => Wanted);
-            if File.Last > 0 then
+            if not Wait and then File.External = IO_Text_Modes.Terminal then
+               Read_Buffer_From_Event (File);
+            else
+               Read_Buffer (File);
+            end if;
+            if File.Last > 0 and then File.Converted then
                Item (I) := File.Buffer (1);
                Last := I;
                Take_Buffer (File); -- not add File.Text.Col
@@ -1412,10 +1493,12 @@ package body Ada.Text_IO.Inside is
       end loop Multi_Character;
       if File.External = IO_Text_Modes.Terminal then
          --  restore terminal mode
-         Dummy := C.termios.tcsetattr (
-            Streams.Stream_IO.Inside.Handle (File.File),
-            C.termios.TCSANOW,
-            Old_Settings'Access);
+         if C.wincon.SetConsoleMode (
+            Handle,
+            Console_Mode) = 0
+         then
+            Raise_Exception (Device_Error'Identity);
+         end if;
       end if;
    end Get_Immediate;
 
@@ -1423,15 +1506,18 @@ package body Ada.Text_IO.Inside is
 
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type);
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type) is
+      function To_Address (Value : access Streams.Root_Stream_Type'Class)
+         return System.Address;
+      pragma Import (Intrinsic, To_Address);
    begin
-      File.Stream := Streams.Stream_IO.Inside.Stream (File.File);
+      File.Stream := To_Address (Streams.Naked_Stream_IO.Stream (File.File));
       File.External := IO_Text_Modes.File_External'Val (Boolean'Pos (
          not System.Native_IO.Is_Terminal (
-            Streams.Stream_IO.Inside.Handle (File.File))));
+            Streams.Naked_Stream_IO.Handle (File.File))));
    end Init_Standard_File;
 
 begin
    Init_Standard_File (Standard_Input_Text'Access);
    Init_Standard_File (Standard_Output_Text'Access);
    Init_Standard_File (Standard_Error_Text'Access);
-end Ada.Text_IO.Inside;
+end Ada.Naked_Text_IO;
