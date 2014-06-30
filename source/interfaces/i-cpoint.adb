@@ -19,6 +19,107 @@ package body Interfaces.C.Pointers is
 
    --  implementation
 
+   function Value (
+      Ref : access constant Element;
+      Terminator : Element := Default_Terminator)
+      return Element_Array is
+   begin
+      if Ref = null then
+         raise Dereference_Error; -- CXB3014
+      else
+         declare
+            Length : constant ptrdiff_t :=
+               Virtual_Length (Ref, Terminator) + 1; -- including nul
+         begin
+            return Value (Ref, Length);
+         end;
+      end if;
+   end Value;
+
+   function Value (
+      Ref : access constant Element; Length : ptrdiff_t)
+      return Element_Array is
+   begin
+      if Ref = null then
+         raise Dereference_Error; -- CXB3014
+      else
+         declare
+            subtype R is
+               Index range
+                  Index'First ..
+                  Index'Val (Index'Pos (Index'First) + Length - 1);
+            Result : Element_Array (R);
+            for Result'Address use To_Address (Ref);
+         begin
+            return Result;
+         end;
+      end if;
+   end Value;
+
+   function Virtual_Length (
+      Ref : access constant Element;
+      Terminator : Element := Default_Terminator)
+      return ptrdiff_t is
+   begin
+      if Ref = null then
+         raise Dereference_Error; -- CXB3016
+      else
+         declare
+            Result : Element_Array (Index);
+            for Result'Address use To_Address (Ref);
+            I : Index'Base := Index'First;
+         begin
+            loop
+               if Result (I) = Terminator then
+                  return Index'Base'Pos (I) - Index'Pos (Index'First);
+               end if;
+               I := Index'Base'Succ (I);
+            end loop;
+         end;
+      end if;
+   end Virtual_Length;
+
+   procedure Copy_Terminated_Array (
+      Source : access constant Element;
+      Target : access Element;
+      Limit : ptrdiff_t := ptrdiff_t'Last;
+      Terminator : Element := Default_Terminator) is
+   begin
+      if Source = null or else Target = null then
+         raise Dereference_Error; -- CXB3016
+      else
+         declare
+            Length : constant ptrdiff_t :=
+               Virtual_Length (Source, Terminator) + 1; -- including nul
+         begin
+            Copy_Array (Source, Target, ptrdiff_t'Min (Length, Limit));
+         end;
+      end if;
+   end Copy_Terminated_Array;
+
+   procedure Copy_Array (
+      Source : access constant Element;
+      Target : access Element;
+      Length : ptrdiff_t) is
+   begin
+      if Source = null or else Target = null then
+         raise Dereference_Error; -- CXB3016
+      else
+         declare
+            subtype R is
+               Index range
+                  Index'First ..
+                  Index'Val (Index'Pos (Index'First) + Length - 1);
+            Source_A : Element_Array (R);
+            for Source_A'Address use To_Address (Source);
+            Target_A : Element_Array (R);
+            for Target_A'Address use To_Address (Target);
+         begin
+            Target_A := Source_A;
+         end;
+      end if;
+   end Copy_Array;
+
    procedure Decrement (Ref : in out Pointer) is
    begin
       Ref := Ref - 1;
