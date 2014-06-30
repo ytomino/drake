@@ -701,6 +701,9 @@ package body Ada.Naked_Text_IO is
    begin
       Check_File_Mode (File, IO_Modes.Out_File);
       if File.External = IO_Text_Modes.Terminal then
+         if Line_Length = 0 or else Page_Length = 0 then
+            Raise_Exception (Device_Error'Identity);
+         end if;
          declare
             Seq : String (1 .. 256);
             Last : Natural := 0;
@@ -741,13 +744,21 @@ package body Ada.Naked_Text_IO is
    end Set_Size;
 
    procedure Set_Line_Length (File : Non_Controlled_File_Type; To : Natural) is
+      Current_Line_Length, Current_Page_Length : Natural;
    begin
-      Set_Size (File, To, Page_Length (File));
+      Size (File, Current_Line_Length, Current_Page_Length);
+      if File.External /= IO_Text_Modes.Terminal or else To > 0 then
+         Set_Size (File, To, Current_Page_Length);
+      end if;
    end Set_Line_Length;
 
    procedure Set_Page_Length (File : Non_Controlled_File_Type; To : Natural) is
+      Current_Line_Length, Current_Page_Length : Natural;
    begin
-      Set_Size (File, Line_Length (File), To);
+      Size (File, Current_Line_Length, Current_Page_Length);
+      if File.External /= IO_Text_Modes.Terminal or else To > 0 then
+         Set_Size (File, Current_Line_Length, To);
+      end if;
    end Set_Page_Length;
 
    procedure Size (
