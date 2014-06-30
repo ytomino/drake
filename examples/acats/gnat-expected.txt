@@ -5,7 +5,6 @@ c4a012b N Float'Machine_Overflows
 c96005b N Duration'Base equals Duration
 ca14028 F on GNAT, it can not use specialized body with generic package spec
 cb10002 N enough memory exists
-cb1010a A stack overflow could not be caught in 64bit Darwin
 ce2102d N In_File is supported in Sequencial_IO
 ce2102e N Out_File is supported in Sequencial_IO
 ce2102f N Inout_File is supported in Direct_IO
@@ -32,11 +31,9 @@ ce3102k N Out_File is supported in Text_IO
 ce3115a N multiple internal files are supported in Text_IO
 ce3304a N -1 not in Text_IO.Count
 ce3413b N Text_IO.Count'Last is too large for test
-cxaa020 F failed to layout with Ada.Text_IO.Enumeration_IO
 cxb4009 C it requites COBOL compiler
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
-cxc7006 F failed to select the fallback handler with Ada.Task_Termination
 cxd1003 F failed to rendezvous
 cxd1004 F failed to rendezvous
 cxd1005 F failed to rendezvous
