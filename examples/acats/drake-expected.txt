@@ -28,7 +28,6 @@ c85014a C unimplemented tasking features
 c85014b C unimplemented tasking features (select)
 c85018a C unimplemented tasking features
 c85018b C unimplemented tasking features
-c91004b U unexpected deadlock
 c91004c U deadlock, unimplemented tasking features (select)
 c92003a C unimplemented tasking features
 c930001 C unimplemented tasking features
@@ -172,12 +171,10 @@ c974014 A unimplemented tasking features (select)
 c980001 F unimplemented tasking features (select)
 c980002 F unimplemented tasking features (select)
 c980003 A unimplemented tasking features (select)
-C990001 A Segmentation fault
 c99005a C unimplemented tasking features
 c9a009a C unimplemented tasking features
 c9a009f C unimplemented tasking features
 c9a009g C unimplemented tasking features
-c9a011a A unexpected exception raised from abort
 c9a011b U deadlock, unimplemented tasking features (select)
 ca14028 F on GNAT, it can not use specialized body with generic package spec
 ca5004a A unimplemented tasking features (select)
@@ -260,10 +257,6 @@ cxb5002 C some Interfaces.Fortran features are unimplemented
 cxb5003 C some Interfaces.Fortran features are unimplemented
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
-cxc3001 F Ada.Interrupts failed
-cxc3003 F Ada.Interrupts failed
-cxc3006 A Ada.Interrupts failed
-cxc3008 F Ada.Interrupts failed
 cxc6003 F unimplemented tasking features (requeue)
 cxc7001 C unimplemented tasking features (task.entry'Caller)
 cxc7004 C unimplemented tasking features
