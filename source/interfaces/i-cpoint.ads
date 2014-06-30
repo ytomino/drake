@@ -26,7 +26,7 @@ package Interfaces.C.Pointers is
    --  C-style Pointer arithmetic
 
    function "+" (
-      Left : Pointer; -- CXB3015 requires nul
+      Left : Pointer; -- CXB3015 requires null
       Right : ptrdiff_t)
       return not null Pointer;
    pragma Convention (Intrinsic, "+");
@@ -40,7 +40,7 @@ package Interfaces.C.Pointers is
    pragma Pure_Function ("+");
    pragma Inline_Always ("+");
    function "-" (
-      Left : Pointer; -- CXB3015 requires nul
+      Left : Pointer; -- CXB3015 requires null
       Right : ptrdiff_t)
       return not null Pointer;
    pragma Convention (Intrinsic, "-");
@@ -59,7 +59,7 @@ package Interfaces.C.Pointers is
    procedure Increment (Ref : in out not null Pointer);
    pragma Convention (Intrinsic, Increment);
    pragma Inline_Always (Increment);
-   procedure Decrement (Ref : in out Pointer); -- CXB3015 requires nul
+   procedure Decrement (Ref : in out Pointer); -- CXB3015 requires null
    pragma Convention (Intrinsic, Decrement);
    pragma Inline_Always (Decrement);
 
