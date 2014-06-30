@@ -152,11 +152,4 @@ package Interfaces.C.Generic_Strings is
    Update_Error : exception
       renames C.Update_Error;
 
-   --  extended from here
-
-   subtype char_t is Element;
-   subtype char_array_t is Element_Array;
-   subtype char_t_Character is Character_Type;
-   subtype char_t_String is String_Type;
-
 end Interfaces.C.Generic_Strings;

@@ -1,6 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
-with System;
+with System.UTF_Conversions;
 with C.winnls;
 pragma Warnings (Off, C.winnls); -- break "pure" rule
 with C.winnt;
@@ -366,12 +366,126 @@ package body Interfaces.C is
 
    package wchar_Conv is
       new Simple_Conversions (
-         wchar_Character,
-         wchar_String,
+         Wide_Character,
+         Wide_String,
          wchar_t,
          wchar_array,
          wchar_t_const_ptr,
          Find_nul);
+
+   procedure To_Non_Nul_Terminated (
+      Item : Wide_Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Substitute : wchar_t);
+   procedure To_Non_Nul_Terminated (
+      Item : Wide_Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Substitute : wchar_t)
+   is
+      Ada_Target : Wide_String (1 .. Target'Length);
+      for Ada_Target'Address use Target'Address;
+      Item_Index : Natural := Item'First;
+      Target_Index : Natural := Ada_Target'First;
+   begin
+      while Item_Index <= Item'Last loop
+         declare
+            Code : System.UTF_Conversions.UCS_4;
+            Item_Used : Natural;
+            From_Status : System.UTF_Conversions.From_Status_Type;
+            Target_Last : Natural;
+            To_Status : System.UTF_Conversions.To_Status_Type;
+         begin
+            System.UTF_Conversions.From_UTF_32 (
+               Item (Item_Index .. Item'Last),
+               Item_Used,
+               Code,
+               From_Status);
+            Item_Index := Item_Used + 1;
+            case From_Status is
+               when System.UTF_Conversions.Success =>
+                  null;
+               when System.UTF_Conversions.Illegal_Sequence
+                  | System.UTF_Conversions.Truncated =>
+                  Code := wchar_t'Pos (Substitute);
+            end case;
+            System.UTF_Conversions.To_UTF_16 (
+               Code,
+               Ada_Target (Target_Index .. Ada_Target'Last),
+               Target_Last,
+               To_Status);
+            case To_Status is
+               when System.UTF_Conversions.Success =>
+                  null;
+               when System.UTF_Conversions.Overflow
+                  | System.UTF_Conversions.Unmappable =>
+                  --  all values of UTF-16 are mappable to UTF-32
+                  raise Constraint_Error;
+            end case;
+            Target_Index := Target_Last + 1;
+         end;
+      end loop;
+      Count := size_t (Target_Index - Ada_Target'First);
+   end To_Non_Nul_Terminated;
+
+   procedure From_Non_Nul_Terminated (
+      Item : wchar_array;
+      Target : out Wide_Wide_String;
+      Count : out Natural;
+      Substitute : Wide_Wide_Character);
+   procedure From_Non_Nul_Terminated (
+      Item : wchar_array;
+      Target : out Wide_Wide_String;
+      Count : out Natural;
+      Substitute : Wide_Wide_Character)
+   is
+      Ada_Item : Wide_String (1 .. Item'Length);
+      for Ada_Item'Address use Item'Address;
+      Item_Index : Natural := Ada_Item'First;
+      Target_Index : Natural := Target'First;
+   begin
+      while Item_Index <= Ada_Item'Last loop
+         declare
+            Code : System.UTF_Conversions.UCS_4;
+            Item_Used : Natural;
+            From_Status : System.UTF_Conversions.From_Status_Type; -- ignored
+            Target_Last : Natural;
+            To_Status : System.UTF_Conversions.To_Status_Type;
+         begin
+            System.UTF_Conversions.From_UTF_16 (
+               Ada_Item (Item_Index .. Ada_Item'Last),
+               Item_Used,
+               Code,
+               From_Status);
+            Item_Index := Item_Used + 1;
+            case From_Status is
+               when System.UTF_Conversions.Success =>
+                  null;
+               when System.UTF_Conversions.Illegal_Sequence
+                  | System.UTF_Conversions.Truncated =>
+                  --  Truncated does not returned in UTF-32
+                  Code := Wide_Wide_Character'Pos (Substitute);
+            end case;
+            System.UTF_Conversions.To_UTF_32 (
+               Code,
+               Target (Target_Index .. Target'Last),
+               Target_Last,
+               To_Status);
+            case To_Status is
+               when System.UTF_Conversions.Success =>
+                  null;
+               when System.UTF_Conversions.Overflow =>
+                  raise Constraint_Error;
+               when System.UTF_Conversions.Unmappable =>
+                  Target (Target_Index) := Substitute;
+                  Target_Last := Target_Index;
+            end case;
+            Target_Index := Target_Last + 1;
+         end;
+      end loop;
+      Count := Target_Index - Target'First;
+   end From_Non_Nul_Terminated;
 
    --  char16_t
 
@@ -609,6 +723,65 @@ package body Interfaces.C is
       else
          wchar_Conv.From_Non_Nul_Terminated (Item, Target, Count);
       end if;
+   end To_Ada;
+
+   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
+      return wchar_array is
+   begin
+      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
+   end To_C;
+
+   function To_C (
+      Item : Wide_Wide_String;
+      Append_Nul : Boolean;
+      Substitute : wchar_t)
+      return wchar_array
+   is
+      Result : wchar_array (
+         0 ..
+         Item'Length * 2); -- Expanding_From_32_To_16, +1 for nul
+      Count : size_t;
+   begin
+      To_Non_Nul_Terminated (Item, Result, Count, Substitute);
+      if Append_Nul then
+         Result (Count) := wide_nul;
+         Count := Count + 1;
+      end if;
+      return Result (0 .. Count - 1);
+   end To_C;
+
+   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+      return Wide_Wide_String is
+   begin
+      return To_Ada (Item, Trim_Nul => Trim_Nul, Substitute => '?');
+   end To_Ada;
+
+   function To_Ada (
+      Item : wchar_array;
+      Trim_Nul : Boolean;
+      Substitute : Wide_Wide_Character)
+      return Wide_Wide_String
+   is
+      Item_Length : size_t;
+   begin
+      if Trim_Nul then
+         Item_Length := Length (Item);
+      else
+         Item_Length := Item'Length;
+      end if;
+      declare
+         Result : Wide_Wide_String (
+            0 ..
+            Natural (Item_Length) - 1); -- Expanding_From_16_To_32
+         Count : Natural;
+      begin
+         From_Non_Nul_Terminated (
+            Item (Item'First .. Item'First + Item_Length - 1),
+            Result,
+            Count,
+            Substitute);
+         return Result (0 .. Count - 1);
+      end;
    end To_Ada;
 
    --  implementation of
