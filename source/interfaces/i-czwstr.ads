@@ -2,13 +2,13 @@ pragma License (Unrestricted);
 --  extended unit
 with Interfaces.C.Generic_Strings;
 with Interfaces.C.WChar_Pointers;
-package Interfaces.C.WStrings is
+package Interfaces.C.Wide_Wide_WStrings is
    new Generic_Strings (
-      Character_Type => wchar_Character,
-      String_Type => wchar_String,
+      Character_Type => Wide_Wide_Character,
+      String_Type => Wide_Wide_String,
       Element => wchar_t,
       Element_Array => wchar_array,
       Pointers => WChar_Pointers,
       To_C => To_C,
       To_Ada => To_Ada);
-pragma Preelaborate (Interfaces.C.WStrings);
+pragma Preelaborate (Interfaces.C.Wide_Wide_WStrings);

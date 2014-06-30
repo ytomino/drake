@@ -264,8 +264,8 @@ package body Interfaces.C is
 
    package wchar_Conv is
       new Simple_Conversions (
-         wchar_Character,
-         wchar_String,
+         Wide_Wide_Character,
+         Wide_Wide_String,
          wchar_t,
          wchar_array,
          wchar_t_const_ptr,
@@ -552,10 +552,16 @@ package body Interfaces.C is
    function Length (Item : wchar_array) return size_t
       renames wchar_Conv.Length;
 
+   function To_C (Item : Wide_String; Append_Nul : Boolean := True)
+      return wchar_array is
+   begin
+      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
+   end To_C;
+
    function To_C (
       Item : Wide_String;
-      Append_Nul : Boolean := True;
-      Substitute : wchar_t := '?')
+      Append_Nul : Boolean;
+      Substitute : wchar_t)
       return wchar_array
    is
       Result : wchar_array (0 .. Item'Length); -- +1 for nul
@@ -569,10 +575,16 @@ package body Interfaces.C is
       return Result (0 .. Count - 1);
    end To_C;
 
+   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+      return Wide_String is
+   begin
+      return To_Ada (Item, Trim_Nul => Trim_Nul, Substitute => '?');
+   end To_Ada;
+
    function To_Ada (
       Item : wchar_array;
-      Trim_Nul : Boolean := True;
-      Substitute : Wide_Character := '?')
+      Trim_Nul : Boolean;
+      Substitute : Wide_Character)
       return Wide_String
    is
       Item_Length : size_t;
@@ -635,7 +647,7 @@ package body Interfaces.C is
          Substitute);
    end To_Ada;
 
-   function To_C (Item : wchar_String; Append_Nul : Boolean := True)
+   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
       return wchar_array is
    begin
       if Append_Nul then
@@ -646,7 +658,7 @@ package body Interfaces.C is
    end To_C;
 
    function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
-      return wchar_String is
+      return Wide_Wide_String is
    begin
       if Trim_Nul then
          return wchar_Conv.From_Nul_Terminated (Item);

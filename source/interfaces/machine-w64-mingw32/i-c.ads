@@ -122,9 +122,20 @@ package Interfaces.C is
       Trim_Nul : Boolean := True);
 
    --  extended
-   subtype wchar_Character is Wide_Character;
-   subtype wchar_String is Wide_String;
-   --  wchar_t does not correspond to Wide_Character in all platform
+   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
+      return wchar_array;
+   function To_C (
+      Item : Wide_Wide_String;
+      Append_Nul : Boolean;
+      Substitute : wchar_t)
+      return wchar_array;
+   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+      return Wide_Wide_String;
+   function To_Ada (
+      Item : wchar_array;
+      Trim_Nul : Boolean;
+      Substitute : Wide_Wide_Character)
+      return Wide_Wide_String;
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.
 
