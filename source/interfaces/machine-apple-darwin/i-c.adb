@@ -647,7 +647,9 @@ package body Interfaces.C is
          Substitute);
    end To_Ada;
 
-   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
+   function To_wchar_array (
+      Item : Wide_Wide_String;
+      Append_Nul : Boolean := True)
       return wchar_array is
    begin
       if Append_Nul then
@@ -655,9 +657,11 @@ package body Interfaces.C is
       else
          return wchar_Conv.To_Non_Nul_Terminated (Item);
       end if;
-   end To_C;
+   end To_wchar_array;
 
-   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+   function To_Wide_Wide_String (
+      Item : wchar_array;
+      Trim_Nul : Boolean := True)
       return Wide_Wide_String is
    begin
       if Trim_Nul then
@@ -665,7 +669,7 @@ package body Interfaces.C is
       else
          return wchar_Conv.From_Non_Nul_Terminated (Item);
       end if;
-   end To_Ada;
+   end To_Wide_Wide_String;
 
    --  implementation of
    --    ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.

@@ -9,6 +9,6 @@ package Interfaces.C.Wide_Wide_WStrings is
       Element => wchar_t,
       Element_Array => wchar_array,
       Pointers => WChar_Pointers,
-      To_C => To_C,
-      To_Ada => To_Ada);
+      To_C => To_wchar_array,
+      To_Ada => To_Wide_Wide_String);
 pragma Preelaborate (Interfaces.C.Wide_Wide_WStrings);
