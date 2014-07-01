@@ -1449,12 +1449,14 @@ package body Ada.Strings.Generic_Fixed is
          Source : String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
-         return String_Type is
+         return String_Type
+      is
+         Length : constant Integer := Source'Length;
       begin
-         return Result : String_Type (1 .. Source'Length) do
-            for I in Result'Range loop
-               Result (I) :=
-                  Mapping (Source (Source'First - Result'First + I));
+         return Result : String_Type (1 .. Length) do
+            for I in 0 .. Length - 1 loop
+               Result (Result'First + I) :=
+                  Mapping (Source (Source'First + I));
             end loop;
          end return;
       end Translate_Per_Element;

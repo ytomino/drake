@@ -157,13 +157,14 @@ package body Ada.Characters.Handling is
    end To_ISO_646;
 
    function To_ISO_646 (Item : String; Substitute : ISO_646 := ' ')
-      return String is
+      return String
+   is
+      Length : constant Natural := Item'Length;
    begin
-      return Result : String (1 .. Item'Length) do
-         for I in Result'Range loop
-            Result (I) := To_ISO_646 (
-               Item (Item'First - Result'First + I),
-               Substitute);
+      return Result : String (1 .. Length) do
+         for I in 0 .. Length - 1 loop
+            Result (Result'First + I) :=
+               To_ISO_646 (Item (Item'First + I), Substitute);
          end loop;
       end return;
    end To_ISO_646;
