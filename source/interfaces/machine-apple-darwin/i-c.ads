@@ -138,9 +138,13 @@ package Interfaces.C is
       Substitute : Wide_Character := '?');
 
    --  extended
-   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
+   function To_wchar_array (
+      Item : Wide_Wide_String;
+      Append_Nul : Boolean := True)
       return wchar_array;
-   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+   function To_Wide_Wide_String (
+      Item : wchar_array;
+      Trim_Nul : Boolean := True)
       return Wide_Wide_String;
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.

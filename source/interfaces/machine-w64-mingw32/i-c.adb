@@ -725,7 +725,7 @@ package body Interfaces.C is
       end if;
    end To_Ada;
 
-   function To_C (
+   function To_wchar_array (
       Item : Wide_Wide_String;
       Append_Nul : Boolean;
       Substitute : wchar_t)
@@ -742,15 +742,20 @@ package body Interfaces.C is
          Count := Count + 1;
       end if;
       return Result (0 .. Count - 1);
-   end To_C;
+   end To_wchar_array;
 
-   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
+   function To_wchar_array (
+      Item : Wide_Wide_String;
+      Append_Nul : Boolean := True)
       return wchar_array is
    begin
-      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
-   end To_C;
+      return To_wchar_array (
+         Item,
+         Append_Nul => Append_Nul,
+         Substitute => '?');
+   end To_wchar_array;
 
-   function To_Ada (
+   function To_Wide_Wide_String (
       Item : wchar_array;
       Trim_Nul : Boolean;
       Substitute : Wide_Wide_Character)
@@ -776,13 +781,18 @@ package body Interfaces.C is
             Substitute);
          return Result (0 .. Count - 1);
       end;
-   end To_Ada;
+   end To_Wide_Wide_String;
 
-   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+   function To_Wide_Wide_String (
+      Item : wchar_array;
+      Trim_Nul : Boolean := True)
       return Wide_Wide_String is
    begin
-      return To_Ada (Item, Trim_Nul => Trim_Nul, Substitute => '?');
-   end To_Ada;
+      return To_Wide_Wide_String (
+         Item,
+         Trim_Nul => Trim_Nul,
+         Substitute => '?');
+   end To_Wide_Wide_String;
 
    --  implementation of
    --    ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.
