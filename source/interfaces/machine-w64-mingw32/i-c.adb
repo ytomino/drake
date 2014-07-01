@@ -559,21 +559,21 @@ package body Interfaces.C is
 
    --  Character (UTF-8) from/to char (MBCS)
 
-   function To_C (Item : Character) return char is
+   function To_char (Item : Character) return char is
    begin
       if Character'Pos (Item) > 16#7f# then
          raise Constraint_Error;
       end if;
       return char (Item);
-   end To_C;
+   end To_char;
 
-   function To_Ada (Item : char) return Character is
+   function To_Character (Item : char) return Character is
    begin
       if char'Pos (Item) > 16#7f# then
          raise Constraint_Error;
       end if;
       return Character (Item);
-   end To_Ada;
+   end To_Character;
 
    function Is_Nul_Terminated (Item : char_array) return Boolean
       renames char_Conv.Is_Nul_Terminated;
@@ -581,7 +581,10 @@ package body Interfaces.C is
    function Length (Item : char_array) return size_t
       renames char_Conv.Length;
 
-   function To_C (Item : String; Append_Nul : Boolean; Substitute : char)
+   function To_char_array (
+      Item : String;
+      Append_Nul : Boolean;
+      Substitute : char)
       return char_array
    is
       Result : char_array (0 .. Item'Length * 2); -- +1 for nul
@@ -593,15 +596,19 @@ package body Interfaces.C is
          Count := Count + 1;
       end if;
       return Result (0 .. Count - 1);
-   end To_C;
+   end To_char_array;
 
-   function To_C (Item : String; Append_Nul : Boolean := True)
+   function To_char_array (
+      Item : String;
+      Append_Nul : Boolean := True)
       return char_array is
    begin
-      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
-   end To_C;
+      return To_char_array (Item, Append_Nul => Append_Nul, Substitute => '?');
+   end To_char_array;
 
-   function To_Ada (Item : char_array; Trim_Nul : Boolean := True)
+   function To_String (
+      Item : char_array;
+      Trim_Nul : Boolean := True)
       return String
    is
       Item_Last : size_t;
@@ -621,9 +628,9 @@ package body Interfaces.C is
             Count);
          return Result (1 .. Count);
       end;
-   end To_Ada;
+   end To_String;
 
-   procedure To_C (
+   procedure To_char_array (
       Item : String;
       Target : out char_array;
       Count : out size_t;
@@ -638,9 +645,9 @@ package body Interfaces.C is
          end if;
          Target (Target'First + Count - 1) := nul;
       end if;
-   end To_C;
+   end To_char_array;
 
-   procedure To_Ada (
+   procedure To_String (
       Item : char_array;
       Target : out String;
       Count : out Natural;
@@ -657,21 +664,21 @@ package body Interfaces.C is
          Item (Item'First .. Item_Last),
          Target,
          Count);
-   end To_Ada;
+   end To_String;
 
    --  implementation of Wide Character and Wide String
 
    --  Wide_Character (UTF-16) from/to wchar_t (UTF-16)
 
-   function To_C (Item : Wide_Character) return wchar_t is
+   function To_wchar_t (Item : Wide_Character) return wchar_t is
    begin
       return wchar_t'Val (Wide_Character'Pos (Item));
-   end To_C;
+   end To_wchar_t;
 
-   function To_Ada (Item : wchar_t) return Wide_Character is
+   function To_Wide_Character (Item : wchar_t) return Wide_Character is
    begin
       return Wide_Character'Val (wchar_t'Pos (Item));
-   end To_Ada;
+   end To_Wide_Character;
 
    function Is_Nul_Terminated (Item : wchar_array) return Boolean
       renames wchar_Conv.Is_Nul_Terminated;
@@ -679,7 +686,9 @@ package body Interfaces.C is
    function Length (Item : wchar_array) return size_t
       renames wchar_Conv.Length;
 
-   function To_C (Item : Wide_String; Append_Nul : Boolean := True)
+   function To_wchar_array (
+      Item : Wide_String;
+      Append_Nul : Boolean := True)
       return wchar_array is
    begin
       if Append_Nul then
@@ -687,9 +696,11 @@ package body Interfaces.C is
       else
          return wchar_Conv.To_Non_Nul_Terminated (Item);
       end if;
-   end To_C;
+   end To_wchar_array;
 
-   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+   function To_Wide_String (
+      Item : wchar_array;
+      Trim_Nul : Boolean := True)
       return Wide_String is
    begin
       if Trim_Nul then
@@ -697,9 +708,9 @@ package body Interfaces.C is
       else
          return wchar_Conv.From_Non_Nul_Terminated (Item);
       end if;
-   end To_Ada;
+   end To_Wide_String;
 
-   procedure To_C (
+   procedure To_wchar_array (
       Item : Wide_String;
       Target : out wchar_array;
       Count : out size_t;
@@ -710,9 +721,9 @@ package body Interfaces.C is
       else
          wchar_Conv.To_Non_Nul_Terminated (Item, Target, Count);
       end if;
-   end To_C;
+   end To_wchar_array;
 
-   procedure To_Ada (
+   procedure To_Wide_String (
       Item : wchar_array;
       Target : out Wide_String;
       Count : out Natural;
@@ -723,7 +734,7 @@ package body Interfaces.C is
       else
          wchar_Conv.From_Non_Nul_Terminated (Item, Target, Count);
       end if;
-   end To_Ada;
+   end To_Wide_String;
 
    function To_wchar_array (
       Item : Wide_Wide_String;
