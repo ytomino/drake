@@ -46,25 +46,33 @@ package Interfaces.C is
    nul : constant char := char'Val (0); -- implementation-defined
 
    function To_C (Item : Character) return char;
+   pragma Inline (To_C);
+
    function To_Ada (Item : char) return Character;
+   pragma Inline (To_Ada);
 
    type char_array is array (size_t range <>) of aliased char;
    for char_array'Component_Size use CHAR_BIT;
 
    function Is_Nul_Terminated (Item : char_array) return Boolean;
+   pragma Inline (Is_Nul_Terminated); -- renamed
 
    --  extended
    function Length (Item : char_array) return size_t;
+   pragma Inline (Length); -- renamed
 
    --  extended
    function To_C (Item : String; Append_Nul : Boolean; Substitute : char)
       return char_array;
+   pragma Inline (To_C);
 
    function To_C (Item : String; Append_Nul : Boolean := True)
       return char_array;
+   pragma Inline (To_C);
 
    function To_Ada (Item : char_array; Trim_Nul : Boolean := True)
       return String;
+   pragma Inline (To_Ada);
 
    --  modified
 --  procedure To_C (
@@ -78,12 +86,14 @@ package Interfaces.C is
       Count : out size_t;
       Append_Nul : Boolean := True;
       Substitute : char := '?');
+   pragma Inline (To_C);
 
    procedure To_Ada (
       Item : char_array;
       Target : out String;
       Count : out Natural;
       Trim_Nul : Boolean := True);
+   pragma Inline (To_Ada);
 
    --  Wide Character and Wide String
 
@@ -96,31 +106,42 @@ package Interfaces.C is
    wide_nul : constant wchar_t := wchar_t'Val (0); -- implementation-defined
 
    function To_C (Item : Wide_Character) return wchar_t;
+   pragma Inline (To_C);
+
    function To_Ada (Item : wchar_t) return Wide_Character;
+   pragma Inline (To_Ada);
 
    type wchar_array is array (size_t range <>) of aliased wchar_t;
    pragma Pack (wchar_array);
 
    function Is_Nul_Terminated (Item : wchar_array) return Boolean;
+   pragma Inline (Is_Nul_Terminated); -- renamed
 
    --  extended
    function Length (Item : wchar_array) return size_t;
+   pragma Inline (Length); -- renamed
 
    function To_C (Item : Wide_String; Append_Nul : Boolean := True)
       return wchar_array;
+   pragma Inline (To_C);
+
    function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
       return Wide_String;
+   pragma Inline (To_Ada);
 
    procedure To_C (
       Item : Wide_String;
       Target : out wchar_array;
       Count : out size_t;
       Append_Nul : Boolean := True);
+   pragma Inline (To_C);
+
    procedure To_Ada (
       Item : wchar_array;
       Target : out Wide_String;
       Count : out Natural;
       Trim_Nul : Boolean := True);
+   pragma Inline (To_Ada);
 
    --  extended
    function To_wchar_array (
@@ -128,19 +149,25 @@ package Interfaces.C is
       Append_Nul : Boolean;
       Substitute : wchar_t)
       return wchar_array;
+   pragma Inline (To_wchar_array);
    function To_wchar_array (
       Item : Wide_Wide_String;
       Append_Nul : Boolean := True)
       return wchar_array;
+   pragma Inline (To_wchar_array);
+
+   --  extended
    function To_Wide_Wide_String (
       Item : wchar_array;
       Trim_Nul : Boolean;
       Substitute : Wide_Wide_Character)
       return Wide_Wide_String;
+   pragma Inline (To_Wide_Wide_String);
    function To_Wide_Wide_String (
       Item : wchar_array;
       Trim_Nul : Boolean := True)
       return Wide_Wide_String;
+   pragma Inline (To_Wide_Wide_String);
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.
 
@@ -151,28 +178,38 @@ package Interfaces.C is
       char16_t'Val (0); -- implementation-defined
 
    function To_C (Item : Wide_Character) return char16_t;
+   pragma Inline (To_C);
+
    function To_Ada (Item : char16_t) return Wide_Character;
+   pragma Inline (To_Ada);
 
    type char16_array is array (size_t range <>) of aliased char16_t;
    pragma Pack (char16_array);
 
    function Is_Nul_Terminated (Item : char16_array) return Boolean;
+   pragma Inline (Is_Nul_Terminated); -- renamed
 
    function To_C (Item : Wide_String; Append_Nul : Boolean := True)
       return char16_array;
+   pragma Inline (To_C);
+
    function To_Ada (Item : char16_array; Trim_Nul : Boolean := True)
       return Wide_String;
+   pragma Inline (To_Ada);
 
    procedure To_C (
       Item : Wide_String;
       Target : out char16_array;
       Count : out size_t;
       Append_Nul : Boolean := True);
+   pragma Inline (To_C);
+
    procedure To_Ada (
       Item : char16_array;
       Target : out Wide_String;
       Count : out Natural;
       Trim_Nul : Boolean := True);
+   pragma Inline (To_Ada);
 
    type char32_t is
       new Wide_Wide_Character; -- implementation-defined character type
@@ -181,32 +218,38 @@ package Interfaces.C is
       char32_t'Val (0); -- implementation-defined
 
    function To_C (Item : Wide_Wide_Character) return char32_t;
+   pragma Inline (To_C);
+
    function To_Ada (Item : char32_t) return Wide_Wide_Character;
+   pragma Inline (To_Ada);
 
    type char32_array is array (size_t range <>) of aliased char32_t;
    pragma Pack (char32_array);
 
    function Is_Nul_Terminated (Item : char32_array) return Boolean;
+   pragma Inline (Is_Nul_Terminated); -- renamed
 
    function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
       return char32_array;
+   pragma Inline (To_C);
+
    function To_Ada (Item : char32_array; Trim_Nul : Boolean := True)
       return Wide_Wide_String;
+   pragma Inline (To_Ada);
 
    procedure To_C (
       Item : Wide_Wide_String;
       Target : out char32_array;
       Count : out size_t;
       Append_Nul : Boolean := True);
+   pragma Inline (To_C);
+
    procedure To_Ada (
       Item : char32_array;
       Target : out Wide_Wide_String;
       Count : out Natural;
       Trim_Nul : Boolean := True);
-
-   pragma Inline (To_C);
    pragma Inline (To_Ada);
-   pragma Inline (Is_Nul_Terminated);
 
    Terminator_Error : exception;
 
