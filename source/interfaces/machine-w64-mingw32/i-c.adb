@@ -581,12 +581,6 @@ package body Interfaces.C is
    function Length (Item : char_array) return size_t
       renames char_Conv.Length;
 
-   function To_C (Item : String; Append_Nul : Boolean := True)
-      return char_array is
-   begin
-      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
-   end To_C;
-
    function To_C (Item : String; Append_Nul : Boolean; Substitute : char)
       return char_array
    is
@@ -599,6 +593,12 @@ package body Interfaces.C is
          Count := Count + 1;
       end if;
       return Result (0 .. Count - 1);
+   end To_C;
+
+   function To_C (Item : String; Append_Nul : Boolean := True)
+      return char_array is
+   begin
+      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
    end To_C;
 
    function To_Ada (Item : char_array; Trim_Nul : Boolean := True)
@@ -725,12 +725,6 @@ package body Interfaces.C is
       end if;
    end To_Ada;
 
-   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
-      return wchar_array is
-   begin
-      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
-   end To_C;
-
    function To_C (
       Item : Wide_Wide_String;
       Append_Nul : Boolean;
@@ -750,11 +744,11 @@ package body Interfaces.C is
       return Result (0 .. Count - 1);
    end To_C;
 
-   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
-      return Wide_Wide_String is
+   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
+      return wchar_array is
    begin
-      return To_Ada (Item, Trim_Nul => Trim_Nul, Substitute => '?');
-   end To_Ada;
+      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
+   end To_C;
 
    function To_Ada (
       Item : wchar_array;
@@ -782,6 +776,12 @@ package body Interfaces.C is
             Substitute);
          return Result (0 .. Count - 1);
       end;
+   end To_Ada;
+
+   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+      return Wide_Wide_String is
+   begin
+      return To_Ada (Item, Trim_Nul => Trim_Nul, Substitute => '?');
    end To_Ada;
 
    --  implementation of
