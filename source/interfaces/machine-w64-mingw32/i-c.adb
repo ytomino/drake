@@ -823,6 +823,9 @@ package body Interfaces.C is
    function Is_Nul_Terminated (Item : char16_array) return Boolean
       renames char16_Conv.Is_Nul_Terminated;
 
+   function Length (Item : char16_array) return size_t
+      renames char16_Conv.Length;
+
    function To_C (Item : Wide_String; Append_Nul : Boolean := True)
       return char16_array is
    begin
@@ -883,6 +886,9 @@ package body Interfaces.C is
 
    function Is_Nul_Terminated (Item : char32_array) return Boolean
       renames char32_Conv.Is_Nul_Terminated;
+
+   function Length (Item : char32_array) return size_t
+      renames char32_Conv.Length;
 
    function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
       return char32_array is
