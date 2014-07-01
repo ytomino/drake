@@ -56,10 +56,11 @@ package Interfaces.C is
    --  extended
    function Length (Item : char_array) return size_t;
 
-   function To_C (Item : String; Append_Nul : Boolean := True)
-      return char_array;
    --  extended
    function To_C (Item : String; Append_Nul : Boolean; Substitute : char)
+      return char_array;
+
+   function To_C (Item : String; Append_Nul : Boolean := True)
       return char_array;
 
    function To_Ada (Item : char_array; Trim_Nul : Boolean := True)
@@ -122,19 +123,19 @@ package Interfaces.C is
       Trim_Nul : Boolean := True);
 
    --  extended
-   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
-      return wchar_array;
    function To_C (
       Item : Wide_Wide_String;
       Append_Nul : Boolean;
       Substitute : wchar_t)
       return wchar_array;
-   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
-      return Wide_Wide_String;
+   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
+      return wchar_array;
    function To_Ada (
       Item : wchar_array;
       Trim_Nul : Boolean;
       Substitute : Wide_Wide_Character)
+      return Wide_Wide_String;
+   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
       return Wide_Wide_String;
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.

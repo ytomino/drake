@@ -93,21 +93,24 @@ package Interfaces.C is
    --  extended
    function Length (Item : wchar_array) return size_t;
 
-   function To_C (Item : Wide_String; Append_Nul : Boolean := True)
-      return wchar_array;
    --  extended
    function To_C (
       Item : Wide_String;
       Append_Nul : Boolean;
       Substitute : wchar_t)
       return wchar_array;
-   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
-      return Wide_String;
+
+   function To_C (Item : Wide_String; Append_Nul : Boolean := True)
+      return wchar_array;
+
    --  extended
    function To_Ada (
       Item : wchar_array;
       Trim_Nul : Boolean;
       Substitute : Wide_Character)
+      return Wide_String;
+
+   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
       return Wide_String;
 
    --  modified

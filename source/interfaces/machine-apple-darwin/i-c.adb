@@ -552,12 +552,6 @@ package body Interfaces.C is
    function Length (Item : wchar_array) return size_t
       renames wchar_Conv.Length;
 
-   function To_C (Item : Wide_String; Append_Nul : Boolean := True)
-      return wchar_array is
-   begin
-      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
-   end To_C;
-
    function To_C (
       Item : Wide_String;
       Append_Nul : Boolean;
@@ -575,11 +569,11 @@ package body Interfaces.C is
       return Result (0 .. Count - 1);
    end To_C;
 
-   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
-      return Wide_String is
+   function To_C (Item : Wide_String; Append_Nul : Boolean := True)
+      return wchar_array is
    begin
-      return To_Ada (Item, Trim_Nul => Trim_Nul, Substitute => '?');
-   end To_Ada;
+      return To_C (Item, Append_Nul => Append_Nul, Substitute => '?');
+   end To_C;
 
    function To_Ada (
       Item : wchar_array;
@@ -607,6 +601,12 @@ package body Interfaces.C is
             Substitute);
          return Result (0 .. Count - 1);
       end;
+   end To_Ada;
+
+   function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
+      return Wide_String is
+   begin
+      return To_Ada (Item, Trim_Nul => Trim_Nul, Substitute => '?');
    end To_Ada;
 
    procedure To_C (
