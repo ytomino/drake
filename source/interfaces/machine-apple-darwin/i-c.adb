@@ -529,21 +529,43 @@ package body Interfaces.C is
 
    --  Wide_Character (UTF-16) from/to wchar_t (UTF-32)
 
-   function To_wchar_t (Item : Wide_Character) return wchar_t is
+   function To_wchar_t (
+      Item : Wide_Character;
+      Substitute : wchar_t)
+      return wchar_t is
    begin
       if Wide_Character'Pos (Item) in 16#d800# .. 16#dfff# then
-         raise Constraint_Error;
+         return Substitute;
+      else
+         return wchar_t'Val (Wide_Character'Pos (Item));
       end if;
-      return wchar_t'Val (Wide_Character'Pos (Item));
    end To_wchar_t;
 
-   function To_Wide_Character (Item : wchar_t) return Wide_Character is
+   function To_wchar_t (
+      Item : Wide_Character)
+      return wchar_t is
+   begin
+      return To_wchar_t (Item, Substitute => '?');
+   end To_wchar_t;
+
+   function To_Wide_Character (
+      Item : wchar_t;
+      Substitute : Wide_Character)
+      return Wide_Character is
    begin
       if wchar_t'Pos (Item) > 16#ffff# then
          --  a check for detecting illegal sequence are omitted
-         raise Constraint_Error;
+         return Substitute;
+      else
+         return Wide_Character'Val (wchar_t'Pos (Item));
       end if;
-      return Wide_Character'Val (wchar_t'Pos (Item));
+   end To_Wide_Character;
+
+   function To_Wide_Character (
+      Item : wchar_t)
+      return Wide_Character is
+   begin
+      return To_Wide_Character (Item, Substitute => '?');
    end To_Wide_Character;
 
    function Is_Nul_Terminated (Item : wchar_array) return Boolean
@@ -654,6 +676,22 @@ package body Interfaces.C is
          Substitute);
    end To_Wide_String;
 
+   --  implementation of Wide Wide Character and Wide Wide String
+
+   --  Wide_Wide_Character (UTF-32) from/to wchar_t (UTF-32)
+
+   function To_wchar_t (Item : Wide_Wide_Character)
+      return wchar_t is
+   begin
+      return wchar_t (Item);
+   end To_wchar_t;
+
+   function To_Wide_Wide_Character (Item : wchar_t)
+      return Wide_Wide_Character is
+   begin
+      return Wide_Wide_Character (Item);
+   end To_Wide_Wide_Character;
+
    function To_wchar_array (
       Item : Wide_Wide_String;
       Append_Nul : Boolean := True)
@@ -675,6 +713,32 @@ package body Interfaces.C is
          return wchar_Conv.From_Nul_Terminated (Item);
       else
          return wchar_Conv.From_Non_Nul_Terminated (Item);
+      end if;
+   end To_Wide_Wide_String;
+
+   procedure To_wchar_array (
+      Item : Wide_Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Append_Nul : Boolean := True) is
+   begin
+      if Append_Nul then
+         wchar_Conv.To_Nul_Terminated (Item, Target, Count);
+      else
+         wchar_Conv.To_Non_Nul_Terminated (Item, Target, Count);
+      end if;
+   end To_wchar_array;
+
+   procedure To_Wide_Wide_String (
+      Item : wchar_array;
+      Target : out Wide_Wide_String;
+      Count : out Natural;
+      Trim_Nul : Boolean := True) is
+   begin
+      if Trim_Nul then
+         wchar_Conv.From_Nul_Terminated (Item, Target, Count);
+      else
+         wchar_Conv.From_Non_Nul_Terminated (Item, Target, Count);
       end if;
    end To_Wide_Wide_String;
 
