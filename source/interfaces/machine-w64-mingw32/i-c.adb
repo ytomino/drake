@@ -559,20 +559,28 @@ package body Interfaces.C is
 
    --  Character (UTF-8) from/to char (MBCS)
 
-   function To_char (Item : Character) return char is
+   function To_char (
+      Item : Character;
+      Substitute : char := '?')
+      return char is
    begin
       if Character'Pos (Item) > 16#7f# then
-         raise Constraint_Error;
+         return Substitute;
+      else
+         return char (Item);
       end if;
-      return char (Item);
    end To_char;
 
-   function To_Character (Item : char) return Character is
+   function To_Character (
+      Item : char;
+      Substitute : Character := '?')
+      return Character is
    begin
       if char'Pos (Item) > 16#7f# then
-         raise Constraint_Error;
+         return Substitute;
+      else
+         return Character (Item);
       end if;
-      return Character (Item);
    end To_Character;
 
    function Is_Nul_Terminated (Item : char_array) return Boolean
@@ -736,6 +744,35 @@ package body Interfaces.C is
       end if;
    end To_Wide_String;
 
+   --  implementation of Wide Wide Character and Wide Wide String
+
+   --  Wide_Wide_Character (UTF-32) from/to wchar_t (UTF-16)
+
+   function To_wchar_t (
+      Item : Wide_Wide_Character;
+      Substitute : wchar_t := '?')
+      return wchar_t is
+   begin
+      if Wide_Wide_Character'Pos (Item) > 16#FFFF# then
+         --  a check for detecting illegal sequence are omitted
+         return Substitute;
+      else
+         return wchar_t'Val (Wide_Wide_Character'Pos (Item));
+      end if;
+   end To_wchar_t;
+
+   function To_Wide_Wide_Character (
+      Item : wchar_t;
+      Substitute : Wide_Wide_Character := '?')
+      return Wide_Wide_Character is
+   begin
+      if wchar_t'Pos (Item) in 16#D800# .. 16#DFFF# then
+         return Substitute;
+      else
+         return Wide_Wide_Character'Val (wchar_t'Pos (Item));
+      end if;
+   end To_Wide_Wide_Character;
+
    function To_wchar_array (
       Item : Wide_Wide_String;
       Append_Nul : Boolean;
@@ -803,6 +840,44 @@ package body Interfaces.C is
          Item,
          Trim_Nul => Trim_Nul,
          Substitute => '?');
+   end To_Wide_Wide_String;
+
+   procedure To_wchar_array (
+      Item : Wide_Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Append_Nul : Boolean := True;
+      Substitute : wchar_t := '?') is
+   begin
+      To_Non_Nul_Terminated (Item, Target, Count, Substitute);
+      if Append_Nul then
+         Count := Count + 1;
+         if Count > Target'Length then
+            raise Constraint_Error;
+         end if;
+         Target (Target'First + Count - 1) := wide_nul;
+      end if;
+   end To_wchar_array;
+
+   procedure To_Wide_Wide_String (
+      Item : wchar_array;
+      Target : out Wide_Wide_String;
+      Count : out Natural;
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Wide_Character := '?')
+   is
+      Item_Last : size_t;
+   begin
+      if Trim_Nul then
+         Item_Last := Item'First + Length (Item) - 1;
+      else
+         Item_Last := Item'Last;
+      end if;
+      From_Non_Nul_Terminated (
+         Item (Item'First .. Item_Last),
+         Target,
+         Count,
+         Substitute);
    end To_Wide_Wide_String;
 
    --  implementation of

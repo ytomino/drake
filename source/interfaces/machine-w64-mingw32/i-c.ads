@@ -46,17 +46,33 @@ package Interfaces.C is
    nul : constant char := char'Val (0); -- implementation-defined
 
    --  extended
-   function To_char (Item : Character) return char;
+   function To_char (
+      Item : Character;
+      Substitute : char := '?')
+      return char;
    pragma Inline (To_char);
 
-   function To_C (Item : Character) return char
+   --  modified
+--  function To_C (Item : Character) return char;
+   function To_C (
+      Item : Character;
+      Substitute : char := '?')
+      return char
       renames To_char;
 
    --  extended
-   function To_Character (Item : char) return Character;
+   function To_Character (
+      Item : char;
+      Substitute : Character := '?')
+      return Character;
    pragma Inline (To_Character);
 
-   function To_Ada (Item : char) return Character
+   --  modified
+--  function To_Ada (Item : char) return Character;
+   function To_Ada (
+      Item : char;
+      Substitute : Character := '?')
+      return Character
       renames To_Character;
 
    type char_array is array (size_t range <>) of aliased char;
@@ -218,6 +234,21 @@ package Interfaces.C is
       renames To_Wide_String;
 
    --  extended
+   --  Wide Wide Character and Wide Wide String
+   function To_wchar_t (
+      Item : Wide_Wide_Character;
+      Substitute : wchar_t := '?')
+      return wchar_t;
+   pragma Inline (To_wchar_t);
+
+   --  extended
+   function To_Wide_Wide_Character (
+      Item : wchar_t;
+      Substitute : Wide_Wide_Character := '?')
+      return Wide_Wide_Character;
+   pragma Inline (To_Wide_Wide_Character);
+
+   --  extended
    function To_wchar_array (
       Item : Wide_Wide_String;
       Append_Nul : Boolean;
@@ -241,6 +272,24 @@ package Interfaces.C is
       Item : wchar_array;
       Trim_Nul : Boolean := True)
       return Wide_Wide_String;
+   pragma Inline (To_Wide_Wide_String);
+
+   --  extended
+   procedure To_wchar_array (
+      Item : Wide_Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Append_Nul : Boolean := True;
+      Substitute : wchar_t := '?');
+   pragma Inline (To_wchar_array);
+
+   --  extended
+   procedure To_Wide_Wide_String (
+      Item : wchar_array;
+      Target : out Wide_Wide_String;
+      Count : out Natural;
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Wide_Character := '?');
    pragma Inline (To_Wide_Wide_String);
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.

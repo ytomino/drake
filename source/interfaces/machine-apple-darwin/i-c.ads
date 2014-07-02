@@ -128,14 +128,28 @@ package Interfaces.C is
    wide_nul : constant wchar_t := wchar_t'Val (0); -- implementation-defined
 
    --  extended
-   function To_wchar_t (Item : Wide_Character) return wchar_t;
+   function To_wchar_t (
+      Item : Wide_Character;
+      Substitute : wchar_t)
+      return wchar_t;
+   pragma Inline (To_wchar_t);
+   function To_wchar_t (
+      Item : Wide_Character)
+      return wchar_t;
    pragma Inline (To_wchar_t);
 
    function To_C (Item : Wide_Character) return wchar_t
       renames To_wchar_t;
 
    --  extended
-   function To_Wide_Character (Item : wchar_t) return Wide_Character;
+   function To_Wide_Character (
+      Item : wchar_t;
+      Substitute : Wide_Character)
+      return Wide_Character;
+   pragma Inline (To_Wide_Character);
+   function To_Wide_Character (
+      Item : wchar_t)
+      return Wide_Character;
    pragma Inline (To_Wide_Character);
 
    function To_Ada (Item : wchar_t) return Wide_Character
@@ -232,6 +246,17 @@ package Interfaces.C is
       renames To_Wide_String;
 
    --  extended
+   --  Wide Wide Character and Wide Wide String
+   function To_wchar_t (Item : Wide_Wide_Character)
+      return wchar_t;
+   pragma Inline (To_wchar_t);
+
+   --  extended
+   function To_Wide_Wide_Character (Item : wchar_t)
+      return Wide_Wide_Character;
+   pragma Inline (To_Wide_Wide_Character);
+
+   --  extended
    function To_wchar_array (
       Item : Wide_Wide_String;
       Append_Nul : Boolean := True)
@@ -243,6 +268,22 @@ package Interfaces.C is
       Item : wchar_array;
       Trim_Nul : Boolean := True)
       return Wide_Wide_String;
+   pragma Inline (To_Wide_Wide_String);
+
+   --  extended
+   procedure To_wchar_array (
+      Item : Wide_Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Append_Nul : Boolean := True);
+   pragma Inline (To_wchar_array);
+
+   --  extended
+   procedure To_Wide_Wide_String (
+      Item : wchar_array;
+      Target : out Wide_Wide_String;
+      Count : out Natural;
+      Trim_Nul : Boolean := True);
    pragma Inline (To_Wide_Wide_String);
 
    --  ISO/IEC 10646:2003 compatible types defined by ISO/IEC TR 19769:2004.
