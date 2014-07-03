@@ -91,8 +91,13 @@ package body Interfaces.C.Generic_Strings is
          Chars'Length); -- CXB3009, accept non-nul terminated
    end New_Char_Array;
 
-   function New_String (Str : String_Type) return not null chars_ptr is
-      C : constant Element_Array := To_C (Str, Append_Nul => False);
+   function New_String (
+      Str : String_Type;
+      Substitute : Element := Element'Val (Character'Pos ('?')))
+      return not null chars_ptr
+   is
+      C : constant Element_Array :=
+         To_C (Str, Append_Nul => False, Substitute => Substitute);
    begin
       return New_Chars_Ptr (C (C'First)'Access, C'Length);
    end New_String;
@@ -237,20 +242,31 @@ package body Interfaces.C.Generic_Strings is
       end if;
    end Value;
 
-   function Value (Item : access constant Element)
+   function Value (
+      Item : access constant Element;
+      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
       return String_Type
    is
       C : constant Element_Array := Value (Item);
    begin
-      return To_Ada (C (C'First .. C'Last - 1), Trim_Nul => False);
+      return To_Ada (
+         C (C'First .. C'Last - 1),
+         Trim_Nul => False,
+         Substitute => Substitute);
    end Value;
 
-   function Value (Item : access constant Element; Length : size_t)
+   function Value (
+      Item : access constant Element;
+      Length : size_t;
+      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
       return String_Type
    is
       C : constant Element_Array := Value (Item, Length, Append_Nul => True);
    begin
-      return To_Ada (C (C'First .. C'Last - 1), Trim_Nul => False);
+      return To_Ada (
+         C (C'First .. C'Last - 1),
+         Trim_Nul => False,
+         Substitute => Substitute);
    end Value;
 
    function Strlen (Item : access constant Element)
@@ -319,12 +335,13 @@ package body Interfaces.C.Generic_Strings is
       Item : access Element;
       Offset : size_t;
       Str : String_Type;
-      Check : Boolean := True) is
+      Check : Boolean := True;
+      Substitute : Element := Element'Val (Character'Pos ('?'))) is
    begin
       Update (
          Item,
          Offset,
-         To_C (Str, Append_Nul => False),
+         To_C (Str, Append_Nul => False, Substitute => Substitute),
          Check);
    end Update;
 

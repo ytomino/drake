@@ -1,14 +1,9 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
-with System.UTF_Conversions;
-with C.winnls;
-pragma Warnings (Off, C.winnls); -- break "pure" rule
-with C.winnt;
-pragma Warnings (Off, C.winnt); -- break "pure" rule
+with Interfaces.C.Inside;
 package body Interfaces.C is
    pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
-   use type Standard.C.size_t;
 
    generic
       type Element is private;
@@ -332,107 +327,6 @@ package body Interfaces.C is
          char_const_ptr,
          Find_nul);
 
-   procedure To_Non_Nul_Terminated (
-      Item : String;
-      Target : out char_array;
-      Count : out size_t;
-      Substitute : char);
-   procedure To_Non_Nul_Terminated (
-      Item : String;
-      Target : out char_array;
-      Count : out size_t;
-      Substitute : char) is
-   begin
-      if Item'Length = 0 then
-         Count := 0;
-      else
-         declare
-            function To_LPSTR is
-               new Ada.Unchecked_Conversion (
-                  System.Address,
-                  Standard.C.winnt.LPSTR);
-            W_Item : Standard.C.winnt.WCHAR_array (0 .. Item'Length - 1);
-            W_Length : size_t;
-            Sub : aliased constant Standard.C.char_array (0 .. 1) := (
-               Standard.C.char'Val (char'Pos (Substitute)),
-               Standard.C.char'Val (0));
-         begin
-            W_Length := size_t (Standard.C.winnls.MultiByteToWideChar (
-               Standard.C.winnls.CP_UTF8,
-               0,
-               To_LPSTR (Item'Address),
-               Item'Length,
-               W_Item (0)'Access,
-               W_Item'Length));
-            if W_Length = 0 then
-               raise Constraint_Error;
-            end if;
-            Count := size_t (Standard.C.winnls.WideCharToMultiByte (
-               Standard.C.winnls.CP_ACP,
-               0,
-               W_Item (0)'Access,
-               Standard.C.signed_int (W_Length),
-               To_LPSTR (Target'Address),
-               Target'Length,
-               Sub (0)'Access,
-               null));
-            if Count = 0 then
-               raise Constraint_Error;
-            end if;
-         end;
-      end if;
-   end To_Non_Nul_Terminated;
-
-   procedure From_Non_Nul_Terminated (
-      Item : char_array;
-      Target : out String;
-      Count : out Natural;
-      Substitute : Character);
-   procedure From_Non_Nul_Terminated (
-      Item : char_array;
-      Target : out String;
-      Count : out Natural;
-      Substitute : Character)
-   is
-      pragma Unreferenced (Substitute);
-   begin
-      if Item'Length = 0 then
-         Count := 0;
-      else
-         declare
-            function To_LPSTR is
-               new Ada.Unchecked_Conversion (
-                  System.Address,
-                  Standard.C.winnt.LPSTR);
-            W_Item : Standard.C.winnt.WCHAR_array (0 .. Item'Length - 1);
-            W_Length : size_t;
-         begin
-            W_Length := size_t (Standard.C.winnls.MultiByteToWideChar (
-               Standard.C.winnls.CP_ACP,
-               0,
-               To_LPSTR (Item'Address),
-               Item'Length,
-               W_Item (0)'Access,
-               W_Item'Length));
-            if W_Length = 0 then
-               raise Constraint_Error;
-            end if;
-            Count := Natural (Standard.C.winnls.WideCharToMultiByte (
-               Standard.C.winnls.CP_UTF8,
-               0,
-               W_Item (0)'Access,
-               Standard.C.signed_int (W_Length),
-               To_LPSTR (Target'Address),
-               Target'Length,
-               null,
-               null));
-            if Count = 0 then
-               raise Constraint_Error;
-            end if;
-         end;
-      end if;
-   end From_Non_Nul_Terminated;
-
    package char_Func is
       new Functions (
          Character,
@@ -440,10 +334,10 @@ package body Interfaces.C is
          char,
          char_array,
          char_Lengths.Length,
-         To_Non_Nul_Terminated,
-         From_Non_Nul_Terminated,
-         Expanding_To_C => 1,
-         Expanding_To_Ada => 3); -- halfwidth kana
+         Inside.To_Non_Nul_Terminated,
+         Inside.From_Non_Nul_Terminated,
+         Expanding_To_C => Inside.Expanding_To_char,
+         Expanding_To_Ada => Inside.Expanding_To_Character);
 
    --  wchar_t
 
@@ -472,13 +366,6 @@ package body Interfaces.C is
          wchar_t_const_ptr,
          Find_nul);
 
-   package wchar_Wide_Conv is
-      new Simple_Conversions (
-         Wide_Character,
-         Wide_String,
-         wchar_t,
-         wchar_array);
-
    package wchar_Wide_Func is
       new Functions (
          Wide_Character,
@@ -486,124 +373,10 @@ package body Interfaces.C is
          wchar_t,
          wchar_array,
          wchar_Lengths.Length,
-         wchar_Wide_Conv.To_Non_Nul_Terminated,
-         wchar_Wide_Conv.From_Non_Nul_Terminated,
-         Expanding_To_C => 1,
-         Expanding_To_Ada => 1);
-
-   procedure To_Non_Nul_Terminated (
-      Item : Wide_Wide_String;
-      Target : out wchar_array;
-      Count : out size_t;
-      Substitute : wchar_t);
-   procedure To_Non_Nul_Terminated (
-      Item : Wide_Wide_String;
-      Target : out wchar_array;
-      Count : out size_t;
-      Substitute : wchar_t)
-   is
-      Ada_Target : Wide_String (1 .. Target'Length);
-      for Ada_Target'Address use Target'Address;
-      Item_Index : Natural := Item'First;
-      Target_Index : Natural := Ada_Target'First;
-   begin
-      while Item_Index <= Item'Last loop
-         declare
-            Code : System.UTF_Conversions.UCS_4;
-            Item_Used : Natural;
-            From_Status : System.UTF_Conversions.From_Status_Type;
-            Target_Last : Natural;
-            To_Status : System.UTF_Conversions.To_Status_Type;
-         begin
-            System.UTF_Conversions.From_UTF_32 (
-               Item (Item_Index .. Item'Last),
-               Item_Used,
-               Code,
-               From_Status);
-            Item_Index := Item_Used + 1;
-            case From_Status is
-               when System.UTF_Conversions.Success =>
-                  null;
-               when System.UTF_Conversions.Illegal_Sequence
-                  | System.UTF_Conversions.Truncated =>
-                  Code := wchar_t'Pos (Substitute);
-            end case;
-            System.UTF_Conversions.To_UTF_16 (
-               Code,
-               Ada_Target (Target_Index .. Ada_Target'Last),
-               Target_Last,
-               To_Status);
-            case To_Status is
-               when System.UTF_Conversions.Success =>
-                  null;
-               when System.UTF_Conversions.Overflow
-                  | System.UTF_Conversions.Unmappable =>
-                  --  all values of UTF-16 are mappable to UTF-32
-                  raise Constraint_Error;
-            end case;
-            Target_Index := Target_Last + 1;
-         end;
-      end loop;
-      Count := size_t (Target_Index - Ada_Target'First);
-   end To_Non_Nul_Terminated;
-
-   procedure From_Non_Nul_Terminated (
-      Item : wchar_array;
-      Target : out Wide_Wide_String;
-      Count : out Natural;
-      Substitute : Wide_Wide_Character);
-   procedure From_Non_Nul_Terminated (
-      Item : wchar_array;
-      Target : out Wide_Wide_String;
-      Count : out Natural;
-      Substitute : Wide_Wide_Character)
-   is
-      Ada_Item : Wide_String (1 .. Item'Length);
-      for Ada_Item'Address use Item'Address;
-      Item_Index : Natural := Ada_Item'First;
-      Target_Index : Natural := Target'First;
-   begin
-      while Item_Index <= Ada_Item'Last loop
-         declare
-            Code : System.UTF_Conversions.UCS_4;
-            Item_Used : Natural;
-            From_Status : System.UTF_Conversions.From_Status_Type; -- ignored
-            Target_Last : Natural;
-            To_Status : System.UTF_Conversions.To_Status_Type;
-         begin
-            System.UTF_Conversions.From_UTF_16 (
-               Ada_Item (Item_Index .. Ada_Item'Last),
-               Item_Used,
-               Code,
-               From_Status);
-            Item_Index := Item_Used + 1;
-            case From_Status is
-               when System.UTF_Conversions.Success =>
-                  null;
-               when System.UTF_Conversions.Illegal_Sequence
-                  | System.UTF_Conversions.Truncated =>
-                  --  Truncated does not returned in UTF-32
-                  Code := Wide_Wide_Character'Pos (Substitute);
-            end case;
-            System.UTF_Conversions.To_UTF_32 (
-               Code,
-               Target (Target_Index .. Target'Last),
-               Target_Last,
-               To_Status);
-            case To_Status is
-               when System.UTF_Conversions.Success =>
-                  null;
-               when System.UTF_Conversions.Overflow =>
-                  raise Constraint_Error;
-               when System.UTF_Conversions.Unmappable =>
-                  Target (Target_Index) := Substitute;
-                  Target_Last := Target_Index;
-            end case;
-            Target_Index := Target_Last + 1;
-         end;
-      end loop;
-      Count := Target_Index - Target'First;
-   end From_Non_Nul_Terminated;
+         Inside.To_Non_Nul_Terminated,
+         Inside.From_Non_Nul_Terminated,
+         Expanding_To_C => Inside.Expanding_From_Wide_To_wchar_t,
+         Expanding_To_Ada => Inside.Expanding_From_wchar_t_To_Wide);
 
    package wchar_Wide_Wide_Func is
       new Functions (
@@ -612,10 +385,10 @@ package body Interfaces.C is
          wchar_t,
          wchar_array,
          wchar_Lengths.Length,
-         To_Non_Nul_Terminated,
-         From_Non_Nul_Terminated,
-         Expanding_To_C => 2, -- Expanding_From_32_To_16
-         Expanding_To_Ada => 1); -- Expanding_From_16_To_32
+         Inside.To_Non_Nul_Terminated,
+         Inside.From_Non_Nul_Terminated,
+         Expanding_To_C => Inside.Expanding_From_Wide_Wide_To_wchar_t,
+         Expanding_To_Ada => Inside.Expanding_From_wchar_t_To_Wide_Wide);
 
    --  char16_t
 
@@ -721,30 +494,30 @@ package body Interfaces.C is
 
    --  implementation of Characters and Strings
 
-   --  Character (UTF-8) from/to char (MBCS)
-
    function To_char (
       Item : Character;
-      Substitute : char := '?')
+      Substitute : char)
+      return char
+      renames Inside.To_char;
+
+   function To_char (
+      Item : Character)
       return char is
    begin
-      if Character'Pos (Item) > 16#7f# then
-         return Substitute;
-      else
-         return char (Item);
-      end if;
+      return To_char (Item, Substitute => '?');
    end To_char;
 
    function To_Character (
       Item : char;
-      Substitute : Character := '?')
+      Substitute : Character)
+      return Character
+      renames Inside.To_Character;
+
+   function To_Character (
+      Item : char)
       return Character is
    begin
-      if char'Pos (Item) > 16#7f# then
-         return Substitute;
-      else
-         return Character (Item);
-      end if;
+      return To_Character (Item, Substitute => '?');
    end To_Character;
 
    function Is_Nul_Terminated (Item : char_array) return Boolean
@@ -755,8 +528,8 @@ package body Interfaces.C is
 
    function To_char_array (
       Item : String;
-      Append_Nul : Boolean;
-      Substitute : char)
+      Append_Nul : Boolean := True;
+      Substitute : char := '?')
       return char_array is
    begin
       if Append_Nul then
@@ -768,25 +541,18 @@ package body Interfaces.C is
       end if;
    end To_char_array;
 
-   function To_char_array (
-      Item : String;
-      Append_Nul : Boolean := True)
-      return char_array is
-   begin
-      return To_char_array (Item, Append_Nul => Append_Nul, Substitute => '?');
-   end To_char_array;
-
    function To_String (
       Item : char_array;
-      Trim_Nul : Boolean := True)
+      Trim_Nul : Boolean := True;
+      Substitute : Character := '?')
       return String is
    begin
       if Trim_Nul then
          return char_Func.From_Nul_Terminated (Item,
-            Substitute => Character'Val (0));
+            Substitute => Substitute);
       else
          return char_Func.From_Non_Nul_Terminated (Item,
-            Substitute => Character'Val (0));
+            Substitute => Substitute);
       end if;
    end To_String;
 
@@ -797,13 +563,12 @@ package body Interfaces.C is
       Append_Nul : Boolean := True;
       Substitute : char := '?') is
    begin
-      To_Non_Nul_Terminated (Item, Target, Count, Substitute);
       if Append_Nul then
          char_Func.To_Nul_Terminated (Item, Target, Count,
-            Substitute => nul);
+            Substitute => Substitute);
       else
-         To_Non_Nul_Terminated (Item, Target, Count,
-            Substitute => nul);
+         Inside.To_Non_Nul_Terminated (Item, Target, Count,
+            Substitute => Substitute);
       end if;
    end To_char_array;
 
@@ -811,29 +576,44 @@ package body Interfaces.C is
       Item : char_array;
       Target : out String;
       Count : out Natural;
-      Trim_Nul : Boolean := True) is
+      Trim_Nul : Boolean := True;
+      Substitute : Character := '?') is
    begin
       if Trim_Nul then
          char_Func.From_Nul_Terminated (Item, Target, Count,
-            Substitute => Character'Val (0));
+            Substitute => Substitute);
       else
-         From_Non_Nul_Terminated (Item, Target, Count,
-            Substitute => Character'Val (0));
+         Inside.From_Non_Nul_Terminated (Item, Target, Count,
+            Substitute => Substitute);
       end if;
    end To_String;
 
    --  implementation of Wide Character and Wide String
 
-   --  Wide_Character (UTF-16) from/to wchar_t (UTF-16)
+   function To_wchar_t (
+      Item : Wide_Character;
+      Substitute : wchar_t)
+      return wchar_t
+      renames Inside.To_wchar_t;
 
-   function To_wchar_t (Item : Wide_Character) return wchar_t is
+   function To_wchar_t (
+      Item : Wide_Character)
+      return wchar_t is
    begin
-      return wchar_t'Val (Wide_Character'Pos (Item));
+      return To_wchar_t (Item, Substitute => Wide_Character'Pos ('?'));
    end To_wchar_t;
 
-   function To_Wide_Character (Item : wchar_t) return Wide_Character is
+   function To_Wide_Character (
+      Item : wchar_t;
+      Substitute : Wide_Character)
+      return Wide_Character
+      renames Inside.To_Wide_Character;
+
+   function To_Wide_Character (
+      Item : wchar_t)
+      return Wide_Character is
    begin
-      return Wide_Character'Val (wchar_t'Pos (Item));
+      return To_Wide_Character (Item, Substitute => '?');
    end To_Wide_Character;
 
    function Is_Nul_Terminated (Item : wchar_array) return Boolean
@@ -844,29 +624,31 @@ package body Interfaces.C is
 
    function To_wchar_array (
       Item : Wide_String;
-      Append_Nul : Boolean := True)
+      Append_Nul : Boolean := True;
+      Substitute : wchar_t := Wide_Character'Pos ('?'))
       return wchar_array is
    begin
       if Append_Nul then
          return wchar_Wide_Func.To_Nul_Terminated (Item,
-            Substitute => wide_nul);
+            Substitute => Substitute);
       else
          return wchar_Wide_Func.To_Non_Nul_Terminated (Item,
-            Substitute => wide_nul);
+            Substitute => Substitute);
       end if;
    end To_wchar_array;
 
    function To_Wide_String (
       Item : wchar_array;
-      Trim_Nul : Boolean := True)
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Character := '?')
       return Wide_String is
    begin
       if Trim_Nul then
          return wchar_Wide_Func.From_Nul_Terminated (Item,
-            Substitute => Wide_Character'Val (0));
+            Substitute => Substitute);
       else
          return wchar_Wide_Func.From_Non_Nul_Terminated (Item,
-            Substitute => Wide_Character'Val (0));
+            Substitute => Substitute);
       end if;
    end To_Wide_String;
 
@@ -874,14 +656,15 @@ package body Interfaces.C is
       Item : Wide_String;
       Target : out wchar_array;
       Count : out size_t;
-      Append_Nul : Boolean := True) is
+      Append_Nul : Boolean := True;
+      Substitute : wchar_t := Wide_Character'Pos ('?')) is
    begin
       if Append_Nul then
          wchar_Wide_Func.To_Nul_Terminated (Item, Target, Count,
-            Substitute => wide_nul);
+            Substitute => Substitute);
       else
-         wchar_Wide_Conv.To_Non_Nul_Terminated (Item, Target, Count,
-            Substitute => wide_nul);
+         Inside.To_Non_Nul_Terminated (Item, Target, Count,
+            Substitute => Substitute);
       end if;
    end To_wchar_array;
 
@@ -889,50 +672,36 @@ package body Interfaces.C is
       Item : wchar_array;
       Target : out Wide_String;
       Count : out Natural;
-      Trim_Nul : Boolean := True) is
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Character := '?') is
    begin
       if Trim_Nul then
          wchar_Wide_Func.From_Nul_Terminated (Item, Target, Count,
-            Substitute => Wide_Character'Val (0));
+            Substitute => Substitute);
       else
-         wchar_Wide_Conv.From_Non_Nul_Terminated (Item, Target, Count,
-            Substitute => Wide_Character'Val (0));
+         Inside.From_Non_Nul_Terminated (Item, Target, Count,
+            Substitute => Substitute);
       end if;
    end To_Wide_String;
 
    --  implementation of Wide Wide Character and Wide Wide String
 
-   --  Wide_Wide_Character (UTF-32) from/to wchar_t (UTF-16)
-
    function To_wchar_t (
       Item : Wide_Wide_Character;
-      Substitute : wchar_t := '?')
-      return wchar_t is
-   begin
-      if Wide_Wide_Character'Pos (Item) > 16#FFFF# then
-         --  a check for detecting illegal sequence are omitted
-         return Substitute;
-      else
-         return wchar_t'Val (Wide_Wide_Character'Pos (Item));
-      end if;
-   end To_wchar_t;
+      Substitute : wchar_t := Wide_Wide_Character'Pos ('?'))
+      return wchar_t
+      renames Inside.To_wchar_t;
 
    function To_Wide_Wide_Character (
       Item : wchar_t;
       Substitute : Wide_Wide_Character := '?')
-      return Wide_Wide_Character is
-   begin
-      if wchar_t'Pos (Item) in 16#D800# .. 16#DFFF# then
-         return Substitute;
-      else
-         return Wide_Wide_Character'Val (wchar_t'Pos (Item));
-      end if;
-   end To_Wide_Wide_Character;
+      return Wide_Wide_Character
+      renames Inside.To_Wide_Wide_Character;
 
    function To_wchar_array (
       Item : Wide_Wide_String;
-      Append_Nul : Boolean;
-      Substitute : wchar_t)
+      Append_Nul : Boolean := True;
+      Substitute : wchar_t := Wide_Wide_Character'Pos ('?'))
       return wchar_array is
    begin
       if Append_Nul then
@@ -944,21 +713,10 @@ package body Interfaces.C is
       end if;
    end To_wchar_array;
 
-   function To_wchar_array (
-      Item : Wide_Wide_String;
-      Append_Nul : Boolean := True)
-      return wchar_array is
-   begin
-      return To_wchar_array (
-         Item,
-         Append_Nul => Append_Nul,
-         Substitute => '?');
-   end To_wchar_array;
-
    function To_Wide_Wide_String (
       Item : wchar_array;
-      Trim_Nul : Boolean;
-      Substitute : Wide_Wide_Character)
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Wide_Character := '?')
       return Wide_Wide_String is
    begin
       if Trim_Nul then
@@ -970,29 +728,18 @@ package body Interfaces.C is
       end if;
    end To_Wide_Wide_String;
 
-   function To_Wide_Wide_String (
-      Item : wchar_array;
-      Trim_Nul : Boolean := True)
-      return Wide_Wide_String is
-   begin
-      return To_Wide_Wide_String (
-         Item,
-         Trim_Nul => Trim_Nul,
-         Substitute => '?');
-   end To_Wide_Wide_String;
-
    procedure To_wchar_array (
       Item : Wide_Wide_String;
       Target : out wchar_array;
       Count : out size_t;
       Append_Nul : Boolean := True;
-      Substitute : wchar_t := '?') is
+      Substitute : wchar_t := Wide_Wide_Character'Pos ('?')) is
    begin
       if Append_Nul then
          wchar_Wide_Wide_Func.To_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       else
-         To_Non_Nul_Terminated (Item, Target, Count,
+         Inside.To_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       end if;
    end To_wchar_array;
@@ -1008,7 +755,7 @@ package body Interfaces.C is
          wchar_Wide_Wide_Func.From_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       else
-         From_Non_Nul_Terminated (Item, Target, Count,
+         Inside.From_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       end if;
    end To_Wide_Wide_String;
