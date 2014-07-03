@@ -10,6 +10,8 @@ package Interfaces.Fortran is
    type Double_Precision is new Long_Float; -- implementation-defined
 
    type Logical is new Boolean;
+   for Logical'Size use Integer'Size;
+   pragma Convention (Fortran, Logical);
 
    package Single_Precision_Complex_Types is
       new Ada.Numerics.Generic_Complex_Types (Real);
@@ -44,5 +46,87 @@ package Interfaces.Fortran is
 --    Item : Fortran_Character;
 --    Target : out String;
 --    Last : out Natural);
+
+   --  B.5(21), Integer_Star_n, Real_Star_n, Logical_Star_n, Complex_Star_n,
+   --    Integer_Kind_n, Real_Kind_n, Logical_Kind_n, Complex_Kind_n,
+   --    and Character_Kind_n.
+
+   --  Integer_Star_n and Integer_Kind_n
+
+   subtype Integer_Kind_1 is Integer_8;
+   subtype Integer_Kind_2 is Integer_16;
+   subtype Integer_Kind_4 is Integer_32;
+   subtype Integer_Kind_8 is Integer_64;
+--  type Integer_Kind_16 is ...; -- supported in gfortran, but not in GNAT
+
+   subtype Integer_Star_1 is Integer_Kind_1;
+   subtype Integer_Star_2 is Integer_Kind_2;
+   subtype Integer_Star_4 is Integer_Kind_4;
+   subtype Integer_Star_8 is Integer_Kind_8;
+--  subtype Integer_Star_16 is Integer_Kind_16;
+
+   --  Real_Star_n and Real_Kind_n
+
+   pragma Compile_Time_Error (Long_Long_Float'Machine_Mantissa /= 64,
+      "Long_Long_Float is not Real_Kind_10.");
+
+   subtype Real_Kind_4 is Real;
+   subtype Real_Kind_8 is Double_Precision;
+   type Real_Kind_10 is new Long_Long_Float; -- i686/x86_64
+--  type Real_Kind_16 is ...; --  libquadmath
+
+   subtype Real_Star_4 is Real_Kind_4;
+   subtype Real_Star_8 is Real_Kind_8;
+   subtype Real_Star_10 is Real_Kind_10;
+--  subtype Real_Star_16 is Real_Kind_16;
+
+   --  Logical_Star_n and Logical_Kind_n
+
+   type Logical_Kind_1 is new Boolean;
+   for Logical_Kind_1'Size use 8;
+   pragma Convention (Fortran, Logical_Kind_1);
+   type Logical_Kind_2 is new Boolean;
+   for Logical_Kind_2'Size use 16;
+   pragma Convention (Fortran, Logical_Kind_2);
+   type Logical_Kind_4 is new Boolean;
+   for Logical_Kind_4'Size use 32;
+   pragma Convention (Fortran, Logical_Kind_4);
+   type Logical_Kind_8 is new Boolean;
+   for Logical_Kind_8'Size use 64;
+   pragma Convention (Fortran, Logical_Kind_8);
+--  type Logical_Kind_16 is ...; -- supported in gfortran, but not in GNAT
+
+   subtype Logical_Star_1 is Logical_Kind_1;
+   subtype Logical_Star_2 is Logical_Kind_2;
+--  subtype Logical_Star_4 is Logical_Kind_4; -- [gcc-4.9] rejects
+--  subtype Logical_Star_8 is Logical_Kind_8; -- [gcc-4.9] rejects
+--  subtype Logical_Star_16 is Logical_Kind_16;
+
+   --  Complex_Star_n and Complex_Kind_n
+
+   package Complex_Types_Kind_4
+      renames Single_Precision_Complex_Types;
+   subtype Complex_Kind_4 is Complex_Types_Kind_4.Complex;
+   package Complex_Types_Kind_8 is
+      new Ada.Numerics.Generic_Complex_Types (Real_Kind_8);
+   subtype Complex_Kind_8 is Complex_Types_Kind_8.Complex;
+   package Complex_Types_Kind_10 is
+      new Ada.Numerics.Generic_Complex_Types (Real_Kind_10);
+   subtype Complex_Kind_10 is Complex_Types_Kind_10.Complex;
+--  type Complex_Kind_16 is ...; -- libquadmath
+
+   subtype Complex_Star_4 is Complex_Kind_4;
+   subtype Complex_Star_8 is Complex_Kind_8;
+   subtype Complex_Star_10 is Complex_Kind_10;
+--  subtype Complex_Star_16 is Complex_Kind_16;
+
+   --  Character_Kind_n
+
+   --  character(kind=ascii) is treated as Latin-1 in gfortran
+   subtype Character_Set_Kind_1 is Character_Set;
+   subtype Character_Kind_1 is Fortran_Character;
+   --  character(kind=ucs4) is treated as UTF-32 in gfortran
+   type Character_Set_Kind_4 is new Wide_Wide_Character;
+   type Character_Kind_4 is array (Positive range <>) of Character_Set_Kind_4;
 
 end Interfaces.Fortran;
