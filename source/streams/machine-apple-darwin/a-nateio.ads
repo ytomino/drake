@@ -4,7 +4,7 @@ with Ada.IO_Exceptions;
 with Ada.IO_Modes;
 with Ada.IO_Text_Modes;
 with Ada.Streams.Naked_Stream_IO.Standard_Files;
-with System.Native_IO;
+with System.Native_IO.Text_IO;
 package Ada.Naked_Text_IO is
 
    --  the parameter Form
@@ -100,13 +100,6 @@ package Ada.Naked_Text_IO is
    function End_Of_Page (File : Non_Controlled_File_Type) return Boolean;
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean;
 
-   procedure Set_Position_Within_Terminal (
-      File : Non_Controlled_File_Type;
-      Col, Line : Positive);
-   procedure Set_Col_Within_Terminal (
-      File : Non_Controlled_File_Type;
-      To : Positive);
-
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive);
    procedure Set_Line (File : Non_Controlled_File_Type; To : Positive);
 
@@ -138,11 +131,6 @@ package Ada.Naked_Text_IO is
       Item : out Character;
       Available : out Boolean);
 
-   procedure View (
-      File : Non_Controlled_File_Type;
-      Left, Top : out Positive;
-      Right, Bottom : out Natural);
-
    --  handle of stream for non-controlled
 
    procedure Open (
@@ -157,6 +145,9 @@ package Ada.Naked_Text_IO is
    function Stream_IO (File : Non_Controlled_File_Type)
       return not null access
          Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+
+   function Terminal_Handle (File : Non_Controlled_File_Type)
+      return System.Native_IO.Handle_Type;
 
    --  standard I/O
 
@@ -199,7 +190,7 @@ private
       Page_Length : Natural := 0;
       Buffer_Col : Natural := 0;
       Last : Natural := 0;
-      Buffer : String (1 .. 6);
+      Buffer : System.Native_IO.Text_IO.Buffer_Type;
       End_Of_File : Boolean := False;
       Dummy_Mark : Dummy_Mark_Type := None;
       Mode : IO_Modes.File_Mode;
