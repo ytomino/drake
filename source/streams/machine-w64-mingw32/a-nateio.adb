@@ -1,15 +1,8 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
-with System.Address_To_Named_Access_Conversions;
 with System.Form_Parameters;
 with System.UTF_Conversions;
-with System.UTF_Conversions.From_8_To_16;
-with System.UTF_Conversions.From_16_To_8;
-with C.windef;
-with C.wincon;
-with C.winnls;
-with C.winnt;
 package body Ada.Naked_Text_IO is
    use Exception_Identification.From_Here;
    use type IO_Modes.File_Mode;
@@ -18,85 +11,6 @@ package body Ada.Naked_Text_IO is
    use type IO_Text_Modes.File_New_Line;
    use type IO_Text_Modes.File_SUB;
    use type Streams.Stream_Element_Offset;
-   use type C.size_t;
-   use type C.windef.WORD;
-   use type C.windef.DWORD;
-   use type C.windef.WINBOOL;
-   use type C.winnt.HANDLE;
-   use type C.winnt.SHORT;
-   use type C.winnt.WCHAR;
-
-   pragma Compile_Time_Error (Wide_Character'Size /= C.winnt.WCHAR'Size,
-      "WCHAR'Size is mismatch");
-
-   package LPSTR_Conv is
-      new System.Address_To_Named_Access_Conversions (
-         C.winnt.CCHAR,
-         C.winnt.LPSTR);
-
-   procedure GetConsoleScreenBufferInfo (
-      ConsoleOutput : C.winnt.HANDLE;
-      ConsoleScreenBufferInfo : access C.wincon.CONSOLE_SCREEN_BUFFER_INFO);
-   procedure GetConsoleScreenBufferInfo (
-      ConsoleOutput : C.winnt.HANDLE;
-      ConsoleScreenBufferInfo : access C.wincon.CONSOLE_SCREEN_BUFFER_INFO) is
-   begin
-      if C.wincon.GetConsoleScreenBufferInfo (
-         ConsoleOutput,
-         ConsoleScreenBufferInfo) = 0
-      then
-         Raise_Exception (Device_Error'Identity);
-      end if;
-   end GetConsoleScreenBufferInfo;
-
-   procedure SetConsoleScreenBufferSize_With_Adjusting (
-      ConsoleOutput : C.winnt.HANDLE;
-      Size : C.wincon.COORD;
-      Current : C.winnt.HANDLE);
-   procedure SetConsoleScreenBufferSize_With_Adjusting (
-      ConsoleOutput : C.winnt.HANDLE;
-      Size : C.wincon.COORD;
-      Current : C.winnt.HANDLE)
-   is
-      Info, Old_Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
-      Old_Size : C.wincon.COORD;
-      Rect : aliased C.wincon.SMALL_RECT;
-   begin
-      --  resize viewport to smaller than current window
-      GetConsoleScreenBufferInfo (Current, Old_Info'Access);
-      Old_Size.X := Old_Info.srWindow.Right - Old_Info.srWindow.Left + 1;
-      Old_Size.Y := Old_Info.srWindow.Bottom - Old_Info.srWindow.Top + 1;
-      if Size.X < Old_Size.X or else Size.Y < Old_Size.Y then
-         Rect.Left := 0;
-         Rect.Top := 0;
-         Rect.Right := C.winnt.SHORT'Min (Size.X, Old_Size.X) - 1;
-         Rect.Bottom := C.winnt.SHORT'Min (Size.Y, Old_Size.Y) - 1;
-         if C.wincon.SetConsoleWindowInfo (
-            ConsoleOutput,
-            1,
-            Rect'Access) = 0
-         then
-            Raise_Exception (Device_Error'Identity);
-         end if;
-      end if;
-      --  resize screen buffer
-      if C.wincon.SetConsoleScreenBufferSize (ConsoleOutput, Size) = 0 then
-         Raise_Exception (Device_Error'Identity);
-      end if;
-      --  maximize viewport
-      GetConsoleScreenBufferInfo (ConsoleOutput, Info'Access);
-      Rect.Left := 0;
-      Rect.Top := 0;
-      Rect.Right := Info.dwMaximumWindowSize.X - 1;
-      Rect.Bottom := Info.dwMaximumWindowSize.Y - 1;
-      if C.wincon.SetConsoleWindowInfo (
-         ConsoleOutput,
-         1,
-         Rect'Access) = 0
-      then
-         Raise_Exception (Device_Error'Identity);
-      end if;
-   end SetConsoleScreenBufferSize_With_Adjusting;
 
    --  implementation of the parameter Form
 
@@ -334,47 +248,8 @@ package body Ada.Naked_Text_IO is
    procedure Raw_New_Page (File : Non_Controlled_File_Type) is
    begin
       if File.External = IO_Text_Modes.Terminal then
-         declare -- clear screen
-            Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
-            Handle : constant System.Native_IO.Handle_Type :=
-               Streams.Naked_Stream_IO.Handle (File.File);
-         begin
-            GetConsoleScreenBufferInfo (
-               Handle,
-               Info'Access);
-            declare
-               Clear_Char_Info : constant C.wincon.CHAR_INFO := (
-                  Char => (
-                     Unchecked_Tag => 0,
-                     UnicodeChar => C.winnt.WCHAR'Val (16#20#)),
-                  Attributes => Info.wAttributes);
-               Buffer : aliased constant array (
-                  0 .. Info.dwSize.Y - 1,
-                  0 .. Info.dwSize.X - 1) of aliased C.wincon.CHAR_INFO := (
-                     others => (others => Clear_Char_Info));
-               Region : aliased C.wincon.SMALL_RECT;
-            begin
-               Region.Left := 0;
-               Region.Top := 0;
-               Region.Right := Info.dwSize.X - 1;
-               Region.Bottom := Info.dwSize.Y - 1;
-               if C.wincon.WriteConsoleOutputW (
-                  hConsoleOutput => Handle,
-                  lpBuffer => Buffer (0, 0)'Access,
-                  dwBufferSize => Info.dwSize,
-                  dwBufferCoord => (X => 0, Y => 0),
-                  lpWriteRegion => Region'Access) = 0
-               then
-                  Raise_Exception (Device_Error'Identity);
-               end if;
-            end;
-            if C.wincon.SetConsoleCursorPosition (
-               Handle,
-               (X => 0, Y => 0)) = 0
-            then
-               Raise_Exception (Device_Error'Identity);
-            end if;
-         end;
+         System.Native_IO.Text_IO.Terminal_Clear (
+            Streams.Naked_Stream_IO.Handle (File.File));
       else
          declare
             Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
@@ -421,9 +296,6 @@ package body Ada.Naked_Text_IO is
 
    procedure Read_Buffer (File : Non_Controlled_File_Type);
    procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type);
-   procedure Read_Buffer_Trailing_From_Terminal (
-      File : Non_Controlled_File_Type;
-      Leading : C.winnt.WCHAR);
    procedure Take_Buffer (File : Non_Controlled_File_Type);
    procedure Take_Page (File : Non_Controlled_File_Type);
    procedure Take_Line (File : Non_Controlled_File_Type);
@@ -441,29 +313,23 @@ package body Ada.Naked_Text_IO is
    --  * Put adds Buffer_Col to current Col.
 
    procedure Read_Buffer (File : Non_Controlled_File_Type) is
-      Ada_Buffer : Wide_String (1 .. 2);
-      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
-      for W_Buffer'Address use Ada_Buffer'Address;
-      W_Buffer_Length : C.size_t;
-      Read_Size : aliased C.windef.DWORD;
-      DBCS_Seq : Natural;
+      New_Last : Integer;
    begin
       if File.End_Of_File then
          null;
       elsif File.Last = 0 or else not File.Converted then
          File.Converted := False;
-         if File.External = IO_Text_Modes.Terminal
-            and then C.wincon.ReadConsole (
-               hConsoleInput => Streams.Naked_Stream_IO.Handle (File.File),
-               lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
-               nNumberOfCharsToRead => 1,
-               lpNumberOfCharsRead => Read_Size'Access,
-               lpReserved => C.windef.LPVOID (System.Null_Address)) /= 0
-            and then Read_Size > 0
-         then
-            Read_Buffer_Trailing_From_Terminal (
-               File,
-               W_Buffer (0));
+         if File.External = IO_Text_Modes.Terminal then
+            System.Native_IO.Text_IO.Terminal_Get (
+               Streams.Naked_Stream_IO.Handle (File.File),
+               File.Buffer, -- if File.Last > 0, read data would be lost ...
+               New_Last);
+            if New_Last < 0 then
+               Raise_Exception (Device_Error'Identity);
+            end if;
+            File.Last := New_Last;
+            File.Converted := File.Last > 0;
+            File.Buffer_Col := 0; -- unused
          else
             declare
                Buffer : Streams.Stream_Element_Array (1 .. 1);
@@ -485,21 +351,20 @@ package body Ada.Naked_Text_IO is
             elsif File.External = IO_Text_Modes.Locale
                and then File.Buffer (1) >= Character'Val (16#80#)
             then
-               DBCS_Seq := 1 + Boolean'Pos (
-                  C.winnls.IsDBCSLeadByte (
-                     C.windef.BYTE'(Character'Pos (File.Buffer (1)))) /= 0);
-               if File.Last = DBCS_Seq then
-                  W_Buffer_Length := C.size_t (C.winnls.MultiByteToWideChar (
-                     C.winnls.CP_ACP,
-                     0,
-                     LPSTR_Conv.To_Pointer (File.Buffer (1)'Address),
-                     C.signed_int (File.Last),
-                     W_Buffer (0)'Access,
-                     2));
-                  System.UTF_Conversions.From_16_To_8.Convert (
-                     Ada_Buffer (1 .. Natural (W_Buffer_Length)),
+               declare
+                  DBCS_Buffer : aliased
+                     System.Native_IO.Text_IO.DBCS_Buffer_Type;
+               begin
+                  DBCS_Buffer (1) := File.Buffer (1);
+                  DBCS_Buffer (2) := File.Buffer (2);
+                  System.Native_IO.Text_IO.To_UTF_8 (
+                     DBCS_Buffer,
+                     File.Last,
                      File.Buffer,
-                     File.Last);
+                     New_Last);
+               end;
+               if New_Last > 0 then
+                  File.Last := New_Last;
                   File.Converted := True;
                   File.Buffer_Col := 2;
                else
@@ -516,76 +381,23 @@ package body Ada.Naked_Text_IO is
    end Read_Buffer;
 
    procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type) is
-      Handle : System.Native_IO.Handle_Type;
-      Event_Count : aliased C.windef.DWORD;
-      Read_Size : aliased C.windef.DWORD;
-      Event : aliased C.wincon.INPUT_RECORD;
+      New_Last : Integer;
    begin
       if not File.End_Of_File
          and then (File.Last = 0 or else not File.Converted)
       then
-         Handle := Streams.Naked_Stream_IO.Handle (File.File);
-         if C.wincon.GetNumberOfConsoleInputEvents (
-            Handle,
-            Event_Count'Access) /= 0
-            and then Event_Count > 0
-            and then C.wincon.ReadConsoleInput (
-               hConsoleInput => Handle,
-               lpBuffer => Event'Access,
-               nLength => 1,
-               lpNumberOfEventsRead => Read_Size'Access) /= 0
-            and then Read_Size > 0
-         then
-            if Event.EventType = C.wincon.KEY_EVENT
-               and then Event.Event.KeyEvent.bKeyDown /= 0
-            then
-               Read_Buffer_Trailing_From_Terminal (
-                  File,
-                  Event.Event.KeyEvent.uChar.UnicodeChar);
-            end if;
+         System.Native_IO.Text_IO.Terminal_Get_Immediate (
+            Streams.Naked_Stream_IO.Handle (File.File),
+            File.Buffer, -- if File.Last > 0, read data would be lost ...
+            New_Last);
+         if New_Last < 0 then
+            Raise_Exception (Device_Error'Identity);
          end if;
-      end if;
-   end Read_Buffer_From_Event;
-
-   procedure Read_Buffer_Trailing_From_Terminal (
-      File : Non_Controlled_File_Type;
-      Leading : C.winnt.WCHAR)
-   is
-      Ada_Buffer : Wide_String (1 .. 2);
-      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
-      for W_Buffer'Address use Ada_Buffer'Address;
-      W_Buffer_Length : C.size_t;
-      Read_Size : aliased C.windef.DWORD;
-      UTF_16_Seq : Natural;
-      Sequence_Status : System.UTF_Conversions.Sequence_Status_Type; -- ignore
-   begin
-      W_Buffer (0) := Leading;
-      if W_Buffer (0) /= C.winnt.WCHAR'Val (0) then
-         W_Buffer_Length := 1;
-         System.UTF_Conversions.UTF_16_Sequence (
-            Wide_Character'Val (C.winnt.WCHAR'Pos (W_Buffer (0))),
-            UTF_16_Seq,
-            Sequence_Status);
-         if UTF_16_Seq = 2
-            and then C.wincon.ReadConsoleW (
-               hConsoleInput => Streams.Naked_Stream_IO.Handle (File.File),
-               lpBuffer => C.windef.LPVOID (W_Buffer (1)'Address),
-               nNumberOfCharsToRead => 1,
-               lpNumberOfCharsRead => Read_Size'Access,
-               lpReserved =>
-                  C.windef.LPVOID (System.Null_Address)) /= 0
-            and then Read_Size > 0
-         then
-            W_Buffer_Length := W_Buffer_Length + C.size_t (Read_Size);
-         end if;
-         System.UTF_Conversions.From_16_To_8.Convert (
-            Ada_Buffer (1 .. Natural (W_Buffer_Length)),
-            File.Buffer,
-            File.Last);
-         File.Converted := True;
+         File.Last := New_Last;
+         File.Converted := File.Last > 0;
          File.Buffer_Col := 0; -- unused
       end if;
-   end Read_Buffer_Trailing_From_Terminal;
+   end Read_Buffer_From_Event;
 
    procedure Take_Buffer (File : Non_Controlled_File_Type) is
       New_Last : constant Natural := File.Last - 1;
@@ -623,26 +435,18 @@ package body Ada.Naked_Text_IO is
       File : Non_Controlled_File_Type;
       Sequence_Length : Natural)
    is
-      Ada_Buffer : Wide_String (1 .. 2);
-      Ada_Buffer_Last : Natural;
-      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
-      for W_Buffer'Address use Ada_Buffer'Address;
-      Written : aliased C.windef.DWORD;
+      Written : Integer;
       Length : constant Natural := File.Last; -- >= Sequence_Length
    begin
-      System.UTF_Conversions.From_8_To_16.Convert (
-         File.Buffer (1 .. Sequence_Length),
-         Ada_Buffer,
-         Ada_Buffer_Last);
-      if File.External = IO_Text_Modes.Terminal
-         and then C.wincon.WriteConsoleW (
-            hConsoleOutput => Streams.Naked_Stream_IO.Handle (File.File),
-            lpBuffer => C.windef.LPCVOID (Ada_Buffer (1)'Address),
-            nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
-            lpNumberOfCharsWritten => Written'Access,
-            lpReserved => C.windef.LPVOID (System.Null_Address)) /= 0
-         and then Written = C.windef.DWORD (Ada_Buffer_Last)
-      then
+      if File.External = IO_Text_Modes.Terminal then
+         System.Native_IO.Text_IO.Terminal_Put (
+            Streams.Naked_Stream_IO.Handle (File.File),
+            File.Buffer,
+            Sequence_Length,
+            Written);
+         if Written < 0 then
+            Raise_Exception (Device_Error'Identity);
+         end if;
          File.Buffer_Col := 0; -- unused
       elsif File.External = IO_Text_Modes.UTF_8
          or else (
@@ -665,18 +469,14 @@ package body Ada.Naked_Text_IO is
          File.Buffer_Col := Sequence_Length;
       else
          declare
-            DBCS_Buffer : String (1 .. 2);
+            DBCS_Buffer : aliased System.Native_IO.Text_IO.DBCS_Buffer_Type;
             DBCS_Last : Natural;
          begin
-            DBCS_Last := Natural (C.winnls.WideCharToMultiByte (
-               C.winnls.CP_ACP,
-               0,
-               W_Buffer (0)'Access,
-               C.signed_int (Ada_Buffer_Last),
-               LPSTR_Conv.To_Pointer (DBCS_Buffer (1)'Address),
-               DBCS_Buffer'Length,
-               null,
-               null));
+            System.Native_IO.Text_IO.To_DBCS (
+               File.Buffer,
+               Sequence_Length,
+               DBCS_Buffer,
+               DBCS_Last);
             if DBCS_Last = 0 then
                DBCS_Buffer (1) := '?';
                DBCS_Last := 1;
@@ -888,22 +688,17 @@ package body Ada.Naked_Text_IO is
 
    procedure Set_Size (
       File : Non_Controlled_File_Type;
-      Line_Length, Page_Length : Natural)
-   is
-      Handle : System.Native_IO.Handle_Type;
+      Line_Length, Page_Length : Natural) is
    begin
       Check_File_Mode (File, IO_Modes.Out_File);
       if File.External = IO_Text_Modes.Terminal then
          if Line_Length = 0 or else Page_Length = 0 then
             Raise_Exception (Device_Error'Identity);
          end if;
-         Handle := Streams.Naked_Stream_IO.Handle (File.File);
-         SetConsoleScreenBufferSize_With_Adjusting (
-            Handle,
-            C.wincon.COORD'(
-               X => C.winnt.SHORT (Line_Length),
-               Y => C.winnt.SHORT (Page_Length)),
-            Handle);
+         System.Native_IO.Text_IO.Set_Terminal_Size (
+            Streams.Naked_Stream_IO.Handle (File.File),
+            Line_Length,
+            Page_Length);
       else
          File.Line_Length := Line_Length;
          File.Page_Length := Page_Length;
@@ -930,17 +725,14 @@ package body Ada.Naked_Text_IO is
 
    procedure Size (
       File : Non_Controlled_File_Type;
-      Line_Length, Page_Length : out Natural)
-   is
-      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+      Line_Length, Page_Length : out Natural) is
    begin
       Check_File_Mode (File, IO_Modes.Out_File);
       if File.External = IO_Text_Modes.Terminal then
-         GetConsoleScreenBufferInfo (
+         System.Native_IO.Text_IO.Terminal_Size (
             Streams.Naked_Stream_IO.Handle (File.File),
-            Info'Access);
-         Line_Length := Natural (Info.dwSize.X);
-         Page_Length := Natural (Info.dwSize.Y);
+            Line_Length,
+            Page_Length);
       else
          Line_Length := File.Line_Length;
          Page_Length := File.Page_Length;
@@ -1100,39 +892,6 @@ package body Ada.Naked_Text_IO is
       end if;
    end End_Of_File;
 
-   procedure Set_Position_Within_Terminal (
-      File : Non_Controlled_File_Type;
-      Col, Line : Positive)
-   is
-      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
-      Handle : System.Native_IO.Handle_Type;
-   begin
-      Check_File_Mode (File, IO_Modes.Out_File);
-      if File.External = IO_Text_Modes.Terminal then
-         Handle := Streams.Naked_Stream_IO.Handle (File.File);
-         GetConsoleScreenBufferInfo (
-            Handle,
-            Info'Access);
-         if C.wincon.SetConsoleCursorPosition (
-            Handle,
-            C.wincon.COORD'(
-               X => C.winnt.SHORT (Col) - 1,
-               Y => C.winnt.SHORT (Line) - 1)) = 0
-         then
-            Raise_Exception (Layout_Error'Identity);
-         end if;
-      else
-         Raise_Exception (Device_Error'Identity);
-      end if;
-   end Set_Position_Within_Terminal;
-
-   procedure Set_Col_Within_Terminal (
-      File : Non_Controlled_File_Type;
-      To : Positive) is
-   begin
-      Set_Position_Within_Terminal (File, To, Line (File));
-   end Set_Col_Within_Terminal;
-
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive) is
    begin
       if Mode (File) = IO_Modes.In_File then
@@ -1154,7 +913,9 @@ package body Ada.Naked_Text_IO is
       else
          --  Out_File (or Append_File)
          if File.External = IO_Text_Modes.Terminal then
-            Set_Col_Within_Terminal (File, To);
+            System.Native_IO.Text_IO.Set_Terminal_Col (
+               Streams.Naked_Stream_IO.Handle (File.File),
+               To);
          else
             if File.Line_Length /= 0 and then To > File.Line_Length then
                Raise_Exception (Layout_Error'Identity);
@@ -1179,7 +940,10 @@ package body Ada.Naked_Text_IO is
       else
          --  Out_File (or Append_File)
          if File.External = IO_Text_Modes.Terminal then
-            Set_Position_Within_Terminal (File, 1, To);
+            System.Native_IO.Text_IO.Set_Terminal_Position (
+               Streams.Naked_Stream_IO.Handle (File.File),
+               Col => 1,
+               Line => To);
          else
             if File.Page_Length /= 0 and then To > File.Page_Length then
                Raise_Exception (Layout_Error'Identity);
@@ -1196,17 +960,14 @@ package body Ada.Naked_Text_IO is
 
    procedure Position (
       File : Non_Controlled_File_Type;
-      Col, Line : out Positive)
-   is
-      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+      Col, Line : out Positive) is
    begin
       Check_File_Open (File);
       if File.External = IO_Text_Modes.Terminal then
-         GetConsoleScreenBufferInfo (
+         System.Native_IO.Text_IO.Terminal_Position (
             Streams.Naked_Stream_IO.Handle (File.File),
-            Info'Access);
-         Col := Positive (Info.dwCursorPosition.X + 1);
-         Line := Positive (Info.dwCursorPosition.Y + 1);
+            Col,
+            Line);
       else
          Col := File.Col;
          Line := File.Line;
@@ -1343,27 +1104,6 @@ package body Ada.Naked_Text_IO is
       end if;
    end Get_Immediate;
 
-   procedure View (
-      File : Non_Controlled_File_Type;
-      Left, Top : out Positive;
-      Right, Bottom : out Natural)
-   is
-      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
-   begin
-      Check_File_Mode (File, IO_Modes.Out_File);
-      if File.External = IO_Text_Modes.Terminal then
-         GetConsoleScreenBufferInfo (
-            Streams.Naked_Stream_IO.Handle (File.File),
-            Info'Access);
-         Left := Positive (Info.srWindow.Left + 1);
-         Top := Positive (Info.srWindow.Top + 1);
-         Right := Natural (Info.srWindow.Right + 1);
-         Bottom := Natural (Info.srWindow.Bottom + 1);
-      else
-         Raise_Exception (Device_Error'Identity);
-      end if;
-   end View;
-
    --  implementation of handle of stream for non-controlled
 
    procedure Open (
@@ -1405,6 +1145,16 @@ package body Ada.Naked_Text_IO is
       Check_Stream_IO_Open (File);
       return File.File'Access;
    end Stream_IO;
+
+   function Terminal_Handle (File : Non_Controlled_File_Type)
+      return System.Native_IO.Handle_Type is
+   begin
+      Check_Stream_IO_Open (File);
+      if File.External /= IO_Text_Modes.Terminal then
+         Raise_Exception (Device_Error'Identity);
+      end if;
+      return Streams.Naked_Stream_IO.Handle (File.File);
+   end Terminal_Handle;
 
    --  implementation for Wide_Text_IO/Wide_Wide_Text_IO
 
@@ -1452,24 +1202,16 @@ package body Ada.Naked_Text_IO is
       Last : out Natural;
       Wait : Boolean)
    is
-      Console_Mode : aliased C.windef.DWORD;
+      Console_Mode : aliased System.Native_IO.Text_IO.Setting;
       Handle : System.Native_IO.Handle_Type;
    begin
       Check_File_Mode (File, IO_Modes.In_File);
       if File.External = IO_Text_Modes.Terminal then
          Handle := Streams.Naked_Stream_IO.Handle (File.File);
-         --  get and unset line-input mode
-         if C.wincon.GetConsoleMode (
+         System.Native_IO.Text_IO.Set_Non_Canonical_Mode (
             Handle,
-            Console_Mode'Access) = 0
-            or else C.wincon.SetConsoleMode (
-               Handle,
-               Console_Mode and not (
-                  C.wincon.ENABLE_ECHO_INPUT
-                  or C.wincon.ENABLE_LINE_INPUT)) = 0
-         then
-            Raise_Exception (Device_Error'Identity);
-         end if;
+            False,
+            Console_Mode);
       end if;
       Last := Item'First - 1;
       Multi_Character : for I in Item'Range loop
@@ -1492,13 +1234,7 @@ package body Ada.Naked_Text_IO is
          end loop Single_Character;
       end loop Multi_Character;
       if File.External = IO_Text_Modes.Terminal then
-         --  restore terminal mode
-         if C.wincon.SetConsoleMode (
-            Handle,
-            Console_Mode) = 0
-         then
-            Raise_Exception (Device_Error'Identity);
-         end if;
+         System.Native_IO.Text_IO.Restore (Handle, Console_Mode);
       end if;
    end Get_Immediate;
 
