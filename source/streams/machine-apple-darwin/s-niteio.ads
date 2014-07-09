@@ -4,6 +4,25 @@ with C.termios;
 package System.Native_IO.Text_IO is
    pragma Preelaborate;
 
+   --  file management
+
+   Default_External : constant Ada.IO_Modes.File_External :=
+      Ada.IO_Modes.UTF_8;
+   Default_New_Line : constant Ada.IO_Modes.File_New_Line :=
+      Ada.IO_Modes.LF;
+
+   type Packed_Form is record
+      Stream_Form : Native_IO.Packed_Form;
+      External : Ada.IO_Modes.File_External_Spec;
+      New_Line : Ada.IO_Modes.File_New_Line_Spec;
+      SUB : Ada.IO_Modes.File_SUB;
+   end record;
+   pragma Suppress_Initialization (Packed_Form);
+   pragma Pack (Packed_Form);
+   pragma Compile_Time_Error (Packed_Form'Size /= 4, "not packed");
+
+   --  read / write
+
    subtype Buffer_Type is String (1 .. 6); -- one code-point of UTF-8
 
    --  terminal
