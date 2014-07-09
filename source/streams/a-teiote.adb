@@ -4,7 +4,7 @@ with System.Native_IO.Text_IO;
 package body Ada.Text_IO.Terminal is
    use Exception_Identification.From_Here;
    use type IO_Modes.File_Mode;
-   use type IO_Text_Modes.File_External;
+   use type IO_Modes.File_External;
 
    procedure Check_File_Mode (
       File : Naked_Text_IO.Non_Controlled_File_Type;
@@ -28,7 +28,7 @@ package body Ada.Text_IO.Terminal is
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Reference (File).all;
    begin
-      return Naked_Text_IO.External (NC_File) = IO_Text_Modes.Terminal;
+      return Naked_Text_IO.External (NC_File) = IO_Modes.Terminal;
    end Is_Terminal;
 
    procedure Set_Size (File : File_Type; Size : Size_Type) is
