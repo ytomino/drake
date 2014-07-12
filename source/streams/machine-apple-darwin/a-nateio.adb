@@ -254,7 +254,7 @@ package body Ada.Naked_Text_IO is
    begin
       Holder.Assign (New_File'Access);
       --  open
-      Open_Proc.all (
+      Open_Proc (
          File => New_File.File,
          Mode => Mode,
          Name => Name,
@@ -498,7 +498,7 @@ package body Ada.Naked_Text_IO is
          declare
             Internal : aliased
                Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
-               File.all.File;
+               File.File;
          begin
             if not Streams.Naked_Stream_IO.Is_Standard (Internal) then
                Free (File);
@@ -520,7 +520,7 @@ package body Ada.Naked_Text_IO is
       declare
          Internal : aliased
             Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
-            File.all.File;
+            File.File;
       begin
          Free (File);
          Streams.Naked_Stream_IO.Delete (Internal);
@@ -534,10 +534,10 @@ package body Ada.Naked_Text_IO is
       Current_Mode : constant IO_Modes.File_Mode := Naked_Text_IO.Mode (File);
    begin
       if Current_Mode /= Mode
-         and then Streams.Naked_Stream_IO.Is_Standard (File.all.File)
+         and then Streams.Naked_Stream_IO.Is_Standard (File.File)
       then
          Raise_Exception (Mode_Error'Identity);
-      elsif not Streams.Naked_Stream_IO.Is_Open (File.all.File) then
+      elsif not Streams.Naked_Stream_IO.Is_Open (File.File) then
          --  External stream mode
          Raise_Exception (Status_Error'Identity);
       else
@@ -562,16 +562,16 @@ package body Ada.Naked_Text_IO is
             File.Stream := To_Address (
                Streams.Naked_Stream_IO.Stream (File.File));
          end;
-         File.all.Page := 1;
-         File.all.Line := 1;
-         File.all.Col := 1;
-         File.all.Line_Length := 0;
-         File.all.Page_Length := 0;
-         File.all.Buffer_Col := 0;
-         File.all.Last := 0;
-         File.all.End_Of_File := False;
-         File.all.Dummy_Mark := None;
-         File.all.Mode := Mode;
+         File.Page := 1;
+         File.Line := 1;
+         File.Col := 1;
+         File.Line_Length := 0;
+         File.Page_Length := 0;
+         File.Buffer_Col := 0;
+         File.Last := 0;
+         File.End_Of_File := False;
+         File.Dummy_Mark := None;
+         File.Mode := Mode;
       end if;
    end Reset;
 
