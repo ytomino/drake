@@ -3,16 +3,19 @@ with System.Formatting;
 package body System.Native_IO.Text_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
+   use type C.unsigned_char; -- cc_t
    use type C.unsigned_int; -- tcflag_t in Linux or FreeBSD
    use type C.unsigned_long; -- tcflag_t in Darwin
 
    procedure tcgetsetattr (
       Handle : Handle_Type;
+      Action : C.signed_int;
       Mask : C.termios.tcflag_t;
       Min : C.termios.cc_t;
       Saved_Settings : not null access C.termios.struct_termios);
    procedure tcgetsetattr (
       Handle : Handle_Type;
+      Action : C.signed_int;
       Mask : C.termios.tcflag_t;
       Min : C.termios.cc_t;
       Saved_Settings : not null access C.termios.struct_termios)
@@ -30,7 +33,7 @@ package body System.Native_IO.Text_IO is
       Settings.c_cc (C.termios.VMIN) := Min; -- wait Min bytes
       Dummy := C.termios.tcsetattr (
          Handle,
-         C.termios.TCSAFLUSH,
+         Action,
          Settings'Access);
    end tcgetsetattr;
 
@@ -148,6 +151,7 @@ package body System.Native_IO.Text_IO is
       --  non-canonical mode and disable echo
       tcgetsetattr (
          Handle,
+         C.termios.TCSAFLUSH,
          not (C.termios.ECHO or C.termios.ICANON),
          1,
          Old_Settings'Access);
@@ -224,6 +228,7 @@ package body System.Native_IO.Text_IO is
       --  non-canonical mode and disable echo
       tcgetsetattr (
          Handle,
+         C.termios.TCSAFLUSH,
          not (C.termios.ECHO or C.termios.ICANON),
          1,
          Old_Settings'Access);
@@ -319,6 +324,7 @@ package body System.Native_IO.Text_IO is
    begin
       tcgetsetattr (
          Handle,
+         C.termios.TCSADRAIN,
          not C.termios.ICANON,
          C.termios.cc_t (Boolean'Pos (Wait)), -- minimum waiting size
          Saved_Settings'Access);
