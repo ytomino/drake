@@ -480,6 +480,14 @@ $(RTSDIR)/adainclude/%.ads: $(EH)/%.ads
 $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+ifneq ($(findstring darwin,$(TARGET)),)
+ifneq ($(filter -g,$(CFLAGS_DEBUG)),)
+# Apple ld64 can't add line info to anonymous symbol .lsda from following .o
+$(BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
+$(BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
+endif
+endif
+
 $(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 ifneq ($(WITHS),0)
