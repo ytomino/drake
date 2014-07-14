@@ -128,8 +128,8 @@ package Ada.Naked_Text_IO is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Stream : not null access Streams.Root_Stream_Type'Class;
       Mode : IO_Modes.File_Mode;
+      Stream : not null access Streams.Root_Stream_Type'Class;
       Name : String := "";
       Form : System.Native_IO.Text_IO.Packed_Form := Default_Form);
 

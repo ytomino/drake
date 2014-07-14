@@ -15,14 +15,14 @@ package body Ada.Streams.Stream_IO.Pipes is
          System.Native_IO.Set_Close_On_Exec (Handles (0));
          Naked.Open (
             Reading,
-            Handles (0),
             In_File,
+            Handles (0),
             To_Close => True);
          System.Native_IO.Set_Close_On_Exec (Handles (1));
          Naked.Open (
             Writing,
-            Handles (1),
             Out_File,
+            Handles (1),
             To_Close => True);
       end if;
    end Create;
