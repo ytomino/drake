@@ -9,6 +9,8 @@ package Ada.Streams.Unbounded_Storage_IO is
 
    type Buffer_Type is private;
 
+   procedure Reset (Object : in out Buffer_Type);
+
    function Size (Object : Buffer_Type) return Stream_Element_Count;
    pragma Inline (Size);
    procedure Set_Size (

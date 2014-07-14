@@ -30,13 +30,13 @@ package body Ada.Streams.Stream_IO.Pipes is
       else
          Naked.Open (
             Reading,
-            Reading_Handle,
             In_File,
+            Reading_Handle,
             To_Close => True);
          Naked.Open (
             Writing,
-            Writing_Handle,
             Out_File,
+            Writing_Handle,
             To_Close => True);
       end if;
    end Create;

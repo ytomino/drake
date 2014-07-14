@@ -191,8 +191,8 @@ package body Ada.Streams.Stream_IO.Sockets is
       else
          Naked.Open (
             File,
-            Cast (Socket),
             Append_File, -- Inout
+            Cast (Socket),
             To_Close => True);
       end if;
    end Connect;

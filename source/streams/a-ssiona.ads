@@ -9,8 +9,8 @@ package Ada.Streams.Stream_IO.Naked is
 
    procedure Open (
       File : in out File_Type;
-      Handle : System.Native_IO.Handle_Type;
       Mode : File_Mode;
+      Handle : System.Native_IO.Handle_Type;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Naked_Stream_IO.Default_Form;
       To_Close : Boolean := False);

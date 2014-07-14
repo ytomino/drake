@@ -140,8 +140,8 @@ package body Ada.Streams.Stream_IO.Sockets is
          System.Native_IO.Set_Close_On_Exec (Handle);
          Naked.Open (
             File,
-            Handle,
             Append_File, -- Inout
+            Handle,
             To_Close => True);
       end if;
    end Connect;

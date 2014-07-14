@@ -1002,8 +1002,8 @@ package body Ada.Streams.Naked_Stream_IO is
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Handle : System.Native_IO.Handle_Type;
       Mode : IO_Modes.File_Mode;
+      Handle : System.Native_IO.Handle_Type;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False)
