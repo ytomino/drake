@@ -203,5 +203,125 @@ begin
 			Ada.Wide_Wide_Text_IO.Close (File);
 		end;
 	end;
+	-- reading a legal sequence by Get_Immediate
+	declare
+		Buffer : U.Buffer_Type;
+	begin
+		String'Write (U.Stream (Buffer), Aegean_Number_One_In_UTF_8);
+		U.Reset (Buffer);
+		declare
+			File : Ada.Text_IO.File_Type;
+			Item : Character;
+		begin
+			Ada.Text_IO.Text_Streams.Open (
+				File,
+				Ada.Text_IO.In_File,
+				U.Stream (Buffer),
+				External => Ada.IO_Modes.UTF_8);
+			for I in Aegean_Number_One_In_UTF_8'Range loop
+				Ada.Text_IO.Get_Immediate (File, Item);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_8 (I));
+			end loop;
+			Ada.Text_IO.Close (File);
+		end;
+		U.Reset (Buffer);
+		declare
+			File : Ada.Wide_Text_IO.File_Type;
+			Item : Wide_Character;
+		begin
+			Ada.Wide_Text_IO.Text_Streams.Open (
+				File,
+				Ada.Wide_Text_IO.In_File,
+				U.Stream (Buffer),
+				External => Ada.IO_Modes.UTF_8);
+			for I in Aegean_Number_One_In_UTF_16'Range loop
+				Ada.Wide_Text_IO.Get_Immediate (File, Item);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_16 (I));
+			end loop;
+			Ada.Wide_Text_IO.Close (File);
+		end;
+		U.Reset (Buffer);
+		declare
+			File : Ada.Wide_Wide_Text_IO.File_Type;
+			Item : Wide_Wide_Character;
+		begin
+			Ada.Wide_Wide_Text_IO.Text_Streams.Open (
+				File,
+				Ada.Wide_Wide_Text_IO.In_File,
+				U.Stream (Buffer),
+				External => Ada.IO_Modes.UTF_8);
+			for I in Aegean_Number_One_In_UTF_32'Range loop
+				Ada.Wide_Wide_Text_IO.Get_Immediate (File, Item);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_32 (I));
+			end loop;
+			Ada.Wide_Wide_Text_IO.Close (File);
+		end;
+	end;
+	-- reading a legal sequence with calling Look_Ahead
+	declare
+		Buffer : U.Buffer_Type;
+	begin
+		String'Write (U.Stream (Buffer), Aegean_Number_One_In_UTF_8);
+		U.Reset (Buffer);
+		declare
+			File : Ada.Text_IO.File_Type;
+			Item : Character;
+			End_Of_Line : Boolean;
+		begin
+			Ada.Text_IO.Text_Streams.Open (
+				File,
+				Ada.Text_IO.In_File,
+				U.Stream (Buffer),
+				External => Ada.IO_Modes.UTF_8);
+			for I in Aegean_Number_One_In_UTF_8'Range loop
+				Ada.Text_IO.Look_Ahead (File, Item, End_Of_Line);
+				pragma Assert (not End_Of_Line);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_8 (I));
+				Ada.Text_IO.Get (File, Item);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_8 (I));
+			end loop;
+			Ada.Text_IO.Close (File);
+		end;
+		U.Reset (Buffer);
+		declare
+			File : Ada.Wide_Text_IO.File_Type;
+			Item : Wide_Character;
+			End_Of_Line : Boolean;
+		begin
+			Ada.Wide_Text_IO.Text_Streams.Open (
+				File,
+				Ada.Wide_Text_IO.In_File,
+				U.Stream (Buffer),
+				External => Ada.IO_Modes.UTF_8);
+			for I in Aegean_Number_One_In_UTF_16'Range loop
+				Ada.Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
+				pragma Assert (not End_Of_Line);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_16 (I));
+				Ada.Wide_Text_IO.Get (File, Item);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_16 (I));
+			end loop;
+			Ada.Wide_Text_IO.Close (File);
+		end;
+		U.Reset (Buffer);
+		declare
+			File : Ada.Wide_Wide_Text_IO.File_Type;
+			Item : Wide_Wide_Character;
+			End_Of_Line : Boolean;
+		begin
+			Ada.Wide_Wide_Text_IO.Text_Streams.Open (
+				File,
+				Ada.Wide_Wide_Text_IO.In_File,
+				U.Stream (Buffer),
+				External => Ada.IO_Modes.UTF_8);
+			for I in Aegean_Number_One_In_UTF_32'Range loop
+				Ada.Wide_Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
+				pragma Assert (not End_Of_Line);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_32 (I));
+				Ada.Wide_Wide_Text_IO.Get_Immediate (File, Item);
+				pragma Assert (Item = Aegean_Number_One_In_UTF_32 (I));
+			end loop;
+			Ada.Wide_Wide_Text_IO.Close (File);
+		end;
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end textstream;

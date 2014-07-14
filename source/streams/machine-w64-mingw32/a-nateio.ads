@@ -270,8 +270,7 @@ private
    procedure Look_Ahead (
       File : Non_Controlled_File_Type;
       Item : out String; -- 1 .. 6
-      Last : out Natural;
-      End_Of_Line : out Boolean);
+      Last : out Natural);
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out String; -- 1 .. 6
