@@ -358,12 +358,12 @@ package body Ada.Naked_Text_IO is
       Sequence_Length : Natural);
 
    --  Input
-   --  * Read_Buffer sets (or keep) Buffer_Col.
-   --  * Get adds Buffer_Col to current Col.
-   --  * Take_Buffer clear Buffer_Col.
+   --  * Read_Buffer sets (or keeps) Ahead_Col.
+   --  * Get adds Ahead_Col to current Col.
+   --  * Take_Buffer clears Ahead_Col.
    --  Output
-   --  * Write_Buffer sets Buffer_Col to written width.
-   --  * Put adds Buffer_Col to current Col.
+   --  * Write_Buffer sets Ahead_Col to written width.
+   --  * Put adds Ahead_Col to current Col.
 
    procedure Read_Buffer (
       File : Non_Controlled_File_Type;
@@ -392,7 +392,7 @@ package body Ada.Naked_Text_IO is
                File.End_Of_File := True;
             end if;
             File.Last := Integer (Last);
-            File.Buffer_Col := Integer (Last) - Old_Last;
+            File.Ahead_Col := Integer (Last) - Old_Last;
          end;
       end if;
    end Read_Buffer;
@@ -402,7 +402,7 @@ package body Ada.Naked_Text_IO is
    begin
       File.Buffer (1 .. New_Last) := File.Buffer (2 .. File.Last);
       File.Last := New_Last;
-      File.Buffer_Col := 0;
+      File.Ahead_Col := 0;
       File.Dummy_Mark := None;
    end Take_Buffer;
 
@@ -448,7 +448,7 @@ package body Ada.Naked_Text_IO is
       begin
          Streams.Write (Unchecked_Stream (File).all, Buffer);
       end;
-      File.Buffer_Col := Sequence_Length;
+      File.Ahead_Col := Sequence_Length;
       File.Last := Length - Sequence_Length;
       File.Buffer (1 .. File.Last) :=
          File.Buffer (Sequence_Length + 1 .. Length);
@@ -567,7 +567,7 @@ package body Ada.Naked_Text_IO is
          File.Col := 1;
          File.Line_Length := 0;
          File.Page_Length := 0;
-         File.Buffer_Col := 0;
+         File.Ahead_Col := 0;
          File.Last := 0;
          File.End_Of_File := False;
          File.Dummy_Mark := None;
@@ -639,7 +639,7 @@ package body Ada.Naked_Text_IO is
       Check_File_Mode (File, IO_Modes.Out_File);
       if File.Last > 0 then
          Write_Buffer (File, File.Last);
-         File.Col := File.Col + File.Buffer_Col;
+         File.Col := File.Col + File.Ahead_Col;
       end if;
       if Streams.Naked_Stream_IO.Is_Open (File.File) then
          Streams.Naked_Stream_IO.Flush (File.File);
@@ -758,11 +758,11 @@ package body Ada.Naked_Text_IO is
                            File.End_Of_File := True; -- for next loop
                            File.Last := 0;
                         else
-                           File.Col := File.Col + File.Buffer_Col;
+                           File.Col := File.Col + File.Ahead_Col;
                            Take_Buffer (File);
                         end if;
                      when others =>
-                        File.Col := File.Col + File.Buffer_Col;
+                        File.Col := File.Col + File.Ahead_Col;
                         Take_Buffer (File);
                   end case;
                end;
@@ -974,13 +974,13 @@ package body Ada.Naked_Text_IO is
                         File.Last := 0;
                      else
                         Item := C;
-                        File.Col := File.Col + File.Buffer_Col;
+                        File.Col := File.Col + File.Ahead_Col;
                         Take_Buffer (File);
                         exit;
                      end if;
                   when others =>
                      Item := C;
-                     File.Col := File.Col + File.Buffer_Col;
+                     File.Col := File.Col + File.Ahead_Col;
                      Take_Buffer (File);
                      exit;
                end case;
@@ -1000,7 +1000,7 @@ package body Ada.Naked_Text_IO is
          and then Character'Pos (Item) not in 2#10000000# .. 2#10111111#
       then
          Write_Buffer (File, File.Last);
-         File.Col := File.Col + File.Buffer_Col;
+         File.Col := File.Col + File.Ahead_Col;
       end if;
       --  write to the buffer
       File.Last := File.Last + 1;
@@ -1012,11 +1012,11 @@ package body Ada.Naked_Text_IO is
             Sequence_Status);
          if File.Last >= Sequence_Length then
             Write_Buffer (File, Sequence_Length);
-            File.Col := File.Col + File.Buffer_Col;
+            File.Col := File.Col + File.Ahead_Col;
          end if;
       else
          Write_Buffer (File, File.Last);
-         File.Col := File.Col + File.Buffer_Col;
+         File.Col := File.Col + File.Ahead_Col;
       end if;
    end Put;
 
