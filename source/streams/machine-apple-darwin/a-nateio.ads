@@ -181,7 +181,7 @@ private
       Col : Natural := 1;
       Line_Length : Natural := 0;
       Page_Length : Natural := 0;
-      Buffer_Col : Natural := 0;
+      Ahead_Col : Natural := 0; -- one-character Col
       Last : Natural := 0;
       Buffer : System.Native_IO.Text_IO.Buffer_Type;
       End_Of_File : Boolean := False;
@@ -203,7 +203,7 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Buffer_Col => 0,
+      Ahead_Col => 0,
       Last => 0,
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
@@ -223,7 +223,7 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Buffer_Col => 0,
+      Ahead_Col => 0,
       Last => 0,
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
@@ -243,7 +243,7 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Buffer_Col => 0,
+      Ahead_Col => 0,
       Last => 0,
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
