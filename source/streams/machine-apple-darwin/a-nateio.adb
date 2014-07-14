@@ -1125,39 +1125,31 @@ package body Ada.Naked_Text_IO is
    procedure Look_Ahead (
       File : Non_Controlled_File_Type;
       Item : out String;
-      Last : out Natural;
-      End_Of_Line : out Boolean)
+      Last : out Natural)
    is
       Wanted_Length : constant Natural := Item'Length;
       Buffer_Last : Natural;
    begin
-      Check_File_Open (File);
-      loop
+      --  Check_File_Mode is omitted
+      --  this subprogram should be called after single-character Look_Ahead
+      while not File.End_Of_File and then File.Last < Wanted_Length loop
          Read_Buffer (File, Wanted_Length);
-         exit when File.Last = Wanted_Length or else File.End_Of_File;
       end loop;
-      if File.Last = 0 then
-         Last := Item'First - 1;
-         End_Of_Line := True;
-      else
-         Buffer_Last := File.Last;
-         End_Of_Line := False;
-         for I in 1 .. File.Last loop
-            if File.Buffer (I) = Character'Val (16#0d#)
-               or else File.Buffer (I) = Character'Val (16#0a#)
-               or else File.Buffer (I) = Character'Val (16#0c#)
-               or else (
-                  File.SUB = IO_Modes.End_Of_File
-                     and then File.Buffer (I) = Character'Val (16#1a#))
-            then
-               Buffer_Last := I - 1;
-               End_Of_Line := True;
-               exit;
-            end if;
-         end loop;
-         Last := Item'First + Last - 1;
-         Item (Item'First .. Last) := File.Buffer (1 .. Buffer_Last);
-      end if;
+      Buffer_Last := File.Last; -- File.Last > 0
+      for I in 1 .. File.Last loop
+         if File.Buffer (I) = Character'Val (16#0d#)
+            or else File.Buffer (I) = Character'Val (16#0a#)
+            or else File.Buffer (I) = Character'Val (16#0c#)
+            or else (
+               File.SUB = IO_Modes.End_Of_File
+                  and then File.Buffer (I) = Character'Val (16#1a#))
+         then
+            Buffer_Last := I - 1;
+            exit;
+         end if;
+      end loop;
+      Last := Item'First + Buffer_Last - 1;
+      Item (Item'First .. Last) := File.Buffer (1 .. Buffer_Last);
    end Look_Ahead;
 
    procedure Get_Immediate (

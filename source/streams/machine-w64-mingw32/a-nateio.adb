@@ -1225,8 +1225,7 @@ package body Ada.Naked_Text_IO is
    procedure Look_Ahead (
       File : Non_Controlled_File_Type;
       Item : out String; -- 1 .. 6
-      Last : out Natural;
-      End_Of_Line : out Boolean)
+      Last : out Natural)
    is
       Buffer_Last : Natural;
    begin
@@ -1238,10 +1237,8 @@ package body Ada.Naked_Text_IO is
       end loop;
       if not (File.Last > 0 and then File.Converted) then
          Last := Item'First - 1;
-         End_Of_Line := True;
       else
          Buffer_Last := File.Last;
-         End_Of_Line := False;
          for I in 1 .. File.Last loop
             if File.Buffer (I) = Character'Val (16#0d#)
                or else File.Buffer (I) = Character'Val (16#0a#)
@@ -1251,11 +1248,10 @@ package body Ada.Naked_Text_IO is
                      and then File.Buffer (I) = Character'Val (16#1a#))
             then
                Buffer_Last := I - 1;
-               End_Of_Line := True;
                exit;
             end if;
          end loop;
-         Last := Item'First + Last - 1;
+         Last := Item'First + Buffer_Last - 1;
          Item (Item'First .. Last) := File.Buffer (1 .. Buffer_Last);
       end if;
    end Look_Ahead;

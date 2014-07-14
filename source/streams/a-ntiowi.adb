@@ -211,11 +211,10 @@ package body Ada.Naked_Text_IO.Wide is
             declare
                S : String (1 .. Length);
                Last : Natural;
-               EOL : Boolean;
                Conv_Last : Natural;
                Code : System.UTF_Conversions.UCS_4;
             begin
-               Look_Ahead (File, S, Last, EOL);
+               Look_Ahead (File, S, Last);
                System.UTF_Conversions.From_UTF_8 (
                   S (1 .. Last),
                   Conv_Last,
