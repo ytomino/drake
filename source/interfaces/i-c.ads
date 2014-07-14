@@ -92,12 +92,10 @@ package Interfaces.C is
    pragma Inline (To_char_array);
 
    --  modified
---  function To_C (Item : String; Append_Nul : Boolean := True)
---    return char_array;
    function To_C (
       Item : String;
       Append_Nul : Boolean := True;
-      Substitute : char := '?')
+      Substitute : char := '?') -- additional
       return char_array
       renames To_char_array;
 
@@ -110,12 +108,10 @@ package Interfaces.C is
    pragma Inline (To_String);
 
    --  modified
---  function To_Ada (Item : char_array; Trim_Nul : Boolean := True)
---    return String
    function To_Ada (
       Item : char_array;
       Trim_Nul : Boolean := True;
-      Substitute : Character := '?')
+      Substitute : Character := '?') -- additional
       return String
       renames To_String;
 
@@ -129,17 +125,12 @@ package Interfaces.C is
    pragma Inline (To_char_array);
 
    --  modified
---  procedure To_C (
---    Item : String;
---    Target : out char_array;
---    Count : out size_t;
---    Append_Nul : Boolean := True);
    procedure To_C (
       Item : String;
       Target : out char_array;
       Count : out size_t;
       Append_Nul : Boolean := True;
-      Substitute : char := '?')
+      Substitute : char := '?') -- additional
       renames To_char_array;
 
    --  extended
@@ -152,17 +143,12 @@ package Interfaces.C is
    pragma Inline (To_String);
 
    --  modified
---  procedure To_Ada (
---    Item : char_array;
---    Target : out String;
---    Count : out Natural;
---    Trim_Nul : Boolean := True);
    procedure To_Ada (
       Item : char_array;
       Target : out String;
       Count : out Natural;
       Trim_Nul : Boolean := True;
-      Substitute : Character := '?')
+      Substitute : Character := '?') -- additional
       renames To_String;
 
    --  Wide Character and Wide String
@@ -220,12 +206,10 @@ package Interfaces.C is
    pragma Inline (To_wchar_array);
 
    --  modified
---  function To_C (Item : Wide_String; Append_Nul : Boolean := True)
---    return wchar_array;
    function To_C (
       Item : Wide_String;
       Append_Nul : Boolean := True;
-      Substitute : wchar_t := Wide_Character'Pos ('?'))
+      Substitute : wchar_t := Wide_Character'Pos ('?')) -- additional
       return wchar_array
       renames To_wchar_array;
 
@@ -238,12 +222,10 @@ package Interfaces.C is
    pragma Inline (To_Wide_String);
 
    --  modified
---  function To_Ada (Item : wchar_array; Trim_Nul : Boolean := True)
---    return Wide_String;
    function To_Ada (
       Item : wchar_array;
       Trim_Nul : Boolean := True;
-      Substitute : Wide_Character := '?')
+      Substitute : Wide_Character := '?') -- additional
       return Wide_String
       renames To_Wide_String;
 
@@ -257,17 +239,12 @@ package Interfaces.C is
    pragma Inline (To_wchar_array);
 
    --  modified
---  procedure To_C (
---    Item : Wide_String;
---    Target : out wchar_array;
---    Count : out size_t;
---    Append_Nul : Boolean := True);
    procedure To_C (
       Item : Wide_String;
       Target : out wchar_array;
       Count : out size_t;
       Append_Nul : Boolean := True;
-      Substitute : wchar_t := Wide_Character'Pos ('?'))
+      Substitute : wchar_t := Wide_Character'Pos ('?')) -- additional
       renames To_wchar_array;
 
    --  extended
@@ -280,17 +257,12 @@ package Interfaces.C is
    pragma Inline (To_Wide_String);
 
    --  modified
---  procedure To_Ada (
---    Item : wchar_array;
---    Target : out Wide_String;
---    Count : out Natural;
---    Trim_Nul : Boolean := True);
    procedure To_Ada (
       Item : wchar_array;
       Target : out Wide_String;
       Count : out Natural;
       Trim_Nul : Boolean := True;
-      Substitute : Wide_Character := '?')
+      Substitute : Wide_Character := '?') -- additional
       renames To_Wide_String;
 
    --  extended

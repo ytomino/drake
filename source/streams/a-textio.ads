@@ -31,7 +31,6 @@ package Ada.Text_IO is
       Mode : File_Mode := Out_File;
       Name : String := "";
       Form : String); -- removed default
-   --  extended
    procedure Create (
       File : in out File_Type;
       Mode : File_Mode := Out_File;
@@ -42,6 +41,8 @@ package Ada.Text_IO is
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
       SUB : IO_Modes.File_SUB := IO_Modes.Ordinary);
+
+   --  extended
    function Create (
       Mode : File_Mode := Out_File;
       Name : String := "";
@@ -60,7 +61,6 @@ package Ada.Text_IO is
       Mode : File_Mode;
       Name : String;
       Form : String); -- removed default
-   --  extended
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;
@@ -71,6 +71,8 @@ package Ada.Text_IO is
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
       SUB : IO_Modes.File_SUB := IO_Modes.Ordinary);
+
+   --  extended
    function Open (
       Mode : File_Mode;
       Name : String;

@@ -209,9 +209,6 @@ package Ada.Strings.Wide_Wide_Fixed is
       renames Wide_Wide_Functions.Maps.Translate;
 
    --  modified
---  procedure Translate (
---    Source : in out Wide_Wide_String;
---    Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping);
    procedure Translate (
       Source : in out Wide_Wide_String;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping;
@@ -310,10 +307,6 @@ package Ada.Strings.Wide_Wide_Fixed is
 
    --  Wide_Wide_String selector subprograms
    --  modified
---  function Trim (
---    Source : Wide_Wide_String;
---    Side : Trim_End)
---    return Wide_Wide_String;
    function Trim (
       Source : Wide_Wide_String;
       Side : Trim_End;
