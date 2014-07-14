@@ -27,7 +27,6 @@ package Ada.Streams.Stream_IO is
       Mode : File_Mode := Out_File;
       Name : String := "";
       Form : String); -- removed default
-   --  extended
    procedure Create (
       File : in out File_Type;
       Mode : File_Mode := Out_File;
@@ -35,6 +34,8 @@ package Ada.Streams.Stream_IO is
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
       Overwrite : Boolean := True);
+
+   --  extended
    function Create (
       Mode : File_Mode := Out_File;
       Name : String := "";
@@ -50,7 +51,6 @@ package Ada.Streams.Stream_IO is
       Mode : File_Mode;
       Name : String;
       Form : String); -- removed default
-   --  extended
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;
@@ -58,6 +58,8 @@ package Ada.Streams.Stream_IO is
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
       Overwrite : Boolean := True);
+
+   --  extended
    function Open (
       Mode : File_Mode;
       Name : String;

@@ -46,7 +46,6 @@ package Ada.Directories is
       Source_Name : String;
       Target_Name : String;
       Form : String); -- removed default
-   --  extended
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
