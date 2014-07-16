@@ -348,7 +348,8 @@ package body Ada.Naked_Text_IO is
 
    procedure Read_Buffer (
       File : Non_Controlled_File_Type;
-      Wanted : Natural := 1);
+      Wanted : Positive := 1;
+      Wait : Boolean := True);
    procedure Take_Buffer (File : Non_Controlled_File_Type);
    procedure Take_Page (File : Non_Controlled_File_Type);
    procedure Take_Line (File : Non_Controlled_File_Type);
@@ -367,33 +368,33 @@ package body Ada.Naked_Text_IO is
 
    procedure Read_Buffer (
       File : Non_Controlled_File_Type;
-      Wanted : Natural := 1)
-   is
-      Wanted_or_1 : constant Positive := Integer'Max (1, Wanted);
+      Wanted : Positive := 1;
+      Wait : Boolean := True) is
    begin
-      if not File.End_Of_File and then File.Last < Wanted_or_1 then
+      if not File.End_Of_File and then File.Last < Wanted then
          declare
             Old_Last : constant Natural := File.Last;
             --  read next single character
             Buffer : Streams.Stream_Element_Array (
                Streams.Stream_Element_Offset (Old_Last + 1) ..
-               Streams.Stream_Element_Offset (Wanted_or_1));
-            for Buffer'Address use
-               File.Buffer (Old_Last + 1 .. Wanted_or_1)'Address;
+               Streams.Stream_Element_Offset (Old_Last + 1));
+            for Buffer'Address use File.Buffer (Old_Last + 1)'Address;
             Last : Streams.Stream_Element_Offset := 0;
          begin
             begin
                Streams.Read (Unchecked_Stream (File).all, Buffer, Last);
+               File.Last := Natural'Base (Last);
+               if Wait and then File.Last = Old_Last then
+                  File.End_Of_File := True;
+               end if;
             exception
                when End_Error =>
                   File.End_Of_File := True;
             end;
-            if Integer (Last) < Wanted then
-               File.End_Of_File := True;
-            end if;
-            File.Last := Integer (Last);
-            File.Ahead_Col := Integer (Last) - Old_Last;
          end;
+      end if;
+      if File.Last > 0 then
+         File.Ahead_Col := 1;
       end if;
    end Read_Buffer;
 
@@ -1158,15 +1159,11 @@ package body Ada.Naked_Text_IO is
       Last : out Natural;
       Wait : Boolean)
    is
-      Wanted : Natural := 1;
       Handle : System.Native_IO.Handle_Type;
       Old_Settings : aliased System.Native_IO.Text_IO.Setting;
    begin
       Check_File_Mode (File, IO_Modes.In_File);
       if File.External = IO_Modes.Terminal then
-         if not Wait then
-            Wanted := 0;
-         end if;
          Handle := Streams.Naked_Stream_IO.Handle (File.File);
          System.Native_IO.Text_IO.Set_Non_Canonical_Mode (
             Handle,
@@ -1176,7 +1173,7 @@ package body Ada.Naked_Text_IO is
       Last := Item'First - 1;
       Multi_Character : for I in Item'Range loop
          Single_Character : loop
-            Read_Buffer (File, Wanted => Wanted);
+            Read_Buffer (File, Wait => Wait);
             if File.Last > 0 then
                Item (I) := File.Buffer (1);
                Last := I;
