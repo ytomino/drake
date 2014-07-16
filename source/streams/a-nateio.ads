@@ -107,8 +107,12 @@ package Ada.Naked_Text_IO is
    function Page (File : Non_Controlled_File_Type) return Positive;
    pragma Inline (Page);
 
-   procedure Get (File : Non_Controlled_File_Type; Item : out Character);
-   procedure Put (File : Non_Controlled_File_Type; Item : Character);
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Character);
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Character);
 
    procedure Look_Ahead (
       File : Non_Controlled_File_Type;
