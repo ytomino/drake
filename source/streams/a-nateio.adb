@@ -13,6 +13,9 @@ package body Ada.Naked_Text_IO is
    use type IO_Modes.File_SUB;
    use type Streams.Stream_Element_Offset;
 
+   procedure unreachable;
+   pragma Import (Intrinsic, unreachable, "__builtin_unreachable");
+
    --  the parameter Form
 
    function Select_External (Spec : IO_Modes.File_External_Spec)
@@ -254,7 +257,7 @@ package body Ada.Naked_Text_IO is
    begin
       Holder.Assign (New_File'Access);
       --  open
-      Open_Proc.all (
+      Open_Proc (
          File => New_File.File,
          Mode => Mode,
          Name => Name,
@@ -346,8 +349,10 @@ package body Ada.Naked_Text_IO is
       end loop;
    end Raw_New_Line;
 
-   procedure Read_Buffer (File : Non_Controlled_File_Type);
-   procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type);
+   procedure Read_Buffer (
+      File : Non_Controlled_File_Type;
+      Wanted : Positive := 1;
+      Wait : Boolean := True);
    procedure Take_Buffer (File : Non_Controlled_File_Type);
    procedure Take_Page (File : Non_Controlled_File_Type);
    procedure Take_Line (File : Non_Controlled_File_Type);
@@ -357,106 +362,119 @@ package body Ada.Naked_Text_IO is
       Sequence_Length : Natural);
 
    --  Input
-   --  * Read_Buffer sets (or keep) Buffer_Col.
-   --  * Get adds Buffer_Col to current Col.
-   --  * Take_Buffer clear Buffer_Col.
+   --  * Read_Buffer sets (or keeps) Ahead_Col.
+   --  * Get adds Ahead_Col to current Col.
+   --  * Take_Buffer clears Ahead_Col.
    --  Output
-   --  * Write_Buffer sets Buffer_Col to written width.
-   --  * Put adds Buffer_Col to current Col.
+   --  * Write_Buffer sets Ahead_Col to written width.
+   --  * Put adds Ahead_Col to current Col.
 
-   procedure Read_Buffer (File : Non_Controlled_File_Type) is
-      New_Last : Integer;
+   procedure Read_Buffer (
+      File : Non_Controlled_File_Type;
+      Wanted : Positive := 1;
+      Wait : Boolean := True) is
    begin
-      if File.End_Of_File then
-         null;
-      elsif File.Last = 0 or else not File.Converted then
-         File.Converted := False;
+      if not File.End_Of_File and then File.Ahead_Last < Wanted then
          if File.External = IO_Modes.Terminal then
-            System.Native_IO.Text_IO.Terminal_Get (
-               Streams.Naked_Stream_IO.Handle (File.File),
-               File.Buffer, -- if File.Last > 0, read data would be lost ...
-               New_Last);
-            if New_Last < 0 then
-               Raise_Exception (Device_Error'Identity);
-            end if;
-            File.Last := New_Last;
-            File.Converted := File.Last > 0;
-            File.Buffer_Col := 0; -- unused
-         else
             declare
-               Buffer : Streams.Stream_Element_Array (1 .. 1);
-               for Buffer'Address use File.Buffer (File.Last + 1)'Address;
+               Read_Length : Streams.Stream_Element_Offset;
+            begin
+               if Wait then
+                  System.Native_IO.Text_IO.Terminal_Get (
+                     Streams.Naked_Stream_IO.Handle (File.File),
+                     File.Buffer (File.Last + 1)'Address,
+                     1,
+                     Read_Length); -- Read_Length can be > 1
+               else
+                  System.Native_IO.Text_IO.Terminal_Get_Immediate (
+                     Streams.Naked_Stream_IO.Handle (File.File),
+                     File.Buffer (File.Last + 1)'Address,
+                     1,
+                     Read_Length); -- Read_Length can be > 1
+               end if;
+               if Read_Length < 0 then
+                  Raise_Exception (Device_Error'Identity);
+               end if;
+               File.Last := File.Last + Natural (Read_Length);
+            end;
+         else
+            --  read next single character
+            declare
+               Old_Last : constant Natural := File.Last;
+               Buffer : Streams.Stream_Element_Array (
+                  Streams.Stream_Element_Offset (Old_Last + 1) ..
+                  Streams.Stream_Element_Offset (Old_Last + 1));
+               for Buffer'Address use File.Buffer (Old_Last + 1)'Address;
                Last : Streams.Stream_Element_Offset;
             begin
-               begin
-                  Streams.Read (Unchecked_Stream (File).all, Buffer, Last);
-               exception
-                  when End_Error => Last := 0;
-               end;
-               File.Last := File.Last + Natural (Last);
-               if Last = 0 then
+               Streams.Read (Unchecked_Stream (File).all, Buffer, Last);
+               File.Last := Natural'Base (Last);
+               if Wait and then File.Last = Old_Last then
                   File.End_Of_File := True;
                end if;
+            exception
+               when End_Error =>
+                  File.End_Of_File := True;
             end;
-            if File.Last = 0 then
-               null; -- read 0 byte
-            elsif File.External = IO_Modes.Locale
-               and then File.Buffer (1) >= Character'Val (16#80#)
-            then
-               declare
-                  DBCS_Buffer : aliased
-                     System.Native_IO.Text_IO.DBCS_Buffer_Type;
-               begin
-                  DBCS_Buffer (1) := File.Buffer (1);
-                  DBCS_Buffer (2) := File.Buffer (2);
-                  System.Native_IO.Text_IO.To_UTF_8 (
-                     DBCS_Buffer,
-                     File.Last,
-                     File.Buffer,
-                     New_Last);
-               end;
-               if New_Last > 0 then
-                  File.Last := New_Last;
-                  File.Converted := True;
-                  File.Buffer_Col := 2;
-               else
-                  null; -- No converted
-               end if;
-            else
-               File.Converted := True;
-               File.Buffer_Col := 1;
-            end if;
          end if;
-      else
-         null; -- No filled
+      end if;
+      if File.Last > 0 and then File.Ahead_Last = 0 then
+         if File.External = IO_Modes.Terminal then
+            File.Ahead_Last := File.Last;
+         elsif File.External = IO_Modes.Locale
+            and then File.Buffer (1) >= Character'Val (16#80#)
+         then
+            declare
+               Locale_Support : constant Boolean :=
+                  System.Native_IO.Text_IO.Default_External = IO_Modes.Locale;
+            begin
+               if not Locale_Support then
+                  unreachable;
+               end if;
+            end;
+            declare
+               DBCS_Buffer : aliased
+                  System.Native_IO.Text_IO.DBCS_Buffer_Type;
+               New_Buffer : System.Native_IO.Text_IO.Buffer_Type;
+               New_Ahead_Last : Natural;
+               New_Last : Natural;
+            begin
+               DBCS_Buffer (1) := File.Buffer (1);
+               DBCS_Buffer (2) := File.Buffer (2);
+               System.Native_IO.Text_IO.To_UTF_8 (
+                  DBCS_Buffer,
+                  File.Last,
+                  New_Buffer,
+                  New_Ahead_Last);
+               if New_Ahead_Last > 0 then
+                  New_Last := New_Ahead_Last + (File.Last - 2);
+                  File.Buffer (New_Ahead_Last + 1 .. New_Last) :=
+                     File.Buffer (3 .. File.Last);
+                  File.Buffer (1 .. New_Ahead_Last) :=
+                     New_Buffer (1 .. New_Ahead_Last);
+                  File.Last := New_Last;
+                  File.Ahead_Last := New_Ahead_Last;
+                  File.Ahead_Col := 2;
+               elsif File.End_Of_File then
+                  --  expected trailing byte is missing
+                  File.Ahead_Last := File.Last;
+                  File.Ahead_Col := File.Last;
+               end if;
+            end;
+         else
+            File.Ahead_Last := 1;
+            File.Ahead_Col := 1;
+         end if;
       end if;
    end Read_Buffer;
-
-   procedure Read_Buffer_From_Event (File : Non_Controlled_File_Type) is
-      New_Last : Integer;
-   begin
-      if not File.End_Of_File
-         and then (File.Last = 0 or else not File.Converted)
-      then
-         System.Native_IO.Text_IO.Terminal_Get_Immediate (
-            Streams.Naked_Stream_IO.Handle (File.File),
-            File.Buffer, -- if File.Last > 0, read data would be lost ...
-            New_Last);
-         if New_Last < 0 then
-            Raise_Exception (Device_Error'Identity);
-         end if;
-         File.Last := New_Last;
-         File.Converted := File.Last > 0;
-         File.Buffer_Col := 0; -- unused
-      end if;
-   end Read_Buffer_From_Event;
 
    procedure Take_Buffer (File : Non_Controlled_File_Type) is
       New_Last : constant Natural := File.Last - 1;
    begin
       File.Buffer (1 .. New_Last) := File.Buffer (2 .. File.Last);
       File.Last := New_Last;
-      File.Buffer_Col := 0;
+      File.Ahead_Last := File.Ahead_Last - 1;
+      File.Ahead_Col := 0;
       File.Dummy_Mark := None;
    end Take_Buffer;
 
@@ -487,39 +505,33 @@ package body Ada.Naked_Text_IO is
       File : Non_Controlled_File_Type;
       Sequence_Length : Natural)
    is
-      Written : Integer;
       Length : constant Natural := File.Last; -- >= Sequence_Length
    begin
       if File.External = IO_Modes.Terminal then
-         System.Native_IO.Text_IO.Terminal_Put (
-            Streams.Naked_Stream_IO.Handle (File.File),
-            File.Buffer,
-            Sequence_Length,
-            Written);
-         if Written < 0 then
-            Raise_Exception (Device_Error'Identity);
-         end if;
-         File.Buffer_Col := 0; -- unused
-      elsif File.External = IO_Modes.UTF_8
-         or else (
-            Sequence_Length = 1
-            and then File.Buffer (1) < Character'Val (16#80#))
-      then
-         if File.Line_Length /= 0
-            and then File.Col + Sequence_Length - 1 > File.Line_Length
-         then
-            Raw_New_Line (File);
-         end if;
          declare
-            Buffer : Streams.Stream_Element_Array (
-               1 ..
-               Streams.Stream_Element_Offset (Sequence_Length));
-            for Buffer'Address use File.Buffer'Address;
+            Written_Length : Streams.Stream_Element_Offset;
          begin
-            Streams.Write (Unchecked_Stream (File).all, Buffer);
+            System.Native_IO.Text_IO.Terminal_Put (
+               Streams.Naked_Stream_IO.Handle (File.File),
+               File.Buffer'Address,
+               Streams.Stream_Element_Offset (Sequence_Length),
+               Written_Length);
+            if Written_Length < 0 then
+               Raise_Exception (Device_Error'Identity);
+            end if;
          end;
-         File.Buffer_Col := Sequence_Length;
-      else
+      elsif File.External = IO_Modes.Locale
+         and then File.Buffer (1) >= Character'Val (16#80#)
+      then
+         declare
+            Locale_Support : constant Boolean :=
+               System.Native_IO.Text_IO.Default_External =
+               IO_Modes.Locale;
+         begin
+            if not Locale_Support then
+               unreachable;
+            end if;
+         end;
          declare
             DBCS_Buffer : aliased System.Native_IO.Text_IO.DBCS_Buffer_Type;
             DBCS_Last : Natural;
@@ -546,8 +558,23 @@ package body Ada.Naked_Text_IO is
             begin
                Streams.Write (Unchecked_Stream (File).all, Buffer);
             end;
-            File.Buffer_Col := DBCS_Last;
+            File.Ahead_Col := DBCS_Last;
          end;
+      else
+         if File.Line_Length /= 0
+            and then File.Col + Sequence_Length - 1 > File.Line_Length
+         then
+            Raw_New_Line (File);
+         end if;
+         declare
+            Buffer : Streams.Stream_Element_Array (
+               1 ..
+               Streams.Stream_Element_Offset (Sequence_Length));
+            for Buffer'Address use File.Buffer'Address;
+         begin
+            Streams.Write (Unchecked_Stream (File).all, Buffer);
+         end;
+         File.Ahead_Col := Sequence_Length;
       end if;
       File.Last := Length - Sequence_Length;
       File.Buffer (1 .. File.Last) :=
@@ -598,7 +625,7 @@ package body Ada.Naked_Text_IO is
          declare
             Internal : aliased
                Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
-               File.all.File;
+               File.File;
          begin
             if not Streams.Naked_Stream_IO.Is_Standard (Internal) then
                Free (File);
@@ -634,10 +661,10 @@ package body Ada.Naked_Text_IO is
       Current_Mode : constant IO_Modes.File_Mode := Naked_Text_IO.Mode (File);
    begin
       if Current_Mode /= Mode
-         and then Streams.Naked_Stream_IO.Is_Standard (File.all.File)
+         and then Streams.Naked_Stream_IO.Is_Standard (File.File)
       then
          Raise_Exception (Mode_Error'Identity);
-      elsif not Streams.Naked_Stream_IO.Is_Open (File.all.File) then
+      elsif not Streams.Naked_Stream_IO.Is_Open (File.File) then
          --  External stream mode
          Raise_Exception (Status_Error'Identity);
       else
@@ -662,17 +689,17 @@ package body Ada.Naked_Text_IO is
             File.Stream := To_Address (
                Streams.Naked_Stream_IO.Stream (File.File));
          end;
-         File.all.Page := 1;
-         File.all.Line := 1;
-         File.all.Col := 1;
-         File.all.Line_Length := 0;
-         File.all.Page_Length := 0;
-         File.all.Buffer_Col := 0;
-         File.all.Last := 0;
-         File.all.Converted := False;
-         File.all.End_Of_File := False;
-         File.all.Dummy_Mark := None;
-         File.all.Mode := Mode;
+         File.Page := 1;
+         File.Line := 1;
+         File.Col := 1;
+         File.Line_Length := 0;
+         File.Page_Length := 0;
+         File.Ahead_Col := 0;
+         File.Ahead_Last := 0;
+         File.Last := 0;
+         File.End_Of_File := False;
+         File.Dummy_Mark := None;
+         File.Mode := Mode;
       end if;
    end Reset;
 
@@ -740,7 +767,7 @@ package body Ada.Naked_Text_IO is
       Check_File_Mode (File, IO_Modes.Out_File);
       if File.Last > 0 then
          Write_Buffer (File, File.Last);
-         File.Col := File.Col + File.Buffer_Col;
+         File.Col := File.Col + File.Ahead_Col;
       end if;
       if Streams.Naked_Stream_IO.Is_Open (File.File)
          and then File.External /=
@@ -860,13 +887,14 @@ package body Ada.Naked_Text_IO is
                      when Character'Val (16#1a#) =>
                         if File.SUB = IO_Modes.End_Of_File then
                            File.End_Of_File := True; -- for next loop
+                           File.Ahead_Last := 0;
                            File.Last := 0;
                         else
-                           File.Col := File.Col + File.Buffer_Col;
+                           File.Col := File.Col + File.Ahead_Col;
                            Take_Buffer (File);
                         end if;
                      when others =>
-                        File.Col := File.Col + File.Buffer_Col;
+                        File.Col := File.Col + File.Ahead_Col;
                         Take_Buffer (File);
                   end case;
                end;
@@ -1065,7 +1093,7 @@ package body Ada.Naked_Text_IO is
          Read_Buffer (File);
          if End_Of_File (File) then
             Raise_Exception (End_Error'Identity);
-         elsif File.Last > 0 and then File.Converted then
+         elsif File.Ahead_Last > 0 then
             declare
                C : constant Character := File.Buffer (1);
             begin
@@ -1077,16 +1105,17 @@ package body Ada.Naked_Text_IO is
                   when Character'Val (16#1a#) =>
                      if File.SUB = IO_Modes.End_Of_File then
                         File.End_Of_File := True; -- for next loop
+                        File.Ahead_Last := 0;
                         File.Last := 0;
                      else
                         Item := C;
-                        File.Col := File.Col + File.Buffer_Col;
+                        File.Col := File.Col + File.Ahead_Col;
                         Take_Buffer (File);
                         exit;
                      end if;
                   when others =>
                      Item := C;
-                     File.Col := File.Col + File.Buffer_Col;
+                     File.Col := File.Col + File.Ahead_Col;
                      Take_Buffer (File);
                      exit;
                end case;
@@ -1099,24 +1128,30 @@ package body Ada.Naked_Text_IO is
       Sequence_Length : Natural;
       Sequence_Status : System.UTF_Conversions.Sequence_Status_Type; -- ignore
    begin
-      Check_File_Open (File);
+      Check_File_Mode (File, IO_Modes.Out_File);
       --  if Item is not trailing byte, flush the buffer
-      if File.Last > 0
+      if (File.Line_Length /= 0 or else File.External /= IO_Modes.UTF_8)
+         and then File.Last > 0
          and then Character'Pos (Item) not in 2#10000000# .. 2#10111111#
       then
          Write_Buffer (File, File.Last);
-         File.Col := File.Col + File.Buffer_Col;
+         File.Col := File.Col + File.Ahead_Col;
       end if;
       --  write to the buffer
       File.Last := File.Last + 1;
       File.Buffer (File.Last) := Item;
-      System.UTF_Conversions.UTF_8_Sequence (
-         File.Buffer (1),
-         Sequence_Length,
-         Sequence_Status);
-      if File.Last >= Sequence_Length then
-         Write_Buffer (File, Sequence_Length);
-         File.Col := File.Col + File.Buffer_Col;
+      if File.Line_Length /= 0 or else File.External /= IO_Modes.UTF_8 then
+         System.UTF_Conversions.UTF_8_Sequence (
+            File.Buffer (1),
+            Sequence_Length,
+            Sequence_Status);
+         if File.Last >= Sequence_Length then
+            Write_Buffer (File, Sequence_Length);
+            File.Col := File.Col + File.Ahead_Col;
+         end if;
+      else
+         Write_Buffer (File, File.Last);
+         File.Col := File.Col + File.Ahead_Col;
       end if;
    end Put;
 
@@ -1125,14 +1160,14 @@ package body Ada.Naked_Text_IO is
       Item : out Character;
       End_Of_Line : out Boolean) is
    begin
-      Check_File_Open (File);
+      Check_File_Mode (File, IO_Modes.In_File);
       loop
          Read_Buffer (File);
          if Naked_Text_IO.End_Of_Line (File) then
             End_Of_Line := True;
             Item := Character'Val (0);
             exit;
-         elsif File.Last > 0 and then File.Converted then
+         elsif File.Ahead_Last > 0 then
             End_Of_Line := False;
             Item := File.Buffer (1);
             exit;
@@ -1227,33 +1262,29 @@ package body Ada.Naked_Text_IO is
       Item : out String; -- 1 .. 6
       Last : out Natural)
    is
+      Wanted_Length : constant Natural := Item'Length;
       Buffer_Last : Natural;
    begin
-      Check_File_Open (File);
-      loop
-         Read_Buffer (File);
-         exit when (File.Last > 0 and then File.Converted)
-            or else File.End_Of_File;
+      --  Check_File_Mode is omitted
+      --  this subprogram should be called after single-character Look_Ahead
+      while not File.End_Of_File and then File.Ahead_Last < Wanted_Length loop
+         Read_Buffer (File, Wanted_Length);
       end loop;
-      if not (File.Last > 0 and then File.Converted) then
-         Last := Item'First - 1;
-      else
-         Buffer_Last := File.Last;
-         for I in 1 .. File.Last loop
-            if File.Buffer (I) = Character'Val (16#0d#)
-               or else File.Buffer (I) = Character'Val (16#0a#)
-               or else File.Buffer (I) = Character'Val (16#0c#)
-               or else (
-                  File.SUB = IO_Modes.End_Of_File
-                     and then File.Buffer (I) = Character'Val (16#1a#))
-            then
-               Buffer_Last := I - 1;
-               exit;
-            end if;
-         end loop;
-         Last := Item'First + Buffer_Last - 1;
-         Item (Item'First .. Last) := File.Buffer (1 .. Buffer_Last);
-      end if;
+      Buffer_Last := File.Last; -- File.Last > 0
+      for I in 1 .. File.Last loop
+         if File.Buffer (I) = Character'Val (16#0d#)
+            or else File.Buffer (I) = Character'Val (16#0a#)
+            or else File.Buffer (I) = Character'Val (16#0c#)
+            or else (
+               File.SUB = IO_Modes.End_Of_File
+                  and then File.Buffer (I) = Character'Val (16#1a#))
+         then
+            Buffer_Last := I - 1;
+            exit;
+         end if;
+      end loop;
+      Last := Item'First + Buffer_Last - 1;
+      Item (Item'First .. Last) := File.Buffer (1 .. Buffer_Last);
    end Look_Ahead;
 
    procedure Get_Immediate (
@@ -1262,26 +1293,22 @@ package body Ada.Naked_Text_IO is
       Last : out Natural;
       Wait : Boolean)
    is
-      Console_Mode : aliased System.Native_IO.Text_IO.Setting;
       Handle : System.Native_IO.Handle_Type;
+      Old_Settings : aliased System.Native_IO.Text_IO.Setting;
    begin
       Check_File_Mode (File, IO_Modes.In_File);
       if File.External = IO_Modes.Terminal then
          Handle := Streams.Naked_Stream_IO.Handle (File.File);
          System.Native_IO.Text_IO.Set_Non_Canonical_Mode (
             Handle,
-            False,
-            Console_Mode);
+            Wait, -- only POSIX
+            Old_Settings);
       end if;
       Last := Item'First - 1;
       Multi_Character : for I in Item'Range loop
          Single_Character : loop
-            if not Wait and then File.External = IO_Modes.Terminal then
-               Read_Buffer_From_Event (File);
-            else
-               Read_Buffer (File);
-            end if;
-            if File.Last > 0 and then File.Converted then
+            Read_Buffer (File, Wait => Wait);
+            if File.Ahead_Last > 0 then
                Item (I) := File.Buffer (1);
                Last := I;
                Take_Buffer (File); -- not add File.Text.Col
@@ -1294,7 +1321,7 @@ package body Ada.Naked_Text_IO is
          end loop Single_Character;
       end loop Multi_Character;
       if File.External = IO_Modes.Terminal then
-         System.Native_IO.Text_IO.Restore (Handle, Console_Mode);
+         System.Native_IO.Text_IO.Restore (Handle, Old_Settings);
       end if;
    end Get_Immediate;
 

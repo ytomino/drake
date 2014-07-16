@@ -43,19 +43,21 @@ package System.Native_IO.Text_IO is
 
    procedure Terminal_Get (
       Handle : Handle_Type;
-      Buffer : in out Buffer_Type;
-      Out_Last : out Integer); -- -1 when error
+      Item : Address; -- requires 6 bytes at least
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset); -- -1 when error
 
    procedure Terminal_Get_Immediate (
       Handle : Handle_Type;
-      Buffer : in out Buffer_Type;
-      Out_Last : out Integer); -- -1 when error
+      Item : Address; -- requires 6 bytes at least
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset); -- -1 when error
 
    procedure Terminal_Put (
       Handle : Handle_Type;
-      Buffer : Buffer_Type;
-      Last : Natural;
-      Out_Last : out Integer); -- -1 when error
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset); -- -1 when error
 
    procedure Terminal_Size (
       Handle : Handle_Type;

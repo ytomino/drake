@@ -35,6 +35,7 @@ package body Ada.Naked_Text_IO.Wide is
                Last,
                To_Status);
             File.Last := Last;
+            File.Ahead_Last := Last;
             File.Buffer (1 .. Last) := Buffer (1 .. Last);
          end;
       end if;
