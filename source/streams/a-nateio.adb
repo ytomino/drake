@@ -1086,7 +1086,9 @@ package body Ada.Naked_Text_IO is
       return File.Page;
    end Page;
 
-   procedure Get (File : Non_Controlled_File_Type; Item : out Character) is
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Character) is
    begin
       Check_File_Mode (File, IO_Modes.In_File);
       loop
@@ -1124,7 +1126,10 @@ package body Ada.Naked_Text_IO is
       end loop;
    end Get;
 
-   procedure Put (File : Non_Controlled_File_Type; Item : Character) is
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Character)
+   is
       Sequence_Length : Natural;
       Sequence_Status : System.UTF_Conversions.Sequence_Status_Type; -- ignore
    begin
