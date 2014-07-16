@@ -110,22 +110,57 @@ package Ada.Naked_Text_IO is
    procedure Get (
       File : Non_Controlled_File_Type;
       Item : out Character);
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character);
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character);
+
    procedure Put (
       File : Non_Controlled_File_Type;
       Item : Character);
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Wide_Character);
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Wide_Wide_Character);
 
    procedure Look_Ahead (
       File : Non_Controlled_File_Type;
       Item : out Character;
       End_Of_Line : out Boolean);
+   procedure Look_Ahead (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character;
+      End_Of_Line : out Boolean);
+   procedure Look_Ahead (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character;
+      End_Of_Line : out Boolean);
 
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out Character);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character);
 
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out Character;
+      Available : out Boolean);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character;
+      Available : out Boolean);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character;
       Available : out Boolean);
 
    --  handle of stream for non-controlled
@@ -268,17 +303,5 @@ private
       Standard_Output_Text'Access;
    Standard_Error : constant Non_Controlled_File_Type :=
       Standard_Error_Text'Access;
-
-   --  for Wide_Text_IO/Wide_Wide_Text_IO
-
-   procedure Look_Ahead (
-      File : Non_Controlled_File_Type;
-      Item : out String; -- 1 .. 6
-      Last : out Natural);
-   procedure Get_Immediate (
-      File : Non_Controlled_File_Type;
-      Item : out String; -- 1 .. 6
-      Last : out Natural;
-      Wait : Boolean);
 
 end Ada.Naked_Text_IO;

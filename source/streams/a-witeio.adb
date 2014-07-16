@@ -1,5 +1,5 @@
 with Ada.Exceptions.Finally;
-with Ada.Naked_Text_IO.Wide;
+with Ada.Naked_Text_IO;
 with Ada.Text_IO.Naked;
 with Ada.Unchecked_Deallocation;
 package body Ada.Wide_Text_IO is
@@ -27,7 +27,7 @@ package body Ada.Wide_Text_IO is
 
    procedure Get (File : File_Type; Item : out Wide_Character) is
    begin
-      Naked_Text_IO.Wide.Get (
+      Naked_Text_IO.Get (
          Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
          Item);
    end Get;
@@ -51,7 +51,7 @@ package body Ada.Wide_Text_IO is
 
    procedure Get_Immediate (File : File_Type; Item : out Wide_Character) is
    begin
-      Naked_Text_IO.Wide.Get_Immediate (
+      Naked_Text_IO.Get_Immediate (
          Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
          Item);
    end Get_Immediate;
@@ -66,7 +66,7 @@ package body Ada.Wide_Text_IO is
       Item : out Wide_Character;
       Available : out Boolean) is
    begin
-      Naked_Text_IO.Wide.Get_Immediate (
+      Naked_Text_IO.Get_Immediate (
          Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
          Item,
          Available);
@@ -143,7 +143,7 @@ package body Ada.Wide_Text_IO is
       Item : out Wide_Character;
       End_Of_Line : out Boolean) is
    begin
-      Naked_Text_IO.Wide.Look_Ahead (
+      Naked_Text_IO.Look_Ahead (
          Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
          Item,
          End_Of_Line);
@@ -158,7 +158,7 @@ package body Ada.Wide_Text_IO is
 
    procedure Put (File : File_Type; Item : Wide_Character) is
    begin
-      Naked_Text_IO.Wide.Put (
+      Naked_Text_IO.Put (
          Text_IO.Naked.Non_Controlled (Text_IO.File_Type (File)).all,
          Item);
    end Put;
