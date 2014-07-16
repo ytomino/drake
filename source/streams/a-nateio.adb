@@ -1038,17 +1038,7 @@ package body Ada.Naked_Text_IO is
       for I in 1 .. Spacing loop
          loop
             Read_Buffer (File);
-            if End_Of_File (File) then
-               if File.Dummy_Mark <= EOP then
-                  File.Dummy_Mark := EOP_EOF;
-                  File.Page := File.Page + 1;
-                  File.Line := 1;
-                  File.Col := 1;
-                  exit;
-               else
-                  Raise_Exception (End_Error'Identity);
-               end if;
-            elsif File.Last > 0 then -- ASCII
+            if File.Last > 0 then -- ASCII
                declare
                   C : constant Character := File.Buffer (1);
                begin
@@ -1073,6 +1063,16 @@ package body Ada.Naked_Text_IO is
                         Take_Buffer (File);
                   end case;
                end;
+            elsif File.End_Of_File then
+               if File.Dummy_Mark <= EOP then
+                  File.Dummy_Mark := EOP_EOF;
+                  File.Page := File.Page + 1;
+                  File.Line := 1;
+                  File.Col := 1;
+                  exit;
+               else
+                  Raise_Exception (End_Error'Identity);
+               end if;
             end if;
          end loop;
       end loop;
@@ -1080,10 +1080,9 @@ package body Ada.Naked_Text_IO is
 
    function End_Of_Line (File : Non_Controlled_File_Type) return Boolean is
    begin
-      if End_Of_File (File) then
+      if End_Of_File (File) then -- End_Of_File calls Read_Buffer
          return True;
       else
-         Read_Buffer (File);
          return File.Last > 0 and then ( -- line mark is ASCII
             File.Buffer (1) = Character'Val (16#0d#)
             or else File.Buffer (1) = Character'Val (16#0a#)
@@ -1130,13 +1129,12 @@ package body Ada.Naked_Text_IO is
 
    function End_Of_Page (File : Non_Controlled_File_Type) return Boolean is
    begin
-      if End_Of_File (File)
+      if End_Of_File (File) -- End_Of_File calls Read_Buffer
          or else File.Dummy_Mark = EOP
          or else File.Dummy_Mark = EOP_EOF
       then
          return True;
       else
-         Read_Buffer (File);
          return File.Last > 0 -- page mark is ASCII
             and then File.Buffer (1) = Character'Val (16#0c#);
       end if;
@@ -1145,17 +1143,11 @@ package body Ada.Naked_Text_IO is
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
    begin
       Check_File_Mode (File, IO_Modes.In_File);
+      Read_Buffer (File);
       if File.Last > 0 then
          return False;
-      elsif not Streams.Naked_Stream_IO.Is_Open (File.File)
-         or else File.External = IO_Modes.Terminal
-      then
-         Read_Buffer (File);
-         return File.End_Of_File;
       else
-         Read_Buffer (File);
-         return File.Last = 0
-            and then Streams.Naked_Stream_IO.End_Of_File (File.File);
+         return File.End_Of_File;
       end if;
    end End_Of_File;
 
@@ -1268,9 +1260,7 @@ package body Ada.Naked_Text_IO is
       Check_File_Mode (File, IO_Modes.In_File);
       loop
          Read_Buffer (File);
-         if End_Of_File (File) then
-            Raise_Exception (End_Error'Identity);
-         elsif File.Ahead_Last > 0 then
+         if File.Ahead_Last > 0 then
             declare
                C : constant Character := File.Buffer (1);
             begin
@@ -1297,6 +1287,8 @@ package body Ada.Naked_Text_IO is
                      exit;
                end case;
             end;
+         elsif File.End_Of_File then
+            Raise_Exception (End_Error'Identity);
          end if;
       end loop;
    end Get;
@@ -1474,8 +1466,7 @@ package body Ada.Naked_Text_IO is
    begin
       Check_File_Mode (File, IO_Modes.In_File);
       loop
-         Read_Buffer (File);
-         if Naked_Text_IO.End_Of_Line (File) then
+         if Naked_Text_IO.End_Of_Line (File) then -- calls Read_Buffer
             End_Of_Line := True;
             Item := Character'Val (0);
             exit;
