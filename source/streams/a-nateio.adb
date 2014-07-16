@@ -1311,6 +1311,7 @@ package body Ada.Naked_Text_IO is
             if File.Ahead_Last > 0 then
                Item (I) := File.Buffer (1);
                Last := I;
+               File.Col := File.Col + File.Ahead_Col;
                Take_Buffer (File); -- not add File.Text.Col
                exit Single_Character; -- next character
             elsif File.End_Of_File then

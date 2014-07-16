@@ -7,6 +7,7 @@ with Ada.Wide_Text_IO.Text_Streams;
 with Ada.Wide_Wide_Text_IO.Text_Streams;
 procedure textstream is
 	use type Ada.Streams.Stream_Element_Offset;
+	use type Ada.Text_IO.Count;
 	package U renames Ada.Streams.Unbounded_Storage_IO;
 	Windows : constant Boolean :=
 		Ada.Environment_Variables.Exists ("OS")
@@ -56,6 +57,7 @@ begin
 				for I in String_Data'Range loop
 					Ada.Text_IO.Put (File, String_Data (I));
 				end loop;
+				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Text_IO.Close (File);
 				pragma Assert (U.Size (Buffer) = Stream_Data'Length);
 				U.Reset (Buffer);
@@ -74,6 +76,7 @@ begin
 				for I in Wide_String_Data'Range loop
 					Ada.Wide_Text_IO.Put (File, Wide_String_Data (I));
 				end loop;
+				pragma Assert (Ada.Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Text_IO.Close (File);
 				pragma Assert (U.Size (Buffer) = Stream_Data'Length);
 				U.Reset (Buffer);
@@ -92,6 +95,7 @@ begin
 				for I in Wide_Wide_String_Data'Range loop
 					Ada.Wide_Wide_Text_IO.Put (File, Wide_Wide_String_Data (I));
 				end loop;
+				pragma Assert (Ada.Wide_Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Wide_Text_IO.Close (File);
 				pragma Assert (U.Size (Buffer) = Stream_Data'Length);
 				U.Reset (Buffer);
@@ -143,6 +147,7 @@ begin
 					Ada.Text_IO.Get (File, Item);
 					pragma Assert (Item = String_Data (I));
 				end loop;
+				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Text_IO.Close (File);
 			end;
 			U.Reset (Buffer);
@@ -159,6 +164,7 @@ begin
 					Ada.Wide_Text_IO.Get (File, Item);
 					pragma Assert (Item = Wide_String_Data (I));
 				end loop;
+				pragma Assert (Ada.Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Text_IO.Close (File);
 			end;
 			U.Reset (Buffer);
@@ -175,6 +181,7 @@ begin
 					Ada.Wide_Wide_Text_IO.Get (File, Item);
 					pragma Assert (Item = Wide_Wide_String_Data (I));
 				end loop;
+				pragma Assert (Ada.Wide_Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Wide_Text_IO.Close (File);
 			end;
 		end Process;
@@ -228,6 +235,7 @@ begin
 				pragma Assert (Ada.Text_IO.End_Of_Line (File));
 				pragma Assert (Ada.Text_IO.End_Of_Page (File));
 				pragma Assert (Ada.Text_IO.End_Of_File (File));
+				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Text_IO.Close (File);
 			end;
 			U.Reset (Buffer);
@@ -250,6 +258,7 @@ begin
 				pragma Assert (Ada.Wide_Text_IO.End_Of_Line (File));
 				pragma Assert (Ada.Wide_Text_IO.End_Of_Page (File));
 				pragma Assert (Ada.Wide_Text_IO.End_Of_File (File));
+				pragma Assert (Ada.Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Text_IO.Close (File);
 			end;
 			U.Reset (Buffer);
@@ -272,6 +281,7 @@ begin
 				pragma Assert (Ada.Wide_Wide_Text_IO.End_Of_Line (File));
 				pragma Assert (Ada.Wide_Wide_Text_IO.End_Of_Page (File));
 				pragma Assert (Ada.Wide_Wide_Text_IO.End_Of_File (File));
+				pragma Assert (Ada.Wide_Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Wide_Text_IO.Close (File);
 			end;
 		end Process;
@@ -319,6 +329,7 @@ begin
 					Ada.Text_IO.Get_Immediate (File, Item);
 					pragma Assert (Item = String_Data (I));
 				end loop;
+				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Text_IO.Close (File);
 			end;
 			U.Reset (Buffer);
@@ -335,6 +346,7 @@ begin
 					Ada.Wide_Text_IO.Get_Immediate (File, Item);
 					pragma Assert (Item = Wide_String_Data (I));
 				end loop;
+				pragma Assert (Ada.Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Text_IO.Close (File);
 			end;
 			U.Reset (Buffer);
@@ -351,6 +363,7 @@ begin
 					Ada.Wide_Wide_Text_IO.Get_Immediate (File, Item);
 					pragma Assert (Item = Wide_Wide_String_Data (I));
 				end loop;
+				pragma Assert (Ada.Wide_Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Wide_Text_IO.Close (File);
 			end;
 		end Process;
@@ -404,6 +417,7 @@ begin
 				end loop;
 				Ada.Text_IO.Look_Ahead (File, Item, End_Of_Line);
 				pragma Assert (End_Of_Line);
+				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Text_IO.Close (File);
 			end;
 			U.Reset (Buffer);
@@ -426,6 +440,7 @@ begin
 				end loop;
 				Ada.Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
 				pragma Assert (End_Of_Line);
+				pragma Assert (Ada.Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Text_IO.Close (File);
 			end;
 			U.Reset (Buffer);
@@ -448,6 +463,7 @@ begin
 				end loop;
 				Ada.Wide_Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
 				pragma Assert (End_Of_Line);
+				pragma Assert (Ada.Wide_Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
 				Ada.Wide_Wide_Text_IO.Close (File);
 			end;
 		end Process;
