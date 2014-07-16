@@ -6,6 +6,7 @@ with C.wincon;
 with C.winnls;
 package body System.Native_IO.Text_IO is
    use Ada.Exception_Identification.From_Here;
+   use type Ada.Streams.Stream_Element_Offset;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
    use type C.windef.WORD;
@@ -194,9 +195,13 @@ package body System.Native_IO.Text_IO is
 
    procedure Terminal_Get (
       Handle : Handle_Type;
-      Buffer : in out Buffer_Type;
-      Out_Last : out Integer)
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset)
    is
+      pragma Unreferenced (Length);
+      Buffer : Buffer_Type;
+      for Buffer'Address use Item;
       W_Buffer : C.winnt.WCHAR_array (0 .. 1);
       Read_Size : aliased C.windef.DWORD;
    begin
@@ -207,23 +212,27 @@ package body System.Native_IO.Text_IO is
             lpNumberOfCharsRead => Read_Size'Access,
             lpReserved => C.windef.LPVOID (Null_Address)) = 0
       then
-         Out_Last := -1; -- error
+         Out_Length := -1; -- error
       elsif Read_Size = 0 then
-         Out_Last := 0; -- no data
+         Out_Length := 0; -- no data
       else
          Read_Buffer_Trailing_From_Terminal (
             Handle,
             Buffer,
-            Out_Last,
+            Natural (Out_Length),
             W_Buffer (0));
       end if;
    end Terminal_Get;
 
    procedure Terminal_Get_Immediate (
       Handle : Handle_Type;
-      Buffer : in out Buffer_Type;
-      Out_Last : out Integer)
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset)
    is
+      pragma Unreferenced (Length);
+      Buffer : Buffer_Type;
+      for Buffer'Address use Item;
       Event_Count : aliased C.windef.DWORD;
       Read_Size : aliased C.windef.DWORD;
       Event : aliased C.wincon.INPUT_RECORD;
@@ -232,43 +241,45 @@ package body System.Native_IO.Text_IO is
          Handle,
          Event_Count'Access) = 0
       then
-         Out_Last := -1; -- error
+         Out_Length := -1; -- error
       elsif Event_Count = 0 then
-         Out_Last := 0; -- no data
+         Out_Length := 0; -- no data
       elsif C.wincon.ReadConsoleInput (
             hConsoleInput => Handle,
             lpBuffer => Event'Access,
             nLength => 1,
             lpNumberOfEventsRead => Read_Size'Access) = 0
       then
-         Out_Last := -1; -- error
+         Out_Length := -1; -- error
       elsif not (
             Read_Size > 0
             and then Event.EventType = C.wincon.KEY_EVENT
             and then Event.Event.KeyEvent.bKeyDown /= 0)
       then
-         Out_Last := 0; -- no data
+         Out_Length := 0; -- no data
       else
          Read_Buffer_Trailing_From_Terminal (
             Handle,
             Buffer,
-            Out_Last,
+            Natural (Out_Length),
             Event.Event.KeyEvent.uChar.UnicodeChar);
       end if;
    end Terminal_Get_Immediate;
 
    procedure Terminal_Put (
       Handle : Handle_Type;
-      Buffer : Buffer_Type;
-      Last : Natural;
-      Out_Last : out Integer)
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset)
    is
+      Buffer : Buffer_Type;
+      for Buffer'Address use Item;
       Ada_Buffer : Wide_String (1 .. 2);
       Ada_Buffer_Last : Natural;
       Written : aliased C.windef.DWORD;
    begin
       UTF_Conversions.From_8_To_16.Convert (
-         Buffer (1 .. Last),
+         Buffer (1 .. Natural (Length)),
          Ada_Buffer,
          Ada_Buffer_Last);
       if C.wincon.WriteConsoleW (
@@ -278,9 +289,9 @@ package body System.Native_IO.Text_IO is
          lpNumberOfCharsWritten => Written'Access,
          lpReserved => C.windef.LPVOID (Null_Address)) = 0
       then
-         Out_Last := -1; -- error
+         Out_Length := -1; -- error
       else
-         Out_Last := Integer (Written);
+         Out_Length := Ada.Streams.Stream_Element_Offset (Written);
       end if;
    end Terminal_Put;
 

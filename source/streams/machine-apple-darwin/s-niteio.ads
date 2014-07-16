@@ -25,7 +25,44 @@ package System.Native_IO.Text_IO is
 
    subtype Buffer_Type is String (1 .. 6); -- one code-point of UTF-8
 
+   subtype DBCS_Buffer_Type is String (1 .. 6); -- unused
+
+   procedure To_UTF_8 (
+      Buffer : aliased DBCS_Buffer_Type;
+      Last : Natural;
+      Out_Buffer : out Buffer_Type;
+      Out_Last : out Natural);
+   pragma Import (Ada, To_UTF_8, "__drake_program_error");
+
+   procedure To_DBCS (
+      Buffer : Buffer_Type;
+      Last : Natural;
+      Out_Buffer : aliased out DBCS_Buffer_Type;
+      Out_Last : out Natural);
+   pragma Import (Ada, To_DBCS, "__drake_program_error");
+
    --  terminal
+
+   procedure Terminal_Get (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset) -- -1 when error
+      renames Read;
+
+   procedure Terminal_Get_Immediate (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset) -- -1 when error
+      renames Read;
+
+   procedure Terminal_Put (
+      Handle : Handle_Type;
+      Item : Address;
+      Length : Ada.Streams.Stream_Element_Offset;
+      Out_Length : out Ada.Streams.Stream_Element_Offset) -- -1 when error
+      renames Write;
 
    procedure Terminal_Size (
       Handle : Handle_Type;
