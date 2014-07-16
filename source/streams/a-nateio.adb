@@ -299,55 +299,10 @@ package body Ada.Naked_Text_IO is
       return To_Pointer (File.Stream).all'Unchecked_Access;
    end Unchecked_Stream;
 
-   procedure Raw_New_Page (File : Non_Controlled_File_Type);
-   procedure Raw_New_Page (File : Non_Controlled_File_Type) is
-   begin
-      if File.External = IO_Modes.Terminal then
-         System.Native_IO.Text_IO.Terminal_Clear (
-            Streams.Naked_Stream_IO.Handle (File.File));
-      else
-         declare
-            Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
-         begin
-            Streams.Write (Unchecked_Stream (File).all, Code);
-         end;
-      end if;
-      File.Page := File.Page + 1;
-      File.Line := 1;
-      File.Col := 1;
-   end Raw_New_Page;
-
-   procedure Raw_New_Line (File : Non_Controlled_File_Type);
-   procedure Raw_New_Line (File : Non_Controlled_File_Type) is
-   begin
-      if File.Page_Length /= 0 and then File.Line >= File.Page_Length then
-         Raw_New_Page (File);
-      else
-         declare
-            Line_Mark : constant Streams.Stream_Element_Array (0 .. 1) :=
-               (16#0d#, 16#0a#);
-            F, L : Streams.Stream_Element_Offset;
-         begin
-            F := Boolean'Pos (File.New_Line = IO_Modes.LF);
-            L := Boolean'Pos (File.New_Line /= IO_Modes.CR);
-            Streams.Write (Unchecked_Stream (File).all, Line_Mark (F .. L));
-         end;
-         File.Line := File.Line + 1;
-         File.Col := 1;
-      end if;
-   end Raw_New_Line;
-
-   procedure Raw_New_Line (
-      File : Non_Controlled_File_Type;
-      Spacing : Positive);
-   procedure Raw_New_Line (
-      File : Non_Controlled_File_Type;
-      Spacing : Positive) is
-   begin
-      for I in 1 .. Spacing loop
-         Raw_New_Line (File);
-      end loop;
-   end Raw_New_Line;
+   --  Input
+   --  * Read_Buffer sets (or keeps) Ahead_Col.
+   --  * Get adds Ahead_Col to current Col.
+   --  * Take_Buffer clears Ahead_Col.
 
    procedure Read_Buffer (
       File : Non_Controlled_File_Type;
@@ -356,18 +311,6 @@ package body Ada.Naked_Text_IO is
    procedure Take_Buffer (File : Non_Controlled_File_Type);
    procedure Take_Page (File : Non_Controlled_File_Type);
    procedure Take_Line (File : Non_Controlled_File_Type);
-
-   procedure Write_Buffer (
-      File : Non_Controlled_File_Type;
-      Sequence_Length : Natural);
-
-   --  Input
-   --  * Read_Buffer sets (or keeps) Ahead_Col.
-   --  * Get adds Ahead_Col to current Col.
-   --  * Take_Buffer clears Ahead_Col.
-   --  Output
-   --  * Write_Buffer sets Ahead_Col to written width.
-   --  * Put adds Ahead_Col to current Col.
 
    procedure Read_Buffer (
       File : Non_Controlled_File_Type;
@@ -500,6 +443,64 @@ package body Ada.Naked_Text_IO is
          end if;
       end if;
    end Take_Line;
+
+   --  Output
+   --  * Write_Buffer sets Ahead_Col to written width.
+   --  * Put adds Ahead_Col to current Col.
+
+   procedure Raw_New_Page (File : Non_Controlled_File_Type);
+   procedure Raw_New_Line (File : Non_Controlled_File_Type);
+   procedure Raw_New_Line (
+      File : Non_Controlled_File_Type;
+      Spacing : Positive);
+   procedure Write_Buffer (
+      File : Non_Controlled_File_Type;
+      Sequence_Length : Natural);
+
+   procedure Raw_New_Page (File : Non_Controlled_File_Type) is
+   begin
+      if File.External = IO_Modes.Terminal then
+         System.Native_IO.Text_IO.Terminal_Clear (
+            Streams.Naked_Stream_IO.Handle (File.File));
+      else
+         declare
+            Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
+         begin
+            Streams.Write (Unchecked_Stream (File).all, Code);
+         end;
+      end if;
+      File.Page := File.Page + 1;
+      File.Line := 1;
+      File.Col := 1;
+   end Raw_New_Page;
+
+   procedure Raw_New_Line (File : Non_Controlled_File_Type) is
+   begin
+      if File.Page_Length /= 0 and then File.Line >= File.Page_Length then
+         Raw_New_Page (File);
+      else
+         declare
+            Line_Mark : constant Streams.Stream_Element_Array (0 .. 1) :=
+               (16#0d#, 16#0a#);
+            F, L : Streams.Stream_Element_Offset;
+         begin
+            F := Boolean'Pos (File.New_Line = IO_Modes.LF);
+            L := Boolean'Pos (File.New_Line /= IO_Modes.CR);
+            Streams.Write (Unchecked_Stream (File).all, Line_Mark (F .. L));
+         end;
+         File.Line := File.Line + 1;
+         File.Col := 1;
+      end if;
+   end Raw_New_Line;
+
+   procedure Raw_New_Line (
+      File : Non_Controlled_File_Type;
+      Spacing : Positive) is
+   begin
+      for I in 1 .. Spacing loop
+         Raw_New_Line (File);
+      end loop;
+   end Raw_New_Line;
 
    procedure Write_Buffer (
       File : Non_Controlled_File_Type;
