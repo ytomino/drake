@@ -30,6 +30,21 @@ begin
 	pragma Assert (
 		O.Image (10.0, Ada.Text_IO.Editing.To_Picture ("--9")) =
 		" 10");
+	pragma Assert (
+		O.Image (10.0, Ada.Text_IO.Editing.To_Picture ("-9")) =
+		"10");
+	begin
+		declare -- overflow
+			S : constant String :=
+				O.Image (1000.0, Ada.Text_IO.Editing.To_Picture ("--9"));
+		begin
+			null;
+		end;
+		raise Program_Error; -- bad
+	exception
+		when Ada.Text_IO.Layout_Error =>
+			null;
+	end;
 	-- examples in RM F.3.2
 	S_73_3 : declare
 		Item : constant T := 123456.78;

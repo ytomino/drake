@@ -351,7 +351,10 @@ package body Ada.Text_IO.Editing is
                      return; -- Layout_Error
                   end if;
                   loop
-                     pragma Assert (Pic_Index >= Pic.Expanded'First);
+                     if Pic_Index < Pic.Expanded'First then
+                        Error := True; -- overflow
+                        return;
+                     end if;
                      if Pic.Expanded (Pic_Index) = '>' then
                         if Item < 0 then
                            Result (Result_Index) := ')';
@@ -366,12 +369,9 @@ package body Ada.Text_IO.Editing is
                         Pic_Index := Pic_Index - 1;
                      elsif Pic.Expanded (Pic_Index) = '-'
                         and then Pic_Index = Pic.First_Sign_Position
+                        and then Item < 0
                      then
-                        if Item < 0 then
-                           Result (Result_Index) := '-';
-                        else
-                           Result (Result_Index) := '+';
-                        end if;
+                        Result (Result_Index) := '-';
                         Result_Index := Result_Index - 1;
                         Pic_Index := Pic_Index - 1;
                         Sign_Filled := True;
