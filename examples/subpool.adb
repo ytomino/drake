@@ -5,7 +5,6 @@ with System.Storage_Elements;
 with Ada.Unchecked_Deallocate_Subpool;
 -- for dummy item type
 with Ada.Finalization;
--- with Ada.Unchecked_Deallocation;
 with System.Storage_Elements.Formatting;
 procedure subpool is
 	-- RM 13-11-6
@@ -183,7 +182,6 @@ procedure subpool is
 	
 	type A is access Dummy.Dummy;
 	for A'Storage_Pool use Pool;
---	procedure Free is new Ada.Unchecked_Deallocation (Dummy.Dummy, A);
 	
 	X : array (1 .. 3) of A;
 	Mark : MR_Pool.Subpool_Handle;

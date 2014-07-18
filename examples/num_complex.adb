@@ -2,17 +2,31 @@ with Ada.Numerics.Generic_Complex_Arrays;
 with Ada.Numerics.Generic_Complex_Elementary_Functions;
 with Ada.Numerics.Generic_Complex_Types;
 with Ada.Numerics.Generic_Real_Arrays;
-with Ada.Numerics.Long_Long_Complex_Types; -- linking check
-with Ada.Numerics.Long_Long_Complex_Elementary_Functions; -- linking check
+with Ada.Numerics.Short_Complex_Arrays;
+with Ada.Numerics.Short_Complex_Elementary_Functions;
+with Ada.Numerics.Short_Complex_Types;
+with Ada.Numerics.Short_Real_Arrays;
+with Ada.Numerics.Complex_Arrays;
+with Ada.Numerics.Complex_Elementary_Functions;
+with Ada.Numerics.Complex_Types;
+with Ada.Numerics.Real_Arrays;
+with Ada.Numerics.Long_Complex_Arrays;
+with Ada.Numerics.Long_Complex_Elementary_Functions;
+with Ada.Numerics.Long_Complex_Types;
+with Ada.Numerics.Long_Real_Arrays;
+with Ada.Numerics.Long_Long_Complex_Arrays;
+with Ada.Numerics.Long_Long_Complex_Elementary_Functions;
+with Ada.Numerics.Long_Long_Complex_Types;
+with Ada.Numerics.Long_Long_Real_Arrays;
 procedure num_complex is
 	generic
 		type T is digits <>;
+		with package RA is new Ada.Numerics.Generic_Real_Arrays (T);
+		with package CT is new Ada.Numerics.Generic_Complex_Types (T);
+		with package CEF is new Ada.Numerics.Generic_Complex_Elementary_Functions (CT);
+		with package CA is new Ada.Numerics.Generic_Complex_Arrays (RA, CT);
 	procedure Test;
 	procedure Test is
-		package RA is new Ada.Numerics.Generic_Real_Arrays (T);
-		package CT is new Ada.Numerics.Generic_Complex_Types (T);
-		package CEF is new Ada.Numerics.Generic_Complex_Elementary_Functions (CT);
-		package CA is new Ada.Numerics.Generic_Complex_Arrays (RA, CT);
 		use CT, CEF, CA;
 		Pi_div_4 : constant Complex := Ada.Numerics.Pi / 4.0 + 0.0 * i;
 	begin
@@ -43,28 +57,62 @@ procedure num_complex is
 	end Test;
 begin
 	declare
-		procedure Short_Float_Test is new Test (Short_Float);
+		procedure Short_Float_Test is
+			new Test (
+				Short_Float,
+				Ada.Numerics.Short_Real_Arrays,
+				Ada.Numerics.Short_Complex_Types,
+				Ada.Numerics.Short_Complex_Elementary_Functions,
+				Ada.Numerics.Short_Complex_Arrays);
 	begin
 		Short_Float_Test;
 	end;
 	declare
-		procedure Float_Test is new Test (Float);
+		procedure Float_Test is
+			new Test (
+				Float,
+				Ada.Numerics.Real_Arrays,
+				Ada.Numerics.Complex_Types,
+				Ada.Numerics.Complex_Elementary_Functions,
+				Ada.Numerics.Complex_Arrays);
 	begin
 		Float_Test;
 	end;
 	declare
-		procedure Long_Float_Test is new Test (Long_Float);
+		procedure Long_Float_Test is
+			new Test (
+				Long_Float,
+				Ada.Numerics.Long_Real_Arrays,
+				Ada.Numerics.Long_Complex_Types,
+				Ada.Numerics.Long_Complex_Elementary_Functions,
+				Ada.Numerics.Long_Complex_Arrays);
 	begin
 		Long_Float_Test;
 	end;
 	declare
-		procedure Long_Long_Float_Test is new Test (Long_Long_Float);
+		procedure Long_Long_Float_Test is
+			new Test (
+				Long_Long_Float,
+				Ada.Numerics.Long_Long_Real_Arrays,
+				Ada.Numerics.Long_Long_Complex_Types,
+				Ada.Numerics.Long_Long_Complex_Elementary_Functions,
+				Ada.Numerics.Long_Long_Complex_Arrays);
 	begin
 		Long_Long_Float_Test;
 	end;
 	declare
 		type Custom_Float is digits 12;
-		procedure Custom_Float_Test is new Test (Custom_Float);
+		package Custom_Real_Arrays is new Ada.Numerics.Generic_Real_Arrays (Custom_Float);
+		package Custom_Complex_Types is new Ada.Numerics.Generic_Complex_Types (Custom_Float);
+		package Custom_Complex_Elementary_Functions is new Ada.Numerics.Generic_Complex_Elementary_Functions (Custom_Complex_Types);
+		package Custom_Complex_Arrays is new Ada.Numerics.Generic_Complex_Arrays (Custom_Real_Arrays, Custom_Complex_Types);
+		procedure Custom_Float_Test is
+			new Test (
+				Custom_Float,
+				Custom_Real_Arrays,
+				Custom_Complex_Types,
+				Custom_Complex_Elementary_Functions,
+				Custom_Complex_Arrays);
 	begin
 		Custom_Float_Test;
 	end;

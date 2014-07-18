@@ -1,7 +1,5 @@
 with Ada.Exceptions;
 with Ada.Strings.Unbounded;
-with Ada.Strings.Unbounded_Strings;
-with System;
 procedure exception5 is
 	
 	procedure Magic is

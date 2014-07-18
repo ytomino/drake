@@ -51,7 +51,7 @@ ifeq ($(WITHA),0)
 MFLAGS+=-a
 endif
 
-CFLAGS=-gnatef
+CFLAGS=-gnatef -gnatf -gnatwI
 
 ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS=-licucore
@@ -64,11 +64,10 @@ LFLAGS=-lm -lpthread -ldl
 endif
 
 ifneq ($(DEBUG),0)
-CFLAGS+=-gnatf -gnatwIj -g -gnata
+CFLAGS+=-g -gnata
 BFLAGS=-E
 LFLAGS+=-g
 else
-CFLAGS+=-gnatf -gnatwIj
 BFLAGS=
 ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS=-Wl,-dead_strip
