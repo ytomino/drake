@@ -1,6 +1,5 @@
 with Ada.Environment_Variables;
 with Ada.IO_Modes;
-with Ada.Streams.Stream_IO;
 with Ada.Streams.Unbounded_Storage_IO;
 with Ada.Text_IO.Text_Streams;
 with Ada.Wide_Text_IO.Text_Streams;

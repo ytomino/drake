@@ -469,10 +469,6 @@ procedure ext_doc is
 	end Process_Dir;
 begin
 	Process_Dir ("../source");
-	Ada.Text_IO.Put_Line ("=================");
-	Ada.Text_IO.Put_Line ("Extended features");
-	Ada.Text_IO.Put_Line ("=================");
-	Ada.Text_IO.New_Line;
 	Ada.Text_IO.Put_Line (".. contents::");
 	Ada.Text_IO.New_Line;
 	declare
