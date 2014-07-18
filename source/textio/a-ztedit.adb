@@ -1,10 +1,10 @@
 with Ada.Exception_Identification.From_Here;
-package body Ada.Wide_Text_IO.Editing is
+package body Ada.Wide_Wide_Text_IO.Editing is
    use Exception_Identification.From_Here;
 
-   procedure Tail (Target : out Wide_String; Source : Wide_String);
-   procedure Tail (Target : out Wide_String; Source : Wide_String) is
-      Padding : constant Wide_Character := ' ';
+   procedure Tail (Target : out Wide_Wide_String; Source : Wide_Wide_String);
+   procedure Tail (Target : out Wide_Wide_String; Source : Wide_Wide_String) is
+      Padding : constant Wide_Wide_Character := ' ';
    begin
       if Target'Length < Source'Length then
          Raise_Exception (Layout_Error'Identity);
@@ -23,7 +23,7 @@ package body Ada.Wide_Text_IO.Editing is
 
       function Length (
          Pic : Picture;
-         Currency : Wide_String := Default_Currency)
+         Currency : Wide_Wide_String := Default_Currency)
          return Natural is
       begin
          return Instance.Length (
@@ -34,7 +34,7 @@ package body Ada.Wide_Text_IO.Editing is
       function Valid (
          Item : Num;
          Pic : Picture;
-         Currency : Wide_String := Default_Currency)
+         Currency : Wide_Wide_String := Default_Currency)
          return Boolean is
       begin
          return Instance.Valid (
@@ -46,17 +46,17 @@ package body Ada.Wide_Text_IO.Editing is
       function Image (
          Item : Num;
          Pic : Picture;
-         Currency : Wide_String := Default_Currency;
-         Fill : Wide_Character := Default_Fill;
-         Separator : Wide_Character := Default_Separator;
-         Radix_Mark : Wide_Character := Default_Radix_Mark)
-         return Wide_String
+         Currency : Wide_Wide_String := Default_Currency;
+         Fill : Wide_Wide_Character := Default_Fill;
+         Separator : Wide_Wide_Character := Default_Separator;
+         Radix_Mark : Wide_Wide_Character := Default_Radix_Mark)
+         return Wide_Wide_String
       is
          Image : constant String := Instance.Image (
             Item,
             Text_IO.Editing.Picture (Pic),
             String'(1 .. Currency'Length => '$'));
-         Result : Wide_String (Image'Range);
+         Result : Wide_Wide_String (Image'Range);
          I : Positive := Result'First;
       begin
          while I <= Result'Last loop
@@ -74,7 +74,8 @@ package body Ada.Wide_Text_IO.Editing is
                   Result (I) := Radix_Mark;
                   I := I + 1;
                when others =>
-                  Result (I) := Wide_Character'Val (Character'Pos (Image (I)));
+                  Result (I) :=
+                     Wide_Wide_Character'Val (Character'Pos (Image (I)));
                   I := I + 1;
             end case;
          end loop;
@@ -85,10 +86,10 @@ package body Ada.Wide_Text_IO.Editing is
          File : File_Type;
          Item : Num;
          Pic : Picture;
-         Currency : Wide_String := Default_Currency;
-         Fill : Wide_Character := Default_Fill;
-         Separator : Wide_Character := Default_Separator;
-         Radix_Mark : Wide_Character := Default_Radix_Mark) is
+         Currency : Wide_Wide_String := Default_Currency;
+         Fill : Wide_Wide_Character := Default_Fill;
+         Separator : Wide_Wide_Character := Default_Separator;
+         Radix_Mark : Wide_Wide_Character := Default_Radix_Mark) is
       begin
          Put (File, Image (Item, Pic, Currency, Fill, Separator, Radix_Mark));
       end Put;
@@ -96,10 +97,10 @@ package body Ada.Wide_Text_IO.Editing is
       procedure Put (
          Item : Num;
          Pic : Picture;
-         Currency : Wide_String := Default_Currency;
-         Fill : Wide_Character := Default_Fill;
-         Separator : Wide_Character := Default_Separator;
-         Radix_Mark : Wide_Character := Default_Radix_Mark) is
+         Currency : Wide_Wide_String := Default_Currency;
+         Fill : Wide_Wide_Character := Default_Fill;
+         Separator : Wide_Wide_Character := Default_Separator;
+         Radix_Mark : Wide_Wide_Character := Default_Radix_Mark) is
       begin
          Put (
             Current_Output.all,
@@ -107,13 +108,13 @@ package body Ada.Wide_Text_IO.Editing is
       end Put;
 
       procedure Put (
-         To : out Wide_String;
+         To : out Wide_Wide_String;
          Item : Num;
          Pic : Picture;
-         Currency : Wide_String := Default_Currency;
-         Fill : Wide_Character := Default_Fill;
-         Separator : Wide_Character := Default_Separator;
-         Radix_Mark : Wide_Character := Default_Radix_Mark) is
+         Currency : Wide_Wide_String := Default_Currency;
+         Fill : Wide_Wide_Character := Default_Fill;
+         Separator : Wide_Wide_Character := Default_Separator;
+         Radix_Mark : Wide_Wide_Character := Default_Radix_Mark) is
       begin
          Tail (
             To,
@@ -122,4 +123,4 @@ package body Ada.Wide_Text_IO.Editing is
 
    end Decimal_Output;
 
-end Ada.Wide_Text_IO.Editing;
+end Ada.Wide_Wide_Text_IO.Editing;
