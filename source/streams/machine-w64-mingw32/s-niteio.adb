@@ -107,7 +107,7 @@ package body System.Native_IO.Text_IO is
             1,
             Rect'Access) = 0
          then
-            Raise_Exception (Device_Error'Identity);
+            Raise_Exception (Layout_Error'Identity); -- Size is too large
          end if;
       end if;
       --  resize screen buffer

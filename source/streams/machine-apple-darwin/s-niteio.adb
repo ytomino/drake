@@ -52,7 +52,7 @@ package body System.Native_IO.Text_IO is
          Item'Length,
          Written_Length);
       if Written_Length < 0 then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (Device_Error'Identity);
       end if;
    end Write;
 
@@ -77,7 +77,7 @@ package body System.Native_IO.Text_IO is
             1,
             Read_Length);
          if Read_Length < 0 then
-            Raise_Exception (Use_Error'Identity);
+            Raise_Exception (Device_Error'Identity);
          end if;
          exit when Read_Length = 0;
          if Last < Item'First then
