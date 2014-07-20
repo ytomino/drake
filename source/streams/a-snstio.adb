@@ -884,7 +884,7 @@ package body Ada.Streams.Naked_Stream_IO is
                         Taking_Length,
                         Written_Length);
                      if Written_Length < 0 then
-                        Raise_Exception (Use_Error'Identity);
+                        Raise_Exception (Device_Error'Identity);
                      end if;
                   end;
                   First := First + Taking_Length;
