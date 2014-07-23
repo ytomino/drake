@@ -9,11 +9,11 @@ package body Ada.Text_IO.Terminal is
    procedure Check_File_Mode (
       File : Naked_Text_IO.Non_Controlled_File_Type;
       Expected : IO_Modes.File_Mode;
-      Line : Natural := Debug.Line);
+      Line : Integer := Debug.Line);
    procedure Check_File_Mode (
       File : Naked_Text_IO.Non_Controlled_File_Type;
       Expected : IO_Modes.File_Mode;
-      Line : Natural := Debug.Line) is
+      Line : Integer := Debug.Line) is
    begin
       if (Naked_Text_IO.Mode (File) = IO_Modes.In_File) /=
          (Expected = IO_Modes.In_File)

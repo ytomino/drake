@@ -312,11 +312,15 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Clear;
    end Allocate_And_Open;
 
-   procedure Check_File_Open (File : Non_Controlled_File_Type);
-   procedure Check_File_Open (File : Non_Controlled_File_Type) is
+   procedure Check_File_Open (
+      File : Non_Controlled_File_Type;
+      Line : Integer := Ada.Debug.Line);
+   procedure Check_File_Open (
+      File : Non_Controlled_File_Type;
+      Line : Integer := Ada.Debug.Line) is
    begin
       if File = null then
-         Raise_Exception (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity, Line => Line);
       end if;
    end Check_File_Open;
 

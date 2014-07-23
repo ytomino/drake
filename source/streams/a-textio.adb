@@ -37,13 +37,15 @@ package body Ada.Text_IO is
 
    procedure Check_File_Mode (
       File : File_Type;
-      Expected : File_Mode);
+      Expected : File_Mode;
+      Line : Natural := Debug.Line);
    procedure Check_File_Mode (
       File : File_Type;
-      Expected : File_Mode) is
+      Expected : File_Mode;
+      Line : Natural := Debug.Line) is
    begin
       if (Mode (File) = In_File) /= (Expected = In_File) then
-         Raise_Exception (Mode_Error'Identity);
+         Raise_Exception (Mode_Error'Identity, Line => Line);
       end if;
    end Check_File_Mode;
 
