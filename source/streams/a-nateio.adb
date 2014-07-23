@@ -1646,7 +1646,7 @@ package body Ada.Naked_Text_IO is
    function Stream (File : Non_Controlled_File_Type)
       return not null access Streams.Root_Stream_Type'Class is
    begin
-      Check_Stream_IO_Open (File);
+      Check_File_Open (File);
       return Unchecked_Stream (File);
    end Stream;
 
