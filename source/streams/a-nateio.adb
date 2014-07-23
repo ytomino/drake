@@ -194,32 +194,42 @@ package body Ada.Naked_Text_IO is
 
    procedure Check_File_Mode (
       File : Non_Controlled_File_Type;
-      Expected : IO_Modes.File_Mode);
-   procedure Check_File_Open (File : Non_Controlled_File_Type);
-   procedure Check_Stream_IO_Open (File : Non_Controlled_File_Type);
+      Expected : IO_Modes.File_Mode;
+      Line : Natural := Ada.Debug.Line);
+   procedure Check_File_Open (
+      File : Non_Controlled_File_Type;
+      Line : Natural := Ada.Debug.Line);
+   procedure Check_Stream_IO_Open (
+      File : Non_Controlled_File_Type;
+      Line : Natural := Ada.Debug.Line);
 
    procedure Check_File_Mode (
       File : Non_Controlled_File_Type;
-      Expected : IO_Modes.File_Mode) is
+      Expected : IO_Modes.File_Mode;
+      Line : Natural := Ada.Debug.Line) is
    begin
       if (Mode (File) = IO_Modes.In_File) /= (Expected = IO_Modes.In_File) then
-         Raise_Exception (Mode_Error'Identity);
+         Raise_Exception (Mode_Error'Identity, Line => Line);
       end if;
    end Check_File_Mode;
 
-   procedure Check_File_Open (File : Non_Controlled_File_Type) is
+   procedure Check_File_Open (
+      File : Non_Controlled_File_Type;
+      Line : Natural := Ada.Debug.Line) is
    begin
       if not Is_Open (File) then
-         Raise_Exception (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity, Line => Line);
       end if;
    end Check_File_Open;
 
-   procedure Check_Stream_IO_Open (File : Non_Controlled_File_Type) is
+   procedure Check_Stream_IO_Open (
+      File : Non_Controlled_File_Type;
+      Line : Natural := Ada.Debug.Line) is
    begin
       if not Is_Open (File)
          or else not Streams.Naked_Stream_IO.Is_Open (File.File)
       then
-         Raise_Exception (Status_Error'Identity);
+         Raise_Exception (Status_Error'Identity, Line => Line);
       end if;
    end Check_Stream_IO_Open;
 

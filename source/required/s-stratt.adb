@@ -98,11 +98,11 @@ package body System.Stream_Attributes is
    procedure Read_Just (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : out Ada.Streams.Stream_Element_Array;
-      Line : Natural := Ada.Debug.Line);
+      Line : Integer := Ada.Debug.Line);
    procedure Read_Just (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : out Ada.Streams.Stream_Element_Array;
-      Line : Natural := Ada.Debug.Line)
+      Line : Integer := Ada.Debug.Line)
    is
       Last : Ada.Streams.Stream_Element_Offset;
    begin
