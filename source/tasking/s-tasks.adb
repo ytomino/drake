@@ -1,4 +1,5 @@
 pragma Check_Policy (Trace, Off);
+with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -16,6 +17,7 @@ with System.Termination;
 with System.Unbounded_Stack_Allocators;
 with System.Unwind.Raising;
 package body System.Tasks is
+   use Ada.Exception_Identification.From_Here;
    use type Synchronous_Objects.Queue_Node_Access;
    use type Storage_Elements.Storage_Offset;
 
@@ -585,7 +587,7 @@ package body System.Tasks is
             Rec,
             Error);
          if Error then
-            raise Tasking_Error;
+            Raise_Exception (Tasking_Error'Identity);
          end if;
          case Rec is
             when TR_Freed =>
@@ -637,7 +639,7 @@ package body System.Tasks is
          Top_Child.Abort_Attribute,
          Error);
       if Error then
-         raise Tasking_Error;
+         Raise_Exception (Tasking_Error'Identity);
       end if;
       --  Leave (M.Mutex);
    end Abort_Handler_On_Leave_Master;
@@ -953,7 +955,7 @@ package body System.Tasks is
                Remove_From_Completion_List (T); -- rollback
             end if;
             Free (T); -- and remove from parent's master
-            raise Tasking_Error;
+            Raise_Exception (Tasking_Error'Identity);
          else
             T.Activation_State := AS_Active;
          end if;
@@ -999,7 +1001,7 @@ package body System.Tasks is
                   T := null;
                   Native_Tasks.Detach (Orig_T.Handle, Error);
                   if Error then
-                     raise Tasking_Error;
+                     Raise_Exception (Tasking_Error'Identity);
                   end if;
                end;
             end if;
@@ -1088,7 +1090,7 @@ package body System.Tasks is
       else
          Native_Tasks.Send_Abort_Signal (T.Handle, T.Abort_Attribute, Error);
          if Error then
-            raise Tasking_Error;
+            Raise_Exception (Tasking_Error'Identity);
          end if;
          Set_Abort_Recursively (T); -- set 'Callable to false, C9A009H
          --  abort myself if parent task is aborted, C9A007A
@@ -1233,7 +1235,7 @@ package body System.Tasks is
          when Elaboration_Error =>
             raise Program_Error; -- C39008A, RM 3.11 (14)
          when Any_Exception =>
-            raise Tasking_Error; -- C93004A
+            Raise_Exception (Tasking_Error'Identity); -- C93004A
       end case;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Activate;
@@ -1248,7 +1250,7 @@ package body System.Tasks is
          when Elaboration_Error =>
             raise Program_Error;
          when Any_Exception =>
-            raise Tasking_Error;
+            Raise_Exception (Tasking_Error'Identity);
       end case;
    end Activate;
 

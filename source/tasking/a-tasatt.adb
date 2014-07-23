@@ -36,21 +36,15 @@ package body Ada.Task_Attributes is
 
    Finalizer : Finalizer_Type;
 
-   procedure Check (T : Task_Identification.Task_Id);
-   procedure Check (T : Task_Identification.Task_Id) is
-   begin
-      if Task_Identification.Is_Terminated (T) then
-         raise Tasking_Error;
-      end if;
-   end Check;
-
    --  implementation
 
    function Value (
       T : Task_Identification.Task_Id := Task_Identification.Current_Task)
       return Attribute is
    begin
-      Check (T);
+      if Task_Identification.Is_Terminated (T) then
+         raise Tasking_Error;
+      end if;
       return Result : Attribute do
          declare
             procedure Process (Item : System.Address);
@@ -70,47 +64,57 @@ package body Ada.Task_Attributes is
 
    function Reference (
       T : Task_Identification.Task_Id := Task_Identification.Current_Task)
-      return not null Attribute_Handle
-   is
-      function New_Item return System.Address;
-      function New_Item return System.Address is
-      begin
-         return Cast (new Attribute'(Initial_Value));
-      end New_Item;
-      Result : System.Address;
+      return not null Attribute_Handle is
    begin
-      Check (T);
-      System.Tasks.Reference (
-         Cast (T),
-         Index,
-         New_Item'Access,
-         Finalize'Access,
-         Result);
-      return Cast (Result);
+      if Task_Identification.Is_Terminated (T) then
+         raise Tasking_Error;
+      end if;
+      declare
+         function New_Item return System.Address;
+         function New_Item return System.Address is
+         begin
+            return Cast (new Attribute'(Initial_Value));
+         end New_Item;
+         Result : System.Address;
+      begin
+         System.Tasks.Reference (
+            Cast (T),
+            Index,
+            New_Item'Access,
+            Finalize'Access,
+            Result);
+         return Cast (Result);
+      end;
    end Reference;
 
    procedure Set_Value (
       Val : Attribute;
-      T : Task_Identification.Task_Id := Task_Identification.Current_Task)
-   is
-      function New_Item return System.Address;
-      function New_Item return System.Address is
-      begin
-         return Cast (new Attribute'(Val));
-      end New_Item;
+      T : Task_Identification.Task_Id := Task_Identification.Current_Task) is
    begin
-      Check (T);
-      System.Tasks.Set (
-         Cast (T),
-         Index,
-         New_Item'Access,
-         Finalize'Access);
+      if Task_Identification.Is_Terminated (T) then
+         raise Tasking_Error;
+      end if;
+      declare
+         function New_Item return System.Address;
+         function New_Item return System.Address is
+         begin
+            return Cast (new Attribute'(Val));
+         end New_Item;
+      begin
+         System.Tasks.Set (
+            Cast (T),
+            Index,
+            New_Item'Access,
+            Finalize'Access);
+      end;
    end Set_Value;
 
    procedure Reinitialize (
       T : Task_Identification.Task_Id := Task_Identification.Current_Task) is
    begin
-      Check (T);
+      if Task_Identification.Is_Terminated (T) then
+         raise Tasking_Error;
+      end if;
       System.Tasks.Clear (Cast (T), Index);
    end Reinitialize;
 
