@@ -1,11 +1,22 @@
-with Ada.Finalization;
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Tasks;
 package body Ada.Task_Attributes is
    use type System.Address;
 
-   Index : System.Tasks.Attribute_Index;
+   procedure Finally (Item : not null access System.Tasks.Attribute_Index);
+   procedure Finally (Item : not null access System.Tasks.Attribute_Index) is
+   begin
+      System.Tasks.Free (Item.all); -- Item.all indicates Index
+   end Finally;
+
+   package Holder is
+      new Exceptions.Finally.Scoped_Holder (
+         System.Tasks.Attribute_Index,
+         Finally);
+
+   Index : aliased System.Tasks.Attribute_Index;
 
    function Cast is
       new Unchecked_Conversion (
@@ -24,17 +35,6 @@ package body Ada.Task_Attributes is
    begin
       Free (P);
    end Finalize;
-
-   type Finalizer_Type is new Finalization.Limited_Controlled with null record;
-   pragma Unreferenced_Objects (Finalizer_Type);
-   overriding procedure Finalize (Object : in out Finalizer_Type);
-   overriding procedure Finalize (Object : in out Finalizer_Type) is
-      pragma Unreferenced (Object);
-   begin
-      System.Tasks.Free (Index);
-   end Finalize;
-
-   Finalizer : Finalizer_Type;
 
    --  implementation
 
@@ -120,4 +120,5 @@ package body Ada.Task_Attributes is
 
 begin
    System.Tasks.Allocate (Index);
+   Holder.Assign (Index'Access);
 end Ada.Task_Attributes;
