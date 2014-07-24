@@ -154,7 +154,6 @@ package body System.Synchronous_Objects.Abortable is
             Timeout => Timeout,
             Notified => Value,
             Aborted => Aborted);
---       pragma Assert (Object.Value >= Value);
       end if;
       Leave (Object.Mutex);
    end Wait;

@@ -222,7 +222,7 @@ package body Ada.Numerics.SFMT.Random is
                or Unsigned_64 (r1);
          end;
       else
---       pragma Assert (Gen.sfmt.idx rem 2 = 0);
+         pragma Check (Validate, Gen.sfmt.idx rem 2 = 0);
          if Gen.sfmt.idx >= N32 then
             Impl.gen_rand_all (Gen.sfmt.state);
             Gen.sfmt.idx := 0;

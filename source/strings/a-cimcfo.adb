@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with Ada.UCD.Case_Folding;
 with System.Once;
 with System.Reference_Counting;
@@ -97,7 +98,7 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
             I,
             UCD.Case_Folding.C_Table_1XXXXx1_Compressed,
             Offset => 16#10000#);
-         pragma Assert (I = Mapping.From'Last + 1);
+         pragma Check (Validate, I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
    end Mapping_Init;
