@@ -19,7 +19,7 @@ package body Ada.Calendar.Time_Zones.Inside is
          GMT_Time.tv_sec'Access,
          Local_TM_Buf'Access);
       Local_Time := C.time.timegm (Local_TM);
-      if Local_Time = -1 then
+      if Local_Time = -1 then -- to pass negative UNIX time (?)
          Raise_Exception (Time_Error'Identity);
       end if;
       return Time_Offset ((Local_Time - GMT_Time.tv_sec) / 60);
