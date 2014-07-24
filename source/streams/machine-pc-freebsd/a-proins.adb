@@ -30,7 +30,7 @@ package body Ada.Processes.Inside is
                System.Zero_Terminated_Strings.To_C (
                   Directory,
                   C_Directory (0)'Access);
-               if C.unistd.chdir (C_Directory (0)'Access) = -1 then
+               if C.unistd.chdir (C_Directory (0)'Access) < 0 then
                   C.unistd.C_qexit (127);
                end if;
             end;
