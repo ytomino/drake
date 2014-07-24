@@ -98,11 +98,11 @@ package body Ada.Directory_Searching is
    end Start_Search;
 
    procedure End_Search (Search : in out Search_Type) is
-      Dummy : C.windef.WINBOOL;
-      pragma Unreferenced (Dummy);
+      R : C.windef.WINBOOL;
    begin
       if Search.Handle /= C.winbase.INVALID_HANDLE_VALUE then
-         Dummy := C.winbase.FindClose (Search.Handle);
+         R := C.winbase.FindClose (Search.Handle);
+         pragma Assert (R /= 0);
       end if;
       Search.Handle := Handle_Type (System.Null_Address);
    end End_Search;

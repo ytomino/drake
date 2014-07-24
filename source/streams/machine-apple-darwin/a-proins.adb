@@ -56,33 +56,37 @@ package body Ada.Processes.Inside is
          Actions : aliased C.spawn.posix_spawn_file_actions_t;
          Attrs : aliased C.spawn.posix_spawnattr_t;
          New_Child : aliased C.sys.types.pid_t;
-         Dummy : C.signed_int;
-         pragma Unreferenced (Dummy);
+         R : C.signed_int;
          errno : C.signed_int;
       begin
          System.Zero_Terminated_Strings.To_C (
             Command_Line,
             C_Command_Line (0)'Access);
          Split_Argument (C_Command_Line, Arguments);
-         Dummy := C.spawn.posix_spawn_file_actions_init (Actions'Access);
-         Dummy := C.spawn.posix_spawnattr_init (Attrs'Access);
+         R := C.spawn.posix_spawn_file_actions_init (Actions'Access);
+         pragma Assert (R = 0);
+         R := C.spawn.posix_spawnattr_init (Attrs'Access);
+         pragma Assert (R = 0);
          if Input /= 0 then
-            Dummy := C.spawn.posix_spawn_file_actions_adddup2 (
+            R := C.spawn.posix_spawn_file_actions_adddup2 (
                Actions'Access,
                0,
                Input);
+            pragma Assert (R = 0);
          end if;
          if Output /= 1 then
-            Dummy := C.spawn.posix_spawn_file_actions_adddup2 (
+            R := C.spawn.posix_spawn_file_actions_adddup2 (
                Actions'Access,
                1,
                Output);
+            pragma Assert (R = 0);
          end if;
          if Error /= 2 then
-            Dummy := C.spawn.posix_spawn_file_actions_adddup2 (
+            R := C.spawn.posix_spawn_file_actions_adddup2 (
                Actions'Access,
                2,
                Error);
+            pragma Assert (R = 0);
          end if;
          if Search_Path then
             errno := C.spawn.posix_spawnp (

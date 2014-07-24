@@ -8,6 +8,7 @@ package body Ada.Interrupts.Inside is
    use type System.Address;
    use type C.signed_int;
    use type C.unsigned_int;
+   use type C.signal.p_sig_fn_t;
 
    procedure Report (
       Interrupt : Interrupt_Id;
@@ -88,21 +89,21 @@ package body Ada.Interrupts.Inside is
       elsif Old_Handler /= null and then New_Handler = null then
          declare
             Old_Action : C.signal.p_sig_fn_t;
-            pragma Unreferenced (Old_Action);
          begin
             Old_Action := C.signal.signal (
                C.signed_int (Interrupt),
                Item.Saved);
+            pragma Assert (Old_Action /= C.signal.SIG_ERR);
          end;
       end if;
       Item.Installed_Handler := New_Handler;
    end Exchange_Handler;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      R : C.signed_int;
    begin
-      Dummy := C.signal.C_raise (C.signed_int (Interrupt));
+      R := C.signal.C_raise (C.signed_int (Interrupt));
+      pragma Assert (R = 0);
    end Raise_Interrupt;
 
 end Ada.Interrupts.Inside;
