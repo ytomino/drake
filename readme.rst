@@ -1,15 +1,15 @@
-Drake The Runtime Library for gcc-Ada
-=====================================
+Drake: A Runtime Library for gcc-Ada
+====================================
 
 What's this?
 ------------
 
-Drake is a runtime library written in 100% Ada to replace GNAT runtime.
+Drake is a runtime library written completely in Ada to replace the GNAT runtime.
 
-A project goal is re-implementing `Predefined Language Environment`_ in Annex A,
+A primary project goal is re-implementing the `Predefined Language Environment`_ in Annex A,
 for real world applications.
 
-Please, read wiki_ for more information.
+Please, read the wiki_ for more information.
 
 Environment
 -----------
@@ -19,11 +19,11 @@ Environment
 - Linux (from 2.6, x86, 32bit/64bit)
 - Windows (from XP, x86, 32bit/64bit) [#experimental]_
 
-Depending tools and libraries
------------------------------
+Required tools and libraries
+----------------------------
 
 gcc
- Use gcc_ *instead of GNAT GPL Edition*.
+ Use of gcc_ instead of the *GNAT GPL Edition* is required.
 translated headers
  Install headmaster_ to convert the headers on your system,
  or download them from `pre-translated headers page`_.
@@ -43,17 +43,17 @@ for old gcc (from 4.5 until 4.8) ::
 How to build
 ------------
 
-Run ``make`` command with some variables, specify a translated headers path
+Run the ``make`` command with some variables, specify a translated headers path
 to ``IMPORTDIR`` and a destination path to ``RTSDIR``. ::
 
  $ make IMPORTDIR=... RTSDIR=...
 
 Read the `build page`_ for details.
 
-Short example
--------------
+A Short example
+---------------
 
-1. Ready source code of a sample application. ::
+1. Prepare the source code of a sample application. ::
    
     $ cat > hello.adb
     with Ada.Text_IO;
@@ -83,9 +83,7 @@ Short example
 Limitations
 -----------
 
-Many many features are unimplemented !!!
-
-And there are several intentional ACATS violations for usability.
+Many features are unimplemented and there are several intentional ACATS violations for usability.
 See `incompatibility features page`_.
 
 .. _`Predefined Language Environment`: http://www.adaic.org/resources/add_content/standards/12rm/html/RM-A.html
