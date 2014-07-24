@@ -15,6 +15,7 @@ package body Ada.Naked_Text_IO is
    use type System.UTF_Conversions.UCS_4;
 
    procedure unreachable;
+   pragma No_Return (unreachable);
    pragma Import (Intrinsic, unreachable, "__builtin_unreachable");
 
    --  the parameter Form
