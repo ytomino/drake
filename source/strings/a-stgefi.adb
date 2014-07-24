@@ -20,16 +20,13 @@ package body Ada.Strings.Generic_Fixed is
             package Conv is
                new System.Address_To_Access_Conversions (Character);
             --  gcc's builtin-function
-            function memset (
+            procedure memset (
                b : Conv.Object_Pointer;
                c : Integer;
-               n : System.Storage_Elements.Storage_Count)
-               return Conv.Object_Pointer;
+               n : System.Storage_Elements.Storage_Count);
             pragma Import (Intrinsic, memset, "__builtin_memset");
-            Dummy : Conv.Object_Pointer;
-            pragma Unreferenced (Dummy);
          begin
-            Dummy := memset (
+            memset (
                Conv.To_Pointer (Target'Address),
                Character_Type'Pos (Pad),
                Target'Length);

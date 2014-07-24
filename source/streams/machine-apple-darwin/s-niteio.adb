@@ -21,20 +21,19 @@ package body System.Native_IO.Text_IO is
       Saved_Settings : not null access C.termios.struct_termios)
    is
       Settings : aliased C.termios.struct_termios;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       --  get current terminal mode
-      Dummy := C.termios.tcgetattr (Handle, Saved_Settings);
+      if C.termios.tcgetattr (Handle, Saved_Settings) < 0 then
+         Raise_Exception (Device_Error'Identity);
+      end if;
       --  set non-canonical mode
       Settings := Saved_Settings.all;
       Settings.c_lflag := Settings.c_lflag and Mask;
       Settings.c_cc (C.termios.VTIME) := 0; -- wait 0.0 sec
       Settings.c_cc (C.termios.VMIN) := Min; -- wait Min bytes
-      Dummy := C.termios.tcsetattr (
-         Handle,
-         Action,
-         Settings'Access);
+      if C.termios.tcsetattr (Handle, Action, Settings'Access) < 0 then
+         Raise_Exception (Device_Error'Identity);
+      end if;
    end tcgetsetattr;
 
    procedure Write (
@@ -145,8 +144,6 @@ package body System.Native_IO.Text_IO is
       Old_Settings : aliased C.termios.struct_termios;
       Buffer : String (1 .. 256);
       Last : Natural;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       --  non-canonical mode and disable echo
       tcgetsetattr (
@@ -160,10 +157,13 @@ package body System.Native_IO.Text_IO is
       --  input
       Read_Escape_Sequence (Handle, Buffer, Last, 't');
       --  restore terminal mode
-      Dummy := C.termios.tcsetattr (
+      if C.termios.tcsetattr (
          Handle,
          C.termios.TCSANOW,
-         Old_Settings'Access);
+         Old_Settings'Access) < 0
+      then
+         Raise_Exception (Device_Error'Identity);
+      end if;
       --  parse
       Parse_Escape_Sequence (
          Buffer (1 .. Last),
@@ -222,8 +222,6 @@ package body System.Native_IO.Text_IO is
       Old_Settings : aliased C.termios.struct_termios;
       Buffer : String (1 .. 256);
       Last : Natural;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       --  non-canonical mode and disable echo
       tcgetsetattr (
@@ -237,10 +235,13 @@ package body System.Native_IO.Text_IO is
       --  input
       Read_Escape_Sequence (Handle, Buffer, Last, 'R');
       --  restore terminal mode
-      Dummy := C.termios.tcsetattr (
+      if C.termios.tcsetattr (
          Handle,
          C.termios.TCSANOW,
-         Old_Settings'Access);
+         Old_Settings'Access) < 0
+      then
+         Raise_Exception (Device_Error'Identity);
+      end if;
       --  parse
       Parse_Escape_Sequence (
          Buffer (1 .. Last),
@@ -332,15 +333,15 @@ package body System.Native_IO.Text_IO is
 
    procedure Restore (
       Handle : Handle_Type;
-      Settings : aliased Setting)
-   is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      Settings : aliased Setting) is
    begin
-      Dummy := C.termios.tcsetattr (
+      if C.termios.tcsetattr (
          Handle,
          C.termios.TCSANOW,
-         Settings'Access);
+         Settings'Access) < 0
+      then
+         Raise_Exception (Device_Error'Identity);
+      end if;
    end Restore;
 
 end System.Native_IO.Text_IO;

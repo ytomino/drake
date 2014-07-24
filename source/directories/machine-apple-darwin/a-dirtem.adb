@@ -77,8 +77,6 @@ package body Ada.Directories.Temporary is
       Length := Length + Temp_Template'Length - 1; -- exclude NUL
       declare
          Handle : C.signed_int;
-         Dummy : C.signed_int;
-         pragma Unreferenced (Dummy);
       begin
          declare -- mkstemp where
             use C.stdlib; -- Linux, POSIX.1-2008
@@ -89,7 +87,9 @@ package body Ada.Directories.Temporary is
          if Handle < 0 then
             Raise_Exception (Use_Error'Identity);
          end if;
-         Dummy := C.unistd.close (Handle);
+         if C.unistd.close (Handle) < 0 then
+            Raise_Exception (Device_Error'Identity);
+         end if;
       end;
       return System.Zero_Terminated_Strings.Value (
          Template (0)'Access,

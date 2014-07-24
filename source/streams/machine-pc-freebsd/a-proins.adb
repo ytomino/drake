@@ -43,6 +43,8 @@ package body Ada.Processes.Inside is
             Duplicated_Input : System.Native_IO.Handle_Type;
             Duplicated_Output : System.Native_IO.Handle_Type;
             Duplicated_Error : System.Native_IO.Handle_Type;
+            New_Descriptor : C.signed_int;
+            R : C.signed_int;
             Dummy : C.signed_int;
             pragma Unreferenced (Dummy);
          begin
@@ -56,22 +58,34 @@ package body Ada.Processes.Inside is
                Duplicated_Output := C.unistd.dup (Output);
                Duplicated_Error := C.unistd.dup (Error);
                --  close standard handles
-               Dummy := C.unistd.close (0);
-               Dummy := C.unistd.close (1);
-               Dummy := C.unistd.close (2);
+               R := C.unistd.close (0);
+               pragma Assert (R = 0);
+               R := C.unistd.close (1);
+               pragma Assert (R = 0);
+               R := C.unistd.close (2);
+               pragma Assert (R = 0);
                --  set standard handles
-               Dummy := C.unistd.dup2 (Duplicated_Input, 0);
-               Dummy := C.unistd.dup2 (Duplicated_Output, 1);
-               Dummy := C.unistd.dup2 (Duplicated_Error, 2);
+               New_Descriptor := C.unistd.dup2 (Duplicated_Input, 0);
+               pragma Assert (New_Descriptor = 0);
+               New_Descriptor := C.unistd.dup2 (Duplicated_Output, 1);
+               pragma Assert (New_Descriptor = 1);
+               New_Descriptor := C.unistd.dup2 (Duplicated_Error, 2);
+               pragma Assert (New_Descriptor = 2);
                --  close duplicated handles
-               Dummy := C.unistd.close (Duplicated_Input);
-               Dummy := C.unistd.close (Duplicated_Output);
-               Dummy := C.unistd.close (Duplicated_Error);
+               R := C.unistd.close (Duplicated_Input);
+               pragma Assert (R = 0);
+               R := C.unistd.close (Duplicated_Output);
+               pragma Assert (R = 0);
+               R := C.unistd.close (Duplicated_Error);
+               pragma Assert (R = 0);
             end if;
             --  clear FD_CLOEXEC
-            Dummy := C.fcntl.fcntl (0, C.fcntl.F_SETFD, 0);
-            Dummy := C.fcntl.fcntl (1, C.fcntl.F_SETFD, 0);
-            Dummy := C.fcntl.fcntl (2, C.fcntl.F_SETFD, 0);
+            R := C.fcntl.fcntl (0, C.fcntl.F_SETFD, 0);
+            pragma Assert (R = 0);
+            R := C.fcntl.fcntl (1, C.fcntl.F_SETFD, 0);
+            pragma Assert (R = 0);
+            R := C.fcntl.fcntl (2, C.fcntl.F_SETFD, 0);
+            pragma Assert (R = 0);
             if Search_Path then
                Dummy := C.unistd.execvp (Arguments (0), Arguments (0)'Access);
             else

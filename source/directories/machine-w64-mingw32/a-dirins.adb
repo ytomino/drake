@@ -286,8 +286,6 @@ package body Ada.Directories.Inside is
       Information : aliased Directory_Entry_Information_Type;
       Aliased_Time : aliased System.Native_Time.Native_Time := Time;
       Handle : C.winnt.HANDLE;
-      Dummy : C.windef.WINBOOL;
-      pragma Unreferenced (Dummy);
    begin
       System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.GetFileAttributesEx (
@@ -317,7 +315,9 @@ package body Ada.Directories.Inside is
       then
          Raise_Exception (Use_Error'Identity);
       end if;
-      Dummy := C.winbase.CloseHandle (Handle);
+      if C.winbase.CloseHandle (Handle) = 0 then
+         Raise_Exception (Device_Error'Identity);
+      end if;
    end Set_Modification_Time;
 
 end Ada.Directories.Inside;

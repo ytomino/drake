@@ -9,6 +9,7 @@ package body System.Program.Dynamic_Linking is
    use type C.size_t;
    use type C.windef.FARPROC;
    use type C.windef.HMODULE;
+   use type C.windef.WINBOOL;
 
    procedure Open (Handle : out C.windef.HMODULE; Name : String);
    procedure Open (Handle : out C.windef.HMODULE; Name : String) is
@@ -28,11 +29,11 @@ package body System.Program.Dynamic_Linking is
 
    procedure Close (Handle : C.windef.HMODULE);
    procedure Close (Handle : C.windef.HMODULE) is
-      Dummy : C.windef.WINBOOL;
-      pragma Unreferenced (Dummy);
+      R : C.windef.WINBOOL;
    begin
       if Handle /= null then
-         Dummy := C.winbase.FreeLibrary (Handle);
+         R := C.winbase.FreeLibrary (Handle);
+         pragma Assert (R /= 0);
       end if;
    end Close;
 

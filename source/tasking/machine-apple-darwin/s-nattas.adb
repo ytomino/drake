@@ -32,13 +32,15 @@ package body System.Native_Tasks is
 
    procedure Mask_SIGTERM (How : C.signed_int);
    procedure Mask_SIGTERM (How : C.signed_int) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
       Mask : aliased C.signal.sigset_t;
+      R : C.signed_int;
    begin
-      Dummy := C.signal.sigemptyset (Mask'Access);
-      Dummy := C.signal.sigaddset (Mask'Access, C.signal.SIGTERM);
-      Dummy := C.pthread.pthread_sigmask (How, Mask'Access, null);
+      R := C.signal.sigemptyset (Mask'Access);
+      pragma Assert (R = 0);
+      R := C.signal.sigaddset (Mask'Access, C.signal.SIGTERM);
+      pragma Assert (R = 0);
+      R := C.pthread.pthread_sigmask (How, Mask'Access, null);
+      pragma Assert (R = 0);
    end Mask_SIGTERM;
 
    --  implementation of thread
@@ -89,32 +91,33 @@ package body System.Native_Tasks is
    --  implementation of signals
 
    procedure Install_Abort_Handler (Handler : Abort_Handler) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
       act : aliased C.signal.struct_sigaction := (
          (Unchecked_Tag => 1, sa_sigaction => SIGTERM_Handler'Access),
          others => <>); -- uninitialized
+      R : C.signed_int;
    begin
       Installed_Abort_Handler := Handler;
       act.sa_flags := C.signed_int (C.unsigned_int'(
          C.signal.SA_RESTART
 --       or C.signal.SA_NODEFER
          or C.signal.SA_SIGINFO));
-      Dummy := C.signal.sigemptyset (act.sa_mask'Access);
-      Dummy := C.signal.sigaction (
+      R := C.signal.sigemptyset (act.sa_mask'Access);
+      pragma Assert (R = 0);
+      R := C.signal.sigaction (
          C.signal.SIGTERM,
          act'Access,
          Old_SIGTERM_Action.Handle'Access);
+      pragma Assert (R = 0);
    end Install_Abort_Handler;
 
    procedure Uninstall_Abort_Handler is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      R : C.signed_int;
    begin
-      Dummy := C.signal.sigaction (
+      R := C.signal.sigaction (
          C.signal.SIGTERM,
          Old_SIGTERM_Action.Handle'Access,
          null);
+      pragma Assert (R = 0);
    end Uninstall_Abort_Handler;
 
    procedure Send_Abort_Signal (

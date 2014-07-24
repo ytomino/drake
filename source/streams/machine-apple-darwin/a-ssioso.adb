@@ -118,10 +118,10 @@ package body Ada.Streams.Stream_IO.Sockets is
                I.ai_addr,
                I.ai_addrlen) = 0;
             declare
-               Dummy : C.signed_int;
-               pragma Unreferenced (Dummy);
+               R : C.signed_int;
             begin
-               Dummy := C.unistd.close (Handle);
+               R := C.unistd.close (Handle);
+               pragma Assert (R = 0);
             end;
             Handle := -1;
          end if;

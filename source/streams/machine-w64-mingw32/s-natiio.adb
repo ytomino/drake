@@ -295,8 +295,6 @@ package body System.Native_IO is
                   Ada.IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
             Overlapped : aliased C.winbase.OVERLAPPED := (
                0, 0, (0, 0, 0), C.winnt.HANDLE (Null_Address));
-            Dummy : C.windef.WINBOOL;
-            pragma Unreferenced (Dummy);
          begin
             if C.winbase.LockFileEx (
                hFile => Handle,

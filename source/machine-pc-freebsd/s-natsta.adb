@@ -1,7 +1,15 @@
+with Ada;
 with C.pthread_np;
 package body System.Native_Stack is
    pragma Suppress (All_Checks);
    use type C.signed_int;
+
+   procedure Runtime_Error (
+      Condition : Boolean;
+      S : String;
+      Source_Location : String := Ada.Debug.Source_Location;
+      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity);
+   pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
 
    procedure Get (
       Thread : C.pthread.pthread_t := C.pthread.pthread_self;
@@ -11,8 +19,7 @@ package body System.Native_Stack is
       C_Addr : aliased C.void_ptr;
       C_Size : aliased C.size_t;
       OK : Boolean := False;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      R : C.signed_int;
    begin
       if C.pthread.pthread_attr_init (Attr'Access) = 0 then
          OK := C.pthread_np.pthread_attr_get_np (Thread, Attr'Access) = 0
@@ -20,7 +27,9 @@ package body System.Native_Stack is
                Attr'Access,
                C_Addr'Access,
                C_Size'Access) = 0;
-         Dummy := C.pthread.pthread_attr_destroy (Attr'Access);
+         R := C.pthread.pthread_attr_destroy (Attr'Access);
+         pragma Debug (Runtime_Error (R < 0,
+            "failed to pthread_attr_destroy"));
       end if;
       if not OK then
          Top := Null_Address;
