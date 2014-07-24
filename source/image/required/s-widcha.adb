@@ -6,21 +6,17 @@ package body System.Wid_Char is
    begin
       if Lo > Hi then
          return 0;
-      elsif Hi >= Character'Val (16#7f#) then
+      elsif Hi >= Character'Val (16#80#) then
          return 6; -- "Hex_XX"
-      elsif Hi >= ' ' then
+      elsif Hi >= ' ' then -- including 7F
          return 3; -- "'X'" or "DEL"
-      else
-         declare
-            Result : Natural := 0;
-         begin
-            for I in Lo .. Hi loop
-               Result := Natural'Max (
-                  Img_Char.Images_1f (I).all'Length,
-                  Result);
-            end loop;
-            return Result; -- 2 or 3
-         end;
+      else -- 2 or 3
+         for I in Lo .. Hi loop
+            if Img_Char.Length (Img_Char.Image_00_1F (I)) = 3 then
+               return 3;
+            end if;
+         end loop;
+         return 2;
       end if;
    end Width_Character;
 

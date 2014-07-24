@@ -60,14 +60,20 @@ package body System.Val_Char is
       Value : out Character;
       Error : out Boolean) is
    begin
-      for I in Img_Char.Images_1f'Range loop
-         if S = Img_Char.Images_1f (I).all then
-            Value := I;
-            Error := False;
-            return;
-         end if;
+      for I in Img_Char.Image_00_1F'Range loop
+         declare
+            Item : Img_Char.String_3
+               renames Img_Char.Image_00_1F (I);
+            Item_Length : constant Natural := Img_Char.Length (Item);
+         begin
+            if S = Item (1 .. Item_Length) then
+               Value := I;
+               Error := False;
+               return;
+            end if;
+         end;
       end loop;
-      if S = Img_Char.Image_7f then
+      if S = Img_Char.Image_7F then
          Value := Character'Val (16#7f#);
          Error := False;
       else
