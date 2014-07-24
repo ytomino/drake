@@ -1,5 +1,15 @@
 with Ada.Text_IO;
+with Ada.Short_Short_Integer_Text_IO;
+with Ada.Short_Integer_Text_IO;
+with Ada.Integer_Text_IO;
+with Ada.Long_Integer_Text_IO;
+with Ada.Long_Long_Integer_Text_IO;
+with Ada.Short_Float_Text_IO;
 with Ada.Float_Text_IO;
+with Ada.Long_Float_Text_IO;
+with Ada.Long_Long_Float_Text_IO;
+with Ada.Wide_Text_IO;
+with Ada.Wide_Wide_Text_IO;
 procedure textionum is
 	type I is range -100 .. 100;
 	package IIO is new Ada.Text_IO.Integer_IO (I);
@@ -24,5 +34,23 @@ begin
 	Ada.Float_Text_IO.Put (S, 5490.0);
 	Ada.Debug.Put (S);
 	pragma Assert (S = " 5.49000E+03");
+	declare
+		package Integer_Wide_Text_IO is new Ada.Wide_Text_IO.Integer_IO (Integer);
+		package Unsigned_Wide_Text_IO is new Ada.Wide_Text_IO.Modular_IO (M);
+		package Float_Wide_Text_IO is new Ada.Wide_Text_IO.Float_IO (F);
+		package Fixed_Wide_Text_IO is new Ada.Wide_Text_IO.Fixed_IO (O);
+		package Decimal_Wide_Text_IO is new Ada.Wide_Text_IO.Decimal_IO (D1);
+	begin
+		null;
+	end;
+	declare
+		package Integer_Wide_Wide_Text_IO is new Ada.Wide_Wide_Text_IO.Integer_IO (Integer);
+		package Unsigned_Wide_Wide_Text_IO is new Ada.Wide_Wide_Text_IO.Modular_IO (M);
+		package Float_Wide_Wide_Text_IO is new Ada.Wide_Wide_Text_IO.Float_IO (F);
+		package Fixed_Wide_Wide_Text_IO is new Ada.Wide_Wide_Text_IO.Fixed_IO (O);
+		package Decimal_Wide_Wide_Text_IO is new Ada.Wide_Wide_Text_IO.Decimal_IO (D1);
+	begin
+		null;
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end textionum;

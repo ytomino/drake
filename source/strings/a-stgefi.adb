@@ -20,16 +20,13 @@ package body Ada.Strings.Generic_Fixed is
             package Conv is
                new System.Address_To_Access_Conversions (Character);
             --  gcc's builtin-function
-            function memset (
+            procedure memset (
                b : Conv.Object_Pointer;
                c : Integer;
-               n : System.Storage_Elements.Storage_Count)
-               return Conv.Object_Pointer;
+               n : System.Storage_Elements.Storage_Count);
             pragma Import (Intrinsic, memset, "__builtin_memset");
-            Dummy : Conv.Object_Pointer;
-            pragma Unreferenced (Dummy);
          begin
-            Dummy := memset (
+            memset (
                Conv.To_Pointer (Target'Address),
                Character_Type'Pos (Pad),
                Target'Length);
@@ -1449,12 +1446,14 @@ package body Ada.Strings.Generic_Fixed is
          Source : String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
-         return String_Type is
+         return String_Type
+      is
+         Length : constant Integer := Source'Length;
       begin
-         return Result : String_Type (1 .. Source'Length) do
-            for I in Result'Range loop
-               Result (I) :=
-                  Mapping (Source (Source'First - Result'First + I));
+         return Result : String_Type (1 .. Length) do
+            for I in 0 .. Length - 1 loop
+               Result (Result'First + I) :=
+                  Mapping (Source (Source'First + I));
             end loop;
          end return;
       end Translate_Per_Element;

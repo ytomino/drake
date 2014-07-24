@@ -11,15 +11,18 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Fill (
       To : out Character_Ranges;
       Table : UCD.UCS_2_Array;
-      Offset : UCD.Difference_Base) is
+      Offset : UCD.Difference_Base)
+   is
+      Length : constant Natural := Table'Length;
    begin
-      pragma Assert (Table'Length = To'Length);
-      for I in Table'Range loop
+      pragma Assert (Length = To'Length);
+      for I in 0 .. Length - 1 loop
          declare
             T : Character_Range
-               renames To (To'First - Table'First + I);
-            C : constant Wide_Wide_Character := Wide_Wide_Character'Val (
-               UCD.Difference_Base (Table (I)) + Offset);
+               renames To (To'First + I);
+            C : constant Wide_Wide_Character :=
+               Wide_Wide_Character'Val (
+                  UCD.Difference_Base (Table (Table'First + I)) + Offset);
          begin
             T.Low := C;
             T.High := C;
@@ -32,15 +35,17 @@ package body Ada.Characters.Inside.Sets.General_Category is
       Table : UCD.UCS_4_Array);
    procedure Fill (
       To : out Character_Ranges;
-      Table : UCD.UCS_4_Array) is
+      Table : UCD.UCS_4_Array)
+   is
+      Length : constant Natural := Table'Length;
    begin
-      pragma Assert (Table'Length = To'Length);
-      for I in Table'Range loop
+      pragma Assert (Length = To'Length);
+      for I in 0 .. Length - 1 loop
          declare
             T : Character_Range
-               renames To (To'First - Table'First + I);
-            C : constant Wide_Wide_Character := Wide_Wide_Character'Val (
-               Table (I));
+               renames To (To'First + I);
+            C : constant Wide_Wide_Character :=
+               Wide_Wide_Character'Val (Table (Table'First + I));
          begin
             T.Low := C;
             T.High := C;
@@ -55,18 +60,22 @@ package body Ada.Characters.Inside.Sets.General_Category is
    procedure Fill (
       To : out Character_Ranges;
       Table : UCD.Set_16_Type;
-      Offset : UCD.Difference_Base) is
+      Offset : UCD.Difference_Base)
+   is
+      Length : constant Natural := Table'Length;
    begin
-      pragma Assert (Table'Length = To'Length);
-      for I in Table'Range loop
+      pragma Assert (Length = To'Length);
+      for I in 0 .. Length - 1 loop
          declare
             T : Character_Range
-               renames To (To'First - Table'First + I);
+               renames To (To'First + I);
+            Item : UCD.Set_16_Item_Type
+               renames Table (Table'First + I);
          begin
             T.Low := Wide_Wide_Character'Val (
-               UCD.Difference_Base (Table (I).Low) + Offset);
+               UCD.Difference_Base (Item.Low) + Offset);
             T.High := Wide_Wide_Character'Val (
-               UCD.Difference_Base (Table (I).High) + Offset);
+               UCD.Difference_Base (Item.High) + Offset);
          end;
       end loop;
    end Fill;
@@ -76,16 +85,20 @@ package body Ada.Characters.Inside.Sets.General_Category is
       Table : UCD.Set_32_Type);
    procedure Fill (
       To : out Character_Ranges;
-      Table : UCD.Set_32_Type) is
+      Table : UCD.Set_32_Type)
+   is
+      Length : constant Natural := Table'Length;
    begin
-      pragma Assert (Table'Length = To'Length);
-      for I in Table'Range loop
+      pragma Assert (Length = To'Length);
+      for I in 0 .. Length - 1 loop
          declare
             T : Character_Range
-               renames To (To'First - Table'First + I);
+               renames To (To'First + I);
+            Item : UCD.Set_32_Item_Type
+               renames Table (Table'First + I);
          begin
-            T.Low := Wide_Wide_Character'Val (Table (I).Low);
-            T.High := Wide_Wide_Character'Val (Table (I).High);
+            T.Low := Wide_Wide_Character'Val (Item.Low);
+            T.High := Wide_Wide_Character'Val (Item.High);
          end;
       end loop;
    end Fill;

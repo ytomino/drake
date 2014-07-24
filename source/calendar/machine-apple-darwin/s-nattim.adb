@@ -66,19 +66,23 @@ package body System.Native_Time is
 
    function Clock return Native_Time is
       Result : aliased C.sys.time.struct_timeval;
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      R : C.signed_int;
    begin
-      Dummy := C.sys.time.gettimeofday (Result'Access, null);
+      R := C.sys.time.gettimeofday (Result'Access, null);
+      pragma Assert (R = 0);
       return To_timespec (Result);
    end Clock;
 
    procedure Simple_Delay_For (D : Duration) is
-      T : aliased C.time.struct_timespec := To_timespec_Duration (D);
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      Req_T : aliased C.time.struct_timespec := To_timespec_Duration (D);
+      Rem_T : aliased C.time.struct_timespec;
+      R : C.signed_int;
    begin
-      Dummy := C.time.nanosleep (T'Access, null);
+      loop
+         R := C.time.nanosleep (Req_T'Access, Rem_T'Access);
+         exit when R = 0;
+         Req_T := Rem_T;
+      end loop;
    end Simple_Delay_For;
 
    procedure Delay_For (D : Duration) is

@@ -2,33 +2,25 @@ pragma License (Unrestricted);
 --  implementation unit
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
-with Ada.IO_Text_Modes;
 with Ada.Streams.Naked_Stream_IO.Standard_Files;
-with System.Native_IO;
+with System.Native_IO.Text_IO;
 package Ada.Naked_Text_IO is
 
    --  the parameter Form
 
-   type Packed_Form is record
-      Stream_Form : System.Native_IO.Packed_Form;
-      External : IO_Text_Modes.File_External_Encoding;
-      New_Line : IO_Text_Modes.File_New_Line;
-      SUB : IO_Text_Modes.File_SUB;
-   end record;
-   pragma Suppress_Initialization (Packed_Form);
-   pragma Pack (Packed_Form);
-   pragma Compile_Time_Error (Packed_Form'Size /= 4, "not packed");
-
-   Default_Form : constant Packed_Form := (
+   Default_Form : constant System.Native_IO.Text_IO.Packed_Form := (
       Stream_Form => Streams.Naked_Stream_IO.Default_Form,
-      External => IO_Text_Modes.Locale,
-      New_Line => IO_Text_Modes.By_Target,
-      SUB => IO_Text_Modes.Ordinary);
+      External => IO_Modes.By_Target,
+      New_Line => IO_Modes.By_Target,
+      SUB => IO_Modes.Ordinary);
 
-   procedure Set (Form : in out Packed_Form; Keyword, Item : String);
-   function Pack (Form : String) return Packed_Form;
+   procedure Set (
+      Form : in out System.Native_IO.Text_IO.Packed_Form;
+      Keyword : String;
+      Item : String);
+   function Pack (Form : String) return System.Native_IO.Text_IO.Packed_Form;
    procedure Unpack (
-      Form : Packed_Form;
+      Form : System.Native_IO.Text_IO.Packed_Form;
       Result : out Streams.Naked_Stream_IO.Form_String;
       Last : out Natural);
 
@@ -41,12 +33,12 @@ package Ada.Naked_Text_IO is
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode := IO_Modes.Out_File;
       Name : String := "";
-      Form : Packed_Form := Default_Form);
+      Form : System.Native_IO.Text_IO.Packed_Form := Default_Form);
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
       Name : String;
-      Form : Packed_Form := Default_Form);
+      Form : System.Native_IO.Text_IO.Packed_Form := Default_Form);
 
    procedure Close (
       File : aliased in out Non_Controlled_File_Type;
@@ -58,10 +50,11 @@ package Ada.Naked_Text_IO is
 
    function Mode (File : Non_Controlled_File_Type) return IO_Modes.File_Mode;
    function Name (File : Non_Controlled_File_Type) return String;
-   function Form (File : Non_Controlled_File_Type) return Packed_Form;
+   function Form (File : Non_Controlled_File_Type)
+      return System.Native_IO.Text_IO.Packed_Form;
 
    function External (File : Non_Controlled_File_Type)
-      return IO_Text_Modes.File_External;
+      return IO_Modes.File_External;
    pragma Inline (External);
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean;
@@ -100,13 +93,6 @@ package Ada.Naked_Text_IO is
    function End_Of_Page (File : Non_Controlled_File_Type) return Boolean;
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean;
 
-   procedure Set_Position_Within_Terminal (
-      File : Non_Controlled_File_Type;
-      Col, Line : Positive);
-   procedure Set_Col_Within_Terminal (
-      File : Non_Controlled_File_Type;
-      To : Positive);
-
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive);
    procedure Set_Line (File : Non_Controlled_File_Type; To : Positive);
 
@@ -121,42 +107,79 @@ package Ada.Naked_Text_IO is
    function Page (File : Non_Controlled_File_Type) return Positive;
    pragma Inline (Page);
 
-   procedure Get (File : Non_Controlled_File_Type; Item : out Character);
-   procedure Put (File : Non_Controlled_File_Type; Item : Character);
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Character);
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character);
+   procedure Get (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character);
+
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Character);
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Wide_Character);
+   procedure Put (
+      File : Non_Controlled_File_Type;
+      Item : Wide_Wide_Character);
 
    procedure Look_Ahead (
       File : Non_Controlled_File_Type;
       Item : out Character;
       End_Of_Line : out Boolean);
+   procedure Look_Ahead (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character;
+      End_Of_Line : out Boolean);
+   procedure Look_Ahead (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character;
+      End_Of_Line : out Boolean);
 
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out Character);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Character);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character);
 
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out Character;
       Available : out Boolean);
-
-   procedure View (
+   procedure Get_Immediate (
       File : Non_Controlled_File_Type;
-      Left, Top : out Positive;
-      Right, Bottom : out Natural);
+      Item : out Wide_Character;
+      Available : out Boolean);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character;
+      Available : out Boolean);
 
    --  handle of stream for non-controlled
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
-      Stream : not null access Streams.Root_Stream_Type'Class;
       Mode : IO_Modes.File_Mode;
+      Stream : not null access Streams.Root_Stream_Type'Class;
       Name : String := "";
-      Form : Packed_Form := Default_Form);
+      Form : System.Native_IO.Text_IO.Packed_Form := Default_Form);
 
    function Stream (File : Non_Controlled_File_Type)
       return not null access Streams.Root_Stream_Type'Class;
    function Stream_IO (File : Non_Controlled_File_Type)
       return not null access
          Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+
+   function Terminal_Handle (File : Non_Controlled_File_Type)
+      return System.Native_IO.Handle_Type;
 
    --  standard I/O
 
@@ -197,81 +220,81 @@ private
       Col : Natural := 1;
       Line_Length : Natural := 0;
       Page_Length : Natural := 0;
-      Buffer_Col : Natural := 0; -- converted length
+      Ahead_Col : Natural := 0; -- one-character Col
+      Ahead_Last : Natural := 0; -- one-character Length, In_Mode only
       Last : Natural := 0;
-      Buffer : String (1 .. 12); -- 2 code-points of UTF-8
-      Converted : Boolean := False;
+      Buffer : System.Native_IO.Text_IO.Buffer_Type;
       End_Of_File : Boolean := False;
       Dummy_Mark : Dummy_Mark_Type := None;
       Mode : IO_Modes.File_Mode;
-      External : IO_Text_Modes.File_External;
-      New_Line : IO_Text_Modes.File_New_Line;
-      SUB : IO_Text_Modes.File_SUB; -- ASCII.SUB = 16#1A#
+      External : IO_Modes.File_External;
+      New_Line : IO_Modes.File_New_Line;
+      SUB : IO_Modes.File_SUB; -- ASCII.SUB = 16#1A#
       Name : String (1 .. Name_Length);
    end record;
    pragma Suppress_Initialization (Text_Type);
 
    Standard_Input_Text : aliased Text_Type := (
       Name_Length => 0,
-      Stream => System.Null_Address, -- overwrite when initialization
+      Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Input,
       Page => 1,
       Line => 1,
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Buffer_Col => 0,
+      Ahead_Col => 0,
+      Ahead_Last => 0,
       Last => 0,
       Buffer => (others => Character'Val (0)),
-      Converted => False,
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => IO_Modes.In_File,
-      External => IO_Text_Modes.Locale, -- overwrite when initialization
-      New_Line => IO_Text_Modes.CR_LF,
-      SUB => IO_Text_Modes.Ordinary,
+      External => System.Native_IO.Text_IO.Default_External, -- be overwritten
+      New_Line => System.Native_IO.Text_IO.Default_New_Line,
+      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Output_Text : aliased Text_Type := (
       Name_Length => 0,
-      Stream => System.Null_Address, -- overwrite when initialization
+      Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Output,
       Page => 1,
       Line => 1,
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Buffer_Col => 0,
+      Ahead_Col => 0,
+      Ahead_Last => 0,
       Last => 0,
       Buffer => (others => Character'Val (0)),
-      Converted => False,
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => IO_Modes.Out_File,
-      External => IO_Text_Modes.Locale, -- overwrite when initialization
-      New_Line => IO_Text_Modes.CR_LF,
-      SUB => IO_Text_Modes.Ordinary,
+      External => System.Native_IO.Text_IO.Default_External, -- be overwritten
+      New_Line => System.Native_IO.Text_IO.Default_New_Line,
+      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Error_Text : aliased Text_Type := (
       Name_Length => 0,
-      Stream => System.Null_Address, -- overwrite when initialization
+      Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Error,
       Page => 1,
       Line => 1,
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Buffer_Col => 0,
+      Ahead_Col => 0,
+      Ahead_Last => 0,
       Last => 0,
       Buffer => (others => Character'Val (0)),
-      Converted => False,
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => IO_Modes.Out_File,
-      External => IO_Text_Modes.Locale, -- overwrite when initialization
-      New_Line => IO_Text_Modes.CR_LF,
-      SUB => IO_Text_Modes.Ordinary,
+      External => System.Native_IO.Text_IO.Default_External, -- be overwritten
+      New_Line => System.Native_IO.Text_IO.Default_New_Line,
+      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Input : constant Non_Controlled_File_Type :=
@@ -280,18 +303,5 @@ private
       Standard_Output_Text'Access;
    Standard_Error : constant Non_Controlled_File_Type :=
       Standard_Error_Text'Access;
-
-   --  for Wide_Text_IO/Wide_Wide_Text_IO
-
-   procedure Look_Ahead (
-      File : Non_Controlled_File_Type;
-      Item : out String; -- 1 .. 6
-      Last : out Natural;
-      End_Of_Line : out Boolean);
-   procedure Get_Immediate (
-      File : Non_Controlled_File_Type;
-      Item : out String; -- 1 .. 6
-      Last : out Natural;
-      Wait : Boolean);
 
 end Ada.Naked_Text_IO;

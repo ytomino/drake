@@ -126,10 +126,10 @@ package body Ada.Streams.Stream_IO.Sockets is
                      I.ai_addr)),
                I.ai_addrlen) = 0;
             declare
-               Dummy : C.signed_int;
-               pragma Unreferenced (Dummy);
+               R : C.signed_int;
             begin
-               Dummy := C.unistd.close (Handle);
+               R := C.unistd.close (Handle);
+               pragma Assert (R = 0);
             end;
          end if;
          I := I.ai_next;
@@ -140,8 +140,8 @@ package body Ada.Streams.Stream_IO.Sockets is
          System.Native_IO.Set_Close_On_Exec (Handle);
          Naked.Open (
             File,
-            Handle,
             Append_File, -- Inout
+            Handle,
             To_Close => True);
       end if;
    end Connect;

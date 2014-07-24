@@ -92,42 +92,43 @@ package body Ada.Interrupts.Inside is
       Old_Handler := Item.Installed_Handler;
       if Old_Handler = null and then New_Handler /= null then
          declare
-            Dummy : C.signed_int;
-            pragma Unreferenced (Dummy);
             Action : aliased C.signal.struct_sigaction := (
                (Unchecked_Tag => 1, sa_sigaction => Handler'Access),
                others => <>); -- uninitialized
+            R : C.signed_int;
          begin
             Action.sa_flags := C.signed_int (C.unsigned_int'(
                C.signal.SA_SIGINFO
                or C.signal.SA_RESTART));
-            Dummy := C.signal.sigemptyset (Action.sa_mask'Access);
-            Dummy := C.signal.sigaction (
+            R := C.signal.sigemptyset (Action.sa_mask'Access);
+            pragma Assert (R = 0);
+            R := C.signal.sigaction (
                C.signed_int (Interrupt),
                Action'Access,
                Item.Saved'Access);
+            pragma Assert (R = 0);
          end;
       elsif Old_Handler /= null and then New_Handler = null then
          declare
-            Dummy : C.signed_int;
-            pragma Unreferenced (Dummy);
             Old_Action : aliased C.signal.struct_sigaction :=
                (others => <>); -- uninitialized
+            R : C.signed_int;
          begin
-            Dummy := C.signal.sigaction (
+            R := C.signal.sigaction (
                C.signed_int (Interrupt),
                Item.Saved'Access,
                Old_Action'Access);
+            pragma Assert (R = 0);
          end;
       end if;
       Item.Installed_Handler := New_Handler;
    end Exchange_Handler;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      R : C.signed_int;
    begin
-      Dummy := C.signal.C_raise (C.signed_int (Interrupt));
+      R := C.signal.C_raise (C.signed_int (Interrupt));
+      pragma Assert (R = 0);
    end Raise_Interrupt;
 
 end Ada.Interrupts.Inside;

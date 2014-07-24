@@ -5,6 +5,7 @@ with C.dlfcn;
 package body System.Program.Dynamic_Linking is
    pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
+   use type C.signed_int;
    use type C.size_t;
    use type C.void_ptr;
 
@@ -26,11 +27,11 @@ package body System.Program.Dynamic_Linking is
 
    procedure Close (Handle : C.void_ptr);
    procedure Close (Handle : C.void_ptr) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      R : C.signed_int;
    begin
       if Handle /= C.void_ptr (Null_Address) then
-         Dummy := C.dlfcn.dlclose (Handle);
+         R := C.dlfcn.dlclose (Handle);
+         pragma Assert (R = 0);
       end if;
    end Close;
 

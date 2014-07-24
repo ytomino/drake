@@ -60,10 +60,10 @@ package body Ada.Directory_Searching is
    end Start_Search;
 
    procedure End_Search (Search : in out Search_Type) is
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+      R : C.signed_int;
    begin
-      Dummy := C.dirent.closedir (Search.Handle);
+      R := C.dirent.closedir (Search.Handle);
+      pragma Assert (R = 0);
       Search.Handle := null;
       System.Standard_Allocators.Free (
          char_ptr_Conv.To_Address (Search.Pattern));

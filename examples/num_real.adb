@@ -2,14 +2,21 @@
 pragma Wide_Character_Encoding (UTF8); -- for using π
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Generic_Real_Arrays;
-with Ada.Numerics.Long_Long_Elementary_Functions; -- linking check
+with Ada.Numerics.Short_Elementary_Functions;
+with Ada.Numerics.Short_Real_Arrays;
+with Ada.Numerics.Elementary_Functions;
+with Ada.Numerics.Real_Arrays;
+with Ada.Numerics.Long_Elementary_Functions;
+with Ada.Numerics.Long_Real_Arrays;
+with Ada.Numerics.Long_Long_Elementary_Functions;
+with Ada.Numerics.Long_Long_Real_Arrays;
 procedure num_real is
 	generic
 		type T is digits <>;
+		with package EF is new Ada.Numerics.Generic_Elementary_Functions (T);
+		with package RA is new Ada.Numerics.Generic_Real_Arrays (T);
 	procedure Test;
 	procedure Test is
-		package EF is new Ada.Numerics.Generic_Elementary_Functions (T);
-		package RA is new Ada.Numerics.Generic_Real_Arrays (T);
 		use EF, RA;
 	begin
 		-- elementary functions
@@ -97,28 +104,50 @@ procedure num_real is
 begin
 	pragma Assert (Ada.Numerics.π = Ada.Numerics.Pi);
 	declare
-		procedure Short_Float_Test is new Test (Short_Float);
+		procedure Short_Float_Test is
+			new Test (
+				Short_Float,
+				Ada.Numerics.Short_Elementary_Functions,
+				Ada.Numerics.Short_Real_Arrays);
 	begin
 		Short_Float_Test;
 	end;
 	declare
-		procedure Float_Test is new Test (Float);
+		procedure Float_Test is
+			new Test (
+				Float,
+				Ada.Numerics.Elementary_Functions,
+				Ada.Numerics.Real_Arrays);
 	begin
 		Float_Test;
 	end;
 	declare
-		procedure Long_Float_Test is new Test (Long_Float);
+		procedure Long_Float_Test is
+			new Test (
+				Long_Float,
+				Ada.Numerics.Long_Elementary_Functions,
+				Ada.Numerics.Long_Real_Arrays);
 	begin
 		Long_Float_Test;
 	end;
 	declare
-		procedure Long_Long_Float_Test is new Test (Long_Long_Float);
+		procedure Long_Long_Float_Test is
+			new Test (
+				Long_Long_Float,
+				Ada.Numerics.Long_Long_Elementary_Functions,
+				Ada.Numerics.Long_Long_Real_Arrays);
 	begin
 		Long_Long_Float_Test;
 	end;
 	declare
 		type Custom_Float is digits 12;
-		procedure Custom_Float_Test is new Test (Custom_Float);
+		package Custom_Elementary_Functions is new Ada.Numerics.Generic_Elementary_Functions (Custom_Float);
+		package Custom_Real_Arrays is new Ada.Numerics.Generic_Real_Arrays (Custom_Float);
+		procedure Custom_Float_Test is
+			new Test (
+				Custom_Float,
+				Custom_Elementary_Functions,
+				Custom_Real_Arrays);
 	begin
 		Custom_Float_Test;
 	end;

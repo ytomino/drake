@@ -7,18 +7,6 @@ package body Interfaces.C.Generic_Strings is
 
    package libc is
 
-      procedure memcpy (
-         s1 : not null access Element;
-         s2 : not null access constant Element;
-         n : size_t);
-      pragma Import (Intrinsic, memcpy, "__builtin_memcpy");
-
-      procedure memmove (
-         s1 : not null access Element;
-         s2 : not null access constant Element;
-         n : size_t);
-      pragma Import (Intrinsic, memmove, "__builtin_memmove");
-
       function malloc (size : size_t) return chars_ptr;
       pragma Import (Intrinsic, malloc, "__builtin_malloc");
 
@@ -103,8 +91,13 @@ package body Interfaces.C.Generic_Strings is
          Chars'Length); -- CXB3009, accept non-nul terminated
    end New_Char_Array;
 
-   function New_String (Str : String_Type) return not null chars_ptr is
-      C : constant Element_Array := To_C (Str, Append_Nul => False);
+   function New_String (
+      Str : String_Type;
+      Substitute : Element := Element'Val (Character'Pos ('?')))
+      return not null chars_ptr
+   is
+      C : constant Element_Array :=
+         To_C (Str, Append_Nul => False, Substitute => Substitute);
    begin
       return New_Chars_Ptr (C (C'First)'Access, C'Length);
    end New_String;
@@ -132,7 +125,10 @@ package body Interfaces.C.Generic_Strings is
          System.Storage_Elements.Storage_Count (Length)
          * (Element_Array'Component_Size / Standard'Storage_Unit);
    begin
-      libc.memcpy (Result, Item, C.size_t (Size));
+      Pointers.Copy_Array (
+         Source => Item,
+         Target => Result,
+         Length => ptrdiff_t (Length));
       Conv.To_Pointer (Conv.To_Address (Result) + Size).all := Element'Val (0);
       return Result;
    end New_Chars_Ptr;
@@ -205,10 +201,10 @@ package body Interfaces.C.Generic_Strings is
       end if;
       declare
          Length : constant size_t := Strlen (Item);
-         Source : Element_Array (0 .. Length); -- CXB3009, including nul
-         for Source'Address use Conv.To_Address (Item);
       begin
-         return Source;
+         return Pointers.Value (
+            Item,
+            ptrdiff_t (Length + 1)); -- CXB3009, including nul
       end;
    end Value;
 
@@ -231,33 +227,46 @@ package body Interfaces.C.Generic_Strings is
       else
          Actual_Length := Strlen (Item) + 1; -- including nul
       end if;
-      declare
-         Source : Element_Array (0 .. Actual_Length - 1);
-         for Source'Address use Conv.To_Address (Item);
-      begin
-         if Append_Nul and then Length < Actual_Length then
+      if Append_Nul and then Length < Actual_Length then
+         declare
+            Source : Element_Array (0 .. Actual_Length - 1);
+            for Source'Address use Conv.To_Address (Item);
+         begin
             return Source (0 .. Length - 1) & Element'Val (0);
-         else
-            return Source (0 .. size_t'Min (Actual_Length, Length) - 1);
-            --  CXB3010, not appending nul
-         end if;
-      end;
+         end;
+      else
+         return Pointers.Value (
+            Item,
+            ptrdiff_t (size_t'Min (Actual_Length, Length)));
+         --  CXB3010, not appending nul
+      end if;
    end Value;
 
-   function Value (Item : access constant Element)
+   function Value (
+      Item : access constant Element;
+      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
       return String_Type
    is
       C : constant Element_Array := Value (Item);
    begin
-      return To_Ada (C (C'First .. C'Last - 1), Trim_Nul => False);
+      return To_Ada (
+         C (C'First .. C'Last - 1),
+         Trim_Nul => False,
+         Substitute => Substitute);
    end Value;
 
-   function Value (Item : access constant Element; Length : size_t)
+   function Value (
+      Item : access constant Element;
+      Length : size_t;
+      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
       return String_Type
    is
       C : constant Element_Array := Value (Item, Length, Append_Nul => True);
    begin
-      return To_Ada (C (C'First .. C'Last - 1), Trim_Nul => False);
+      return To_Ada (
+         C (C'First .. C'Last - 1),
+         Trim_Nul => False,
+         Substitute => Substitute);
    end Value;
 
    function Strlen (Item : access constant Element)
@@ -326,12 +335,13 @@ package body Interfaces.C.Generic_Strings is
       Item : access Element;
       Offset : size_t;
       Str : String_Type;
-      Check : Boolean := True) is
+      Check : Boolean := True;
+      Substitute : Element := Element'Val (Character'Pos ('?'))) is
    begin
       Update (
          Item,
          Offset,
-         To_C (Str, Append_Nul => False),
+         To_C (Str, Append_Nul => False, Substitute => Substitute),
          Check);
    end Update;
 
@@ -346,11 +356,11 @@ package body Interfaces.C.Generic_Strings is
          * (Element_Array'Component_Size / Standard'Storage_Unit);
       Offsetted_Item : constant chars_ptr :=
          Conv.To_Pointer (Conv.To_Address (chars_ptr (Item)) + Offset_Size);
-      Size : constant System.Storage_Elements.Storage_Count :=
-         System.Storage_Elements.Storage_Count (Length)
-         * (Element_Array'Component_Size / Standard'Storage_Unit);
    begin
-      libc.memmove (Offsetted_Item, Source, C.size_t (Size));
+      Pointers.Copy_Array (
+         Source => Source,
+         Target => Offsetted_Item,
+         Length => ptrdiff_t (Length));
    end Update;
 
    procedure Update (

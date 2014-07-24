@@ -321,8 +321,6 @@ package body System.Native_IO is
          O_CLOEXEC_Is_Missing : constant Boolean :=
             C.fcntl.O_CLOEXEC = 0;
          pragma Warnings (Off, O_CLOEXEC_Is_Missing);
-         Dummy : C.signed_int;
-         pragma Unreferenced (Dummy);
       begin
          if O_CLOEXEC_Is_Missing then
             --  set FD_CLOEXEC if O_CLOEXEC is missing
@@ -343,8 +341,6 @@ package body System.Native_IO is
                Ada.IO_Modes.Read_Only => C.sys.file.LOCK_SH,
                Ada.IO_Modes.Deny => C.sys.file.LOCK_EX);
          operation : C.unsigned_int;
-         Dummy : C.signed_int;
-         pragma Unreferenced (Dummy);
       begin
          if Shared /= Ada.IO_Modes.Allow
             and then (O_EXLOCK_Is_Missing or else Race_Is_Raising)

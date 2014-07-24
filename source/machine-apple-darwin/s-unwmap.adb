@@ -24,7 +24,6 @@ package body System.Unwind.Mapping is
       Context : C.void_ptr)
    is
       pragma Unreferenced (Info);
---    pragma Unreferenced (Context);
       function Cast is new Ada.Unchecked_Conversion (C.void_ptr, Address);
       C_Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
       subtype Fixed_String is String (Positive);

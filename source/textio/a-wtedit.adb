@@ -17,14 +17,6 @@ package body Ada.Wide_Text_IO.Editing is
 
    --  implementation
 
-   function Valid (
-      Pic_String : String;
-      Blank_When_Zero : Boolean := False)
-      return Boolean is
-   begin
-      return Text_IO.Editing.Valid (Pic_String, Blank_When_Zero);
-   end Valid;
-
    package body Decimal_Output is
 
       package Instance is new Text_IO.Editing.Decimal_Output (Num);

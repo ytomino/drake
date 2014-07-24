@@ -2,7 +2,8 @@ with Ada;
 with Interfaces;
 with Interfaces.C.Pointers;
 with Interfaces.C.Strings;
-with Interfaces.C.WStrings;
+with Interfaces.C.Wide_WStrings;
+with Interfaces.C.Wide_Wide_WStrings;
 procedure intf is
 begin
 	-- pragma Import

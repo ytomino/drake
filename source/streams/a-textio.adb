@@ -37,13 +37,15 @@ package body Ada.Text_IO is
 
    procedure Check_File_Mode (
       File : File_Type;
-      Expected : File_Mode);
+      Expected : File_Mode;
+      Line : Natural := Debug.Line);
    procedure Check_File_Mode (
       File : File_Type;
-      Expected : File_Mode) is
+      Expected : File_Mode;
+      Line : Natural := Debug.Line) is
    begin
       if (Mode (File) = In_File) /= (Expected = In_File) then
-         Raise_Exception (Mode_Error'Identity);
+         Raise_Exception (Mode_Error'Identity, Line => Line);
       end if;
    end Check_File_Mode;
 
@@ -69,9 +71,9 @@ package body Ada.Text_IO is
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
       Overwrite : Boolean := True;
-      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
-      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
-      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary) is
+      External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
+      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary) is
    begin
       Naked_Text_IO.Create (
          Reference (File).all,
@@ -86,9 +88,9 @@ package body Ada.Text_IO is
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
       Overwrite : Boolean := True;
-      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
-      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
-      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary)
+      External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
+      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary)
       return File_Type is
    begin
       return Result : File_Type do
@@ -120,9 +122,9 @@ package body Ada.Text_IO is
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
       Overwrite : Boolean := True;
-      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
-      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
-      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary) is
+      External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
+      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary) is
    begin
       Naked_Text_IO.Open (
          Reference (File).all,
@@ -137,9 +139,9 @@ package body Ada.Text_IO is
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
       Overwrite : Boolean := True;
-      External : IO_Text_Modes.File_External_Encoding := IO_Text_Modes.Locale;
-      New_Line : IO_Text_Modes.File_New_Line := IO_Text_Modes.By_Target;
-      SUB : IO_Text_Modes.File_SUB := IO_Text_Modes.Ordinary)
+      External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
+      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary)
       return File_Type is
    begin
       return Result : File_Type do

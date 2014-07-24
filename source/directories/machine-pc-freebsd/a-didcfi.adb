@@ -30,8 +30,8 @@ is
    Data : aliased C.sys.stat.struct_stat;
    Map : C.void_ptr;
    Written : C.sys.types.ssize_t;
-   Dummy : C.signed_int;
-   pragma Unreferenced (Dummy);
+   Closed : C.signed_int;
+   R : C.signed_int;
 begin
    System.Zero_Terminated_Strings.To_C (Source_Name, C_Source_Name (0)'Access);
    System.Zero_Terminated_Strings.To_C (Target_Name, C_Target_Name (0)'Access);
@@ -42,7 +42,8 @@ begin
       Raise_Exception (Name_Error'Identity);
    end if;
    if C.sys.stat.fstat (Source, Data'Access) < 0 then
-      Dummy := C.unistd.close (Source);
+      R := C.unistd.close (Source);
+      pragma Assert (R = 0);
       Raise_Exception (Use_Error'Identity);
    end if;
    if not Overwrite then
@@ -53,7 +54,8 @@ begin
       C.signed_int (Flag),
       Data.st_mode);
    if Target < 0 then
-      Dummy := C.unistd.close (Source);
+      R := C.unistd.close (Source);
+      pragma Assert (R = 0);
       Raise_Exception (Name_Error'Identity);
    end if;
    Map := C.sys.mman.mmap (
@@ -67,10 +69,12 @@ begin
       Target,
       C.void_const_ptr (Map),
       C.size_t (Data.st_size));
-   Dummy := C.sys.mman.munmap (Map, C.size_t (Data.st_size));
-   Dummy := C.unistd.close (Source);
-   Dummy := C.unistd.close (Target);
-   if Written < C.sys.types.ssize_t (Data.st_size) then
-      Raise_Exception (Use_Error'Identity);
+   R := C.sys.mman.munmap (Map, C.size_t (Data.st_size));
+   pragma Assert (R = 0);
+   R := C.unistd.close (Source);
+   pragma Assert (R = 0);
+   Closed := C.unistd.close (Target);
+   if Written < C.sys.types.ssize_t (Data.st_size) or else Closed < 0 then
+      Raise_Exception (Device_Error'Identity);
    end if;
 end Ada.Directories.Inside.Do_Copy_File;

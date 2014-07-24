@@ -9,7 +9,8 @@ package Ada.Wide_Text_IO.Editing is
    function Valid (
       Pic_String : String;
       Blank_When_Zero : Boolean := False)
-      return Boolean;
+      return Boolean
+      renames Text_IO.Editing.Valid;
 
 --  function To_Picture (
 --    Pic_String : String;

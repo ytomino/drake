@@ -14,11 +14,13 @@ generic
          Default_Terminator => Element'Val (0));
    with function To_C (
       Item : String_Type;
-      Append_Nul : Boolean := True)
+      Append_Nul : Boolean := True;
+      Substitute : Element := Element'Val (Character'Pos ('?')))
       return Element_Array;
    with function To_Ada (
       Item : Element_Array;
-      Trim_Nul : Boolean := True)
+      Trim_Nul : Boolean := True;
+      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
       return String_Type;
 package Interfaces.C.Generic_Strings is
    pragma Preelaborate;
@@ -70,7 +72,10 @@ package Interfaces.C.Generic_Strings is
    function New_Char_Array (Chars : Element_Array) return not null chars_ptr;
 
 --  function New_String (Str : String) return chars_ptr;
-   function New_String (Str : String_Type) return not null chars_ptr;
+   function New_String (
+      Str : String_Type;
+      Substitute : Element := Element'Val (Character'Pos ('?')))
+      return not null chars_ptr;
 
    --  extended
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr;
@@ -105,11 +110,16 @@ package Interfaces.C.Generic_Strings is
       return Element_Array;
 
 --  function Value (Item : chars_ptr) return String;
-   function Value (Item : access constant Element) -- CXB3011 requires null
+   function Value (
+      Item : access constant Element; -- CXB3011 requires null
+      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
       return String_Type;
 
 --  function Value (Item : chars_ptr; Length : size_t) return String;
-   function Value (Item : access constant Element; Length : size_t)
+   function Value (
+      Item : access constant Element;
+      Length : size_t;
+      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
       return String_Type;
 
 --  function Strlen (Item : chars_ptr) return size_t;
@@ -136,7 +146,8 @@ package Interfaces.C.Generic_Strings is
       Item : access Element; -- CXB3012 requires null
       Offset : size_t;
       Str : String_Type;
-      Check : Boolean := True);
+      Check : Boolean := True;
+      Substitute : Element := Element'Val (Character'Pos ('?')));
 
    --  extended
    procedure Update (
@@ -151,12 +162,5 @@ package Interfaces.C.Generic_Strings is
 
    Update_Error : exception
       renames C.Update_Error;
-
-   --  extended from here
-
-   subtype char_t is Element;
-   subtype char_array_t is Element_Array;
-   subtype char_t_Character is Character_Type;
-   subtype char_t_String is String_Type;
 
 end Interfaces.C.Generic_Strings;

@@ -227,9 +227,6 @@ package Ada.Strings.Fixed is
       renames Functions.Maps.Translate;
 
    --  modified
---  procedure Translate (
---    Source : in out String;
---    Mapping : Maps.Character_Mapping);
    procedure Translate (
       Source : in out String;
       Mapping : Maps.Character_Mapping;
@@ -337,10 +334,6 @@ package Ada.Strings.Fixed is
 
    --  String selector subprograms
    --  modified
---  function Trim (
---    Source : String;
---    Side : Trim_End)
---    return String;
    function Trim (
       Source : String;
       Side : Trim_End;

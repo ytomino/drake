@@ -11,13 +11,14 @@ package body Ada.Calendar.Time_Zones.Inside is
       --  FreeBSD does not have timezone variable
       GMT_Time : aliased constant System.Native_Time.Native_Time :=
          System.Native_Time.To_Native_Time (Duration (Date));
-      Local_TM : aliased C.time.struct_tm;
+      Local_TM_Buf : aliased C.time.struct_tm;
+      Local_TM : C.time.struct_tm_ptr;
       Local_Time : aliased C.sys.types.time_t;
-      Dummy : C.time.struct_tm_ptr;
-      pragma Unreferenced (Dummy);
    begin
-      Dummy := C.time.localtime_r (GMT_Time.tv_sec'Access, Local_TM'Access);
-      Local_Time := C.time.timegm (Local_TM'Access);
+      Local_TM := C.time.localtime_r (
+         GMT_Time.tv_sec'Access,
+         Local_TM_Buf'Access);
+      Local_Time := C.time.timegm (Local_TM);
       if Local_Time = -1 then
          Raise_Exception (Time_Error'Identity);
       end if;

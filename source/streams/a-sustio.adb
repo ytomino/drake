@@ -44,6 +44,11 @@ package body Ada.Streams.Unbounded_Storage_IO is
 
    --  implementation
 
+   procedure Reset (Object : in out Buffer_Type) is
+   begin
+      Object.Stream.Index := 1;
+   end Reset;
+
    function Size (Object : Buffer_Type) return Stream_Element_Count is
    begin
       return Object.Stream.Last;

@@ -8,6 +8,6 @@ package Interfaces.C.Strings is
       Element => char,
       Element_Array => char_array,
       Pointers => Char_Pointers,
-      To_C => To_C,
-      To_Ada => To_Ada);
+      To_C => To_char_array,
+      To_Ada => To_String);
 pragma Preelaborate (Interfaces.C.Strings);
