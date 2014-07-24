@@ -9,6 +9,7 @@ package body System.Secondary_Stack is
    pragma Import (Intrinsic, clz, "__builtin_clz");
 
    procedure unreachable;
+   pragma No_Return (unreachable);
    pragma Import (Intrinsic, unreachable, "__builtin_unreachable");
 
    --  implementation

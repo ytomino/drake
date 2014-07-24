@@ -8,6 +8,10 @@ package body Ada.Characters.Normalization is
    use type UCD.UCS_4;
    use type System.UTF_Conversions.UCS_4;
 
+   procedure unreachable;
+   pragma No_Return (unreachable);
+   pragma Import (Intrinsic, unreachable, "__builtin_unreachable");
+
    function Standard_Equal (Left, Right : Wide_Wide_String) return Boolean;
    function Standard_Equal (Left, Right : Wide_Wide_String) return Boolean is
    begin
@@ -48,7 +52,7 @@ package body Ada.Characters.Normalization is
          end if;
       end loop;
       pragma Assert (False);
-      return 0;
+      unreachable;
    end Decomposed_Length;
 
    type D_Map_Element is record
