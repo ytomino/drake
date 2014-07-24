@@ -307,7 +307,6 @@ package body System.Synchronous_Objects is
             Object.Mutex,
             Timeout => Timeout,
             Notified => Value);
---       pragma Assert (Object.Value >= Value);
       end if;
       Leave (Object.Mutex);
    end Wait;
