@@ -134,7 +134,7 @@ package body Ada.Characters.Normalization is
             end if;
             --  replacing
             Decomposed := True;
-            Item (I + To_Length .. Last + To_Length) :=
+            Item (I + To_Length .. Last + To_Length - 1) :=
                Item (I + 1 .. Last);
             Item (I .. I + To_Length - 1) := To (1 .. To_Length);
             Last := Last + To_Length - 1;
