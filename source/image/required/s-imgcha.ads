@@ -11,40 +11,44 @@ package System.Img_Char is
 
    --  helper
    Hex_Prefix : constant String := "Hex_";
-   Images_1f : constant array (Character'Val (0) .. Character'Val (16#1f#)) of
-      not null access constant String := (
-         new String'("NUL"),
-         new String'("SOH"),
-         new String'("STX"),
-         new String'("ETX"),
-         new String'("EOT"),
-         new String'("ENQ"),
-         new String'("ACK"),
-         new String'("BEL"),
-         new String'("BS"),
-         new String'("HT"),
-         new String'("LF"),
-         new String'("VT"),
-         new String'("FF"),
-         new String'("CR"),
-         new String'("SO"),
-         new String'("SI"),
-         new String'("DLE"),
-         new String'("DC1"),
-         new String'("DC2"),
-         new String'("DC3"),
-         new String'("DC4"),
-         new String'("NAK"),
-         new String'("SYN"),
-         new String'("ETB"),
-         new String'("CAN"),
-         new String'("EM"),
-         new String'("SUB"),
-         new String'("ESC"),
-         new String'("FS"),
-         new String'("GS"),
-         new String'("RS"),
-         new String'("US"));
-   Image_7f : constant String := "DEL";
+   subtype String_3 is String (1 .. 3);
+   function Length (Item : String_3) return Natural;
+   pragma Inline (Length);
+   Image_00_1F : aliased constant array (
+      Character'Val (0) ..
+      Character'Val (16#1F#)) of aliased String_3 := (
+         "NUL",
+         "SOH",
+         "STX",
+         "ETX",
+         "EOT",
+         "ENQ",
+         "ACK",
+         "BEL",
+         "BS" & Character'Val (0),
+         "HT" & Character'Val (0),
+         "LF" & Character'Val (0),
+         "VT" & Character'Val (0),
+         "FF" & Character'Val (0),
+         "CR" & Character'Val (0),
+         "SO" & Character'Val (0),
+         "SI" & Character'Val (0),
+         "DLE",
+         "DC1",
+         "DC2",
+         "DC3",
+         "DC4",
+         "NAK",
+         "SYN",
+         "ETB",
+         "CAN",
+         "EM" & Character'Val (0),
+         "SUB",
+         "ESC",
+         "FS" & Character'Val (0),
+         "GS" & Character'Val (0),
+         "RS" & Character'Val (0),
+         "US" & Character'Val (0));
+   Image_7F : aliased constant String_3 := "DEL";
 
 end System.Img_Char;

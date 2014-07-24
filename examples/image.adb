@@ -101,7 +101,6 @@ begin
 		pragma Assert (Enum16'Value (Enum16'Image (Enum16'Last)) = Enum16'Last);
 		pragma Assert (Enum32'Value (Enum32'Image (Enum32'First)) = Enum32'First);
 		pragma Assert (Enum32'Value (Enum32'Image (Enum32'Last)) = Enum32'Last);
-		pragma Assert (Character'Value (Character'Image (Character'First)) = Character'First);
 		begin
 			if Character'Value ("SOFT_HYPHEN") = Character'Val (16#ad#) then
 				null;
@@ -110,7 +109,10 @@ begin
 		exception
 			when Constraint_Error => null; -- OK
 		end;
-		pragma Assert (Character'Value (Character'Image (Character'Last)) = Character'Last);
+		for I in Character loop
+			pragma Assert (Character'Value (Character'Image (I)) = I);
+			null;
+		end loop;
 		pragma Assert (Wide_Character'Value (Wide_Character'Image (Wide_Character'First)) = Wide_Character'First);
 		pragma Assert (Wide_Character'Value ("SOFT_HYPHEN") = Wide_Character'Val (16#ad#));
 		pragma Assert (Wide_Character'Value (Wide_Character'Image (Wide_Character'Last)) = Wide_Character'Last);
@@ -182,6 +184,22 @@ begin
 			pragma Assert (T'Wide_Wide_Width = 6);
 			null;
 		end;
+		for I in Character'First .. Character'Val (16#80#) loop
+			for J in I .. Character'Val (16#80#) loop
+				declare
+					subtype T is Character range I .. J;
+					Max_Width : Natural := 0;
+				begin
+					for K in T loop
+						Max_Width := Natural'Max (Max_Width, T'Image (K)'Length);
+					end loop;
+					pragma Assert (T'Width = Max_Width);
+					pragma Assert (T'Wide_Width = Max_Width);
+					pragma Assert (T'Wide_Wide_Width = Max_Width);
+					null;
+				end;
+			end loop;
+		end loop;
 		declare
 			subtype T is Wide_Character range Wide_Character'Val (0) .. Wide_Character'Value ("Hex_FFFF");
 		begin
