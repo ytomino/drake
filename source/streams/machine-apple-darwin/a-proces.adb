@@ -121,7 +121,9 @@ package body Ada.Processes is
          Command_Line,
          C_Command_Line (0)'Access);
       Code := C.stdlib.C_system (C_Command_Line (0)'Access);
-      if Code = -1 then
+      if Code < 0
+         or else Code = 127 * 16#100# -- the execution of the shell failed
+      then
          Raise_Exception (Name_Error'Identity);
       else
          if WIFEXITED (Code) then
