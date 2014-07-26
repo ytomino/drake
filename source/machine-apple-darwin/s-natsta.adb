@@ -1,7 +1,9 @@
+with System.Storage_Elements;
 with C.sys.syscall;
 with C.unistd;
 package body System.Native_Stack is
    pragma Suppress (All_Checks);
+   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
 
    procedure Get (
@@ -9,7 +11,10 @@ package body System.Native_Stack is
       Top, Bottom : out Address) is
    begin
       Bottom := Address (C.pthread.pthread_get_stackaddr_np (Thread));
-      Top := Bottom - Address (C.pthread.pthread_get_stacksize_np (Thread));
+      Top :=
+         Bottom
+         - Storage_Elements.Storage_Offset (
+            C.pthread.pthread_get_stacksize_np (Thread));
    end Get;
 
    procedure Fake_Return_From_Signal_Handler is
