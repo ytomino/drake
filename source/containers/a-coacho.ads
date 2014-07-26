@@ -108,14 +108,14 @@ private
       Super at 0 range 0 .. Weak_Access_Holders.Data_Size - 1;
    end record;
 
-   Null_Data : aliased Data := (
+   Null_Data : aliased constant Data := (
       Super => (System.Reference_Counting.Static, null),
       Item => <>);
 
    type Data_Access is access all Data;
 
    type Holder is new Finalization.Controlled with record
-      Data : aliased not null Data_Access := Null_Data'Access;
+      Data : aliased not null Data_Access := Null_Data'Unrestricted_Access;
    end record;
 
    overriding procedure Adjust (Object : in out Holder);

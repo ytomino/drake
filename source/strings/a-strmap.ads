@@ -221,7 +221,7 @@ private
    subtype Set_Data is Characters.Inside.Sets.Character_Set;
    type Set_Data_Access is access all Set_Data;
 
-   Empty_Set_Data : constant Set_Data := (
+   Empty_Set_Data : aliased constant Set_Data := (
       Length => 0,
       Reference_Count => System.Reference_Counting.Static,
       Items => <>);
@@ -275,7 +275,7 @@ private
    subtype Map_Data is Characters.Inside.Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
 
-   Empty_Map_Data : constant Map_Data := (
+   Empty_Map_Data : aliased constant Map_Data := (
       Length => 0,
       Reference_Count => System.Reference_Counting.Static,
       From => <>,

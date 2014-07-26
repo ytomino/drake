@@ -2,7 +2,6 @@ with Ada.Characters.Inside;
 with Ada.Streams.Block_Transmission.Wide_Wide_Strings;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System.Address_To_Named_Access_Conversions;
 with System.UTF_Conversions.From_8_To_32;
 with System.UTF_Conversions.From_16_To_32;
 with System.UTF_Conversions.From_32_To_8;
@@ -30,17 +29,34 @@ package body Ada.Strings.Maps is
       return True;
    end Valid;
 
+   subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
+
+   function Upcast is
+      new Unchecked_Conversion (
+         Not_Null_Set_Data_Access,
+         System.Reference_Counting.Container);
+   function Downcast is
+      new Unchecked_Conversion (
+         System.Reference_Counting.Container,
+         Not_Null_Set_Data_Access);
+
+   type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
+   type Container_Access is access all System.Reference_Counting.Container;
+
+   function Upcast is
+      new Unchecked_Conversion (Set_Data_Access_Access, Container_Access);
+
    procedure Free is new Unchecked_Deallocation (Set_Data, Set_Data_Access);
 
-   procedure Free_Set_Data (Data : System.Address);
-   procedure Free_Set_Data (Data : System.Address) is
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Set_Data,
-            Set_Data_Access);
-      X : Set_Data_Access := Conv.To_Pointer (Data);
+   procedure Free_Set_Data (
+      Data : in out System.Reference_Counting.Data_Access);
+   procedure Free_Set_Data (
+      Data : in out System.Reference_Counting.Data_Access)
+   is
+      X : Set_Data_Access := Downcast (Data);
    begin
       Free (X);
+      Data := null;
    end Free_Set_Data;
 
    --  "-" operation
@@ -573,10 +589,18 @@ package body Ada.Strings.Maps is
    begin
       if Left_Data.Length = 0 then
          Data := Right_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -610,10 +634,18 @@ package body Ada.Strings.Maps is
    begin
       if Left_Data.Length = 0 then
          Data := Right_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       else
          declare
             Max : constant Natural := Left_Data.Length + Right_Data.Length;
@@ -658,7 +690,11 @@ package body Ada.Strings.Maps is
          Data := Empty_Set_Data'Unrestricted_Access;
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -706,21 +742,14 @@ package body Ada.Strings.Maps is
 
       overriding procedure Adjust (Object : in out Character_Set) is
       begin
-         System.Reference_Counting.Adjust (Object.Data.Reference_Count);
+         System.Reference_Counting.Adjust (
+            Upcast (Object.Data'Unchecked_Access));
       end Adjust;
 
       overriding procedure Finalize (Object : in out Character_Set) is
-         subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
-         type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
-         type System_Address_Access is access all System.Address;
-         function Upcast is
-            new Unchecked_Conversion (
-               Set_Data_Access_Access,
-               System_Address_Access);
       begin
          System.Reference_Counting.Clear (
-            Upcast (Object.Data'Access),
-            Object.Data.Reference_Count,
+            Upcast (Object.Data'Unchecked_Access),
             Free => Free_Set_Data'Access);
       end Finalize;
 
@@ -769,17 +798,29 @@ package body Ada.Strings.Maps is
 
    --  maps
 
+   subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
+
+   function Downcast is
+      new Unchecked_Conversion (
+         System.Reference_Counting.Container,
+         Not_Null_Map_Data_Access);
+
+   type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
+
+   function Upcast is
+      new Unchecked_Conversion (Map_Data_Access_Access, Container_Access);
+
    procedure Free is new Unchecked_Deallocation (Map_Data, Map_Data_Access);
 
-   procedure Free_Map_Data (Data : System.Address);
-   procedure Free_Map_Data (Data : System.Address) is
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Map_Data,
-            Map_Data_Access);
-      X : Map_Data_Access := Conv.To_Pointer (Data);
+   procedure Free_Map_Data (
+      Data : in out System.Reference_Counting.Data_Access);
+   procedure Free_Map_Data (
+      Data : in out System.Reference_Counting.Data_Access)
+   is
+      X : Map_Data_Access := Downcast (Data);
    begin
       Free (X);
+      Data := null;
    end Free_Map_Data;
 
    --  implementation of maps
@@ -929,21 +970,14 @@ package body Ada.Strings.Maps is
 
       overriding procedure Adjust (Object : in out Character_Mapping) is
       begin
-         System.Reference_Counting.Adjust (Object.Data.Reference_Count);
+         System.Reference_Counting.Adjust (
+            Upcast (Object.Data'Unchecked_Access));
       end Adjust;
 
       overriding procedure Finalize (Object : in out Character_Mapping) is
-         subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
-         type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
-         type System_Address_Access is access all System.Address;
-         function Upcast is
-            new Unchecked_Conversion (
-               Map_Data_Access_Access,
-               System_Address_Access);
       begin
          System.Reference_Counting.Clear (
-            Upcast (Object.Data'Access),
-            Object.Data.Reference_Count,
+            Upcast (Object.Data'Unchecked_Access),
             Free => Free_Map_Data'Access);
       end Finalize;
 

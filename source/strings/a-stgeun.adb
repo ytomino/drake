@@ -11,10 +11,21 @@ package body Ada.Strings.Generic_Unbounded is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
    subtype Not_Null_Data_Access is not null Data_Access;
-   type Data_Access_Access is access all Not_Null_Data_Access;
-   type System_Address_Access is access all System.Address;
+
    function Upcast is
-      new Unchecked_Conversion (Data_Access_Access, System_Address_Access);
+      new Unchecked_Conversion (
+         Not_Null_Data_Access,
+         System.Reference_Counting.Container);
+   function Downcast is
+      new Unchecked_Conversion (
+         System.Reference_Counting.Container,
+         Not_Null_Data_Access);
+
+   type Data_Access_Access is access all Not_Null_Data_Access;
+   type Container_Access is access all System.Reference_Counting.Container;
+
+   function Upcast is
+      new Unchecked_Conversion (Data_Access_Access, Container_Access);
 
    function Allocate_Data (Max_Length, Capacity : Natural)
       return not null Data_Access;
@@ -85,21 +96,22 @@ package body Ada.Strings.Generic_Unbounded is
       end if;
    end Allocate_Data;
 
-   procedure Free_Data (Data : System.Address);
-   procedure Free_Data (Data : System.Address) is
+   procedure Free_Data (Data : in out System.Reference_Counting.Data_Access);
+   procedure Free_Data (Data : in out System.Reference_Counting.Data_Access) is
    begin
-      System.Standard_Allocators.Free (Data);
+      System.Standard_Allocators.Free (Data_Cast.To_Address (Downcast (Data)));
+      Data := null;
    end Free_Data;
 
    procedure Copy_Data (
-      Target : out System.Address;
-      Source : System.Address;
+      Target : out System.Reference_Counting.Data_Access;
+      Source : not null System.Reference_Counting.Data_Access;
       Length : Natural;
       Max_Length : Natural;
       Capacity : Natural);
    procedure Copy_Data (
-      Target : out System.Address;
-      Source : System.Address;
+      Target : out System.Reference_Counting.Data_Access;
+      Source : not null System.Reference_Counting.Data_Access;
       Length : Natural;
       Max_Length : Natural;
       Capacity : Natural)
@@ -108,8 +120,8 @@ package body Ada.Strings.Generic_Unbounded is
          Allocate_Data (Max_Length, Capacity);
       subtype R is Integer range 1 .. Length;
    begin
-      Data.Items (R) := Data_Cast.To_Pointer (Source).Items (R);
-      Target := Data_Cast.To_Address (Data);
+      Data.Items (R) := Downcast (Source).Items (R);
+      Target := Upcast (Data);
    end Copy_Data;
 
    procedure Reserve_Capacity (
@@ -121,12 +133,11 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       System.Reference_Counting.Unique (
          Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Reference_Count => Item.Data.Reference_Count,
          Target_Length => Item.Length,
          Target_Capacity => Generic_Unbounded.Capacity (Item),
          Max_Length => Item.Length,
          Capacity => Capacity,
-         Sentinel => Empty_Data'Address,
+         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
    end Reserve_Capacity;
@@ -146,9 +157,7 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       System.Reference_Counting.Assign (
          Upcast (Target.Data'Unchecked_Access),
-         Target.Data.Reference_Count,
          Upcast (Source.Data'Unrestricted_Access),
-         Source.Data.Reference_Count,
          Free => Free_Data'Access);
       Target.Length := Source.Length;
    end Assign;
@@ -176,12 +185,11 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       System.Reference_Counting.Set_Length (
          Target => Upcast (Source.Data'Unchecked_Access),
-         Target_Reference_Count => Source.Data.Reference_Count,
          Target_Length => Source.Length,
          Target_Max_Length => Source.Data.Max_Length,
          Target_Capacity => Capacity (Source),
          New_Length => Length,
-         Sentinel => Empty_Data'Address,
+         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
       Source.Length := Length;
@@ -481,14 +489,13 @@ package body Ada.Strings.Generic_Unbounded is
 
    overriding procedure Adjust (Object : in out Unbounded_String) is
    begin
-      System.Reference_Counting.Adjust (Object.Data.Reference_Count);
+      System.Reference_Counting.Adjust (Upcast (Object.Data'Unchecked_Access));
    end Adjust;
 
    overriding procedure Finalize (Object : in out Unbounded_String) is
    begin
       System.Reference_Counting.Clear (
          Upcast (Object.Data'Unchecked_Access),
-         Object.Data.Reference_Count,
          Free => Free_Data'Access);
       Object.Data := Empty_Data'Unrestricted_Access;
       Object.Length := 0;

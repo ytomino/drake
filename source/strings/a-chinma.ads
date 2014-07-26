@@ -15,6 +15,13 @@ package Ada.Characters.Inside.Maps is
    pragma Suppress_Initialization (Character_Mapping);
    --  all object must have explicit initialization
 
+   --  place Reference_Count at first
+   for Character_Mapping use record
+      Reference_Count at 0 range
+         0 ..
+         System.Reference_Counting.Counter'Size - 1;
+   end record;
+
    function Value (
       Map : Character_Mapping;
       Element : Character_Type)
