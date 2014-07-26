@@ -1,7 +1,9 @@
 with Ada.Unchecked_Conversion;
+with System.Storage_Elements;
 with C.pthread_np;
 package body System.Native_Stack is
    pragma Suppress (All_Checks);
+   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
 
    procedure Runtime_Error (
@@ -37,7 +39,7 @@ package body System.Native_Stack is
          Bottom := Null_Address;
       else
          Top := Cast (C_Addr);
-         Bottom := Top + Address (C_Size);
+         Bottom := Top + Storage_Elements.Storage_Offset (C_Size);
       end if;
    end Get;
 
