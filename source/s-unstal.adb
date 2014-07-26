@@ -2,8 +2,8 @@ with System.Address_To_Named_Access_Conversions;
 with System.Standard_Allocators;
 package body System.Unbounded_Stack_Allocators is
    pragma Suppress (All_Checks);
-   use type System.Storage_Elements.Integer_Address;
-   use type System.Storage_Elements.Storage_Offset;
+   use type Storage_Elements.Integer_Address;
+   use type Storage_Elements.Storage_Offset;
 
    Expanding : constant := 1; -- connecting next page
    pragma Warnings (Off, Expanding);

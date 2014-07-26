@@ -16,7 +16,7 @@ package body System.Native_Credentials is
       then
          raise Constraint_Error; -- ???
       end if;
-      return System.Zero_Terminated_WStrings.Value (
+      return Zero_Terminated_WStrings.Value (
          Result (0)'Access,
          C.size_t (Length) - 1);
    end User_Name;

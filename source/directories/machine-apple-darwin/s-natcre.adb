@@ -12,7 +12,7 @@ package body System.Native_Credentials is
       if Info = null then
          raise Constraint_Error;
       else
-         return System.Zero_Terminated_Strings.Value (Info.pw_name);
+         return Zero_Terminated_Strings.Value (Info.pw_name);
       end if;
    end User_Name;
 
@@ -23,7 +23,7 @@ package body System.Native_Credentials is
       if Info = null then
          raise Constraint_Error;
       else
-         return System.Zero_Terminated_Strings.Value (Info.gr_name);
+         return Zero_Terminated_Strings.Value (Info.gr_name);
       end if;
    end Group_Name;
 
