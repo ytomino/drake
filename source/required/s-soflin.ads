@@ -27,14 +27,21 @@ package System.Soft_Links is
    procedure Nop
       renames Synchronous_Control.Nop;
 
+   type Current_Master_Handler is access function return Integer;
+   pragma Suppress (Access_Check, Current_Master_Handler);
+   type Enter_Master_Handler is access procedure;
+   pragma Suppress (Access_Check, Enter_Master_Handler);
+   type Complete_Master_Handler is access procedure;
+   pragma Suppress (Access_Check, Complete_Master_Handler);
+
    --  required for controlled types and task by compiler (s-soflin.ads)
-   Current_Master : not null access function return Integer := Zero'Access;
+   Current_Master : not null Current_Master_Handler := Zero'Access;
    pragma Suppress (Access_Check, Current_Master);
 
    --  required for task by compiler (s-soflin.ads)
-   Enter_Master : not null access procedure := Nop'Access;
+   Enter_Master : not null Enter_Master_Handler := Nop'Access;
    pragma Suppress (Access_Check, Enter_Master);
-   Complete_Master : not null access procedure := Nop'Access;
+   Complete_Master : not null Complete_Master_Handler := Nop'Access;
    pragma Suppress (Access_Check, Complete_Master);
 
    --  required for many times by compiler (s-soflin.ads)

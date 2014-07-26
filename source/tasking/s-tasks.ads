@@ -121,8 +121,10 @@ package System.Tasks is
       return Natural;
    function Callable (T : not null Task_Id) return Boolean;
 
-   Cancel_Call_Hook : access
-      procedure (X : in out Synchronous_Objects.Queue_Node_Access) := null;
+   type Cancel_Call_Handler is access procedure (
+      X : in out Synchronous_Objects.Queue_Node_Access);
+
+   Cancel_Call_Hook : Cancel_Call_Handler := null;
 
    --  attribute for Ada.Task_Attributes
 

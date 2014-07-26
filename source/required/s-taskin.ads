@@ -63,10 +63,13 @@ package System.Tasking is
    function Self return Task_Id;
    pragma Import (Ada, Self, "__drake_current_task");
 
-   --  required for 'Storage_Size by compiler (s-taskin.ads)
-   Storage_Size : access function (T : Task_Id)
-      return Storage_Elements.Storage_Count := null;
+   type Storage_Size_Handler is access function (T : Task_Id)
+      return Storage_Elements.Storage_Count;
       --  System.Parameters.Size_Type ???
+   pragma Suppress (Access_Check, Storage_Size_Handler);
+
+   --  required for 'Storage_Size by compiler (s-taskin.ads)
+   Storage_Size : Storage_Size_Handler := null;
    pragma Suppress (Access_Check, Storage_Size);
 
    --  equivalent to String_Access (s-taskin.ads)
