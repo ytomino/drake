@@ -11,6 +11,13 @@ begin
 		Ada.Debug.Put (Ada.Command_Line.Exit_Status'Image (Code));
 		Ada.Processes.Shell ("ls @@@", Code); -- is not existing
 		Ada.Debug.Put (Ada.Command_Line.Exit_Status'Image (Code));
+		begin
+			Ada.Processes.Shell ("acats", Code); -- dir
+			raise Program_Error;
+		exception
+			when Ada.Processes.Name_Error =>
+				null;
+		end;
 	end;
 	declare
 		C : Ada.Processes.Process;

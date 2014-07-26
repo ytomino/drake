@@ -127,13 +127,11 @@ package body System.Native_Tasks is
    is
       pragma Unreferenced (Attr);
    begin
---    pragma Check (Trace, Ada.Debug.Put ("abort " & Name (T)));
       case C.pthread.pthread_kill (Handle, C.signal.SIGTERM) is
          when 0 =>
             Yield;
             Error := False;
          when C.errno.ESRCH =>
---          pragma Assert (Terminated (T));
             Error := False; -- it is already terminated, C9A003A
          when others =>
             Error := True;

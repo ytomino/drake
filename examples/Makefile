@@ -64,7 +64,7 @@ LFLAGS=-lm -lpthread -ldl
 endif
 
 ifneq ($(DEBUG),0)
-CFLAGS+=-g -gnata
+CFLAGS+=-g -gnata -gnat-p
 BFLAGS=-E
 LFLAGS+=-g
 else

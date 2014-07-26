@@ -69,7 +69,7 @@ package body Ada.Calendar.Inside is
       Result : Duration;
    begin
       --  UNIX time starts until 1970, Year_Number stats unitl 1901...
-      if C_Result = -1 then
+      if C_Result = -1 then -- to pass negative UNIX time (?)
          if Year = 1901 and then Month = 1 and then Day = 1 then
             Result := -7857734400.0; -- first day in Time
          else

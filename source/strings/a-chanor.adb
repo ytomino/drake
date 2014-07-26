@@ -1,5 +1,6 @@
 --  reference:
 --  http://www.unicode.org/reports/tr15/
+pragma Check_Policy (Validate, Off);
 with Ada.UCD.Combining_Class;
 with Ada.UCD.Normalization;
 with System.Once;
@@ -7,6 +8,10 @@ with System.UTF_Conversions;
 package body Ada.Characters.Normalization is
    use type UCD.UCS_4;
    use type System.UTF_Conversions.UCS_4;
+
+   procedure unreachable;
+   pragma No_Return (unreachable);
+   pragma Import (Intrinsic, unreachable, "__builtin_unreachable");
 
    function Standard_Equal (Left, Right : Wide_Wide_String) return Boolean;
    function Standard_Equal (Left, Right : Wide_Wide_String) return Boolean is
@@ -47,8 +52,8 @@ package body Ada.Characters.Normalization is
             return I;
          end if;
       end loop;
-      pragma Assert (False);
-      return 0;
+      pragma Check (Validate, False);
+      unreachable;
    end Decomposed_Length;
 
    type D_Map_Element is record
@@ -134,7 +139,7 @@ package body Ada.Characters.Normalization is
             end if;
             --  replacing
             Decomposed := True;
-            Item (I + To_Length .. Last + To_Length) :=
+            Item (I + To_Length .. Last + To_Length - 1) :=
                Item (I + 1 .. Last);
             Item (I .. I + To_Length - 1) := To (1 .. To_Length);
             Last := Last + To_Length - 1;
@@ -222,7 +227,7 @@ package body Ada.Characters.Normalization is
          Fill (D_Map.all, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
          --  16#1D15E#
          Fill (D_Map.all, I, UCD.Normalization.NFD_E_Table_XXXXXXXX);
-         pragma Assert (I = D_Map'Last + 1);
+         pragma Check (Validate, I = D_Map'Last + 1);
       end;
       --  sort
       for I in D_Map'First + 1 .. D_Map'Last loop
@@ -263,7 +268,7 @@ package body Ada.Characters.Normalization is
                               To (J .. J + R_Length - 1) :=
                                  D_Map (D).To (1 .. R_Length);
                               To_Last := To_Last + R_Length - 1;
-                              pragma Assert (To_Last <= Expanding);
+                              pragma Check (Validate, To_Last <= Expanding);
                               J := J + R_Length - 1;
                            end;
                         else
@@ -437,7 +442,7 @@ package body Ada.Characters.Normalization is
          Fill (C_Map.all, I, UCD.Normalization.NFD_D_Table_XXXX);
          --  (16#11099#, 16#110BA#) ..
          Fill (C_Map.all, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
-         pragma Assert (I = C_Map'Last + 1);
+         pragma Check (Validate, I = C_Map'Last + 1);
       end;
       --  sort
       for I in C_Map'First + 1 .. C_Map'Last loop

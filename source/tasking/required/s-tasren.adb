@@ -96,7 +96,7 @@ package body System.Tasking.Rendezvous is
       Tasks.Enable_Abort;
       Tasks.Accept_Call (
          The_Node,
-         Address (E),
+         System'To_Address (E),
          Filter'Access,
          Aborted => Aborted);
       Tasks.Disable_Abort (Aborted); -- if aborted, raise here
@@ -258,7 +258,7 @@ package body System.Tasking.Rendezvous is
    begin
       return Tasks.Call_Count (
          Tasks.Current_Task_Id,
-         Address (E),
+         System'To_Address (E),
          Filter'Access);
    end Task_Count;
 

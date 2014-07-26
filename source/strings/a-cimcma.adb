@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with Ada.UCD.Simple_Case_Mapping;
 with System.Once;
 with System.Reference_Counting;
@@ -147,7 +148,7 @@ package body Ada.Characters.Inside.Maps.Case_Mapping is
             I,
             UCD.Simple_Case_Mapping.SL_Table_1XXXX_Compressed,
             Offset => 16#10000#);
-         pragma Assert (I = Mapping.From'Last + 1);
+         pragma Check (Validate, I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
    end L_Mapping_Init;
@@ -200,7 +201,7 @@ package body Ada.Characters.Inside.Maps.Case_Mapping is
             I,
             UCD.Simple_Case_Mapping.SL_Table_1XXXX_Compressed,
             Offset => 16#10000#);
-         pragma Assert (I = Mapping.From'Last + 1);
+         pragma Check (Validate, I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
    end U_Mapping_Init;

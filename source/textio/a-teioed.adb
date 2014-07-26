@@ -387,7 +387,6 @@ package body Ada.Text_IO.Editing is
                   if Pic_Leading_Index > Pic_Index then
                      Pic_Leading_Index := Pic_Index;
                   end if;
-                  pragma Assert (Pic_Leading_Index >= Pic.Expanded'First);
                   case Pic.Expanded (Pic_Leading_Index) is
                      when '$' =>
                         if Currency_Filled then
@@ -510,7 +509,6 @@ package body Ada.Text_IO.Editing is
                if Pic.Radix_Position <= Pic.Length
                   and then Pic.Expanded (Pic.Radix_Position) = '.'
                then
-                  pragma Assert (Result_Index <= Result'Last);
                   Result (Result_Index) := Radix_Mark;
                   Result_Index := Result_Index + 1;
                end if;
@@ -530,7 +528,7 @@ package body Ada.Text_IO.Editing is
                   Pic_Index := Pic_Index + 1;
                end loop;
                while Result_Index <= Result'Last loop
-                  pragma Assert (Pic_Index >= Pic.Expanded'First);
+                  pragma Assert (Pic_Index <= Pic.Length);
                   case Pic.Expanded (Pic_Index) is
                      when '#' =>
                         if Currency_Filled then

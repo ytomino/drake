@@ -9,7 +9,7 @@ package body Ada.Streams.Stream_IO.Pipes is
    procedure Create (Reading, Writing : out File_Type) is
       Handles : array (0 .. 1) of aliased System.Native_IO.Handle_Type;
    begin
-      if C.unistd.pipe (Handles (0)'Access) = -1 then
+      if C.unistd.pipe (Handles (0)'Access) < 0 then
          Raise_Exception (Use_Error'Identity);
       else
          System.Native_IO.Set_Close_On_Exec (Handles (0));

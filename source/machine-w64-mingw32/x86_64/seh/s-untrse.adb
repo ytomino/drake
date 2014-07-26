@@ -67,7 +67,8 @@ package body Separated is
             if RuntimeFunction = null then
                --  In case of failure, assume this is a leaf function.
                context.Rip :=
-                  PCDWORD64_Conv.To_Pointer (Address (context.Rsp)).all;
+                  PCDWORD64_Conv.To_Pointer (
+                     System'To_Address (context.Rsp)).all;
                context.Rsp := context.Rsp + 8;
             else
                --  Unwind.
@@ -87,13 +88,13 @@ package body Separated is
                      NvContext'Access);
             end if;
             --  0 means bottom of the stack.
-            exit when Address (context.Rip) = Null_Address;
+            exit when System'To_Address (context.Rip) = Null_Address;
             if Skipped_Frames < Skip_Frames then
                --  Skip frames.
                Skipped_Frames := Skipped_Frames + 1;
                pragma Check (Trace, Ada.Debug.Put ("skip"));
-            elsif Address (context.Rip) >= Exclude_Min
-               and then Address (context.Rip) <= Exclude_Max
+            elsif System'To_Address (context.Rip) >= Exclude_Min
+               and then System'To_Address (context.Rip) <= Exclude_Max
             then
                --  Excluded frames.
                pragma Check (Trace, Ada.Debug.Put ("exclude"));
@@ -101,7 +102,8 @@ package body Separated is
             else
                Length := Length + 1;
                Traceback (Length) :=
-                  Address (context.Rip) - Storage_Elements.Storage_Offset'(2);
+                  System'To_Address (context.Rip)
+                  - Storage_Elements.Storage_Offset'(2);
                pragma Check (Trace, Ada.Debug.Put ("fill"));
                exit when Length >= Tracebacks_Array'Length;
             end if;

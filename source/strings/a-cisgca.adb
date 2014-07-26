@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with Ada.UCD.General_Category;
 with System.Once;
 with System.Reference_Counting;
@@ -15,7 +16,7 @@ package body Ada.Characters.Inside.Sets.General_Category is
    is
       Length : constant Natural := Table'Length;
    begin
-      pragma Assert (Length = To'Length);
+      pragma Check (Validate, Length = To'Length);
       for I in 0 .. Length - 1 loop
          declare
             T : Character_Range
@@ -39,7 +40,7 @@ package body Ada.Characters.Inside.Sets.General_Category is
    is
       Length : constant Natural := Table'Length;
    begin
-      pragma Assert (Length = To'Length);
+      pragma Check (Validate, Length = To'Length);
       for I in 0 .. Length - 1 loop
          declare
             T : Character_Range
@@ -64,7 +65,7 @@ package body Ada.Characters.Inside.Sets.General_Category is
    is
       Length : constant Natural := Table'Length;
    begin
-      pragma Assert (Length = To'Length);
+      pragma Check (Validate, Length = To'Length);
       for I in 0 .. Length - 1 loop
          declare
             T : Character_Range
@@ -89,7 +90,7 @@ package body Ada.Characters.Inside.Sets.General_Category is
    is
       Length : constant Natural := Table'Length;
    begin
-      pragma Assert (Length = To'Length);
+      pragma Check (Validate, Length = To'Length);
       for I in 0 .. Length - 1 loop
          declare
             T : Character_Range
@@ -138,16 +139,16 @@ package body Ada.Characters.Inside.Sets.General_Category is
       Fill (T_16x1, Table_16x1, Offset => 0);
       Fill (T_16x2, Table_16x2, Offset => 0);
       Merge (To (R_16_First .. R_17_First - 1), Last, T_16x1, T_16x2);
-      pragma Assert (Last = R_17_First - 1);
+      pragma Check (Validate, Last = R_17_First - 1);
       Fill (T_17x1, Table_17x1, Offset => 16#10000#);
       Fill (T_17x2, Table_17x2, Offset => 16#10000#);
       Merge (To (R_17_First .. R_32_First - 1), Last, T_17x1, T_17x2);
-      pragma Assert (Last = R_32_First - 1);
+      pragma Check (Validate, Last = R_32_First - 1);
       Fill (T_32x1, Table_32x1);
       Fill (T_32x2, Table_32x2);
       Merge (To (R_32_First .. R_32_Last), Last, T_32x1, T_32x2);
-      pragma Assert (Last = R_32_Last);
-      pragma Assert (Last = To'Last);
+      pragma Check (Validate, Last = R_32_Last);
+      pragma Check (Validate, Last = To'Last);
    end Fill;
 
    type Character_Set_Access is access Character_Set;
@@ -196,7 +197,7 @@ package body Ada.Characters.Inside.Sets.General_Category is
             Reference_Count => System.Reference_Counting.Static,
             Items => UA.Items);
       end;
-      pragma Assert (
+      pragma Check (Validate,
          All_Unassigned_Set.Items (All_Unassigned_Set.Items'Last).High =
          Character_Type'Val (16#10FFFF#));
       All_Unassigned_Set.Items (All_Unassigned_Set.Items'Last).High :=
