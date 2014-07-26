@@ -203,9 +203,9 @@ package body System.Unwind.Mapping is
          new Ada.Unchecked_Conversion (
             C.winnt.struct_TEB_ptr,
             C.winnt.NT_TIB_ptr);
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            Address,
+      package EXCEPTION_REGISTRATION_RECORD_ptr_Conv is
+         new Address_To_Named_Access_Conversions (
+            C.winnt.struct_EXCEPTION_REGISTRATION_RECORD,
             C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr);
       TEB : constant C.winnt.struct_TEB_ptr := C.winnt.NtCurrentTeb;
       TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
@@ -215,9 +215,10 @@ package body System.Unwind.Mapping is
       SEH_Rec.ExceptionList := TIB.ExceptionList;
       SEH_Rec.Handler := Ada_SEH_Handler'Access;
       --  register new handler
-      TIB.ExceptionList := Cast (SEH);
+      TIB.ExceptionList :=
+         EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH);
       --  memory the stack area of main
-      SEH_In_Main := Cast (SEH);
+      SEH_In_Main := EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH);
       --  note, raising an exception from SetUnhandledExceptionFilter is
       --    probably too late
    end Install_Exception_Handler;

@@ -1,6 +1,7 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System.Address_To_Named_Access_Conversions;
 with System.Tasks;
 package body Ada.Task_Attributes is
    use type System.Address;
@@ -22,16 +23,17 @@ package body Ada.Task_Attributes is
       new Unchecked_Conversion (
          Task_Identification.Task_Id,
          System.Tasks.Task_Id);
-   function Cast is
-      new Unchecked_Conversion (System.Address, Attribute_Handle);
-   function Cast is
-      new Unchecked_Conversion (Attribute_Handle, System.Address);
+
+   package Attribute_Handle_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         Attribute,
+         Attribute_Handle);
 
    procedure Free is new Unchecked_Deallocation (Attribute, Attribute_Handle);
 
    procedure Finalize (Item : System.Address);
    procedure Finalize (Item : System.Address) is
-      P : Attribute_Handle := Cast (Item);
+      P : Attribute_Handle := Attribute_Handle_Conv.To_Pointer (Item);
    begin
       Free (P);
    end Finalize;
@@ -53,7 +55,7 @@ package body Ada.Task_Attributes is
                if Item = System.Null_Address then
                   Result := Initial_Value;
                else
-                  Result := Cast (Item).all;
+                  Result := Attribute_Handle_Conv.To_Pointer (Item).all;
                end if;
             end Process;
          begin
@@ -73,7 +75,8 @@ package body Ada.Task_Attributes is
          function New_Item return System.Address;
          function New_Item return System.Address is
          begin
-            return Cast (new Attribute'(Initial_Value));
+            return Attribute_Handle_Conv.To_Address (
+               new Attribute'(Initial_Value));
          end New_Item;
          Result : System.Address;
       begin
@@ -83,7 +86,7 @@ package body Ada.Task_Attributes is
             New_Item'Access,
             Finalize'Access,
             Result);
-         return Cast (Result);
+         return Attribute_Handle_Conv.To_Pointer (Result);
       end;
    end Reference;
 
@@ -98,7 +101,7 @@ package body Ada.Task_Attributes is
          function New_Item return System.Address;
          function New_Item return System.Address is
          begin
-            return Cast (new Attribute'(Val));
+            return Attribute_Handle_Conv.To_Address (new Attribute'(Val));
          end New_Item;
       begin
          System.Tasks.Set (
