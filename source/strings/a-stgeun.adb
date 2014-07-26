@@ -148,6 +148,14 @@ package body Ada.Strings.Generic_Unbounded is
       Reserve_Capacity (Item, Capacity (Item));
    end Unique;
 
+   function Create (Data : not null Data_Access; Length : Natural)
+      return Unbounded_String;
+   function Create (Data : not null Data_Access; Length : Natural)
+      return Unbounded_String is
+   begin
+      return (Finalization.Controlled with Data => Data, Length => Length);
+   end Create;
+
    procedure Assign (
       Target : in out Unbounded_String;
       Source : Unbounded_String);
@@ -166,9 +174,7 @@ package body Ada.Strings.Generic_Unbounded is
 
    function Null_Unbounded_String return Unbounded_String is
    begin
-      return (Finalization.Controlled with
-         Data => Empty_Data'Unrestricted_Access,
-         Length => 0);
+      return Create (Data => Empty_Data'Unrestricted_Access, Length => 0);
    end Null_Unbounded_String;
 
    function Is_Null (Source : Unbounded_String) return Boolean is
@@ -208,7 +214,7 @@ package body Ada.Strings.Generic_Unbounded is
          Allocate_Data (Length, Length);
    begin
       New_Data.Items (1 .. Length) := Source;
-      return (Finalization.Controlled with Data => New_Data, Length => Length);
+      return Create (Data => New_Data, Length => Length);
    end To_Unbounded_String;
 
    function To_Unbounded_String (Length : Natural)
@@ -217,7 +223,7 @@ package body Ada.Strings.Generic_Unbounded is
       New_Data : constant not null Data_Access :=
          Allocate_Data (Length, Length);
    begin
-      return (Finalization.Controlled with Data => New_Data, Length => Length);
+      return Create (Data => New_Data, Length => Length);
    end To_Unbounded_String;
 
    function To_String (Source : Unbounded_String) return String_Type is
@@ -1133,9 +1139,7 @@ package body Ada.Strings.Generic_Unbounded is
          if S'First /= 1 then
             raise Constraint_Error;
          end if;
-         return (Finalization.Controlled with
-            Data => S_Data'Unrestricted_Access,
-            Length => S'Last);
+         return Create (Data => S_Data'Unrestricted_Access, Length => S'Last);
       end Value;
 
    end Generic_Constant;
