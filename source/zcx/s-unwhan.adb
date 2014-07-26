@@ -77,10 +77,6 @@ package body System.Unwind.Handling is
          new Ada.Unchecked_Conversion (
             C.unwind.struct_Unwind_Exception_ptr,
             C.unwind.Unwind_Word);
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            C.unwind.Unwind_Sword,
-            C.unwind.Unwind_Word);
       GCC_Exception : constant Representation.Machine_Occurrence_Access :=
          To_GNAT (Exception_Object);
       landing_pad : C.unwind.Unwind_Ptr;
@@ -367,7 +363,7 @@ package body System.Unwind.Handling is
       C.unwind.Unwind_SetGR (
          Context,
          builtin_eh_return_data_regno (1),
-         Cast (ttype_filter));
+         C.unwind.Unwind_Word'Mod (ttype_filter));
       C.unwind.Unwind_SetIP (Context, landing_pad);
       --  Setup_Current_Excep (GCC_Exception); -- moved to Begin_Handler
       pragma Check (Trace, Ada.Debug.Put ("leave"));
