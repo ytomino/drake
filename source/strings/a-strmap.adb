@@ -719,13 +719,6 @@ package body Ada.Strings.Maps is
 
    package body Controlled_Sets is
 
-      procedure Assign (
-         Object : in out Character_Set;
-         Data : not null Set_Data_Access) is
-      begin
-         Object.Data := Data;
-      end Assign;
-
       function Create (
          Data : not null Set_Data_Access)
          return Character_Set is
@@ -759,23 +752,21 @@ package body Ada.Strings.Maps is
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Character_Set)
          is
-            Item_Data : Set_Data_Access;
             Length : Integer;
          begin
             Finalize (Item);
             Integer'Read (Stream, Length);
             if Length = 0 then
-               Assign (Item, Empty_Set_Data'Unrestricted_Access);
+               Item.Data := Empty_Set_Data'Unrestricted_Access;
             else
-               Item_Data := new Set_Data'(
+               Item.Data := new Set_Data'(
                   Length => Length,
                   Reference_Count => 1,
                   Items => <>);
-               Assign (Item, Item_Data);
                Characters.Inside.Sets.Character_Ranges'Read (
                   Stream,
-                  Item_Data.Items);
-               pragma Assert (Valid (Item_Data));
+                  Item.Data.Items);
+               pragma Assert (Valid (Item.Data));
             end if;
          end Read;
 
@@ -783,13 +774,12 @@ package body Ada.Strings.Maps is
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : Character_Set)
          is
-            pragma Assert (Valid (Reference (Item)));
-            Item_Data : constant not null Set_Data_Access := Reference (Item);
+            pragma Assert (Valid (Item.Data));
          begin
-            Integer'Write (Stream, Item_Data.Length);
+            Integer'Write (Stream, Item.Data.Length);
             Characters.Inside.Sets.Character_Ranges'Write (
                Stream,
-               Item_Data.Items);
+               Item.Data.Items);
          end Write;
 
       end Streaming;
@@ -947,13 +937,6 @@ package body Ada.Strings.Maps is
 
    package body Controlled_Maps is
 
-      procedure Assign (
-         Object : in out Character_Mapping;
-         Data : not null Map_Data_Access) is
-      begin
-         Object.Data := Data;
-      end Assign;
-
       function Create (
          Data : not null Map_Data_Access)
          return Character_Mapping is
@@ -987,42 +970,38 @@ package body Ada.Strings.Maps is
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Character_Mapping)
          is
-            Item_Data : Map_Data_Access;
             Length : Integer;
          begin
             Finalize (Item);
             Integer'Read (Stream, Length);
             if Length = 0 then
-               Assign (Item, Empty_Map_Data'Unrestricted_Access);
+               Item.Data := Empty_Map_Data'Unrestricted_Access;
             else
-               Item_Data := new Map_Data'(
+               Item.Data := new Map_Data'(
                   Length => Length,
                   Reference_Count => 1,
                   From => <>,
                   To => <>);
-               Assign (Item, Item_Data);
                Streams.Block_Transmission.Wide_Wide_Strings.Read (
                   Stream,
-                  Item_Data.From);
+                  Item.Data.From);
                Streams.Block_Transmission.Wide_Wide_Strings.Read (
                   Stream,
-                  Item_Data.To);
+                  Item.Data.To);
             end if;
          end Read;
 
          procedure Write (
             Stream : not null access Streams.Root_Stream_Type'Class;
-            Item : Character_Mapping)
-         is
-            Item_Data : constant not null Map_Data_Access := Reference (Item);
+            Item : Character_Mapping) is
          begin
-            Integer'Write (Stream, Item_Data.Length);
+            Integer'Write (Stream, Item.Data.Length);
             Streams.Block_Transmission.Wide_Wide_Strings.Write (
                Stream,
-               Item_Data.From);
+               Item.Data.From);
             Streams.Block_Transmission.Wide_Wide_Strings.Write (
                Stream,
-               Item_Data.To);
+               Item.Data.To);
          end Write;
 
       end Streaming;

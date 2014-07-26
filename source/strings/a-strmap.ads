@@ -230,11 +230,6 @@ private
 
       type Character_Set is private;
 
-      procedure Assign (
-         Object : in out Character_Set;
-         Data : not null Set_Data_Access);
-      pragma Inline (Assign);
-
       function Create (
          Data : not null Set_Data_Access)
          return Character_Set;
@@ -284,11 +279,6 @@ private
    package Controlled_Maps is
 
       type Character_Mapping is private;
-
-      procedure Assign (
-         Object : in out Character_Mapping;
-         Data : not null Map_Data_Access);
-      pragma Inline (Assign);
 
       function Create (
          Data : not null Map_Data_Access)

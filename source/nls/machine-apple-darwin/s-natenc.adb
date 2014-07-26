@@ -140,6 +140,54 @@ package body System.Native_Encoding is
       return UTF_8_Name (0)'Access;
    end Get_Current_Encoding;
 
+   procedure Open (Object : out Converter; From, To : Encoding_Id) is
+      pragma Unmodified (Object); -- modified via Reference
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
+      From_uconv : C.icucore.UConverter_ptr;
+      To_uconv : C.icucore.UConverter_ptr;
+      Error : aliased C.icucore.UErrorCode :=
+         C.icucore.unicode.utypes.U_ZERO_ERROR;
+   begin
+      From_uconv := C.icucore.unicode.ucnv.ucnv_open (From, Error'Access);
+      if From_uconv = null then
+         Raise_Exception (Name_Error'Identity);
+      end if;
+      To_uconv := C.icucore.unicode.ucnv.ucnv_open (To, Error'Access);
+      if To_uconv = null then
+         C.icucore.unicode.ucnv.ucnv_close (From_uconv);
+         Raise_Exception (Name_Error'Identity);
+      end if;
+      C.icucore.unicode.ucnv.ucnv_setFromUCallBack (
+         To_uconv,
+         C.icucore.unicode.ucnv_err.UCNV_FROM_U_CALLBACK_STOP'Access,
+         C.void_const_ptr (Null_Address),
+         null,
+         null,
+         Error'Access);
+      case Error is
+         when C.icucore.unicode.utypes.U_ZERO_ERROR =>
+            null;
+         when others =>
+            C.icucore.unicode.ucnv.ucnv_close (To_uconv);
+            C.icucore.unicode.ucnv.ucnv_close (From_uconv);
+            Raise_Exception (Use_Error'Identity);
+      end case;
+      --  about "From"
+      NC_Converter.From_uconv := From_uconv;
+      --  intermediate
+      NC_Converter.Buffer_First :=
+         UChar_const_ptr_Conv.To_Pointer (NC_Converter.Buffer'Address);
+      NC_Converter.Buffer_Limit :=
+         UChar_ptr_Conv.To_Pointer (NC_Converter.Buffer'Address);
+      --  about "To"
+      NC_Converter.To_uconv := To_uconv;
+      Default_Substitute (
+         To_uconv,
+         NC_Converter.Substitute,
+         NC_Converter.Substitute_Length);
+   end Open;
+
    function Get_Is_Open (Object : Converter) return Boolean is
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);
@@ -428,51 +476,6 @@ package body System.Native_Encoding is
    end Put_Substitute;
 
    package body Controlled is
-
-      procedure Open (Object : out Converter; From, To : Encoding_Id) is
-         From_uconv : C.icucore.UConverter_ptr;
-         To_uconv : C.icucore.UConverter_ptr;
-         Error : aliased C.icucore.UErrorCode :=
-            C.icucore.unicode.utypes.U_ZERO_ERROR;
-      begin
-         From_uconv := C.icucore.unicode.ucnv.ucnv_open (From, Error'Access);
-         if From_uconv = null then
-            Raise_Exception (Name_Error'Identity);
-         end if;
-         To_uconv := C.icucore.unicode.ucnv.ucnv_open (To, Error'Access);
-         if To_uconv = null then
-            C.icucore.unicode.ucnv.ucnv_close (From_uconv);
-            Raise_Exception (Name_Error'Identity);
-         end if;
-         C.icucore.unicode.ucnv.ucnv_setFromUCallBack (
-            To_uconv,
-            C.icucore.unicode.ucnv_err.UCNV_FROM_U_CALLBACK_STOP'Access,
-            C.void_const_ptr (Null_Address),
-            null,
-            null,
-            Error'Access);
-         case Error is
-            when C.icucore.unicode.utypes.U_ZERO_ERROR =>
-               null;
-            when others =>
-               C.icucore.unicode.ucnv.ucnv_close (To_uconv);
-               C.icucore.unicode.ucnv.ucnv_close (From_uconv);
-               Raise_Exception (Use_Error'Identity);
-         end case;
-         --  about "From"
-         Object.Data.From_uconv := From_uconv;
-         --  intermediate
-         Object.Data.Buffer_First :=
-            UChar_const_ptr_Conv.To_Pointer (Object.Data.Buffer'Address);
-         Object.Data.Buffer_Limit :=
-            UChar_ptr_Conv.To_Pointer (Object.Data.Buffer'Address);
-         --  about "To"
-         Object.Data.To_uconv := To_uconv;
-         Default_Substitute (
-            To_uconv,
-            Object.Data.Substitute,
-            Object.Data.Substitute_Length);
-      end Open;
 
       function Reference (Object : Converter)
          return not null access Non_Controlled_Converter is
