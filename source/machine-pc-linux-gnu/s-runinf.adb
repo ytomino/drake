@@ -38,7 +38,7 @@ package body System.Runtime_Information is
          begin
             for I in 0 .. Info.dlpi_phnum - 1 loop
                if dlpi_phdr (C.size_t (I)).p_type = C.elf.PT_LOAD then
-                  R.First_Load_Address := Address (
+                  R.First_Load_Address := System'To_Address (
                      dlpi_phdr (C.size_t (I)).p_vaddr
                      + C.elf.Elf32_Addr'Mod (Info.dlpi_addr));
                   return 1; -- finish
@@ -58,7 +58,7 @@ package body System.Runtime_Information is
          begin
             for I in 0 .. Info.dlpi_phnum - 1 loop
                if dlpi_phdr (C.size_t (I)).p_type = C.elf.PT_LOAD then
-                  R.First_Load_Address := Address (
+                  R.First_Load_Address := System'To_Address (
                      dlpi_phdr (C.size_t (I)).p_vaddr
                      + C.elf.Elf64_Addr'Mod (Info.dlpi_addr));
                   return 1; -- finish

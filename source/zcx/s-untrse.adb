@@ -1,5 +1,5 @@
 pragma Check_Policy (Trace, Off);
-with Ada.Unchecked_Conversion;
+with Ada;
 with C.unwind;
 separate (System.Unwind.Traceback)
 package body Separated is
@@ -38,10 +38,8 @@ package body Separated is
          return C.unwind.URC_NORMAL_STOP;
       else
          declare
-            function Cast is
-               new Ada.Unchecked_Conversion (C.unwind.Unwind_Ptr, Address);
             IP : constant Address :=
-               Cast (C.unwind.Unwind_GetIP (Context));
+               System'To_Address (C.unwind.Unwind_GetIP (Context));
          begin
             if IP >= D.Exclude_Min and then IP <= D.Exclude_Max then
                pragma Check (Trace, Ada.Debug.Put ("exclude"));

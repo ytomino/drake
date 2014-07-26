@@ -149,8 +149,9 @@ package body System.Unwind.Handling is
                            + C.basetsd.ULONG64'Size / Standard'Storage_Unit;
                      end if;
                      --  Adjust rip.
-                     PDWORD64_Conv.To_Pointer (Address (rip)).all :=
-                        PDWORD64_Conv.To_Pointer (Address (rip)).all + 1;
+                     PDWORD64_Conv.To_Pointer (System'To_Address (rip)).all :=
+                        PDWORD64_Conv.To_Pointer (System'To_Address (rip)).all
+                        + 1;
                   end;
                   exit;
                when others =>
@@ -545,7 +546,7 @@ package body System.Unwind.Handling is
                            --  In case of failure,
                            --    assume this is a leaf function.
                            context.Rip := PDWORD64_Conv.To_Pointer (
-                              Address (context.Rsp)).all;
+                              System'To_Address (context.Rsp)).all;
                            context.Rsp := context.Rsp + 8;
                         else
                            --  Unwind.
@@ -568,7 +569,7 @@ package body System.Unwind.Handling is
                   end loop;
                   if mf_func /= null then
                      Adjust_Context (
-                        Address (
+                        System'To_Address (
                            mf_imagebase
                            + C.basetsd.ULONG64 (mf_func.UnwindData)),
                         mf_rsp);

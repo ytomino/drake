@@ -1,7 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
-with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
 package body System.Native_Encoding is
@@ -341,9 +340,8 @@ package body System.Native_Encoding is
    package body Controlled is
 
       procedure Open (Object : out Converter; From, To : Encoding_Id) is
-         Error : constant C.iconv.iconv_t := C.iconv.iconv_t (
-            Storage_Elements.To_Address (
-               Storage_Elements.Integer_Address'Mod (-1)));
+         Error : constant C.iconv.iconv_t :=
+            C.iconv.iconv_t (System'To_Address (-1));
          iconv : C.iconv.iconv_t;
       begin
          iconv := C.iconv.iconv_open (To, From);
