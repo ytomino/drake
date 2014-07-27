@@ -193,27 +193,32 @@ package Ada.Wide_Wide_Text_IO is
 
    --  Character Input-Output
 
-   procedure Get (File : File_Type; Item : out Wide_Wide_Character);
+   procedure Get (File : File_Type; Item : out Wide_Wide_Character)
+      renames Overloaded_Get;
    procedure Get (Item : out Wide_Wide_Character);
 
-   procedure Put (File : File_Type; Item : Wide_Wide_Character);
+   procedure Put (File : File_Type; Item : Wide_Wide_Character)
+      renames Overloaded_Put;
    procedure Put (Item : Wide_Wide_Character);
 
    procedure Look_Ahead (
       File : File_Type;
       Item : out Wide_Wide_Character;
-      End_Of_Line : out Boolean);
+      End_Of_Line : out Boolean)
+      renames Overloaded_Look_Ahead;
    procedure Look_Ahead (
       Item : out Wide_Wide_Character;
       End_Of_Line : out Boolean);
 
-   procedure Get_Immediate (File : File_Type; Item : out Wide_Wide_Character);
+   procedure Get_Immediate (File : File_Type; Item : out Wide_Wide_Character)
+      renames Overloaded_Get_Immediate;
    procedure Get_Immediate (Item : out Wide_Wide_Character);
 
    procedure Get_Immediate (
       File : File_Type;
       Item : out Wide_Wide_Character;
-      Available : out Boolean);
+      Available : out Boolean)
+      renames Overloaded_Get_Immediate;
    procedure Get_Immediate (
       Item : out Wide_Wide_Character;
       Available : out Boolean);
@@ -239,24 +244,29 @@ package Ada.Wide_Wide_Text_IO is
 
    --  String Input-Output
 
-   procedure Get (File : File_Type; Item : out Wide_Wide_String);
+   procedure Get (File : File_Type; Item : out Wide_Wide_String)
+      renames Overloaded_Get;
    procedure Get (Item : out Wide_Wide_String);
 
-   procedure Put (File : File_Type; Item : Wide_Wide_String);
+   procedure Put (File : File_Type; Item : Wide_Wide_String)
+      renames Overloaded_Put;
    procedure Put (Item : Wide_Wide_String);
 
    procedure Get_Line (
       File : File_Type;
       Item : out Wide_Wide_String;
-      Last : out Natural);
+      Last : out Natural)
+      renames Overloaded_Get_Line;
    procedure Get_Line (
       Item : out Wide_Wide_String;
       Last : out Natural);
 
-   function Get_Line (File : File_Type) return Wide_Wide_String;
+   function Get_Line (File : File_Type) return Wide_Wide_String
+      renames Overloaded_Get_Line;
    function Get_Line return Wide_Wide_String;
 
-   procedure Put_Line (File : File_Type; Item : Wide_Wide_String);
+   procedure Put_Line (File : File_Type; Item : Wide_Wide_String)
+      renames Overloaded_Put_Line;
    procedure Put_Line (Item : Wide_Wide_String);
 
    --  hiding
