@@ -41,8 +41,4 @@ package Ada.IO_Modes is
       By_Target); -- default, LF in POSIX, or CR_LF in Windows
    type File_New_Line is new File_New_Line_Spec range LF .. CR_LF;
 
-   type File_SUB is (
-      Ordinary, -- "sub=none" or default
-      End_Of_File); -- "sub=eof"
-
 end Ada.IO_Modes;

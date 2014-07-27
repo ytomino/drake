@@ -15,7 +15,6 @@ package System.Native_IO.Text_IO is
       Stream_Form : Native_IO.Packed_Form;
       External : Ada.IO_Modes.File_External_Spec;
       New_Line : Ada.IO_Modes.File_New_Line_Spec;
-      SUB : Ada.IO_Modes.File_SUB;
    end record;
    pragma Suppress_Initialization (Packed_Form);
    pragma Pack (Packed_Form);

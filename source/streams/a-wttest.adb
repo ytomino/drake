@@ -25,8 +25,7 @@ package body Ada.Wide_Text_IO.Text_Streams is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary) is
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target) is
    begin
       Text_IO.Text_Streams.Open (
          Text_IO.File_Type (File),
@@ -37,8 +36,7 @@ package body Ada.Wide_Text_IO.Text_Streams is
          Wait => Wait,
          Overwrite => Overwrite,
          External => External,
-         New_Line => New_Line,
-         SUB => SUB);
+         New_Line => New_Line);
    end Open;
 
    function Stream (File : File_Type) return Stream_Access is

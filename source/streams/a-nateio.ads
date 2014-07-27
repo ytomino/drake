@@ -11,8 +11,7 @@ package Ada.Naked_Text_IO is
    Default_Form : constant System.Native_IO.Text_IO.Packed_Form := (
       Stream_Form => Streams.Naked_Stream_IO.Default_Form,
       External => IO_Modes.By_Target,
-      New_Line => IO_Modes.By_Target,
-      SUB => IO_Modes.Ordinary);
+      New_Line => IO_Modes.By_Target);
 
    procedure Set (
       Form : in out System.Native_IO.Text_IO.Packed_Form;
@@ -229,7 +228,6 @@ private
       Mode : IO_Modes.File_Mode;
       External : IO_Modes.File_External;
       New_Line : IO_Modes.File_New_Line;
-      SUB : IO_Modes.File_SUB; -- ASCII.SUB = 16#1A#
       Name : String (1 .. Name_Length);
    end record;
    pragma Suppress_Initialization (Text_Type);
@@ -252,7 +250,6 @@ private
       Mode => IO_Modes.In_File,
       External => System.Native_IO.Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_IO.Text_IO.Default_New_Line,
-      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Output_Text : aliased Text_Type := (
@@ -273,7 +270,6 @@ private
       Mode => IO_Modes.Out_File,
       External => System.Native_IO.Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_IO.Text_IO.Default_New_Line,
-      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Error_Text : aliased Text_Type := (
@@ -294,7 +290,6 @@ private
       Mode => IO_Modes.Out_File,
       External => System.Native_IO.Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_IO.Text_IO.Default_New_Line,
-      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Input : constant Non_Controlled_File_Type :=

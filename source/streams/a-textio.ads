@@ -39,8 +39,7 @@ package Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary);
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target);
 
    --  extended
    function Create (
@@ -50,8 +49,7 @@ package Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary)
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       return File_Type;
    pragma Inline (Create);
 
@@ -69,8 +67,7 @@ package Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary);
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target);
 
    --  extended
    function Open (
@@ -80,8 +77,7 @@ package Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary)
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       return File_Type;
    pragma Inline (Open);
 

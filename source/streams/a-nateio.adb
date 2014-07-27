@@ -10,7 +10,6 @@ package body Ada.Naked_Text_IO is
    use type IO_Modes.File_Mode;
    use type IO_Modes.File_New_Line;
    use type IO_Modes.File_New_Line_Spec;
-   use type IO_Modes.File_SUB;
    use type Streams.Stream_Element_Offset;
    use type System.UTF_Conversions.UCS_4;
 
@@ -86,12 +85,6 @@ package body Ada.Naked_Text_IO is
             Form.New_Line := IO_Modes.CR;
          elsif Item'Length > 0 and then Item (Item'First) = 'm' then
             Form.New_Line := IO_Modes.CR_LF;
-         end if;
-      elsif Keyword = "sub" then
-         if Item'Length > 0 and then Item (Item'First) = 'e' then -- eof
-            Form.SUB := IO_Modes.End_Of_File;
-         elsif Item'Length > 0 and then Item (Item'First) = 'o' then
-            Form.SUB := IO_Modes.Ordinary;
          end if;
       else
          Streams.Naked_Stream_IO.Set (Form.Stream_Form, Keyword, Item);
@@ -169,16 +162,6 @@ package body Ada.Naked_Text_IO is
                Result (Last + 1 .. New_Last) := "lm=m";
                Last := New_Last;
          end case;
-      end if;
-      if Form.SUB /= IO_Modes.Ordinary then
-         if Last /= Streams.Naked_Stream_IO.Form_String'First - 1 then
-            New_Last := Last + 1;
-            Result (New_Last) := ',';
-            Last := New_Last;
-         end if;
-         New_Last := Last + 7;
-         Result (Last + 1 .. New_Last) := "sub=eof";
-         Last := New_Last;
       end if;
    end Unpack;
 
@@ -259,7 +242,6 @@ package body Ada.Naked_Text_IO is
          Mode => Mode,
          External => <>,
          New_Line => <>,
-         SUB => <>,
          Name => "",
          others => <>);
       package Holder is
@@ -288,11 +270,9 @@ package body Ada.Naked_Text_IO is
       then
          New_File.External := IO_Modes.Terminal;
          New_File.New_Line := System.Native_IO.Text_IO.Default_New_Line;
-         New_File.SUB := IO_Modes.Ordinary;
       else
          New_File.External := Select_External (Form.External);
          New_File.New_Line := Select_New_Line (Form.New_Line);
-         New_File.SUB := Form.SUB;
       end if;
       --  complete
       Holder.Clear;
@@ -531,9 +511,6 @@ package body Ada.Naked_Text_IO is
          if File.Buffer (I) = Character'Val (16#0d#)
             or else File.Buffer (I) = Character'Val (16#0a#)
             or else File.Buffer (I) = Character'Val (16#0c#)
-            or else (
-               File.SUB = IO_Modes.End_Of_File
-                  and then File.Buffer (I) = Character'Val (16#1a#))
          then
             Buffer_Last := I - 1;
             exit;
@@ -931,8 +908,7 @@ package body Ada.Naked_Text_IO is
          return (
             Stream_Form,
             External,
-            IO_Modes.File_New_Line_Spec (File.New_Line),
-            File.SUB);
+            IO_Modes.File_New_Line_Spec (File.New_Line));
       end;
    end Form;
 
@@ -1060,15 +1036,6 @@ package body Ada.Naked_Text_IO is
                      when Character'Val (16#0c#) =>
                         Take_Page (File);
                         exit;
-                     when Character'Val (16#1a#) =>
-                        if File.SUB = IO_Modes.End_Of_File then
-                           File.End_Of_File := True; -- for next loop
-                           File.Ahead_Last := 0;
-                           File.Last := 0;
-                        else
-                           File.Col := File.Col + File.Ahead_Col;
-                           Take_Buffer (File);
-                        end if;
                      when others =>
                         File.Col := File.Col + File.Ahead_Col;
                         Take_Buffer (File);
@@ -1097,10 +1064,7 @@ package body Ada.Naked_Text_IO is
          return File.Last > 0 and then ( -- line mark is ASCII
             File.Buffer (1) = Character'Val (16#0d#)
             or else File.Buffer (1) = Character'Val (16#0a#)
-            or else File.Buffer (1) = Character'Val (16#0c#)
-            or else (
-               File.SUB = IO_Modes.End_Of_File
-                  and then File.Buffer (1) = Character'Val (16#1a#)));
+            or else File.Buffer (1) = Character'Val (16#0c#));
       end if;
    end End_Of_Line;
 
@@ -1280,17 +1244,6 @@ package body Ada.Naked_Text_IO is
                      Take_Line (File);
                   when Character'Val (16#0c#) =>
                      Take_Page (File);
-                  when Character'Val (16#1a#) =>
-                     if File.SUB = IO_Modes.End_Of_File then
-                        File.End_Of_File := True; -- for next loop
-                        File.Ahead_Last := 0;
-                        File.Last := 0;
-                     else
-                        Item := C;
-                        File.Col := File.Col + File.Ahead_Col;
-                        Take_Buffer (File);
-                        exit;
-                     end if;
                   when others =>
                      Item := C;
                      File.Col := File.Col + File.Ahead_Col;
@@ -1633,7 +1586,6 @@ package body Ada.Naked_Text_IO is
          Mode => Mode,
          External => Select_External (Form.External),
          New_Line => Select_New_Line (Form.New_Line),
-         SUB => Form.SUB,
          Name => '*' & Name,
          others => <>);
    end Open;

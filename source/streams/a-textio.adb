@@ -79,14 +79,13 @@ package body Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary) is
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target) is
    begin
       Naked_Text_IO.Create (
          Reference (File).all,
          IO_Modes.File_Mode (Mode),
          Name => Name,
-         Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
+         Form => ((Shared, Wait, Overwrite), External, New_Line));
    end Create;
 
    function Create (
@@ -96,8 +95,7 @@ package body Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary)
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       return File_Type is
    begin
       return Result : File_Type do
@@ -105,7 +103,7 @@ package body Ada.Text_IO is
             Reference (Result).all,
             IO_Modes.File_Mode (Mode),
             Name => Name,
-            Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
+            Form => ((Shared, Wait, Overwrite), External, New_Line));
       end return;
    end Create;
 
@@ -130,14 +128,13 @@ package body Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary) is
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target) is
    begin
       Naked_Text_IO.Open (
          Reference (File).all,
          IO_Modes.File_Mode (Mode),
          Name => Name,
-         Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
+         Form => ((Shared, Wait, Overwrite), External, New_Line));
    end Open;
 
    function Open (
@@ -147,8 +144,7 @@ package body Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary)
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       return File_Type is
    begin
       return Result : File_Type do
@@ -156,7 +152,7 @@ package body Ada.Text_IO is
             Reference (Result).all,
             IO_Modes.File_Mode (Mode),
             Name => Name,
-            Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
+            Form => ((Shared, Wait, Overwrite), External, New_Line));
       end return;
    end Open;
 

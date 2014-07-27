@@ -23,8 +23,7 @@ package Ada.Wide_Text_IO.Text_Streams is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary);
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target);
    pragma Inline (Open);
 
    function Stream (File : File_Type) return Stream_Access;
