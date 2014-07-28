@@ -457,8 +457,105 @@ begin
 					Ada.Wide_Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
 					pragma Assert (not End_Of_Line);
 					pragma Assert (Item = Wide_Wide_String_Data (I));
-					Ada.Wide_Wide_Text_IO.Get_Immediate (File, Item);
+					Ada.Wide_Wide_Text_IO.Get (File, Item);
 					pragma Assert (Item = Wide_Wide_String_Data (I));
+				end loop;
+				Ada.Wide_Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
+				pragma Assert (End_Of_Line);
+				pragma Assert (Ada.Wide_Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
+				Ada.Wide_Wide_Text_IO.Close (File);
+			end;
+		end Process;
+	begin
+		-- UTF-8
+		Process (
+			Ada.IO_Modes.UTF_8,
+			Aegean_Number_One_In_UTF_8,
+			Aegean_Number_One_In_UTF_8,
+			Aegean_Number_One_In_UTF_16,
+			Aegean_Number_One_In_UTF_32);
+		-- DBCS (SJIS)
+		if Windows then
+			Process (
+				Ada.IO_Modes.Locale,
+				Japanease_A_In_SJIS,
+				Japanease_A_In_UTF_8,
+				Japanease_A_In_UTF_16,
+				Japanease_A_In_UTF_32);
+		end if;
+	end;
+	-- reading a legal sequence with calling Look_Ahead and Skip_Ahead
+	declare
+		procedure Process (
+			External : Ada.IO_Modes.File_External_Spec;
+			Stream_Data : String;
+			String_Data : String;
+			Wide_String_Data : Wide_String;
+			Wide_Wide_String_Data : Wide_Wide_String)
+		is
+			Buffer : U.Buffer_Type;
+		begin
+			String'Write (U.Stream (Buffer), Stream_Data);
+			U.Reset (Buffer);
+			declare
+				File : Ada.Text_IO.File_Type;
+				Item : Character;
+				End_Of_Line : Boolean;
+			begin
+				Ada.Text_IO.Text_Streams.Open (
+					File,
+					Ada.Text_IO.In_File,
+					U.Stream (Buffer),
+					External => External);
+				for I in String_Data'Range loop
+					Ada.Text_IO.Look_Ahead (File, Item, End_Of_Line);
+					pragma Assert (not End_Of_Line);
+					pragma Assert (Item = String_Data (I));
+					Ada.Text_IO.Skip_Ahead (File);
+				end loop;
+				Ada.Text_IO.Look_Ahead (File, Item, End_Of_Line);
+				pragma Assert (End_Of_Line);
+				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1);
+				Ada.Text_IO.Close (File);
+			end;
+			U.Reset (Buffer);
+			declare
+				File : Ada.Wide_Text_IO.File_Type;
+				Item : Wide_Character;
+				End_Of_Line : Boolean;
+			begin
+				Ada.Wide_Text_IO.Text_Streams.Open (
+					File,
+					Ada.Wide_Text_IO.In_File,
+					U.Stream (Buffer),
+					External => External);
+				for I in Wide_String_Data'Range loop
+					Ada.Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
+					pragma Assert (not End_Of_Line);
+					pragma Assert (Item = Wide_String_Data (I));
+					Ada.Wide_Text_IO.Skip_Ahead (File);
+				end loop;
+				Ada.Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
+				pragma Assert (End_Of_Line);
+				pragma Assert (Ada.Wide_Text_IO.Col (File) = Stream_Data'Length + 1);
+				Ada.Wide_Text_IO.Close (File);
+			end;
+			U.Reset (Buffer);
+			declare
+				File : Ada.Wide_Wide_Text_IO.File_Type;
+				Item : Wide_Wide_Character;
+				End_Of_Line : Boolean;
+			begin
+				Ada.Wide_Wide_Text_IO.Text_Streams.Open (
+					File,
+					Ada.Wide_Wide_Text_IO.In_File,
+					U.Stream (Buffer),
+					External => External);
+				for I in Wide_Wide_String_Data'Range loop
+					Ada.Wide_Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
+					pragma Assert (not End_Of_Line);
+					pragma Assert (Item = Wide_Wide_String_Data (I));
+					Ada.Wide_Wide_Text_IO.Skip_Ahead (File);
 				end loop;
 				Ada.Wide_Wide_Text_IO.Look_Ahead (File, Item, End_Of_Line);
 				pragma Assert (End_Of_Line);

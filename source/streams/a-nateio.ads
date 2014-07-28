@@ -139,6 +139,8 @@ package Ada.Naked_Text_IO is
       Item : out Wide_Wide_Character;
       End_Of_Line : out Boolean);
 
+   procedure Skip_Ahead (File : Non_Controlled_File_Type);
+
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out Character);
@@ -219,9 +221,11 @@ private
       Col : Natural := 1;
       Line_Length : Natural := 0;
       Page_Length : Natural := 0;
-      Ahead_Col : Natural := 0; -- one-character Col
-      Ahead_Last : Natural := 0; -- one-character Length, In_Mode only
       Last : Natural := 0;
+      Ahead_Last : Natural := 0; -- one-character Length, In_Mode only
+      Ahead_Col : Natural := 0; -- one-character Col
+      Looked_Ahead_Last : Natural := 0;
+      Looked_Ahead_Second : String (1 .. 3); -- second of surrogate pair
       Buffer : System.Native_IO.Text_IO.Buffer_Type;
       End_Of_File : Boolean := False;
       Dummy_Mark : Dummy_Mark_Type := None;
@@ -241,9 +245,11 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Ahead_Col => 0,
-      Ahead_Last => 0,
       Last => 0,
+      Ahead_Last => 0,
+      Ahead_Col => 0,
+      Looked_Ahead_Last => 0,
+      Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
       Dummy_Mark => None,
@@ -261,9 +267,11 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Ahead_Col => 0,
-      Ahead_Last => 0,
       Last => 0,
+      Ahead_Last => 0,
+      Ahead_Col => 0,
+      Looked_Ahead_Last => 0,
+      Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
       Dummy_Mark => None,
@@ -281,9 +289,11 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Ahead_Col => 0,
-      Ahead_Last => 0,
       Last => 0,
+      Ahead_Last => 0,
+      Ahead_Col => 0,
+      Looked_Ahead_Last => 0,
+      Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
       Dummy_Mark => None,

@@ -267,6 +267,11 @@ package Ada.Text_IO is
       End_Of_Line : out Boolean);
 
    --  extended
+   --  Skip one character or mark of new-line
+   --    looked by last calling of Look_Ahead.
+   procedure Skip_Ahead (File : File_Type);
+
+   --  extended
    procedure Overloaded_Get_Immediate (
       File : File_Type;
       Item : out Character);

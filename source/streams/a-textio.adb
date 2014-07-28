@@ -624,6 +624,11 @@ package body Ada.Text_IO is
       Look_Ahead (Current_Input.all, Item, End_Of_Line);
    end Look_Ahead;
 
+   procedure Skip_Ahead (File : File_Type) is
+   begin
+      Naked_Text_IO.Skip_Ahead (Reference (File).all);
+   end Skip_Ahead;
+
    procedure Overloaded_Get_Immediate (
       File : File_Type;
       Item : out Character) is
