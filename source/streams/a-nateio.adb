@@ -1512,22 +1512,30 @@ package body Ada.Naked_Text_IO is
       C : Character;
    begin
       Look_Ahead (File, C, End_Of_Line);
+      --  File.Buffer is already converted even through File.External = Locale
       if End_Of_Line then
          Item := Wide_Wide_Character'Val (0);
       else
-         declare
-            Sequence_Length : Natural;
-            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
-         begin
-            System.UTF_Conversions.UTF_8_Sequence (
-               C,
-               Sequence_Length,
-               From_Status);
+         if File.External = Ada.IO_Modes.Locale then
             declare
-               Buffer_Last : Natural;
-               Conv_Last : Natural;
-               Code : System.UTF_Conversions.UCS_4;
+               Locale_Support : constant Boolean :=
+                  System.Native_IO.Text_IO.Default_External = IO_Modes.Locale;
             begin
+               if not Locale_Support then
+                  unreachable;
+               end if;
+            end;
+            File.Looked_Ahead_Last := File.Ahead_Last; -- shortcut
+         else
+            declare
+               Sequence_Length : Natural;
+               Buffer_Last : Natural;
+               From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+            begin
+               System.UTF_Conversions.UTF_8_Sequence (
+                  C,
+                  Sequence_Length,
+                  From_Status);
                Buffer_Last := 1;
                while Buffer_Last < Sequence_Length loop
                   if File.Last < Sequence_Length then
@@ -1553,13 +1561,19 @@ package body Ada.Naked_Text_IO is
                   File.Ahead_Col := Buffer_Last;
                end if;
                File.Looked_Ahead_Last := Buffer_Last;
-               System.UTF_Conversions.From_UTF_8 (
-                  File.Buffer (1 .. Buffer_Last),
-                  Conv_Last,
-                  Code,
-                  From_Status);
-               Item := Wide_Wide_Character'Val (Code);
             end;
+         end if;
+         declare
+            Conv_Last : Natural;
+            Code : System.UTF_Conversions.UCS_4;
+            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+         begin
+            System.UTF_Conversions.From_UTF_8 (
+               File.Buffer (1 .. File.Looked_Ahead_Last),
+               Conv_Last,
+               Code,
+               From_Status);
+            Item := Wide_Wide_Character'Val (Code);
          end;
       end if;
    end Look_Ahead;

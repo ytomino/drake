@@ -57,16 +57,22 @@ procedure textstream is
 		Character'Val (16#90#),
 		Character'Val (16#84#),
 		Character'Val (16#87#));
-	Japanease_A_In_UTF_8 : constant String (1 .. 3) := (
-		Character'Val (16#e3#),
+	Japanease_A_In_UTF_8 : constant String (1 .. 6) := (
+		Character'Val (16#EF#), -- halfwidth katakana
+		Character'Val (16#BD#),
+		Character'Val (16#B1#),
+		Character'Val (16#e3#), -- hiragana
 		Character'Val (16#81#),
 		Character'Val (16#82#));
-	Japanease_A_In_UTF_16 : constant Wide_String (1 .. 1) :=
-		(1 => Wide_Character'Val (16#3042#));
-	Japanease_A_In_UTF_32 : constant Wide_Wide_String (1 .. 1) :=
-		(1 => Wide_Wide_Character'Val (16#3042#));
-	Japanease_A_In_SJIS : constant String (1 .. 2) := (
-		Character'Val (16#82#),
+	Japanease_A_In_UTF_16 : constant Wide_String (1 .. 2) := (
+		Wide_Character'Val (16#FF71#), -- halfwidth katakana
+		Wide_Character'Val (16#3042#)); -- hiragana
+	Japanease_A_In_UTF_32 : constant Wide_Wide_String (1 .. 2) := (
+		Wide_Wide_Character'Val (16#FF71#), -- halfwidth katakana
+		Wide_Wide_Character'Val (16#3042#)); -- hiragana
+	Japanease_A_In_SJIS : constant String (1 .. 3) := (
+		Character'Val (16#B1#), -- halfwidth katakana
+		Character'Val (16#82#), -- hiragana
 		Character'Val (16#a0#));
 begin
 	-- writing
