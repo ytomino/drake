@@ -51,7 +51,7 @@ ifeq ($(WITHA),0)
 MFLAGS+=-a
 endif
 
-CFLAGS=-gnatef -gnatf -gnatwI
+CFLAGS=-pipe -gnatef -gnatf -gnatwI
 
 ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS=-licucore

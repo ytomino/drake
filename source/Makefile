@@ -241,7 +241,7 @@ endif
 
 CFLAGS=
 
-CFLAGS_FOR_COMPILER_UNIT=-nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_LTO) $(CFLAGS)
+CFLAGS_FOR_COMPILER_UNIT=-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_LTO) $(CFLAGS)
 
 .PHONY: all import_objs c-archive
 
