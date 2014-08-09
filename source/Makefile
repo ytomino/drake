@@ -74,7 +74,7 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib/build
 
-SUBDIRS=ada83 calendar containers directories distributed environment image interfaces nls numerics pools streams strings tasking textio $(EH)
+SUBDIRS=ada83 calendar containers directories distributed environment image interfaces nls numerics pools streams strings tasking textio
 
 ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
@@ -110,11 +110,18 @@ endif
 
 ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
 CPUSUBDIR=x86_64
+SIMDSUBDIR=sse2
 else
 ifneq ($(findstring i386,$(TARGET))$(findstring i686,$(TARGET)),) # i386-*-*
 CPUSUBDIR=i386
+ifneq ($(findstring darwin,$(TARGET)),) # i686-apple-darwin*
+SIMDSUBDIR=sse2
 else
-CPUSUBDIR=unknown
+SIMDSUBDIR=nosimd
+endif
+else
+CPUSUBDIR=generic
+SIMDSUBDIR=nosimd
 endif
 endif
 
@@ -136,7 +143,8 @@ endif
 # text_io     : image numerics streams strings # child packages of Text_IO
 
 SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGETSUBDIR)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard required/*.ad[sb]) \
-	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]))
+	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/$(SIMDSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]) \
+	$(wildcard $(EH)/*.ad[sb]))
 
 SEPARATED=$(EH)/s-unrase.adb $(EH)/s-untrse.adb
 
@@ -400,6 +408,18 @@ $(RTSDIR)/adainclude/%.ads: numerics/%.ads
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: numerics/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: numerics/$(CPUSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: numerics/$(CPUSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: numerics/$(CPUSUBDIR)/$(SIMDSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: numerics/$(CPUSUBDIR)/$(SIMDSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: numerics/$(TARGETSUBDIR)/%.ads
