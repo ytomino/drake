@@ -41,7 +41,9 @@ private package Ada.Directory_Searching is
       Directory_Entry : aliased out Directory_Entry_Type;
       Has_Next_Entry : out Boolean);
 
-   procedure End_Search (Search : in out Search_Type);
+   procedure End_Search (
+      Search : in out Search_Type;
+      Raise_On_Error : Boolean);
 
    procedure Get_Next_Entry (
       Search : in out Search_Type;
