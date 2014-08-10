@@ -220,7 +220,7 @@ package body System.Tasking.Protected_Objects.Operations is
                if Ada.Exceptions.Exception_Identity (The_Node.X) /=
                   Ada.Exceptions.Null_Id
                then
-                  Ada.Exceptions.Reraise_Occurrence (The_Node.X);
+                  Ada.Exceptions.Unchecked_Reraise_Occurrence (The_Node.X);
                end if;
             end;
          when Conditional_Call =>

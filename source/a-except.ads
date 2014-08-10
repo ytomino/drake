@@ -31,6 +31,13 @@ package Ada.Exceptions is
    function Exception_Message (X : Exception_Occurrence) return String;
    procedure Reraise_Occurrence (X : Exception_Occurrence);
 
+   --  extended
+   --  Same as Reraise_Occurrence without checking Null_Occurrence.
+   procedure Unchecked_Reraise_Occurrence (X : Exception_Occurrence);
+   pragma No_Return (Unchecked_Reraise_Occurrence);
+   pragma Import (Ada, Unchecked_Reraise_Occurrence,
+      "ada__exceptions__reraise_occurrence_always");
+
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id;
    function Exception_Name (X : Exception_Occurrence) return String;
@@ -83,10 +90,9 @@ private
 
    --  required by compiler (a-except-2005.ads)
    --  for reraising (exp_ch11.adb)
-   procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
+   procedure Reraise_Occurrence_Always (X : Exception_Occurrence)
+      renames Unchecked_Reraise_Occurrence;
    pragma No_Return (Reraise_Occurrence_Always);
-   pragma Import (Ada, Reraise_Occurrence_Always,
-      "ada__exceptions__reraise_occurrence_always");
 
    --  required by compiler (a-except-2005.ads)
    --  for reraising from when all others (exp_ch11.adb)
