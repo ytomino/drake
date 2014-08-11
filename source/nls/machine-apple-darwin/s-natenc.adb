@@ -75,6 +75,7 @@ package body System.Native_Encoding is
       len : aliased C.stdint.int8_t := Item'Length;
       Error : aliased C.icucore.UErrorCode :=
          C.icucore.unicode.utypes.U_ZERO_ERROR;
+      pragma Suppress (Validity_Check, Error);
    begin
       C.icucore.unicode.ucnv.ucnv_getSubstChars (
          uconv,
@@ -148,6 +149,7 @@ package body System.Native_Encoding is
       To_uconv : C.icucore.UConverter_ptr;
       Error : aliased C.icucore.UErrorCode :=
          C.icucore.unicode.utypes.U_ZERO_ERROR;
+      pragma Suppress (Validity_Check, Error);
    begin
       From_uconv := C.icucore.unicode.ucnv.ucnv_open (From, Error'Access);
       if From_uconv = null then
@@ -258,6 +260,7 @@ package body System.Native_Encoding is
             + Storage_Elements.Storage_Offset'(Out_Item'Length));
       Finish_2nd : Boolean;
       Error : aliased C.icucore.UErrorCode;
+      pragma Suppress (Validity_Check, Error);
    begin
       Adjust_Buffer (
          NC_Converter.Buffer,
@@ -365,6 +368,7 @@ package body System.Native_Encoding is
             + Storage_Elements.Storage_Offset'(Out_Item'Length));
       Error : aliased C.icucore.UErrorCode :=
          C.icucore.unicode.utypes.U_ZERO_ERROR;
+      pragma Suppress (Validity_Check, Error);
    begin
       C.icucore.unicode.ucnv.ucnv_fromUnicode (
          NC_Converter.To_uconv,
