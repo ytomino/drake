@@ -39,7 +39,7 @@ package body Ada.Processes.Inside is
             C_Command_Line : C.char_array (
                0 ..
                Command_Line'Length * System.Zero_Terminated_Strings.Expanding);
-            Arguments : C.char_ptr_array (0 .. 255);
+            Arguments : C.char_ptr_array (0 .. 255) := (others => <>);
             Duplicated_Input : System.Native_IO.Handle_Type;
             Duplicated_Output : System.Native_IO.Handle_Type;
             Duplicated_Error : System.Native_IO.Handle_Type;

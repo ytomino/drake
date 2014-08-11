@@ -36,7 +36,12 @@ package body Separated is
       Skip_Frames : Natural)
    is
       context : aliased C.winnt.CONTEXT;
-      history : aliased C.winnt.UNWIND_HISTORY_TABLE;
+      history : aliased C.winnt.UNWIND_HISTORY_TABLE := (
+         Count => <>,
+         Search => <>,
+         LowAddress => <>,
+         HighAddress => <>,
+         F_Entry => (others => <>));
       Skipped_Frames : Natural;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
@@ -52,7 +57,9 @@ package body Separated is
       loop
          declare
             RuntimeFunction : C.winnt.PRUNTIME_FUNCTION;
-            NvContext : aliased C.winnt.KNONVOLATILE_CONTEXT_POINTERS;
+            NvContext : aliased C.winnt.KNONVOLATILE_CONTEXT_POINTERS := (
+               FloatingContext => (others => <>),
+               IntegerContext => (others => <>));
             ImageBase : aliased C.basetsd.ULONG64;
             HandlerData : aliased C.winnt.PVOID;
             EstablisherFrame : aliased C.basetsd.ULONG64;
