@@ -81,7 +81,7 @@ ifneq ($(WITHF),0)
 CFLAGS+=-ffast-math -gnatec=$(abspath ../source/fastmath.adc)
 endif
 
-.PHONY: all clean
+.PHONY: all clean xfind xfindall
 
 all: $(BUILDDIR)/adalib/libgnat.a $(BINLN) $(EXAMPLES)
 
@@ -101,3 +101,9 @@ $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT)
 
 clean:
 	-rm -rf $(BINLN) *.build
+
+xfind:
+	gnatfind -f -aO$(BUILDDIR) $(X) $(GFLAGS) $(FFLAGS) | sed 's/^$(subst /,\/,$(PWD))\///'
+
+xfindall: FFLAGS+=-r
+xfindall: xfind
