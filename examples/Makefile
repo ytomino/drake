@@ -64,9 +64,9 @@ LFLAGS=-lm -lpthread -ldl
 endif
 
 ifneq ($(DEBUG),0)
-CFLAGS+=-g -gnata -gnat-p
+CFLAGS+=-ggdb -gnata -gnat-p
 BFLAGS=-E
-LFLAGS+=-g
+LFLAGS+=-ggdb
 else
 BFLAGS=
 ifneq ($(findstring darwin,$(TARGET)),)

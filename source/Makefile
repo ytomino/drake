@@ -217,10 +217,10 @@ CFLAGS_DEBUG=
 OPTIMIZE=1
 else
 ifeq ($(DEBUG),1)
-CFLAGS_DEBUG=-g1
+CFLAGS_DEBUG=-ggdb1
 OPTIMIZE=1
 else
-CFLAGS_DEBUG=-g -gnata
+CFLAGS_DEBUG=-ggdb -gnata
 OPTIMIZE=0
 endif
 endif
@@ -501,7 +501,7 @@ $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 ifneq ($(findstring darwin,$(TARGET)),)
-ifneq ($(filter -g,$(CFLAGS_DEBUG)),)
+ifneq ($(filter -g,$(CFLAGS_DEBUG))$(filter -ggdb,$(CFLAGS_DEBUG)),)
 # Apple ld64 can't add line info to anonymous symbol .lsda from following .o
 $(BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 $(BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
