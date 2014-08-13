@@ -1,6 +1,5 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Containers.Composites;
 with Ada.Streams; -- [gcc-4.7] can not search in private with
 with System;
 package body Ada.Containers.Ordered_Sets is
@@ -16,8 +15,6 @@ package body Ada.Containers.Ordered_Sets is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
-
-   function Compare is new Composites.Compare (Element_Type);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -35,20 +32,41 @@ package body Ada.Containers.Ordered_Sets is
    is
       Context : Context_Type;
       for Context'Address use Params;
+      Left : Element_Type
+         renames Context.Left.all;
+      Right : Element_Type
+         renames Downcast (Position).Element;
    begin
-      return Compare (
-         Context.Left.all,
-         Downcast (Position).Element);
+      --  [gcc-4.9] outputs wrong code for combination of
+      --    constrained short String used as Key_Type (ex. String (1 .. 4))
+      --    and instantiation of Ada.Containers.Composites.Compare here
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
    end Compare_Element;
 
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
       return Integer;
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
-      return Integer is
+      return Integer
+   is
+      Left_E : Element_Type
+         renames Downcast (Left).Element;
+      Right_E : Element_Type
+         renames Downcast (Right).Element;
    begin
-      return Compare (
-         Downcast (Left).Element,
-         Downcast (Right).Element);
+      --  [gcc-4.9] same as above
+      if Left_E < Right_E then
+         return -1;
+      elsif Right_E < Left_E then
+         return 1;
+      else
+         return 0;
+      end if;
    end Compare_Node;
 
    procedure Copy_Node (
@@ -767,8 +785,6 @@ package body Ada.Containers.Ordered_Sets is
 
    package body Generic_Keys is
 
-      function Compare is new Composites.Compare (Key_Type);
-
       type Context_Type is limited record
          Left : not null access Key_Type;
       end record;
@@ -785,10 +801,19 @@ package body Ada.Containers.Ordered_Sets is
       is
          Context : Context_Type;
          for Context'Address use Params;
+         Left : Key_Type
+            renames Context.Left.all;
+         Right : Key_Type
+            renames Key (Downcast (Position).Element);
       begin
-         return Compare (
-            Context.Left.all,
-            Key (Downcast (Position).Element));
+         --  [gcc-4.9] same as above
+         if Left < Right then
+            return -1;
+         elsif Right < Left then
+            return 1;
+         else
+            return 0;
+         end if;
       end Compare_Key;
 
       function Ceiling (Container : Set; Key : Key_Type) return Cursor is

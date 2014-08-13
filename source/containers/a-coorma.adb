@@ -1,6 +1,5 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Containers.Composites;
 with System;
 package body Ada.Containers.Ordered_Maps is
    use type Binary_Trees.Node_Access;
@@ -15,8 +14,6 @@ package body Ada.Containers.Ordered_Maps is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
-
-   function Compare is new Composites.Compare (Key_Type);
 
    type Context_Type is limited record
       Left : not null access Key_Type;
@@ -34,10 +31,21 @@ package body Ada.Containers.Ordered_Maps is
    is
       Context : Context_Type;
       for Context'Address use Params;
+      Left : Key_Type
+         renames Context.Left.all;
+      Right : Key_Type
+         renames Downcast (Position).Key;
    begin
-      return Compare (
-         Context.Left.all,
-         Downcast (Position).Key);
+      --  [gcc-4.9] outputs wrong code for combination of
+      --    constrained short String used as Key_Type (ex. String (1 .. 4))
+      --    and instantiation of Ada.Containers.Composites.Compare here
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
    end Compare_Key;
 
    procedure Copy_Node (
