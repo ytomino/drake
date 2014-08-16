@@ -6,7 +6,9 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
    use type UCD.Difference_Base;
    use type UCD.UCS_4;
 
-   Mapping : access Character_Mapping;
+   type Character_Mapping_Access is access Character_Mapping;
+
+   Mapping : Character_Mapping_Access;
    Mapping_Flag : aliased System.Once.Flag := 0;
 
    procedure Decode (

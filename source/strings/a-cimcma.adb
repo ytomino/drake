@@ -6,6 +6,8 @@ package body Ada.Characters.Inside.Maps.Case_Mapping is
    use type UCD.Difference_Base;
    use type UCD.UCS_4;
 
+   type Character_Mapping_Access is access Character_Mapping;
+
    procedure Decode (
       Mapping : in out Character_Mapping;
       I : in out Positive;
@@ -110,12 +112,12 @@ package body Ada.Characters.Inside.Maps.Case_Mapping is
 
    --  lower case map
 
-   L_Mapping : access Character_Mapping;
+   L_Mapping : Character_Mapping_Access;
    L_Mapping_Flag : aliased System.Once.Flag := 0;
 
    procedure L_Mapping_Init;
    procedure L_Mapping_Init is
-      Mapping : access Character_Mapping
+      Mapping : Character_Mapping_Access
          renames L_Mapping;
    begin
       Mapping := new Character_Mapping'(
@@ -163,12 +165,12 @@ package body Ada.Characters.Inside.Maps.Case_Mapping is
 
    --  upper case map
 
-   U_Mapping : access Character_Mapping;
+   U_Mapping : Character_Mapping_Access;
    U_Mapping_Flag : aliased System.Once.Flag := 0;
 
    procedure U_Mapping_Init;
    procedure U_Mapping_Init is
-      Mapping : access Character_Mapping
+      Mapping : Character_Mapping_Access
          renames U_Mapping;
    begin
       Mapping := new Character_Mapping'(

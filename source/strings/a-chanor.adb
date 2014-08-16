@@ -65,8 +65,9 @@ package body Ada.Characters.Normalization is
    type D_Map_Array is
       array (1 .. UCD.Normalization.NFD_Total) of D_Map_Element;
    pragma Suppress_Initialization (D_Map_Array);
+   type D_Map_Array_Access is access D_Map_Array;
 
-   D_Map : access D_Map_Array;
+   D_Map : D_Map_Array_Access;
    D_Flag : aliased System.Once.Flag := 0;
 
    function D_Find (Item : Wide_Wide_Character) return Natural;
@@ -296,8 +297,9 @@ package body Ada.Characters.Normalization is
    type C_Map_Array is
       array (1 .. UCD.Normalization.NFC_Total) of C_Map_Element;
    pragma Suppress_Initialization (C_Map_Array);
+   type C_Map_Array_Access is access C_Map_Array;
 
-   C_Map : access C_Map_Array;
+   C_Map : C_Map_Array_Access;
    C_Flag : aliased System.Once.Flag := 0;
 
    function C_Find (Item : Composing_Wide_Wide_String) return Natural;

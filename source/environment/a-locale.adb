@@ -46,6 +46,8 @@ package body Ada.Locales is
       array (Positive range <>) of Language_Table_Element;
    pragma Suppress_Initialization (Language_Table_Array);
 
+   type Language_Table_Array_Access is access Language_Table_Array;
+
    unde : constant Alpha_2_NP := (
       1 => ISO_639_Alpha_2_Unknown (1),
       2 => ISO_639_Alpha_2_Unknown (2));
@@ -598,7 +600,7 @@ package body Ada.Locales is
                      --  "zaza; dimili; dimli; kirdki; kirmanjki; zazaki"
    --  mis, mul, qaa-qtz, und, zxx are excluded
 
-   Lang_Map_3 : access Language_Table_Array;
+   Lang_Map_3 : Language_Table_Array_Access;
    Lang_Map_3_Flag : aliased System.Once.Flag := 0;
 
    procedure Lang_Map_3_Init;
@@ -658,7 +660,7 @@ package body Ada.Locales is
       end;
    end To_Alpha_2;
 
-   Lang_Map_2 : access Language_Table_Array;
+   Lang_Map_2 : Language_Table_Array_Access;
    Lang_Map_2_Flag : aliased System.Once.Flag := 0;
 
    procedure Lang_Map_2_Init;

@@ -4,8 +4,9 @@ with Ada.Environment_Variables;
 procedure cmdline is
 	Count : Natural;
 	Value_Test : Boolean := False;
+	type String_Access is access String;
 	type Pair is record
-		Name, Value : access String;
+		Name, Value : String_Access;
 	end record;
 	Rec : array (1 .. 255) of Pair;
 	procedure Process (Name, Value : in String) is

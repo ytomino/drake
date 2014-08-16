@@ -8,8 +8,9 @@ procedure typedio is
 begin
 	Test_Direct_IO : declare
 		use Character_IO;
+		type String_Access is access String;
 		File : File_Type;
-		Temp_Name : access String;
+		Temp_Name : String_Access;
 		Buf : Character;
 	begin
 		Create (File, Inout_File);
