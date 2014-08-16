@@ -81,9 +81,12 @@ ifneq ($(WITHF),0)
 CFLAGS+=-ffast-math -gnatec=$(abspath ../source/fastmath.adc)
 endif
 
-.PHONY: all clean xfind xfindall
+.PHONY: all tree clean xfind xfindall
 
 all: $(BUILDDIR)/adalib/libgnat.a $(BINLN) $(EXAMPLES)
+
+tree:
+	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
 
 $(BINLN):
 	ln -s $(BUILDDIR) $(BINLN)

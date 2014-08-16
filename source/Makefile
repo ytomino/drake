@@ -236,9 +236,11 @@ endif
 endif
 
 ifneq ($(WITHF),0)
-CFLAGS_MATH=-ffast-math -gnatec=fastmath.adc
+CFLAGS_MATH=-ffast-math
+ADC=fastmath.adc
 else
 CFLAGS_MATH=
+ADC=$(wildcard $(RTSDIR)/adainclude/*.adc)
 endif
 
 ifneq ($(WITHL),0)
@@ -247,13 +249,27 @@ else
 CFLAGS_LTO=
 endif
 
+ifneq ($(ADC),)
+CFLAGS_ADC=-gnatec=$(ADC)
+else
+CFLAGS_ADC=
+endif
+
 CFLAGS=
 
-CFLAGS_FOR_COMPILER_UNIT=-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_LTO) $(CFLAGS)
+CFLAGS_FOR_COMPILER_UNIT=-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS)
 
-.PHONY: all import_objs c-archive
+.PHONY: all tree import_objs c-archive
 
 all: $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
+
+tree: \
+		$(RTSDIR)/adainclude \
+		$(RTSDIR)/adalib \
+		$(BUILDDIR) \
+		$(RTSDIR)/adainclude/system.ads \
+		$(LIBRARY_SRCS) \
+		$(IMPORT_HEADERS)
 
 $(RTSDIR)/adalib/libgnat.a: \
 		$(RTSDIR)/adainclude \
