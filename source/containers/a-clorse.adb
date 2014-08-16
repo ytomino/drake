@@ -860,7 +860,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
       function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
       begin
-         return not (Left < Right) and not (Right < Left);
+         return not (Left < Right) and then not (Right < Left);
       end Equivalent_Keys;
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is

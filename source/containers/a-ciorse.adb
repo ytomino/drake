@@ -591,7 +591,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    function Overlap (Left, Right : Set) return Boolean is
    begin
-      if Is_Empty (Left) or Is_Empty (Right) then
+      if Is_Empty (Left) or else Is_Empty (Right) then
          return False;
       else
          return Binary_Trees.Overlap (
@@ -860,7 +860,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
       function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
       begin
-         return not (Left < Right) and not (Right < Left);
+         return not (Left < Right) and then not (Right < Left);
       end Equivalent_Keys;
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is

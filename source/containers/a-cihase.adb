@@ -530,7 +530,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function Overlap (Left, Right : Set) return Boolean is
    begin
-      if Is_Empty (Left) or Is_Empty (Right) then
+      if Is_Empty (Left) or else Is_Empty (Right) then
          return False;
       else
          return Hash_Tables.Overlap (

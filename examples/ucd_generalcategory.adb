@@ -277,7 +277,7 @@ begin
 										Item_S : Boolean := R.First /= R.Last;
 										Offset : Integer := 0;
 									begin
-										if Item_B = B and Item_S = S then
+										if Item_B = B and then Item_S = S then
 											if B = In_17 then
 												Offset := 16#10000#;
 											end if;
