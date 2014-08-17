@@ -101,8 +101,8 @@ package Ada.Strings.Wide_Wide_Maps is
    overriding function To_Sequence (Set : Wide_Wide_Character_Set)
       return Maps.Character_Sequence is abstract;
 
-   --  Representation for a Wide_Wide_Character to Wide_Wide_Character
-   --  mapping:
+   --  Representation for a Wide_Wide_Character to
+   --    Wide_Wide_Character mapping:
 --  type Wide_Wide_Character_Mapping is private;
    type Wide_Wide_Character_Mapping is new Maps.Character_Mapping;
    pragma Preelaborable_Initialization (Wide_Wide_Character_Mapping);

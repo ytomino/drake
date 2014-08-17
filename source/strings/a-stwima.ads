@@ -30,22 +30,28 @@ package Ada.Strings.Wide_Maps is
       return Wide_Character_Set
       renames Overloaded_To_Set;
 
-   function To_Ranges (Set : Wide_Character_Set) return Wide_Character_Ranges
+   function To_Ranges (Set : Wide_Character_Set)
+      return Wide_Character_Ranges
       renames Overloaded_To_Ranges;
 
 --  function "=" (Left, Right : Wide_Character_Set) return Boolean;
    --  function "=" is inherited
 
---  function "not" (Right : Wide_Character_Set) return Wide_Character_Set;
+--  function "not" (Right : Wide_Character_Set)
+--    return Wide_Character_Set;
 --  function "and" (Left, Right : Wide_Character_Set)
 --    return Wide_Character_Set;
---  function "or" (Left, Right : Wide_Character_Set) return Wide_Character_Set;
+--  function "or" (Left, Right : Wide_Character_Set)
+--    return Wide_Character_Set;
 --  function "xor" (Left, Right : Wide_Character_Set)
 --    return Wide_Character_Set;
---  function "-" (Left, Right : Wide_Character_Set) return Wide_Character_Set;
+--  function "-" (Left, Right : Wide_Character_Set)
+--    return Wide_Character_Set;
    --  "not", "and", "or", "xor" and "-" are inherited
 
-   function Is_In (Element : Wide_Character; Set : Wide_Character_Set)
+   function Is_In (
+      Element : Wide_Character;
+      Set : Wide_Character_Set)
       return Boolean
       renames Overloaded_Is_In;
 
@@ -95,12 +101,15 @@ package Ada.Strings.Wide_Maps is
    overriding function To_Sequence (Set : Wide_Character_Set)
       return Maps.Character_Sequence is abstract;
 
-   --  Representation for a Wide_Character to Wide_Character mapping:
+   --  Representation for a Wide_Character to
+   --    Wide_Character mapping:
 --  type Wide_Character_Mapping is private;
    type Wide_Character_Mapping is new Maps.Character_Mapping;
    pragma Preelaborable_Initialization (Wide_Character_Mapping);
 
-   function Value (Map : Wide_Character_Mapping; Element : Wide_Character)
+   function Value (
+      Map : Wide_Character_Mapping;
+      Element : Wide_Character)
       return Wide_Character
       renames Overloaded_Value;
 
