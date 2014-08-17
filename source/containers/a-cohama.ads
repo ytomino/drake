@@ -37,7 +37,7 @@ package Ada.Containers.Hashed_Maps is
    package Map_Iterator_Interfaces is
       new Iterator_Interfaces (Cursor, Has_Element);
 
-   function "=" (Left, Right : Map) return Boolean;
+   overriding function "=" (Left, Right : Map) return Boolean;
 
    function Capacity (Container : Map) return Count_Type;
 

@@ -43,7 +43,7 @@ package body Ada.Containers.Access_Holders is
          Data => Null_Data'Unrestricted_Access);
    end Null_Holder;
 
-   function "=" (Left, Right : Holder) return Boolean is
+   overriding function "=" (Left, Right : Holder) return Boolean is
    begin
       return Left.Data = Right.Data;
    end "=";
@@ -129,7 +129,7 @@ package body Ada.Containers.Access_Holders is
             Weak_Access_Holders.Data_Access,
             Data_Access);
 
-      function "=" (Left, Right : Weak_Holder) return Boolean is
+      overriding function "=" (Left, Right : Weak_Holder) return Boolean is
       begin
          return Left.Super.Data = Right.Super.Data;
       end "=";

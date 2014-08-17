@@ -117,7 +117,7 @@ package Ada.Strings.Generic_Unbounded is
       Low : Positive;
       High : Natural);
 
-   function "=" (Left, Right : Unbounded_String) return Boolean;
+   overriding function "=" (Left, Right : Unbounded_String) return Boolean;
    function "=" (Left : Unbounded_String; Right : String_Type) return Boolean;
    function "=" (Left : String_Type; Right : Unbounded_String) return Boolean;
 

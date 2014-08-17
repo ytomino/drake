@@ -17,7 +17,7 @@ package Ada.Containers.Indefinite_Holders is
 --  Empty_Holder : constant Holder;
    function Empty_Holder return Holder;
 
-   function "=" (Left, Right : Holder) return Boolean;
+   overriding function "=" (Left, Right : Holder) return Boolean;
 
    function To_Holder (New_Item : Element_Type) return Holder;
 

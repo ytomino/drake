@@ -602,23 +602,27 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 
-   function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Iterator) return Cursor is
    begin
       return First (Object.Container.all);
    end First;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
       pragma Unreferenced (Object);
    begin
       return Next (Position);
    end Next;
 
-   function Last (Object : Iterator) return Cursor is
+   overriding function Last (Object : Iterator) return Cursor is
    begin
       return Last (Object.Container.all);
    end Last;
 
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
       pragma Unreferenced (Object);
    begin
       return Previous (Position);

@@ -17,7 +17,7 @@ package Ada.Containers.Access_Holders is
    function Null_Holder return Holder;
    --  Empty_Holder?
 
-   function "=" (Left, Right : Holder) return Boolean;
+   overriding function "=" (Left, Right : Holder) return Boolean;
 
    function To_Holder (Source : Name) return Holder;
    --  for shorthand
@@ -61,7 +61,7 @@ package Ada.Containers.Access_Holders is
 
       type Weak_Holder is tagged private;
 
-      function "=" (Left, Right : Weak_Holder) return Boolean;
+      overriding function "=" (Left, Right : Weak_Holder) return Boolean;
 
       function To_Weak_Holder (Source : Holder) return Weak_Holder;
       function "+" (Right : Holder) return Weak_Holder

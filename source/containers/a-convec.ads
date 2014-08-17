@@ -44,7 +44,7 @@ package Ada.Containers.Vectors is
    package Vector_Iterator_Interfaces is
       new Iterator_Interfaces (Cursor, Has_Element);
 
-   function "=" (Left, Right : Vector) return Boolean;
+   overriding function "=" (Left, Right : Vector) return Boolean;
 
    function To_Vector (Length : Count_Type) return Vector;
 

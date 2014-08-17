@@ -791,7 +791,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Process (Container.Reference (Index).Element.all);
    end Update_Element;
 
-   function "=" (Left, Right : Vector) return Boolean is
+   overriding function "=" (Left, Right : Vector) return Boolean is
    begin
       if Left.Length /= Right.Length then
          return False;
@@ -846,17 +846,18 @@ package body Ada.Containers.Indefinite_Vectors is
       end return;
    end "&";
 
-   procedure Adjust (Object : in out Vector) is
+   overriding procedure Adjust (Object : in out Vector) is
    begin
       Copy_On_Write.Adjust (Object.Super'Access);
    end Adjust;
 
-   function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Iterator) return Cursor is
    begin
       return Object.First;
    end First;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor is
    begin
       if Position >= Object.Last then
          return No_Element;
@@ -865,12 +866,13 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
    end Next;
 
-   function Last (Object : Iterator) return Cursor is
+   overriding function Last (Object : Iterator) return Cursor is
    begin
       return Object.Last;
    end Last;
 
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor is
    begin
       if Position <= Object.First then
          return No_Element;

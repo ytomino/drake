@@ -35,7 +35,7 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
    package List_Iterator_Interfaces is
       new Iterator_Interfaces (Cursor, Has_Element);
 
-   function "=" (Left, Right : List) return Boolean;
+   overriding function "=" (Left, Right : List) return Boolean;
 
    function Length (Container : List) return Count_Type;
 

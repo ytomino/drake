@@ -507,7 +507,7 @@ package body Ada.Strings.Maps is
             Items => (1 => (Low => Singleton, High => Singleton))));
    end Overloaded_To_Set;
 
-   function "=" (Left, Right : Character_Set) return Boolean is
+   overriding function "=" (Left, Right : Character_Set) return Boolean is
       pragma Assert (Valid (Reference (Left)));
       pragma Assert (Valid (Reference (Right)));
       Left_Data : constant not null Set_Data_Access := Reference (Left);
@@ -925,7 +925,7 @@ package body Ada.Strings.Maps is
       return Characters.Inside.Maps.Value (Reference (Map).all, Element);
    end Overloaded_Value;
 
-   function "=" (Left, Right : Character_Mapping) return Boolean is
+   overriding function "=" (Left, Right : Character_Mapping) return Boolean is
       Left_Data : constant not null Map_Data_Access := Reference (Left);
       Right_Data : constant not null Map_Data_Access := Reference (Right);
    begin

@@ -367,7 +367,7 @@ package body Ada.Strings.Generic_Unbounded is
       end if;
    end Unbounded_Slice;
 
-   function "=" (Left, Right : Unbounded_String) return Boolean is
+   overriding function "=" (Left, Right : Unbounded_String) return Boolean is
    begin
       return Left.Data.Items (1 .. Left.Length) =
          Right.Data.Items (1 .. Right.Length);

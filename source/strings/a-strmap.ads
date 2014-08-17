@@ -75,7 +75,7 @@ package Ada.Strings.Maps is
    function To_Ranges (Set : Character_Set) return Character_Ranges
       renames Overloaded_To_Ranges;
 
-   function "=" (Left, Right : Character_Set) return Boolean;
+   overriding function "=" (Left, Right : Character_Set) return Boolean;
 
    function "not" (Right : Character_Set) return Character_Set;
    function "and" (Left, Right : Character_Set) return Character_Set;
@@ -190,7 +190,7 @@ package Ada.Strings.Maps is
       renames Overloaded_To_Mapping;
 
    --  extended
-   function "=" (Left, Right : Character_Mapping) return Boolean;
+   overriding function "=" (Left, Right : Character_Mapping) return Boolean;
 
    --  extended
    function Overloaded_To_Domain (Map : Character_Mapping)

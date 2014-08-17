@@ -180,7 +180,7 @@ package body Ada.Containers.Indefinite_Holders is
       Process (Container.Reference.Element.all);
    end Update_Element;
 
-   function "=" (Left, Right : Holder) return Boolean is
+   overriding function "=" (Left, Right : Holder) return Boolean is
    begin
       if Left.Super.Data = Right.Super.Data then
          return True;

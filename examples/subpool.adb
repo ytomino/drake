@@ -79,7 +79,7 @@ procedure subpool is
 	package body MR_Pool is
 		use type Subpool_Handle;
 		
-		procedure Initialize (Pool : in out Mark_Release_Pool_Type) is
+		overriding procedure Initialize (Pool : in out Mark_Release_Pool_Type) is
 			-- Initialize the first default subpool.
 		begin
 			Subpools.Initialize (Subpools.Root_Storage_Pool_With_Subpools (Pool)); -- drake
@@ -88,7 +88,7 @@ procedure subpool is
 				(Pool.Markers(1)'Unchecked_Access, Pool);
 		end Initialize;
 		
-		function Create_Subpool (Pool : in out Mark_Release_Pool_Type)
+		overriding function Create_Subpool (Pool : in out Mark_Release_Pool_Type)
 			return not null Subpool_Handle is
 			-- Mark the current allocation location.
 		begin
@@ -105,7 +105,7 @@ procedure subpool is
 			end return;
 		end Create_Subpool;
 		
-		procedure Deallocate_Subpool (
+		overriding procedure Deallocate_Subpool (
 			Pool : in out Mark_Release_Pool_Type;
 			Subpool : in out Subpool_Handle) is
 		begin
@@ -122,14 +122,14 @@ procedure subpool is
 			end if;
 		end Deallocate_Subpool;
 		
-		function Default_Subpool_for_Pool (
+		overriding function Default_Subpool_for_Pool (
 			Pool : in Mark_Release_Pool_Type) return not null Subpool_Handle is
 		begin
 			return Pool.Markers(Pool.Current_Pool)
 				'Unrestricted_Access; -- 'Unchecked_Access; / different gcc from Standard
 		end Default_Subpool_for_Pool;
 		
-		procedure Allocate_From_Subpool (
+		overriding procedure Allocate_From_Subpool (
 			Pool : in out Mark_Release_Pool_Type;
 			Storage_Address : out System.Address;
 			Size_In_Storage_Elements : in Storage_Count;

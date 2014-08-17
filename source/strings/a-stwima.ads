@@ -55,9 +55,12 @@ package Ada.Strings.Wide_Maps is
 --    return Boolean;
    --  function Is_Subset is inherited
 
-   function "<=" (Left : Wide_Character_Set; Right : Wide_Character_Set)
-      return Boolean
-      renames Is_Subset;
+--  function "<=" (
+--    Left : Wide_Character_Set;
+--    Right : Wide_Character_Set)
+--    return Boolean
+--    renames Is_Subset;
+   --  function "<=" is inherited
 
    --  Alternative representation for a set of Wide_Character values:
    subtype Wide_Character_Sequence is Wide_String;
@@ -75,19 +78,21 @@ package Ada.Strings.Wide_Maps is
       renames Overloaded_To_Sequence;
 
    --  hiding
-   function To_Set (Ranges : Maps.Character_Ranges)
+   overriding function To_Set (Ranges : Maps.Character_Ranges)
       return Wide_Character_Set is abstract;
-   function To_Set (Span : Maps.Character_Range)
+   overriding function To_Set (Span : Maps.Character_Range)
       return Wide_Character_Set is abstract;
-   function To_Ranges (Set : Wide_Character_Set)
+   overriding function To_Ranges (Set : Wide_Character_Set)
       return Maps.Character_Ranges is abstract;
-   function Is_In (Element : Character; Set : Wide_Character_Set)
+   overriding function Is_In (
+      Element : Character;
+      Set : Wide_Character_Set)
       return Boolean is abstract;
-   function To_Set (Sequence : Maps.Character_Sequence)
+   overriding function To_Set (Sequence : Maps.Character_Sequence)
       return Wide_Character_Set is abstract;
-   function To_Set (Singleton : Character)
+   overriding function To_Set (Singleton : Character)
       return Wide_Character_Set is abstract;
-   function To_Sequence (Set : Wide_Character_Set)
+   overriding function To_Sequence (Set : Wide_Character_Set)
       return Maps.Character_Sequence is abstract;
 
    --  Representation for a Wide_Character to Wide_Character mapping:
@@ -115,13 +120,15 @@ package Ada.Strings.Wide_Maps is
       renames Overloaded_To_Range;
 
    --  hiding
-   function Value (Map : Wide_Character_Mapping; Element : Character)
+   overriding function Value (
+      Map : Wide_Character_Mapping;
+      Element : Character)
       return Character is abstract;
-   function To_Mapping (From, To : Maps.Character_Sequence)
+   overriding function To_Mapping (From, To : Maps.Character_Sequence)
       return Wide_Character_Mapping is abstract;
-   function To_Domain (Map : Wide_Character_Mapping)
+   overriding function To_Domain (Map : Wide_Character_Mapping)
       return Maps.Character_Sequence is abstract;
-   function To_Range (Map : Wide_Character_Mapping)
+   overriding function To_Range (Map : Wide_Character_Mapping)
       return Maps.Character_Sequence is abstract;
 
    type Wide_Character_Mapping_Function is

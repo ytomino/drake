@@ -280,7 +280,7 @@ package body Ada.Directories is
       end if;
    end Get_Next_Entry;
 
-   procedure Finalize (Search : in out Search_Type) is
+   overriding procedure Finalize (Search : in out Search_Type) is
    begin
       if Search.Search.Handle /= Directory_Searching.Null_Handle then
          End_Search (Search, Raise_On_Error => False);

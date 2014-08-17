@@ -851,12 +851,13 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
-   function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Iterator) return Cursor is
    begin
       return Object.First;
    end First;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor is
    begin
       if Position >= Object.Last then
          return No_Element;
@@ -865,12 +866,13 @@ package body Ada.Containers.Limited_Vectors is
       end if;
    end Next;
 
-   function Last (Object : Iterator) return Cursor is
+   overriding function Last (Object : Iterator) return Cursor is
    begin
       return Object.Last;
    end Last;
 
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor is
    begin
       if Position <= Object.First then
          return No_Element;
