@@ -136,11 +136,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    --  implementation
 
-   procedure Adjust (Object : in out List) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
-
    procedure Assign (Target : in out List; Source : List) is
    begin
       Copy_On_Write.Assign (
@@ -280,11 +275,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return Object.First;
-   end First;
-
    function Has_Element (Position : Cursor) return Boolean is
    begin
       return Position /= null;
@@ -390,11 +380,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end if;
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Object.Last;
-   end Last;
-
    function Length (Container : List) return Count_Type is
    begin
       if Container.Super.Data = null then
@@ -427,15 +412,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Position := Downcast (Position.Super.Next);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position = Object.Last then
-         return No_Element;
-      else
-         return Next (Position);
-      end if;
-   end Next;
-
    procedure Prepend (
       Container : in out List;
       New_Item : Element_Type;
@@ -456,15 +432,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Position.Super.Super.Previous);
-   end Previous;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position = Object.First then
-         return No_Element;
-      else
-         return Previous (Position);
-      end if;
    end Previous;
 
    procedure Query_Element (
@@ -677,6 +644,39 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    begin
       return Base.Is_Before (Upcast (Left), Upcast (Right));
    end "<";
+
+   procedure Adjust (Object : in out List) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return Object.First;
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
+   end Next;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Object.Last;
+   end Last;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
+   end Previous;
 
    package body Generic_Sorting is
 

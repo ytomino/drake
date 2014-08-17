@@ -254,13 +254,6 @@ package body Ada.Directories is
       End_Search (Search, Raise_On_Error => True);
    end End_Search;
 
-   procedure Finalize (Search : in out Search_Type) is
-   begin
-      if Search.Search.Handle /= Directory_Searching.Null_Handle then
-         End_Search (Search, Raise_On_Error => False);
-      end if;
-   end Finalize;
-
    function More_Entries (Search : Search_Type) return Boolean is
    begin
       if Search.Search.Handle = Directory_Searching.Null_Handle then
@@ -286,6 +279,13 @@ package body Ada.Directories is
          Next (Search);
       end if;
    end Get_Next_Entry;
+
+   procedure Finalize (Search : in out Search_Type) is
+   begin
+      if Search.Search.Handle /= Directory_Searching.Null_Handle then
+         End_Search (Search, Raise_On_Error => False);
+      end if;
+   end Finalize;
 
    procedure Search (
       Directory : String;

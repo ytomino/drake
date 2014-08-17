@@ -136,11 +136,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 
    --  implementation
 
---  diff (Adjust)
---
---
---
-
 --  diff (Assign)
 --
 --
@@ -280,11 +275,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return Object.First;
-   end First;
-
    function Has_Element (Position : Cursor) return Boolean is
    begin
       return Position /= null;
@@ -390,11 +380,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Object.Last;
-   end Last;
-
    function Length (Container : List) return Count_Type is
    begin
       return Container.Length;
@@ -427,15 +412,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position := Downcast (Position.Super.Next);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position = Object.Last then
-         return No_Element;
-      else
-         return Next (Position);
-      end if;
-   end Next;
-
 --  diff (Prepend)
 --
 --
@@ -456,15 +432,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Position.Super.Super.Previous);
-   end Previous;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position = Object.First then
-         return No_Element;
-      else
-         return Previous (Position);
-      end if;
    end Previous;
 
    procedure Query_Element (
@@ -677,6 +644,39 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    begin
       return Base.Is_Before (Upcast (Left), Upcast (Right));
    end "<";
+
+--  diff (Adjust)
+--
+--
+--
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return Object.First;
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
+   end Next;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Object.Last;
+   end Last;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
+   end Previous;
 
    package body Generic_Sorting is
 

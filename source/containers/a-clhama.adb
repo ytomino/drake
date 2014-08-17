@@ -157,11 +157,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
 
    --  implementation
 
---  diff (Adjust)
---
---
---
-
 --  diff (Assign)
 --
 --
@@ -288,11 +283,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --  diff
 --  diff
 --  diff
-   end First;
-
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
    end First;
 
    function Has_Element (Position : Cursor) return Boolean is
@@ -440,12 +430,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
       Position := Downcast (Position.Super.Next);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    procedure Query_Element (
       Position : Cursor;
       Process : not null access procedure (
@@ -554,6 +538,22 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+
+--  diff (Adjust)
+--
+--
+--
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
 
    package body Equivalent is
 

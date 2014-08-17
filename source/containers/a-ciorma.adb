@@ -147,11 +147,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    --  implementation
 
-   overriding procedure Adjust (Object : in out Map) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
-
    procedure Assign (Target : in out Map; Source : Map) is
    begin
       Copy_On_Write.Assign (
@@ -297,11 +292,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          return Downcast (Binary_Trees.First (
             Downcast (Container.Super.Data).Root));
       end if;
-   end First;
-
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
    end First;
 
    function Floor (Container : Map; Key : Key_Type) return Cursor is
@@ -452,11 +442,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       end if;
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Last (Object.Container.all);
-   end Last;
-
    function Length (Container : Map) return Count_Type is
    begin
       if Container.Super.Data = null then
@@ -487,12 +472,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Position := Downcast (Binary_Trees.Next (Upcast (Position)));
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    function Previous (Position : Cursor) return Cursor is
    begin
       return Downcast (Binary_Trees.Previous (Upcast (Position)));
@@ -501,12 +480,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Previous (Position);
    end Previous;
 
    procedure Query_Element (
@@ -623,6 +596,33 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    begin
       return Left.Key.all < Right;
    end "<";
+
+   overriding procedure Adjust (Object : in out Map) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Last (Object.Container.all);
+   end Last;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
+   end Previous;
 
    package body Streaming is
 

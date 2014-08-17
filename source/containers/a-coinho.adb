@@ -82,11 +82,6 @@ package body Ada.Containers.Indefinite_Holders is
 
    --  implementation
 
-   overriding procedure Adjust (Object : in out Holder) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
-
    procedure Assign (Target : in out Holder; Source : Holder) is
    begin
       Copy_On_Write.Assign (
@@ -196,6 +191,11 @@ package body Ada.Containers.Indefinite_Holders is
             Downcast (Right.Super.Data).Element.all;
       end if;
    end "=";
+
+   overriding procedure Adjust (Object : in out Holder) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
 
    package body Streaming is
 

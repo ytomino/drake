@@ -165,11 +165,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    --  implementation
 
-   procedure Adjust (Object : in out Set) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
-
    procedure Assign (Target : in out Set; Source : Set) is
    begin
       Copy_On_Write.Assign (
@@ -339,11 +334,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          return Downcast (Hash_Tables.First (
             Downcast (Container.Super.Data).Table));
       end if;
-   end First;
-
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
    end First;
 
 --  diff (Generic_Array_To_Set)
@@ -522,12 +512,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Position := Downcast (Position.Super.Next);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    function Overlap (Left, Right : Set) return Boolean is
    begin
       if Is_Empty (Left) or else Is_Empty (Right) then
@@ -699,6 +683,22 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
             Equivalent => Equivalent'Access);
       end if;
    end "=";
+
+   procedure Adjust (Object : in out Set) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
 
    package body Generic_Keys is
 

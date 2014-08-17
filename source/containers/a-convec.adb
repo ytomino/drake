@@ -183,11 +183,6 @@ package body Ada.Containers.Vectors is
 
    --  implementation
 
-   procedure Adjust (Object : in out Vector) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
-
    procedure Assign (Target : in out Vector; Source : Vector) is
    begin
       Copy_On_Write.Assign (
@@ -418,11 +413,6 @@ package body Ada.Containers.Vectors is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return Object.First;
-   end First;
-
    function First_Index (Container : Vector) return Index_Type is
       pragma Unreferenced (Container);
    begin
@@ -571,11 +561,6 @@ package body Ada.Containers.Vectors is
       end if;
    end Iterate;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Object.Last;
-   end Last;
-
    function Last_Index (Container : Vector) return Extended_Index is
    begin
       return Index_Type'First - 1 + Index_Type'Base (Container.Length);
@@ -595,15 +580,6 @@ package body Ada.Containers.Vectors is
       Target.Length := Source.Length;
    end Move;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position >= Object.Last then
-         return No_Element;
-      else
-         return Position + 1;
-      end if;
-   end Next;
-
    procedure Prepend (Container : in out Vector; New_Item : Vector) is
    begin
       Insert (Container, Index_Type'First, New_Item);
@@ -616,15 +592,6 @@ package body Ada.Containers.Vectors is
    begin
       Insert (Container, Index_Type'First, New_Item, Count);
    end Prepend;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position <= Object.First then
-         return No_Element;
-      else
-         return Position - 1;
-      end if;
-   end Previous;
 
    procedure Query_Element (
       Container : Vector'Class;
@@ -878,6 +845,39 @@ package body Ada.Containers.Vectors is
          Append (Result, Right);
       end return;
    end "&";
+
+   procedure Adjust (Object : in out Vector) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return Object.First;
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position >= Object.Last then
+         return No_Element;
+      else
+         return Position + 1;
+      end if;
+   end Next;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Object.Last;
+   end Last;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+   begin
+      if Position <= Object.First then
+         return No_Element;
+      else
+         return Position - 1;
+      end if;
+   end Previous;
 
    package body Generic_Sorting is
 

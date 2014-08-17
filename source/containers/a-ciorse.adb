@@ -165,11 +165,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    --  implementation
 
-   overriding procedure Adjust (Object : in out Set) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
-
    procedure Assign (Target : in out Set; Source : Set) is
    begin
       Copy_On_Write.Assign (
@@ -367,11 +362,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
-   end First;
-
    function Floor (Container : Set; Item : Element_Type) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -548,11 +538,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Last (Object.Container.all);
-   end Last;
-
    function Length (Container : Set) return Count_Type is
    begin
       if Container.Super.Data = null then
@@ -583,12 +568,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Position := Downcast (Binary_Trees.Next (Upcast (Position)));
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    function Overlap (Left, Right : Set) return Boolean is
    begin
       if Is_Empty (Left) or else Is_Empty (Right) then
@@ -609,12 +588,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Previous (Position);
    end Previous;
 
    procedure Query_Element (
@@ -782,6 +755,33 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    begin
       return Left.Element.all < Right;
    end "<";
+
+   overriding procedure Adjust (Object : in out Set) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   function Next (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
+   function Last (Object : Iterator) return Cursor is
+   begin
+      return Last (Object.Container.all);
+   end Last;
+
+   function Previous (Object : Iterator; Position : Cursor) return Cursor is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
+   end Previous;
 
    package body Generic_Keys is
 
