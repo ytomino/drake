@@ -457,6 +457,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       New_Item : Element_Type) is
    begin
       Unique (Container, True);
+      Free (Position.Element);
       Position.Element := new Element_Type'(New_Item);
    end Replace_Element;
 

@@ -457,6 +457,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
       New_Item : Element_Type) is
    begin
       Unique (Container, True);
+--  diff
       Position.Element := New_Item;
    end Replace_Element;
 
