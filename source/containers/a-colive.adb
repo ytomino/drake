@@ -645,16 +645,16 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
-   procedure Replace_Element (
-      Container : in out Vector;
-      Position : Index_Type;
-      New_Item : not null access function return Element_Type) is
-   begin
-      Free (Container.Data.Items (Position));
-      Container.Data.Items (Position) :=
-         new Element_Type'(New_Item.all);
---  diff
-   end Replace_Element;
+--  diff (Replace_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
    procedure Reserve_Capacity (
       Container : in out Vector;
