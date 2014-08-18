@@ -458,6 +458,9 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
 
 --  diff (Insert)
 --
@@ -478,7 +481,7 @@ package body Ada.Containers.Limited_Vectors is
       Count : Count_Type := 1) is
    begin
       Insert_Space (Container, Before, Position, Count);
-      for I in Before .. Before + Index_Type'Base (Count) - 1 loop
+      for I in Position .. Position + Index_Type'Base (Count) - 1 loop
          pragma Check (Validate, Container.Data.Items (I) = null);
          Container.Data.Items (I) := new Element_Type'(New_Item.all);
 --  diff
@@ -502,14 +505,14 @@ package body Ada.Containers.Limited_Vectors is
       Count : Count_Type := 1) is
    begin
       Position := Before;
-      if Before = Index_Type'First + Index_Type'Base (Container.Length) then
+      if Position = Index_Type'First + Index_Type'Base (Container.Length) then
          Set_Length (Container, Container.Length + Count);
       else
          declare
             Old_Length : constant Count_Type := Container.Length;
             Moving : constant Index_Type'Base :=
-               Last_Index (Container) - Before;
-            After : constant Index_Type := Before + Index_Type'Base (Count);
+               Last_Index (Container) - Position;
+            After : constant Index_Type := Position + Index_Type'Base (Count);
          begin
             Set_Length (Container, Old_Length + Count);
 --  diff
@@ -520,9 +523,9 @@ package body Ada.Containers.Limited_Vectors is
                Free (Container.Data.Items (I));
             end loop;
             Container.Data.Items (After .. After + Moving) :=
-               Container.Data.Items (Before .. Before + Moving);
+               Container.Data.Items (Position .. Position + Moving);
 --  diff
-            for I in Before .. After - 1 loop
+            for I in Position .. After - 1 loop
                Container.Data.Items (I) := null;
             end loop;
          end;

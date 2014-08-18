@@ -446,14 +446,17 @@ package body Ada.Containers.Vectors is
       Position : out Cursor) is
    begin
       if Container.Length = 0 then
-         Position := Before;
+         Position := Index_Type'First;
          Assign (Container, New_Item);
       else
          Insert_Space (Container, Before, Position, New_Item.Length);
          Downcast (Container.Super.Data).Items (
-            Before ..
-            Before + Index_Type'Base (New_Item.Length) - 1) :=
+            Position ..
+            Position + Index_Type'Base (New_Item.Length) - 1) :=
             Downcast (New_Item.Super.Data).Items;
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
       end if;
@@ -478,7 +481,7 @@ package body Ada.Containers.Vectors is
       Count : Count_Type := 1) is
    begin
       Insert_Space (Container, Before, Position, Count);
-      for I in Before .. Before + Index_Type'Base (Count) - 1 loop
+      for I in Position .. Position + Index_Type'Base (Count) - 1 loop
          Downcast (Container.Super.Data).Items (I) := New_Item;
 --  diff
 --  diff
@@ -502,14 +505,14 @@ package body Ada.Containers.Vectors is
       Count : Count_Type := 1) is
    begin
       Position := Before;
-      if Before = Index_Type'First + Index_Type'Base (Container.Length) then
+      if Position = Index_Type'First + Index_Type'Base (Container.Length) then
          Set_Length (Container, Container.Length + Count);
       else
          declare
             Old_Length : constant Count_Type := Container.Length;
             Moving : constant Index_Type'Base :=
-               Last_Index (Container) - Before;
-            After : constant Index_Type := Before + Index_Type'Base (Count);
+               Last_Index (Container) - Position;
+            After : constant Index_Type := Position + Index_Type'Base (Count);
          begin
             Set_Length (Container, Old_Length + Count);
             Unique (Container, True);
@@ -521,7 +524,7 @@ package body Ada.Containers.Vectors is
 --  diff
             Downcast (Container.Super.Data).Items (After .. After + Moving) :=
                Downcast (Container.Super.Data).Items
-                  (Before .. Before + Moving);
+                  (Position .. Position + Moving);
 --  diff
 --  diff
 --  diff
