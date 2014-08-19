@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with Ada.Containers.Array_Sorting;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -33,10 +34,7 @@ package body Ada.Containers.Vectors is
 --
 --
 
---  diff (Replace_Element)
---
---
---
+--  diff (Allocate_Element)
 --
 --
 --
@@ -215,6 +213,10 @@ package body Ada.Containers.Vectors is
                   Downcast (Container.Super.Data).Items (R1) :=
                      Downcast (New_Item.Super.Data).Items (R2);
                end;
+--  diff
+--  diff
+--  diff
+--  diff
             end if;
          end;
       end if;
@@ -232,9 +234,13 @@ package body Ada.Containers.Vectors is
          Index_Type'First + Index_Type'Base (Old_Length) ..
          Last_Index (Container)
       loop
-         Downcast (Container.Super.Data).Items (I) := New_Item;
+         declare
+            E : Element_Type
+               renames Downcast (Container.Super.Data).Items (I);
+         begin
 --  diff
---  diff
+            E := New_Item;
+         end;
       end loop;
    end Append;
 
@@ -450,10 +456,16 @@ package body Ada.Containers.Vectors is
          Assign (Container, New_Item);
       else
          Insert_Space (Container, Before, Position, New_Item.Length);
-         Downcast (Container.Super.Data).Items (
-            Position ..
-            Position + Index_Type'Base (New_Item.Length) - 1) :=
-            Downcast (New_Item.Super.Data).Items;
+         declare
+            subtype R1 is
+               Index_Type range
+                  Position ..
+                  Position + Index_Type'Base (New_Item.Length) - 1;
+         begin
+            Downcast (Container.Super.Data).Items (R1) :=
+               Downcast (New_Item.Super.Data).Items;
+         end;
+--  diff
 --  diff
 --  diff
 --  diff
@@ -482,9 +494,13 @@ package body Ada.Containers.Vectors is
    begin
       Insert_Space (Container, Before, Position, Count);
       for I in Position .. Position + Index_Type'Base (Count) - 1 loop
-         Downcast (Container.Super.Data).Items (I) := New_Item;
+         declare
+            E : Element_Type
+               renames Downcast (Container.Super.Data).Items (I);
+         begin
 --  diff
---  diff
+            E := New_Item;
+         end;
       end loop;
    end Insert;
 
@@ -654,9 +670,13 @@ package body Ada.Containers.Vectors is
       New_Item : Element_Type) is
    begin
       Unique (Container, True);
-      Downcast (Container.Super.Data).Items (Index) := New_Item;
+      declare
+         E : Element_Type
+            renames Downcast (Container.Super.Data).Items (Index);
+      begin
 --  diff
---  diff
+         E := New_Item;
+      end;
    end Replace_Element;
 
    procedure Reserve_Capacity (
@@ -967,6 +987,10 @@ package body Ada.Containers.Vectors is
                Downcast (Item.Super.Data).Items (
                   Index_Type'First ..
                   Last_Index (Item)));
+--  diff
+--  diff
+--  diff
+--  diff
          end if;
       end Read;
 

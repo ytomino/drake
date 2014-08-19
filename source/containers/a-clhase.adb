@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 --  diff (Ada.Streams)
@@ -15,6 +16,9 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --  diff (Downcast)
 --
+
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -48,7 +52,21 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Downcast (Right).Element.all);
    end Equivalent_Node;
 
---  diff (Copy_Node)
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
 --
 --
 --
@@ -61,8 +79,19 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+--  diff (Copy_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -367,22 +396,30 @@ package body Ada.Containers.Limited_Hashed_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
-      New_Element : Element_Access := new Element_Type'(New_Item.all);
-      New_Hash : constant Hash_Type := Hash (New_Element.all);
+      procedure Finally (X : not null access Element_Access);
+      procedure Finally (X : not null access Element_Access) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Element_Access, Finally);
+      New_Element : aliased Element_Access := new Element_Type'(New_Item.all);
+      New_Hash : Hash_Type;
    begin
+      Holder.Assign (New_Element'Access);
+      New_Hash := Hash (New_Element.all);
       Position := Find (Container, New_Hash, New_Element.all);
       Inserted := Position = null;
       if Inserted then
          Position := new Node'(
             Super => <>,
             Element => New_Element);
+         Holder.Clear;
          Hash_Tables.Insert (
             Container.Table,
             Container.Length,
             New_Hash,
             Upcast (Position));
-      else
-         Free (New_Element);
       end if;
    end Insert;
 

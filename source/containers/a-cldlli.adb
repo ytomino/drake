@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -15,12 +16,42 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff (Downcast)
 --
 
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+
 --  diff (Context_Type)
 --
 --
 --
 
 --  diff (Equivalent_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
 --
 --
 --
@@ -47,9 +78,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
-
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+--
 
    procedure Free_Node (Object : in out Linked_Lists.Node_Access);
    procedure Free_Node (Object : in out Linked_Lists.Node_Access) is
@@ -193,7 +222,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       X : Linked_Lists.Node_Access;
       Next : Linked_Lists.Node_Access;
    begin
---  different line
+--  diff
       for I in 1 .. Count loop
          X := Upcast (Position);
          Next := Position.Super.Next;
@@ -252,9 +281,9 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
 
 --  diff (Find)
+--
 --
 --
 --
@@ -307,15 +336,27 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    begin
 --  diff
       for I in 1 .. Count loop
-         Position := new Node'(
-            Super => <>,
-            Element => new Element_Type'(New_Item.all));
-         Base.Insert (
-            Container.First,
-            Container.Last,
-            Container.Length,
-            Before => Upcast (Before),
-            New_Item => Upcast (Position));
+         declare
+            procedure Finally (X : not null access Cursor);
+            procedure Finally (X : not null access Cursor) is
+            begin
+               Free (X.all);
+            end Finally;
+            package Holder is
+               new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+            X : aliased Cursor := new Node;
+         begin
+            Holder.Assign (X'Access);
+            X.Element := new Element_Type'(New_Item.all);
+            Holder.Clear;
+            Base.Insert (
+               Container.First,
+               Container.Last,
+               Container.Length,
+               Before => Upcast (Before),
+               New_Item => Upcast (X));
+            Position := X;
+         end;
       end loop;
    end Insert;
 

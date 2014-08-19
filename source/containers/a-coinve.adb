@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 with Ada.Containers.Array_Sorting;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -33,18 +34,15 @@ package body Ada.Containers.Indefinite_Vectors is
       return Left /= null and then Left.all = Right;
    end Equivalent_Element;
 
-   procedure Replace_Element (
-      Item : in out Element_Access;
-      New_Item : Element_Access);
-   procedure Replace_Element (
-      Item : in out Element_Access;
-      New_Item : Element_Access) is
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type);
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type) is
    begin
-      Free (Item);
-      if New_Item /= null then
-         Item := new Element_Type'(New_Item.all);
-      end if;
-   end Replace_Element;
+      Item := new Element_Type'(New_Item);
+   end Allocate_Element;
 
    procedure Free_Data (Data : in out Copy_On_Write.Data_Access);
    procedure Free_Data (Data : in out Copy_On_Write.Data_Access) is
@@ -124,7 +122,7 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       for I in R loop
          if S.Items (I) /= null then
-            T.Items (I) := new Element_Type'(S.Items (I).all);
+            Allocate_Element (T.Items (I), S.Items (I).all);
          end if;
       end loop;
       T.Super.Max_Length := Length;
@@ -202,18 +200,22 @@ package body Ada.Containers.Indefinite_Vectors is
                Assign (Container, New_Item);
             else
                Set_Length (Container, Old_Length + New_Item.Length);
---  diff
---  diff
---  diff
---  diff
                for I in
                   Index_Type'First + Index_Type'Base (Old_Length) ..
                   Last_Index (Container)
                loop
-                  Replace_Element (
-                     Downcast (Container.Super.Data).Items (I),
-                     Downcast (New_Item.Super.Data).Items (
-                        I - Index_Type'Base (Old_Length)));
+                  declare
+                     E : Element_Access
+                        renames Downcast (Container.Super.Data).Items (I);
+                     S : Element_Access
+                        renames Downcast (New_Item.Super.Data).Items (
+                           I - Index_Type'Base (Old_Length));
+                  begin
+                     pragma Check (Validate, E = null);
+                     if S /= null then
+                        Allocate_Element (E, S.all);
+                     end if;
+                  end;
                end loop;
             end if;
          end;
@@ -232,9 +234,13 @@ package body Ada.Containers.Indefinite_Vectors is
          Index_Type'First + Index_Type'Base (Old_Length) ..
          Last_Index (Container)
       loop
-         Replace_Element (
-            Downcast (Container.Super.Data).Items (I),
-            New_Item'Unrestricted_Access);
+         declare
+            E : Element_Access
+               renames Downcast (Container.Super.Data).Items (I);
+         begin
+            pragma Check (Validate, E = null);
+            Allocate_Element (E, New_Item);
+         end;
       end loop;
    end Append;
 
@@ -454,10 +460,16 @@ package body Ada.Containers.Indefinite_Vectors is
             Position ..
             Position + Index_Type'Base (New_Item.Length) - 1
          loop
-            Replace_Element (
-               Downcast (Container.Super.Data).Items (I),
-               Downcast (New_Item.Super.Data).Items
-                  (I - Position + Index_Type'First));
+            declare
+               E : Element_Access
+                  renames Downcast (Container.Super.Data).Items (I);
+               S : Element_Access
+                  renames Downcast (New_Item.Super.Data).Items (
+                     I - Before + Index_Type'First);
+            begin
+               pragma Check (Validate, E = null);
+               Allocate_Element (E, S.all);
+            end;
          end loop;
       end if;
    end Insert;
@@ -482,9 +494,13 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       Insert_Space (Container, Before, Position, Count);
       for I in Position .. Position + Index_Type'Base (Count) - 1 loop
-         Replace_Element (
-            Downcast (Container.Super.Data).Items (I),
-            New_Item'Unrestricted_Access);
+         declare
+            E : Element_Access
+               renames Downcast (Container.Super.Data).Items (I);
+         begin
+            pragma Check (Validate, E = null);
+            Allocate_Element (E, New_Item);
+         end;
       end loop;
    end Insert;
 
@@ -654,9 +670,13 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Item : Element_Type) is
    begin
       Unique (Container, True);
-      Replace_Element (
-         Downcast (Container.Super.Data).Items (Index),
-         New_Item'Unrestricted_Access);
+      declare
+         E : Element_Access
+            renames Downcast (Container.Super.Data).Items (Index);
+      begin
+         Free (E);
+         Allocate_Element (E, New_Item);
+      end;
    end Replace_Element;
 
    procedure Reserve_Capacity (
@@ -963,9 +983,13 @@ package body Ada.Containers.Indefinite_Vectors is
          if Length > 0 then
             Set_Length (Item, Length);
             for I in Index_Type'First .. Last_Index (Item) loop
-               Downcast (Item.Super.Data).Items (I) :=
-                  new Element_Type'(Element_Type'Input (Stream));
---  diff
+               declare
+                  E : Element_Access
+                     renames Downcast (Item.Super.Data).Items (I);
+               begin
+                  pragma Check (Validate, E = null);
+                  Allocate_Element (E, Element_Type'Input (Stream));
+               end;
             end loop;
          end if;
       end Read;

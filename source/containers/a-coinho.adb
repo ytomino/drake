@@ -12,6 +12,16 @@ package body Ada.Containers.Indefinite_Holders is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
 
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type);
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type) is
+   begin
+      Item := new Element_Type'(New_Item);
+   end Allocate_Element;
+
    procedure Free_Data (Data : in out Copy_On_Write.Data_Access);
    procedure Free_Data (Data : in out Copy_On_Write.Data_Access) is
       X : Data_Access := Downcast (Data);
@@ -61,8 +71,9 @@ package body Ada.Containers.Indefinite_Holders is
                Finally);
       begin
          Holder.Assign (Target'Unrestricted_Access);
-         Downcast (Target).Element :=
-            new Element_Type'(Downcast (Source).Element.all);
+         Allocate_Element (
+            Downcast (Target).Element,
+            Downcast (Source).Element.all);
          Holder.Clear;
       end;
    end Copy_Data;
@@ -162,14 +173,13 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       Clear (Container);
       Unique (Container, True);
-      Downcast (Container.Super.Data).Element := new Element_Type'(New_Item);
+      Allocate_Element (Downcast (Container.Super.Data).Element, New_Item);
    end Replace_Element;
 
    function To_Holder (New_Item : Element_Type) return Holder is
    begin
       return Result : Holder do
-         Unique (Result, True);
-         Downcast (Result.Super.Data).Element := new Element_Type'(New_Item);
+         Replace_Element (Result, New_Item);
       end return;
    end To_Holder;
 
@@ -205,8 +215,9 @@ package body Ada.Containers.Indefinite_Holders is
       begin
          Clear (Item);
          Unique (Item, True);
-         Downcast (Item.Super.Data).Element :=
-            new Element_Type'(Element_Type'Input (Stream));
+         Allocate_Element (
+            Downcast (Item.Super.Data).Element,
+            Element_Type'Input (Stream));
       end Read;
 
       procedure Write (

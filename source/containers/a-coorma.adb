@@ -1,3 +1,4 @@
+--  diff (Ada.Exceptions.Finally)
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -14,6 +15,10 @@ package body Ada.Containers.Ordered_Maps is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+--  diff (Free)
+--  diff (Free)
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Key_Type;
@@ -48,6 +53,42 @@ package body Ada.Containers.Ordered_Maps is
       end if;
    end Compare_Key;
 
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Copy_Node (
       Target : out Binary_Trees.Node_Access;
       Source : not null Binary_Trees.Node_Access);
@@ -55,16 +96,13 @@ package body Ada.Containers.Ordered_Maps is
       Target : out Binary_Trees.Node_Access;
       Source : not null Binary_Trees.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
+      New_Node : constant Cursor := new Node'(
+         Super => <>,
          Key => Downcast (Source).Key,
          Element => Downcast (Source).Element);
    begin
       Target := Upcast (New_Node);
    end Copy_Node;
-
---  diff (Free)
---  diff (Free)
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -364,8 +402,23 @@ package body Ada.Containers.Ordered_Maps is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       Before : constant Cursor := Ceiling (Container, Key);
    begin
+--  diff
       Inserted := Before = null or else Key < Before.Key;
       if Inserted then
          Unique (Container, True);
@@ -379,7 +432,6 @@ package body Ada.Containers.Ordered_Maps is
             Upcast (Before),
             Upcast (Position));
       else
---  diff
          Position := Before;
       end if;
    end Insert;
@@ -641,11 +693,13 @@ package body Ada.Containers.Ordered_Maps is
          for I in 1 .. Length loop
             declare
                New_Key : Key_Type;
-               New_Element : Element_Type;
+               Position : Cursor;
+               Inserted : Boolean;
+               pragma Unreferenced (Inserted);
             begin
                Key_Type'Read (Stream, New_Key);
-               Element_Type'Read (Stream, New_Element);
-               Include (Item, New_Key, New_Element);
+               Insert (Item, New_Key, Position, Inserted);
+               Element_Type'Read (Stream, Position.Element);
             end;
          end loop;
       end Read;

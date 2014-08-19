@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -14,6 +15,10 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+   procedure Free is new Unchecked_Deallocation (Key_Type, Key_Access);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Key_Type;
@@ -37,6 +42,42 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          Downcast (Position).Key.all);
    end Equivalent_Key;
 
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type);
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type) is
+   begin
+      Item := new Element_Type'(New_Item);
+   end Allocate_Element;
+
+   procedure Allocate_Node (
+      Item : out Cursor;
+      Key : Key_Type;
+      New_Item : Element_Type);
+   procedure Allocate_Node (
+      Item : out Cursor;
+      Key : Key_Type;
+      New_Item : Element_Type)
+   is
+      procedure Finally (X : not null access Cursor);
+      procedure Finally (X : not null access Cursor) is
+      begin
+         Free (X.all.Key);
+         Free (X.all);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+      X : aliased Cursor := new Node;
+   begin
+      Holder.Assign (X'Access);
+      X.Key := new Key_Type'(Key);
+      Allocate_Element (X.Element, New_Item);
+      Holder.Clear;
+      Item := X;
+   end Allocate_Node;
+
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access);
@@ -44,16 +85,13 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
-         Key => new Key_Type'(Downcast (Source).Key.all),
-         Element => new Element_Type'(Downcast (Source).Element.all));
+      Source_Node : constant Cursor := Downcast (Source);
+      New_Node : Cursor;
    begin
+      Allocate_Node (New_Node, Source_Node.Key.all, Source_Node.Element.all);
+--  diff
       Target := Upcast (New_Node);
    end Copy_Node;
-
-   procedure Free is new Unchecked_Deallocation (Key_Type, Key_Access);
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -335,23 +373,37 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       New_Hash : constant Hash_Type := Hash (Key);
    begin
+--  diff
+--  diff
       Position := Find (Container, New_Hash, Key);
       Inserted := Position = null;
       if Inserted then
          Unique (Container, True);
-         Position := new Node'(
-            Super => <>,
-            Key => new Key_Type'(Key),
-            Element => new Element_Type'(New_Item));
+         Allocate_Node (Position, Key, New_Item);
+--  diff
+--  diff
+--  diff
          Hash_Tables.Insert (
             Downcast (Container.Super.Data).Table,
             Downcast (Container.Super.Data).Length,
             New_Hash,
             Upcast (Position));
---  diff
---  diff
       end if;
    end Insert;
 
@@ -475,7 +527,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    begin
       Unique (Container, True);
       Free (Position.Element);
-      Position.Element := new Element_Type'(New_Item);
+      Allocate_Element (Position.Element, New_Item);
    end Replace_Element;
 
    procedure Reserve_Capacity (
@@ -572,9 +624,11 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
                Key : constant Key_Type := Key_Type'Input (Stream);
                Element : constant Element_Type := Element_Type'Input (Stream);
             begin
---  diff
---  diff
                Include (Item, Key, Element);
+--  diff
+--  diff
+--  diff
+--  diff
             end;
          end loop;
       end Read;

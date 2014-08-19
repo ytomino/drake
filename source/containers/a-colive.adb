@@ -1,5 +1,6 @@
 pragma Check_Policy (Validate, Off);
 with Ada.Containers.Array_Sorting;
+--  diff (Ada.Unchecked_Conversion)
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Limited_Vectors is
@@ -33,10 +34,7 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Replace_Element)
---
---
---
+--  diff (Allocate_Element)
 --
 --
 --
@@ -219,8 +217,16 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
 
 --  diff (Append)
+--
+--
+--
+--
 --
 --
 --
@@ -461,6 +467,12 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
+--
+--
 
 --  diff (Insert)
 --
@@ -482,9 +494,13 @@ package body Ada.Containers.Limited_Vectors is
    begin
       Insert_Space (Container, Before, Position, Count);
       for I in Position .. Position + Index_Type'Base (Count) - 1 loop
-         pragma Check (Validate, Container.Data.Items (I) = null);
-         Container.Data.Items (I) := new Element_Type'(New_Item.all);
---  diff
+         declare
+            E : Element_Access
+               renames Container.Data.Items (I);
+         begin
+            pragma Check (Validate, E = null);
+            E := new Element_Type'(New_Item.all);
+         end;
       end loop;
    end Insert;
 
@@ -649,6 +665,10 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Replace_Element)
+--
+--
+--
+--
 --
 --
 --

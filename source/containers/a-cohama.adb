@@ -1,3 +1,4 @@
+--  diff (Ada.Exceptions.Finally)
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -14,6 +15,10 @@ package body Ada.Containers.Hashed_Maps is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+--  diff
+--  diff
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Key_Type;
@@ -37,6 +42,42 @@ package body Ada.Containers.Hashed_Maps is
          Downcast (Position).Key);
    end Equivalent_Key;
 
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access);
@@ -44,16 +85,13 @@ package body Ada.Containers.Hashed_Maps is
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
+      New_Node : constant Cursor := new Node'(
+         Super => <>,
          Key => Downcast (Source).Key,
          Element => Downcast (Source).Element);
    begin
       Target := Upcast (New_Node);
    end Copy_Node;
-
---  diff
---  diff
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -335,8 +373,24 @@ package body Ada.Containers.Hashed_Maps is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       New_Hash : constant Hash_Type := Hash (Key);
    begin
+--  diff
+--  diff
       Position := Find (Container, New_Hash, Key);
       Inserted := Position = null;
       if Inserted then
@@ -350,8 +404,6 @@ package body Ada.Containers.Hashed_Maps is
             Downcast (Container.Super.Data).Length,
             New_Hash,
             Upcast (Position));
---  diff
---  diff
       end if;
    end Insert;
 
@@ -570,11 +622,13 @@ package body Ada.Containers.Hashed_Maps is
          for I in 1 .. Length loop
             declare
                New_Key : Key_Type;
-               New_Element : Element_Type;
+               Position : Cursor;
+               Inserted : Boolean;
+               pragma Unreferenced (Inserted);
             begin
                Key_Type'Read (Stream, New_Key);
-               Element_Type'Read (Stream, New_Element);
-               Include (Item, New_Key, New_Element);
+               Insert (Item, New_Key, Position, Inserted);
+               Element_Type'Read (Stream, Position.Element);
             end;
          end loop;
       end Read;

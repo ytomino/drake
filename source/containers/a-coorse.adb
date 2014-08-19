@@ -1,3 +1,4 @@
+--  diff (Ada.Exceptions.Finally)
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Streams; -- [gcc-4.7] can not search in private with
@@ -15,6 +16,9 @@ package body Ada.Containers.Ordered_Sets is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+--  diff (Free)
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -69,6 +73,33 @@ package body Ada.Containers.Ordered_Sets is
       end if;
    end Compare_Node;
 
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Copy_Node (
       Target : out Binary_Trees.Node_Access;
       Source : not null Binary_Trees.Node_Access);
@@ -76,14 +107,12 @@ package body Ada.Containers.Ordered_Sets is
       Target : out Binary_Trees.Node_Access;
       Source : not null Binary_Trees.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
+      New_Node : constant Cursor := new Node'(
+         Super => <>,
          Element => Downcast (Source).Element);
    begin
       Target := Upcast (New_Node);
    end Copy_Node;
-
---  diff (Free)
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -410,8 +439,17 @@ package body Ada.Containers.Ordered_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       Before : constant Cursor := Ceiling (Container, New_Item);
    begin
+--  diff
       Inserted := Before = null or else New_Item < Before.Element;
       if Inserted then
          Unique (Container, True);
@@ -424,7 +462,6 @@ package body Ada.Containers.Ordered_Sets is
             Upcast (Before),
             Upcast (Position));
       else
---  diff
          Position := Before;
       end if;
    end Insert;
@@ -967,18 +1004,12 @@ package body Ada.Containers.Ordered_Sets is
       begin
          Count_Type'Read (Stream, Length);
          Clear (Item);
---  diff
          for I in 1 .. Length loop
             declare
                New_Item : Element_Type;
---  diff
---  diff
             begin
                Element_Type'Read (Stream, New_Item);
                Include (Item, New_Item);
---  diff
---  diff
---  diff
             end;
          end loop;
       end Read;

@@ -1,3 +1,4 @@
+--  diff (Ada.Exceptions.Finally)
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -14,6 +15,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+--  diff (Free)
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -35,6 +39,33 @@ package body Ada.Containers.Doubly_Linked_Lists is
       return Context.Left.all = Downcast (Right).Element;
    end Equivalent_Element;
 
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Copy_Node (
       Target : out Linked_Lists.Node_Access;
       Source : not null Linked_Lists.Node_Access);
@@ -42,14 +73,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Target : out Linked_Lists.Node_Access;
       Source : not null Linked_Lists.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
+      New_Node : constant Cursor := new Node'(
+         Super => <>,
          Element => Downcast (Source).Element);
    begin
       Target := Upcast (New_Node);
    end Copy_Node;
-
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
---  diff (Free)
 
    procedure Free_Node (Object : in out Linked_Lists.Node_Access);
    procedure Free_Node (Object : in out Linked_Lists.Node_Access) is
@@ -307,15 +336,27 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       Unique (Container, True);
       for I in 1 .. Count loop
-         Position := new Node'(
-            Super => <>,
-            Element => New_Item);
-         Base.Insert (
-            Downcast (Container.Super.Data).First,
-            Downcast (Container.Super.Data).Last,
-            Downcast (Container.Super.Data).Length,
-            Before => Upcast (Before),
-            New_Item => Upcast (Position));
+         declare
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+            X : constant Cursor := new Node'(
+               Super => <>,
+               Element => New_Item);
+         begin
+--  diff
+            Base.Insert (
+               Downcast (Container.Super.Data).First,
+               Downcast (Container.Super.Data).Last,
+               Downcast (Container.Super.Data).Length,
+               Before => Upcast (Before),
+               New_Item => Upcast (X));
+            Position := X;
+         end;
       end loop;
    end Insert;
 
@@ -753,19 +794,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
       begin
          Count_Type'Read (Stream, Length);
          Clear (Item);
---  diff
          for I in 1 .. Length loop
             declare
                Position : Cursor;
---  diff
---  diff
             begin
                Insert (Item, null, Position);
                Element_Type'Read (Stream, Position.Element);
---  diff
---  diff
---  diff
---  diff
             end;
          end loop;
       end Read;

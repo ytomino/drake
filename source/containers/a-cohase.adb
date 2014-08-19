@@ -1,3 +1,4 @@
+--  diff (Ada.Exceptions.Finally)
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Streams; -- [gcc-4.7] can not search in private with
@@ -15,6 +16,9 @@ package body Ada.Containers.Hashed_Sets is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+--  diff
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -48,6 +52,33 @@ package body Ada.Containers.Hashed_Sets is
          Downcast (Right).Element);
    end Equivalent_Node;
 
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access);
@@ -55,14 +86,12 @@ package body Ada.Containers.Hashed_Sets is
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
+      New_Node : constant Cursor := new Node'(
+         Super => <>,
          Element => Downcast (Source).Element);
    begin
       Target := Upcast (New_Node);
    end Copy_Node;
-
---  diff
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -367,8 +396,18 @@ package body Ada.Containers.Hashed_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       New_Hash : constant Hash_Type := Hash (New_Item);
    begin
+--  diff
+--  diff
       Position := Find (Container, New_Hash, New_Item);
       Inserted := Position = null;
       if Inserted then
@@ -381,8 +420,6 @@ package body Ada.Containers.Hashed_Sets is
             Downcast (Container.Super.Data).Length,
             New_Hash,
             Upcast (Position));
---  diff
---  diff
       end if;
    end Insert;
 
@@ -835,14 +872,9 @@ package body Ada.Containers.Hashed_Sets is
          for I in 1 .. Length loop
             declare
                New_Item : Element_Type;
---  diff
---  diff
             begin
                Element_Type'Read (Stream, New_Item);
                Include (Item, New_Item);
---  diff
---  diff
---  diff
             end;
          end loop;
       end Read;

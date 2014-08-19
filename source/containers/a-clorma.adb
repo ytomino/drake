@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -14,6 +15,10 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --  diff (Downcast)
 --
+
+   procedure Free is new Unchecked_Deallocation (Key_Type, Key_Access);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Key_Type;
@@ -48,7 +53,29 @@ package body Ada.Containers.Limited_Ordered_Maps is
       end if;
    end Compare_Key;
 
---  diff (Copy_Node)
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -62,9 +89,20 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 
-   procedure Free is new Unchecked_Deallocation (Key_Type, Key_Access);
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+--  diff (Copy_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -364,22 +402,36 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Position : out Cursor;
       Inserted : out Boolean)
    is
-      The_Key : Key_Access := new Key_Type'(New_Key.all);
-      Before : constant Cursor := Ceiling (Container, The_Key.all);
+      type Pair is record
+         Key : Key_Access;
+         Node : Cursor;
+      end record;
+      pragma Suppress_Initialization (Pair);
+      procedure Finally (X : not null access Pair);
+      procedure Finally (X : not null access Pair) is
+      begin
+         Free (X.Key);
+         Free (X.Node);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Pair, Finally);
+      New_Pair : aliased Pair := (new Key_Type'(New_Key.all), null);
+      Before : constant Cursor := Ceiling (Container, New_Pair.Key.all);
    begin
-      Inserted := Before = null or else The_Key.all < Before.Key.all;
+      Holder.Assign (New_Pair'Access);
+      Inserted := Before = null or else New_Pair.Key.all < Before.Key.all;
       if Inserted then
-         Position := new Node'(
-            Super => <>,
-            Key => The_Key,
-            Element => new Element_Type'(New_Item.all));
+         New_Pair.Node := new Node;
+         New_Pair.Node.Key := New_Pair.Key;
+         New_Pair.Node.Element := new Element_Type'(New_Item.all);
+         Holder.Clear;
+         Position := New_Pair.Node;
          Base.Insert (
             Container.Root,
             Container.Length,
             Upcast (Before),
             Upcast (Position));
       else
-         Free (The_Key);
          Position := Before;
       end if;
    end Insert;
