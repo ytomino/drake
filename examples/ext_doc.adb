@@ -330,7 +330,7 @@ procedure ext_doc is
 														if State = Comment then
 															Ada.Strings.Unbounded.Append (Document, ASCII.LF & ASCII.LF);
 														end if;
-														Ada.Strings.Unbounded.Append (Document, "::" & ASCII.LF & ASCII.LF);
+														Ada.Strings.Unbounded.Append (Document, ".. code-block:: ada" & ASCII.LF & ASCII.LF);
 													end if;
 													if Ex_Line'Length > 0 and then Ex_Line (Ex_Line'First) /= ' ' then
 														Ada.Strings.Unbounded.Append (Document, ' ' & Ex_Line & ASCII.LF);
