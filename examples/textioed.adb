@@ -45,6 +45,15 @@ begin
 		when Ada.Text_IO.Layout_Error =>
 			null;
 	end;
+	pragma Assert (
+		O.Image (0.999, Ada.Text_IO.Editing.To_Picture ("9")) =
+		"1");
+	pragma Assert (
+		O.Image (0.999, Ada.Text_IO.Editing.To_Picture ("9.9")) =
+		"1.0");
+	pragma Assert (
+		O.Image (0.555, Ada.Text_IO.Editing.To_Picture ("9.9_9")) =
+		"0.5,6");
 	-- examples in RM F.3.2
 	S_73_3 : declare
 		Item : constant T := 123456.78;
