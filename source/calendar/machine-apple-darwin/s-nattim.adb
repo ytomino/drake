@@ -69,7 +69,9 @@ package body System.Native_Time is
       R : C.signed_int;
    begin
       R := C.sys.time.gettimeofday (Result'Access, null);
-      pragma Assert (R = 0);
+      if R < 0 then
+         raise Program_Error; -- ???
+      end if;
       return To_timespec (Result);
    end Clock;
 

@@ -239,7 +239,7 @@ package body Ada.Directories.Information is
       Handle : C.winnt.HANDLE;
       Info : aliased C.winbase.BY_HANDLE_FILE_INFORMATION;
       Result : C.windef.WINBOOL;
-      R : C.windef.WINBOOL;
+      Closed : C.windef.WINBOOL;
    begin
       System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Handle := C.winbase.CreateFile (
@@ -256,9 +256,8 @@ package body Ada.Directories.Information is
          Raise_Exception (Name_Error'Identity);
       end if;
       Result := C.winbase.GetFileInformationByHandle (Handle, Info'Access);
-      R := C.winbase.CloseHandle (Handle);
-      pragma Assert (R /= 0);
-      if Result = 0 then
+      Closed := C.winbase.CloseHandle (Handle);
+      if Result = 0 or else Closed = 0 then
          Raise_Exception (Use_Error'Identity);
       end if;
       return (

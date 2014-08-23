@@ -56,37 +56,49 @@ package body Ada.Processes.Inside is
          Actions : aliased C.spawn.posix_spawn_file_actions_t;
          Attrs : aliased C.spawn.posix_spawnattr_t;
          New_Child : aliased C.sys.types.pid_t;
-         R : C.signed_int;
          errno : C.signed_int;
       begin
          System.Zero_Terminated_Strings.To_C (
             Command_Line,
             C_Command_Line (0)'Access);
          Split_Argument (C_Command_Line, Arguments);
-         R := C.spawn.posix_spawn_file_actions_init (Actions'Access);
-         pragma Assert (R = 0);
-         R := C.spawn.posix_spawnattr_init (Attrs'Access);
-         pragma Assert (R = 0);
+         if C.spawn.posix_spawn_file_actions_init (Actions'Access) /= 0 then
+            Exception_Id := Use_Error'Identity;
+            goto Cleanup;
+         end if;
+         if C.spawn.posix_spawnattr_init (Attrs'Access) /= 0 then
+            Exception_Id := Use_Error'Identity;
+            goto Cleanup;
+         end if;
          if Input /= 0 then
-            R := C.spawn.posix_spawn_file_actions_adddup2 (
+            if C.spawn.posix_spawn_file_actions_adddup2 (
                Actions'Access,
                0,
-               Input);
-            pragma Assert (R = 0);
+               Input) /= 0
+            then
+               Exception_Id := Use_Error'Identity;
+               goto Cleanup;
+            end if;
          end if;
          if Output /= 1 then
-            R := C.spawn.posix_spawn_file_actions_adddup2 (
+            if C.spawn.posix_spawn_file_actions_adddup2 (
                Actions'Access,
                1,
-               Output);
-            pragma Assert (R = 0);
+               Output) /= 0
+            then
+               Exception_Id := Use_Error'Identity;
+               goto Cleanup;
+            end if;
          end if;
          if Error /= 2 then
-            R := C.spawn.posix_spawn_file_actions_adddup2 (
+            if C.spawn.posix_spawn_file_actions_adddup2 (
                Actions'Access,
                2,
-               Error);
-            pragma Assert (R = 0);
+               Error) /= 0
+            then
+               Exception_Id := Use_Error'Identity;
+               goto Cleanup;
+            end if;
          end if;
          if Search_Path then
             errno := C.spawn.posix_spawnp (
@@ -125,7 +137,9 @@ package body Ada.Processes.Inside is
       --  restore current directory
       if Old_Directory /= null then
          if C.unistd.chdir (Old_Directory) < 0 then
-            Exception_Id := Name_Error'Identity;
+            if Exception_Id = Exception_Identification.Null_Id then
+               Exception_Id := Name_Error'Identity;
+            end if;
          end if;
          C.stdlib.free (C.void_ptr (char_ptr_Conv.To_Address (Old_Directory)));
       end if;

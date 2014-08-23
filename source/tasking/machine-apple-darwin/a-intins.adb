@@ -95,40 +95,43 @@ package body Ada.Interrupts.Inside is
             Action : aliased C.signal.struct_sigaction := (
                (Unchecked_Tag => 1, sa_sigaction => Handler'Access),
                others => <>); -- uninitialized
-            R : C.signed_int;
          begin
             Action.sa_flags := C.signed_int (C.unsigned_int'(
                C.signal.SA_SIGINFO
                or C.signal.SA_RESTART));
-            R := C.signal.sigemptyset (Action.sa_mask'Access);
-            pragma Assert (R = 0);
-            R := C.signal.sigaction (
+            if C.signal.sigemptyset (Action.sa_mask'Access) < 0 then
+               raise Program_Error;
+            end if;
+            if C.signal.sigaction (
                C.signed_int (Interrupt),
                Action'Access,
-               Item.Saved'Access);
-            pragma Assert (R = 0);
+               Item.Saved'Access) < 0
+            then
+               raise Program_Error;
+            end if;
          end;
       elsif Old_Handler /= null and then New_Handler = null then
          declare
             Old_Action : aliased C.signal.struct_sigaction :=
                (others => <>); -- uninitialized
-            R : C.signed_int;
          begin
-            R := C.signal.sigaction (
+            if C.signal.sigaction (
                C.signed_int (Interrupt),
                Item.Saved'Access,
-               Old_Action'Access);
-            pragma Assert (R = 0);
+               Old_Action'Access) < 0
+            then
+               raise Program_Error;
+            end if;
          end;
       end if;
       Item.Installed_Handler := New_Handler;
    end Exchange_Handler;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id) is
-      R : C.signed_int;
    begin
-      R := C.signal.C_raise (C.signed_int (Interrupt));
-      pragma Assert (R = 0);
+      if C.signal.C_raise (C.signed_int (Interrupt)) < 0 then
+         raise Program_Error;
+      end if;
    end Raise_Interrupt;
 
 end Ada.Interrupts.Inside;
