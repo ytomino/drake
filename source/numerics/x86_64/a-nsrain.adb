@@ -44,11 +44,9 @@ package body Ada.Numerics.SFMT.Random.Inside is
       sse2_param_mask : constant v4si := (MSK1, MSK2, MSK3, MSK4);
       v, x, y, z : m128i;
    begin
---    y := mm_srli_epi32 (b, SR1);
-      y := To_m128i (ia32_psrldi128 (To_v4si (b), SR1));
+      y := To_m128i (ia32_psrldi128 (To_v4si (b), SR1)); -- mm_srli_epi32
       z := mm_srli_si128 (c, SR2 * 8);
---    v := mm_slli_epi32 (d, SL1);
-      v := To_m128i (ia32_pslldi128 (To_v4si (d), SL1));
+      v := To_m128i (ia32_pslldi128 (To_v4si (d), SL1)); -- mm_slli_epi32
       z := mm_xor_si128 (z, a);
       z := mm_xor_si128 (z, v);
       x := mm_slli_si128 (a, SL2 * 8);

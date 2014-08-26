@@ -25,8 +25,6 @@ package body System.Secondary_Stack is
       --  alignment
       if Storage_Size <= Standard'Maximum_Alignment / 2 then
          declare
---          H : constant Integer := Unsigned'Size - 1 - Integer (
---             clz (Unsigned (Storage_Size) * 2 - 1));
             H : constant Integer := Integer (
                clz (Unsigned (Storage_Size) * 2 - 1)
                xor (Unsigned'Size - 1)); -- cancel wordy xor

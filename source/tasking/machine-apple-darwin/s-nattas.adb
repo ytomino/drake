@@ -98,10 +98,8 @@ package body System.Native_Tasks is
          others => <>); -- uninitialized
    begin
       Installed_Abort_Handler := Handler;
-      act.sa_flags := C.signed_int (C.unsigned_int'(
-         C.signal.SA_RESTART
---       or C.signal.SA_NODEFER
-         or C.signal.SA_SIGINFO));
+      act.sa_flags := C.signed_int (
+         C.unsigned_int'(C.signal.SA_RESTART or C.signal.SA_SIGINFO));
       if C.signal.sigemptyset (act.sa_mask'Access) < 0 then
          raise Program_Error; -- ??
       end if;

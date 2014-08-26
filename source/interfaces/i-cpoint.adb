@@ -1,17 +1,9 @@
---  with System.Address_To_Constant_Access_Conversions; -- Preelaborate unit
---  with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Pointers is
    pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Offset;
 
---  package Conv is
---    new System.Address_To_Named_Access_Conversions (Element, Pointer);
---  package const_Conv is
---    new System.Address_To_Constant_Access_Conversions (
---       Element,
---       Constant_Pointer);
-
+   --  no System.Address_To_Access_Conversions for modifying to Pure
    function To_Pointer (Value : System.Address) return access Element;
    pragma Import (Intrinsic, To_Pointer);
    function To_Address (Value : access constant Element) return System.Address;
