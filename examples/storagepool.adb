@@ -1,4 +1,5 @@
 with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Reallocation;
 with System.Storage_Elements.Formatting;
 with System.Storage_Pools.Unbounded;
 procedure storagepool is
@@ -24,6 +25,28 @@ begin
 			Free (Y);
 		end;
 	end Global;
+	Reallocation : declare
+		type S is access String;
+		procedure Reallocate is new Ada.Unchecked_Reallocation (Positive, Character, String, S);
+		procedure Free is new Ada.Unchecked_Deallocation (String, S);
+		X : S := new String'(257 => '[', 258 .. 511 => '-', 512 => ']');
+	begin
+		Reallocate (X, 1, 768);
+		X (1 .. 256) := (others => '.');
+		X (513 .. 678) := (others => '.');
+		pragma Assert (X (257) = '[');
+		pragma Assert (X (512) = ']');
+		Reallocate (X, 257, 512);
+		pragma Assert (X (257) = '[');
+		pragma Assert (X (512) = ']');
+		Reallocate (X, 129, 257);
+		X (129 .. 256) := (others => '.');
+		pragma Assert (X (257) = '[');
+		Reallocate (X, 257, 512);
+		X (258 .. 512) := (258 .. 511 => '-', 512 => ']');
+		pragma Assert (X (257) = '[');
+		Free (X);
+	end Reallocation;
 	Sized_And_Fixed : declare
 		type T is access System.Address;
 		for T'Storage_Size use (System.Address'Size / Standard'Storage_Unit) * 25;
