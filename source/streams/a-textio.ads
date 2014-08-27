@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 with Ada.Formatting;
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
+with Ada.Unchecked_Deallocation;
 private with Ada.Finalization;
 private with Ada.Naked_Text_IO;
 package Ada.Text_IO is
@@ -22,6 +23,17 @@ package Ada.Text_IO is
 
 --  type Type_Set is (Lower_Case, Upper_Case);
    type Type_Set is new Formatting.Type_Set;
+
+   --  extended
+   type String_Access is access String;
+   procedure Free is
+      new Unchecked_Deallocation (String, String_Access);
+   type Wide_String_Access is access Wide_String;
+   procedure Free is
+      new Unchecked_Deallocation (Wide_String, Wide_String_Access);
+   type Wide_Wide_String_Access is access Wide_Wide_String;
+   procedure Free is
+      new Unchecked_Deallocation (Wide_Wide_String, Wide_Wide_String_Access);
 
    --  File Management
 
@@ -357,6 +369,17 @@ package Ada.Text_IO is
       File : not null File_Access;
       Item : out String;
       Last : out Natural); -- alt
+
+   --  extended
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out String_Access);
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out Wide_String_Access);
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out Wide_Wide_String_Access);
 
    --  extended
    function Overloaded_Get_Line (File : File_Type) return String;

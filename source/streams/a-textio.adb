@@ -23,19 +23,9 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Streams.Naked_Stream_IO;
 with Ada.Unchecked_Conversion;
-with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Reallocation;
 package body Ada.Text_IO is
    use Exception_Identification.From_Here;
-
-   type String_Access is access String;
-   procedure Free is
-      new Unchecked_Deallocation (String, String_Access);
-   type Wide_String_Access is access Wide_String;
-   procedure Free is
-      new Unchecked_Deallocation (Wide_String, Wide_String_Access);
-   type Wide_Wide_String_Access is access Wide_Wide_String;
-   procedure Free is
-      new Unchecked_Deallocation (Wide_Wide_String, Wide_Wide_String_Access);
 
    function To_File_Access is
       new Unchecked_Conversion (Controlled.File_Access, File_Access);
@@ -55,6 +45,105 @@ package body Ada.Text_IO is
          Raise_Exception (Mode_Error'Identity, Line => Line);
       end if;
    end Check_File_Mode;
+
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Positive,
+         Character,
+         String,
+         String_Access);
+
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Positive,
+         Wide_Character,
+         Wide_String,
+         Wide_String_Access);
+
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Positive,
+         Wide_Wide_Character,
+         Wide_Wide_String,
+         Wide_Wide_String_Access);
+
+   procedure Finally (X : not null access String_Access);
+   procedure Finally (X : not null access String_Access) is
+   begin
+      Free (X.all);
+   end Finally;
+
+   procedure Finally (X : not null access Wide_String_Access);
+   procedure Finally (X : not null access Wide_String_Access) is
+   begin
+      Free (X.all);
+   end Finally;
+
+   procedure Finally (X : not null access Wide_Wide_String_Access);
+   procedure Finally (X : not null access Wide_Wide_String_Access) is
+   begin
+      Free (X.all);
+   end Finally;
+
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out String_Access;
+      Last : out Natural);
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out String_Access;
+      Last : out Natural)
+   is
+      Next : Positive := 1;
+   begin
+      Item := new String (1 .. 256);
+      loop
+         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         exit when Last < Item'Last;
+         Next := Item'Last + 1;
+         Reallocate (Item, 1, Item'Last * 2);
+      end loop;
+   end Raw_Get_Line;
+
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out Wide_String_Access;
+      Last : out Natural);
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out Wide_String_Access;
+      Last : out Natural)
+   is
+      Next : Positive := 1;
+   begin
+      Item := new Wide_String (1 .. 256);
+      loop
+         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         exit when Last < Item'Last;
+         Next := Item'Last + 1;
+         Reallocate (Item, 1, Item'Last * 2);
+      end loop;
+   end Raw_Get_Line;
+
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out Wide_Wide_String_Access;
+      Last : out Natural);
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out Wide_Wide_String_Access;
+      Last : out Natural)
+   is
+      Next : Positive := 1;
+   begin
+      Item := new Wide_Wide_String (1 .. 256);
+      loop
+         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         exit when Last < Item'Last;
+         Next := Item'Last + 1;
+         Reallocate (Item, 1, Item'Last * 2);
+      end loop;
+   end Raw_Get_Line;
 
    --  implementation of File Management
 
@@ -832,109 +921,97 @@ package body Ada.Text_IO is
       Get_Line (File.all, Item, Last);
    end Get_Line;
 
-   function Overloaded_Get_Line (File : File_Type) return String is
-      Line_Buffer : aliased String_Access :=
-         new String (1 .. 256);
-      Next : Positive := 1;
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out String_Access)
+   is
+      Aliased_Item : aliased String_Access;
       Last : Natural;
-      procedure Finally (X : not null access String_Access);
-      procedure Finally (X : not null access String_Access) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (
             String_Access,
             Finally);
    begin
-      Holder.Assign (Line_Buffer'Access);
-      loop
-         Overloaded_Get_Line (
-            File,
-            Line_Buffer (Next .. Line_Buffer'Last),
-            Last);
-         exit when Last < Line_Buffer'Last;
-         Next := Line_Buffer'Last + 1;
-         declare
-            New_Buffer : constant String_Access :=
-               new String (1 .. Line_Buffer'Last * 2);
-         begin
-            New_Buffer (Line_Buffer'Range) := Line_Buffer.all;
-            Free (Line_Buffer);
-            Line_Buffer := New_Buffer;
-         end;
-      end loop;
-      return Line_Buffer (1 .. Last);
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      Reallocate (Aliased_Item, 1, Last);
+      Holder.Clear;
+      Item := Aliased_Item;
    end Overloaded_Get_Line;
 
-   function Overloaded_Get_Line (File : File_Type) return Wide_String is
-      Line_Buffer : aliased Wide_String_Access :=
-         new Wide_String (1 .. 256);
-      Next : Positive := 1;
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out Wide_String_Access)
+   is
+      Aliased_Item : aliased Wide_String_Access;
       Last : Natural;
-      procedure Finally (X : not null access Wide_String_Access);
-      procedure Finally (X : not null access Wide_String_Access) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (
             Wide_String_Access,
             Finally);
    begin
-      Holder.Assign (Line_Buffer'Access);
-      loop
-         Overloaded_Get_Line (
-            File,
-            Line_Buffer (Next .. Line_Buffer'Last),
-            Last);
-         exit when Last < Line_Buffer'Last;
-         Next := Line_Buffer'Last + 1;
-         declare
-            New_Buffer : constant Wide_String_Access :=
-               new Wide_String (1 .. Line_Buffer'Last * 2);
-         begin
-            New_Buffer (Line_Buffer'Range) := Line_Buffer.all;
-            Free (Line_Buffer);
-            Line_Buffer := New_Buffer;
-         end;
-      end loop;
-      return Line_Buffer (1 .. Last);
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      Reallocate (Aliased_Item, 1, Last);
+      Holder.Clear;
+      Item := Aliased_Item;
    end Overloaded_Get_Line;
 
-   function Overloaded_Get_Line (File : File_Type) return Wide_Wide_String is
-      Line_Buffer : aliased Wide_Wide_String_Access :=
-         new Wide_Wide_String (1 .. 256);
-      Next : Positive := 1;
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out Wide_Wide_String_Access)
+   is
+      Aliased_Item : aliased Wide_Wide_String_Access;
       Last : Natural;
-      procedure Finally (X : not null access Wide_Wide_String_Access);
-      procedure Finally (X : not null access Wide_Wide_String_Access) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (
             Wide_Wide_String_Access,
             Finally);
    begin
-      Holder.Assign (Line_Buffer'Access);
-      loop
-         Overloaded_Get_Line (
-            File,
-            Line_Buffer (Next .. Line_Buffer'Last),
-            Last);
-         exit when Last < Line_Buffer'Last;
-         Next := Line_Buffer'Last + 1;
-         declare
-            New_Buffer : constant Wide_Wide_String_Access :=
-               new Wide_Wide_String (1 .. Line_Buffer'Last * 2);
-         begin
-            New_Buffer (Line_Buffer'Range) := Line_Buffer.all;
-            Free (Line_Buffer);
-            Line_Buffer := New_Buffer;
-         end;
-      end loop;
-      return Line_Buffer (1 .. Last);
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      Reallocate (Aliased_Item, 1, Last);
+      Holder.Clear;
+      Item := Aliased_Item;
+   end Overloaded_Get_Line;
+
+   function Overloaded_Get_Line (File : File_Type) return String is
+      Aliased_Item : aliased String_Access;
+      Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            String_Access,
+            Finally);
+   begin
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      return Aliased_Item (Aliased_Item'First .. Last);
+   end Overloaded_Get_Line;
+
+   function Overloaded_Get_Line (File : File_Type) return Wide_String is
+      Aliased_Item : aliased Wide_String_Access;
+      Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Wide_String_Access,
+            Finally);
+   begin
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      return Aliased_Item (Aliased_Item'First .. Last);
+   end Overloaded_Get_Line;
+
+   function Overloaded_Get_Line (File : File_Type) return Wide_Wide_String is
+      Aliased_Item : aliased Wide_Wide_String_Access;
+      Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Wide_Wide_String_Access,
+            Finally);
+   begin
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;
 
    function Get_Line return String is
