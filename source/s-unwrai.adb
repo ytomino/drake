@@ -24,6 +24,22 @@ package body System.Unwind.Raising is
       return Storage_Elements.Storage_Count;
    pragma Import (Intrinsic, strlen, "__builtin_strlen");
 
+   --  for Report_Traceback
+
+   procedure Put (S : String; Params : Address);
+   procedure Put (S : String; Params : Address) is
+      pragma Unreferenced (Params);
+   begin
+      Termination.Error_Put (S);
+   end Put;
+
+   procedure New_Line (Params : Address);
+   procedure New_Line (Params : Address) is
+      pragma Unreferenced (Params);
+   begin
+      Termination.Error_New_Line;
+   end New_Line;
+
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
    Call_Chain : access procedure (
       Current : not null Exception_Occurrence_Access);
@@ -635,18 +651,6 @@ package body System.Unwind.Raising is
    end Report;
 
    procedure Report_Traceback (X : Exception_Occurrence) is
-      procedure Put (S : String; Params : Address);
-      procedure Put (S : String; Params : Address) is
-         pragma Unreferenced (Params);
-      begin
-         Termination.Error_Put (S);
-      end Put;
-      procedure New_Line (Params : Address);
-      procedure New_Line (Params : Address) is
-         pragma Unreferenced (Params);
-      begin
-         Termination.Error_New_Line;
-      end New_Line;
    begin
       Exception_Information (
          X,
