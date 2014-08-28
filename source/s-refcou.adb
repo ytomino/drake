@@ -132,18 +132,11 @@ package body System.Reference_Counting is
       then
          declare
             Old : aliased Container := Target.all;
-            New_Capacity : constant Natural :=
-               Integer'Max (Capacity, Target_Length);
          begin
-            if New_Capacity = 0 then
+            if Capacity = 0 then
                Target.all := Sentinel;
             else
-               Copy (
-                  Target.all,
-                  Old,
-                  Target_Length,
-                  Max_Length,
-                  New_Capacity);
+               Copy (Target.all, Old, Target_Length, Max_Length, Capacity);
             end if;
             Clear (Old'Access, Free => Free);
          end;

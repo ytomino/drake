@@ -129,14 +129,16 @@ package body Ada.Strings.Generic_Unbounded is
       Capacity : Natural);
    procedure Reserve_Capacity (
       Item : in out Unbounded_String;
-      Capacity : Natural) is
+      Capacity : Natural)
+   is
+      New_Capacity : constant Natural := Integer'Max (Capacity, Item.Length);
    begin
       System.Reference_Counting.Unique (
          Target => Upcast (Item.Data'Unchecked_Access),
          Target_Length => Item.Length,
          Target_Capacity => Generic_Unbounded.Capacity (Item),
          Max_Length => Item.Length,
-         Capacity => Capacity,
+         Capacity => New_Capacity,
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
@@ -360,7 +362,7 @@ package body Ada.Strings.Generic_Unbounded is
       High : Natural) is
    begin
       if Low = 1 then
-         Target := Source;
+         Assign (Target, Source);
          Set_Length (Target, High);
       else
          Set_Unbounded_String (Target, Source.Data.Items (Low .. High));

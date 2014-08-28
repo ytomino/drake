@@ -120,6 +120,10 @@ begin
 		pragma Assert (V = "CONSTANTV");
 		pragma Assert (U.Constant_Reference.Element.all'Address = A);
 		pragma Assert (V.Constant_Reference.Element.all'Address /= A);
+		Ada.Strings.Unbounded.Unbounded_Slice (U, U, 3, 6); -- both Source and Target
+		pragma Assert (U = "NSTA");
+		Ada.Strings.Unbounded.Append (U, U); -- both Source and Target
+		pragma Assert (U = "NSTANSTA");
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end str;
