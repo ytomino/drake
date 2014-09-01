@@ -30,7 +30,9 @@ package body Ada.Text_IO.Unbounded_IO is
       File : File_Type)
       return Strings.Unbounded.Unbounded_String is
    begin
-      return Strings.Unbounded.To_Unbounded_String (Get_Line (File));
+      return Result : Strings.Unbounded.Unbounded_String do
+         Get_Line (File, Result);
+      end return;
    end Get_Line;
 
    function Get_Line
@@ -41,9 +43,21 @@ package body Ada.Text_IO.Unbounded_IO is
 
    procedure Get_Line (
       File : File_Type;
-      Item : out Strings.Unbounded.Unbounded_String) is
+      Item : out Strings.Unbounded.Unbounded_String)
+   is
+      Last : Natural := 0;
+      Capacity : Natural := 256;
    begin
-      Item := Get_Line (File);
+      loop
+         Strings.Unbounded.Set_Length (Item, Capacity);
+         Get_Line (
+            File,
+            Item.Reference.Element.all (Last + 1 .. Capacity),
+            Last);
+         exit when Last < Capacity;
+         Capacity := Capacity * 2;
+      end loop;
+      Strings.Unbounded.Set_Length (Item, Last);
    end Get_Line;
 
    procedure Get_Line (
