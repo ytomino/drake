@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  translated unit from DerivedEastAsianWidth.txt
+--  implementation unit, translated from DerivedEastAsianWidth.txt
 package Ada.UCD.East_Asian_Width is
    pragma Pure;
 

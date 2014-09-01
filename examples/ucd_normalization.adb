@@ -236,7 +236,8 @@ begin
 	case Output is
 		when Reversible =>
 			Put_Line ("pragma License (Unrestricted);");
-			Put_Line ("--  translated unit from UnicodeData.txt (6), CompositionExclusions.txt");
+			Put_Line ("--  implementation unit,");
+			Put_Line ("--    translated from UnicodeData.txt (6), CompositionExclusions.txt");
 			Put_Line ("package Ada.UCD.Normalization is");
 			Put_Line ("   pragma Pure;");
 			New_Line;
@@ -253,7 +254,8 @@ begin
 			New_Line;
 		when Unreversible =>
 			Put_Line ("pragma License (Unrestricted);");
-			Put_Line ("--  translated unit from UnicodeData.txt (6), CompositionExclusions.txt");
+			Put_Line ("--  implementation unit,");
+			Put_Line ("--    translated from UnicodeData.txt (6), CompositionExclusions.txt");
 			Put_Line ("package Ada.UCD.Normalization.Unreversible is");
 			Put_Line ("   pragma Pure;");
 			New_Line;
