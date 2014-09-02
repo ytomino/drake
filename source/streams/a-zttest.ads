@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 with Ada.IO_Modes;
 with Ada.Streams.Stream_IO;
+with Ada.Text_IO.Text_Streams;
 package Ada.Wide_Wide_Text_IO.Text_Streams is
 
 --  type Stream_Access is access all Streams.Root_Stream_Type'Class;
@@ -12,8 +13,8 @@ package Ada.Wide_Wide_Text_IO.Text_Streams is
       Mode : File_Mode;
       Stream : Stream_Access;
       Name : String := "";
-      Form : String); -- removed default
-   pragma Inline (Open);
+      Form : String) -- removed default
+      renames Text_IO.Text_Streams.Open;
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;
@@ -23,10 +24,10 @@ package Ada.Wide_Wide_Text_IO.Text_Streams is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target);
-   pragma Inline (Open);
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
+      renames Text_IO.Text_Streams.Open;
 
-   function Stream (File : File_Type) return Stream_Access;
-   pragma Inline (Stream);
+   function Stream (File : File_Type) return Stream_Access
+      renames Text_IO.Text_Streams.Stream;
 
 end Ada.Wide_Wide_Text_IO.Text_Streams;

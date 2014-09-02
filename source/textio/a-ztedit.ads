@@ -4,7 +4,7 @@ package Ada.Wide_Wide_Text_IO.Editing is
 
    --  modified
 --  type Picture is private;
-   type Picture is new Text_IO.Editing.Picture;
+   subtype Picture is Text_IO.Editing.Picture;
 
    function Valid (
       Pic_String : String;
@@ -12,16 +12,16 @@ package Ada.Wide_Wide_Text_IO.Editing is
       return Boolean
       renames Text_IO.Editing.Valid;
 
---  function To_Picture (
---    Pic_String : String;
---    Blank_When_Zero : Boolean := False)
---    return Picture;
-   --  function To_Picture is inherited
+   function To_Picture (
+      Pic_String : String;
+      Blank_When_Zero : Boolean := False)
+      return Picture
+      renames Text_IO.Editing.To_Picture;
 
---  function Pic_String (Pic : Picture) return String;
-   --  function Pic_String is inherited
---  function Blank_When_Zero (Pic : Picture) return Boolean;
-   --  function Blank_When_Zero is inherited
+   function Pic_String (Pic : Picture) return String
+      renames Text_IO.Editing.Pic_String;
+   function Blank_When_Zero (Pic : Picture) return Boolean
+      renames Text_IO.Editing.Blank_When_Zero;
 
    Max_Picture_Length : constant := 30; -- implementation_defined
 

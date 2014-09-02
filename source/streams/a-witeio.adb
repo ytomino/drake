@@ -2,21 +2,6 @@ package body Ada.Wide_Text_IO is
 
    --  implementation
 
-   function Current_Error return File_Access is
-   begin
-      return File_Type (Text_IO.Current_Error.all)'Unrestricted_Access;
-   end Current_Error;
-
-   function Current_Input return File_Access is
-   begin
-      return File_Type (Text_IO.Current_Input.all)'Unrestricted_Access;
-   end Current_Input;
-
-   function Current_Output return File_Access is
-   begin
-      return File_Type (Text_IO.Current_Output.all)'Unrestricted_Access;
-   end Current_Output;
-
    procedure Get (Item : out Wide_Character) is
    begin
       Get (Current_Input.all, Item);
@@ -72,20 +57,5 @@ package body Ada.Wide_Text_IO is
    begin
       Put_Line (Current_Output.all, Item);
    end Put_Line;
-
-   function Standard_Error return File_Access is
-   begin
-      return File_Type (Text_IO.Standard_Error.all)'Unrestricted_Access;
-   end Standard_Error;
-
-   function Standard_Input return File_Access is
-   begin
-      return File_Type (Text_IO.Standard_Input.all)'Unrestricted_Access;
-   end Standard_Input;
-
-   function Standard_Output return File_Access is
-   begin
-      return File_Type (Text_IO.Standard_Output.all)'Unrestricted_Access;
-   end Standard_Output;
 
 end Ada.Wide_Text_IO;
