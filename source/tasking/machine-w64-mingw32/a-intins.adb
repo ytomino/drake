@@ -65,6 +65,7 @@ package body Ada.Interrupts.Inside is
       return Interrupt not in
          Names.First_Interrupt_Id ..
          Names.Last_Interrupt_Id;
+      --  SIGKILL and SIGSTOP are not declared in mingw
    end Is_Reserved;
 
    function Current_Handler (Interrupt : Interrupt_Id)

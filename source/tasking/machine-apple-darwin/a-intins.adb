@@ -72,7 +72,9 @@ package body Ada.Interrupts.Inside is
    begin
       return Interrupt not in
          Names.First_Interrupt_Id ..
-         Names.Last_Interrupt_Id;
+         Names.Last_Interrupt_Id
+         or else Interrupt = C.signal.SIGKILL
+         or else Interrupt = C.signal.SIGSTOP;
    end Is_Reserved;
 
    function Current_Handler (Interrupt : Interrupt_Id)
