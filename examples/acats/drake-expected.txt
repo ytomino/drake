@@ -239,10 +239,6 @@ cxaa019 C it requires Ada95 mode (Ada.Text_IO.Current_Output)
 cxab001 F strict End_Of_Line
 cxac003 F strict End_Of_Line
 cxac004 C unicode (latin-1)
-cxb3003 C unimplemented Interfaces.C features (Pointers)
-cxb3007 C cannot resolve Interfaces.C.To_C overloaded for Wide_Wide_String
-cxb3014 C unimplemented Interfaces.C features (Pointers)
-cxb3016 C unimplemented Interfaces.C features (Pointers)
 cxb4001 C some Interfaces.COBOL features are unimplemented
 cxb4002 C some Interfaces.COBOL features are unimplemented
 cxb4003 C some Interfaces.COBOL features are unimplemented

@@ -1,0 +1,11 @@
+--- c95012a.adb.orig	2014-09-02 23:59:33.000000000 +0900
++++ c95012a.adb	2014-09-03 00:00:15.000000000 +0900
+@@ -83,7 +83,7 @@
+           PACKAGE BODY PKG IS
+           BEGIN
+                AT2 := NEW T2T;
+-               DELAY 60.0;
++               DELAY 6.0;
+           END PKG;
+ 
+      BEGIN
