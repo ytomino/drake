@@ -21,7 +21,8 @@ procedure tagged4 is
 		end Method;
 	end A;
 	package C is
-		type Container (Message : access String) is tagged limited record
+		type String_Access is access String;
+		type Container (Message : String_Access) is tagged limited record
 			Field : aliased A.Aggregated_Object (Message);
 		end record;
 		function Get (Object : not null access Container'Class) return access I.Intf'Class;
@@ -36,7 +37,7 @@ procedure tagged4 is
 		Impl;
 	end C;
 	package D is
-		type Container (Additional : access String) is
+		type Container (Additional : C.String_Access) is
 			new C.Container (Additional) with
 		record
 			Controlled_Field : Ada.Strings.Unbounded.Unbounded_String;

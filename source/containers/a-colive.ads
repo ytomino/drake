@@ -87,10 +87,10 @@ package Ada.Containers.Limited_Vectors is
 
 --  diff (Element)
 
-   procedure Replace_Element (
-      Container : in out Vector;
-      Position : Index_Type;
-      New_Item : not null access function return Element_Type);
+--  diff (Replace_Element)
+--
+--
+--
 
 --  diff (Replace_Element)
 --

@@ -255,10 +255,12 @@ package body Ada.Environment_Variables.Inside is
          new System.Address_To_Named_Access_Conversions (
             C.winnt.WCHAR,
             C.winnt.LPWCH);
-      R : C.windef.WINBOOL;
    begin
-      R := C.winbase.FreeEnvironmentStrings (LPWCH_Conv.To_Pointer (Block));
-      pragma Assert (R /= 0);
+      if C.winbase.FreeEnvironmentStrings (
+         LPWCH_Conv.To_Pointer (Block)) = 0
+      then
+         null; -- ignore
+      end if;
    end Release_Block;
 
    function First (Block : System.Address) return Cursor is

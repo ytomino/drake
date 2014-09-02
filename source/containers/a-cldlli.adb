@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -15,12 +16,42 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff (Downcast)
 --
 
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+
 --  diff (Context_Type)
 --
 --
 --
 
 --  diff (Equivalent_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
 --
 --
 --
@@ -47,9 +78,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
-
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+--
 
    procedure Free_Node (Object : in out Linked_Lists.Node_Access);
    procedure Free_Node (Object : in out Linked_Lists.Node_Access) is
@@ -136,11 +165,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 
    --  implementation
 
---  diff (Adjust)
---
---
---
-
 --  diff (Assign)
 --
 --
@@ -198,7 +222,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       X : Linked_Lists.Node_Access;
       Next : Linked_Lists.Node_Access;
    begin
---  different line
+--  diff
       for I in 1 .. Count loop
          X := Upcast (Position);
          Next := Position.Super.Next;
@@ -257,9 +281,9 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
 
 --  diff (Find)
+--
 --
 --
 --
@@ -278,11 +302,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
 --  diff
-   end First;
-
-   function First (Object : Iterator) return Cursor is
-   begin
-      return Object.First;
    end First;
 
    function Has_Element (Position : Cursor) return Boolean is
@@ -317,15 +336,27 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    begin
 --  diff
       for I in 1 .. Count loop
-         Position := new Node'(
-            Super => <>,
-            Element => new Element_Type'(New_Item.all));
-         Base.Insert (
-            Container.First,
-            Container.Last,
-            Container.Length,
-            Before => Upcast (Before),
-            New_Item => Upcast (Position));
+         declare
+            procedure Finally (X : not null access Cursor);
+            procedure Finally (X : not null access Cursor) is
+            begin
+               Free (X.all);
+            end Finally;
+            package Holder is
+               new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+            X : aliased Cursor := new Node;
+         begin
+            Holder.Assign (X'Access);
+            X.Element := new Element_Type'(New_Item.all);
+            Holder.Clear;
+            Base.Insert (
+               Container.First,
+               Container.Last,
+               Container.Length,
+               Before => Upcast (Before),
+               New_Item => Upcast (X));
+            Position := X;
+         end;
       end loop;
    end Insert;
 
@@ -390,11 +421,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Object.Last;
-   end Last;
-
    function Length (Container : List) return Count_Type is
    begin
       return Container.Length;
@@ -427,15 +453,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position := Downcast (Position.Super.Next);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position = Object.Last then
-         return No_Element;
-      else
-         return Next (Position);
-      end if;
-   end Next;
-
 --  diff (Prepend)
 --
 --
@@ -458,15 +475,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position := Downcast (Position.Super.Super.Previous);
    end Previous;
 
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position = Object.First then
-         return No_Element;
-      else
-         return Previous (Position);
-      end if;
-   end Previous;
-
    procedure Query_Element (
       Position : Cursor;
       Process : not null access procedure (Element : Element_Type)) is
@@ -485,6 +493,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Reference;
 
 --  diff (Replace_Element)
+--
 --
 --
 --
@@ -677,6 +686,41 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    begin
       return Base.Is_Before (Upcast (Left), Upcast (Right));
    end "<";
+
+--  diff (Adjust)
+--
+--
+--
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return Object.First;
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor is
+   begin
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
+   end Next;
+
+   overriding function Last (Object : Iterator) return Cursor is
+   begin
+      return Object.Last;
+   end Last;
+
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor is
+   begin
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
+   end Previous;
 
    package body Generic_Sorting is
 

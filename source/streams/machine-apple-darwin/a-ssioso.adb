@@ -117,12 +117,9 @@ package body Ada.Streams.Stream_IO.Sockets is
                Handle,
                I.ai_addr,
                I.ai_addrlen) = 0;
-            declare
-               R : C.signed_int;
-            begin
-               R := C.unistd.close (Handle);
-               pragma Assert (R = 0);
-            end;
+            if C.unistd.close (Handle) < 0 then
+               Raise_Exception (Use_Error'Identity);
+            end if;
             Handle := -1;
          end if;
          I := I.ai_next;

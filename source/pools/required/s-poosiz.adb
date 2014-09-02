@@ -8,9 +8,15 @@ package body System.Pool_Size is
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
    is
-      pragma Assert (Pool.Alignment rem Alignment = 0);
       Error : Boolean := False;
    begin
+      if Pool.Alignment rem Alignment /= 0
+         or else (
+            Pool.Elmt_Size /= 0
+            and then Size_In_Storage_Elements /= Pool.Elmt_Size)
+      then
+         raise Constraint_Error;
+      end if;
       Shared_Locking.Enter;
       if Pool.Elmt_Size = 0 then
          --  variable size mode (allocation only...)
@@ -27,7 +33,6 @@ package body System.Pool_Size is
          end if;
       else
          --  fixed size mode
-         pragma Assert (Size_In_Storage_Elements = Pool.Elmt_Size);
          if Pool.First_Free /= 0 then
             Storage_Address := Pool.The_Pool (Pool.First_Free)'Address;
             declare
@@ -55,17 +60,21 @@ package body System.Pool_Size is
       Pool : in out Stack_Bounded_Pool;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
-      Alignment : Storage_Elements.Storage_Count)
-   is
-      pragma Assert (Pool.Alignment rem Alignment = 0);
+      Alignment : Storage_Elements.Storage_Count) is
    begin
+      if Pool.Alignment rem Alignment /= 0
+         or else (
+            Pool.Elmt_Size /= 0
+            and then Size_In_Storage_Elements /= Pool.Elmt_Size)
+      then
+         raise Constraint_Error;
+      end if;
       Shared_Locking.Enter;
       if Pool.Elmt_Size = 0 then
          --  variable size mode
          null; -- deallocation is unimplemented...
       else
          --  fixed size mode
-         pragma Assert (Size_In_Storage_Elements = Pool.Elmt_Size);
          declare
             Next : Storage_Elements.Storage_Count;
             for Next'Address use Storage_Address;

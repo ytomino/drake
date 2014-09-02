@@ -1,5 +1,6 @@
 pragma Check_Policy (Validate, Off);
 with Ada.Containers.Array_Sorting;
+--  diff (Ada.Unchecked_Conversion)
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Limited_Vectors is
@@ -33,10 +34,7 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Replace_Element)
---
---
---
+--  diff (Allocate_Element)
 --
 --
 --
@@ -183,11 +181,6 @@ package body Ada.Containers.Limited_Vectors is
 
    --  implementation
 
---  diff (Adjust)
---
---
---
-
 --  diff (Assign)
 --
 --
@@ -224,8 +217,16 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
 
 --  diff (Append)
+--
+--
+--
+--
 --
 --
 --
@@ -418,11 +419,6 @@ package body Ada.Containers.Limited_Vectors is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return Object.First;
-   end First;
-
    function First_Index (Container : Vector) return Index_Type is
       pragma Unreferenced (Container);
    begin
@@ -468,6 +464,15 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
 --  diff (Insert)
 --
@@ -488,10 +493,14 @@ package body Ada.Containers.Limited_Vectors is
       Count : Count_Type := 1) is
    begin
       Insert_Space (Container, Before, Position, Count);
-      for I in Before .. Before + Index_Type'Base (Count) - 1 loop
-         pragma Check (Validate, Container.Data.Items (I) = null);
-         Container.Data.Items (I) := new Element_Type'(New_Item.all);
---  diff
+      for I in Position .. Position + Index_Type'Base (Count) - 1 loop
+         declare
+            E : Element_Access
+               renames Container.Data.Items (I);
+         begin
+            pragma Check (Validate, E = null);
+            E := new Element_Type'(New_Item.all);
+         end;
       end loop;
    end Insert;
 
@@ -512,14 +521,14 @@ package body Ada.Containers.Limited_Vectors is
       Count : Count_Type := 1) is
    begin
       Position := Before;
-      if Before = Index_Type'First + Index_Type'Base (Container.Length) then
+      if Position = Index_Type'First + Index_Type'Base (Container.Length) then
          Set_Length (Container, Container.Length + Count);
       else
          declare
             Old_Length : constant Count_Type := Container.Length;
             Moving : constant Index_Type'Base :=
-               Last_Index (Container) - Before;
-            After : constant Index_Type := Before + Index_Type'Base (Count);
+               Last_Index (Container) - Position;
+            After : constant Index_Type := Position + Index_Type'Base (Count);
          begin
             Set_Length (Container, Old_Length + Count);
 --  diff
@@ -530,9 +539,9 @@ package body Ada.Containers.Limited_Vectors is
                Free (Container.Data.Items (I));
             end loop;
             Container.Data.Items (After .. After + Moving) :=
-               Container.Data.Items (Before .. Before + Moving);
+               Container.Data.Items (Position .. Position + Moving);
 --  diff
-            for I in Before .. After - 1 loop
+            for I in Position .. After - 1 loop
                Container.Data.Items (I) := null;
             end loop;
          end;
@@ -571,11 +580,6 @@ package body Ada.Containers.Limited_Vectors is
       end if;
    end Iterate;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Object.Last;
-   end Last;
-
    function Last_Index (Container : Vector) return Extended_Index is
    begin
       return Index_Type'First - 1 + Index_Type'Base (Container.Length);
@@ -595,15 +599,6 @@ package body Ada.Containers.Limited_Vectors is
       Source.Length := 0;
    end Move;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position >= Object.Last then
-         return No_Element;
-      else
-         return Position + 1;
-      end if;
-   end Next;
-
 --  diff (Prepend)
 --
 --
@@ -616,15 +611,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position <= Object.First then
-         return No_Element;
-      else
-         return Position - 1;
-      end if;
-   end Previous;
 
    procedure Query_Element (
       Container : Vector'Class;
@@ -678,16 +664,20 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
-   procedure Replace_Element (
-      Container : in out Vector;
-      Position : Index_Type;
-      New_Item : not null access function return Element_Type) is
-   begin
-      Free (Container.Data.Items (Position));
-      Container.Data.Items (Position) :=
-         new Element_Type'(New_Item.all);
---  diff
-   end Replace_Element;
+--  diff (Replace_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
    procedure Reserve_Capacity (
       Container : in out Vector;
@@ -878,6 +868,41 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+
+--  diff (Adjust)
+--
+--
+--
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return Object.First;
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor is
+   begin
+      if Position >= Object.Last then
+         return No_Element;
+      else
+         return Position + 1;
+      end if;
+   end Next;
+
+   overriding function Last (Object : Iterator) return Cursor is
+   begin
+      return Object.Last;
+   end Last;
+
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor is
+   begin
+      if Position <= Object.First then
+         return No_Element;
+      else
+         return Position - 1;
+      end if;
+   end Previous;
 
    package body Generic_Sorting is
 

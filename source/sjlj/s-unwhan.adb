@@ -84,7 +84,6 @@ package body System.Unwind.Handling is
             --  about region
             lsda : C.void_ptr;
             base : C.unwind.Unwind_Ptr;
---          call_site_encoding : C.unsigned_char; -- disused for sjlj
             call_site_table : C.unsigned_char_const_ptr;
             lp_base : aliased C.unwind.Unwind_Ptr;
             action_table : C.unsigned_char_const_ptr;
@@ -93,7 +92,6 @@ package body System.Unwind.Handling is
             ttype_base : C.unwind.Unwind_Ptr;
             --  about action
             table_entry : C.unsigned_char_const_ptr;
---          ttype_entry : C.unwind.Unwind_Ptr;
          begin
             if Context = null then
                pragma Check (Trace, Ada.Debug.Put ("leave, Context = null"));
@@ -138,7 +136,6 @@ package body System.Unwind.Handling is
                ttype_base := C.unwind_pe.base_of_encoded_value (
                   ttype_encoding,
                   Context);
---             call_site_encoding := p.all;
                Increment (p);
                call_site_table := C.unwind_pe.read_uleb128 (p, tmp'Access);
                action_table := call_site_table + C.ptrdiff_t (tmp);
@@ -256,7 +253,6 @@ package body System.Unwind.Handling is
                            if is_handled then
                               ttype_filter := C.unwind.Unwind_Sword (
                                  ar_filter);
---                            ttype_entry := choice;
                               pragma Check (Trace, Ada.Debug.Put (
                                  "handler is found"));
                               exit;

@@ -11,8 +11,7 @@ package Ada.Naked_Text_IO is
    Default_Form : constant System.Native_IO.Text_IO.Packed_Form := (
       Stream_Form => Streams.Naked_Stream_IO.Default_Form,
       External => IO_Modes.By_Target,
-      New_Line => IO_Modes.By_Target,
-      SUB => IO_Modes.Ordinary);
+      New_Line => IO_Modes.By_Target);
 
    procedure Set (
       Form : in out System.Native_IO.Text_IO.Packed_Form;
@@ -140,6 +139,8 @@ package Ada.Naked_Text_IO is
       Item : out Wide_Wide_Character;
       End_Of_Line : out Boolean);
 
+   procedure Skip_Ahead (File : Non_Controlled_File_Type);
+
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out Character);
@@ -220,16 +221,17 @@ private
       Col : Natural := 1;
       Line_Length : Natural := 0;
       Page_Length : Natural := 0;
-      Ahead_Col : Natural := 0; -- one-character Col
-      Ahead_Last : Natural := 0; -- one-character Length, In_Mode only
       Last : Natural := 0;
+      Ahead_Last : Natural := 0; -- one-character Length, In_Mode only
+      Ahead_Col : Natural := 0; -- one-character Col
+      Looked_Ahead_Last : Natural := 0;
+      Looked_Ahead_Second : String (1 .. 3); -- second of surrogate pair
       Buffer : System.Native_IO.Text_IO.Buffer_Type;
       End_Of_File : Boolean := False;
       Dummy_Mark : Dummy_Mark_Type := None;
       Mode : IO_Modes.File_Mode;
       External : IO_Modes.File_External;
       New_Line : IO_Modes.File_New_Line;
-      SUB : IO_Modes.File_SUB; -- ASCII.SUB = 16#1A#
       Name : String (1 .. Name_Length);
    end record;
    pragma Suppress_Initialization (Text_Type);
@@ -243,16 +245,17 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Ahead_Col => 0,
-      Ahead_Last => 0,
       Last => 0,
+      Ahead_Last => 0,
+      Ahead_Col => 0,
+      Looked_Ahead_Last => 0,
+      Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => IO_Modes.In_File,
       External => System.Native_IO.Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_IO.Text_IO.Default_New_Line,
-      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Output_Text : aliased Text_Type := (
@@ -264,16 +267,17 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Ahead_Col => 0,
-      Ahead_Last => 0,
       Last => 0,
+      Ahead_Last => 0,
+      Ahead_Col => 0,
+      Looked_Ahead_Last => 0,
+      Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => IO_Modes.Out_File,
       External => System.Native_IO.Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_IO.Text_IO.Default_New_Line,
-      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Error_Text : aliased Text_Type := (
@@ -285,16 +289,17 @@ private
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
-      Ahead_Col => 0,
-      Ahead_Last => 0,
       Last => 0,
+      Ahead_Last => 0,
+      Ahead_Col => 0,
+      Looked_Ahead_Last => 0,
+      Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
       Dummy_Mark => None,
       Mode => IO_Modes.Out_File,
       External => System.Native_IO.Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_IO.Text_IO.Default_New_Line,
-      SUB => IO_Modes.Ordinary,
       Name => "");
 
    Standard_Input : constant Non_Controlled_File_Type :=

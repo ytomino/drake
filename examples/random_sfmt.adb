@@ -324,7 +324,7 @@ begin
 			end if;
 		end;
 	end loop;
-	if not (speed or bit32 or bit64) then
+	if not (speed or else bit32 or else bit64) then
 		Ada.Text_IO.Put_Line ("usage:");
 		Ada.Text_IO.Put_Line (
 			Ada.Command_Line.Command_Name

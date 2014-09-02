@@ -51,7 +51,7 @@ ifeq ($(WITHA),0)
 MFLAGS+=-a
 endif
 
-CFLAGS=-gnatef -gnatf -gnatwI
+CFLAGS=-pipe -gnatef -gnatf -gnatwI
 
 ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS=-licucore
@@ -64,9 +64,9 @@ LFLAGS=-lm -lpthread -ldl
 endif
 
 ifneq ($(DEBUG),0)
-CFLAGS+=-g -gnata -gnat-p
+CFLAGS+=-ggdb -gnata -gnat-p
 BFLAGS=-E
-LFLAGS+=-g
+LFLAGS+=-ggdb
 else
 BFLAGS=
 ifneq ($(findstring darwin,$(TARGET)),)
@@ -81,9 +81,12 @@ ifneq ($(WITHF),0)
 CFLAGS+=-ffast-math -gnatec=$(abspath ../source/fastmath.adc)
 endif
 
-.PHONY: all clean
+.PHONY: all tree clean xfind xfindall
 
 all: $(BUILDDIR)/adalib/libgnat.a $(BINLN) $(EXAMPLES)
+
+tree:
+	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
 
 $(BINLN):
 	ln -s $(BUILDDIR) $(BINLN)
@@ -101,3 +104,9 @@ $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT)
 
 clean:
 	-rm -rf $(BINLN) *.build
+
+xfind:
+	gnatfind -f -aO$(BUILDDIR) $(X) $(GFLAGS) $(FFLAGS) | sed 's/^$(subst /,\/,$(PWD))\///'
+
+xfindall: FFLAGS+=-r
+xfindall: xfind

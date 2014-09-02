@@ -1,0 +1,82 @@
+--- c94010a.adb.orig	2014-09-02 23:56:59.000000000 +0900
++++ c94010a.adb	2014-09-02 23:58:02.000000000 +0900
+@@ -70,14 +70,14 @@
+      PACKAGE BODY P IS
+           TASK BODY LIM_PRI_TASK IS
+           BEGIN
+-               DELAY 30.0;
++               DELAY 3.0;
+                GLOBAL_INT := IDENT_INT (2);
+           END LIM_PRI_TASK;
+      END P;
+ 
+      TASK BODY TT IS
+      BEGIN
+-          DELAY 30.0;
++          DELAY 3.0;
+           GLOBAL_INT := IDENT_INT (1);
+      END TT;
+ 
+@@ -118,7 +118,7 @@
+           PROC1 (0);
+           IF GLOBAL_INT = IDENT_INT (0) THEN
+                FAILED ("TASK NOT DEPENDENT ON MASTER - 1");
+-               DELAY 35.0;
++               DELAY 3.5;
+           END IF;
+      END;
+ 
+@@ -134,7 +134,7 @@
+           WHEN MY_EXCEPTION =>
+                IF GLOBAL_INT = IDENT_INT (0) THEN
+                     FAILED ("TASK NOT DEPENDENT ON MASTER - 2");
+-                    DELAY 35.0;
++                    DELAY 3.5;
+                END IF;
+           WHEN OTHERS =>
+                FAILED ("UNEXPECTED EXCEPTION RAISED - 2");
+@@ -152,7 +152,7 @@
+           WHEN MY_EXCEPTION =>
+                IF GLOBAL_INT = IDENT_INT (0) THEN
+                     FAILED ("TASK NOT DEPENDENT ON MASTER - 3");
+-                    DELAY 35.0;
++                    DELAY 3.5;
+                END IF;
+           WHEN OTHERS =>
+                FAILED ("UNEXPECTED EXCEPTION RAISED - 3");
+@@ -167,7 +167,7 @@
+           PROC4 (0);
+           IF GLOBAL_INT = IDENT_INT (0) THEN
+                FAILED ("TASK NOT DEPENDENT ON MASTER - 4");
+-               DELAY 35.0;
++               DELAY 3.5;
+           END IF;
+      END;
+ 
+@@ -184,7 +184,7 @@
+           WHEN MY_EXCEPTION =>
+                IF GLOBAL_INT = IDENT_INT (0) THEN
+                     FAILED ("TASK NOT DEPENDENT ON MASTER - 5");
+-                    DELAY 35.0;
++                    DELAY 3.5;
+                END IF;
+           WHEN OTHERS =>
+                FAILED ("UNEXPECTED EXCEPTION RAISED - 5");
+@@ -200,7 +200,7 @@
+           A := FUNC2 (0);
+           IF GLOBAL_INT = IDENT_INT (0) THEN
+                FAILED ("TASK NOT DEPENDENT ON MASTER - 6");
+-               DELAY 35.0;
++               DELAY 3.5;
+           END IF;
+      END;
+ 
+@@ -214,7 +214,7 @@
+           A := FUNC3 (0);
+           IF GLOBAL_INT = IDENT_INT (0) THEN
+                FAILED ("TASK NOT DEPENDENT ON MASTER - 7");
+-               DELAY 35.0;
++               DELAY 3.5;
+           END IF;
+      END;
+ 

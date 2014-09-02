@@ -245,9 +245,21 @@ procedure run_acats is
 	procedure Setup_Test_Dir is
 	begin
 		if Ada.Directories.Exists (Test_Dir) then
-			Ada.Directories.Delete_Tree (Test_Dir);
+			declare
+				procedure Process (Dir_Entry : in Ada.Directories.Directory_Entry_Type) is
+				begin
+					Ada.Directories.Delete_File (Ada.Directories.Full_Name (Dir_Entry));
+				end Process;
+			begin
+				Ada.Directories.Search (
+					Directory => Test_Dir,
+					Pattern => "*",
+					Filter => (others => True),
+					Process => Process'Access);
+			end;
+		else
+			Ada.Directories.Create_Directory (Test_Dir);
 		end if;
-		Ada.Directories.Create_Directory (Test_Dir);
 	end Setup_Test_Dir;
 	
 	procedure Adjust_After_Extract (Name : in String) is
@@ -262,7 +274,27 @@ procedure run_acats is
 			Ada.Directories.Copy_File (Source, Destination);
 		end Copy;
 	begin
-		if Ada.Strings.Equal_Case_Insensitive (Name, "ca1020e") then
+		if Ada.Strings.Equal_Case_Insensitive (Name, "c94001a") then
+			Shell_Execute ("patch -i ../c94001a.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94001b") then
+			Shell_Execute ("patch -i ../c94001b.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94001c") then
+			Shell_Execute ("patch -i ../c94001c.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94002a") then
+			Shell_Execute ("patch -i ../c94002a.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94004a") then
+			Shell_Execute ("patch -i ../c94004a.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94004b") then
+			Shell_Execute ("patch -i ../c94004b.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94005b") then
+			Shell_Execute ("patch -i ../c94005b.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94010a") then
+			Shell_Execute ("patch -i ../c94010a.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c95012a") then
+			Shell_Execute ("patch -i ../c95012a.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c95021a") then
+			Shell_Execute ("patch -i ../c95021a.patch");
+		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ca1020e") then
 			Delete ("ca1020e_func1.adb");
 			Delete ("ca1020e_func2.adb");
 			Delete ("ca1020e_proc1.adb");

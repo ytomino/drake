@@ -261,8 +261,6 @@ private
    end record;
 
    overriding procedure Finalize (Search : in out Search_Type);
-   procedure End_Search (Search : in out Search_Type)
-      renames Finalize;
 
    type Cursor is new Natural;
 

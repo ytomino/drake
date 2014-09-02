@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -14,6 +15,10 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --  diff (Downcast)
 --
+
+   procedure Free is new Unchecked_Deallocation (Key_Type, Key_Access);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Key_Type;
@@ -37,7 +42,29 @@ package body Ada.Containers.Limited_Hashed_Maps is
          Downcast (Position).Key.all);
    end Equivalent_Key;
 
---  diff (Copy_Node)
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -51,9 +78,20 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 
-   procedure Free is new Unchecked_Deallocation (Key_Type, Key_Access);
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+--  diff (Copy_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -156,11 +194,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Find;
 
    --  implementation
-
---  diff (Adjust)
---
---
---
 
 --  diff (Assign)
 --
@@ -290,11 +323,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --  diff
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
-   end First;
-
    function Has_Element (Position : Cursor) return Boolean is
    begin
       return Position /= null;
@@ -345,23 +373,37 @@ package body Ada.Containers.Limited_Hashed_Maps is
       Position : out Cursor;
       Inserted : out Boolean)
    is
-      Key : Key_Access := new Key_Type'(New_Key.all);
-      New_Hash : constant Hash_Type := Hash (Key.all);
+      type Pair is record
+         Key : Key_Access;
+         Node : Cursor;
+      end record;
+      pragma Suppress_Initialization (Pair);
+      procedure Finally (X : not null access Pair);
+      procedure Finally (X : not null access Pair) is
+      begin
+         Free (X.Key);
+         Free (X.Node);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Pair, Finally);
+      New_Pair : aliased Pair := (new Key_Type'(New_Key.all), null);
+      New_Hash : Hash_Type;
    begin
-      Position := Find (Container, New_Hash, Key.all);
+      Holder.Assign (New_Pair'Access);
+      New_Hash := Hash (New_Pair.Key.all);
+      Position := Find (Container, New_Hash, New_Pair.Key.all);
       Inserted := Position = null;
       if Inserted then
-         Position := new Node'(
-            Super => <>,
-            Key => Key,
-            Element => new Element_Type'(New_Item.all));
+         New_Pair.Node := new Node;
+         New_Pair.Node.Key := New_Pair.Key;
+         New_Pair.Node.Element := new Element_Type'(New_Item.all);
+         Holder.Clear;
+         Position := New_Pair.Node;
          Hash_Tables.Insert (
             Container.Table,
             Container.Length,
             New_Hash,
             Upcast (Position));
-      else
-         Free (Key);
       end if;
    end Insert;
 
@@ -438,12 +480,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
    procedure Next (Position : in out Cursor) is
    begin
       Position := Downcast (Position.Super.Next);
-   end Next;
-
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
    end Next;
 
    procedure Query_Element (
@@ -554,6 +590,24 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+
+--  diff (Adjust)
+--
+--
+--
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
 
    package body Equivalent is
 

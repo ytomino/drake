@@ -4,12 +4,14 @@ package Ada.Strings.Wide_Wide_Maps is
    pragma Preelaborate;
 
    --  Representation for a set of Wide_Wide_Character values:
+   --  modified
 --  type Wide_Wide_Character_Set is private;
-   type Wide_Wide_Character_Set is new Maps.Character_Set;
-   pragma Preelaborable_Initialization (Wide_Wide_Character_Set);
+   subtype Wide_Wide_Character_Set is Maps.Character_Set;
 
+   --  modified
 --  Null_Set : constant Wide_Wide_Character_Set;
-   --  function Null_Set is inherited
+   function Null_Set return Wide_Wide_Character_Set
+      renames Maps.Null_Set;
 
 --  type Wide_Wide_Character_Range is record
 --    Low : Wide_Wide_Character;
@@ -24,116 +26,96 @@ package Ada.Strings.Wide_Wide_Maps is
 
    function To_Set (Ranges : Wide_Wide_Character_Ranges)
       return Wide_Wide_Character_Set
-      renames Overloaded_To_Set;
+      renames Maps.Overloaded_To_Set;
 
    function To_Set (Span : Wide_Wide_Character_Range)
       return Wide_Wide_Character_Set
-      renames Overloaded_To_Set;
+      renames Maps.Overloaded_To_Set;
 
    function To_Ranges (Set : Wide_Wide_Character_Set)
       return Wide_Wide_Character_Ranges
-      renames Overloaded_To_Ranges;
+      renames Maps.Overloaded_To_Ranges;
 
---  function "=" (Left, Right : Wide_Wide_Character_Set) return Boolean;
-   --  function "=" is inherited
+   function "=" (Left, Right : Wide_Wide_Character_Set) return Boolean
+      renames Maps."=";
 
---  function "not" (Right : Wide_Wide_Character_Set)
---    return Wide_Wide_Character_Set;
---  function "and" (Left, Right : Wide_Wide_Character_Set)
---    return Wide_Wide_Character_Set;
---  function "or" (Left, Right : Wide_Wide_Character_Set)
---    return Wide_Wide_Character_Set;
---  function "xor" (Left, Right : Wide_Wide_Character_Set)
---    return Wide_Wide_Character_Set;
---  function "-" (Left, Right : Wide_Wide_Character_Set)
---    return Wide_Wide_Character_Set;
-   --  "not", "and", "or", "xor" and "-" are inherited
+   function "not" (Right : Wide_Wide_Character_Set)
+      return Wide_Wide_Character_Set
+      renames Maps."not";
+   function "and" (Left, Right : Wide_Wide_Character_Set)
+      return Wide_Wide_Character_Set
+      renames Maps."and";
+   function "or" (Left, Right : Wide_Wide_Character_Set)
+      return Wide_Wide_Character_Set
+      renames Maps."or";
+   function "xor" (Left, Right : Wide_Wide_Character_Set)
+      return Wide_Wide_Character_Set
+      renames Maps."xor";
+   function "-" (Left, Right : Wide_Wide_Character_Set)
+      return Wide_Wide_Character_Set
+      renames Maps."-";
 
    function Is_In (
       Element : Wide_Wide_Character;
       Set : Wide_Wide_Character_Set)
       return Boolean
-      renames Overloaded_Is_In;
+      renames Maps.Overloaded_Is_In;
 
---  function Is_Subset (
---    Elements : Wide_Wide_Character_Set;
---    Set : Wide_Wide_Character_Set)
---    return Boolean;
-   --  function Is_Subset is inherited
+   function Is_Subset (
+      Elements : Wide_Wide_Character_Set;
+      Set : Wide_Wide_Character_Set)
+      return Boolean
+      renames Maps.Is_Subset;
 
    function "<=" (
       Left : Wide_Wide_Character_Set;
       Right : Wide_Wide_Character_Set)
       return Boolean
-      renames Is_Subset;
+      renames Maps.Is_Subset;
 
    --  Alternative representation for a set of Wide_Wide_Character values:
    subtype Wide_Wide_Character_Sequence is Wide_Wide_String;
 
    function To_Set (Sequence : Wide_Wide_Character_Sequence)
       return Wide_Wide_Character_Set
-      renames Overloaded_To_Set;
+      renames Maps.Overloaded_To_Set;
 
    function To_Set (Singleton : Wide_Wide_Character)
       return Wide_Wide_Character_Set
-      renames Overloaded_To_Set;
+      renames Maps.Overloaded_To_Set;
 
    function To_Sequence (Set : Wide_Wide_Character_Set)
       return Wide_Wide_Character_Sequence
-      renames Overloaded_To_Sequence;
+      renames Maps.Overloaded_To_Sequence;
 
-   --  hiding
-   function To_Set (Ranges : Maps.Character_Ranges)
-      return Wide_Wide_Character_Set is abstract;
-   function To_Set (Span : Maps.Character_Range)
-      return Wide_Wide_Character_Set is abstract;
-   function To_Ranges (Set : Wide_Wide_Character_Set)
-      return Maps.Character_Ranges is abstract;
-   function Is_In (Element : Character; Set : Wide_Wide_Character_Set)
-      return Boolean is abstract;
-   function To_Set (Sequence : Maps.Character_Sequence)
-      return Wide_Wide_Character_Set is abstract;
-   function To_Set (Singleton : Character)
-      return Wide_Wide_Character_Set is abstract;
-   function To_Sequence (Set : Wide_Wide_Character_Set)
-      return Maps.Character_Sequence is abstract;
-
-   --  Representation for a Wide_Wide_Character to Wide_Wide_Character
-   --  mapping:
+   --  Representation for a Wide_Wide_Character to
+   --    Wide_Wide_Character mapping:
+   --  modified
 --  type Wide_Wide_Character_Mapping is private;
-   type Wide_Wide_Character_Mapping is new Maps.Character_Mapping;
-   pragma Preelaborable_Initialization (Wide_Wide_Character_Mapping);
+   subtype Wide_Wide_Character_Mapping is Maps.Character_Mapping;
 
    function Value (
       Map : Wide_Wide_Character_Mapping;
       Element : Wide_Wide_Character)
       return Wide_Wide_Character
-      renames Overloaded_Value;
+      renames Maps.Overloaded_Value;
 
+   --  modified
 --  Identity : constant Wide_Wide_Character_Mapping;
-   --  function Identity is inehrited
+   function Identity return Wide_Wide_Character_Mapping
+      renames Maps.Identity;
 
    function To_Mapping (From, To : Wide_Wide_Character_Sequence)
       return Wide_Wide_Character_Mapping
-      renames Overloaded_To_Mapping;
+      renames Maps.Overloaded_To_Mapping;
 
    function To_Domain (Map : Wide_Wide_Character_Mapping)
       return Wide_Wide_Character_Sequence
-      renames Overloaded_To_Domain;
+      renames Maps.Overloaded_To_Domain;
 
    function To_Range (Map : Wide_Wide_Character_Mapping)
       return Wide_Wide_Character_Sequence
-      renames Overloaded_To_Range;
-
-   --  hiding
-   function Value (Map : Wide_Wide_Character_Mapping; Element : Character)
-      return Character is abstract;
-   function To_Mapping (From, To : Maps.Character_Sequence)
-      return Wide_Wide_Character_Mapping is abstract;
-   function To_Domain (Map : Wide_Wide_Character_Mapping)
-      return Maps.Character_Sequence is abstract;
-   function To_Range (Map : Wide_Wide_Character_Mapping)
-      return Maps.Character_Sequence is abstract;
+      renames Maps.Overloaded_To_Range;
 
    type Wide_Wide_Character_Mapping_Function is
       access function (From : Wide_Wide_Character) return Wide_Wide_Character;

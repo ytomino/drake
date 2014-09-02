@@ -55,6 +55,19 @@ package body Ada.Directories is
       return Overwrite;
    end Pack_For_Copy_File;
 
+   procedure End_Search (
+      Search : in out Search_Type;
+      Raise_On_Error : Boolean);
+   procedure End_Search (
+      Search : in out Search_Type;
+      Raise_On_Error : Boolean) is
+   begin
+      Free (Search.Path);
+      Directory_Searching.End_Search (
+         Search.Search,
+         Raise_On_Error => Raise_On_Error);
+   end End_Search;
+
    procedure Next (Search : in out Search_Type);
    procedure Next (Search : in out Search_Type) is
    begin
@@ -208,7 +221,9 @@ package body Ada.Directories is
       function Cast is new
          Unchecked_Conversion (Filter_Type, Directory_Searching.Filter_Type);
    begin
-      Finalize (Search); -- cleanup
+      if Search.Search.Handle /= Directory_Searching.Null_Handle then
+         Raise_Exception (Status_Error'Identity);
+      end if;
       Directory_Searching.Start_Search (
          Search.Search,
          Directory,
@@ -231,13 +246,13 @@ package body Ada.Directories is
       end return;
    end Start_Search;
 
-   procedure Finalize (Search : in out Search_Type) is
+   procedure End_Search (Search : in out Search_Type) is
    begin
-      if Search.Search.Handle /= Directory_Searching.Null_Handle then
-         Directory_Searching.End_Search (Search.Search);
-         Free (Search.Path);
+      if Search.Search.Handle = Directory_Searching.Null_Handle then
+         Raise_Exception (Status_Error'Identity);
       end if;
-   end Finalize;
+      End_Search (Search, Raise_On_Error => True);
+   end End_Search;
 
    function More_Entries (Search : Search_Type) return Boolean is
    begin
@@ -264,6 +279,13 @@ package body Ada.Directories is
          Next (Search);
       end if;
    end Get_Next_Entry;
+
+   overriding procedure Finalize (Search : in out Search_Type) is
+   begin
+      if Search.Search.Handle /= Directory_Searching.Null_Handle then
+         End_Search (Search, Raise_On_Error => False);
+      end if;
+   end Finalize;
 
    procedure Search (
       Directory : String;

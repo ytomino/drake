@@ -1,0 +1,11 @@
+--- c94004b_pkg.adb.orig	2014-09-02 23:51:28.000000000 +0900
++++ c94004b_pkg.adb	2014-09-02 23:51:40.000000000 +0900
+@@ -4,7 +4,7 @@
+ PACKAGE BODY C94004B_PKG IS
+ 
+      TASK BODY TT IS
+-          I : INTEGER := IDENT_INT (120);
++          I : INTEGER := IDENT_INT (12);
+      BEGIN
+           ACCEPT E;
+           COMMENT ("DELAY LIBRARY TASK FOR TWO MINUTES");

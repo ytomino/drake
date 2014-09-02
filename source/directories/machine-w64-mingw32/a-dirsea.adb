@@ -41,6 +41,9 @@ package body Ada.Directory_Searching is
       Directory_Entry : aliased out Directory_Entry_Type;
       Has_Next_Entry : out Boolean) is
    begin
+      if Directory'Length = 0 then -- reject
+         Raise_Exception (Name_Error'Identity);
+      end if;
       declare
          Wildcard : C.winnt.WCHAR_array (
             0 ..
@@ -90,21 +93,33 @@ package body Ada.Directory_Searching is
                Search.Handle,
                Directory_Entry'Access) = 0
             then
-               Has_Next_Entry := False; -- end
-               exit;
+               case C.winbase.GetLastError is
+                  when C.winerror.ERROR_FILE_NOT_FOUND
+                     | C.winerror.ERROR_NO_MORE_FILES =>
+                     Has_Next_Entry := False;
+                     exit; -- end
+                  when others =>
+                     Raise_Exception (Use_Error'Identity);
+               end case;
             end if;
          end loop;
       end if;
    end Start_Search;
 
-   procedure End_Search (Search : in out Search_Type) is
-      R : C.windef.WINBOOL;
+   procedure End_Search (
+      Search : in out Search_Type;
+      Raise_On_Error : Boolean)
+   is
+      Handle : constant C.winnt.HANDLE := Search.Handle;
    begin
-      if Search.Handle /= C.winbase.INVALID_HANDLE_VALUE then
-         R := C.winbase.FindClose (Search.Handle);
-         pragma Assert (R /= 0);
-      end if;
       Search.Handle := Handle_Type (System.Null_Address);
+      if Handle /= C.winbase.INVALID_HANDLE_VALUE then
+         if C.winbase.FindClose (Handle) = 0 then
+            if Raise_On_Error then
+               Raise_Exception (Use_Error'Identity);
+            end if;
+         end if;
+      end if;
    end End_Search;
 
    procedure Get_Next_Entry (
@@ -119,8 +134,14 @@ package body Ada.Directory_Searching is
             Search.Handle,
             Directory_Entry'Access) = 0
          then
-            Has_Next_Entry := False; -- end
-            exit;
+            case C.winbase.GetLastError is
+               when C.winerror.ERROR_FILE_NOT_FOUND
+                  | C.winerror.ERROR_NO_MORE_FILES =>
+                  Has_Next_Entry := False;
+                  exit; -- end
+               when others =>
+                  Raise_Exception (Use_Error'Identity);
+            end case;
          end if;
          if Match_Filter (Search.Filter, Directory_Entry) then
             Has_Next_Entry := True;

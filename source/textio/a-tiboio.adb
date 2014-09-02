@@ -30,7 +30,9 @@ package body Ada.Text_IO.Bounded_IO is
       File : File_Type)
       return Bounded.Bounded_String is
    begin
-      return Bounded.To_Bounded_String (Get_Line (File));
+      return Result : Bounded.Bounded_String do
+         Get_Line (File, Result);
+      end return;
    end Get_Line;
 
    function Get_Line

@@ -2,7 +2,6 @@ with Ada.Characters.Inside;
 with Ada.Streams.Block_Transmission.Wide_Wide_Strings;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System.Address_To_Named_Access_Conversions;
 with System.UTF_Conversions.From_8_To_32;
 with System.UTF_Conversions.From_16_To_32;
 with System.UTF_Conversions.From_32_To_8;
@@ -30,17 +29,34 @@ package body Ada.Strings.Maps is
       return True;
    end Valid;
 
+   subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
+
+   function Upcast is
+      new Unchecked_Conversion (
+         Not_Null_Set_Data_Access,
+         System.Reference_Counting.Container);
+   function Downcast is
+      new Unchecked_Conversion (
+         System.Reference_Counting.Container,
+         Not_Null_Set_Data_Access);
+
+   type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
+   type Container_Access is access all System.Reference_Counting.Container;
+
+   function Upcast is
+      new Unchecked_Conversion (Set_Data_Access_Access, Container_Access);
+
    procedure Free is new Unchecked_Deallocation (Set_Data, Set_Data_Access);
 
-   procedure Free_Set_Data (Data : System.Address);
-   procedure Free_Set_Data (Data : System.Address) is
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Set_Data,
-            Set_Data_Access);
-      X : Set_Data_Access := Conv.To_Pointer (Data);
+   procedure Free_Set_Data (
+      Data : in out System.Reference_Counting.Data_Access);
+   procedure Free_Set_Data (
+      Data : in out System.Reference_Counting.Data_Access)
+   is
+      X : Set_Data_Access := Downcast (Data);
    begin
       Free (X);
+      Data := null;
    end Free_Set_Data;
 
    --  "-" operation
@@ -491,7 +507,7 @@ package body Ada.Strings.Maps is
             Items => (1 => (Low => Singleton, High => Singleton))));
    end Overloaded_To_Set;
 
-   function "=" (Left, Right : Character_Set) return Boolean is
+   overriding function "=" (Left, Right : Character_Set) return Boolean is
       pragma Assert (Valid (Reference (Left)));
       pragma Assert (Valid (Reference (Right)));
       Left_Data : constant not null Set_Data_Access := Reference (Left);
@@ -573,10 +589,18 @@ package body Ada.Strings.Maps is
    begin
       if Left_Data.Length = 0 then
          Data := Right_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -610,10 +634,18 @@ package body Ada.Strings.Maps is
    begin
       if Left_Data.Length = 0 then
          Data := Right_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       else
          declare
             Max : constant Natural := Left_Data.Length + Right_Data.Length;
@@ -658,7 +690,11 @@ package body Ada.Strings.Maps is
          Data := Empty_Set_Data'Unrestricted_Access;
       elsif Right_Data.Length = 0 then
          Data := Left_Data;
-         System.Reference_Counting.Adjust (Data.Reference_Count);
+         declare
+            X : aliased System.Reference_Counting.Container := Upcast (Data);
+         begin
+            System.Reference_Counting.Adjust (X'Access);
+         end;
       else
          declare
             Items : Characters.Inside.Sets.Character_Ranges (
@@ -683,13 +719,6 @@ package body Ada.Strings.Maps is
 
    package body Controlled_Sets is
 
-      procedure Assign (
-         Object : in out Character_Set;
-         Data : not null Set_Data_Access) is
-      begin
-         Object.Data := Data;
-      end Assign;
-
       function Create (
          Data : not null Set_Data_Access)
          return Character_Set is
@@ -706,21 +735,14 @@ package body Ada.Strings.Maps is
 
       overriding procedure Adjust (Object : in out Character_Set) is
       begin
-         System.Reference_Counting.Adjust (Object.Data.Reference_Count);
+         System.Reference_Counting.Adjust (
+            Upcast (Object.Data'Unchecked_Access));
       end Adjust;
 
       overriding procedure Finalize (Object : in out Character_Set) is
-         subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
-         type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
-         type System_Address_Access is access all System.Address;
-         function Upcast is
-            new Unchecked_Conversion (
-               Set_Data_Access_Access,
-               System_Address_Access);
       begin
          System.Reference_Counting.Clear (
-            Upcast (Object.Data'Access),
-            Object.Data.Reference_Count,
+            Upcast (Object.Data'Unchecked_Access),
             Free => Free_Set_Data'Access);
       end Finalize;
 
@@ -730,23 +752,21 @@ package body Ada.Strings.Maps is
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Character_Set)
          is
-            Item_Data : Set_Data_Access;
             Length : Integer;
          begin
             Finalize (Item);
             Integer'Read (Stream, Length);
             if Length = 0 then
-               Assign (Item, Empty_Set_Data'Unrestricted_Access);
+               Item.Data := Empty_Set_Data'Unrestricted_Access;
             else
-               Item_Data := new Set_Data'(
+               Item.Data := new Set_Data'(
                   Length => Length,
                   Reference_Count => 1,
                   Items => <>);
-               Assign (Item, Item_Data);
                Characters.Inside.Sets.Character_Ranges'Read (
                   Stream,
-                  Item_Data.Items);
-               pragma Assert (Valid (Item_Data));
+                  Item.Data.Items);
+               pragma Assert (Valid (Item.Data));
             end if;
          end Read;
 
@@ -754,13 +774,12 @@ package body Ada.Strings.Maps is
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : Character_Set)
          is
-            pragma Assert (Valid (Reference (Item)));
-            Item_Data : constant not null Set_Data_Access := Reference (Item);
+            pragma Assert (Valid (Item.Data));
          begin
-            Integer'Write (Stream, Item_Data.Length);
+            Integer'Write (Stream, Item.Data.Length);
             Characters.Inside.Sets.Character_Ranges'Write (
                Stream,
-               Item_Data.Items);
+               Item.Data.Items);
          end Write;
 
       end Streaming;
@@ -769,17 +788,29 @@ package body Ada.Strings.Maps is
 
    --  maps
 
+   subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
+
+   function Downcast is
+      new Unchecked_Conversion (
+         System.Reference_Counting.Container,
+         Not_Null_Map_Data_Access);
+
+   type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
+
+   function Upcast is
+      new Unchecked_Conversion (Map_Data_Access_Access, Container_Access);
+
    procedure Free is new Unchecked_Deallocation (Map_Data, Map_Data_Access);
 
-   procedure Free_Map_Data (Data : System.Address);
-   procedure Free_Map_Data (Data : System.Address) is
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Map_Data,
-            Map_Data_Access);
-      X : Map_Data_Access := Conv.To_Pointer (Data);
+   procedure Free_Map_Data (
+      Data : in out System.Reference_Counting.Data_Access);
+   procedure Free_Map_Data (
+      Data : in out System.Reference_Counting.Data_Access)
+   is
+      X : Map_Data_Access := Downcast (Data);
    begin
       Free (X);
+      Data := null;
    end Free_Map_Data;
 
    --  implementation of maps
@@ -894,7 +925,7 @@ package body Ada.Strings.Maps is
       return Characters.Inside.Maps.Value (Reference (Map).all, Element);
    end Overloaded_Value;
 
-   function "=" (Left, Right : Character_Mapping) return Boolean is
+   overriding function "=" (Left, Right : Character_Mapping) return Boolean is
       Left_Data : constant not null Map_Data_Access := Reference (Left);
       Right_Data : constant not null Map_Data_Access := Reference (Right);
    begin
@@ -905,13 +936,6 @@ package body Ada.Strings.Maps is
    end "=";
 
    package body Controlled_Maps is
-
-      procedure Assign (
-         Object : in out Character_Mapping;
-         Data : not null Map_Data_Access) is
-      begin
-         Object.Data := Data;
-      end Assign;
 
       function Create (
          Data : not null Map_Data_Access)
@@ -929,21 +953,14 @@ package body Ada.Strings.Maps is
 
       overriding procedure Adjust (Object : in out Character_Mapping) is
       begin
-         System.Reference_Counting.Adjust (Object.Data.Reference_Count);
+         System.Reference_Counting.Adjust (
+            Upcast (Object.Data'Unchecked_Access));
       end Adjust;
 
       overriding procedure Finalize (Object : in out Character_Mapping) is
-         subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
-         type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
-         type System_Address_Access is access all System.Address;
-         function Upcast is
-            new Unchecked_Conversion (
-               Map_Data_Access_Access,
-               System_Address_Access);
       begin
          System.Reference_Counting.Clear (
-            Upcast (Object.Data'Access),
-            Object.Data.Reference_Count,
+            Upcast (Object.Data'Unchecked_Access),
             Free => Free_Map_Data'Access);
       end Finalize;
 
@@ -953,42 +970,38 @@ package body Ada.Strings.Maps is
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Character_Mapping)
          is
-            Item_Data : Map_Data_Access;
             Length : Integer;
          begin
             Finalize (Item);
             Integer'Read (Stream, Length);
             if Length = 0 then
-               Assign (Item, Empty_Map_Data'Unrestricted_Access);
+               Item.Data := Empty_Map_Data'Unrestricted_Access;
             else
-               Item_Data := new Map_Data'(
+               Item.Data := new Map_Data'(
                   Length => Length,
                   Reference_Count => 1,
                   From => <>,
                   To => <>);
-               Assign (Item, Item_Data);
                Streams.Block_Transmission.Wide_Wide_Strings.Read (
                   Stream,
-                  Item_Data.From);
+                  Item.Data.From);
                Streams.Block_Transmission.Wide_Wide_Strings.Read (
                   Stream,
-                  Item_Data.To);
+                  Item.Data.To);
             end if;
          end Read;
 
          procedure Write (
             Stream : not null access Streams.Root_Stream_Type'Class;
-            Item : Character_Mapping)
-         is
-            Item_Data : constant not null Map_Data_Access := Reference (Item);
+            Item : Character_Mapping) is
          begin
-            Integer'Write (Stream, Item_Data.Length);
+            Integer'Write (Stream, Item.Data.Length);
             Streams.Block_Transmission.Wide_Wide_Strings.Write (
                Stream,
-               Item_Data.From);
+               Item.Data.From);
             Streams.Block_Transmission.Wide_Wide_Strings.Write (
                Stream,
-               Item_Data.To);
+               Item.Data.To);
          end Write;
 
       end Streaming;

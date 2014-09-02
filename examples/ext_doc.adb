@@ -39,7 +39,7 @@ procedure ext_doc is
 		begin
 			loop
 				L := Ada.Strings.Fixed.Index (Line, ' ', From => F) - 1;
-				if L < F and Line (Line'Last) = ';' then
+				if L < F and then Line (Line'Last) = ';' then
 					L := Line'Last - 1;
 				end if;
 				if L < F then
@@ -287,7 +287,7 @@ procedure ext_doc is
 											Ex_Line : constant String := Get_Next_Line;
 											Ex_F : Integer := Ada.Strings.Fixed.Index_Non_Blank (Ex_Line);
 										begin
-											if (not Block or Ex_Line /= "") and then Ex_F - Ex_Line'First < Indent and then not Start_With (Ex_Line, "--") then
+											if (not Block or else Ex_Line /= "") and then Ex_F - Ex_Line'First < Indent and then not Start_With (Ex_Line, "--") then
 												if State = Start then
 													raise Extended_Style_Error with Name & " """ & Ex_Line & """";
 												end if;
@@ -330,7 +330,7 @@ procedure ext_doc is
 														if State = Comment then
 															Ada.Strings.Unbounded.Append (Document, ASCII.LF & ASCII.LF);
 														end if;
-														Ada.Strings.Unbounded.Append (Document, "::" & ASCII.LF & ASCII.LF);
+														Ada.Strings.Unbounded.Append (Document, ".. code-block:: ada" & ASCII.LF & ASCII.LF);
 													end if;
 													if Ex_Line'Length > 0 and then Ex_Line (Ex_Line'First) /= ' ' then
 														Ada.Strings.Unbounded.Append (Document, ' ' & Ex_Line & ASCII.LF);

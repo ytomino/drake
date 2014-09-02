@@ -1,0 +1,20 @@
+--- c95021a.adb.orig	2014-09-03 00:02:19.000000000 +0900
++++ c95021a.adb	2014-09-03 00:03:08.000000000 +0900
+@@ -121,7 +121,7 @@
+                FOR I IN 1..6       -- WILL WAIT FOR ONE MINUTE
+                LOOP
+                     EXIT WHEN E1'COUNT = 2;
+-                    DELAY 10.0;    -- WAIT FOR CALLS TO ARRIVE
++                    DELAY 1.0;    -- WAIT FOR CALLS TO ARRIVE
+                END LOOP;
+ 
+                IF E1'COUNT /= 2 THEN
+@@ -150,7 +150,7 @@
+                FOR I IN 1..6       -- WILL WAIT FOR ONE MINUTE
+                LOOP
+                     EXIT WHEN E1'COUNT = 2;
+-                    DELAY 10.0;    -- WAIT FOR CALLS TO ARRIVE
++                    DELAY 1.0;    -- WAIT FOR CALLS TO ARRIVE
+                END LOOP;
+ 
+                IF E1'COUNT /= 2 THEN

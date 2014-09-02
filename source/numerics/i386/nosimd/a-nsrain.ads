@@ -1,0 +1,1 @@
+../../generic/a-nsrain.ads

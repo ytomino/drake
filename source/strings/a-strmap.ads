@@ -75,7 +75,7 @@ package Ada.Strings.Maps is
    function To_Ranges (Set : Character_Set) return Character_Ranges
       renames Overloaded_To_Ranges;
 
-   function "=" (Left, Right : Character_Set) return Boolean;
+   overriding function "=" (Left, Right : Character_Set) return Boolean;
 
    function "not" (Right : Character_Set) return Character_Set;
    function "and" (Left, Right : Character_Set) return Character_Set;
@@ -190,7 +190,7 @@ package Ada.Strings.Maps is
       renames Overloaded_To_Mapping;
 
    --  extended
-   function "=" (Left, Right : Character_Mapping) return Boolean;
+   overriding function "=" (Left, Right : Character_Mapping) return Boolean;
 
    --  extended
    function Overloaded_To_Domain (Map : Character_Mapping)
@@ -221,7 +221,7 @@ private
    subtype Set_Data is Characters.Inside.Sets.Character_Set;
    type Set_Data_Access is access all Set_Data;
 
-   Empty_Set_Data : constant Set_Data := (
+   Empty_Set_Data : aliased constant Set_Data := (
       Length => 0,
       Reference_Count => System.Reference_Counting.Static,
       Items => <>);
@@ -229,11 +229,6 @@ private
    package Controlled_Sets is
 
       type Character_Set is private;
-
-      procedure Assign (
-         Object : in out Character_Set;
-         Data : not null Set_Data_Access);
-      pragma Inline (Assign);
 
       function Create (
          Data : not null Set_Data_Access)
@@ -275,7 +270,7 @@ private
    subtype Map_Data is Characters.Inside.Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
 
-   Empty_Map_Data : constant Map_Data := (
+   Empty_Map_Data : aliased constant Map_Data := (
       Length => 0,
       Reference_Count => System.Reference_Counting.Static,
       From => <>,
@@ -284,11 +279,6 @@ private
    package Controlled_Maps is
 
       type Character_Mapping is private;
-
-      procedure Assign (
-         Object : in out Character_Mapping;
-         Data : not null Map_Data_Access);
-      pragma Inline (Assign);
 
       function Create (
          Data : not null Map_Data_Access)

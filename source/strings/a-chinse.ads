@@ -22,6 +22,13 @@ package Ada.Characters.Inside.Sets is
    end record;
    pragma Suppress_Initialization (Character_Set);
 
+   --  place Reference_Count at first
+   for Character_Set use record
+      Reference_Count at 0 range
+         0 ..
+         System.Reference_Counting.Counter'Size - 1;
+   end record;
+
    function Is_In (
       Element : Character_Type;
       Set : Character_Set)

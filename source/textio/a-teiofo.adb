@@ -1,12 +1,8 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
-with Ada.Unchecked_Deallocation;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Formatting is
    use Exception_Identification.From_Here;
-
-   type String_Access is access String;
-   procedure Free is new Unchecked_Deallocation (String, String_Access);
 
    procedure Finally (X : not null access String_Access);
    procedure Finally (X : not null access String_Access) is

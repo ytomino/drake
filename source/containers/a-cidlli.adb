@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -14,6 +15,9 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -35,6 +39,33 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       return Context.Left.all = Downcast (Right).Element.all;
    end Equivalent_Element;
 
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type);
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type) is
+   begin
+      Item := new Element_Type'(New_Item);
+   end Allocate_Element;
+
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type);
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type) is
+      procedure Finally (X : not null access Cursor);
+      procedure Finally (X : not null access Cursor) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+      X : aliased Cursor := new Node;
+   begin
+      Holder.Assign (X'Access);
+      Allocate_Element (X.Element, New_Item);
+      Holder.Clear;
+      Item := X;
+   end Allocate_Node;
+
    procedure Copy_Node (
       Target : out Linked_Lists.Node_Access;
       Source : not null Linked_Lists.Node_Access);
@@ -42,14 +73,12 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Target : out Linked_Lists.Node_Access;
       Source : not null Linked_Lists.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
-         Element => new Element_Type'(Downcast (Source).Element.all));
+      New_Node : Cursor;
    begin
+      Allocate_Node (New_Node, Downcast (Source).Element.all);
+--  diff
       Target := Upcast (New_Node);
    end Copy_Node;
-
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
 
    procedure Free_Node (Object : in out Linked_Lists.Node_Access);
    procedure Free_Node (Object : in out Linked_Lists.Node_Access) is
@@ -135,11 +164,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    end Unique;
 
    --  implementation
-
-   procedure Adjust (Object : in out List) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
 
    procedure Assign (Target : in out List; Source : List) is
    begin
@@ -280,11 +304,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return Object.First;
-   end First;
-
    function Has_Element (Position : Cursor) return Boolean is
    begin
       return Position /= null;
@@ -317,15 +336,27 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    begin
       Unique (Container, True);
       for I in 1 .. Count loop
-         Position := new Node'(
-            Super => <>,
-            Element => new Element_Type'(New_Item));
-         Base.Insert (
-            Downcast (Container.Super.Data).First,
-            Downcast (Container.Super.Data).Last,
-            Downcast (Container.Super.Data).Length,
-            Before => Upcast (Before),
-            New_Item => Upcast (Position));
+         declare
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+            X : Cursor;
+         begin
+            Allocate_Node (X, New_Item);
+--  diff
+--  diff
+            Base.Insert (
+               Downcast (Container.Super.Data).First,
+               Downcast (Container.Super.Data).Last,
+               Downcast (Container.Super.Data).Length,
+               Before => Upcast (Before),
+               New_Item => Upcast (X));
+            Position := X;
+         end;
       end loop;
    end Insert;
 
@@ -390,11 +421,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end if;
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Object.Last;
-   end Last;
-
    function Length (Container : List) return Count_Type is
    begin
       if Container.Super.Data = null then
@@ -427,15 +453,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Position := Downcast (Position.Super.Next);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position = Object.Last then
-         return No_Element;
-      else
-         return Next (Position);
-      end if;
-   end Next;
-
    procedure Prepend (
       Container : in out List;
       New_Item : Element_Type;
@@ -456,15 +473,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Position.Super.Super.Previous);
-   end Previous;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-   begin
-      if Position = Object.First then
-         return No_Element;
-      else
-         return Previous (Position);
-      end if;
    end Previous;
 
    procedure Query_Element (
@@ -490,7 +498,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       New_Item : Element_Type) is
    begin
       Unique (Container, True);
-      Position.Element := new Element_Type'(New_Item);
+      Free (Position.Element);
+      Allocate_Element (Position.Element, New_Item);
    end Replace_Element;
 
    procedure Reverse_Elements (Container : in out List) is
@@ -647,7 +656,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Process (Container.Reference (Position).Element.all);
    end Update_Element;
 
-   function "=" (Left, Right : List) return Boolean is
+   overriding function "=" (Left, Right : List) return Boolean is
       function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
          return Boolean;
       function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
@@ -677,6 +686,41 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    begin
       return Base.Is_Before (Upcast (Left), Upcast (Right));
    end "<";
+
+   overriding procedure Adjust (Object : in out List) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return Object.First;
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor is
+   begin
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
+   end Next;
+
+   overriding function Last (Object : Iterator) return Cursor is
+   begin
+      return Object.Last;
+   end Last;
+
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor is
+   begin
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
+   end Previous;
 
    package body Generic_Sorting is
 
@@ -750,19 +794,12 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       begin
          Count_Type'Read (Stream, Length);
          Clear (Item);
-         Unique (Item, True);
          for I in 1 .. Length loop
             declare
-               Position : constant Cursor := new Node'(
-                  Super => <>,
-                  Element => new Element_Type'(Element_Type'Input (Stream)));
+               New_Item : constant Element_Type := Element_Type'Input (Stream);
             begin
-               Base.Insert (
-                  Downcast (Item.Super.Data).First,
-                  Downcast (Item.Super.Data).Last,
-                  Downcast (Item.Super.Data).Length,
-                  Before => null,
-                  New_Item => Upcast (Position));
+               Insert (Item, null, New_Item);
+--  diff
             end;
          end loop;
       end Read;

@@ -93,6 +93,29 @@ package body System.Native_Encoding is
       return UTF_8_Name (0)'Access;
    end Get_Current_Encoding;
 
+   procedure Open (Object : out Converter; From, To : Encoding_Id) is
+      pragma Unmodified (Object); -- modified via Reference
+      NC_Converter : constant not null access Non_Controlled_Converter :=
+         Reference (Object);
+      Error : constant C.iconv.iconv_t :=
+         C.iconv.iconv_t (System'To_Address (-1));
+      iconv : C.iconv.iconv_t;
+   begin
+      iconv := C.iconv.iconv_open (To, From);
+      if iconv = Error then
+         Raise_Exception (Name_Error'Identity);
+      end if;
+      NC_Converter.iconv := iconv;
+      --  about "From"
+      NC_Converter.Min_Size_In_From_Stream_Elements :=
+         Get_Min_Size_In_Stream_Elements (From);
+      --  about "To"
+      Default_Substitute (
+         To,
+         NC_Converter.Substitute,
+         NC_Converter.Substitute_Length);
+   end Open;
+
    function Get_Is_Open (Object : Converter) return Boolean is
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);
@@ -338,26 +361,6 @@ package body System.Native_Encoding is
    end Put_Substitute;
 
    package body Controlled is
-
-      procedure Open (Object : out Converter; From, To : Encoding_Id) is
-         Error : constant C.iconv.iconv_t :=
-            C.iconv.iconv_t (System'To_Address (-1));
-         iconv : C.iconv.iconv_t;
-      begin
-         iconv := C.iconv.iconv_open (To, From);
-         if iconv = Error then
-            Raise_Exception (Name_Error'Identity);
-         end if;
-         Object.Data.iconv := iconv;
-         --  about "From"
-         Object.Data.Min_Size_In_From_Stream_Elements :=
-            Get_Min_Size_In_Stream_Elements (From);
-         --  about "To"
-         Default_Substitute (
-            To,
-            Object.Data.Substitute,
-            Object.Data.Substitute_Length);
-      end Open;
 
       function Reference (Object : Converter)
          return not null access Non_Controlled_Converter is

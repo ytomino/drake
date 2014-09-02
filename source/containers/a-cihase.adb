@@ -1,3 +1,4 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Streams; -- [gcc-4.7] can not search in private with
@@ -15,6 +16,9 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -48,6 +52,33 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Downcast (Right).Element.all);
    end Equivalent_Node;
 
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type);
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type) is
+   begin
+      Item := new Element_Type'(New_Item);
+   end Allocate_Element;
+
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type);
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type) is
+      procedure Finally (X : not null access Cursor);
+      procedure Finally (X : not null access Cursor) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+      X : aliased Cursor := new Node;
+   begin
+      Holder.Assign (X'Access);
+      Allocate_Element (X.Element, New_Item);
+      Holder.Clear;
+      Item := X;
+   end Allocate_Node;
+
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access);
@@ -55,14 +86,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
-         Element => new Element_Type'(Downcast (Source).Element.all));
+      New_Node : Cursor;
    begin
+      Allocate_Node (New_Node, Downcast (Source).Element.all);
+--  diff
       Target := Upcast (New_Node);
    end Copy_Node;
-
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -164,11 +193,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    end Find;
 
    --  implementation
-
-   procedure Adjust (Object : in out Set) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
 
    procedure Assign (Target : in out Set; Source : Set) is
    begin
@@ -341,11 +365,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
-   end First;
-
 --  diff (Generic_Array_To_Set)
 --
 --
@@ -377,22 +396,30 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       New_Hash : constant Hash_Type := Hash (New_Item);
    begin
+--  diff
+--  diff
       Position := Find (Container, New_Hash, New_Item);
       Inserted := Position = null;
       if Inserted then
          Unique (Container, True);
-         Position := new Node'(
-            Super => <>,
-            Element => new Element_Type'(New_Item));
+         Allocate_Node (Position, New_Item);
+--  diff
+--  diff
          Hash_Tables.Insert (
             Downcast (Container.Super.Data).Table,
             Downcast (Container.Super.Data).Length,
             New_Hash,
             Upcast (Position));
---  diff
---  diff
       end if;
    end Insert;
 
@@ -522,15 +549,9 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Position := Downcast (Position.Super.Next);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    function Overlap (Left, Right : Set) return Boolean is
    begin
-      if Is_Empty (Left) or Is_Empty (Right) then
+      if Is_Empty (Left) or else Is_Empty (Right) then
          return False;
       else
          return Hash_Tables.Overlap (
@@ -559,7 +580,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    begin
       Unique (Container, True);
       Free (Position.Element);
-      Position.Element := new Element_Type'(New_Item);
+      Allocate_Element (Position.Element, New_Item);
    end Replace_Element;
 
    procedure Reserve_Capacity (
@@ -675,7 +696,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       end if;
    end Union;
 
-   function "=" (Left, Right : Set) return Boolean is
+   overriding function "=" (Left, Right : Set) return Boolean is
       function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
          return Boolean;
       function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
@@ -699,6 +720,24 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
             Equivalent => Equivalent'Access);
       end if;
    end "=";
+
+   overriding procedure Adjust (Object : in out Set) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
 
    package body Generic_Keys is
 
@@ -832,15 +871,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Clear (Item);
          for I in 1 .. Length loop
             declare
-               Position : constant Cursor := new Node'(
-                  Super => <>,
-                  Element => new Element_Type'(Element_Type'Input (Stream)));
+               New_Item : constant Element_Type := Element_Type'Input (Stream);
             begin
-               Hash_Tables.Insert (
-                  Downcast (Item.Super.Data).Table,
-                  Downcast (Item.Super.Data).Length,
-                  Hash (Position.Element.all),
-                  New_Item => Upcast (Position));
+--  diff
+               Include (Item, New_Item);
             end;
          end loop;
       end Read;

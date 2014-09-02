@@ -134,7 +134,7 @@ begin
 		end loop;
 	end;
 	Put_Line ("pragma License (Unrestricted);");
-	Put_Line ("--  translated unit from DerivedEastAsianWidth.txt");
+	Put_Line ("--  implementation unit, translated from DerivedEastAsianWidth.txt");
 	Put_Line ("package Ada.UCD.East_Asian_Width is");
 	Put_Line ("   pragma Pure;");
 	New_Line;

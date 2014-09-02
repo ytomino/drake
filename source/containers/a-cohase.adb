@@ -1,3 +1,4 @@
+--  diff (Ada.Exceptions.Finally)
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Streams; -- [gcc-4.7] can not search in private with
@@ -15,6 +16,9 @@ package body Ada.Containers.Hashed_Sets is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+--  diff
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -48,6 +52,33 @@ package body Ada.Containers.Hashed_Sets is
          Downcast (Right).Element);
    end Equivalent_Node;
 
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access);
@@ -55,14 +86,12 @@ package body Ada.Containers.Hashed_Sets is
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
+      New_Node : constant Cursor := new Node'(
+         Super => <>,
          Element => Downcast (Source).Element);
    begin
       Target := Upcast (New_Node);
    end Copy_Node;
-
---  diff
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -164,11 +193,6 @@ package body Ada.Containers.Hashed_Sets is
    end Find;
 
    --  implementation
-
-   procedure Adjust (Object : in out Set) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
 
    procedure Assign (Target : in out Set; Source : Set) is
    begin
@@ -341,11 +365,6 @@ package body Ada.Containers.Hashed_Sets is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
-   end First;
-
    function Generic_Array_To_Set (S : Element_Array) return Set is
    begin
       return Result : Set do
@@ -377,8 +396,18 @@ package body Ada.Containers.Hashed_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       New_Hash : constant Hash_Type := Hash (New_Item);
    begin
+--  diff
+--  diff
       Position := Find (Container, New_Hash, New_Item);
       Inserted := Position = null;
       if Inserted then
@@ -391,8 +420,6 @@ package body Ada.Containers.Hashed_Sets is
             Downcast (Container.Super.Data).Length,
             New_Hash,
             Upcast (Position));
---  diff
---  diff
       end if;
    end Insert;
 
@@ -522,15 +549,9 @@ package body Ada.Containers.Hashed_Sets is
       Position := Downcast (Position.Super.Next);
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    function Overlap (Left, Right : Set) return Boolean is
    begin
-      if Is_Empty (Left) or Is_Empty (Right) then
+      if Is_Empty (Left) or else Is_Empty (Right) then
          return False;
       else
          return Hash_Tables.Overlap (
@@ -675,7 +696,7 @@ package body Ada.Containers.Hashed_Sets is
       end if;
    end Union;
 
-   function "=" (Left, Right : Set) return Boolean is
+   overriding function "=" (Left, Right : Set) return Boolean is
       function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
          return Boolean;
       function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
@@ -699,6 +720,24 @@ package body Ada.Containers.Hashed_Sets is
             Equivalent => Equivalent'Access);
       end if;
    end "=";
+
+   overriding procedure Adjust (Object : in out Set) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
 
    package body Generic_Keys is
 
@@ -833,14 +872,9 @@ package body Ada.Containers.Hashed_Sets is
          for I in 1 .. Length loop
             declare
                New_Item : Element_Type;
---  diff
---  diff
             begin
                Element_Type'Read (Stream, New_Item);
                Include (Item, New_Item);
---  diff
---  diff
---  diff
             end;
          end loop;
       end Read;

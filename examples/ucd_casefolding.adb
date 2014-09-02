@@ -166,7 +166,7 @@ begin
 		end;
 	end loop;
 	Put_Line ("pragma License (Unrestricted);");
-	Put_Line ("--  translated unit from CaseFolding.txt");
+	Put_Line ("--  implementation unit, translated from CaseFolding.txt");
 	Put_Line ("package Ada.UCD.Case_Folding is");
 	Put_Line ("   pragma Pure;");
 	New_Line;

@@ -32,6 +32,7 @@ package body Ada.Processes.Inside is
                   C_Directory (0)'Access);
                if C.unistd.chdir (C_Directory (0)'Access) < 0 then
                   C.unistd.C_qexit (127);
+                  --  _exit is qualified as __attribute__((noreturn))
                end if;
             end;
          end if;
@@ -39,12 +40,10 @@ package body Ada.Processes.Inside is
             C_Command_Line : C.char_array (
                0 ..
                Command_Line'Length * System.Zero_Terminated_Strings.Expanding);
-            Arguments : C.char_ptr_array (0 .. 255);
+            Arguments : C.char_ptr_array (0 .. 255) := (others => <>);
             Duplicated_Input : System.Native_IO.Handle_Type;
             Duplicated_Output : System.Native_IO.Handle_Type;
             Duplicated_Error : System.Native_IO.Handle_Type;
-            New_Descriptor : C.signed_int;
-            R : C.signed_int;
             Dummy : C.signed_int;
             pragma Unreferenced (Dummy);
          begin
@@ -58,34 +57,34 @@ package body Ada.Processes.Inside is
                Duplicated_Output := C.unistd.dup (Output);
                Duplicated_Error := C.unistd.dup (Error);
                --  close standard handles
-               R := C.unistd.close (0);
-               pragma Assert (R = 0);
-               R := C.unistd.close (1);
-               pragma Assert (R = 0);
-               R := C.unistd.close (2);
-               pragma Assert (R = 0);
+               if C.unistd.close (0) < 0
+                  or else C.unistd.close (1) < 0
+                  or else C.unistd.close (2) < 0
+               then
+                  C.unistd.C_qexit (127);
+               end if;
                --  set standard handles
-               New_Descriptor := C.unistd.dup2 (Duplicated_Input, 0);
-               pragma Assert (New_Descriptor = 0);
-               New_Descriptor := C.unistd.dup2 (Duplicated_Output, 1);
-               pragma Assert (New_Descriptor = 1);
-               New_Descriptor := C.unistd.dup2 (Duplicated_Error, 2);
-               pragma Assert (New_Descriptor = 2);
+               if C.unistd.dup2 (Duplicated_Input, 0) < 0
+                  or else C.unistd.dup2 (Duplicated_Output, 1) < 0
+                  or else C.unistd.dup2 (Duplicated_Error, 2) < 0
+               then
+                  C.unistd.C_qexit (127);
+               end if;
                --  close duplicated handles
-               R := C.unistd.close (Duplicated_Input);
-               pragma Assert (R = 0);
-               R := C.unistd.close (Duplicated_Output);
-               pragma Assert (R = 0);
-               R := C.unistd.close (Duplicated_Error);
-               pragma Assert (R = 0);
+               if C.unistd.close (Duplicated_Input) < 0
+                  or else C.unistd.close (Duplicated_Output) < 0
+                  or else C.unistd.close (Duplicated_Error) < 0
+               then
+                  C.unistd.C_qexit (127);
+               end if;
             end if;
             --  clear FD_CLOEXEC
-            R := C.fcntl.fcntl (0, C.fcntl.F_SETFD, 0);
-            pragma Assert (R = 0);
-            R := C.fcntl.fcntl (1, C.fcntl.F_SETFD, 0);
-            pragma Assert (R = 0);
-            R := C.fcntl.fcntl (2, C.fcntl.F_SETFD, 0);
-            pragma Assert (R = 0);
+            if C.fcntl.fcntl (0, C.fcntl.F_SETFD, 0) < 0
+               or else C.fcntl.fcntl (1, C.fcntl.F_SETFD, 0) < 0
+               or else C.fcntl.fcntl (2, C.fcntl.F_SETFD, 0) < 0
+            then
+               C.unistd.C_qexit (127);
+            end if;
             if Search_Path then
                Dummy := C.unistd.execvp (Arguments (0), Arguments (0)'Access);
             else

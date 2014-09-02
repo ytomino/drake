@@ -1,6 +1,6 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Containers.Composites;
 with Ada.Streams; -- [gcc-4.7] can not search in private with
 with System;
 package body Ada.Containers.Indefinite_Ordered_Sets is
@@ -17,7 +17,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
 
-   function Compare is new Composites.Compare (Element_Type);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -35,21 +36,69 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    is
       Context : Context_Type;
       for Context'Address use Params;
+      Left : Element_Type
+         renames Context.Left.all;
+      Right : Element_Type
+         renames Downcast (Position).Element.all;
    begin
-      return Compare (
-         Context.Left.all,
-         Downcast (Position).Element.all);
+      --  [gcc-4.9] outputs wrong code for combination of
+      --    constrained short String used as Key_Type (ex. String (1 .. 4))
+      --    and instantiation of Ada.Containers.Composites.Compare here
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
    end Compare_Element;
 
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
       return Integer;
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
-      return Integer is
+      return Integer
+   is
+      Left_E : Element_Type
+         renames Downcast (Left).Element.all;
+      Right_E : Element_Type
+         renames Downcast (Right).Element.all;
    begin
-      return Compare (
-         Downcast (Left).Element.all,
-         Downcast (Right).Element.all);
+      --  [gcc-4.9] same as above
+      if Left_E < Right_E then
+         return -1;
+      elsif Right_E < Left_E then
+         return 1;
+      else
+         return 0;
+      end if;
    end Compare_Node;
+
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type);
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : Element_Type) is
+   begin
+      Item := new Element_Type'(New_Item);
+   end Allocate_Element;
+
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type);
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type) is
+      procedure Finally (X : not null access Cursor);
+      procedure Finally (X : not null access Cursor) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+      X : aliased Cursor := new Node;
+   begin
+      Holder.Assign (X'Access);
+      Allocate_Element (X.Element, New_Item);
+      Holder.Clear;
+      Item := X;
+   end Allocate_Node;
 
    procedure Copy_Node (
       Target : out Binary_Trees.Node_Access;
@@ -58,14 +107,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Target : out Binary_Trees.Node_Access;
       Source : not null Binary_Trees.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
-         Element => new Element_Type'(Downcast (Source).Element.all));
+      New_Node : Cursor;
    begin
+      Allocate_Node (New_Node, Downcast (Source).Element.all);
+--  diff
       Target := Upcast (New_Node);
    end Copy_Node;
-
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -146,11 +193,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    end Unique;
 
    --  implementation
-
-   overriding procedure Adjust (Object : in out Set) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
 
    procedure Assign (Target : in out Set; Source : Set) is
    begin
@@ -349,11 +391,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
-   end First;
-
    function Floor (Container : Set; Item : Element_Type) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -402,21 +439,29 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       Before : constant Cursor := Ceiling (Container, New_Item);
    begin
+--  diff
       Inserted := Before = null or else New_Item < Before.Element.all;
       if Inserted then
          Unique (Container, True);
-         Position := new Node'(
-            Super => <>,
-            Element => new Element_Type'(New_Item));
+         Allocate_Node (Position, New_Item);
+--  diff
+--  diff
          Base.Insert (
             Downcast (Container.Super.Data).Root,
             Downcast (Container.Super.Data).Length,
             Upcast (Before),
             Upcast (Position));
       else
---  diff
          Position := Before;
       end if;
    end Insert;
@@ -530,11 +575,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Last (Object.Container.all);
-   end Last;
-
    function Length (Container : Set) return Count_Type is
    begin
       if Container.Super.Data = null then
@@ -565,15 +605,9 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Position := Downcast (Binary_Trees.Next (Upcast (Position)));
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    function Overlap (Left, Right : Set) return Boolean is
    begin
-      if Is_Empty (Left) or Is_Empty (Right) then
+      if Is_Empty (Left) or else Is_Empty (Right) then
          return False;
       else
          return Binary_Trees.Overlap (
@@ -591,12 +625,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Previous (Position);
    end Previous;
 
    procedure Query_Element (
@@ -618,7 +646,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    begin
       Unique (Container, True);
       Free (Position.Element);
-      Position.Element := new Element_Type'(New_Item);
+      Allocate_Element (Position.Element, New_Item);
    end Replace_Element;
 
    procedure Reverse_Iterate (
@@ -730,7 +758,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end Union;
 
-   function "=" (Left, Right : Set) return Boolean is
+   overriding function "=" (Left, Right : Set) return Boolean is
       function Equivalent (Left, Right : not null Binary_Trees.Node_Access)
          return Boolean;
       function Equivalent (Left, Right : not null Binary_Trees.Node_Access)
@@ -765,9 +793,38 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       return Left.Element.all < Right;
    end "<";
 
-   package body Generic_Keys is
+   overriding procedure Adjust (Object : in out Set) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
 
-      function Compare is new Composites.Compare (Key_Type);
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
+   overriding function Last (Object : Iterator) return Cursor is
+   begin
+      return Last (Object.Container.all);
+   end Last;
+
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
+   end Previous;
+
+   package body Generic_Keys is
 
       type Context_Type is limited record
          Left : not null access Key_Type;
@@ -785,10 +842,19 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       is
          Context : Context_Type;
          for Context'Address use Params;
+         Left : Key_Type
+            renames Context.Left.all;
+         Right : Key_Type
+            renames Key (Downcast (Position).Element.all);
       begin
-         return Compare (
-            Context.Left.all,
-            Key (Downcast (Position).Element.all));
+         --  [gcc-4.9] same as above
+         if Left < Right then
+            return -1;
+         elsif Right < Left then
+            return 1;
+         else
+            return 0;
+         end if;
       end Compare_Key;
 
       function Ceiling (Container : Set; Key : Key_Type) return Cursor is
@@ -835,7 +901,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
       function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
       begin
-         return not (Left < Right) and not (Right < Left);
+         return not (Left < Right) and then not (Right < Left);
       end Equivalent_Keys;
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is
@@ -938,18 +1004,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       begin
          Count_Type'Read (Stream, Length);
          Clear (Item);
-         Unique (Item, True);
          for I in 1 .. Length loop
             declare
-               Position : constant Cursor := new Node'(
-                  Super => <>,
-                  Element => new Element_Type'(Element_Type'Input (Stream)));
+               New_Item : constant Element_Type := Element_Type'Input (Stream);
             begin
-               Base.Insert (
-                  Downcast (Item.Super.Data).Root,
-                  Downcast (Item.Super.Data).Length,
-                  Before => null,
-                  New_Item => Upcast (Position));
+--  diff
+               Include (Item, New_Item);
             end;
          end loop;
       end Read;

@@ -9,6 +9,7 @@ package body Ada.Formatting is
       "No_Sign mismatch");
 
    function Integer_Image (Item : T) return String is
+      Abs_Item : T := Item;
       Result : String (
          1 ..
          4 + Long_Long_Integer'Width + Width); -- "16##"
@@ -16,6 +17,7 @@ package body Ada.Formatting is
       Error : Boolean;
    begin
       if Item < 0 then
+         Abs_Item := -Item;
          if Signs (-1) /= No_Sign then
             Last := Last + 1;
             Result (Last) := Signs (-1);
@@ -42,7 +44,7 @@ package body Ada.Formatting is
       end if;
       if T'Size > System.Formatting.Unsigned'Size then
          System.Formatting.Image (
-            System.Formatting.Longest_Unsigned (abs Item),
+            System.Formatting.Longest_Unsigned (Abs_Item),
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,
@@ -53,7 +55,7 @@ package body Ada.Formatting is
             Error => Error);
       else
          System.Formatting.Image (
-            System.Formatting.Unsigned (abs Item),
+            System.Formatting.Unsigned (Abs_Item),
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,

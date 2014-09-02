@@ -59,15 +59,21 @@ package body Ada.Directory_Searching is
       Get_Next_Entry (Search, Directory_Entry, Has_Next_Entry);
    end Start_Search;
 
-   procedure End_Search (Search : in out Search_Type) is
-      R : C.signed_int;
+   procedure End_Search (
+      Search : in out Search_Type;
+      Raise_On_Error : Boolean)
+   is
+      Handle : constant C.dirent.DIR_ptr := Search.Handle;
    begin
-      R := C.dirent.closedir (Search.Handle);
-      pragma Assert (R = 0);
       Search.Handle := null;
       System.Standard_Allocators.Free (
          char_ptr_Conv.To_Address (Search.Pattern));
       Search.Pattern := null;
+      if C.dirent.closedir (Handle) < 0 then
+         if Raise_On_Error then
+            Raise_Exception (Use_Error'Identity);
+         end if;
+      end if;
    end End_Search;
 
    procedure Get_Next_Entry (
@@ -78,13 +84,15 @@ package body Ada.Directory_Searching is
       loop
          declare
             Result : aliased C.sys.dirent.struct_dirent_ptr;
+            errno : C.signed_int;
          begin
-            if C.dirent.readdir_r (
+            errno := C.dirent.readdir_r (
                Search.Handle,
                Directory_Entry'Access,
-               Result'Access) < 0
-               or else Result = null
-            then
+               Result'Access);
+            if errno /= 0 then
+               Raise_Exception (Use_Error'Identity);
+            elsif Result = null then
                Has_Next_Entry := False; -- end
                exit;
             end if;

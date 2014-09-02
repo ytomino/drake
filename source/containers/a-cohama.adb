@@ -1,3 +1,4 @@
+--  diff (Ada.Exceptions.Finally)
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
@@ -14,6 +15,10 @@ package body Ada.Containers.Hashed_Maps is
       new Unchecked_Conversion (Data_Access, Copy_On_Write.Data_Access);
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
+
+--  diff
+--  diff
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Key_Type;
@@ -37,6 +42,42 @@ package body Ada.Containers.Hashed_Maps is
          Downcast (Position).Key);
    end Equivalent_Key;
 
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access);
@@ -44,16 +85,13 @@ package body Ada.Containers.Hashed_Maps is
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(Super => <>,
+      New_Node : constant Cursor := new Node'(
+         Super => <>,
          Key => Downcast (Source).Key,
          Element => Downcast (Source).Element);
    begin
       Target := Upcast (New_Node);
    end Copy_Node;
-
---  diff
---  diff
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -156,11 +194,6 @@ package body Ada.Containers.Hashed_Maps is
    end Find;
 
    --  implementation
-
-   procedure Adjust (Object : in out Map) is
-   begin
-      Copy_On_Write.Adjust (Object.Super'Access);
-   end Adjust;
 
    procedure Assign (Target : in out Map; Source : Map) is
    begin
@@ -290,11 +323,6 @@ package body Ada.Containers.Hashed_Maps is
       end if;
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
-   end First;
-
    function Has_Element (Position : Cursor) return Boolean is
    begin
       return Position /= null;
@@ -345,8 +373,24 @@ package body Ada.Containers.Hashed_Maps is
       Position : out Cursor;
       Inserted : out Boolean)
    is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       New_Hash : constant Hash_Type := Hash (Key);
    begin
+--  diff
+--  diff
       Position := Find (Container, New_Hash, Key);
       Inserted := Position = null;
       if Inserted then
@@ -360,8 +404,6 @@ package body Ada.Containers.Hashed_Maps is
             Downcast (Container.Super.Data).Length,
             New_Hash,
             Upcast (Position));
---  diff
---  diff
       end if;
    end Insert;
 
@@ -438,12 +480,6 @@ package body Ada.Containers.Hashed_Maps is
    procedure Next (Position : in out Cursor) is
    begin
       Position := Downcast (Position.Super.Next);
-   end Next;
-
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
    end Next;
 
    procedure Query_Element (
@@ -526,7 +562,7 @@ package body Ada.Containers.Hashed_Maps is
          Container.Reference (Position).Element.all);
    end Update_Element;
 
-   function "=" (Left, Right : Map) return Boolean is
+   overriding function "=" (Left, Right : Map) return Boolean is
       function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
          return Boolean;
       function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
@@ -555,6 +591,24 @@ package body Ada.Containers.Hashed_Maps is
       end if;
    end "=";
 
+   overriding procedure Adjust (Object : in out Map) is
+   begin
+      Copy_On_Write.Adjust (Object.Super'Access);
+   end Adjust;
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
    package body Streaming is
 
       procedure Read (
@@ -568,11 +622,13 @@ package body Ada.Containers.Hashed_Maps is
          for I in 1 .. Length loop
             declare
                New_Key : Key_Type;
-               New_Element : Element_Type;
+               Position : Cursor;
+               Inserted : Boolean;
+               pragma Unreferenced (Inserted);
             begin
                Key_Type'Read (Stream, New_Key);
-               Element_Type'Read (Stream, New_Element);
-               Include (Item, New_Key, New_Element);
+               Insert (Item, New_Key, Position, Inserted);
+               Element_Type'Read (Stream, Position.Element);
             end;
          end loop;
       end Read;

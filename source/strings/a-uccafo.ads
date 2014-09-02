@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  translated unit from CaseFolding.txt
+--  implementation unit, translated from CaseFolding.txt
 package Ada.UCD.Case_Folding is
    pragma Pure;
 

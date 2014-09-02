@@ -6,10 +6,10 @@ procedure tagged3 is
 	end Root;
 	package Derived is
 		type T is new Root.T with null record;
-		function Create (Params : not null access Integer) return T;
+		overriding function Create (Params : not null access Integer) return T;
 	end Derived;
 	package body Derived is
-		function Create (Params : not null access Integer) return T is
+		overriding function Create (Params : not null access Integer) return T is
 		begin
 			Ada.Debug.Put ("create derived");
 			return (Root.T with null record);

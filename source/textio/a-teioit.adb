@@ -1,9 +1,6 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Unchecked_Deallocation;
 package body Ada.Text_IO.Iterators is
    use Exception_Identification.From_Here;
-
-   procedure Free is new Unchecked_Deallocation (String, String_Access);
 
    --  implementation
 
@@ -55,7 +52,9 @@ package body Ada.Text_IO.Iterators is
       else
          Free (Object.Lines.Item);
          Object.Lines.Line := Line (Object.Lines.File.all);
-         Object.Lines.Item := new String'(Get_Line (Object.Lines.File.all));
+         Overloaded_Get_Line (
+            Object.Lines.File.all,
+            Object.Lines.Item); -- allocation
          return Line_Cursor (Object.Lines.Line);
       end if;
    end First;

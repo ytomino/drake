@@ -17,7 +17,7 @@ package Ada.Containers.Access_Holders is
    function Null_Holder return Holder;
    --  Empty_Holder?
 
-   function "=" (Left, Right : Holder) return Boolean;
+   overriding function "=" (Left, Right : Holder) return Boolean;
 
    function To_Holder (Source : Name) return Holder;
    --  for shorthand
@@ -61,7 +61,7 @@ package Ada.Containers.Access_Holders is
 
       type Weak_Holder is tagged private;
 
-      function "=" (Left, Right : Weak_Holder) return Boolean;
+      overriding function "=" (Left, Right : Weak_Holder) return Boolean;
 
       function To_Weak_Holder (Source : Holder) return Weak_Holder;
       function "+" (Right : Holder) return Weak_Holder
@@ -108,14 +108,14 @@ private
       Super at 0 range 0 .. Weak_Access_Holders.Data_Size - 1;
    end record;
 
-   Null_Data : aliased Data := (
+   Null_Data : aliased constant Data := (
       Super => (System.Reference_Counting.Static, null),
       Item => <>);
 
    type Data_Access is access all Data;
 
    type Holder is new Finalization.Controlled with record
-      Data : aliased not null Data_Access := Null_Data'Access;
+      Data : aliased not null Data_Access := Null_Data'Unrestricted_Access;
    end record;
 
    overriding procedure Adjust (Object : in out Holder);

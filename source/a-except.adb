@@ -5,6 +5,40 @@ package body Ada.Exceptions is
    pragma Suppress (All_Checks);
    use type System.Unwind.Exception_Data_Access;
 
+   --  for Exception_Information
+
+   type Information_Context_Type is record
+      Item : String (
+         1 ..
+         256
+            + System.Unwind.Exception_Msg_Max_Length
+            + System.Unwind.Max_Tracebacks
+               * (3 + (Standard'Address_Size + 3) / 4));
+      Last : Natural;
+   end record;
+   pragma Suppress_Initialization (Information_Context_Type);
+
+   procedure Put (S : String; Params : System.Address);
+   procedure Put (S : String; Params : System.Address) is
+      Context : Information_Context_Type;
+      for Context'Address use Params;
+      First : constant Positive := Context.Last + 1;
+   begin
+      Context.Last := Context.Last + S'Length;
+      Context.Item (First .. Context.Last) := S;
+   end Put;
+
+   procedure New_Line (Params : System.Address);
+   procedure New_Line (Params : System.Address) is
+      Context : Information_Context_Type;
+      for Context'Address use Params;
+   begin
+      Context.Last := Context.Last + 1;
+      Context.Item (Context.Last) := Character'Val (10);
+   end New_Line;
+
+   --  implementation
+
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id
    is
@@ -22,41 +56,15 @@ package body Ada.Exceptions is
          raise Constraint_Error;
       else
          declare
-            Max_Length : constant := 256
-               + System.Unwind.Exception_Msg_Max_Length
-               + System.Unwind.Max_Tracebacks
-                  * (3 + (Standard'Address_Size + 3) / 4);
-            type Result_Type is record
-               Item : String (1 .. Max_Length);
-               Last : Natural;
-            end record;
-            pragma Suppress_Initialization (Result_Type);
-            procedure Put (S : String; Params : System.Address);
-            procedure Put (S : String; Params : System.Address) is
-               Result : Result_Type;
-               for Result'Address use Params;
-               First : constant Positive := Result.Last + 1;
-            begin
-               Result.Last := Result.Last + S'Length;
-               Result.Item (First .. Result.Last) := S;
-            end Put;
-            procedure New_Line (Params : System.Address);
-            procedure New_Line (Params : System.Address) is
-               Result : Result_Type;
-               for Result'Address use Params;
-            begin
-               Result.Last := Result.Last + 1;
-               Result.Item (Result.Last) := Character'Val (10);
-            end New_Line;
-            Result : aliased Result_Type;
+            Context : aliased Information_Context_Type;
          begin
-            Result.Last := 0;
+            Context.Last := 0;
             System.Unwind.Exception_Information (
                System.Unwind.Exception_Occurrence (X),
-               Result'Address,
+               Context'Address,
                Put => Put'Access,
                New_Line => New_Line'Access);
-            return Result.Item (1 .. Result.Last);
+            return Context.Item (1 .. Context.Last);
          end;
       end if;
    end Exception_Information;

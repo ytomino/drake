@@ -36,7 +36,7 @@ package Ada.Containers.Indefinite_Hashed_Sets is
    package Set_Iterator_Interfaces is
       new Iterator_Interfaces (Cursor, Has_Element);
 
-   function "=" (Left, Right : Set) return Boolean;
+   overriding function "=" (Left, Right : Set) return Boolean;
 
    function Equivalent_Sets (Left, Right : Set) return Boolean;
 

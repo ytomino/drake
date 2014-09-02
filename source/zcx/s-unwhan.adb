@@ -108,7 +108,6 @@ package body System.Unwind.Handling is
             ttype_base : C.unwind.Unwind_Ptr;
             --  about action
             table_entry : C.unsigned_char_const_ptr;
---          ttype_entry : C.unwind.Unwind_Ptr;
          begin
             if Context = null then
                pragma Check (Trace, Ada.Debug.Put ("leave, Context = null"));
@@ -290,7 +289,6 @@ package body System.Unwind.Handling is
                            if is_handled then
                               ttype_filter := C.unwind.Unwind_Sword (
                                  ar_filter);
---                            ttype_entry := choice;
                               pragma Check (Trace, Ada.Debug.Put (
                                  "handler is found"));
                               exit;

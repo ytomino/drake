@@ -65,6 +65,7 @@ package body Ada.Interrupts.Inside is
       return Interrupt not in
          Names.First_Interrupt_Id ..
          Names.Last_Interrupt_Id;
+      --  SIGKILL and SIGSTOP are not declared in mingw
    end Is_Reserved;
 
    function Current_Handler (Interrupt : Interrupt_Id)
@@ -93,17 +94,19 @@ package body Ada.Interrupts.Inside is
             Old_Action := C.signal.signal (
                C.signed_int (Interrupt),
                Item.Saved);
-            pragma Assert (Old_Action /= C.signal.SIG_ERR);
+            if Old_Action = C.signal.SIG_ERR then
+               raise Program_Error;
+            end if;
          end;
       end if;
       Item.Installed_Handler := New_Handler;
    end Exchange_Handler;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id) is
-      R : C.signed_int;
    begin
-      R := C.signal.C_raise (C.signed_int (Interrupt));
-      pragma Assert (R = 0);
+      if C.signal.C_raise (C.signed_int (Interrupt)) < 0 then
+         raise Program_Error;
+      end if;
    end Raise_Interrupt;
 
 end Ada.Interrupts.Inside;

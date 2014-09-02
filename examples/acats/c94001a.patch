@@ -1,0 +1,11 @@
+--- c94001a.adb.orig	2014-09-02 23:32:07.000000000 +0900
++++ c94001a.adb	2014-09-02 23:32:23.000000000 +0900
+@@ -56,7 +56,7 @@
+           ACCEPT E (I : INTEGER) DO
+                LOCAL := I;
+           END E;
+-          DELAY 30.0;    -- SINCE THE PARENT UNIT HAS HIGHER PRIORITY
++          DELAY 3.0;     -- SINCE THE PARENT UNIT HAS HIGHER PRIORITY
+                          -- AT THIS POINT, IT WILL RECEIVE CONTROL AND
+                          -- TERMINATE IF THE ERROR IS PRESENT.
+           GLOBAL := LOCAL;

@@ -184,8 +184,8 @@ package body System.Arith_64 is
          Unwind.Raising.Zero_Division;
       end if;
       declare
-         XY_Is_Minus : constant Boolean := (X < 0) xor (Y < 0);
-         Q_Is_Minus : constant Boolean := XY_Is_Minus xor (Z < 0);
+         XY_Is_Minus : constant Boolean := (X < 0) /= (Y < 0);
+         Q_Is_Minus : constant Boolean := XY_Is_Minus /= (Z < 0);
          AX : constant U64 := U64'Mod (abs X);
          AY : constant U64 := U64'Mod (abs Y);
          AZ : constant U64 := U64'Mod (abs Z);

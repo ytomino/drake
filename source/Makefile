@@ -74,7 +74,7 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib/build
 
-SUBDIRS=ada83 calendar containers directories distributed environment image interfaces nls numerics pools streams strings tasking textio $(EH)
+SUBDIRS=ada83 calendar containers directories distributed environment image interfaces nls numerics pools streams strings tasking textio
 
 ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
@@ -110,11 +110,18 @@ endif
 
 ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
 CPUSUBDIR=x86_64
+SIMDSUBDIR=sse2
 else
 ifneq ($(findstring i386,$(TARGET))$(findstring i686,$(TARGET)),) # i386-*-*
 CPUSUBDIR=i386
+ifneq ($(findstring darwin,$(TARGET)),) # i686-apple-darwin*
+SIMDSUBDIR=sse2
 else
-CPUSUBDIR=unknown
+SIMDSUBDIR=nosimd
+endif
+else
+CPUSUBDIR=generic
+SIMDSUBDIR=nosimd
 endif
 endif
 
@@ -136,7 +143,8 @@ endif
 # text_io     : image numerics streams strings # child packages of Text_IO
 
 SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGETSUBDIR)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard required/*.ad[sb]) \
-	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]))
+	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/$(SIMDSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]) \
+	$(wildcard $(EH)/*.ad[sb]))
 
 SEPARATED=$(EH)/s-unrase.adb $(EH)/s-untrse.adb
 
@@ -209,10 +217,10 @@ CFLAGS_DEBUG=
 OPTIMIZE=1
 else
 ifeq ($(DEBUG),1)
-CFLAGS_DEBUG=-g1
+CFLAGS_DEBUG=-ggdb1
 OPTIMIZE=1
 else
-CFLAGS_DEBUG=-g -gnata
+CFLAGS_DEBUG=-ggdb -gnata
 OPTIMIZE=0
 endif
 endif
@@ -221,16 +229,18 @@ ifeq ($(OPTIMIZE),0)
 CFLAGS_OPTIMIZE=-Og
 else
 ifeq ($(OBJFMT),ELF)
-CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn -ffunction-sections -fdata-sections
+CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatB -gnatVn -gnatn -ffunction-sections -fdata-sections
 else
-CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatn
+CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatB -gnatVn -gnatn
 endif
 endif
 
 ifneq ($(WITHF),0)
-CFLAGS_MATH=-ffast-math -gnatec=fastmath.adc
+CFLAGS_MATH=-ffast-math
+ADC=fastmath.adc
 else
 CFLAGS_MATH=
+ADC=$(wildcard $(RTSDIR)/adainclude/*.adc)
 endif
 
 ifneq ($(WITHL),0)
@@ -239,13 +249,27 @@ else
 CFLAGS_LTO=
 endif
 
+ifneq ($(ADC),)
+CFLAGS_ADC=-gnatec=$(ADC)
+else
+CFLAGS_ADC=
+endif
+
 CFLAGS=
 
-CFLAGS_FOR_COMPILER_UNIT=-nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_LTO) $(CFLAGS)
+CFLAGS_FOR_COMPILER_UNIT=-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS)
 
-.PHONY: all import_objs c-archive
+.PHONY: all tree import_objs c-archive
 
 all: $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
+
+tree: \
+		$(RTSDIR)/adainclude \
+		$(RTSDIR)/adalib \
+		$(BUILDDIR) \
+		$(RTSDIR)/adainclude/system.ads \
+		$(LIBRARY_SRCS) \
+		$(IMPORT_HEADERS)
 
 $(RTSDIR)/adalib/libgnat.a: \
 		$(RTSDIR)/adainclude \
@@ -402,6 +426,18 @@ $(RTSDIR)/adainclude/%.ads: numerics/%.ads
 $(RTSDIR)/adainclude/%.adb: numerics/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+$(RTSDIR)/adainclude/%.ads: numerics/$(CPUSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: numerics/$(CPUSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: numerics/$(CPUSUBDIR)/$(SIMDSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: numerics/$(CPUSUBDIR)/$(SIMDSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
 $(RTSDIR)/adainclude/%.ads: numerics/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
@@ -481,7 +517,7 @@ $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 ifneq ($(findstring darwin,$(TARGET)),)
-ifneq ($(filter -g,$(CFLAGS_DEBUG)),)
+ifneq ($(filter -g,$(CFLAGS_DEBUG))$(filter -ggdb,$(CFLAGS_DEBUG)),)
 # Apple ld64 can't add line info to anonymous symbol .lsda from following .o
 $(BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 $(BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder

@@ -1,3 +1,4 @@
+pragma Check_Policy (Validate, Off);
 pragma Check_Policy (Trace, Off);
 with Ada.Exception_Identification.From_Here;
 with Ada.Text_IO.Formatting;
@@ -316,17 +317,19 @@ package body Ada.Text_IO.Editing is
                Item_Image,
                Item_Last,
                Scale,
+               Minus_Sign => ' ', -- for skipping
                Fore_Width => Fore,
                Fore_Padding => ' ',
                Aft_Width => Aft);
-            --  fix
-            if Item_Image (Item_Image'First + Fore - 1) = ' '
+            --  skip single zero before decimal point
+            if Item_Image (Item_Image'First + Fore - 1) = ' ' -- sign is blank
                and then Item_Image (Item_Image'First + Fore) = '0'
             then
                Item_Image (Item_Image'First + Fore) := ' ';
             end if;
+            --  before decimal point
             declare
-               Result_Index : Natural := Radix_Position - 1;
+               Result_Index : Natural := Result'First + Radix_Position - 2;
                Pic_Index : Natural := Pic.Radix_Position - 1;
                Pic_Leading_Index : Natural := Pic_Index;
                Sign_Filled : Boolean := False;
@@ -335,26 +338,16 @@ package body Ada.Text_IO.Editing is
                Dollar_Used : Boolean := False;
             begin
                for I in reverse
-                  Item_Image'First + 1 .. -- skip sign
+                  Item_Image'First ..
                   Item_Image'First + Fore
                loop
                   exit when Item_Image (I) = ' ';
-                  if Result_Index < Result'First then
-                     pragma Check (Trace, Debug.Put (
-                        "width of"
-                        & Long_Long_Integer'Image (Item)
-                        & "* 10**"
-                        & Integer'Image (-Scale)
-                        & " is too longer for "
-                        & Pic_String (Pic)));
-                     Error := True;
-                     return; -- Layout_Error
-                  end if;
                   loop
                      if Pic_Index < Pic.Expanded'First then
                         Error := True; -- overflow
-                        return;
+                        return; -- Layout_Error
                      end if;
+                     pragma Check (Validate, Result_Index >= Result'First);
                      if Pic.Expanded (Pic_Index) = '>' then
                         if Item < 0 then
                            Result (Result_Index) := ')';
@@ -379,14 +372,17 @@ package body Ada.Text_IO.Editing is
                         exit;
                      end if;
                   end loop;
+                  pragma Check (Validate, Item_Image (I) /= ' ');
                   Result (Result_Index) := Item_Image (I);
                   Result_Index := Result_Index - 1;
                   Pic_Index := Pic_Index - 1;
                end loop;
-               while Result_Index >= Result'First loop
+               loop
                   if Pic_Leading_Index > Pic_Index then
                      Pic_Leading_Index := Pic_Index;
                   end if;
+                  exit when Pic_Leading_Index < Pic.Expanded'First;
+                  pragma Check (Validate, Result_Index >= Result'First);
                   case Pic.Expanded (Pic_Leading_Index) is
                      when '$' =>
                         if Currency_Filled then
@@ -499,9 +495,11 @@ package body Ada.Text_IO.Editing is
                   Error := True;
                   return; -- Layout_Error
                end if;
+               pragma Check (Validate, Result_Index = Result'First - 1);
             end;
+            --  after decimal point
             declare
-               Result_Index : Positive := Radix_Position;
+               Result_Index : Positive := Result'First + Radix_Position - 1;
                Pic_Index : Natural := Pic.Radix_Position + 1;
                Paren_Filled : Boolean := False;
                Currency_Filled : Boolean := False;
@@ -516,19 +514,20 @@ package body Ada.Text_IO.Editing is
                   Item_Image'First + Fore + 2 ..
                   Item_Image'Last
                loop
-                  exit when Result_Index > Result'Last;
-                  pragma Assert (Pic_Index <= Pic.Length);
+                  exit when Pic_Index > Pic.Length;
                   if Pic.Expanded (Pic_Index) = '_' then
+                     pragma Check (Validate, Result_Index <= Result'Last);
                      Result (Result_Index) := Separator;
                      Result_Index := Result_Index + 1;
                      Pic_Index := Pic_Index + 1;
                   end if;
+                  pragma Check (Validate, Result_Index <= Result'Last);
                   Result (Result_Index) := Item_Image (I);
                   Result_Index := Result_Index + 1;
                   Pic_Index := Pic_Index + 1;
                end loop;
-               while Result_Index <= Result'Last loop
-                  pragma Assert (Pic_Index <= Pic.Length);
+               while Pic_Index <= Pic.Length loop
+                  pragma Check (Validate, Result_Index <= Result'Last);
                   case Pic.Expanded (Pic_Index) is
                      when '#' =>
                         if Currency_Filled then
@@ -576,6 +575,7 @@ package body Ada.Text_IO.Editing is
                         Pic_Index := Pic_Index + 1;
                   end case;
                end loop;
+               pragma Check (Validate, Result_Index = Result'Last + 1);
             end;
          end;
       end if;

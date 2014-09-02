@@ -246,7 +246,7 @@ package body System.Storage_Pools.Subpools is
                end;
             end loop;
             if Raised then
-               Ada.Exceptions.Reraise_Occurrence (X);
+               Ada.Exceptions.Unchecked_Reraise_Occurrence (X);
             end if;
          end;
       end if;

@@ -1,6 +1,6 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Containers.Composites;
 with System;
 package body Ada.Containers.Limited_Ordered_Maps is
    use type Binary_Trees.Node_Access;
@@ -16,7 +16,9 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff (Downcast)
 --
 
-   function Compare is new Composites.Compare (Key_Type);
+   procedure Free is new Unchecked_Deallocation (Key_Type, Key_Access);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Key_Type;
@@ -34,11 +36,58 @@ package body Ada.Containers.Limited_Ordered_Maps is
    is
       Context : Context_Type;
       for Context'Address use Params;
+      Left : Key_Type
+         renames Context.Left.all;
+      Right : Key_Type
+         renames Downcast (Position).Key.all;
    begin
-      return Compare (
-         Context.Left.all,
-         Downcast (Position).Key.all);
+      --  [gcc-4.9] outputs wrong code for combination of
+      --    constrained short String used as Key_Type (ex. String (1 .. 4))
+      --    and instantiation of Ada.Containers.Composites.Compare here
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
    end Compare_Key;
+
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
 --  diff (Copy_Node)
 --
@@ -53,10 +102,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 --
-
-   procedure Free is new Unchecked_Deallocation (Key_Type, Key_Access);
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+--
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -138,11 +184,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 
    --  implementation
-
---  diff (Adjust)
---
---
---
 
 --  diff (Assign)
 --
@@ -291,11 +332,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
-   end First;
-
    function Floor (Container : Map; Key : Key_Type) return Cursor is
    begin
 --  diff
@@ -366,22 +402,36 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Position : out Cursor;
       Inserted : out Boolean)
    is
-      The_Key : Key_Access := new Key_Type'(New_Key.all);
-      Before : constant Cursor := Ceiling (Container, The_Key.all);
+      type Pair is record
+         Key : Key_Access;
+         Node : Cursor;
+      end record;
+      pragma Suppress_Initialization (Pair);
+      procedure Finally (X : not null access Pair);
+      procedure Finally (X : not null access Pair) is
+      begin
+         Free (X.Key);
+         Free (X.Node);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Pair, Finally);
+      New_Pair : aliased Pair := (new Key_Type'(New_Key.all), null);
+      Before : constant Cursor := Ceiling (Container, New_Pair.Key.all);
    begin
-      Inserted := Before = null or else The_Key.all < Before.Key.all;
+      Holder.Assign (New_Pair'Access);
+      Inserted := Before = null or else New_Pair.Key.all < Before.Key.all;
       if Inserted then
-         Position := new Node'(
-            Super => <>,
-            Key => The_Key,
-            Element => new Element_Type'(New_Item.all));
+         New_Pair.Node := new Node;
+         New_Pair.Node.Key := New_Pair.Key;
+         New_Pair.Node.Element := new Element_Type'(New_Item.all);
+         Holder.Clear;
+         Position := New_Pair.Node;
          Base.Insert (
             Container.Root,
             Container.Length,
             Upcast (Before),
             Upcast (Position));
       else
-         Free (The_Key);
          Position := Before;
       end if;
    end Insert;
@@ -444,11 +494,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Last (Object.Container.all);
-   end Last;
-
    function Length (Container : Map) return Count_Type is
    begin
       return Container.Length;
@@ -479,12 +524,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Position := Downcast (Binary_Trees.Next (Upcast (Position)));
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    function Previous (Position : Cursor) return Cursor is
    begin
       return Downcast (Binary_Trees.Previous (Upcast (Position)));
@@ -493,12 +532,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Previous (Position);
    end Previous;
 
    procedure Query_Element (
@@ -615,6 +648,37 @@ package body Ada.Containers.Limited_Ordered_Maps is
    begin
       return Left.Key.all < Right;
    end "<";
+
+--  diff (Adjust)
+--
+--
+--
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
+   overriding function Last (Object : Iterator) return Cursor is
+   begin
+      return Last (Object.Container.all);
+   end Last;
+
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
+   end Previous;
 
    package body Equivalents is
 

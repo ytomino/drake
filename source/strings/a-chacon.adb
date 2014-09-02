@@ -20,11 +20,8 @@ package body Ada.Characters.Conversions is
                Last,
                Code,
                From_State);
-            if System.UTF_Conversions.UCS_4'Pos (Code) > 16#10ffff#
-               --  a check for detecting illegal sequence are omitted
---             or else Code in 16#d800# .. 16#dfff#
---             or else From_State /= System.UTF_Conversions.Success
-            then
+            --  a check for detecting illegal sequence are omitted
+            if System.UTF_Conversions.UCS_4'Pos (Code) > 16#10ffff# then
                return False;
             end if;
          end;
@@ -70,10 +67,8 @@ package body Ada.Characters.Conversions is
    function Is_Wide_String (Item : Wide_Wide_String) return Boolean is
    begin
       for I in Item'Range loop
-         if Wide_Wide_Character'Pos (Item (I)) > 16#10ffff#
-            --  a check for detecting illegal sequence are omitted
---          or else Wide_Wide_Character'Pos (Item (I)) in 16#d800# .. 16#dfff#
-         then
+         --  a check for detecting illegal sequence are omitted
+         if Wide_Wide_Character'Pos (Item (I)) > 16#10ffff# then
             return False;
          end if;
       end loop;

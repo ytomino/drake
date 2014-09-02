@@ -1,6 +1,6 @@
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Containers.Composites;
 --  diff (Ada.Streams)
 with System;
 package body Ada.Containers.Limited_Ordered_Sets is
@@ -17,7 +17,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff (Downcast)
 --
 
-   function Compare is new Composites.Compare (Element_Type);
+   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
+   procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
    type Context_Type is limited record
       Left : not null access Element_Type;
@@ -35,21 +36,69 @@ package body Ada.Containers.Limited_Ordered_Sets is
    is
       Context : Context_Type;
       for Context'Address use Params;
+      Left : Element_Type
+         renames Context.Left.all;
+      Right : Element_Type
+         renames Downcast (Position).Element.all;
    begin
-      return Compare (
-         Context.Left.all,
-         Downcast (Position).Element.all);
+      --  [gcc-4.9] outputs wrong code for combination of
+      --    constrained short String used as Key_Type (ex. String (1 .. 4))
+      --    and instantiation of Ada.Containers.Composites.Compare here
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
    end Compare_Element;
 
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
       return Integer;
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
-      return Integer is
+      return Integer
+   is
+      Left_E : Element_Type
+         renames Downcast (Left).Element.all;
+      Right_E : Element_Type
+         renames Downcast (Right).Element.all;
    begin
-      return Compare (
-         Downcast (Left).Element.all,
-         Downcast (Right).Element.all);
+      --  [gcc-4.9] same as above
+      if Left_E < Right_E then
+         return -1;
+      elsif Right_E < Left_E then
+         return 1;
+      else
+         return 0;
+      end if;
    end Compare_Node;
+
+--  diff (Allocate_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Allocate_Node)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
 --  diff (Copy_Node)
 --
@@ -63,9 +112,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
-
-   procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
-   procedure Free is new Unchecked_Deallocation (Node, Cursor);
+--
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -146,11 +193,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 
    --  implementation
-
---  diff (Adjust)
---
---
---
 
 --  diff (Assign)
 --
@@ -349,11 +391,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
    end First;
 
-   function First (Object : Iterator) return Cursor is
-   begin
-      return First (Object.Container.all);
-   end First;
-
    function Floor (Container : Set; Item : Element_Type) return Cursor is
    begin
 --  diff
@@ -402,21 +439,29 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
-      New_Element : Element_Access := new Element_Type'(New_Item.all);
+      procedure Finally (X : not null access Element_Access);
+      procedure Finally (X : not null access Element_Access) is
+      begin
+         Free (X.all);
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Element_Access, Finally);
+      New_Element : aliased Element_Access := new Element_Type'(New_Item.all);
       Before : constant Cursor := Ceiling (Container, New_Element.all);
    begin
+      Holder.Assign (New_Element'Access);
       Inserted := Before = null or else New_Element.all < Before.Element.all;
       if Inserted then
          Position := new Node'(
             Super => <>,
             Element => New_Element);
+         Holder.Clear;
          Base.Insert (
             Container.Root,
             Container.Length,
             Upcast (Before),
             Upcast (Position));
       else
-         Free (New_Element);
          Position := Before;
       end if;
    end Insert;
@@ -530,11 +575,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
    end Last;
 
-   function Last (Object : Iterator) return Cursor is
-   begin
-      return Last (Object.Container.all);
-   end Last;
-
    function Length (Container : Set) return Count_Type is
    begin
       return Container.Length;
@@ -565,12 +605,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Position := Downcast (Binary_Trees.Next (Upcast (Position)));
    end Next;
 
-   function Next (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Next (Position);
-   end Next;
-
    function Overlap (Left, Right : Set) return Boolean is
    begin
 --  diff
@@ -591,12 +625,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
    procedure Previous (Position : in out Cursor) is
    begin
       Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   function Previous (Object : Iterator; Position : Cursor) return Cursor is
-      pragma Unreferenced (Object);
-   begin
-      return Previous (Position);
    end Previous;
 
    procedure Query_Element (
@@ -765,9 +793,38 @@ package body Ada.Containers.Limited_Ordered_Sets is
       return Left.Element.all < Right;
    end "<";
 
-   package body Generic_Keys is
+--  diff (Adjust)
+--
+--
+--
 
-      function Compare is new Composites.Compare (Key_Type);
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      return First (Object.Container.all);
+   end First;
+
+   overriding function Next (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Next (Position);
+   end Next;
+
+   overriding function Last (Object : Iterator) return Cursor is
+   begin
+      return Last (Object.Container.all);
+   end Last;
+
+   overriding function Previous (Object : Iterator; Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return Previous (Position);
+   end Previous;
+
+   package body Generic_Keys is
 
       type Context_Type is limited record
          Left : not null access Key_Type;
@@ -785,10 +842,19 @@ package body Ada.Containers.Limited_Ordered_Sets is
       is
          Context : Context_Type;
          for Context'Address use Params;
+         Left : Key_Type
+            renames Context.Left.all;
+         Right : Key_Type
+            renames Key (Downcast (Position).Element.all);
       begin
-         return Compare (
-            Context.Left.all,
-            Key (Downcast (Position).Element.all));
+         --  [gcc-4.9] same as above
+         if Left < Right then
+            return -1;
+         elsif Right < Left then
+            return 1;
+         else
+            return 0;
+         end if;
       end Compare_Key;
 
       function Ceiling (Container : Set; Key : Key_Type) return Cursor is
@@ -835,7 +901,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
       function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
       begin
-         return not (Left < Right) and not (Right < Left);
+         return not (Left < Right) and then not (Right < Left);
       end Equivalent_Keys;
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is

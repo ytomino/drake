@@ -23,12 +23,9 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Streams.Naked_Stream_IO;
 with Ada.Unchecked_Conversion;
-with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Reallocation;
 package body Ada.Text_IO is
    use Exception_Identification.From_Here;
-
-   type String_Access is access String;
-   procedure Free is new Unchecked_Deallocation (String, String_Access);
 
    function To_File_Access is
       new Unchecked_Conversion (Controlled.File_Access, File_Access);
@@ -48,6 +45,105 @@ package body Ada.Text_IO is
          Raise_Exception (Mode_Error'Identity, Line => Line);
       end if;
    end Check_File_Mode;
+
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Positive,
+         Character,
+         String,
+         String_Access);
+
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Positive,
+         Wide_Character,
+         Wide_String,
+         Wide_String_Access);
+
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Positive,
+         Wide_Wide_Character,
+         Wide_Wide_String,
+         Wide_Wide_String_Access);
+
+   procedure Finally (X : not null access String_Access);
+   procedure Finally (X : not null access String_Access) is
+   begin
+      Free (X.all);
+   end Finally;
+
+   procedure Finally (X : not null access Wide_String_Access);
+   procedure Finally (X : not null access Wide_String_Access) is
+   begin
+      Free (X.all);
+   end Finally;
+
+   procedure Finally (X : not null access Wide_Wide_String_Access);
+   procedure Finally (X : not null access Wide_Wide_String_Access) is
+   begin
+      Free (X.all);
+   end Finally;
+
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out String_Access;
+      Last : out Natural);
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out String_Access;
+      Last : out Natural)
+   is
+      Next : Positive := 1;
+   begin
+      Item := new String (1 .. 256);
+      loop
+         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         exit when Last < Item'Last;
+         Next := Item'Last + 1;
+         Reallocate (Item, 1, Item'Last * 2);
+      end loop;
+   end Raw_Get_Line;
+
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out Wide_String_Access;
+      Last : out Natural);
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out Wide_String_Access;
+      Last : out Natural)
+   is
+      Next : Positive := 1;
+   begin
+      Item := new Wide_String (1 .. 256);
+      loop
+         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         exit when Last < Item'Last;
+         Next := Item'Last + 1;
+         Reallocate (Item, 1, Item'Last * 2);
+      end loop;
+   end Raw_Get_Line;
+
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out Wide_Wide_String_Access;
+      Last : out Natural);
+   procedure Raw_Get_Line (
+      File : File_Type;
+      Item : aliased out Wide_Wide_String_Access;
+      Last : out Natural)
+   is
+      Next : Positive := 1;
+   begin
+      Item := new Wide_Wide_String (1 .. 256);
+      loop
+         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         exit when Last < Item'Last;
+         Next := Item'Last + 1;
+         Reallocate (Item, 1, Item'Last * 2);
+      end loop;
+   end Raw_Get_Line;
 
    --  implementation of File Management
 
@@ -72,14 +168,13 @@ package body Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary) is
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target) is
    begin
       Naked_Text_IO.Create (
          Reference (File).all,
          IO_Modes.File_Mode (Mode),
          Name => Name,
-         Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
+         Form => ((Shared, Wait, Overwrite), External, New_Line));
    end Create;
 
    function Create (
@@ -89,8 +184,7 @@ package body Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary)
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       return File_Type is
    begin
       return Result : File_Type do
@@ -98,7 +192,7 @@ package body Ada.Text_IO is
             Reference (Result).all,
             IO_Modes.File_Mode (Mode),
             Name => Name,
-            Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
+            Form => ((Shared, Wait, Overwrite), External, New_Line));
       end return;
    end Create;
 
@@ -123,14 +217,13 @@ package body Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary) is
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target) is
    begin
       Naked_Text_IO.Open (
          Reference (File).all,
          IO_Modes.File_Mode (Mode),
          Name => Name,
-         Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
+         Form => ((Shared, Wait, Overwrite), External, New_Line));
    end Open;
 
    function Open (
@@ -140,8 +233,7 @@ package body Ada.Text_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target;
-      SUB : IO_Modes.File_SUB := IO_Modes.Ordinary)
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       return File_Type is
    begin
       return Result : File_Type do
@@ -149,7 +241,7 @@ package body Ada.Text_IO is
             Reference (Result).all,
             IO_Modes.File_Mode (Mode),
             Name => Name,
-            Form => ((Shared, Wait, Overwrite), External, New_Line, SUB));
+            Form => ((Shared, Wait, Overwrite), External, New_Line));
       end return;
    end Open;
 
@@ -534,10 +626,26 @@ package body Ada.Text_IO is
 
    --  implementation of Character Input-Output
 
-   procedure Get (File : File_Type; Item : out Character) is
+   procedure Overloaded_Get (
+      File : File_Type;
+      Item : out Character) is
    begin
       Naked_Text_IO.Get (Reference (File).all, Item);
-   end Get;
+   end Overloaded_Get;
+
+   procedure Overloaded_Get (
+      File : File_Type;
+      Item : out Wide_Character) is
+   begin
+      Naked_Text_IO.Get (Reference (File).all, Item);
+   end Overloaded_Get;
+
+   procedure Overloaded_Get (
+      File : File_Type;
+      Item : out Wide_Wide_Character) is
+   begin
+      Naked_Text_IO.Get (Reference (File).all, Item);
+   end Overloaded_Get;
 
    procedure Get (Item : out Character) is
    begin
@@ -549,10 +657,20 @@ package body Ada.Text_IO is
       Get (File.all, Item);
    end Get;
 
-   procedure Put (File : File_Type; Item : Character) is
+   procedure Overloaded_Put (File : File_Type; Item : Character) is
    begin
       Naked_Text_IO.Put (Reference (File).all, Item);
-   end Put;
+   end Overloaded_Put;
+
+   procedure Overloaded_Put (File : File_Type; Item : Wide_Character) is
+   begin
+      Naked_Text_IO.Put (Reference (File).all, Item);
+   end Overloaded_Put;
+
+   procedure Overloaded_Put (File : File_Type; Item : Wide_Wide_Character) is
+   begin
+      Naked_Text_IO.Put (Reference (File).all, Item);
+   end Overloaded_Put;
 
    procedure Put (Item : Character) is
    begin
@@ -564,13 +682,29 @@ package body Ada.Text_IO is
       Put (File.all, Item);
    end Put;
 
-   procedure Look_Ahead (
+   procedure Overloaded_Look_Ahead (
       File : File_Type;
       Item : out Character;
       End_Of_Line : out Boolean) is
    begin
       Naked_Text_IO.Look_Ahead (Reference (File).all, Item, End_Of_Line);
-   end Look_Ahead;
+   end Overloaded_Look_Ahead;
+
+   procedure Overloaded_Look_Ahead (
+      File : File_Type;
+      Item : out Wide_Character;
+      End_Of_Line : out Boolean) is
+   begin
+      Naked_Text_IO.Look_Ahead (Reference (File).all, Item, End_Of_Line);
+   end Overloaded_Look_Ahead;
+
+   procedure Overloaded_Look_Ahead (
+      File : File_Type;
+      Item : out Wide_Wide_Character;
+      End_Of_Line : out Boolean) is
+   begin
+      Naked_Text_IO.Look_Ahead (Reference (File).all, Item, End_Of_Line);
+   end Overloaded_Look_Ahead;
 
    procedure Look_Ahead (
       Item : out Character;
@@ -579,23 +713,61 @@ package body Ada.Text_IO is
       Look_Ahead (Current_Input.all, Item, End_Of_Line);
    end Look_Ahead;
 
-   procedure Get_Immediate (File : File_Type; Item : out Character) is
+   procedure Skip_Ahead (File : File_Type) is
+   begin
+      Naked_Text_IO.Skip_Ahead (Reference (File).all);
+   end Skip_Ahead;
+
+   procedure Overloaded_Get_Immediate (
+      File : File_Type;
+      Item : out Character) is
    begin
       Naked_Text_IO.Get_Immediate (Reference (File).all, Item);
-   end Get_Immediate;
+   end Overloaded_Get_Immediate;
 
-   procedure Get_Immediate (Item : out Character) is
+   procedure Overloaded_Get_Immediate (
+      File : File_Type;
+      Item : out Wide_Character) is
+   begin
+      Naked_Text_IO.Get_Immediate (Reference (File).all, Item);
+   end Overloaded_Get_Immediate;
+
+   procedure Overloaded_Get_Immediate (
+      File : File_Type;
+      Item : out Wide_Wide_Character) is
+   begin
+      Naked_Text_IO.Get_Immediate (Reference (File).all, Item);
+   end Overloaded_Get_Immediate;
+
+   procedure Get_Immediate (
+      Item : out Character) is
    begin
       Get_Immediate (Current_Input.all, Item);
    end Get_Immediate;
 
-   procedure Get_Immediate (
+   procedure Overloaded_Get_Immediate (
       File : File_Type;
       Item : out Character;
       Available : out Boolean) is
    begin
       Naked_Text_IO.Get_Immediate (Reference (File).all, Item, Available);
-   end Get_Immediate;
+   end Overloaded_Get_Immediate;
+
+   procedure Overloaded_Get_Immediate (
+      File : File_Type;
+      Item : out Wide_Character;
+      Available : out Boolean) is
+   begin
+      Naked_Text_IO.Get_Immediate (Reference (File).all, Item, Available);
+   end Overloaded_Get_Immediate;
+
+   procedure Overloaded_Get_Immediate (
+      File : File_Type;
+      Item : out Wide_Wide_Character;
+      Available : out Boolean) is
+   begin
+      Naked_Text_IO.Get_Immediate (Reference (File).all, Item, Available);
+   end Overloaded_Get_Immediate;
 
    procedure Get_Immediate (
       Item : out Character;
@@ -606,12 +778,26 @@ package body Ada.Text_IO is
 
    --  implementation of String Input-Output
 
-   procedure Get (File : File_Type; Item : out String) is
+   procedure Overloaded_Get (File : File_Type; Item : out String) is
    begin
       for I in Item'Range loop
-         Get (File, Item (I));
+         Overloaded_Get (File, Item (I));
       end loop;
-   end Get;
+   end Overloaded_Get;
+
+   procedure Overloaded_Get (File : File_Type; Item : out Wide_String) is
+   begin
+      for I in Item'Range loop
+         Overloaded_Get (File, Item (I));
+      end loop;
+   end Overloaded_Get;
+
+   procedure Overloaded_Get (File : File_Type; Item : out Wide_Wide_String) is
+   begin
+      for I in Item'Range loop
+         Overloaded_Get (File, Item (I));
+      end loop;
+   end Overloaded_Get;
 
    procedure Get (Item : out String) is
    begin
@@ -623,12 +809,26 @@ package body Ada.Text_IO is
       Get (File.all, Item);
    end Get;
 
-   procedure Put (File : File_Type; Item : String) is
+   procedure Overloaded_Put (File : File_Type; Item : String) is
    begin
       for I in Item'Range loop
-         Put (File, Item (I));
+         Overloaded_Put (File, Item (I));
       end loop;
-   end Put;
+   end Overloaded_Put;
+
+   procedure Overloaded_Put (File : File_Type; Item : Wide_String) is
+   begin
+      for I in Item'Range loop
+         Overloaded_Put (File, Item (I));
+      end loop;
+   end Overloaded_Put;
+
+   procedure Overloaded_Put (File : File_Type; Item : Wide_Wide_String) is
+   begin
+      for I in Item'Range loop
+         Overloaded_Put (File, Item (I));
+      end loop;
+   end Overloaded_Put;
 
    procedure Put (Item : String) is
    begin
@@ -640,7 +840,7 @@ package body Ada.Text_IO is
       Put (File.all, Item);
    end Put;
 
-   procedure Get_Line (
+   procedure Overloaded_Get_Line (
       File : File_Type;
       Item : out String;
       Last : out Natural) is
@@ -656,11 +856,55 @@ package body Ada.Text_IO is
                exit;
             else
                Last := Last + 1;
-               Get (File, Item (Last));
+               Overloaded_Get (File, Item (Last));
             end if;
          end loop;
       end if;
-   end Get_Line;
+   end Overloaded_Get_Line;
+
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out Wide_String;
+      Last : out Natural) is
+   begin
+      if Item'Length > 0 then
+         if End_Of_File (File) then
+            Raise_Exception (End_Error'Identity);
+         end if;
+         Last := Item'First - 1;
+         while Last < Item'Last loop
+            if End_Of_Line (File) then
+               Skip_Line (File);
+               exit;
+            else
+               Last := Last + 1;
+               Overloaded_Get (File, Item (Last));
+            end if;
+         end loop;
+      end if;
+   end Overloaded_Get_Line;
+
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out Wide_Wide_String;
+      Last : out Natural) is
+   begin
+      if Item'Length > 0 then
+         if End_Of_File (File) then
+            Raise_Exception (End_Error'Identity);
+         end if;
+         Last := Item'First - 1;
+         while Last < Item'Last loop
+            if End_Of_Line (File) then
+               Skip_Line (File);
+               exit;
+            else
+               Last := Last + 1;
+               Overloaded_Get (File, Item (Last));
+            end if;
+         end loop;
+      end if;
+   end Overloaded_Get_Line;
 
    procedure Get_Line (
       Item : out String;
@@ -677,46 +921,121 @@ package body Ada.Text_IO is
       Get_Line (File.all, Item, Last);
    end Get_Line;
 
-   function Get_Line (File : File_Type) return String is
-      Line_Buffer : aliased String_Access :=
-         new String (1 .. 256);
-      Next : Positive := 1;
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out String_Access)
+   is
+      Aliased_Item : aliased String_Access;
       Last : Natural;
-      procedure Finally (X : not null access String_Access);
-      procedure Finally (X : not null access String_Access) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (String_Access, Finally);
+         new Exceptions.Finally.Scoped_Holder (
+            String_Access,
+            Finally);
    begin
-      Holder.Assign (Line_Buffer'Access);
-      loop
-         Get_Line (File, Line_Buffer (Next .. Line_Buffer'Last), Last);
-         exit when Last < Line_Buffer'Last;
-         Next := Line_Buffer'Last + 1;
-         declare
-            New_Buffer : constant String_Access :=
-               new String (1 .. Line_Buffer'Last * 2);
-         begin
-            New_Buffer (Line_Buffer'Range) := Line_Buffer.all;
-            Free (Line_Buffer);
-            Line_Buffer := New_Buffer;
-         end;
-      end loop;
-      return Line_Buffer (1 .. Last);
-   end Get_Line;
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      Reallocate (Aliased_Item, 1, Last);
+      Holder.Clear;
+      Item := Aliased_Item;
+   end Overloaded_Get_Line;
+
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out Wide_String_Access)
+   is
+      Aliased_Item : aliased Wide_String_Access;
+      Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Wide_String_Access,
+            Finally);
+   begin
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      Reallocate (Aliased_Item, 1, Last);
+      Holder.Clear;
+      Item := Aliased_Item;
+   end Overloaded_Get_Line;
+
+   procedure Overloaded_Get_Line (
+      File : File_Type;
+      Item : out Wide_Wide_String_Access)
+   is
+      Aliased_Item : aliased Wide_Wide_String_Access;
+      Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Wide_Wide_String_Access,
+            Finally);
+   begin
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      Reallocate (Aliased_Item, 1, Last);
+      Holder.Clear;
+      Item := Aliased_Item;
+   end Overloaded_Get_Line;
+
+   function Overloaded_Get_Line (File : File_Type) return String is
+      Aliased_Item : aliased String_Access;
+      Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            String_Access,
+            Finally);
+   begin
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      return Aliased_Item (Aliased_Item'First .. Last);
+   end Overloaded_Get_Line;
+
+   function Overloaded_Get_Line (File : File_Type) return Wide_String is
+      Aliased_Item : aliased Wide_String_Access;
+      Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Wide_String_Access,
+            Finally);
+   begin
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      return Aliased_Item (Aliased_Item'First .. Last);
+   end Overloaded_Get_Line;
+
+   function Overloaded_Get_Line (File : File_Type) return Wide_Wide_String is
+      Aliased_Item : aliased Wide_Wide_String_Access;
+      Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Wide_Wide_String_Access,
+            Finally);
+   begin
+      Holder.Assign (Aliased_Item'Access);
+      Raw_Get_Line (File, Aliased_Item, Last);
+      return Aliased_Item (Aliased_Item'First .. Last);
+   end Overloaded_Get_Line;
 
    function Get_Line return String is
    begin
       return Get_Line (Current_Input.all);
    end Get_Line;
 
-   procedure Put_Line (File : File_Type; Item : String) is
+   procedure Overloaded_Put_Line (File : File_Type; Item : String) is
    begin
-      Put (File, Item);
+      Overloaded_Put (File, Item);
       New_Line (File);
-   end Put_Line;
+   end Overloaded_Put_Line;
+
+   procedure Overloaded_Put_Line (File : File_Type; Item : Wide_String) is
+   begin
+      Overloaded_Put (File, Item);
+      New_Line (File);
+   end Overloaded_Put_Line;
+
+   procedure Overloaded_Put_Line (File : File_Type; Item : Wide_Wide_String) is
+   begin
+      Overloaded_Put (File, Item);
+      New_Line (File);
+   end Overloaded_Put_Line;
 
    procedure Put_Line (Item : String) is
    begin

@@ -25,13 +25,15 @@ package body System.Program.Dynamic_Linking is
       end if;
    end Open;
 
-   procedure Close (Handle : C.void_ptr);
-   procedure Close (Handle : C.void_ptr) is
+   procedure Close (Handle : C.void_ptr; Raise_On_Error : Boolean);
+   procedure Close (Handle : C.void_ptr; Raise_On_Error : Boolean) is
       R : C.signed_int;
    begin
       if Handle /= C.void_ptr (Null_Address) then
          R := C.dlfcn.dlclose (Handle);
-         pragma Assert (R = 0);
+         if R < 0 and then Raise_On_Error then
+            Raise_Exception (Use_Error'Identity);
+         end if;
       end if;
    end Close;
 
@@ -57,7 +59,7 @@ package body System.Program.Dynamic_Linking is
    procedure Close (Lib : in out Library) is
       Handle : constant not null access C.void_ptr := Reference (Lib);
    begin
-      Close (Handle.all);
+      Close (Handle.all, Raise_On_Error => True);
       Handle.all := C.void_ptr (Null_Address);
    end Close;
 
@@ -100,7 +102,7 @@ package body System.Program.Dynamic_Linking is
 
       overriding procedure Finalize (Object : in out Library) is
       begin
-         Close (Object.Handle);
+         Close (Object.Handle, Raise_On_Error => False);
       end Finalize;
 
    end Controlled;

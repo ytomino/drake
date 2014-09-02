@@ -22,7 +22,7 @@ package body System.Unwind.Traceback is
 
    procedure Call_Chain (Current : not null Exception_Occurrence_Access) is
    begin
-      if Exception_Tracebacks /= 0 and Current.Num_Tracebacks = 0 then
+      if Exception_Tracebacks /= 0 and then Current.Num_Tracebacks = 0 then
          Separated.Get_Traceback (
             Current.Tracebacks,
             Current.Num_Tracebacks,

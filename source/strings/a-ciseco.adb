@@ -3,6 +3,8 @@ with System.Once;
 with System.Reference_Counting;
 package body Ada.Characters.Inside.Sets.Constants is
 
+   type Character_Set_Access is access Sets.Character_Set;
+
    function Total_Length (Source : Character_Ranges_Array) return Natural;
    function Total_Length (Source : Character_Ranges_Array) return Natural is
       Result : Natural := 0;
@@ -15,7 +17,7 @@ package body Ada.Characters.Inside.Sets.Constants is
 
    --  implementation
 
-   Decimal_Digit_Set_Data : access Characters.Inside.Sets.Character_Set;
+   Decimal_Digit_Set_Data : Character_Set_Access;
    Decimal_Digit_Flag : aliased System.Once.Flag := 0;
 
    procedure Decimal_Digit_Init;
@@ -35,7 +37,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       return Decimal_Digit_Set_Data;
    end Decimal_Digit_Set;
 
-   Hexadecimal_Digit_Set_Data : access Characters.Inside.Sets.Character_Set;
+   Hexadecimal_Digit_Set_Data : Character_Set_Access;
    Hexadecimal_Digit_Flag : aliased System.Once.Flag := 0;
 
    procedure Hexadecimal_Digit_Init;
@@ -56,7 +58,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       return Hexadecimal_Digit_Set_Data;
    end Hexadecimal_Digit_Set;
 
-   ISO_646_Set_Data : access Characters.Inside.Sets.Character_Set;
+   ISO_646_Set_Data : Character_Set_Access;
    ISO_646_Flag : aliased System.Once.Flag := 0;
 
    procedure ISO_646_Init;
@@ -78,7 +80,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       return ISO_646_Set_Data;
    end ISO_646_Set;
 
-   Wide_Character_Set_Data : access Characters.Inside.Sets.Character_Set;
+   Wide_Character_Set_Data : Character_Set_Access;
    Wide_Character_Flag : aliased System.Once.Flag := 0;
 
    procedure Wide_Character_Init;
@@ -104,7 +106,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       return Wide_Character_Set_Data;
    end Wide_Character_Set;
 
-   Letter_Set_Data : access Sets.Character_Set := null;
+   Letter_Set_Data : Character_Set_Access;
    Letter_Flag : aliased System.Once.Flag := 0;
 
    procedure Letter_Init;
@@ -133,7 +135,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       return Letter_Set_Data;
    end Letter_Set;
 
-   Alphanumeric_Set_Data : access Sets.Character_Set := null;
+   Alphanumeric_Set_Data : Character_Set_Access;
    Alphanumeric_Flag : aliased System.Once.Flag := 0;
 
    procedure Alphanumeric_Init;
@@ -161,7 +163,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       return Alphanumeric_Set_Data;
    end Alphanumeric_Set;
 
-   Special_Set_Data : access Sets.Character_Set := null;
+   Special_Set_Data : Character_Set_Access := null;
    Special_Flag : aliased System.Once.Flag := 0;
 
    procedure Special_Init;
@@ -201,7 +203,7 @@ package body Ada.Characters.Inside.Sets.Constants is
       return Special_Set_Data;
    end Special_Set;
 
-   Graphic_Set_Data : access Sets.Character_Set := null;
+   Graphic_Set_Data : Character_Set_Access := null;
    Graphic_Flag : aliased System.Once.Flag := 0;
 
    procedure Graphic_Init;

@@ -38,8 +38,6 @@ package Ada.Text_IO.Iterators is
 
 private
 
-   type String_Access is access String;
-
    type Lines_Type is new Finalization.Limited_Controlled with record
       File : File_Access;
       Item : String_Access;

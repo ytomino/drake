@@ -56,115 +56,107 @@ package body System.Reference_Counting is
 
    --  implementation
 
-   function Shared (Count : Counter) return Boolean is
+   function Shared (Data : not null Data_Access) return Boolean is
    begin
-      return Count > 1; -- static is True
+      return Data.all > 1; -- static is True
    end Shared;
 
    --  not null because using sentinel (that means empty data block)
 
-   procedure Adjust (Reference_Count : aliased in out Counter) is
+   procedure Adjust (
+      Target : not null access Container)
+   is
+      Reference_Count : constant not null Data_Access := Target.all;
    begin
-      if Reference_Count /= Static then
-         sync_add_and_fetch_32 (Reference_Count'Access, 1);
+      if Reference_Count.all /= Static then
+         sync_add_and_fetch_32 (Reference_Count, 1);
       end if;
    end Adjust;
 
    procedure Assign (
-      Target : not null access Address;
-      Target_Reference_Count : aliased in out Counter;
-      Source : not null access constant Address;
-      Source_Reference_Count : aliased in out Counter;
-      Free : not null access procedure (Object : Address)) is
+      Target : not null access Container;
+      Source : not null access constant Container;
+      Free : not null access procedure (Object : in out Data_Access)) is
    begin
       if Target.all /= Source.all then
-         Clear (Target, Target_Reference_Count, Free);
+         Clear (Target, Free);
          Target.all := Source.all;
-         Adjust (Source_Reference_Count);
+         Adjust (Target);
       end if;
    end Assign;
 
    procedure Clear (
-      Target : not null access Address;
-      Reference_Count : aliased in out Counter;
-      Free : not null access procedure (Object : Address)) is
+      Target : not null access Container;
+      Free : not null access procedure (Object : in out Data_Access))
+   is
+      Reference_Count : constant not null Data_Access := Target.all;
    begin
-      if Reference_Count /= Static then
-         if sync_sub_and_fetch_32 (Reference_Count'Access, 1) = 0 then
+      if Reference_Count.all /= Static then
+         if sync_sub_and_fetch_32 (Reference_Count, 1) = 0 then
             Free (Target.all);
          end if;
       end if;
    end Clear;
 
    procedure Move (
-      Target : not null access Address;
-      Target_Reference_Count : aliased in out Counter;
-      Source : not null access Address;
-      Sentinel : Address;
-      Free : not null access procedure (Object : Address)) is
+      Target : not null access Container;
+      Source : not null access Container;
+      Sentinel : not null Data_Access;
+      Free : not null access procedure (Object : in out Data_Access)) is
    begin
       if Target.all /= Source.all then
-         Clear (Target, Target_Reference_Count, Free);
+         Clear (Target, Free);
          Target.all := Source.all;
          Source.all := Sentinel;
       end if;
    end Move;
 
    procedure Unique (
-      Target : not null access Address;
-      Target_Reference_Count : aliased in out Counter;
+      Target : not null access Container;
       Target_Length : Natural;
       Target_Capacity : Natural;
       Max_Length : Natural;
       Capacity : Natural;
-      Sentinel : Address;
+      Sentinel : not null Data_Access;
       Copy : not null access procedure (
-         Target : out Address;
-         Source : Address;
+         Target : out Data_Access;
+         Source : not null Data_Access;
          Length : Natural;
          Max_Length : Natural;
          Capacity : Natural);
-      Free : not null access procedure (Object : Address)) is
+      Free : not null access procedure (Object : in out Data_Access)) is
    begin
       if Capacity /= Target_Capacity
          or else -- static (excluding Sentinel) is True
-            (Target.all /= Sentinel and then Target_Reference_Count > 1)
+            (Target.all /= Sentinel and then Target.all.all > 1)
       then
          declare
-            Old : aliased Address := Target.all;
-            New_Capacity : constant Natural :=
-               Integer'Max (Capacity, Target_Length);
+            Old : aliased Container := Target.all;
          begin
-            if New_Capacity = 0 then
+            if Capacity = 0 then
                Target.all := Sentinel;
             else
-               Copy (
-                  Target.all,
-                  Old,
-                  Target_Length,
-                  Max_Length,
-                  New_Capacity);
+               Copy (Target.all, Old, Target_Length, Max_Length, Capacity);
             end if;
-            Clear (Old'Access, Target_Reference_Count, Free => Free);
+            Clear (Old'Access, Free => Free);
          end;
       end if;
    end Unique;
 
    procedure Set_Length (
-      Target : not null access Address;
-      Target_Reference_Count : aliased in out Counter;
+      Target : not null access Container;
       Target_Length : Natural;
       Target_Max_Length : aliased in out Natural;
       Target_Capacity : Natural;
       New_Length : Natural;
-      Sentinel : Address;
+      Sentinel : not null Data_Access;
       Copy : not null access procedure (
-         Target : out Address;
-         Source : Address;
+         Target : out Data_Access;
+         Source : not null Data_Access;
          Length : Natural;
          Max_Length : Natural;
          Capacity : Natural);
-      Free : not null access procedure (Object : Address)) is
+      Free : not null access procedure (Object : in out Data_Access)) is
    begin
       if New_Length > Target_Length then
          --  inscreasing
@@ -176,7 +168,6 @@ package body System.Reference_Counting is
             begin
                Unique (
                   Target => Target,
-                  Target_Reference_Count => Target_Reference_Count,
                   Target_Length => Target_Length,
                   Target_Capacity => Target_Capacity,
                   Max_Length => New_Length,
@@ -193,10 +184,9 @@ package body System.Reference_Counting is
                New_Length)
             then
                null;
-            elsif Target_Reference_Count > 1 then
+            elsif Target.all.all > 1 then
                Unique (
                   Target => Target,
-                  Target_Reference_Count => Target_Reference_Count,
                   Target_Length => Target_Length,
                   Target_Capacity => Target_Capacity,
                   Max_Length => New_Length,
@@ -210,7 +200,7 @@ package body System.Reference_Counting is
          end if;
       else
          --  decreasing
-         if Target_Reference_Count = 1 then
+         if Target.all.all = 1 then
             Target_Max_Length := New_Length;
          end if;
       end if;

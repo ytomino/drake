@@ -17,6 +17,7 @@ private package Ada.Containers.Weak_Access_Holders is
       Weak_List : Weak_Holder_Access;
    end record;
    for Data'Size use Data_Size;
+   --  place Reference_Count at first
    for Data use record
       Reference_Count at 0 range
          0 ..
