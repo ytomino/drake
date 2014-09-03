@@ -80,21 +80,23 @@ package Ada.Strings.Naked_Maps is
          System.Reference_Counting.Counter'Size - 1;
    end record;
 
-   function Value (
-      Map : Character_Mapping;
-      Element : Character_Type)
-      return Character_Type;
-
-   function Value (
-      Map : Character_Mapping;
-      Element : Character)
-      return Character;
-
    function To_Mapping (
       From, To : Character_Sequence;
       Initial_Reference_Count : System.Reference_Counting.Counter)
       return Character_Mapping;
 
+   function Value (
+      Map : Character_Mapping;
+      Element : Character_Type)
+      return Character_Type;
+
+   --  for Handling
+   function Value (
+      Map : Character_Mapping;
+      Element : Character)
+      return Character;
+
+   --  for Handling
    procedure Translate (
       Source : String;
       Mapping : Character_Mapping;

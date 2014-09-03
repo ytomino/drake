@@ -79,6 +79,26 @@ package body Ada.Strings.Naked_Maps is
 
    --  implementation of sets
 
+   function Is_In (
+      Element : Character_Type;
+      Set : Character_Set)
+      return Boolean
+   is
+      Index : constant Integer := Search (Set.Items, Element, Element);
+   begin
+      return Index <= Set.Items'Last
+         and then Element >= Set.Items (Index).Low
+         and then Element <= Set.Items (Index).High;
+   end Is_In;
+
+   function Is_In (
+      Element : Character;
+      Set : Character_Set)
+      return Boolean is
+   begin
+      return Is_In (To_Wide_Wide_Character (Element), Set);
+   end Is_In;
+
    procedure Add (
       A : in out Character_Ranges;
       Last : in out Natural;
@@ -141,26 +161,6 @@ package body Ada.Strings.Naked_Maps is
          end;
       end if;
    end Add;
-
-   function Is_In (
-      Element : Character_Type;
-      Set : Character_Set)
-      return Boolean
-   is
-      Index : constant Integer := Search (Set.Items, Element, Element);
-   begin
-      return Index <= Set.Items'Last
-         and then Element >= Set.Items (Index).Low
-         and then Element <= Set.Items (Index).High;
-   end Is_In;
-
-   function Is_In (
-      Element : Character;
-      Set : Character_Set)
-      return Boolean is
-   begin
-      return Is_In (To_Wide_Wide_Character (Element), Set);
-   end Is_In;
 
    procedure Merge (
       Target : out Character_Ranges;
