@@ -35,8 +35,6 @@ private package Ada.Text_IO.Formatting is
       Padding : Character;
       Padding_Width : Field);
 
-   --  for Modular_IO
-
    --  for Integer_IO, Modular_IO, Float_IO, Fixed_IO
    function Get_Numeric_Literal (File : File_Type; Real : Boolean)
       return String;
