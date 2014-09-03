@@ -4,6 +4,8 @@ with System.Reference_Counting;
 package Ada.Characters.Inside.Sets is
    pragma Pure;
 
+   --  Representation for a set of Wide_Wide_Character values
+
    subtype Character_Type is Wide_Wide_Character;
    subtype Character_Sequence is Wide_Wide_String;
 
@@ -33,12 +35,14 @@ package Ada.Characters.Inside.Sets is
       Element : Character_Type;
       Set : Character_Set)
       return Boolean;
+
+   --  for Handling
    function Is_In (
       Element : Character;
       Set : Character_Set)
       return Boolean;
 
-   --  binary tree operations
+   --  making operations
 
    procedure Add (
       A : in out Character_Ranges;
@@ -50,10 +54,13 @@ package Ada.Characters.Inside.Sets is
       Last : out Natural;
       Left, Right : Character_Ranges);
 
+private
+
    type Character_Ranges_Array is
       array (Positive range <>) of not null access constant Character_Ranges;
    pragma Suppress_Initialization (Character_Ranges_Array);
 
+   --  for Constants
    procedure Merge (
       Target : out Character_Ranges;
       Last : out Natural;

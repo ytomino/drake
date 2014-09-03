@@ -168,32 +168,49 @@ package body Ada.Characters.Inside.Sets is
    procedure Merge (
       Target : out Character_Ranges;
       Last : out Natural;
-      Source : Character_Ranges_Array) is
+      Source : Character_Ranges_Array)
+   is
+      Live_Source : Character_Ranges_Array := Source; -- for modifying
+      Live_Source_Indexes : array (Live_Source'Range) of Positive;
+      Live_Source_Last : Natural := Live_Source'Last;
    begin
-      if Source'Length = 0 then
-         Last := Target'First - 1;
-      elsif Source'Length = 1 then
-         Last := Target'First + Source (Source'First)'Length - 1;
-         Target (Target'First .. Last) := Source (Source'First).all;
-      elsif Source'Length = 2 then
-         Merge (
-            Target,
-            Last,
-            Source (Source'First).all,
-            Source (Source'Last).all);
-      else
+      for I in Live_Source'Range loop
+         Live_Source_Indexes (I) := Live_Source (I).all'First;
+      end loop;
+      Last := Target'First - 1;
+      while Live_Source_Last >= Live_Source'First loop
          declare
-            Temp : Character_Ranges (Target'Range);
-            Temp_Last : Natural;
+            Min_Index : Positive;
          begin
-            Merge (Temp, Temp_Last, Source (Source'First + 1 .. Source'Last));
-            Merge (
+            --  select the lowest range
+            Min_Index := Live_Source'First;
+            for I in Live_Source'First + 1 .. Live_Source_Last loop
+               if Live_Source (I).all (Live_Source_Indexes (I)).Low <
+                  Live_Source (Min_Index).all (
+                     Live_Source_Indexes (Min_Index)).Low
+               then
+                  Min_Index := I;
+               end if;
+            end loop;
+            --  merge the lowest range
+            Append (
                Target,
                Last,
-               Source (Source'First).all,
-               Temp (Temp'First .. Temp_Last));
+               Live_Source (Min_Index).all (Live_Source_Indexes (Min_Index)));
+            --  increment the index
+            Live_Source_Indexes (Min_Index) :=
+               Live_Source_Indexes (Min_Index) + 1;
+            if Live_Source_Indexes (Min_Index) >
+               Live_Source (Min_Index).all'Last
+            then
+               --  remove the finished source
+               Live_Source (Min_Index) := Live_Source (Live_Source_Last);
+               Live_Source_Indexes (Min_Index) :=
+                  Live_Source_Indexes (Live_Source_Last);
+               Live_Source_Last := Live_Source_Last - 1;
+            end if;
          end;
-      end if;
+      end loop;
    end Merge;
 
 end Ada.Characters.Inside.Sets;
