@@ -59,7 +59,4 @@ package Ada.Characters.Inside.Sets is
       Last : out Natural;
       Source : Character_Ranges_Array);
 
-   function Search (A : Character_Ranges; L, H : Character_Type)
-      return Positive;
-
 end Ada.Characters.Inside.Sets;

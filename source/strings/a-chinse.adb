@@ -21,6 +21,33 @@ package body Ada.Characters.Inside.Sets is
       end if;
    end Append;
 
+   function Search (A : Character_Ranges; L, H : Character_Type)
+      return Positive;
+   function Search (A : Character_Ranges; L, H : Character_Type)
+      return Positive
+   is
+      First : Positive := A'First;
+      Last : Natural := A'Last;
+   begin
+      loop
+         if First > Last then
+            return First; -- return the insertion position when not found
+         else
+            declare
+               Middle : constant Integer := (First + Last) / 2;
+            begin
+               if H < A (Middle).Low then
+                  Last := Middle - 1;
+               elsif L > A (Middle).High then
+                  First := Middle + 1;
+               else
+                  return Middle;
+               end if;
+            end;
+         end if;
+      end loop;
+   end Search;
+
    --  implementation
 
    procedure Add (
@@ -168,30 +195,5 @@ package body Ada.Characters.Inside.Sets is
          end;
       end if;
    end Merge;
-
-   function Search (A : Character_Ranges; L, H : Character_Type)
-      return Positive
-   is
-      First : Positive := A'First;
-      Last : Natural := A'Last;
-   begin
-      loop
-         if First > Last then
-            return First; -- return the insertion position when not found
-         else
-            declare
-               Middle : constant Integer := (First + Last) / 2;
-            begin
-               if H < A (Middle).Low then
-                  Last := Middle - 1;
-               elsif L > A (Middle).High then
-                  First := Middle + 1;
-               else
-                  return Middle;
-               end if;
-            end;
-         end if;
-      end loop;
-   end Search;
 
 end Ada.Characters.Inside.Sets;
