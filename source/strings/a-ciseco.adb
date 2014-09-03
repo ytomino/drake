@@ -29,7 +29,8 @@ package body Ada.Characters.Inside.Sets.Constants is
          Items => (1 => ('0', '9')));
    end Decimal_Digit_Init;
 
-   function Decimal_Digit_Set return not null access Sets.Character_Set is
+   function Decimal_Digit_Set
+      return not null access Sets.Character_Set is
    begin
       System.Once.Initialize (
          Decimal_Digit_Flag'Access,
@@ -50,7 +51,8 @@ package body Ada.Characters.Inside.Sets.Constants is
             Items => (('0', '9'), ('A', 'F'), ('a', 'f')));
    end Hexadecimal_Digit_Init;
 
-   function Hexadecimal_Digit_Set return not null access Sets.Character_Set is
+   function Hexadecimal_Digit_Set
+      return not null access Sets.Character_Set is
    begin
       System.Once.Initialize (
          Hexadecimal_Digit_Flag'Access,
@@ -98,7 +100,8 @@ package body Ada.Characters.Inside.Sets.Constants is
                Character_Type'Val (16#FFFF#))));
    end Wide_Character_Init;
 
-   function Wide_Character_Set return not null access Sets.Character_Set is
+   function Wide_Character_Set
+      return not null access Sets.Character_Set is
    begin
       System.Once.Initialize (
          Wide_Character_Flag'Access,

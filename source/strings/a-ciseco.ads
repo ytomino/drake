@@ -3,13 +3,16 @@ pragma License (Unrestricted);
 package Ada.Characters.Inside.Sets.Constants is
    pragma Preelaborate;
 
-   function Decimal_Digit_Set return not null access Character_Set;
-   function Hexadecimal_Digit_Set return not null access Character_Set;
+   function Decimal_Digit_Set
+      return not null access Character_Set;
+   function Hexadecimal_Digit_Set
+      return not null access Character_Set;
 
    function ISO_646_Set return not null access Character_Set;
    function Character_Set return not null access Character_Set
       renames ISO_646_Set; -- 16#00# .. 16#7F#
-   function Wide_Character_Set return not null access Sets.Character_Set;
+   function Wide_Character_Set
+      return not null access Sets.Character_Set;
 
    function Letter_Set return not null access Sets.Character_Set;
    --  Ll, Lu, Lt, Lm, Lo
