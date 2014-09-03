@@ -1,9 +1,9 @@
-with Ada.Characters.Inside.Maps.Case_Folding;
+with Ada.Strings.Naked_Maps.Case_Folding;
 function Ada.Strings.Less_Case_Insensitive (Left, Right : String)
    return Boolean is
 begin
-   return Characters.Inside.Maps.Compare (
+   return Strings.Naked_Maps.Compare (
       Left,
       Right,
-      Characters.Inside.Maps.Case_Folding.Case_Folding_Map.all) < 0;
+      Strings.Naked_Maps.Case_Folding.Case_Folding_Map.all) < 0;
 end Ada.Strings.Less_Case_Insensitive;

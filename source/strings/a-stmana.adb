@@ -1,4 +1,4 @@
-package body Ada.Strings.Maps.Inside is
+package body Ada.Strings.Maps.Naked is
 
    function To_Set return Character_Set is
    begin
@@ -12,4 +12,4 @@ package body Ada.Strings.Maps.Inside is
          Map_Data_Access'(Source.all'Unchecked_Access));
    end To_Mapping;
 
-end Ada.Strings.Maps.Inside;
+end Ada.Strings.Maps.Naked;

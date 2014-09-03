@@ -1,11 +1,9 @@
 pragma License (Unrestricted);
-private with Ada.Characters.Inside.Maps;
-private with Ada.Characters.Inside.Maps.Case_Folding;
-private with Ada.Characters.Inside.Maps.Case_Mapping;
-private with Ada.Characters.Inside.Sets;
-private with Ada.Characters.Inside.Sets.Constants;
-private with Ada.Characters.Inside.Sets.General_Category;
-private with Ada.Strings.Maps.Inside;
+private with Ada.Strings.Maps.Naked;
+private with Ada.Strings.Naked_Maps.Case_Folding;
+private with Ada.Strings.Naked_Maps.Case_Mapping;
+private with Ada.Strings.Naked_Maps.General_Category;
+private with Ada.Strings.Naked_Maps.Set_Constants;
 package Ada.Strings.Maps.Constants is
 --  pragma Pure;
    pragma Preelaborate; -- controlled types
@@ -141,146 +139,127 @@ package Ada.Strings.Maps.Constants is
 private
 
    function Unassigned_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.All_Unassigned);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.All_Unassigned);
    function Unassigned_Set return Character_Set
       renames Unassigned_Set_Body;
 
    function Uppercase_Letter_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Uppercase_Letter);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Uppercase_Letter);
    function Uppercase_Letter_Set return Character_Set
       renames Uppercase_Letter_Set_Body;
 
    function Lowercase_Letter_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Lowercase_Letter);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Lowercase_Letter);
    function Lowercase_Letter_Set return Character_Set
       renames Lowercase_Letter_Set_Body;
 
    function Titlecase_Letter_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Titlecase_Letter);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Titlecase_Letter);
    function Titlecase_Letter_Set return Character_Set
       renames Titlecase_Letter_Set_Body;
 
    function Modifier_Letter_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Modifier_Letter);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Modifier_Letter);
    function Modifier_Letter_Set return Character_Set
       renames Modifier_Letter_Set_Body;
 
    function Other_Letter_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Other_Letter);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Other_Letter);
    function Other_Letter_Set return Character_Set
       renames Other_Letter_Set_Body;
 
    function Decimal_Number_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Decimal_Number);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Decimal_Number);
    function Decimal_Number_Set return Character_Set
       renames Decimal_Number_Set_Body;
 
    function Letter_Number_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Letter_Number);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Letter_Number);
    function Letter_Number_Set return Character_Set
       renames Letter_Number_Set_Body;
 
    function Other_Number_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Other_Number);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Other_Number);
    function Other_Number_Set return Character_Set
       renames Other_Number_Set_Body;
 
    function Line_Separator_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Line_Separator);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Line_Separator);
    function Line_Separator_Set return Character_Set
       renames Line_Separator_Set_Body;
 
    function Paragraph_Separator_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Paragraph_Separator);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Paragraph_Separator);
    function Paragraph_Separator_Set return Character_Set
       renames Paragraph_Separator_Set_Body;
 
    function Control_Set_Body is
-      new Maps.Inside.To_Set (Characters.Inside.Sets.General_Category.Control);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Control);
    function Control_Set return Character_Set
       renames Control_Set_Body;
 
    function Format_Set_Body is
-      new Maps.Inside.To_Set (Characters.Inside.Sets.General_Category.Format);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Format);
    function Format_Set return Character_Set
       renames Format_Set_Body;
 
    function Private_Use_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Private_Use);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Private_Use);
    function Private_Use_Set return Character_Set
       renames Private_Use_Set_Body;
 
    function Surrogate_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.General_Category.Surrogate);
+      new Maps.Naked.To_Set (Naked_Maps.General_Category.Surrogate);
    function Surrogate_Set return Character_Set
       renames Surrogate_Set_Body;
 
    function Graphic_Set_Body is
-      new Maps.Inside.To_Set (Characters.Inside.Sets.Constants.Graphic_Set);
+      new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Graphic_Set);
    function Graphic_Set return Character_Set
       renames Graphic_Set_Body;
 
    function Letter_Set_Body is
-      new Maps.Inside.To_Set (Characters.Inside.Sets.Constants.Letter_Set);
+      new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Letter_Set);
    function Letter_Set return Character_Set
       renames Letter_Set_Body;
 
    function Decimal_Digit_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.Constants.Decimal_Digit_Set);
+      new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Decimal_Digit_Set);
    function Decimal_Digit_Set return Character_Set
       renames Decimal_Digit_Set_Body;
 
    function Hexadecimal_Digit_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.Constants.Hexadecimal_Digit_Set);
+      new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Hexadecimal_Digit_Set);
    function Hexadecimal_Digit_Set return Character_Set
       renames Hexadecimal_Digit_Set_Body;
 
    function Alphanumeric_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.Constants.Alphanumeric_Set);
+      new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Alphanumeric_Set);
    function Alphanumeric_Set return Character_Set
       renames Alphanumeric_Set_Body;
 
    function Special_Set_Body is
-      new Maps.Inside.To_Set (Characters.Inside.Sets.Constants.Special_Set);
+      new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Special_Set);
    function Special_Set return Character_Set
       renames Special_Set_Body;
 
    function ISO_646_Set_Body is
-      new Maps.Inside.To_Set (Characters.Inside.Sets.Constants.ISO_646_Set);
+      new Maps.Naked.To_Set (Naked_Maps.Set_Constants.ISO_646_Set);
    function ISO_646_Set return Character_Set
       renames ISO_646_Set_Body;
 
    function Lower_Case_Map_Body is
-      new Maps.Inside.To_Mapping (
-         Characters.Inside.Maps.Case_Mapping.Lower_Case_Map);
+      new Maps.Naked.To_Mapping (Naked_Maps.Case_Mapping.Lower_Case_Map);
    function Lower_Case_Map return Character_Mapping
       renames Lower_Case_Map_Body;
 
    function Upper_Case_Map_Body is
-      new Maps.Inside.To_Mapping (
-         Characters.Inside.Maps.Case_Mapping.Upper_Case_Map);
+      new Maps.Naked.To_Mapping (Naked_Maps.Case_Mapping.Upper_Case_Map);
    function Upper_Case_Map return Character_Mapping
       renames Upper_Case_Map_Body;
 
    function Case_Folding_Map_Body is
-      new Maps.Inside.To_Mapping (
-         Characters.Inside.Maps.Case_Folding.Case_Folding_Map);
+      new Maps.Naked.To_Mapping (Naked_Maps.Case_Folding.Case_Folding_Map);
    function Case_Folding_Map return Character_Mapping
       renames Case_Folding_Map_Body;
 

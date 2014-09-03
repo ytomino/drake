@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Characters.Inside.Sets.Constants is
+package Ada.Strings.Naked_Maps.Set_Constants is
    pragma Preelaborate;
 
    function Decimal_Digit_Set
@@ -12,18 +12,18 @@ package Ada.Characters.Inside.Sets.Constants is
    function Character_Set return not null access Character_Set
       renames ISO_646_Set; -- 16#00# .. 16#7F#
    function Wide_Character_Set
-      return not null access Sets.Character_Set;
+      return not null access Naked_Maps.Character_Set;
 
-   function Letter_Set return not null access Sets.Character_Set;
+   function Letter_Set return not null access Naked_Maps.Character_Set;
    --  Ll, Lu, Lt, Lm, Lo
 
-   function Alphanumeric_Set return not null access Sets.Character_Set;
+   function Alphanumeric_Set return not null access Naked_Maps.Character_Set;
    --  Letter + Nd, Nl, No
 
-   function Special_Set return not null access Sets.Character_Set;
+   function Special_Set return not null access Naked_Maps.Character_Set;
    --  Mn, Me, Mc, Zs, Pd, Ps, Pe, Pc, Po, Sm, Sc, Sk, So, Pi, Pf
 
-   function Graphic_Set return not null access Sets.Character_Set;
+   function Graphic_Set return not null access Naked_Maps.Character_Set;
    --  Alphanumeric + Special
 
-end Ada.Characters.Inside.Sets.Constants;
+end Ada.Strings.Naked_Maps.Set_Constants;

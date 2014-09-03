@@ -1,9 +1,9 @@
-with Ada.Characters.Inside.Sets.General_Category;
+with Ada.Strings.Naked_Maps.General_Category;
 with System.Once;
 with System.Reference_Counting;
-package body Ada.Characters.Inside.Sets.Constants is
+package body Ada.Strings.Naked_Maps.Set_Constants is
 
-   type Character_Set_Access is access Sets.Character_Set;
+   type Character_Set_Access is access Naked_Maps.Character_Set;
 
    function Total_Length (Source : Character_Ranges_Array) return Natural;
    function Total_Length (Source : Character_Ranges_Array) return Natural is
@@ -23,14 +23,14 @@ package body Ada.Characters.Inside.Sets.Constants is
    procedure Decimal_Digit_Init;
    procedure Decimal_Digit_Init is
    begin
-      Decimal_Digit_Set_Data := new Characters.Inside.Sets.Character_Set'(
+      Decimal_Digit_Set_Data := new Naked_Maps.Character_Set'(
          Length => 1,
          Reference_Count => System.Reference_Counting.Static,
          Items => (1 => ('0', '9')));
    end Decimal_Digit_Init;
 
    function Decimal_Digit_Set
-      return not null access Sets.Character_Set is
+      return not null access Naked_Maps.Character_Set is
    begin
       System.Once.Initialize (
          Decimal_Digit_Flag'Access,
@@ -45,14 +45,14 @@ package body Ada.Characters.Inside.Sets.Constants is
    procedure Hexadecimal_Digit_Init is
    begin
       Hexadecimal_Digit_Set_Data :=
-         new Characters.Inside.Sets.Character_Set'(
+         new Naked_Maps.Character_Set'(
             Length => 3,
             Reference_Count => System.Reference_Counting.Static,
             Items => (('0', '9'), ('A', 'F'), ('a', 'f')));
    end Hexadecimal_Digit_Init;
 
    function Hexadecimal_Digit_Set
-      return not null access Sets.Character_Set is
+      return not null access Naked_Maps.Character_Set is
    begin
       System.Once.Initialize (
          Hexadecimal_Digit_Flag'Access,
@@ -66,7 +66,7 @@ package body Ada.Characters.Inside.Sets.Constants is
    procedure ISO_646_Init;
    procedure ISO_646_Init is
    begin
-      ISO_646_Set_Data := new Characters.Inside.Sets.Character_Set'(
+      ISO_646_Set_Data := new Naked_Maps.Character_Set'(
          Length => 1,
          Reference_Count => System.Reference_Counting.Static,
          Items => (1 => (
@@ -74,7 +74,7 @@ package body Ada.Characters.Inside.Sets.Constants is
             Character_Type'Val (16#7F#))));
    end ISO_646_Init;
 
-   function ISO_646_Set return not null access Sets.Character_Set is
+   function ISO_646_Set return not null access Naked_Maps.Character_Set is
    begin
       System.Once.Initialize (
          ISO_646_Flag'Access,
@@ -88,7 +88,7 @@ package body Ada.Characters.Inside.Sets.Constants is
    procedure Wide_Character_Init;
    procedure Wide_Character_Init is
    begin
-      Wide_Character_Set_Data := new Characters.Inside.Sets.Character_Set'(
+      Wide_Character_Set_Data := new Naked_Maps.Character_Set'(
          Length => 2,
          Reference_Count => System.Reference_Counting.Static,
          Items => (
@@ -101,7 +101,7 @@ package body Ada.Characters.Inside.Sets.Constants is
    end Wide_Character_Init;
 
    function Wide_Character_Set
-      return not null access Sets.Character_Set is
+      return not null access Naked_Maps.Character_Set is
    begin
       System.Once.Initialize (
          Wide_Character_Flag'Access,
@@ -124,13 +124,13 @@ package body Ada.Characters.Inside.Sets.Constants is
       Last : Natural;
    begin
       Merge (Items, Last, Source);
-      Letter_Set_Data := new Sets.Character_Set'(
+      Letter_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
    end Letter_Init;
 
-   function Letter_Set return not null access Sets.Character_Set is
+   function Letter_Set return not null access Naked_Maps.Character_Set is
    begin
       System.Once.Initialize (
          Letter_Flag'Access,
@@ -152,13 +152,13 @@ package body Ada.Characters.Inside.Sets.Constants is
       Last : Natural;
    begin
       Merge (Items, Last, Source);
-      Alphanumeric_Set_Data := new Sets.Character_Set'(
+      Alphanumeric_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
    end Alphanumeric_Init;
 
-   function Alphanumeric_Set return not null access Sets.Character_Set is
+   function Alphanumeric_Set return not null access Naked_Maps.Character_Set is
    begin
       System.Once.Initialize (
          Alphanumeric_Flag'Access,
@@ -192,13 +192,13 @@ package body Ada.Characters.Inside.Sets.Constants is
       Last : Natural;
    begin
       Merge (Items, Last, Source);
-      Special_Set_Data := new Sets.Character_Set'(
+      Special_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
    end Special_Init;
 
-   function Special_Set return not null access Sets.Character_Set is
+   function Special_Set return not null access Naked_Maps.Character_Set is
    begin
       System.Once.Initialize (
          Special_Flag'Access,
@@ -218,13 +218,13 @@ package body Ada.Characters.Inside.Sets.Constants is
       Last : Natural;
    begin
       Merge (Items, Last, Source);
-      Graphic_Set_Data := new Sets.Character_Set'(
+      Graphic_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
    end Graphic_Init;
 
-   function Graphic_Set return not null access Sets.Character_Set is
+   function Graphic_Set return not null access Naked_Maps.Character_Set is
    begin
       System.Once.Initialize (
          Graphic_Flag'Access,
@@ -232,4 +232,4 @@ package body Ada.Characters.Inside.Sets.Constants is
       return Graphic_Set_Data;
    end Graphic_Set;
 
-end Ada.Characters.Inside.Sets.Constants;
+end Ada.Strings.Naked_Maps.Set_Constants;

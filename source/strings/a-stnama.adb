@@ -1,4 +1,33 @@
-package body Ada.Characters.Inside.Sets is
+with Ada.Characters.Conversions;
+with Ada.Exception_Identification.From_Here;
+with System.UTF_Conversions;
+package body Ada.Strings.Naked_Maps is
+   use Exception_Identification.From_Here;
+   use type System.UTF_Conversions.UCS_4;
+
+   --  implementation of alternative conversions functions
+
+   function To_Character (Item : Wide_Wide_Character)
+      return Character is
+   begin
+      if Characters.Conversions.Is_Character (Item) then
+         return Character'Val (Wide_Wide_Character'Pos (Item));
+      else
+         raise Constraint_Error;
+      end if;
+   end To_Character;
+
+   function To_Wide_Wide_Character (Item : Character)
+      return Wide_Wide_Character is
+   begin
+      if Characters.Conversions.Is_Wide_Wide_Character (Item) then
+         return Wide_Wide_Character'Val (Character'Pos (Item));
+      else
+         raise Constraint_Error;
+      end if;
+   end To_Wide_Wide_Character;
+
+   --  sets
 
    procedure Append (
       Target : in out Character_Ranges;
@@ -48,7 +77,7 @@ package body Ada.Characters.Inside.Sets is
       end loop;
    end Search;
 
-   --  implementation
+   --  implementation of sets
 
    procedure Add (
       A : in out Character_Ranges;
@@ -213,4 +242,186 @@ package body Ada.Characters.Inside.Sets is
       end loop;
    end Merge;
 
-end Ada.Characters.Inside.Sets;
+   --  implementation of maps
+
+   function To_Mapping (
+      From, To : Character_Sequence;
+      Initial_Reference_Count : System.Reference_Counting.Counter)
+      return Character_Mapping
+   is
+      From_Length : constant Natural := From'Length;
+   begin
+      if From_Length /= To'Length then
+         Raise_Exception (Translation_Error'Identity);
+      else
+         declare
+            Sorted_From : Character_Sequence (1 .. From_Length) := From;
+            Sorted_To : Character_Sequence (1 .. From_Length) := To;
+            Last : Natural;
+         begin
+            Sort (Sorted_From, Sorted_To, Last);
+            return Character_Mapping'(
+               Length => Last,
+               Reference_Count => Initial_Reference_Count,
+               From => Sorted_From (1 .. Last),
+               To => Sorted_To (1 .. Last));
+         end;
+      end if;
+   end To_Mapping;
+
+   function Value (
+      Map : Character_Mapping;
+      Element : Character_Type)
+      return Character_Type
+   is
+      L : Positive := Map.From'First;
+      H : Natural := Map.From'Last;
+   begin
+      loop
+         exit when L > H;
+         declare
+            M : constant Positive := (L + H) / 2;
+         begin
+            if Element < Map.From (M) then
+               H := M - 1;
+            elsif Element > Map.From (M) then
+               L := M + 1;
+            else
+               return Map.To (M);
+            end if;
+         end;
+      end loop;
+      return Element;
+   end Value;
+
+   function Value (
+      Map : Character_Mapping;
+      Element : Character)
+      return Character is
+   begin
+      return To_Character (Value (Map, To_Wide_Wide_Character (Element)));
+   end Value;
+
+   procedure Translate (
+      Source : String;
+      Mapping : Character_Mapping;
+      Item : out String; -- Source'Length * 6, at least
+      Last : out Natural)
+   is
+      I : Natural := Source'First;
+      J : Natural := Item'First;
+   begin
+      while I <= Source'Last loop
+         declare
+            Code : System.UTF_Conversions.UCS_4;
+            I_Next : Natural;
+            J_Next : Natural;
+            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+            To_Status : System.UTF_Conversions.To_Status_Type; -- ignore
+         begin
+            --  get single unicode character
+            System.UTF_Conversions.From_UTF_8 (
+               Source (I .. Source'Last),
+               I_Next,
+               Code,
+               From_Status);
+            --  map it
+            Code := Wide_Wide_Character'Pos (
+               Value (Mapping, Wide_Wide_Character'Val (Code)));
+            --  put it
+            System.UTF_Conversions.To_UTF_8 (
+               Code,
+               Item (J .. Item'Last),
+               J_Next,
+               To_Status);
+            --  forwarding
+            I := I_Next + 1;
+            J := J_Next + 1;
+         end;
+      end loop;
+      Last := J - 1;
+   end Translate;
+
+   function Compare (
+      Left : String;
+      Right : String;
+      Mapping : Character_Mapping)
+      return Integer
+   is
+      I : Natural := Left'First;
+      J : Natural := Right'First;
+   begin
+      while I <= Left'Last and then J <= Right'Last loop
+         declare
+            I_Code : System.UTF_Conversions.UCS_4;
+            I_Next : Natural;
+            J_Code : System.UTF_Conversions.UCS_4;
+            J_Next : Natural;
+            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+         begin
+            System.UTF_Conversions.From_UTF_8 (
+               Left (I .. Left'Last),
+               I_Next,
+               I_Code,
+               From_Status);
+            I := I_Next + 1;
+            I_Code := Wide_Wide_Character'Pos (
+               Value (Mapping, Wide_Wide_Character'Val (I_Code)));
+            System.UTF_Conversions.From_UTF_8 (
+               Right (J .. Right'Last),
+               J_Next,
+               J_Code,
+               From_Status);
+            J := J_Next + 1;
+            J_Code := Wide_Wide_Character'Pos (
+               Value (Mapping, Wide_Wide_Character'Val (J_Code)));
+            if I_Code < J_Code then
+               return -1;
+            elsif I_Code > J_Code then
+               return 1;
+            end if;
+         end;
+      end loop;
+      return Boolean'Pos (I <= Left'Last) - Boolean'Pos (J <= Right'Last);
+   end Compare;
+
+   procedure Sort (From, To : in out Character_Sequence) is
+      pragma Assert (From'First = To'First);
+   begin
+      for I in From'First + 1 .. From'Last loop
+         for J in reverse From'First .. I - 1 loop
+            declare
+               Temp_F : Character_Type;
+               Temp_T : Character_Type;
+               K : constant Positive := J + 1;
+            begin
+               if From (J) = From (K) then
+                  Raise_Exception (Translation_Error'Identity);
+               end if;
+               exit when From (J) <= From (K);
+               Temp_F := From (J);
+               Temp_T := To (J);
+               From (J) := From (K);
+               To (J) := To (K);
+               From (K) := Temp_F;
+               To (K) := Temp_T;
+            end;
+         end loop;
+      end loop;
+   end Sort;
+
+   procedure Sort (From, To : in out Character_Sequence; Last : out Natural) is
+      pragma Assert (From'First = To'First);
+   begin
+      Last := From'Last;
+      for I in reverse From'Range loop
+         if From (I) = To (I) then
+            From (I) := From (Last);
+            To (I) := To (Last);
+            Last := Last - 1;
+         end if;
+      end loop;
+      Sort (From (From'First .. Last), To (To'First .. Last));
+   end Sort;
+
+end Ada.Strings.Naked_Maps;

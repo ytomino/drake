@@ -2,7 +2,7 @@ pragma Check_Policy (Validate, Off);
 with Ada.UCD.General_Category;
 with System.Once;
 with System.Reference_Counting;
-package body Ada.Characters.Inside.Sets.General_Category is
+package body Ada.Strings.Naked_Maps.General_Category is
    use type UCD.Difference_Base;
 
    procedure Fill (
@@ -1082,4 +1082,4 @@ package body Ada.Characters.Inside.Sets.General_Category is
       return Final_Punctuation_Set;
    end Final_Punctuation;
 
-end Ada.Characters.Inside.Sets.General_Category;
+end Ada.Strings.Naked_Maps.General_Category;

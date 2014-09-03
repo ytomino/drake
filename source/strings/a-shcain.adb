@@ -1,4 +1,4 @@
-with Ada.Characters.Inside.Maps.Case_Folding;
+with Ada.Strings.Naked_Maps.Case_Folding;
 with System.UTF_Conversions;
 function Ada.Strings.Hash_Case_Insensitive (Key : String)
    return Containers.Hash_Type
@@ -21,10 +21,11 @@ begin
             From_Status);
          I := Next + 1;
          --  update
-         Result := Containers.Rotate_Left (Result, 5) xor
-            Wide_Wide_Character'Pos (Characters.Inside.Maps.Value (
-               Characters.Inside.Maps.Case_Folding.Case_Folding_Map.all,
-               Wide_Wide_Character'Val (Code)));
+         Result := Containers.Rotate_Left (Result, 5)
+            xor Wide_Wide_Character'Pos (
+               Strings.Naked_Maps.Value (
+                  Strings.Naked_Maps.Case_Folding.Case_Folding_Map.all,
+                  Wide_Wide_Character'Val (Code)));
       end;
    end loop;
    return Result;

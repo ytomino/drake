@@ -2,7 +2,7 @@ pragma Check_Policy (Validate, Off);
 with Ada.UCD.Simple_Case_Mapping;
 with System.Once;
 with System.Reference_Counting;
-package body Ada.Characters.Inside.Maps.Case_Mapping is
+package body Ada.Strings.Naked_Maps.Case_Mapping is
    use type UCD.Difference_Base;
    use type UCD.UCS_4;
 
@@ -216,4 +216,4 @@ package body Ada.Characters.Inside.Maps.Case_Mapping is
       return U_Mapping;
    end Upper_Case_Map;
 
-end Ada.Characters.Inside.Maps.Case_Mapping;
+end Ada.Strings.Naked_Maps.Case_Mapping;

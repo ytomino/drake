@@ -1,8 +1,7 @@
 pragma License (Unrestricted);
-private with Ada.Characters.Inside.Maps;
-private with Ada.Characters.Inside.Sets;
 private with Ada.Finalization;
 private with Ada.Streams;
+private with Ada.Strings.Naked_Maps;
 private with System.Reference_Counting;
 package Ada.Strings.Maps is
    pragma Preelaborate;
@@ -218,7 +217,7 @@ package Ada.Strings.Maps is
 
 private
 
-   subtype Set_Data is Characters.Inside.Sets.Character_Set;
+   subtype Set_Data is Naked_Maps.Character_Set;
    type Set_Data_Access is access all Set_Data;
 
    Empty_Set_Data : aliased constant Set_Data := (
@@ -267,7 +266,7 @@ private
 
    type Character_Set is new Controlled_Sets.Character_Set;
 
-   subtype Map_Data is Characters.Inside.Maps.Character_Mapping;
+   subtype Map_Data is Naked_Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
 
    Empty_Map_Data : aliased constant Map_Data := (

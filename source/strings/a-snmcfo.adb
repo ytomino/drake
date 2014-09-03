@@ -2,7 +2,7 @@ pragma Check_Policy (Validate, Off);
 with Ada.UCD.Case_Folding;
 with System.Once;
 with System.Reference_Counting;
-package body Ada.Characters.Inside.Maps.Case_Folding is
+package body Ada.Strings.Naked_Maps.Case_Folding is
    use type UCD.Difference_Base;
    use type UCD.UCS_4;
 
@@ -113,4 +113,4 @@ package body Ada.Characters.Inside.Maps.Case_Folding is
       return Mapping;
    end Case_Folding_Map;
 
-end Ada.Characters.Inside.Maps.Case_Folding;
+end Ada.Strings.Naked_Maps.Case_Folding;

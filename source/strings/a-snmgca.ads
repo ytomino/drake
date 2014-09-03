@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.Characters.Inside.Sets.General_Category is
+package Ada.Strings.Naked_Maps.General_Category is
    pragma Preelaborate;
 
    --  General_Category=Unassigned (Cn)
@@ -95,4 +95,4 @@ package Ada.Characters.Inside.Sets.General_Category is
    --  General_Category=Final_Punctuation (Pf)
    function Final_Punctuation return not null access Character_Set;
 
-end Ada.Characters.Inside.Sets.General_Category;
+end Ada.Strings.Naked_Maps.General_Category;
