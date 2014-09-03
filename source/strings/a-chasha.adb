@@ -86,7 +86,7 @@ package body Ada.Characters.ASCII.Handling is
       Length : constant Natural := Item'Length;
    begin
       return Result : String (1 .. Length) do
-         for I in Item'Range loop
+         for I in 0 .. Length - 1 loop
             Result (Result'First + I) := To_Upper (Item (Item'First + I));
          end loop;
       end return;
