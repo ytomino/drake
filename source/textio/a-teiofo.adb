@@ -539,4 +539,32 @@ package body Ada.Text_IO.Formatting is
       Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
    end Tail;
 
+   procedure Tail (
+      Target : out Wide_String;
+      Source : Wide_String;
+      Padding : Wide_Character := ' ') is
+   begin
+      if Target'Length < Source'Length then
+         Raise_Exception (Layout_Error'Identity);
+      end if;
+      for I in Target'First .. Target'Last - Source'Length loop
+         Target (I) := Padding;
+      end loop;
+      Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
+   end Tail;
+
+   procedure Tail (
+      Target : out Wide_Wide_String;
+      Source : Wide_Wide_String;
+      Padding : Wide_Wide_Character := ' ') is
+   begin
+      if Target'Length < Source'Length then
+         Raise_Exception (Layout_Error'Identity);
+      end if;
+      for I in Target'First .. Target'Last - Source'Length loop
+         Target (I) := Padding;
+      end loop;
+      Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
+   end Tail;
+
 end Ada.Text_IO.Formatting;

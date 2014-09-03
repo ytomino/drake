@@ -71,5 +71,13 @@ private package Ada.Text_IO.Formatting is
       Target : out String;
       Source : String;
       Padding : Character := ' ');
+   procedure Tail (
+      Target : out Wide_String;
+      Source : Wide_String;
+      Padding : Wide_Character := ' ');
+   procedure Tail (
+      Target : out Wide_Wide_String;
+      Source : Wide_Wide_String;
+      Padding : Wide_Wide_Character := ' ');
 
 end Ada.Text_IO.Formatting;

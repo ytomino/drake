@@ -41,16 +41,21 @@ package Ada.Wide_Text_IO.Editing is
       Default_Radix_Mark : Wide_Character := Editing.Default_Radix_Mark;
    package Decimal_Output is
 
+      --  for renaming
+      package Strings is new Text_IO.Editing.Decimal_Output (Num);
+
       function Length (
          Pic : Picture;
          Currency : Wide_String := Default_Currency)
-         return Natural;
+         return Natural
+         renames Strings.Overloaded_Length;
 
       function Valid (
          Item : Num;
          Pic : Picture;
          Currency : Wide_String := Default_Currency)
-         return Boolean;
+         return Boolean
+         renames Strings.Overloaded_Valid;
 
       function Image (
          Item : Num;
@@ -59,7 +64,8 @@ package Ada.Wide_Text_IO.Editing is
          Fill : Wide_Character := Default_Fill;
          Separator : Wide_Character := Default_Separator;
          Radix_Mark : Wide_Character := Default_Radix_Mark)
-         return Wide_String;
+         return Wide_String
+         renames Strings.Overloaded_Image;
 
       procedure Put (
          File : File_Type;
@@ -68,7 +74,8 @@ package Ada.Wide_Text_IO.Editing is
          Currency : Wide_String := Default_Currency;
          Fill : Wide_Character := Default_Fill;
          Separator : Wide_Character := Default_Separator;
-         Radix_Mark : Wide_Character := Default_Radix_Mark);
+         Radix_Mark : Wide_Character := Default_Radix_Mark)
+         renames Strings.Overloaded_Put;
 
       procedure Put (
          Item : Num;
@@ -76,7 +83,8 @@ package Ada.Wide_Text_IO.Editing is
          Currency : Wide_String := Default_Currency;
          Fill : Wide_Character := Default_Fill;
          Separator : Wide_Character := Default_Separator;
-         Radix_Mark : Wide_Character := Default_Radix_Mark);
+         Radix_Mark : Wide_Character := Default_Radix_Mark)
+         renames Strings.Overloaded_Put;
 
       procedure Put (
          To : out Wide_String;
@@ -85,7 +93,8 @@ package Ada.Wide_Text_IO.Editing is
          Currency : Wide_String := Default_Currency;
          Fill : Wide_Character := Default_Fill;
          Separator : Wide_Character := Default_Separator;
-         Radix_Mark : Wide_Character := Default_Radix_Mark);
+         Radix_Mark : Wide_Character := Default_Radix_Mark)
+         renames Strings.Overloaded_Put;
 
    end Decimal_Output;
 

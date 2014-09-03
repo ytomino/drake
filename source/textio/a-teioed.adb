@@ -631,14 +631,30 @@ package body Ada.Text_IO.Editing is
 
    package body Decimal_Output is
 
-      function Length (Pic : Picture; Currency : String := Default_Currency)
+      function Overloaded_Length (Pic : Picture; Currency : String)
          return Natural
          renames Editing.Length;
 
-      function Valid (
+      function Overloaded_Length (Pic : Picture; Currency : Wide_String)
+         return Natural is
+      begin
+         return Overloaded_Length (
+            Pic,
+            Currency => String'(1 .. Currency'Length => '$'));
+      end Overloaded_Length;
+
+      function Overloaded_Length (Pic : Picture; Currency : Wide_Wide_String)
+         return Natural is
+      begin
+         return Overloaded_Length (
+            Pic,
+            Currency => String'(1 .. Currency'Length => '$'));
+      end Overloaded_Length;
+
+      function Overloaded_Valid (
          Item : Num;
          Pic : Picture;
-         Currency : String := Default_Currency)
+         Currency : String)
          return Boolean
       is
          Error : Boolean;
@@ -656,15 +672,39 @@ package body Ada.Text_IO.Editing is
             Radix_Mark => Default_Radix_Mark,
             Error => Error);
          return not Error;
-      end Valid;
+      end Overloaded_Valid;
 
-      function Image (
+      function Overloaded_Valid (
          Item : Num;
          Pic : Picture;
-         Currency : String := Default_Currency;
-         Fill : Character := Default_Fill;
-         Separator : Character := Default_Separator;
-         Radix_Mark : Character := Default_Radix_Mark)
+         Currency : Wide_String)
+         return Boolean is
+      begin
+         return Overloaded_Valid (
+            Item,
+            Pic,
+            Currency => String'(1 .. Currency'Length => '$'));
+      end Overloaded_Valid;
+
+      function Overloaded_Valid (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String)
+         return Boolean is
+      begin
+         return Overloaded_Valid (
+            Item,
+            Pic,
+            Currency => String'(1 .. Currency'Length => '$'));
+      end Overloaded_Valid;
+
+      function Overloaded_Image (
+         Item : Num;
+         Pic : Picture;
+         Currency : String;
+         Fill : Character;
+         Separator : Character;
+         Radix_Mark : Character)
          return String
       is
          Error : Boolean;
@@ -685,46 +725,268 @@ package body Ada.Text_IO.Editing is
                raise Layout_Error;
             end if;
          end return;
-      end Image;
+      end Overloaded_Image;
 
-      procedure Put (
+      function Overloaded_Image (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_String;
+         Fill : Wide_Character;
+         Separator : Wide_Character;
+         Radix_Mark : Wide_Character)
+         return Wide_String
+      is
+         Image : constant String := Overloaded_Image (
+            Item,
+            Pic,
+            Currency => String'(1 .. Currency'Length => '$'),
+            Fill => '*', -- Editing.Default_Fill
+            Separator => ',', -- Editing.Default_Separator
+            Radix_Mark => '.'); -- Editing.Default_Radix_Mark
+         Result : Wide_String (Image'Range);
+         I : Positive := Result'First;
+      begin
+         while I <= Result'Last loop
+            case Image (I) is
+               when '$' =>
+                  Result (I .. I + Currency'Length - 1) := Currency;
+                  I := I + Currency'Length;
+               when '*' =>
+                  Result (I) := Fill;
+                  I := I + 1;
+               when ',' =>
+                  Result (I) := Separator;
+                  I := I + 1;
+               when '.' =>
+                  Result (I) := Radix_Mark;
+                  I := I + 1;
+               when others =>
+                  Result (I) :=
+                     Wide_Character'Val (Character'Pos (Image (I)));
+                  I := I + 1;
+            end case;
+         end loop;
+         return Result;
+      end Overloaded_Image;
+
+      function Overloaded_Image (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String;
+         Fill : Wide_Wide_Character;
+         Separator : Wide_Wide_Character;
+         Radix_Mark : Wide_Wide_Character)
+         return Wide_Wide_String
+      is
+         Image : constant String := Overloaded_Image (
+            Item,
+            Pic,
+            Currency => String'(1 .. Currency'Length => '$'),
+            Fill => '*', -- Editing.Default_Fill
+            Separator => ',', -- Editing.Default_Separator
+            Radix_Mark => '.'); -- Editing.Default_Radix_Mark
+         Result : Wide_Wide_String (Image'Range);
+         I : Positive := Result'First;
+      begin
+         while I <= Result'Last loop
+            case Image (I) is
+               when '$' =>
+                  Result (I .. I + Currency'Length - 1) := Currency;
+                  I := I + Currency'Length;
+               when '*' =>
+                  Result (I) := Fill;
+                  I := I + 1;
+               when ',' =>
+                  Result (I) := Separator;
+                  I := I + 1;
+               when '.' =>
+                  Result (I) := Radix_Mark;
+                  I := I + 1;
+               when others =>
+                  Result (I) :=
+                     Wide_Wide_Character'Val (Character'Pos (Image (I)));
+                  I := I + 1;
+            end case;
+         end loop;
+         return Result;
+      end Overloaded_Image;
+
+      procedure Overloaded_Put (
          File : File_Type;
          Item : Num;
          Pic : Picture;
-         Currency : String := Default_Currency;
-         Fill : Character := Default_Fill;
-         Separator : Character := Default_Separator;
-         Radix_Mark : Character := Default_Radix_Mark) is
+         Currency : String;
+         Fill : Character;
+         Separator : Character;
+         Radix_Mark : Character) is
       begin
-         Put (File, Image (Item, Pic, Currency, Fill, Separator, Radix_Mark));
-      end Put;
+         Overloaded_Put (
+            File,
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
 
-      procedure Put (
+      procedure Overloaded_Put (
+         File : File_Type;
          Item : Num;
          Pic : Picture;
-         Currency : String := Default_Currency;
-         Fill : Character := Default_Fill;
-         Separator : Character := Default_Separator;
-         Radix_Mark : Character := Default_Radix_Mark) is
+         Currency : Wide_String;
+         Fill : Wide_Character;
+         Separator : Wide_Character;
+         Radix_Mark : Wide_Character) is
       begin
-         Put (
-            Current_Output.all,
-            Image (Item, Pic, Currency, Fill, Separator, Radix_Mark));
-      end Put;
+         Overloaded_Put (
+            File,
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
 
-      procedure Put (
+      procedure Overloaded_Put (
+         File : File_Type;
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String;
+         Fill : Wide_Wide_Character;
+         Separator : Wide_Wide_Character;
+         Radix_Mark : Wide_Wide_Character) is
+      begin
+         Overloaded_Put (
+            File,
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
+
+      procedure Overloaded_Put (
+         Item : Num;
+         Pic : Picture;
+         Currency : String;
+         Fill : Character;
+         Separator : Character;
+         Radix_Mark : Character) is
+      begin
+         Overloaded_Put (
+            Current_Output.all,
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
+
+      procedure Overloaded_Put (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_String;
+         Fill : Wide_Character;
+         Separator : Wide_Character;
+         Radix_Mark : Wide_Character) is
+      begin
+         Overloaded_Put (
+            Current_Output.all,
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
+
+      procedure Overloaded_Put (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String;
+         Fill : Wide_Wide_Character;
+         Separator : Wide_Wide_Character;
+         Radix_Mark : Wide_Wide_Character) is
+      begin
+         Overloaded_Put (
+            Current_Output.all,
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
+
+      procedure Overloaded_Put (
          To : out String;
          Item : Num;
          Pic : Picture;
-         Currency : String := Default_Currency;
-         Fill : Character := Default_Fill;
-         Separator : Character := Default_Separator;
-         Radix_Mark : Character := Default_Radix_Mark) is
+         Currency : String;
+         Fill : Character;
+         Separator : Character;
+         Radix_Mark : Character) is
       begin
          Formatting.Tail (
             To,
-            Image (Item, Pic, Currency, Fill, Separator, Radix_Mark));
-      end Put;
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
+
+      procedure Overloaded_Put (
+         To : out Wide_String;
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_String;
+         Fill : Wide_Character;
+         Separator : Wide_Character;
+         Radix_Mark : Wide_Character) is
+      begin
+         Formatting.Tail (
+            To,
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
+
+      procedure Overloaded_Put (
+         To : out Wide_Wide_String;
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String;
+         Fill : Wide_Wide_Character;
+         Separator : Wide_Wide_Character;
+         Radix_Mark : Wide_Wide_Character) is
+      begin
+         Formatting.Tail (
+            To,
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => Currency,
+               Fill => Fill,
+               Separator => Separator,
+               Radix_Mark => Radix_Mark));
+      end Overloaded_Put;
 
    end Decimal_Output;
 
