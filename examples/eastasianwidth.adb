@@ -1,6 +1,6 @@
-with Ada.Characters.East_Asian_Width;
+with Ada.Strings.East_Asian_Width;
 procedure eastasianwidth is
-	use Ada.Characters.East_Asian_Width;
+	use Ada.Strings.East_Asian_Width;
 	subtype WWC is Wide_Wide_Character;
 begin
 	pragma Assert (Kind (WWC'Val (0)) = Neutral);

@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-package Ada.Characters.East_Asian_Width is
+package Ada.Strings.East_Asian_Width is
    --  Unicode property "east asian width".
    pragma Pure;
 
@@ -19,4 +19,4 @@ package Ada.Characters.East_Asian_Width is
       return Boolean;
    pragma Inline (Is_Full_Width);
 
-end Ada.Characters.East_Asian_Width;
+end Ada.Strings.East_Asian_Width;

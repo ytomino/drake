@@ -1,5 +1,5 @@
 with Ada.UCD.East_Asian_Width;
-package body Ada.Characters.East_Asian_Width is
+package body Ada.Strings.East_Asian_Width is
    use type UCD.UCS_4;
 
    pragma Compile_Time_Error (
@@ -106,4 +106,4 @@ package body Ada.Characters.East_Asian_Width is
          Width_Kind'Pos (Ambiguous) - Boolean'Pos (East_Asian);
    end Is_Full_Width;
 
-end Ada.Characters.East_Asian_Width;
+end Ada.Strings.East_Asian_Width;
