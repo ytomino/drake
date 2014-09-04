@@ -3,6 +3,7 @@ with Ada.Exception_Identification.From_Here;
 with System.UTF_Conversions;
 package body Ada.Strings.Naked_Maps is
    use Exception_Identification.From_Here;
+   use type System.UTF_Conversions.From_Status_Type;
    use type System.UTF_Conversions.UCS_4;
 
    --  implementation of alternative conversions functions
@@ -316,7 +317,7 @@ package body Ada.Strings.Naked_Maps is
             Code : System.UTF_Conversions.UCS_4;
             I_Next : Natural;
             J_Next : Natural;
-            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+            From_Status : System.UTF_Conversions.From_Status_Type;
             To_Status : System.UTF_Conversions.To_Status_Type; -- ignore
          begin
             --  get single unicode character
@@ -325,15 +326,21 @@ package body Ada.Strings.Naked_Maps is
                I_Next,
                Code,
                From_Status);
-            --  map it
-            Code := Wide_Wide_Character'Pos (
-               Value (Mapping, Wide_Wide_Character'Val (Code)));
-            --  put it
-            System.UTF_Conversions.To_UTF_8 (
-               Code,
-               Item (J .. Item'Last),
-               J_Next,
-               To_Status);
+            if From_Status = System.UTF_Conversions.Success then
+               --  map it
+               Code := Wide_Wide_Character'Pos (
+                  Value (Mapping, Wide_Wide_Character'Val (Code)));
+               --  put it
+               System.UTF_Conversions.To_UTF_8 (
+                  Code,
+                  Item (J .. Item'Last),
+                  J_Next,
+                  To_Status);
+            else
+               --  keep illegal sequence
+               J_Next := J + (I_Next - I);
+               Item (J .. J_Next) := Source (I .. I_Next);
+            end if;
             --  forwarding
             I := I_Next + 1;
             J := J_Next + 1;
@@ -357,29 +364,51 @@ package body Ada.Strings.Naked_Maps is
             I_Next : Natural;
             J_Code : System.UTF_Conversions.UCS_4;
             J_Next : Natural;
-            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+            L_From_Status : System.UTF_Conversions.From_Status_Type;
+            R_From_Status : System.UTF_Conversions.From_Status_Type;
          begin
             System.UTF_Conversions.From_UTF_8 (
                Left (I .. Left'Last),
                I_Next,
                I_Code,
-               From_Status);
-            I := I_Next + 1;
-            I_Code := Wide_Wide_Character'Pos (
-               Value (Mapping, Wide_Wide_Character'Val (I_Code)));
+               L_From_Status);
             System.UTF_Conversions.From_UTF_8 (
                Right (J .. Right'Last),
                J_Next,
                J_Code,
-               From_Status);
-            J := J_Next + 1;
-            J_Code := Wide_Wide_Character'Pos (
-               Value (Mapping, Wide_Wide_Character'Val (J_Code)));
-            if I_Code < J_Code then
-               return -1;
-            elsif I_Code > J_Code then
-               return 1;
+               R_From_Status);
+            if L_From_Status = System.UTF_Conversions.Success then
+               if R_From_Status = System.UTF_Conversions.Success then
+                  --  Left and Right are legal
+                  I_Code := Wide_Wide_Character'Pos (
+                     Value (Mapping, Wide_Wide_Character'Val (I_Code)));
+                  J_Code := Wide_Wide_Character'Pos (
+                     Value (Mapping, Wide_Wide_Character'Val (J_Code)));
+                  if I_Code < J_Code then
+                     return -1;
+                  elsif I_Code > J_Code then
+                     return 1;
+                  end if;
+               else
+                  --  Left is legal, Right is illegal
+                  return -1; -- legal < illegal
+               end if;
+            else
+               if R_From_Status = System.UTF_Conversions.Success then
+                  --  Left is illegal, Right is legal
+                  return 1; -- illegal > legal
+               else
+                  --  Left and Right are illegal
+                  if Left (I .. I_Next) < Right (J .. J_Next) then
+                     return -1;
+                  elsif Left (I .. I_Next) > Right (J .. J_Next) then
+                     return 1;
+                  end if;
+               end if;
             end if;
+            --  forwarding
+            I := I_Next + 1;
+            J := J_Next + 1;
          end;
       end loop;
       return Boolean'Pos (I <= Left'Last) - Boolean'Pos (J <= Right'Last);

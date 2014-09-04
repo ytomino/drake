@@ -675,7 +675,7 @@ package body Ada.Strings.Generic_Fixed is
                declare
                   Next : Positive;
                   Code : Wide_Wide_Character;
-                  Error : Boolean;
+                  Error : Boolean; -- ignore
                begin
                   Get (Pattern (P .. Pattern'Last), Next, Code, Error);
                   P := Next + 1;
@@ -686,7 +686,7 @@ package body Ada.Strings.Generic_Fixed is
             declare
                Next : Positive;
                Code : Wide_Wide_Character;
-               Error : Boolean;
+               Error : Boolean; -- ignore
             begin
                Get (Source (Result + 1 .. Source'Last), Next, Code, Error);
                Result := Next;
@@ -730,8 +730,14 @@ package body Ada.Strings.Generic_Fixed is
                      Error : Boolean;
                   begin
                      Get (Source (Current .. Source'Last), Next, Code, Error);
-                     Code := Mapping (Code, Params);
-                     Put (Code, Buffer, Character_Length);
+                     if Error then
+                        Character_Length := Next - Current + 1;
+                        Buffer (1 .. Character_Length) :=
+                           Source (Current .. Next);
+                     else
+                        Code := Mapping (Code, Params);
+                        Put (Code, Buffer, Character_Length);
+                     end if;
                      P := Pattern'First + Character_Length;
                      if Buffer (1 .. Character_Length) =
                         Pattern (Pattern'First .. P - 1)
@@ -748,8 +754,14 @@ package body Ada.Strings.Generic_Fixed is
                               J_Next,
                               Code,
                               Error);
-                           Code := Mapping (Code, Params);
-                           Put (Code, Buffer, Character_Length);
+                           if Error then
+                              Character_Length := J_Next - J + 1;
+                              Buffer (1 .. Character_Length) :=
+                                 Source (J .. J_Next);
+                           else
+                              Code := Mapping (Code, Params);
+                              Put (Code, Buffer, Character_Length);
+                           end if;
                            exit when Buffer (1 .. Character_Length) /=
                               Pattern (P .. P + Character_Length - 1);
                            P := P + Character_Length;
@@ -801,8 +813,14 @@ package body Ada.Strings.Generic_Fixed is
                         Previous,
                         Code,
                         Error);
-                     Code := Mapping (Code, Params);
-                     Put (Code, Buffer, Character_Length);
+                     if Error then
+                        Character_Length := Current - Previous + 1;
+                        Buffer (1 .. Character_Length) :=
+                           Source (Previous .. Current);
+                     else
+                        Code := Mapping (Code, Params);
+                        Put (Code, Buffer, Character_Length);
+                     end if;
                      P := Pattern'Last - Character_Length;
                      if Buffer (1 .. Character_Length) =
                         Pattern (P + 1 .. Pattern'Last)
@@ -819,8 +837,14 @@ package body Ada.Strings.Generic_Fixed is
                               J_Previous,
                               Code,
                               Error);
-                           Code := Mapping (Code, Params);
-                           Put (Code, Buffer, Character_Length);
+                           if Error then
+                              Character_Length := J - J_Previous + 1;
+                              Buffer (1 .. Character_Length) :=
+                                 Source (J_Previous .. J);
+                           else
+                              Code := Mapping (Code, Params);
+                              Put (Code, Buffer, Character_Length);
+                           end if;
                            exit when Buffer (1 .. Character_Length) /=
                               Pattern (P - Character_Length + 1 .. P);
                            P := P - Character_Length;
@@ -863,14 +887,20 @@ package body Ada.Strings.Generic_Fixed is
                Code : Wide_Wide_Character;
                I_Next : Natural;
                J_Next : Natural;
-               Error : Boolean; -- ignore
+               Error : Boolean;
             begin
                --  get single unicode character
                Get (Source (I .. Source'Last), I_Next, Code, Error);
-               --  map it
-               Code := Mapping (Code, Params);
-               --  put it
-               Put (Code, Result (J .. Result'Last), J_Next);
+               if Error then
+                  --  keep illegal sequence
+                  J_Next := J + (I_Next - I);
+                  Result (J .. J_Next) := Source (I .. I_Next);
+               else
+                  --  map it
+                  Code := Mapping (Code, Params);
+                  --  put it
+                  Put (Code, Result (J .. Result'Last), J_Next);
+               end if;
                --  forwarding
                I := I_Next + 1;
                J := J_Next + 1;
@@ -1217,8 +1247,14 @@ package body Ada.Strings.Generic_Fixed is
                Error : Boolean;
             begin
                Get (Source (I .. Source'Last), I_Next, Code, Error);
-               if Is_In (Code, Set) = (Test = Inside) then
-                  return I;
+               if Error then
+                  if Test /= Inside then -- illegal sequence is outside
+                     return I;
+                  end if;
+               else
+                  if Is_In (Code, Set) = (Test = Inside) then
+                     return I;
+                  end if;
                end if;
                I := I_Next + 1;
             end;
@@ -1245,8 +1281,14 @@ package body Ada.Strings.Generic_Fixed is
                   I_Previous,
                   Code,
                   Error);
-               if Is_In (Code, Set) = (Test = Inside) then
-                  return I;
+               if Error then
+                  if Test /= Inside then -- illegal sequence is outside
+                     return I;
+                  end if;
+               else
+                  if Is_In (Code, Set) = (Test = Inside) then
+                     return I;
+                  end if;
                end if;
                I := I_Previous - 1;
             end;
@@ -1298,7 +1340,7 @@ package body Ada.Strings.Generic_Fixed is
                Error : Boolean;
             begin
                Get (Source (I .. Source'Last), I_Next, Code, Error);
-               if Is_In (Code, Set) then
+               if not Error and then Is_In (Code, Set) then
                   Result := Result + 1;
                end if;
                I := I_Next + 1;
@@ -1351,7 +1393,11 @@ package body Ada.Strings.Generic_Fixed is
                Error : Boolean; -- ignore
             begin
                Get (Source (Last + 1 .. Source'Last), Next, Code, Error);
-               exit when Is_In (Code, Set) /= (Test = Inside);
+               if Error then
+                  exit when Test = Inside; -- illegal sequence is outside
+               else
+                  exit when Is_In (Code, Set) /= (Test = Inside);
+               end if;
                Last := Next;
             end;
          end loop;
@@ -1370,14 +1416,18 @@ package body Ada.Strings.Generic_Fixed is
             declare
                Previous : Positive;
                Code : Wide_Wide_Character;
-               Error : Boolean; -- ignore
+               Error : Boolean;
             begin
                Get_Reverse (
                   Source (Source'First .. First - 1),
                   Previous,
                   Code,
                   Error);
-               exit when Is_In (Code, Set) /= (Test = Inside);
+               if Error then
+                  exit when Test = Inside; -- illegal sequence is outside
+               else
+                  exit when Is_In (Code, Set) /= (Test = Inside);
+               end if;
                First := Previous;
             end;
          end loop;

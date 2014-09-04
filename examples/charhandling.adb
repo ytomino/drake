@@ -35,5 +35,8 @@ begin
 				raise;
 		end;
 	end loop;
+	-- illegal sequence
+	pragma Assert (UH.To_Upper ("a" & Character'Val (16#E0#) & "b") = "A" & Character'Val (16#E0#) & "B");
+	pragma Assert (UH.To_Lower ("A" & Character'Val (16#C0#) & "B") = "a" & Character'Val (16#C0#) & "b");
 	pragma Debug (Ada.Debug.Put ("OK"));
 end charhandling;
