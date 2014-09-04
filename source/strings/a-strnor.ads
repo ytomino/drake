@@ -5,6 +5,12 @@ package Ada.Strings.Normalization is
    --  This package provides unicode normalization.
    pragma Preelaborate;
 
+   procedure Iterate (
+      Expanded : Boolean;
+      Process : not null access procedure (
+         Precomposed : Wide_Wide_Character;
+         Decomposed : Wide_Wide_String));
+
    Expanding : constant := 4; -- max decomposed length of one code point
 
    --  NFD (only reversible)

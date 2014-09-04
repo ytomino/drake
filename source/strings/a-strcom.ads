@@ -9,6 +9,12 @@ package Ada.Strings.Composites is
 
    function Combining_Class (Item : Wide_Wide_Character) return Class;
 
+   --  get all combining characters that each combining class of them > 0
+   procedure Iterate (
+      Process : not null access procedure (
+         Item : Wide_Wide_Character;
+         Combining_Class : Class));
+
    function Is_Variation_Selector (Item : Wide_Wide_Character)
       return Boolean;
 

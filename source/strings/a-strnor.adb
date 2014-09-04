@@ -137,8 +137,8 @@ package body Ada.Strings.Normalization is
       end loop;
    end D_Buff;
 
-   procedure D_Init;
-   procedure D_Init is
+   procedure D_Fill (Map : out D_Map_Array);
+   procedure D_Fill (Map : out D_Map_Array) is
       procedure Fill (
          Map : in out D_Map_Array;
          I : in out Positive;
@@ -173,7 +173,7 @@ package body Ada.Strings.Normalization is
                   Wide_Wide_Character'Val (Table (J).Mapping (K));
             end loop;
             for K in 3 .. Expanding loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
+               Map (I).To (K) := Wide_Wide_Character'Val (0);
             end loop;
             I := I + 1;
          end loop;
@@ -194,41 +194,47 @@ package body Ada.Strings.Normalization is
                   Wide_Wide_Character'Val (Table (J).Mapping (K));
             end loop;
             for K in 3 .. Expanding loop
-               D_Map (I).To (K) := Wide_Wide_Character'Val (0);
+               Map (I).To (K) := Wide_Wide_Character'Val (0);
             end loop;
             I := I + 1;
          end loop;
       end Fill;
    begin
       --  make table
-      D_Map := new D_Map_Array;
       declare
-         I : Positive := D_Map'First;
+         I : Positive := Map'First;
       begin
          --  16#00C0# ..
-         Fill (D_Map.all, I, UCD.Normalization.NFD_D_Table_XXXX);
+         Fill (Map, I, UCD.Normalization.NFD_D_Table_XXXX);
          --  16#0340#
-         Fill (D_Map.all, I, UCD.Normalization.NFD_S_Table_XXXX);
+         Fill (Map, I, UCD.Normalization.NFD_S_Table_XXXX);
          --  16#0344# ..
-         Fill (D_Map.all, I, UCD.Normalization.NFD_E_Table_XXXX);
+         Fill (Map, I, UCD.Normalization.NFD_E_Table_XXXX);
          --  16#1109A# ..
-         Fill (D_Map.all, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
+         Fill (Map, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
          --  16#1D15E#
-         Fill (D_Map.all, I, UCD.Normalization.NFD_E_Table_XXXXXXXX);
-         pragma Check (Validate, I = D_Map'Last + 1);
+         Fill (Map, I, UCD.Normalization.NFD_E_Table_XXXXXXXX);
+         pragma Check (Validate, I = Map'Last + 1);
       end;
       --  sort
-      for I in D_Map'First + 1 .. D_Map'Last loop
-         for J in reverse D_Map'First .. I - 1 loop
-            exit when D_Map (J).From <= D_Map (J + 1).From;
+      for I in Map'First + 1 .. Map'Last loop
+         for J in reverse Map'First .. I - 1 loop
+            exit when Map (J).From <= Map (J + 1).From;
             declare
-               T : constant D_Map_Element := D_Map (J);
+               T : constant D_Map_Element := Map (J);
             begin
-               D_Map (J) := D_Map (J + 1);
-               D_Map (J + 1) := T;
+               Map (J) := Map (J + 1);
+               Map (J + 1) := T;
             end;
          end loop;
       end loop;
+   end D_Fill;
+
+   procedure D_Init;
+   procedure D_Init is
+   begin
+      D_Map := new D_Map_Array;
+      D_Fill (D_Map.all);
       --  expanding re-decomposable
       loop
          declare
@@ -1004,6 +1010,46 @@ package body Ada.Strings.Normalization is
          Composites.Get_Combined);
 
    --  implementation
+
+   procedure Iterate (
+      Expanded : Boolean;
+      Process : not null access procedure (
+         Precomposed : Wide_Wide_Character;
+         Decomposed : Wide_Wide_String))
+   is
+      procedure Do_Iterate (
+         Map : D_Map_Array;
+         Process : not null access procedure (
+            Precomposed : Wide_Wide_Character;
+            Decomposed : Wide_Wide_String));
+      procedure Do_Iterate (
+         Map : D_Map_Array;
+         Process : not null access procedure (
+            Precomposed : Wide_Wide_Character;
+            Decomposed : Wide_Wide_String)) is
+      begin
+         for I in Map'Range loop
+            declare
+               Item : D_Map_Element
+                  renames Map (I);
+            begin
+               Process (Item.From, Item.To (1 .. Decomposed_Length (Item.To)));
+            end;
+         end loop;
+      end Do_Iterate;
+   begin
+      if Expanded then
+         System.Once.Initialize (D_Flag'Access, D_Init'Access);
+         Do_Iterate (D_Map.all, Process);
+      else
+         declare
+            Map : D_Map_Array;
+         begin
+            D_Fill (Map);
+            Do_Iterate (Map, Process);
+         end;
+      end if;
+   end Iterate;
 
    procedure Decompose (
       Item : String;

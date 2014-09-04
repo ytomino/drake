@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.UCD is
+private package Ada.UCD is
    --  This is the parent package of Unicode Character Database.
    pragma Pure;
 

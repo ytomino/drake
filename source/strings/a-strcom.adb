@@ -259,6 +259,43 @@ package body Ada.Strings.Composites is
       end if;
    end Combining_Class;
 
+   procedure Iterate (
+      Process : not null access procedure (
+         Item : Wide_Wide_Character;
+         Combining_Class : Class)) is
+   begin
+      for I in UCD.Combining_Class.Table_XXXX'Range loop
+         declare
+            Item : UCD.Combining_Class.Table_16_Item_Type
+               renames UCD.Combining_Class.Table_XXXX (I);
+         begin
+            for J in
+               Item.Start ..
+               Item.Start + UCD.UCS_4 (Item.Length) - 1
+            loop
+               Process (
+                  Wide_Wide_Character'Val (J),
+                  Class (Item.Combining_Class));
+            end loop;
+         end;
+      end loop;
+      for I in UCD.Combining_Class.Table_1XXXX'Range loop
+         declare
+            Item : UCD.Combining_Class.Table_16_Item_Type
+               renames UCD.Combining_Class.Table_1XXXX (I);
+         begin
+            for J in
+               Item.Start ..
+               Item.Start + UCD.UCS_4 (Item.Length) - 1
+            loop
+               Process (
+                  Wide_Wide_Character'Val (J + 16#10000#),
+                  Class (Item.Combining_Class));
+            end loop;
+         end;
+      end loop;
+   end Iterate;
+
    function Is_Variation_Selector (Item : Wide_Wide_Character)
       return Boolean is
    begin

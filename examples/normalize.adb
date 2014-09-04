@@ -1,6 +1,5 @@
 with Ada.Strings.Composites;
 with Ada.Strings.Normalization;
-with Ada.UCD.Normalization.Unreversible; -- check
 procedure normalize is
 	use type Ada.Strings.Composites.Class;
 	subtype C is Character;
