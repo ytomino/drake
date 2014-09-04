@@ -1,51 +1,9 @@
 pragma License (Unrestricted);
 --  extended unit
+with Ada.Strings.Composites;
 package Ada.Strings.Normalization is
    --  This package provides unicode normalization.
    pragma Preelaborate;
-
-   type Class is range 0 .. 255;
-   for Class'Size use Standard'Storage_Unit;
-
-   function Combining_Class (Item : Wide_Wide_Character) return Class;
-
-   function Is_Variation_Selector (Item : Wide_Wide_Character)
-      return Boolean;
-
-   --  for sequence
-   type State is record
-      Next_Character : Wide_Wide_Character;
-      Next_Combining_Class : Class;
-      Next_Last : Natural;
-   end record;
-
-   procedure Start (Item : String; State : out Normalization.State);
-   procedure Start (Item : Wide_String; State : out Normalization.State);
-   procedure Start (Item : Wide_Wide_String; State : out Normalization.State);
-
-   --  get one combining character sequence
-   --    including trailing variation selector
-   procedure Get_Combined (
-      Item : String;
-      Last : out Natural);
-   procedure Get_Combined (
-      State : in out Normalization.State;
-      Item : String;
-      Last : out Natural);
-   procedure Get_Combined (
-      Item : Wide_String;
-      Last : out Natural);
-   procedure Get_Combined (
-      State : in out Normalization.State;
-      Item : Wide_String;
-      Last : out Natural);
-   procedure Get_Combined (
-      Item : Wide_Wide_String;
-      Last : out Natural);
-   procedure Get_Combined (
-      State : in out Normalization.State;
-      Item : Wide_Wide_String;
-      Last : out Natural);
 
    Expanding : constant := 4; -- max decomposed length of one code point
 
@@ -58,7 +16,7 @@ package Ada.Strings.Normalization is
       Out_Item : out String;
       Out_Last : out Natural); -- UTF-8
    procedure Decompose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : String;
       Last : out Natural;
       Out_Item : out String;
@@ -69,7 +27,7 @@ package Ada.Strings.Normalization is
       Out_Item : out Wide_String;
       Out_Last : out Natural); -- UTF-16
    procedure Decompose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
@@ -80,7 +38,7 @@ package Ada.Strings.Normalization is
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural); -- UTF-32
    procedure Decompose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
@@ -118,7 +76,7 @@ package Ada.Strings.Normalization is
       Out_Item : out String;
       Out_Last : out Natural);
    procedure Compose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : String;
       Last : out Natural;
       Out_Item : out String;
@@ -129,7 +87,7 @@ package Ada.Strings.Normalization is
       Out_Item : out Wide_String;
       Out_Last : out Natural);
    procedure Compose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
@@ -140,7 +98,7 @@ package Ada.Strings.Normalization is
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural);
    procedure Compose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;

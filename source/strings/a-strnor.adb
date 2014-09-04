@@ -1,7 +1,6 @@
 --  reference:
 --  http://www.unicode.org/reports/tr15/
 pragma Check_Policy (Validate, Off);
-with Ada.UCD.Combining_Class;
 with Ada.UCD.Normalization;
 with System.Once;
 with System.UTF_Conversions;
@@ -24,19 +23,6 @@ package body Ada.Strings.Normalization is
    begin
       return Left < Right;
    end Standard_Less;
-
-   --  see http://www.unicode.org/reports/tr15/#Hangul
-   package Hangle is
-      SBase : constant := 16#AC00#;
-      LBase : constant := 16#1100#;
-      VBase : constant := 16#1161#;
-      TBase : constant := 16#11A7#;
-      LCount : constant := 19;
-      VCount : constant := 21;
-      TCount : constant := 28;
-      NCount : constant := VCount * TCount; -- 588
-      SCount : constant := LCount * NCount; -- 11172
-   end Hangle;
 
    --  NFD
 
@@ -113,24 +99,25 @@ package body Ada.Strings.Normalization is
                To := D_Map (D).To;
                To_Length := Decomposed_Length (To);
             elsif Wide_Wide_Character'Pos (Item (I)) in
-               Hangle.SBase ..
-               Hangle.SBase + Hangle.SCount - 1
+               UCD.Hangul.SBase ..
+               UCD.Hangul.SBase + UCD.Hangul.SCount - 1
             then
                --  S to LV[T]
                declare
                   SIndex : constant UCD.UCS_4 :=
-                     Wide_Wide_Character'Pos (Item (I)) - Hangle.SBase;
+                     Wide_Wide_Character'Pos (Item (I)) - UCD.Hangul.SBase;
                   L : constant UCD.UCS_4 :=
-                     Hangle.LBase + SIndex / Hangle.NCount;
+                     UCD.Hangul.LBase + SIndex / UCD.Hangul.NCount;
                   V : constant UCD.UCS_4 :=
-                     Hangle.VBase + (SIndex rem Hangle.NCount) / Hangle.TCount;
+                     UCD.Hangul.VBase + SIndex rem UCD.Hangul.NCount
+                     / UCD.Hangul.TCount;
                   T : constant UCD.UCS_4 :=
-                     Hangle.TBase + SIndex rem Hangle.TCount;
+                     UCD.Hangul.TBase + SIndex rem UCD.Hangul.TCount;
                begin
                   To (1) := Wide_Wide_Character'Val (L);
                   To (2) := Wide_Wide_Character'Val (V);
                   To_Length := 2;
-                  if T /= Hangle.TBase then
+                  if T /= UCD.Hangul.TBase then
                      To (3) := Wide_Wide_Character'Val (T);
                      To_Length := 3;
                   end if;
@@ -346,37 +333,39 @@ package body Ada.Strings.Normalization is
                if C > 0 then
                   To := C_Map (C).To;
                elsif Wide_Wide_Character'Pos (From (1)) in
-                  Hangle.LBase ..
-                  Hangle.LBase + Hangle.LCount - 1
+                  UCD.Hangul.LBase ..
+                  UCD.Hangul.LBase + UCD.Hangul.LCount - 1
                   and then Wide_Wide_Character'Pos (From (2)) in
-                     Hangle.VBase ..
-                     Hangle.VBase + Hangle.VCount - 1
+                     UCD.Hangul.VBase ..
+                     UCD.Hangul.VBase + UCD.Hangul.VCount - 1
                then
                   --  LV to S
                   declare
                      LIndex : constant UCD.UCS_4 :=
                         Wide_Wide_Character'Pos (From (1))
-                        - Hangle.LBase;
+                        - UCD.Hangul.LBase;
                      VIndex : constant UCD.UCS_4 :=
                         Wide_Wide_Character'Pos (From (2))
-                        - Hangle.VBase;
+                        - UCD.Hangul.VBase;
                   begin
-                     To := Wide_Wide_Character'Val (Hangle.SBase
-                        + (LIndex * Hangle.VCount + VIndex) * Hangle.TCount);
+                     To := Wide_Wide_Character'Val (
+                        UCD.Hangul.SBase
+                        + (LIndex * UCD.Hangul.VCount + VIndex)
+                           * UCD.Hangul.TCount);
                   end;
                elsif Wide_Wide_Character'Pos (From (1)) in
-                  Hangle.SBase ..
-                  Hangle.SBase + Hangle.SCount - 1
+                  UCD.Hangul.SBase ..
+                  UCD.Hangul.SBase + UCD.Hangul.SCount - 1
                   and then Wide_Wide_Character'Pos (From (2)) in
-                     Hangle.TBase ..
-                     Hangle.TBase + Hangle.TCount - 1
+                     UCD.Hangul.TBase ..
+                     UCD.Hangul.TBase + UCD.Hangul.TCount - 1
                then
                   --  ST to T
                   declare
                      ch : constant UCD.UCS_4 :=
                         Wide_Wide_Character'Pos (From (1));
                      TIndex : constant UCD.UCS_4 :=
-                        Wide_Wide_Character'Pos (From (2)) - Hangle.TBase;
+                        Wide_Wide_Character'Pos (From (2)) - UCD.Hangul.TBase;
                   begin
                      To := Wide_Wide_Character'Val (ch + TIndex);
                   end;
@@ -474,23 +463,12 @@ package body Ada.Strings.Normalization is
          Result : out String_Type;
          Last : out Natural;
          Status : out System.UTF_Conversions.To_Status_Type);
+      with procedure Start (Item : String_Type; State : out Composites.State);
+      with procedure Get_Combined (
+         State : in out Composites.State;
+         Item : String_Type;
+         Last : out Natural);
    package Generic_Normalization is
-
-      procedure Start (Item : String_Type; State : out Normalization.State);
-
-      procedure Get_Combined_No_Length_Check (
-         State : in out Normalization.State;
-         Item : String_Type;
-         Last : out Natural);
-
-      procedure Get_Combined (
-         Item : String_Type;
-         Last : out Natural);
-
-      procedure Get_Combined (
-         State : in out Normalization.State;
-         Item : String_Type;
-         Last : out Natural);
 
       procedure Decode (
          Item : String_Type;
@@ -502,7 +480,7 @@ package body Ada.Strings.Normalization is
          Buffer_Last : out Natural);
 
       procedure Decompose_No_Length_Check (
-         State : in out Normalization.State;
+         State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
@@ -515,7 +493,7 @@ package body Ada.Strings.Normalization is
          Out_Last : out Natural);
 
       procedure Decompose (
-         State : in out Normalization.State;
+         State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
@@ -529,7 +507,7 @@ package body Ada.Strings.Normalization is
       function Decompose (Item : String_Type) return String_Type;
 
       procedure Compose_No_Length_Check (
-         State : in out Normalization.State;
+         State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
@@ -542,7 +520,7 @@ package body Ada.Strings.Normalization is
          Out_Last : out Natural);
 
       procedure Compose (
-         State : in out Normalization.State;
+         State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
@@ -581,142 +559,6 @@ package body Ada.Strings.Normalization is
 
    package body Generic_Normalization is
 
-      procedure Start (Item : String_Type; State : out Normalization.State) is
-         Code : System.UTF_Conversions.UCS_4;
-         From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
-      begin
-         if Item'Length = 0 then
-            State.Next_Character := Wide_Wide_Character'Val (0);
-            State.Next_Combining_Class := 0;
-            State.Next_Last := Item'Last;
-         else
-            From_UTF (Item, State.Next_Last, Code, From_Status);
-            State.Next_Character := Wide_Wide_Character'Val (Code);
-            State.Next_Combining_Class :=
-               Combining_Class (State.Next_Character);
-         end if;
-      end Start;
-
-      procedure Get_Combined_No_Length_Check (
-         State : in out Normalization.State;
-         Item : String_Type;
-         Last : out Natural)
-      is
-         Next : Natural;
-         Code : System.UTF_Conversions.UCS_4;
-         From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
-      begin
-         Last := State.Next_Last; -- skip first code point
-         if State.Next_Combining_Class = 0 then
-            Code := Wide_Wide_Character'Pos (State.Next_Character);
-            if Code in Hangle.LBase .. Hangle.LBase + Hangle.LCount - 1 then
-               From_UTF (
-                  Item (Last + 1 .. Item'Last),
-                  Next,
-                  Code,
-                  From_Status);
-               if Code in Hangle.VBase .. Hangle.VBase + Hangle.VCount - 1 then
-                  Last := Next; -- LV
-                  From_UTF (
-                     Item (Last + 1 .. Item'Last),
-                     Next,
-                     Code,
-                     From_Status);
-                  if Code in
-                     Hangle.TBase ..
-                     Hangle.TBase + Hangle.TCount - 1
-                  then
-                     Last := Next; -- LVT
-                  end if;
-               end if;
-            elsif Code in Hangle.SBase .. Hangle.SBase + Hangle.SCount - 1 then
-               From_UTF (
-                  Item (Last + 1 .. Item'Last),
-                  Next,
-                  Code,
-                  From_Status);
-               if Code in Hangle.TBase .. Hangle.TBase + Hangle.TCount - 1 then
-                  Last := Next; -- ST
-               end if;
-            end if;
-         end if;
-         declare
-            Current_Class : Class := State.Next_Combining_Class;
-         begin
-            State.Next_Character := Wide_Wide_Character'Val (0);
-            State.Next_Combining_Class := 0;
-            State.Next_Last := Last;
-            while Last < Item'Last loop
-               From_UTF (
-                  Item (Last + 1 .. Item'Last),
-                  Next,
-                  Code,
-                  From_Status);
-               State.Next_Character := Wide_Wide_Character'Val (Code);
-               State.Next_Combining_Class :=
-                  Combining_Class (State.Next_Character);
-               State.Next_Last := Next;
-               if State.Next_Combining_Class < Current_Class then
-                  exit;
-               elsif State.Next_Combining_Class = 0 then
-                  if Is_Variation_Selector (State.Next_Character) then
-                     --  get one variation selector
-                     Last := Next;
-                     if Last >= Item'Last then
-                        State.Next_Character := Wide_Wide_Character'Val (0);
-                        State.Next_Combining_Class := 0;
-                        State.Next_Last := Last;
-                     else
-                        From_UTF (
-                           Item (Last + 1 .. Item'Last),
-                           Next,
-                           Code,
-                           From_Status);
-                        State.Next_Character := Wide_Wide_Character'Val (Code);
-                        State.Next_Combining_Class :=
-                           Combining_Class (State.Next_Character);
-                        State.Next_Last := Next;
-                     end if;
-                  end if;
-                  exit;
-               end if;
-               Current_Class := State.Next_Combining_Class;
-               Last := Next;
-            end loop;
-         end;
-      end Get_Combined_No_Length_Check;
-
-      procedure Get_Combined (
-         Item : String_Type;
-         Last : out Natural) is
-      begin
-         if Item'Length = 0 then
-            Last := Item'Last;
-         else
-            declare
-               St : State;
-            begin
-               Start (Item, St);
-               Get_Combined_No_Length_Check (St, Item, Last);
-            end;
-         end if;
-      end Get_Combined;
-
-      procedure Get_Combined (
-         State : in out Normalization.State;
-         Item : String_Type;
-         Last : out Natural) is
-      begin
-         if Item'Length = 0 then
-            Last := Item'Last;
-            State.Next_Character := Wide_Wide_Character'Val (0);
-            State.Next_Combining_Class := 0;
-            State.Next_Last := Last;
-         else
-            Get_Combined_No_Length_Check (State, Item, Last);
-         end if;
-      end Get_Combined;
-
       procedure Decode (
          Item : String_Type;
          Buffer : out Wide_Wide_String;
@@ -752,14 +594,14 @@ package body Ada.Strings.Normalization is
       end Encode;
 
       procedure Decompose_No_Length_Check (
-         State : in out Normalization.State;
+         State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
          Out_Last : out Natural) is
       begin
          --  get one combining character sequence
-         Get_Combined_No_Length_Check (State, Item, Last);
+         Get_Combined (State, Item, Last);
          --  normalization
          declare
             Decomposed : Boolean;
@@ -798,7 +640,7 @@ package body Ada.Strings.Normalization is
          else
             System.Once.Initialize (D_Flag'Access, D_Init'Access);
             declare
-               St : State;
+               St : Composites.State;
             begin
                Start (Item, St);
                Decompose_No_Length_Check (St, Item, Last, Out_Item, Out_Last);
@@ -807,7 +649,7 @@ package body Ada.Strings.Normalization is
       end Decompose;
 
       procedure Decompose (
-         State : in out Normalization.State;
+         State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
@@ -834,7 +676,7 @@ package body Ada.Strings.Normalization is
          if Item'Length > 0 then
             System.Once.Initialize (D_Flag'Access, D_Init'Access);
             declare
-               St : State;
+               St : Composites.State;
                Last : Natural := Item'First - 1;
             begin
                Start (Item, St);
@@ -859,14 +701,14 @@ package body Ada.Strings.Normalization is
       end Decompose;
 
       procedure Compose_No_Length_Check (
-         State : in out Normalization.State;
+         State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
          Out_Last : out Natural) is
       begin
          --  get one combining character sequence
-         Get_Combined_No_Length_Check (State, Item, Last);
+         Get_Combined (State, Item, Last);
          --  normalization
          declare
             Decomposed : Boolean;
@@ -908,7 +750,7 @@ package body Ada.Strings.Normalization is
          else
             System.Once.Initialize (C_Flag'Access, C_Init'Access);
             declare
-               St : State;
+               St : Composites.State;
             begin
                Start (Item, St);
                Compose_No_Length_Check (St, Item, Last, Out_Item, Out_Last);
@@ -917,7 +759,7 @@ package body Ada.Strings.Normalization is
       end Compose;
 
       procedure Compose (
-         State : in out Normalization.State;
+         State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
@@ -944,7 +786,7 @@ package body Ada.Strings.Normalization is
          if Item'Length > 0 then
             System.Once.Initialize (C_Flag'Access, C_Init'Access);
             declare
-               St : State;
+               St : Composites.State;
                Last : Natural := Item'First - 1;
             begin
                Start (Item, St);
@@ -989,9 +831,9 @@ package body Ada.Strings.Normalization is
          end if;
          System.Once.Initialize (D_Flag'Access, D_Init'Access);
          declare
-            Left_State : State;
+            Left_State : Composites.State;
             Left_Last : Natural := Left'First - 1;
-            Right_State : State;
+            Right_State : Composites.State;
             Right_Last : Natural := Right'First - 1;
          begin
             Start (Left, Left_State);
@@ -1068,9 +910,9 @@ package body Ada.Strings.Normalization is
          end if;
          System.Once.Initialize (D_Flag'Access, D_Init'Access);
          declare
-            Left_State : State;
+            Left_State : Composites.State;
             Left_Last : Natural := Left'First - 1;
-            Right_State : State;
+            Right_State : Composites.State;
             Right_Last : Natural := Right'First - 1;
          begin
             Start (Left, Left_State);
@@ -1139,136 +981,29 @@ package body Ada.Strings.Normalization is
          String,
          System.UTF_Conversions.UTF_8_Max_Length,
          System.UTF_Conversions.From_UTF_8,
-         System.UTF_Conversions.To_UTF_8);
+         System.UTF_Conversions.To_UTF_8,
+         Composites.Start,
+         Composites.Get_Combined);
    package UTF_16 is
       new Generic_Normalization (
          Wide_Character,
          Wide_String,
          System.UTF_Conversions.UTF_16_Max_Length,
          System.UTF_Conversions.From_UTF_16,
-         System.UTF_Conversions.To_UTF_16);
+         System.UTF_Conversions.To_UTF_16,
+         Composites.Start,
+         Composites.Get_Combined);
    package UTF_32 is
       new Generic_Normalization (
          Wide_Wide_Character,
          Wide_Wide_String,
          1,
          System.UTF_Conversions.From_UTF_32,
-         System.UTF_Conversions.To_UTF_32);
+         System.UTF_Conversions.To_UTF_32,
+         Composites.Start,
+         Composites.Get_Combined);
 
    --  implementation
-
-   function Combining_Class (Item : Wide_Wide_Character) return Class is
-      Code : UCD.UCS_4 := Wide_Wide_Character'Pos (Item);
-   begin
-      if Code > 16#ffff# then
-         declare
-            L : Positive := UCD.Combining_Class.Table_1XXXX'First;
-            H : Natural := UCD.Combining_Class.Table_1XXXX'Last;
-         begin
-            Code := Code - 16#10000#;
-            loop
-               declare
-                  M : constant Positive := (L + H) / 2;
-               begin
-                  if Code < UCD.Combining_Class.Table_1XXXX (M).Start then
-                     H := M - 1;
-                  elsif Code >= UCD.Combining_Class.Table_1XXXX (M).Start
-                     + UCD.UCS_4 (UCD.Combining_Class.Table_1XXXX (M).Length)
-                  then
-                     L := M + 1;
-                  else
-                     return Class (
-                        UCD.Combining_Class.Table_1XXXX (M).Combining_Class);
-                  end if;
-               end;
-               if L > H then
-                  return 0;
-               end if;
-            end loop;
-         end;
-      else
-         declare
-            L : Positive := UCD.Combining_Class.Table_XXXX'First;
-            H : Natural := UCD.Combining_Class.Table_XXXX'Last;
-         begin
-            loop
-               declare
-                  M : constant Positive := (L + H) / 2;
-               begin
-                  if Code < UCD.Combining_Class.Table_XXXX (M).Start then
-                     H := M - 1;
-                  elsif Code >= UCD.Combining_Class.Table_XXXX (M).Start
-                     + UCD.UCS_4 (UCD.Combining_Class.Table_XXXX (M).Length)
-                  then
-                     L := M + 1;
-                  else
-                     return Class (
-                        UCD.Combining_Class.Table_XXXX (M).Combining_Class);
-                  end if;
-               end;
-               if L > H then
-                  return 0;
-               end if;
-            end loop;
-         end;
-      end if;
-   end Combining_Class;
-
-   function Is_Variation_Selector (Item : Wide_Wide_Character)
-      return Boolean is
-   begin
-      case Wide_Wide_Character'Pos (Item) is
-         when 16#180B# .. 16#180D# -- MONGOLIAN FREE VARIATION SELECTOR (1..3)
-            | 16#FE00# .. 16#FE0F# -- VARIATION SELECTOR (1..16)
-            | 16#E0100# .. 16#E01EF# -- VARIATION SELECTOR (17..256)
-         =>
-            return True;
-         when others =>
-            return False;
-      end case;
-   end Is_Variation_Selector;
-
-   procedure Start (Item : String; State : out Normalization.State)
-      renames UTF_8.Start;
-
-   procedure Start (Item : Wide_String; State : out Normalization.State)
-      renames UTF_16.Start;
-
-   procedure Start (Item : Wide_Wide_String; State : out Normalization.State)
-      renames UTF_32.Start;
-
-   procedure Get_Combined (
-      Item : String;
-      Last : out Natural)
-      renames UTF_8.Get_Combined;
-
-   procedure Get_Combined (
-      State : in out Normalization.State;
-      Item : String;
-      Last : out Natural)
-      renames UTF_8.Get_Combined;
-
-   procedure Get_Combined (
-      Item : Wide_String;
-      Last : out Natural)
-      renames UTF_16.Get_Combined;
-
-   procedure Get_Combined (
-      State : in out Normalization.State;
-      Item : Wide_String;
-      Last : out Natural)
-      renames UTF_16.Get_Combined;
-
-   procedure Get_Combined (
-      Item : Wide_Wide_String;
-      Last : out Natural)
-      renames UTF_32.Get_Combined;
-
-   procedure Get_Combined (
-      State : in out Normalization.State;
-      Item : Wide_Wide_String;
-      Last : out Natural)
-      renames UTF_32.Get_Combined;
 
    procedure Decompose (
       Item : String;
@@ -1278,7 +1013,7 @@ package body Ada.Strings.Normalization is
       renames UTF_8.Decompose;
 
    procedure Decompose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : String;
       Last : out Natural;
       Out_Item : out String;
@@ -1293,7 +1028,7 @@ package body Ada.Strings.Normalization is
       renames UTF_16.Decompose;
 
    procedure Decompose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
@@ -1308,7 +1043,7 @@ package body Ada.Strings.Normalization is
       renames UTF_32.Decompose;
 
    procedure Decompose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
@@ -1356,7 +1091,7 @@ package body Ada.Strings.Normalization is
       renames UTF_8.Compose;
 
    procedure Compose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : String;
       Last : out Natural;
       Out_Item : out String;
@@ -1371,7 +1106,7 @@ package body Ada.Strings.Normalization is
       renames UTF_16.Compose;
 
    procedure Compose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
@@ -1386,7 +1121,7 @@ package body Ada.Strings.Normalization is
       renames UTF_32.Compose;
 
    procedure Compose (
-      State : in out Normalization.State;
+      State : in out Composites.State;
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
