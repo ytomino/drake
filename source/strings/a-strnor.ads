@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-package Ada.Characters.Normalization is
+package Ada.Strings.Normalization is
    --  This package provides unicode normalization.
    pragma Preelaborate;
 
@@ -231,4 +231,4 @@ package Ada.Characters.Normalization is
    --  note 2: sorting by combining class is unimplemented
    --  note 3: Decompose is faster than Compose on current implementation
 
-end Ada.Characters.Normalization;
+end Ada.Strings.Normalization;

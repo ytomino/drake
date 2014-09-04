@@ -5,7 +5,7 @@ with Ada.UCD.Combining_Class;
 with Ada.UCD.Normalization;
 with System.Once;
 with System.UTF_Conversions;
-package body Ada.Characters.Normalization is
+package body Ada.Strings.Normalization is
    use type UCD.UCS_4;
    use type System.UTF_Conversions.UCS_4;
 
@@ -1504,4 +1504,4 @@ package body Ada.Characters.Normalization is
       return Boolean
       renames UTF_32.Less;
 
-end Ada.Characters.Normalization;
+end Ada.Strings.Normalization;
