@@ -22,6 +22,7 @@ package Ada.Strings.Composites is
    type State is record
       Next_Character : Wide_Wide_Character;
       Next_Combining_Class : Class;
+      Next_Is_Illegal_Sequence : Boolean;
       Next_Last : Natural;
    end record;
 
@@ -33,24 +34,30 @@ package Ada.Strings.Composites is
    --    including trailing variation selector
    procedure Get_Combined (
       Item : String;
-      Last : out Natural);
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean);
    procedure Get_Combined (
       State : in out Composites.State;
       Item : String;
-      Last : out Natural);
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean);
    procedure Get_Combined (
       Item : Wide_String;
-      Last : out Natural);
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean);
    procedure Get_Combined (
       State : in out Composites.State;
       Item : Wide_String;
-      Last : out Natural);
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean);
    procedure Get_Combined (
       Item : Wide_Wide_String;
-      Last : out Natural);
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean);
    procedure Get_Combined (
       State : in out Composites.State;
       Item : Wide_Wide_String;
-      Last : out Natural);
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean);
 
 end Ada.Strings.Composites;

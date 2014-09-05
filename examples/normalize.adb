@@ -19,13 +19,17 @@ begin
 			& WWC'Val (16#304b#) & WWC'Val (16#3099#) -- ka & dakuten
 			& "e" & WWC'Val (16#0323#) & WWC'Val (16#0304#) & WWC'Val (16#0301#);
 		Last : Natural;
+		Is_Illegal_Sequence : Boolean;
 	begin
-		Ada.Strings.Composites.Get_Combined (S, Last);
+		Ada.Strings.Composites.Get_Combined (S, Last, Is_Illegal_Sequence);
 		pragma Assert (Last = 3);
-		Ada.Strings.Composites.Get_Combined (S (Last + 1 .. S'Last), Last);
+		pragma Assert (not Is_Illegal_Sequence);
+		Ada.Strings.Composites.Get_Combined (S (Last + 1 .. S'Last), Last, Is_Illegal_Sequence);
 		pragma Assert (Last = 5);
-		Ada.Strings.Composites.Get_Combined (S (Last + 1 .. S'Last), Last);
+		pragma Assert (not Is_Illegal_Sequence);
+		Ada.Strings.Composites.Get_Combined (S (Last + 1 .. S'Last), Last, Is_Illegal_Sequence);
 		pragma Assert (Last = 9);
+		pragma Assert (not Is_Illegal_Sequence);
 	end;
 	-- decomposing and composing
 	pragma Assert (Ada.Strings.Normalization.Decompose (WWS'("")) = "");

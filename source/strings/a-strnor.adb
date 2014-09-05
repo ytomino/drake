@@ -473,7 +473,8 @@ package body Ada.Strings.Normalization is
       with procedure Get_Combined (
          State : in out Composites.State;
          Item : String_Type;
-         Last : out Natural);
+         Last : out Natural;
+         Is_Illegal_Sequence : out Boolean);
    package Generic_Normalization is
 
       procedure Decode (
@@ -604,34 +605,38 @@ package body Ada.Strings.Normalization is
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
-         Out_Last : out Natural) is
+         Out_Last : out Natural)
+      is
+         Is_Illegal_Sequence : Boolean;
       begin
          --  get one combining character sequence
-         Get_Combined (State, Item, Last);
-         --  normalization
-         declare
-            Decomposed : Boolean;
-            Buffer : Wide_Wide_String (
-               1 ..
-               Expanding * Max_Length * (Last - Item'First + 1));
-            Buffer_Last : Natural;
-         begin
-            --  decoding
-            Decode (
-               Item (Item'First .. Last),
-               Buffer,
-               Buffer_Last);
-            --  decomposing
-            D_Buff (Buffer, Buffer_Last, Decomposed);
-            --  encoding
-            if Decomposed then
-               Encode (Buffer (1 .. Buffer_Last), Out_Item, Out_Last);
-            else
-               Out_Last := Out_Item'First + (Last - Item'First);
-               Out_Item (Out_Item'First .. Out_Last) :=
-                  Item (Item'First .. Last);
-            end if;
-         end;
+         Get_Combined (State, Item, Last, Is_Illegal_Sequence);
+         if not Is_Illegal_Sequence then
+            --  normalization
+            declare
+               Decomposed : Boolean;
+               Buffer : Wide_Wide_String (
+                  1 ..
+                  Expanding * Max_Length * (Last - Item'First + 1));
+               Buffer_Last : Natural;
+            begin
+               --  decoding
+               Decode (
+                  Item (Item'First .. Last),
+                  Buffer,
+                  Buffer_Last);
+               --  decomposing
+               D_Buff (Buffer, Buffer_Last, Decomposed);
+               --  encoding
+               if Decomposed then
+                  Encode (Buffer (1 .. Buffer_Last), Out_Item, Out_Last);
+               else
+                  Out_Last := Out_Item'First + (Last - Item'First);
+                  Out_Item (Out_Item'First .. Out_Last) :=
+                     Item (Item'First .. Last);
+               end if;
+            end;
+         end if;
       end Decompose_No_Length_Check;
 
       procedure Decompose (
@@ -662,9 +667,11 @@ package body Ada.Strings.Normalization is
          Out_Last : out Natural) is
       begin
          if Item'Length = 0 then
+            --  finished
             Last := Item'Last;
             State.Next_Character := Wide_Wide_Character'Val (0);
             State.Next_Combining_Class := 0;
+            State.Next_Is_Illegal_Sequence := False;
             State.Next_Last := Last;
             Out_Last := Out_Item'First - 1;
          else
@@ -711,37 +718,41 @@ package body Ada.Strings.Normalization is
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
-         Out_Last : out Natural) is
+         Out_Last : out Natural)
+      is
+         Is_Illegal_Sequence : Boolean;
       begin
          --  get one combining character sequence
-         Get_Combined (State, Item, Last);
-         --  normalization
-         declare
-            Decomposed : Boolean;
-            Composed : Boolean;
-            Buffer : Wide_Wide_String (
-               1 ..
-               Expanding * Max_Length * (Last - Item'First + 1));
-            Buffer_Last : Natural;
-         begin
-            --  decoding
-            Decode (
-               Item (Item'First .. Last),
-               Buffer,
-               Buffer_Last);
-            --  first, decomposing
-            D_Buff (Buffer, Buffer_Last, Decomposed);
-            --  next, composing
-            C_Buff (Buffer, Buffer_Last, Composed);
-            --  encoding
-            if Decomposed or else Composed then
-               Encode (Buffer (1 .. Buffer_Last), Out_Item, Out_Last);
-            else
-               Out_Last := Out_Item'First + (Last - Item'First);
-               Out_Item (Out_Item'First .. Out_Last) :=
-                  Item (Item'First .. Last);
-            end if;
-         end;
+         Get_Combined (State, Item, Last, Is_Illegal_Sequence);
+         if not Is_Illegal_Sequence then
+            --  normalization
+            declare
+               Decomposed : Boolean;
+               Composed : Boolean;
+               Buffer : Wide_Wide_String (
+                  1 ..
+                  Expanding * Max_Length * (Last - Item'First + 1));
+               Buffer_Last : Natural;
+            begin
+               --  decoding
+               Decode (
+                  Item (Item'First .. Last),
+                  Buffer,
+                  Buffer_Last);
+               --  first, decomposing
+               D_Buff (Buffer, Buffer_Last, Decomposed);
+               --  next, composing
+               C_Buff (Buffer, Buffer_Last, Composed);
+               --  encoding
+               if Decomposed or else Composed then
+                  Encode (Buffer (1 .. Buffer_Last), Out_Item, Out_Last);
+               else
+                  Out_Last := Out_Item'First + (Last - Item'First);
+                  Out_Item (Out_Item'First .. Out_Last) :=
+                     Item (Item'First .. Last);
+               end if;
+            end;
+         end if;
       end Compose_No_Length_Check;
 
       procedure Compose (
@@ -772,9 +783,11 @@ package body Ada.Strings.Normalization is
          Out_Last : out Natural) is
       begin
          if Item'Length = 0 then
+            --  finished
             Last := Item'Last;
             State.Next_Character := Wide_Wide_Character'Val (0);
             State.Next_Combining_Class := 0;
+            State.Next_Is_Illegal_Sequence := False;
             State.Next_Last := Last;
             Out_Last := Out_Item'First - 1;
          else
@@ -849,41 +862,68 @@ package body Ada.Strings.Normalization is
                declare
                   Left_First : constant Positive := Left_Last + 1;
                   Right_First : constant Positive := Right_Last + 1;
+                  Left_Is_Illegal_Sequence : Boolean;
+                  Right_Is_Illegal_Sequence : Boolean;
                begin
                   Get_Combined (
                      Left_State,
                      Left (Left_First .. Left'Last),
-                     Left_Last);
+                     Left_Last,
+                     Left_Is_Illegal_Sequence);
                   Get_Combined (
                      Right_State,
                      Right (Right_First .. Right'Last),
-                     Right_Last);
-                  declare
-                     Left_Buffer : Wide_Wide_String (
-                        1 ..
-                        Expanding * Max_Length * (Left_Last - Left_First + 1));
-                     Left_Buffer_Last : Natural;
-                     Right_Buffer : Wide_Wide_String (
-                        1 ..
-                        Expanding * Max_Length
-                           * (Right_Last - Right_First + 1));
-                     Right_Buffer_Last : Natural;
-                  begin
-                     Decode (
-                        Left (Left_First .. Left_Last),
-                        Left_Buffer,
-                        Left_Buffer_Last);
-                     Decode (
-                        Right (Right_First .. Right_Last),
-                        Right_Buffer,
-                        Right_Buffer_Last);
-                     if not Equal_Combined (
-                        Left_Buffer (1 .. Left_Buffer_Last),
-                        Right_Buffer (1 .. Right_Buffer_Last))
-                     then
+                     Right_Last,
+                     Right_Is_Illegal_Sequence);
+                  if not Left_Is_Illegal_Sequence then
+                     if not Right_Is_Illegal_Sequence then
+                        --  left and right are legal
+                        declare
+                           Left_Buffer : Wide_Wide_String (
+                              1 ..
+                              Expanding
+                                 * Max_Length
+                                 * (Left_Last - Left_First + 1));
+                           Left_Buffer_Last : Natural;
+                           Right_Buffer : Wide_Wide_String (
+                              1 ..
+                              Expanding
+                                 * Max_Length
+                                 * (Right_Last - Right_First + 1));
+                           Right_Buffer_Last : Natural;
+                        begin
+                           Decode (
+                              Left (Left_First .. Left_Last),
+                              Left_Buffer,
+                              Left_Buffer_Last);
+                           Decode (
+                              Right (Right_First .. Right_Last),
+                              Right_Buffer,
+                              Right_Buffer_Last);
+                           if not Equal_Combined (
+                              Left_Buffer (1 .. Left_Buffer_Last),
+                              Right_Buffer (1 .. Right_Buffer_Last))
+                           then
+                              return False;
+                           end if;
+                        end;
+                     else
+                        --  left is legal, right is illegal
                         return False;
                      end if;
-                  end;
+                  else
+                     if not Right_Is_Illegal_Sequence then
+                        --  left is illegal, right is legal
+                        return False;
+                     else
+                        --  left and right are illegal
+                        if Left (Left_First .. Left_Last) /=
+                           Right (Right_First .. Right_Last)
+                        then
+                           return False;
+                        end if;
+                     end if;
+                  end if;
                end;
                --  detect ends
                if Left_Last >= Left'Last then
@@ -928,46 +968,77 @@ package body Ada.Strings.Normalization is
                declare
                   Left_First : constant Positive := Left_Last + 1;
                   Right_First : constant Positive := Right_Last + 1;
+                  Left_Is_Illegal_Sequence : Boolean;
+                  Right_Is_Illegal_Sequence : Boolean;
                begin
                   Get_Combined (
                      Left_State,
                      Left (Left_First .. Left'Last),
-                     Left_Last);
+                     Left_Last,
+                     Left_Is_Illegal_Sequence);
                   Get_Combined (
                      Right_State,
                      Right (Right_First .. Right'Last),
-                     Right_Last);
-                  declare
-                     Left_Buffer : Wide_Wide_String (
-                        1 ..
-                        Expanding * Max_Length * (Left_Last - Left_First + 1));
-                     Left_Buffer_Last : Natural;
-                     Right_Buffer : Wide_Wide_String (
-                        1 ..
-                        Expanding * Max_Length
-                           * (Right_Last - Right_First + 1));
-                     Right_Buffer_Last : Natural;
-                  begin
-                     Decode (
-                        Left (Left_First .. Left_Last),
-                        Left_Buffer,
-                        Left_Buffer_Last);
-                     Decode (
-                        Right (Right_First .. Right_Last),
-                        Right_Buffer,
-                        Right_Buffer_Last);
-                     if Less_Combined (
-                        Left_Buffer (1 .. Left_Buffer_Last),
-                        Right_Buffer (1 .. Right_Buffer_Last))
-                     then
+                     Right_Last,
+                     Right_Is_Illegal_Sequence);
+                  if not Left_Is_Illegal_Sequence then
+                     if not Right_Is_Illegal_Sequence then
+                        --  left and right are legal
+                        declare
+                           Left_Buffer : Wide_Wide_String (
+                              1 ..
+                              Expanding
+                                 * Max_Length
+                                 * (Left_Last - Left_First + 1));
+                           Left_Buffer_Last : Natural;
+                           Right_Buffer : Wide_Wide_String (
+                              1 ..
+                              Expanding
+                                 * Max_Length
+                                 * (Right_Last - Right_First + 1));
+                           Right_Buffer_Last : Natural;
+                        begin
+                           Decode (
+                              Left (Left_First .. Left_Last),
+                              Left_Buffer,
+                              Left_Buffer_Last);
+                           Decode (
+                              Right (Right_First .. Right_Last),
+                              Right_Buffer,
+                              Right_Buffer_Last);
+                           if Less_Combined (
+                              Left_Buffer (1 .. Left_Buffer_Last),
+                              Right_Buffer (1 .. Right_Buffer_Last))
+                           then
+                              return True;
+                           elsif Less_Combined (
+                              Right_Buffer (1 .. Right_Buffer_Last),
+                              Left_Buffer (1 .. Left_Buffer_Last))
+                           then
+                              return False;
+                           end if;
+                        end;
+                     else
+                        --  left is legal, right is illegal
                         return True;
-                     elsif Less_Combined (
-                        Right_Buffer (1 .. Right_Buffer_Last),
-                        Left_Buffer (1 .. Left_Buffer_Last))
-                     then
-                        return False;
                      end if;
-                  end;
+                  else
+                     if not Right_Is_Illegal_Sequence then
+                        --  left is illegal, right is legal
+                        return False;
+                     else
+                        --  left and right are illegal
+                        if Left (Left_First .. Left_Last) <
+                           Right (Right_First .. Right_Last)
+                        then
+                           return True;
+                        elsif Left (Left_First .. Left_Last) <
+                           Right (Right_First .. Right_Last)
+                        then
+                           return False;
+                        end if;
+                     end if;
+                  end if;
                end;
                --  detect ends
                if Left_Last >= Left'Last then
