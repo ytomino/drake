@@ -56,6 +56,10 @@ begin
 	pragma Assert (not Ada.Strings.Normalization.Equal (WWS'("AA"), "A"));
 	pragma Assert (not Ada.Strings.Normalization.Equal (WWS'("AA"), "AB"));
 	pragma Assert (not Ada.Strings.Normalization.Equal (WWS'("AB"), "AA"));
+	pragma Assert (not Ada.Strings.Normalization.Equal ((1 => WWC'Val (16#00C0#)), 'A' & WWC'Val (16#0301#)));
+	pragma Assert (Ada.Strings.Normalization.Equal ((1 => WWC'Val (16#00C1#)), 'A' & WWC'Val (16#0301#)));
+	pragma Assert (Ada.Strings.Normalization.Equal ((1 => WWC'Val (16#304c#)), WWC'Val (16#304b#) & WWC'Val (16#3099#)));
+	pragma Assert (Ada.Strings.Normalization.Equal (WWC'Val (16#304b#) & WWC'Val (16#3099#), (1 => WWC'Val (16#304c#))));
 	-- less
 	pragma Assert (not Ada.Strings.Normalization.Less (WWS'(""), ""));
 	pragma Assert (Ada.Strings.Normalization.Less (WWS'(""), "A"));
@@ -65,5 +69,9 @@ begin
 	pragma Assert (not Ada.Strings.Normalization.Less (WWS'("AA"), "A"));
 	pragma Assert (Ada.Strings.Normalization.Less (WWS'("AA"), "AB"));
 	pragma Assert (not Ada.Strings.Normalization.Less (WWS'("AB"), "AA"));
+	pragma Assert (Ada.Strings.Normalization.Less ((1 => WWC'Val (16#00C0#)), 'A' & WWC'Val (16#0301#)));
+	pragma Assert (not Ada.Strings.Normalization.Less ((1 => WWC'Val (16#00C1#)), 'A' & WWC'Val (16#0301#)));
+	pragma Assert (not Ada.Strings.Normalization.Less ((1 => WWC'Val (16#304c#)), WWC'Val (16#304b#) & WWC'Val (16#3099#)));
+	pragma Assert (not Ada.Strings.Normalization.Less (WWC'Val (16#304b#) & WWC'Val (16#3099#), (1 => WWC'Val (16#304c#))));
 	pragma Debug (Ada.Debug.Put ("OK"));
 end normalize;

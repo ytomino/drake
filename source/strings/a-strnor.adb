@@ -885,21 +885,31 @@ package body Ada.Strings.Normalization is
                                  * Max_Length
                                  * (Left_Last - Left_First + 1));
                            Left_Buffer_Last : Natural;
+                           Left_Decomposed : Boolean; -- ignore
                            Right_Buffer : Wide_Wide_String (
                               1 ..
                               Expanding
                                  * Max_Length
                                  * (Right_Last - Right_First + 1));
                            Right_Buffer_Last : Natural;
+                           Right_Decomposed : Boolean; -- ignore
                         begin
                            Decode (
                               Left (Left_First .. Left_Last),
                               Left_Buffer,
                               Left_Buffer_Last);
+                           D_Buff (
+                              Left_Buffer,
+                              Left_Buffer_Last,
+                              Left_Decomposed);
                            Decode (
                               Right (Right_First .. Right_Last),
                               Right_Buffer,
                               Right_Buffer_Last);
+                           D_Buff (
+                              Right_Buffer,
+                              Right_Buffer_Last,
+                              Right_Decomposed);
                            if not Equal_Combined (
                               Left_Buffer (1 .. Left_Buffer_Last),
                               Right_Buffer (1 .. Right_Buffer_Last))
@@ -991,21 +1001,31 @@ package body Ada.Strings.Normalization is
                                  * Max_Length
                                  * (Left_Last - Left_First + 1));
                            Left_Buffer_Last : Natural;
+                           Left_Decomposed : Boolean; -- ignore
                            Right_Buffer : Wide_Wide_String (
                               1 ..
                               Expanding
                                  * Max_Length
                                  * (Right_Last - Right_First + 1));
                            Right_Buffer_Last : Natural;
+                           Right_Decomposed : Boolean; -- ignore
                         begin
                            Decode (
                               Left (Left_First .. Left_Last),
                               Left_Buffer,
                               Left_Buffer_Last);
+                           D_Buff (
+                              Left_Buffer,
+                              Left_Buffer_Last,
+                              Left_Decomposed);
                            Decode (
                               Right (Right_First .. Right_Last),
                               Right_Buffer,
                               Right_Buffer_Last);
+                           D_Buff (
+                              Right_Buffer,
+                              Right_Buffer_Last,
+                              Right_Decomposed);
                            if Less_Combined (
                               Left_Buffer (1 .. Left_Buffer_Last),
                               Right_Buffer (1 .. Right_Buffer_Last))
