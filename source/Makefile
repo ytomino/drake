@@ -74,7 +74,7 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib/build
 
-SUBDIRS=ada83 calendar containers directories distributed environment image interfaces nls numerics pools streams strings tasking textio
+SUBDIRS=ada83 calendar containers directories distributed environment hash image interfaces nls numerics pools streams strings tasking textio
 
 ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
@@ -132,6 +132,7 @@ endif
 # containers  :                                # Ada.Containers
 # directories : calendar                       # Ada.Directories
 # distributed :                                # Annex E, Distributed Systems
+# hash        : strings                        # Ada.Strings.Hash and Hash_Case_Insensitive
 # image       :                                # support for 'Image and 'Value attributes
 # interfaces  :                                # Interfaces.C and Interfaces.COBOL
 # nls         :                                # System.Native_Encoding
@@ -382,6 +383,12 @@ $(RTSDIR)/adainclude/%.ads: environment/$(TARGETSUBDIR)/%.ads
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: environment/$(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: hash/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: hash/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: image/%.ads
