@@ -1,44 +1,17 @@
 pragma License (Unrestricted);
 --  Ada 2012
-with Ada.Strings.UTF_Encoding.Conversions;
+with Ada.Characters.Conversions;
+with Ada.Strings.UTF_Encoding.Generic_Strings;
 package Ada.Strings.UTF_Encoding.Strings is
-   pragma Pure;
-
-   --  Encoding / decoding between String and various encoding schemes
-   function Encode (
-      Item : String;
-      Output_Scheme : Encoding_Scheme;
-      Output_BOM : Boolean := False)
-      return UTF_String;
-
-   function Encode (
-      Item : String;
-      Output_BOM : Boolean := False)
-      return UTF_8_String;
-
-   function Encode (
-      Item : String;
-      Output_BOM : Boolean := False)
-      return UTF_16_Wide_String
-      renames Conversions.Convert;
-
-   --  extended
-   function Encode (
-      Item : String;
-      Output_BOM : Boolean := False)
-      return UTF_32_Wide_Wide_String
-      renames Conversions.Convert;
-
-   function Decode (
-      Item : UTF_String;
-      Input_Scheme : Encoding_Scheme)
-      return String;
-
-   function Decode (Item : UTF_8_String) return String;
-
-   function Decode (Item : UTF_16_Wide_String) return String;
-
-   --  extended
-   function Decode (Item : UTF_32_Wide_Wide_String) return String;
-
-end Ada.Strings.UTF_Encoding.Strings;
+   new Ada.Strings.UTF_Encoding.Generic_Strings (
+      Character,
+      String,
+      Expanding_From_8 => 1,
+      Expanding_From_16 => 3, -- Expanding_From_16_To_8
+      Expanding_From_32 => 6, -- Expanding_From_32_To_8
+      Expanding_To_8 => 1,
+      Expanding_To_16 => 1, -- Expanding_From_8_To_16
+      Expanding_To_32 => 1, -- Expanding_From_8_To_32
+      Get => Ada.Characters.Conversions.Get,
+      Put => Ada.Characters.Conversions.Put);
+pragma Pure (Ada.Strings.UTF_Encoding.Strings);

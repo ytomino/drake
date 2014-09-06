@@ -84,21 +84,6 @@ private
          + Encoding_Scheme'Pos (UTF_32LE) *
             Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
 
-   function Contains_BOM_8 (Item : UTF_String) return Boolean;
-   function Contains_BOM_16BE (Item : UTF_String) return Boolean;
-   function Contains_BOM_16LE (Item : UTF_String) return Boolean;
-   function Contains_BOM_32BE (Item : UTF_String) return Boolean;
-   function Contains_BOM_32LE (Item : UTF_String) return Boolean;
-
-   generic
-      type Character_Type is (<>);
-      type String_Type is array (Positive range <>) of Character_Type;
-      BOM : String_Type;
-   function Generic_Add_Or_Remove_BOM (
-      Item : String_Type;
-      Output_BOM : Boolean := False)
-      return String_Type;
-
    BOM_Table : constant array (Encoding_Scheme) of
       not null access constant UTF_String := (
          UTF_8 => BOM_8'Access,

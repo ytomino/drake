@@ -1,46 +1,17 @@
 pragma License (Unrestricted);
 --  Ada 2012
-with Ada.Strings.UTF_Encoding.Conversions;
+with Ada.Characters.Conversions;
+with Ada.Strings.UTF_Encoding.Generic_Strings;
 package Ada.Strings.UTF_Encoding.Wide_Wide_Strings is
-   pragma Pure;
-
-   --  Encoding / decoding between Wide_Wide_String
-   --  and various encoding schemes
-   function Encode (
-      Item : Wide_Wide_String;
-      Output_Scheme : Encoding_Scheme;
-      Output_BOM : Boolean := False)
-      return UTF_String
-      renames Conversions.Convert;
-
-   function Encode (
-      Item : Wide_Wide_String;
-      Output_BOM : Boolean := False)
-      return UTF_8_String
-      renames Conversions.Convert;
-
-   function Encode (
-      Item : Wide_Wide_String;
-      Output_BOM : Boolean := False)
-      return UTF_16_Wide_String
-      renames Conversions.Convert;
-
-   --  extended
-   function Encode (
-      Item : Wide_Wide_String;
-      Output_BOM : Boolean := False)
-      return UTF_32_Wide_Wide_String;
-
-   function Decode (
-      Item : UTF_String;
-      Input_Scheme : Encoding_Scheme)
-      return Wide_Wide_String;
-
-   function Decode (Item : UTF_8_String) return Wide_Wide_String;
-
-   function Decode (Item : UTF_16_Wide_String) return Wide_Wide_String;
-
-   --  extended
-   function Decode (Item : UTF_32_Wide_Wide_String) return Wide_Wide_String;
-
-end Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
+   new Ada.Strings.UTF_Encoding.Generic_Strings (
+      Wide_Wide_Character,
+      Wide_Wide_String,
+      Expanding_From_8 => 1, -- Expanding_From_8_To_32
+      Expanding_From_16 => 1, -- Expanding_From_16_To_32
+      Expanding_From_32 => 1,
+      Expanding_To_8 => 6, -- Expanding_From_32_To_8
+      Expanding_To_16 => 2, -- Expanding_From_32_To_16
+      Expanding_To_32 => 1,
+      Get => Ada.Characters.Conversions.Get,
+      Put => Ada.Characters.Conversions.Put);
+pragma Pure (Ada.Strings.UTF_Encoding.Wide_Wide_Strings);

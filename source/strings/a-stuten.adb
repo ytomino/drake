@@ -1,5 +1,11 @@
 package body Ada.Strings.UTF_Encoding is
 
+   function Contains_BOM_8 (Item : UTF_String) return Boolean;
+   function Contains_BOM_16BE (Item : UTF_String) return Boolean;
+   function Contains_BOM_16LE (Item : UTF_String) return Boolean;
+   function Contains_BOM_32BE (Item : UTF_String) return Boolean;
+   function Contains_BOM_32LE (Item : UTF_String) return Boolean;
+
    function Contains_BOM_8 (Item : UTF_String) return Boolean is
    begin
       return Item'Length >= 3
@@ -40,6 +46,8 @@ package body Ada.Strings.UTF_Encoding is
          and then Item (Item'First + 3) = BOM_32LE (4);
    end Contains_BOM_32LE;
 
+   --  implementation
+
    function Encoding (
       Item : UTF_String;
       Default : Encoding_Scheme := UTF_8)
@@ -59,28 +67,5 @@ package body Ada.Strings.UTF_Encoding is
          return Default;
       end if;
    end Encoding;
-
-   function Generic_Add_Or_Remove_BOM (
-      Item : String_Type;
-      Output_BOM : Boolean := False)
-      return String_Type
-   is
-      Has_BOM : constant Boolean := Item'Length >= BOM'Length
-         and then Item (Item'First .. Item'First + (BOM'Length - 1)) = BOM;
-   begin
-      if Output_BOM then
-         if Has_BOM then
-            return Item;
-         else
-            return BOM & Item;
-         end if;
-      else
-         if Has_BOM then
-            return Item (Item'First + BOM'Length .. Item'Last);
-         else
-            return Item;
-         end if;
-      end if;
-   end Generic_Add_Or_Remove_BOM;
 
 end Ada.Strings.UTF_Encoding;
