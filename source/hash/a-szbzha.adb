@@ -1,7 +1,7 @@
 with Ada.Strings.Wide_Wide_Hash;
-function Ada.Strings.Wide_Wide_Bounded.Hash (
+function Ada.Strings.Wide_Wide_Bounded.Wide_Wide_Hash (
    Key : Bounded.Bounded_Wide_Wide_String)
    return Containers.Hash_Type is
 begin
    return Strings.Wide_Wide_Hash (Key.Element (1 .. Key.Length));
-end Ada.Strings.Wide_Wide_Bounded.Hash;
+end Ada.Strings.Wide_Wide_Bounded.Wide_Wide_Hash;
