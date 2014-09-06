@@ -618,11 +618,6 @@ package Ada.Strings.Generic_Unbounded is
 
    end Generic_Functions;
 
-   generic
-      type Hash_Type is private;
-      with function Fixed_Hash (Key : String_Type) return Hash_Type;
-   function Generic_Hash (Key : Unbounded_String) return Hash_Type;
-
    --  for making constant Unbounded_String without dynamic allocation
    generic
       S : not null String_Constant_Access;

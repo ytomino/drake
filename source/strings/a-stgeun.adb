@@ -1124,11 +1124,6 @@ package body Ada.Strings.Generic_Unbounded is
 
    end Generic_Functions;
 
-   function Generic_Hash (Key : Unbounded_String) return Hash_Type is
-   begin
-      return Fixed_Hash (Key.Data.Items (1 .. Key.Length));
-   end Generic_Hash;
-
    package body Generic_Constant is
 
       S_Data : aliased constant Data := (
