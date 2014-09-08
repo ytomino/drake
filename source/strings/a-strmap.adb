@@ -1,5 +1,4 @@
 with Ada.Characters.Conversions;
-with Ada.Streams.Block_Transmission.Wide_Wide_Strings;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.UTF_Conversions.From_8_To_32;
@@ -982,6 +981,10 @@ package body Ada.Strings.Maps is
 
       package body Streaming is
 
+         --  compatibility with
+         --    Ordered_Maps (Wide_Wide_Character, Wide_Wide_Character)
+         --    and Hashed_Maps (Wide_Wide_Character, Wide_Wide_Character, ...)
+
          procedure Read (
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Character_Mapping)
@@ -993,17 +996,18 @@ package body Ada.Strings.Maps is
             if Length = 0 then
                Item.Data := Empty_Map_Data'Unrestricted_Access;
             else
-               Item.Data := new Map_Data'(
-                  Length => Length,
-                  Reference_Count => 1,
-                  From => <>,
-                  To => <>);
-               Streams.Block_Transmission.Wide_Wide_Strings.Read (
-                  Stream,
-                  Item.Data.From);
-               Streams.Block_Transmission.Wide_Wide_Strings.Read (
-                  Stream,
-                  Item.Data.To);
+               declare
+                  From, To : Wide_Wide_Character_Sequence (1 .. Length);
+               begin
+                  for I in 1 .. Length loop
+                     Wide_Wide_Character'Read (Stream, From (I));
+                     Wide_Wide_Character'Read (Stream, To (I));
+                  end loop;
+                  Item.Data := new Map_Data'(Naked_Maps.To_Mapping (
+                     From,
+                     To,
+                     Initial_Reference_Count => 1));
+               end;
             end if;
          end Read;
 
@@ -1012,12 +1016,10 @@ package body Ada.Strings.Maps is
             Item : Character_Mapping) is
          begin
             Integer'Write (Stream, Item.Data.Length);
-            Streams.Block_Transmission.Wide_Wide_Strings.Write (
-               Stream,
-               Item.Data.From);
-            Streams.Block_Transmission.Wide_Wide_Strings.Write (
-               Stream,
-               Item.Data.To);
+            for I in 1 .. Item.Data.Length loop
+               Wide_Wide_Character'Write (Stream, Item.Data.From (I));
+               Wide_Wide_Character'Write (Stream, Item.Data.To (I));
+            end loop;
          end Write;
 
       end Streaming;
