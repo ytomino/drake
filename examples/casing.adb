@@ -1,6 +1,10 @@
 with Ada.Containers;
 with Ada.Strings.Equal_Case_Insensitive;
+with Ada.Strings.Wide_Equal_Case_Insensitive;
+with Ada.Strings.Wide_Wide_Equal_Case_Insensitive;
 with Ada.Strings.Less_Case_Insensitive;
+with Ada.Strings.Wide_Less_Case_Insensitive;
+with Ada.Strings.Wide_Wide_Less_Case_Insensitive;
 with Ada.Strings.Hash_Case_Insensitive;
 with Ada.Strings.Wide_Hash_Case_Insensitive;
 with Ada.Strings.Wide_Wide_Hash_Case_Insensitive;

@@ -103,13 +103,6 @@ package Ada.Strings.Naked_Maps is
       Item : out String; -- Source'Length * 6, at least
       Last : out Natural);
 
-   --  for Equal_Case_Insensitive, Less_Case_Insensitive
-   function Compare (
-      Left : String;
-      Right : String;
-      Mapping : Character_Mapping)
-      return Integer;
-
 private
 
    type Character_Ranges_Array is
