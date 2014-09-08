@@ -92,15 +92,13 @@ package body Ada.Text_IO is
    procedure Raw_Get_Line (
       File : File_Type;
       Item : aliased out String_Access;
-      Last : out Natural)
-   is
-      Next : Positive := 1;
+      Last : out Natural) is
    begin
       Item := new String (1 .. 256);
+      Last := 0;
       loop
-         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         Overloaded_Get_Line (File, Item (Last + 1 .. Item'Last), Last);
          exit when Last < Item'Last;
-         Next := Item'Last + 1;
          Reallocate (Item, 1, Item'Last * 2);
       end loop;
    end Raw_Get_Line;
@@ -112,15 +110,13 @@ package body Ada.Text_IO is
    procedure Raw_Get_Line (
       File : File_Type;
       Item : aliased out Wide_String_Access;
-      Last : out Natural)
-   is
-      Next : Positive := 1;
+      Last : out Natural) is
    begin
       Item := new Wide_String (1 .. 256);
+      Last := 0;
       loop
-         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         Overloaded_Get_Line (File, Item (Last + 1 .. Item'Last), Last);
          exit when Last < Item'Last;
-         Next := Item'Last + 1;
          Reallocate (Item, 1, Item'Last * 2);
       end loop;
    end Raw_Get_Line;
@@ -132,15 +128,13 @@ package body Ada.Text_IO is
    procedure Raw_Get_Line (
       File : File_Type;
       Item : aliased out Wide_Wide_String_Access;
-      Last : out Natural)
-   is
-      Next : Positive := 1;
+      Last : out Natural) is
    begin
       Item := new Wide_Wide_String (1 .. 256);
+      Last := 0;
       loop
-         Overloaded_Get_Line (File, Item (Next .. Item'Last), Last);
+         Overloaded_Get_Line (File, Item (Last + 1 .. Item'Last), Last);
          exit when Last < Item'Last;
-         Next := Item'Last + 1;
          Reallocate (Item, 1, Item'Last * 2);
       end loop;
    end Raw_Get_Line;

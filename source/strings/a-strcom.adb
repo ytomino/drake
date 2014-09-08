@@ -78,7 +78,7 @@ package body Ada.Strings.Composites is
          Last : out Natural;
          Is_Illegal_Sequence : out Boolean)
       is
-         Next : Natural;
+         New_Last : Natural;
          Code : System.UTF_Conversions.UCS_4;
          From_Status : System.UTF_Conversions.From_Status_Type;
       begin
@@ -96,7 +96,7 @@ package body Ada.Strings.Composites is
                then
                   From_UTF (
                      Item (Last + 1 .. Item'Last),
-                     Next,
+                     New_Last,
                      Code,
                      From_Status);
                   if From_Status = System.UTF_Conversions.Success
@@ -104,10 +104,10 @@ package body Ada.Strings.Composites is
                         UCD.Hangul.VBase ..
                         UCD.Hangul.VBase + UCD.Hangul.VCount - 1
                   then
-                     Last := Next; -- LV
+                     Last := New_Last; -- LV
                      From_UTF (
                         Item (Last + 1 .. Item'Last),
-                        Next,
+                        New_Last,
                         Code,
                         From_Status);
                      if From_Status = System.UTF_Conversions.Success
@@ -115,7 +115,7 @@ package body Ada.Strings.Composites is
                            UCD.Hangul.TBase ..
                            UCD.Hangul.TBase + UCD.Hangul.TCount - 1
                      then
-                        Last := Next; -- LVT
+                        Last := New_Last; -- LVT
                      end if;
                   end if;
                elsif Code in
@@ -124,7 +124,7 @@ package body Ada.Strings.Composites is
                then
                   From_UTF (
                      Item (Last + 1 .. Item'Last),
-                     Next,
+                     New_Last,
                      Code,
                      From_Status);
                   if From_Status = System.UTF_Conversions.Success
@@ -132,7 +132,7 @@ package body Ada.Strings.Composites is
                         UCD.Hangul.TBase ..
                         UCD.Hangul.TBase + UCD.Hangul.TCount - 1
                   then
-                     Last := Next; -- ST
+                     Last := New_Last; -- ST
                   end if;
                end if;
             end if;

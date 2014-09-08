@@ -309,21 +309,21 @@ package body Ada.Strings.Naked_Maps is
       Item : out String; -- Source'Length * 6, at least
       Last : out Natural)
    is
-      I : Natural := Source'First;
-      J : Natural := Item'First;
+      Source_Last : Natural := Source'First - 1;
    begin
-      while I <= Source'Last loop
+      Last := Item'First - 1;
+      while Source_Last < Source'Last loop
          declare
+            Source_Index : constant Positive := Source_Last + 1;
+            Index : constant Positive := Last + 1;
             Code : System.UTF_Conversions.UCS_4;
-            I_Next : Natural;
-            J_Next : Natural;
             From_Status : System.UTF_Conversions.From_Status_Type;
             To_Status : System.UTF_Conversions.To_Status_Type; -- ignore
          begin
             --  get single unicode character
             System.UTF_Conversions.From_UTF_8 (
-               Source (I .. Source'Last),
-               I_Next,
+               Source (Source_Index .. Source'Last),
+               Source_Last,
                Code,
                From_Status);
             if From_Status = System.UTF_Conversions.Success then
@@ -333,20 +333,16 @@ package body Ada.Strings.Naked_Maps is
                --  put it
                System.UTF_Conversions.To_UTF_8 (
                   Code,
-                  Item (J .. Item'Last),
-                  J_Next,
+                  Item (Index .. Item'Last),
+                  Last,
                   To_Status);
             else
                --  keep illegal sequence
-               J_Next := J + (I_Next - I);
-               Item (J .. J_Next) := Source (I .. I_Next);
+               Last := Index + (Source_Last - Source_Index);
+               Item (Index .. Last) := Source (Source_Index .. Source_Last);
             end if;
-            --  forwarding
-            I := I_Next + 1;
-            J := J_Next + 1;
          end;
       end loop;
-      Last := J - 1;
    end Translate;
 
    procedure Sort (From, To : in out Character_Sequence) is

@@ -9,21 +9,19 @@ is
       Containers.Murmur_Hash_3.Initialize (0);
    Count : Containers.Count_Type := 0;
    Result : Containers.Hash_Type;
-   I : Natural := Key'First;
+   Last : Natural := Key'First - 1;
 begin
-   while I <= Key'Last loop
+   while Last < Key'Last loop
       declare
          Code : Wide_Wide_Character;
-         Next : Natural;
          Is_Illegal_Sequence : Boolean; -- ignore
       begin
          --  get single unicode character
          Get (
-            Key (I .. Key'Last),
-            Next,
+            Key (Last + 1 .. Key'Last),
+            Last,
             Code,
             Is_Illegal_Sequence);
-         I := Next + 1;
          Count := Count + 1;
          --  update
          Containers.Murmur_Hash_3.Update (
