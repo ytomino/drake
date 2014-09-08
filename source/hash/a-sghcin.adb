@@ -1,9 +1,14 @@
+with Ada.Containers.Murmur_Hash_3;
 with Ada.Strings.Naked_Maps.Case_Folding;
 function Ada.Strings.Generic_Hash_Case_Insensitive (Key : String_Type)
    return Containers.Hash_Type
 is
-   use type Containers.Hash_Type;
-   Result : Containers.Hash_Type := 0;
+   Mapping : constant not null access Naked_Maps.Character_Mapping :=
+      Strings.Naked_Maps.Case_Folding.Case_Folding_Map;
+   State : Containers.Murmur_Hash_3.State :=
+      Containers.Murmur_Hash_3.Initialize (0);
+   Count : Containers.Count_Type := 0;
+   Result : Containers.Hash_Type;
    I : Natural := Key'First;
 begin
    while I <= Key'Last loop
@@ -19,13 +24,16 @@ begin
             Code,
             Is_Illegal_Sequence);
          I := Next + 1;
+         Count := Count + 1;
          --  update
-         Result := Containers.Rotate_Left (Result, 5)
-            xor Wide_Wide_Character'Pos (
-               Strings.Naked_Maps.Value (
-                  Strings.Naked_Maps.Case_Folding.Case_Folding_Map.all,
-                  Code));
+         Containers.Murmur_Hash_3.Update (
+            State,
+            Containers.Hash_Type'(
+               Wide_Wide_Character'Pos (
+                  Strings.Naked_Maps.Value (Mapping.all, Code))));
       end;
    end loop;
+   Containers.Murmur_Hash_3.Update (State, Count);
+   Containers.Murmur_Hash_3.Finalize (State, Result);
    return Result;
 end Ada.Strings.Generic_Hash_Case_Insensitive;

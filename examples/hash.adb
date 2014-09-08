@@ -28,5 +28,8 @@ begin
 			null;
 		end loop;
 	end loop;
+	-- the hash algorithm is MurmurHash3 (seed = 0)
+	pragma Assert (Ada.Strings.Hash ("") = 0);
+	pragma Assert (Ada.Strings.Hash ("a") = 16#2b038801#);
 	pragma Debug (Ada.Debug.Put ("OK"));
 end hash;
