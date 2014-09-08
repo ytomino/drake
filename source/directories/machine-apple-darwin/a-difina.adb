@@ -396,18 +396,18 @@ package body Ada.Directories.File_Names is
                   Stack (Top) := Trailing_Code;
                   Last := Trailing_Last;
                else
-                  --  reverse
-                  for I in 0 .. Top / 2 - 1 loop
-                     declare
-                        Temp : constant System.UTF_Conversions.UCS_4 :=
-                           Stack (Stack'First + I);
-                     begin
-                        Stack (Stack'First + I) := Stack (Top - I);
-                        Stack (Top - 1) := Temp;
-                     end;
-                  end loop;
                   exit;
                end if;
+            end;
+         end loop;
+         --  reverse trailing composable characters
+         for I in 0 .. Top / 2 - 1 loop
+            declare
+               Temp : constant System.UTF_Conversions.UCS_4 :=
+                  Stack (Stack'First + I);
+            begin
+               Stack (Stack'First + I) := Stack (Top - I);
+               Stack (Top - I) := Temp;
             end;
          end loop;
          --  push taken code
