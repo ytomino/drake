@@ -1268,29 +1268,27 @@ package body Ada.Strings.Generic_Fixed is
          Test : Membership := Inside)
          return Natural
       is
-         I : Natural := Source'Last;
+         First : Positive := Source'Last + 1;
       begin
-         while I >= Source'First loop
+         while First > Source'First loop
             declare
-               I_Previous : Positive;
                Code : Wide_Wide_Character;
                Error : Boolean;
             begin
                Get_Reverse (
-                  Source (Source'First .. I),
-                  I_Previous,
+                  Source (Source'First .. First - 1),
+                  First,
                   Code,
                   Error);
                if Error then
                   if Test /= Inside then -- illegal sequence is outside
-                     return I;
+                     return First;
                   end if;
                else
                   if Is_In (Code, Set) = (Test = Inside) then
-                     return I;
+                     return First;
                   end if;
                end if;
-               I := I_Previous - 1;
             end;
          end loop;
          return 0;
