@@ -30,6 +30,9 @@ begin
 	pragma Assert (not AS.Less_Case_Insensitive ("aa", "A"));
 	pragma Assert (not AS.Less_Case_Insensitive (Full_Width_Lower_A, Full_Width_Upper_A));
 	pragma Assert (AS.Hash_Case_Insensitive ("aAa") = AS.Hash_Case_Insensitive ("AaA"));
+	-- Hash = Wide_Hash = Wide_Wide_Hash
+	pragma Assert (AS.Hash_Case_Insensitive ("Hash") = AS.Wide_Hash_Case_Insensitive ("hASH"));
+	pragma Assert (AS.Hash_Case_Insensitive ("HasH") = AS.Wide_Wide_Hash_Case_Insensitive ("hASh"));
 	-- illegal sequence
 	pragma Assert (AS.Less_Case_Insensitive ("", (1 => C'Val (16#80#))));
 	pragma Assert (AS.Less_Case_Insensitive (Full_Width_Upper_A, (1 => C'Val (16#80#))));

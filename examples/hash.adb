@@ -28,6 +28,9 @@ begin
 			null;
 		end loop;
 	end loop;
+	-- Hash = Wide_Hash = Wide_Wide_Hash
+	pragma Assert (Ada.Strings.Hash ("Hash") = Ada.Strings.Wide_Hash ("Hash"));
+	pragma Assert (Ada.Strings.Hash ("Hash") = Ada.Strings.Wide_Wide_Hash ("Hash"));
 	-- the hash algorithm is MurmurHash3 (seed = 0)
 	pragma Assert (Ada.Strings.Hash ("") = 0);
 	pragma Assert (Ada.Strings.Hash ("a") = 16#2b038801#);
