@@ -2,7 +2,6 @@ with Ada.Strings.Naked_Maps.Case_Folding;
 with Ada.Strings.Naked_Maps.Case_Mapping;
 with Ada.Strings.Naked_Maps.General_Category;
 with Ada.Strings.Naked_Maps.Set_Constants;
-with System.UTF_Conversions;
 package body Ada.Characters.Handling is
 
    function Is_Control (Item : Character) return Boolean is
@@ -92,7 +91,7 @@ package body Ada.Characters.Handling is
    function To_Lower (Item : String) return String is
       Result : String (
          1 ..
-         Item'Length * System.UTF_Conversions.UTF_8_Max_Length);
+         Item'Length * Conversions.Max_Length_In_String);
       Last : Natural;
    begin
       Strings.Naked_Maps.Translate (
@@ -106,7 +105,7 @@ package body Ada.Characters.Handling is
    function To_Upper (Item : String) return String is
       Result : String (
          1 ..
-         Item'Length * System.UTF_Conversions.UTF_8_Max_Length);
+         Item'Length * Conversions.Max_Length_In_String);
       Last : Natural;
    begin
       Strings.Naked_Maps.Translate (
@@ -120,7 +119,7 @@ package body Ada.Characters.Handling is
    function To_Case_Folding (Item : String) return String is
       Result : String (
          1 ..
-         Item'Length * System.UTF_Conversions.UTF_8_Max_Length);
+         Item'Length * Conversions.Max_Length_In_String);
       Last : Natural;
    begin
       Strings.Naked_Maps.Translate (

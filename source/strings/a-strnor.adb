@@ -1,12 +1,11 @@
 --  reference:
 --  http://www.unicode.org/reports/tr15/
 pragma Check_Policy (Validate, Off);
+with Ada.Characters.Conversions;
 with Ada.UCD.Normalization;
 with System.Once;
-with System.UTF_Conversions;
 package body Ada.Strings.Normalization is
    use type UCD.UCS_4;
-   use type System.UTF_Conversions.UCS_4;
 
    procedure unreachable;
    pragma No_Return (unreachable);
@@ -459,16 +458,15 @@ package body Ada.Strings.Normalization is
       type Character_Type is (<>);
       type String_Type is array (Positive range <>) of Character_Type;
       Max_Length : Positive;
-      with procedure From_UTF (
+      with procedure Get (
          Data : String_Type;
          Last : out Natural;
-         Result : out System.UTF_Conversions.UCS_4;
-         Status : out System.UTF_Conversions.From_Status_Type);
-      with procedure To_UTF (
-         Code : System.UTF_Conversions.UCS_4;
+         Result : out Wide_Wide_Character;
+         Is_Illegal_Sequence : out Boolean);
+      with procedure Put (
+         Code : Wide_Wide_Character;
          Result : out String_Type;
-         Last : out Natural;
-         Status : out System.UTF_Conversions.To_Status_Type);
+         Last : out Natural);
       with procedure Start (Item : String_Type; State : out Composites.State);
       with procedure Get_Combined (
          State : in out Composites.State;
@@ -572,31 +570,32 @@ package body Ada.Strings.Normalization is
          Buffer_Last : out Natural)
       is
          Last : Natural := Item'First - 1;
-         Code : System.UTF_Conversions.UCS_4;
-         From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+         Code : Wide_Wide_Character;
+         Is_Illegal_Sequence : Boolean; -- ignore
       begin
          Buffer_Last := Buffer'First - 1;
          while Last < Item'Last loop
-            From_UTF (Item (Last + 1 .. Item'Last), Last, Code, From_Status);
+            Get (
+               Item (Last + 1 .. Item'Last),
+               Last,
+               Code,
+               Is_Illegal_Sequence);
             Buffer_Last := Buffer_Last + 1;
-            Buffer (Buffer_Last) := Wide_Wide_Character'Val (Code);
+            Buffer (Buffer_Last) := Code;
          end loop;
       end Decode;
 
       procedure Encode (
          Item : Wide_Wide_String;
          Buffer : out String_Type;
-         Buffer_Last : out Natural)
-      is
-         To_Status : System.UTF_Conversions.To_Status_Type; -- ignore
+         Buffer_Last : out Natural) is
       begin
          Buffer_Last := Buffer'First - 1;
          for I in Item'Range loop
-            To_UTF (
-               Wide_Wide_Character'Pos (Item (I)),
+            Put (
+               Item (I),
                Buffer (Buffer_Last + 1 .. Buffer'Last),
-               Buffer_Last,
-               To_Status);
+               Buffer_Last);
          end loop;
       end Encode;
 
@@ -1072,31 +1071,31 @@ package body Ada.Strings.Normalization is
 
    end Generic_Normalization;
 
-   package UTF_8 is
+   package Strings is
       new Generic_Normalization (
          Character,
          String,
-         System.UTF_Conversions.UTF_8_Max_Length,
-         System.UTF_Conversions.From_UTF_8,
-         System.UTF_Conversions.To_UTF_8,
+         Characters.Conversions.Max_Length_In_String,
+         Characters.Conversions.Get,
+         Characters.Conversions.Put,
          Composites.Start,
          Composites.Get_Combined);
-   package UTF_16 is
+   package Wide_Strings is
       new Generic_Normalization (
          Wide_Character,
          Wide_String,
-         System.UTF_Conversions.UTF_16_Max_Length,
-         System.UTF_Conversions.From_UTF_16,
-         System.UTF_Conversions.To_UTF_16,
+         Characters.Conversions.Max_Length_In_Wide_String,
+         Characters.Conversions.Get,
+         Characters.Conversions.Put,
          Composites.Start,
          Composites.Get_Combined);
-   package UTF_32 is
+   package Wide_Wide_Strings is
       new Generic_Normalization (
          Wide_Wide_Character,
          Wide_Wide_String,
-         1,
-         System.UTF_Conversions.From_UTF_32,
-         System.UTF_Conversions.To_UTF_32,
+         Characters.Conversions.Max_Length_In_Wide_Wide_String, -- 1
+         Characters.Conversions.Get,
+         Characters.Conversions.Put,
          Composites.Start,
          Composites.Get_Combined);
 
@@ -1147,7 +1146,7 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames UTF_8.Decompose;
+      renames Strings.Decompose;
 
    procedure Decompose (
       State : in out Composites.State;
@@ -1155,14 +1154,14 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames UTF_8.Decompose;
+      renames Strings.Decompose;
 
    procedure Decompose (
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames UTF_16.Decompose;
+      renames Wide_Strings.Decompose;
 
    procedure Decompose (
       State : in out Composites.State;
@@ -1170,14 +1169,14 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames UTF_16.Decompose;
+      renames Wide_Strings.Decompose;
 
    procedure Decompose (
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames UTF_32.Decompose;
+      renames Wide_Wide_Strings.Decompose;
 
    procedure Decompose (
       State : in out Composites.State;
@@ -1185,47 +1184,47 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames UTF_32.Decompose;
+      renames Wide_Wide_Strings.Decompose;
 
    procedure Decompose (
       Item : String;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames UTF_8.Decompose;
+      renames Strings.Decompose;
 
    function Decompose (
       Item : String)
       return String
-      renames UTF_8.Decompose;
+      renames Strings.Decompose;
 
    procedure Decompose (
       Item : Wide_String;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames UTF_16.Decompose;
+      renames Wide_Strings.Decompose;
 
    function Decompose (
       Item : Wide_String)
       return Wide_String
-      renames UTF_16.Decompose;
+      renames Wide_Strings.Decompose;
 
    procedure Decompose (
       Item : Wide_Wide_String;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames UTF_32.Decompose;
+      renames Wide_Wide_Strings.Decompose;
 
    function Decompose (
       Item : Wide_Wide_String)
       return Wide_Wide_String
-      renames UTF_32.Decompose;
+      renames Wide_Wide_Strings.Decompose;
 
    procedure Compose (
       Item : String;
       Last : out Natural;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames UTF_8.Compose;
+      renames Strings.Compose;
 
    procedure Compose (
       State : in out Composites.State;
@@ -1233,14 +1232,14 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames UTF_8.Compose;
+      renames Strings.Compose;
 
    procedure Compose (
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames UTF_16.Compose;
+      renames Wide_Strings.Compose;
 
    procedure Compose (
       State : in out Composites.State;
@@ -1248,14 +1247,14 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames UTF_16.Compose;
+      renames Wide_Strings.Compose;
 
    procedure Compose (
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames UTF_32.Compose;
+      renames Wide_Wide_Strings.Compose;
 
    procedure Compose (
       State : in out Composites.State;
@@ -1263,45 +1262,45 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames UTF_32.Compose;
+      renames Wide_Wide_Strings.Compose;
 
    procedure Compose (
       Item : String;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames UTF_8.Compose;
+      renames Strings.Compose;
 
    function Compose (
       Item : String)
       return String
-      renames UTF_8.Compose;
+      renames Strings.Compose;
 
    procedure Compose (
       Item : Wide_String;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames UTF_16.Compose;
+      renames Wide_Strings.Compose;
 
    function Compose (
       Item : Wide_String)
       return Wide_String
-      renames UTF_16.Compose;
+      renames Wide_Strings.Compose;
 
    procedure Compose (
       Item : Wide_Wide_String;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames UTF_32.Compose;
+      renames Wide_Wide_Strings.Compose;
 
    function Compose (
       Item : Wide_Wide_String)
       return Wide_Wide_String
-      renames UTF_32.Compose;
+      renames Wide_Wide_Strings.Compose;
 
    function Equal (
       Left, Right : String)
       return Boolean
-      renames UTF_8.Equal;
+      renames Strings.Equal;
 
    function Equal (
       Left, Right : String;
@@ -1309,12 +1308,12 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames UTF_8.Equal;
+      renames Strings.Equal;
 
    function Equal (
       Left, Right : Wide_String)
       return Boolean
-      renames UTF_16.Equal;
+      renames Wide_Strings.Equal;
 
    function Equal (
       Left, Right : Wide_String;
@@ -1322,12 +1321,12 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames UTF_16.Equal;
+      renames Wide_Strings.Equal;
 
    function Equal (
       Left, Right : Wide_Wide_String)
       return Boolean
-      renames UTF_32.Equal;
+      renames Wide_Wide_Strings.Equal;
 
    function Equal (
       Left, Right : Wide_Wide_String;
@@ -1335,12 +1334,12 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames UTF_32.Equal;
+      renames Wide_Wide_Strings.Equal;
 
    function Less (
       Left, Right : String)
       return Boolean
-      renames UTF_8.Less;
+      renames Strings.Less;
 
    function Less (
       Left, Right : String;
@@ -1348,12 +1347,12 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames UTF_8.Less;
+      renames Strings.Less;
 
    function Less (
       Left, Right : Wide_String)
       return Boolean
-      renames UTF_16.Less;
+      renames Wide_Strings.Less;
 
    function Less (
       Left, Right : Wide_String;
@@ -1361,12 +1360,12 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames UTF_16.Less;
+      renames Wide_Strings.Less;
 
    function Less (
       Left, Right : Wide_Wide_String)
       return Boolean
-      renames UTF_32.Less;
+      renames Wide_Wide_Strings.Less;
 
    function Less (
       Left, Right : Wide_Wide_String;
@@ -1374,6 +1373,6 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames UTF_32.Less;
+      renames Wide_Wide_Strings.Less;
 
 end Ada.Strings.Normalization;

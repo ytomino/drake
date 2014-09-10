@@ -1,18 +1,16 @@
+with Ada.Characters.Conversions;
 with Ada.UCD.Combining_Class;
-with System.UTF_Conversions;
 package body Ada.Strings.Composites is
    use type UCD.UCS_4;
-   use type System.UTF_Conversions.From_Status_Type;
-   use type System.UTF_Conversions.UCS_4;
 
    generic
       type Character_Type is (<>);
       type String_Type is array (Positive range <>) of Character_Type;
-      with procedure From_UTF (
+      with procedure Get (
          Data : String_Type;
          Last : out Natural;
-         Result : out System.UTF_Conversions.UCS_4;
-         Status : out System.UTF_Conversions.From_Status_Type);
+         Result : out Wide_Wide_Character;
+         Is_Illegal_Sequence : out Boolean);
    package Generic_Composites is
 
       procedure Start (Item : String_Type; State : out Composites.State);
@@ -44,15 +42,13 @@ package body Ada.Strings.Composites is
 
       procedure Start_No_Length_Check (
          Item : String_Type;
-         State : out Composites.State)
-      is
-         Code : System.UTF_Conversions.UCS_4;
-         From_Status : System.UTF_Conversions.From_Status_Type;
+         State : out Composites.State) is
       begin
-         From_UTF (Item, State.Next_Last, Code, From_Status);
-         State.Next_Character := Wide_Wide_Character'Val (Code);
-         State.Next_Is_Illegal_Sequence :=
-            From_Status /= System.UTF_Conversions.Success;
+         Get (
+            Item,
+            State.Next_Last,
+            State.Next_Character,
+            State.Next_Is_Illegal_Sequence);
          if State.Next_Is_Illegal_Sequence then
             State.Next_Combining_Class := 0;
          else
@@ -85,49 +81,48 @@ package body Ada.Strings.Composites is
          then
             declare
                New_Last : Natural;
-               Code : System.UTF_Conversions.UCS_4;
-               From_Status : System.UTF_Conversions.From_Status_Type;
+               Combining_Code : Wide_Wide_Character;
+               Combining_Is_Illegal_Sequence : Boolean;
             begin
-               Code := Wide_Wide_Character'Pos (State.Next_Character);
-               if Code in
+               if Wide_Wide_Character'Pos (State.Next_Character) in
                   UCD.Hangul.LBase ..
                   UCD.Hangul.LBase + UCD.Hangul.LCount - 1
                then
-                  From_UTF (
+                  Get (
                      Item (Last + 1 .. Item'Last),
                      New_Last,
-                     Code,
-                     From_Status);
-                  if From_Status = System.UTF_Conversions.Success
-                     and then Code in
+                     Combining_Code,
+                     Combining_Is_Illegal_Sequence);
+                  if not Combining_Is_Illegal_Sequence
+                     and then Wide_Wide_Character'Pos (Combining_Code) in
                         UCD.Hangul.VBase ..
                         UCD.Hangul.VBase + UCD.Hangul.VCount - 1
                   then
                      Last := New_Last; -- LV
-                     From_UTF (
+                     Get (
                         Item (Last + 1 .. Item'Last),
                         New_Last,
-                        Code,
-                        From_Status);
-                     if From_Status = System.UTF_Conversions.Success
-                        and then Code in
+                        Combining_Code,
+                        Combining_Is_Illegal_Sequence);
+                     if not Combining_Is_Illegal_Sequence
+                        and then Wide_Wide_Character'Pos (Combining_Code) in
                            UCD.Hangul.TBase ..
                            UCD.Hangul.TBase + UCD.Hangul.TCount - 1
                      then
                         Last := New_Last; -- LVT
                      end if;
                   end if;
-               elsif Code in
+               elsif Wide_Wide_Character'Pos (State.Next_Character) in
                   UCD.Hangul.SBase ..
                   UCD.Hangul.SBase + UCD.Hangul.SCount - 1
                then
-                  From_UTF (
+                  Get (
                      Item (Last + 1 .. Item'Last),
                      New_Last,
-                     Code,
-                     From_Status);
-                  if From_Status = System.UTF_Conversions.Success
-                     and then Code in
+                     Combining_Code,
+                     Combining_Is_Illegal_Sequence);
+                  if not Combining_Is_Illegal_Sequence
+                     and then Wide_Wide_Character'Pos (Combining_Code) in
                         UCD.Hangul.TBase ..
                         UCD.Hangul.TBase + UCD.Hangul.TCount - 1
                   then
@@ -219,21 +214,21 @@ package body Ada.Strings.Composites is
 
    end Generic_Composites;
 
-   package UTF_8 is
+   package Strings is
       new Generic_Composites (
          Character,
          String,
-         System.UTF_Conversions.From_UTF_8);
-   package UTF_16 is
+         Characters.Conversions.Get);
+   package Wide_Strings is
       new Generic_Composites (
          Wide_Character,
          Wide_String,
-         System.UTF_Conversions.From_UTF_16);
-   package UTF_32 is
+         Characters.Conversions.Get);
+   package Wide_Wide_Strings is
       new Generic_Composites (
          Wide_Wide_Character,
          Wide_Wide_String,
-         System.UTF_Conversions.From_UTF_32);
+         Characters.Conversions.Get);
 
    --  implementation
 
@@ -346,51 +341,51 @@ package body Ada.Strings.Composites is
    end Is_Variation_Selector;
 
    procedure Start (Item : String; State : out Composites.State)
-      renames UTF_8.Start;
+      renames Strings.Start;
 
    procedure Start (Item : Wide_String; State : out Composites.State)
-      renames UTF_16.Start;
+      renames Wide_Strings.Start;
 
    procedure Start (Item : Wide_Wide_String; State : out Composites.State)
-      renames UTF_32.Start;
+      renames Wide_Wide_Strings.Start;
 
    procedure Get_Combined (
       Item : String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames UTF_8.Get_Combined;
+      renames Strings.Get_Combined;
 
    procedure Get_Combined (
       State : in out Composites.State;
       Item : String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames UTF_8.Get_Combined;
+      renames Strings.Get_Combined;
 
    procedure Get_Combined (
       Item : Wide_String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames UTF_16.Get_Combined;
+      renames Wide_Strings.Get_Combined;
 
    procedure Get_Combined (
       State : in out Composites.State;
       Item : Wide_String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames UTF_16.Get_Combined;
+      renames Wide_Strings.Get_Combined;
 
    procedure Get_Combined (
       Item : Wide_Wide_String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames UTF_32.Get_Combined;
+      renames Wide_Wide_Strings.Get_Combined;
 
    procedure Get_Combined (
       State : in out Composites.State;
       Item : Wide_Wide_String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames UTF_32.Get_Combined;
+      renames Wide_Wide_Strings.Get_Combined;
 
 end Ada.Strings.Composites;

@@ -100,7 +100,7 @@ package Ada.Strings.Naked_Maps is
    procedure Translate (
       Source : String;
       Mapping : Character_Mapping;
-      Item : out String; -- Source'Length * 6, at least
+      Item : out String; -- multiply Max_Length_In_String
       Last : out Natural);
 
 private

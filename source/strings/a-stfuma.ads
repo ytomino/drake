@@ -4,7 +4,7 @@ with Ada.Characters.Conversions;
 with Ada.Strings.Maps;
 package Ada.Strings.Functions.Maps is
    new Generic_Maps (
-      Expanding => 6, -- System.UTF_Conversions.UTF_8_Max_Length
+      Expanding => Characters.Conversions.Max_Length_In_String,
       Put => Characters.Conversions.Put,
       Get => Characters.Conversions.Get,
       Get_Reverse => Characters.Conversions.Get_Reverse,

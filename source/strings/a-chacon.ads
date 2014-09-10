@@ -192,6 +192,37 @@ package Ada.Characters.Conversions is
       Item : out Wide_Wide_String;
       Last : out Natural);
 
+   --  extended
+   --  Max lengthes of each one multi-byte character,
+   --    and the rates of expansion.
+   Max_Length_In_String : constant := 6;
+   Max_Length_In_Wide_String : constant := 2;
+   Max_Length_In_Wide_Wide_String : constant := 1;
+   Expanding_From_String_To_Wide_String : constant := 1;
+   Expanding_From_String_To_Wide_Wide_String : constant := 1;
+   Expanding_From_Wide_String_To_String : constant := 3;
+   Expanding_From_Wide_String_To_Wide_Wide_String : constant := 1;
+   Expanding_From_Wide_Wide_String_To_String : constant := 6;
+   Expanding_From_Wide_Wide_String_To_Wide_String : constant := 2;
+   Expanding_From_String_To_UTF_8 : constant := 1;
+   Expanding_From_String_To_UTF_16 : constant := 1;
+   Expanding_From_String_To_UTF_32 : constant := 1;
+   Expanding_From_Wide_String_To_UTF_8 : constant := 3;
+   Expanding_From_Wide_String_To_UTF_16 : constant := 1;
+   Expanding_From_Wide_String_To_UTF_32 : constant := 1;
+   Expanding_From_Wide_Wide_String_To_UTF_8 : constant := 6;
+   Expanding_From_Wide_Wide_String_To_UTF_16 : constant := 2;
+   Expanding_From_Wide_Wide_String_To_UTF_32 : constant := 1;
+   Expanding_From_UTF_8_To_String : constant := 1;
+   Expanding_From_UTF_8_To_Wide_String : constant := 1;
+   Expanding_From_UTF_8_To_Wide_Wide_String : constant := 1;
+   Expanding_From_UTF_16_To_String : constant := 3;
+   Expanding_From_UTF_16_To_Wide_String : constant := 1;
+   Expanding_From_UTF_16_To_Wide_Wide_String : constant := 1;
+   Expanding_From_UTF_32_To_String : constant := 6;
+   Expanding_From_UTF_32_To_Wide_String : constant := 2;
+   Expanding_From_UTF_32_To_Wide_Wide_String : constant := 1;
+
 private
 
    function To_Wide_String (

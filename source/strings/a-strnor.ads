@@ -20,35 +20,35 @@ package Ada.Strings.Normalization is
       Item : String;
       Last : out Natural;
       Out_Item : out String;
-      Out_Last : out Natural); -- UTF-8
+      Out_Last : out Natural);
    procedure Decompose (
       State : in out Composites.State;
       Item : String;
       Last : out Natural;
       Out_Item : out String;
-      Out_Last : out Natural); -- UTF-8 with state
+      Out_Last : out Natural);
    procedure Decompose (
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
-      Out_Last : out Natural); -- UTF-16
+      Out_Last : out Natural);
    procedure Decompose (
       State : in out Composites.State;
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
-      Out_Last : out Natural); -- UTF-16 with state
+      Out_Last : out Natural);
    procedure Decompose (
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
-      Out_Last : out Natural); -- UTF-32
+      Out_Last : out Natural);
    procedure Decompose (
       State : in out Composites.State;
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
-      Out_Last : out Natural); -- UTF-32 with state
+      Out_Last : out Natural);
 
    --  all sequences
    procedure Decompose (

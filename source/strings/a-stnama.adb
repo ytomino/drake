@@ -1,10 +1,7 @@
 with Ada.Characters.Conversions;
 with Ada.Exception_Identification.From_Here;
-with System.UTF_Conversions;
 package body Ada.Strings.Naked_Maps is
    use Exception_Identification.From_Here;
-   use type System.UTF_Conversions.From_Status_Type;
-   use type System.UTF_Conversions.UCS_4;
 
    --  implementation of alternative conversions functions
 
@@ -306,7 +303,7 @@ package body Ada.Strings.Naked_Maps is
    procedure Translate (
       Source : String;
       Mapping : Character_Mapping;
-      Item : out String; -- Source'Length * 6, at least
+      Item : out String;
       Last : out Natural)
    is
       Source_Last : Natural := Source'First - 1;
@@ -316,26 +313,23 @@ package body Ada.Strings.Naked_Maps is
          declare
             Source_Index : constant Positive := Source_Last + 1;
             Index : constant Positive := Last + 1;
-            Code : System.UTF_Conversions.UCS_4;
-            From_Status : System.UTF_Conversions.From_Status_Type;
-            To_Status : System.UTF_Conversions.To_Status_Type; -- ignore
+            Code : Wide_Wide_Character;
+            Is_Illegal_Sequence : Boolean;
          begin
             --  get single unicode character
-            System.UTF_Conversions.From_UTF_8 (
+            Characters.Conversions.Get (
                Source (Source_Index .. Source'Last),
                Source_Last,
                Code,
-               From_Status);
-            if From_Status = System.UTF_Conversions.Success then
+               Is_Illegal_Sequence);
+            if not Is_Illegal_Sequence then
                --  map it
-               Code := Wide_Wide_Character'Pos (
-                  Value (Mapping, Wide_Wide_Character'Val (Code)));
+               Code := Value (Mapping, Code);
                --  put it
-               System.UTF_Conversions.To_UTF_8 (
+               Characters.Conversions.Put (
                   Code,
                   Item (Index .. Item'Last),
-                  Last,
-                  To_Status);
+                  Last);
             else
                --  keep illegal sequence
                Last := Index + (Source_Last - Source_Index);
