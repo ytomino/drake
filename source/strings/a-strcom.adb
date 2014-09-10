@@ -76,19 +76,18 @@ package body Ada.Strings.Composites is
          State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
-         Is_Illegal_Sequence : out Boolean)
-      is
-         New_Last : Natural;
-         Code : System.UTF_Conversions.UCS_4;
-         From_Status : System.UTF_Conversions.From_Status_Type;
+         Is_Illegal_Sequence : out Boolean) is
       begin
          Last := State.Next_Last; -- skip first code point
          Is_Illegal_Sequence := State.Next_Is_Illegal_Sequence;
-         if Is_Illegal_Sequence then
-            --  handling combining class of illegal sequence as 0
-            Start (Item (State.Next_Last + 1 .. Item'Last), State);
-         else
-            if State.Next_Combining_Class = 0 then
+         if not Is_Illegal_Sequence -- combining class of illegal sequence = 0
+            and then State.Next_Combining_Class = 0
+         then
+            declare
+               New_Last : Natural;
+               Code : System.UTF_Conversions.UCS_4;
+               From_Status : System.UTF_Conversions.From_Status_Type;
+            begin
                Code := Wide_Wide_Character'Pos (State.Next_Character);
                if Code in
                   UCD.Hangul.LBase ..
@@ -135,41 +134,41 @@ package body Ada.Strings.Composites is
                      Last := New_Last; -- ST
                   end if;
                end if;
-            end if;
-            declare
-               Current_Class : Class := State.Next_Combining_Class;
-            begin
-               State.Next_Character := Wide_Wide_Character'Val (0);
-               State.Next_Combining_Class := 0;
-               State.Next_Is_Illegal_Sequence := False;
-               State.Next_Last := Last;
-               while Last < Item'Last loop
-                  Start_No_Length_Check (Item (Last + 1 .. Item'Last), State);
-                  if State.Next_Is_Illegal_Sequence
-                     or else State.Next_Combining_Class < Current_Class
-                  then
-                     exit;
-                  elsif State.Next_Combining_Class = 0 then
-                     if Is_Variation_Selector (State.Next_Character) then
-                        --  get one variation selector
-                        Last := State.Next_Last;
-                        if Last >= Item'Last then
-                           State.Next_Character := Wide_Wide_Character'Val (0);
-                           State.Next_Combining_Class := 0;
-                           State.Next_Is_Illegal_Sequence := False;
-                        else
-                           Start_No_Length_Check (
-                              Item (Last + 1 .. Item'Last),
-                              State);
-                        end if;
-                     end if;
-                     exit;
-                  end if;
-                  Current_Class := State.Next_Combining_Class;
-                  Last := State.Next_Last;
-               end loop;
             end;
          end if;
+         declare
+            Current_Class : Class := State.Next_Combining_Class;
+         begin
+            State.Next_Character := Wide_Wide_Character'Val (0);
+            State.Next_Combining_Class := 0;
+            State.Next_Is_Illegal_Sequence := False;
+            State.Next_Last := Last;
+            while Last < Item'Last loop
+               Start_No_Length_Check (Item (Last + 1 .. Item'Last), State);
+               if State.Next_Is_Illegal_Sequence
+                  or else State.Next_Combining_Class < Current_Class
+               then
+                  exit;
+               elsif State.Next_Combining_Class = 0 then
+                  if Is_Variation_Selector (State.Next_Character) then
+                     --  get one variation selector
+                     Last := State.Next_Last;
+                     if Last >= Item'Last then
+                        State.Next_Character := Wide_Wide_Character'Val (0);
+                        State.Next_Combining_Class := 0;
+                        State.Next_Is_Illegal_Sequence := False;
+                     else
+                        Start_No_Length_Check (
+                           Item (Last + 1 .. Item'Last),
+                           State);
+                     end if;
+                  end if;
+                  exit;
+               end if;
+               Current_Class := State.Next_Combining_Class;
+               Last := State.Next_Last;
+            end loop;
+         end;
       end Get_Combined_No_Length_Check;
 
       procedure Get_Combined (
