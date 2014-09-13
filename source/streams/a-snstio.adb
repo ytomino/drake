@@ -738,6 +738,7 @@ package body Ada.Streams.Naked_Stream_IO is
          File.Dispatcher.File := File;
       end if;
       declare
+         pragma Suppress (Alignment_Check);
          S : aliased Dispatchers.Root_Dispatcher;
          pragma Import (Ada, S);
          for S'Address use File.Dispatcher'Address;

@@ -16,6 +16,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    function To_UTF_16_Wide_String (Item : System.Address; Length : Natural)
       return UTF_16_Wide_String
    is
+      pragma Suppress (Alignment_Check); -- Item'Alignment = 2
       pragma Check (Validate, Length rem 2 = 0);
       pragma Check (Validate, Item mod 2 = 0); -- stack may be aligned
       Result : UTF_16_Wide_String (1 .. Length / 2);
@@ -33,6 +34,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Length : Natural)
       return UTF_32_Wide_Wide_String
    is
+      pragma Suppress (Alignment_Check); -- Item'Alignment = 4
       pragma Check (Validate, Length rem 4 = 0);
       pragma Check (Validate, Item mod 4 = 0); -- stack may be aligned
       Result : UTF_32_Wide_Wide_String (1 .. Length / 4);
@@ -474,6 +476,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       --  from 16 to 16 : (Item'Length / 2 + 1) * 2 = Item'Length + 2
       --  from 32 to 16 : (2 * Item'Length / 4 + 1) * 2 = Item'Length + 2
       Result : UTF_String (1 .. 2 * Item'Length + 2);
+      for Result'Alignment use 16 / Standard'Storage_Unit;
       Last : Natural;
    begin
       Do_Convert (
@@ -496,6 +499,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       --  from 16 to 32 : (Item'Length / 2 + 1) * 4 = 2 * Item'Length + 4
       --  from 32 to 32 : (Item'Length / 4 + 1) * 4 = Item'Length + 4
       Result : UTF_String (1 .. 4 * Item'Length + 4);
+      for Result'Alignment use 32 / Standard'Storage_Unit;
       Last : Natural;
    begin
       Do_Convert (
@@ -517,6 +521,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          1 ..
          (Item'Length * System.UTF_Conversions.Expanding_From_8_To_16 + 1)
             * 2);
+      for Result'Alignment use 16 / Standard'Storage_Unit;
       Last : Natural;
    begin
       --  it should be specialized version ?
@@ -539,6 +544,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          1 ..
          (Item'Length * System.UTF_Conversions.Expanding_From_8_To_32 + 1)
             * 4);
+      for Result'Alignment use 32 / Standard'Storage_Unit;
       Last : Natural;
    begin
       --  it should be specialized version ?
@@ -610,6 +616,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          1 ..
          (Item'Length * System.UTF_Conversions.Expanding_From_16_To_32 + 1)
             * 4);
+      for Result'Alignment use 32 / Standard'Storage_Unit;
       Last : Natural;
    begin
       --  it should be specialized version ?
@@ -681,6 +688,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          1 ..
          (Item'Length * System.UTF_Conversions.Expanding_From_32_To_16 + 1)
             * 2);
+      for Result'Alignment use 16 / Standard'Storage_Unit;
       Last : Natural;
    begin
       --  it should be specialized version ?

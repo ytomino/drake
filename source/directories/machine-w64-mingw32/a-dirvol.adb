@@ -86,6 +86,7 @@ package body Ada.Directories.Volumes is
       Root_Path_Length := C.string.wcslen (Root_Path (0)'Access);
       return Result : File_System do
          declare
+            pragma Suppress (Alignment_Check);
             NC_Result : constant not null access Non_Controlled_File_System :=
                Reference (Result);
             Dest : constant System.Address :=
@@ -235,6 +236,7 @@ package body Ada.Directories.Volumes is
             begin
                Object.Data.Root_Path := null;
                declare
+                  pragma Suppress (Alignment_Check);
                   Dest : constant System.Address :=
                      System.Standard_Allocators.Allocate (
                         System.Storage_Elements.Storage_Count (

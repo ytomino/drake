@@ -634,6 +634,7 @@ private
       --  the storage be allocated in here
    end record;
    pragma Suppress_Initialization (Data);
+   pragma Compile_Time_Error (Data'Size rem Integer'Size > 0, "misaligned");
 
    type Data_Access is access all Data;
 

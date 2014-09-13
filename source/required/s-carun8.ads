@@ -11,6 +11,8 @@ package System.Compare_Array_Unsigned_8 is
    function Compare_Array_U8_Unaligned is
       new Packed_Arrays.Compare (Unsigned_8);
 
+   pragma Suppress (All_Checks); -- for instantiation
+
    --  required to compare arrays by compiler (s-carun8.ads)
    function Compare_Array_U8 (
       Left : Address;

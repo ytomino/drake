@@ -178,20 +178,23 @@ package body Ada.Directories.File_Names is
 
    --  equivalent to getmappedvalue16 (vfs_utfconv.c)
    function getmappedvalue16 (
-      theTable : System.Address;
-      numElem : C.size_t;
+--    theTable : System.Address; -- CFUniCharDecompositionTable
+--    numElem : C.size_t; -- CFUniCharDecompositionTable'Length / 2
       character : C.vfs_utfconvdata.u_int16_t)
       return C.vfs_utfconvdata.u_int16_t;
    function getmappedvalue16 (
-      theTable : System.Address;
-      numElem : C.size_t;
+--    theTable : System.Address;
+--    numElem : C.size_t;
       character : C.vfs_utfconvdata.u_int16_t)
       return C.vfs_utfconvdata.u_int16_t
    is
       type unicode_mappings16_array is array (C.size_t) of unicode_mappings16;
       pragma Suppress_Initialization (unicode_mappings16_array);
       table : unicode_mappings16_array;
-      for table'Address use theTable;
+      for table'Address use
+         C.vfs_utfconvdata.CFUniCharDecompositionTable'Address;
+      numElem : constant :=
+         C.vfs_utfconvdata.CFUniCharDecompositionTable'Length / 2;
       p, q, divider : C.size_t;
    begin
       if character < table (0).key
@@ -243,8 +246,8 @@ package body Ada.Directories.File_Names is
       bmpMappings : u_int16_t_ptr;
    begin
       value := getmappedvalue16 (
-         C.vfs_utfconvdata.CFUniCharDecompositionTable'Address,
-         C.vfs_utfconvdata.CFUniCharDecompositionTable'Length / 2,
+--       C.vfs_utfconvdata.CFUniCharDecompositionTable'Address,
+--       C.vfs_utfconvdata.CFUniCharDecompositionTable'Length / 2,
          character);
       length := EXTRACT_COUNT (value);
       firstChar := value and 16#0FFF#;
