@@ -56,7 +56,8 @@ package body Ada.Text_IO.Editing is
                declare
                   Count_First : Positive;
                   Count_Last : Natural;
-                  Count : System.Formatting.Unsigned;
+                  Count_U : System.Formatting.Unsigned;
+                  Count : Natural;
                begin
                   Formatting.Get_Tail (
                      Pic_String (I + 1 .. Pic_String'Last),
@@ -64,14 +65,18 @@ package body Ada.Text_IO.Editing is
                   System.Formatting.Literals.Get_Literal (
                      Pic_String (Count_First .. Pic_String'Last),
                      Count_Last,
-                     Count,
+                     Count_U,
                      Error => Error);
-                  if Error then
+                  if Error
+                     or else Count_U >
+                        System.Formatting.Unsigned (Natural'Last)
+                  then
                      return; -- Picture_Error
                   end if;
+                  Count := Natural (Count_U);
                   if Count = 0
                      or else I = Pic_String'First
-                     or else I + Integer (Count) - 1 > Pic_String'Last
+                     or else I + Count - 1 > Pic_String'Last
                   then
                      Error := True;
                      return; -- Picture_Error
