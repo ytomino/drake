@@ -1,7 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
-with System.Formatting;
+with System.Formatting.Address;
 with System.Shared_Locking;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_8_To_32;
@@ -290,42 +290,31 @@ package body Ada.Tags is
       if External'Length >= Nested_Prefix'Length
          and then External (
             External'First ..
-            External'First - 1 + Nested_Prefix'Length) = Nested_Prefix
+            External'First + Nested_Prefix'Length - 1) = Nested_Prefix
       then
          declare
-            Use_Longest : constant Boolean :=
-               Standard'Address_Size > System.Formatting.Unsigned'Size;
-            Result : System.Storage_Elements.Integer_Address;
-            Last : Natural;
+            Addr_First : constant Positive :=
+               External'First + Nested_Prefix'Length;
+            Addr_Last : constant Natural :=
+               Addr_First
+               + System.Formatting.Address.Address_String'Length
+               - 1;
+            Result : System.Address;
             Error : Boolean;
          begin
-            if Use_Longest then
-               System.Formatting.Value (
-                  External (
-                     External'First + Nested_Prefix'Length ..
-                     External'Last),
-                  Last,
-                  System.Formatting.Longest_Unsigned (Result),
-                  Base => 16,
-                  Error => Error);
-            else
-               System.Formatting.Value (
-                  External (
-                     External'First + Nested_Prefix'Length ..
-                     External'Last),
-                  Last,
-                  System.Formatting.Unsigned (Result),
-                  Base => 16,
-                  Error => Error);
-            end if;
-            if Error
-               or else Last >= External'Last
-               or else External (Last + 1) /= '#'
+            if Addr_Last >= External'Last
+               or else External (Addr_Last + 1) /= '#'
             then
                Raise_Exception (Tag_Error'Identity);
             end if;
-            return Tag_Conv.To_Pointer (
-               System.Storage_Elements.To_Address (Result));
+            System.Formatting.Address.Value (
+               External (Addr_First .. Addr_Last),
+               Result,
+               Error => Error);
+            if Error then
+               Raise_Exception (Tag_Error'Identity);
+            end if;
+            return Tag_Conv.To_Pointer (Result);
          end;
       else
          declare

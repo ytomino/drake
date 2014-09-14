@@ -1,5 +1,5 @@
 with System.Address_To_Named_Access_Conversions;
-with System.Formatting.Address_Image;
+with System.Formatting.Address;
 with System.Termination;
 package body System.Unbounded_Stack_Allocators.Debug is
    pragma Suppress (All_Checks);
@@ -10,15 +10,12 @@ package body System.Unbounded_Stack_Allocators.Debug is
       new Address_To_Named_Access_Conversions (Block, Block_Access);
 
    procedure Error_Put (Item : Address) is
-      Width : constant Natural := (Standard'Address_Size + 3) / 4;
-      S : String (1 .. Width);
-      Last : Natural;
+      S : Formatting.Address.Address_String;
    begin
       Termination.Error_Put ("0x");
-      Formatting.Address_Image (
+      Formatting.Address.Image (
          Item,
          S,
-         Last,
          Set => Formatting.Lower_Case);
       Termination.Error_Put (S);
    end Error_Put;

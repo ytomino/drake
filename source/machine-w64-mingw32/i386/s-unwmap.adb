@@ -1,7 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
-with System.Formatting.Address_Image;
+with System.Formatting.Address;
 with System.Native_Stack;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
@@ -154,20 +154,28 @@ package body System.Unwind.Mapping is
                   --  'The instruction at %p referenced memory at %p.'
                   Message (1 .. 21) := "The instruction at 0x";
                   Message_Last := 21;
-                  Formatting.Address_Image (
+                  Formatting.Address.Image (
                      Address (Exception_Record.ExceptionAddress),
-                     Message (Message_Last + 1 .. Message'Last),
-                     Message_Last,
+                     Message (
+                        Message_Last + 1 ..
+                        Message'Last
+                           + Formatting.Address.Address_String'Length),
                      Set => Formatting.Lower_Case);
+                  Message_Last :=
+                     Message_Last + Formatting.Address.Address_String'Length;
                   Message (Message_Last + 1 .. Message_Last + 24) :=
                      " referenced memory at 0x";
                   Message_Last := Message_Last + 24;
-                  Formatting.Address_Image (
+                  Formatting.Address.Image (
                      System'To_Address (
                         Exception_Record.ExceptionInformation (1)),
-                     Message (Message_Last + 1 .. Message'Last),
-                     Message_Last,
+                     Message (
+                        Message_Last + 1 ..
+                        Message_Last
+                           + Formatting.Address.Address_String'Length),
                      Set => Formatting.Lower_Case);
+                  Message_Last :=
+                     Message_Last + Formatting.Address.Address_String'Length;
                   Message (Message_Last + 1) := '.';
                   Message_Last := Message_Last + 1;
                else
