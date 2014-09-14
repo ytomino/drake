@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 with Ada.Strings.Maps.Constants;
---  diff (Ada.Characters.Inside.Sets.Constants)
---  diff (Ada.Strings.Maps.Inside)
+--  diff (Ada.Strings.Maps.Naked)
+--  diff (Ada.Strings.Naked_Maps.Set_Constants)
 package Ada.Strings.Wide_Maps.Wide_Constants is
    pragma Preelaborate;
 

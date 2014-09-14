@@ -24,11 +24,11 @@
 --   only in UCD:   16#FE25#
 --   only in UCD:   16#FE26#
 -- -------------------------
-with Ada.UCD.Combining_Class; -- from Unicode Character Database
-with Ada.UCD.Normalization;
 with C.vfs_utfconvdata; -- from XNU
 with Ada.Containers.Ordered_Maps;
 with Ada.Integer_Text_IO;
+with Ada.Strings.Composites; -- from Unicode Character Database
+with Ada.Strings.Normalization;
 with Ada.Text_IO;
 procedure diff_ucd_hfs is
 	subtype WC is Wide_Character;
@@ -40,33 +40,30 @@ procedure diff_ucd_hfs is
 begin
 	-- make decomposing map from UCD
 	declare
-		package N renames Ada.UCD.Normalization;
 		Target : Decomposing_Maps.Map renames UCD_Decomposing_Map;
+		procedure Process (Pre : Wide_Wide_Character; De : Wide_Wide_String) is
+			Second : Wide_Wide_Character;
+		begin
+			if De'Length = 2 then
+				Second := De (De'First + 1);
+			else
+				Second := Wide_Wide_Character'Val (0);
+			end if;
+			if Wide_Wide_Character'Pos (Pre) <= 16#FFFF#
+				and then De'Length in 1 .. 2
+				and then Wide_Wide_Character'Pos (De (De'First)) <= 16#FFFF#
+				and then Wide_Wide_Character'Pos (Second) <= 16#FFFF#
+			then
+				Decomposing_Maps.Insert (
+					Target,
+					WC'Val (Wide_Wide_Character'Pos (Pre)),
+					Decomposed'(
+						1 => WC'Val (Wide_Wide_Character'Pos (De (De'First))),
+						2 => WC'Val (Wide_Wide_Character'Pos (Second))));
+			end if;
+		end Process;
 	begin
-		for I in N.NFD_D_Table_XXXX'Range loop
-			Decomposing_Maps.Insert (
-				Target,
-				WC'Val (N.NFD_D_Table_XXXX (I).Code),
-				Decomposed'(
-					1 => WC'Val (N.NFD_D_Table_XXXX (I).Mapping (1)),
-					2 => WC'Val (N.NFD_D_Table_XXXX (I).Mapping (2))));
-		end loop;
-		for I in N.NFD_E_Table_XXXX'Range loop
-			Decomposing_Maps.Insert (
-				Target,
-				WC'Val (N.NFD_E_Table_XXXX (I).Code),
-				Decomposed'(
-					1 => WC'Val (N.NFD_E_Table_XXXX (I).Mapping (1)),
-					2 => WC'Val (N.NFD_E_Table_XXXX (I).Mapping (2))));
-		end loop;
-		for I in N.NFD_S_Table_XXXX'Range loop
-			Decomposing_Maps.Insert (
-				Target,
-				WC'Val (N.NFD_S_Table_XXXX (I).Code),
-				Decomposed'(
-					1 => WC'Val (N.NFD_S_Table_XXXX (I).Mapping),
-					2 => WC'Val (0)));
-		end loop;
+		Ada.Strings.Normalization.Iterate (False, Process'Access);
 	end;
 	-- make decomposing map from VFS
 	declare
@@ -150,17 +147,18 @@ begin
 	end;
 	-- make combining class map from UCD
 	declare
-		package C renames Ada.UCD.Combining_Class;
 		Target : Combining_Class_Maps.Map renames UCD_Combining_Class_Map;
-	begin
-		for I in C.Table_XXXX'Range loop
-			for J in 0 .. Integer (C.Table_XXXX (I).Length) - 1 loop
+		procedure Process (Item : Wide_Wide_Character; Combining_Class : Ada.Strings.Composites.Class) is
+		begin
+			if Wide_Wide_Character'Pos (Item) <= 16#FFFF# then
 				Combining_Class_Maps.Insert (
 					Target,
-					WC'Val (Integer (C.Table_XXXX (I).Start) + J),
-					Integer (C.Table_XXXX (I).Combining_Class));
-			end loop;
-		end loop;
+					WC'Val (Wide_Wide_Character'Pos (Item)),
+					Integer (Combining_Class));
+			end if;
+		end Process;
+	begin
+		Ada.Strings.Composites.Iterate (Process'Access);
 	end;
 	-- make combining class map from VFS
 	declare

@@ -275,7 +275,7 @@ package body Interfaces.C.Inside is
          declare
             Code : System.UTF_Conversions.UCS_4;
             Item_Used : Natural;
-            From_Status : System.UTF_Conversions.From_Status_Type; -- ignored
+            From_Status : System.UTF_Conversions.From_Status_Type;
             Target_Last : Natural;
             To_Status : System.UTF_Conversions.To_Status_Type;
          begin

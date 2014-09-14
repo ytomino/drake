@@ -13,6 +13,7 @@ package body System.Packed_Arrays is
          and then Element_Type'Enum_Rep (Element_Type'First) = 0
       then
          declare
+            pragma Suppress (Range_Check);
             function memcmp (
                s1 : Address;
                s2 : Address;
@@ -31,6 +32,8 @@ package body System.Packed_Arrays is
          end;
       else
          declare
+            pragma Compile_Time_Error (Element_Type'Alignment /= 1,
+               "misaligned");
             Min_Length : constant Integer := Integer'Min (Left_Len, Right_Len);
             type Min_Array_Type is array (1 .. Min_Length) of Element_Type;
             pragma Pack (Min_Array_Type);

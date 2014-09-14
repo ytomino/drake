@@ -1,13 +1,36 @@
-with Ada.Characters.Inside;
-with Ada.Streams.Block_Transmission.Wide_Wide_Strings;
+with Ada.Characters.Conversions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with System.UTF_Conversions.From_8_To_32;
-with System.UTF_Conversions.From_16_To_32;
-with System.UTF_Conversions.From_32_To_8;
-with System.UTF_Conversions.From_32_To_16;
 package body Ada.Strings.Maps is
-   use type Characters.Inside.Sets.Character_Ranges;
+   use type Naked_Maps.Character_Ranges;
+
+   --  alternative conversions functions
+   --    raising exception instead of using substitute.
+
+   function To_Wide_Character (Item : Wide_Wide_Character)
+      return Wide_Character;
+   function To_Wide_Wide_Character (Item : Wide_Character)
+      return Wide_Wide_Character;
+
+   function To_Wide_Character (Item : Wide_Wide_Character)
+      return Wide_Character is
+   begin
+      if Characters.Conversions.Is_Wide_Character (Item) then
+         return Wide_Character'Val (Wide_Wide_Character'Pos (Item));
+      else
+         raise Constraint_Error;
+      end if;
+   end To_Wide_Character;
+
+   function To_Wide_Wide_Character (Item : Wide_Character)
+      return Wide_Wide_Character is
+   begin
+      if Characters.Conversions.Is_Wide_Wide_Character (Item) then
+         return Wide_Wide_Character'Val (Wide_Character'Pos (Item));
+      else
+         raise Constraint_Error;
+      end if;
+   end To_Wide_Wide_Character;
 
    --  sets
 
@@ -61,13 +84,13 @@ package body Ada.Strings.Maps is
 
    --  "-" operation
    procedure Sub (
-      Result : in out Characters.Inside.Sets.Character_Ranges;
+      Result : in out Naked_Maps.Character_Ranges;
       Last : out Natural;
-      Left, Right : Characters.Inside.Sets.Character_Ranges);
+      Left, Right : Naked_Maps.Character_Ranges);
    procedure Sub (
-      Result : in out Characters.Inside.Sets.Character_Ranges;
+      Result : in out Naked_Maps.Character_Ranges;
       Last : out Natural;
-      Left, Right : Characters.Inside.Sets.Character_Ranges)
+      Left, Right : Naked_Maps.Character_Ranges)
    is
       I : Positive := Left'First;
       J : Positive := Right'First;
@@ -115,13 +138,13 @@ package body Ada.Strings.Maps is
 
    --  "*"/and operation
    procedure Mul (
-      Result : in out Characters.Inside.Sets.Character_Ranges;
+      Result : in out Naked_Maps.Character_Ranges;
       Last : out Natural;
-      Left, Right : Characters.Inside.Sets.Character_Ranges);
+      Left, Right : Naked_Maps.Character_Ranges);
    procedure Mul (
-      Result : in out Characters.Inside.Sets.Character_Ranges;
+      Result : in out Naked_Maps.Character_Ranges;
       Last : out Natural;
-      Left, Right : Characters.Inside.Sets.Character_Ranges)
+      Left, Right : Naked_Maps.Character_Ranges)
    is
       I : Positive := Left'First;
       J : Positive := Right'First;
@@ -180,7 +203,7 @@ package body Ada.Strings.Maps is
          begin
             for I in Elements_Data.Items'Range loop
                declare
-                  E : Characters.Inside.Sets.Character_Range
+                  E : Naked_Maps.Character_Range
                      renames Elements_Data.Items (I);
                begin
                   loop
@@ -213,7 +236,7 @@ package body Ada.Strings.Maps is
       return Boolean is
    begin
       return Overloaded_Is_In (
-         Characters.Inside.To_Wide_Wide_Character (Element),
+         Naked_Maps.To_Wide_Wide_Character (Element),
          Set);
    end Overloaded_Is_In;
 
@@ -222,9 +245,7 @@ package body Ada.Strings.Maps is
       Set : Character_Set)
       return Boolean is
    begin
-      return Overloaded_Is_In (
-         Characters.Inside.To_Wide_Wide_Character (Element),
-         Set);
+      return Overloaded_Is_In (To_Wide_Wide_Character (Element), Set);
    end Overloaded_Is_In;
 
    function Overloaded_Is_In (
@@ -234,7 +255,7 @@ package body Ada.Strings.Maps is
    is
       pragma Assert (Valid (Reference (Set)));
    begin
-      return Characters.Inside.Sets.Is_In (Element, Reference (Set).all);
+      return Naked_Maps.Is_In (Element, Reference (Set).all);
    end Overloaded_Is_In;
 
    function Overloaded_To_Ranges (Set : Character_Set)
@@ -245,10 +266,10 @@ package body Ada.Strings.Maps is
    begin
       return Result : Character_Ranges (Set_Data.Items'Range) do
          for I in Result'Range loop
-            Result (I).Low := Characters.Inside.To_Character (
-               Set_Data.Items (I).Low);
-            Result (I).High := Characters.Inside.To_Character (
-               Set_Data.Items (I).High);
+            Result (I).Low :=
+               Naked_Maps.To_Character (Set_Data.Items (I).Low);
+            Result (I).High :=
+               Naked_Maps.To_Character (Set_Data.Items (I).High);
          end loop;
       end return;
    end Overloaded_To_Ranges;
@@ -261,10 +282,8 @@ package body Ada.Strings.Maps is
    begin
       return Result : Wide_Character_Ranges (Set_Data.Items'Range) do
          for I in Result'Range loop
-            Result (I).Low := Characters.Inside.To_Wide_Character (
-               Set_Data.Items (I).Low);
-            Result (I).High := Characters.Inside.To_Wide_Character (
-               Set_Data.Items (I).High);
+            Result (I).Low := To_Wide_Character (Set_Data.Items (I).Low);
+            Result (I).High := To_Wide_Character (Set_Data.Items (I).High);
          end loop;
       end return;
    end Overloaded_To_Ranges;
@@ -288,15 +307,15 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Sequence (Set : Character_Set)
       return Character_Sequence is
    begin
-      return System.UTF_Conversions.From_32_To_8.Convert (
-         Overloaded_To_Sequence (Set));
+      return Characters.Conversions.To_String (
+         Wide_Wide_String'(Overloaded_To_Sequence (Set)));
    end Overloaded_To_Sequence;
 
    function Overloaded_To_Sequence (Set : Character_Set)
       return Wide_Character_Sequence is
    begin
-      return System.UTF_Conversions.From_32_To_16.Convert (
-         Overloaded_To_Sequence (Set));
+      return Characters.Conversions.To_Wide_String (
+         Wide_Wide_String'(Overloaded_To_Sequence (Set)));
    end Overloaded_To_Sequence;
 
    function Overloaded_To_Sequence (Set : Character_Set)
@@ -327,17 +346,17 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Set (Ranges : Character_Ranges)
       return Character_Set
    is
-      Items : Characters.Inside.Sets.Character_Ranges (1 .. Ranges'Length);
+      Items : Naked_Maps.Character_Ranges (1 .. Ranges'Length);
       Last : Natural := Items'First - 1;
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
          if Ranges (I).Low <= Ranges (I).High then
-            Characters.Inside.Sets.Add (
+            Naked_Maps.Add (
                Items,
                Last,
-               Characters.Inside.To_Wide_Wide_Character (Ranges (I).Low),
-               Characters.Inside.To_Wide_Wide_Character (Ranges (I).High));
+               Naked_Maps.To_Wide_Wide_Character (Ranges (I).Low),
+               Naked_Maps.To_Wide_Wide_Character (Ranges (I).High));
          end if;
       end loop;
       if Last < Items'First then
@@ -355,17 +374,17 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Set (Ranges : Wide_Character_Ranges)
       return Character_Set
    is
-      Items : Characters.Inside.Sets.Character_Ranges (1 .. Ranges'Length);
+      Items : Naked_Maps.Character_Ranges (1 .. Ranges'Length);
       Last : Natural := Items'First - 1;
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
          if Ranges (I).Low <= Ranges (I).High then
-            Characters.Inside.Sets.Add (
+            Naked_Maps.Add (
                Items,
                Last,
-               Characters.Inside.To_Wide_Wide_Character (Ranges (I).Low),
-               Characters.Inside.To_Wide_Wide_Character (Ranges (I).High));
+               To_Wide_Wide_Character (Ranges (I).Low),
+               To_Wide_Wide_Character (Ranges (I).High));
          end if;
       end loop;
       if Last < Items'First then
@@ -383,13 +402,13 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Set (Ranges : Wide_Wide_Character_Ranges)
       return Character_Set
    is
-      Items : Characters.Inside.Sets.Character_Ranges (1 .. Ranges'Length);
+      Items : Naked_Maps.Character_Ranges (1 .. Ranges'Length);
       Last : Natural := Items'First - 1;
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
          if Ranges (I).Low <= Ranges (I).High then
-            Characters.Inside.Sets.Add (
+            Naked_Maps.Add (
                Items,
                Last,
                Ranges (I).Low,
@@ -412,16 +431,16 @@ package body Ada.Strings.Maps is
       return Character_Set is
    begin
       return Overloaded_To_Set (Wide_Wide_Character_Range'(
-         Low => Characters.Inside.To_Wide_Wide_Character (Span.Low),
-         High => Characters.Inside.To_Wide_Wide_Character (Span.High)));
+         Low => Naked_Maps.To_Wide_Wide_Character (Span.Low),
+         High => Naked_Maps.To_Wide_Wide_Character (Span.High)));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Wide_Character_Range)
       return Character_Set is
    begin
       return Overloaded_To_Set (Wide_Wide_Character_Range'(
-         Low => Characters.Inside.To_Wide_Wide_Character (Span.Low),
-         High => Characters.Inside.To_Wide_Wide_Character (Span.High)));
+         Low => To_Wide_Wide_Character (Span.Low),
+         High => To_Wide_Wide_Character (Span.High)));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Wide_Wide_Character_Range)
@@ -445,27 +464,29 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Set (Sequence : Character_Sequence)
       return Character_Set is
    begin
+      --  Should it raise Constraint_Error for illegal sequence ?
       return Overloaded_To_Set (
-         System.UTF_Conversions.From_8_To_32.Convert (Sequence));
+         Characters.Conversions.To_Wide_Wide_String (Sequence));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Wide_Character_Sequence)
       return Character_Set is
    begin
+      --  Should it raise Constraint_Error for illegal sequence ?
       return Overloaded_To_Set (
-         System.UTF_Conversions.From_16_To_32.Convert (Sequence));
+         Characters.Conversions.To_Wide_Wide_String (Sequence));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Wide_Wide_Character_Sequence)
       return Character_Set
    is
-      Items : Characters.Inside.Sets.Character_Ranges (Sequence'Range);
+      Items : Naked_Maps.Character_Ranges (Sequence'Range);
       Last : Natural := Items'First - 1;
       Data : Set_Data_Access;
    begin
       --  it should be more optimized...
       for I in Sequence'Range loop
-         Characters.Inside.Sets.Add (
+         Naked_Maps.Add (
             Items,
             Last,
             Sequence (I),
@@ -486,15 +507,13 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Set (Singleton : Character)
       return Character_Set is
    begin
-      return Overloaded_To_Set (
-         Characters.Inside.To_Wide_Wide_Character (Singleton));
+      return Overloaded_To_Set (Naked_Maps.To_Wide_Wide_Character (Singleton));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Singleton : Wide_Character)
       return Character_Set is
    begin
-      return Overloaded_To_Set (
-         Characters.Inside.To_Wide_Wide_Character (Singleton));
+      return Overloaded_To_Set (To_Wide_Wide_Character (Singleton));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Singleton : Wide_Wide_Character)
@@ -525,7 +544,7 @@ package body Ada.Strings.Maps is
          Data := Full_Set_Data'Unrestricted_Access;
       else
          declare
-            Items : Characters.Inside.Sets.Character_Ranges (
+            Items : Naked_Maps.Character_Ranges (
                1 ..
                Full_Set_Data.Length + Right_Data.Length);
             Last : Natural;
@@ -558,7 +577,7 @@ package body Ada.Strings.Maps is
          Data := Empty_Set_Data'Unrestricted_Access;
       else
          declare
-            Items : Characters.Inside.Sets.Character_Ranges (
+            Items : Naked_Maps.Character_Ranges (
                1 ..
                Left_Data.Length + Right_Data.Length);
             Last : Natural;
@@ -603,12 +622,12 @@ package body Ada.Strings.Maps is
          end;
       else
          declare
-            Items : Characters.Inside.Sets.Character_Ranges (
+            Items : Naked_Maps.Character_Ranges (
                1 ..
                Left_Data.Length + Right_Data.Length);
             Last : Natural;
          begin
-            Characters.Inside.Sets.Merge (
+            Naked_Maps.Merge (
                Items,
                Last,
                Left_Data.Items,
@@ -649,14 +668,14 @@ package body Ada.Strings.Maps is
       else
          declare
             Max : constant Natural := Left_Data.Length + Right_Data.Length;
-            X : Characters.Inside.Sets.Character_Ranges (1 .. Max);
+            X : Naked_Maps.Character_Ranges (1 .. Max);
             X_Last : Natural;
-            Y : Characters.Inside.Sets.Character_Ranges (1 .. Max);
+            Y : Naked_Maps.Character_Ranges (1 .. Max);
             Y_Last : Natural;
-            Items : Characters.Inside.Sets.Character_Ranges (1 .. Max);
+            Items : Naked_Maps.Character_Ranges (1 .. Max);
             Last : Natural;
          begin
-            Characters.Inside.Sets.Merge (
+            Naked_Maps.Merge (
                X,
                X_Last,
                Left_Data.Items,
@@ -697,7 +716,7 @@ package body Ada.Strings.Maps is
          end;
       else
          declare
-            Items : Characters.Inside.Sets.Character_Ranges (
+            Items : Naked_Maps.Character_Ranges (
                1 ..
                Left_Data.Length + Right_Data.Length);
             Last : Natural;
@@ -763,9 +782,7 @@ package body Ada.Strings.Maps is
                   Length => Length,
                   Reference_Count => 1,
                   Items => <>);
-               Characters.Inside.Sets.Character_Ranges'Read (
-                  Stream,
-                  Item.Data.Items);
+               Naked_Maps.Character_Ranges'Read (Stream, Item.Data.Items);
                pragma Assert (Valid (Item.Data));
             end if;
          end Read;
@@ -777,9 +794,7 @@ package body Ada.Strings.Maps is
             pragma Assert (Valid (Item.Data));
          begin
             Integer'Write (Stream, Item.Data.Length);
-            Characters.Inside.Sets.Character_Ranges'Write (
-               Stream,
-               Item.Data.Items);
+            Naked_Maps.Character_Ranges'Write (Stream, Item.Data.Items);
          end Write;
 
       end Streaming;
@@ -828,15 +843,15 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Domain (Map : Character_Mapping)
       return Character_Sequence is
    begin
-      return System.UTF_Conversions.From_32_To_8.Convert (
-         Overloaded_To_Domain (Map));
+      return Characters.Conversions.To_String (
+         Wide_Wide_String'(Overloaded_To_Domain (Map)));
    end Overloaded_To_Domain;
 
    function Overloaded_To_Domain (Map : Character_Mapping)
       return Wide_Character_Sequence is
    begin
-      return System.UTF_Conversions.From_32_To_16.Convert (
-         Overloaded_To_Domain (Map));
+      return Characters.Conversions.To_Wide_String (
+         Wide_Wide_String'(Overloaded_To_Domain (Map)));
    end Overloaded_To_Domain;
 
    function Overloaded_To_Domain (Map : Character_Mapping)
@@ -848,17 +863,19 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Mapping (From, To : Character_Sequence)
       return Character_Mapping is
    begin
+      --  Should it raise Constraint_Error for illegal sequence ?
       return Overloaded_To_Mapping (
-         System.UTF_Conversions.From_8_To_32.Convert (From),
-         System.UTF_Conversions.From_8_To_32.Convert (To));
+         Characters.Conversions.To_Wide_Wide_String (From),
+         Characters.Conversions.To_Wide_Wide_String (To));
    end Overloaded_To_Mapping;
 
    function Overloaded_To_Mapping (From, To : Wide_Character_Sequence)
       return Character_Mapping is
    begin
+      --  Should it raise Constraint_Error for illegal sequence ?
       return Overloaded_To_Mapping (
-         System.UTF_Conversions.From_16_To_32.Convert (From),
-         System.UTF_Conversions.From_16_To_32.Convert (To));
+         Characters.Conversions.To_Wide_Wide_String (From),
+         Characters.Conversions.To_Wide_Wide_String (To));
    end Overloaded_To_Mapping;
 
    function Overloaded_To_Mapping (From, To : Wide_Wide_Character_Sequence)
@@ -869,7 +886,7 @@ package body Ada.Strings.Maps is
       if From'Length = 0 then
          New_Data := Empty_Map_Data'Unrestricted_Access;
       else
-         New_Data := new Map_Data'(Characters.Inside.Maps.To_Mapping (
+         New_Data := new Map_Data'(Naked_Maps.To_Mapping (
             From,
             To,
             Initial_Reference_Count => 1));
@@ -880,15 +897,15 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Range (Map : Character_Mapping)
       return Character_Sequence is
    begin
-      return System.UTF_Conversions.From_32_To_8.Convert (
-         Overloaded_To_Range (Map));
+      return Characters.Conversions.To_String (
+         Wide_Wide_String'(Overloaded_To_Range (Map)));
    end Overloaded_To_Range;
 
    function Overloaded_To_Range (Map : Character_Mapping)
       return Wide_Character_Sequence is
    begin
-      return System.UTF_Conversions.From_32_To_16.Convert (
-         Overloaded_To_Range (Map));
+      return Characters.Conversions.To_Wide_String (
+         Wide_Wide_String'(Overloaded_To_Range (Map)));
    end Overloaded_To_Range;
 
    function Overloaded_To_Range (Map : Character_Mapping)
@@ -902,9 +919,8 @@ package body Ada.Strings.Maps is
       Element : Character)
       return Character is
    begin
-      return Characters.Inside.To_Character (Overloaded_Value (
-         Map,
-         Characters.Inside.To_Wide_Wide_Character (Element)));
+      return Naked_Maps.To_Character (
+         Overloaded_Value (Map, Naked_Maps.To_Wide_Wide_Character (Element)));
    end Overloaded_Value;
 
    function Overloaded_Value (
@@ -912,9 +928,8 @@ package body Ada.Strings.Maps is
       Element : Wide_Character)
       return Wide_Character is
    begin
-      return Characters.Inside.To_Wide_Character (Overloaded_Value (
-         Map,
-         Characters.Inside.To_Wide_Wide_Character (Element)));
+      return To_Wide_Character (
+         Overloaded_Value (Map, To_Wide_Wide_Character (Element)));
    end Overloaded_Value;
 
    function Overloaded_Value (
@@ -922,7 +937,7 @@ package body Ada.Strings.Maps is
       Element : Wide_Wide_Character)
       return Wide_Wide_Character is
    begin
-      return Characters.Inside.Maps.Value (Reference (Map).all, Element);
+      return Naked_Maps.Value (Reference (Map).all, Element);
    end Overloaded_Value;
 
    overriding function "=" (Left, Right : Character_Mapping) return Boolean is
@@ -966,6 +981,10 @@ package body Ada.Strings.Maps is
 
       package body Streaming is
 
+         --  compatibility with
+         --    Ordered_Maps (Wide_Wide_Character, Wide_Wide_Character)
+         --    and Hashed_Maps (Wide_Wide_Character, Wide_Wide_Character, ...)
+
          procedure Read (
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Character_Mapping)
@@ -977,17 +996,18 @@ package body Ada.Strings.Maps is
             if Length = 0 then
                Item.Data := Empty_Map_Data'Unrestricted_Access;
             else
-               Item.Data := new Map_Data'(
-                  Length => Length,
-                  Reference_Count => 1,
-                  From => <>,
-                  To => <>);
-               Streams.Block_Transmission.Wide_Wide_Strings.Read (
-                  Stream,
-                  Item.Data.From);
-               Streams.Block_Transmission.Wide_Wide_Strings.Read (
-                  Stream,
-                  Item.Data.To);
+               declare
+                  From, To : Wide_Wide_Character_Sequence (1 .. Length);
+               begin
+                  for I in 1 .. Length loop
+                     Wide_Wide_Character'Read (Stream, From (I));
+                     Wide_Wide_Character'Read (Stream, To (I));
+                  end loop;
+                  Item.Data := new Map_Data'(Naked_Maps.To_Mapping (
+                     From,
+                     To,
+                     Initial_Reference_Count => 1));
+               end;
             end if;
          end Read;
 
@@ -996,12 +1016,10 @@ package body Ada.Strings.Maps is
             Item : Character_Mapping) is
          begin
             Integer'Write (Stream, Item.Data.Length);
-            Streams.Block_Transmission.Wide_Wide_Strings.Write (
-               Stream,
-               Item.Data.From);
-            Streams.Block_Transmission.Wide_Wide_Strings.Write (
-               Stream,
-               Item.Data.To);
+            for I in 1 .. Item.Data.Length loop
+               Wide_Wide_Character'Write (Stream, Item.Data.From (I));
+               Wide_Wide_Character'Write (Stream, Item.Data.To (I));
+            end loop;
          end Write;
 
       end Streaming;

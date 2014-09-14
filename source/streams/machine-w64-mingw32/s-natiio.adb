@@ -75,6 +75,7 @@ package body System.Native_IO is
             Storage_Elements.Storage_Offset (Out_Length + 1) -- NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
+         pragma Suppress (Alignment_Check);
          Full_Path_A : Name_String (Name_Length);
          for Full_Path_A'Address use
             Name_Pointer_Conv.To_Address (Full_Path_Pointer);
@@ -97,6 +98,7 @@ package body System.Native_IO is
                + 2) -- '*' & NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
+         pragma Suppress (Alignment_Check);
          Out_Item_A : Name_String (Name_Length);
          for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
@@ -155,6 +157,7 @@ package body System.Native_IO is
             Storage_Elements.Storage_Offset (Out_Length + 1)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
+         pragma Suppress (Alignment_Check);
          Out_Item_A : C.winnt.WCHAR_array (C.size_t);
          for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin

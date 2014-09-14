@@ -53,6 +53,7 @@ package body Ada.Strings.Generic_Unbounded is
                Result.Reference_Count := 1;
                Result.Max_Length := Max_Length;
                declare
+                  pragma Suppress (Alignment_Check);
                   Usable_Size : constant
                      System.Storage_Elements.Storage_Count :=
                      System.Standard_Allocators.Allocated_Size (M)
@@ -1123,11 +1124,6 @@ package body Ada.Strings.Generic_Unbounded is
       end Generic_Maps;
 
    end Generic_Functions;
-
-   function Generic_Hash (Key : Unbounded_String) return Hash_Type is
-   begin
-      return Fixed_Hash (Key.Data.Items (1 .. Key.Length));
-   end Generic_Hash;
 
    package body Generic_Constant is
 

@@ -166,19 +166,21 @@ package body Ada.Numerics.MT19937 is
             Error => Error);
          pragma Check (Validate, not Error and then Last = Result'Last);
       end Hex;
-      Result : String (1 .. Max_Image_Width);
-      Position : Positive := Result'First;
+      Last : Natural := 0;
    begin
-      for I in N_Range loop
-         Hex (
-            Result (Position .. Position + Cardinal'Size / 4 - 1),
-            Of_State.Vector (I));
-         Position := Position + Cardinal'Size / 4;
-         Result (Position) := ':';
-         Position := Position + 1;
-      end loop;
-      Hex (Result (Position .. Result'Last), Of_State.Condition);
-      return Result;
+      return Result : String (1 .. Max_Image_Width) do
+         for I in N_Range loop
+            declare
+               Previous_Last : constant Natural := Last;
+            begin
+               Last := Last + Cardinal'Size / 4;
+               Hex (Result (Previous_Last + 1 .. Last), Of_State.Vector (I));
+               Last := Last + 1;
+               Result (Last) := ':';
+            end;
+         end loop;
+         Hex (Result (Last + 1 .. Result'Last), Of_State.Condition);
+      end return;
    end Image;
 
    function Value (Coded_State : String) return State is
@@ -199,24 +201,27 @@ package body Ada.Numerics.MT19937 is
          end if;
          Value := Cardinal (Result);
       end Hex;
-      Result : State;
-      Position : Positive := Coded_State'First;
+      Last : Natural := Coded_State'First - 1;
    begin
       if Coded_State'Length /= Max_Image_Width then
          raise Constraint_Error;
       end if;
-      for I in N_Range loop
-         Hex (
-            Coded_State (Position .. Position + Cardinal'Size / 4 - 1),
-            Result.Vector (I));
-         Position := Position + Cardinal'Size / 4;
-         if Coded_State (Position) /= ':' then
-            raise Constraint_Error;
-         end if;
-         Position := Position + 1;
-      end loop;
-      Hex (Coded_State (Position .. Coded_State'Last), Result.Condition);
-      return Result;
+      return Result : State do
+         for I in N_Range loop
+            declare
+               Previous_Last : constant Natural := Last;
+            begin
+               Last := Last + Cardinal'Size / 4;
+               Hex (
+                  Coded_State (Previous_Last + 1 .. Last), Result.Vector (I));
+               Last := Last + 1;
+               if Coded_State (Last) /= ':' then
+                  raise Constraint_Error;
+               end if;
+            end;
+         end loop;
+         Hex (Coded_State (Last + 1 .. Coded_State'Last), Result.Condition);
+      end return;
    end Value;
 
    function Random_0_To_1 (Gen : aliased in out Generator)

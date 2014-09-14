@@ -170,11 +170,18 @@ private
          File : Non_Controlled_File_Type := null;
       end record;
       pragma Suppress_Initialization (Dispatcher);
+      for Dispatcher'Alignment use
+         Standard'Address_Size / Standard'Storage_Unit;
 
       pragma Compile_Time_Error (
          Seekable_Dispatcher'Size /= Root_Dispatcher'Size
          or else Dispatcher'Size /= Root_Dispatcher'Size,
          "size mismatch");
+
+      pragma Compile_Time_Error (
+         Seekable_Dispatcher'Alignment /= Root_Dispatcher'Alignment
+         or else Dispatcher'Alignment /= Root_Dispatcher'Alignment,
+         "misaligned");
 
    end Dispatchers;
 

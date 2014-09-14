@@ -4,7 +4,7 @@ with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
-with System.Formatting.Address_Image;
+with System.Formatting.Address;
 with System.Native_Stack;
 with System.Native_Tasks.Yield;
 with System.Native_Time;
@@ -408,7 +408,7 @@ package body System.Tasks is
          1 ..
          Name_Prefix'Length
             + (if T.Name /= null then T.Name'Length + 1 else 0)
-            + (Standard'Address_Size + 3) / 4);
+            + Formatting.Address.Address_String'Length);
       Name_Last : Natural;
    begin
       Name_Last := Name_Prefix'Length;
@@ -418,11 +418,13 @@ package body System.Tasks is
          Name_Last := Name_Last + T.Name'Length + 1;
          Name (Name_Last) := ':';
       end if;
-      Formatting.Address_Image (
+      Formatting.Address.Image (
          Task_Record_Conv.To_Address (T),
-         Name (Name_Last + 1 .. Name'Last),
-         Name_Last,
+         Name (
+            Name_Last + 1 ..
+            Name_Last + Formatting.Address.Address_String'Length),
          Set => Formatting.Upper_Case);
+      Name_Last := Name_Last + Formatting.Address.Address_String'Length;
       Unwind.Raising.Report (Cast (Current), Name (1 .. Name_Last));
    end Report;
 

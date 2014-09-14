@@ -531,19 +531,21 @@ package body Ada.Numerics.SFMT.Random is
       end Hex_Put;
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Of_State.state'Address;
-      Position : Positive := 1;
+      Last : Natural := 0;
    begin
       return Result : String (1 .. Max_Image_Width) do
          for I in 0 .. N32 - 1 loop
-            Hex_Put (
-               Result (Position .. Position + 32 / 4 - 1),
-               psfmt32 (I));
-            Position := Position + 32 / 4;
-            Result (Position) := ':';
-            Position := Position + 1;
+            declare
+               Previous_Last : constant Natural := Last;
+            begin
+               Last := Last + 32 / 4;
+               Hex_Put (Result (Previous_Last + 1 .. Last), psfmt32 (I));
+               Last := Last + 1;
+               Result (Last) := ':';
+            end;
          end loop;
          Hex_Put (
-            Result (Position .. Result'Last),
+            Result (Last + 1 .. Result'Last),
             Unsigned_32 (Of_State.idx));
       end return;
    end Image;
@@ -566,31 +568,33 @@ package body Ada.Numerics.SFMT.Random is
          end if;
          Item := Unsigned_32 (Result);
       end Hex_Get;
-      Position : Positive := Coded_State'First;
+      Last : Natural := Coded_State'First - 1;
       idx : Unsigned_32;
    begin
+      if Coded_State'Length /= Max_Image_Width then
+         raise Constraint_Error;
+      end if;
       return Result : State do
-         if Coded_State'Length /= Max_Image_Width then
-            raise Constraint_Error;
-         end if;
          declare
             psfmt32 : Unsigned_32_Array_N32;
             for psfmt32'Address use Result.state'Address;
          begin
             for I in 0 .. N32 - 1 loop
-               Hex_Get (
-                  Coded_State (Position .. Position + 32 / 4 - 1),
-                  psfmt32 (I));
-               Position := Position + 32 / 4;
-               if Coded_State (Position) /= ':' then
-                  raise Constraint_Error;
-               end if;
-               Position := Position + 1;
+               declare
+                  Previous_Last : constant Natural := Last;
+               begin
+                  Last := Last + 32 / 4;
+                  Hex_Get (
+                     Coded_State (Previous_Last + 1 .. Last),
+                     psfmt32 (I));
+                  Last := Last + 1;
+                  if Coded_State (Last) /= ':' then
+                     raise Constraint_Error;
+                  end if;
+               end;
             end loop;
          end;
-         Hex_Get (
-            Coded_State (Position .. Coded_State'Last),
-            idx);
+         Hex_Get (Coded_State (Last + 1 .. Coded_State'Last), idx);
          Result.idx := Integer (idx);
       end return;
    end Value;

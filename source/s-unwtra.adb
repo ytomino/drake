@@ -1,4 +1,4 @@
-with System.Formatting.Address_Image;
+with System.Formatting.Address;
 with System.Runtime_Information;
 with System.Unwind.Raising;
 package body System.Unwind.Traceback is
@@ -38,18 +38,15 @@ package body System.Unwind.Traceback is
       Put : not null access procedure (S : String; Params : Address);
       New_Line : not null access procedure (Params : Address))
    is
-      Width : constant Natural := (Standard'Address_Size + 3) / 4;
-      S : String (1 .. Width);
-      Last : Natural;
+      S : Formatting.Address.Address_String;
    begin
       Put ("Load address: 0x", Params);
       declare
          Item : constant Address := Runtime_Information.Load_Address;
       begin
-         Formatting.Address_Image (
+         Formatting.Address.Image (
             Item,
             S,
-            Last,
             Set => Formatting.Lower_Case);
          Put (S, Params);
       end;
@@ -61,10 +58,9 @@ package body System.Unwind.Traceback is
          declare
             Item : constant Address := X.Tracebacks (I);
          begin
-            Formatting.Address_Image (
+            Formatting.Address.Image (
                Item,
                S,
-               Last,
                Set => Formatting.Lower_Case);
             Put (S, Params);
          end;

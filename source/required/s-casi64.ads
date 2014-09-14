@@ -6,6 +6,7 @@ package System.Compare_Array_Signed_64 is
 
    type Integer_64 is range -2 ** 63 .. 2 ** 63 - 1;
    for Integer_64'Size use 64;
+   for Integer_64'Alignment use 1;
 
    --  required to compare arrays by compiler (s-casi64.ads)
    function Compare_Array_S64 is

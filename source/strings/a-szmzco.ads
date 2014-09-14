@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 with Ada.Strings.Maps.Constants;
-private with Ada.Characters.Inside.Sets.Constants;
-private with Ada.Strings.Maps.Inside;
+private with Ada.Strings.Maps.Naked;
+private with Ada.Strings.Naked_Maps.Set_Constants;
 package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
    pragma Preelaborate;
 
@@ -105,8 +105,7 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
 private
 
    function Wide_Character_Set_Body is
-      new Maps.Inside.To_Set (
-         Characters.Inside.Sets.Constants.Wide_Character_Set);
+      new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Wide_Character_Set);
    function Wide_Character_Set return Wide_Wide_Character_Set
       renames Wide_Character_Set_Body;
 

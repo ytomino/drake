@@ -1,6 +1,11 @@
 pragma License (Unrestricted);
 --  Ada 2012
-function Ada.Strings.Less_Case_Insensitive (Left, Right : String)
-   return Boolean;
---  pragma Pure (Less_Case_Insensitive);
-pragma Preelaborate (Less_Case_Insensitive); -- use maps
+with Ada.Characters.Conversions;
+with Ada.Strings.Generic_Less_Case_Insensitive;
+function Ada.Strings.Less_Case_Insensitive is
+   new Generic_Less_Case_Insensitive (
+      Character,
+      String,
+      Characters.Conversions.Get);
+--  pragma Pure (Ada.Strings.Less_Case_Insensitive);
+pragma Preelaborate (Ada.Strings.Less_Case_Insensitive); -- use maps

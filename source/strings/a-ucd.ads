@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-package Ada.UCD is
+private package Ada.UCD is
    --  This is the parent package of Unicode Character Database.
    pragma Pure;
 
@@ -124,5 +124,20 @@ package Ada.UCD is
    pragma Suppress_Initialization (Map_16x3_Type);
    pragma Pack (Map_16x3_Type);
    pragma Compile_Time_Error (Map_16x3_Type'Component_Size /= 64, "packed?");
+
+   --  non-generated tables
+
+   --  see http://www.unicode.org/reports/tr15/#Hangul
+   package Hangul is
+      SBase : constant := 16#AC00#;
+      LBase : constant := 16#1100#;
+      VBase : constant := 16#1161#;
+      TBase : constant := 16#11A7#;
+      LCount : constant := 19;
+      VCount : constant := 21;
+      TCount : constant := 28;
+      NCount : constant := VCount * TCount; -- 588
+      SCount : constant := LCount * NCount; -- 11172
+   end Hangul;
 
 end Ada.UCD;

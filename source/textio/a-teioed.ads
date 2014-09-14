@@ -34,14 +34,67 @@ package Ada.Text_IO.Editing is
       Default_Radix_Mark : Character := Editing.Default_Radix_Mark;
    package Decimal_Output is
 
-      function Length (Pic : Picture; Currency : String := Default_Currency)
+      --  extended
+      function Overloaded_Length (Pic : Picture; Currency : String)
          return Natural;
+      function Overloaded_Length (Pic : Picture; Currency : Wide_String)
+         return Natural;
+      function Overloaded_Length (Pic : Picture; Currency : Wide_Wide_String)
+         return Natural;
+
+      function Length (Pic : Picture; Currency : String := Default_Currency)
+         return Natural
+         renames Overloaded_Length;
+
+      --  extended
+      function Overloaded_Valid (
+         Item : Num;
+         Pic : Picture;
+         Currency : String)
+         return Boolean;
+      function Overloaded_Valid (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_String)
+         return Boolean;
+      function Overloaded_Valid (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String)
+         return Boolean;
 
       function Valid (
          Item : Num;
          Pic : Picture;
          Currency : String := Default_Currency)
-         return Boolean;
+         return Boolean
+         renames Overloaded_Valid;
+
+      --  extended
+      function Overloaded_Image (
+         Item : Num;
+         Pic : Picture;
+         Currency : String;
+         Fill : Character;
+         Separator : Character;
+         Radix_Mark : Character)
+         return String;
+      function Overloaded_Image (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_String;
+         Fill : Wide_Character;
+         Separator : Wide_Character;
+         Radix_Mark : Wide_Character)
+         return Wide_String;
+      function Overloaded_Image (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String;
+         Fill : Wide_Wide_Character;
+         Separator : Wide_Wide_Character;
+         Radix_Mark : Wide_Wide_Character)
+         return Wide_Wide_String;
 
       function Image (
          Item : Num;
@@ -50,7 +103,34 @@ package Ada.Text_IO.Editing is
          Fill : Character := Default_Fill;
          Separator : Character := Default_Separator;
          Radix_Mark : Character := Default_Radix_Mark)
-         return String;
+         return String
+         renames Overloaded_Image;
+
+      --  extended
+      procedure Overloaded_Put (
+         File : File_Type;
+         Item : Num;
+         Pic : Picture;
+         Currency : String;
+         Fill : Character;
+         Separator : Character;
+         Radix_Mark : Character);
+      procedure Overloaded_Put (
+         File : File_Type;
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_String;
+         Fill : Wide_Character;
+         Separator : Wide_Character;
+         Radix_Mark : Wide_Character);
+      procedure Overloaded_Put (
+         File : File_Type;
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String;
+         Fill : Wide_Wide_Character;
+         Separator : Wide_Wide_Character;
+         Radix_Mark : Wide_Wide_Character);
 
       procedure Put (
          File : File_Type;
@@ -59,7 +139,31 @@ package Ada.Text_IO.Editing is
          Currency : String := Default_Currency;
          Fill : Character := Default_Fill;
          Separator : Character := Default_Separator;
-         Radix_Mark : Character := Default_Radix_Mark);
+         Radix_Mark : Character := Default_Radix_Mark)
+         renames Overloaded_Put;
+
+      --  extended
+      procedure Overloaded_Put (
+         Item : Num;
+         Pic : Picture;
+         Currency : String;
+         Fill : Character;
+         Separator : Character;
+         Radix_Mark : Character);
+      procedure Overloaded_Put (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_String;
+         Fill : Wide_Character;
+         Separator : Wide_Character;
+         Radix_Mark : Wide_Character);
+      procedure Overloaded_Put (
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String;
+         Fill : Wide_Wide_Character;
+         Separator : Wide_Wide_Character;
+         Radix_Mark : Wide_Wide_Character);
 
       procedure Put (
          Item : Num;
@@ -67,7 +171,34 @@ package Ada.Text_IO.Editing is
          Currency : String := Default_Currency;
          Fill : Character := Default_Fill;
          Separator : Character := Default_Separator;
-         Radix_Mark : Character := Default_Radix_Mark);
+         Radix_Mark : Character := Default_Radix_Mark)
+         renames Overloaded_Put;
+
+      --  extended
+      procedure Overloaded_Put (
+         To : out String;
+         Item : Num;
+         Pic : Picture;
+         Currency : String;
+         Fill : Character;
+         Separator : Character;
+         Radix_Mark : Character);
+      procedure Overloaded_Put (
+         To : out Wide_String;
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_String;
+         Fill : Wide_Character;
+         Separator : Wide_Character;
+         Radix_Mark : Wide_Character);
+      procedure Overloaded_Put (
+         To : out Wide_Wide_String;
+         Item : Num;
+         Pic : Picture;
+         Currency : Wide_Wide_String;
+         Fill : Wide_Wide_Character;
+         Separator : Wide_Wide_Character;
+         Radix_Mark : Wide_Wide_Character);
 
       procedure Put (
          To : out String;
@@ -76,7 +207,8 @@ package Ada.Text_IO.Editing is
          Currency : String := Default_Currency;
          Fill : Character := Default_Fill;
          Separator : Character := Default_Separator;
-         Radix_Mark : Character := Default_Radix_Mark);
+         Radix_Mark : Character := Default_Radix_Mark)
+         renames Overloaded_Put;
 
    end Decimal_Output;
 

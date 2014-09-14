@@ -435,27 +435,31 @@ package body System.UTF_Conversions is
       Last : out Natural;
       Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
    is
-      I : Natural := Source'First;
-      J : Natural := Result'First;
+      Source_Last : Natural := Source'First - 1;
    begin
-      Last := J - 1;
-      while I <= Source'Last loop
+      Last := Result'First - 1;
+      while Source_Last < Source'Last loop
          declare
             Code : UCS_4;
-            Used : Natural;
             From_Status : From_Status_Type;
             To_Status : To_Status_Type; -- ignore
          begin
-            From_UTF (Source (I .. Source'Last), Used, Code, From_Status);
-            I := Used + 1;
+            From_UTF (
+               Source (Source_Last + 1 .. Source'Last),
+               Source_Last,
+               Code,
+               From_Status);
             if From_Status /= Success then
-               Result (J) := Substitute;
-               Last := J;
+               Last := Last + 1;
+               Result (Last) := Substitute;
             else
-               To_UTF (Code, Result (J .. Result'Last), Last, To_Status);
+               To_UTF (
+                  Code,
+                  Result (Last + 1 .. Result'Last),
+                  Last,
+                  To_Status);
                --  ignore error
             end if;
-            J := Last + 1;
          end;
       end loop;
    end Convert_Procedure;

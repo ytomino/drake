@@ -1,45 +1,23 @@
 pragma License (Unrestricted);
 --  Ada 2012
-with Ada.Strings.UTF_Encoding.Conversions;
+with Ada.Characters.Conversions;
+with Ada.Strings.UTF_Encoding.Generic_Strings;
 package Ada.Strings.UTF_Encoding.Wide_Strings is
-   pragma Pure;
-
-   --  Encoding / decoding between Wide_String and various encoding schemes
-   function Encode (
-      Item : Wide_String;
-      Output_Scheme : Encoding_Scheme;
-      Output_BOM : Boolean := False)
-      return UTF_String
-      renames Conversions.Convert;
-
-   function Encode (
-      Item : Wide_String;
-      Output_BOM : Boolean := False)
-      return UTF_8_String
-      renames Conversions.Convert;
-
-   function Encode (
-      Item : Wide_String;
-      Output_BOM : Boolean := False)
-      return UTF_16_Wide_String;
-
-   --  extended
-   function Encode (
-      Item : Wide_String;
-      Output_BOM : Boolean := False)
-      return UTF_32_Wide_Wide_String
-      renames Conversions.Convert;
-
-   function Decode (
-      Item : UTF_String;
-      Input_Scheme : Encoding_Scheme)
-      return Wide_String;
-
-   function Decode (Item : UTF_8_String) return Wide_String;
-
-   function Decode (Item : UTF_16_Wide_String) return Wide_String;
-
-   --  extended
-   function Decode (Item : UTF_32_Wide_Wide_String) return Wide_String;
-
-end Ada.Strings.UTF_Encoding.Wide_Strings;
+   new Ada.Strings.UTF_Encoding.Generic_Strings (
+      Wide_Character,
+      Wide_String,
+      Expanding_From_8 =>
+         Characters.Conversions.Expanding_From_UTF_8_To_Wide_String,
+      Expanding_From_16 =>
+         Characters.Conversions.Expanding_From_UTF_16_To_Wide_String,
+      Expanding_From_32 =>
+         Characters.Conversions.Expanding_From_UTF_32_To_Wide_String,
+      Expanding_To_8 =>
+         Characters.Conversions.Expanding_From_Wide_String_To_UTF_8,
+      Expanding_To_16 =>
+         Characters.Conversions.Expanding_From_Wide_String_To_UTF_16,
+      Expanding_To_32 =>
+         Characters.Conversions.Expanding_From_Wide_String_To_UTF_32,
+      Get => Ada.Characters.Conversions.Get,
+      Put => Ada.Characters.Conversions.Put);
+pragma Pure (Ada.Strings.UTF_Encoding.Wide_Strings);
