@@ -2,7 +2,7 @@ pragma Check_Policy (Validate, Off);
 pragma Check_Policy (Trace, Off);
 with Ada.Exception_Identification.From_Here;
 with Ada.Text_IO.Formatting;
-with System.Formatting.Decimal_Image;
+with System.Formatting.Decimal;
 with System.Formatting.Literals;
 package body Ada.Text_IO.Editing is
    use Exception_Identification.From_Here;
@@ -317,7 +317,7 @@ package body Ada.Text_IO.Editing is
             if Pic.Has_Dollar = Previous then
                Radix_Position := Radix_Position + Currency'Length - 1;
             end if;
-            System.Formatting.Decimal_Image (
+            System.Formatting.Decimal.Image (
                Item,
                Item_Image,
                Item_Last,

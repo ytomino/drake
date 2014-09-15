@@ -1,7 +1,6 @@
-with System.Formatting.Decimal_Image;
+with System.Formatting.Decimal;
+with System.Formatting.Fixed;
 with System.Formatting.Float;
-with System.Formatting.Float_Image;
-with System.Formatting.Fixed_Image;
 package body Ada.Formatting is
    pragma Suppress (All_Checks);
 
@@ -135,8 +134,8 @@ package body Ada.Formatting is
          Fore_Width + Aft_Width + Exponent_Width + 8); -- (-16#.#E-)
       Last : Natural;
    begin
-      System.Formatting.Float_Image (
-         Long_Long_Float (Item),
+      System.Formatting.Float.Image (
+         System.Formatting.Float.Longest_Float (Item),
          Result,
          Last,
          Minus_Sign => Signs (-1),
@@ -173,8 +172,8 @@ package body Ada.Formatting is
       Last : Natural;
    begin
       if Exponent then
-         System.Formatting.Float_Image (
-            Long_Long_Float (Item),
+         System.Formatting.Float.Image (
+            System.Formatting.Float.Longest_Float (Item),
             Result,
             Last,
             Minus_Sign => Signs (-1),
@@ -194,7 +193,7 @@ package body Ada.Formatting is
             Exponent_Width => Exponent_Width,
             Exponent_Padding => Exponent_Padding);
       else
-         System.Formatting.Fixed_Image (
+         System.Formatting.Fixed.Image (
             Long_Long_Float (Item),
             Result,
             Last,
@@ -224,8 +223,8 @@ package body Ada.Formatting is
       Last : Natural;
    begin
       if Exponent then
-         System.Formatting.Float_Image (
-            Long_Long_Float (Item),
+         System.Formatting.Float.Image (
+            System.Formatting.Float.Longest_Float (Item),
             Result,
             Last,
             Minus_Sign => Signs (-1),
@@ -241,7 +240,7 @@ package body Ada.Formatting is
             Exponent_Width => Exponent_Width,
             Exponent_Padding => Exponent_Padding);
       else
-         System.Formatting.Decimal_Image (
+         System.Formatting.Decimal.Image (
             Long_Long_Integer'Integer_Value (Item),
             Result,
             Last,

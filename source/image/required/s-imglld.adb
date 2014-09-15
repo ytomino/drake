@@ -1,4 +1,4 @@
-with System.Formatting.Decimal_Image;
+with System.Formatting.Decimal;
 package body System.Img_LLD is
    pragma Suppress (All_Checks);
 
@@ -8,7 +8,7 @@ package body System.Img_LLD is
       P : out Natural;
       Scale : Integer) is
    begin
-      Formatting.Decimal_Image (
+      Formatting.Decimal.Image (
          V,
          S,
          P,

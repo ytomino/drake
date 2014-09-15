@@ -1,6 +1,6 @@
 with Ada.Text_IO.Formatting;
-with System.Formatting.Decimal_Image;
-with System.Formatting.Float_Image;
+with System.Formatting.Decimal;
+with System.Formatting.Float;
 with System.Formatting.Literals.Float;
 package body Ada.Text_IO.Decimal_IO is
 
@@ -19,8 +19,8 @@ package body Ada.Text_IO.Decimal_IO is
    begin
       if Exp /= 0 then
          --  decimal version should be implemented...
-         System.Formatting.Float_Image (
-            Long_Long_Float (Item),
+         System.Formatting.Float.Image (
+            System.Formatting.Float.Longest_Float (Item),
             To,
             Last,
             Zero_Sign => System.Formatting.No_Sign,
@@ -28,7 +28,7 @@ package body Ada.Text_IO.Decimal_IO is
             Aft_Width => Field'Max (1, Aft),
             Exponent_Width => Exp - 1);
       else
-         System.Formatting.Decimal_Image (
+         System.Formatting.Decimal.Image (
             Long_Long_Integer'Integer_Value (Item),
             To,
             Last,

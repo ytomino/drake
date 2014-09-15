@@ -9,13 +9,6 @@ package System.Formatting.Float is
 
    --  decimal part for floating-point format = Aft / Base ** Exponent
 
-   procedure Split (
-      X : Longest_Unsigned_Float;
-      Fore : out Digit; -- Fore < Base
-      Aft : out Longest_Unsigned_Float;
-      Exponent : out Integer;
-      Base : Number_Base := 10);
-
    procedure Aft_Scale (
       Aft : Longest_Unsigned_Float;
       Scaled_Aft : out Longest_Unsigned_Float;
@@ -39,5 +32,27 @@ package System.Formatting.Float is
       return Positive;
    pragma Inline (Fore_Width);
    --  return width of integer part
+
+   procedure Image (
+      Value : Longest_Float;
+      Item : out String; -- To'Length >= Long_Long_Float'Width + 4 (16##)
+      Last : out Natural;
+      Minus_Sign : Character := '-';
+      Zero_Sign : Character := ' ';
+      Plus_Sign : Character := ' ';
+      Base : Number_Base := 10;
+      Base_Form : Boolean := False;
+      Set : Type_Set := Upper_Case;
+      Fore_Width : Positive := 1;
+      Fore_Padding : Character := '0';
+      Aft_Width : Positive;
+      Exponent_Mark : Character := 'E';
+      Exponent_Minus_Sign : Character := '-';
+      Exponent_Zero_Sign : Character := '+';
+      Exponent_Plus_Sign : Character := '+';
+      Exponent_Width : Positive := 2;
+      Exponent_Padding : Character := '0';
+      NaN : String := "NAN";
+      Infinity : String := "INF");
 
 end System.Formatting.Float;

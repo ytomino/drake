@@ -1,6 +1,6 @@
 with Ada.Text_IO.Formatting;
-with System.Formatting.Fixed_Image;
-with System.Formatting.Float_Image;
+with System.Formatting.Fixed;
+with System.Formatting.Float;
 with System.Formatting.Literals.Float;
 package body Ada.Text_IO.Fixed_IO is
 
@@ -20,8 +20,8 @@ package body Ada.Text_IO.Fixed_IO is
       Aft_Width : constant Field := Field'Max (1, Aft);
    begin
       if Exp /= 0 then
-         System.Formatting.Float_Image (
-            Long_Long_Float (Item),
+         System.Formatting.Float.Image (
+            System.Formatting.Float.Longest_Float (Item),
             To,
             Last,
             Zero_Sign => System.Formatting.No_Sign,
@@ -29,7 +29,7 @@ package body Ada.Text_IO.Fixed_IO is
             Aft_Width => Aft_Width,
             Exponent_Width => Exp - 1);
       else
-         System.Formatting.Fixed_Image (
+         System.Formatting.Fixed.Image (
             Long_Long_Float (Item),
             To,
             Last,
