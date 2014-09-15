@@ -11,7 +11,7 @@ package System.Formatting.Float is
 
    procedure Split (
       X : Longest_Unsigned_Float;
-      Fore : out Unsigned; -- Fore < Base
+      Fore : out Digit; -- Fore < Base
       Aft : out Longest_Unsigned_Float;
       Exponent : out Integer;
       Base : Number_Base := 10);

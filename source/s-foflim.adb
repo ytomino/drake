@@ -68,7 +68,7 @@ begin
       end;
    else
       declare
-         Fore : Unsigned;
+         Fore : Digit;
          Aft : Long_Long_Float;
          Exponent : Integer;
          Scaled_Aft : Long_Long_Float;
@@ -91,7 +91,7 @@ begin
          if Rouned_Up then
             Fore := Fore + 1;
             Scaled_Aft := 0.0;
-            if Fore >= Unsigned (Base) then
+            if Fore >= Base then
                Fore := 1;
                Exponent := Exponent + 1;
             end if;

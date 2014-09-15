@@ -11,7 +11,7 @@ package body System.Formatting.Float is
 
    procedure Split (
       X : Longest_Unsigned_Float;
-      Fore : out Unsigned;
+      Fore : out Digit;
       Aft : out Longest_Unsigned_Float;
       Exponent : out Integer;
       Base : Number_Base := 10) is
@@ -37,7 +37,7 @@ package body System.Formatting.Float is
                   Fore_Float : constant Longest_Unsigned_Float :=
                      truncl (Scaled);
                begin
-                  Fore := Unsigned (Fore_Float);
+                  Fore := Digit (Fore_Float);
                   Aft := X - Fore_Float * B;
                end;
             end;
@@ -56,7 +56,7 @@ package body System.Formatting.Float is
                   Fore_Float : constant Longest_Unsigned_Float :=
                      truncl (Scaled);
                begin
-                  Fore := Unsigned (Fore_Float);
+                  Fore := Digit (Fore_Float);
                   Aft := X - Fore_Float / B;
                end;
             end;
