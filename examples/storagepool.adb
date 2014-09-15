@@ -3,6 +3,7 @@ with Ada.Unchecked_Reallocation;
 with System.Storage_Elements.Formatting;
 with System.Storage_Pools.Unbounded;
 procedure storagepool is
+	use type System.Storage_Elements.Storage_Offset;
 	Verbose : constant Boolean := False;
 begin
 	Global : declare
@@ -57,24 +58,27 @@ begin
 		procedure Free is new Ada.Unchecked_Deallocation (System.Address, T);
 		A : array (1 .. 25) of T;
 	begin
-		for I in A'Range loop
-			A (I) := new System.Address'(System'To_Address (I));
-			if Verbose then
-				Ada.Debug.Put (System.Storage_Elements.Formatting.Image (A(I).all'Address));
-			end if;
-			for J in A'First .. I - 1 loop
-				pragma Assert (A(I) /= A (J));
-				null;
+		for Trying in 1 .. 2 loop
+			for I in A'Range loop
+				A (I) := new System.Address'(System'To_Address (I));
+				if Verbose then
+					Ada.Debug.Put (System.Storage_Elements.Formatting.Image (A(I).all'Address));
+				end if;
+				pragma Assert (A (I).all'Address mod System.Address'Alignment = 0);
+				for J in A'First .. I - 1 loop
+					pragma Assert (A(I) /= A (J));
+					null;
+				end loop;
 			end loop;
-		end loop;
-		begin
-			A (1) := new System.Address; -- error
-			raise Program_Error;
-		exception
-			when Storage_Error => null;
-		end;
-		for I in A'Range loop
-			Free (A(I));
+			begin
+				A (1) := new System.Address; -- error
+				raise Program_Error;
+			exception
+				when Storage_Error => null;
+			end;
+			for I in A'Range loop
+				Free (A(I));
+			end loop;
 		end loop;
 	end Sized_And_Fixed;
 	Sized_And_Variable : declare
