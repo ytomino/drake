@@ -378,9 +378,8 @@ package body System.Storage_Pools.Subpools is
       Alignment : Storage_Elements.Storage_Count)
       return Storage_Elements.Storage_Count is
    begin
-      return (Finalization_Masters.Header_Size + Alignment - 1)
-         / Alignment
-         * Alignment;
+      return Finalization_Masters.Header_Size
+         + (-Finalization_Masters.Header_Size) mod Alignment;
    end Header_Size_With_Padding;
 
 end System.Storage_Pools.Subpools;
