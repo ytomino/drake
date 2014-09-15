@@ -16,6 +16,7 @@ package System.Pool_Size is
       Size : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count) is limited
    record
+      First_Free : Storage_Elements.Storage_Offset := -1; -- offset
       First_Empty : Storage_Elements.Storage_Count := 0; -- offset
       Storage : aliased Aligned_Storage_Array (1 .. Size);
    end record;

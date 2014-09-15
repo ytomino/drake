@@ -3,6 +3,7 @@ with Ada.Unchecked_Reallocation;
 with System.Storage_Elements.Formatting;
 with System.Storage_Pools.Unbounded;
 procedure storagepool is
+	use type System.Address;
 	use type System.Storage_Elements.Storage_Offset;
 	Verbose : constant Boolean := False;
 begin
@@ -83,21 +84,55 @@ begin
 	end Sized_And_Fixed;
 	Sized_And_Variable : declare
 		type V is access String;
-		for V'Storage_Size use 100;
+		for V'Storage_Size use 300;
 		procedure Free is new Ada.Unchecked_Deallocation (String, V);
-		A : array (1 .. 2) of V;
+		A : array (1 .. 6) of V;
+		First_Address : System.Address;
 	begin
-		A (1) := new String (1 .. 5);
-		if Verbose then
-			Ada.Debug.Put (System.Storage_Elements.Formatting.Image (A (1).all'Address));
-		end if;
-		A (2) := new String (1 .. 10);
-		if Verbose then
-			Ada.Debug.Put (System.Storage_Elements.Formatting.Image (A (2).all'Address));
-		end if;
-		pragma Assert (A (1) /= A (2));
+		A (1) := new String (1 .. 1);
+		First_Address := A (1).all'Address;
 		Free (A (1));
+		for Trying in 1 .. 2 loop
+			for I in A'Range loop
+				A (I) := new String (1 .. I * 5);
+				if Verbose then
+					Ada.Debug.Put (System.Storage_Elements.Formatting.Image (A (I).all'Address));
+				end if;
+				for J in A'First .. I - 1 loop
+					pragma Assert (A (J) /= A (I));
+					null;
+				end loop;
+			end loop;
+			begin
+				A (1) := new String (1 .. 300); -- error
+				raise Program_Error;
+			exception
+				when Storage_Error => null;
+			end;
+			pragma Assert (A (1).all'Address = First_Address);
+			Free (A (6));
+			Free (A (1));
+			Free (A (2));
+			Free (A (4));
+			Free (A (3));
+			Free (A (5));
+		end loop;
+		A (1) := new String (1 .. 100);
+		pragma Assert (A (1).all'Address = First_Address);
+		A (2) := new String (1 .. 1);
+		Free (A (1));
+		A (3) := new String (1 .. 5); -- reuse the area of A (1)
+		pragma Assert (A (3).all'Address = First_Address);
+		Free (A (3));
+		A (4) := new String (1 .. 10); -- reuse the area of A (1)
+		pragma Assert (A (4).all'Address = First_Address);
+		A (5) := new String (1 .. 15); -- reuse the split area
+		Free (A (4));
+		Free (A (5));
 		Free (A (2));
+		A (1) := new String (1 .. 150);
+		pragma Assert (A (1).all'Address = First_Address);
+		Free (A (1));
 	end Sized_And_Variable;
 	Local : declare
 		Pool : System.Storage_Pools.Unbounded.Unbounded_Pool;
