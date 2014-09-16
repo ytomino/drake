@@ -21,9 +21,9 @@ package System.Runtime_Context is
       access function return not null Task_Local_Storage_Access;
    pragma Suppress (Access_Check, Get_Task_Local_Storage_Handler);
 
-   Get_Task_Local_Storage_Hook : not null Get_Task_Local_Storage_Handler :=
+   Get_Task_Local_Storage_Hook : Get_Task_Local_Storage_Handler :=
       Get_Main_Task_Local_Storage'Access;
-   pragma Suppress (Access_Check, Get_Task_Local_Storage_Hook);
+   pragma Suppress (Access_Check, Get_Task_Local_Storage_Hook); -- not null
 
    function Get_Task_Local_Storage
       return not null Task_Local_Storage_Access;
