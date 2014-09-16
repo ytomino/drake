@@ -1153,31 +1153,21 @@ package body System.Tasks is
    end Disable_Abort;
 
    procedure Lock_Abort is
+      T : constant Task_Id := Current_Task_Id; -- and register
    begin
-      if Registered_State = Registered then
-         declare
-            T : constant Task_Id := Current_Task_Id;
-         begin
-            pragma Check (Trace, Ada.Debug.Put (Name (T).all
-               & Natural'Image (T.Abort_Locking) & " =>"
-               & Natural'Image (T.Abort_Locking + 1)));
-            T.Abort_Locking := T.Abort_Locking + 1;
-         end;
-      end if;
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all
+         & Natural'Image (T.Abort_Locking) & " =>"
+         & Natural'Image (T.Abort_Locking + 1)));
+      T.Abort_Locking := T.Abort_Locking + 1;
    end Lock_Abort;
 
    procedure Unlock_Abort is
+      T : constant Task_Id := TLS_Current_Task_Id;
    begin
-      if Registered_State = Registered then
-         declare
-            T : constant Task_Id := TLS_Current_Task_Id;
-         begin
-            pragma Check (Trace, Ada.Debug.Put (Name (T).all
-               & Natural'Image (T.Abort_Locking) & " =>"
-               & Natural'Image (T.Abort_Locking - 1)));
-            T.Abort_Locking := T.Abort_Locking - 1;
-         end;
-      end if;
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all
+         & Natural'Image (T.Abort_Locking) & " =>"
+         & Natural'Image (T.Abort_Locking - 1)));
+      T.Abort_Locking := T.Abort_Locking - 1;
    end Unlock_Abort;
 
    function Is_Aborted return Boolean is
