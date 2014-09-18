@@ -1,21 +1,30 @@
 with Ada.Exception_Identification.From_Here;
+with System.Address_To_Named_Access_Conversions;
+with System.Standard_Allocators;
+with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.winerror;
 package body Ada.Directory_Searching is
    use Exception_Identification.From_Here;
+   use type System.Storage_Elements.Storage_Offset;
    use type C.signed_int;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
 
+   package WIN32_FIND_DATA_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.winbase.WIN32_FIND_DATA,
+         C.winbase.struct_WIN32_FIND_DATAW_ptr);
+
    function Match_Filter (
       Filter : Filter_Type;
-      Directory_Entry : Directory_Entry_Type)
+      Directory_Entry : not null Directory_Entry_Access)
       return Boolean;
    function Match_Filter (
       Filter : Filter_Type;
-      Directory_Entry : Directory_Entry_Type)
+      Directory_Entry : not null Directory_Entry_Access)
       return Boolean is
    begin
       return Filter (To_File_Kind (Directory_Entry.dwFileAttributes))
@@ -33,12 +42,31 @@ package body Ada.Directory_Searching is
 
    --  implementation
 
+   function New_Directory_Entry (Source : not null Directory_Entry_Access)
+      return not null Directory_Entry_Access
+   is
+      Result : Directory_Entry_Access;
+   begin
+      Result := WIN32_FIND_DATA_ptr_Conv.To_Pointer (
+         System.Standard_Allocators.Allocate (
+            C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
+      Result.all := Source.all;
+      return Result;
+   end New_Directory_Entry;
+
+   procedure Free (X : in out Directory_Entry_Access) is
+   begin
+      System.Standard_Allocators.Free (
+         WIN32_FIND_DATA_ptr_Conv.To_Address (X));
+      X := null;
+   end Free;
+
    procedure Start_Search (
-      Search : in out Search_Type;
+      Search : aliased in out Search_Type;
       Directory : String;
       Pattern : String;
       Filter : Filter_Type;
-      Directory_Entry : aliased out Directory_Entry_Type;
+      Directory_Entry : out Directory_Entry_Access;
       Has_Next_Entry : out Boolean) is
    begin
       if Directory'Length = 0 then -- reject
@@ -69,9 +97,10 @@ package body Ada.Directory_Searching is
             Pattern,
             Wildcard (Wildcard_Length)'Access);
          --  start search
+         Directory_Entry := Search.Directory_Entry'Unchecked_Access;
          Search.Handle := C.winbase.FindFirstFileW (
             Wildcard (0)'Access,
-            Directory_Entry'Access);
+            Directory_Entry);
       end;
       if Search.Handle = C.winbase.INVALID_HANDLE_VALUE then
          case C.winbase.GetLastError is
@@ -89,10 +118,7 @@ package body Ada.Directory_Searching is
                Has_Next_Entry := True;
                exit; -- found
             end if;
-            if C.winbase.FindNextFileW (
-               Search.Handle,
-               Directory_Entry'Access) = 0
-            then
+            if C.winbase.FindNextFile (Search.Handle, Directory_Entry) = 0 then
                case C.winbase.GetLastError is
                   when C.winerror.ERROR_FILE_NOT_FOUND
                      | C.winerror.ERROR_NO_MORE_FILES =>
@@ -107,7 +133,7 @@ package body Ada.Directory_Searching is
    end Start_Search;
 
    procedure End_Search (
-      Search : in out Search_Type;
+      Search : aliased in out Search_Type;
       Raise_On_Error : Boolean)
    is
       Handle : constant C.winnt.HANDLE := Search.Handle;
@@ -123,17 +149,15 @@ package body Ada.Directory_Searching is
    end End_Search;
 
    procedure Get_Next_Entry (
-      Search : in out Search_Type;
-      Directory_Entry : aliased out Directory_Entry_Type;
+      Search : aliased in out Search_Type;
+      Directory_Entry : out Directory_Entry_Access;
       Has_Next_Entry : out Boolean)
    is
       pragma Unmodified (Search);
    begin
+      Directory_Entry := Search.Directory_Entry'Unchecked_Access;
       loop
-         if C.winbase.FindNextFileW (
-            Search.Handle,
-            Directory_Entry'Access) = 0
-         then
+         if C.winbase.FindNextFile (Search.Handle, Directory_Entry) = 0 then
             case C.winbase.GetLastError is
                when C.winerror.ERROR_FILE_NOT_FOUND
                   | C.winerror.ERROR_NO_MORE_FILES =>
@@ -150,14 +174,14 @@ package body Ada.Directory_Searching is
       end loop;
    end Get_Next_Entry;
 
-   function Simple_Name (Directory_Entry : Directory_Entry_Type)
+   function Simple_Name (Directory_Entry : not null Directory_Entry_Access)
       return String is
    begin
       return System.Zero_Terminated_WStrings.Value (
          Directory_Entry.cFileName (0)'Access);
    end Simple_Name;
 
-   function Kind (Directory_Entry : Directory_Entry_Type)
+   function Kind (Directory_Entry : not null Directory_Entry_Access)
       return File_Kind is
    begin
       return To_File_Kind (Directory_Entry.dwFileAttributes);
@@ -165,7 +189,7 @@ package body Ada.Directory_Searching is
 
    function Size (
       Directory : String;
-      Directory_Entry : Directory_Entry_Type;
+      Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
       return Streams.Stream_Element_Count
    is
@@ -181,7 +205,7 @@ package body Ada.Directory_Searching is
 
    function Modification_Time (
       Directory : String;
-      Directory_Entry : Directory_Entry_Type;
+      Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
       return System.Native_Time.Native_Time
    is

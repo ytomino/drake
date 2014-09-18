@@ -3,7 +3,7 @@ with System.Address_To_Named_Access_Conversions;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
-with C.bits.dirent;
+with C.errno;
 with C.fnmatch;
 with C.string;
 package body Ada.Directory_Searching is
@@ -19,14 +19,46 @@ package body Ada.Directory_Searching is
    package char_ptr_Conv is
       new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
 
+   package dirent_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         C.dirent.struct_dirent64,
+         C.bits.dirent.struct_dirent64_ptr);
+
+   procedure memcpy (
+      dst : not null C.bits.dirent.struct_dirent64_ptr;
+      src : not null C.bits.dirent.struct_dirent64_ptr;
+      n : System.Storage_Elements.Storage_Count);
+   pragma Import (Intrinsic, memcpy, "__builtin_memcpy");
+
    --  implementation
 
+   function New_Directory_Entry (Source : not null Directory_Entry_Access)
+      return not null Directory_Entry_Access
+   is
+      Result : Directory_Entry_Access;
+   begin
+      Result := dirent_ptr_Conv.To_Pointer (
+         System.Standard_Allocators.Allocate (
+            System.Storage_Elements.Storage_Count (Source.d_reclen)));
+      memcpy (
+         Result,
+         Source,
+         System.Storage_Elements.Storage_Count (Source.d_reclen));
+      return Result;
+   end New_Directory_Entry;
+
+   procedure Free (X : in out Directory_Entry_Access) is
+   begin
+      System.Standard_Allocators.Free (dirent_ptr_Conv.To_Address (X));
+      X := null;
+   end Free;
+
    procedure Start_Search (
-      Search : in out Search_Type;
+      Search : aliased in out Search_Type;
       Directory : String;
       Pattern : String;
       Filter : Filter_Type;
-      Directory_Entry : aliased out Directory_Entry_Type;
+      Directory_Entry : out Directory_Entry_Access;
       Has_Next_Entry : out Boolean) is
    begin
       if Directory'Length = 0 then -- reject
@@ -60,7 +92,7 @@ package body Ada.Directory_Searching is
    end Start_Search;
 
    procedure End_Search (
-      Search : in out Search_Type;
+      Search : aliased in out Search_Type;
       Raise_On_Error : Boolean)
    is
       Handle : constant C.dirent.DIR_ptr := Search.Handle;
@@ -77,26 +109,19 @@ package body Ada.Directory_Searching is
    end End_Search;
 
    procedure Get_Next_Entry (
-      Search : in out Search_Type;
-      Directory_Entry : aliased out Directory_Entry_Type;
+      Search : aliased in out Search_Type;
+      Directory_Entry : out Directory_Entry_Access;
       Has_Next_Entry : out Boolean) is
    begin
       loop
-         declare
-            Result : aliased C.bits.dirent.struct_dirent64_ptr;
-            errno : C.signed_int;
-         begin
-            errno := C.dirent.readdir64_r (
-               Search.Handle,
-               Directory_Entry'Access,
-               Result'Access);
-            if errno /= 0 then
-               Raise_Exception (Use_Error'Identity);
-            elsif Result = null then
-               Has_Next_Entry := False; -- end
-               exit;
-            end if;
-         end;
+         C.errno.errno_location.all := 0;
+         Directory_Entry := C.dirent.readdir64 (Search.Handle);
+         if C.errno.errno /= 0 then
+            Raise_Exception (Use_Error'Identity);
+         elsif Directory_Entry = null then
+            Has_Next_Entry := False; -- end
+            exit;
+         end if;
          if Search.Filter (Kind (Directory_Entry))
             and then C.fnmatch.fnmatch (
                Search.Pattern,
@@ -115,14 +140,14 @@ package body Ada.Directory_Searching is
       end loop;
    end Get_Next_Entry;
 
-   function Simple_Name (Directory_Entry : Directory_Entry_Type)
+   function Simple_Name (Directory_Entry : not null Directory_Entry_Access)
       return String is
    begin
       return System.Zero_Terminated_Strings.Value (
          Directory_Entry.d_name (0)'Access);
    end Simple_Name;
 
-   function Kind (Directory_Entry : Directory_Entry_Type)
+   function Kind (Directory_Entry : not null Directory_Entry_Access)
       return File_Kind is
    begin
       --  DTTOIF
@@ -132,7 +157,7 @@ package body Ada.Directory_Searching is
 
    function Size (
       Directory : String;
-      Directory_Entry : Directory_Entry_Type;
+      Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
       return Streams.Stream_Element_Count is
    begin
@@ -148,7 +173,7 @@ package body Ada.Directory_Searching is
 
    function Modification_Time (
       Directory : String;
-      Directory_Entry : Directory_Entry_Type;
+      Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
       return System.Native_Time.Native_Time is
    begin
@@ -176,7 +201,7 @@ package body Ada.Directory_Searching is
 
    procedure Get_Information (
       Directory : String;
-      Directory_Entry : Directory_Entry_Type;
+      Directory_Entry : not null Directory_Entry_Access;
       Information : aliased out C.sys.stat.struct_stat64)
    is
       S_Length : constant C.size_t :=

@@ -244,19 +244,45 @@ private
    type Search_Access is access Search_Type;
    for Search_Access'Storage_Size use 0;
 
-   type Directory_Entry_Type is record -- not limited in full view
-      Search : Search_Access := null;
-      Data : aliased Directory_Searching.Directory_Entry_Type;
+   type Directory_Entry_Status is (Empty, Attached, Detached);
+   pragma Discard_Names (Directory_Entry_Status);
+
+   type Non_Controlled_Directory_Entry_Type is record
+      Path : String_Access;
+      Directory_Entry : Directory_Searching.Directory_Entry_Access;
       Additional : aliased Directory_Searching.Directory_Entry_Additional_Type;
+      Status : Directory_Entry_Status := Empty;
    end record;
 
+   package Controlled is
+
+      type Directory_Entry_Type is limited private;
+
+      function Reference (Object : Directory_Entry_Type)
+         return not null access Non_Controlled_Directory_Entry_Type;
+      pragma Inline (Reference);
+
+   private
+
+      type Directory_Entry_Type is
+         new Finalization.Limited_Controlled with
+      record
+         Data : aliased Non_Controlled_Directory_Entry_Type;
+      end record;
+
+      overriding procedure Finalize (Object : in out Directory_Entry_Type);
+
+   end Controlled;
+
+   type Directory_Entry_Type is new Controlled.Directory_Entry_Type;
+
    type Search_Type is new Finalization.Limited_Controlled with record
-      Search : Directory_Searching.Search_Type := (
+      Search : aliased Directory_Searching.Search_Type := (
          Handle => Directory_Searching.Null_Handle,
          others => <>);
       Path : String_Access;
       Next_Directory_Entry : aliased Directory_Entry_Type;
-      Has_Next : Boolean;
+      Next_Is_Queried : Boolean;
       Count : Natural;
    end record;
 

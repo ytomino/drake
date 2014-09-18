@@ -16,11 +16,20 @@ begin
 		use DII, DII.Iterator_Interfaces;
 		Ite : DII.Iterator_Interfaces.Forward_Iterator'Class := DII.Iterate;
 		Pos : DII.Cursor := First (Ite);
+		J : DII.Cursor;
 	begin
 		Ada.Debug.Put (">>>>");
 		while Has_Element (Pos) loop
 			Ada.Debug.Put (Ada.Directories.Simple_Name (DII.Constant_Reference (Pos).Element.all));
+			if Ada.Directories.Simple_Name (DII.Constant_Reference (Pos).Element.all) = "input2forward.adb" then
+				J := Pos;
+			end if;
 			Pos := Next (Ite, Pos);
+		end loop;
+		Ada.Debug.Put ("----");
+		while Has_Element (J) loop
+			Ada.Debug.Put (Ada.Directories.Simple_Name (DII.Constant_Reference (J).Element.all));
+			J := Next (Ite, J);
 		end loop;
 		Ada.Debug.Put ("<<<<");
 	end;
