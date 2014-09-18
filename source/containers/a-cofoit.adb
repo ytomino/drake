@@ -48,7 +48,6 @@ package body Ada.Containers.Forward_Iterators is
             end if;
             Release (Object.Last);
             Object.Last := New_Node;
-            Retain (New_Node);
             Assign (Result, New_Node);
          end;
       end if;
