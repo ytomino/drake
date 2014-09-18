@@ -11,7 +11,6 @@ package body Ada.Directory_Searching is
    use type System.Storage_Elements.Storage_Offset;
    use type C.char;
    use type C.signed_int;
-   use type C.unsigned_char; -- d_namelen in FreeBSD
    use type C.dirent.DIR_ptr;
    use type C.bits.dirent.struct_dirent64_ptr;
    use type C.size_t;
