@@ -5,6 +5,9 @@ package body Ada.Command_Line is
 
    --  implementation
 
+   function Argument_Count return Natural
+      renames Inside.Argument_Count;
+
    function Argument (Number : Positive) return String is
    begin
       if Number > Inside.Argument_Count then
@@ -13,9 +16,6 @@ package body Ada.Command_Line is
          return Inside.Argument (Number);
       end if;
    end Argument;
-
-   function Argument_Count return Natural
-      renames Inside.Argument_Count;
 
    function Command_Name return String is
    begin
