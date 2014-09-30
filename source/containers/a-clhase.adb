@@ -518,7 +518,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    function Iterate (Container : Set)
       return Set_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Iterator'(Container => Container'Unrestricted_Access);
+      return Set_Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    function Length (Container : Set) return Count_Type is
@@ -726,12 +726,12 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 
-   overriding function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Set_Iterator) return Cursor is
    begin
       return First (Object.Container.all);
    end First;
 
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function Next (Object : Set_Iterator; Position : Cursor)
       return Cursor
    is
       pragma Unreferenced (Object);

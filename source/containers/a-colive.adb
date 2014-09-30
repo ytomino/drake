@@ -565,7 +565,9 @@ package body Ada.Containers.Limited_Vectors is
    function Iterate (Container : Vector)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return Iterator'(First => First (Container), Last => Last (Container));
+      return Vector_Iterator'(
+         First => First (Container),
+         Last => Last (Container));
    end Iterate;
 
    function Iterate (Container : Vector; First, Last : Cursor)
@@ -574,9 +576,9 @@ package body Ada.Containers.Limited_Vectors is
       pragma Unreferenced (Container);
    begin
       if First > Last then
-         return Iterator'(First => No_Element, Last => No_Element);
+         return Vector_Iterator'(First => No_Element, Last => No_Element);
       else
-         return Iterator'(First => First, Last => Last);
+         return Vector_Iterator'(First => First, Last => Last);
       end if;
    end Iterate;
 
@@ -874,12 +876,12 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
-   overriding function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Vector_Iterator) return Cursor is
    begin
       return Object.First;
    end First;
 
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function Next (Object : Vector_Iterator; Position : Cursor)
       return Cursor is
    begin
       if Position >= Object.Last then
@@ -889,12 +891,12 @@ package body Ada.Containers.Limited_Vectors is
       end if;
    end Next;
 
-   overriding function Last (Object : Iterator) return Cursor is
+   overriding function Last (Object : Vector_Iterator) return Cursor is
    begin
       return Object.Last;
    end Last;
 
-   overriding function Previous (Object : Iterator; Position : Cursor)
+   overriding function Previous (Object : Vector_Iterator; Position : Cursor)
       return Cursor is
    begin
       if Position <= Object.First then

@@ -225,12 +225,14 @@ private
    type Map_Access is access constant Map;
    for Map_Access'Storage_Size use 0;
 
-   type Iterator is new Map_Iterator_Interfaces.Forward_Iterator with record
+   type Map_Iterator is
+      new Map_Iterator_Interfaces.Forward_Iterator with
+   record
       Container : not null Map_Access;
    end record;
 
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function First (Object : Map_Iterator) return Cursor;
+   overriding function Next (Object : Map_Iterator; Position : Cursor)
       return Cursor;
 
    package Streaming is
@@ -272,13 +274,13 @@ private
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Iterator);
+         Item : out Map_Iterator);
       function Missing_Input (
          Stream : not null access Streams.Root_Stream_Type'Class)
-         return Iterator;
+         return Map_Iterator;
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Iterator);
+         Item : Map_Iterator);
 
       pragma Import (Ada, Missing_Read, "__drake_program_error");
       pragma Import (Ada, Missing_Input, "__drake_program_error");
@@ -301,10 +303,10 @@ private
    for Reference_Type'Read use Streaming.Missing_Read;
    for Reference_Type'Write use Streaming.Missing_Write;
 
-   for Iterator'Read use Streaming.Missing_Read;
-   for Iterator'Input use Streaming.Missing_Input;
-   for Iterator'Write use Streaming.Missing_Write;
-   for Iterator'Output use Streaming.Missing_Write;
+   for Map_Iterator'Read use Streaming.Missing_Read;
+   for Map_Iterator'Input use Streaming.Missing_Input;
+   for Map_Iterator'Write use Streaming.Missing_Write;
+   for Map_Iterator'Output use Streaming.Missing_Write;
 
    No_Element : constant Cursor := null;
 

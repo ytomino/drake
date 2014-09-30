@@ -401,18 +401,18 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   type Iterator is new Vector_Iterator_Interfaces.Reversible_Iterator
-      with
+   type Vector_Iterator is
+      new Vector_Iterator_Interfaces.Reversible_Iterator with
    record
       First : Extended_Index;
       Last : Extended_Index;
    end record;
 
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function First (Object : Vector_Iterator) return Cursor;
+   overriding function Next (Object : Vector_Iterator; Position : Cursor)
       return Cursor;
-   overriding function Last (Object : Iterator) return Cursor;
-   overriding function Previous (Object : Iterator; Position : Cursor)
+   overriding function Last (Object : Vector_Iterator) return Cursor;
+   overriding function Previous (Object : Vector_Iterator; Position : Cursor)
       return Cursor;
 
    package Streaming is
@@ -440,13 +440,13 @@ private
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Iterator);
+         Item : out Vector_Iterator);
       function Missing_Input (
          Stream : not null access Streams.Root_Stream_Type'Class)
-         return Iterator;
+         return Vector_Iterator;
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Iterator);
+         Item : Vector_Iterator);
 
       pragma Import (Ada, Missing_Read, "__drake_program_error");
       pragma Import (Ada, Missing_Input, "__drake_program_error");
@@ -463,9 +463,9 @@ private
    for Reference_Type'Read use Streaming.Missing_Read;
    for Reference_Type'Write use Streaming.Missing_Write;
 
-   for Iterator'Read use Streaming.Missing_Read;
-   for Iterator'Input use Streaming.Missing_Input;
-   for Iterator'Write use Streaming.Missing_Write;
-   for Iterator'Output use Streaming.Missing_Write;
+   for Vector_Iterator'Read use Streaming.Missing_Read;
+   for Vector_Iterator'Input use Streaming.Missing_Input;
+   for Vector_Iterator'Write use Streaming.Missing_Write;
+   for Vector_Iterator'Output use Streaming.Missing_Write;
 
 end Ada.Containers.Limited_Vectors;

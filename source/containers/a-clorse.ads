@@ -302,15 +302,17 @@ private
    type Set_Access is access constant Set;
    for Set_Access'Storage_Size use 0;
 
-   type Iterator is new Set_Iterator_Interfaces.Reversible_Iterator with record
+   type Set_Iterator is
+      new Set_Iterator_Interfaces.Reversible_Iterator with
+   record
       Container : not null Set_Access;
    end record;
 
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function First (Object : Set_Iterator) return Cursor;
+   overriding function Next (Object : Set_Iterator; Position : Cursor)
       return Cursor;
-   overriding function Last (Object : Iterator) return Cursor;
-   overriding function Previous (Object : Iterator; Position : Cursor)
+   overriding function Last (Object : Set_Iterator) return Cursor;
+   overriding function Previous (Object : Set_Iterator; Position : Cursor)
       return Cursor;
 
    package Streaming is
@@ -338,13 +340,13 @@ private
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Iterator);
+         Item : out Set_Iterator);
       function Missing_Input (
          Stream : not null access Streams.Root_Stream_Type'Class)
-         return Iterator;
+         return Set_Iterator;
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Iterator);
+         Item : Set_Iterator);
 
       pragma Import (Ada, Missing_Read, "__drake_program_error");
       pragma Import (Ada, Missing_Input, "__drake_program_error");
@@ -361,10 +363,10 @@ private
    for Constant_Reference_Type'Read use Streaming.Missing_Read;
    for Constant_Reference_Type'Write use Streaming.Missing_Write;
 
-   for Iterator'Read use Streaming.Missing_Read;
-   for Iterator'Input use Streaming.Missing_Input;
-   for Iterator'Write use Streaming.Missing_Write;
-   for Iterator'Output use Streaming.Missing_Write;
+   for Set_Iterator'Read use Streaming.Missing_Read;
+   for Set_Iterator'Input use Streaming.Missing_Input;
+   for Set_Iterator'Write use Streaming.Missing_Write;
+   for Set_Iterator'Output use Streaming.Missing_Write;
 
    No_Element : constant Cursor := null;
 
