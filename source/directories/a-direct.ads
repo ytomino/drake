@@ -290,8 +290,8 @@ private
 
    type Cursor is new Natural;
 
-   type Search_Iterator is new Search_Iterator_Interfaces.Forward_Iterator
-      with
+   type Search_Iterator is
+      new Search_Iterator_Interfaces.Forward_Iterator with
    record
       Search : Search_Access;
    end record;

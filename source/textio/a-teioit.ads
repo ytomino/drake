@@ -51,8 +51,8 @@ private
 
    type Line_Cursor is new Count;
 
-   type Line_Iterator is new Lines_Iterator_Interfaces.Forward_Iterator
-      with
+   type Line_Iterator is
+      new Lines_Iterator_Interfaces.Forward_Iterator with
    record
       Lines : Lines_Access;
    end record;
