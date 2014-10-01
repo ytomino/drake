@@ -19,7 +19,9 @@ private
    type Flag is mod 2;
    pragma Atomic (Flag);
 
-   type Suspension_Object is new Finalization.Limited_Controlled with record
+   type Suspension_Object is
+      limited new Finalization.Limited_Controlled with
+   record
       Object : System.Synchronous_Objects.Event;
       Waiting : aliased Flag; -- for CXDA002
    end record;

@@ -67,7 +67,7 @@ private
 
    private
 
-      type Process is new Finalization.Limited_Controlled with record
+      type Process is limited new Finalization.Limited_Controlled with record
          Handle : aliased C.winnt.HANDLE := C.winbase.INVALID_HANDLE_VALUE;
       end record;
 

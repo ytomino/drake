@@ -266,7 +266,7 @@ private
 
 --  diff (Data_Access)
 
-   type List is new Finalization.Limited_Controlled with record
+   type List is limited new Finalization.Limited_Controlled with record
       First : Linked_Lists.Node_Access := null;
       Last : Linked_Lists.Node_Access := null;
       Length : Count_Type := 0;

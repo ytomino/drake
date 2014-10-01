@@ -202,7 +202,7 @@ private
 
 --  diff (Data_Access)
 
-   type Map is new Finalization.Limited_Controlled with record
+   type Map is limited new Finalization.Limited_Controlled with record
       Table : Hash_Tables.Table_Access;
       Length : Count_Type := 0;
    end record;

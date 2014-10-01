@@ -285,7 +285,7 @@ private
 
 --  diff (Data_Access)
 
-   type Set is new Finalization.Limited_Controlled with record
+   type Set is limited new Finalization.Limited_Controlled with record
       Root : Binary_Trees.Node_Access := null;
       Length : Count_Type := 0;
    end record;

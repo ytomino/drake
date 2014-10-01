@@ -265,7 +265,7 @@ private
    private
 
       type Directory_Entry_Type is
-         new Finalization.Limited_Controlled with
+         limited new Finalization.Limited_Controlled with
       record
          Data : aliased Non_Controlled_Directory_Entry_Type;
       end record;
@@ -276,7 +276,7 @@ private
 
    type Directory_Entry_Type is new Controlled.Directory_Entry_Type;
 
-   type Search_Type is new Finalization.Limited_Controlled with record
+   type Search_Type is limited new Finalization.Limited_Controlled with record
       Search : aliased Directory_Searching.Search_Type := (
          Handle => Directory_Searching.Null_Handle,
          others => <>);

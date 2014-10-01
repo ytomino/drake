@@ -38,7 +38,7 @@ package Ada.Text_IO.Iterators is
 
 private
 
-   type Lines_Type is new Finalization.Limited_Controlled with record
+   type Lines_Type is limited new Finalization.Limited_Controlled with record
       File : File_Access;
       Item : String_Access;
       Line : Count;

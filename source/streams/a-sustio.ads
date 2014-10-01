@@ -36,7 +36,7 @@ private
 
    type Stream_Element_Array_Access is access Stream_Element_Array;
 
-   type Stream_Type is new Seekable_Stream_Type with record
+   type Stream_Type is limited new Seekable_Stream_Type with record
       Data : System.Address;
       Capacity : Stream_Element_Offset;
       Last : Stream_Element_Offset;

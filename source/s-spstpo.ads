@@ -4,7 +4,7 @@ package System.Storage_Pools.Standard_Pools is
    pragma Preelaborate;
 
    type Standard_Pool is
-      new Storage_Pools.Root_Storage_Pool with null record;
+      limited new Storage_Pools.Root_Storage_Pool with null record;
    pragma Finalize_Storage_Only (Standard_Pool);
 
    overriding procedure Allocate (

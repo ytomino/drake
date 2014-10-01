@@ -5,7 +5,7 @@ package System.Storage_Pools.Subpools is
    pragma Preelaborate;
 
    type Root_Storage_Pool_With_Subpools is
-      abstract new Root_Storage_Pool with private;
+      abstract limited new Root_Storage_Pool with private;
 
    type Root_Subpool is abstract tagged limited private;
 
@@ -81,7 +81,7 @@ private
    FS_Finalization_Started : constant Finalization_State := 1;
 
    type Root_Storage_Pool_With_Subpools is
-      abstract new Root_Storage_Pool with
+      abstract limited new Root_Storage_Pool with
    record
       Last : Subpool_Handle := null;
       --  state

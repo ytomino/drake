@@ -386,7 +386,7 @@ private
 
    type Data_Access is access all Data;
 
-   type Vector is new Finalization.Limited_Controlled with record
+   type Vector is limited new Finalization.Limited_Controlled with record
       Data : Data_Access := null;
       Length : Count_Type := 0;
    end record;

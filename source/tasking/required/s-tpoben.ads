@@ -41,7 +41,7 @@ package System.Tasking.Protected_Objects.Entries is
    --  required by compiler
    --  (if it is not controlled type, compiler may be crashed!)
    type Protection_Entries (Num_Entries : Protected_Entry_Index) is
-      new Ada.Finalization.Limited_Controlled with
+      limited new Ada.Finalization.Limited_Controlled with
    record
       Mutex : aliased Synchronous_Objects.Mutex;
       Calling : aliased Synchronous_Objects.Queue;

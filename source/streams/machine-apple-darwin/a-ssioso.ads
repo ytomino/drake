@@ -31,7 +31,7 @@ private
 
    private
 
-      type End_Point is new Finalization.Limited_Controlled with record
+      type End_Point is limited new Finalization.Limited_Controlled with record
          Data : aliased C.netdb.struct_addrinfo_ptr := null;
       end record;
 

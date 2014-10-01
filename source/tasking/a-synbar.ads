@@ -18,7 +18,7 @@ package Ada.Synchronous_Barriers is
 private
 
    type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
-      new Finalization.Limited_Controlled with
+      limited new Finalization.Limited_Controlled with
    record
       Object : System.Synchronous_Objects.Barrier;
    end record;

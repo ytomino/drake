@@ -77,7 +77,7 @@ package System.Pool_Size is
       Pool_Size : Storage_Elements.Storage_Count;
       Elmt_Size : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count) is
-      new Storage_Pools.Root_Storage_Pool with
+      limited new Storage_Pools.Root_Storage_Pool with
    record
       case Elmt_Size is
          when 0 =>

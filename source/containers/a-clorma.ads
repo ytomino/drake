@@ -236,7 +236,7 @@ private
 
 --  diff (Data_Access)
 
-   type Map is new Finalization.Limited_Controlled with record
+   type Map is limited new Finalization.Limited_Controlled with record
       Root : Binary_Trees.Node_Access := null;
       Length : Count_Type := 0;
    end record;
