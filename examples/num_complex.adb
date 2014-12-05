@@ -31,6 +31,16 @@ procedure num_complex is
 		Pi_div_4 : constant Complex := Ada.Numerics.Pi / 4.0 + 0.0 * i;
 	begin
 		-- primitives of imaginary
+		pragma Assert (+i = i);
+		pragma Assert (-i = 1.0 / i);
+		pragma Assert (abs i = 1.0);
+		pragma Assert (i + i = -2.0 / i);
+		pragma Assert (i - i = 0.0 / i);
+		pragma Assert (2.0 * i = i + i);
+		pragma Assert (i / i = 1.0);
+		pragma Assert (i * 2.0 = i + i);
+		pragma Assert (i / 2.0 = 0.5 * i);
+		pragma Assert (2.0 / i = -2.0 * i);
 		pragma Assert (i * i = -1.0);
 		pragma Assert (i > -i and then -i < i);
 		pragma Assert (i >= j and then j <= i);
