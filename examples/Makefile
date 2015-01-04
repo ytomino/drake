@@ -1,3 +1,17 @@
+# targets:
+#   all      building all examples (default)
+#   tree     building only adainclude
+#   clean    deleting all built files
+#   xfind    finding the declaration of the symbol $(X)
+#   xfindall finding all references of the symbol $(X)
+# variables:
+#   GFLAGS= global
+#   CFLAGS= gcc (compiling only)
+#   MFLAGS= gnatmake
+#   BFLAGS= gnatbind
+#   LFLAGS= gnatlink
+#   FFLAGS= gnatfind
+
 export HOST=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
@@ -51,35 +65,41 @@ ifeq ($(WITHA),0)
 MFLAGS+=-a
 endif
 
-CFLAGS=-pipe -gnatef -gnatf -gnatwI
+CFLAGS=
+CFLAGS_FOR_EXAMPLE=-pipe -gnatef -gnatf -gnatwI
+LFLAGS=
+LFLAGS_FOR_EXAMPLE=
 
 ifneq ($(findstring darwin,$(TARGET)),)
-LFLAGS=-licucore
+LFLAGS_FOR_EXAMPLE+=-licucore
 endif
 ifneq ($(findstring freebsd,$(TARGET)),)
-LFLAGS=-lm -lpthread -liconv -lgcc_eh
+LFLAGS_FOR_EXAMPLE+=-lm -lpthread -liconv -lgcc_eh
 endif
 ifneq ($(findstring linux-gnu,$(TARGET)),)
-LFLAGS=-lm -lpthread -ldl
+LFLAGS_FOR_EXAMPLE+=-lm -lpthread -ldl
 endif
 
 ifneq ($(DEBUG),0)
-CFLAGS+=-ggdb -gnata -gnat-p
+CFLAGS_FOR_EXAMPLE+=-ggdb -gnata -gnat-p
 BFLAGS=-E
-LFLAGS+=-ggdb
+LFLAGS_FOR_EXAMPLE+=-ggdb
 else
 BFLAGS=
 ifneq ($(findstring darwin,$(TARGET)),)
-LFLAGS=-Wl,-dead_strip
+LFLAGS_FOR_EXAMPLE=-Wl,-dead_strip
 endif
 ifneq ($(findstring freebsd,$(TARGET)),)
-LFLAGS+=-Wl,--gc-sections
+LFLAGS_FOR_EXAMPLE+=-Wl,--gc-sections
 endif
 endif
 
 ifneq ($(WITHF),0)
-CFLAGS+=-ffast-math -gnatec=$(abspath ../source/fastmath.adc)
+CFLAGS_FOR_EXAMPLE+=-ffast-math -gnatec=$(abspath ../source/fastmath.adc)
 endif
+
+CFLAGS_FOR_EXAMPLE+=$(CFLAGS)
+LFLAGS_FOR_EXAMPLE+=$(LFLAGS)
 
 .PHONY: all tree clean xfind xfindall
 
@@ -96,9 +116,9 @@ $(BUILDDIR)/adalib/libgnat.a: $(wildcard $(BUILDDIR)/adainclude/*.ad?)
 	touch $@
 
 $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
-	$(GNATPREFIX)gnatmake -c $< $(GFLAGS) $(MFLAGS) -cargs $(CFLAGS)
+	$(GNATPREFIX)gnatmake -c $< $(GFLAGS) $(MFLAGS) -cargs $(CFLAGS_FOR_EXAMPLE)
 	cd $(BUILDDIR) && $(GNATPREFIX)gnatbind $(basename $(notdir $<)).ali $(GFLAGS) $(BFLAGS)
-	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS) $(LFLAGS)
+	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS) $(LFLAGS_FOR_EXAMPLE)
 
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT)
 
