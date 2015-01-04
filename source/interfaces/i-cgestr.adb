@@ -225,7 +225,54 @@ package body Interfaces.C.Generic_Strings is
          end if;
          Actual_Length := 0;
       else
-         Actual_Length := Strlen (Item) + 1; -- including nul
+         if Element'Size = char'Size then
+            declare
+               function memchr (
+                  s : not null access constant Element;
+                  c : int;
+                  n : size_t)
+                  return const_chars_ptr;
+               pragma Import (Intrinsic, memchr, "__builtin_memchr");
+               P : constant const_chars_ptr := memchr (Item, 0, Length);
+            begin
+               if P = null then
+                  Actual_Length := Length;
+               else
+                  Actual_Length := C.size_t (
+                     const_Conv.To_Address (P) - const_Conv.To_Address (Item));
+               end if;
+            end;
+         elsif Element'Size = wchar_t'Size then
+            declare
+               function wmemchr (
+                  ws : not null access constant Element;
+                  wc : int;
+                  n : size_t)
+                  return const_chars_ptr;
+               pragma Import (C, wmemchr);
+               P : constant const_chars_ptr := wmemchr (Item, 0, Length);
+            begin
+               if P = null then
+                  Actual_Length := Length;
+               else
+                  Actual_Length := C.size_t (
+                     (const_Conv.To_Address (P) - const_Conv.To_Address (Item))
+                     / (wchar_t'Size / Standard'Storage_Unit));
+               end if;
+            end;
+         else
+            declare
+               Source : Element_Array (0 .. Length - 1);
+               for Source'Address use Conv.To_Address (Item);
+            begin
+               Actual_Length := 0;
+               while Actual_Length < Length loop
+                  exit when Source (Actual_Length) = Element'Val (0);
+                  Actual_Length := Actual_Length + 1;
+               end loop;
+            end;
+         end if;
+         Actual_Length := Actual_Length + 1; -- including nul
       end if;
       if Append_Nul and then Length < Actual_Length then
          declare
