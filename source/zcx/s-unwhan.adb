@@ -49,15 +49,8 @@ package body System.Unwind.Handling is
          + Address (Right));
    end "+";
 
-   function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean;
-   function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean is
-      package uchar_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.unsigned_char,
-            C.unsigned_char_const_ptr);
-   begin
-      return uchar_Conv.To_Address (Left) < uchar_Conv.To_Address (Right);
-   end "<";
+   function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean
+      with Import, Convention => Intrinsic;
 
    --  implementation
 
