@@ -50,7 +50,7 @@ to ``IMPORTDIR`` and a destination path to ``RTSDIR``. ::
 
 Read the `build page`_ for details.
 
-A Short example
+A short example
 ---------------
 
 1. Prepare the source code of a sample application. ::
