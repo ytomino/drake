@@ -57,14 +57,6 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
       end if;
    end Skew;
 
-   procedure Skew (T : not null Node_Access);
-   procedure Skew (T : not null Node_Access) is
-      Dummy : constant not null Node_Access := Skew (T);
-      pragma Unreferenced (Dummy);
-   begin
-      null;
-   end Skew;
-
    function Split (T : not null Node_Access) return not null Node_Access;
    --  before:
    --    T
@@ -112,14 +104,6 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
       else
          return T;
       end if;
-   end Split;
-
-   procedure Split (T : not null Node_Access);
-   procedure Split (T : not null Node_Access) is
-      Dummy : constant not null Node_Access := Split (T);
-      pragma Unreferenced (Dummy);
-   begin
-      null;
    end Split;
 
    --  implementation
@@ -269,13 +253,23 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
                         Debug.Dump (
                            Debug.Root (Current),
                            Current, "removed c"));
-                     Skew (Current.Right);
+                     declare
+                        Dummy : Node_Access;
+                        pragma Unreferenced (Dummy);
+                     begin
+                        Dummy := Skew (Current.Right);
+                     end;
                      if Current.Right.Right /= null then
                         pragma Check (Dump_On_Removing,
                            Debug.Dump (
                               Debug.Root (Current),
                               Current, "removed d"));
-                        Skew (Current.Right.Right);
+                        declare
+                           Dummy : Node_Access;
+                           pragma Unreferenced (Dummy);
+                        begin
+                           Dummy := Skew (Current.Right.Right);
+                        end;
                      end if;
                   end if;
                   pragma Check (Dump_On_Removing,
@@ -286,7 +280,12 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
                         Debug.Dump (
                            Debug.Root (Current),
                            Current, "removed f"));
-                     Split (Current.Right);
+                     declare
+                        Dummy : Node_Access;
+                        pragma Unreferenced (Dummy);
+                     begin
+                        Dummy := Split (Current.Right);
+                     end;
                   end if;
                end if;
                exit when Current.Parent = null;
