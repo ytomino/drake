@@ -182,7 +182,7 @@ package body Ada.Streams.Stream_IO is
       To : Positive_Count) is
    begin
       Set_Index (File, To);
-      Write (File, Item, To);
+      Write (File, Item);
    end Write;
 
    procedure Write (
