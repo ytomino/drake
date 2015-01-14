@@ -26,22 +26,31 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
    --    / \
    --    B R
    function Skew (T : not null Node_Access) return not null Node_Access is
-      pragma Assert (T.Parent /= null); -- not root
       L : constant Node_Access := T.Left;
    begin
       if L /= null and then Downcast (L).Level = Downcast (T).Level then
-         if T.Parent.Left = T then
-            T.Parent.Left := L;
-         else
-            T.Parent.Right := L;
-         end if;
-         L.Parent := T.Parent;
-         T.Parent := L;
-         T.Left := L.Right;
-         if T.Left /= null then
-            T.Left.Parent := T;
-         end if;
-         L.Right := T;
+         declare
+            Parent : constant Node_Access := T.Parent;
+         begin
+            if Parent /= null then
+               if Parent.Left = T then
+                  Parent.Left := L;
+               else
+                  Parent.Right := L;
+               end if;
+            end if;
+            T.Parent := L;
+            L.Parent := Parent;
+         end;
+         declare
+            B : constant Node_Access := L.Right;
+         begin
+            if B /= null then
+               B.Parent := T;
+            end if;
+            T.Left := B;
+            L.Right := T;
+         end;
          return L;
       else
          return T;
@@ -70,25 +79,34 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
    --   / \
    --   A B
    function Split (T : not null Node_Access) return not null Node_Access is
-      pragma Assert (T.Parent /= null); -- not root
       R : constant Node_Access := T.Right;
    begin
       if R /= null
          and then R.Right /= null
          and then Downcast (T).Level = Downcast (R.Right).Level
       then
-         if T.Parent.Left = T then
-            T.Parent.Left := R;
-         else
-            T.Parent.Right := R;
-         end if;
-         R.Parent := T.Parent;
-         T.Parent := R;
-         T.Right := R.Left;
-         if T.Right /= null then
-            T.Right.Parent := T;
-         end if;
-         R.Left := T;
+         declare
+            Parent : constant Node_Access := T.Parent;
+         begin
+            if Parent /= null then
+               if Parent.Left = T then
+                  Parent.Left := R;
+               else
+                  Parent.Right := R;
+               end if;
+            end if;
+            T.Parent := R;
+            R.Parent := Parent;
+         end;
+         declare
+            B : constant Node_Access := R.Left;
+         begin
+            if B /= null then
+               B.Parent := T;
+            end if;
+            T.Right := B;
+            R.Left := T;
+         end;
          Downcast (R).Level := Downcast (R).Level + 1;
          return R;
       else
@@ -110,13 +128,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
       Container : in out Node_Access;
       Length : in out Count_Type;
       Before : Node_Access;
-      New_Item : not null Node_Access)
-   is
-      Root_Body : Node := (
-         Super => (Left => Container, Right => null, Parent => null),
-         Level => -1);
-      Root : constant Node_Access := Root_Body.Super'Unrestricted_Access;
-      Current : Node_Access;
+      New_Item : not null Node_Access) is
    begin
       --  insert
       Downcast (New_Item).Level := 0;
@@ -125,40 +137,42 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
          New_Item.Left := null;
          New_Item.Right := null;
          Container := New_Item;
-      elsif Before = null then
-         New_Item.Parent := Last (Container);
-         New_Item.Left := null;
-         New_Item.Right := null;
-         New_Item.Parent.Right := New_Item;
-      elsif Before.Left = null then
-         New_Item.Parent := Before;
-         New_Item.Left := null;
-         New_Item.Right := null;
-         New_Item.Parent.Left := New_Item;
       else
-         New_Item.Parent := Last (Before.Left);
-         New_Item.Left := null;
-         New_Item.Right := null;
-         New_Item.Parent.Right := New_Item;
-      end if;
-      --  make virtual root to make it easy to parent access
-      if Container /= null then
          pragma Assert (Container.Parent = null);
-         Root.Left := Container;
-         Container.Parent := Root;
-      end if;
-      --  rebalance
-      Current := New_Item.Parent;
-      while Current /= Root loop
-         Current := Skew (Current);
-         Current := Split (Current);
-         Current := Current.Parent;
-      end loop;
-      --  restore virtual root
-      Container := Root.Left;
-      if Container /= null then
-         pragma Assert (Container.Parent = Root);
-         Container.Parent := null;
+         declare
+            Current : Node_Access;
+         begin
+            if Before = null then
+               Current := Last (Container);
+               pragma Assert (Current.Right = null);
+               New_Item.Parent := Current;
+               New_Item.Left := null;
+               New_Item.Right := null;
+               Current.Right := New_Item;
+            elsif Before.Left = null then
+               Current := Before;
+               pragma Assert (Current.Left = null);
+               New_Item.Parent := Current;
+               New_Item.Left := null;
+               New_Item.Right := null;
+               Current.Left := New_Item;
+            else
+               Current := Last (Before.Left);
+               pragma Assert (Current.Right = null);
+               New_Item.Parent := Current;
+               New_Item.Left := null;
+               New_Item.Right := null;
+               Current.Right := New_Item;
+            end if;
+            --  rebalance
+            loop
+               Current := Skew (Current);
+               Current := Split (Current);
+               exit when Current.Parent = null;
+               Current := Current.Parent;
+            end loop;
+            Container := Current;
+         end;
       end if;
       --  increment
       Length := Length + 1;
@@ -170,107 +184,116 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
    procedure Remove (
       Container : in out Node_Access;
       Length : in out Count_Type;
-      Position : not null Node_Access)
-   is
-      Root_Body : Node := (
-         Super => (Left => Container, Right => null, Parent => null),
-         Level => -1);
-      Root : constant Node_Access := Root_Body.Super'Unrestricted_Access;
-      Leaf : Node_Access;
-      Current : Node_Access; -- leveling point
+      Position : not null Node_Access) is
    begin
-      --  make virtual root to make it easy to parent access
-      if Container /= null then
-         pragma Assert (Container.Parent = null);
-         Root.Left := Container;
-         Container.Parent := Root;
-      end if;
-      --  removing item and swapping item and leaf
-      if Position.Left /= null then
-         Leaf := Last (Position.Left);
-      elsif Position.Right /= null then
-         Leaf := Position.Right;
-         pragma Assert (Leaf.Left = null); -- be balanced
+      pragma Assert (Container /= null and then Length > 0);
+      if Length = 1 then
+         pragma Assert (Container = Position
+            and then Position.Left = null
+            and then Position.Right = null
+            and then Position.Parent = null);
+         Container := null;
       else
-         Leaf := Position;
-      end if;
-      if Leaf.Parent = Position then
-         Current := Leaf;
-      else
-         Current := Leaf.Parent;
-      end if;
-      if Leaf.Parent.Left = Leaf then
-         Leaf.Parent.Left := null;
-      else
-         Leaf.Parent.Right := null;
-      end if;
-      if Position /= Leaf then
-         Leaf.Parent := Position.Parent;
-         if Position.Parent.Left = Position then
-            Position.Parent.Left := Leaf;
-         else
-            Position.Parent.Right := Leaf;
-         end if;
-         Leaf.Left := Position.Left;
-         if Position.Left /= null then
-            Position.Left.Parent := Leaf;
-         end if;
-         Leaf.Right := Position.Right;
-         if Position.Right /= null then
-            Position.Right.Parent := Leaf;
-         end if;
-         Downcast (Leaf).Level := Downcast (Position).Level;
-      end if;
-      --  rebalance
-      while Current /= Root loop
-         if (Current.Left = null and then Downcast (Current).Level > 0)
-            or else (Current.Left /= null
-               and then
-                  Downcast (Current).Level > Downcast (Current.Left).Level + 1)
-            or else (Current.Right = null
-               and then Downcast (Current).Level > 0)
-            or else (Current.Right /= null
-               and then Downcast (Current).Level >
-                  Downcast (Current.Right).Level + 1)
-         then
-            pragma Check (Dump_On_Removing,
-               Debug.Dump (Root.Left, Current, "removed a"));
-            Downcast (Current).Level := Downcast (Current).Level - 1;
-            if Current.Right /= null
-               and then
-                  Downcast (Current.Right).Level > Downcast (Current).Level
-            then
-               Downcast (Current.Right).Level := Downcast (Current).Level;
-            end if;
-            pragma Check (Dump_On_Removing,
-               Debug.Dump (Root.Left, Current, "removed b"));
-            Current := Skew (Current);
-            if Current.Right /= null then
-               pragma Check (Dump_On_Removing,
-                  Debug.Dump (Root.Left, Current, "removed c"));
-               Skew (Current.Right);
-               if Current.Right.Right /= null then
-                  pragma Check (Dump_On_Removing,
-                     Debug.Dump (Root.Left, Current, "removed d"));
-                  Skew (Current.Right.Right);
+         declare
+            Leaf : Node_Access;
+            Current : Node_Access; -- leveling point
+         begin
+            --  removing item and swapping item and leaf
+            if Position.Left /= null then
+               Leaf := Last (Position.Left);
+               if Leaf.Parent = Position then
+                  Current := Leaf;
+               else
+                  Current := Leaf.Parent;
                end if;
+            elsif Position.Right /= null then
+               Leaf := Position.Right;
+               pragma Assert (Leaf.Left = null); -- be balanced
+               Current := Leaf;
+            else
+               Leaf := Position;
+               Current := Leaf.Parent;
             end if;
-            pragma Check (Dump_On_Removing,
-               Debug.Dump (Root.Left, Current, "removed e"));
-            Current := Split (Current);
-            if Current.Right /= null then
-               pragma Check (Dump_On_Removing,
-                  Debug.Dump (Root.Left, Current, "removed f"));
-               Split (Current.Right);
+            if Leaf.Parent.Left = Leaf then
+               Leaf.Parent.Left := null;
+            else
+               Leaf.Parent.Right := null;
             end if;
-         end if;
-         Current := Current.Parent;
-      end loop;
-      --  restore virtual root
-      Container := Root.Left;
-      if Container /= null then
-         pragma Assert (Container.Parent = Root);
-         Container.Parent := null;
+            if Position /= Leaf then
+               Leaf.Parent := Position.Parent;
+               if Position.Parent = null then
+                  pragma Assert (Container = Position);
+                  Container := Leaf;
+               elsif Position.Parent.Left = Position then
+                  Position.Parent.Left := Leaf;
+               else
+                  Position.Parent.Right := Leaf;
+               end if;
+               Leaf.Left := Position.Left;
+               if Position.Left /= null then
+                  Position.Left.Parent := Leaf;
+               end if;
+               Leaf.Right := Position.Right;
+               if Position.Right /= null then
+                  Position.Right.Parent := Leaf;
+               end if;
+               Downcast (Leaf).Level := Downcast (Position).Level;
+            end if;
+            --  rebalance
+            loop
+               if (Current.Left = null and then Downcast (Current).Level > 0)
+                  or else (Current.Left /= null
+                     and then Downcast (Current).Level >
+                        Downcast (Current.Left).Level + 1)
+                  or else (Current.Right = null
+                     and then Downcast (Current).Level > 0)
+                  or else (Current.Right /= null
+                     and then Downcast (Current).Level >
+                        Downcast (Current.Right).Level + 1)
+               then
+                  pragma Check (Dump_On_Removing,
+                     Debug.Dump (Debug.Root (Current), Current, "removed a"));
+                  Downcast (Current).Level := Downcast (Current).Level - 1;
+                  if Current.Right /= null
+                     and then Downcast (Current.Right).Level >
+                        Downcast (Current).Level
+                  then
+                     Downcast (Current.Right).Level :=
+                        Downcast (Current).Level;
+                  end if;
+                  pragma Check (Dump_On_Removing,
+                     Debug.Dump (Debug.Root (Current), Current, "removed b"));
+                  Current := Skew (Current);
+                  if Current.Right /= null then
+                     pragma Check (Dump_On_Removing,
+                        Debug.Dump (
+                           Debug.Root (Current),
+                           Current, "removed c"));
+                     Skew (Current.Right);
+                     if Current.Right.Right /= null then
+                        pragma Check (Dump_On_Removing,
+                           Debug.Dump (
+                              Debug.Root (Current),
+                              Current, "removed d"));
+                        Skew (Current.Right.Right);
+                     end if;
+                  end if;
+                  pragma Check (Dump_On_Removing,
+                     Debug.Dump (Debug.Root (Current), Current, "removed e"));
+                  Current := Split (Current);
+                  if Current.Right /= null then
+                     pragma Check (Dump_On_Removing,
+                        Debug.Dump (
+                           Debug.Root (Current),
+                           Current, "removed f"));
+                     Split (Current.Right);
+                  end if;
+               end if;
+               exit when Current.Parent = null;
+               Current := Current.Parent;
+            end loop;
+            Container := Current;
+         end;
       end if;
       --  decrement
       Length := Length - 1;

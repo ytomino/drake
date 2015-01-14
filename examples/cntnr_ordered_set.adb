@@ -197,19 +197,31 @@ begin
 		for I in 1 .. 5 loop
 			Sets.Insert (X, I);
 		end loop;
-		Sets_Debug.Dump (X);
+		Sets_Debug.Dump (X, Message => Ada.Debug.Source_Location);
 		for I in reverse 6 .. 10 loop
 			Sets.Insert (X, I);
 		end loop;
-		Sets_Debug.Dump (X);
+		Sets_Debug.Dump (X, Message => Ada.Debug.Source_Location);
 		for I in 11 .. 15 loop
 			Sets.Insert (X, I);
 		end loop;
-		Sets_Debug.Dump (X);
+		Sets_Debug.Dump (X, Message => Ada.Debug.Source_Location);
 		for I in reverse 16 .. 20 loop
 			Sets.Insert (X, I);
 		end loop;
-		Sets_Debug.Dump (X);
+		Sets_Debug.Dump (X, Message => Ada.Debug.Source_Location);
+		for I in 6 .. 15 loop
+			Sets.Delete (X, I);
+		end loop;
+		Sets_Debug.Dump (X, Message => Ada.Debug.Source_Location);
+		for I in 1 .. 5 loop
+			Sets.Delete (X, I);
+		end loop;
+		for I in 16 .. 20 loop
+			Sets.Delete (X, I);
+		end loop;
+		Sets_Debug.Dump (X, Message => Ada.Debug.Source_Location);
+		pragma Assert (X.Is_Empty);
 	end;
 	Stream_Test : declare
 		package USIO renames Ada.Streams.Unbounded_Storage_IO;

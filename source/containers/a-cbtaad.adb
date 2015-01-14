@@ -9,6 +9,15 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
 
    --  implementation
 
+   function Root (Node : not null Node_Access) return not null Node_Access is
+      Result : not null Node_Access := Node;
+   begin
+      while Result.Parent /= null loop
+         Result := Result.Parent;
+      end loop;
+      return Result;
+   end Root;
+
    function Dump (
       Container : Node_Access;
       Marker : Node_Access;

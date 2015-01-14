@@ -6,7 +6,7 @@ package body Ada.Containers.Ordered_Sets.Debug is
    function Downcast is
       new Unchecked_Conversion (Copy_On_Write.Data_Access, Data_Access);
 
-   procedure Dump (Source : Set) is
+   procedure Dump (Source : Set; Message : String := "") is
       Container : Binary_Trees.Node_Access;
       Dummy : Boolean;
       pragma Unreferenced (Dummy);
@@ -18,7 +18,8 @@ package body Ada.Containers.Ordered_Sets.Debug is
       end if;
       Dummy := Base.Debug.Dump (
          Container => Container,
-         Marker => null);
+         Marker => null,
+         Message => Message);
    end Dump;
 
    function Validate (Source : Set) return Boolean is
