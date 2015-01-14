@@ -13,15 +13,20 @@ package body Ada.Containers.Forward_Iterators is
 
    procedure Release (Node : in out Node_Access);
    procedure Release (Node : in out Node_Access) is
+      Item : Node_Access := Node;
    begin
-      if Node /= null then
-         Node.Reference_Count := Node.Reference_Count - 1;
-         if Node.Reference_Count = 0 then
-            Release (Node.Next);
-            Free (Node.Item);
-            Free (Node);
-         end if;
-      end if;
+      while Item /= null loop
+         Item.Reference_Count := Item.Reference_Count - 1;
+         exit when Item.Reference_Count > 0;
+         declare
+            Next : constant Node_Access := Item.Next;
+         begin
+            Free (Item.Item);
+            Free (Item);
+            Item := Next;
+         end;
+      end loop;
+      Node := null;
    end Release;
 
    procedure Append (

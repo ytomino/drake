@@ -29,9 +29,12 @@ package body Ada.Command_Line.Generic_Parsing is
    function Make_Cursor (
       Index : Input_Cursor;
       State : Argument_Parsing.State_Type)
-      return Cursor is
+      return Cursor
+   is
+      Next_Index : Input_Cursor := Index;
+      Next_State : Argument_Parsing.State_Type := State;
    begin
-      if Has_Element (Index) then
+      while Has_Element (Next_Index) loop
          pragma Check (Trace, Debug.Put ("allocate"));
          declare
             package Holder is
@@ -44,30 +47,29 @@ package body Ada.Command_Line.Generic_Parsing is
             Holder.Assign (Context'Access);
             Context := new Argument_Context'(
                Reference_Count => 1,
-               Index => Index,
-               Next_Index => Index,
+               Index => Next_Index,
+               Next_Index => Next_Index,
                Argument => <>,
                Argument_Iterator => <>);
-            Context.Argument := new String'(Argument (Index));
+            Context.Argument := new String'(Argument (Next_Index));
             Context.Argument_Iterator :=
                new Argument_Parsing.Argument_Iterator'(
-                  Argument_Parsing.Iterate (Context.Argument.all, State));
+                  Argument_Parsing.Iterate (Context.Argument.all, Next_State));
             Subindex := Argument_Parsing.First (Context.Argument_Iterator.all);
             if not Argument_Parsing.Has_Element (Subindex) then
-               return Make_Cursor (
-                  Index =>
-                     Input_Iterator_Interfaces.Next (Input_Iterator, Index),
-                  State =>
-                     Argument_Parsing.State (Context.Argument_Iterator.all));
+               Next_Index :=
+                  Input_Iterator_Interfaces.Next (Input_Iterator, Next_Index);
+               Next_State :=
+                  Argument_Parsing.State (Context.Argument_Iterator.all);
+               --  continue
             else
                return Result : constant Cursor := Create (Context, Subindex) do
                   Holder.Clear;
                end return;
             end if;
          end;
-      else
-         return Create (null, Argument_Parsing.No_Element);
-      end if;
+      end loop;
+      return Create (null, Argument_Parsing.No_Element);
    end Make_Cursor;
 
    --  implementation

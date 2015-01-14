@@ -24,33 +24,39 @@ package body Ada.Tags.Delegating is
    pragma Suppress_Initialization (I_Node);
 
    procedure I_Insert (
-      Node : in out I_Node_Access;
+      Node : aliased in out I_Node_Access;
       Interface_Tag : Tag;
       Get : not null access function (Object : System.Address)
          return System.Address);
    procedure I_Insert (
-      Node : in out I_Node_Access;
+      Node : aliased in out I_Node_Access;
       Interface_Tag : Tag;
       Get : not null access function (Object : System.Address)
          return System.Address)
    is
       function "+" (X : Tag) return System.Address
          renames Tag_Conv.To_Address;
+      type I_Node_Access_Access is access all I_Node_Access;
+      for I_Node_Access_Access'Storage_Size use 0;
+      Current : not null I_Node_Access_Access := Node'Access;
    begin
-      if Node = null then
-         pragma Check (Trace, Debug.Put ("add"));
-         Node := new I_Node'(
-            Left => null,
-            Right => null,
-            Interface_Tag => Interface_Tag,
-            Get => Get);
-      elsif +Node.all.Interface_Tag > +Interface_Tag then
-         I_Insert (Node.Left, Interface_Tag, Get);
-      elsif +Node.all.Interface_Tag < +Interface_Tag then
-         I_Insert (Node.Right, Interface_Tag, Get);
-      else
-         null; -- already added
-      end if;
+      loop
+         if Current.all = null then
+            pragma Check (Trace, Debug.Put ("add"));
+            Current.all := new I_Node'(
+               Left => null,
+               Right => null,
+               Interface_Tag => Interface_Tag,
+               Get => Get);
+            exit;
+         elsif +Current.all.Interface_Tag > +Interface_Tag then
+            Current := Current.all.Left'Access;
+         elsif +Current.all.Interface_Tag < +Interface_Tag then
+            Current := Current.all.Right'Access;
+         else
+            exit; -- already added
+         end if;
+      end loop;
    end I_Insert;
 
    function I_Find (Node : I_Node_Access; Interface_Tag : Tag)
@@ -60,16 +66,18 @@ package body Ada.Tags.Delegating is
    is
       function "+" (X : Tag) return System.Address
          renames Tag_Conv.To_Address;
+      Current : I_Node_Access := Node;
    begin
-      if Node = null then
-         return null;
-      elsif +Node.Interface_Tag > +Interface_Tag then
-         return I_Find (Node.Left, Interface_Tag);
-      elsif +Node.Interface_Tag < +Interface_Tag then
-         return I_Find (Node.Right, Interface_Tag);
-      else
-         return Node;
-      end if;
+      while Current /= null loop
+         if +Current.Interface_Tag > +Interface_Tag then
+            Current := Current.Left;
+         elsif +Current.Interface_Tag < +Interface_Tag then
+            Current := Current.Right;
+         else
+            return Current; -- found
+         end if;
+      end loop;
+      return null; -- not found
    end I_Find;
 
    type D_Node;
@@ -82,47 +90,56 @@ package body Ada.Tags.Delegating is
    pragma Suppress_Initialization (D_Node);
 
    procedure D_Insert (
-      Node : in out D_Node_Access;
+      Node : aliased in out D_Node_Access;
       T : Tag;
       Result : out D_Node_Access);
    procedure D_Insert (
-      Node : in out D_Node_Access;
+      Node : aliased in out D_Node_Access;
       T : Tag;
       Result : out D_Node_Access)
    is
       function "+" (X : Tag) return System.Address
          renames Tag_Conv.To_Address;
+      type D_Node_Access_Access is access all D_Node_Access;
+      for D_Node_Access_Access'Storage_Size use 0;
+      Current : not null D_Node_Access_Access := Node'Access;
    begin
-      if Node = null then
-         Node := new D_Node'(
-            Left => null,
-            Right => null,
-            Object_Tag => T,
-            Map => null);
-         Result := Node;
-      elsif +Node.all.Object_Tag > +T then
-         D_Insert (Node.Left, T, Result);
-      elsif +Node.all.Object_Tag < +T then
-         D_Insert (Node.Right, T, Result);
-      else
-         Result := Node;
-      end if;
+      loop
+         if Current.all = null then
+            Current.all := new D_Node'(
+               Left => null,
+               Right => null,
+               Object_Tag => T,
+               Map => null);
+            Result := Current.all;
+            exit;
+         elsif +Current.all.Object_Tag > +T then
+            Current := Current.all.Left'Access;
+         elsif +Current.all.Object_Tag < +T then
+            Current := Current.all.Right'Access;
+         else
+            Result := Current.all;
+            exit; -- already added
+         end if;
+      end loop;
    end D_Insert;
 
    function D_Find (Node : D_Node_Access; T : Tag) return D_Node_Access;
    function D_Find (Node : D_Node_Access; T : Tag) return D_Node_Access is
       function "+" (X : Tag) return System.Address
          renames Tag_Conv.To_Address;
+      Current : D_Node_Access := Node;
    begin
-      if Node = null then
-         return null;
-      elsif +Node.Object_Tag > +T then
-         return D_Find (Node.Left, T);
-      elsif +Node.Object_Tag < +T then
-         return D_Find (Node.Right, T);
-      else
-         return Node;
-      end if;
+      while Current /= null loop
+         if +Current.Object_Tag > +T then
+            Current := Current.Left;
+         elsif +Current.Object_Tag < +T then
+            Current := Current.Right;
+         else
+            return Current; -- found
+         end if;
+      end loop;
+      return null; -- not found
    end D_Find;
 
    Delegating_Map : aliased D_Node_Access := null;
