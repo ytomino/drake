@@ -880,7 +880,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container, Key).Element);
+         return (Element => Find (Container, Key).Element.all'Access);
       end Constant_Reference;
 
       function Contains (Container : Set; Key : Key_Type) return Boolean is
@@ -955,7 +955,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       begin
          Unique (Container, True);
 --  diff
-         return (Element => Position.Element);
+         return (Element => Position.Element.all'Access);
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key (
@@ -964,7 +964,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          return Reference_Type is
       begin
          Unique (Container, True);
-         return (Element => Find (Container, Key).Element);
+         return (Element => Find (Container, Key).Element.all'Access);
       end Reference_Preserving_Key;
 
       procedure Replace (
