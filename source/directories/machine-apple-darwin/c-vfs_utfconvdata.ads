@@ -46,7 +46,7 @@ package C.vfs_utfconvdata is
    type u_int32_t_array is array (C.size_t range <>) of aliased u_int32_t;
    pragma Suppress_Initialization (u_int32_t_array);
 
-   CFUniCharDecompositionTable : aliased constant u_int16_t_array (0 .. 1939) := (
+   CFUniCharDecompositionTable : constant u_int16_t_array (0 .. 1939) := (
       16#00C0#, 16#2000#,   16#00C1#, 16#2002#,   16#00C2#, 16#2004#,   16#00C3#, 16#2006#,
       16#00C4#, 16#2008#,   16#00C5#, 16#200A#,   16#00C7#, 16#200C#,   16#00C8#, 16#200E#,
       16#00C9#, 16#2010#,   16#00CA#, 16#2012#,   16#00CB#, 16#2014#,   16#00CC#, 16#2016#,
@@ -294,7 +294,7 @@ package C.vfs_utfconvdata is
 --  UniCharDecompositionTableLength : constant u_int32_t :=
 --    CFUniCharDecompositionTable'Length / 2;
 
-   CFUniCharMultipleDecompositionTable : aliased constant u_int16_t_array (0 .. 1887) := (
+   CFUniCharMultipleDecompositionTable : constant u_int16_t_array (0 .. 1887) := (
       16#0041#, 16#0300#, 16#0041#, 16#0301#, 16#0041#, 16#0302#, 16#0041#, 16#0303#,
       16#0041#, 16#0308#, 16#0041#, 16#030A#, 16#0043#, 16#0327#, 16#0045#, 16#0300#,
       16#0045#, 16#0301#, 16#0045#, 16#0302#, 16#0045#, 16#0308#, 16#0049#, 16#0300#,
@@ -532,7 +532,7 @@ package C.vfs_utfconvdata is
       16#05E7#, 16#05BC#, 16#05E8#, 16#05BC#, 16#05E9#, 16#05BC#, 16#05EA#, 16#05BC#,
       16#05D5#, 16#05B9#, 16#05D1#, 16#05BF#, 16#05DB#, 16#05BF#, 16#05E4#, 16#05BF#);
 
-   CFUniCharDecomposableBitmap : aliased constant u_int8_t_array (0 .. 831) := (
+   CFUniCharDecomposableBitmap : constant u_int8_t_array (0 .. 831) := (
       16#01#, 16#02#, 16#03#, 16#04#, 16#05#, 16#00#, 16#06#, 16#00#,
       16#00#, 16#07#, 16#08#, 16#09#, 16#0A#, 16#0B#, 16#00#, 16#0C#,
       16#0D#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#,
@@ -639,7 +639,7 @@ package C.vfs_utfconvdata is
       16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#,
       16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#);
 
---  CFUniCharPrecompSourceTable : aliased constant u_int32_t_array := (
+--  CFUniCharPrecompSourceTable : constant u_int32_t_array := (
 --    16#00000300#, 16#00540000#, 16#00000301#, 16#00750054#,
 --    16#00000302#, 16#002000C9#, 16#00000303#, 16#001C00E9#,
 --    16#00000304#, 16#002C0105#, 16#00000306#, 16#00200131#,
@@ -671,7 +671,7 @@ package C.vfs_utfconvdata is
 --  CFUniCharPrecompositionTableLength : constant u_int32_t :=
 --    CFUniCharPrecompSourceTable'Length / 2;
 
---  CFUniCharBMPPrecompDestinationTable : aliased constant u_int16_t_array := (
+--  CFUniCharBMPPrecompDestinationTable : constant u_int16_t_array := (
 --    16#0041#, 16#00C0#, 16#0045#, 16#00C8#, 16#0049#, 16#00CC#, 16#004E#, 16#01F8#,
 --    16#004F#, 16#00D2#, 16#0055#, 16#00D9#, 16#0057#, 16#1E80#, 16#0059#, 16#1EF2#,
 --    16#0061#, 16#00E0#, 16#0065#, 16#00E8#, 16#0069#, 16#00EC#, 16#006E#, 16#01F9#,
@@ -903,7 +903,7 @@ package C.vfs_utfconvdata is
 --    16#30CF#, 16#30D1#, 16#30D2#, 16#30D4#, 16#30D5#, 16#30D7#, 16#30D8#, 16#30DA#,
 --    16#30DB#, 16#30DD#);
 
---  CFUniCharCombiningBitmap : aliased constant u_int8_t_array := (
+--  CFUniCharCombiningBitmap : constant u_int8_t_array := (
 --    16#00#, 16#00#, 16#00#, 16#01#, 16#02#, 16#03#, 16#04#, 16#05#,
 --    16#00#, 16#06#, 16#07#, 16#08#, 16#09#, 16#0A#, 16#0B#, 16#0C#,
 --    16#0D#, 16#14#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#0E#,
