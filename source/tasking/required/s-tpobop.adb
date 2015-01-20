@@ -3,9 +3,15 @@ with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
 with System.Synchronous_Control;
 with System.Synchronous_Objects.Abortable;
+with System.Tasks;
 package body System.Tasking.Protected_Objects.Operations is
    use type Ada.Exceptions.Exception_Id;
    use type Synchronous_Objects.Queue_Node_Access;
+
+   package Task_Record_Conv is
+      new Address_To_Named_Access_Conversions (
+         Tasks.Task_Record,
+         Tasks.Task_Id);
 
    package Queue_Node_Conv is
       new Address_To_Named_Access_Conversions (
@@ -184,6 +190,8 @@ package body System.Tasking.Protected_Objects.Operations is
                   Super => <>,
                   E => E,
                   Uninterpreted_Data => Uninterpreted_Data,
+                  Caller =>
+                     Task_Record_Conv.To_Address (Tasks.Current_Task_Id),
                   Requeued => False,
                   Waiting => <>, -- default initializer
                   X => <>); -- default initializer
@@ -283,6 +291,13 @@ package body System.Tasking.Protected_Objects.Operations is
    begin
       raise Program_Error;
    end Requeue_Task_To_Protected_Entry;
+
+   function Protected_Entry_Caller (
+      Object : Entries.Protection_Entries'Class)
+      return Task_Id is
+   begin
+      return Object.Current_Calling.Caller;
+   end Protected_Entry_Caller;
 
    function Protected_Count (
       Object : Entries.Protection_Entries'Class;

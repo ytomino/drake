@@ -102,7 +102,7 @@ package System.Tasking.Rendezvous is
    function Callable (T : Task_Id) return Boolean;
 
    --  required for 'Caller by compiler (s-tasren.ads)
-   type Task_Entry_Nesting_Depth is range 0 .. Max_Entry;
+   type Task_Entry_Nesting_Depth is range 0 .. Integer'Last;
    function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_Id;
 
    --  required for 'Count by compiler (s-tasren.ads)

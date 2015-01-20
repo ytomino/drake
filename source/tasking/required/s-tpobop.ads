@@ -63,13 +63,15 @@ package System.Tasking.Protected_Objects.Operations is
       E : Protected_Entry_Index;
       With_Abort : Boolean);
 
+   --  required for 'Caller by compiler
+   function Protected_Entry_Caller (
+      Object : Entries.Protection_Entries'Class)
+      return Task_Id;
+
    --  required for 'Count by compiler
    function Protected_Count (
       Object : Entries.Protection_Entries'Class;
       E : Protected_Entry_Index)
       return Natural;
-
-   --  unimplemented subprograms required by compiler
-   --  Protected_Entry_Caller
 
 end System.Tasking.Protected_Objects.Operations;

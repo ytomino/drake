@@ -9,6 +9,7 @@ package System.Tasking.Protected_Objects.Entries is
       Super : aliased Synchronous_Objects.Queue_Node;
       E : Protected_Entry_Index;
       Uninterpreted_Data : Address;
+      Caller : Task_Id;
       Requeued : Boolean;
       Waiting : aliased Synchronous_Objects.Event;
       X : Ada.Exceptions.Exception_Occurrence;
