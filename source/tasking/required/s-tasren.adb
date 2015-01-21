@@ -76,8 +76,8 @@ package body System.Tasking.Rendezvous is
       Current_Call : constant Node_Access := TLS_Current_Call;
    begin
       Ada.Exceptions.Save_Occurrence (Current_Call.X, X);
-      Synchronous_Objects.Set (Current_Call.Waiting);
       TLS_Current_Call := Current_Call.Previous;
+      Synchronous_Objects.Set (Current_Call.Waiting);
       if not ZCX_By_Default then
          Tasks.Unlock_Abort;
          --  Abort_Undefer will not be called by compiler
@@ -109,8 +109,8 @@ package body System.Tasking.Rendezvous is
    procedure Complete_Rendezvous is
       Current_Call : constant Node_Access := TLS_Current_Call;
    begin
-      Synchronous_Objects.Set (Current_Call.Waiting);
       TLS_Current_Call := Current_Call.Previous;
+      Synchronous_Objects.Set (Current_Call.Waiting);
    end Complete_Rendezvous;
 
    procedure Exceptional_Complete_Rendezvous (
