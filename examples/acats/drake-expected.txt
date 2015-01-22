@@ -41,7 +41,7 @@ c93005g C unimplemented tasking features
 c93005h C unimplemented tasking features
 c93006a A unimplemented tasking features (select)
 c93008a C unimplemented tasking features
-c940004 C unimplemented tasking features (protected.entry'Count)
+c940004 C unimplemented tasking features (select)
 c940013 C unimplemented tasking features
 c940014 A unimplemented tasking features (requeue)
 c94001g C unimplemented tasking features
@@ -84,10 +84,6 @@ c95089a C unimplemented tasking features
 c95095a C unimplemented tasking features
 c95095b C unimplemented tasking features
 c95095c C unimplemented tasking features
-c951002 U deadlock, unimplemented tasking features (protected.entry'Count)
-c953002 U deadlock, unimplemented tasking features (protected.entry'Count)
-c953003 A unimplemented tasking features (protected.entry'Count)
-c954001 U deadlock, unimplemented tasking features (requeue)
 c954010 C unimplemented tasking features
 c954011 C unimplemented tasking features
 c954012 C unimplemented tasking features
@@ -253,8 +249,7 @@ cxb5002 C some Interfaces.Fortran features are unimplemented
 cxb5003 C some Interfaces.Fortran features are unimplemented
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
-cxc6003 F unimplemented tasking features (requeue)
-cxc7001 C unimplemented tasking features (task.entry'Caller)
+cxc7001 C unimplemented tasking features (select)
 cxc7004 C unimplemented tasking features
 cxc7006 C unimplemented tasking features (Ada.Task_Termination)
 cxd1001 C unimplemented tasking features
@@ -271,7 +266,7 @@ cxd2003 F unimplemented tasking features (priority)
 cxd2004 F unimplemented tasking features (priority)
 cxd2006 C unimplemented tasking features
 cxd2007 C unimplemented tasking features
-cxd2008 C unimplemented tasking features
+cxd2008 C unimplemented tasking features (select)
 cxd3001 F unimplemented tasking features (priority)
 cxd3002 F unimplemented tasking features (priority)
 cxd4001 C unimplemented tasking features
