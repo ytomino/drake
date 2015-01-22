@@ -8,6 +8,18 @@ package body System.Tasking.Protected_Objects.Operations is
    use type Ada.Exceptions.Exception_Id;
    use type Synchronous_Objects.Queue_Node_Access;
 
+   function Filter (
+      The_Node : not null Synchronous_Objects.Queue_Node_Access;
+      Params : Address)
+      return Boolean;
+   function Filter (
+      The_Node : not null Synchronous_Objects.Queue_Node_Access;
+      Params : Address)
+      return Boolean is
+   begin
+      return Entries.Downcast (The_Node).E = Protected_Entry_Index (Params);
+   end Filter;
+
    package Task_Record_Conv is
       new Address_To_Named_Access_Conversions (
          Tasks.Task_Record,
@@ -73,20 +85,19 @@ package body System.Tasking.Protected_Objects.Operations is
             Object.Compiler_Info,
             Node.E);
       Result : Boolean;
-      Action : Boolean;
    begin
       --  queue is locked in filter
+      Node.Action := False;
       Node.Requeued := False;
       begin
          Result := Object.Entry_Bodies (Index).Barrier (
             Object.Compiler_Info,
             Node.E);
-         Action := Result;
+         Node.Action := Result; -- execute the body after removing node
       exception
          when others =>
             Object.Raised_On_Barrier := True;
             Result := True;
-            Action := False;
             begin
                raise Program_Error; -- C953001
             exception
@@ -94,14 +105,6 @@ package body System.Tasking.Protected_Objects.Operations is
                   Ada.Exceptions.Save_Occurrence (Node.X, E);
             end;
       end;
-      if Action then
-         Object.Current_Calling := Node;
-         Object.Entry_Bodies (Index).Action (
-            Object.Compiler_Info,
-            Node.Uninterpreted_Data,
-            Node.E);
-         Object.Current_Calling := null;
-      end if;
       return Result;
    end Invoke_Filter;
 
@@ -117,7 +120,7 @@ package body System.Tasking.Protected_Objects.Operations is
    begin
       pragma Assert (Object.Entry_Bodies'First = 1);
       loop
-         Synchronous_Objects.Take (
+         Synchronous_Objects.Unsynchronized_Take (
             Object.Calling,
             Taken,
             To_Address (Object),
@@ -127,6 +130,27 @@ package body System.Tasking.Protected_Objects.Operations is
             Node : constant not null Entries.Node_Access :=
                Entries.Downcast (Taken);
          begin
+            if Node.Action then
+               declare
+                  Index : constant Positive_Protected_Entry_Index :=
+                     Object.Find_Body_Index (
+                        Object.Compiler_Info,
+                        Node.E);
+               begin
+                  Object.Current_Calling := Node;
+                  begin
+                     Object.Entry_Bodies (Index).Action (
+                        Object.Compiler_Info,
+                        Node.Uninterpreted_Data,
+                        Node.E);
+                  exception
+                     when E : others =>
+                        Ada.Exceptions.Save_Occurrence (Node.X, E);
+                  end;
+                  Object.Current_Calling := null;
+               end;
+            end if;
+            Entries.Unlock_Entries (Object);
             if Node.Requeued then
                Synchronous_Objects.Add (Object.Calling, Taken);
             else
@@ -135,6 +159,7 @@ package body System.Tasking.Protected_Objects.Operations is
                   Entries.Cancel_Calls (Object.all);
                end if;
             end if;
+            Entries.Lock_Entries (Object);
          end;
       end loop;
    end Invoke;
@@ -144,8 +169,9 @@ package body System.Tasking.Protected_Objects.Operations is
    procedure Service_Entries (
       Object : not null access Entries.Protection_Entries'Class) is
    begin
-      Entries.Unlock_Entries (Object);
+      --  already locked
       Invoke (Object);
+      Entries.Unlock_Entries (Object);
    end Service_Entries;
 
    procedure Complete_Entry_Body (
@@ -192,6 +218,7 @@ package body System.Tasking.Protected_Objects.Operations is
                   Uninterpreted_Data => Uninterpreted_Data,
                   Caller =>
                      Task_Record_Conv.To_Address (Tasks.Current_Task_Id),
+                  Action => False,
                   Requeued => False,
                   Waiting => <>, -- default initializer
                   X => <>); -- default initializer
@@ -203,7 +230,9 @@ package body System.Tasking.Protected_Objects.Operations is
                   Object.Calling,
                   The_Node.Super'Unchecked_Access);
                Synchronous_Control.Unlock_Abort; -- Tasks.Enable_Abort;
+               Entries.Lock_Entries (Object);
                Invoke (Object);
+               Entries.Unlock_Entries (Object);
                Synchronous_Objects.Abortable.Wait (
                   The_Node.Waiting,
                   Aborted => Aborted);
@@ -304,8 +333,11 @@ package body System.Tasking.Protected_Objects.Operations is
       E : Protected_Entry_Index)
       return Natural is
    begin
-      raise Program_Error;
-      return Protected_Count (Object, E);
+      --  locked because 'Count is called only from barriers or bodies
+      return Synchronous_Objects.Unsynchronized_Count (
+         Object.Calling,
+         System'To_Address (E),
+         Filter'Access);
    end Protected_Count;
 
 end System.Tasking.Protected_Objects.Operations;

@@ -1,3 +1,4 @@
+pragma Check_Policy (Trace, Off);
 package body System.Tasking.Protected_Objects.Entries is
 
    procedure Cancel_Call (Call : not null Node_Access);
@@ -48,13 +49,17 @@ package body System.Tasking.Protected_Objects.Entries is
    procedure Lock_Entries (
       Object : not null access Protection_Entries'Class) is
    begin
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Synchronous_Objects.Enter (Object.Mutex);
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Lock_Entries;
 
    procedure Unlock_Entries (
       Object : not null access Protection_Entries'Class) is
    begin
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
       Synchronous_Objects.Leave (Object.Mutex);
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unlock_Entries;
 
    procedure Cancel_Calls (Object : in out Protection_Entries'Class) is
