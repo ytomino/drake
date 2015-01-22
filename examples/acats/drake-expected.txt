@@ -28,7 +28,6 @@ c85014a C unimplemented tasking features
 c85014b C unimplemented tasking features (select)
 c85018a C unimplemented tasking features
 c85018b C unimplemented tasking features
-c91004b U unexpected deadlock
 c91004c U deadlock, unimplemented tasking features (select)
 c92003a C unimplemented tasking features
 c930001 C unimplemented tasking features
@@ -42,7 +41,7 @@ c93005g C unimplemented tasking features
 c93005h C unimplemented tasking features
 c93006a A unimplemented tasking features (select)
 c93008a C unimplemented tasking features
-c940004 C unimplemented tasking features (protected.entry'Count)
+c940004 C unimplemented tasking features (select)
 c940013 C unimplemented tasking features
 c940014 A unimplemented tasking features (requeue)
 c94001g C unimplemented tasking features
@@ -85,10 +84,6 @@ c95089a C unimplemented tasking features
 c95095a C unimplemented tasking features
 c95095b C unimplemented tasking features
 c95095c C unimplemented tasking features
-c951002 U deadlock, unimplemented tasking features (protected.entry'Count)
-c953002 U deadlock, unimplemented tasking features (protected.entry'Count)
-c953003 A unimplemented tasking features (protected.entry'Count)
-c954001 U deadlock, unimplemented tasking features (requeue)
 c954010 C unimplemented tasking features
 c954011 C unimplemented tasking features
 c954012 C unimplemented tasking features
@@ -172,12 +167,10 @@ c974014 A unimplemented tasking features (select)
 c980001 F unimplemented tasking features (select)
 c980002 F unimplemented tasking features (select)
 c980003 A unimplemented tasking features (select)
-C990001 A Segmentation fault
 c99005a C unimplemented tasking features
 c9a009a C unimplemented tasking features
 c9a009f C unimplemented tasking features
 c9a009g C unimplemented tasking features
-c9a011a A unexpected exception raised from abort
 c9a011b U deadlock, unimplemented tasking features (select)
 ca14028 F on GNAT, it can not use specialized body with generic package spec
 ca5004a A unimplemented tasking features (select)
@@ -242,10 +235,6 @@ cxaa019 C it requires Ada95 mode (Ada.Text_IO.Current_Output)
 cxab001 F strict End_Of_Line
 cxac003 F strict End_Of_Line
 cxac004 C unicode (latin-1)
-cxb3003 C unimplemented Interfaces.C features (Pointers)
-cxb3007 C cannot resolve Interfaces.C.To_C overloaded for Wide_Wide_String
-cxb3014 C unimplemented Interfaces.C features (Pointers)
-cxb3016 C unimplemented Interfaces.C features (Pointers)
 cxb4001 C some Interfaces.COBOL features are unimplemented
 cxb4002 C some Interfaces.COBOL features are unimplemented
 cxb4003 C some Interfaces.COBOL features are unimplemented
@@ -260,12 +249,7 @@ cxb5002 C some Interfaces.Fortran features are unimplemented
 cxb5003 C some Interfaces.Fortran features are unimplemented
 cxb5004 C it requites Fortran compiler
 cxb5005 C it requites Fortran compiler
-cxc3001 F Ada.Interrupts failed
-cxc3003 F Ada.Interrupts failed
-cxc3006 A Ada.Interrupts failed
-cxc3008 F Ada.Interrupts failed
-cxc6003 F unimplemented tasking features (requeue)
-cxc7001 C unimplemented tasking features (task.entry'Caller)
+cxc7001 C unimplemented tasking features (select)
 cxc7004 C unimplemented tasking features
 cxc7006 C unimplemented tasking features (Ada.Task_Termination)
 cxd1001 C unimplemented tasking features
@@ -282,7 +266,7 @@ cxd2003 F unimplemented tasking features (priority)
 cxd2004 F unimplemented tasking features (priority)
 cxd2006 C unimplemented tasking features
 cxd2007 C unimplemented tasking features
-cxd2008 C unimplemented tasking features
+cxd2008 C unimplemented tasking features (select)
 cxd3001 F unimplemented tasking features (priority)
 cxd3002 F unimplemented tasking features (priority)
 cxd4001 C unimplemented tasking features
