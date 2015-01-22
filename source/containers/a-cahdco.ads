@@ -6,7 +6,7 @@ generic
    type Base_Name is access all Base'Class;
    with package Base_Holders is
       new Access_Holders (Base_Name, Free => <>);
-   type Derived (<>) is abstract new Base with private;
+   type Derived (<>) is abstract limited new Base with private;
    type Derived_Name is access all Derived'Class;
    with package Derived_Holders is
       new Access_Holders (Derived_Name, Free => <>);

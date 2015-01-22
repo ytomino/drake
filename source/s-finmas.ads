@@ -17,7 +17,7 @@ package System.Finalization_Masters is
    subtype Any_Storage_Pool_Ptr is Storage_Pools.Storage_Pool_Access;
 
    type Finalization_Master is
-      new Ada.Finalization.Limited_Controlled with private;
+      limited new Ada.Finalization.Limited_Controlled with private;
 
    procedure Attach_Unprotected (N, L : not null FM_Node_Ptr);
    procedure Attach (N, L : not null FM_Node_Ptr);
@@ -81,7 +81,7 @@ private
    FS_Finalization_Started : constant Finalization_State := 1;
 
    type Finalization_Master is
-      new Ada.Finalization.Limited_Controlled with
+      limited new Ada.Finalization.Limited_Controlled with
    record
       List : aliased FM_List;
       Base_Pool : Any_Storage_Pool_Ptr := null;

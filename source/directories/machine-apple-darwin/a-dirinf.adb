@@ -18,16 +18,18 @@ package body Ada.Directories.Information is
    use type C.sys.types.mode_t;
    use type C.sys.types.ssize_t;
 
-   procedure Fill (Directory_Entry : aliased in out Directory_Entry_Type);
-   procedure Fill (Directory_Entry : aliased in out Directory_Entry_Type) is
+   procedure Fill (
+      Directory_Entry : not null access Non_Controlled_Directory_Entry_Type);
+   procedure Fill (
+      Directory_Entry : not null access Non_Controlled_Directory_Entry_Type) is
    begin
-      if Directory_Entry.Search = null then
+      if Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
       if not Directory_Entry.Additional.Filled then
          Directory_Searching.Get_Information (
-            Directory_Entry.Search.Path.all,
-            Directory_Entry.Data,
+            Directory_Entry.Path.all,
+            Directory_Entry.Directory_Entry,
             Directory_Entry.Additional.Information);
          Directory_Entry.Additional.Filled := True;
       end if;
@@ -62,10 +64,13 @@ package body Ada.Directories.Information is
    end Group;
 
    function Group (Directory_Entry : Directory_Entry_Type) return String is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
+      Fill (NC_Directory_Entry);
       return System.Native_Credentials.Group_Name (
-         Directory_Entry.Additional.Information.st_gid);
+         NC_Directory_Entry.Additional.Information.st_gid);
    end Group;
 
    function Is_Block_Special_File (Name : String) return Boolean is
@@ -77,10 +82,14 @@ package body Ada.Directories.Information is
    end Is_Block_Special_File;
 
    function Is_Block_Special_File (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
-      return (Directory_Entry.Additional.Information.st_mode
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
 
@@ -93,10 +102,14 @@ package body Ada.Directories.Information is
    end Is_Character_Special_File;
 
    function Is_Character_Special_File (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
-      return (Directory_Entry.Additional.Information.st_mode
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
 
@@ -109,10 +122,14 @@ package body Ada.Directories.Information is
    end Is_FIFO;
 
    function Is_FIFO (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
-      return (Directory_Entry.Additional.Information.st_mode
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFIFO;
    end Is_FIFO;
 
@@ -125,10 +142,14 @@ package body Ada.Directories.Information is
    end Is_Socket;
 
    function Is_Socket (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
-      return (Directory_Entry.Additional.Information.st_mode
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFSOCK;
    end Is_Socket;
 
@@ -141,10 +162,14 @@ package body Ada.Directories.Information is
    end Is_Symbolic_Link;
 
    function Is_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
-      return (Directory_Entry.Additional.Information.st_mode
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
 
@@ -160,10 +185,13 @@ package body Ada.Directories.Information is
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
+      Fill (NC_Directory_Entry);
       return Cast (System.Native_Time.To_Time (
-         Directory_Entry.Additional.Information.st_atim));
+         NC_Directory_Entry.Additional.Information.st_atim));
    end Last_Access_Time;
 
    function Last_Status_Change_Time (Name : String)
@@ -180,10 +208,13 @@ package body Ada.Directories.Information is
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
+      Fill (NC_Directory_Entry);
       return Cast (System.Native_Time.To_Time (
-         Directory_Entry.Additional.Information.st_ctim));
+         NC_Directory_Entry.Additional.Information.st_ctim));
    end Last_Status_Change_Time;
 
    function Owner (Name : String) return String is
@@ -194,10 +225,13 @@ package body Ada.Directories.Information is
    end Owner;
 
    function Owner (Directory_Entry : Directory_Entry_Type) return String is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
+      Fill (NC_Directory_Entry);
       return System.Native_Credentials.User_Name (
-         Directory_Entry.Additional.Information.st_uid);
+         NC_Directory_Entry.Additional.Information.st_uid);
    end Owner;
 
    function Permission_Set (Name : String) return Permission_Set_Type is
@@ -208,11 +242,15 @@ package body Ada.Directories.Information is
    end Permission_Set;
 
    function Permission_Set (Directory_Entry : Directory_Entry_Type)
-      return Permission_Set_Type is
+      return Permission_Set_Type
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      Fill (Directory_Entry'Unrestricted_Access.all);
+      Fill (NC_Directory_Entry);
       return To_Permission_Set (
-         Directory_Entry.Additional.Information.st_mode);
+         NC_Directory_Entry.Additional.Information.st_mode);
    end Permission_Set;
 
    function Read_Symbolic_Link (Name : String) return String is
@@ -288,11 +326,14 @@ package body Ada.Directories.Information is
    end Identity;
 
    function Identity (Directory_Entry : Directory_Entry_Type) return File_Id is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return File_Id (Directory_Entry.Data.d_ino);
+      return File_Id (NC_Directory_Entry.Directory_Entry.d_ino);
    end Identity;
 
 end Ada.Directories.Information;

@@ -168,7 +168,7 @@ procedure random_sfmt is
 		for i in 0 .. 10 - 1 loop
 			clo := Ada.Execution_Time.Clock;
 			for j in 0 .. BLOCK_SIZE * COUNT - 1 loop
-			 	Dummy := Random_32 (Gen);
+				Dummy := Random_32 (Gen);
 			end loop;
 			clo_Span:= Ada.Execution_Time.Clock - clo;
 			if clo_Span < min then

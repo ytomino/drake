@@ -2,7 +2,7 @@ pragma Check_Policy (Validate, Off);
 pragma Check_Policy (Trace, Off);
 with Ada.Exception_Identification.From_Here;
 with Ada.Text_IO.Formatting;
-with System.Formatting.Decimal_Image;
+with System.Formatting.Decimal;
 with System.Formatting.Literals;
 package body Ada.Text_IO.Editing is
    use Exception_Identification.From_Here;
@@ -56,7 +56,8 @@ package body Ada.Text_IO.Editing is
                declare
                   Count_First : Positive;
                   Count_Last : Natural;
-                  Count : System.Formatting.Unsigned;
+                  Count_U : System.Formatting.Unsigned;
+                  Count : Natural;
                begin
                   Formatting.Get_Tail (
                      Pic_String (I + 1 .. Pic_String'Last),
@@ -64,14 +65,18 @@ package body Ada.Text_IO.Editing is
                   System.Formatting.Literals.Get_Literal (
                      Pic_String (Count_First .. Pic_String'Last),
                      Count_Last,
-                     Count,
+                     Count_U,
                      Error => Error);
-                  if Error then
+                  if Error
+                     or else Count_U >
+                        System.Formatting.Unsigned (Natural'Last)
+                  then
                      return; -- Picture_Error
                   end if;
+                  Count := Natural (Count_U);
                   if Count = 0
                      or else I = Pic_String'First
-                     or else I + Integer (Count) - 1 > Pic_String'Last
+                     or else I + Count - 1 > Pic_String'Last
                   then
                      Error := True;
                      return; -- Picture_Error
@@ -312,7 +317,7 @@ package body Ada.Text_IO.Editing is
             if Pic.Has_Dollar = Previous then
                Radix_Position := Radix_Position + Currency'Length - 1;
             end if;
-            System.Formatting.Decimal_Image (
+            System.Formatting.Decimal.Image (
                Item,
                Item_Image,
                Item_Last,

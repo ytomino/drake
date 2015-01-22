@@ -396,7 +396,9 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    function Iterate (Container : List)
       return List_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return Iterator'(First => First (Container), Last => Last (Container));
+      return List_Iterator'(
+         First => First (Container),
+         Last => Last (Container));
    end Iterate;
 
    function Iterate (Container : List; First, Last : Cursor)
@@ -405,9 +407,9 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       pragma Unreferenced (Container);
    begin
       if Base.Is_Before (Upcast (Last), Upcast (First)) then
-         return Iterator'(First => No_Element, Last => No_Element);
+         return List_Iterator'(First => No_Element, Last => No_Element);
       else
-         return Iterator'(First => First, Last => Last);
+         return List_Iterator'(First => First, Last => Last);
       end if;
    end Iterate;
 
@@ -692,12 +694,12 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Copy_On_Write.Adjust (Object.Super'Access);
    end Adjust;
 
-   overriding function First (Object : Iterator) return Cursor is
+   overriding function First (Object : List_Iterator) return Cursor is
    begin
       return Object.First;
    end First;
 
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function Next (Object : List_Iterator; Position : Cursor)
       return Cursor is
    begin
       if Position = Object.Last then
@@ -707,12 +709,12 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end if;
    end Next;
 
-   overriding function Last (Object : Iterator) return Cursor is
+   overriding function Last (Object : List_Iterator) return Cursor is
    begin
       return Object.Last;
    end Last;
 
-   overriding function Previous (Object : Iterator; Position : Cursor)
+   overriding function Previous (Object : List_Iterator; Position : Cursor)
       return Cursor is
    begin
       if Position = Object.First then

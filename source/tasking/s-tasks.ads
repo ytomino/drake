@@ -134,22 +134,22 @@ package System.Tasks is
    procedure Free (Index : in out Attribute_Index);
    procedure Query (
       T : not null Task_Id;
-      Index : in out Attribute_Index;
+      Index : aliased in out Attribute_Index;
       Process : not null access procedure (Item : Address));
    procedure Set (
       T : not null Task_Id;
-      Index : in out Attribute_Index;
+      Index : aliased in out Attribute_Index;
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address));
    procedure Reference (
       T : not null Task_Id;
-      Index : in out Attribute_Index;
+      Index : aliased in out Attribute_Index;
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address);
       Result : out Address);
    procedure Clear (
       T : not null Task_Id;
-      Index : in out Attribute_Index);
+      Index : aliased in out Attribute_Index);
 
 private
 

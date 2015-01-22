@@ -70,7 +70,7 @@ private
 
    private
 
-      type Mapping is new Finalization.Limited_Controlled with record
+      type Mapping is limited new Finalization.Limited_Controlled with record
          Data : aliased Non_Controlled_Mapping := (
             Address => System.Null_Address,
             Size => 0,

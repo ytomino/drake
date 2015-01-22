@@ -27,46 +27,6 @@ package body Ada.Real_Time is
       return Time_Span (S);
    end Seconds;
 
-   function "abs" (Right : Time_Span) return Time_Span is
-   begin
-      return Time_Span (abs Duration (Right));
-   end "abs";
-
-   function "+" (Left : Time; Right : Time_Span) return Time is
-   begin
-      return Time (Duration (Left) + Duration (Right));
-   end "+";
-
-   function "+" (Left : Time_Span; Right : Time) return Time is
-   begin
-      return Time (Duration (Left) + Duration (Right));
-   end "+";
-
-   function "+" (Left, Right : Time_Span) return Time_Span is
-   begin
-      return Time_Span (Duration (Left) + Duration (Right));
-   end "+";
-
-   function "-" (Left : Time; Right : Time_Span) return Time is
-   begin
-      return Time (Duration (Left) - Duration (Right));
-   end "-";
-
-   function "-" (Left : Time; Right : Time) return Time_Span is
-   begin
-      return Time_Span (Duration (Left) - Duration (Right));
-   end "-";
-
-   function "-" (Left, Right : Time_Span) return Time_Span is
-   begin
-      return Time_Span (Duration (Left) - Duration (Right));
-   end "-";
-
-   function "-" (Right : Time_Span) return Time_Span is
-   begin
-      return Time_Span (-Duration (Right));
-   end "-";
-
    function "*" (Left : Time_Span; Right : Integer) return Time_Span is
    begin
       return Time_Span (Duration (Left) * Right);

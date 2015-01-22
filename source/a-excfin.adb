@@ -6,7 +6,7 @@ package body Ada.Exceptions.Finally is
 
    type Handler_Type is access procedure (Params : System.Address);
 
-   type Finalizer is new Finalization.Limited_Controlled with record
+   type Finalizer is limited new Finalization.Limited_Controlled with record
       Params : System.Address;
       Handler : System.Address;
    end record;

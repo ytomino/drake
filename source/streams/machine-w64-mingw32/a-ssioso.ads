@@ -32,7 +32,7 @@ private
 
    private
 
-      type End_Point is new Finalization.Limited_Controlled with record
+      type End_Point is limited new Finalization.Limited_Controlled with record
          Data : aliased C.ws2tcpip.struct_addrinfoW_ptr := null;
       end record;
 

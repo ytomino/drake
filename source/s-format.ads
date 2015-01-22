@@ -4,10 +4,10 @@ package System.Formatting is
    pragma Pure;
 
    subtype Number_Base is Integer range 2 .. 16; -- same as Text_IO.Number_Base
+   subtype Digit is Integer range 0 .. 15;
 
    type Unsigned is mod 2 ** Integer'Size;
    type Longest_Unsigned is mod 2 ** Long_Long_Integer'Size;
-   subtype Digit is Unsigned range 0 .. 15;
 
    type Type_Set is (Lower_Case, Upper_Case); -- same as Text_IO.Type_Set
    pragma Discard_Names (Type_Set);

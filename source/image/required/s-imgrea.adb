@@ -1,5 +1,5 @@
-with System.Formatting.Fixed_Image;
-with System.Formatting.Float_Image;
+with System.Formatting.Fixed;
+with System.Formatting.Float;
 package body System.Img_Real is
    pragma Suppress (All_Checks);
 
@@ -9,7 +9,7 @@ package body System.Img_Real is
       P : out Natural;
       Aft : Natural) is
    begin
-      Formatting.Fixed_Image (
+      Formatting.Fixed.Image (
          V,
          S,
          P,
@@ -22,7 +22,7 @@ package body System.Img_Real is
       P : out Natural;
       Digs : Natural) is
    begin
-      Formatting.Float_Image (
+      Formatting.Float.Image (
          V,
          S,
          P,

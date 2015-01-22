@@ -29,8 +29,9 @@ package System.Debug is
       Source_Location : String;
       Enclosing_Entity : String)
       return Boolean;
+   pragma Suppress (Access_Check, Put_Handler);
 
-   Put_Hook : not null Put_Handler := Default_Put'Access;
+   Put_Hook : Put_Handler := Default_Put'Access; -- not null
    pragma Suppress (Access_Check, Put_Hook);
    pragma Export (Ada, Put_Hook, "__drake_debug_put_hook");
 

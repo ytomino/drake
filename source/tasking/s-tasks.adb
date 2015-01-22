@@ -1153,31 +1153,21 @@ package body System.Tasks is
    end Disable_Abort;
 
    procedure Lock_Abort is
+      T : constant Task_Id := Current_Task_Id; -- and register
    begin
-      if Registered_State = Registered then
-         declare
-            T : constant Task_Id := Current_Task_Id;
-         begin
-            pragma Check (Trace, Ada.Debug.Put (Name (T).all
-               & Natural'Image (T.Abort_Locking) & " =>"
-               & Natural'Image (T.Abort_Locking + 1)));
-            T.Abort_Locking := T.Abort_Locking + 1;
-         end;
-      end if;
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all
+         & Natural'Image (T.Abort_Locking) & " =>"
+         & Natural'Image (T.Abort_Locking + 1)));
+      T.Abort_Locking := T.Abort_Locking + 1;
    end Lock_Abort;
 
    procedure Unlock_Abort is
+      T : constant Task_Id := TLS_Current_Task_Id;
    begin
-      if Registered_State = Registered then
-         declare
-            T : constant Task_Id := TLS_Current_Task_Id;
-         begin
-            pragma Check (Trace, Ada.Debug.Put (Name (T).all
-               & Natural'Image (T.Abort_Locking) & " =>"
-               & Natural'Image (T.Abort_Locking - 1)));
-            T.Abort_Locking := T.Abort_Locking - 1;
-         end;
-      end if;
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all
+         & Natural'Image (T.Abort_Locking) & " =>"
+         & Natural'Image (T.Abort_Locking - 1)));
+      T.Abort_Locking := T.Abort_Locking - 1;
    end Unlock_Abort;
 
    function Is_Aborted return Boolean is
@@ -1606,14 +1596,14 @@ package body System.Tasks is
 
    procedure Query (
       T : not null Task_Id;
-      Index : in out Attribute_Index;
+      Index : aliased in out Attribute_Index;
       Process : not null access procedure (Item : Address))
    is
       Value : Address;
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       if T.Attributes_Length > Index.Index
-         and then T.Attributes (Index.Index).Index = Index'Unrestricted_Access
+         and then T.Attributes (Index.Index).Index = Index'Unchecked_Access
       then
          Value := T.Attributes (Index.Index).Item;
       else
@@ -1625,7 +1615,7 @@ package body System.Tasks is
 
    procedure Set (
       T : not null Task_Id;
-      Index : in out Attribute_Index;
+      Index : aliased in out Attribute_Index;
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address))
    is
@@ -1642,13 +1632,13 @@ package body System.Tasks is
          A : Attribute
             renames T.Attributes (Index.Index);
       begin
-         if A.Index = Index'Unrestricted_Access then
+         if A.Index = Index'Unchecked_Access then
             A.Finalize (A.Item);
          end if;
          A.Item := New_Item.all;
          A.Finalize := To_Finalize_Handler (Finalize.all'Address);
-         if A.Index /= Index'Unrestricted_Access then
-            A.Index := Index'Unrestricted_Access;
+         if A.Index /= Index'Unchecked_Access then
+            A.Index := Index'Unchecked_Access;
             A.Previous := null;
             A.Next := Index.List;
             if Index.List /= null then
@@ -1662,7 +1652,7 @@ package body System.Tasks is
 
    procedure Reference (
       T : not null Task_Id;
-      Index : in out Attribute_Index;
+      Index : aliased in out Attribute_Index;
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address);
       Result : out Address)
@@ -1680,11 +1670,11 @@ package body System.Tasks is
          A : Attribute
             renames T.Attributes (Index.Index);
       begin
-         if A.Index /= Index'Unrestricted_Access then
+         if A.Index /= Index'Unchecked_Access then
             A.Item := New_Item.all;
             A.Finalize := To_Finalize_Handler (Finalize.all'Address);
-            if A.Index /= Index'Unrestricted_Access then
-               A.Index := Index'Unrestricted_Access;
+            if A.Index /= Index'Unchecked_Access then
+               A.Index := Index'Unchecked_Access;
                A.Previous := null;
                A.Next := Index.List;
                if Index.List /= null then
@@ -1700,11 +1690,11 @@ package body System.Tasks is
 
    procedure Clear (
       T : not null Task_Id;
-      Index : in out Attribute_Index) is
+      Index : aliased in out Attribute_Index) is
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       if T.Attributes_Length > Index.Index
-         and then T.Attributes (Index.Index).Index = Index'Unrestricted_Access
+         and then T.Attributes (Index.Index).Index = Index'Unchecked_Access
       then
          declare
             A : Attribute

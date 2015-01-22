@@ -9,6 +9,8 @@ package System.Tasking.Protected_Objects.Entries is
       Super : aliased Synchronous_Objects.Queue_Node;
       E : Protected_Entry_Index;
       Uninterpreted_Data : Address;
+      Caller : Task_Id;
+      Action : Boolean;
       Requeued : Boolean;
       Waiting : aliased Synchronous_Objects.Event;
       X : Ada.Exceptions.Exception_Occurrence;
@@ -41,7 +43,7 @@ package System.Tasking.Protected_Objects.Entries is
    --  required by compiler
    --  (if it is not controlled type, compiler may be crashed!)
    type Protection_Entries (Num_Entries : Protected_Entry_Index) is
-      new Ada.Finalization.Limited_Controlled with
+      limited new Ada.Finalization.Limited_Controlled with
    record
       Mutex : aliased Synchronous_Objects.Mutex;
       Calling : aliased Synchronous_Objects.Queue;
@@ -78,7 +80,7 @@ package System.Tasking.Protected_Objects.Entries is
    procedure Unlock_Entries (
       Object : not null access Protection_Entries'Class);
 
-   --  cancel all callings of entries
+   --  for System.Tasking.Protected_Objects.Operations.Service_Entries
    procedure Cancel_Calls (Object : in out Protection_Entries'Class);
 
    --  required by compiler (s-tpoben.ads)

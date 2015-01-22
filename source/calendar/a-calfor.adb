@@ -5,6 +5,7 @@ with System.Native_Time;
 package body Ada.Calendar.Formatting is
 --  pragma Suppress (All_Checks);
    use type Time_Zones.Time_Offset;
+   use type System.Formatting.Unsigned;
    use type System.Native_Time.Nanosecond_Number;
 
    --  for Year, Month, Day
@@ -467,7 +468,13 @@ package body Ada.Calendar.Formatting is
          Last,
          Year,
          Error => Error);
-      if Error or else Last >= Date'Last or else Date (Last + 1) /= '-' then
+      if Error
+         or else Year not in
+            System.Formatting.Unsigned (Year_Number'First) ..
+            System.Formatting.Unsigned (Year_Number'Last)
+         or else Last >= Date'Last
+         or else Date (Last + 1) /= '-'
+      then
          raise Constraint_Error;
       end if;
       Last := Last + 1;
@@ -476,7 +483,13 @@ package body Ada.Calendar.Formatting is
          Last,
          Month,
          Error => Error);
-      if Error or else Last >= Date'Last or else Date (Last + 1) /= '-' then
+      if Error
+         or else Month not in
+            System.Formatting.Unsigned (Month_Number'First) ..
+            System.Formatting.Unsigned (Month_Number'Last)
+         or else Last >= Date'Last
+         or else Date (Last + 1) /= '-'
+      then
          raise Constraint_Error;
       end if;
       Last := Last + 1;
@@ -485,7 +498,13 @@ package body Ada.Calendar.Formatting is
          Last,
          Day,
          Error => Error);
-      if Error or else Last >= Date'Last or else Date (Last + 1) /= ' ' then
+      if Error
+         or else Day not in
+            System.Formatting.Unsigned (Day_Number'First) ..
+            System.Formatting.Unsigned (Day_Number'Last)
+         or else Last >= Date'Last
+         or else Date (Last + 1) /= ' '
+      then
          raise Constraint_Error;
       end if;
       Last := Last + 1;
@@ -558,7 +577,7 @@ package body Ada.Calendar.Formatting is
          Hour,
          Error => Error);
       if Error
-         or else Hour_Number'Base (Hour) not in Hour_Number
+         or else Hour > System.Formatting.Unsigned (Hour_Number'Last)
          or else Last >= Elapsed_Time'Last
          or else Elapsed_Time (Last + 1) /= ':'
       then
@@ -571,7 +590,7 @@ package body Ada.Calendar.Formatting is
          Minute,
          Error => Error);
       if Error
-         or else Minute_Number'Base (Minute) not in Minute_Number
+         or else Minute > System.Formatting.Unsigned (Minute_Number'Last)
          or else Last >= Elapsed_Time'Last
          or else Elapsed_Time (Last + 1) /= ':'
       then
@@ -584,7 +603,7 @@ package body Ada.Calendar.Formatting is
          Second,
          Error => Error);
       if Error
-         or else Second_Number'Base (Second) not in Second_Number
+         or else Second > System.Formatting.Unsigned (Second_Number'Last)
       then
          raise Constraint_Error;
       end if;
@@ -683,6 +702,7 @@ package body Ada.Calendar.Formatting is
          Hour,
          Error => Error);
       if Error
+         or else Hour > System.Formatting.Unsigned (Hour_Number'Last)
          or else Last >= Time_Zone'Last
          or else Time_Zone (Last + 1) /= ':'
       then
@@ -694,7 +714,10 @@ package body Ada.Calendar.Formatting is
          Last,
          Minute,
          Error => Error);
-      if Error or else Last /= Time_Zone'Last then
+      if Error
+         or else Minute > System.Formatting.Unsigned (Minute_Number'Last)
+         or else Last /= Time_Zone'Last
+      then
          raise Constraint_Error;
       end if;
       Result := Time_Zones.Time_Offset'Base (Hour) * 60

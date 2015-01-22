@@ -45,59 +45,69 @@ package body Ada.Tags is
    pragma Suppress_Initialization (E_Node);
 
    procedure E_Insert (
-      Node : in out E_Node_Access;
+      Node : aliased in out E_Node_Access;
       T : Tag;
       External : String);
    procedure E_Insert (
-      Node : in out E_Node_Access;
+      Node : aliased in out E_Node_Access;
       T : Tag;
-      External : String) is
+      External : String)
+   is
+      type E_Node_Access_Access is access all E_Node_Access;
+      for E_Node_Access_Access'Storage_Size use 0;
+      Current : not null E_Node_Access_Access := Node'Access;
    begin
-      if Node = null then
-         Node := new E_Node'(Left => null, Right => null, Tag => T);
-      else
-         declare
-            TSD : constant Type_Specific_Data_Ptr :=
-               TSD_Ptr_Conv.To_Pointer (DT (Node.all.Tag).TSD);
-            Node_External : String
-               renames
-                  TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
-         begin
-            if Node_External > External then
-               E_Insert (Node.Left, T, External);
-            elsif Node_External < External then
-               E_Insert (Node.Right, T, External);
-            else
-               null; -- already added
-            end if;
-         end;
-      end if;
+      loop
+         if Current.all = null then
+            Current.all := new E_Node'(Left => null, Right => null, Tag => T);
+            exit;
+         else
+            declare
+               Current_TSD : constant Type_Specific_Data_Ptr :=
+                  TSD_Ptr_Conv.To_Pointer (DT (Current.all.Tag).TSD);
+               Current_External_Len : constant Natural :=
+                  Natural (strlen (Current_TSD.External_Tag));
+               Current_External : String
+                  renames Current_TSD.External_Tag (1 .. Current_External_Len);
+            begin
+               if Current_External > External then
+                  Current := Current.all.Left'Access;
+               elsif Current_External < External then
+                  Current := Current.all.Right'Access;
+               else
+                  exit; -- already added
+               end if;
+            end;
+         end if;
+      end loop;
    end E_Insert;
 
    function E_Find (Node : E_Node_Access; External : String)
       return E_Node_Access;
    function E_Find (Node : E_Node_Access; External : String)
-      return E_Node_Access is
+      return E_Node_Access
+   is
+      Current : E_Node_Access := Node;
    begin
-      if Node = null then
-         return null;
-      else
+      while Current /= null loop
          declare
-            TSD : constant Type_Specific_Data_Ptr :=
-               TSD_Ptr_Conv.To_Pointer (DT (Node.Tag).TSD);
-            Node_External : String
-               renames
-                  TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
+            Current_TSD : constant Type_Specific_Data_Ptr :=
+               TSD_Ptr_Conv.To_Pointer (DT (Current.Tag).TSD);
+            Current_External_Len : constant Natural :=
+               Natural (strlen (Current_TSD.External_Tag));
+            Current_External : String
+               renames Current_TSD.External_Tag (1 .. Current_External_Len);
          begin
-            if Node_External > External then
-               return E_Find (Node.Left, External);
-            elsif Node_External < External then
-               return E_Find (Node.Right, External);
+            if Current_External > External then
+               Current := Current.Left;
+            elsif Current_External < External then
+               Current := Current.Right;
             else
-               return Node;
+               return Current; -- found
             end if;
          end;
-      end if;
+      end loop;
+      return null; -- not found
    end E_Find;
 
    External_Map : aliased E_Node_Access := null;

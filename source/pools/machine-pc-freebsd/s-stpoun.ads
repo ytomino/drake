@@ -4,7 +4,7 @@ package System.Storage_Pools.Unbounded is
    --  This package provides a separated stogae pool for local scope.
    pragma Preelaborate;
 
-   type Unbounded_Pool is new Root_Storage_Pool with private;
+   type Unbounded_Pool is limited new Root_Storage_Pool with private;
 
 private
 
@@ -16,7 +16,7 @@ private
    end record;
    pragma Suppress_Initialization (Header);
 
-   type Unbounded_Pool is new Root_Storage_Pool with record
+   type Unbounded_Pool is limited new Root_Storage_Pool with record
       List : Header_Access := null;
    end record;
    pragma Finalize_Storage_Only (Unbounded_Pool);

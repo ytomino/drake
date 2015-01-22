@@ -1,5 +1,4 @@
 with Ada.Unchecked_Conversion;
-with System.Address_To_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 package body Ada.Strings.Generic_Fixed is
@@ -17,11 +16,13 @@ package body Ada.Strings.Generic_Fixed is
          and then String_Type'Component_Size = Standard'Storage_Unit
       then
          declare
+            type P is access all Character;
+            for P'Storage_Size use 0;
             package Conv is
-               new System.Address_To_Access_Conversions (Character);
+               new System.Address_To_Named_Access_Conversions (Character, P);
             --  gcc's builtin-function
             procedure memset (
-               b : Conv.Object_Pointer;
+               b : not null P;
                c : Integer;
                n : System.Storage_Elements.Storage_Count);
             pragma Import (Intrinsic, memset, "__builtin_memset");
@@ -121,14 +122,16 @@ package body Ada.Strings.Generic_Fixed is
          and then String_Type'Component_Size = Standard'Storage_Unit
       then
          declare
+            type P is access all Character;
+            for P'Storage_Size use 0;
             package Conv is
-               new System.Address_To_Access_Conversions (Character);
+               new System.Address_To_Named_Access_Conversions (Character, P);
             --  gcc's builtin-function
             function memchr (
-               s : Conv.Object_Pointer;
+               s : not null P;
                c : Integer;
                n : System.Storage_Elements.Storage_Count)
-               return Conv.Object_Pointer;
+               return P;
             pragma Import (Intrinsic, memchr, "__builtin_memchr");
             Result : constant System.Address := Conv.To_Address (
                memchr (

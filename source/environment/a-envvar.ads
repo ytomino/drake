@@ -40,7 +40,7 @@ private
 
    type Cursor is new System.Address;
 
-   type Iterator is new Finalization.Limited_Controlled
+   type Iterator is limited new Finalization.Limited_Controlled
       and Iterator_Interfaces.Forward_Iterator with
    record
       Block : System.Address := System.Null_Address;

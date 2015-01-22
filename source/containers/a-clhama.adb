@@ -446,7 +446,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    function Iterate (Container : Map)
       return Map_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Iterator'(Container => Container'Unrestricted_Access);
+      return Map_Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    function Key (Position : Cursor) return Key_Reference_Type is
@@ -596,12 +596,12 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 
-   overriding function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Map_Iterator) return Cursor is
    begin
       return First (Object.Container.all);
    end First;
 
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function Next (Object : Map_Iterator; Position : Cursor)
       return Cursor
    is
       pragma Unreferenced (Object);

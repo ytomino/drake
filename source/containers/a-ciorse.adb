@@ -561,7 +561,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    function Iterate (Container : Set)
       return Set_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return Iterator'(Container => Container'Unrestricted_Access);
+      return Set_Iterator'(Container => Container'Unrestricted_Access);
    end Iterate;
 
    function Last (Container : Set) return Cursor is
@@ -798,12 +798,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Copy_On_Write.Adjust (Object.Super'Access);
    end Adjust;
 
-   overriding function First (Object : Iterator) return Cursor is
+   overriding function First (Object : Set_Iterator) return Cursor is
    begin
       return First (Object.Container.all);
    end First;
 
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function Next (Object : Set_Iterator; Position : Cursor)
       return Cursor
    is
       pragma Unreferenced (Object);
@@ -811,12 +811,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       return Next (Position);
    end Next;
 
-   overriding function Last (Object : Iterator) return Cursor is
+   overriding function Last (Object : Set_Iterator) return Cursor is
    begin
       return Last (Object.Container.all);
    end Last;
 
-   overriding function Previous (Object : Iterator; Position : Cursor)
+   overriding function Previous (Object : Set_Iterator; Position : Cursor)
       return Cursor
    is
       pragma Unreferenced (Object);
@@ -880,7 +880,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container, Key).Element);
+         return (Element => Find (Container, Key).Element.all'Access);
       end Constant_Reference;
 
       function Contains (Container : Set; Key : Key_Type) return Boolean is
@@ -955,7 +955,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       begin
          Unique (Container, True);
 --  diff
-         return (Element => Position.Element);
+         return (Element => Position.Element.all'Access);
       end Reference_Preserving_Key;
 
       function Reference_Preserving_Key (
@@ -964,7 +964,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          return Reference_Type is
       begin
          Unique (Container, True);
-         return (Element => Find (Container, Key).Element);
+         return (Element => Find (Container, Key).Element.all'Access);
       end Reference_Preserving_Key;
 
       procedure Replace (

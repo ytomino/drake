@@ -34,7 +34,7 @@ begin
 	declare
 		Search : aliased Ada.Directories.Search_Type := Ada.Directories.Start_Search (".");
 		Ite : Ada.Directories.Search_Iterator_Interfaces.Forward_Iterator'Class :=
-		   Ada.Directories.Iterate (Search);
+			Ada.Directories.Iterate (Search);
 		Position : Ada.Directories.Cursor := Ada.Directories.Search_Iterator_Interfaces.First (Ite);
 	begin
 		while Ada.Directories.Has_Element (Position) loop

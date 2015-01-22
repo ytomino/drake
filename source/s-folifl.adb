@@ -32,7 +32,7 @@ package body System.Formatting.Literals.Float is
                Last := Last + 1;
             end if;
             Value (Item (Last + 1), X, Is_Invalid);
-            exit when Is_Invalid or else X >= Unsigned (Base);
+            exit when Is_Invalid or else X >= Base;
             if Scale <= Long_Long_Float'Last / Long_Long_Float (Base) then
                Result := Result * Long_Long_Float (Base) + Long_Long_Float (X);
                Scale := Scale * Long_Long_Float (Base);
@@ -77,7 +77,7 @@ package body System.Formatting.Literals.Float is
                exit;
             end if;
             Value (Item (Last + 1), X, Is_Invalid);
-            exit when Is_Invalid or else X >= Unsigned (Base);
+            exit when Is_Invalid or else X >= Base;
             if Result >
                (Long_Long_Float'Last - Long_Long_Float (X))
                / Long_Long_Float (Base)

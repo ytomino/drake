@@ -19,9 +19,8 @@ package Ada.Execution_Time is
 --  function "+" (Left : CPU_Time; Right : Time_Span) return CPU_Time;
 --  function "+" (Left : Time_Span; Right : CPU_Time) return CPU_Time;
 --  function "-" (Left : CPU_Time; Right : Time_Span) return CPU_Time;
-   function "-" (Left : CPU_Time; Right : CPU_Time) return Real_Time.Time_Span;
-   pragma Pure_Function ("-");
-   pragma Inline ("-");
+   function "-" (Left : CPU_Time; Right : CPU_Time) return Real_Time.Time_Span
+      with Pure_Function, Import, Convention => Intrinsic;
 
 --  function "<" (Left, Right : CPU_Time) return Boolean;
 --  function "<=" (Left, Right : CPU_Time) return Boolean;

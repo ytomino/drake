@@ -18,27 +18,26 @@ package Ada.Real_Time is
    function Clock return Time;
    pragma Inline (Clock);
 
-   function "+" (Left : Time; Right : Time_Span) return Time;
-   function "+" (Left : Time_Span; Right : Time) return Time;
-   pragma Pure_Function ("+");
-   pragma Inline ("+");
-   function "-" (Left : Time; Right : Time_Span) return Time;
-   function "-" (Left : Time; Right : Time) return Time_Span;
-   pragma Pure_Function ("-");
-   pragma Inline ("-");
+   function "+" (Left : Time; Right : Time_Span) return Time
+      with Pure_Function, Import, Convention => Intrinsic;
+   function "+" (Left : Time_Span; Right : Time) return Time
+      with Pure_Function, Import, Convention => Intrinsic;
+   function "-" (Left : Time; Right : Time_Span) return Time
+      with Pure_Function, Import, Convention => Intrinsic;
+   function "-" (Left : Time; Right : Time) return Time_Span
+      with Pure_Function, Import, Convention => Intrinsic;
 
    function "<" (Left, Right : Time) return Boolean;
    function "<=" (Left, Right : Time) return Boolean;
    function ">" (Left, Right : Time) return Boolean;
    function ">=" (Left, Right : Time) return Boolean;
 
-   function "+" (Left, Right : Time_Span) return Time_Span;
-   pragma Pure_Function ("+");
-   pragma Inline ("+");
-   function "-" (Left, Right : Time_Span) return Time_Span;
-   function "-" (Right : Time_Span) return Time_Span;
-   pragma Pure_Function ("-");
-   pragma Inline ("-");
+   function "+" (Left, Right : Time_Span) return Time_Span
+      with Pure_Function, Import, Convention => Intrinsic;
+   function "-" (Left, Right : Time_Span) return Time_Span
+      with Pure_Function, Import, Convention => Intrinsic;
+   function "-" (Right : Time_Span) return Time_Span
+      with Pure_Function, Import, Convention => Intrinsic;
    function "*" (Left : Time_Span; Right : Integer) return Time_Span;
    function "*" (Left : Integer; Right : Time_Span) return Time_Span;
    pragma Pure_Function ("*");
@@ -48,9 +47,8 @@ package Ada.Real_Time is
    pragma Pure_Function ("/");
    pragma Inline ("/");
 
-   function "abs" (Right : Time_Span) return Time_Span;
-   pragma Pure_Function ("abs");
-   pragma Inline ("abs");
+   function "abs" (Right : Time_Span) return Time_Span
+      with Pure_Function, Import, Convention => Intrinsic;
 
    function "<" (Left, Right : Time_Span) return Boolean;
    function "<=" (Left, Right : Time_Span) return Boolean;

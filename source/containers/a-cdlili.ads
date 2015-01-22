@@ -284,18 +284,18 @@ private
    type Reference_Type (
       Element : not null access Element_Type) is null record;
 
-   type Iterator is new List_Iterator_Interfaces.Reversible_Iterator
-      with
+   type List_Iterator is
+      new List_Iterator_Interfaces.Reversible_Iterator with
    record
       First : Cursor;
       Last : Cursor;
    end record;
 
-   overriding function First (Object : Iterator) return Cursor;
-   overriding function Next (Object : Iterator; Position : Cursor)
+   overriding function First (Object : List_Iterator) return Cursor;
+   overriding function Next (Object : List_Iterator; Position : Cursor)
       return Cursor;
-   overriding function Last (Object : Iterator) return Cursor;
-   overriding function Previous (Object : Iterator; Position : Cursor)
+   overriding function Last (Object : List_Iterator) return Cursor;
+   overriding function Previous (Object : List_Iterator; Position : Cursor)
       return Cursor;
 
    package Streaming is
@@ -330,13 +330,13 @@ private
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Iterator);
+         Item : out List_Iterator);
       function Missing_Input (
          Stream : not null access Streams.Root_Stream_Type'Class)
-         return Iterator;
+         return List_Iterator;
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Iterator);
+         Item : List_Iterator);
 
       pragma Import (Ada, Missing_Read, "__drake_program_error");
       pragma Import (Ada, Missing_Input, "__drake_program_error");
@@ -356,10 +356,10 @@ private
    for Reference_Type'Read use Streaming.Missing_Read;
    for Reference_Type'Write use Streaming.Missing_Write;
 
-   for Iterator'Read use Streaming.Missing_Read;
-   for Iterator'Input use Streaming.Missing_Input;
-   for Iterator'Write use Streaming.Missing_Write;
-   for Iterator'Output use Streaming.Missing_Write;
+   for List_Iterator'Read use Streaming.Missing_Read;
+   for List_Iterator'Input use Streaming.Missing_Input;
+   for List_Iterator'Write use Streaming.Missing_Write;
+   for List_Iterator'Output use Streaming.Missing_Write;
 
    No_Element : constant Cursor := null;
 

@@ -1,4 +1,5 @@
 with System.Formatting;
+with System.Unsigned_Types;
 package body System.Img_Int is
    pragma Suppress (All_Checks);
 
@@ -7,19 +8,19 @@ package body System.Img_Int is
       S : in out String;
       P : out Natural)
    is
-      X : Formatting.Unsigned;
+      X : Unsigned_Types.Unsigned;
       Error : Boolean;
    begin
       pragma Assert (S'Length >= 1);
       if V < 0 then
          S (S'First) := '-';
-         X := Formatting.Unsigned'Mod (-V);
+         X := Unsigned_Types.Unsigned'Mod (-V);
       else
          S (S'First) := ' ';
-         X := Formatting.Unsigned (V);
+         X := Unsigned_Types.Unsigned (V);
       end if;
       Formatting.Image (
-         X,
+         Formatting.Unsigned (X),
          S (S'First + 1 .. S'Last),
          P,
          Error => Error);

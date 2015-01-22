@@ -40,7 +40,9 @@ private
 
    private
 
-      type Library is new Ada.Finalization.Limited_Controlled with record
+      type Library is
+         limited new Ada.Finalization.Limited_Controlled with
+      record
          Handle : aliased C.void_ptr := C.void_ptr (Null_Address);
       end record;
 

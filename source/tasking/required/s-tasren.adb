@@ -22,6 +22,7 @@ package body System.Tasking.Rendezvous is
       Previous : Node_Access;
       E : Task_Entry_Index;
       Uninterpreted_Data : Address;
+      Caller : Task_Id;
       Waiting : aliased Synchronous_Objects.Event;
       X : Ada.Exceptions.Exception_Occurrence;
    end record;
@@ -75,8 +76,8 @@ package body System.Tasking.Rendezvous is
       Current_Call : constant Node_Access := TLS_Current_Call;
    begin
       Ada.Exceptions.Save_Occurrence (Current_Call.X, X);
-      Synchronous_Objects.Set (Current_Call.Waiting);
       TLS_Current_Call := Current_Call.Previous;
+      Synchronous_Objects.Set (Current_Call.Waiting);
       if not ZCX_By_Default then
          Tasks.Unlock_Abort;
          --  Abort_Undefer will not be called by compiler
@@ -108,8 +109,8 @@ package body System.Tasking.Rendezvous is
    procedure Complete_Rendezvous is
       Current_Call : constant Node_Access := TLS_Current_Call;
    begin
-      Synchronous_Objects.Set (Current_Call.Waiting);
       TLS_Current_Call := Current_Call.Previous;
+      Synchronous_Objects.Set (Current_Call.Waiting);
    end Complete_Rendezvous;
 
    procedure Exceptional_Complete_Rendezvous (
@@ -177,6 +178,7 @@ package body System.Tasking.Rendezvous is
             Previous => null,
             E => E,
             Uninterpreted_Data => Uninterpreted_Data,
+            Caller => Task_Record_Conv.To_Address (Tasks.Current_Task_Id),
             Waiting => <>, -- default initializer
             X => <>); -- default initializer
          Aborted : Boolean;
@@ -249,9 +251,12 @@ package body System.Tasking.Rendezvous is
    end Callable;
 
    function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_Id is
+      Call : not null Node_Access := TLS_Current_Call;
    begin
-      raise Program_Error;
-      return Task_Entry_Caller (D);
+      for I in 1 .. D loop
+         Call := Call.Previous;
+      end loop;
+      return Call.Caller;
    end Task_Entry_Caller;
 
    function Task_Count (E : Task_Entry_Index) return Natural is

@@ -115,8 +115,8 @@ package body System.Synchronous_Objects is
       Initialize (Object.Condition_Variable);
       Object.Head := null;
       Object.Tail := null;
-      Object.Waiting := False;
       Object.Filter := null;
+      Object.Waiting := False;
       Object.Canceled := False;
    end Initialize;
 
@@ -131,22 +131,31 @@ package body System.Synchronous_Objects is
       Filter : Queue_Filter)
       return Natural
    is
-      Result : Natural := 0;
+      Result : Natural;
    begin
       Enter (Object.Mutex.all);
-      declare
-         I : Queue_Node_Access := Object.Head;
-      begin
-         while I /= null loop
-            if Filter = null or else Filter (I, Params) then
-               Result := Result + 1;
-            end if;
-            I := I.Next;
-         end loop;
-      end;
+      Result := Unsynchronized_Count (Object, Params, Filter);
       Leave (Object.Mutex.all);
       return Result;
    end Count;
+
+   function Unsynchronized_Count (
+      Object : Queue;
+      Params : Address;
+      Filter : Queue_Filter)
+      return Natural
+   is
+      Result : Natural := 0;
+      I : Queue_Node_Access := Object.Head;
+   begin
+      while I /= null loop
+         if Filter = null or else Filter (I, Params) then
+            Result := Result + 1;
+         end if;
+         I := I.Next;
+      end loop;
+      return Result;
+   end Unsynchronized_Count;
 
    function Canceled (Object : Queue) return Boolean is
    begin
@@ -208,14 +217,21 @@ package body System.Synchronous_Objects is
       Filter : Queue_Filter) is
    begin
       Enter (Object.Mutex.all);
-      declare
-         Previous : Queue_Node_Access := null;
-         I : Queue_Node_Access := Object.Head;
-      begin
-         Take_No_Sync (Object, Item, Params, Filter, Previous, I);
-      end;
+      Unsynchronized_Take (Object, Item, Params, Filter);
       Leave (Object.Mutex.all);
    end Take;
+
+   procedure Unsynchronized_Take (
+      Object : in out Queue;
+      Item : out Queue_Node_Access;
+      Params : Address;
+      Filter : Queue_Filter)
+   is
+      Previous : Queue_Node_Access := null;
+      I : Queue_Node_Access := Object.Head;
+   begin
+      Take_No_Sync (Object, Item, Params, Filter, Previous, I);
+   end Unsynchronized_Take;
 
    procedure Take_No_Sync (
       Object : in out Queue;

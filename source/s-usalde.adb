@@ -3,7 +3,6 @@ with System.Formatting.Address;
 with System.Termination;
 package body System.Unbounded_Stack_Allocators.Debug is
    pragma Suppress (All_Checks);
-   use type Formatting.Unsigned;
    use type Storage_Elements.Storage_Offset;
 
    package Conv is
@@ -33,13 +32,13 @@ package body System.Unbounded_Stack_Allocators.Debug is
          Error : Boolean;
          --  index
          I : Address := Allocator;
-         Block_Number : Formatting.Unsigned := 0;
+         Block_Number : Natural := 0;
       begin
          while I /= Null_Address loop
             --  put block number
             Termination.Error_Put ("#");
             Formatting.Image (
-               Block_Number,
+               Formatting.Unsigned (Block_Number),
                S,
                Last,
                Width => 2,
@@ -61,11 +60,11 @@ package body System.Unbounded_Stack_Allocators.Debug is
                   Conv.To_Pointer (I).Limit - (I + Header_Size);
                Used : constant Storage_Elements.Storage_Count :=
                   Conv.To_Pointer (I).Used - (I + Header_Size);
-               Percentage : constant Formatting.Unsigned :=
-                  Formatting.Unsigned ((Used * 100 + Space - 1) / Space);
+               Percentage : constant Storage_Elements.Storage_Count :=
+                  (Used * 100 + Space - 1) / Space;
             begin
                Formatting.Image (
-                  Percentage,
+                  Formatting.Unsigned (Percentage),
                   S,
                   Last,
                   Width => 3,

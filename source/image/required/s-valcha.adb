@@ -4,6 +4,7 @@ with System.Val_Enum;
 with System.Value_Error;
 package body System.Val_Char is
    pragma Suppress (All_Checks);
+   use type Formatting.Unsigned;
 
    function Value_Character (Str : String) return Character is
       First : Positive;
@@ -35,7 +36,10 @@ package body System.Val_Char is
                      Result,
                      Base => 16,
                      Error => Error);
-                  if not Error and then Used_Last = Last then
+                  if not Error
+                     and then Used_Last = Last
+                     and then Result <= Character'Pos (Character'Last)
+                  then
                      return Character'Val (Result);
                   end if;
                end;

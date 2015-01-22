@@ -128,7 +128,7 @@ private
 
    package Dispatchers is
 
-      type Root_Dispatcher is new Root_Stream_Type with record
+      type Root_Dispatcher is limited new Root_Stream_Type with record
          File : Non_Controlled_File_Type;
       end record;
       pragma Suppress_Initialization (Root_Dispatcher);
@@ -142,7 +142,7 @@ private
          Stream : in out Root_Dispatcher;
          Item : Stream_Element_Array);
 
-      type Seekable_Dispatcher is new Seekable_Stream_Type with record
+      type Seekable_Dispatcher is limited new Seekable_Stream_Type with record
          File : Non_Controlled_File_Type;
       end record;
       pragma Suppress_Initialization (Seekable_Dispatcher);

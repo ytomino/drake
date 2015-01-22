@@ -25,13 +25,17 @@ package body Ada.Directories.Information is
    end Creation_Time;
 
    function Creation_Time (Directory_Entry : Directory_Entry_Type)
-      return Calendar.Time is
+      return Calendar.Time
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
       return Cast (System.Native_Time.To_Time (
-         Directory_Entry.Data.ftLastWriteTime));
+         NC_Directory_Entry.Directory_Entry.ftLastWriteTime));
    end Creation_Time;
 
    function Last_Access_Time (Name : String) return Calendar.Time is
@@ -43,13 +47,17 @@ package body Ada.Directories.Information is
    end Last_Access_Time;
 
    function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
-      return Calendar.Time is
+      return Calendar.Time
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
       return Cast (System.Native_Time.To_Time (
-         Directory_Entry.Data.ftLastAccessTime));
+         NC_Directory_Entry.Directory_Entry.ftLastAccessTime));
    end Last_Access_Time;
 
    function Is_Read_Only (Name : String) return Boolean is
@@ -61,12 +69,16 @@ package body Ada.Directories.Information is
    end Is_Read_Only;
 
    function Is_Read_Only (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_READONLY) /= 0;
    end Is_Read_Only;
 
@@ -79,12 +91,16 @@ package body Ada.Directories.Information is
    end Needs_Archiving;
 
    function Needs_Archiving (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ARCHIVE) /= 0;
    end Needs_Archiving;
 
@@ -97,12 +113,16 @@ package body Ada.Directories.Information is
    end Is_Compressed;
 
    function Is_Compressed (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_COMPRESSED) /= 0;
    end Is_Compressed;
 
@@ -115,12 +135,16 @@ package body Ada.Directories.Information is
    end Is_Encrypted;
 
    function Is_Encrypted (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ENCRYPTED) /= 0;
    end Is_Encrypted;
 
@@ -133,12 +157,16 @@ package body Ada.Directories.Information is
    end Is_Hidden;
 
    function Is_Hidden (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_HIDDEN) /= 0;
    end Is_Hidden;
 
@@ -151,12 +179,16 @@ package body Ada.Directories.Information is
    end Is_System;
 
    function Is_System (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SYSTEM) /= 0;
    end Is_System;
 
@@ -169,12 +201,16 @@ package body Ada.Directories.Information is
    end Is_Offline;
 
    function Is_Offline (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_OFFLINE) /= 0;
    end Is_Offline;
 
@@ -187,12 +223,16 @@ package body Ada.Directories.Information is
    end Is_Temporary;
 
    function Is_Temporary (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_TEMPORARY) /= 0;
    end Is_Temporary;
 
@@ -205,12 +245,16 @@ package body Ada.Directories.Information is
    end Is_Sparse;
 
    function Is_Sparse (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SPARSE_FILE) /= 0;
    end Is_Sparse;
 
@@ -223,12 +267,16 @@ package body Ada.Directories.Information is
    end Is_Not_Indexed;
 
    function Is_Not_Indexed (Directory_Entry : Directory_Entry_Type)
-      return Boolean is
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
    begin
-      if Directory_Entry.Search = null then
+      if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return (Directory_Entry.Data.dwFileAttributes
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) /= 0;
    end Is_Not_Indexed;
 

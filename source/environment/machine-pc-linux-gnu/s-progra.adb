@@ -55,7 +55,7 @@ package body System.Program is
       end loop;
    end Read_Symbolic_Link;
 
-   proc_self_exe : aliased constant C.char_array :=
+   proc_self_exe : aliased constant C.char_array (0 .. 14) :=
       "/proc/self/exe" & C.char'Val (0);
 
    --  implementation

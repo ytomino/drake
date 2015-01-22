@@ -1,4 +1,4 @@
-with System.Address_To_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 package body System.Atomic_Primitives is
    use type Interfaces.Unsigned_8;
    use type Interfaces.Unsigned_16;
@@ -14,10 +14,23 @@ package body System.Atomic_Primitives is
 --  pragma Compile_Time_Warning (not uint64'Atomic_Always_Lock_Free,
 --    "uint64 is not atomic");
 
-   package uint8_Conv is new Address_To_Access_Conversions (uint8);
-   package uint16_Conv is new Address_To_Access_Conversions (uint16);
-   package uint32_Conv is new Address_To_Access_Conversions (uint32);
-   package uint64_Conv is new Address_To_Access_Conversions (uint64);
+   type uint8_Access is access all uint8;
+   for uint8_Access'Storage_Size use 0;
+   type uint16_Access is access all uint16;
+   for uint16_Access'Storage_Size use 0;
+   type uint32_Access is access all uint32;
+   for uint32_Access'Storage_Size use 0;
+   type uint64_Access is access all uint64;
+   for uint64_Access'Storage_Size use 0;
+
+   package uint8_Conv is
+      new Address_To_Named_Access_Conversions (uint8, uint8_Access);
+   package uint16_Conv is
+      new Address_To_Named_Access_Conversions (uint16, uint16_Access);
+   package uint32_Conv is
+      new Address_To_Named_Access_Conversions (uint32, uint32_Access);
+   package uint64_Conv is
+      new Address_To_Named_Access_Conversions (uint64, uint64_Access);
 
    Acquire : constant := 2; -- gcc's intrinsic
 

@@ -57,6 +57,11 @@ package System.Synchronous_Objects is
       Params : Address;
       Filter : Queue_Filter)
       return Natural;
+   function Unsynchronized_Count (
+      Object : Queue;
+      Params : Address;
+      Filter : Queue_Filter)
+      return Natural;
    function Canceled (Object : Queue) return Boolean;
    procedure Cancel (
       Object : in out Queue;
@@ -65,6 +70,11 @@ package System.Synchronous_Objects is
       Object : in out Queue;
       Item : not null Queue_Node_Access);
    procedure Take ( -- no waiting
+      Object : in out Queue;
+      Item : out Queue_Node_Access;
+      Params : Address;
+      Filter : Queue_Filter);
+   procedure Unsynchronized_Take (
       Object : in out Queue;
       Item : out Queue_Node_Access;
       Params : Address;
@@ -123,9 +133,9 @@ private
       Condition_Variable : Synchronous_Objects.Condition_Variable;
       Head : aliased Queue_Node_Access;
       Tail : Queue_Node_Access;
-      Waiting : Boolean;
       Params : Address;
       Filter : Queue_Filter;
+      Waiting : Boolean;
       Canceled : Boolean;
    end record;
    pragma Suppress_Initialization (Queue);

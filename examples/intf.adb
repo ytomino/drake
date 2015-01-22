@@ -80,5 +80,17 @@ begin
 		Interfaces.C.Strings.Free (p);
 		pragma Assert (Interfaces.C.Strings.Value (Interfaces.C.Strings.To_Const_Chars_Ptr (C_Sub_Str'Unrestricted_Access), 3) = String'("345"));
 	end;
+	-- Interfaces.C.Wide_WStrings
+	declare
+		C_Str : aliased Interfaces.C.wchar_array (1 .. 5) := Interfaces.C.To_C ("12345", Append_Nul => False);
+		C_Sub_Str : Interfaces.C.wchar_array renames C_Str (3 .. 5);
+		p : Interfaces.C.Wide_WStrings.chars_ptr := Interfaces.C.Wide_WStrings.New_String ("ABC");
+	begin
+		pragma Assert (Interfaces.C.Wide_WStrings.Value (p) = Wide_String'("ABC"));
+		Interfaces.C.Wide_WStrings.Update (p, 1, Wide_String'("Z"));
+		pragma Assert (Interfaces.C.Wide_WStrings.Value (p) = Wide_String'("AZC"));
+		Interfaces.C.Wide_WStrings.Free (p);
+		pragma Assert (Interfaces.C.Wide_WStrings.Value (Interfaces.C.Wide_WStrings.To_Const_Chars_Ptr (C_Sub_Str'Unrestricted_Access), 3) = Wide_String'("345"));
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end intf;
