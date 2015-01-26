@@ -1459,9 +1459,14 @@ package body System.Tasks is
 
    procedure Call (
       T : not null Task_Id;
-      Item : not null Synchronous_Objects.Queue_Node_Access) is
+      Item : not null Synchronous_Objects.Queue_Node_Access)
+   is
+      Canceled : Boolean;
    begin
-      Synchronous_Objects.Add (T.Rendezvous.Calling, Item);
+      Synchronous_Objects.Add (T.Rendezvous.Calling, Item, Canceled);
+      if Canceled then
+         Raise_Exception (Tasking_Error'Identity);
+      end if;
    end Call;
 
    procedure Uncall (

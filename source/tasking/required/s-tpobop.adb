@@ -1,3 +1,4 @@
+with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
@@ -5,6 +6,7 @@ with System.Synchronous_Control;
 with System.Synchronous_Objects.Abortable;
 with System.Tasks;
 package body System.Tasking.Protected_Objects.Operations is
+   use Ada.Exception_Identification.From_Here;
    use type Ada.Exceptions.Exception_Id;
    use type Synchronous_Objects.Queue_Node_Access;
 
@@ -150,16 +152,34 @@ package body System.Tasking.Protected_Objects.Operations is
                   Object.Current_Calling := null;
                end;
             end if;
-            Entries.Unlock_Entries (Object);
             if Node.Requeued then
-               Synchronous_Objects.Add (Object.Calling, Taken);
+               --  internal requeue is a part of a single protected operation.
+               declare
+                  Canceled : Boolean;
+               begin
+                  Synchronous_Objects.Unsynchronized_Prepend (
+                     Object.Calling,
+                     Taken,
+                     Canceled);
+                  if Canceled then -- it does not happen ?
+                     begin
+                        Raise_Exception (Tasking_Error'Identity);
+                     exception
+                        when E : Program_Error =>
+                           Ada.Exceptions.Save_Occurrence (Node.X, E);
+                     end;
+                  end if;
+               end;
             else
                Synchronous_Objects.Set (Node.Waiting);
                if Object.Raised_On_Barrier then
+                  --  cancel all current callers, RM 9.5.3 (7/3)
+                  Object.Raised_On_Barrier := False;
+                  Entries.Unlock_Entries (Object);
                   Entries.Cancel_Calls (Object.all);
+                  Entries.Lock_Entries (Object);
                end if;
             end if;
-            Entries.Lock_Entries (Object);
          end;
       end loop;
    end Invoke;
@@ -222,13 +242,18 @@ package body System.Tasking.Protected_Objects.Operations is
                   Requeued => False,
                   Waiting => <>, -- default initializer
                   X => <>); -- default initializer
+               Canceled : Boolean;
                Aborted : Boolean;
             begin
                Synchronous_Objects.Initialize (The_Node.Waiting);
                Holder.Assign (The_Node.Waiting'Access);
                Synchronous_Objects.Add (
                   Object.Calling,
-                  The_Node.Super'Unchecked_Access);
+                  The_Node.Super'Unchecked_Access,
+                  Canceled);
+               if Canceled then
+                  Raise_Exception (Tasking_Error'Identity);
+               end if;
                Synchronous_Control.Unlock_Abort; -- Tasks.Enable_Abort;
                Entries.Lock_Entries (Object);
                Invoke (Object);
@@ -306,6 +331,7 @@ package body System.Tasking.Protected_Objects.Operations is
          raise Program_Error;
       end if;
       if Object = New_Object then
+         --  internal requeue
          Object.Current_Calling.E := E;
          Object.Current_Calling.Requeued := True;
       else

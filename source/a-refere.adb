@@ -38,10 +38,22 @@ package body Ada.References is
          return Reference_Type
       is
          pragma Unmodified (Item);
+         type Constant_Slice_Type is access function (
+            Item : aliased Array_Type;
+            First : Index_Type;
+            Last : Index_Type'Base)
+            return Constant_Reference_Type;
+         type Variable_Slice_Type is access function (
+            Item : aliased Array_Type; -- [gcc-4.8] can only have "in" params
+            First : Index_Type;
+            Last : Index_Type'Base)
+            return Reference_Type;
          function Cast is
-            new Unchecked_Conversion (Constant_Reference_Type, Reference_Type);
+            new Unchecked_Conversion (
+               Constant_Slice_Type,
+               Variable_Slice_Type);
       begin
-         return Cast (Constant_Slice (Item, First, Last));
+         return Cast (Constant_Slice'Access) (Item, First, Last);
       end Slice;
 
    end Generic_Slicing;

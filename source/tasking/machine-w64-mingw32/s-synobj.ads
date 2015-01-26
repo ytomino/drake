@@ -66,9 +66,14 @@ package System.Synchronous_Objects is
    procedure Cancel (
       Object : in out Queue;
       Cancel_Node : access procedure (X : in out Queue_Node_Access));
+   procedure Unsynchronized_Prepend (
+      Object : in out Queue;
+      Item : not null Queue_Node_Access;
+      Canceled : out Boolean);
    procedure Add (
       Object : in out Queue;
-      Item : not null Queue_Node_Access);
+      Item : not null Queue_Node_Access;
+      Canceled : out Boolean);
    procedure Take ( -- no waiting
       Object : in out Queue;
       Item : out Queue_Node_Access;
@@ -182,6 +187,10 @@ private
       Filter : Queue_Filter;
       Previous : in out Queue_Node_Access;
       Current : in out Queue_Node_Access);
+   --  awake Abortable.Take
+   procedure Notify_All (
+      Object : in out Queue;
+      Item : not null Queue_Node_Access);
 
    type Event is limited record
       Handle : C.winnt.HANDLE;

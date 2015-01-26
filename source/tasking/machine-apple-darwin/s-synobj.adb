@@ -181,15 +181,30 @@ package body System.Synchronous_Objects is
       Leave (Object.Mutex.all);
    end Cancel;
 
+   procedure Unsynchronized_Prepend (
+      Object : in out Queue;
+      Item : not null Queue_Node_Access;
+      Canceled : out Boolean) is
+   begin
+      Canceled := Object.Canceled;
+      if not Canceled then
+         Item.Next := Object.Head;
+         Object.Head := Item;
+         if Object.Tail = null then
+            Object.Tail := Item;
+         end if;
+         Notify_All (Object, Item);
+      end if;
+   end Unsynchronized_Prepend;
+
    procedure Add (
       Object : in out Queue;
-      Item : not null Queue_Node_Access)
-   is
-      Error : Boolean;
+      Item : not null Queue_Node_Access;
+      Canceled : out Boolean) is
    begin
       Enter (Object.Mutex.all);
-      Error := Object.Canceled;
-      if not Error then
+      Canceled := Object.Canceled;
+      if not Canceled then
          if Object.Head = null then
             Object.Head := Item;
          else
@@ -197,17 +212,9 @@ package body System.Synchronous_Objects is
          end if;
          Object.Tail := Item;
          Item.Next := null;
-         if Object.Waiting
-            and then (Object.Filter = null
-               or else Object.Filter (Item, Object.Params))
-         then
-            Notify_All (Object.Condition_Variable);
-         end if;
+         Notify_All (Object, Item);
       end if;
       Leave (Object.Mutex.all);
-      if Error then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
    end Add;
 
    procedure Take (
@@ -259,6 +266,18 @@ package body System.Synchronous_Objects is
          Current := Current.Next;
       end loop Search;
    end Take_No_Sync;
+
+   procedure Notify_All (
+      Object : in out Queue;
+      Item : not null Queue_Node_Access) is
+   begin
+      if Object.Waiting
+         and then (Object.Filter = null
+            or else Object.Filter (Item, Object.Params))
+      then
+         Notify_All (Object.Condition_Variable);
+      end if;
+   end Notify_All;
 
    --  event
 
