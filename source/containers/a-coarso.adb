@@ -5,12 +5,12 @@ package body Ada.Containers.Array_Sorting is
 
    function GCD (X, Y : Positive) return Positive;
    function GCD (X, Y : Positive) return Positive is
-      X2 : Integer := X;
-      Y2 : Integer := Y;
+      X2 : Natural := X;
+      Y2 : Natural := Y;
    begin
       if X2 < Y2 then
          declare
-            T : constant Integer := X2;
+            T : constant Natural := X2;
          begin
             X2 := Y2;
             Y2 := T;
@@ -19,7 +19,7 @@ package body Ada.Containers.Array_Sorting is
       while Y2 /= 0 loop
          pragma Assert (X2 >= Y2);
          declare
-            R : constant Integer := X2 rem Y2;
+            R : constant Natural := X2 rem Y2;
          begin
             X2 := Y2;
             Y2 := R;
