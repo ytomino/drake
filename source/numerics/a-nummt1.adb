@@ -95,41 +95,44 @@ package body Ada.Numerics.MT19937 is
    end Initialize;
 
    function Initialize (Initiator : Cardinal_Vector) return State is
+      Initiator_Length : constant Natural := Initiator'Length;
       i : Integer := 1;
       j : Integer := 0;
    begin
       return S : State := Initialize (19650218) do
-         for K in reverse 1 .. Cardinal'Max (N, Initiator'Length) loop
-            declare
-               P : constant Cardinal := S.Vector (i - 1);
-            begin
-               S.Vector (i) := (S.Vector (i) xor
-                  ((P xor Interfaces.Shift_Right (P, 30)) * 1664525))
-                  + Initiator (Initiator'First + j) + Cardinal (j);
-            end;
-            i := i + 1;
-            if i >= N then
-               S.Vector (0) := S.Vector (N - 1);
-               i := 1;
-            end if;
-            j := (j + 1) rem Initiator'Length;
-         end loop;
-         for K in reverse 1 .. (N - 1) loop
-            declare
-               P : constant Cardinal := S.Vector (i - 1);
-            begin
-               S.Vector (i) :=
-                  (S.Vector (i) xor
-                     ((P xor Interfaces.Shift_Right (P, 30)) * 1566083941))
-                  - Cardinal (i);
-            end;
-            i := i + 1;
-            if i >= N then
-               S.Vector (0) := S.Vector (N - 1);
-               i := 1;
-            end if;
-         end loop;
-         S.Vector (0) := 16#80000000#;
+         if Initiator_Length > 0 then
+            for K in reverse 1 .. Integer'Max (N, Initiator_Length) loop
+               declare
+                  P : constant Cardinal := S.Vector (i - 1);
+               begin
+                  S.Vector (i) := (S.Vector (i) xor
+                     ((P xor Interfaces.Shift_Right (P, 30)) * 1664525))
+                     + Initiator (Initiator'First + j) + Cardinal (j);
+               end;
+               i := i + 1;
+               if i >= N then
+                  S.Vector (0) := S.Vector (N - 1);
+                  i := 1;
+               end if;
+               j := (j + 1) rem Initiator_Length;
+            end loop;
+            for K in reverse 1 .. (N - 1) loop
+               declare
+                  P : constant Cardinal := S.Vector (i - 1);
+               begin
+                  S.Vector (i) :=
+                     (S.Vector (i) xor
+                        ((P xor Interfaces.Shift_Right (P, 30)) * 1566083941))
+                     - Cardinal (i);
+               end;
+               i := i + 1;
+               if i >= N then
+                  S.Vector (0) := S.Vector (N - 1);
+                  i := 1;
+               end if;
+            end loop;
+            S.Vector (0) := 16#80000000#;
+         end if;
       end return;
    end Initialize;
 
