@@ -61,6 +61,15 @@ begin
 		Ada.Text_IO.Put_Line ("T5'Small = " & Long_Long_Float'Image (T5'Small));
 		pragma Assert (T5'Image (-128.0) = "-128.0");
 	end;
+	-- just 64bit
+	declare
+		type T6 is delta 0.25 range 0.0 .. 16#0fff_ffff_ffff_ffff.c#;
+		X : T6 := T6'Last;
+		Y : T6 := X / T6'Value (T6'Image (T6'Last));
+	begin
+		pragma Assert (Y = 1.0);
+		null;
+	end;
 	-- over 64bit
 	declare -- X > Y
 		X : Duration := 16#1_ffff_ffff.0#;

@@ -123,7 +123,7 @@ package body System.Arith_64 is
       Rem_Q : U64;
    begin
       Q := 0;
-      while Temp_XH > 0 or else Temp_XL > U64 (Interfaces.Integer_64'Last) loop
+      while Temp_XH > 0 loop
          declare
             XH_W : constant Natural := Natural (clz (Temp_XH) xor 63) + 1;
             Scaling_W : constant Natural := XH_W + 1;
@@ -132,10 +132,10 @@ package body System.Arith_64 is
             Scaled_X : constant U64 :=
                Interfaces.Shift_Left (Temp_XH, 64 - Scaling_W) or
                Interfaces.Shift_Right (Temp_XL, Scaling_W);
-            --  bits of Scaled_X = 63
+            --  0 < Scaled_X < 2 ** 63
          begin
             if Scaled_X < Y then
-               --  bits of Y = 63 (original Y is signed)
+               --  Y <= 2 ** 63 (original Y is signed)
                declare
                   YL : constant U64 := Interfaces.Shift_Left (Y, XH_W);
                   YH : constant U64 := Interfaces.Shift_Right (Y, 64 - XH_W);
@@ -160,6 +160,17 @@ package body System.Arith_64 is
             end if;
          end;
       end loop;
+      if Temp_XL > U64 (Interfaces.Integer_64'Last) then
+         declare
+            Scaled_X : constant U64 := Interfaces.Shift_Right (Temp_XL, 1);
+            --  Y <= Scaled_X < 2 ** 63
+            Temp_Q, Temp_R : U64;
+         begin
+            Div (Scaled_X, Y, Temp_Q, Temp_R);
+            Q := Q + Interfaces.Shift_Left (Temp_Q, 1);
+            Temp_XL := Interfaces.Shift_Left (Temp_R, 1) or (Temp_XL and 1);
+         end;
+      end if;
       Div (Temp_XL, Y, Rem_Q, R);
       Q := Q + Rem_Q;
    end Div;
