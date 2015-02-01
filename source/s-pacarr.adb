@@ -2,64 +2,69 @@ with System.Storage_Elements;
 package body System.Packed_Arrays is
    pragma Suppress (All_Checks);
 
-   function Compare (
-      Left : Address;
-      Right : Address;
-      Left_Len : Natural;
-      Right_Len : Natural)
-      return Integer is
-   begin
-      if Element_Type'Size = Standard'Storage_Unit
-         and then Element_Type'Enum_Rep (Element_Type'First) = 0
-      then
-         declare
-            pragma Suppress (Range_Check);
-            function memcmp (
-               s1 : Address;
-               s2 : Address;
-               n : Storage_Elements.Storage_Count)
-               return Integer;
-            pragma Import (Intrinsic, memcmp, "__builtin_memcmp");
-            Result : constant Integer := memcmp (
-               Left,
-               Right,
-               Storage_Elements.Storage_Count (
-                  Integer'Min (Left_Len, Right_Len)));
-         begin
-            if Result /= 0 then
-               return Result;
-            end if;
-         end;
-      else
-         declare
-            pragma Compile_Time_Error (Element_Type'Alignment /= 1,
-               "misaligned");
-            Min_Length : constant Integer := Integer'Min (Left_Len, Right_Len);
-            type Min_Array_Type is array (1 .. Min_Length) of Element_Type;
-            pragma Pack (Min_Array_Type);
-            pragma Suppress_Initialization (Min_Array_Type);
-            L : Min_Array_Type;
-            for L'Address use Left;
-            R : Min_Array_Type;
-            for R'Address use Right;
-         begin
-            for I in 1 .. Min_Length loop
-               if L (I) < R (I) then
-                  return -1;
-               elsif L (I) > R (I) then
-                  return 1;
+   package body Ordering is
+
+      function Compare (
+         Left : Address;
+         Right : Address;
+         Left_Len : Natural;
+         Right_Len : Natural)
+         return Integer is
+      begin
+         if Element_Type'Size = Standard'Storage_Unit
+            and then Element_Type'Enum_Rep (Element_Type'First) = 0
+         then
+            declare
+               pragma Suppress (Range_Check);
+               function memcmp (
+                  s1 : Address;
+                  s2 : Address;
+                  n : Storage_Elements.Storage_Count)
+                  return Integer;
+               pragma Import (Intrinsic, memcmp, "__builtin_memcmp");
+               Result : constant Integer := memcmp (
+                  Left,
+                  Right,
+                  Storage_Elements.Storage_Count (
+                     Integer'Min (Left_Len, Right_Len)));
+            begin
+               if Result /= 0 then
+                  return Result;
                end if;
-            end loop;
-         end;
-      end if;
-      if Left_Len < Right_Len then
-         return -1;
-      elsif Left_Len > Right_Len then
-         return 1;
-      else
-         return 0;
-      end if;
-   end Compare;
+            end;
+         else
+            declare
+               pragma Compile_Time_Error (Element_Type'Alignment /= 1,
+                  "misaligned");
+               Min_Length : constant Integer :=
+                  Integer'Min (Left_Len, Right_Len);
+               type Min_Array_Type is array (1 .. Min_Length) of Element_Type;
+               pragma Pack (Min_Array_Type);
+               pragma Suppress_Initialization (Min_Array_Type);
+               L : Min_Array_Type;
+               for L'Address use Left;
+               R : Min_Array_Type;
+               for R'Address use Right;
+            begin
+               for I in 1 .. Min_Length loop
+                  if L (I) < R (I) then
+                     return -1;
+                  elsif L (I) > R (I) then
+                     return 1;
+                  end if;
+               end loop;
+            end;
+         end if;
+         if Left_Len < Right_Len then
+            return -1;
+         elsif Left_Len > Right_Len then
+            return 1;
+         else
+            return 0;
+         end if;
+      end Compare;
+
+   end Ordering;
 
    package body Indexing is
 

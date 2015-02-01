@@ -75,7 +75,7 @@ package System.Fat_Flt is
       function Unaligned_Valid (A : Address) return Boolean;
       pragma Import (Ada, Unaligned_Valid,
          "system__fat_flt__attr_float__valid");
-      pragma Pure_Function (Unaligned_Valid);
+      pragma Machine_Attribute (Unaligned_Valid, "pure");
 
    end Attr_Float;
 

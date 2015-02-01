@@ -2,7 +2,8 @@ pragma License (Unrestricted);
 --  implementation unit required by compiler
 with System.Packed_Arrays;
 package System.Pack_03 is
-   pragma Pure;
+   pragma Preelaborate;
+   --  if this is Pure, subprograms would become __attribute__((const)).
 
    type Bits_03 is mod 2 ** 3;
    for Bits_03'Size use 3;
