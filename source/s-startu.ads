@@ -54,8 +54,6 @@ package System.Startup is
    Unreserve_All_Interrupts : Integer := 0;
    pragma Export (C, Unreserve_All_Interrupts,
       "__gl_unreserve_all_interrupts");
-   Zero_Cost_Exceptions : Integer := 0;
-   pragma Export (C, Zero_Cost_Exceptions, "__gl_zero_cost_exceptions");
    Detect_Blocking : Integer := 0;
    pragma Export (C, Detect_Blocking, "__gl_detect_blocking");
    Default_Stack_Size : Integer := -1;
