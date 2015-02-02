@@ -1,12 +1,9 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
-with System.Native_Time;
+private with System.Native_Time;
 private package Ada.Real_Time.Delays is
 
    --  required for delay until statement by compiler (a-retide.ads)
-   --  the error message is
-   --    'entity "Ada.Real_Time.Delays.Rt_Delay_Until" not available',
-   --  but "Delay_Until" is required in fact.
    procedure Delay_Until (T : Time);
    pragma Inline (Delay_Until); -- renamed
 
@@ -14,6 +11,9 @@ private package Ada.Real_Time.Delays is
 --  function To_Duration (T : Time) return Duration;
 
 private
+
+   --  [gcc-4.8/4.9] compiler could not resolve the private type Time
+   --    if this instantiation is in the visible part.
 
    procedure Delay_Until_Body is
       new System.Native_Time.Generic_Delay_Until (Time);
