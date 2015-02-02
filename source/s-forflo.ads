@@ -19,12 +19,11 @@ package System.Formatting.Float is
 
    procedure Aft_Image (
       Value : Longest_Unsigned_Float; -- scaled Aft
-      Item : out String;
+      Item : out String; -- Item'Length >= Width + 1 for '.'
       Last : out Natural;
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := Standard.Float'Digits - 1);
-   --  Aft_Image puts '.', Item is required Width + 1
 
    function Fore_Width (Value : Longest_Float; Base : Number_Base := 10)
       return Positive;
@@ -35,7 +34,7 @@ package System.Formatting.Float is
 
    procedure Image (
       Value : Longest_Float;
-      Item : out String; -- To'Length >= Long_Long_Float'Width + 4 (16##)
+      Item : out String; -- Item'Length >= Long_Long_Float'Width + 4 for "16##"
       Last : out Natural;
       Minus_Sign : Character := '-';
       Zero_Sign : Character := ' ';

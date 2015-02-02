@@ -114,7 +114,7 @@ private
       "ada__exceptions__triggered_by_abort");
 
    --  required by compiler (a-except-2005.ads)
-   --  for Intrinsic function Exception_Name (exp_intr.adb)
+   --  for intrinsic function Exception_Name (exp_intr.adb)
    function Exception_Name_Simple (X : Exception_Occurrence) return String
       renames Exception_Name;
 

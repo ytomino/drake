@@ -77,7 +77,7 @@ package System.Unwind.Raising is
    procedure Raise_Program_Error;
    pragma Export (Ada, Raise_Program_Error, "__drake_program_error");
 
-   --  shortcut required by compiler (a-except-2005.adb)
+   --  for runtime checks (a-except-2005.adb)
 
    procedure rcheck_00 (File : not null access Character; Line : Integer);
    pragma No_Return (rcheck_00);
