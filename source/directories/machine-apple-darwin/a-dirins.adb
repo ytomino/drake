@@ -1,4 +1,4 @@
-with Ada.Directories.Inside.Do_Copy_File;
+with Ada.Directories.Copying;
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
@@ -142,7 +142,7 @@ package body Ada.Directories.Inside is
       Source_Name : String;
       Target_Name : String;
       Overwrite : Boolean)
-      renames Inside.Do_Copy_File.Copy_File;
+      renames Copying.Copy_File;
 
    procedure Rename (
       Old_Name : String;

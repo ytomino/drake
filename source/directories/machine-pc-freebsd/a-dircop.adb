@@ -5,7 +5,7 @@ with C.sys.mman;
 with C.sys.stat;
 with C.sys.types;
 with C.unistd;
-package body Ada.Directories.Inside.Do_Copy_File is
+package body Ada.Directories.Copying is
    use Exception_Identification.From_Here;
    use type Exception_Identification.Exception_Id;
    use type System.Address;
@@ -107,4 +107,4 @@ package body Ada.Directories.Inside.Do_Copy_File is
       end if;
    end Copy_File;
 
-end Ada.Directories.Inside.Do_Copy_File;
+end Ada.Directories.Copying;

@@ -2,7 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
 with C.copyfile;
 with C.errno;
-package body Ada.Directories.Inside.Do_Copy_File is
+package body Ada.Directories.Copying is
    use Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.size_t;
@@ -46,4 +46,4 @@ package body Ada.Directories.Inside.Do_Copy_File is
       end if;
    end Copy_File;
 
-end Ada.Directories.Inside.Do_Copy_File;
+end Ada.Directories.Copying;
