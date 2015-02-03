@@ -168,6 +168,49 @@ package body Ada.Directories.Inside is
       end if;
    end Copy_File;
 
+   procedure Replace_File (
+      Source_Name : String;
+      Target_Name : String)
+   is
+      W_Source_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Source_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+      W_Target_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Target_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+      Error : Boolean;
+   begin
+      System.Zero_Terminated_WStrings.To_C (
+         Source_Name,
+         W_Source_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (
+         Target_Name,
+         W_Target_Name (0)'Access);
+      Error := C.winbase.ReplaceFile (
+         W_Source_Name (0)'Access,
+         W_Target_Name (0)'Access,
+         null,
+         0,
+         C.windef.LPVOID (System.Null_Address),
+         C.windef.LPVOID (System.Null_Address)) = 0;
+      if Error then
+         --  Target_Name is not existing.
+         Error := C.winbase.MoveFileEx (
+             W_Source_Name (0)'Access,
+             W_Target_Name (0)'Access,
+             dwFlags => C.winbase.MOVEFILE_REPLACE_EXISTING) = 0;
+      end if;
+      if Error then
+         case C.winbase.GetLastError is
+            when C.winerror.ERROR_FILE_NOT_FOUND
+               | C.winerror.ERROR_PATH_NOT_FOUND =>
+               Raise_Exception (Name_Error'Identity);
+            when others =>
+               Raise_Exception (Use_Error'Identity);
+         end case;
+      end if;
+   end Replace_File;
+
    procedure Symbolic_Link (
       Source_Name : String;
       Target_Name : String;

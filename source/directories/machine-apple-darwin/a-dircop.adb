@@ -2,6 +2,8 @@ with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
 with C.copyfile;
 with C.errno;
+with C.stdio; -- rename(2)
+with C.sys.stat;
 package body Ada.Directories.Copying is
    use Exception_Identification.From_Here;
    use type C.signed_int;
@@ -38,12 +40,63 @@ package body Ada.Directories.Copying is
       then
          case C.errno.errno is
             when C.errno.ENOENT
-               | C.errno.ENOTSUP =>
+               | C.errno.ENOTSUP => -- the source is not a regular file
                Raise_Exception (Name_Error'Identity);
             when others =>
                Raise_Exception (Use_Error'Identity);
          end case;
       end if;
    end Copy_File;
+
+   procedure Replace_File (
+      Source_Name : String;
+      Target_Name : String)
+   is
+      C_Source_Name : C.char_array (
+         0 ..
+         Source_Name'Length * System.Zero_Terminated_Strings.Expanding);
+      C_Target_Name : C.char_array (
+         0 ..
+         Target_Name'Length * System.Zero_Terminated_Strings.Expanding);
+      Info : aliased C.sys.stat.struct_stat;
+      Error : Boolean;
+   begin
+      System.Zero_Terminated_Strings.To_C (
+         Source_Name,
+         C_Source_Name (0)'Access);
+      System.Zero_Terminated_Strings.To_C (
+         Target_Name,
+         C_Target_Name (0)'Access);
+      --  check whether the source is existing or not.
+      Error := C.sys.stat.stat (C_Source_Name (0)'Access, Info'Access) < 0;
+      if not Error then
+         --  copy attributes from the target to the source.
+         Error := C.copyfile.copyfile (
+            C_Target_Name (0)'Access,
+            C_Source_Name (0)'Access,
+            null,
+            C.copyfile.COPYFILE_METADATA) < 0;
+         if not Error
+            or else C.errno.errno = C.errno.ENOENT -- target is not existing
+         then
+            --  overwrite the target with the source.
+            Error := C.stdio.rename (
+               C_Source_Name (0)'Access,
+               C_Target_Name (0)'Access) < 0;
+         end if;
+      end if;
+      if Error then
+         case C.errno.errno is
+            when C.errno.ENOENT
+               | C.errno.ENOTDIR
+               | C.errno.EISDIR
+               | C.errno.ENAMETOOLONG
+               | C.errno.ENOTSUP => -- the source is not a regular file
+               Raise_Exception (Name_Error'Identity);
+            when others =>
+               Raise_Exception (Use_Error'Identity);
+         end case;
+      end if;
+   end Replace_File;
 
 end Ada.Directories.Copying;

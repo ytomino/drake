@@ -53,6 +53,15 @@ package Ada.Directories is
    pragma Inline (Copy_File); -- renamed
 
    --  extended
+   --  Overwrite a target file with another source file,
+   --    and delete the source if it succeeded.
+   --  Replace_File tries to preserve attributes of the target unlike Rename.
+   procedure Replace_File (
+      Source_Name : String;
+      Target_Name : String);
+   pragma Inline (Replace_File); -- renamed
+
+   --  extended
    --  Create a symbolic link.
    procedure Symbolic_Link (
       Source_Name : String;

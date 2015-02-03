@@ -157,6 +157,11 @@ package body Ada.Directories.Inside is
       Overwrite : Boolean)
       renames Copying.Copy_File;
 
+   procedure Replace_File (
+      Source_Name : String;
+      Target_Name : String)
+      renames Copying.Replace_File;
+
    procedure Symbolic_Link (
       Source_Name : String;
       Target_Name : String;

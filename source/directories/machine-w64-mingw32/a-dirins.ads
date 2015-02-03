@@ -26,6 +26,10 @@ package Ada.Directories.Inside is
       Target_Name : String;
       Overwrite : Boolean);
 
+   procedure Replace_File (
+      Source_Name : String;
+      Target_Name : String);
+
    procedure Symbolic_Link (
       Source_Name : String;
       Target_Name : String;

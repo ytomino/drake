@@ -1,6 +1,8 @@
 with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
+with C.errno;
 with C.fcntl;
+with C.stdio; -- rename(2)
 with C.sys.mman;
 with C.sys.stat;
 with C.sys.types;
@@ -106,5 +108,54 @@ package body Ada.Directories.Copying is
          Raise_Exception (Exception_Id);
       end if;
    end Copy_File;
+
+   procedure Replace_File (
+      Source_Name : String;
+      Target_Name : String)
+   is
+      C_Source_Name : C.char_array (
+         0 ..
+         Source_Name'Length * System.Zero_Terminated_Strings.Expanding);
+      C_Target_Name : C.char_array (
+         0 ..
+         Target_Name'Length * System.Zero_Terminated_Strings.Expanding);
+      Target_Info : aliased C.sys.stat.struct_stat;
+      Error : Boolean;
+   begin
+      System.Zero_Terminated_Strings.To_C (
+         Source_Name,
+         C_Source_Name (0)'Access);
+      System.Zero_Terminated_Strings.To_C (
+         Target_Name,
+         C_Target_Name (0)'Access);
+      --  if the target is already existing,
+      --    copy attributes from the target to the source.
+      Error := False;
+      if C.sys.stat.stat (
+         C_Target_Name (0)'Access,
+         Target_Info'Access) = 0
+      then
+         Error := C.sys.stat.chmod (
+            C_Source_Name (0)'Access,
+            Target_Info.st_mode) < 0;
+      end if;
+      if not Error then
+         --  overwrite the target with the source.
+         Error := C.stdio.rename (
+            C_Source_Name (0)'Access,
+            C_Target_Name (0)'Access) < 0;
+      end if;
+      if Error then
+         case C.errno.errno is
+            when C.errno.ENOENT
+               | C.errno.ENOTDIR
+               | C.errno.EISDIR
+               | C.errno.ENAMETOOLONG =>
+               Raise_Exception (Name_Error'Identity);
+            when others =>
+               Raise_Exception (Use_Error'Identity);
+         end case;
+      end if;
+   end Replace_File;
 
 end Ada.Directories.Copying;
