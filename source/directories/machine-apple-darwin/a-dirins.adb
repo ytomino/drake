@@ -111,12 +111,6 @@ package body Ada.Directories.Inside is
       end if;
    end Delete_File;
 
-   procedure Copy_File (
-      Source_Name : String;
-      Target_Name : String;
-      Overwrite : Boolean)
-      renames Copying.Copy_File;
-
    procedure Rename (
       Old_Name : String;
       New_Name : String;
@@ -156,6 +150,12 @@ package body Ada.Directories.Inside is
          end case;
       end if;
    end Rename;
+
+   procedure Copy_File (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean)
+      renames Copying.Copy_File;
 
    procedure Symbolic_Link (
       Source_Name : String;

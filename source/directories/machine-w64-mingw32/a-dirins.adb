@@ -100,39 +100,6 @@ package body Ada.Directories.Inside is
       end if;
    end Delete_File;
 
-   procedure Copy_File (
-      Source_Name : String;
-      Target_Name : String;
-      Overwrite : Boolean)
-   is
-      W_Source_Name : aliased C.winnt.WCHAR_array (
-         0 ..
-         Source_Name'Length * System.Zero_Terminated_WStrings.Expanding);
-      W_Target_Name : aliased C.winnt.WCHAR_array (
-         0 ..
-         Target_Name'Length * System.Zero_Terminated_WStrings.Expanding);
-   begin
-      System.Zero_Terminated_WStrings.To_C (
-         Source_Name,
-         W_Source_Name (0)'Access);
-      System.Zero_Terminated_WStrings.To_C (
-         Target_Name,
-         W_Target_Name (0)'Access);
-      if C.winbase.CopyFile (
-         W_Source_Name (0)'Access,
-         W_Target_Name (0)'Access,
-         bFailIfExists => Boolean'Pos (not Overwrite)) = 0
-      then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
-      end if;
-   end Copy_File;
-
    procedure Rename (
       Old_Name : String;
       New_Name : String;
@@ -167,6 +134,39 @@ package body Ada.Directories.Inside is
          end case;
       end if;
    end Rename;
+
+   procedure Copy_File (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean)
+   is
+      W_Source_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Source_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+      W_Target_Name : aliased C.winnt.WCHAR_array (
+         0 ..
+         Target_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+   begin
+      System.Zero_Terminated_WStrings.To_C (
+         Source_Name,
+         W_Source_Name (0)'Access);
+      System.Zero_Terminated_WStrings.To_C (
+         Target_Name,
+         W_Target_Name (0)'Access);
+      if C.winbase.CopyFile (
+         W_Source_Name (0)'Access,
+         W_Target_Name (0)'Access,
+         bFailIfExists => Boolean'Pos (not Overwrite)) = 0
+      then
+         case C.winbase.GetLastError is
+            when C.winerror.ERROR_FILE_NOT_FOUND
+               | C.winerror.ERROR_PATH_NOT_FOUND =>
+               Raise_Exception (Name_Error'Identity);
+            when others =>
+               Raise_Exception (Use_Error'Identity);
+         end case;
+      end if;
+   end Copy_File;
 
    procedure Symbolic_Link (
       Source_Name : String;
