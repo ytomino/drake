@@ -4,6 +4,7 @@ with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Zero_Terminated_Strings;
 with C.errno;
+with C.stdio; -- rename(2)
 with C.stdlib;
 with C.sys.time;
 with C.sys.types;
@@ -15,34 +16,6 @@ package body Ada.Directories.Inside is
    use type C.signed_long;
    use type C.size_t;
    use type C.sys.types.mode_t;
-
-   --  reference:
-   --  http://www.opensource.apple.com/source/gcc/gcc-5664/libiberty/rename.c
-   function C_rename (
-      zfrom : access constant C.char;
-      zto : access constant C.char;
-      Overwrite : Boolean)
-      return C.signed_int;
-   pragma Convention (C, C_rename);
-   function C_rename (
-      zfrom : access constant C.char;
-      zto : access constant C.char;
-      Overwrite : Boolean)
-      return C.signed_int is
-   begin
-      if C.unistd.link (zfrom, zto) < 0 then
-         if C.errno.errno /= C.errno.EEXIST or else not Overwrite then
-            return -1;
-         end if;
-         --  try to overwrite
-         if C.unistd.unlink (zto) < 0
-            or else C.unistd.link (zfrom, zto) < 0
-         then
-            return -1;
-         end if;
-      end if;
-      return C.unistd.unlink (zfrom);
-   end C_rename;
 
    procedure Get_Information (
       Name : String;
@@ -155,14 +128,23 @@ package body Ada.Directories.Inside is
       C_New_Name : C.char_array (
          0 ..
          New_Name'Length * System.Zero_Terminated_Strings.Expanding);
+      Error : Boolean;
    begin
       System.Zero_Terminated_Strings.To_C (Old_Name, C_Old_Name (0)'Access);
       System.Zero_Terminated_Strings.To_C (New_Name, C_New_Name (0)'Access);
-      if C_rename (
-         C_Old_Name (0)'Access,
-         C_New_Name (0)'Access,
-         Overwrite) < 0
-      then
+      if Overwrite then
+         Error := C.stdio.rename (
+            C_Old_Name (0)'Access,
+            C_New_Name (0)'Access) < 0;
+      else
+         Error := C.unistd.link (
+            C_Old_Name (0)'Access,
+            C_New_Name (0)'Access) < 0;
+         if not Error then
+            Error := C.unistd.unlink (C_Old_Name (0)'Access) < 0;
+         end if;
+      end if;
+      if Error then
          case C.errno.errno is
             when C.errno.ENOENT
                | C.errno.ENOTDIR
