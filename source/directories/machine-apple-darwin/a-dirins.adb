@@ -142,7 +142,7 @@ package body Ada.Directories.Inside is
       Source_Name : String;
       Target_Name : String;
       Overwrite : Boolean)
-      renames Inside.Do_Copy_File;
+      renames Inside.Do_Copy_File.Copy_File;
 
    procedure Rename (
       Old_Name : String;
