@@ -12,7 +12,8 @@ package body Ada.Directories.Copying is
    use type Exception_Identification.Exception_Id;
    use type System.Address;
    use type C.signed_int;
-   use type C.unsigned_int;
+   use type C.unsigned_short; -- mode_t in FreeBSD
+   use type C.unsigned_int; -- open flag, and mode_t in Linux
    use type C.signed_long; -- 64bit ssize_t
    use type C.size_t;
 
@@ -131,13 +132,13 @@ package body Ada.Directories.Copying is
       --  if the target is already existing,
       --    copy attributes from the target to the source.
       Error := False;
-      if C.sys.stat.stat (
+      if C.sys.stat.lstat (
          C_Target_Name (0)'Access,
          Target_Info'Access) = 0
       then
-         Error := C.sys.stat.chmod (
+         Error := C.sys.stat.lchmod (
             C_Source_Name (0)'Access,
-            Target_Info.st_mode) < 0;
+            Target_Info.st_mode and C.sys.stat.ALLPERMS) < 0;
       end if;
       if not Error then
          --  overwrite the target with the source.

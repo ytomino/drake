@@ -21,7 +21,8 @@ package body Ada.Directories.Copying is
       C_Target_Name : C.char_array (
          0 ..
          Target_Name'Length * System.Zero_Terminated_Strings.Expanding);
-      Flag : C.unsigned_int := C.copyfile.COPYFILE_ALL;
+      Flag : C.unsigned_int :=
+         C.copyfile.COPYFILE_ALL or C.copyfile.COPYFILE_NOFOLLOW;
    begin
       System.Zero_Terminated_Strings.To_C (
          Source_Name,
@@ -68,14 +69,14 @@ package body Ada.Directories.Copying is
          Target_Name,
          C_Target_Name (0)'Access);
       --  check whether the source is existing or not.
-      Error := C.sys.stat.stat (C_Source_Name (0)'Access, Info'Access) < 0;
+      Error := C.sys.stat.lstat (C_Source_Name (0)'Access, Info'Access) < 0;
       if not Error then
          --  copy attributes from the target to the source.
          Error := C.copyfile.copyfile (
             C_Target_Name (0)'Access,
             C_Source_Name (0)'Access,
             null,
-            C.copyfile.COPYFILE_METADATA) < 0;
+            C.copyfile.COPYFILE_METADATA or C.copyfile.COPYFILE_NOFOLLOW) < 0;
          if not Error
             or else C.errno.errno = C.errno.ENOENT -- target is not existing
          then
