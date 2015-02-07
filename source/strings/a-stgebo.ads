@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Ada.Strings.Bounded
+--  generalized unit of Ada.Strings.Bounded
 with Ada.References;
 with Ada.Streams;
 generic

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Exponentiations;
 package System.Exn_Int is
    pragma Pure;

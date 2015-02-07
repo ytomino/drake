@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Ada.Strings.Unbounded
+--  generalized unit of Ada.Strings.Unbounded
 with Ada.References;
 with Ada.Streams;
 with Ada.Unchecked_Deallocation;

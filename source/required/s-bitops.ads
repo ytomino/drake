@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 package System.Bit_Ops is
    pragma Preelaborate;
    --  if this is Pure, subprograms would become __attribute__((const))

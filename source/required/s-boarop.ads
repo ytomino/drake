@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Storage_Elements;
 package System.Boolean_Array_Operations is
    pragma Pure;

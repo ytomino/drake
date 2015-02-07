@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Packed_Arrays;
 package System.Compare_Array_Signed_16 is
    pragma Preelaborate;

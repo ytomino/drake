@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Ada.Strings.UTF_Encoding.Strings
+--  generalized unit of Ada.Strings.UTF_Encoding.Strings
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;

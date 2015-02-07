@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Unsigned_Types;
 with System.Exponentiations;
 package System.Exp_Uns is

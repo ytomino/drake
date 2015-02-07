@@ -94,11 +94,7 @@ procedure ext_doc is
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);
 							end if;
 							exit;
-						elsif Start_With (Line, "--  please see ") then
-							Kind := Extended_Unit;
-							Reference := +Line (Line'First + 15 .. Line'Last);
-							exit;
-						elsif Start_With (Line, "--  generic implementation of ") then
+						elsif Start_With (Line, "--  generalized unit of ") then
 							Kind := Extended_Unit;
 							Reference := +Line (Line'First + 30 .. Line'Last);
 							exit;
@@ -120,6 +116,15 @@ procedure ext_doc is
 							exit;
 						elsif Start_With (Line, "--  implementation") then
 							Kind := Implementation_Unit;
+							if Line /= "--  implementation unit"
+								and then not Start_With (Line, "--  implementation unit for ")
+								and then not Start_With (Line, "--  implementation unit required ")
+								and then not Start_With (Line, "--  implementation unit specialized ")
+								and then not Start_With (Line, "--  implementation unit,") -- translated or proposed in AI
+							then
+								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
+								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);
+							end if;
 							exit;
 						elsif Start_With (Line, "--  with") or else Start_With (Line, "--  diff") then
 							null; -- skip
