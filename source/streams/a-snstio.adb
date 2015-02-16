@@ -229,7 +229,8 @@ package body Ada.Streams.Naked_Stream_IO is
       elsif File.Buffer_Length = 0 then
          File.Buffer_Index := 0;
       else
-         File.Buffer_Index := Buffer_Index rem File.Buffer_Length;
+         File.Buffer_Index := Buffer_Index
+            rem Stream_Element_Positive_Count (File.Buffer_Length);
       end if;
       File.Reading_Index := File.Buffer_Index;
       File.Writing_Index := File.Buffer_Index;
@@ -335,7 +336,8 @@ package body Ada.Streams.Naked_Stream_IO is
          else
             File.Buffer := System.Standard_Allocators.Allocate (
                System.Storage_Elements.Storage_Count (File.Buffer_Length));
-            File.Buffer_Index := File.Buffer_Index rem File.Buffer_Length;
+            File.Buffer_Index := File.Buffer_Index
+               rem Stream_Element_Positive_Count (File.Buffer_Length);
          end if;
          File.Reading_Index := File.Buffer_Index;
          File.Writing_Index := File.Buffer_Index;
@@ -390,7 +392,8 @@ package body Ada.Streams.Naked_Stream_IO is
    procedure Ready_Writing_Buffer (File : not null Non_Controlled_File_Type) is
    begin
       --  writing buffer is from File.Buffer_Index until File.Writing_Index
-      File.Buffer_Index := File.Buffer_Index rem File.Buffer_Length;
+      File.Buffer_Index := File.Buffer_Index
+         rem Stream_Element_Positive_Count (File.Buffer_Length);
       File.Writing_Index := File.Buffer_Index;
       File.Reading_Index := File.Buffer_Index;
    end Ready_Writing_Buffer;
@@ -420,7 +423,8 @@ package body Ada.Streams.Naked_Stream_IO is
                Error := True;
             end if;
             if not Error then
-               File.Buffer_Index := File.Writing_Index rem File.Buffer_Length;
+               File.Buffer_Index := File.Writing_Index
+                  rem Stream_Element_Positive_Count (File.Buffer_Length);
                File.Writing_Index := File.Buffer_Index;
                File.Reading_Index := File.Buffer_Index;
             end if;

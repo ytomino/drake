@@ -7,13 +7,19 @@ package System.Packed_Arrays is
 
    generic
       type Element_Type is (<>);
-   function Compare (
-      Left : Address;
-      Right : Address;
-      Left_Len : Natural;
-      Right_Len : Natural)
-      return Integer;
-   pragma Pure_Function (Compare);
+   package Ordering is
+      --  this surrounding package is necessary for propagating
+      --    pragma Machine_Attribute to its instances.
+
+      function Compare (
+         Left : Address;
+         Right : Address;
+         Left_Len : Natural;
+         Right_Len : Natural)
+         return Integer;
+      pragma Machine_Attribute (Compare, "pure");
+
+   end Ordering;
 
    --  for System.Pack_XX
 
@@ -22,7 +28,7 @@ package System.Packed_Arrays is
    package Indexing is
 
       function Get (Arr : Address; N : Natural) return Element_Type;
-      pragma Pure_Function (Get);
+      pragma Machine_Attribute (Get, "pure");
       pragma Inline (Get);
 
       procedure Set (Arr : Address; N : Natural; E : Element_Type);

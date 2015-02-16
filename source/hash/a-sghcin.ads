@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Ada.Strings.Hash_Case_Insensitive
+--  generalized unit of Ada.Strings.Hash_Case_Insensitive
 with Ada.Containers;
 generic
    type Character_Type is (<>);

@@ -1,7 +1,8 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 package System.Bit_Ops is
-   pragma Pure;
+   pragma Preelaborate;
+   --  if this is Pure, subprograms would become __attribute__((const))
 
    --  required for "=" packed boolean array by compiler (s-bitop.ads)
    function Bit_Eq (
@@ -10,7 +11,7 @@ package System.Bit_Ops is
       Right : Address;
       Rlen : Natural)
       return Boolean;
-   pragma Pure_Function (Bit_Eq);
+   pragma Machine_Attribute (Bit_Eq, "pure");
 
    --  required by compiler ??? (s-bitop.ads)
 --  procedure Bit_Not (

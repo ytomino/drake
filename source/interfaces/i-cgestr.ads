@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Interfaces.C.Strings
+--  generalized unit of Interfaces.C.Strings
 with Interfaces.C.Pointers;
 generic
    type Character_Type is (<>);

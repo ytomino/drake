@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Unsigned_Types;
 package System.Val_Uns is
    pragma Pure;

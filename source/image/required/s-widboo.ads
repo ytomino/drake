@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 package System.Wid_Bool is
    pragma Pure;
 

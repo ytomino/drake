@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Ada.Strings.Hash
+--  generalized unit of Ada.Strings.Hash
 with Ada.Containers;
 generic
    type Character_Type is (<>);

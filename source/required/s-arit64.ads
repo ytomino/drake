@@ -21,7 +21,7 @@ package System.Arith_64 is
       Q, R : out Interfaces.Integer_64;
       Round : Boolean);
 
-   --  required by compiler ??? (s-arit64.ads)
+   --  required if Long_Long_Integer'Size > 64 (s-arit64.ads)
 --  function Add_With_Ovflo_Check (X, Y : Interfaces.Integer_64)
 --    return Interfaces.Integer_64;
 --  function Subtract_With_Ovflo_Check (X, Y : Interfaces.Integer_64)

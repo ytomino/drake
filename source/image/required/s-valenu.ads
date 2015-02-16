@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 package System.Val_Enum is
    pragma Pure;
 

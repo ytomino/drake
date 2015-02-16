@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Wid_Char;
 package System.WWd_Char is
    pragma Pure;

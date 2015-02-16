@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 package System.Unwind.Standard is
    pragma Preelaborate;
 
-   --  required to use Standard.Constraint_Error / Numeric_Error (s-stalib.ads)
+   --  Standard.Constraint_Error / Numeric_Error (s-stalib.ads)
    Constraint_Error_Name : aliased constant String (1 .. 17) :=
       "CONSTRAINT_ERROR" & Character'Val (0);
    Constraint_Error : aliased constant Exception_Data := (
@@ -16,7 +16,7 @@ package System.Unwind.Standard is
       Raise_Hook => null);
    pragma Export (Ada, Constraint_Error, "constraint_error");
 
-   --  required to use Standard.Program_Error (s-stalib.ads)
+   --  Standard.Program_Error (s-stalib.ads)
    Program_Error_Name : aliased constant String (1 .. 14) :=
       "PROGRAM_ERROR" & Character'Val (0);
    Program_Error : aliased constant Exception_Data := (
@@ -29,7 +29,7 @@ package System.Unwind.Standard is
       Raise_Hook => null);
    pragma Export (Ada, Program_Error, "program_error");
 
-   --  required to use Standard.Storage_Error (s-stalib.ads)
+   --  Standard.Storage_Error (s-stalib.ads)
    Storage_Error_Name : aliased constant String (1 .. 14) :=
       "STORAGE_ERROR" & Character'Val (0);
    Storage_Error : aliased constant Exception_Data := (
@@ -42,7 +42,7 @@ package System.Unwind.Standard is
       Raise_Hook => null);
    pragma Export (Ada, Storage_Error, "storage_error");
 
-   --  required to use Standard.Tasking_Error (s-stalib.ads)
+   --  Standard.Tasking_Error (s-stalib.ads)
    Tasking_Error_Name : aliased constant String (1 .. 14) :=
       "TASKING_ERROR" & Character'Val (0);
    Tasking_Error : aliased constant Exception_Data := (
@@ -55,7 +55,7 @@ package System.Unwind.Standard is
       Raise_Hook => null);
    pragma Export (Ada, Tasking_Error, "tasking_error");
 
-   --  required to use Standard'Abort_Signal (s-stalib.ads)
+   --  Standard'Abort_Signal (s-stalib.ads)
    Abort_Signal_Name : aliased constant String (1 .. 14) :=
       "_ABORT_SIGNAL" & Character'Val (0);
    Abort_Signal : aliased constant Exception_Data := (

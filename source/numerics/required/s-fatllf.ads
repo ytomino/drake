@@ -81,7 +81,7 @@ package System.Fat_LLF is
       function Unaligned_Valid (A : Address) return Boolean;
       pragma Import (Ada, Unaligned_Valid,
          "system__fat_llf__attr_long_long_float__valid");
-      pragma Pure_Function (Unaligned_Valid);
+      pragma Machine_Attribute (Unaligned_Valid, "pure");
 
    end Attr_Long_Long_Float;
 

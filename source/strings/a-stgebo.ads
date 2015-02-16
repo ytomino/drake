@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Ada.Strings.Bounded
+--  generalized unit of Ada.Strings.Bounded
 with Ada.References;
 with Ada.Streams;
 generic
@@ -272,11 +272,11 @@ package Ada.Strings.Generic_Bounded is
 
       function "*" (Left : Natural; Right : Character_Type)
          return Bounded_String;
-      --  function "*" is required to be primitive by CXA4007
+      --  function "*" should be primitive for CXA4007
 
       function "*" (Left : Natural; Right : String_Type)
          return Bounded_String;
-      --  function "*" is required to be primitive by CXA4007
+      --  function "*" should be primitive for CXA4007
 
       function "*" (Left : Natural; Right : Bounded_String)
          return Bounded_String;

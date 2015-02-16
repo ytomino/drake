@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation package required by compiler
+--  implementation unit required by compiler
 with System.Exponentiations;
 with System.Unsigned_Types;
 package System.Exp_Mod is

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Ada.Strings.Equal_Case_Insensitive
+--  generalized unit of Ada.Strings.Equal_Case_Insensitive
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;

@@ -15,9 +15,11 @@ package body System.Bit_Ops is
          return False;
       else
          declare
+            type Unsigned is mod 2 ** Integer'Size;
             Quotient : constant Storage_Elements.Storage_Count :=
                Storage_Elements.Storage_Count (Llen) / Standard'Storage_Unit;
-            Remainder : constant Natural := Llen mod Standard'Storage_Unit;
+            Remainder : constant Natural :=
+               Natural (Unsigned (Llen) rem Standard'Storage_Unit);
             type Fixed_Unit_Array is
                array (1 .. Quotient) of Storage_Elements.Storage_Element;
             L_Units : Fixed_Unit_Array;

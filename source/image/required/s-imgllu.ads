@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 with System.Unsigned_Types;
---  implementation package required by compiler
+--  implementation unit required by compiler
 package System.Img_LLU is
    pragma Pure;
 

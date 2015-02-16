@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit required by compiler for controlled types
+--  implementation unit required by compiler
 with Ada.Finalization;
 with System.Storage_Elements;
 with System.Storage_Pools;

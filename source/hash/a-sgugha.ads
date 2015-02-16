@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  generic implementation of Ada.Strings.Unbounded.Hash
+--  generalized unit of Ada.Strings.Unbounded.Hash
 with Ada.Containers;
 generic
    with function Fixed_Hash (Key : String_Type)
