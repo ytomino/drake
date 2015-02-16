@@ -78,6 +78,10 @@ package body Separated is
    pragma Export (C, Set_Exception_Parameter,
       "__gnat_set_exception_parameter");
 
+   --  for "catch exception" command of gdb (s-excdeb.ads)
+   procedure Debug_Raise_Exception (E : not null Exception_Data_Access);
+   pragma Export (Ada, Debug_Raise_Exception, "__gnat_debug_raise_exception");
+
    --  implementation
 
    procedure Set_Foreign_Occurrence (
@@ -187,6 +191,7 @@ package body Separated is
             pragma Check (Trace, Report);
          end;
       end if;
+      Debug_Raise_Exception (GCC_Exception.Occurrence.Id); -- for gdb
       Propagate_GCC_Exception (GCC_Exception);
    end Propagate_Exception;
 
@@ -236,5 +241,11 @@ package body Separated is
          Set_Foreign_Occurrence (Current, GCC_Exception);
       end if;
    end Set_Exception_Parameter;
+
+   procedure Debug_Raise_Exception (E : not null Exception_Data_Access) is
+      pragma Inspection_Point (E);
+   begin
+      null;
+   end Debug_Raise_Exception;
 
 end Separated;
