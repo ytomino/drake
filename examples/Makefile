@@ -80,6 +80,11 @@ ifneq ($(findstring linux-gnu,$(TARGET)),)
 LFLAGS_FOR_EXAMPLE+=-lm -lpthread -ldl
 endif
 
+ifneq ($(GCC),)
+MFLAGS+=--GCC="$(GCC)"
+LFLAGS_FOR_EXAMPLE+=--GCC="$(GCC)"
+endif
+
 ifneq ($(DEBUG),0)
 CFLAGS_FOR_EXAMPLE+=-ggdb -gnata -gnat-p
 BFLAGS=-E
