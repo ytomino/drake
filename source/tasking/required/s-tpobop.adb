@@ -165,7 +165,7 @@ package body System.Tasking.Protected_Objects.Operations is
                      begin
                         Raise_Exception (Tasking_Error'Identity);
                      exception
-                        when E : Program_Error =>
+                        when E : Tasking_Error =>
                            Ada.Exceptions.Save_Occurrence (Node.X, E);
                      end;
                   end if;
