@@ -42,8 +42,8 @@ package Ada.Execution_Time is
 
 private
 
-   type CPU_Time is new Real_Time.Time;
-   CPU_Time_First : constant CPU_Time := CPU_Time (Real_Time.Time_First);
-   CPU_Time_Last : constant CPU_Time := CPU_Time (Real_Time.Time_Last);
+   type CPU_Time is new Real_Time.Time_Span; -- from 0.0
+   CPU_Time_First : constant CPU_Time := CPU_Time (Real_Time.Time_Span_First);
+   CPU_Time_Last : constant CPU_Time := CPU_Time (Real_Time.Time_Span_Last);
 
 end Ada.Execution_Time;

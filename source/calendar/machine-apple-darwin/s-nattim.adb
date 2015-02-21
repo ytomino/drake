@@ -3,8 +3,8 @@ package body System.Native_Time is
    use type C.signed_int;
    use type C.signed_long;
 
-   Diff : constant Nanosecond_Number := 5680281600;
-   --  second from 1970-01-01 (0 of POSIX time) to 2150-01-01 (0 of Ada time)
+   Diff : constant := 5680281600.0;
+   --  seconds from 1970-01-01 (0 of POSIX time) to 2150-01-01 (0 of Ada time)
 
    function To_timespec (X : C.sys.time.struct_timeval)
       return C.time.struct_timespec;
@@ -23,46 +23,51 @@ package body System.Native_Time is
    is
       Nanosecond : constant Nanosecond_Number :=
          Nanosecond_Number'Integer_Value (D);
-      Sub_Second : constant Nanosecond_Number := Nanosecond mod 1000000000;
+      Sub_Second : constant Nanosecond_Number := Nanosecond mod 1000_000_000;
    begin
       return (
          tv_sec =>
-            C.sys.types.time_t ((Nanosecond - Sub_Second) / 1000000000),
+            C.sys.types.time_t ((Nanosecond - Sub_Second) / 1000_000_000),
          tv_nsec =>
             C.signed_long (Sub_Second));
    end To_timespec_Duration;
 
+   function To_Duration (D : C.sys.types.time_t) return Duration;
+   function To_Duration (D : C.sys.types.time_t) return Duration is
+   begin
+      return Duration'Fixed_Value (
+         (Nanosecond_Number (D)) * 1000_000_000);
+   end To_Duration;
+
+   function To_Duration (D : C.time.struct_timespec) return Duration;
+   function To_Duration (D : C.time.struct_timespec) return Duration is
+   begin
+      return Duration'Fixed_Value (
+         Nanosecond_Number'Integer_Value (To_Duration (D.tv_sec))
+         + Nanosecond_Number (D.tv_nsec));
+   end To_Duration;
+
    --  implementation
 
    function To_Native_Time (T : Duration) return Native_Time is
-      Nanosecond : constant Nanosecond_Number :=
-         Nanosecond_Number'Integer_Value (T);
-      Sub_Second : constant Nanosecond_Number := Nanosecond mod 1000000000;
    begin
-      return (
-         tv_sec =>
-            C.sys.types.time_t ((Nanosecond - Sub_Second) / 1000000000 + Diff),
-         tv_nsec =>
-            C.signed_long (Sub_Second));
+      return To_timespec_Duration (T + Diff);
    end To_Native_Time;
 
    function To_Time (T : Native_Time) return Duration is
    begin
-      return Duration'Fixed_Value (
-         Nanosecond_Number'Integer_Value (To_Time (T.tv_sec))
-         + Nanosecond_Number (T.tv_nsec));
+      return To_Duration (T) - Diff;
    end To_Time;
 
    function To_Time (T : C.sys.types.time_t) return Duration is
    begin
-      return Duration'Fixed_Value (
-         (Nanosecond_Number (T) - Diff) * 1000000000);
+      return To_Duration (T) - Diff;
    end To_Time;
 
-   function To_Time (T : C.sys.time.struct_timeval) return Duration is
+   function To_Duration (D : C.sys.time.struct_timeval) return Duration is
    begin
-      return To_Time (To_timespec (T));
-   end To_Time;
+      return To_Duration (To_timespec (D));
+   end To_Duration;
 
    function Clock return Native_Time is
       Result : aliased C.sys.time.struct_timeval;

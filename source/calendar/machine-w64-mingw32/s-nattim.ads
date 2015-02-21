@@ -16,9 +16,14 @@ package System.Native_Time is
    subtype Native_Time is C.windef.FILETIME;
 
    function To_Native_Time (T : Duration) return Native_Time;
-   pragma Pure_Function (To_Native_Time);
    function To_Time (T : Native_Time) return Duration;
+
+   pragma Pure_Function (To_Native_Time);
    pragma Pure_Function (To_Time);
+
+   function To_Duration (D : Native_Time) return Duration;
+
+   pragma Pure_Function (To_Duration);
 
    --  current absolute time
 

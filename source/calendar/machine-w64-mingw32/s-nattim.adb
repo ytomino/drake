@@ -3,8 +3,8 @@ with C.winnt;
 package body System.Native_Time is
    pragma Suppress (All_Checks);
 
-   Diff : constant Nanosecond_Number := 173247552000000000;
-   --  100-nanosecond from 1601-01-01 (0 of FILETIME)
+   Diff : constant := 17324755200_000_000_0;
+   --  100-nanoseconds from 1601-01-01 (0 of FILETIME)
    --    to 2150-01-01 (0 of Ada time)
 
    --  implementation
@@ -29,6 +29,16 @@ package body System.Native_Time is
       return Duration'Fixed_Value (
          (Nanosecond_Number (U.QuadPart) - Diff) * 100);
    end To_Time;
+
+   function To_Duration (D : Native_Time) return Duration is
+      U : constant C.winnt.ULARGE_INTEGER := (
+         Unchecked_Tag => 0,
+         LowPart => D.dwLowDateTime,
+         HighPart => D.dwHighDateTime);
+   begin
+      return Duration'Fixed_Value (
+         (Nanosecond_Number (U.QuadPart)) * 100);
+   end To_Duration;
 
    function Clock return Native_Time is
       Result : aliased C.windef.FILETIME;
