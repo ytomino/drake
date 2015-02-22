@@ -1,7 +1,7 @@
 with System.Native_Time;
 with C.windef;
 with C.winbase;
-package body Ada.Execution_Time.Inside is
+package body System.Native_Execution_Time is
    pragma Suppress (All_Checks);
    use type C.windef.WINBOOL;
 
@@ -22,8 +22,8 @@ package body Ada.Execution_Time.Inside is
       then
          raise Program_Error; -- ???
       else
-         return To_Time_Span (System.Native_Time.To_Duration (UserTime));
+         return System.Native_Time.To_Duration (UserTime);
       end if;
    end Clock;
 
-end Ada.Execution_Time.Inside;
+end System.Native_Execution_Time;

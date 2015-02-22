@@ -1,8 +1,10 @@
-with Ada.Execution_Time.Inside;
+private with System.Native_Execution_Time;
 package body Ada.Execution_Time is
    pragma Suppress (All_Checks);
 
-   function Clock return CPU_Time
-      renames Inside.Clock;
+   function Clock return CPU_Time is
+   begin
+      return To_Time_Span (System.Native_Execution_Time.Clock);
+   end Clock;
 
 end Ada.Execution_Time;

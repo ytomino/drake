@@ -1,6 +1,6 @@
 with System.Native_Time;
 with C.sys.resource;
-package body Ada.Execution_Time.Inside is
+package body System.Native_Execution_Time is
    pragma Suppress (All_Checks);
    use type C.signed_int;
 
@@ -13,9 +13,8 @@ package body Ada.Execution_Time.Inside is
       then
          raise Program_Error; -- ???
       else
-         return To_Time_Span (
-            System.Native_Time.To_Duration (rusage.ru_utime));
+         return System.Native_Time.To_Duration (rusage.ru_utime);
       end if;
    end Clock;
 
-end Ada.Execution_Time.Inside;
+end System.Native_Execution_Time;
