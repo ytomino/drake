@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 package Ada.Calendar.Inside is
 
    subtype Time_Offset is Integer range -28 * 60 .. 28 * 60;

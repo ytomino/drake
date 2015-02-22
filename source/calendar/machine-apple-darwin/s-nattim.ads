@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with C.sys.time; -- struct timeval
 with C.sys.types; -- time_t
 with C.time; -- struct timespec

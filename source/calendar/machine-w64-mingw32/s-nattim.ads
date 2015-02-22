@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 with C.windef;
 package System.Native_Time is
    pragma Preelaborate;
