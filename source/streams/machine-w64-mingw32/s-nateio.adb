@@ -4,7 +4,8 @@ with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_16_To_8;
 with C.wincon;
 with C.winnls;
-package body System.Native_IO.Text_IO is
+with C.winnt;
+package body System.Native_Text_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
    use type C.windef.DWORD;
@@ -444,4 +445,4 @@ package body System.Native_IO.Text_IO is
       end if;
    end Restore;
 
-end System.Native_IO.Text_IO;
+end System.Native_Text_IO;

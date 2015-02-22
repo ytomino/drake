@@ -1,8 +1,9 @@
 with Ada.Exception_Identification.From_Here;
 with System.Formatting;
-package body System.Native_IO.Text_IO is
+package body System.Native_Text_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
+   use type C.signed_int;
    use type C.unsigned_char; -- cc_t
    use type C.unsigned_int; -- tcflag_t in Linux or FreeBSD
    use type C.unsigned_long; -- tcflag_t in Darwin
@@ -45,7 +46,7 @@ package body System.Native_IO.Text_IO is
    is
       Written_Length : Ada.Streams.Stream_Element_Offset;
    begin
-      Write (
+      Native_IO.Write (
          Handle,
          Item'Address,
          Item'Length,
@@ -70,7 +71,7 @@ package body System.Native_IO.Text_IO is
    begin
       Last := Item'First - 1;
       loop
-         Read (
+         Native_IO.Read (
             Handle,
             Item (Last + 1)'Address,
             1,
@@ -344,4 +345,4 @@ package body System.Native_IO.Text_IO is
       end if;
    end Restore;
 
-end System.Native_IO.Text_IO;
+end System.Native_Text_IO;
