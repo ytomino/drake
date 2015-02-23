@@ -24,8 +24,11 @@ package System.Native_Time is
    pragma Pure_Function (To_Native_Time);
    pragma Pure_Function (To_Time);
 
+   function To_Native_Duration (D : Duration) return Native_Time;
+   function To_Duration (D : Native_Time) return Duration;
    function To_Duration (D : C.sys.time.struct_timeval) return Duration;
 
+   pragma Pure_Function (To_Native_Duration);
    pragma Pure_Function (To_Duration);
 
    --  current absolute time

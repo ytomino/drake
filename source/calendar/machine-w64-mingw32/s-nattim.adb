@@ -60,8 +60,12 @@ package body System.Native_Time is
    end Delay_For;
 
    procedure Simple_Delay_Until (T : Native_Time) is
+      Timeout_T : constant Duration := To_Duration (T);
+      Current_T : constant Duration := To_Duration (Clock);
    begin
-      Simple_Delay_For (To_Time (T) - To_Time (Clock));
+      if Timeout_T > Current_T then
+         Simple_Delay_For (Timeout_T - Current_T);
+      end if;
    end Simple_Delay_Until;
 
    procedure Delay_Until (T : Native_Time) is
