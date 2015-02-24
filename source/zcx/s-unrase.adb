@@ -25,22 +25,22 @@ package body Separated is
 
    --  (a-exexpr-gcc.adb)
    procedure Set_Foreign_Occurrence (
-      Current : not null Exception_Occurrence_Access;
-      GCC_Exception : not null Representation.Machine_Occurrence_Access);
+      X : out Exception_Occurrence;
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
 
-   --  set current occurrence or Foreign_Exception (a-exexpr-gcc.adb)
-   procedure Setup_Current_Excep (
-      GCC_Exception : not null Representation.Machine_Occurrence_Access;
+   --  equivalent to Setup_Current_Excep (a-exexpr-gcc.adb)
+   procedure Save_Current_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
       Current : out Exception_Occurrence_Access);
 
    --  hook for entering an exception handler (a-exexpr-gcc.adb)
    procedure Begin_Handler (
-      GCC_Exception : Representation.Machine_Occurrence_Access);
+      Machine_Occurrence : Representation.Machine_Occurrence_Access);
    pragma Export (C, Begin_Handler, "__gnat_begin_handler");
 
    --  hook for leaving an exception handler (a-exexpr-gcc.adb)
    procedure End_Handler (
-      GCC_Exception : Representation.Machine_Occurrence_Access);
+      Machine_Occurrence : Representation.Machine_Occurrence_Access);
    pragma Export (C, End_Handler, "__gnat_end_handler");
 
    --  (a-exexpr-gcc.adb)
@@ -54,27 +54,29 @@ package body Separated is
       return C.unwind.Unwind_Reason_Code;
    pragma Convention (C, CleanupUnwind_Handler);
 
-   --  (a-exexpr-gcc.adb)
-   procedure Propagate_GCC_Exception (
-      GCC_Exception : not null Representation.Machine_Occurrence_Access);
-   pragma No_Return (Propagate_GCC_Exception);
+   --  equivalent to Propagate_GCC_Exception (a-exexpr-gcc.adb)
+   procedure Propagate_Machine_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
+   pragma No_Return (Propagate_Machine_Occurrence);
+   pragma Convention (C, Propagate_Machine_Occurrence);
 
-   --  (a-exexpr-gcc.adb)
-   procedure Reraise_GCC_Exception (
-      GCC_Exception : not null Representation.Machine_Occurrence_Access);
-   pragma Export (C, Reraise_GCC_Exception, "__gnat_reraise_zcx");
+   --  equivalent to Reraise_GCC_Exception (a-exexpr-gcc.adb)
+   --  for nested controlled types
+   procedure Reraise_Machine_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
+   pragma Export (C, Reraise_Machine_Occurrence, "__gnat_reraise_zcx");
 
    --  Win64 SEH only (a-exexpr-gcc.adb)
    procedure Unhandled_Except_Handler (
-      GCC_Exception : not null Representation.Machine_Occurrence_Access);
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
    pragma No_Return (Unhandled_Except_Handler);
    pragma Export (C, Unhandled_Except_Handler,
       "__gnat_unhandled_except_handler");
 
    --  when E : others (a-exexpr-gcc.adb)
    procedure Set_Exception_Parameter (
-      Current : not null Exception_Occurrence_Access;
-      GCC_Exception : not null Representation.Machine_Occurrence_Access);
+      X : not null Exception_Occurrence_Access;
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
    pragma Export (C, Set_Exception_Parameter,
       "__gnat_set_exception_parameter");
 
@@ -85,60 +87,60 @@ package body Separated is
    --  implementation
 
    procedure Set_Foreign_Occurrence (
-      Current : not null Exception_Occurrence_Access;
-      GCC_Exception : not null Representation.Machine_Occurrence_Access)
+      X : out Exception_Occurrence;
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
    is
-      package GGEA_Conv is
+      package MOA_Conv is
          new Address_To_Named_Access_Conversions (
             Representation.Machine_Occurrence,
             Representation.Machine_Occurrence_Access);
    begin
-      Current.Id := Foreign_Exception'Access;
-      Current.Machine_Occurrence := GGEA_Conv.To_Address (GCC_Exception);
-      Current.Msg_Length := 0;
-      Current.Exception_Raised := True;
-      Current.Pid := Local_Partition_ID;
-      Current.Num_Tracebacks := 0;
+      X.Id := Foreign_Exception'Access;
+      X.Machine_Occurrence := MOA_Conv.To_Address (Machine_Occurrence);
+      X.Msg_Length := 0;
+      X.Exception_Raised := True;
+      X.Pid := Local_Partition_ID;
+      X.Num_Tracebacks := 0;
    end Set_Foreign_Occurrence;
 
-   procedure Setup_Current_Excep (
-      GCC_Exception : not null Representation.Machine_Occurrence_Access;
+   procedure Save_Current_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
       Current : out Exception_Occurrence_Access)
    is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
    begin
       Current := TLS.Current_Exception'Access;
-      if GCC_Exception.Header.exception_class =
+      if Machine_Occurrence.Header.exception_class =
          Representation.GNAT_Exception_Class
       then
-         Current.all := GCC_Exception.Occurrence;
+         Current.all := Machine_Occurrence.Occurrence;
       else
-         Set_Foreign_Occurrence (Current, GCC_Exception);
+         Set_Foreign_Occurrence (Current.all, Machine_Occurrence);
       end if;
-   end Setup_Current_Excep;
+   end Save_Current_Occurrence;
 
    procedure Begin_Handler (
-      GCC_Exception : Representation.Machine_Occurrence_Access)
+      Machine_Occurrence : Representation.Machine_Occurrence_Access)
    is
       Current : Exception_Occurrence_Access;
       pragma Unreferenced (Current);
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Setup_Current_Excep (GCC_Exception, Current);
+      Save_Current_Occurrence (Machine_Occurrence, Current);
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Begin_Handler;
 
    procedure End_Handler (
-      GCC_Exception : Representation.Machine_Occurrence_Access) is
+      Machine_Occurrence : Representation.Machine_Occurrence_Access) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      if GCC_Exception = null then
+      if Machine_Occurrence = null then
          pragma Check (Trace, Ada.Debug.Put (
-            "GCC_Exception = null, reraised"));
+            "Machine_Occurrence = null, reraised"));
          null;
       else
-         C.unwind.Unwind_DeleteException (GCC_Exception.Header'Access);
+         C.unwind.Unwind_DeleteException (Machine_Occurrence.Header'Access);
          --  in Win32 SEH, the chain may be rollback, so restore it
          Mapping.Reinstall_Exception_Handler;
       end if;
@@ -172,18 +174,18 @@ package body Separated is
       X : Exception_Occurrence;
       Stack_Guard : Address)
    is
-      GCC_Exception : Representation.Machine_Occurrence_Access;
+      Machine_Occurrence : Representation.Machine_Occurrence_Access;
    begin
-      GCC_Exception := Representation.New_Machine_Occurrence;
-      GCC_Exception.Occurrence := X;
-      GCC_Exception.Stack_Guard := Stack_Guard;
+      Machine_Occurrence := Representation.New_Machine_Occurrence;
+      Machine_Occurrence.Occurrence := X;
+      Machine_Occurrence.Stack_Guard := Stack_Guard;
       if Call_Chain'Address /= Null_Address then
-         Call_Chain (GCC_Exception.Occurrence'Access);
+         Call_Chain (Machine_Occurrence.Occurrence'Access);
          declare
             function Report return Boolean;
             function Report return Boolean is
             begin
-               Report_Traceback (GCC_Exception.Occurrence);
+               Report_Traceback (Machine_Occurrence.Occurrence);
                return True;
             end Report;
          begin
@@ -191,54 +193,54 @@ package body Separated is
             pragma Check (Trace, Report);
          end;
       end if;
-      Debug_Raise_Exception (GCC_Exception.Occurrence.Id); -- for gdb
-      Propagate_GCC_Exception (GCC_Exception);
+      Debug_Raise_Exception (Machine_Occurrence.Occurrence.Id); -- for gdb
+      Propagate_Machine_Occurrence (Machine_Occurrence);
    end Propagate_Exception;
 
-   procedure Propagate_GCC_Exception (
-      GCC_Exception : not null Representation.Machine_Occurrence_Access)
+   procedure Propagate_Machine_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
    is
       Dummy : C.unwind.Unwind_Reason_Code;
       pragma Unreferenced (Dummy);
    begin
       pragma Check (Trace, Ada.Debug.Put ("Unwind_RaiseException"));
-      Dummy := Handling.Unwind_RaiseException (GCC_Exception.Header'Access);
+      Dummy := Handling.Unwind_RaiseException (
+         Machine_Occurrence.Header'Access);
       --  in GNAT runtime, calling Notify_Unhandled_Exception here
       pragma Check (Trace, Ada.Debug.Put ("Unwind_ForcedUnwind"));
       Dummy := Handling.Unwind_ForcedUnwind (
-         GCC_Exception.Header'Access,
+         Machine_Occurrence.Header'Access,
          CleanupUnwind_Handler'Access,
          C.void_ptr (Null_Address));
       pragma Check (Trace, Ada.Debug.Put ("unhandled"));
-      Unhandled_Except_Handler (GCC_Exception);
-   end Propagate_GCC_Exception;
+      Unhandled_Except_Handler (Machine_Occurrence);
+   end Propagate_Machine_Occurrence;
 
-   procedure Reraise_GCC_Exception (
-      GCC_Exception : not null Representation.Machine_Occurrence_Access) is
-   begin
-      Propagate_GCC_Exception (GCC_Exception);
-   end Reraise_GCC_Exception;
+   procedure Reraise_Machine_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
+      renames Propagate_Machine_Occurrence;
 
    procedure Unhandled_Except_Handler (
-      GCC_Exception : not null Representation.Machine_Occurrence_Access)
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
    is
       Current : Exception_Occurrence_Access;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Setup_Current_Excep (GCC_Exception, Current);
+      Save_Current_Occurrence (Machine_Occurrence, Current);
       Unhandled_Exception_Terminate (Current);
    end Unhandled_Except_Handler;
 
    procedure Set_Exception_Parameter (
-      Current : not null Exception_Occurrence_Access;
-      GCC_Exception : not null Representation.Machine_Occurrence_Access) is
+      X : not null Exception_Occurrence_Access;
+      Machine_Occurrence :
+         not null Representation.Machine_Occurrence_Access) is
    begin
-      if GCC_Exception.Header.exception_class =
+      if Machine_Occurrence.Header.exception_class =
          Representation.GNAT_Exception_Class
       then
-         Save_Occurrence (Current.all, GCC_Exception.Occurrence);
+         Save_Occurrence (X.all, Machine_Occurrence.Occurrence);
       else
-         Set_Foreign_Occurrence (Current, GCC_Exception);
+         Set_Foreign_Occurrence (X.all, Machine_Occurrence);
       end if;
    end Set_Exception_Parameter;
 
