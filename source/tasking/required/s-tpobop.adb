@@ -100,12 +100,8 @@ package body System.Tasking.Protected_Objects.Operations is
          when others =>
             Object.Raised_On_Barrier := True;
             Result := True;
-            begin
-               raise Program_Error; -- C953001
-            exception
-               when E : Program_Error =>
-                  Ada.Exceptions.Save_Occurrence (Node.X, E);
-            end;
+            --  C953001
+            Ada.Exceptions.Save_Exception (Node.X, Program_Error'Identity);
       end;
       return Result;
    end Invoke_Filter;
@@ -162,12 +158,9 @@ package body System.Tasking.Protected_Objects.Operations is
                      Taken,
                      Canceled);
                   if Canceled then -- it does not happen ?
-                     begin
-                        Raise_Exception (Tasking_Error'Identity);
-                     exception
-                        when E : Tasking_Error =>
-                           Ada.Exceptions.Save_Occurrence (Node.X, E);
-                     end;
+                     Ada.Exceptions.Save_Exception (
+                        Node.X,
+                        Tasking_Error'Identity);
                   end if;
                end;
             else

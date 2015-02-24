@@ -537,6 +537,45 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_35;
 
+   procedure Save_Exception (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := "";
+      Line : Integer := 0;
+      Column : Integer := 0;
+      Message : String := "") is
+   begin
+      Set_Exception_Message (E, File, Line, Column, Message, X);
+      Set_Traceback (X);
+   end Save_Exception;
+
+   procedure Save_E (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      Message : String) is
+   begin
+      Save_Exception (X, E, Message => Message);
+   end Save_E;
+
+   procedure Save_Exception_From_Here (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line) is
+   begin
+      Save_Exception (X, E, File, Line, Message => Explicit_Raise);
+   end Save_Exception_From_Here;
+
+   procedure Save_Exception_From_Here_With (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line;
+      Message : String) is
+   begin
+      Save_Exception (X, E, File, Line, Message => Message);
+   end Save_Exception_From_Here_With;
+
    --  at last of exclusion
    function ZZZ return Address is
    begin

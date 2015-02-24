@@ -58,6 +58,31 @@ package Ada.Exceptions is
       Source : Exception_Occurrence)
       return Exception_Occurrence_Access;
 
+   --  extended
+   --  Effective alternatives of:
+   --    begin raise E; when X : E => Save_Occurrence (Target, X); end;
+   procedure Save_Exception (
+      Target : out Exception_Occurrence;
+      E : Exception_Id;
+      Message : String := "")
+      with Import, Convention => Ada,
+         External_Name => "__drake_save_exception";
+   procedure Save_Exception_From_Here (
+      Target : out Exception_Occurrence;
+      E : Exception_Id;
+      File : String := Debug.File;
+      Line : Integer := Debug.Line)
+      with Import, Convention => Ada,
+         External_Name => "__drake_save_exception_from_here";
+   procedure Save_Exception_From_Here (
+      Target : out Exception_Occurrence;
+      E : Exception_Id;
+      File : String := Debug.File;
+      Line : Integer := Debug.Line;
+      Message : String)
+      with Import, Convention => Ada,
+         External_Name => "__drake_save_exception_from_here_with";
+
 --  procedure Read_Exception_Occurrence (
 --    Stream : not null access Ada.Streams.Root_Stream_Type'Class;
 --    Item : out Exception_Occurrence);

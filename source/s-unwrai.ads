@@ -189,6 +189,37 @@ package System.Unwind.Raising is
    function AAA return Address;
    function ZZZ return Address;
 
+   procedure Save_Exception (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := "";
+      Line : Integer := 0;
+      Column : Integer := 0;
+      Message : String := "");
+
+   procedure Save_E (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      Message : String);
+   pragma Export (Ada, Save_E, "__drake_save_exception");
+
+   procedure Save_Exception_From_Here (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line);
+   pragma Export (Ada, Save_Exception_From_Here,
+      "__drake_save_exception_from_here");
+
+   procedure Save_Exception_From_Here_With (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line;
+      Message : String);
+   pragma Export (Ada, Save_Exception_From_Here_With,
+      "__drake_save_exception_from_here_with");
+
    --  implementation for tasking (a-except-2005.adb)
    function Triggered_By_Abort return Boolean;
    pragma Export (Ada, Triggered_By_Abort,
