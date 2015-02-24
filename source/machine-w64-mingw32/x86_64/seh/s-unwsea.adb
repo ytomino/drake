@@ -6,7 +6,7 @@ with System.Unwind.Mapping;
 with System.Unwind.Representation;
 with C.basetsd;
 with C.unwind_pe;
-package body System.Unwind.Handling is
+package body System.Unwind.Searching is
    pragma Suppress (All_Checks);
    use type Representation.Machine_Occurrence_Access;
    use type C.ptrdiff_t;
@@ -605,4 +605,4 @@ package body System.Unwind.Handling is
       return Result;
    end Personality_SEH;
 
-end System.Unwind.Handling;
+end System.Unwind.Searching;

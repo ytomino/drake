@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit
 with Ada;
+with System.Unwind.Representation;
 package System.Unwind.Raising is
    pragma Preelaborate;
 
@@ -201,6 +202,11 @@ package System.Unwind.Raising is
       Column : Integer := 0;
       Message : String;
       X : in out Exception_Occurrence);
+
+   --  equivalent to Setup_Current_Excep (a-exexpr-gcc.adb)
+   procedure Save_Current_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
+      Current : out Exception_Occurrence_Access);
 
    --  output the information of unhandled exception
    procedure Report (X : Exception_Occurrence; Where : String);

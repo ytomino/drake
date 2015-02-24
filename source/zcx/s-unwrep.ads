@@ -4,6 +4,12 @@ with C.unwind;
 package System.Unwind.Representation is
    pragma Preelaborate;
 
+   subtype Unwind_Exception_Class is C.unwind.Unwind_Exception_Class;
+
+   procedure Unwind_DeleteException (
+      Item : access C.unwind.struct_Unwind_Exception)
+      renames C.unwind.Unwind_DeleteException;
+
    --  (a-exexpr-gcc.adb)
    GNAT_Exception_Class : constant := 16#474e552d41646100#;
 

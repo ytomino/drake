@@ -182,6 +182,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 	s-unwmap.o \
 	s-unwrai.o \
 	s-unwrep.o \
+	s-unwsea.o \
 	s-unwsta.o \
 	s-unwtra.o)
 

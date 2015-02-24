@@ -1,42 +1,18 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
-with System.Address_To_Named_Access_Conversions;
-with System.Unwind.Handling;
-with System.Unwind.Mapping;
 with System.Unwind.Representation;
+with System.Unwind.Searching;
 with C.unwind;
 separate (System.Unwind.Raising)
 package body Separated is
    pragma Suppress (All_Checks);
    use type Representation.Machine_Occurrence_Access;
    use type C.signed_int;
-   use type C.unsigned_int; -- Unwind_Ptr (32bit)
-   use type C.unsigned_long; -- Unwind_Ptr and Unwind_Exception_Class (64bit)
-   use type C.unsigned_long_long; -- Unwind_Exception_Class (32bit)
-
-   Foreign_Exception : aliased Exception_Data;
-   pragma Import (Ada, Foreign_Exception,
-      "system__exceptions__foreign_exception");
 
    function To_GNAT is
       new Ada.Unchecked_Conversion (
          C.unwind.struct_Unwind_Exception_ptr,
          Representation.Machine_Occurrence_Access);
-
-   --  equivalent to Setup_Current_Excep (a-exexpr-gcc.adb)
-   procedure Save_Current_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
-      Current : out Exception_Occurrence_Access);
-
-   --  hook for entering an exception handler (a-exexpr-gcc.adb)
-   procedure Begin_Handler (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access);
-   pragma Export (C, Begin_Handler, "__gnat_begin_handler");
-
-   --  hook for leaving an exception handler (a-exexpr-gcc.adb)
-   procedure End_Handler (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access);
-   pragma Export (C, End_Handler, "__gnat_end_handler");
 
    --  (a-exexpr-gcc.adb)
    function CleanupUnwind_Handler (
@@ -73,60 +49,6 @@ package body Separated is
    pragma Export (Ada, Debug_Raise_Exception, "__gnat_debug_raise_exception");
 
    --  implementation
-
-   procedure Save_Current_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
-      Current : out Exception_Occurrence_Access)
-   is
-      package MOA_Conv is
-         new Address_To_Named_Access_Conversions (
-            Representation.Machine_Occurrence,
-            Representation.Machine_Occurrence_Access);
-      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
-         Runtime_Context.Get_Task_Local_Storage;
-   begin
-      Current := TLS.Current_Exception'Access;
-      if Machine_Occurrence.Header.exception_class =
-         Representation.GNAT_Exception_Class
-      then
-         Current.all := Machine_Occurrence.Occurrence;
-      else
-         Current.Id := Foreign_Exception'Access;
-         Current.Machine_Occurrence :=
-            MOA_Conv.To_Address (Machine_Occurrence);
-         Current.Msg_Length := 0;
-         Current.Exception_Raised := True;
-         Current.Pid := Local_Partition_ID;
-         Current.Num_Tracebacks := 0;
-      end if;
-   end Save_Current_Occurrence;
-
-   procedure Begin_Handler (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access)
-   is
-      Current : Exception_Occurrence_Access;
-      pragma Unreferenced (Current);
-   begin
-      pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Save_Current_Occurrence (Machine_Occurrence, Current);
-      pragma Check (Trace, Ada.Debug.Put ("leave"));
-   end Begin_Handler;
-
-   procedure End_Handler (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access) is
-   begin
-      pragma Check (Trace, Ada.Debug.Put ("enter"));
-      if Machine_Occurrence = null then
-         pragma Check (Trace, Ada.Debug.Put (
-            "Machine_Occurrence = null, reraised"));
-         null;
-      else
-         C.unwind.Unwind_DeleteException (Machine_Occurrence.Header'Access);
-         --  in Win32 SEH, the chain may be rollback, so restore it
-         Mapping.Reinstall_Exception_Handler;
-      end if;
-      pragma Check (Trace, Ada.Debug.Put ("leave"));
-   end End_Handler;
 
    function CleanupUnwind_Handler (
       ABI_Version : C.signed_int;
@@ -185,11 +107,11 @@ package body Separated is
       pragma Unreferenced (Dummy);
    begin
       pragma Check (Trace, Ada.Debug.Put ("Unwind_RaiseException"));
-      Dummy := Handling.Unwind_RaiseException (
+      Dummy := Searching.Unwind_RaiseException (
          Machine_Occurrence.Header'Access);
       --  in GNAT runtime, calling Notify_Unhandled_Exception here
       pragma Check (Trace, Ada.Debug.Put ("Unwind_ForcedUnwind"));
-      Dummy := Handling.Unwind_ForcedUnwind (
+      Dummy := Searching.Unwind_ForcedUnwind (
          Machine_Occurrence.Header'Access,
          CleanupUnwind_Handler'Access,
          C.void_ptr (Null_Address));
