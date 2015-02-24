@@ -219,19 +219,19 @@ package body Ada.Hierarchical_File_Names is
       end if;
    end Base_Name;
 
-   function Compose_No_Folding (
+   function Unfolded_Compose (
       Containing_Directory : String := "";
       Name : String;
       Extension : String := "") return String is
    begin
-      return Compose_No_Folding (
+      return Unfolded_Compose (
          Containing_Directory,
          Name,
          Extension,
          Path_Delimiter => Default_Path_Delimiter);
-   end Compose_No_Folding;
+   end Unfolded_Compose;
 
-   function Compose_No_Folding (
+   function Unfolded_Compose (
       Containing_Directory : String := "";
       Name : String;
       Extension : String := "";
@@ -265,7 +265,7 @@ package body Ada.Hierarchical_File_Names is
          Last := Last + Extension'Length;
       end if;
       return Result (1 .. Last);
-   end Compose_No_Folding;
+   end Unfolded_Compose;
 
    --  operations in Ada.Directories.Hierarchical_File_Names
 
@@ -466,8 +466,8 @@ package body Ada.Hierarchical_File_Names is
          end;
       end loop;
       if Parent_Count > 0 then
-         return Compose_No_Folding (
-            Compose_No_Folding (
+         return Unfolded_Compose (
+            Unfolded_Compose (
                Directory (C_D_First .. C_D_Last),
                Parent_Directory_Name (
                   Parent_Count,
@@ -477,7 +477,7 @@ package body Ada.Hierarchical_File_Names is
             Extension,
             Path_Delimiter => Path_Delimiter);
       else
-         return Compose_No_Folding (
+         return Unfolded_Compose (
             Directory (C_D_First .. C_D_Last),
             Relative_Name (R_R_First .. R_R_Last),
             Extension,
@@ -648,7 +648,7 @@ package body Ada.Hierarchical_File_Names is
                      Parent_Count,
                      Path_Delimiter => Path_Delimiter);
                else
-                  return Compose_No_Folding (
+                  return Unfolded_Compose (
                      Parent_Directory_Name (
                         Parent_Count,
                         Path_Delimiter => Path_Delimiter),

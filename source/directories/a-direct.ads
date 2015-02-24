@@ -122,7 +122,7 @@ package Ada.Directories is
       Name : String;
       Extension : String := "")
       return String
-      renames Hierarchical_File_Names.Compose_No_Folding;
+      renames Hierarchical_File_Names.Unfolded_Compose;
 
 --  type Name_Case_Kind is
 --    (Unknown, Case_Sensitive, Case_Insensitive, Case_Preserving);
