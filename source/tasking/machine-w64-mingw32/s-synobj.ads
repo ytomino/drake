@@ -211,8 +211,4 @@ private
    end record;
    pragma Suppress_Initialization (RW_Lock);
 
-   --  for Abortable
-
-   function "-" (Left, Right : Native_Time.Native_Time) return Duration;
-
 end System.Synchronous_Objects;

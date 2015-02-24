@@ -96,13 +96,19 @@ package body System.Synchronous_Objects is
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
       Timeout : Duration;
-      Notified : out Boolean) is
+      Notified : out Boolean)
+   is
+      Timeout_T : Native_Time.Native_Time := Native_Time.Clock;
    begin
+      if Timeout >= 0.0 then
+         Timeout_T := Native_Time.To_Native_Duration (
+            Native_Time.To_Duration (Timeout_T) + Timeout);
+      end if;
       Wait (
          Object,
          Mutex,
-         Native_Time.Clock + Timeout,
-         Notified);
+         Timeout => Timeout_T,
+         Notified => Notified);
    end Wait;
 
    --  queue
@@ -423,14 +429,5 @@ package body System.Synchronous_Objects is
          Raise_Exception (Tasking_Error'Identity);
       end if;
    end Leave;
-
-   --  for Abortable
-
-   function "+" (Left : Native_Time.Native_Time; Right : Duration)
-      return Native_Time.Native_Time is
-   begin
-      return Native_Time.To_Native_Time (
-         Native_Time.To_Time (Left) + Right);
-   end "+";
 
 end System.Synchronous_Objects;

@@ -16,13 +16,17 @@ package body System.Synchronous_Objects.Abortable is
       Aborted := Tasks.Is_Aborted;
       if not Aborted then
          declare
-            N : Native_Time.Native_Time;
+            Timeout_T : constant Duration := Native_Time.To_Duration (Timeout);
+            N : Duration := Native_Time.To_Duration (Native_Time.Clock);
          begin
             loop
-               N := Native_Time.Clock + Abort_Checking_Span;
-               exit when Native_Time.To_Time (N) >=
-                  Native_Time.To_Time (Timeout);
-               Wait (Object, Mutex, N, Notified);
+               N := N + Abort_Checking_Span;
+               exit when N >= Timeout_T;
+               Wait (
+                  Object,
+                  Mutex,
+                  Timeout => Native_Time.To_Native_Time (N),
+                  Notified => Notified);
                Aborted := Tasks.Is_Aborted;
                if Notified or else Aborted then
                   return;

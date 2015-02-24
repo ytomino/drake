@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with C.sys.time; -- struct timeval
 with C.sys.types; -- time_t
 with C.time; -- struct timespec
@@ -19,12 +19,17 @@ package System.Native_Time is
 
    function To_Native_Time (T : Duration) return Native_Time;
    function To_Time (T : Native_Time) return Duration;
-
    function To_Time (T : C.sys.types.time_t) return Duration;
-   function To_Time (T : C.sys.time.struct_timeval) return Duration;
 
    pragma Pure_Function (To_Native_Time);
    pragma Pure_Function (To_Time);
+
+   function To_Native_Duration (D : Duration) return Native_Time;
+   function To_Duration (D : Native_Time) return Duration;
+   function To_Duration (D : C.sys.time.struct_timeval) return Duration;
+
+   pragma Pure_Function (To_Native_Duration);
+   pragma Pure_Function (To_Duration);
 
    --  current absolute time
 

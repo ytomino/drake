@@ -1,6 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Naked_Text_IO;
-with System.Native_IO.Text_IO;
+with System.Native_Text_IO;
 package body Ada.Text_IO.Terminal is
    use Exception_Identification.From_Here;
    use type IO_Modes.File_Mode;
@@ -41,7 +41,7 @@ package body Ada.Text_IO.Terminal is
          renames Reference (File).all;
    begin
       Check_File_Mode (NC_File, IO_Modes.Out_File);
-      System.Native_IO.Text_IO.Set_Terminal_Size (
+      System.Native_Text_IO.Set_Terminal_Size (
          Naked_Text_IO.Terminal_Handle (NC_File),
          Integer (Line_Length),
          Integer (Page_Length));
@@ -59,7 +59,7 @@ package body Ada.Text_IO.Terminal is
          renames Reference (File).all;
    begin
       Check_File_Mode (NC_File, IO_Modes.Out_File);
-      System.Native_IO.Text_IO.Terminal_Size (
+      System.Native_Text_IO.Terminal_Size (
          Naked_Text_IO.Terminal_Handle (NC_File),
          Natural'Base (Line_Length),
          Natural'Base (Page_Length));
@@ -81,7 +81,7 @@ package body Ada.Text_IO.Terminal is
          renames Reference (File).all;
    begin
       Check_File_Mode (NC_File, IO_Modes.Out_File);
-      System.Native_IO.Text_IO.Terminal_View (
+      System.Native_Text_IO.Terminal_View (
          Naked_Text_IO.Terminal_Handle (NC_File),
          Positive'Base (Left),
          Positive'Base (Top),
@@ -99,7 +99,7 @@ package body Ada.Text_IO.Terminal is
          renames Reference (File).all;
    begin
       Check_File_Mode (NC_File, IO_Modes.Out_File);
-      System.Native_IO.Text_IO.Set_Terminal_Position (
+      System.Native_Text_IO.Set_Terminal_Position (
          Naked_Text_IO.Terminal_Handle (NC_File),
          Integer (Col),
          Integer (Line));
@@ -110,7 +110,7 @@ package body Ada.Text_IO.Terminal is
          renames Reference (File).all;
    begin
       Check_File_Mode (NC_File, IO_Modes.Out_File);
-      System.Native_IO.Text_IO.Set_Terminal_Col (
+      System.Native_Text_IO.Set_Terminal_Col (
          Naked_Text_IO.Terminal_Handle (NC_File),
          Integer (To));
    end Set_Col;
@@ -130,7 +130,7 @@ package body Ada.Text_IO.Terminal is
          renames Reference (File).all;
    begin
       Check_File_Mode (NC_File, IO_Modes.Out_File);
-      System.Native_IO.Text_IO.Terminal_Position (
+      System.Native_Text_IO.Terminal_Position (
          Naked_Text_IO.Terminal_Handle (NC_File),
          Positive'Base (Col),
          Positive'Base (Line));

@@ -1,6 +1,7 @@
 with Ada.Execution_Time;
 with Ada.Real_Time;
 with Ada.Text_IO;
+with Ada.Unchecked_Conversion;
 procedure times is
 	package Duration_IO is new Ada.Text_IO.Fixed_IO (Duration);
 	use Ada.Text_IO, Duration_IO;
@@ -30,5 +31,13 @@ begin
 	pragma Assert (Now_RT + Ada.Real_Time.To_Time_Span (2.0) - Now_RT = Ada.Real_Time.To_Time_Span (2.0));
 	pragma Assert (Ada.Real_Time.To_Time_Span (2.0) + Now_RT = Now_RT + Ada.Real_Time.To_Time_Span (2.0));
 	pragma Assert (Now_RT - Ada.Real_Time.To_Time_Span (2.0) = Now_RT + Ada.Real_Time.To_Time_Span (-2.0));
+	-- Execution_Time.Time is started from 0
+	declare
+		function To_Duration is new Ada.Unchecked_Conversion (Ada.Execution_Time.CPU_Time, Duration);
+	begin
+		pragma Assert (To_Duration (First_CT) in 0.0 .. 0.5);
+		pragma Assert (To_Duration (Now_CT) in 0.0 .. 0.5); -- "delay" do not use CPU time
+		null;
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end times;

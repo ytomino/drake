@@ -1,15 +1,21 @@
 pragma License (Unrestricted);
---  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
-with C.termios;
-package System.Native_IO.Text_IO is
+--  implementation unit specialized for Windows
+with Ada.IO_Exceptions;
+with Ada.IO_Modes;
+with Ada.Streams;
+with System.Native_IO;
+with C.windef;
+package System.Native_Text_IO is
    pragma Preelaborate;
+
+   subtype Handle_Type is Native_IO.Handle_Type;
 
    --  file management
 
    Default_External : constant Ada.IO_Modes.File_External :=
-      Ada.IO_Modes.UTF_8;
+      Ada.IO_Modes.Locale;
    Default_New_Line : constant Ada.IO_Modes.File_New_Line :=
-      Ada.IO_Modes.LF;
+      Ada.IO_Modes.CR_LF;
 
    type Packed_Form is record
       Stream_Form : Native_IO.Packed_Form;
@@ -22,46 +28,41 @@ package System.Native_IO.Text_IO is
 
    --  read / write
 
-   subtype Buffer_Type is String (1 .. 6); -- one code-point of UTF-8
+   subtype Buffer_Type is String (1 .. 12); -- 2 code-points of UTF-8
 
-   subtype DBCS_Buffer_Type is String (1 .. 6); -- unused
+   subtype DBCS_Buffer_Type is String (1 .. 2);
 
    procedure To_UTF_8 (
       Buffer : aliased DBCS_Buffer_Type;
       Last : Natural;
       Out_Buffer : out Buffer_Type;
       Out_Last : out Natural);
-   pragma Import (Ada, To_UTF_8, "__drake_program_error");
 
    procedure To_DBCS (
       Buffer : Buffer_Type;
       Last : Natural;
       Out_Buffer : aliased out DBCS_Buffer_Type;
       Out_Last : out Natural);
-   pragma Import (Ada, To_DBCS, "__drake_program_error");
 
    --  terminal
 
    procedure Terminal_Get (
       Handle : Handle_Type;
-      Item : Address;
+      Item : Address; -- requires 6 bytes at least
       Length : Ada.Streams.Stream_Element_Offset;
-      Out_Length : out Ada.Streams.Stream_Element_Offset) -- -1 when error
-      renames Read;
+      Out_Length : out Ada.Streams.Stream_Element_Offset); -- -1 when error
 
    procedure Terminal_Get_Immediate (
       Handle : Handle_Type;
-      Item : Address;
+      Item : Address; -- requires 6 bytes at least
       Length : Ada.Streams.Stream_Element_Offset;
-      Out_Length : out Ada.Streams.Stream_Element_Offset) -- -1 when error
-      renames Read;
+      Out_Length : out Ada.Streams.Stream_Element_Offset); -- -1 when error
 
    procedure Terminal_Put (
       Handle : Handle_Type;
       Item : Address;
       Length : Ada.Streams.Stream_Element_Offset;
-      Out_Length : out Ada.Streams.Stream_Element_Offset) -- -1 when error
-      renames Write;
+      Out_Length : out Ada.Streams.Stream_Element_Offset); -- -1 when error
 
    procedure Terminal_Size (
       Handle : Handle_Type;
@@ -88,11 +89,11 @@ package System.Native_IO.Text_IO is
    procedure Terminal_Clear (
       Handle : Handle_Type);
 
-   subtype Setting is C.termios.struct_termios;
+   subtype Setting is C.windef.DWORD;
 
    procedure Set_Non_Canonical_Mode (
       Handle : Handle_Type;
-      Wait : Boolean;
+      Wait : Boolean; -- unreferenced
       Saved_Settings : aliased out Setting);
 
    procedure Restore (
@@ -101,7 +102,11 @@ package System.Native_IO.Text_IO is
 
    --  exceptions
 
+   Device_Error : exception
+      renames Ada.IO_Exceptions.Device_Error;
    Data_Error : exception
       renames Ada.IO_Exceptions.Data_Error;
+   Layout_Error : exception
+      renames Ada.IO_Exceptions.Layout_Error;
 
-end System.Native_IO.Text_IO;
+end System.Native_Text_IO;

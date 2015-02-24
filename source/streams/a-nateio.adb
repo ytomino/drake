@@ -30,7 +30,7 @@ package body Ada.Naked_Text_IO is
          when IO_Modes.Locale =>
             declare
                Locale_Support : constant Boolean :=
-                  System.Native_IO.Text_IO.Default_External =
+                  System.Native_Text_IO.Default_External =
                   IO_Modes.Locale;
             begin
                if Locale_Support then
@@ -40,7 +40,7 @@ package body Ada.Naked_Text_IO is
                end if;
             end;
          when IO_Modes.By_Target =>
-            return System.Native_IO.Text_IO.Default_External;
+            return System.Native_Text_IO.Default_External;
       end case;
    end Select_External;
 
@@ -53,14 +53,14 @@ package body Ada.Naked_Text_IO is
          when IO_Modes.LF | IO_Modes.CR | IO_Modes.CR_LF =>
             return IO_Modes.File_New_Line (Spec);
          when IO_Modes.By_Target =>
-            return System.Native_IO.Text_IO.Default_New_Line;
+            return System.Native_Text_IO.Default_New_Line;
       end case;
    end Select_New_Line;
 
    --  implementation of the parameter Form
 
    procedure Set (
-      Form : in out System.Native_IO.Text_IO.Packed_Form;
+      Form : in out System.Native_Text_IO.Packed_Form;
       Keyword : String;
       Item : String) is
    begin
@@ -91,14 +91,14 @@ package body Ada.Naked_Text_IO is
       end if;
    end Set;
 
-   function Pack (Form : String) return System.Native_IO.Text_IO.Packed_Form is
+   function Pack (Form : String) return System.Native_Text_IO.Packed_Form is
       Keyword_First : Positive;
       Keyword_Last : Natural;
       Item_First : Positive;
       Item_Last : Natural;
       Last : Natural;
    begin
-      return Result : System.Native_IO.Text_IO.Packed_Form := Default_Form do
+      return Result : System.Native_Text_IO.Packed_Form := Default_Form do
          Last := Form'First - 1;
          while Last < Form'Last loop
             System.Form_Parameters.Get (
@@ -117,7 +117,7 @@ package body Ada.Naked_Text_IO is
    end Pack;
 
    procedure Unpack (
-      Form : System.Native_IO.Text_IO.Packed_Form;
+      Form : System.Native_Text_IO.Packed_Form;
       Result : out Streams.Naked_Stream_IO.Form_String;
       Last : out Natural)
    is
@@ -228,13 +228,13 @@ package body Ada.Naked_Text_IO is
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
       Name : String;
-      Form : System.Native_IO.Text_IO.Packed_Form);
+      Form : System.Native_Text_IO.Packed_Form);
    procedure Open_File (
       Open_Proc : Open_Access;
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
       Name : String;
-      Form : System.Native_IO.Text_IO.Packed_Form)
+      Form : System.Native_Text_IO.Packed_Form)
    is
       New_File : aliased Non_Controlled_File_Type := new Text_Type'(
          Name_Length => 0,
@@ -269,7 +269,7 @@ package body Ada.Naked_Text_IO is
          Streams.Naked_Stream_IO.Handle (New_File.File))
       then
          New_File.External := IO_Modes.Terminal;
-         New_File.New_Line := System.Native_IO.Text_IO.Default_New_Line;
+         New_File.New_Line := System.Native_Text_IO.Default_New_Line;
       else
          New_File.External := Select_External (Form.External);
          New_File.New_Line := Select_New_Line (Form.New_Line);
@@ -317,13 +317,13 @@ package body Ada.Naked_Text_IO is
                Read_Length : Streams.Stream_Element_Offset;
             begin
                if Wait then
-                  System.Native_IO.Text_IO.Terminal_Get (
+                  System.Native_Text_IO.Terminal_Get (
                      Streams.Naked_Stream_IO.Handle (File.File),
                      File.Buffer (File.Last + 1)'Address,
                      1,
                      Read_Length); -- Read_Length can be > 1
                else
-                  System.Native_IO.Text_IO.Terminal_Get_Immediate (
+                  System.Native_Text_IO.Terminal_Get_Immediate (
                      Streams.Naked_Stream_IO.Handle (File.File),
                      File.Buffer (File.Last + 1)'Address,
                      1,
@@ -363,7 +363,7 @@ package body Ada.Naked_Text_IO is
          then
             declare
                Locale_Support : constant Boolean :=
-                  System.Native_IO.Text_IO.Default_External = IO_Modes.Locale;
+                  System.Native_Text_IO.Default_External = IO_Modes.Locale;
             begin
                if not Locale_Support then
                   unreachable;
@@ -371,12 +371,12 @@ package body Ada.Naked_Text_IO is
             end;
             declare
                DBCS_Buffer : aliased
-                  System.Native_IO.Text_IO.DBCS_Buffer_Type;
+                  System.Native_Text_IO.DBCS_Buffer_Type;
                New_Last : Natural;
             begin
                DBCS_Buffer (1) := File.Buffer (1);
                DBCS_Buffer (2) := File.Buffer (2);
-               System.Native_IO.Text_IO.To_UTF_8 (
+               System.Native_Text_IO.To_UTF_8 (
                   DBCS_Buffer,
                   File.Last,
                   File.Buffer,
@@ -466,13 +466,13 @@ package body Ada.Naked_Text_IO is
    is
       type Restore_Type is record
          Handle : System.Native_IO.Handle_Type;
-         Old_Settings : aliased System.Native_IO.Text_IO.Setting;
+         Old_Settings : aliased System.Native_Text_IO.Setting;
       end record;
       pragma Suppress_Initialization (Restore_Type);
       procedure Finally (X : not null access Restore_Type);
       procedure Finally (X : not null access Restore_Type) is
       begin
-         System.Native_IO.Text_IO.Restore (X.Handle, X.Old_Settings);
+         System.Native_Text_IO.Restore (X.Handle, X.Old_Settings);
       end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (Restore_Type, Finally);
@@ -481,7 +481,7 @@ package body Ada.Naked_Text_IO is
       Check_File_Mode (File, IO_Modes.In_File);
       if File.External = IO_Modes.Terminal then
          X.Handle := Streams.Naked_Stream_IO.Handle (File.File);
-         System.Native_IO.Text_IO.Set_Non_Canonical_Mode (
+         System.Native_Text_IO.Set_Non_Canonical_Mode (
             X.Handle,
             Wait, -- only POSIX
             X.Old_Settings);
@@ -637,7 +637,7 @@ package body Ada.Naked_Text_IO is
    procedure Raw_New_Page (File : Non_Controlled_File_Type) is
    begin
       if File.External = IO_Modes.Terminal then
-         System.Native_IO.Text_IO.Terminal_Clear (
+         System.Native_Text_IO.Terminal_Clear (
             Streams.Naked_Stream_IO.Handle (File.File));
       else
          declare
@@ -689,7 +689,7 @@ package body Ada.Naked_Text_IO is
          declare
             Written_Length : Streams.Stream_Element_Offset;
          begin
-            System.Native_IO.Text_IO.Terminal_Put (
+            System.Native_Text_IO.Terminal_Put (
                Streams.Naked_Stream_IO.Handle (File.File),
                File.Buffer'Address,
                Streams.Stream_Element_Offset (Sequence_Length),
@@ -703,7 +703,7 @@ package body Ada.Naked_Text_IO is
       then
          declare
             Locale_Support : constant Boolean :=
-               System.Native_IO.Text_IO.Default_External =
+               System.Native_Text_IO.Default_External =
                IO_Modes.Locale;
          begin
             if not Locale_Support then
@@ -711,10 +711,10 @@ package body Ada.Naked_Text_IO is
             end if;
          end;
          declare
-            DBCS_Buffer : aliased System.Native_IO.Text_IO.DBCS_Buffer_Type;
+            DBCS_Buffer : aliased System.Native_Text_IO.DBCS_Buffer_Type;
             DBCS_Last : Natural;
          begin
-            System.Native_IO.Text_IO.To_DBCS (
+            System.Native_Text_IO.To_DBCS (
                File.Buffer,
                Sequence_Length,
                DBCS_Buffer,
@@ -765,7 +765,7 @@ package body Ada.Naked_Text_IO is
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode := IO_Modes.Out_File;
       Name : String := "";
-      Form : System.Native_IO.Text_IO.Packed_Form := Default_Form) is
+      Form : System.Native_Text_IO.Packed_Form := Default_Form) is
    begin
       if Is_Open (File) then
          Raise_Exception (Status_Error'Identity);
@@ -782,7 +782,7 @@ package body Ada.Naked_Text_IO is
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
       Name : String;
-      Form : System.Native_IO.Text_IO.Packed_Form := Default_Form) is
+      Form : System.Native_Text_IO.Packed_Form := Default_Form) is
    begin
       if Is_Open (File) then
          Raise_Exception (Status_Error'Identity);
@@ -903,7 +903,7 @@ package body Ada.Naked_Text_IO is
    end Name;
 
    function Form (File : Non_Controlled_File_Type)
-      return System.Native_IO.Text_IO.Packed_Form is
+      return System.Native_Text_IO.Packed_Form is
    begin
       Check_File_Open (File);
       declare
@@ -917,7 +917,7 @@ package body Ada.Naked_Text_IO is
          end if;
          if File.External = IO_Modes.Terminal then
             External := IO_Modes.File_External_Spec (
-               System.Native_IO.Text_IO.Default_External);
+               System.Native_Text_IO.Default_External);
          else
             External := IO_Modes.File_External_Spec (File.External);
          end if;
@@ -964,7 +964,7 @@ package body Ada.Naked_Text_IO is
          if Line_Length = 0 or else Page_Length = 0 then
             Raise_Exception (Device_Error'Identity);
          end if;
-         System.Native_IO.Text_IO.Set_Terminal_Size (
+         System.Native_Text_IO.Set_Terminal_Size (
             Streams.Naked_Stream_IO.Handle (File.File),
             Line_Length,
             Page_Length);
@@ -998,7 +998,7 @@ package body Ada.Naked_Text_IO is
    begin
       Check_File_Mode (File, IO_Modes.Out_File);
       if File.External = IO_Modes.Terminal then
-         System.Native_IO.Text_IO.Terminal_Size (
+         System.Native_Text_IO.Terminal_Size (
             Streams.Naked_Stream_IO.Handle (File.File),
             Line_Length,
             Page_Length);
@@ -1163,7 +1163,7 @@ package body Ada.Naked_Text_IO is
       else
          --  Out_File (or Append_File)
          if File.External = IO_Modes.Terminal then
-            System.Native_IO.Text_IO.Set_Terminal_Col (
+            System.Native_Text_IO.Set_Terminal_Col (
                Streams.Naked_Stream_IO.Handle (File.File),
                To);
          else
@@ -1190,7 +1190,7 @@ package body Ada.Naked_Text_IO is
       else
          --  Out_File (or Append_File)
          if File.External = IO_Modes.Terminal then
-            System.Native_IO.Text_IO.Set_Terminal_Position (
+            System.Native_Text_IO.Set_Terminal_Position (
                Streams.Naked_Stream_IO.Handle (File.File),
                Col => 1,
                Line => To);
@@ -1214,7 +1214,7 @@ package body Ada.Naked_Text_IO is
    begin
       Check_File_Open (File);
       if File.External = IO_Modes.Terminal then
-         System.Native_IO.Text_IO.Terminal_Position (
+         System.Native_Text_IO.Terminal_Position (
             Streams.Naked_Stream_IO.Handle (File.File),
             Col,
             Line);
@@ -1519,7 +1519,7 @@ package body Ada.Naked_Text_IO is
          if File.External = Ada.IO_Modes.Locale then
             declare
                Locale_Support : constant Boolean :=
-                  System.Native_IO.Text_IO.Default_External = IO_Modes.Locale;
+                  System.Native_Text_IO.Default_External = IO_Modes.Locale;
             begin
                if not Locale_Support then
                   unreachable;
@@ -1673,7 +1673,7 @@ package body Ada.Naked_Text_IO is
       Mode : IO_Modes.File_Mode;
       Stream : not null access Streams.Root_Stream_Type'Class;
       Name : String := "";
-      Form : System.Native_IO.Text_IO.Packed_Form := Default_Form)
+      Form : System.Native_Text_IO.Packed_Form := Default_Form)
    is
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
          return System.Address;

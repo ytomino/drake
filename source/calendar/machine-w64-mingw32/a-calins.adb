@@ -30,7 +30,7 @@ package body Ada.Calendar.Inside is
       Local_Date := Duration (Date) + Duration (Time_Zone * 60);
       Sub_Second := Duration'Fixed_Value (
          System.Native_Time.Nanosecond_Number'Integer_Value (Local_Date)
-         rem 1000_000_000);
+         mod 1000_000_000);
       Local_Date := Local_Date - Sub_Second;
       FileTime := System.Native_Time.To_Native_Time (Local_Date);
       if C.winbase.FileTimeToSystemTime (

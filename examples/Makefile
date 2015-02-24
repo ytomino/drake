@@ -80,6 +80,11 @@ ifneq ($(findstring linux-gnu,$(TARGET)),)
 LFLAGS_FOR_EXAMPLE+=-lm -lpthread -ldl
 endif
 
+ifneq ($(GCC),)
+MFLAGS+=--GCC="$(GCC)"
+LFLAGS_FOR_EXAMPLE+=--GCC="$(GCC)"
+endif
+
 ifneq ($(DEBUG),0)
 CFLAGS_FOR_EXAMPLE+=-ggdb -gnata -gnat-p
 BFLAGS=-E
@@ -103,7 +108,7 @@ LFLAGS_FOR_EXAMPLE+=$(LFLAGS)
 
 .PHONY: all tree clean xfind xfindall
 
-all: $(BUILDDIR)/adalib/libgnat.a $(BINLN) $(EXAMPLES)
+all: $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
 
 tree:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
@@ -120,7 +125,7 @@ $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
 	cd $(BUILDDIR) && $(GNATPREFIX)gnatbind $(basename $(notdir $<)).ali $(GFLAGS) $(BFLAGS)
 	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS) $(LFLAGS_FOR_EXAMPLE)
 
-$(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT)
+$(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT) $(BINLN)
 
 clean:
 	-rm -rf $(BINLN) *.build

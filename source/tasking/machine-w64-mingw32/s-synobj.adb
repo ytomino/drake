@@ -305,9 +305,19 @@ package body System.Synchronous_Objects is
    procedure Wait (
       Object : in out Event;
       Timeout : Native_Time.Native_Time;
-      Value : out Boolean) is
+      Value : out Boolean)
+   is
+      Timeout_T : constant Duration := Native_Time.To_Duration (Timeout);
+      Current_T : constant Duration :=
+         Native_Time.To_Duration (Native_Time.Clock);
+      D : Duration;
    begin
-      Wait (Object, Timeout - Native_Time.Clock, Value);
+      if Timeout_T > Current_T then
+         D := Timeout_T - Current_T;
+      else
+         D := 0.0;
+      end if;
+      Wait (Object, Timeout => D, Value => Value);
    end Wait;
 
    procedure Wait (
@@ -417,12 +427,5 @@ package body System.Synchronous_Objects is
          end if;
       end if;
    end Leave;
-
-   --  for Abortable
-
-   function "-" (Left, Right : Native_Time.Native_Time) return Duration is
-   begin
-      return Native_Time.To_Time (Left) - Native_Time.To_Time (Right);
-   end "-";
 
 end System.Synchronous_Objects;

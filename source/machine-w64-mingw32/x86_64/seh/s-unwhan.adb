@@ -578,8 +578,7 @@ package body System.Unwind.Handling is
                begin
                   --  Directly convert the system exception to a GCC one.
                   --  This is really breaking the API, but is necessary
-                  --    for stack size
-                  --  reasons: the normal way is to call
+                  --    for stack size reasons: the normal way is to call
                   --    Raise_From_Signal_Handler, which build the exception
                   --    and calls _Unwind_RaiseException, which unwinds
                   --    the stack and will call this personality routine.
