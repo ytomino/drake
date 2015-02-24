@@ -1,4 +1,5 @@
 pragma Check_Policy (Trace, Off);
+with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
 with System.Runtime_Context;
 with System.Startup;
@@ -8,6 +9,7 @@ with System.Termination;
 with System.Unwind.Standard;
 package body System.Unwind.Raising is
    pragma Suppress (All_Checks);
+   use type Representation.Unwind_Exception_Class;
 
    --  package separated for depending on zcx / sjlj
    package Separated is
@@ -23,6 +25,12 @@ package body System.Unwind.Raising is
    function strlen (s : not null access Character)
       return Storage_Elements.Storage_Count;
    pragma Import (Intrinsic, strlen, "__builtin_strlen");
+
+   --  for Set_Foreign_Occurrence
+
+   Foreign_Exception : aliased Exception_Data;
+   pragma Import (Ada, Foreign_Exception,
+      "system__exceptions__foreign_exception");
 
    --  for Report_Traceback
 
@@ -601,6 +609,40 @@ package body System.Unwind.Raising is
       X.Pid := Local_Partition_ID;
       X.Num_Tracebacks := 0;
    end Set_Exception_Message;
+
+   procedure Set_Foreign_Occurrence (
+      X : in out Exception_Occurrence;
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
+   is
+      package MOA_Conv is
+         new Address_To_Named_Access_Conversions (
+            Representation.Machine_Occurrence,
+            Representation.Machine_Occurrence_Access);
+   begin
+      X.Id := Foreign_Exception'Access;
+      X.Machine_Occurrence := MOA_Conv.To_Address (Machine_Occurrence);
+      X.Msg_Length := 0;
+      X.Exception_Raised := True;
+      X.Pid := Local_Partition_ID;
+      X.Num_Tracebacks := 0;
+   end Set_Foreign_Occurrence;
+
+   procedure Save_Current_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
+      Current : out Exception_Occurrence_Access)
+   is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
+   begin
+      Current := TLS.Current_Exception'Access;
+      if Machine_Occurrence.Header.exception_class =
+         Representation.GNAT_Exception_Class
+      then
+         Current.all := Machine_Occurrence.Occurrence;
+      else
+         Set_Foreign_Occurrence (Current.all, Machine_Occurrence);
+      end if;
+   end Save_Current_Occurrence;
 
    procedure Report (X : Exception_Occurrence; Where : String) is
       procedure Put_Upper;
