@@ -1,9 +1,9 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
-with System.Unwind.Handling;
 with System.Unwind.Mapping;
 with System.Unwind.Representation;
+with System.Unwind.Searching;
 with C.unwind;
 separate (System.Unwind.Raising)
 package body Separated is
@@ -204,11 +204,11 @@ package body Separated is
       pragma Unreferenced (Dummy);
    begin
       pragma Check (Trace, Ada.Debug.Put ("Unwind_RaiseException"));
-      Dummy := Handling.Unwind_RaiseException (
+      Dummy := Searching.Unwind_RaiseException (
          Machine_Occurrence.Header'Access);
       --  in GNAT runtime, calling Notify_Unhandled_Exception here
       pragma Check (Trace, Ada.Debug.Put ("Unwind_ForcedUnwind"));
-      Dummy := Handling.Unwind_ForcedUnwind (
+      Dummy := Searching.Unwind_ForcedUnwind (
          Machine_Occurrence.Header'Access,
          CleanupUnwind_Handler'Access,
          C.void_ptr (Null_Address));

@@ -1,14 +1,10 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
-with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
-with System.Unwind.Mapping;
 with System.Unwind.Representation;
-with C.basetsd;
 with C.unwind_pe;
-package body System.Unwind.Handling is
+package body System.Unwind.Searching is
    pragma Suppress (All_Checks);
-   use type Representation.Machine_Occurrence_Access;
    use type C.ptrdiff_t;
    use type C.signed_int;
    use type C.size_t;
@@ -19,16 +15,10 @@ package body System.Unwind.Handling is
    use type C.unsigned_long_long;
    use type C.void_ptr;
    use type C.unwind.sleb128_t;
-   use type C.winnt.PRUNTIME_FUNCTION;
 
    Foreign_Exception : aliased Exception_Data;
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
-
-   function builtin_eh_return_data_regno (A1 : C.signed_int)
-      return C.signed_int;
-   pragma Import (Intrinsic, builtin_eh_return_data_regno,
-      "__builtin_eh_return_data_regno");
 
    procedure Increment (p : in out C.unsigned_char_const_ptr);
    procedure Increment (p : in out C.unsigned_char_const_ptr) is
@@ -53,109 +43,6 @@ package body System.Unwind.Handling is
       return uchar_Conv.To_Pointer (uchar_Conv.To_Address (Left)
          + Address (Right));
    end "+";
-
-   function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean
-      with Import, Convention => Intrinsic;
-
-   package Unwind_Exception_ptr_Conv is
-      new Address_To_Named_Access_Conversions (
-         C.unwind.struct_Unwind_Exception,
-         C.unwind.struct_Unwind_Exception_ptr);
-   package PUINT16_Conv is
-      new Address_To_Named_Access_Conversions (
-         C.basetsd.UINT16,
-         C.basetsd.PUINT16);
-   package PDWORD64_Conv is
-      new Address_To_Named_Access_Conversions (
-         C.basetsd.DWORD64,
-         C.basetsd.PDWORD64);
-
-   --  (unwind-seh.c)
-   STATUS_USER_DEFINED : constant := 2 ** 29;
-   GCC_MAGIC : constant := 16#474343#; -- "GCC"
-   STATUS_GCC_THROW : constant :=
-      STATUS_USER_DEFINED + 0 * 2 ** 24 + GCC_MAGIC;
-
---  UWOP_PUSH_NONVOL : constant := 0;
-   UWOP_ALLOC_LARGE : constant := 1;
---  UWOP_ALLOC_SMALL : constant := 2;
---  UWOP_SET_FPREG : constant := 3;
-   UWOP_SAVE_NONVOL : constant := 4;
---  UWOP_SAVE_NONVOL_FAR : constant := 5;
-   UWOP_SAVE_XMM128 : constant := 8;
---  UWOP_SAVE_XMM128_FAR : constant := 9;
-   UWOP_PUSH_MACHFRAME : constant := 10;
-
-   --  equivalent to __gnat_adjust_context (raise-gcc.c)
-   procedure Adjust_Context (
-      Unwind_Data : Address;
-      Context_RSP : C.basetsd.ULONG64);
-   procedure Adjust_Context (
-      Unwind_Data : Address;
-      Context_RSP : C.basetsd.ULONG64)
-   is
-      package uchar_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.unsigned_char,
-            C.unsigned_char_const_ptr);
-      unw : Address := Unwind_Data;
-      rsp : C.basetsd.ULONG64 := Context_RSP;
-      len : C.unsigned_char;
-   begin
-      --  Version = 1, no flags, no prolog.
-      if uchar_Conv.To_Pointer (unw).all /= 1
-         or else uchar_Conv.To_Pointer (unw + 1).all /= 0
-         or else uchar_Conv.To_Pointer (unw + 3).all /= 0 -- No frame pointer.
-      then
-         null;
-      else
-         len := uchar_Conv.To_Pointer (unw + 2).all;
-         unw := unw + 4;
-         while len > 0 loop
-            --  Offset in prolog = 0.
-            exit when uchar_Conv.To_Pointer (unw).all /= 0;
-            case uchar_Conv.To_Pointer (unw + 1).all and 16#0f# is
-               when UWOP_ALLOC_LARGE =>
-                  --  Expect < 512KB.
-                  exit when
-                     (uchar_Conv.To_Pointer (unw + 1).all and 16#f0#) /= 0;
-                  rsp :=
-                     rsp
-                     + 8
-                        * C.basetsd.ULONG64 (
-                           PUINT16_Conv.To_Pointer (unw + 2).all);
-                  len := len - 1;
-                  unw := unw + 2;
-               when UWOP_SAVE_NONVOL | UWOP_SAVE_XMM128 =>
-                  len := len - 1;
-                  unw := unw + 2;
-               when UWOP_PUSH_MACHFRAME =>
-                  declare
-                     rip : C.basetsd.ULONG64;
-                  begin
-                     rip := rsp;
-                     if (uchar_Conv.To_Pointer (unw + 1).all and 16#f0#) =
-                        16#10#
-                     then
-                        rip :=
-                           rip
-                           + C.basetsd.ULONG64'Size / Standard'Storage_Unit;
-                     end if;
-                     --  Adjust rip.
-                     PDWORD64_Conv.To_Pointer (System'To_Address (rip)).all :=
-                        PDWORD64_Conv.To_Pointer (System'To_Address (rip)).all
-                        + 1;
-                  end;
-                  exit;
-               when others =>
-                  --  Unexpected.
-                  exit;
-            end case;
-            unw := unw + 2;
-            len := len - 1;
-         end loop;
-      end if;
-   end Adjust_Context;
 
    --  implementation
 
@@ -197,7 +84,6 @@ package body System.Unwind.Handling is
             --  about region
             lsda : C.void_ptr;
             base : C.unwind.Unwind_Ptr;
-            call_site_encoding : C.unsigned_char;
             call_site_table : C.unsigned_char_const_ptr;
             lp_base : aliased C.unwind.Unwind_Ptr;
             action_table : C.unsigned_char_const_ptr;
@@ -250,7 +136,6 @@ package body System.Unwind.Handling is
                ttype_base := C.unwind_pe.base_of_encoded_value (
                   ttype_encoding,
                   Context);
-               call_site_encoding := p.all;
                Increment (p);
                call_site_table := C.unwind_pe.read_uleb128 (p, tmp'Access);
                action_table := call_site_table + C.ptrdiff_t (tmp);
@@ -260,51 +145,32 @@ package body System.Unwind.Handling is
                ip_before_insn : aliased C.signed_int := 0;
                ip : C.unwind.Unwind_Ptr :=
                   C.unwind.Unwind_GetIPInfo (Context, ip_before_insn'Access);
+               call_site : C.signed_int;
             begin
                if ip_before_insn = 0 then
                   pragma Check (Trace, Ada.Debug.Put ("ip_before_insn = 0"));
                   ip := ip - 1;
                end if;
+               call_site := C.signed_int (ip);
+               if call_site <= 0 then
+                  pragma Check (Trace, Ada.Debug.Put (
+                     "leave, no action or terminate"));
+                  return C.unwind.URC_CONTINUE_UNWIND;
+               end if;
                loop
-                  if not (p < action_table) then
-                     pragma Check (Trace, Ada.Debug.Put (
-                        "leave, not (p < action_table)"));
-                     return C.unwind.URC_CONTINUE_UNWIND;
-                  end if;
                   declare
-                     cs_start, cs_len, cs_lp : aliased C.unwind.Unwind_Ptr;
+                     cs_lp : aliased C.unwind.uleb128_t;
                      cs_action : aliased C.unwind.uleb128_t;
                   begin
-                     p := C.unwind_pe.read_encoded_value (
-                        null,
-                        call_site_encoding,
-                        p,
-                        cs_start'Access);
-                     p := C.unwind_pe.read_encoded_value (
-                        null,
-                        call_site_encoding,
-                        p,
-                        cs_len'Access);
-                     p := C.unwind_pe.read_encoded_value (
-                        null,
-                        call_site_encoding,
+                     p := C.unwind_pe.read_uleb128 (
                         p,
                         cs_lp'Access);
                      p := C.unwind_pe.read_uleb128 (
                         p,
                         cs_action'Access);
-                     if ip < base + cs_start then
-                        pragma Check (Trace, Ada.Debug.Put (
-                           "leave, ip < base + cs_start"));
-                        return C.unwind.URC_CONTINUE_UNWIND;
-                     elsif ip < base + cs_start + cs_len then
-                        if cs_lp /= 0 then
-                           landing_pad := lp_base + cs_lp;
-                        else
-                           pragma Check (Trace, Ada.Debug.Put (
-                              "leave, cs_lp = 0"));
-                           return C.unwind.URC_CONTINUE_UNWIND;
-                        end if;
+                     call_site := call_site - 1;
+                     if call_site = 0 then
+                        landing_pad := C.unwind.Unwind_Ptr (cs_lp + 1);
                         if cs_action /= 0 then
                            table_entry := action_table
                               + C.ptrdiff_t (cs_action - 1);
@@ -364,23 +230,14 @@ package body System.Unwind.Handling is
                            if Exception_Class =
                               Representation.GNAT_Exception_Class
                            then
-                              if choice =
-                                 Cast (Unhandled_Others_Value'Access)
-                              then
-                                 pragma Check (Trace, Ada.Debug.Put (
-                                    "unhandled exception"));
-                                 is_handled := True;
-                              else
-                                 is_handled :=
-                                    choice = Cast (GCC_Exception.Occurrence.Id)
-                                    or else
-                                       (choice = Cast (Others_Value'Access)
-                                       and then
-                                          not GCC_Exception.Occurrence.Id.
-                                             Not_Handled_By_Others)
-                                    or else
-                                       choice = Cast (All_Others_Value'Access);
-                              end if;
+                              is_handled :=
+                                 choice = Cast (GCC_Exception.Occurrence.Id)
+                                 or else
+                                    (choice = Cast (Others_Value'Access)
+                                    and then not GCC_Exception.Occurrence.Id.
+                                       Not_Handled_By_Others)
+                                 or else
+                                    choice = Cast (All_Others_Value'Access);
                            else
                               pragma Check (Trace, Ada.Debug.Put (
                                  "foreign exception"));
@@ -453,9 +310,6 @@ package body System.Unwind.Handling is
                pragma Check (Trace, Ada.Debug.Put (
                   "UA_CLEANUP_PHASE without UA_HANDLER_FRAME"));
                null; -- ???
-            elsif Phases = C.unwind.UA_END_OF_STACK then
-               pragma Check (Trace, Ada.Debug.Put ("leave, end of stack"));
-               return C.unwind.URC_HANDLER_FOUND;
             else
                pragma Check (Trace, Ada.Debug.Put ("miscellany phase"));
                null; -- ???
@@ -466,11 +320,11 @@ package body System.Unwind.Handling is
       --  setup_to_install (raise-gcc.c)
       C.unwind.Unwind_SetGR (
          Context,
-         builtin_eh_return_data_regno (0),
+         0, -- builtin_eh_return_data_regno (0),
          Cast (C.unwind.struct_Unwind_Exception_ptr (Exception_Object)));
       C.unwind.Unwind_SetGR (
          Context,
-         builtin_eh_return_data_regno (1),
+         1, -- builtin_eh_return_data_regno (1),
          C.unwind.Unwind_Word'Mod (ttype_filter));
       C.unwind.Unwind_SetIP (Context, landing_pad);
       --  Setup_Current_Excep (GCC_Exception); -- moved to Begin_Handler
@@ -478,127 +332,4 @@ package body System.Unwind.Handling is
       return C.unwind.URC_INSTALL_CONTEXT;
    end Personality;
 
-   function Personality_SEH (
-      ms_exc : C.winnt.PEXCEPTION_RECORD;
-      this_frame : C.void_ptr;
-      ms_orig_context : C.winnt.PCONTEXT;
-      ms_disp : C.winnt.PDISPATCHER_CONTEXT)
-      return C.excpt.EXCEPTION_DISPOSITION
-   is
-      Result : C.excpt.EXCEPTION_DISPOSITION;
-   begin
-      pragma Check (Trace, Ada.Debug.Put ("enter"));
-      if (ms_exc.ExceptionCode and STATUS_USER_DEFINED) = 0 then
-         pragma Check (Trace, Ada.Debug.Put ("Windows exception"));
-         declare
-            the_exception : Representation.Machine_Occurrence_Access;
-            excpip : constant C.basetsd.ULONG64 :=
-               C.basetsd.ULONG64 (Address (ms_exc.ExceptionAddress));
-         begin
-            if excpip /= 0
-               and then excpip >=
-                  ms_disp.ImageBase
-                  + C.basetsd.ULONG64 (ms_disp.FunctionEntry.BeginAddress)
-               and then excpip <
-                  ms_disp.ImageBase
-                  + C.basetsd.ULONG64 (ms_disp.FunctionEntry.EndAddress)
-            then
-               --  This is a fault in this function.
-               --  We need to adjust the return address
-               --    before raising the GCC exception.
-               declare
-                  context : aliased C.winnt.CONTEXT;
-                  mf_func : C.winnt.PRUNTIME_FUNCTION := null;
-                  mf_imagebase : C.basetsd.ULONG64;
-                  mf_rsp : C.basetsd.ULONG64 := 0;
-               begin
-                  --  Get the context.
-                  C.winnt.RtlCaptureContext (context'Access);
-                  loop
-                     declare
-                        RuntimeFunction : C.winnt.PRUNTIME_FUNCTION;
-                        ImageBase : aliased C.basetsd.ULONG64;
-                        HandlerData : aliased C.winnt.PVOID;
-                        EstablisherFrame : aliased C.basetsd.ULONG64;
-                        Dummy : C.winnt.PEXCEPTION_ROUTINE;
-                        pragma Unreferenced (Dummy);
-                     begin
-                        --  Get function metadata.
-                        RuntimeFunction :=
-                           C.winnt.RtlLookupFunctionEntry (
-                              context.Rip,
-                              ImageBase'Access,
-                              ms_disp.HistoryTable);
-                        exit when RuntimeFunction = ms_disp.FunctionEntry;
-                        mf_func := RuntimeFunction;
-                        mf_imagebase := ImageBase;
-                        mf_rsp := context.Rsp;
-                        if RuntimeFunction = null then
-                           --  In case of failure,
-                           --    assume this is a leaf function.
-                           context.Rip := PDWORD64_Conv.To_Pointer (
-                              System'To_Address (context.Rsp)).all;
-                           context.Rsp := context.Rsp + 8;
-                        else
-                           --  Unwind.
-                           Dummy := C.winnt.RtlVirtualUnwind (
-                              0,
-                              ImageBase,
-                              context.Rip,
-                              RuntimeFunction,
-                              context'Access,
-                              HandlerData'Access,
-                              EstablisherFrame'Access,
-                              null);
-                        end if;
-                        --  0 means bottom of the stack.
-                        if context.Rip = 0 then
-                           mf_func := null;
-                           exit;
-                        end if;
-                     end;
-                  end loop;
-                  if mf_func /= null then
-                     Adjust_Context (
-                        System'To_Address (
-                           mf_imagebase
-                           + C.basetsd.ULONG64 (mf_func.UnwindData)),
-                        mf_rsp);
-                  end if;
-               end;
-            end if;
-            the_exception := Mapping.New_Machine_Occurrence_From_SEH (ms_exc);
-            if the_exception /= null then
-               declare
-                  exc : C.unwind.struct_Unwind_Exception_ptr;
-               begin
-                  --  Directly convert the system exception to a GCC one.
-                  --  This is really breaking the API, but is necessary
-                  --    for stack size reasons: the normal way is to call
-                  --    Raise_From_Signal_Handler, which build the exception
-                  --    and calls _Unwind_RaiseException, which unwinds
-                  --    the stack and will call this personality routine.
-                  --  But the Windows unwinder needs about 2KB of stack.
-                  exc := the_exception.Header'Access;
-                  exc.F_private := (others => 0);
-                  ms_exc.ExceptionCode := STATUS_GCC_THROW;
-                  ms_exc.NumberParameters := 1;
-                  ms_exc.ExceptionInformation (0) :=
-                     C.basetsd.ULONG_PTR (
-                        Unwind_Exception_ptr_Conv.To_Address (exc));
-               end;
-            end if;
-         end;
-      end if;
-      pragma Check (Trace, Ada.Debug.Put ("GCC_specific_handler"));
-      Result := C.unwind.GCC_specific_handler (
-         ms_exc,
-         this_frame,
-         ms_orig_context,
-         ms_disp,
-         Personality'Access);
-      pragma Check (Trace, Ada.Debug.Put ("leave"));
-      return Result;
-   end Personality_SEH;
-
-end System.Unwind.Handling;
+end System.Unwind.Searching;

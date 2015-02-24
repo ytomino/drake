@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit
 with C.unwind;
-package System.Unwind.Handling is
+package System.Unwind.Searching is
    pragma Preelaborate;
 
    function Unwind_RaiseException (
@@ -36,4 +36,4 @@ package System.Unwind.Handling is
       Personality'Access = C.unwind.Unwind_Personality_Fn'(null),
       "this expression is always false, for type check purpose");
 
-end System.Unwind.Handling;
+end System.Unwind.Searching;

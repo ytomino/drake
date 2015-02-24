@@ -3,7 +3,7 @@ with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
 with System.Unwind.Representation;
 with C.unwind_pe;
-package body System.Unwind.Handling is
+package body System.Unwind.Searching is
    pragma Suppress (All_Checks);
    use type C.ptrdiff_t;
    use type C.signed_int;
@@ -19,6 +19,11 @@ package body System.Unwind.Handling is
    Foreign_Exception : aliased Exception_Data;
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
+
+   function builtin_eh_return_data_regno (A1 : C.signed_int)
+      return C.signed_int;
+   pragma Import (Intrinsic, builtin_eh_return_data_regno,
+      "__builtin_eh_return_data_regno");
 
    procedure Increment (p : in out C.unsigned_char_const_ptr);
    procedure Increment (p : in out C.unsigned_char_const_ptr) is
@@ -43,6 +48,9 @@ package body System.Unwind.Handling is
       return uchar_Conv.To_Pointer (uchar_Conv.To_Address (Left)
          + Address (Right));
    end "+";
+
+   function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean
+      with Import, Convention => Intrinsic;
 
    --  implementation
 
@@ -84,6 +92,7 @@ package body System.Unwind.Handling is
             --  about region
             lsda : C.void_ptr;
             base : C.unwind.Unwind_Ptr;
+            call_site_encoding : C.unsigned_char;
             call_site_table : C.unsigned_char_const_ptr;
             lp_base : aliased C.unwind.Unwind_Ptr;
             action_table : C.unsigned_char_const_ptr;
@@ -136,6 +145,7 @@ package body System.Unwind.Handling is
                ttype_base := C.unwind_pe.base_of_encoded_value (
                   ttype_encoding,
                   Context);
+               call_site_encoding := p.all;
                Increment (p);
                call_site_table := C.unwind_pe.read_uleb128 (p, tmp'Access);
                action_table := call_site_table + C.ptrdiff_t (tmp);
@@ -145,32 +155,51 @@ package body System.Unwind.Handling is
                ip_before_insn : aliased C.signed_int := 0;
                ip : C.unwind.Unwind_Ptr :=
                   C.unwind.Unwind_GetIPInfo (Context, ip_before_insn'Access);
-               call_site : C.signed_int;
             begin
                if ip_before_insn = 0 then
                   pragma Check (Trace, Ada.Debug.Put ("ip_before_insn = 0"));
                   ip := ip - 1;
                end if;
-               call_site := C.signed_int (ip);
-               if call_site <= 0 then
-                  pragma Check (Trace, Ada.Debug.Put (
-                     "leave, no action or terminate"));
-                  return C.unwind.URC_CONTINUE_UNWIND;
-               end if;
                loop
+                  if not (p < action_table) then
+                     pragma Check (Trace, Ada.Debug.Put (
+                        "leave, not (p < action_table)"));
+                     return C.unwind.URC_CONTINUE_UNWIND;
+                  end if;
                   declare
-                     cs_lp : aliased C.unwind.uleb128_t;
+                     cs_start, cs_len, cs_lp : aliased C.unwind.Unwind_Ptr;
                      cs_action : aliased C.unwind.uleb128_t;
                   begin
-                     p := C.unwind_pe.read_uleb128 (
+                     p := C.unwind_pe.read_encoded_value (
+                        null,
+                        call_site_encoding,
+                        p,
+                        cs_start'Access);
+                     p := C.unwind_pe.read_encoded_value (
+                        null,
+                        call_site_encoding,
+                        p,
+                        cs_len'Access);
+                     p := C.unwind_pe.read_encoded_value (
+                        null,
+                        call_site_encoding,
                         p,
                         cs_lp'Access);
                      p := C.unwind_pe.read_uleb128 (
                         p,
                         cs_action'Access);
-                     call_site := call_site - 1;
-                     if call_site = 0 then
-                        landing_pad := C.unwind.Unwind_Ptr (cs_lp + 1);
+                     if ip < base + cs_start then
+                        pragma Check (Trace, Ada.Debug.Put (
+                           "leave, ip < base + cs_start"));
+                        return C.unwind.URC_CONTINUE_UNWIND;
+                     elsif ip < base + cs_start + cs_len then
+                        if cs_lp /= 0 then
+                           landing_pad := lp_base + cs_lp;
+                        else
+                           pragma Check (Trace, Ada.Debug.Put (
+                              "leave, cs_lp = 0"));
+                           return C.unwind.URC_CONTINUE_UNWIND;
+                        end if;
                         if cs_action /= 0 then
                            table_entry := action_table
                               + C.ptrdiff_t (cs_action - 1);
@@ -320,11 +349,11 @@ package body System.Unwind.Handling is
       --  setup_to_install (raise-gcc.c)
       C.unwind.Unwind_SetGR (
          Context,
-         0, -- builtin_eh_return_data_regno (0),
+         builtin_eh_return_data_regno (0),
          Cast (C.unwind.struct_Unwind_Exception_ptr (Exception_Object)));
       C.unwind.Unwind_SetGR (
          Context,
-         1, -- builtin_eh_return_data_regno (1),
+         builtin_eh_return_data_regno (1),
          C.unwind.Unwind_Word'Mod (ttype_filter));
       C.unwind.Unwind_SetIP (Context, landing_pad);
       --  Setup_Current_Excep (GCC_Exception); -- moved to Begin_Handler
@@ -332,4 +361,4 @@ package body System.Unwind.Handling is
       return C.unwind.URC_INSTALL_CONTEXT;
    end Personality;
 
-end System.Unwind.Handling;
+end System.Unwind.Searching;
