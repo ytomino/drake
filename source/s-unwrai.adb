@@ -16,8 +16,8 @@ package body System.Unwind.Raising is
 
       --  (a-exexpr-gcc.adb)
       procedure Propagate_Exception (
-         X : Exception_Occurrence;
-         Stack_Guard : Address);
+         Machine_Occurrence :
+            not null Representation.Machine_Occurrence_Access);
       pragma No_Return (Propagate_Exception);
 
    end Separated;
@@ -49,8 +49,7 @@ package body System.Unwind.Raising is
    end New_Line;
 
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
-   Call_Chain : access procedure (
-      Current : not null Exception_Occurrence_Access);
+   Call_Chain : access procedure (Current : in out Exception_Occurrence);
    pragma Import (Ada, Call_Chain, "__drake_ref_call_chain");
    pragma Weak_External (Call_Chain);
 
@@ -78,10 +77,16 @@ package body System.Unwind.Raising is
       Last_Chance_Handler (Current.all);
    end Unhandled_Exception_Terminate;
 
-   type Uninitialized_Exception_Occurrence is record
-      X : Exception_Occurrence;
-   end record;
-   pragma Suppress_Initialization (Uninitialized_Exception_Occurrence);
+   procedure Allocate_Machine_Occurrence (
+      Machine_Occurrence : out Representation.Machine_Occurrence_Access;
+      Stack_Guard : Address);
+   procedure Allocate_Machine_Occurrence (
+      Machine_Occurrence : out Representation.Machine_Occurrence_Access;
+      Stack_Guard : Address) is
+   begin
+      Machine_Occurrence := Representation.New_Machine_Occurrence;
+      Machine_Occurrence.Stack_Guard := Stack_Guard;
+   end Allocate_Machine_Occurrence;
 
    --  not calling Abort_Defer
 
@@ -131,10 +136,14 @@ package body System.Unwind.Raising is
       Column : Integer := 0;
       Message : String := "")
    is
-      X : Uninitialized_Exception_Occurrence;
+      Machine_Occurrence : Representation.Machine_Occurrence_Access;
    begin
-      Set_Exception_Message (E, File, Line, Column, Message, X.X);
-      Separated.Propagate_Exception (X.X, Stack_Guard => Null_Address);
+      Allocate_Machine_Occurrence (
+         Machine_Occurrence,
+         Stack_Guard => Null_Address);
+      Set_Exception_Message (E, File, Line, Column, Message,
+         X => Machine_Occurrence.Occurrence);
+      Separated.Propagate_Exception (Machine_Occurrence);
    end Raise_Exception_No_Defer;
 
    procedure Raise_Exception (
@@ -145,13 +154,17 @@ package body System.Unwind.Raising is
       Message : String := "";
       Stack_Guard : Address := Null_Address)
    is
-      X : Uninitialized_Exception_Occurrence;
+      Machine_Occurrence : Representation.Machine_Occurrence_Access;
    begin
-      Set_Exception_Message (E, File, Line, Column, Message, X.X);
       if not ZCX_By_Default then
          Synchronous_Control.Lock_Abort;
       end if;
-      Separated.Propagate_Exception (X.X, Stack_Guard => Stack_Guard);
+      Allocate_Machine_Occurrence (
+         Machine_Occurrence,
+         Stack_Guard => Stack_Guard);
+      Set_Exception_Message (E, File, Line, Column, Message,
+         X => Machine_Occurrence.Occurrence);
+      Separated.Propagate_Exception (Machine_Occurrence);
    end Raise_Exception;
 
    procedure Raise_E (
@@ -184,9 +197,14 @@ package body System.Unwind.Raising is
    end Raise_Exception_From_Here_With;
 
    procedure Reraise_No_Defer (X : Exception_Occurrence) is
+      Machine_Occurrence : Representation.Machine_Occurrence_Access;
    begin
       pragma Check (Trace, Ada.Debug.Put ("reraising..."));
-      Separated.Propagate_Exception (X, Stack_Guard => Null_Address);
+      Allocate_Machine_Occurrence (
+         Machine_Occurrence,
+         Stack_Guard => Null_Address);
+      Machine_Occurrence.Occurrence := X;
+      Separated.Propagate_Exception (Machine_Occurrence);
    end Reraise_No_Defer;
 
    procedure Reraise (X : Exception_Occurrence) is
@@ -534,6 +552,24 @@ package body System.Unwind.Raising is
    begin
       return X.Id = Standard.Abort_Signal'Access;
    end Triggered_By_Abort;
+
+   procedure Set_Traceback (X : in out Exception_Occurrence) is
+   begin
+      if Call_Chain'Address /= Null_Address then
+         Call_Chain (X);
+         declare
+            function Report return Boolean;
+            function Report return Boolean is
+            begin
+               Report_Traceback (X);
+               return True;
+            end Report;
+         begin
+            pragma Check (Trace, Ada.Debug.Put ("raising..."));
+            pragma Check (Trace, Report);
+         end;
+      end if;
+   end Set_Traceback;
 
    procedure Set_Exception_Message (
       Id : not null Exception_Data_Access;

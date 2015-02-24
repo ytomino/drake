@@ -74,28 +74,10 @@ package body Separated is
 
    --  (a-exexpr-gcc.adb)
    procedure Propagate_Exception (
-      X : Exception_Occurrence;
-      Stack_Guard : Address)
-   is
-      Machine_Occurrence : Representation.Machine_Occurrence_Access;
+      Machine_Occurrence :
+         not null Representation.Machine_Occurrence_Access) is
    begin
-      Machine_Occurrence := Representation.New_Machine_Occurrence;
-      Machine_Occurrence.Occurrence := X;
-      Machine_Occurrence.Stack_Guard := Stack_Guard;
-      if Call_Chain'Address /= Null_Address then
-         Call_Chain (Machine_Occurrence.Occurrence'Access);
-         declare
-            function Report return Boolean;
-            function Report return Boolean is
-            begin
-               Report_Traceback (Machine_Occurrence.Occurrence);
-               return True;
-            end Report;
-         begin
-            pragma Check (Trace, Ada.Debug.Put ("raising..."));
-            pragma Check (Trace, Report);
-         end;
-      end if;
+      Set_Traceback (Machine_Occurrence.Occurrence);
       Debug_Raise_Exception (Machine_Occurrence.Occurrence.Id); -- for gdb
       Propagate_Machine_Occurrence (Machine_Occurrence);
    end Propagate_Exception;

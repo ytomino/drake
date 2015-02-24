@@ -8,7 +8,7 @@ package System.Unwind.Traceback is
    pragma Export (C, Exception_Tracebacks, "__gl_exception_tracebacks");
 
    --  get traceback (a-excach.adb)
-   procedure Call_Chain (Current : not null Exception_Occurrence_Access);
+   procedure Call_Chain (Current : in out Exception_Occurrence);
    pragma Export (Ada, Call_Chain, "ada__exceptions__call_chain");
 
    --  equivalent to Append_Info_Basic_Exception_Traceback (a-exexda.adb)
@@ -24,7 +24,7 @@ private
    --  these symbols will be linked when "__gl_exception_tracebacks" is used
 
    type Call_Chain_Handler is
-      access procedure (Current : not null Exception_Occurrence_Access);
+      access procedure (Current : in out Exception_Occurrence);
    Call_Chain_Ref : constant not null Call_Chain_Handler := Call_Chain'Access;
    pragma Export (Ada, Call_Chain_Ref, "__drake_ref_call_chain");
 
