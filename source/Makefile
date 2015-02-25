@@ -13,7 +13,6 @@
 #   WITHF=      -ffast-math (default:0)
 #   WITHI=      if 0, symbolic link instead of install (default:1)
 #   WITHL=      link time optimization (default:0)
-#   WITHS=      assembly source (default:0)
 #   DEBUG=      debug level (default:if TARGET=HOST then 2 else 1)
 #   CFLAGS=     additional compiler options (default:empty)
 
@@ -50,11 +49,6 @@ endif
 # if WITHL=1, link-time optimization be enabled
 ifeq ($(WITHL),)
 WITHL=0
-endif
-
-# if WITHS=1, assembly sources be outputed
-ifeq ($(WITHS),)
-WITHS=0
 endif
 
 # if DEBUG>0, debug info
@@ -537,15 +531,9 @@ endif
 
 $(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
-ifneq ($(WITHS),0)
-	cd $(dir $@) && $(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -S $<
-endif
 
 $(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
-ifneq ($(WITHS),0)
-	cd $(dir $@) && $(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -S $<
-endif
 
 $(RTSDIR)/adalib/%.ali: $(BUILDDIR)/%.o
 	install -m 444 $(basename $<).ali $@

@@ -55,7 +55,6 @@ endif
 export WITHA=0
 export WITHF=0
 export WITHI=0
-export WITHS=0
 export DEBUG=2
 
 GFLAGS=--RTS=$(abspath $(BUILDDIR))
