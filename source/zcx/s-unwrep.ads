@@ -6,10 +6,6 @@ package System.Unwind.Representation is
 
    subtype Unwind_Exception_Class is C.unwind.Unwind_Exception_Class;
 
-   procedure Unwind_DeleteException (
-      Item : access C.unwind.struct_Unwind_Exception)
-      renames C.unwind.Unwind_DeleteException;
-
    --  (a-exexpr-gcc.adb)
    GNAT_Exception_Class : constant := 16#474e552d41646100#;
 
@@ -27,9 +23,6 @@ package System.Unwind.Representation is
 
    type Machine_Occurrence_Access is access all Machine_Occurrence;
    for Machine_Occurrence_Access'Storage_Size use 0;
-
-   --  equivalent to Allocate_Occurrence (a-exexpr-gcc.adb)
-   function New_Machine_Occurrence return not null Machine_Occurrence_Access;
 
    --  by -fdump-tree-all, try ... exception be expanded below:
    --  try

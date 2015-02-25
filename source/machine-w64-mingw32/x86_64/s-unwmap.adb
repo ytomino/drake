@@ -166,9 +166,8 @@ package body System.Unwind.Mapping is
             declare
                Result : constant
                   not null Representation.Machine_Occurrence_Access :=
-                  Representation.New_Machine_Occurrence;
+                  Raising.New_Machine_Occurrence (Stack_Guard => Stack_Guard);
             begin
-               Result.Stack_Guard := Stack_Guard;
                Raising.Set_Exception_Message (
                   Id => Eexception_Id,
                   Message => Message,
