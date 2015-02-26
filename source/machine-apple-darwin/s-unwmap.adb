@@ -61,6 +61,22 @@ package body System.Unwind.Mapping is
 
    --  implementation
 
+   procedure Set_Signal_Stack (S : access Signal_Stack_Type) is
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); -- OSX
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); -- FreeBSD
+      pragma Warnings (Off, Cast);
+      stack : aliased C.signal.stack_t := (
+         ss_sp => Cast (S (S'First)'Access),
+         ss_size => Signal_Stack_Type'Size / Standard'Storage_Unit,
+         ss_flags => 0);
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      Dummy := C.signal.sigaltstack (stack'Access, null);
+   end Set_Signal_Stack;
+
    procedure Install_Exception_Handler (SEH : Address) is
       pragma Unreferenced (SEH);
       act : aliased C.signal.struct_sigaction := (
@@ -86,21 +102,5 @@ package body System.Unwind.Mapping is
       --  segmentation violation
       Dummy := C.signal.sigaction (C.signal.SIGSEGV, act'Access, null);
    end Install_Exception_Handler;
-
-   procedure Set_Signal_Stack (S : access Signal_Stack_Type) is
-      function Cast is
-         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); -- OSX
-      function Cast is
-         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); -- FreeBSD
-      pragma Warnings (Off, Cast);
-      stack : aliased C.signal.stack_t := (
-         ss_sp => Cast (S (S'First)'Access),
-         ss_size => Signal_Stack_Type'Size / Standard'Storage_Unit,
-         ss_flags => 0);
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
-   begin
-      Dummy := C.signal.sigaltstack (stack'Access, null);
-   end Set_Signal_Stack;
 
 end System.Unwind.Mapping;

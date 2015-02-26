@@ -5,6 +5,11 @@ with C.winnt;
 package System.Unwind.Mapping is
    pragma Preelaborate;
 
+   --  signal alt stack
+   type Signal_Stack_Type is private;
+   procedure Set_Signal_Stack (S : access Signal_Stack_Type) is null;
+   pragma Export (Ada, Set_Signal_Stack, "__drake_set_signal_stack");
+
    --  register signal handler (init.c/seh_init.c)
    procedure Install_Exception_Handler (SEH : Address) is null;
    pragma Export (Ada, Install_Exception_Handler,
@@ -13,11 +18,6 @@ package System.Unwind.Mapping is
    procedure Reinstall_Exception_Handler is null;
    pragma Export (Ada, Reinstall_Exception_Handler,
       "__drake_reinstall_exception_handler");
-
-   --  signal alt stack
-   type Signal_Stack_Type is private;
-   procedure Set_Signal_Stack (S : access Signal_Stack_Type) is null;
-   pragma Export (Ada, Set_Signal_Stack, "__drake_set_signal_stack");
 
    --  equivalent to __gnat_map_SEH (seh_init.c)
    --    and Create_Machine_Occurrence_From_Signal_Handler (a-except-2005.adb)

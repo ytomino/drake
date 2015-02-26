@@ -4,6 +4,9 @@ with System;
 package nosig is
    pragma Preelaborate;
 
+   procedure Set_Signal_Stack (S : System.Address) is null;
+   pragma Export (Ada, Set_Signal_Stack, "__drake_set_signal_stack");
+
    procedure Install_Exception_Handler (SEH : System.Address) is null;
    pragma Export (Ada, Install_Exception_Handler,
       "__drake_install_exception_handler");
@@ -11,9 +14,6 @@ package nosig is
    procedure Reinstall_Exception_Handler is null;
    pragma Export (Ada, Reinstall_Exception_Handler,
       "__drake_reinstall_exception_handler");
-
-   procedure Set_Signal_Stack (S : System.Address) is null;
-   pragma Export (Ada, Set_Signal_Stack, "__drake_set_signal_stack");
 
    --  Win64 SEH only
    function New_Machine_Occurrence_From_SEH (
