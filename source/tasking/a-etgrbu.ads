@@ -17,7 +17,7 @@ package Ada.Execution_Time.Group_Budgets is
 
 --  procedure Add_Task (
 --    GB : in out Group_Budget;
---    T  : Task_Identification.Task_Id);
+--    T : Task_Identification.Task_Id);
 --  procedure Remove_Task (
 --    GB : in out Group_Budget;
 --    T : Task_Identification.Task_Id);

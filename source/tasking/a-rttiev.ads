@@ -6,11 +6,11 @@ package Ada.Real_Time.Timing_Events is
       access protected procedure (Event : in out Timing_Event);
 
 --  procedure Set_Handler (
---    Event   : in out Timing_Event;
+--    Event : in out Timing_Event;
 --    At_Time : Time;
 --    Handler : Timing_Event_Handler);
 --  procedure Set_Handler (
---    Event   : in out Timing_Event;
+--    Event : in out Timing_Event;
 --    In_Time : Time_Span;
 --    Handler : Timing_Event_Handler);
 --  function Current_Handler (Event : Timing_Event)

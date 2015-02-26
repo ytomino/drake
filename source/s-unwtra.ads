@@ -35,7 +35,7 @@ private
       New_Line : not null access procedure (Params : Address));
    Traceback_Information_Ref : constant
       not null Traceback_Information_Handler :=
-         Traceback_Information'Access;
+      Traceback_Information'Access;
    pragma Export (Ada, Traceback_Information_Ref,
       "__drake_ref_traceback_information");
 
