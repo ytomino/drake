@@ -108,11 +108,14 @@ procedure ext_doc is
 							exit;
 						elsif Start_With (Line, "--  runtime")
 							or else Start_With (Line, "--  optional runtime")
+							or else Start_With (Line, "--  overridable runtime")
 						then
 							Kind := Runtime_Unit;
 							if Line /= "--  runtime unit"
 								and then not Start_With (Line, "--  runtime unit ")
 								and then Line /= "--  optional runtime unit"
+								and then Line /= "--  overridable runtime unit"
+								and then not Start_With (Line, "--  overridable runtime unit specialized ")
 							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);

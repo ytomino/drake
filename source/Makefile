@@ -6,7 +6,7 @@
 #   HOST=       host platform (default:gcc -dumpmachine)
 #   TARGET=     target platform (default:HOST)
 #   RTSDIR=     output directory (default:.)
-#   BUILDDIR=   temporary directory (default:RTSDIR/adalib/build)
+#   BUILDDIR=   temporary directory (default:RTSDIR/adalib)
 #   IMPORTDIR=  pre-translated headers (default:generating on make)
 #   WITHA=      if 0, building minimum runtime (default:1)
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
@@ -66,7 +66,9 @@ RTSDIR=.
 IMPORTDIR=$(RTSDIR)/adainclude
 GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
-BUILDDIR=$(RTSDIR)/adalib/build
+BUILDDIR=$(RTSDIR)/adalib
+LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat.build
+NOSIG_BUILDDIR=$(BUILDDIR)/nosig.build
 
 SUBDIRS=ada83 calendar containers directories distributed environment hash image interfaces nls numerics pools streams strings tasking textio
 
@@ -151,7 +153,7 @@ else # unknown mechanism
 EH_OBJS=
 endif
 
-COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
+COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
 	$(EH_OBJS) \
 	system.o \
 	s-debug.o \
@@ -183,7 +185,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 # s-maccod.o and s-stoele.o are also standard library
 
 ifneq ($(WITHA),0)
-ALL_OBJS=$(addprefix $(BUILDDIR)/,\
+ALL_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/,\
 	system.o \
 	$(sort $(addsuffix .o,$(basename $(notdir $(filter-out $(SEPARATED),$(SRC)))))))
 else
@@ -193,7 +195,7 @@ endif
 ALL_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(basename $(notdir $(ALL_OBJS)))))
 
 ifneq ($(WITHC),0)
-ifneq ($(wildcard $(BUILDDIR)/c.o),)
+ifneq ($(wildcard $(LIBGNAT_BUILDDIR)/c.o),)
 IMPORT_HEADERS=
 else
 IMPORT_HEADERS=import_objs
@@ -257,26 +259,29 @@ CFLAGS_FOR_COMPILER_UNIT=-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -
 
 .PHONY: all tree import_objs c-archive
 
-all: $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
+all: $(RTSDIR)/adalib/libgnat.a $(RTSDIR)/adalib/nosig.o $(ALL_ALI)
 
 tree: \
 		$(RTSDIR)/adainclude \
-		$(RTSDIR)/adalib \
-		$(BUILDDIR) \
 		$(RTSDIR)/adainclude/system.ads \
 		$(LIBRARY_SRCS) \
+		$(RTSDIR)/adalib \
+		$(LIBGNAT_BUILDDIR) \
 		$(IMPORT_HEADERS)
 
 $(RTSDIR)/adalib/libgnat.a: \
 		$(RTSDIR)/adainclude \
-		$(RTSDIR)/adalib \
-		$(BUILDDIR) \
 		$(RTSDIR)/adainclude/system.ads \
 		$(LIBRARY_SRCS) \
+		$(RTSDIR)/adalib \
+		$(LIBGNAT_BUILDDIR) \
 		$(IMPORT_HEADERS) \
 		$(ALL_OBJS)
 	-rm $@ 2> /dev/null
-	$(AR) -q $@ $(BUILDDIR)/*.o
+	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
+
+$(RTSDIR)/adalib/nosig.o: $(NOSIG_BUILDDIR)/nosig.o
+	install -m 444 $< $@
 
 $(RTSDIR)/adainclude:
 	mkdir -p $@
@@ -284,7 +289,10 @@ $(RTSDIR)/adainclude:
 $(RTSDIR)/adalib:
 	mkdir $@
 
-$(BUILDDIR):
+$(LIBGNAT_BUILDDIR):
+	mkdir $@
+
+$(NOSIG_BUILDDIR):
 	mkdir $@
 
 $(RTSDIR)/adainclude/system.ads:
@@ -519,23 +527,26 @@ $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 # keep the order from AAA to ZZZ
-$(BUILDDIR)/s-unwrai.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
+$(LIBGNAT_BUILDDIR)/s-unwrai.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 
 ifneq ($(findstring darwin,$(TARGET)),)
 ifneq ($(filter -g,$(CFLAGS_DEBUG))$(filter -ggdb,$(CFLAGS_DEBUG)),)
 # Apple ld64 can't add line info to anonymous symbol .lsda from following .o
-$(BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
-$(BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
+$(LIBGNAT_BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
+$(LIBGNAT_BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 endif
 endif
 
-$(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
+$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 
-$(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
+$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 
-$(RTSDIR)/adalib/%.ali: $(BUILDDIR)/%.o
+$(NOSIG_BUILDDIR)/nosig.o: obj/nosig.ads $(NOSIG_BUILDDIR)
+	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
+
+$(RTSDIR)/adalib/%.ali: $(LIBGNAT_BUILDDIR)/%.o
 	install -m 444 $(basename $<).ali $@
 
 ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)
@@ -545,8 +556,8 @@ endif
 
 # separated
 
-$(BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
-$(BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
+$(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
+$(LIBGNAT_BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
 
 # nested
 
@@ -554,7 +565,7 @@ ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad[sb]) $(IMPORTDIR)/c.ads
 IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata c-icucore,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
-IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(BUILDDIR)/,$(IMPLIB_ITEMS)))
+IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(LIBGNAT_BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 
 ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)
