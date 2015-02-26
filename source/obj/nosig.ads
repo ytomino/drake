@@ -4,12 +4,15 @@ with System;
 package nosig is
    pragma Preelaborate;
 
-   procedure Set_Signal_Stack (S : System.Address) is null;
-   pragma Export (Ada, Set_Signal_Stack, "__drake_set_signal_stack");
-
    procedure Install_Exception_Handler (SEH : System.Address) is null;
    pragma Export (Ada, Install_Exception_Handler,
       "__drake_install_exception_handler");
+
+   procedure Install_Task_Exception_Handler (
+      SEH : System.Address;
+      Signal_Stack : System.Address) is null;
+   pragma Export (Ada, Install_Task_Exception_Handler,
+      "__drake_install_task_exception_handler");
 
    procedure Reinstall_Exception_Handler is null;
    pragma Export (Ada, Reinstall_Exception_Handler,

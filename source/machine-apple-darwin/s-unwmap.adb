@@ -57,10 +57,7 @@ package body System.Unwind.Mapping is
          Stack_Guard => Stack_Guard);
    end sigaction_Handler;
 
-   Signal_Stack : aliased Signal_Stack_Type;
-
-   --  implementation
-
+   procedure Set_Signal_Stack (S : access Signal_Stack_Type);
    procedure Set_Signal_Stack (S : access Signal_Stack_Type) is
       function Cast is
          new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); -- OSX
@@ -76,6 +73,10 @@ package body System.Unwind.Mapping is
    begin
       Dummy := C.signal.sigaltstack (stack'Access, null);
    end Set_Signal_Stack;
+
+   Signal_Stack : aliased Signal_Stack_Type;
+
+   --  implementation
 
    procedure Install_Exception_Handler (SEH : Address) is
       pragma Unreferenced (SEH);
@@ -102,5 +103,15 @@ package body System.Unwind.Mapping is
       --  segmentation violation
       Dummy := C.signal.sigaction (C.signal.SIGSEGV, act'Access, null);
    end Install_Exception_Handler;
+
+   procedure Install_Task_Exception_Handler (
+      SEH : Address;
+      Signal_Stack : not null access Signal_Stack_Type)
+   is
+      pragma Unreferenced (SEH);
+   begin
+      --  sigaction setting would be inherited from the main thread.
+      Set_Signal_Stack (Signal_Stack);
+   end Install_Task_Exception_Handler;
 
 end System.Unwind.Mapping;

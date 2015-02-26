@@ -6,13 +6,17 @@ package System.Unwind.Mapping is
 
    --  signal alt stack
    type Signal_Stack_Type is private;
-   procedure Set_Signal_Stack (S : access Signal_Stack_Type);
-   pragma Export (Ada, Set_Signal_Stack, "__drake_set_signal_stack");
 
    --  register signal handler (init.c/seh_init.c)
    procedure Install_Exception_Handler (SEH : Address);
    pragma Export (Ada, Install_Exception_Handler,
       "__drake_install_exception_handler");
+
+   procedure Install_Task_Exception_Handler (
+      SEH : Address;
+      Signal_Stack : not null access Signal_Stack_Type);
+   pragma Export (Ada, Install_Task_Exception_Handler,
+      "__drake_install_task_exception_handler");
 
    procedure Reinstall_Exception_Handler is null;
    pragma Export (Ada, Reinstall_Exception_Handler,
