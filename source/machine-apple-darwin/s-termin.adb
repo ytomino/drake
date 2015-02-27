@@ -1,23 +1,24 @@
 with C.stdlib;
 with C.sys.types;
+with C.sys.uio;
 with C.unistd;
 package body System.Termination is
    pragma Suppress (All_Checks);
 
-   procedure Error_Put (S : String) is
+   New_Line : aliased constant C.char := C.char'Val (10);
+
+   procedure Error_Put_Line (S : String) is
+      iovec : aliased array (0 .. 1) of aliased C.sys.uio.struct_iovec := (
+         (C.void_ptr (S'Address), S'Length),
+         (C.void_ptr (New_Line'Address), 1));
       Dummy : C.sys.types.ssize_t;
       pragma Unreferenced (Dummy);
    begin
-      Dummy := C.unistd.write (
+      Dummy := C.sys.uio.writev (
          C.unistd.STDERR_FILENO,
-         C.void_const_ptr (S'Address),
-         S'Length);
-   end Error_Put;
-
-   procedure Error_New_Line is
-   begin
-      Error_Put ((1 => Character'Val (10)));
-   end Error_New_Line;
+         iovec (0)'Access,
+         iovec'Length);
+   end Error_Put_Line;
 
    procedure Force_Abort is
    begin

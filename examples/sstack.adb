@@ -1,5 +1,6 @@
 -- secondary stack
 with Ada.Exceptions;
+with System.Formatting.Address;
 with System.Runtime_Context;
 with System.Secondary_Stack;
 with System.Storage_Elements;
@@ -35,12 +36,16 @@ begin
 	declare
 		M : System.Secondary_Stack.Mark_Id := 	System.Secondary_Stack.SS_Mark;
 		A : System.Address;
+		S : String (1 .. 13 + System.Formatting.Address.Address_String'Length);
 	begin
 		for I in System.Storage_Elements.Storage_Count'(1) .. 7 loop
 			System.Secondary_Stack.SS_Allocate (A, I);
-			System.Termination.Error_Put ("Allocated: ");
-			System.Unbounded_Stack_Allocators.Debug.Error_Put (A);
-			System.Termination.Error_New_Line;
+			S (1 .. 13) := "Allocated: 0x";
+			System.Formatting.Address.Image (
+				A,
+				S (14 .. S'Last),
+				Set => System.Formatting.Lower_Case);
+			System.Termination.Error_Put_Line (S);
 			Dump_Secondary_Stack;
 		end loop;
 		System.Secondary_Stack.SS_Release (M);

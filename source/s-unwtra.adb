@@ -23,18 +23,34 @@ package body System.Unwind.Traceback is
 
    --  for Report_Traceback
 
+   type Information_Context_Type is record
+      Item : String (
+         1 ..
+         256
+            + System.Unwind.Exception_Msg_Max_Length
+            + System.Unwind.Max_Tracebacks
+               * (3 + (Standard'Address_Size + 3) / 4));
+      Last : Natural;
+   end record;
+   pragma Suppress_Initialization (Information_Context_Type);
+
    procedure Put (S : String; Params : Address);
    procedure Put (S : String; Params : Address) is
-      pragma Unreferenced (Params);
+      Context : Information_Context_Type;
+      for Context'Address use Params;
+      First : constant Positive := Context.Last + 1;
    begin
-      Termination.Error_Put (S);
+      Context.Last := Context.Last + S'Length;
+      Context.Item (First .. Context.Last) := S;
    end Put;
 
    procedure New_Line (Params : Address);
    procedure New_Line (Params : Address) is
-      pragma Unreferenced (Params);
+      Context : Information_Context_Type;
+      for Context'Address use Params;
    begin
-      Termination.Error_New_Line;
+      Termination.Error_Put_Line (Context.Item (1 .. Context.Last));
+      Context.Last := 0;
    end New_Line;
 
    --  implementation
@@ -99,10 +115,12 @@ package body System.Unwind.Traceback is
    end Traceback_Information;
 
    procedure Report_Traceback (X : Exception_Occurrence) is
+      Context : Information_Context_Type;
    begin
+      Context.Last := 0;
       Exception_Information (
          X,
-         Null_Address,
+         Context'Address,
          Put => Put'Access,
          New_Line => New_Line'Access);
    end Report_Traceback;
