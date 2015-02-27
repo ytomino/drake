@@ -260,7 +260,6 @@ package System.Unwind.Raising is
 
    --  output the information of unhandled exception
    procedure Report (X : Exception_Occurrence; Where : String);
-   procedure Report_Traceback (X : Exception_Occurrence);
 
    --  unhandled handler (a-exexpr-gcc.adb)
    --  the symbol is required only in Win64 SEH.

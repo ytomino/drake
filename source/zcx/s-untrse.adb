@@ -1,5 +1,4 @@
 pragma Check_Policy (Trace, Off);
-with Ada;
 with C.unwind;
 separate (System.Unwind.Traceback)
 package body Separated is

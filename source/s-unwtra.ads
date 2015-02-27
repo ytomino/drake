@@ -18,6 +18,8 @@ package System.Unwind.Traceback is
       Put : not null access procedure (S : String; Params : Address);
       New_Line : not null access procedure (Params : Address));
 
+   procedure Report_Traceback (X : Exception_Occurrence);
+
 private
 
    --  for weak linking,
@@ -38,5 +40,11 @@ private
       Traceback_Information'Access;
    pragma Export (Ada, Traceback_Information_Ref,
       "__drake_ref_traceback_information");
+
+   type Report_Traceback_Handler is
+      access procedure (X : Exception_Occurrence);
+   Report_Traceback_Ref : constant not null Report_Traceback_Handler :=
+      Report_Traceback'Access;
+   pragma Export (Ada, Report_Traceback_Ref, "__drake_ref_report_traceback");
 
 end System.Unwind.Traceback;

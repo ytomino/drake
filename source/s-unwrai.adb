@@ -42,26 +42,15 @@ package body System.Unwind.Raising is
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
 
-   --  for Report_Traceback
-
-   procedure Put (S : String; Params : Address);
-   procedure Put (S : String; Params : Address) is
-      pragma Unreferenced (Params);
-   begin
-      Termination.Error_Put (S);
-   end Put;
-
-   procedure New_Line (Params : Address);
-   procedure New_Line (Params : Address) is
-      pragma Unreferenced (Params);
-   begin
-      Termination.Error_New_Line;
-   end New_Line;
-
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
+
    Call_Chain : access procedure (Current : in out Exception_Occurrence);
    pragma Import (Ada, Call_Chain, "__drake_ref_call_chain");
    pragma Weak_External (Call_Chain);
+
+   Report_Traceback : access procedure (X : Exception_Occurrence);
+   pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
+   pragma Weak_External (Report_Traceback);
 
    --  (a-elchha.ads)
    procedure Last_Chance_Handler (
@@ -623,17 +612,6 @@ package body System.Unwind.Raising is
    begin
       if Call_Chain'Address /= Null_Address then
          Call_Chain (X);
-         declare
-            function Report return Boolean;
-            function Report return Boolean is
-            begin
-               Report_Traceback (X);
-               return True;
-            end Report;
-         begin
-            pragma Check (Trace, Ada.Debug.Put ("raising..."));
-            pragma Check (Trace, Report);
-         end;
       end if;
    end Set_Traceback;
 
@@ -773,7 +751,9 @@ package body System.Unwind.Raising is
             Termination.Error_Put (" of environment task");
          end if;
          Termination.Error_New_Line;
-      elsif X.Num_Tracebacks > 0 then
+      elsif X.Num_Tracebacks > 0
+         and then Report_Traceback'Address /= Null_Address
+      then
          Put_Upper;
          Termination.Error_Put (" terminated by unhandled exception");
          Termination.Error_New_Line;
@@ -793,15 +773,6 @@ package body System.Unwind.Raising is
          Termination.Error_New_Line;
       end if;
    end Report;
-
-   procedure Report_Traceback (X : Exception_Occurrence) is
-   begin
-      Exception_Information (
-         X,
-         Null_Address,
-         Put => Put'Access,
-         New_Line => New_Line'Access);
-   end Report_Traceback;
 
    procedure Unhandled_Except_Handler (
       Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
