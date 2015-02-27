@@ -1,5 +1,4 @@
 pragma Check_Policy (Trace, Off);
-with Ada;
 with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 with C.basetsd;

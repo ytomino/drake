@@ -1,5 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
+with System.Standard_Allocators;
 with System.Unwind.Representation;
 with System.Unwind.Searching;
 with C.unwind;
@@ -7,12 +8,40 @@ separate (System.Unwind.Raising)
 package body Separated is
    pragma Suppress (All_Checks);
    use type Representation.Machine_Occurrence_Access;
+   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
+
+   procedure memset (
+      b : Address;
+      c : Integer;
+      n : Storage_Elements.Storage_Count);
+   pragma Import (Intrinsic, memset, "__builtin_memset");
 
    function To_GNAT is
       new Ada.Unchecked_Conversion (
          C.unwind.struct_Unwind_Exception_ptr,
          Representation.Machine_Occurrence_Access);
+
+   --  equivalent to GNAT_GCC_Exception_Cleanup (a-exexpr-gcc.adb)
+   procedure Cleanup (
+      Reason : C.unwind.Unwind_Reason_Code;
+      Exception_Object : access C.unwind.struct_Unwind_Exception);
+   pragma Convention (C, Cleanup);
+
+   procedure Cleanup (
+      Reason : C.unwind.Unwind_Reason_Code;
+      Exception_Object : access C.unwind.struct_Unwind_Exception)
+   is
+      pragma Unreferenced (Reason);
+      package Conv is
+         new Address_To_Named_Access_Conversions (
+            C.unwind.struct_Unwind_Exception,
+            C.unwind.struct_Unwind_Exception_ptr);
+   begin
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
+      Standard_Allocators.Free (Conv.To_Address (Exception_Object));
+      pragma Check (Trace, Ada.Debug.Put ("leave"));
+   end Cleanup;
 
    --  (a-exexpr-gcc.adb)
    function CleanupUnwind_Handler (
@@ -24,31 +53,6 @@ package body Separated is
       Argument : C.void_ptr)
       return C.unwind.Unwind_Reason_Code;
    pragma Convention (C, CleanupUnwind_Handler);
-
-   --  equivalent to Propagate_GCC_Exception (a-exexpr-gcc.adb)
-   procedure Propagate_Machine_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
-   pragma No_Return (Propagate_Machine_Occurrence);
-   pragma Convention (C, Propagate_Machine_Occurrence);
-
-   --  equivalent to Reraise_GCC_Exception (a-exexpr-gcc.adb)
-   --  for nested controlled types
-   procedure Reraise_Machine_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
-   pragma Export (C, Reraise_Machine_Occurrence, "__gnat_reraise_zcx");
-
-   --  Win64 SEH only (a-exexpr-gcc.adb)
-   procedure Unhandled_Except_Handler (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
-   pragma No_Return (Unhandled_Except_Handler);
-   pragma Export (C, Unhandled_Except_Handler,
-      "__gnat_unhandled_except_handler");
-
-   --  for "catch exception" command of gdb (s-excdeb.ads)
-   procedure Debug_Raise_Exception (E : not null Exception_Data_Access);
-   pragma Export (Ada, Debug_Raise_Exception, "__gnat_debug_raise_exception");
-
-   --  implementation
 
    function CleanupUnwind_Handler (
       ABI_Version : C.signed_int;
@@ -72,33 +76,50 @@ package body Separated is
       return C.unwind.URC_NO_REASON;
    end CleanupUnwind_Handler;
 
-   --  (a-exexpr-gcc.adb)
-   procedure Propagate_Exception (
-      X : Exception_Occurrence;
-      Stack_Guard : Address)
+   --  implementation
+
+   function New_Machine_Occurrence
+      return not null Representation.Machine_Occurrence_Access
    is
-      Machine_Occurrence : Representation.Machine_Occurrence_Access;
+      package Conv is
+         new Address_To_Named_Access_Conversions (
+            Representation.Machine_Occurrence,
+            Representation.Machine_Occurrence_Access);
+      Result : constant not null Representation.Machine_Occurrence_Access :=
+         Conv.To_Pointer (
+            Standard_Allocators.Allocate (
+               Representation.Machine_Occurrence'Size
+               / Standard'Storage_Unit));
    begin
-      Machine_Occurrence := Representation.New_Machine_Occurrence;
-      Machine_Occurrence.Occurrence := X;
-      Machine_Occurrence.Stack_Guard := Stack_Guard;
-      if Call_Chain'Address /= Null_Address then
-         Call_Chain (Machine_Occurrence.Occurrence'Access);
-         declare
-            function Report return Boolean;
-            function Report return Boolean is
-            begin
-               Report_Traceback (Machine_Occurrence.Occurrence);
-               return True;
-            end Report;
-         begin
-            pragma Check (Trace, Ada.Debug.Put ("raising..."));
-            pragma Check (Trace, Report);
-         end;
-      end if;
-      Debug_Raise_Exception (Machine_Occurrence.Occurrence.Id); -- for gdb
-      Propagate_Machine_Occurrence (Machine_Occurrence);
-   end Propagate_Exception;
+      Result.Header.exception_class := Representation.GNAT_Exception_Class;
+      Result.Header.exception_cleanup := Cleanup'Access;
+      --  fill 0 to private area
+      pragma Compile_Time_Error (
+         C.unwind.Unwind_Exception_Class'Size rem Standard'Word_Size /= 0,
+         "unaligned Unwind_Exception_Class'Size");
+      pragma Compile_Time_Error (
+         C.unwind.Unwind_Exception_Cleanup_Fn'Size rem Standard'Word_Size /= 0,
+         "unaligned Unwind_Exception_Cleanup_Fn'Size");
+      memset (
+         Result.Header.exception_cleanup'Address
+            + Storage_Elements.Storage_Offset'(
+               C.unwind.Unwind_Exception_Cleanup_Fn'Size
+               / Standard'Storage_Unit),
+         0,
+         C.unwind.struct_Unwind_Exception'Size / Standard'Storage_Unit
+            - Storage_Elements.Storage_Offset'(
+               C.unwind.Unwind_Exception_Class'Size
+                  / Standard'Storage_Unit
+               + C.unwind.Unwind_Exception_Cleanup_Fn'Size
+                  / Standard'Storage_Unit));
+      return Result;
+   end New_Machine_Occurrence;
+
+   procedure Free (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access) is
+   begin
+      C.unwind.Unwind_DeleteException (Machine_Occurrence.Header'Access);
+   end Free;
 
    procedure Propagate_Machine_Occurrence (
       Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
@@ -118,25 +139,5 @@ package body Separated is
       pragma Check (Trace, Ada.Debug.Put ("unhandled"));
       Unhandled_Except_Handler (Machine_Occurrence);
    end Propagate_Machine_Occurrence;
-
-   procedure Reraise_Machine_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
-      renames Propagate_Machine_Occurrence;
-
-   procedure Unhandled_Except_Handler (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
-   is
-      Current : Exception_Occurrence_Access;
-   begin
-      pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Save_Current_Occurrence (Machine_Occurrence, Current);
-      Unhandled_Exception_Terminate (Current);
-   end Unhandled_Except_Handler;
-
-   procedure Debug_Raise_Exception (E : not null Exception_Data_Access) is
-      pragma Inspection_Point (E);
-   begin
-      null;
-   end Debug_Raise_Exception;
 
 end Separated;

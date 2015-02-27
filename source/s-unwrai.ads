@@ -69,6 +69,12 @@ package System.Unwind.Raising is
    pragma Export (Ada, Reraise_From_Controlled_Operation,
       "__gnat_raise_from_controlled_operation");
 
+   --  equivalent to Reraise_GCC_Exception (a-exexpr-gcc.adb)
+   --  for nested controlled types
+   procedure Reraise_Machine_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
+   pragma Export (C, Reraise_Machine_Occurrence, "__gnat_reraise_zcx");
+
    --  implementation for raising from finalize_library (a-except-2005.adb)
    procedure Reraise_Library_Exception_If_Any;
    pragma Export (Ada, Reraise_Library_Exception_If_Any,
@@ -189,10 +195,49 @@ package System.Unwind.Raising is
    function AAA return Address;
    function ZZZ return Address;
 
+   procedure Save_Exception (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := "";
+      Line : Integer := 0;
+      Column : Integer := 0;
+      Message : String := "");
+
+   procedure Save_E (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      Message : String);
+   pragma Export (Ada, Save_E, "__drake_save_exception");
+
+   procedure Save_Exception_From_Here (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line);
+   pragma Export (Ada, Save_Exception_From_Here,
+      "__drake_save_exception_from_here");
+
+   procedure Save_Exception_From_Here_With (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line;
+      Message : String);
+   pragma Export (Ada, Save_Exception_From_Here_With,
+      "__drake_save_exception_from_here_with");
+
    --  implementation for tasking (a-except-2005.adb)
    function Triggered_By_Abort return Boolean;
    pragma Export (Ada, Triggered_By_Abort,
       "ada__exceptions__triggered_by_abort");
+
+   function New_Machine_Occurrence (Stack_Guard : Address)
+      return not null Representation.Machine_Occurrence_Access;
+
+   procedure Free (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access);
+
+   procedure Set_Traceback (X : in out Exception_Occurrence);
 
    --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
    procedure Set_Exception_Message (
@@ -210,11 +255,23 @@ package System.Unwind.Raising is
 
    --  output the information of unhandled exception
    procedure Report (X : Exception_Occurrence; Where : String);
-   procedure Report_Traceback (X : Exception_Occurrence);
+
+   --  unhandled handler (a-exexpr-gcc.adb)
+   --  the symbol is required only in Win64 SEH.
+   procedure Unhandled_Except_Handler (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
+   pragma No_Return (Unhandled_Except_Handler);
+   pragma Export (C, Unhandled_Except_Handler,
+      "__gnat_unhandled_except_handler");
 
    --  gdb knows some names for "catch exception" command.
    --  but, it works incompletely with not GNAT-GPL but official gcc.
    --  in drake, only the simple form of "catch exception" is supported.
+
+   --  (s-excdeb.ads)
+   procedure Debug_Raise_Exception (E : not null Exception_Data_Access);
+   pragma Export (Ada, Debug_Raise_Exception, "__gnat_debug_raise_exception");
+
 --  procedure __gnat_unhandled_exception (E : Exception_Data_Ptr);
 --  procedure __gnat_debug_raise_assert_failure;
 --  procedure __gnat_raise_nodefer_with_msg (E : Exception_Data_Ptr);

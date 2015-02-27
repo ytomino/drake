@@ -293,22 +293,22 @@ begin
 						end if;
 						Put ("_Type := (");
 						New_Line;
- 						declare
- 							Offset : Integer := 0;
- 							I : CF_Maps.Cursor := First (Table (Kind));
- 							Second : Boolean := False;
- 						begin
- 							if B = In_32 then
- 								Offset := 16#10000#;
- 							end if;
- 							while Has_Element (I) loop
- 								declare
- 									Item_B : Bit := Get_Bit (Key (I));
- 									Item_L : Len := Length (Element (I));
- 									Item_RLE : Positive := 1;
- 									N : CF_Maps.Cursor := Next (I);
- 								begin
- 									if Compressible (I) then
+						declare
+							Offset : Integer := 0;
+							I : CF_Maps.Cursor := First (Table (Kind));
+							Second : Boolean := False;
+						begin
+							if B = In_32 then
+								Offset := 16#10000#;
+							end if;
+							while Has_Element (I) loop
+								declare
+									Item_B : Bit := Get_Bit (Key (I));
+									Item_L : Len := Length (Element (I));
+									Item_RLE : Positive := 1;
+									N : CF_Maps.Cursor := Next (I);
+								begin
+									if Compressible (I) then
 										declare
 											K : Wide_Wide_Character := Key (I);
 											E : Wide_Wide_Character := Element (Element (I), 1);
@@ -325,20 +325,20 @@ begin
 												Item_RLE := Item_RLE + 1;
 											end loop;
 										end;
- 									end if;
- 									if Item_B = B
- 										and then Item_L = L
- 										and then (Item_RLE > 1) = Compressed
- 									then
- 										if Second then
- 											Put (",");
- 											New_Line;
- 										end if;
- 										Put ("      ");
- 										if Num (Kind, B, L, Compressed) = 1 then
- 											Put ("1 => ");
- 										end if;
- 										Put ("(");
+									end if;
+									if Item_B = B
+										and then Item_L = L
+										and then (Item_RLE > 1) = Compressed
+									then
+										if Second then
+											Put (",");
+											New_Line;
+										end if;
+										Put ("      ");
+										if Num (Kind, B, L, Compressed) = 1 then
+											Put ("1 => ");
+										end if;
+										Put ("(");
 										Put (
 											Integer'(Wide_Wide_Character'Pos (Key (I))) - Offset,
 											Base => 16,
@@ -371,14 +371,14 @@ begin
 											end if;
 										end if;
 										Put (")");
- 										Second := True;
- 									end if;
- 									I := N;
- 								end;
- 							end loop;
- 							Put (");");
- 							New_Line;
- 						end;
+										Second := True;
+									end if;
+									I := N;
+								end;
+							end loop;
+							Put (");");
+							New_Line;
+						end;
 						New_Line;
 					end if;
 				end loop;

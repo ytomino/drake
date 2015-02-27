@@ -61,12 +61,12 @@ package Ada.Hierarchical_File_Names is
       First : out Positive;
       Last : out Natural);
 
-   function Compose_No_Folding (
+   function Unfolded_Compose (
       Containing_Directory : String := "";
       Name : String;
       Extension : String := "")
       return String;
-   function Compose_No_Folding (
+   function Unfolded_Compose (
       Containing_Directory : String := "";
       Name : String;
       Extension : String := "";

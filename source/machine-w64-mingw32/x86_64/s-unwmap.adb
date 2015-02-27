@@ -23,12 +23,6 @@ package body System.Unwind.Mapping is
    package LPWSTR_Conv is
       new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWSTR);
 
-   --  weak reference for System.Unwind.Tracebacks (ELF only ?)
-   Call_Chain : access procedure (
-      Current : not null Exception_Occurrence_Access);
-   pragma Import (Ada, Call_Chain, "__drake_ref_call_chain");
-   pragma Weak_External (Call_Chain);
-
    --  implementation
 
    function New_Machine_Occurrence_From_SEH (
@@ -174,27 +168,13 @@ package body System.Unwind.Mapping is
             declare
                Result : constant
                   not null Representation.Machine_Occurrence_Access :=
-                  Representation.New_Machine_Occurrence;
+                  Raising.New_Machine_Occurrence (Stack_Guard => Stack_Guard);
             begin
-               Result.Stack_Guard := Stack_Guard;
                Raising.Set_Exception_Message (
                   Id => Eexception_Id,
                   Message => Message,
                   X => Result.Occurrence);
-               if Call_Chain'Address /= Null_Address then
-                  Call_Chain (Result.Occurrence'Access);
-                  declare
-                     function Report return Boolean;
-                     function Report return Boolean is
-                     begin
-                        Raising.Report_Traceback (Result.Occurrence);
-                        return True;
-                     end Report;
-                  begin
-                     pragma Check (Trace, Ada.Debug.Put ("info..."));
-                     pragma Check (Trace, Report);
-                  end;
-               end if;
+               Raising.Set_Traceback (Result.Occurrence);
                pragma Check (Trace, Ada.Debug.Put ("leave, mapped"));
                return Result;
             end;

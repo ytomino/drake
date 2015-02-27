@@ -86,7 +86,7 @@ package body System.Pool_Size is
                         declare
                            New_Index : constant
                               Storage_Elements.Storage_Count :=
-                                 Matched_Index + Actual_Size;
+                              Matched_Index + Actual_Size;
                            New_Chunk : Freed_Chunk;
                            for New_Chunk'Address use
                               Allocator.Storage'Address + New_Index;

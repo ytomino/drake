@@ -8,7 +8,7 @@ package System.Unwind.Traceback is
    pragma Export (C, Exception_Tracebacks, "__gl_exception_tracebacks");
 
    --  get traceback (a-excach.adb)
-   procedure Call_Chain (Current : not null Exception_Occurrence_Access);
+   procedure Call_Chain (Current : in out Exception_Occurrence);
    pragma Export (Ada, Call_Chain, "ada__exceptions__call_chain");
 
    --  equivalent to Append_Info_Basic_Exception_Traceback (a-exexda.adb)
@@ -18,13 +18,15 @@ package System.Unwind.Traceback is
       Put : not null access procedure (S : String; Params : Address);
       New_Line : not null access procedure (Params : Address));
 
+   procedure Report_Traceback (X : Exception_Occurrence);
+
 private
 
    --  for weak linking,
    --  these symbols will be linked when "__gl_exception_tracebacks" is used
 
    type Call_Chain_Handler is
-      access procedure (Current : not null Exception_Occurrence_Access);
+      access procedure (Current : in out Exception_Occurrence);
    Call_Chain_Ref : constant not null Call_Chain_Handler := Call_Chain'Access;
    pragma Export (Ada, Call_Chain_Ref, "__drake_ref_call_chain");
 
@@ -35,8 +37,14 @@ private
       New_Line : not null access procedure (Params : Address));
    Traceback_Information_Ref : constant
       not null Traceback_Information_Handler :=
-         Traceback_Information'Access;
+      Traceback_Information'Access;
    pragma Export (Ada, Traceback_Information_Ref,
       "__drake_ref_traceback_information");
+
+   type Report_Traceback_Handler is
+      access procedure (X : Exception_Occurrence);
+   Report_Traceback_Ref : constant not null Report_Traceback_Handler :=
+      Report_Traceback'Access;
+   pragma Export (Ada, Report_Traceback_Ref, "__drake_ref_report_traceback");
 
 end System.Unwind.Traceback;

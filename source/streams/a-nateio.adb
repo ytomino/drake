@@ -370,8 +370,7 @@ package body Ada.Naked_Text_IO is
                end if;
             end;
             declare
-               DBCS_Buffer : aliased
-                  System.Native_Text_IO.DBCS_Buffer_Type;
+               DBCS_Buffer : aliased System.Native_Text_IO.DBCS_Buffer_Type;
                New_Last : Natural;
             begin
                DBCS_Buffer (1) := File.Buffer (1);
@@ -823,8 +822,7 @@ package body Ada.Naked_Text_IO is
    begin
       Check_File_Open (File);
       declare
-         Internal : aliased
-            Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
+         Internal : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
             File.File;
       begin
          Free (File);

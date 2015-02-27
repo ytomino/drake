@@ -9,8 +9,8 @@ package System.Soft_Links is
    --    by compiler (s-soflin.ads)
    function Do_Get_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access;
-   Get_Current_Excep : constant access function
-      return Ada.Exceptions.Exception_Occurrence_Access :=
+   Get_Current_Excep : constant
+      access function return Ada.Exceptions.Exception_Occurrence_Access :=
       Do_Get_Current_Excep'Access;
    pragma Suppress (Access_Check, Get_Current_Excep); -- not null
 

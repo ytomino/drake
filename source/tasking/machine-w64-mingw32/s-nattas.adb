@@ -118,9 +118,10 @@ package body System.Native_Tasks is
    end Initialize;
 
    procedure Finalize (Attr : in out Task_Attribute_Of_Abort) is
-      pragma Unmodified (Attr);
+      Closing_Handle : constant Handle_Type := Attr.Event;
    begin
-      if C.winbase.CloseHandle (Attr.Event) = 0 then
+      Attr.Event := C.winbase.INVALID_HANDLE_VALUE;
+      if C.winbase.CloseHandle (Closing_Handle) = 0 then
          null; -- ignore
       end if;
    end Finalize;
@@ -134,7 +135,8 @@ package body System.Native_Tasks is
    begin
       Error := False;
       if C.winbase.SetEvent (Attr.Event) = 0 then
-         Error := C.winbase.GetLastError = C.winerror.ERROR_INVALID_HANDLE;
+         Error := C.winbase.GetLastError /=
+            C.winerror.ERROR_INVALID_HANDLE; -- already terminated
       end if;
    end Send_Abort_Signal;
 

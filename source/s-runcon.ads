@@ -8,6 +8,7 @@ package System.Runtime_Context is
    type Task_Local_Storage is record
       Secondary_Stack : aliased Address;
       Overlaid_Allocation : Address; -- for System.Storage_Pools.Overlaps
+      SEH : Address; -- Win32 only
       Current_Exception : aliased Unwind.Exception_Occurrence;
    end record;
    pragma Suppress_Initialization (Task_Local_Storage);

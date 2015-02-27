@@ -84,6 +84,10 @@ procedure ext_doc is
 						if Start_With (Line, "--  Ada") or else Line = "--  separated and auto-loaded by compiler" then
 							Kind := Standard_Unit;
 							exit;
+						elsif Start_With (Line, "--  extended unit, please see ") then
+							Kind := Extended_Unit;
+							Reference := +Line (Line'First + 30 .. Line'Last);
+							exit;
 						elsif Start_With (Line, "--  extended ") then
 							Kind := Extended_Unit;
 							if Line /= "--  extended unit"
@@ -96,7 +100,7 @@ procedure ext_doc is
 							exit;
 						elsif Start_With (Line, "--  generalized unit of ") then
 							Kind := Extended_Unit;
-							Reference := +Line (Line'First + 30 .. Line'Last);
+							Reference := +Line (Line'First + 24 .. Line'Last);
 							exit;
 						elsif Start_With (Line, "--  translated unit from ") then
 							Kind := Extended_Unit;
@@ -104,11 +108,14 @@ procedure ext_doc is
 							exit;
 						elsif Start_With (Line, "--  runtime")
 							or else Start_With (Line, "--  optional runtime")
+							or else Start_With (Line, "--  overridable runtime")
 						then
 							Kind := Runtime_Unit;
 							if Line /= "--  runtime unit"
 								and then not Start_With (Line, "--  runtime unit ")
 								and then Line /= "--  optional runtime unit"
+								and then Line /= "--  overridable runtime unit"
+								and then not Start_With (Line, "--  overridable runtime unit specialized ")
 							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);
@@ -283,6 +290,7 @@ procedure ext_doc is
 									Skip_F : Integer := 0;
 									Comment_Only : Boolean := Block;
 									Hiding : Boolean := False;
+									C : Character;
 								begin
 									if Added_In_File then
 										Ada.Strings.Unbounded.Append (Document, ASCII.LF);
@@ -318,6 +326,13 @@ procedure ext_doc is
 													Hiding := True;
 												end if;
 											elsif Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "pragma") then
+												Skip_F := Ex_F;
+												Comment_Only := False;
+											elsif Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "with Import") then
+												C := Ada.Strings.Unbounded.Element (Document, Ada.Strings.Unbounded.Length (Document) - 1);
+												if C /= ';' and then C /= '.' then
+													Ada.Strings.Unbounded.Insert (Document, Ada.Strings.Unbounded.Length (Document), ";");
+												end if;
 												Skip_F := Ex_F;
 												Comment_Only := False;
 											elsif Start_With (Ex_Line, "--  diff")

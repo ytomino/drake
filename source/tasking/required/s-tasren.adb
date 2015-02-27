@@ -48,12 +48,7 @@ package body System.Tasking.Rendezvous is
    procedure Cancel_Call (Call : not null Node_Access);
    procedure Cancel_Call (Call : not null Node_Access) is
    begin
-      begin
-         raise Tasking_Error;
-      exception
-         when E : Tasking_Error =>
-            Ada.Exceptions.Save_Occurrence (Call.X, E);
-      end;
+      Ada.Exceptions.Save_Exception_From_Here (Call.X, Tasking_Error'Identity);
       Synchronous_Objects.Set (Call.Waiting);
    end Cancel_Call;
 

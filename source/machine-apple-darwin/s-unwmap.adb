@@ -58,6 +58,23 @@ package body System.Unwind.Mapping is
          Stack_Guard => Stack_Guard);
    end sigaction_Handler;
 
+   procedure Set_Signal_Stack (S : access Signal_Stack_Type);
+   procedure Set_Signal_Stack (S : access Signal_Stack_Type) is
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); -- OSX
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); -- FreeBSD
+      pragma Warnings (Off, Cast);
+      stack : aliased C.signal.stack_t := (
+         ss_sp => Cast (S (S'First)'Access),
+         ss_size => Signal_Stack_Type'Size / Standard'Storage_Unit,
+         ss_flags => 0);
+      Dummy : C.signed_int;
+      pragma Unreferenced (Dummy);
+   begin
+      Dummy := C.signal.sigaltstack (stack'Access, null);
+   end Set_Signal_Stack;
+
    Signal_Stack : aliased Signal_Stack_Type;
 
    --  implementation
@@ -88,20 +105,14 @@ package body System.Unwind.Mapping is
       Dummy := C.signal.sigaction (C.signal.SIGSEGV, act'Access, null);
    end Install_Exception_Handler;
 
-   procedure Set_Signal_Stack (S : access Signal_Stack_Type) is
-      function Cast is
-         new Ada.Unchecked_Conversion (C.char_ptr, C.void_ptr); -- OSX
-      function Cast is
-         new Ada.Unchecked_Conversion (C.char_ptr, C.char_ptr); -- FreeBSD
-      pragma Warnings (Off, Cast);
-      stack : aliased C.signal.stack_t := (
-         ss_sp => Cast (S (S'First)'Access),
-         ss_size => Signal_Stack_Type'Size / Standard'Storage_Unit,
-         ss_flags => 0);
-      Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
+   procedure Install_Task_Exception_Handler (
+      SEH : Address;
+      Signal_Stack : not null access Signal_Stack_Type)
+   is
+      pragma Unreferenced (SEH);
    begin
-      Dummy := C.signal.sigaltstack (stack'Access, null);
-   end Set_Signal_Stack;
+      --  sigaction setting would be inherited from the main thread.
+      Set_Signal_Stack (Signal_Stack);
+   end Install_Task_Exception_Handler;
 
 end System.Unwind.Mapping;

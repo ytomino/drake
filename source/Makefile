@@ -1,21 +1,25 @@
 # targets:
-#   all         building drake runtime (default)
+#   all         building drake runtime (default target)
+#   tree        building only adainclude
 #   import_objs compiling only translated headers for nesting
 #   c-archive   archiving translated headers to tar.bz2
 # variables:
-#   HOST=       host platform (default:gcc -dumpmachine)
-#   TARGET=     target platform (default:HOST)
+#   HOST=       host platform (default:`gcc -dumpmachine`)
+#   TARGET=     target platform (default:$HOST)
+#   IMPORTDIR=  pre-translated headers (default:empty, generating on make)
 #   RTSDIR=     output directory (default:.)
-#   BUILDDIR=   temporary directory (default:RTSDIR/adalib/build)
-#   IMPORTDIR=  pre-translated headers (default:generating on make)
+#   BUILDDIR=   temporary directory (default:$RTSDIR/adalib)
+#   GCC=        compiler (default:$TARGET-gcc)
+#   INSTALL=    copy source files to adainclude (default:install -m 444)
+#   EH=         mechanism of exception handling (default:selected by $TARGET)
 #   WITHA=      if 0, building minimum runtime (default:1)
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
 #   WITHF=      -ffast-math (default:0)
-#   WITHI=      if 0, symbolic link instead of install (default:1)
 #   WITHL=      link time optimization (default:0)
-#   WITHS=      assembly source (default:0)
 #   DEBUG=      debug level (default:if TARGET=HOST then 2 else 1)
-#   CFLAGS=     additional compiler options (default:empty)
+#   CFLAGS=     additional options for gcc (default:empty)
+
+export MAKEFLAGS+=r
 
 HOST=$(shell gcc -dumpmachine)
 TARGET=$(HOST)
@@ -25,6 +29,10 @@ AR=ar
 else
 GCC=$(TARGET)-gcc
 AR=$(TARGET)-ar
+endif
+
+ifeq ($(INSTALL),)
+INSTALL=install -m 444
 endif
 
 # if WITHA=1, all files be compiled
@@ -42,19 +50,9 @@ ifeq ($(WITHF),)
 WITHF=0
 endif
 
-# if WITHL=1, install
-ifeq ($(WITHI),)
-WITHI=1
-endif
-
 # if WITHL=1, link-time optimization be enabled
 ifeq ($(WITHL),)
 WITHL=0
-endif
-
-# if WITHS=1, assembly sources be outputed
-ifeq ($(WITHS),)
-WITHS=0
 endif
 
 # if DEBUG>0, debug info
@@ -72,7 +70,9 @@ RTSDIR=.
 IMPORTDIR=$(RTSDIR)/adainclude
 GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
-BUILDDIR=$(RTSDIR)/adalib/build
+BUILDDIR=$(RTSDIR)/adalib
+LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat.build
+NOSIG_BUILDDIR=$(BUILDDIR)/nosig.build
 
 SUBDIRS=ada83 calendar containers directories distributed environment hash image interfaces nls numerics pools streams strings tasking textio
 
@@ -80,18 +80,15 @@ ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
 TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
-else
-ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
+else ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
 TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
-else
-ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
+else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
-else
-ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
+else ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
 ifneq ($(findstring x86_64,$(TARGET)),)
 EH=machine-w64-mingw32/x86_64/seh
 else
@@ -104,15 +101,11 @@ EH=zcx
 TARGETSUBDIR=$(TARGET)
 OBJFMT=
 endif
-endif
-endif
-endif
 
 ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
 CPUSUBDIR=x86_64
 SIMDSUBDIR=sse2
-else
-ifneq ($(findstring i386,$(TARGET))$(findstring i686,$(TARGET)),) # i386-*-*
+else ifneq ($(findstring i386,$(TARGET))$(findstring i686,$(TARGET)),) # i386-*-*
 CPUSUBDIR=i386
 ifneq ($(findstring darwin,$(TARGET)),) # i686-apple-darwin*
 SIMDSUBDIR=sse2
@@ -122,7 +115,6 @@ endif
 else
 CPUSUBDIR=generic
 SIMDSUBDIR=nosimd
-endif
 endif
 
 # relation of sub directoris
@@ -157,7 +149,7 @@ else # unknown mechanism
 EH_OBJS=
 endif
 
-COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
+COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
 	$(EH_OBJS) \
 	system.o \
 	s-debug.o \
@@ -189,7 +181,7 @@ COMPILER_OBJS= $(addprefix $(BUILDDIR)/, \
 # s-maccod.o and s-stoele.o are also standard library
 
 ifneq ($(WITHA),0)
-ALL_OBJS=$(addprefix $(BUILDDIR)/,\
+ALL_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/,\
 	system.o \
 	$(sort $(addsuffix .o,$(basename $(notdir $(filter-out $(SEPARATED),$(SRC)))))))
 else
@@ -199,7 +191,7 @@ endif
 ALL_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(basename $(notdir $(ALL_OBJS)))))
 
 ifneq ($(WITHC),0)
-ifneq ($(wildcard $(BUILDDIR)/c.o),)
+ifneq ($(wildcard $(LIBGNAT_BUILDDIR)/c.o),)
 IMPORT_HEADERS=
 else
 IMPORT_HEADERS=import_objs
@@ -208,23 +200,15 @@ else
 IMPORT_HEADERS=$(IMPORTDIR)/c.ads
 endif
 
-ifneq ($(WITHI),0)
-INSTALL=install -m 444
-else
-INSTALL=ln -s
-endif
-
 ifeq ($(DEBUG),0)
 CFLAGS_DEBUG=
 OPTIMIZE=1
-else
-ifeq ($(DEBUG),1)
+else ifeq ($(DEBUG),1)
 CFLAGS_DEBUG=-ggdb1
 OPTIMIZE=1
 else
 CFLAGS_DEBUG=-ggdb -gnata
 OPTIMIZE=0
-endif
 endif
 
 ifeq ($(OPTIMIZE),0)
@@ -237,12 +221,12 @@ CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatB -gnatVn -gnatn
 endif
 endif
 
+ADC=$(wildcard $(RTSDIR)/adainclude/*.adc)
 ifneq ($(WITHF),0)
 CFLAGS_MATH=-ffast-math
-ADC=fastmath.adc
+ADC+=fastmath.adc
 else
 CFLAGS_MATH=
-ADC=$(wildcard $(RTSDIR)/adainclude/*.adc)
 endif
 
 ifneq ($(WITHL),0)
@@ -252,37 +236,41 @@ CFLAGS_LTO=
 endif
 
 ifneq ($(ADC),)
-CFLAGS_ADC=-gnatec=$(ADC)
+CFLAGS_ADC=$(addprefix -gnatec=,$(ADC))
 else
 CFLAGS_ADC=
 endif
 
 CFLAGS=
 
-CFLAGS_FOR_COMPILER_UNIT=-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS)
+CFLAGS_FOR_COMPILER_UNIT=$(strip -pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP \
+	$(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS))
 
 .PHONY: all tree import_objs c-archive
 
-all: $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
+all: $(RTSDIR)/adalib/libgnat.a $(RTSDIR)/adalib/nosig.o $(ALL_ALI)
 
 tree: \
 		$(RTSDIR)/adainclude \
-		$(RTSDIR)/adalib \
-		$(BUILDDIR) \
 		$(RTSDIR)/adainclude/system.ads \
 		$(LIBRARY_SRCS) \
+		$(RTSDIR)/adalib \
+		$(LIBGNAT_BUILDDIR) \
 		$(IMPORT_HEADERS)
 
 $(RTSDIR)/adalib/libgnat.a: \
 		$(RTSDIR)/adainclude \
-		$(RTSDIR)/adalib \
-		$(BUILDDIR) \
 		$(RTSDIR)/adainclude/system.ads \
 		$(LIBRARY_SRCS) \
+		$(RTSDIR)/adalib \
+		$(LIBGNAT_BUILDDIR) \
 		$(IMPORT_HEADERS) \
 		$(ALL_OBJS)
 	-rm $@ 2> /dev/null
-	$(AR) -q $@ $(BUILDDIR)/*.o
+	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
+
+$(RTSDIR)/adalib/nosig.o: $(NOSIG_BUILDDIR)/nosig.o
+	install -m 444 $< $@
 
 $(RTSDIR)/adainclude:
 	mkdir -p $@
@@ -290,7 +278,10 @@ $(RTSDIR)/adainclude:
 $(RTSDIR)/adalib:
 	mkdir $@
 
-$(BUILDDIR):
+$(LIBGNAT_BUILDDIR):
+	mkdir $@
+
+$(NOSIG_BUILDDIR):
 	mkdir $@
 
 $(RTSDIR)/adainclude/system.ads:
@@ -524,27 +515,27 @@ $(RTSDIR)/adainclude/%.ads: $(EH)/%.ads
 $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
+# keep the order from AAA to ZZZ
+$(LIBGNAT_BUILDDIR)/s-unwrai.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
+
 ifneq ($(findstring darwin,$(TARGET)),)
 ifneq ($(filter -g,$(CFLAGS_DEBUG))$(filter -ggdb,$(CFLAGS_DEBUG)),)
 # Apple ld64 can't add line info to anonymous symbol .lsda from following .o
-$(BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
-$(BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
+$(LIBGNAT_BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
+$(LIBGNAT_BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 endif
 endif
 
-$(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
+$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
-ifneq ($(WITHS),0)
-	cd $(dir $@) && $(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -S $<
-endif
 
-$(BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
+$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
-ifneq ($(WITHS),0)
-	cd $(dir $@) && $(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -S $<
-endif
 
-$(RTSDIR)/adalib/%.ali: $(BUILDDIR)/%.o
+$(NOSIG_BUILDDIR)/nosig.o: obj/nosig.ads $(NOSIG_BUILDDIR)
+	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
+
+$(RTSDIR)/adalib/%.ali: $(LIBGNAT_BUILDDIR)/%.o
 	install -m 444 $(basename $<).ali $@
 
 ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)
@@ -554,8 +545,8 @@ endif
 
 # separated
 
-$(BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
-$(BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
+$(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
+$(LIBGNAT_BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
 
 # nested
 
@@ -563,7 +554,7 @@ ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad[sb]) $(IMPORTDIR)/c.ads
 IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata c-icucore,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
-IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(BUILDDIR)/,$(IMPLIB_ITEMS)))
+IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(LIBGNAT_BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 
 ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)

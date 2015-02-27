@@ -444,6 +444,7 @@ package body System.Tasks is
       function To_Result is
          new Ada.Unchecked_Conversion (Long_Integer, Native_Tasks.Result_Type);
       Result : Native_Tasks.Result_Type;
+      SEH : aliased array (1 .. 2) of Integer;
       Local : aliased Runtime_Context.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
       No_Detached : Boolean;
@@ -459,7 +460,9 @@ package body System.Tasks is
       Local.Current_Exception.Id := null;
       TLS_Data := Local'Unchecked_Access;
       --  setup signal stack
-      Unwind.Mapping.Set_Signal_Stack (T.Signal_Stack'Access);
+      Unwind.Mapping.Install_Task_Exception_Handler (
+         SEH'Address,
+         T.Signal_Stack'Access);
       --  setup native stack
       Native_Tasks.Initialize (T.Stack_Attribute);
       --  execute

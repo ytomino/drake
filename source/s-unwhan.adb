@@ -35,8 +35,7 @@ package body System.Unwind.Handling is
             "Machine_Occurrence = null, reraised"));
          null;
       else
-         Representation.Unwind_DeleteException (
-            Machine_Occurrence.Header'Access);
+         Raising.Free (Machine_Occurrence);
          --  in Win32 SEH, the chain may be rollback, so restore it
          Mapping.Reinstall_Exception_Handler;
       end if;

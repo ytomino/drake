@@ -4,12 +4,8 @@ package body System.Tasking.Protected_Objects.Entries is
    procedure Cancel_Call (Call : not null Node_Access);
    procedure Cancel_Call (Call : not null Node_Access) is
    begin
-      begin
-         raise Program_Error; -- C940016, not Tasking_Error
-      exception
-         when E : Program_Error =>
-            Ada.Exceptions.Save_Occurrence (Call.X, E);
-      end;
+      --  C940016, not Tasking_Error
+      Ada.Exceptions.Save_Exception (Call.X, Program_Error'Identity);
       Synchronous_Objects.Set (Call.Waiting);
    end Cancel_Call;
 

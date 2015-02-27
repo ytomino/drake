@@ -11,16 +11,26 @@ package body System.Unwind.Raising is
    pragma Suppress (All_Checks);
    use type Representation.Unwind_Exception_Class;
 
-   --  package separated for depending on zcx / sjlj
+   --  package separated for depending on libgcc
    package Separated is
 
-      --  (a-exexpr-gcc.adb)
-      procedure Propagate_Exception (
-         X : Exception_Occurrence;
-         Stack_Guard : Address);
-      pragma No_Return (Propagate_Exception);
+      --  equivalent to Allocate_Occurrence (a-exexpr-gcc.adb)
+      function New_Machine_Occurrence
+         return not null Representation.Machine_Occurrence_Access;
+
+      procedure Free (
+         Machine_Occurrence : Representation.Machine_Occurrence_Access);
+
+      --  equivalent to Propagate_GCC_Exception (a-exexpr-gcc.adb)
+      procedure Propagate_Machine_Occurrence (
+         Machine_Occurrence :
+            not null Representation.Machine_Occurrence_Access);
+      pragma No_Return (Propagate_Machine_Occurrence);
+      pragma Convention (C, Propagate_Machine_Occurrence);
 
    end Separated;
+
+   package body Separated is separate;
 
    function strlen (s : not null access Character)
       return Storage_Elements.Storage_Count;
@@ -32,27 +42,15 @@ package body System.Unwind.Raising is
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
 
-   --  for Report_Traceback
-
-   procedure Put (S : String; Params : Address);
-   procedure Put (S : String; Params : Address) is
-      pragma Unreferenced (Params);
-   begin
-      Termination.Error_Put (S);
-   end Put;
-
-   procedure New_Line (Params : Address);
-   procedure New_Line (Params : Address) is
-      pragma Unreferenced (Params);
-   begin
-      Termination.Error_New_Line;
-   end New_Line;
-
    --  weak reference for System.Unwind.Tracebacks (ELF only ?)
-   Call_Chain : access procedure (
-      Current : not null Exception_Occurrence_Access);
+
+   Call_Chain : access procedure (Current : in out Exception_Occurrence);
    pragma Import (Ada, Call_Chain, "__drake_ref_call_chain");
    pragma Weak_External (Call_Chain);
+
+   Report_Traceback : access procedure (X : Exception_Occurrence);
+   pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
+   pragma Weak_External (Report_Traceback);
 
    --  (a-elchha.ads)
    procedure Last_Chance_Handler (
@@ -78,10 +76,11 @@ package body System.Unwind.Raising is
       Last_Chance_Handler (Current.all);
    end Unhandled_Exception_Terminate;
 
-   type Uninitialized_Exception_Occurrence is record
-      X : Exception_Occurrence;
-   end record;
-   pragma Suppress_Initialization (Uninitialized_Exception_Occurrence);
+   --  equivalent to Complete_And_Propagate_Occurrence (a-exexpr-gcc.adb)
+   procedure Propagate_Machine_Occurrence (
+      Machine_Occurrence :
+         not null Representation.Machine_Occurrence_Access);
+   pragma No_Return (Propagate_Machine_Occurrence);
 
    --  not calling Abort_Defer
 
@@ -122,7 +121,14 @@ package body System.Unwind.Raising is
 
    --  start private part in exclusion
 
-   package body Separated is separate;
+   procedure Propagate_Machine_Occurrence (
+      Machine_Occurrence :
+         not null Representation.Machine_Occurrence_Access) is
+   begin
+      Set_Traceback (Machine_Occurrence.Occurrence);
+      Debug_Raise_Exception (Machine_Occurrence.Occurrence.Id); -- for gdb
+      Separated.Propagate_Machine_Occurrence (Machine_Occurrence);
+   end Propagate_Machine_Occurrence;
 
    procedure Raise_Exception_No_Defer (
       E : not null Exception_Data_Access;
@@ -131,10 +137,13 @@ package body System.Unwind.Raising is
       Column : Integer := 0;
       Message : String := "")
    is
-      X : Uninitialized_Exception_Occurrence;
+      Machine_Occurrence : Representation.Machine_Occurrence_Access;
    begin
-      Set_Exception_Message (E, File, Line, Column, Message, X.X);
-      Separated.Propagate_Exception (X.X, Stack_Guard => Null_Address);
+      Machine_Occurrence := New_Machine_Occurrence (
+         Stack_Guard => Null_Address);
+      Set_Exception_Message (E, File, Line, Column, Message,
+         X => Machine_Occurrence.Occurrence);
+      Propagate_Machine_Occurrence (Machine_Occurrence);
    end Raise_Exception_No_Defer;
 
    procedure Raise_Exception (
@@ -145,13 +154,16 @@ package body System.Unwind.Raising is
       Message : String := "";
       Stack_Guard : Address := Null_Address)
    is
-      X : Uninitialized_Exception_Occurrence;
+      Machine_Occurrence : Representation.Machine_Occurrence_Access;
    begin
-      Set_Exception_Message (E, File, Line, Column, Message, X.X);
       if not ZCX_By_Default then
          Synchronous_Control.Lock_Abort;
       end if;
-      Separated.Propagate_Exception (X.X, Stack_Guard => Stack_Guard);
+      Machine_Occurrence := New_Machine_Occurrence (
+         Stack_Guard => Stack_Guard);
+      Set_Exception_Message (E, File, Line, Column, Message,
+         X => Machine_Occurrence.Occurrence);
+      Propagate_Machine_Occurrence (Machine_Occurrence);
    end Raise_Exception;
 
    procedure Raise_E (
@@ -184,9 +196,13 @@ package body System.Unwind.Raising is
    end Raise_Exception_From_Here_With;
 
    procedure Reraise_No_Defer (X : Exception_Occurrence) is
+      Machine_Occurrence : Representation.Machine_Occurrence_Access;
    begin
       pragma Check (Trace, Ada.Debug.Put ("reraising..."));
-      Separated.Propagate_Exception (X, Stack_Guard => Null_Address);
+      Machine_Occurrence := New_Machine_Occurrence (
+         Stack_Guard => Null_Address);
+      Machine_Occurrence.Occurrence := X;
+      Propagate_Machine_Occurrence (Machine_Occurrence);
    end Reraise_No_Defer;
 
    procedure Reraise (X : Exception_Occurrence) is
@@ -232,6 +248,10 @@ package body System.Unwind.Raising is
          end;
       end if;
    end Reraise_From_Controlled_Operation;
+
+   procedure Reraise_Machine_Occurrence (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
+      renames Separated.Propagate_Machine_Occurrence;
 
    procedure Reraise_Library_Exception_If_Any is
    begin
@@ -519,6 +539,45 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_34;
 
+   procedure Save_Exception (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := "";
+      Line : Integer := 0;
+      Column : Integer := 0;
+      Message : String := "") is
+   begin
+      Set_Exception_Message (E, File, Line, Column, Message, X);
+      Set_Traceback (X);
+   end Save_Exception;
+
+   procedure Save_E (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      Message : String) is
+   begin
+      Save_Exception (X, E, Message => Message);
+   end Save_E;
+
+   procedure Save_Exception_From_Here (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line) is
+   begin
+      Save_Exception (X, E, File, Line, Message => Explicit_Raise);
+   end Save_Exception_From_Here;
+
+   procedure Save_Exception_From_Here_With (
+      X : out Exception_Occurrence;
+      E : not null Exception_Data_Access;
+      File : String := Ada.Debug.File;
+      Line : Integer := Ada.Debug.Line;
+      Message : String) is
+   begin
+      Save_Exception (X, E, File, Line, Message => Message);
+   end Save_Exception_From_Here_With;
+
    --  at last of exclusion
    function ZZZ return Address is
    begin
@@ -534,6 +593,27 @@ package body System.Unwind.Raising is
    begin
       return X.Id = Standard.Abort_Signal'Access;
    end Triggered_By_Abort;
+
+   function New_Machine_Occurrence (Stack_Guard : Address)
+      return not null Representation.Machine_Occurrence_Access
+   is
+      Result : constant not null Representation.Machine_Occurrence_Access :=
+         Separated.New_Machine_Occurrence;
+   begin
+      Result.Stack_Guard := Stack_Guard;
+      return Result;
+   end New_Machine_Occurrence;
+
+   procedure Free (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access)
+      renames Separated.Free;
+
+   procedure Set_Traceback (X : in out Exception_Occurrence) is
+   begin
+      if Call_Chain'Address /= Null_Address then
+         Call_Chain (X);
+      end if;
+   end Set_Traceback;
 
    procedure Set_Exception_Message (
       Id : not null Exception_Data_Access;
@@ -664,7 +744,9 @@ package body System.Unwind.Raising is
             Termination.Error_Put (" of environment task");
          end if;
          Termination.Error_New_Line;
-      elsif X.Num_Tracebacks > 0 then
+      elsif X.Num_Tracebacks > 0
+         and then Report_Traceback'Address /= Null_Address
+      then
          Put_Upper;
          Termination.Error_Put (" terminated by unhandled exception");
          Termination.Error_New_Line;
@@ -685,13 +767,20 @@ package body System.Unwind.Raising is
       end if;
    end Report;
 
-   procedure Report_Traceback (X : Exception_Occurrence) is
+   procedure Unhandled_Except_Handler (
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
+   is
+      Current : Exception_Occurrence_Access;
    begin
-      Exception_Information (
-         X,
-         Null_Address,
-         Put => Put'Access,
-         New_Line => New_Line'Access);
-   end Report_Traceback;
+      pragma Check (Trace, Ada.Debug.Put ("enter"));
+      Save_Current_Occurrence (Machine_Occurrence, Current);
+      Unhandled_Exception_Terminate (Current);
+   end Unhandled_Except_Handler;
+
+   procedure Debug_Raise_Exception (E : not null Exception_Data_Access) is
+      pragma Inspection_Point (E);
+   begin
+      null;
+   end Debug_Raise_Exception;
 
 end System.Unwind.Raising;

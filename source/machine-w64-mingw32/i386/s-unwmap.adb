@@ -3,6 +3,7 @@ with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
 with System.Native_Stack;
+with System.Runtime_Context;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
 with C.basetsd;
@@ -25,6 +26,11 @@ package body System.Unwind.Mapping is
    package LPWSTR_Conv is
       new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWSTR);
 
+   package EXCEPTION_REGISTRATION_RECORD_ptr_Conv is
+      new Address_To_Named_Access_Conversions (
+         C.winnt.struct_EXCEPTION_REGISTRATION_RECORD,
+         C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr);
+
    type SEH_Handler is access function (
       Exception_Record : C.winnt.struct_EXCEPTION_RECORD_ptr;
       Establisher_Frame : C.void_ptr;
@@ -38,8 +44,6 @@ package body System.Unwind.Mapping is
    end record;
    for SEH_Record'Size use Standard'Address_Size * 2;
    pragma Suppress_Initialization (SEH_Record);
-
-   SEH_In_Main : C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr;
 
    function Ada_SEH_Handler (
       Exception_Record : C.winnt.struct_EXCEPTION_RECORD_ptr;
@@ -213,10 +217,8 @@ package body System.Unwind.Mapping is
          new Ada.Unchecked_Conversion (
             C.winnt.struct_TEB_ptr,
             C.winnt.NT_TIB_ptr);
-      package EXCEPTION_REGISTRATION_RECORD_ptr_Conv is
-         new Address_To_Named_Access_Conversions (
-            C.winnt.struct_EXCEPTION_REGISTRATION_RECORD,
-            C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr);
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
       TEB : constant C.winnt.struct_TEB_ptr := C.winnt.NtCurrentTeb;
       TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
       SEH_Rec : SEH_Record;
@@ -228,21 +230,36 @@ package body System.Unwind.Mapping is
       TIB.ExceptionList :=
          EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH);
       --  memory the stack area of main
-      SEH_In_Main := EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH);
+      TLS.SEH := SEH;
       --  note, raising an exception from SetUnhandledExceptionFilter is
       --    probably too late
    end Install_Exception_Handler;
+
+   procedure Install_Task_Exception_Handler (
+      SEH : Address;
+      Signal_Stack : not null access Signal_Stack_Type)
+   is
+      pragma Unreferenced (Signal_Stack);
+   begin
+      Install_Exception_Handler (SEH);
+   end Install_Task_Exception_Handler;
 
    procedure Reinstall_Exception_Handler is
       function Cast is
          new Ada.Unchecked_Conversion (
             C.winnt.struct_TEB_ptr,
             C.winnt.NT_TIB_ptr);
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
+      SEH : constant Address := TLS.SEH;
       TEB : constant C.winnt.struct_TEB_ptr := C.winnt.NtCurrentTeb;
       TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
    begin
-      if TIB.ExceptionList /= SEH_In_Main then
-         TIB.ExceptionList := SEH_In_Main;
+      if TIB.ExceptionList /=
+         EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH)
+      then
+         TIB.ExceptionList :=
+            EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH);
          pragma Check (Trace, Ada.Debug.Put ("reinstalled"));
       end if;
    end Reinstall_Exception_Handler;
