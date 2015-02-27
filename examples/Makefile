@@ -1,16 +1,19 @@
 # targets:
-#   all      building all examples (default)
+#   all      building all examples (default target)
 #   tree     building only adainclude
 #   clean    deleting all built files
-#   xfind    finding the declaration of the symbol $(X)
-#   xfindall finding all references of the symbol $(X)
+#   xfind    finding the declaration of the symbol $X
+#   xfindall finding all references of the symbol $X
 # variables:
-#   GFLAGS= global
-#   CFLAGS= gcc (compiling only)
-#   MFLAGS= gnatmake
-#   BFLAGS= gnatbind
-#   LFLAGS= gnatlink
-#   FFLAGS= gnatfind
+#   HOST, TARGET, IMPORTDIR, GCC are based on ../source/Makefile
+#   GFLAGS= additional options for all gnattools (default:empty)
+#   CFLAGS= additional options for gcc (default:empty)
+#   MFLAGS= additional options for gnatmake (default:empty)
+#   BFLAGS= additional options for gnatbind (default:empty)
+#   LFLAGS= additional options for gnatlink (default:empty)
+#   FFLAGS= additional options for gnatfind (default:empty)
+
+export MAKEFLAGS+=r
 
 export HOST=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
@@ -45,65 +48,71 @@ endif
 BUILDDIR=$(TARGET).build
 
 ifneq ($(wildcard import/$(TARGET)),)
-IMPORTDIR=$(abspath import/$(TARGET))
+IMPORTDIR=import/$(TARGET)
 endif
 
 ifneq ($(IMPORTDIR),)
 DRAKEVARS+=IMPORTDIR=$(abspath $(IMPORTDIR))
 endif
 
+export INSTALL=ln -s
 export WITHA=0
 export WITHF=0
-export WITHI=0
 export DEBUG=2
 
-GFLAGS=--RTS=$(abspath $(BUILDDIR))
-MFLAGS=-D $(BUILDDIR)
+GFLAGS=
+GFLAGS_ALL=--RTS=$(abspath $(BUILDDIR))
+CFLAGS=
+CFLAGS_ALL=-pipe -gnatef -gnatf -gnatwI
+MFLAGS=
+MFLAGS_ALL=-D $(BUILDDIR)
+BFLAGS=
+BFLAGS_ALL=
+LFLAGS=
+LFLAGS_ALL=
+FFLAGS=
+FFLAGS_ALL=
 
 ifeq ($(WITHA),0)
-MFLAGS+=-a
+MFLAGS_ALL+=-a
 endif
-
-CFLAGS=
-CFLAGS_FOR_EXAMPLE=-pipe -gnatef -gnatf -gnatwI
-LFLAGS=
-LFLAGS_FOR_EXAMPLE=
 
 ifneq ($(findstring darwin,$(TARGET)),)
-LFLAGS_FOR_EXAMPLE+=-licucore
-endif
-ifneq ($(findstring freebsd,$(TARGET)),)
-LFLAGS_FOR_EXAMPLE+=-lm -lpthread -liconv -lgcc_eh
-endif
-ifneq ($(findstring linux-gnu,$(TARGET)),)
-LFLAGS_FOR_EXAMPLE+=-lm -lpthread -ldl
+LFLAGS_ALL+=-licucore
+else ifneq ($(findstring freebsd,$(TARGET)),)
+LFLAGS_ALL+=-lm -lpthread -liconv -lgcc_eh
+else ifneq ($(findstring linux-gnu,$(TARGET)),)
+LFLAGS_ALL+=-lm -lpthread -ldl
 endif
 
+GCC=
 ifneq ($(GCC),)
-MFLAGS+=--GCC="$(GCC)"
-LFLAGS_FOR_EXAMPLE+=--GCC="$(GCC)"
+MFLAGS_ALL+=--GCC="$(GCC)"
+LFLAGS_ALL+=--GCC="$(GCC)"
 endif
 
 ifneq ($(DEBUG),0)
-CFLAGS_FOR_EXAMPLE+=-ggdb -gnata -gnat-p
-BFLAGS=-E
-LFLAGS_FOR_EXAMPLE+=-ggdb
+CFLAGS_ALL+=-ggdb -gnata -gnat-p
+BFLAGS_ALL+=-E
+LFLAGS_ALL+=-ggdb
 else
-BFLAGS=
 ifneq ($(findstring darwin,$(TARGET)),)
-LFLAGS_FOR_EXAMPLE=-Wl,-dead_strip
-endif
-ifneq ($(findstring freebsd,$(TARGET)),)
-LFLAGS_FOR_EXAMPLE+=-Wl,--gc-sections
+LFLAGS_ALL+=-Wl,-dead_strip
+else ifneq ($(findstring freebsd,$(TARGET)),)
+LFLAGS_ALL+=-Wl,--gc-sections
 endif
 endif
 
 ifneq ($(WITHF),0)
-CFLAGS_FOR_EXAMPLE+=-ffast-math -gnatec=$(abspath ../source/fastmath.adc)
+CFLAGS_ALL+=-ffast-math -gnatec=../source/fastmath.adc
 endif
 
-CFLAGS_FOR_EXAMPLE+=$(CFLAGS)
-LFLAGS_FOR_EXAMPLE+=$(LFLAGS)
+GFLAGS_ALL:=$(strip $(GFLAGS_ALL) $(GFLAGS))
+CFLAGS_ALL:=$(strip $(CFLAGS_ALL) $(CFLAGS))
+MFLAGS_ALL:=$(strip $(MFLAGS_ALL) $(MFLAGS))
+BFLAGS_ALL:=$(strip $(BFLAGS_ALL) $(BFLAGS))
+LFLAGS_ALL:=$(strip $(LFLAGS_ALL) $(LFLAGS))
+FFLAGS_ALL:=$(strip $(FFLAGS_ALL) $(FFLAGS))
 
 .PHONY: all tree clean xfind xfindall
 
@@ -120,11 +129,11 @@ $(BUILDDIR)/adalib/libgnat.a: $(wildcard $(BUILDDIR)/adainclude/*.ad?)
 	touch $@
 
 $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
-	$(GNATPREFIX)gnatmake -c $< $(GFLAGS) $(MFLAGS) -cargs $(CFLAGS_FOR_EXAMPLE)
-	cd $(BUILDDIR) && $(GNATPREFIX)gnatbind $(basename $(notdir $<)).ali $(GFLAGS) $(BFLAGS)
-	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS) $(LFLAGS_FOR_EXAMPLE)
+	$(GNATPREFIX)gnatmake -c $< $(GFLAGS_ALL) $(MFLAGS_ALL) -cargs $(CFLAGS_ALL)
+	cd $(BUILDDIR) && $(GNATPREFIX)gnatbind $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(BFLAGS_ALL)
+	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(LFLAGS_ALL)
 
-$(BUILDDIR)/nosignal$(EXEEXT): LFLAGS_FOR_EXAMPLE+=$(abspath $(BUILDDIR)/adalib/nosig.o)
+$(BUILDDIR)/nosignal$(EXEEXT): LFLAGS_ALL+=$(abspath $(BUILDDIR)/adalib/nosig.o)
 
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT) $(BINLN)
 
@@ -132,7 +141,7 @@ clean:
 	-rm -rf $(BINLN) *.build
 
 xfind:
-	gnatfind -f -aO$(BUILDDIR) $(X) $(GFLAGS) $(FFLAGS) | sed 's/^$(subst /,\/,$(PWD))\///'
+	gnatfind -f -aO$(BUILDDIR) $(X) $(GFLAGS_ALL) $(FFLAGS_ALL) | sed 's/^$(subst /,\/,$(PWD))\///'
 
-xfindall: FFLAGS+=-r
 xfindall: xfind
+xfindall: FFLAGS_ALL+=-r

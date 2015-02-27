@@ -1,20 +1,25 @@
 # targets:
-#   all         building drake runtime (default)
+#   all         building drake runtime (default target)
+#   tree        building only adainclude
 #   import_objs compiling only translated headers for nesting
 #   c-archive   archiving translated headers to tar.bz2
 # variables:
-#   HOST=       host platform (default:gcc -dumpmachine)
-#   TARGET=     target platform (default:HOST)
+#   HOST=       host platform (default:`gcc -dumpmachine`)
+#   TARGET=     target platform (default:$HOST)
+#   IMPORTDIR=  pre-translated headers (default:empty, generating on make)
 #   RTSDIR=     output directory (default:.)
-#   BUILDDIR=   temporary directory (default:RTSDIR/adalib)
-#   IMPORTDIR=  pre-translated headers (default:generating on make)
+#   BUILDDIR=   temporary directory (default:$RTSDIR/adalib)
+#   GCC=        compiler (default:$TARGET-gcc)
+#   INSTALL=    copy source files to adainclude (default:install -m 444)
+#   EH=         mechanism of exception handling (default:selected by $TARGET)
 #   WITHA=      if 0, building minimum runtime (default:1)
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
 #   WITHF=      -ffast-math (default:0)
-#   WITHI=      if 0, symbolic link instead of install (default:1)
 #   WITHL=      link time optimization (default:0)
 #   DEBUG=      debug level (default:if TARGET=HOST then 2 else 1)
-#   CFLAGS=     additional compiler options (default:empty)
+#   CFLAGS=     additional options for gcc (default:empty)
+
+export MAKEFLAGS+=r
 
 HOST=$(shell gcc -dumpmachine)
 TARGET=$(HOST)
@@ -24,6 +29,10 @@ AR=ar
 else
 GCC=$(TARGET)-gcc
 AR=$(TARGET)-ar
+endif
+
+ifeq ($(INSTALL),)
+INSTALL=install -m 444
 endif
 
 # if WITHA=1, all files be compiled
@@ -39,11 +48,6 @@ endif
 # if WITHF=1, -ffast-math
 ifeq ($(WITHF),)
 WITHF=0
-endif
-
-# if WITHL=1, install
-ifeq ($(WITHI),)
-WITHI=1
 endif
 
 # if WITHL=1, link-time optimization be enabled
@@ -76,18 +80,15 @@ ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
 TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
-else
-ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
+else ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
 TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
-else
-ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
+else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
-else
-ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
+else ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
 ifneq ($(findstring x86_64,$(TARGET)),)
 EH=machine-w64-mingw32/x86_64/seh
 else
@@ -100,15 +101,11 @@ EH=zcx
 TARGETSUBDIR=$(TARGET)
 OBJFMT=
 endif
-endif
-endif
-endif
 
 ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
 CPUSUBDIR=x86_64
 SIMDSUBDIR=sse2
-else
-ifneq ($(findstring i386,$(TARGET))$(findstring i686,$(TARGET)),) # i386-*-*
+else ifneq ($(findstring i386,$(TARGET))$(findstring i686,$(TARGET)),) # i386-*-*
 CPUSUBDIR=i386
 ifneq ($(findstring darwin,$(TARGET)),) # i686-apple-darwin*
 SIMDSUBDIR=sse2
@@ -118,7 +115,6 @@ endif
 else
 CPUSUBDIR=generic
 SIMDSUBDIR=nosimd
-endif
 endif
 
 # relation of sub directoris
@@ -204,23 +200,15 @@ else
 IMPORT_HEADERS=$(IMPORTDIR)/c.ads
 endif
 
-ifneq ($(WITHI),0)
-INSTALL=install -m 444
-else
-INSTALL=ln -s
-endif
-
 ifeq ($(DEBUG),0)
 CFLAGS_DEBUG=
 OPTIMIZE=1
-else
-ifeq ($(DEBUG),1)
+else ifeq ($(DEBUG),1)
 CFLAGS_DEBUG=-ggdb1
 OPTIMIZE=1
 else
 CFLAGS_DEBUG=-ggdb -gnata
 OPTIMIZE=0
-endif
 endif
 
 ifeq ($(OPTIMIZE),0)
@@ -233,12 +221,12 @@ CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatB -gnatVn -gnatn
 endif
 endif
 
+ADC=$(wildcard $(RTSDIR)/adainclude/*.adc)
 ifneq ($(WITHF),0)
 CFLAGS_MATH=-ffast-math
-ADC=fastmath.adc
+ADC+=fastmath.adc
 else
 CFLAGS_MATH=
-ADC=$(wildcard $(RTSDIR)/adainclude/*.adc)
 endif
 
 ifneq ($(WITHL),0)
@@ -248,14 +236,15 @@ CFLAGS_LTO=
 endif
 
 ifneq ($(ADC),)
-CFLAGS_ADC=-gnatec=$(ADC)
+CFLAGS_ADC=$(addprefix -gnatec=,$(ADC))
 else
 CFLAGS_ADC=
 endif
 
 CFLAGS=
 
-CFLAGS_FOR_COMPILER_UNIT=-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP $(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS)
+CFLAGS_FOR_COMPILER_UNIT=$(strip -pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP \
+	$(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS))
 
 .PHONY: all tree import_objs c-archive
 
