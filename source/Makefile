@@ -160,7 +160,6 @@ COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-natsta.o \
 	s-runcon.o \
 	s-runinf.o \
-	s-shaloc.o \
 	s-staall.o \
 	s-stalib.o \
 	s-startu.o \

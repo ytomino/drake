@@ -28,6 +28,7 @@
 #include <sys/types.h> /* before other system headers */
 #include <time.h> /* time and sleep */
 #include <sys/time.h> /* get current time */
+#include <sys/uio.h> /* before signal.h */
 #include <signal.h> /* before unistd.h */
 #include <string.h> /* strsignal */
 #include <sys/syscall.h> /* sigreturn */
@@ -197,6 +198,7 @@
 #pragma for Ada "sys/file.h" include "fcntl.h"
 #pragma for Ada "sys/mman.h" include "sys/types.h" /* mmap */
 #pragma for Ada "sys/time.h" include "sys/_timeval.h" /* timeval */
+#pragma for Ada "sys/uio.h" include "sys/_iovec.h" /* struct iovec */
 #pragma for Ada "time.h" include "sys/timespec.h" /* timespec */
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
 #pragma for Ada "unistd.h" include "sys/unistd.h"
@@ -240,6 +242,7 @@
 #pragma for Ada "sys/syscall.h" include "bits/syscall.h"
 #pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */
 #pragma for Ada "sys/types.h" include "bits/types.h" /* time_t */
+#pragma for Ada "sys/uio.h" include "bits/uio.h" /* struct iovec */
 #pragma for Ada "termios.h" include "bits/termios.h"
 #pragma for Ada "unistd.h" include "bits/confname.h" /* _SC_NPROCESSORS_ONLN */
 #endif

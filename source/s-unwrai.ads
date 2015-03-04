@@ -226,17 +226,6 @@ package System.Unwind.Raising is
    pragma Export (Ada, Save_Exception_From_Here_With,
       "__drake_save_exception_from_here_with");
 
-   --  implementation for tasking (a-except-2005.adb)
-   function Triggered_By_Abort return Boolean;
-   pragma Export (Ada, Triggered_By_Abort,
-      "ada__exceptions__triggered_by_abort");
-
-   function New_Machine_Occurrence (Stack_Guard : Address)
-      return not null Representation.Machine_Occurrence_Access;
-
-   procedure Free (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access);
-
    procedure Set_Traceback (X : in out Exception_Occurrence);
 
    --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
@@ -247,6 +236,17 @@ package System.Unwind.Raising is
       Column : Integer := 0;
       Message : String;
       X : in out Exception_Occurrence);
+
+   --  implementation for tasking (a-except-2005.adb)
+   function Triggered_By_Abort return Boolean;
+   pragma Export (Ada, Triggered_By_Abort,
+      "ada__exceptions__triggered_by_abort");
+
+   function New_Machine_Occurrence (Stack_Guard : Address)
+      return not null Representation.Machine_Occurrence_Access;
+
+   procedure Free (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access);
 
    --  equivalent to Setup_Current_Excep (a-exexpr-gcc.adb)
    procedure Save_Current_Occurrence (

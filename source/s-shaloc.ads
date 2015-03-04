@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  implementation unit
 package System.Shared_Locking is
    pragma Preelaborate;
 

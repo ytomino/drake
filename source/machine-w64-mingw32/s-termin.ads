@@ -4,8 +4,7 @@ package System.Termination is
    pragma Preelaborate;
 
    --  write to standard error output
-   procedure Error_Put (S : String);
-   procedure Error_New_Line;
+   procedure Error_Put_Line (S : String);
 
    --  force to abort
    procedure Force_Abort;

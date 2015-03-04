@@ -1,4 +1,3 @@
-with System.Shared_Locking;
 with System.Termination;
 package body System.Debug is
    pragma Suppress (All_Checks);
@@ -7,16 +6,20 @@ package body System.Debug is
       S : String;
       Source_Location : String;
       Enclosing_Entity : String)
-      return Boolean is
+      return Boolean
+   is
+      L_Length : constant Natural := Source_Location'Length;
+      E_Length : constant Natural := Enclosing_Entity'Length;
+      Buffer : String (
+         1 ..
+         S'Length + L_Length + E_Length + 5); -- ": (" and ") "
    begin
-      Shared_Locking.Enter;
-      Termination.Error_Put (Source_Location);
-      Termination.Error_Put (": (");
-      Termination.Error_Put (Enclosing_Entity);
-      Termination.Error_Put (") ");
-      Termination.Error_Put (S);
-      Termination.Error_New_Line;
-      Shared_Locking.Leave;
+      Buffer (1 .. L_Length) := Source_Location;
+      Buffer (L_Length + 1 .. L_Length + 3) := ": (";
+      Buffer (L_Length + 4 .. L_Length + E_Length + 3) := Enclosing_Entity;
+      Buffer (L_Length + E_Length + 4 .. L_Length + E_Length + 5) := ") ";
+      Buffer (L_Length + E_Length + 6 .. Buffer'Last) := S;
+      Termination.Error_Put_Line (Buffer);
       return True;
    end Default_Put;
 

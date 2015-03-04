@@ -578,36 +578,6 @@ package body System.Unwind.Raising is
       Save_Exception (X, E, File, Line, Message => Message);
    end Save_Exception_From_Here_With;
 
-   --  at last of exclusion
-   function ZZZ return Address is
-   begin
-      <<Code>>
-      return Code'Address;
-   end ZZZ;
-
-   function Triggered_By_Abort return Boolean is
-      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
-         Runtime_Context.Get_Task_Local_Storage;
-      X : constant not null Exception_Occurrence_Access :=
-         TLS.Current_Exception'Access;
-   begin
-      return X.Id = Standard.Abort_Signal'Access;
-   end Triggered_By_Abort;
-
-   function New_Machine_Occurrence (Stack_Guard : Address)
-      return not null Representation.Machine_Occurrence_Access
-   is
-      Result : constant not null Representation.Machine_Occurrence_Access :=
-         Separated.New_Machine_Occurrence;
-   begin
-      Result.Stack_Guard := Stack_Guard;
-      return Result;
-   end New_Machine_Occurrence;
-
-   procedure Free (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access)
-      renames Separated.Free;
-
    procedure Set_Traceback (X : in out Exception_Occurrence) is
    begin
       if Call_Chain'Address /= Null_Address then
@@ -690,6 +660,36 @@ package body System.Unwind.Raising is
       X.Num_Tracebacks := 0;
    end Set_Exception_Message;
 
+   --  at last of exclusion
+   function ZZZ return Address is
+   begin
+      <<Code>>
+      return Code'Address;
+   end ZZZ;
+
+   function Triggered_By_Abort return Boolean is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
+      X : constant not null Exception_Occurrence_Access :=
+         TLS.Current_Exception'Access;
+   begin
+      return X.Id = Standard.Abort_Signal'Access;
+   end Triggered_By_Abort;
+
+   function New_Machine_Occurrence (Stack_Guard : Address)
+      return not null Representation.Machine_Occurrence_Access
+   is
+      Result : constant not null Representation.Machine_Occurrence_Access :=
+         Separated.New_Machine_Occurrence;
+   begin
+      Result.Stack_Guard := Stack_Guard;
+      return Result;
+   end New_Machine_Occurrence;
+
+   procedure Free (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access)
+      renames Separated.Free;
+
    procedure Save_Current_Occurrence (
       Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
       Current : out Exception_Occurrence_Access)
@@ -718,52 +718,77 @@ package body System.Unwind.Raising is
    end Save_Current_Occurrence;
 
    procedure Report (X : Exception_Occurrence; Where : String) is
-      procedure Put_Upper;
-      procedure Put_Upper is
+      subtype Buffer_Type is String (1 .. 256 + Exception_Msg_Max_Length);
+      procedure Put (
+         Buffer : in out Buffer_Type;
+         Last : in out Natural;
+         S : String);
+      procedure Put (
+         Buffer : in out Buffer_Type;
+         Last : in out Natural;
+         S : String)
+      is
+         First : constant Natural := Last + 1;
+      begin
+         Last := Last + S'Length;
+         Buffer (First .. Last) := S;
+      end Put;
+      procedure Put_Upper (
+         Buffer : in out Buffer_Type;
+         Last : out Natural;
+         Where : String);
+      procedure Put_Upper (
+         Buffer : in out Buffer_Type;
+         Last : out Natural;
+         Where : String)
+      is
          type Character_Code is mod 2 ** Character'Size;
       begin
+         Last := 0;
          if Where'Length > 0 then
-            Termination.Error_Put (
-               String'(1 => Character'Val (
-                  Character_Code'(Character'Pos (Where (Where'First)))
-                  and not 16#20#))); -- upper-case
-            Termination.Error_Put (Where (Where'First + 1 .. Where'Last));
+            Put (Buffer, Last, Where);
+            Buffer (1) := Character'Val (
+               Character_Code'(Character'Pos (Buffer (1)))
+               and not 16#20#); -- upper-case
          else
-            Termination.Error_Put ("Execution");
+            Put (Buffer, Last, "Execution");
          end if;
       end Put_Upper;
       subtype Fixed_String is String (Positive);
       Full_Name : Fixed_String;
       for Full_Name'Address use X.Id.Full_Name;
+      Buffer : Buffer_Type;
+      Last : Natural;
    begin
-      Termination.Error_New_Line;
+      Termination.Error_Put_Line ("");
       if Full_Name (1) = '_' then -- Standard'Abort_Signal
-         Put_Upper;
-         Termination.Error_Put (" terminated by abort");
+         Put_Upper (Buffer, Last, Where);
+         Put (Buffer, Last, " terminated by abort");
          if Where'Length = 0 then
-            Termination.Error_Put (" of environment task");
+            Put (Buffer, Last, " of environment task");
          end if;
-         Termination.Error_New_Line;
+         Termination.Error_Put_Line (Buffer (1 .. Last));
       elsif X.Num_Tracebacks > 0
          and then Report_Traceback'Address /= Null_Address
       then
-         Put_Upper;
-         Termination.Error_Put (" terminated by unhandled exception");
-         Termination.Error_New_Line;
+         Put_Upper (Buffer, Last, Where);
+         Put (Buffer, Last, " terminated by unhandled exception");
+         Termination.Error_Put_Line (Buffer (1 .. Last));
          Report_Traceback (X);
       else
+         Last := 0;
          if Where'Length > 0 then
-            Termination.Error_Put ("in ");
-            Termination.Error_Put (Where);
-            Termination.Error_Put (", ");
+            Put (Buffer, Last, "in ");
+            Put (Buffer, Last, Where);
+            Put (Buffer, Last, ", ");
          end if;
-         Termination.Error_Put ("raised ");
-         Termination.Error_Put (Full_Name (1 .. X.Id.Name_Length - 1));
+         Put (Buffer, Last, "raised ");
+         Put (Buffer, Last, Full_Name (1 .. X.Id.Name_Length - 1));
          if X.Msg_Length > 0 then
-            Termination.Error_Put (" : ");
-            Termination.Error_Put (X.Msg (1 .. X.Msg_Length));
+            Put (Buffer, Last, " : ");
+            Put (Buffer, Last, X.Msg (1 .. X.Msg_Length));
          end if;
-         Termination.Error_New_Line;
+         Termination.Error_Put_Line (Buffer (1 .. Last));
       end if;
    end Report;
 

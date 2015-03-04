@@ -1,6 +1,6 @@
 with Ada.Unchecked_Conversion;
+with System.Formatting.Address;
 with System.Termination;
-with System.Unbounded_Stack_Allocators.Debug; -- Error_Put for System.Address
 package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
 
    type AA_Node_Access is access Node;
@@ -35,6 +35,23 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                Probe (Current.Right)) + 1;
          end if;
       end Probe;
+      subtype Buffer_Type is String (1 .. 256);
+      procedure Put (
+         Buffer : in out Buffer_Type;
+         Last : in out Natural;
+         S : String);
+      procedure Put (
+         Buffer : in out Buffer_Type;
+         Last : in out Natural;
+         S : String)
+      is
+         First : constant Natural := Last + 1;
+      begin
+         Last := Last + S'Length;
+         Buffer (First .. Last) := S;
+      end Put;
+      Buffer : Buffer_Type;
+      Last : Natural;
       Deeper : constant Integer := Probe (Container);
       Indent_S : String (1 .. 2 * Deeper) := (others => ' ');
       Mark : constant array (Boolean) of Character := "-*";
@@ -63,15 +80,20 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
          else
             Indent_S (Indent) := '+';
          end if;
-         System.Termination.Error_Put (Indent_S);
-         System.Termination.Error_Put (" ");
-         System.Unbounded_Stack_Allocators.Debug.Error_Put (
-            Current.all'Address);
-         System.Termination.Error_Put (" (level =");
-         System.Termination.Error_Put (
-            Level_Type'Image (Downcast (Current).Level));
-         System.Termination.Error_Put (")");
-         System.Termination.Error_New_Line;
+         Last := 0;
+         Put (Buffer, Last, Indent_S);
+         Put (Buffer, Last, " 0x");
+         System.Formatting.Address.Image (
+            Current.all'Address,
+            Buffer (
+               Last + 1 ..
+               Last + System.Formatting.Address.Address_String'Length),
+            Set => System.Formatting.Lower_Case);
+         Last := Last + System.Formatting.Address.Address_String'Length;
+         Put (Buffer, Last, " (level =");
+         Put (Buffer, Last, Level_Type'Image (Downcast (Current).Level));
+         Put (Buffer, Last, ")");
+         System.Termination.Error_Put_Line (Buffer (1 .. Last));
          Indent_S (Indent) := B;
          Indent_S (Indent - 1) := ' ';
          if Indent > 2 then
@@ -84,12 +106,13 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
          end if;
       end Process;
    begin
-      System.Termination.Error_Put ("Tree:");
+      Last := 0;
+      Put (Buffer, Last, "Tree:");
       if Message'Length > 0 then
-         System.Termination.Error_Put (" ");
-         System.Termination.Error_Put (Message);
+         Put (Buffer, Last, " ");
+         Put (Buffer, Last, Message);
       end if;
-      System.Termination.Error_New_Line;
+      System.Termination.Error_Put_Line (Buffer (1 .. Last));
       if Container /= null then
          Process (Container, 2);
       end if;

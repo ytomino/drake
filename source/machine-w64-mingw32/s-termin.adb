@@ -14,13 +14,13 @@ package body System.Termination is
 
    --  implementation
 
-   procedure Error_Put (S : String) is
+   procedure Error_Put_Line (S : String) is
       Written : aliased C.windef.DWORD;
       Dummy : C.windef.WINBOOL;
       pragma Unreferenced (Dummy);
       S16 : Wide_String (1 .. S'Length);
       S16_Last : Natural;
-      SL : String (1 .. S16'Length * 2);
+      SL : String (1 .. S16'Length * 2 + 2);
       SL_Last : Natural;
    begin
       --  convert S that is UTF-8 to active codepage
@@ -40,6 +40,11 @@ package body System.Termination is
          SL'Length,
          null,
          null));
+      --  newline
+      SL_Last := SL_Last + 1;
+      SL (SL_Last) := Character'Val (13);
+      SL_Last := SL_Last + 1;
+      SL (SL_Last) := Character'Val (10);
       --  output
       Dummy := C.winbase.WriteFile (
          C.winbase.GetStdHandle (C.winbase.STD_ERROR_HANDLE),
@@ -47,12 +52,7 @@ package body System.Termination is
          C.windef.DWORD (SL_Last),
          Written'Access,
          null);
-   end Error_Put;
-
-   procedure Error_New_Line is
-   begin
-      Error_Put ((1 => Character'Val (10), 2 => Character'Val (13)));
-   end Error_New_Line;
+   end Error_Put_Line;
 
    procedure Force_Abort is
    begin
