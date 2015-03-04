@@ -1,6 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with System.Address_To_Constant_Access_Conversions;
-separate (System.Unwind.Traceback)
+separate (System.Unwind.Backtrace)
 package body Separated is
    pragma Suppress (All_Checks);
    --  in sjlj mode, Unwind_Backtrace does not work
@@ -24,8 +24,8 @@ package body Separated is
    Caller_In_main : constant := 160;
    --  120 in unoptimized 32bit code
 
-   procedure Get_Traceback (
-      Traceback : aliased out Tracebacks_Array;
+   procedure Backtrace (
+      Item : aliased out Tracebacks_Array;
       Last : out Natural;
       Exclude_Min : Address;
       Exclude_Max : Address;
@@ -51,7 +51,7 @@ package body Separated is
             pragma Check (Trace, Ada.Debug.Put ("exclude"));
          else
             Last := Last + 1;
-            Traceback (Last) := IP;
+            Item (Last) := IP;
             pragma Check (Trace, Ada.Debug.Put ("fill"));
             exit when Last >= Tracebacks_Array'Last;
          end if;
@@ -61,6 +61,6 @@ package body Separated is
          exit when BP = 0; -- dirty handling in thread
       end loop;
       pragma Check (Trace, Ada.Debug.Put ("end"));
-   end Get_Traceback;
+   end Backtrace;
 
 end Separated;

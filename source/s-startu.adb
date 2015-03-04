@@ -1,7 +1,7 @@
 package body System.Startup is
    pragma Suppress (All_Checks);
 
-   --  weak reference for System.Unwind.Tracebacks (ELF only ?)
+   --  weak reference for System.Unwind.Mapping
    Install_Exception_Handler : access procedure (SEH : Address);
    pragma Import (Ada, Install_Exception_Handler,
       "__drake_ref_install_exception_handler");

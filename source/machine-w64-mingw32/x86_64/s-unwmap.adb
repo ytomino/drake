@@ -172,7 +172,7 @@ package body System.Unwind.Mapping is
                   Id => Eexception_Id,
                   Message => Message,
                   X => Result.Occurrence);
-               Raising.Set_Traceback (Result.Occurrence);
+               Raising.Backtrace (Result.Occurrence);
                pragma Check (Trace, Ada.Debug.Put ("leave, mapped"));
                return Result;
             end;

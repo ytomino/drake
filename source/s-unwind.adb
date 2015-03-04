@@ -1,15 +1,16 @@
 package body System.Unwind is
    pragma Suppress (All_Checks);
 
-   type Traceback_Information_Handler is access procedure (
+   --  weak reference for System.Unwind.Backtrace
+   type Backtrace_Information_Handler is access procedure (
       X : Exception_Occurrence;
       Params : Address;
       Put : not null access procedure (S : String; Params : Address);
       New_Line : not null access procedure (Params : Address));
-   Traceback_Information : constant Traceback_Information_Handler;
-   pragma Import (Ada, Traceback_Information,
-      "__drake_ref_traceback_information");
-   pragma Weak_External (Traceback_Information);
+   Backtrace_Information : constant Backtrace_Information_Handler;
+   pragma Import (Ada, Backtrace_Information,
+      "__drake_ref_backtrace_information");
+   pragma Weak_External (Backtrace_Information);
 
    procedure Exception_Information (
       X : Exception_Occurrence;
@@ -32,9 +33,9 @@ package body System.Unwind is
          null;
       end if;
       if X.Num_Tracebacks > 0
-         and then Traceback_Information'Address /= Null_Address
+         and then Backtrace_Information'Address /= Null_Address
       then
-         Traceback_Information (
+         Backtrace_Information (
             X,
             Params,
             Put => Put,

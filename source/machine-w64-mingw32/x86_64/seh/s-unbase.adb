@@ -3,7 +3,7 @@ with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 with C.basetsd;
 with C.winnt;
-separate (System.Unwind.Traceback)
+separate (System.Unwind.Backtrace)
 package body Separated is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
@@ -27,8 +27,8 @@ package body Separated is
 
    --  implementation
 
-   procedure Get_Traceback (
-      Traceback : aliased out Tracebacks_Array;
+   procedure Backtrace (
+      Item : aliased out Tracebacks_Array;
       Last : out Natural;
       Exclude_Min : Address;
       Exclude_Max : Address;
@@ -105,7 +105,7 @@ package body Separated is
                pragma Check (Trace, Ada.Debug.Put ("exclude"));
             else
                Last := Last + 1;
-               Traceback (Last) :=
+               Item (Last) :=
                   System'To_Address (context.Rip)
                   - Storage_Elements.Storage_Offset'(2);
                pragma Check (Trace, Ada.Debug.Put ("fill"));
@@ -114,6 +114,6 @@ package body Separated is
          end;
       end loop;
       pragma Check (Trace, Ada.Debug.Put ("end"));
-   end Get_Traceback;
+   end Backtrace;
 
 end Separated;

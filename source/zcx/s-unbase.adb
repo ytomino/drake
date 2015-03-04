@@ -1,11 +1,11 @@
 pragma Check_Policy (Trace, Off);
 with C.unwind;
-separate (System.Unwind.Traceback)
+separate (System.Unwind.Backtrace)
 package body Separated is
    pragma Suppress (All_Checks);
 
    type Data is record
-      Traceback : not null access Tracebacks_Array;
+      Item : not null access Tracebacks_Array;
       Last : Natural;
       Exclude_Min : Address;
       Exclude_Max : Address;
@@ -41,7 +41,7 @@ package body Separated is
                pragma Check (Trace, Ada.Debug.Put ("exclude"));
             else
                D.Last := D.Last + 1;
-               D.Traceback (D.Last) := IP;
+               D.Item (D.Last) := IP;
                pragma Check (Trace, Ada.Debug.Put ("fill"));
                if D.Last >= Tracebacks_Array'Last then
                   pragma Check (Trace, Ada.Debug.Put ("leave, over"));
@@ -54,15 +54,15 @@ package body Separated is
       return C.unwind.URC_NO_REASON;
    end Unwind_Trace;
 
-   procedure Get_Traceback (
-      Traceback : aliased out Tracebacks_Array;
+   procedure Backtrace (
+      Item : aliased out Tracebacks_Array;
       Last : out Natural;
       Exclude_Min : Address;
       Exclude_Max : Address;
       Skip_Frames : Natural)
    is
       D : aliased Data := (
-         Traceback'Unchecked_Access,
+         Item'Unchecked_Access,
          Tracebacks_Array'First - 1,
          Exclude_Min,
          Exclude_Max,
@@ -76,6 +76,6 @@ package body Separated is
          C.void_ptr (D'Address));
       pragma Check (Trace, Ada.Debug.Put ("end"));
       Last := D.Last;
-   end Get_Traceback;
+   end Backtrace;
 
 end Separated;
