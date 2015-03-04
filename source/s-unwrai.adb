@@ -578,36 +578,6 @@ package body System.Unwind.Raising is
       Save_Exception (X, E, File, Line, Message => Message);
    end Save_Exception_From_Here_With;
 
-   --  at last of exclusion
-   function ZZZ return Address is
-   begin
-      <<Code>>
-      return Code'Address;
-   end ZZZ;
-
-   function Triggered_By_Abort return Boolean is
-      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
-         Runtime_Context.Get_Task_Local_Storage;
-      X : constant not null Exception_Occurrence_Access :=
-         TLS.Current_Exception'Access;
-   begin
-      return X.Id = Standard.Abort_Signal'Access;
-   end Triggered_By_Abort;
-
-   function New_Machine_Occurrence (Stack_Guard : Address)
-      return not null Representation.Machine_Occurrence_Access
-   is
-      Result : constant not null Representation.Machine_Occurrence_Access :=
-         Separated.New_Machine_Occurrence;
-   begin
-      Result.Stack_Guard := Stack_Guard;
-      return Result;
-   end New_Machine_Occurrence;
-
-   procedure Free (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access)
-      renames Separated.Free;
-
    procedure Set_Traceback (X : in out Exception_Occurrence) is
    begin
       if Call_Chain'Address /= Null_Address then
@@ -689,6 +659,36 @@ package body System.Unwind.Raising is
       X.Pid := Local_Partition_ID;
       X.Num_Tracebacks := 0;
    end Set_Exception_Message;
+
+   --  at last of exclusion
+   function ZZZ return Address is
+   begin
+      <<Code>>
+      return Code'Address;
+   end ZZZ;
+
+   function Triggered_By_Abort return Boolean is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
+      X : constant not null Exception_Occurrence_Access :=
+         TLS.Current_Exception'Access;
+   begin
+      return X.Id = Standard.Abort_Signal'Access;
+   end Triggered_By_Abort;
+
+   function New_Machine_Occurrence (Stack_Guard : Address)
+      return not null Representation.Machine_Occurrence_Access
+   is
+      Result : constant not null Representation.Machine_Occurrence_Access :=
+         Separated.New_Machine_Occurrence;
+   begin
+      Result.Stack_Guard := Stack_Guard;
+      return Result;
+   end New_Machine_Occurrence;
+
+   procedure Free (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access)
+      renames Separated.Free;
 
    procedure Set_Foreign_Occurrence (
       X : in out Exception_Occurrence;

@@ -69,7 +69,7 @@ package body System.Unwind.Traceback is
             Current.Num_Tracebacks,
             Raising.AAA,
             Raising.ZZZ,
-            3); -- Propagate_Exception, Call_Chain, Get_Traceback
+            2); -- Call_Chain and Separated.Get_Traceback
          pragma Check (Trace, Ada.Debug.Put ("Call_Chain"));
          pragma Check (Trace, Report);
       end if;
