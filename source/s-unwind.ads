@@ -40,7 +40,7 @@ package System.Unwind is
       Exception_Raised : Boolean := False;
       Pid : Natural := 0;
       Num_Tracebacks : Natural range 0 .. Max_Tracebacks := 0;
-      Tracebacks : Tracebacks_Array;
+      Tracebacks : aliased Tracebacks_Array;
    end record;
 
    type Exception_Occurrence_Access is access all Exception_Occurrence;

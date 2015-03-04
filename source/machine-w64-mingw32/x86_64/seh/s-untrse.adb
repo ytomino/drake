@@ -28,8 +28,8 @@ package body Separated is
    --  implementation
 
    procedure Get_Traceback (
-      Traceback : out Tracebacks_Array;
-      Length : out Natural;
+      Traceback : aliased out Tracebacks_Array;
+      Last : out Natural;
       Exclude_Min : Address;
       Exclude_Max : Address;
       Skip_Frames : Natural)
@@ -41,9 +41,9 @@ package body Separated is
          LowAddress => <>,
          HighAddress => <>,
          F_Entry => (others => <>));
-      Skipped_Frames : Natural;
+      Skip : Natural;
    begin
-      pragma Check (Trace, Ada.Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("start"));
       --  Get the context.
       C.winnt.RtlCaptureContext (context'Access);
       --  Setup unwind history table (a cached to speed-up unwinding).
@@ -51,8 +51,8 @@ package body Separated is
          history'Access,
          0,
          C.winnt.UNWIND_HISTORY_TABLE'Size / Standard'Storage_Unit);
-      Length := 0;
-      Skipped_Frames := 0;
+      Last := Tracebacks_Array'First - 1;
+      Skip := Skip_Frames;
       loop
          declare
             RuntimeFunction : C.winnt.PRUNTIME_FUNCTION;
@@ -95,27 +95,25 @@ package body Separated is
             end if;
             --  0 means bottom of the stack.
             exit when System'To_Address (context.Rip) = Null_Address;
-            if Skipped_Frames < Skip_Frames then
-               --  Skip frames.
-               Skipped_Frames := Skipped_Frames + 1;
+            if Skip > 0 then
+               Skip := Skip - 1;
                pragma Check (Trace, Ada.Debug.Put ("skip"));
             elsif System'To_Address (context.Rip) >= Exclude_Min
                and then System'To_Address (context.Rip) <= Exclude_Max
             then
-               --  Excluded frames.
+               Skip := 0; -- end of skip
                pragma Check (Trace, Ada.Debug.Put ("exclude"));
-               null;
             else
-               Length := Length + 1;
-               Traceback (Length) :=
+               Last := Last + 1;
+               Traceback (Last) :=
                   System'To_Address (context.Rip)
                   - Storage_Elements.Storage_Offset'(2);
                pragma Check (Trace, Ada.Debug.Put ("fill"));
-               exit when Length >= Tracebacks_Array'Length;
+               exit when Last >= Tracebacks_Array'Last;
             end if;
          end;
       end loop;
-      pragma Check (Trace, Ada.Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("end"));
    end Get_Traceback;
 
 end Separated;

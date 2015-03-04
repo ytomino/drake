@@ -25,8 +25,8 @@ package body Separated is
    --  120 in unoptimized 32bit code
 
    procedure Get_Traceback (
-      Traceback : out Tracebacks_Array;
-      Length : out Natural;
+      Traceback : aliased out Tracebacks_Array;
+      Last : out Natural;
       Exclude_Min : Address;
       Exclude_Max : Address;
       Skip_Frames : Natural)
@@ -37,33 +37,30 @@ package body Separated is
       IP : Address;
       Skip : Natural;
    begin
-      pragma Check (Trace, Ada.Debug.Put ("enter"));
+      pragma Check (Trace, Ada.Debug.Put ("start"));
       BP := Conv.To_Address (builtin_frame_address (0));
-      Length := 0;
+      Last := Tracebacks_Array'First - 1;
       Skip := Skip_Frames;
       loop
-         if Traceback'First + Length > Traceback'Last then
-            pragma Check (Trace, Ada.Debug.Put ("over"));
-            exit;
-         end if;
          IP := Conv.To_Pointer (BP + Return_Offset).all - Call_Length;
          if Skip > 0 then
             Skip := Skip - 1;
             pragma Check (Trace, Ada.Debug.Put ("skip"));
          elsif IP >= Exclude_Min and then IP <= Exclude_Max then
+            Skip := 0; -- end of skip
             pragma Check (Trace, Ada.Debug.Put ("exclude"));
-            null;
          else
-            Traceback (Traceback'First + Length) := IP;
-            Length := Length + 1;
+            Last := Last + 1;
+            Traceback (Last) := IP;
             pragma Check (Trace, Ada.Debug.Put ("fill"));
+            exit when Last >= Tracebacks_Array'Last;
          end if;
          exit when IP >= main'Code_Address
             and then IP < main'Code_Address + Caller_In_main;
          BP := Conv.To_Pointer (BP).all + Parent_Offset;
          exit when BP = 0; -- dirty handling in thread
       end loop;
-      pragma Check (Trace, Ada.Debug.Put ("leave"));
+      pragma Check (Trace, Ada.Debug.Put ("end"));
    end Get_Traceback;
 
 end Separated;

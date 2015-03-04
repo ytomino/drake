@@ -11,8 +11,8 @@ package body System.Unwind.Traceback is
 
       --  equivalent to __gnat_backtrace (tracebak.c/tb-gcc.c)
       procedure Get_Traceback (
-         Traceback : out Tracebacks_Array;
-         Length : out Natural;
+         Traceback : aliased out Tracebacks_Array;
+         Last : out Natural;
          Exclude_Min : Address;
          Exclude_Max : Address;
          Skip_Frames : Natural);
@@ -66,7 +66,7 @@ package body System.Unwind.Traceback is
       if Exception_Tracebacks /= 0 and then Current.Num_Tracebacks = 0 then
          Separated.Get_Traceback (
             Current.Tracebacks,
-            Current.Num_Tracebacks,
+            Current.Num_Tracebacks, -- Tracebacks_Array'First = 1
             Raising.AAA,
             Raising.ZZZ,
             2); -- Call_Chain and Separated.Get_Traceback
