@@ -190,6 +190,28 @@
 #pragma for Ada "termios.h" include "sys/termios.h"
 #pragma for Ada "time.h" include "sys/_structs.h" /* timespec */
 #pragma for Ada "unistd.h" include "sys/unistd.h"
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1090
+#pragma for Ada "pthread.h" include "sys/_types/_pthread_cond_t.h"
+#pragma for Ada "pthread.h" include "sys/_types/_pthread_mutex_t.h"
+#pragma for Ada "pthread.h" include "sys/_types/_pthread_rwlock_t.h"
+#pragma for Ada "pthread.h" include "sys/_types/_pthread_t.h"
+#pragma for Ada "signal.h" include "sys/_types/_sigaltstack.h" /* stack_t */
+#pragma for Ada "signal.h" include "sys/_types/_sigset_t.h"
+#pragma for Ada "sys/stat.h" include "sys/_types/_s_ifmt.h" /* S_IF* */
+#pragma for Ada "sys/time.h" include "sys/_types/_timeval.h"
+#pragma for Ada "sys/types.h" include "sys/_types/_gid_t.h"
+#pragma for Ada "sys/types.h" include "sys/_types/_mode_t.h"
+#pragma for Ada "sys/types.h" include "sys/_types/_ssize_t.h"
+#pragma for Ada "sys/types.h" include "sys/_types/_suseconds_t.h"
+#pragma for Ada "sys/types.h" include "sys/_types/_off_t.h"
+#pragma for Ada "sys/types.h" include "sys/_types/_pid_t.h"
+#pragma for Ada "sys/types.h" include "sys/_types/_time_t.h"
+#pragma for Ada "sys/types.h" include "sys/_types/_uid_t.h"
+#pragma for Ada "sys/ucontext.h" include "sys/_types/_ucontext.h" /* ucontext_t */
+#pragma for Ada "sys/uio.h" include "sys/_types/_iovec_t.h"
+#pragma for Ada "time.h" include "sys/_types/_timespec.h" /* struct timespec */
+#pragma for Ada "unistd.h" include "sys/_types/_seek_set.h" /* SEEK_* */
+#endif
 #elif defined(__FreeBSD__)
 #pragma for Ada "dirent.h" include "sys/dirent.h"
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
