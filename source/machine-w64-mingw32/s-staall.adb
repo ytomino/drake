@@ -7,7 +7,6 @@ with C.windef;
 with C.winnt;
 package body System.Standard_Allocators is
    pragma Suppress (All_Checks);
-   use type C.void_ptr;
    use type C.windef.WINBOOL;
 --  use type C.basetsd.SIZE_T;
 --  use type C.windef.DWORD;
@@ -105,9 +104,7 @@ package body System.Standard_Allocators is
          C.basetsd.SIZE_T (Size),
          C.winnt.MEM_RESERVE or C.winnt.MEM_COMMIT,
          C.winnt.PAGE_READWRITE);
-      if Mapped_Address = C.windef.LPVOID (Null_Address)
-         and then Raise_On_Error
-      then
+      if Address (Mapped_Address) = Null_Address and then Raise_On_Error then
          Unwind.Raising.Raise_Exception_From_Here_With (
             Unwind.Standard.Storage_Error'Access,
             Message => Page_Exhausted);

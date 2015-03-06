@@ -13,7 +13,6 @@ package body System.Unwind.Searching is
    use type C.unsigned_int; -- _Unwind_Ptr is unsigned int or unsigned long
    use type C.unsigned_long;
    use type C.unsigned_long_long;
-   use type C.void_ptr;
    use type C.unwind.sleb128_t;
 
    Foreign_Exception : aliased Exception_Data;
@@ -98,7 +97,7 @@ package body System.Unwind.Searching is
                return C.unwind.URC_CONTINUE_UNWIND;
             end if;
             lsda := C.unwind.Unwind_GetLanguageSpecificData (Context);
-            if lsda = C.void_ptr (Null_Address) then
+            if Address (lsda) = Null_Address then
                pragma Check (Trace, Ada.Debug.Put ("leave, lsda = null"));
                return C.unwind.URC_CONTINUE_UNWIND;
             end if;

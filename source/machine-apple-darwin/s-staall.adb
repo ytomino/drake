@@ -8,7 +8,6 @@ with C.unistd;
 package body System.Standard_Allocators is
    pragma Suppress (All_Checks);
    use type C.signed_int;
-   use type C.void_ptr;
 
    procedure Runtime_Error (
       Condition : Boolean;
@@ -79,7 +78,7 @@ package body System.Standard_Allocators is
          C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE,
          -1,
          0);
-      if Mapped_Address = C.sys.mman.MAP_FAILED
+      if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED)
          and then Raise_On_Error
       then
          Unwind.Raising.Raise_Exception_From_Here_With (
@@ -106,7 +105,7 @@ package body System.Standard_Allocators is
          C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE + C.sys.mman.MAP_FIXED,
          -1,
          0);
-      if Mapped_Address = C.sys.mman.MAP_FAILED
+      if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED)
          and then Raise_On_Error
       then
          Unwind.Raising.Raise_Exception_From_Here_With (
