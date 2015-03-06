@@ -1,8 +1,7 @@
-with Ada.Unchecked_Conversion;
 with Ada.Asynchronous_Task_Control;
 with Ada.Task_Attributes;
 with Ada.Task_Identification;
-with Ada.Task_Termination;
+with Ada.Unchecked_Conversion;
 with System.Tasks;
 procedure tasking3 is
 	Count : constant := 3;

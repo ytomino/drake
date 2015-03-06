@@ -2,6 +2,7 @@
 pragma Wide_Character_Encoding (UTF8); -- for using π
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Generic_Real_Arrays;
+-- all instances
 with Ada.Numerics.Short_Elementary_Functions;
 with Ada.Numerics.Short_Real_Arrays;
 with Ada.Numerics.Elementary_Functions;

@@ -1,5 +1,4 @@
 with Ada.Command_Line;
-with Ada.Text_IO;
 with Ada.Text_IO.Terminal;
 procedure tty2 is
 	use Ada.Text_IO;

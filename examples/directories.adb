@@ -3,9 +3,7 @@ pragma Ada_2012;
 with Ada.Calendar;
 with Ada.Command_Line;
 with Ada.Credentials;
-with Ada.Directories;
 with Ada.Directories.Information;
-with Ada.Directories.Temporary;
 with Ada.Directories.Volumes;
 with Ada.Text_IO;
 procedure directories is

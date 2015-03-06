@@ -4,15 +4,15 @@ with System.Formatting.Address;
 with System.Runtime_Information;
 with System.Termination;
 with System.Unwind.Raising;
-package body System.Unwind.Traceback is
+package body System.Unwind.Backtrace is
    pragma Suppress (All_Checks);
 
    package Separated is
 
       --  equivalent to __gnat_backtrace (tracebak.c/tb-gcc.c)
-      procedure Get_Traceback (
-         Traceback : out Tracebacks_Array;
-         Length : out Natural;
+      procedure Backtrace (
+         Item : aliased out Tracebacks_Array;
+         Last : out Natural;
          Exclude_Min : Address;
          Exclude_Max : Address;
          Skip_Frames : Natural);
@@ -21,7 +21,7 @@ package body System.Unwind.Traceback is
 
    package body Separated is separate;
 
-   --  for Report_Traceback
+   --  for Report_Backtrace
 
    type Information_Context_Type is record
       Item : String (
@@ -59,23 +59,23 @@ package body System.Unwind.Traceback is
       function Report return Boolean;
       function Report return Boolean is
       begin
-         Report_Traceback (Current);
+         Report_Backtrace (Current);
          return True;
       end Report;
    begin
       if Exception_Tracebacks /= 0 and then Current.Num_Tracebacks = 0 then
-         Separated.Get_Traceback (
+         Separated.Backtrace (
             Current.Tracebacks,
-            Current.Num_Tracebacks,
+            Current.Num_Tracebacks, -- Tracebacks_Array'First = 1
             Raising.AAA,
             Raising.ZZZ,
-            2); -- Call_Chain and Separated.Get_Traceback
+            2); -- Call_Chain and Separated.Backtrace
          pragma Check (Trace, Ada.Debug.Put ("Call_Chain"));
          pragma Check (Trace, Report);
       end if;
    end Call_Chain;
 
-   procedure Traceback_Information (
+   procedure Backtrace_Information (
       X : Exception_Occurrence;
       Params : Address;
       Put : not null access procedure (S : String; Params : Address);
@@ -112,9 +112,9 @@ package body System.Unwind.Traceback is
          end if;
       end loop;
       New_Line (Params);
-   end Traceback_Information;
+   end Backtrace_Information;
 
-   procedure Report_Traceback (X : Exception_Occurrence) is
+   procedure Report_Backtrace (X : Exception_Occurrence) is
       Context : Information_Context_Type;
    begin
       Context.Last := 0;
@@ -123,6 +123,6 @@ package body System.Unwind.Traceback is
          Context'Address,
          Put => Put'Access,
          New_Line => New_Line'Access);
-   end Report_Traceback;
+   end Report_Backtrace;
 
-end System.Unwind.Traceback;
+end System.Unwind.Backtrace;

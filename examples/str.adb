@@ -1,17 +1,16 @@
+with Ada.Strings.Maps.Constants;
+with Ada.Strings.Unbounded_Strings;
+with System;
+-- all strings
 with Ada.Strings.Fixed;
 with Ada.Strings.Bounded;
 with Ada.Strings.Unbounded;
-with Ada.Strings.Unbounded_Strings;
 with Ada.Strings.Wide_Fixed;
 with Ada.Strings.Wide_Bounded;
 with Ada.Strings.Wide_Unbounded;
 with Ada.Strings.Wide_Wide_Fixed;
 with Ada.Strings.Wide_Wide_Bounded;
 with Ada.Strings.Wide_Wide_Unbounded;
-with Ada.Strings.Maps.Constants;
-with Ada.Strings.Wide_Maps;
-with Ada.Strings.Wide_Wide_Maps;
-with System;
 procedure str is
 begin
 	-- operators

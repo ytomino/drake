@@ -226,7 +226,7 @@ package System.Unwind.Raising is
    pragma Export (Ada, Save_Exception_From_Here_With,
       "__drake_save_exception_from_here_with");
 
-   procedure Set_Traceback (X : in out Exception_Occurrence);
+   procedure Backtrace (X : in out Exception_Occurrence);
 
    --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
    procedure Set_Exception_Message (

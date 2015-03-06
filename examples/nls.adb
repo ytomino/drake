@@ -1,11 +1,9 @@
-with Ada.Streams;
-with Ada.Streams.Unbounded_Storage_IO;
-with Ada.Environment_Encoding;
+with Ada.Environment_Encoding.Encoding_Streams;
 with Ada.Environment_Encoding.Names;
 with Ada.Environment_Encoding.Strings;
 with Ada.Environment_Encoding.Wide_Strings;
 with Ada.Environment_Encoding.Wide_Wide_Strings;
-with Ada.Environment_Encoding.Encoding_Streams;
+with Ada.Streams.Unbounded_Storage_IO;
 procedure nls is
 	package USIO renames Ada.Streams.Unbounded_Storage_IO;
 	use type Ada.Streams.Stream_Element_Array;

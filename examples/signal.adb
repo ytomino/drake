@@ -1,9 +1,9 @@
 -- stack trace must be shown with gnatbind -E
 with Ada.Unchecked_Conversion;
+with Interfaces;
 with System.Formatting;
 with System.Machine_Code;
 with System.Storage_Elements;
-with Interfaces;
 procedure signal is
 	use type Interfaces.Unsigned_16;
 	Bad : exception;

@@ -1,8 +1,8 @@
 -- find circular dependency
 pragma Ada_2012;
 with Ada.Command_Line;
-with Ada.Containers.Indefinite_Ordered_Sets;
 with Ada.Containers.Indefinite_Ordered_Maps;
+with Ada.Containers.Indefinite_Ordered_Sets;
 with Ada.Directories;
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;

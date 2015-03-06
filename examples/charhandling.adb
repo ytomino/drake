@@ -1,5 +1,5 @@
-with Ada.Characters.Handling;
 with Ada.Characters.ASCII.Handling;
+with Ada.Characters.Handling;
 procedure charhandling is
 	package UH renames Ada.Characters.Handling;
 	package AH renames Ada.Characters.ASCII.Handling;

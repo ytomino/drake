@@ -1,4 +1,5 @@
 with Ada.Containers;
+-- all hash functions
 with Ada.Strings.Hash;
 with Ada.Strings.Wide_Hash;
 with Ada.Strings.Wide_Wide_Hash;

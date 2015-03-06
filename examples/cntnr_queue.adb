@@ -1,6 +1,6 @@
 with Ada.Containers.Synchronized_Queue_Interfaces;
-with Ada.Containers.Unbounded_Synchronized_Queues;
 with Ada.Containers.Unbounded_Priority_Queues;
+with Ada.Containers.Unbounded_Synchronized_Queues;
 procedure cntnr_queue is
 	package Integer_Queue_Interfaces is
 		new Ada.Containers.Synchronized_Queue_Interfaces (Character);

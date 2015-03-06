@@ -1,11 +1,9 @@
 pragma Ada_2012;
-with Ada.Containers.Vectors;
+with Ada.Characters.ASCII.Handling;
 with Ada.Containers.Indefinite_Vectors;
 with Ada.Containers.Limited_Vectors;
-with Ada.Characters.ASCII.Handling;
+with Ada.Containers.Vectors;
 with Ada.Streams.Unbounded_Storage_IO;
--- with Ada.Text_IO;
-with System;
 procedure cntnr_Vector is
 	function Custom_Eq (Left, Right : Character) return Boolean is
 	begin

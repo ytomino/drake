@@ -1,24 +1,24 @@
 pragma License (Unrestricted);
 --  runtime unit
-package System.Unwind.Traceback is
+package System.Unwind.Backtrace is
    pragma Preelaborate;
 
    --  filled by gnatbind (init.c)
    Exception_Tracebacks : Integer := 0; -- set by "-E" option
    pragma Export (C, Exception_Tracebacks, "__gl_exception_tracebacks");
 
-   --  get traceback (a-excach.adb)
+   --  backtrace (a-excach.adb)
    procedure Call_Chain (Current : in out Exception_Occurrence);
    pragma Export (Ada, Call_Chain, "ada__exceptions__call_chain");
 
    --  equivalent to Append_Info_Basic_Exception_Traceback (a-exexda.adb)
-   procedure Traceback_Information (
+   procedure Backtrace_Information (
       X : Exception_Occurrence;
       Params : Address;
       Put : not null access procedure (S : String; Params : Address);
       New_Line : not null access procedure (Params : Address));
 
-   procedure Report_Traceback (X : Exception_Occurrence);
+   procedure Report_Backtrace (X : Exception_Occurrence);
 
 private
 
@@ -30,21 +30,21 @@ private
    Call_Chain_Ref : constant not null Call_Chain_Handler := Call_Chain'Access;
    pragma Export (Ada, Call_Chain_Ref, "__drake_ref_call_chain");
 
-   type Traceback_Information_Handler is access procedure (
+   type Backtrace_Information_Handler is access procedure (
       X : Exception_Occurrence;
       Params : Address;
       Put : not null access procedure (S : String; Params : Address);
       New_Line : not null access procedure (Params : Address));
-   Traceback_Information_Ref : constant
-      not null Traceback_Information_Handler :=
-      Traceback_Information'Access;
-   pragma Export (Ada, Traceback_Information_Ref,
-      "__drake_ref_traceback_information");
+   Backtrace_Information_Ref : constant
+      not null Backtrace_Information_Handler :=
+      Backtrace_Information'Access;
+   pragma Export (Ada, Backtrace_Information_Ref,
+      "__drake_ref_backtrace_information");
 
-   type Report_Traceback_Handler is
+   type Report_Backtrace_Handler is
       access procedure (X : Exception_Occurrence);
-   Report_Traceback_Ref : constant not null Report_Traceback_Handler :=
-      Report_Traceback'Access;
-   pragma Export (Ada, Report_Traceback_Ref, "__drake_ref_report_traceback");
+   Report_Backtrace_Ref : constant not null Report_Backtrace_Handler :=
+      Report_Backtrace'Access;
+   pragma Export (Ada, Report_Backtrace_Ref, "__drake_ref_report_backtrace");
 
-end System.Unwind.Traceback;
+end System.Unwind.Backtrace;

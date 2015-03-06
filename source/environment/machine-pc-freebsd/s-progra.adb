@@ -39,7 +39,7 @@ package body System.Program is
             Result_Length : aliased C.size_t := Buffer_Length;
          begin
             if C.sys.sysctl.sysctl (
-               mib (0)'Access,
+               mib (0)'Unrestricted_Access, -- "const" is missing in FreeBSD7
                4,
                C.void_ptr (Conv.To_Address (Buffer)),
                Result_Length'Access,

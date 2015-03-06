@@ -1,11 +1,8 @@
 with Ada.Command_Line;
 with Ada.Streams;
-with Ada.Text_IO;
 with Ada.Text_IO.Text_Streams;
 with Ada.Wide_Text_IO;
-with Ada.Wide_Text_IO.Text_Streams;
 with Ada.Wide_Wide_Text_IO;
-with Ada.Wide_Wide_Text_IO.Text_Streams;
 with System.Form_Parameters;
 with System.Standard_Allocators;
 procedure textio is

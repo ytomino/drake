@@ -42,15 +42,15 @@ package body System.Unwind.Raising is
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
 
-   --  weak reference for System.Unwind.Tracebacks (ELF only ?)
+   --  weak reference for System.Unwind.Backtrace
 
    Call_Chain : access procedure (Current : in out Exception_Occurrence);
    pragma Import (Ada, Call_Chain, "__drake_ref_call_chain");
    pragma Weak_External (Call_Chain);
 
-   Report_Traceback : access procedure (X : Exception_Occurrence);
-   pragma Import (Ada, Report_Traceback, "__drake_ref_report_traceback");
-   pragma Weak_External (Report_Traceback);
+   Report_Backtrace : access procedure (X : Exception_Occurrence);
+   pragma Import (Ada, Report_Backtrace, "__drake_ref_report_backtrace");
+   pragma Weak_External (Report_Backtrace);
 
    --  (a-elchha.ads)
    procedure Last_Chance_Handler (
@@ -125,7 +125,7 @@ package body System.Unwind.Raising is
       Machine_Occurrence :
          not null Representation.Machine_Occurrence_Access) is
    begin
-      Set_Traceback (Machine_Occurrence.Occurrence);
+      Backtrace (Machine_Occurrence.Occurrence);
       Debug_Raise_Exception (Machine_Occurrence.Occurrence.Id); -- for gdb
       Separated.Propagate_Machine_Occurrence (Machine_Occurrence);
    end Propagate_Machine_Occurrence;
@@ -548,7 +548,7 @@ package body System.Unwind.Raising is
       Message : String := "") is
    begin
       Set_Exception_Message (E, File, Line, Column, Message, X);
-      Set_Traceback (X);
+      Backtrace (X);
    end Save_Exception;
 
    procedure Save_E (
@@ -578,12 +578,12 @@ package body System.Unwind.Raising is
       Save_Exception (X, E, File, Line, Message => Message);
    end Save_Exception_From_Here_With;
 
-   procedure Set_Traceback (X : in out Exception_Occurrence) is
+   procedure Backtrace (X : in out Exception_Occurrence) is
    begin
       if Call_Chain'Address /= Null_Address then
          Call_Chain (X);
       end if;
-   end Set_Traceback;
+   end Backtrace;
 
    procedure Set_Exception_Message (
       Id : not null Exception_Data_Access;
@@ -769,12 +769,12 @@ package body System.Unwind.Raising is
          end if;
          Termination.Error_Put_Line (Buffer (1 .. Last));
       elsif X.Num_Tracebacks > 0
-         and then Report_Traceback'Address /= Null_Address
+         and then Report_Backtrace'Address /= Null_Address
       then
          Put_Upper (Buffer, Last, Where);
          Put (Buffer, Last, " terminated by unhandled exception");
          Termination.Error_Put_Line (Buffer (1 .. Last));
-         Report_Traceback (X);
+         Report_Backtrace (X);
       else
          Last := 0;
          if Where'Length > 0 then

@@ -139,7 +139,7 @@ SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGE
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/$(SIMDSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]) \
 	$(wildcard $(EH)/*.ad[sb]))
 
-SEPARATED=$(EH)/s-unrase.adb $(EH)/s-untrse.adb
+SEPARATED=$(EH)/s-unbase.adb $(EH)/s-unrase.adb
 
 LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 
@@ -167,6 +167,7 @@ COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-syncon.o \
 	s-termin.o \
 	s-unstyp.o \
+	s-unwbac.o \
 	s-unwfor.o \
 	s-unwhan.o \
 	s-unwind.o \
@@ -174,8 +175,7 @@ COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-unwrai.o \
 	s-unwrep.o \
 	s-unwsea.o \
-	s-unwsta.o \
-	s-unwtra.o)
+	s-unwsta.o)
 
 # s-maccod.o and s-stoele.o are also standard library
 
@@ -544,8 +544,8 @@ endif
 
 # separated
 
+$(LIBGNAT_BUILDDIR)/s-unwbac.o : $(EH)/s-unbase.adb
 $(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
-$(LIBGNAT_BUILDDIR)/s-unwtra.o : $(EH)/s-untrse.adb
 
 # nested
 

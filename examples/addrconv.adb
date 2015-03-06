@@ -1,7 +1,7 @@
 with Ada;
 with System.Address_To_Access_Conversions;
-with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 procedure addrconv is
 	package AC1 is new System.Address_To_Access_Conversions (Integer);
 	type TA is access all Integer;

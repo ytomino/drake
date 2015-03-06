@@ -1,6 +1,6 @@
+with Ada.Task_Identification;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Ada.Task_Identification;
 with System.Tasks;
 procedure tasking5 is
 	function Cast is new Ada.Unchecked_Conversion (

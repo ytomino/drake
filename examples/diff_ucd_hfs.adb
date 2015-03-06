@@ -24,12 +24,12 @@
 --   only in UCD:   16#FE25#
 --   only in UCD:   16#FE26#
 -- -------------------------
-with C.vfs_utfconvdata; -- from XNU
 with Ada.Containers.Ordered_Maps;
 with Ada.Integer_Text_IO;
 with Ada.Strings.Composites; -- from Unicode Character Database
 with Ada.Strings.Normalization;
 with Ada.Text_IO;
+with C.vfs_utfconvdata; -- from XNU
 procedure diff_ucd_hfs is
 	subtype WC is Wide_Character;
 	subtype Decomposed is Wide_String (1 .. 2);
