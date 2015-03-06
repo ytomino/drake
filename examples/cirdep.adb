@@ -77,7 +77,6 @@ begin
 		-- removing separated units
 		for I in Table.Iterate loop
 			declare
-				Name : constant String := Unit_To_Unit_Sets_Maps.Key (I);
 				The_Set : Unit_Sets.Set renames Table.Reference (I);
 			begin
 				for J in The_Set.Iterate loop
