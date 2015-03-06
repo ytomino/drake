@@ -1,9 +1,8 @@
-with Ada.Containers.Ordered_Sets;
-with Ada.Containers.Ordered_Sets.Debug;
 with Ada.Containers.Indefinite_Ordered_Sets;
 with Ada.Containers.Limited_Ordered_Sets;
+with Ada.Containers.Ordered_Sets;
+with Ada.Containers.Ordered_Sets.Debug;
 with Ada.Streams.Unbounded_Storage_IO;
--- with Ada.Text_IO;
 procedure cntnr_Ordered_Set is
 	use type Ada.Containers.Count_Type;
 	package Sets is new Ada.Containers.Ordered_Sets (Integer);

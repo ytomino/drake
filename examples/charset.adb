@@ -1,8 +1,9 @@
+with Ada.Integer_Text_IO;
+with Ada.Wide_Wide_Text_IO;
+-- all Maps and Constants
 with Ada.Strings.Maps.Constants;
 with Ada.Strings.Wide_Maps.Wide_Constants;
 with Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants;
-with Ada.Wide_Wide_Text_IO;
-with Ada.Integer_Text_IO;
 procedure charset is
 	use type Ada.Strings.Maps.Character_Set;
 	Set : Ada.Strings.Maps.Character_Set;

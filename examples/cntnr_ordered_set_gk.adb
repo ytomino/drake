@@ -1,6 +1,6 @@
-with Ada.Containers.Ordered_Sets;
 with Ada.Containers.Indefinite_Ordered_Sets;
 with Ada.Containers.Limited_Ordered_Sets;
+with Ada.Containers.Ordered_Sets;
 procedure cntnr_ordered_set_gk is
 	type T is record
 		Key : Character;

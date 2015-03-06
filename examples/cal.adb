@@ -1,9 +1,7 @@
-with Ada.Calendar;
-with Ada.Calendar.Arithmetic;
 with Ada.Calendar.Formatting;
 with Ada.Calendar.Time_Zones;
-with Ada.Text_IO;
 with Ada.Integer_Text_IO;
+with Ada.Text_IO;
 with Ada.Unchecked_Conversion;
 procedure cal is
 	type Integer_Time is mod 2 ** Duration'Size;

@@ -1,4 +1,5 @@
 with Ada.Containers;
+-- all case insensitive functions
 with Ada.Strings.Equal_Case_Insensitive;
 with Ada.Strings.Wide_Equal_Case_Insensitive;
 with Ada.Strings.Wide_Wide_Equal_Case_Insensitive;

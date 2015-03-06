@@ -1,8 +1,7 @@
-with Ada.Directories;
-with Ada.Directories.Hierarchical_File_Names;
-with Ada.Directories.Volumes;
 with Ada.Directories.Equal_File_Names;
+with Ada.Directories.Hierarchical_File_Names;
 with Ada.Directories.Less_File_Names;
+with Ada.Directories.Volumes;
 with Ada.Hierarchical_File_Names;
 procedure filename is
 	Windows : constant Boolean := Ada.Hierarchical_File_Names.Is_Path_Delimiter ('\');

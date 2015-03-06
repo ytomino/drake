@@ -1,4 +1,3 @@
-with Ada.Streams.Stream_IO;
 with Ada.Streams.Stream_IO.Naked;
 with System.Native_IO;
 procedure streamiobuf is

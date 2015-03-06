@@ -1,4 +1,3 @@
-with Ada.Streams.Overlaps_Storage_IO;
 with Ada.Streams.Unbounded_Storage_IO;
 procedure storagestream is
 	Memory : Ada.Streams.Unbounded_Storage_IO.Buffer_Type;

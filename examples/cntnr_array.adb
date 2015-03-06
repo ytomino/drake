@@ -1,7 +1,4 @@
 with Ada.Containers.Generic_Arrays;
-with Ada.Containers.Generic_Array_Sort;
-with Ada.Containers.Generic_Constrained_Array_Sort;
-with Ada.Containers.Generic_Sort;
 with Ada.Unchecked_Deallocation;
 with Ada.Text_IO;
 procedure cntnr_Array is

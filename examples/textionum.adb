@@ -1,15 +1,17 @@
 with Ada.Text_IO;
+with Ada.Wide_Text_IO;
+with Ada.Wide_Wide_Text_IO;
+-- all Integer_Text_IO
 with Ada.Short_Short_Integer_Text_IO;
 with Ada.Short_Integer_Text_IO;
 with Ada.Integer_Text_IO;
 with Ada.Long_Integer_Text_IO;
 with Ada.Long_Long_Integer_Text_IO;
+-- all Float_Text_IO
 with Ada.Short_Float_Text_IO;
 with Ada.Float_Text_IO;
 with Ada.Long_Float_Text_IO;
 with Ada.Long_Long_Float_Text_IO;
-with Ada.Wide_Text_IO;
-with Ada.Wide_Wide_Text_IO;
 procedure textionum is
 	type I is range -100 .. 100;
 	package IIO is new Ada.Text_IO.Integer_IO (I);

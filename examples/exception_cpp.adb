@@ -1,11 +1,10 @@
-with Ada;
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
-with C.unwind;
 with Interfaces.C.Strings;
 with System.Address_To_Access_Conversions;
 with System.Storage_Elements;
 with System.Unwind.Foreign;
+with C.unwind;
 procedure exception_cpp is
 	pragma Linker_Options ("-lstdc++");
 	use type Interfaces.C.char_array;

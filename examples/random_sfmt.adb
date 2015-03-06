@@ -12,10 +12,11 @@ with Ada.Command_Line;
 with Ada.Execution_Time;
 with Ada.Formatting;
 with Ada.Integer_Text_IO;
-with Ada.Numerics.SFMT.Params_19937;
-with Ada.Numerics.SFMT.Params_216091;
 with Ada.Real_Time;
 with Ada.Text_IO;
+-- all instances of Ada.Numerics.SFMT.Random
+with Ada.Numerics.SFMT.Params_19937;
+with Ada.Numerics.SFMT.Params_216091;
 procedure random_sfmt is
 	use Ada.Numerics.SFMT.Params_19937;
 	-- use Ada.Numerics.SFMT.Params_216091;

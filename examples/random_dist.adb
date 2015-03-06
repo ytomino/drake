@@ -1,6 +1,6 @@
 with Ada.Float;
-with Ada.Numerics.SFMT.Params_216091;
 with Ada.Numerics.Distributions;
+with Ada.Numerics.SFMT.Params_216091;
 with Ada.Text_IO;
 procedure random_dist is
 	package R renames Ada.Numerics.SFMT.Params_216091;

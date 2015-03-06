@@ -1,6 +1,5 @@
 with Ada.Command_Line;
 with Ada.Environment_Variables;
-with Ada.Streams.Stream_IO.Pipes;
 with Ada.Processes;
 procedure process is
 begin

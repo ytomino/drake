@@ -1,8 +1,9 @@
 pragma Ada_2012;
 with Ada.Command_Line.Generic_Parsing;
-with Ada.Command_Line.Parsing;
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Ada.Strings.Unbounded;
+-- for compiling test
+with Ada.Command_Line.Parsing;
 procedure getopt is
 	use type Ada.Strings.Unbounded.Unbounded_String;
 	package Lists is new Ada.Containers.Indefinite_Doubly_Linked_Lists (String);

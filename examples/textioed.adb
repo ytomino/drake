@@ -1,3 +1,4 @@
+-- all Editing
 with Ada.Text_IO.Editing;
 with Ada.Wide_Text_IO.Editing;
 with Ada.Wide_Wide_Text_IO.Editing;
