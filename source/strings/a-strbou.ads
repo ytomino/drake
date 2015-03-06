@@ -1,6 +1,4 @@
 pragma License (Unrestricted);
-with Ada.Strings.Bounded_Strings;
-with Ada.Strings.Bounded_Strings.Functions;
 with Ada.Strings.Bounded_Strings.Functions.Maps;
 with Ada.Strings.Maps;
 package Ada.Strings.Bounded is

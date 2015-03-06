@@ -20,9 +20,11 @@ procedure floats is
 	begin
 		pragma Assert (T'Image (Infinity) = " INF");
 		pragma Assert (T'Image (-Infinity) = "-INF");
+		pragma Assert (Is_Infinity (Infinity));
 		pragma Assert (T'Image (NaN) = " NAN");
 		pragma Assert (T'Image (-NaN) = "-NAN");
 		pragma Assert (not (-NaN < 0.0)); -- comparison NaN is always False
+		pragma Assert (Is_NaN (NaN));
 		pragma Assert (Is_Negative (-1.0));
 		pragma Assert (not Is_Negative (0.0));
 		pragma Assert (not Is_Negative (+1.0));

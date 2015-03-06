@@ -1,6 +1,4 @@
 pragma License (Unrestricted);
-with Ada.Strings.Bounded_Wide_Wide_Strings;
-with Ada.Strings.Bounded_Wide_Wide_Strings.Functions;
 with Ada.Strings.Bounded_Wide_Wide_Strings.Functions.Maps;
 with Ada.Strings.Wide_Wide_Maps;
 package Ada.Strings.Wide_Wide_Bounded is

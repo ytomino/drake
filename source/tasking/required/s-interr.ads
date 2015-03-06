@@ -2,7 +2,6 @@ pragma License (Unrestricted);
 --  implementation unit required by compiler
 with Ada.Interrupts;
 with System.Interrupt_Handlers;
-with System.Tasking.Protected_Objects;
 with System.Tasking.Protected_Objects.Entries;
 package System.Interrupts is
 

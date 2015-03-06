@@ -1,7 +1,7 @@
 with Ada.Numerics.Generic_Arrays;
 with Ada.Unchecked_Conversion;
-with System.Long_Long_Complex_Types;
 with System.Long_Long_Complex_Elementary_Functions;
+with System.Long_Long_Complex_Types;
 with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Arrays is
    pragma Suppress (All_Checks);

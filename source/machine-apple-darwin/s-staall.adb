@@ -3,8 +3,8 @@ with Ada.Unchecked_Conversion;
 with System.Unwind.Raising; -- raising exception in compiler unit
 with System.Unwind.Standard;
 with C.stdlib;
-with C.unistd;
 with C.sys.mman;
+with C.unistd;
 package body System.Standard_Allocators is
    pragma Suppress (All_Checks);
    use type C.signed_int;

@@ -1,7 +1,5 @@
 pragma License (Unrestricted);
 with Ada.Strings.Maps;
-with Ada.Strings.Unbounded_Strings;
-with Ada.Strings.Unbounded_Strings.Functions;
 with Ada.Strings.Unbounded_Strings.Functions.Maps;
 package Ada.Strings.Unbounded is
    pragma Preelaborate;

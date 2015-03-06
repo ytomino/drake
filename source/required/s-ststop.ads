@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
-with Ada.Streams.Block_Transmission;
 with Ada.Streams.Block_Transmission.Strings;
 with Ada.Streams.Block_Transmission.Wide_Strings;
 with Ada.Streams.Block_Transmission.Wide_Wide_Strings;
