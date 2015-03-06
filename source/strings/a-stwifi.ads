@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
-with Ada.Strings.Wide_Functions;
 with Ada.Strings.Wide_Functions.Maps;
 with Ada.Strings.Wide_Maps;
 package Ada.Strings.Wide_Fixed is

@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  Ada 2012
-with System;
 with Ada.Containers.Synchronized_Queue_Interfaces;
+with System;
 generic
    with package Queue_Interfaces is new Synchronized_Queue_Interfaces (<>);
    Default_Ceiling : System.Any_Priority := System.Priority'Last;

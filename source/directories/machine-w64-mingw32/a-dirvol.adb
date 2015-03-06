@@ -3,9 +3,9 @@ with System.Address_To_Named_Access_Conversions;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
+with C.string;
 with C.winbase;
 with C.winerror;
-with C.string;
 package body Ada.Directories.Volumes is
    use Exception_Identification.From_Here;
    use type File_Size;

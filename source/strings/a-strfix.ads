@@ -1,5 +1,4 @@
 pragma License (Unrestricted);
-with Ada.Strings.Functions;
 with Ada.Strings.Functions.Maps;
 with Ada.Strings.Maps;
 package Ada.Strings.Fixed is

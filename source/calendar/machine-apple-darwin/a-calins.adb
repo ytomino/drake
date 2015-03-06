@@ -1,7 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with System.Native_Time;
-with C.time;
 with C.sys.types;
+with C.time;
 package body Ada.Calendar.Inside is
    pragma Suppress (All_Checks);
    use Exception_Identification.From_Here;
