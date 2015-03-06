@@ -17,7 +17,6 @@ package body System.Unwind.Searching is
    use type C.unsigned_int; -- _Unwind_Ptr is unsigned int or unsigned long
    use type C.unsigned_long;
    use type C.unsigned_long_long;
-   use type C.void_ptr;
    use type C.unwind.sleb128_t;
    use type C.winnt.PRUNTIME_FUNCTION;
 
@@ -175,6 +174,8 @@ package body System.Unwind.Searching is
          new Ada.Unchecked_Conversion (
             C.unwind.struct_Unwind_Exception_ptr,
             C.unwind.Unwind_Word);
+      function To_Address is
+         new Ada.Unchecked_Conversion (C.void_ptr, System.Address);
       GCC_Exception : constant Representation.Machine_Occurrence_Access :=
          To_GNAT (Exception_Object);
       landing_pad : C.unwind.Unwind_Ptr;
@@ -212,7 +213,7 @@ package body System.Unwind.Searching is
                return C.unwind.URC_CONTINUE_UNWIND;
             end if;
             lsda := C.unwind.Unwind_GetLanguageSpecificData (Context);
-            if lsda = C.void_ptr (Null_Address) then
+            if To_Address (lsda) = Null_Address then
                pragma Check (Trace, Ada.Debug.Put ("leave, lsda = null"));
                return C.unwind.URC_CONTINUE_UNWIND;
             end if;
