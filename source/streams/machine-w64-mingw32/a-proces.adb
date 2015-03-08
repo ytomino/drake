@@ -6,6 +6,7 @@ with C.windef;
 with C.winerror;
 package body Ada.Processes is
    use Exception_Identification.From_Here;
+   use type Command_Line.Exit_Status;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
@@ -124,12 +125,18 @@ package body Ada.Processes is
          Raise_Exception (Use_Error'Identity);
       else
          declare
+            Max : constant := C.windef.DWORD'Modulus / 2; -- 16#8000_0000#
             Exit_Code : aliased C.windef.DWORD;
          begin
             if C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access) = 0 then
                Raise_Exception (Use_Error'Identity);
             end if;
-            Status := Command_Line.Exit_Status (Exit_Code);
+            if Exit_Code < Max then
+               Status := Command_Line.Exit_Status (Exit_Code);
+            else
+               --  terminated by an unhandled exception
+               Status := Command_Line.Exit_Status'Last;
+            end if;
          end;
       end if;
    end Wait;
