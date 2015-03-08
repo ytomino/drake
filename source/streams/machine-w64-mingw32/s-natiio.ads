@@ -142,6 +142,12 @@ package System.Native_IO is
       Standard_Output_Handle : aliased in out Handle_Type;
       Standard_Error_Handle : aliased in out Handle_Type);
 
+   --  pipes
+
+   procedure Open_Pipe (
+      Reading_Handle : aliased out Handle_Type;
+      Writing_Handle : aliased out Handle_Type);
+
    --  exceptions
 
    function IO_Exception_Id (Error : C.windef.DWORD)

@@ -532,6 +532,27 @@ package body System.Native_IO is
       Standard_Error_Handle := Standard_Error;
    end Initialize;
 
+   procedure Open_Pipe (
+      Reading_Handle : aliased out Handle_Type;
+      Writing_Handle : aliased out Handle_Type)
+   is
+      Inheritable_Security_Attributes : aliased constant
+         C.winbase.SECURITY_ATTRIBUTES := (
+            nLength =>
+               C.winbase.SECURITY_ATTRIBUTES'Size / Standard'Storage_Unit,
+            lpSecurityDescriptor => C.windef.LPVOID (System.Null_Address),
+            bInheritHandle => 1);
+   begin
+      if C.winbase.CreatePipe (
+         Reading_Handle'Access,
+         Writing_Handle'Access,
+         Inheritable_Security_Attributes'Unrestricted_Access,
+         0) = 0
+      then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+   end Open_Pipe;
+
    function IO_Exception_Id (Error : C.windef.DWORD)
       return Ada.Exception_Identification.Exception_Id is
    begin

@@ -529,6 +529,22 @@ package body System.Native_IO is
       return Ada.Streams.Stream_Element_Offset (Info.st_size);
    end Size;
 
+   procedure Open_Pipe (
+      Reading_Handle : aliased out Handle_Type;
+      Writing_Handle : aliased out Handle_Type)
+   is
+      Handles : aliased C.signed_int_array (0 .. 1);
+   begin
+      if C.unistd.pipe (Handles (0)'Access) < 0 then
+         Raise_Exception (Use_Error'Identity);
+      else
+         Set_Close_On_Exec (Handles (0));
+         Set_Close_On_Exec (Handles (1));
+         Reading_Handle := Handles (0);
+         Writing_Handle := Handles (1);
+      end if;
+   end Open_Pipe;
+
    function IO_Exception_Id (errno : C.signed_int)
       return Ada.Exception_Identification.Exception_Id is
    begin
