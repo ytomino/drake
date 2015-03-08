@@ -208,15 +208,18 @@ OPTIMIZE=1
 else
 CFLAGS_DEBUG=-ggdb -gnata
 OPTIMIZE=0
+ifeq ($(EH),sjlj)
+CFLAGS_DEBUG+=-fno-omit-frame-pointer
+endif
 endif
 
 ifeq ($(OPTIMIZE),0)
 CFLAGS_OPTIMIZE=-Og
 else
 ifeq ($(OBJFMT),ELF)
-CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatB -gnatVn -gnatn -ffunction-sections -fdata-sections
+CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn -ffunction-sections -fdata-sections
 else
-CFLAGS_OPTIMIZE=-Os -momit-leaf-frame-pointer -gnatB -gnatVn -gnatn
+CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn
 endif
 endif
 
