@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Windows
 package Ada.Streams.Stream_IO.Pipes is
    --  There is a subprogram to create pipe.
 

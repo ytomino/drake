@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Windows
 private with Ada.Finalization;
 private with C.ws2tcpip;
 package Ada.Streams.Stream_IO.Sockets is

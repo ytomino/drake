@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for FreeBSD
 with System.Native_IO;
 with C.sys.types;
 package Ada.Processes.Inside is
