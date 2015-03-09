@@ -5,12 +5,12 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
 
    type Character_Set_Access is access Naked_Maps.Character_Set;
 
-   function Total_Length (Source : Character_Ranges_Array) return Natural;
-   function Total_Length (Source : Character_Ranges_Array) return Natural is
+   function Total_Length (Source : Character_Set_Array) return Natural;
+   function Total_Length (Source : Character_Set_Array) return Natural is
       Result : Natural := 0;
    begin
       for I in Source'Range loop
-         Result := Result + Source (I)'Length;
+         Result := Result + Source (I).Length;
       end loop;
       return Result;
    end Total_Length;
@@ -114,12 +114,12 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
 
    procedure Letter_Init;
    procedure Letter_Init is
-      Source : constant Character_Ranges_Array := (
-         General_Category.Lowercase_Letter.Items'Unrestricted_Access,
-         General_Category.Uppercase_Letter.Items'Unrestricted_Access,
-         General_Category.Titlecase_Letter.Items'Unrestricted_Access,
-         General_Category.Modifier_Letter.Items'Unrestricted_Access,
-         General_Category.Other_Letter.Items'Unrestricted_Access);
+      Source : Character_Set_Array := (
+         General_Category.Lowercase_Letter,
+         General_Category.Uppercase_Letter,
+         General_Category.Titlecase_Letter,
+         General_Category.Modifier_Letter,
+         General_Category.Other_Letter);
       Items : Character_Ranges (1 .. Total_Length (Source));
       Last : Natural;
    begin
@@ -143,11 +143,11 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
 
    procedure Alphanumeric_Init;
    procedure Alphanumeric_Init is
-      Source : constant Character_Ranges_Array := (
-         Letter_Set.Items'Unrestricted_Access,
-         General_Category.Decimal_Number.Items'Unrestricted_Access,
-         General_Category.Letter_Number.Items'Unrestricted_Access,
-         General_Category.Other_Number.Items'Unrestricted_Access);
+      Source : Character_Set_Array := (
+         Letter_Set,
+         General_Category.Decimal_Number,
+         General_Category.Letter_Number,
+         General_Category.Other_Number);
       Items : Character_Ranges (1 .. Total_Length (Source));
       Last : Natural;
    begin
@@ -171,23 +171,22 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
 
    procedure Special_Init;
    procedure Special_Init is
-      Source : constant Character_Ranges_Array := (
-         General_Category.Nonspacing_Mark.Items'Unrestricted_Access,
-         General_Category.Enclosing_Mark.Items'Unrestricted_Access,
-         General_Category.Spacing_Mark.Items'Unrestricted_Access,
-         General_Category.Space_Separator.Items'Unrestricted_Access,
-         General_Category.Dash_Punctuation.Items'Unrestricted_Access,
-         General_Category.Open_Punctuation.Items'Unrestricted_Access,
-         General_Category.Close_Punctuation.Items'Unrestricted_Access,
-         General_Category.Connector_Punctuation.
-            Items'Unrestricted_Access,
-         General_Category.Other_Punctuation.Items'Unrestricted_Access,
-         General_Category.Math_Symbol.Items'Unrestricted_Access,
-         General_Category.Currency_Symbol.Items'Unrestricted_Access,
-         General_Category.Modifier_Symbol.Items'Unrestricted_Access,
-         General_Category.Other_Symbol.Items'Unrestricted_Access,
-         General_Category.Initial_Punctuation.Items'Unrestricted_Access,
-         General_Category.Final_Punctuation.Items'Unrestricted_Access);
+      Source : Character_Set_Array := (
+         General_Category.Nonspacing_Mark,
+         General_Category.Enclosing_Mark,
+         General_Category.Spacing_Mark,
+         General_Category.Space_Separator,
+         General_Category.Dash_Punctuation,
+         General_Category.Open_Punctuation,
+         General_Category.Close_Punctuation,
+         General_Category.Connector_Punctuation,
+         General_Category.Other_Punctuation,
+         General_Category.Math_Symbol,
+         General_Category.Currency_Symbol,
+         General_Category.Modifier_Symbol,
+         General_Category.Other_Symbol,
+         General_Category.Initial_Punctuation,
+         General_Category.Final_Punctuation);
       Items : Character_Ranges (1 .. Total_Length (Source));
       Last : Natural;
    begin
@@ -211,13 +210,12 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
 
    procedure Graphic_Init;
    procedure Graphic_Init is
-      Source : constant Character_Ranges_Array := (
-         Alphanumeric_Set.Items'Unrestricted_Access,
-         Special_Set.Items'Unrestricted_Access);
-      Items : Character_Ranges (1 .. Total_Length (Source));
+      Items : Character_Ranges (
+         1 ..
+         Alphanumeric_Set.Length + Special_Set.Length);
       Last : Natural;
    begin
-      Merge (Items, Last, Source);
+      Merge (Items, Last, Alphanumeric_Set.Items, Special_Set.Items);
       Graphic_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,

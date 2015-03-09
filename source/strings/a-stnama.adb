@@ -195,26 +195,21 @@ package body Ada.Strings.Naked_Maps is
    procedure Merge (
       Target : out Character_Ranges;
       Last : out Natural;
-      Source : Character_Ranges_Array)
+      Source : in out Character_Set_Array)
    is
-      Live_Source : Character_Ranges_Array := Source; -- for modifying
-      Live_Source_Indexes : array (Live_Source'Range) of Positive;
-      Live_Source_Last : Natural := Live_Source'Last;
+      Source_Indexes : array (Source'Range) of Positive := (others => 1);
+      Source_Last : Natural := Source'Last;
    begin
-      for I in Live_Source'Range loop
-         Live_Source_Indexes (I) := Live_Source (I).all'First;
-      end loop;
       Last := Target'First - 1;
-      while Live_Source_Last >= Live_Source'First loop
+      while Source_Last >= Source'First loop
          declare
             Min_Index : Positive;
          begin
             --  select the lowest range
-            Min_Index := Live_Source'First;
-            for I in Live_Source'First + 1 .. Live_Source_Last loop
-               if Live_Source (I).all (Live_Source_Indexes (I)).Low <
-                  Live_Source (Min_Index).all (
-                     Live_Source_Indexes (Min_Index)).Low
+            Min_Index := Source'First;
+            for I in Source'First + 1 .. Source_Last loop
+               if Source (I).Items (Source_Indexes (I)).Low <
+                  Source (Min_Index).Items (Source_Indexes (Min_Index)).Low
                then
                   Min_Index := I;
                end if;
@@ -223,18 +218,14 @@ package body Ada.Strings.Naked_Maps is
             Append (
                Target,
                Last,
-               Live_Source (Min_Index).all (Live_Source_Indexes (Min_Index)));
+               Source (Min_Index).Items (Source_Indexes (Min_Index)));
             --  increment the index
-            Live_Source_Indexes (Min_Index) :=
-               Live_Source_Indexes (Min_Index) + 1;
-            if Live_Source_Indexes (Min_Index) >
-               Live_Source (Min_Index).all'Last
-            then
+            Source_Indexes (Min_Index) := Source_Indexes (Min_Index) + 1;
+            if Source_Indexes (Min_Index) > Source (Min_Index).Length then
                --  remove the finished source
-               Live_Source (Min_Index) := Live_Source (Live_Source_Last);
-               Live_Source_Indexes (Min_Index) :=
-                  Live_Source_Indexes (Live_Source_Last);
-               Live_Source_Last := Live_Source_Last - 1;
+               Source (Min_Index) := Source (Source_Last);
+               Source_Indexes (Min_Index) := Source_Indexes (Source_Last);
+               Source_Last := Source_Last - 1;
             end if;
          end;
       end loop;
