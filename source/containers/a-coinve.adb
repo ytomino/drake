@@ -131,13 +131,16 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Unique (Container : in out Vector; To_Update : Boolean);
    procedure Unique (Container : in out Vector; To_Update : Boolean) is
+      Current_Capacity : constant Count_Type := Capacity (Container);
    begin
       Copy_On_Write.Unique (
          Container.Super'Access,
-         To_Update,
          Container.Length,
-         Capacity (Container),
+         Current_Capacity,
+         Current_Capacity,
+         To_Update,
          Allocate => Allocate_Data'Access,
+         Move => Move_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
    end Unique;
@@ -688,12 +691,12 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Container.Length);
    begin
-      Copy_On_Write.Reserve_Capacity (
+      Copy_On_Write.Unique (
          Container.Super'Access,
-         True,
          Container.Length,
+         Indefinite_Vectors.Capacity (Container),
          New_Capacity,
-         New_Capacity /= Indefinite_Vectors.Capacity (Container),
+         True,
          Allocate => Allocate_Data'Access,
          Move => Move_Data'Access,
          Copy => Copy_Data'Access,

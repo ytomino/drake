@@ -161,13 +161,16 @@ package body Ada.Containers.Hashed_Maps is
 
    procedure Unique (Container : in out Map; To_Update : Boolean);
    procedure Unique (Container : in out Map; To_Update : Boolean) is
+      Current_Capacity : constant Count_Type := Capacity (Container);
    begin
       Copy_On_Write.Unique (
          Container.Super'Access,
-         To_Update,
          0, -- Length is unused
-         Capacity (Container),
+         Current_Capacity,
+         Current_Capacity,
+         To_Update,
          Allocate => Allocate_Data'Access,
+         Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
    end Unique;
@@ -539,10 +542,12 @@ package body Ada.Containers.Hashed_Maps is
    begin
       Copy_On_Write.Unique (
          Container.Super'Access,
-         True,
          0, -- Length is unused
+         Hashed_Maps.Capacity (Container),
          New_Capacity,
+         True,
          Allocate => Allocate_Data'Access,
+         Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
       Hash_Tables.Rebuild (
