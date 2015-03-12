@@ -30,6 +30,7 @@ package System.Unwind.Mapping is
       return Representation.Machine_Occurrence_Access;
    pragma Export (Ada, New_Machine_Occurrence_From_SEH,
       "__drake_new_machine_occurrence_from_seh");
+   pragma No_Inline (New_Machine_Occurrence_From_SEH);
 
 private
 
