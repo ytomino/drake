@@ -534,16 +534,16 @@ package body Ada.Streams.Naked_Stream_IO is
             System.Native_IO.Close_Temporary (
                Freeing_File.Handle,
                Freeing_File.Name,
-               Raise_On_Error => True);
+               Raise_On_Error => Raise_On_Error);
          elsif Delete then
             System.Native_IO.Delete_Ordinary (
                Freeing_File.Handle,
                Freeing_File.Name,
-               Raise_On_Error => True);
+               Raise_On_Error => Raise_On_Error);
          else
             System.Native_IO.Close_Ordinary (
                Freeing_File.Handle,
-               Raise_On_Error => True);
+               Raise_On_Error => Raise_On_Error);
          end if;
       end if;
    end Close_And_Deallocate;
