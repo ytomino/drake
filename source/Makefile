@@ -123,7 +123,7 @@ endif
 # calendar    :                                # support for delay statement, Ada.Calendars, Ada.Execution_Time and Ada.Real_Time
 # containers  :                                # Ada.Containers
 # directories : calendar                       # Ada.Directories
-# distributed :                                # Annex E, Distributed Systems
+# distributed : environment streams            # Annex E, Distributed Systems
 # hash        : strings                        # Ada.Strings.Hash and Hash_Case_Insensitive
 # image       :                                # support for 'Image and 'Value attributes
 # interfaces  :                                # Interfaces.C and Interfaces.COBOL
@@ -359,6 +359,12 @@ $(RTSDIR)/adainclude/%.ads: distributed/%.ads
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.adb: distributed/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: distributed/$(TARGETSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.adb: distributed/$(TARGETSUBDIR)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 $(RTSDIR)/adainclude/%.ads: distributed/required/%.ads
