@@ -354,6 +354,18 @@ package body System.Native_IO is
       end;
    end Open_Ordinary;
 
+   procedure Close_Ordinary (
+      Handle : Handle_Type;
+      Raise_On_Error : Boolean)
+   is
+      Error : Boolean;
+   begin
+      Error := C.unistd.close (Handle) < 0;
+      if Error and then Raise_On_Error then
+         Raise_IO_Exception;
+      end if;
+   end Close_Ordinary;
+
    procedure Close_Temporary (
       Handle : Handle_Type;
       Name : not null Name_Pointer;
@@ -369,18 +381,6 @@ package body System.Native_IO is
          Raise_IO_Exception;
       end if;
    end Close_Temporary;
-
-   procedure Close_Ordinary (
-      Handle : Handle_Type;
-      Raise_On_Error : Boolean)
-   is
-      Error : Boolean;
-   begin
-      Error := C.unistd.close (Handle) < 0;
-      if Error and then Raise_On_Error then
-         Raise_IO_Exception;
-      end if;
-   end Close_Ordinary;
 
    procedure Set_Close_On_Exec (Handle : Handle_Type) is
       Error : Boolean;

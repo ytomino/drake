@@ -66,16 +66,16 @@ package System.Native_IO is
       Name : not null Name_Pointer;
       Form : Packed_Form);
 
-   procedure Close_Temporary (
-      Handle : Handle_Type;
-      Name : not null Name_Pointer;
-      Raise_On_Error : Boolean);
-
    procedure Close_Ordinary (
       Handle : Handle_Type;
       Raise_On_Error : Boolean);
 
    procedure Delete_Ordinary (
+      Handle : Handle_Type;
+      Name : not null Name_Pointer;
+      Raise_On_Error : Boolean);
+
+   procedure Close_Temporary (
       Handle : Handle_Type;
       Name : not null Name_Pointer;
       Raise_On_Error : Boolean);
