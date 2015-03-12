@@ -316,8 +316,10 @@ package body System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
+      Name : not null Name_Pointer;
       Raise_On_Error : Boolean)
    is
+      pragma Unreferenced (Name);
       Error : Boolean;
    begin
       Error := C.winbase.CloseHandle (Handle) = 0;
@@ -341,17 +343,6 @@ package body System.Native_IO is
          Raise_IO_Exception;
       end if;
    end Delete_Ordinary;
-
-   procedure Close_Temporary (
-      Handle : Handle_Type;
-      Name : not null Name_Pointer;
-      Raise_On_Error : Boolean)
-   is
-      pragma Unreferenced (Name);
-   begin
-      --  CloseHandle remove the temporary file
-      Close_Ordinary (Handle, Raise_On_Error);
-   end Close_Temporary;
 
    function Is_Terminal (Handle : Handle_Type) return Boolean is
       Mode : aliased C.windef.DWORD;

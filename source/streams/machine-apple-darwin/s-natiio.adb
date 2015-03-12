@@ -356,8 +356,10 @@ package body System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
+      Name : not null Name_Pointer;
       Raise_On_Error : Boolean)
    is
+      pragma Unreferenced (Name);
       Error : Boolean;
    begin
       Error := C.unistd.close (Handle) < 0;
@@ -366,7 +368,7 @@ package body System.Native_IO is
       end if;
    end Close_Ordinary;
 
-   procedure Close_Temporary (
+   procedure Delete_Ordinary (
       Handle : Handle_Type;
       Name : not null Name_Pointer;
       Raise_On_Error : Boolean)
@@ -380,7 +382,7 @@ package body System.Native_IO is
       if Error and then Raise_On_Error then
          Raise_IO_Exception;
       end if;
-   end Close_Temporary;
+   end Delete_Ordinary;
 
    procedure Set_Close_On_Exec (Handle : Handle_Type) is
       Error : Boolean;

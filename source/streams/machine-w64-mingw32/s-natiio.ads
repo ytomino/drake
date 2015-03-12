@@ -68,6 +68,7 @@ package System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
+      Name : not null Name_Pointer;
       Raise_On_Error : Boolean);
 
    procedure Delete_Ordinary (
@@ -78,7 +79,8 @@ package System.Native_IO is
    procedure Close_Temporary (
       Handle : Handle_Type;
       Name : not null Name_Pointer;
-      Raise_On_Error : Boolean);
+      Raise_On_Error : Boolean)
+      renames Close_Ordinary;
 
 --  procedure Set_Close_On_Exec (Handle : Handle_Type);
 
