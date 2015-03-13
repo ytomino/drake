@@ -55,6 +55,8 @@ package body Ada.Processes.Inside is
             System.Environment_Block;
          Actions : aliased C.spawn.posix_spawn_file_actions_t;
          Attrs : aliased C.spawn.posix_spawnattr_t;
+         subtype Handle_Index is C.signed_int range 0 .. 2;
+         Source_Handles : array (Handle_Index) of C.signed_int;
          New_Child : aliased C.sys.types.pid_t;
          errno : C.signed_int;
       begin
@@ -70,36 +72,21 @@ package body Ada.Processes.Inside is
             Exception_Id := Use_Error'Identity;
             goto Cleanup;
          end if;
-         if Input /= 0 then
-            if C.spawn.posix_spawn_file_actions_adddup2 (
-               Actions'Access,
-               0,
-               Input) /= 0
-            then
-               Exception_Id := Use_Error'Identity;
-               goto Cleanup;
+         Source_Handles (0) := Input;
+         Source_Handles (1) := Output;
+         Source_Handles (2) := Error;
+         for I in Handle_Index loop
+            if Source_Handles (I) /= I then
+               if C.spawn.posix_spawn_file_actions_adddup2 (
+                  Actions'Access,
+                  Source_Handles (I),
+                  I) /= 0
+               then
+                  Exception_Id := Use_Error'Identity;
+                  goto Cleanup;
+               end if;
             end if;
-         end if;
-         if Output /= 1 then
-            if C.spawn.posix_spawn_file_actions_adddup2 (
-               Actions'Access,
-               1,
-               Output) /= 0
-            then
-               Exception_Id := Use_Error'Identity;
-               goto Cleanup;
-            end if;
-         end if;
-         if Error /= 2 then
-            if C.spawn.posix_spawn_file_actions_adddup2 (
-               Actions'Access,
-               2,
-               Error) /= 0
-            then
-               Exception_Id := Use_Error'Identity;
-               goto Cleanup;
-            end if;
-         end if;
+         end loop;
          if Search_Path then
             errno := C.spawn.posix_spawnp (
                New_Child'Access,

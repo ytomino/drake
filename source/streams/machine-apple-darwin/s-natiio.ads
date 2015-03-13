@@ -65,20 +65,21 @@ package System.Native_IO is
       Name : not null Name_Pointer;
       Form : Packed_Form);
 
-   procedure Close_Temporary (
-      Handle : Handle_Type;
-      Name : not null Name_Pointer;
-      Raise_On_Error : Boolean);
-
    procedure Close_Ordinary (
       Handle : Handle_Type;
+      Name : not null Name_Pointer;
       Raise_On_Error : Boolean);
 
    procedure Delete_Ordinary (
       Handle : Handle_Type;
       Name : not null Name_Pointer;
+      Raise_On_Error : Boolean);
+
+   procedure Close_Temporary (
+      Handle : Handle_Type;
+      Name : not null Name_Pointer;
       Raise_On_Error : Boolean)
-      renames Close_Temporary;
+      renames Delete_Ordinary;
 
    procedure Set_Close_On_Exec (Handle : Handle_Type);
 
@@ -141,6 +142,12 @@ package System.Native_IO is
       Standard_Input_Handle : aliased in out Handle_Type;
       Standard_Output_Handle : aliased in out Handle_Type;
       Standard_Error_Handle : aliased in out Handle_Type) is null;
+
+   --  pipes
+
+   procedure Open_Pipe (
+      Reading_Handle : aliased out Handle_Type;
+      Writing_Handle : aliased out Handle_Type);
 
    --  exceptions
 

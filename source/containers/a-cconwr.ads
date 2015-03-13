@@ -58,25 +58,10 @@ private package Ada.Containers.Copy_On_Write is
 
    procedure Unique (
       Target : not null access Container;
+      Target_Length : Count_Type;
+      Target_Capacity : Count_Type; -- current value
+      Capacity : Count_Type; -- new value
       To_Update : Boolean;
-      Length : Count_Type;
-      Capacity : Count_Type; -- only used when allocating new data
-      Allocate : not null access procedure (
-         Target : out Data_Access;
-         Capacity : Count_Type);
-      Copy : not null access procedure (
-         Target : out Data_Access;
-         Source : not null Data_Access;
-         Length : Count_Type;
-         Capacity : Count_Type);
-      Free : not null access procedure (Object : in out Data_Access));
-
-   procedure Reserve_Capacity (
-      Target : not null access Container;
-      To_Update : Boolean;
-      Length : Count_Type;
-      Capacity : Count_Type; -- always used
-      To_Reallocate : Boolean; -- Capacity is differ from old value
       Allocate : not null access procedure (
          Target : out Data_Access;
          Capacity : Count_Type);

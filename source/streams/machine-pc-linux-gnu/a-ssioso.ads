@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Linux
 private with Ada.Finalization;
 private with C.netdb;
 package Ada.Streams.Stream_IO.Sockets is

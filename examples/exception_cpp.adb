@@ -51,7 +51,7 @@ exception
 --			GCC_Exception : constant System.Address :=
 --				To_Repr (E'Unrestricted_Access).Machine_Occurrence;
 			GCC_Exception : constant System.Address :=
-				System.Runtime_Context.Get_Task_Local_Storage.Current_Exception.Machine_Occurrence;
+				System.Runtime_Context.Get_Task_Local_Storage.Foreign_Occurrence.Machine_Occurrence;
 			Cpp_Exception : constant System.Address :=
 				GCC_Exception + C.unwind.struct_Unwind_Exception'Max_Size_In_Storage_Elements;
 		begin

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Windows
 with Ada.Command_Line;
 with Ada.IO_Exceptions;
 with Ada.Streams.Stream_IO.Standard_Files;

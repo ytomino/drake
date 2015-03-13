@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  runtime unit
-with System.Unwind;
+with System.Unwind.Representation;
 package System.Runtime_Context is
    pragma Preelaborate;
 
@@ -9,7 +9,8 @@ package System.Runtime_Context is
       Secondary_Stack : aliased Address;
       Overlaid_Allocation : Address; -- for System.Storage_Pools.Overlaps
       SEH : Address; -- Win32 only
-      Current_Exception : aliased Unwind.Exception_Occurrence;
+      Machine_Occurrence : Unwind.Representation.Machine_Occurrence_Access;
+      Foreign_Occurrence : aliased Unwind.Exception_Occurrence;
    end record;
    pragma Suppress_Initialization (Task_Local_Storage);
    type Task_Local_Storage_Access is access all Task_Local_Storage;

@@ -105,15 +105,15 @@ package Ada.Strings.Naked_Maps is
 
 private
 
-   type Character_Ranges_Array is
-      array (Positive range <>) of not null access constant Character_Ranges;
-   pragma Suppress_Initialization (Character_Ranges_Array);
+   type Character_Set_Array is
+      array (Positive range <>) of not null access constant Character_Set;
+   pragma Suppress_Initialization (Character_Set_Array);
 
    --  for Set_Constants
    procedure Merge (
       Target : out Character_Ranges;
       Last : out Natural;
-      Source : Character_Ranges_Array);
+      Source : in out Character_Set_Array); -- destructive
 
    procedure Sort (From, To : in out Character_Sequence);
    procedure Sort (From, To : in out Character_Sequence; Last : out Natural);

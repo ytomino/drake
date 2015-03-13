@@ -195,6 +195,11 @@ private
 
    Uninitialized_Buffer : constant := -1;
 
+   type Close_Handler is access procedure (
+      Handle : System.Native_IO.Handle_Type;
+      Name : not null System.Native_IO.Name_Pointer;
+      Raise_On_Error : Boolean);
+
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
       Handle : aliased System.Native_IO.Handle_Type; -- file descripter
       Mode : IO_Modes.File_Mode;
@@ -208,6 +213,7 @@ private
       Buffer_Index : Stream_Element_Offset; -- Index (File) mod Buffer_Length
       Reading_Index : Stream_Element_Offset;
       Writing_Index : Stream_Element_Offset;
+      Closer : Close_Handler;
       Dispatcher : aliased Dispatchers.Dispatcher := (
          Tag => Tags.No_Tag,
          File => null);

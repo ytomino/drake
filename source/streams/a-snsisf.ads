@@ -31,6 +31,7 @@ private
       Buffer_Index => 0,
       Reading_Index => 0,
       Writing_Index => 0,
+      Closer => null,
       Dispatcher => (Tags.No_Tag, null));
 
    Standard_Output_Name : aliased System.Native_IO.Name_String (0 .. 7) := (
@@ -56,6 +57,7 @@ private
       Buffer_Index => 0,
       Reading_Index => 0,
       Writing_Index => 0,
+      Closer => null,
       Dispatcher => (Tags.No_Tag, null));
 
    Standard_Error_Name : aliased System.Native_IO.Name_String (0 .. 7) := (
@@ -81,6 +83,7 @@ private
       Buffer_Index => 0,
       Reading_Index => 0,
       Writing_Index => 0,
+      Closer => null,
       Dispatcher => (Tags.No_Tag, null));
 
    Standard_Input : constant Non_Controlled_File_Type :=

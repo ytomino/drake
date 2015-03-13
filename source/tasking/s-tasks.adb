@@ -457,7 +457,7 @@ package body System.Tasks is
       --  setup secondary stack
       Local.Secondary_Stack := Null_Address;
       Local.Overlaid_Allocation := Null_Address;
-      Local.Current_Exception.Id := null;
+      Local.Machine_Occurrence := null;
       TLS_Data := Local'Unchecked_Access;
       --  setup signal stack
       Unwind.Mapping.Install_Task_Exception_Handler (

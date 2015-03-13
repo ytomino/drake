@@ -184,10 +184,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    begin
       Copy_On_Write.Unique (
          Container.Super'Access,
-         To_Update,
          0, -- Length is unused
          0, -- Capacity is unused
+         0, -- Capacity is unused
+         To_Update,
          Allocate => Allocate_Data'Access,
+         Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
    end Unique;

@@ -16,13 +16,10 @@ package body System.Unwind.Handling is
    --  implementation
 
    procedure Begin_Handler (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access)
-   is
-      Current : Exception_Occurrence_Access;
-      pragma Unreferenced (Current);
+      Machine_Occurrence : Representation.Machine_Occurrence_Access) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Raising.Save_Current_Occurrence (Machine_Occurrence, Current);
+      Raising.Set_Current_Machine_Occurrence (Machine_Occurrence);
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Begin_Handler;
 
@@ -36,6 +33,7 @@ package body System.Unwind.Handling is
          null;
       else
          Raising.Free (Machine_Occurrence);
+         Raising.Set_Current_Machine_Occurrence (null);
          --  in Win32 SEH, the chain may be rollback, so restore it
          Mapping.Reinstall_Exception_Handler;
       end if;
