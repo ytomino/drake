@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit
 with Ada;
+with System.Runtime_Context;
 with System.Unwind.Representation;
 package System.Unwind.Raising is
    pragma Preelaborate;
@@ -248,10 +249,15 @@ package System.Unwind.Raising is
       X : in out Exception_Occurrence;
       Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
 
-   --  equivalent to Setup_Current_Excep (a-exexpr-gcc.adb)
-   procedure Save_Current_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
-      Current : out Exception_Occurrence_Access);
+   procedure Set_Current_Machine_Occurrence (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access);
+
+   --  equivalent to Get_Current_Excep_NT (s-soflin.adb),
+   --     Get_Current_Excep (s-tarest.adb)
+   --     and Setup_Current_Excep (a-exexpr-gcc.adb)
+   function Get_Current_Occurrence (
+      TLS : not null Runtime_Context.Task_Local_Storage_Access)
+      return Exception_Occurrence_Access;
 
    --  implementation for tasking (a-except-2005.adb)
    function Triggered_By_Abort return Boolean;

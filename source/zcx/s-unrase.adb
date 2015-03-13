@@ -7,7 +7,6 @@ with C.unwind;
 separate (System.Unwind.Raising)
 package body Separated is
    pragma Suppress (All_Checks);
-   use type Representation.Machine_Occurrence_Access;
    use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
 

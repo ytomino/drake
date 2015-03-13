@@ -1,7 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
-with System.Runtime_Context;
 with System.Startup;
 with System.Storage_Elements;
 with System.Synchronous_Control;
@@ -9,6 +8,7 @@ with System.Termination;
 with System.Unwind.Standard;
 package body System.Unwind.Raising is
    pragma Suppress (All_Checks);
+   use type Representation.Machine_Occurrence_Access;
    use type Representation.Unwind_Exception_Class;
 
    --  package separated for depending on libgcc
@@ -698,30 +698,49 @@ package body System.Unwind.Raising is
       X.Num_Tracebacks := 0;
    end Set_Foreign_Occurrence;
 
-   procedure Save_Current_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
-      Current : out Exception_Occurrence_Access)
+   procedure Set_Current_Machine_Occurrence (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access)
    is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
    begin
-      Current := TLS.Current_Exception'Access;
+      TLS.Machine_Occurrence := Machine_Occurrence;
+   end Set_Current_Machine_Occurrence;
+
+   function Get_Current_Occurrence (
+      TLS : not null Runtime_Context.Task_Local_Storage_Access)
+      return Exception_Occurrence_Access
+   is
+      Machine_Occurrence : constant
+         not null Representation.Machine_Occurrence_Access :=
+         TLS.Machine_Occurrence;
+      Result : Exception_Occurrence_Access;
+   begin
       if Machine_Occurrence.Header.exception_class =
          Representation.GNAT_Exception_Class
       then
-         Current.all := Machine_Occurrence.Occurrence;
+         Result := Machine_Occurrence.Occurrence'Access;
       else
-         Set_Foreign_Occurrence (Current.all, Machine_Occurrence);
+         Result := TLS.Foreign_Occurrence'Access;
+         Set_Foreign_Occurrence (Result.all, Machine_Occurrence);
       end if;
-   end Save_Current_Occurrence;
+      return Result;
+   end Get_Current_Occurrence;
 
    function Triggered_By_Abort return Boolean is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
-      X : constant not null Exception_Occurrence_Access :=
-         TLS.Current_Exception'Access;
+      Machine_Occurrence : constant
+         not null Representation.Machine_Occurrence_Access :=
+         TLS.Machine_Occurrence;
+      Result : Boolean;
    begin
-      return X.Id = Standard.Abort_Signal'Access;
+      Result := Machine_Occurrence /= null
+         and then Machine_Occurrence.Header.exception_class =
+            Representation.GNAT_Exception_Class
+         and then Machine_Occurrence.Occurrence.Id =
+            Standard.Abort_Signal'Access;
+      return Result;
    end Triggered_By_Abort;
 
    procedure Report (X : Exception_Occurrence; Where : String) is
@@ -802,10 +821,13 @@ package body System.Unwind.Raising is
    procedure Unhandled_Except_Handler (
       Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
    is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
       Current : Exception_Occurrence_Access;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Save_Current_Occurrence (Machine_Occurrence, Current);
+      TLS.Machine_Occurrence := Machine_Occurrence;
+      Current := Get_Current_Occurrence (TLS);
       Unhandled_Exception_Terminate (Current);
    end Unhandled_Except_Handler;
 

@@ -5,8 +5,8 @@ with System.Synchronous_Control;
 package System.Soft_Links is
    pragma Preelaborate;
 
-   --  required for getting "Ada.Exceptions".Exception_Occurrence
-   --    by compiler (s-soflin.ads)
+   --  required for elaboration of packages by compiler (s-soflin.ads)
+   --  the result would passed to Save_Occurrence or Save_Library_Occurrence.
    function Do_Get_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access;
    Get_Current_Excep : constant
@@ -14,7 +14,10 @@ package System.Soft_Links is
       Do_Get_Current_Excep'Access;
    pragma Suppress (Access_Check, Get_Current_Excep); -- not null
 
-   --  required for entry of task by compiler (s-soflin.ads)
+   --  required for entry call by compiler (s-soflin.ads)
+   --  the result would passed to Exceptional_Complete_Rendezvous,
+   --    Exceptional_Complete_Entry_Body
+   --    or Exceptional_Complete_Single_Entry_Body.
    function Get_GNAT_Exception return Ada.Exceptions.Exception_Id;
    pragma Inline (Get_GNAT_Exception);
 
