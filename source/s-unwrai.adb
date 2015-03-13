@@ -667,15 +667,6 @@ package body System.Unwind.Raising is
       return Code'Address;
    end ZZZ;
 
-   function Triggered_By_Abort return Boolean is
-      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
-         Runtime_Context.Get_Task_Local_Storage;
-      X : constant not null Exception_Occurrence_Access :=
-         TLS.Current_Exception'Access;
-   begin
-      return X.Id = Standard.Abort_Signal'Access;
-   end Triggered_By_Abort;
-
    function New_Machine_Occurrence (Stack_Guard : Address)
       return not null Representation.Machine_Occurrence_Access
    is
@@ -723,6 +714,15 @@ package body System.Unwind.Raising is
          Set_Foreign_Occurrence (Current.all, Machine_Occurrence);
       end if;
    end Save_Current_Occurrence;
+
+   function Triggered_By_Abort return Boolean is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
+      X : constant not null Exception_Occurrence_Access :=
+         TLS.Current_Exception'Access;
+   begin
+      return X.Id = Standard.Abort_Signal'Access;
+   end Triggered_By_Abort;
 
    procedure Report (X : Exception_Occurrence; Where : String) is
       subtype Buffer_Type is String (1 .. 256 + Exception_Msg_Max_Length);

@@ -191,10 +191,6 @@ package System.Unwind.Raising is
    pragma No_Return (rcheck_35);
    pragma Export (C, rcheck_35, "__gnat_rcheck_SE_Object_Too_Large");
 
-   --  excluding code range
-   function AAA return Address;
-   function ZZZ return Address;
-
    procedure Save_Exception (
       X : out Exception_Occurrence;
       E : not null Exception_Data_Access;
@@ -237,10 +233,9 @@ package System.Unwind.Raising is
       Message : String;
       X : in out Exception_Occurrence);
 
-   --  implementation for tasking (a-except-2005.adb)
-   function Triggered_By_Abort return Boolean;
-   pragma Export (Ada, Triggered_By_Abort,
-      "ada__exceptions__triggered_by_abort");
+   --  excluding code range
+   function AAA return Address;
+   function ZZZ return Address;
 
    function New_Machine_Occurrence (Stack_Guard : Address)
       return not null Representation.Machine_Occurrence_Access;
@@ -257,6 +252,11 @@ package System.Unwind.Raising is
    procedure Save_Current_Occurrence (
       Machine_Occurrence : not null Representation.Machine_Occurrence_Access;
       Current : out Exception_Occurrence_Access);
+
+   --  implementation for tasking (a-except-2005.adb)
+   function Triggered_By_Abort return Boolean;
+   pragma Export (Ada, Triggered_By_Abort,
+      "ada__exceptions__triggered_by_abort");
 
    --  output the information of unhandled exception
    procedure Report (X : Exception_Occurrence; Where : String);
