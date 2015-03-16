@@ -6,6 +6,6 @@ package Ada.Command_Line.Parsing is
       Input_Cursor => Natural,
       Has_Element => Has_Element,
       Input_Iterator_Interfaces => Iterator_Interfaces,
-      Input_Iterator => Iterate (1, Argument_Count),
+      Input_Iterator => Iterate,
       Argument => Argument);
 --  Command line parser.
