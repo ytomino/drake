@@ -31,9 +31,7 @@ pragma License (Unrestricted);
 --  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 --  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
---
---   Ada version by yt
---
+--  Ada version: 2012 yt
 package Ada.Numerics.SFMT is
    pragma Preelaborate;
 end Ada.Numerics.SFMT;

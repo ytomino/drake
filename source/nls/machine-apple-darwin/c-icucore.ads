@@ -1,10 +1,12 @@
+pragma License (Unrestricted); -- MIT License
+--  translated unit from icu4c of http://site.icu-project.org/
+--
 --  **********************************************************************
 --  *   Copyright (C) 1996-2010, International Business Machines
 --  *   Corporation and others.  All Rights Reserved.
 --  **********************************************************************
+--
 --  Ada version: 2013 yt
-pragma License (Unrestricted); -- MIT License
---  translated unit from icu4c of http://site.icu-project.org/
 with C.stdint;
 package C.icucore is
    pragma Preelaborate;

@@ -4,8 +4,7 @@ pragma License (Unrestricted);
 --  MurmurHash3 was written by Austin Appleby, and is placed in the public
 --  domain. The author hereby disclaims copyright to this source code.
 --
---   Ada version by yt
---
+--  Ada version: 2014 yt
 package Ada.Containers.Murmur_Hash_3 is
    pragma Pure;
 
