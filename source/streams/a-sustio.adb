@@ -217,57 +217,69 @@ package body Ada.Streams.Unbounded_Storage_IO is
    --  implementation
 
    procedure Reset (Object : in out Buffer_Type) is
+      S : constant not null Stream_Access := Stream (Object);
    begin
-      Object.Stream.Index := 1;
+      S.Index := 1;
    end Reset;
 
    function Size (Object : Buffer_Type) return Stream_Element_Count is
+      S : constant not null Stream_Access := Stream (Object);
    begin
-      return Object.Stream.Last;
+      return S.Last;
    end Size;
 
    procedure Set_Size (
       Object : in out Buffer_Type;
-      Size : Stream_Element_Count) is
+      Size : Stream_Element_Count)
+   is
+      S : constant not null Stream_Access := Stream (Object);
    begin
-      Set_Size (Object.Stream.all, Size);
-      if Object.Stream.Index > Size + 1 then
-         Object.Stream.Index := Size + 1;
+      Set_Size (S.all, Size);
+      if S.Index > Size + 1 then
+         S.Index := Size + 1;
       end if;
    end Set_Size;
 
    function Capacity (Object : Buffer_Type) return Stream_Element_Count is
+      S : constant not null Stream_Access := Stream (Object);
    begin
-      return Object.Stream.Data.Capacity;
+      return S.Data.Capacity;
    end Capacity;
 
    procedure Reserve_Capacity (
       Object : in out Buffer_Type;
       Capacity : Stream_Element_Count)
    is
+      S : constant not null Stream_Access := Stream (Object);
       New_Capacity : constant Stream_Element_Count :=
-         Stream_Element_Offset'Max (Capacity, Object.Stream.Last);
+         Stream_Element_Offset'Max (Capacity, S.Last);
    begin
-      Reallocate (Object.Stream.all, New_Capacity);
+      Reallocate (S.all, New_Capacity);
    end Reserve_Capacity;
 
    function Address (Object : aliased in out Buffer_Type)
-      return System.Address is
+      return System.Address
+   is
+      S : constant not null Stream_Access := Stream (Object);
    begin
-      Unique (Object.Stream.all);
-      return Object.Stream.Data.Storage;
+      Unique (S.all);
+      return S.Data.Storage;
    end Address;
 
    function Size (Object : Buffer_Type)
-      return System.Storage_Elements.Storage_Count is
+      return System.Storage_Elements.Storage_Count
+   is
+      S : constant not null Stream_Access := Stream (Object);
    begin
-      return System.Storage_Elements.Storage_Count (Object.Stream.Last);
+      return System.Storage_Elements.Storage_Count (S.Last);
    end Size;
 
    function Stream (Object : Buffer_Type)
-      return not null access Root_Stream_Type'Class is
+      return not null access Root_Stream_Type'Class
+   is
+      S : constant not null Stream_Access := Stream (Object);
    begin
-      return Object.Stream;
+      return S;
    end Stream;
 
    overriding procedure Read (
@@ -349,46 +361,55 @@ package body Ada.Streams.Unbounded_Storage_IO is
       return Stream.Last;
    end Size;
 
-   overriding procedure Initialize (Object : in out Buffer_Type) is
-   begin
-      Object.Stream := new Stream_Type'(
-         Data => Empty_Data'Unrestricted_Access,
-         Last => 0,
-         Index => 1);
-   end Initialize;
+   package body Controlled is
 
-   overriding procedure Finalize (Object : in out Buffer_Type) is
-   begin
-      if Object.Stream /= null then
-         System.Reference_Counting.Clear (
-            Upcast (Object.Stream.Data'Access),
-            Free => Free_Data'Access);
-         Free (Object.Stream);
-      end if;
-   end Finalize;
-
-   overriding procedure Adjust (Object : in out Buffer_Type) is
-      Old_Stream : constant Stream_Access := Object.Stream;
-   begin
-      Object.Stream := new Stream_Type'(
-         Data => Old_Stream.Data,
-         Last => Old_Stream.Last,
-         Index => Old_Stream.Index);
-      System.Reference_Counting.Adjust (Upcast (Object.Stream.Data'Access));
-   end Adjust;
-
-   package body Streaming is
-
-      procedure Write (
-         Stream : not null access Root_Stream_Type'Class;
-         Item : Buffer_Type)
-      is
-         Stream_Item : Stream_Element_Array (1 .. Item.Stream.Last);
-         for Stream_Item'Address use Item.Stream.Data.Storage;
+      function Stream (Object : Buffer_Type) return not null Stream_Access is
       begin
-         Streams.Write (Stream.all, Stream_Item);
-      end Write;
+         return Object.Stream;
+      end Stream;
 
-   end Streaming;
+      overriding procedure Initialize (Object : in out Buffer_Type) is
+      begin
+         Object.Stream := new Stream_Type'(
+            Data => Empty_Data'Unrestricted_Access,
+            Last => 0,
+            Index => 1);
+      end Initialize;
+
+      overriding procedure Finalize (Object : in out Buffer_Type) is
+      begin
+         if Object.Stream /= null then
+            System.Reference_Counting.Clear (
+               Upcast (Object.Stream.Data'Access),
+               Free => Free_Data'Access);
+            Free (Object.Stream);
+         end if;
+      end Finalize;
+
+      overriding procedure Adjust (Object : in out Buffer_Type) is
+         Old_Stream : constant Stream_Access := Object.Stream;
+      begin
+         Object.Stream := new Stream_Type'(
+            Data => Old_Stream.Data,
+            Last => Old_Stream.Last,
+            Index => Old_Stream.Index);
+         System.Reference_Counting.Adjust (Upcast (Object.Stream.Data'Access));
+      end Adjust;
+
+      package body Streaming is
+
+         procedure Write (
+            Stream : not null access Root_Stream_Type'Class;
+            Item : Buffer_Type)
+         is
+            Stream_Item : Stream_Element_Array (1 .. Item.Stream.Last);
+            for Stream_Item'Address use Item.Stream.Data.Storage;
+         begin
+            Streams.Write (Stream.all, Stream_Item);
+         end Write;
+
+      end Streaming;
+
+   end Controlled;
 
 end Ada.Streams.Unbounded_Storage_IO;

@@ -83,36 +83,49 @@ private
 
    type Stream_Access is access Stream_Type;
 
-   type Buffer_Type is new Finalization.Controlled with record
-      Stream : Stream_Access;
-   end record;
+   package Controlled is
 
-   overriding procedure Initialize (Object : in out Buffer_Type);
-   overriding procedure Finalize (Object : in out Buffer_Type);
-   overriding procedure Adjust (Object : in out Buffer_Type);
+      type Buffer_Type is private;
 
-   package Streaming is
+      function Stream (Object : Buffer_Type) return not null Stream_Access;
+      pragma Inline (Stream);
 
-      procedure Missing_Read (
-         Stream : not null access Root_Stream_Type'Class;
-         Item : out Buffer_Type);
-      function Missing_Input (
-         Stream : not null access Streams.Root_Stream_Type'Class)
-         return Buffer_Type;
+   private
 
-      pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Input, "__drake_program_error");
-      --  "out" parameter destructs size info, and result is also
+      type Buffer_Type is new Finalization.Controlled with record
+         Stream : Stream_Access;
+      end record;
 
-      procedure Write (
-         Stream : not null access Root_Stream_Type'Class;
-         Item : Buffer_Type);
+      overriding procedure Initialize (Object : in out Buffer_Type);
+      overriding procedure Finalize (Object : in out Buffer_Type);
+      overriding procedure Adjust (Object : in out Buffer_Type);
 
-   end Streaming;
+      package Streaming is
 
-   for Buffer_Type'Read use Streaming.Missing_Read;
-   for Buffer_Type'Input use Streaming.Missing_Input;
-   for Buffer_Type'Write use Streaming.Write;
-   for Buffer_Type'Output use Streaming.Write;
+         procedure Missing_Read (
+            Stream : not null access Root_Stream_Type'Class;
+            Item : out Buffer_Type);
+         function Missing_Input (
+            Stream : not null access Streams.Root_Stream_Type'Class)
+            return Buffer_Type;
+
+         pragma Import (Ada, Missing_Read, "__drake_program_error");
+         pragma Import (Ada, Missing_Input, "__drake_program_error");
+         --  "out" parameter destructs size info, and result is also
+
+         procedure Write (
+            Stream : not null access Root_Stream_Type'Class;
+            Item : Buffer_Type);
+
+      end Streaming;
+
+      for Buffer_Type'Read use Streaming.Missing_Read;
+      for Buffer_Type'Input use Streaming.Missing_Input;
+      for Buffer_Type'Write use Streaming.Write;
+      for Buffer_Type'Output use Streaming.Write;
+
+   end Controlled;
+
+   type Buffer_Type is new Controlled.Buffer_Type;
 
 end Ada.Streams.Unbounded_Storage_IO;
