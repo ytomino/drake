@@ -152,27 +152,6 @@ package body Ada.Strings.Generic_Unbounded is
       Target := Upcast (Data);
    end Copy_Data;
 
-   procedure Reserve_Capacity (
-      Item : in out Unbounded_String;
-      Capacity : Natural);
-   procedure Reserve_Capacity (
-      Item : in out Unbounded_String;
-      Capacity : Natural)
-   is
-      New_Capacity : constant Natural := Integer'Max (Capacity, Item.Length);
-   begin
-      System.Reference_Counting.Unique (
-         Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Length => System.Reference_Counting.Length_Type (Item.Length),
-         Target_Capacity => System.Reference_Counting.Length_Type (
-            Generic_Unbounded.Capacity (Item)),
-         Max_Length => System.Reference_Counting.Length_Type (Item.Length),
-         Capacity => System.Reference_Counting.Length_Type (New_Capacity),
-         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
-   end Reserve_Capacity;
-
    procedure Unique (Item : in out Unbounded_String);
    procedure Unique (Item : in out Unbounded_String) is
    begin
@@ -238,6 +217,24 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       return Source.Data.Items'Last;
    end Capacity;
+
+   procedure Reserve_Capacity (
+      Item : in out Unbounded_String;
+      Capacity : Natural)
+   is
+      New_Capacity : constant Natural := Integer'Max (Capacity, Item.Length);
+   begin
+      System.Reference_Counting.Unique (
+         Target => Upcast (Item.Data'Unchecked_Access),
+         Target_Length => System.Reference_Counting.Length_Type (Item.Length),
+         Target_Capacity => System.Reference_Counting.Length_Type (
+            Generic_Unbounded.Capacity (Item)),
+         Max_Length => System.Reference_Counting.Length_Type (Item.Length),
+         Capacity => System.Reference_Counting.Length_Type (New_Capacity),
+         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
+   end Reserve_Capacity;
 
    function To_Unbounded_String (Source : String_Type)
       return Unbounded_String
