@@ -236,6 +236,21 @@ package body Ada.Streams.Unbounded_Storage_IO is
       end if;
    end Set_Size;
 
+   function Capacity (Object : Buffer_Type) return Stream_Element_Count is
+   begin
+      return Object.Stream.Data.Capacity;
+   end Capacity;
+
+   procedure Reserve_Capacity (
+      Object : in out Buffer_Type;
+      Capacity : Stream_Element_Count)
+   is
+      New_Capacity : constant Stream_Element_Count :=
+         Stream_Element_Offset'Max (Capacity, Object.Stream.Last);
+   begin
+      Reallocate (Object.Stream.all, New_Capacity);
+   end Reserve_Capacity;
+
    function Address (Object : aliased in out Buffer_Type)
       return System.Address is
    begin
