@@ -65,14 +65,15 @@ package Ada.Exceptions is
       Target : out Exception_Occurrence;
       E : Exception_Id;
       Message : String := "")
-      with Import, Convention => Ada,
-         External_Name => "__drake_save_exception";
+      with Import,
+         Convention => Ada, External_Name => "__drake_save_exception";
    procedure Save_Exception_From_Here (
       Target : out Exception_Occurrence;
       E : Exception_Id;
       File : String := Debug.File;
       Line : Integer := Debug.Line)
-      with Import, Convention => Ada,
+      with Import,
+         Convention => Ada,
          External_Name => "__drake_save_exception_from_here";
    procedure Save_Exception_From_Here (
       Target : out Exception_Occurrence;
@@ -80,7 +81,8 @@ package Ada.Exceptions is
       File : String := Debug.File;
       Line : Integer := Debug.Line;
       Message : String)
-      with Import, Convention => Ada,
+      with Import,
+         Convention => Ada,
          External_Name => "__drake_save_exception_from_here_with";
 
 --  procedure Read_Exception_Occurrence (

@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit, please see AI05-0001-1
 private with System.Storage_Elements;
 generic
---   type Object is limited private;
+--  type Object is limited private;
    type Object is private;
    --  limited type could not have copy-assign version New_Object
 package System.Initialization is

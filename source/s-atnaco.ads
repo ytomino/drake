@@ -12,6 +12,7 @@ package System.Address_To_Named_Access_Conversions is
    function To_Address (Value : Object_Pointer) return Address;
    pragma Import (Intrinsic, To_Address);
 
---   pragma Convention (Intrinsic, To_Pointer);
---   pragma Convention (Intrinsic, To_Address);
+--  pragma Convention (Intrinsic, To_Pointer);
+--  pragma Convention (Intrinsic, To_Address);
+
 end System.Address_To_Named_Access_Conversions;

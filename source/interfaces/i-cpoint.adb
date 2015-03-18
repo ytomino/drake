@@ -190,7 +190,7 @@ package body Interfaces.C.Pointers is
    function "-" (
       Left : not null Constant_Pointer;
       Right : ptrdiff_t)
-      return not null Constant_Pointer　is
+      return not null Constant_Pointer is
    begin
       return To_Pointer (
          To_Address (Left)

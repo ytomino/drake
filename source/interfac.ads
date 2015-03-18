@@ -77,171 +77,167 @@ package Interfaces is
       A1 : not null access Integer_8;
       Model : Natural)
       return Integer_8
-      with Import, Convention => Intrinsic,
-         External_Name => "__atomic_load_1";
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_1";
    function atomic_load (
       A1 : not null access Integer_16;
       Model : Natural)
       return Integer_16
-      with Import, Convention => Intrinsic,
-         External_Name => "__atomic_load_2";
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_2";
    function atomic_load (
       A1 : not null access Integer_32;
       Model : Natural)
       return Integer_32
-      with Import, Convention => Intrinsic,
-         External_Name => "__atomic_load_4";
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_4";
    function atomic_load (
       A1 : not null access Integer_64;
       Model : Natural)
       return Integer_64
-      with Import, Convention => Intrinsic,
-         External_Name => "__atomic_load_8";
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_8";
 
    function atomic_load (
       A1 : not null access Unsigned_8;
       Model : Natural)
       return Unsigned_8
-      with Import, Convention => Intrinsic,
-         External_Name => "__atomic_load_1";
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_1";
    function atomic_load (
       A1 : not null access Unsigned_16;
       Model : Natural)
       return Unsigned_16
-      with Import, Convention => Intrinsic,
-         External_Name => "__atomic_load_2";
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_2";
    function atomic_load (
       A1 : not null access Unsigned_32;
       Model : Natural)
       return Unsigned_32
-      with Import, Convention => Intrinsic,
-         External_Name => "__atomic_load_4";
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_4";
    function atomic_load (
       A1 : not null access Unsigned_64;
       Model : Natural)
       return Unsigned_64
-      with Import, Convention => Intrinsic,
-         External_Name => "__atomic_load_8";
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_8";
 
    procedure sync_add_and_fetch (
       A1 : not null access Integer_8;
       A2 : Integer_8)
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_add_and_fetch_1";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_1";
    procedure sync_add_and_fetch (
       A1 : not null access Integer_16;
       A2 : Integer_16)
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_add_and_fetch_2";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_2";
    procedure sync_add_and_fetch (
       A1 : not null access Integer_32;
       A2 : Integer_32)
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_add_and_fetch_4";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_4";
    procedure sync_add_and_fetch (
       A1 : not null access Integer_64;
       A2 : Integer_64)
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_add_and_fetch_8";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_8";
 
    procedure sync_add_and_fetch (
       A1 : not null access Unsigned_8;
       A2 : Unsigned_8)
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_add_and_fetch_1";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_1";
    procedure sync_add_and_fetch (
       A1 : not null access Unsigned_16;
       A2 : Unsigned_16)
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_add_and_fetch_2";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_2";
    procedure sync_add_and_fetch (
       A1 : not null access Unsigned_32;
       A2 : Unsigned_32)
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_add_and_fetch_4";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_4";
    procedure sync_add_and_fetch (
       A1 : not null access Unsigned_64;
       A2 : Unsigned_64)
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_add_and_fetch_8";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_8";
 
    function sync_sub_and_fetch (
       A1 : not null access Integer_8;
       A2 : Integer_8)
       return Integer_8
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_sub_and_fetch_1";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_1";
    function sync_sub_and_fetch (
       A1 : not null access Integer_16;
       A2 : Integer_16)
       return Integer_16
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_sub_and_fetch_2";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_2";
    function sync_sub_and_fetch (
       A1 : not null access Integer_32;
       A2 : Integer_32)
       return Integer_32
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_sub_and_fetch_4";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_4";
    function sync_sub_and_fetch (
       A1 : not null access Integer_64;
       A2 : Integer_64)
       return Integer_64
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_sub_and_fetch_8";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_8";
 
    function sync_sub_and_fetch (
       A1 : not null access Unsigned_8;
       A2 : Unsigned_8)
       return Unsigned_8
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_sub_and_fetch_1";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_1";
    function sync_sub_and_fetch (
       A1 : not null access Unsigned_16;
       A2 : Unsigned_16)
       return Unsigned_16
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_sub_and_fetch_2";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_2";
    function sync_sub_and_fetch (
       A1 : not null access Unsigned_32;
       A2 : Unsigned_32)
       return Unsigned_32
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_sub_and_fetch_4";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_4";
    function sync_sub_and_fetch (
       A1 : not null access Unsigned_64;
       A2 : Unsigned_64)
       return Unsigned_64
-      with Import, Convention => Intrinsic,
-         External_Name => "__sync_sub_and_fetch_8";
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_8";
 
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_8;
       A2 : Integer_8;
       A3 : Integer_8)
       return Boolean
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_bool_compare_and_swap_1";
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_16;
       A2 : Integer_16;
       A3 : Integer_16)
       return Boolean
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_bool_compare_and_swap_2";
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_32;
       A2 : Integer_32;
       A3 : Integer_32)
       return Boolean
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_bool_compare_and_swap_4";
    function sync_bool_compare_and_swap (
       A1 : not null access Integer_64;
       A2 : Integer_64;
       A3 : Integer_64)
       return Boolean
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_bool_compare_and_swap_8";
 
    function sync_bool_compare_and_swap (
@@ -249,28 +245,32 @@ package Interfaces is
       A2 : Unsigned_8;
       A3 : Unsigned_8)
       return Boolean
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_bool_compare_and_swap_1";
    function sync_bool_compare_and_swap (
       A1 : not null access Unsigned_16;
       A2 : Unsigned_16;
       A3 : Unsigned_16)
       return Boolean
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_bool_compare_and_swap_2";
    function sync_bool_compare_and_swap (
       A1 : not null access Unsigned_32;
       A2 : Unsigned_32;
       A3 : Unsigned_32)
       return Boolean
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_bool_compare_and_swap_4";
    function sync_bool_compare_and_swap (
       A1 : not null access Unsigned_64;
       A2 : Unsigned_64;
       A3 : Unsigned_64)
       return Boolean
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_bool_compare_and_swap_8";
 
    function sync_val_compare_and_swap (
@@ -278,28 +278,32 @@ package Interfaces is
       A2 : Integer_8;
       A3 : Integer_8)
       return Integer_8
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_val_compare_and_swap_1";
    function sync_val_compare_and_swap (
       A1 : not null access Integer_16;
       A2 : Integer_16;
       A3 : Integer_16)
       return Integer_16
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_val_compare_and_swap_2";
    function sync_val_compare_and_swap (
       A1 : not null access Integer_32;
       A2 : Integer_32;
       A3 : Integer_32)
       return Integer_32
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_val_compare_and_swap_4";
    function sync_val_compare_and_swap (
       A1 : not null access Integer_64;
       A2 : Integer_64;
       A3 : Integer_64)
       return Integer_64
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_val_compare_and_swap_8";
 
    function sync_val_compare_and_swap (
@@ -307,28 +311,32 @@ package Interfaces is
       A2 : Unsigned_8;
       A3 : Unsigned_8)
       return Unsigned_8
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_val_compare_and_swap_1";
    function sync_val_compare_and_swap (
       A1 : not null access Unsigned_16;
       A2 : Unsigned_16;
       A3 : Unsigned_16)
       return Unsigned_16
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_val_compare_and_swap_2";
    function sync_val_compare_and_swap (
       A1 : not null access Unsigned_32;
       A2 : Unsigned_32;
       A3 : Unsigned_32)
       return Unsigned_32
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_val_compare_and_swap_4";
    function sync_val_compare_and_swap (
       A1 : not null access Unsigned_64;
       A2 : Unsigned_64;
       A3 : Unsigned_64)
       return Unsigned_64
-      with Import, Convention => Intrinsic,
+      with Import,
+         Convention => Intrinsic,
          External_Name => "__sync_val_compare_and_swap_8";
 
 end Interfaces;

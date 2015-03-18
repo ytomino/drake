@@ -249,16 +249,16 @@ private
 
    --  required by compiler ??? (a-tags.ads)
 --  procedure Check_TSD (TSD : Type_Specific_Data_Ptr);
---   function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
---   function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
---   function Offset_To_Top (This : System.Address)
---      return System.Storage_Elements.Storage_Offset;
---   function Secondary_Tag (T, Iface : Tag) return Tag;
---   procedure Set_Dynamic_Offset_To_Top (
---      This : System.Address;
---      Interface_T : Tag;
---      Offset_Value : System.Storage_Elements.Storage_Offset;
---      Offset_Func : Offset_To_Top_Function_Ptr);
+--  function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
+--  function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
+--  function Offset_To_Top (This : System.Address)
+--    return System.Storage_Elements.Storage_Offset;
+--  function Secondary_Tag (T, Iface : Tag) return Tag;
+--  procedure Set_Dynamic_Offset_To_Top (
+--    This : System.Address;
+--    Interface_T : Tag;
+--    Offset_Value : System.Storage_Elements.Storage_Offset;
+--    Offset_Func : Offset_To_Top_Function_Ptr);
 
    --  inheritance relation check
    function Is_Descendant (

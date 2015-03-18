@@ -13,8 +13,8 @@ package Ada.Numerics.Generic_Complex_Types is
    pragma Preelaborable_Initialization (Imaginary);
 
    --  modified
---   i : constant Imaginary;
---   j : constant Imaginary;
+--  i : constant Imaginary;
+--  j : constant Imaginary;
    function i return Imaginary;
    pragma Inline (i);
    function j return Imaginary
