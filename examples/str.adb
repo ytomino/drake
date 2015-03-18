@@ -123,6 +123,9 @@ begin
 		pragma Assert (U = "NSTA");
 		Ada.Strings.Unbounded.Append (U, U); -- both Source and Target
 		pragma Assert (U = "NSTANSTA");
+		Ada.Strings.Unbounded_Strings.Reserve_Capacity (U, 0);
+		Ada.Strings.Unbounded.Append (U, U);
+		pragma Assert (U = "NSTANSTANSTANSTA");
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end str;

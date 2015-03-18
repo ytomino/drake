@@ -730,9 +730,17 @@ package body System.Unwind.Raising is
    begin
       Result := Machine_Occurrence /= null
          and then Machine_Occurrence.Header.exception_class =
-            Representation.GNAT_Exception_Class
-         and then Machine_Occurrence.Occurrence.Id =
-            Standard.Abort_Signal'Access;
+            Representation.GNAT_Exception_Class;
+      if Result then
+         declare
+            subtype Fixed_String is String (Positive);
+            Full_Name : Fixed_String;
+            for Full_Name'Address use
+               Machine_Occurrence.Occurrence.Id.Full_Name;
+         begin
+            Result := Full_Name (1) = '_'; -- Standard'Abort_Signal
+         end;
+      end if;
       return Result;
    end Triggered_By_Abort;
 

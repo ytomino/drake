@@ -5,6 +5,7 @@ with C.errno;
 with C.fcntl;
 with C.stdlib;
 with C.sys.file;
+with C.sys.mman;
 with C.sys.stat;
 with C.sys.types;
 package body System.Native_IO is
@@ -15,11 +16,10 @@ package body System.Native_IO is
    use type C.char; -- Name_Character
    use type C.char_array; -- Name_String
    use type C.char_ptr; -- Name_Pointer
-   use type C.signed_long;
-   use type C.signed_long_long;
    use type C.size_t; -- Name_Length
    use type C.unsigned_int;
    use type C.unsigned_short;
+   use type C.sys.types.off_t;
 
    pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
       "off_t is not 64bit");
@@ -555,6 +555,53 @@ package body System.Native_IO is
          Writing_Handle := Handles (1);
       end if;
    end Open_Pipe;
+
+   procedure Map (
+      Mapping : out Mapping_Type;
+      Handle : Handle_Type;
+      Offset : Ada.Streams.Stream_Element_Offset;
+      Size : Ada.Streams.Stream_Element_Count;
+      Writable : Boolean)
+   is
+      function To_Address is
+         new Ada.Unchecked_Conversion (C.void_ptr, Address);
+      Protects : constant array (Boolean) of C.signed_int := (
+         C.sys.mman.PROT_READ,
+         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
+      Mapped_Offset : constant C.sys.types.off_t :=
+         C.sys.types.off_t (Offset) - 1;
+      Mapped_Size : constant C.size_t := C.size_t (Size);
+      Mapped_Address : C.void_ptr;
+   begin
+      Mapped_Address := C.sys.mman.mmap (
+         C.void_ptr (Null_Address),
+         Mapped_Size,
+         Protects (Writable),
+         C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
+         Handle,
+         Mapped_Offset);
+      if To_Address (Mapped_Address) = To_Address (C.sys.mman.MAP_FAILED) then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      Mapping.Storage_Address := To_Address (Mapped_Address);
+      Mapping.Storage_Size := Storage_Elements.Storage_Offset (Size);
+   end Map;
+
+   procedure Unmap (
+      Mapping : in out Mapping_Type;
+      Raise_On_Error : Boolean) is
+   begin
+      if C.sys.mman.munmap (
+         C.void_ptr (Mapping.Storage_Address),
+         C.size_t (Mapping.Storage_Size)) /= 0
+      then
+         if Raise_On_Error then
+            Raise_Exception (Use_Error'Identity);
+         end if;
+      end if;
+      Mapping.Storage_Address := Null_Address;
+      Mapping.Storage_Size := 0;
+   end Unmap;
 
    function IO_Exception_Id (errno : C.signed_int)
       return Ada.Exception_Identification.Exception_Id is

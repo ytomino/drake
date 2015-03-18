@@ -39,6 +39,9 @@ package Ada.Strings.Generic_Unbounded is
    procedure Set_Length (Source : in out Unbounded_String; Length : Natural);
    function Capacity (Source : Unbounded_String'Class) return Natural;
    pragma Inline (Capacity);
+   procedure Reserve_Capacity (
+      Item : in out Unbounded_String;
+      Capacity : Natural);
 
    type String_Access is access all String_Type;
 --  procedure Free (X : in out String_Access);
@@ -629,7 +632,7 @@ private
 
    type Data is record -- "limited" prevents No_Elaboration_Code
       Reference_Count : aliased System.Reference_Counting.Counter;
-      Max_Length : aliased Natural;
+      Max_Length : aliased System.Reference_Counting.Length_Type;
       Items : not null String_Access;
       --  the storage be allocated in here
    end record;

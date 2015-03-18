@@ -22,5 +22,28 @@ begin
 	if Wide_Wide_String'Input (Stream) /= "ABCDEFG" then
 		raise Program_Error;
 	end if;
+	declare
+		N : Ada.Streams.Unbounded_Storage_IO.Buffer_Type := Memory;
+		N_Stream : not null access Ada.Streams.Seekable_Stream_Type'Class :=
+			Ada.Streams.Seekable_Stream_Type'Class (
+				Ada.Streams.Unbounded_Storage_IO.Stream (N).all)'Access;
+		Index : constant Ada.Streams.Stream_Element_Offset :=
+			Ada.Streams.Index (Stream.all);
+	begin
+		Ada.Streams.Unbounded_Storage_IO.Reset (N);
+		if Wide_Wide_String'Input (N_Stream) /= "ABCDEFG" then
+			raise Program_Error;
+		end if;
+		String'Output (N_Stream, "RESERVEDAREA");
+		String'Output (Stream, "ANOTHER");
+		Ada.Streams.Set_Index (N_Stream.all, Index);
+		if String'Input (N_Stream) /= "RESERVEDAREA" then
+			raise Program_Error;
+		end if;
+		Ada.Streams.Set_Index (Stream.all, Index);
+		if String'Input (Stream) /= "ANOTHER" then
+			raise Program_Error;
+		end if;
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end storagestream;

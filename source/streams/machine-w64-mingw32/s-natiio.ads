@@ -4,6 +4,7 @@ with Ada.IO_Exceptions;
 with Ada.IO_Modes;
 with Ada.Exception_Identification;
 with Ada.Streams;
+with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.windef;
@@ -149,6 +150,26 @@ package System.Native_IO is
    procedure Open_Pipe (
       Reading_Handle : aliased out Handle_Type;
       Writing_Handle : aliased out Handle_Type);
+
+   --  storage mapped I/O
+
+   type Mapping_Type is record
+      Storage_Address : Address;
+      Storage_Size : Storage_Elements.Storage_Count;
+      File_Mapping : C.winnt.HANDLE;
+   end record;
+   pragma Suppress_Initialization (Mapping_Type);
+
+   procedure Map (
+      Mapping : out Mapping_Type;
+      Handle : Handle_Type;
+      Offset : Ada.Streams.Stream_Element_Offset; -- 1-origin
+      Size : Ada.Streams.Stream_Element_Count;
+      Writable : Boolean);
+
+   procedure Unmap (
+      Mapping : in out Mapping_Type;
+      Raise_On_Error : Boolean);
 
    --  exceptions
 

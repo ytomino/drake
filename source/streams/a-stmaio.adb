@@ -1,15 +1,10 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.IO_Modes;
 with Ada.Streams.Stream_IO.Naked;
-with C.basetsd;
-with C.windef;
 package body Ada.Storage_Mapped_IO is
    use Exception_Identification.From_Here;
    use type Streams.Stream_Element_Offset;
-   use type C.windef.WINBOOL;
-   use type C.winnt.ULONGLONG;
---  use type System.Address;
---  use type C.winnt.HANDLE; -- C.void_ptr
+   use type System.Address;
 
    procedure Map (
       Object : in out Non_Controlled_Mapping;
@@ -24,58 +19,19 @@ package body Ada.Storage_Mapped_IO is
       Size : Streams.Stream_IO.Count;
       Writable : Boolean)
    is
-      Protects : constant array (Boolean) of C.windef.DWORD := (
-         C.winnt.PAGE_READONLY,
-         C.winnt.PAGE_READWRITE);
-      Accesses : constant array (Boolean) of C.windef.DWORD := (
-         C.winbase.FILE_MAP_READ,
-         C.winbase.FILE_MAP_WRITE);
-      Mapped_Offset : C.winnt.ULARGE_INTEGER;
-      Mapped_Size : C.winnt.ULARGE_INTEGER;
-      Mapped_Address : C.windef.LPVOID;
-      File_Mapping : C.winnt.HANDLE;
+      Mapped_Size : Streams.Stream_IO.Count;
    begin
-      Mapped_Offset.QuadPart := C.winnt.ULONGLONG (Offset) - 1;
-      Mapped_Size.QuadPart := C.winnt.ULONGLONG (Size);
-      if Mapped_Size.QuadPart = 0 then
-         Mapped_Size.QuadPart :=
-            C.winnt.ULONGLONG (Streams.Naked_Stream_IO.Size (File))
-            - Mapped_Offset.QuadPart;
+      if Size = 0 then
+         Mapped_Size := Streams.Naked_Stream_IO.Size (File) - (Offset - 1);
+      else
+         Mapped_Size := Size;
       end if;
-      File_Mapping := C.winbase.CreateFileMapping (
+      System.Native_IO.Map (
+         Object.Mapping,
          Streams.Naked_Stream_IO.Handle (File),
-         null,
-         Protects (Writable),
-         Mapped_Size.HighPart,
-         Mapped_Size.LowPart,
-         null);
-      declare
-         use type C.winnt.HANDLE;
-      begin
-         if File_Mapping = C.winbase.INVALID_HANDLE_VALUE then
-            Raise_Exception (Use_Error'Identity);
-         end if;
-      end;
-      Mapped_Address := C.winbase.MapViewOfFileEx (
-         File_Mapping,
-         Accesses (Writable),
-         Mapped_Offset.HighPart,
-         Mapped_Offset.LowPart,
-         C.basetsd.SIZE_T (Mapped_Size.QuadPart),
-         C.windef.LPVOID (System.Null_Address));
-      declare
-         use type C.windef.LPVOID;
-      begin
-         if Mapped_Address = C.windef.LPVOID (System.Null_Address) then
-            if C.winbase.CloseHandle (File_Mapping) = 0 then
-               null; -- raise Use_Error;
-            end if;
-            Raise_Exception (Use_Error'Identity);
-         end if;
-      end;
-      Object.Address := System.Address (Mapped_Address);
-      Object.Size := System.Storage_Elements.Storage_Count (Size);
-      Object.File_Mapping := File_Mapping;
+         Offset,
+         Mapped_Size,
+         Writable);
    end Map;
 
    procedure Unmap (
@@ -86,15 +42,9 @@ package body Ada.Storage_Mapped_IO is
       Raise_On_Error : Boolean) is
    begin
       --  unmap
-      if C.winbase.UnmapViewOfFile (C.windef.LPCVOID (Object.Address)) = 0
-         or else C.winbase.CloseHandle (Object.File_Mapping) = 0
-      then
-         if Raise_On_Error then
-            Raise_Exception (Use_Error'Identity);
-         end if;
-      end if;
-      --  reset
-      Object.Address := System.Null_Address;
+      System.Native_IO.Unmap (
+         Object.Mapping,
+         Raise_On_Error => Raise_On_Error);
       --  close file
       if Streams.Naked_Stream_IO.Is_Open (Object.File) then
          Streams.Naked_Stream_IO.Close (
@@ -106,11 +56,10 @@ package body Ada.Storage_Mapped_IO is
    --  implementation
 
    function Is_Map (Object : Mapping) return Boolean is
-      use type System.Address;
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
-      return NC_Mapping.Address /= System.Null_Address;
+      return NC_Mapping.Mapping.Storage_Address /= System.Null_Address;
    end Is_Map;
 
    procedure Map (
@@ -120,12 +69,11 @@ package body Ada.Storage_Mapped_IO is
       Size : Streams.Stream_IO.Count := 0)
    is
       pragma Unmodified (Object); -- modified via 'Unrestricted_Access
-      use type System.Address;
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
       --  check already opened
-      if NC_Mapping.Address /= System.Null_Address then
+      if NC_Mapping.Mapping.Storage_Address /= System.Null_Address then
          Raise_Exception (Status_Error'Identity);
       end if;
       --  map
@@ -146,12 +94,11 @@ package body Ada.Storage_Mapped_IO is
       Size : Streams.Stream_IO.Count := 0)
    is
       pragma Unmodified (Object); -- modified via 'Unrestricted_Access
-      use type System.Address;
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
       --  check already opened
-      if NC_Mapping.Address /= System.Null_Address then
+      if NC_Mapping.Mapping.Storage_Address /= System.Null_Address then
          Raise_Exception (Status_Error'Identity);
       end if;
       --  open file
@@ -161,6 +108,7 @@ package body Ada.Storage_Mapped_IO is
          IO_Modes.File_Mode (Mode),
          Name,
          Streams.Naked_Stream_IO.Pack (Form));
+      --  map
       Map (
          NC_Mapping.all,
          NC_Mapping.File,
@@ -170,11 +118,10 @@ package body Ada.Storage_Mapped_IO is
    end Map;
 
    procedure Unmap (Object : in out Mapping) is
-      use type System.Address;
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
-      if NC_Mapping.Address = System.Null_Address then
+      if NC_Mapping.Mapping.Storage_Address = System.Null_Address then
          Raise_Exception (Status_Error'Identity);
       end if;
       Unmap (NC_Mapping.all, Raise_On_Error => True);
@@ -184,7 +131,7 @@ package body Ada.Storage_Mapped_IO is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
-      return NC_Mapping.Address;
+      return NC_Mapping.Mapping.Storage_Address;
    end Address;
 
    function Size (Object : Mapping)
@@ -193,7 +140,7 @@ package body Ada.Storage_Mapped_IO is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
-      return NC_Mapping.Size;
+      return NC_Mapping.Mapping.Storage_Size;
    end Size;
 
    package body Controlled is
@@ -205,9 +152,8 @@ package body Ada.Storage_Mapped_IO is
       end Reference;
 
       overriding procedure Finalize (Object : in out Mapping) is
-         use type System.Address;
       begin
-         if Object.Data.Address /= System.Null_Address then
+         if Object.Data.Mapping.Storage_Address /= System.Null_Address then
             Unmap (Object.Data, Raise_On_Error => False);
          end if;
       end Finalize;
