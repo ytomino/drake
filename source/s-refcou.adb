@@ -120,6 +120,11 @@ package body System.Reference_Counting is
       Max_Length : Length_Type;
       Capacity : Length_Type;
       Sentinel : not null Data_Access;
+      Reallocate : not null access procedure (
+         Target : aliased in out Data_Access;
+         Length : Length_Type;
+         Max_Length : Length_Type;
+         Capacity : Length_Type);
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
@@ -128,20 +133,28 @@ package body System.Reference_Counting is
          Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access)) is
    begin
-      if Capacity /= Target_Capacity
-         or else -- static (excluding Sentinel) is True
-            (Target.all /= Sentinel and then Target.all.all > 1)
-      then
-         declare
-            Old : aliased Container := Target.all;
-         begin
+      if Target.all.all > 1 then -- shared
+         if Capacity /= Target_Capacity or else Target.all /= Sentinel then
+            declare
+               Old : aliased Container := Target.all;
+            begin
+               if Capacity = 0 then
+                  Target.all := Sentinel;
+               else
+                  Copy (Target.all, Old, Target_Length, Max_Length, Capacity);
+               end if;
+               Clear (Old'Access, Free => Free);
+            end;
+         end if;
+      else -- not shared
+         if Capacity /= Target_Capacity then
             if Capacity = 0 then
+               Free (Target.all);
                Target.all := Sentinel;
             else
-               Copy (Target.all, Old, Target_Length, Max_Length, Capacity);
+               Reallocate (Target.all, Target_Length, Max_Length, Capacity);
             end if;
-            Clear (Old'Access, Free => Free);
-         end;
+         end if;
       end if;
    end Unique;
 
@@ -152,6 +165,11 @@ package body System.Reference_Counting is
       Target_Capacity : Length_Type;
       New_Length : Length_Type;
       Sentinel : not null Data_Access;
+      Reallocate : not null access procedure (
+         Target : aliased in out Data_Access;
+         Length : Length_Type;
+         Max_Length : Length_Type;
+         Capacity : Length_Type);
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
@@ -177,6 +195,7 @@ package body System.Reference_Counting is
                   Max_Length => New_Length,
                   Capacity => New_Capacity,
                   Sentinel => Sentinel,
+                  Reallocate => Reallocate,
                   Copy => Copy, -- Copy should set Max_Length
                   Free => Free);
             end;
@@ -196,6 +215,7 @@ package body System.Reference_Counting is
                   Max_Length => New_Length,
                   Capacity => Target_Capacity, -- keep Capacity
                   Sentinel => Sentinel,
+                  Reallocate => Reallocate,
                   Copy => Copy, -- Copy should set Max_Length
                   Free => Free);
             else -- reference count = 1

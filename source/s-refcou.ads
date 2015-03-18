@@ -47,11 +47,16 @@ package System.Reference_Counting is
       Max_Length : Length_Type;
       Capacity : Length_Type;
       Sentinel : not null Data_Access;
+      Reallocate : not null access procedure (
+         Target : aliased in out Data_Access;
+         Length : Length_Type; -- copying length
+         Max_Length : Length_Type; -- new length
+         Capacity : Length_Type);
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
-         Length : Length_Type;
-         Max_Length : Length_Type;
+         Length : Length_Type; -- copying length
+         Max_Length : Length_Type; -- new length
          Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access));
 
@@ -62,11 +67,16 @@ package System.Reference_Counting is
       Target_Capacity : Length_Type;
       New_Length : Length_Type;
       Sentinel : not null Data_Access;
+      Reallocate : not null access procedure (
+         Target : aliased in out Data_Access;
+         Length : Length_Type; -- copying length
+         Max_Length : Length_Type; -- new length
+         Capacity : Length_Type);
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
-         Length : Length_Type;
-         Max_Length : Length_Type;
+         Length : Length_Type; -- copying length
+         Max_Length : Length_Type; -- new length
          Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access));
 

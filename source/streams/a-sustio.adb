@@ -114,26 +114,25 @@ package body Ada.Streams.Unbounded_Storage_IO is
    end Free_Data;
 
    procedure Reallocate_Data (
-      Data : aliased in out not null Data_Access;
+      Data : aliased in out System.Reference_Counting.Data_Access;
+      Length : System.Reference_Counting.Length_Type;
+      Max_Length : System.Reference_Counting.Length_Type;
       Capacity : System.Reference_Counting.Length_Type);
    procedure Reallocate_Data (
-      Data : aliased in out not null Data_Access;
-      Capacity : System.Reference_Counting.Length_Type) is
+      Data : aliased in out System.Reference_Counting.Data_Access;
+      Length : System.Reference_Counting.Length_Type;
+      Max_Length : System.Reference_Counting.Length_Type;
+      Capacity : System.Reference_Counting.Length_Type)
+   is
+      pragma Unreferenced (Length);
+      M : constant System.Address :=
+         System.Standard_Allocators.Reallocate (
+            Data_Cast.To_Address (Downcast (Data)),
+            Allocation_Size (Capacity));
    begin
-      if Capacity = 0 then
-         System.Standard_Allocators.Free (Data_Cast.To_Address (Data));
-         Data := Empty_Data'Unrestricted_Access;
-      else
-         declare
-            M : constant System.Address :=
-               System.Standard_Allocators.Reallocate (
-                  Data_Cast.To_Address (Data),
-                  Allocation_Size (Capacity));
-         begin
-            Data := Data_Cast.To_Pointer (M);
-            Adjust_Allocated (Data);
-         end;
-      end if;
+      Data := Upcast (Data_Cast.To_Pointer (M));
+      Downcast (Data).Max_Length := Max_Length;
+      Adjust_Allocated (Downcast (Data));
    end Reallocate_Data;
 
    procedure Copy_Data (
@@ -167,25 +166,17 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Stream : in out Stream_Type;
       Size : Stream_Element_Count) is
    begin
-      if System.Reference_Counting.Shared (
-         Stream.Data.Reference_Count'Access)
-      then
-         System.Reference_Counting.Unique (
-            Target => Upcast (Stream.Data'Unchecked_Access),
-            Target_Length => System.Reference_Counting.Length_Type (
-               Stream.Last),
-            Target_Capacity => System.Reference_Counting.Length_Type (
-               Stream.Data.Capacity),
-            Max_Length => System.Reference_Counting.Length_Type (Stream.Last),
-            Capacity => System.Reference_Counting.Length_Type (Size),
-            Sentinel => Upcast (Empty_Data'Unrestricted_Access),
-            Copy => Copy_Data'Access,
-            Free => Free_Data'Access);
-      elsif Size /= Stream.Data.Capacity then
-         Reallocate_Data (
-            Stream.Data,
-            System.Reference_Counting.Length_Type (Size));
-      end if;
+      System.Reference_Counting.Unique (
+         Target => Upcast (Stream.Data'Unchecked_Access),
+         Target_Length => System.Reference_Counting.Length_Type (Stream.Last),
+         Target_Capacity => System.Reference_Counting.Length_Type (
+            Stream.Data.Capacity),
+         Max_Length => System.Reference_Counting.Length_Type (Stream.Last),
+         Capacity => System.Reference_Counting.Length_Type (Size),
+         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
+         Reallocate => Reallocate_Data'Access,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
    end Reallocate;
 
    procedure Unique (Stream : in out Stream_Type);
@@ -209,6 +200,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
             Stream.Data.Capacity),
          New_Length => System.Reference_Counting.Length_Type (Size),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
+         Reallocate => Reallocate_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
       Stream.Last := Size;

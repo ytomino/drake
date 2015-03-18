@@ -131,6 +131,28 @@ package body Ada.Strings.Generic_Unbounded is
       Data := null;
    end Free_Data;
 
+   procedure Reallocate_Data (
+      Data : aliased in out System.Reference_Counting.Data_Access;
+      Length : System.Reference_Counting.Length_Type;
+      Max_Length : System.Reference_Counting.Length_Type;
+      Capacity : System.Reference_Counting.Length_Type);
+   procedure Reallocate_Data (
+      Data : aliased in out System.Reference_Counting.Data_Access;
+      Length : System.Reference_Counting.Length_Type;
+      Max_Length : System.Reference_Counting.Length_Type;
+      Capacity : System.Reference_Counting.Length_Type)
+   is
+      pragma Unreferenced (Length);
+      M : constant System.Address :=
+         System.Standard_Allocators.Reallocate (
+            Data_Cast.To_Address (Downcast (Data)),
+            Allocation_Size (Capacity));
+   begin
+      Data := Upcast (Data_Cast.To_Pointer (M));
+      Downcast (Data).Max_Length := Max_Length;
+      Adjust_Allocated (Downcast (Data));
+   end Reallocate_Data;
+
    procedure Copy_Data (
       Target : out System.Reference_Counting.Data_Access;
       Source : not null System.Reference_Counting.Data_Access;
@@ -208,6 +230,7 @@ package body Ada.Strings.Generic_Unbounded is
             Capacity (Source)),
          New_Length => System.Reference_Counting.Length_Type (Length),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
+         Reallocate => Reallocate_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
       Source.Length := Length;
@@ -232,6 +255,7 @@ package body Ada.Strings.Generic_Unbounded is
          Max_Length => System.Reference_Counting.Length_Type (Item.Length),
          Capacity => System.Reference_Counting.Length_Type (New_Capacity),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
+         Reallocate => Reallocate_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
    end Reserve_Capacity;
