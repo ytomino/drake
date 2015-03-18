@@ -5,6 +5,7 @@ with Ada.Streams.Stream_IO;
 with System.Storage_Elements;
 private with Ada.Finalization;
 private with Ada.Streams.Naked_Stream_IO;
+private with System.Native_IO;
 package Ada.Storage_Mapped_IO is
    --  This package provides memory-mapped I/O.
 
@@ -51,8 +52,7 @@ package Ada.Storage_Mapped_IO is
 private
 
    type Non_Controlled_Mapping is limited record
-      Address : System.Address := System.Null_Address;
-      Size : System.Storage_Elements.Storage_Count;
+      Mapping : System.Native_IO.Mapping_Type;
       File : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type;
    end record;
    pragma Suppress_Initialization (Non_Controlled_Mapping);
@@ -69,8 +69,10 @@ private
 
       type Mapping is limited new Finalization.Limited_Controlled with record
          Data : aliased Non_Controlled_Mapping := (
-            Address => System.Null_Address,
-            Size => 0,
+            Mapping => (
+               Storage_Address => System.Null_Address,
+               Storage_Size => 0,
+               others => <>),
             File => null);
       end record;
 

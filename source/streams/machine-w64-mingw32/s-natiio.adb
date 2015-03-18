@@ -1,7 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Standard_Allocators;
-with System.Storage_Elements;
+with C.basetsd;
 with C.string;
 with C.wincon;
 with C.winerror;
@@ -15,6 +15,7 @@ package body System.Native_IO is
    use type C.windef.DWORD;
    use type C.windef.UINT;
    use type C.windef.WINBOOL;
+   use type C.winnt.ULONGLONG;
 
    package Name_Pointer_Conv is
       new Address_To_Named_Access_Conversions (Name_Character, Name_Pointer);
@@ -536,6 +537,71 @@ package body System.Native_IO is
          Raise_Exception (Use_Error'Identity);
       end if;
    end Open_Pipe;
+
+   procedure Map (
+      Mapping : out Mapping_Type;
+      Handle : Handle_Type;
+      Offset : Ada.Streams.Stream_Element_Offset; -- 1-origin
+      Size : Ada.Streams.Stream_Element_Count;
+      Writable : Boolean)
+   is
+      use type C.winnt.HANDLE;
+      Protects : constant array (Boolean) of C.windef.DWORD := (
+         C.winnt.PAGE_READONLY,
+         C.winnt.PAGE_READWRITE);
+      Accesses : constant array (Boolean) of C.windef.DWORD := (
+         C.winbase.FILE_MAP_READ,
+         C.winbase.FILE_MAP_WRITE);
+      Mapped_Offset : C.winnt.ULARGE_INTEGER;
+      Mapped_Size : C.winnt.ULARGE_INTEGER;
+      Mapped_Address : C.windef.LPVOID;
+      File_Mapping : C.winnt.HANDLE;
+   begin
+      Mapped_Offset.QuadPart := C.winnt.ULONGLONG (Offset) - 1;
+      Mapped_Size.QuadPart := C.winnt.ULONGLONG (Size);
+      File_Mapping := C.winbase.CreateFileMapping (
+         Handle,
+         null,
+         Protects (Writable),
+         Mapped_Size.HighPart,
+         Mapped_Size.LowPart,
+         null);
+      if File_Mapping = C.winbase.INVALID_HANDLE_VALUE then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      Mapped_Address := C.winbase.MapViewOfFileEx (
+         File_Mapping,
+         Accesses (Writable),
+         Mapped_Offset.HighPart,
+         Mapped_Offset.LowPart,
+         C.basetsd.SIZE_T (Mapped_Size.QuadPart),
+         C.windef.LPVOID (System.Null_Address));
+      if Address (Mapped_Address) = Null_Address then
+         if C.winbase.CloseHandle (File_Mapping) = 0 then
+            null; -- raise Use_Error;
+         end if;
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      Mapping.Storage_Address := Address (Mapped_Address);
+      Mapping.Storage_Size := Storage_Elements.Storage_Count (Size);
+      Mapping.File_Mapping := File_Mapping;
+   end Map;
+
+   procedure Unmap (
+      Mapping : in out Mapping_Type;
+      Raise_On_Error : Boolean) is
+   begin
+      if C.winbase.UnmapViewOfFile (
+         C.windef.LPCVOID (Mapping.Storage_Address)) = 0
+         or else C.winbase.CloseHandle (Mapping.File_Mapping) = 0
+      then
+         if Raise_On_Error then
+            Raise_Exception (Use_Error'Identity);
+         end if;
+      end if;
+      Mapping.Storage_Address := Null_Address;
+      Mapping.Storage_Size := 0;
+   end Unmap;
 
    function IO_Exception_Id (Error : C.windef.DWORD)
       return Ada.Exception_Identification.Exception_Id is
