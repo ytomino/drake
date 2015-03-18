@@ -4,8 +4,8 @@ procedure mappedio is
 begin
 	Ada.Storage_Mapped_IO.Map (Mapping, Name => "mappedio.adb"); -- this file
 	declare
-		Image : String (1 .. Natural (Ada.Storage_Mapped_IO.Size (Mapping)));
-		for Image'Address use Ada.Storage_Mapped_IO.Address (Mapping);
+		Image : String (1 .. Natural (Ada.Storage_Mapped_IO.Storage_Size (Mapping)));
+		for Image'Address use Ada.Storage_Mapped_IO.Storage_Address (Mapping);
 	begin
 		Ada.Debug.Put (Image);
 	end;

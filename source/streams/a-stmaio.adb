@@ -127,21 +127,21 @@ package body Ada.Storage_Mapped_IO is
       Unmap (NC_Mapping.all, Raise_On_Error => True);
    end Unmap;
 
-   function Address (Object : Mapping) return System.Address is
+   function Storage_Address (Object : Mapping) return System.Address is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
       return NC_Mapping.Mapping.Storage_Address;
-   end Address;
+   end Storage_Address;
 
-   function Size (Object : Mapping)
+   function Storage_Size (Object : Mapping)
       return System.Storage_Elements.Storage_Count
    is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
       return NC_Mapping.Mapping.Storage_Size;
-   end Size;
+   end Storage_Size;
 
    package body Controlled is
 

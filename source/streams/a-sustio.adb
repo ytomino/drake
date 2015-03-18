@@ -249,22 +249,22 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Reallocate (S.all, New_Capacity);
    end Reserve_Capacity;
 
-   function Address (Object : aliased in out Buffer_Type)
+   function Storage_Address (Object : aliased in out Buffer_Type)
       return System.Address
    is
       S : constant not null Stream_Access := Stream (Object);
    begin
       Unique (S.all);
       return S.Data.Storage;
-   end Address;
+   end Storage_Address;
 
-   function Size (Object : Buffer_Type)
+   function Storage_Size (Object : Buffer_Type)
       return System.Storage_Elements.Storage_Count
    is
       S : constant not null Stream_Access := Stream (Object);
    begin
       return System.Storage_Elements.Storage_Count (S.Last);
-   end Size;
+   end Storage_Size;
 
    function Stream (Object : Buffer_Type)
       return not null access Root_Stream_Type'Class

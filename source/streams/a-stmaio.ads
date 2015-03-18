@@ -38,11 +38,11 @@ package Ada.Storage_Mapped_IO is
 
    procedure Unmap (Object : in out Mapping);
 
-   function Address (Object : Mapping) return System.Address;
-   pragma Inline (Address);
-   function Size (Object : Mapping)
+   function Storage_Address (Object : Mapping) return System.Address;
+   pragma Inline (Storage_Address);
+   function Storage_Size (Object : Mapping)
       return System.Storage_Elements.Storage_Count;
-   pragma Inline (Size);
+   pragma Inline (Storage_Size);
 
    Status_Error : exception
       renames IO_Exceptions.Status_Error;

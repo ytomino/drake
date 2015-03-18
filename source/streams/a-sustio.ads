@@ -25,11 +25,11 @@ package Ada.Streams.Unbounded_Storage_IO is
       Capacity : Stream_Element_Count);
 
    --  direct storage accessing
-   function Address (Object : aliased in out Buffer_Type)
+   function Storage_Address (Object : aliased in out Buffer_Type)
       return System.Address;
-   function Size (Object : Buffer_Type)
+   function Storage_Size (Object : Buffer_Type)
       return System.Storage_Elements.Storage_Count;
-   pragma Inline (Size);
+   pragma Inline (Storage_Size);
 
    --  streaming
    function Stream (Object : Buffer_Type)
