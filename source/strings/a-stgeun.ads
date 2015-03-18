@@ -629,7 +629,7 @@ private
 
    type Data is record -- "limited" prevents No_Elaboration_Code
       Reference_Count : aliased System.Reference_Counting.Counter;
-      Max_Length : aliased Natural;
+      Max_Length : aliased System.Reference_Counting.Length_Type;
       Items : not null String_Access;
       --  the storage be allocated in here
    end record;

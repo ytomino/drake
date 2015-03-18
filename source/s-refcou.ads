@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
+with System.Storage_Elements;
 package System.Reference_Counting is
    pragma Pure;
 
@@ -37,34 +38,36 @@ package System.Reference_Counting is
       Sentinel : not null Data_Access;
       Free : not null access procedure (Object : in out Data_Access));
 
+   subtype Length_Type is Storage_Elements.Storage_Count;
+
    procedure Unique (
       Target : not null access Container;
-      Target_Length : Natural;
-      Target_Capacity : Natural;
-      Max_Length : Natural;
-      Capacity : Natural;
+      Target_Length : Length_Type;
+      Target_Capacity : Length_Type;
+      Max_Length : Length_Type;
+      Capacity : Length_Type;
       Sentinel : not null Data_Access;
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
-         Length : Natural;
-         Max_Length : Natural;
-         Capacity : Natural);
+         Length : Length_Type;
+         Max_Length : Length_Type;
+         Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access));
 
    procedure Set_Length (
       Target : not null access Container;
-      Target_Length : Natural;
-      Target_Max_Length : aliased in out Natural;
-      Target_Capacity : Natural;
-      New_Length : Natural;
+      Target_Length : Length_Type;
+      Target_Max_Length : aliased in out Length_Type;
+      Target_Capacity : Length_Type;
+      New_Length : Length_Type;
       Sentinel : not null Data_Access;
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
-         Length : Natural;
-         Max_Length : Natural;
-         Capacity : Natural);
+         Length : Length_Type;
+         Max_Length : Length_Type;
+         Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access));
 
 end System.Reference_Counting;

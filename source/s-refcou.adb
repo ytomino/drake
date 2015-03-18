@@ -1,5 +1,6 @@
 package body System.Reference_Counting is
    pragma Suppress (All_Checks);
+   use type System.Storage_Elements.Storage_Offset;
 
    procedure sync_add_and_fetch_32 (
       A1 : not null access Counter;
@@ -13,26 +14,27 @@ package body System.Reference_Counting is
    pragma Import (Intrinsic, sync_sub_and_fetch_32, "__sync_sub_and_fetch_4");
 
    function sync_bool_compare_and_swap (
-      A1 : not null access Natural;
-      A2 : Natural;
-      A3 : Natural)
+      A1 : not null access Length_Type;
+      A2 : Length_Type;
+      A3 : Length_Type)
       return Boolean;
    function sync_bool_compare_and_swap (
-      A1 : not null access Natural;
-      A2 : Natural;
-      A3 : Natural)
+      A1 : not null access Length_Type;
+      A2 : Length_Type;
+      A3 : Length_Type)
       return Boolean
    is
       pragma Compile_Time_Error (
-         Integer'Size /= 32 and then Integer'Size /= 64,
-         "Integer'Size is neither 32 nor 64");
+         Storage_Elements.Storage_Offset'Size /= 32
+         and then Storage_Elements.Storage_Offset'Size /= 64,
+         "Storage_Elements.Storage_Offset'Size is neither 32 nor 64");
    begin
-      if Integer'Size = 32 then
+      if Storage_Elements.Storage_Offset'Size = 32 then
          declare
             function sync_bool_compare_and_swap_32 (
-               A1 : not null access Natural;
-               A2 : Integer;
-               A3 : Integer)
+               A1 : not null access Storage_Elements.Storage_Count;
+               A2 : Storage_Elements.Storage_Offset;
+               A3 : Storage_Elements.Storage_Offset)
                return Boolean;
             pragma Import (Intrinsic, sync_bool_compare_and_swap_32,
                "__sync_bool_compare_and_swap_4");
@@ -42,9 +44,9 @@ package body System.Reference_Counting is
       else
          declare
             function sync_bool_compare_and_swap_64 (
-               A1 : not null access Natural;
-               A2 : Integer;
-               A3 : Integer)
+               A1 : not null access Storage_Elements.Storage_Count;
+               A2 : Storage_Elements.Storage_Offset;
+               A3 : Storage_Elements.Storage_Offset)
                return Boolean;
             pragma Import (Intrinsic, sync_bool_compare_and_swap_64,
                "__sync_bool_compare_and_swap_8");
@@ -113,17 +115,17 @@ package body System.Reference_Counting is
 
    procedure Unique (
       Target : not null access Container;
-      Target_Length : Natural;
-      Target_Capacity : Natural;
-      Max_Length : Natural;
-      Capacity : Natural;
+      Target_Length : Length_Type;
+      Target_Capacity : Length_Type;
+      Max_Length : Length_Type;
+      Capacity : Length_Type;
       Sentinel : not null Data_Access;
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
-         Length : Natural;
-         Max_Length : Natural;
-         Capacity : Natural);
+         Length : Length_Type;
+         Max_Length : Length_Type;
+         Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access)) is
    begin
       if Capacity /= Target_Capacity
@@ -145,17 +147,17 @@ package body System.Reference_Counting is
 
    procedure Set_Length (
       Target : not null access Container;
-      Target_Length : Natural;
-      Target_Max_Length : aliased in out Natural;
-      Target_Capacity : Natural;
-      New_Length : Natural;
+      Target_Length : Length_Type;
+      Target_Max_Length : aliased in out Length_Type;
+      Target_Capacity : Length_Type;
+      New_Length : Length_Type;
       Sentinel : not null Data_Access;
       Copy : not null access procedure (
          Target : out Data_Access;
          Source : not null Data_Access;
-         Length : Natural;
-         Max_Length : Natural;
-         Capacity : Natural);
+         Length : Length_Type;
+         Max_Length : Length_Type;
+         Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access)) is
    begin
       if New_Length > Target_Length then
@@ -163,8 +165,10 @@ package body System.Reference_Counting is
          if New_Length > Target_Capacity then
             --  expanding
             declare
-               New_Capacity : constant Natural :=
-                  Integer'Max (Target_Capacity * 2, New_Length);
+               New_Capacity : constant Length_Type :=
+                  Storage_Elements.Storage_Offset'Max (
+                     Target_Capacity * 2,
+                     New_Length);
             begin
                Unique (
                   Target => Target,

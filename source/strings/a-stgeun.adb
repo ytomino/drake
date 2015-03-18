@@ -27,71 +27,98 @@ package body Ada.Strings.Generic_Unbounded is
    function Upcast is
       new Unchecked_Conversion (Data_Access_Access, Container_Access);
 
-   function Allocate_Data (Max_Length, Capacity : Natural)
+   function Allocation_Size (
+      Capacity : System.Reference_Counting.Length_Type)
+      return System.Storage_Elements.Storage_Count;
+   function Allocation_Size (
+      Capacity : System.Reference_Counting.Length_Type)
+      return System.Storage_Elements.Storage_Count
+   is
+      Header_Size : constant System.Storage_Elements.Storage_Count :=
+         Data'Size / Standard'Storage_Unit
+         + Integer'Size / Standard'Storage_Unit * 2; -- constraints
+      Item_Size : System.Storage_Elements.Storage_Count;
+   begin
+      if String_Type'Component_Size rem Standard'Storage_Unit = 0 then
+         --  optimized for packed
+         Item_Size :=
+            Capacity * (String_Type'Component_Size / Standard'Storage_Unit);
+      else
+         --  unpacked
+         Item_Size :=
+            (Capacity * String_Type'Component_Size
+               + (Standard'Storage_Unit - 1))
+            / Standard'Storage_Unit;
+      end if;
+      return Header_Size + Item_Size;
+   end Allocation_Size;
+
+   procedure Adjust_Allocated (Data : not null Data_Access);
+   procedure Adjust_Allocated (Data : not null Data_Access) is
+      pragma Suppress (Alignment_Check);
+      Header_Size : constant System.Storage_Elements.Storage_Count :=
+         Generic_Unbounded.Data'Size / Standard'Storage_Unit
+         + Integer'Size / Standard'Storage_Unit * 2; -- constraints
+      M : constant System.Address := Data_Cast.To_Address (Data);
+      Usable_Size : constant
+         System.Storage_Elements.Storage_Count :=
+         System.Standard_Allocators.Allocated_Size (M)
+         - Header_Size;
+      type Repr is record
+         Data : System.Address;
+         Constraints : System.Address;
+      end record;
+      pragma Suppress_Initialization (Repr);
+      R : Repr;
+      for R'Address use Data.Items'Address;
+      First : Integer;
+      for First'Address use
+         M + Generic_Unbounded.Data'Size / Standard'Storage_Unit;
+      Last : Integer;
+      for Last'Address use
+         First'Address + Integer'Size / Standard'Storage_Unit;
+   begin
+      First := 1;
+      if String_Type'Component_Size
+         rem Standard'Storage_Unit = 0
+      then -- optimized for packed
+         Last := Integer (
+            Usable_Size
+            / (String_Type'Component_Size
+               / Standard'Storage_Unit));
+      else -- unpacked
+         Last := Integer (
+            Usable_Size
+            * Standard'Storage_Unit
+            / String_Type'Component_Size);
+      end if;
+      R.Constraints := First'Address;
+      R.Data := Last'Address + Integer'Size / Standard'Storage_Unit;
+   end Adjust_Allocated;
+
+   function Allocate_Data (
+      Max_Length : System.Reference_Counting.Length_Type;
+      Capacity : System.Reference_Counting.Length_Type)
       return not null Data_Access;
-   function Allocate_Data (Max_Length, Capacity : Natural)
+   function Allocate_Data (
+      Max_Length : System.Reference_Counting.Length_Type;
+      Capacity : System.Reference_Counting.Length_Type)
       return not null Data_Access is
    begin
       if Capacity = 0 then
          return Empty_Data'Unrestricted_Access;
       else
          declare
-            Header_Size : constant System.Storage_Elements.Storage_Count :=
-               Data'Size / Standard'Storage_Unit
-               + Integer'Size / Standard'Storage_Unit * 2; -- constraints
-            Use_Size : constant System.Storage_Elements.Storage_Count :=
-               (System.Storage_Elements.Storage_Count (Capacity)
-                  * String_Type'Component_Size
-                     + (Standard'Storage_Unit - 1))
-               / Standard'Storage_Unit;
             M : constant System.Address :=
-               System.Standard_Allocators.Allocate (Header_Size + Use_Size);
+               System.Standard_Allocators.Allocate (
+                  Allocation_Size (Capacity));
          begin
             return Result : constant not null Data_Access :=
                Data_Cast.To_Pointer (M)
             do
                Result.Reference_Count := 1;
                Result.Max_Length := Max_Length;
-               declare
-                  pragma Suppress (Alignment_Check);
-                  Usable_Size : constant
-                     System.Storage_Elements.Storage_Count :=
-                     System.Standard_Allocators.Allocated_Size (M)
-                     - Header_Size;
-                  type Repr is record
-                     Data : System.Address;
-                     Constraints : System.Address;
-                  end record;
-                  pragma Suppress_Initialization (Repr);
-                  R : Repr;
-                  for R'Address use Result.Items'Address;
-                  First : Integer;
-                  for First'Address use
-                     M + Data'Size / Standard'Storage_Unit;
-                  Last : Integer;
-                  for Last'Address use
-                     First'Address + Integer'Size / Standard'Storage_Unit;
-                  Data : Character_Type;
-                  for Data'Address use
-                     Last'Address + Integer'Size / Standard'Storage_Unit;
-               begin
-                  First := 1;
-                  if String_Type'Component_Size
-                     rem Standard'Storage_Unit = 0
-                  then -- optimized for packed
-                     Last := Integer (
-                        Usable_Size
-                        / (String_Type'Component_Size
-                           / Standard'Storage_Unit));
-                  else -- unpacked
-                     Last := Integer (
-                        Usable_Size
-                        * Standard'Storage_Unit
-                        / String_Type'Component_Size);
-                  end if;
-                  R.Constraints := First'Address;
-                  R.Data := Data'Address;
-               end;
+               Adjust_Allocated (Result);
             end return;
          end;
       end if;
@@ -107,19 +134,19 @@ package body Ada.Strings.Generic_Unbounded is
    procedure Copy_Data (
       Target : out System.Reference_Counting.Data_Access;
       Source : not null System.Reference_Counting.Data_Access;
-      Length : Natural;
-      Max_Length : Natural;
-      Capacity : Natural);
+      Length : System.Reference_Counting.Length_Type;
+      Max_Length : System.Reference_Counting.Length_Type;
+      Capacity : System.Reference_Counting.Length_Type);
    procedure Copy_Data (
       Target : out System.Reference_Counting.Data_Access;
       Source : not null System.Reference_Counting.Data_Access;
-      Length : Natural;
-      Max_Length : Natural;
-      Capacity : Natural)
+      Length : System.Reference_Counting.Length_Type;
+      Max_Length : System.Reference_Counting.Length_Type;
+      Capacity : System.Reference_Counting.Length_Type)
    is
       Data : constant not null Data_Access :=
          Allocate_Data (Max_Length, Capacity);
-      subtype R is Integer range 1 .. Length;
+      subtype R is Integer range 1 .. Integer (Length);
    begin
       Data.Items (R) := Downcast (Source).Items (R);
       Target := Upcast (Data);
@@ -136,10 +163,11 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       System.Reference_Counting.Unique (
          Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Length => Item.Length,
-         Target_Capacity => Generic_Unbounded.Capacity (Item),
-         Max_Length => Item.Length,
-         Capacity => New_Capacity,
+         Target_Length => System.Reference_Counting.Length_Type (Item.Length),
+         Target_Capacity => System.Reference_Counting.Length_Type (
+            Generic_Unbounded.Capacity (Item)),
+         Max_Length => System.Reference_Counting.Length_Type (Item.Length),
+         Capacity => System.Reference_Counting.Length_Type (New_Capacity),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
@@ -194,10 +222,12 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       System.Reference_Counting.Set_Length (
          Target => Upcast (Source.Data'Unchecked_Access),
-         Target_Length => Source.Length,
+         Target_Length => System.Reference_Counting.Length_Type (
+            Source.Length),
          Target_Max_Length => Source.Data.Max_Length,
-         Target_Capacity => Capacity (Source),
-         New_Length => Length,
+         Target_Capacity => System.Reference_Counting.Length_Type (
+            Capacity (Source)),
+         New_Length => System.Reference_Counting.Length_Type (Length),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
@@ -214,7 +244,9 @@ package body Ada.Strings.Generic_Unbounded is
    is
       Length : constant Natural := Source'Length;
       New_Data : constant not null Data_Access :=
-         Allocate_Data (Length, Length);
+         Allocate_Data (
+            System.Reference_Counting.Length_Type (Length),
+            System.Reference_Counting.Length_Type (Length));
    begin
       New_Data.Items (1 .. Length) := Source;
       return Create (Data => New_Data, Length => Length);
@@ -224,7 +256,9 @@ package body Ada.Strings.Generic_Unbounded is
       return Unbounded_String
    is
       New_Data : constant not null Data_Access :=
-         Allocate_Data (Length, Length);
+         Allocate_Data (
+            System.Reference_Counting.Length_Type (Length),
+            System.Reference_Counting.Length_Type (Length));
    begin
       return Create (Data => New_Data, Length => Length);
    end To_Unbounded_String;
@@ -1129,7 +1163,7 @@ package body Ada.Strings.Generic_Unbounded is
 
       S_Data : aliased constant Data := (
          Reference_Count => System.Reference_Counting.Static,
-         Max_Length => Integer'Last,
+         Max_Length => System.Reference_Counting.Length_Type (Integer'Last),
          Items => S.all'Unrestricted_Access);
 
       function Value return Unbounded_String is
