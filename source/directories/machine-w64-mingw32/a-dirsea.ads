@@ -74,13 +74,15 @@ private package Ada.Directory_Searching is
       Additional : aliased in out Directory_Entry_Additional_Type)
       return System.Native_Time.Native_Time;
 
+   --  for Ada.Directories
+
+   function To_File_Kind (Attributes : C.windef.DWORD) return File_Kind;
+
+   --  exceptions
+
    Name_Error : exception
       renames IO_Exceptions.Name_Error;
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
-
-   --  for Ada.Directories
-
-   function To_File_Kind (Attributes : C.windef.DWORD) return File_Kind;
 
 end Ada.Directory_Searching;

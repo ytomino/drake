@@ -77,11 +77,6 @@ private package Ada.Directory_Searching is
       Additional : aliased in out Directory_Entry_Additional_Type)
       return System.Native_Time.Native_Time;
 
-   Name_Error : exception
-      renames IO_Exceptions.Name_Error;
-   Use_Error : exception
-      renames IO_Exceptions.Use_Error;
-
    --  for Ada.Directories
 
    function To_File_Kind (mode : C.sys.types.mode_t) return File_Kind;
@@ -90,5 +85,12 @@ private package Ada.Directory_Searching is
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Information : aliased out C.sys.stat.struct_stat64);
+
+   --  exceptions
+
+   Name_Error : exception
+      renames IO_Exceptions.Name_Error;
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
 
 end Ada.Directory_Searching;
