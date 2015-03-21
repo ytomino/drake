@@ -113,8 +113,7 @@ package body Ada.Processes.Inside is
                Exception_Id := Storage_Error'Identity;
             when C.errno.ENOTDIR
                | C.errno.ENAMETOOLONG
-               | C.errno.ENOENT
-               | C.errno.EACCES => -- implies the command is a directory
+               | C.errno.ENOENT =>
                Exception_Id := Name_Error'Identity;
             when others =>
                Exception_Id := System.Native_IO.IO_Exception_Id (Error);

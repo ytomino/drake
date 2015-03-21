@@ -75,7 +75,7 @@ package body Ada.Directory_Searching is
          Search.Handle := C.dirent.opendir (C_Directory (0)'Access);
       end;
       if Search.Handle = null then
-         Raise_Exception (Name_Error'Identity);
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
       Search.Filter := Filter;
       declare
@@ -103,7 +103,7 @@ package body Ada.Directory_Searching is
       Search.Pattern := null;
       if C.dirent.closedir (Handle) < 0 then
          if Raise_On_Error then
-            Raise_Exception (Use_Error'Identity);
+            Raise_Exception (IO_Exception_Id (C.errno.errno));
          end if;
       end if;
    end End_Search;
@@ -116,12 +116,16 @@ package body Ada.Directory_Searching is
       loop
          C.errno.errno_location.all := 0;
          Directory_Entry := C.dirent.readdir64 (Search.Handle);
-         if C.errno.errno /= 0 then
-            Raise_Exception (Use_Error'Identity);
-         elsif Directory_Entry = null then
-            Has_Next_Entry := False; -- end
-            exit;
-         end if;
+         declare
+            errno : constant C.signed_int := C.errno.errno;
+         begin
+            if errno /= 0 then
+               Raise_Exception (IO_Exception_Id (errno));
+            elsif Directory_Entry = null then
+               Has_Next_Entry := False; -- end
+               exit;
+            end if;
+         end;
          if Search.Filter (Kind (Directory_Entry))
             and then C.fnmatch.fnmatch (
                Search.Pattern,
@@ -229,8 +233,33 @@ package body Ada.Directory_Searching is
          Full_Name (0)'Access,
          Information'Access) < 0
       then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
    end Get_Information;
+
+   function IO_Exception_Id (errno : C.signed_int)
+      return Exception_Identification.Exception_Id is
+   begin
+      case errno is
+         when C.errno.EIO =>
+            return Device_Error'Identity;
+         when others =>
+            return Use_Error'Identity;
+      end case;
+   end IO_Exception_Id;
+
+   function Named_IO_Exception_Id (errno : C.signed_int)
+      return Exception_Identification.Exception_Id is
+   begin
+      case errno is
+         when C.errno.ENOENT
+            | C.errno.ENOTDIR
+            | C.errno.EISDIR
+            | C.errno.ENAMETOOLONG =>
+            return Name_Error'Identity;
+         when others =>
+            return IO_Exception_Id (errno);
+      end case;
+   end Named_IO_Exception_Id;
 
 end Ada.Directory_Searching;

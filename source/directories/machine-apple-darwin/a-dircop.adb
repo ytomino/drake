@@ -10,6 +10,12 @@ package body Ada.Directories.Copying is
    use type C.size_t;
    use type C.unsigned_int;
 
+   function Named_IO_Exception_Id (errno : C.signed_int)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
+
+   --  implementation
+
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
@@ -39,13 +45,16 @@ package body Ada.Directories.Copying is
          null,
          Flag) < 0
       then
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTSUP => -- the source is not a regular file
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         declare
+            errno : constant C.signed_int := C.errno.errno;
+         begin
+            case errno is
+               when C.errno.ENOTSUP => -- the source is not a regular file
+                  Raise_Exception (Name_Error'Identity);
+               when others =>
+                  Raise_Exception (Named_IO_Exception_Id (errno));
+            end case;
+         end;
       end if;
    end Copy_File;
 
@@ -87,16 +96,16 @@ package body Ada.Directories.Copying is
          end if;
       end if;
       if Error then
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTDIR
-               | C.errno.EISDIR
-               | C.errno.ENAMETOOLONG
-               | C.errno.ENOTSUP => -- the source is not a regular file
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         declare
+            errno : constant C.signed_int := C.errno.errno;
+         begin
+            case errno is
+               when C.errno.ENOTSUP => -- the source is not a regular file
+                  Raise_Exception (Name_Error'Identity);
+               when others =>
+                  Raise_Exception (Named_IO_Exception_Id (errno));
+            end case;
+         end;
       end if;
    end Replace_File;
 

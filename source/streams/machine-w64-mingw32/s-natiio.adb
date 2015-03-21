@@ -26,13 +26,6 @@ package body System.Native_IO is
       C.winnt.WCHAR'Val (Wide_Character'Pos ('A')),
       C.winnt.WCHAR'Val (0));
 
-   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line);
-   pragma No_Return (Raise_IO_Exception);
-   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line) is
-   begin
-      Raise_Exception (IO_Exception_Id (C.winbase.GetLastError), Line => Line);
-   end Raise_IO_Exception;
-
    --  implementation
 
    procedure Free (Item : in out Name_Pointer) is
@@ -149,7 +142,7 @@ package body System.Native_IO is
             or C.winbase.FILE_FLAG_DELETE_ON_CLOSE,
          hTemplateFile => C.winnt.HANDLE (Null_Address));
       if Handle = C.winbase.INVALID_HANDLE_VALUE then
-         Raise_IO_Exception;
+         Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
       --  allocate filename
       Out_Length := C.string.wcslen (Temp_Name (0)'Access);
@@ -325,7 +318,7 @@ package body System.Native_IO is
    begin
       Error := C.winbase.CloseHandle (Handle) = 0;
       if Error and then Raise_On_Error then
-         Raise_IO_Exception;
+         Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Close_Ordinary;
 
@@ -341,7 +334,7 @@ package body System.Native_IO is
          Error := C.winbase.DeleteFile (Name) = 0;
       end if;
       if Error and then Raise_On_Error then
-         Raise_IO_Exception;
+         Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Delete_Ordinary;
 
@@ -464,7 +457,7 @@ package body System.Native_IO is
          liNewFilePointer'Access,
          Whence) = 0
       then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
       New_Index :=
          Ada.Streams.Stream_Element_Offset (liNewFilePointer.QuadPart) + 1;
@@ -483,7 +476,7 @@ package body System.Native_IO is
          liNewFilePointer'Access,
          C.winbase.FILE_CURRENT) = 0
       then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
       return Ada.Streams.Stream_Element_Offset (liNewFilePointer.QuadPart) + 1;
    end Index;
@@ -494,7 +487,7 @@ package body System.Native_IO is
       liFileSize : aliased C.winnt.LARGE_INTEGER;
    begin
       if C.winbase.GetFileSizeEx (Handle, liFileSize'Access) = 0 then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
       return Ada.Streams.Stream_Element_Offset (liFileSize.QuadPart);
    end Size;

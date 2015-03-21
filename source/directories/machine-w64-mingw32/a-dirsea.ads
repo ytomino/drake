@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit for Ada.Directories
+with Ada.Exception_Identification;
 with Ada.IO_Exceptions;
 with Ada.Streams;
 with System.Native_Time;
@@ -80,9 +81,17 @@ private package Ada.Directory_Searching is
 
    --  exceptions
 
+   function IO_Exception_Id (Error : C.windef.DWORD)
+      return Exception_Identification.Exception_Id;
+
+   function Named_IO_Exception_Id (Error : C.windef.DWORD)
+      return Exception_Identification.Exception_Id;
+
    Name_Error : exception
       renames IO_Exceptions.Name_Error;
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
+   Device_Error : exception
+      renames IO_Exceptions.Device_Error;
 
 end Ada.Directory_Searching;

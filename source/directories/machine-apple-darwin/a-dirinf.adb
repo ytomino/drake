@@ -18,6 +18,10 @@ package body Ada.Directories.Information is
    use type C.sys.types.mode_t;
    use type C.sys.types.ssize_t;
 
+   function Named_IO_Exception_Id (errno : C.signed_int)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
+
    procedure Fill (
       Directory_Entry : not null access Non_Controlled_Directory_Entry_Type);
    procedure Fill (
@@ -288,15 +292,7 @@ package body Ada.Directories.Information is
                To_size (Buffer_Length));
          begin
             if Result < 0 then
-               case C.errno.errno is
-                  when C.errno.ENAMETOOLONG
-                     | C.errno.ENOENT
-                     | C.errno.ENOTDIR
-                  =>
-                     Raise_Exception (Name_Error'Identity);
-                  when others =>
-                     Raise_Exception (Use_Error'Identity);
-               end case;
+               Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
             end if;
             if C.size_t (Result) < Buffer_Length then
                return System.Zero_Terminated_Strings.Value (

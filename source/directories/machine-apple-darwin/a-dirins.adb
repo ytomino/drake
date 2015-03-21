@@ -17,6 +17,10 @@ package body Ada.Directories.Inside is
    use type C.size_t;
    use type C.sys.types.mode_t;
 
+   function Named_IO_Exception_Id (errno : C.signed_int)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
+
    procedure Get_Information (
       Name : String;
       Information : aliased out Directory_Entry_Information_Type;
@@ -61,7 +65,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
       if C.unistd.chdir (C_Directory (0)'Access) /= 0 then
-         Raise_Exception (Name_Error'Identity);
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Set_Directory;
 
@@ -78,14 +82,7 @@ package body Ada.Directories.Inside is
          New_Directory,
          C_New_Directory (0)'Access);
       if C.sys.stat.mkdir (C_New_Directory (0)'Access, 8#755#) /= 0 then
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTDIR
-               | C.errno.ENAMETOOLONG =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Create_Directory;
 
@@ -96,7 +93,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
       if C.unistd.rmdir (C_Directory (0)'Access) < 0 then
-         Raise_Exception (Name_Error'Identity);
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Delete_Directory;
 
@@ -107,7 +104,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       if C.unistd.unlink (C_Name (0)'Access) < 0 then
-         Raise_Exception (Name_Error'Identity);
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Delete_File;
 
@@ -139,15 +136,7 @@ package body Ada.Directories.Inside is
          end if;
       end if;
       if Error then
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTDIR
-               | C.errno.EISDIR
-               | C.errno.ENAMETOOLONG =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Rename;
 
@@ -195,14 +184,7 @@ package body Ada.Directories.Inside is
                   return; -- success
                end if;
             end if;
-            case C.errno.errno is
-               when C.errno.ENOENT
-                  | C.errno.ENOTDIR
-                  | C.errno.ENAMETOOLONG =>
-                  Raise_Exception (Name_Error'Identity);
-               when others =>
-                  Raise_Exception (Use_Error'Identity);
-            end case;
+            Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
          end if;
       end;
    end Symbolic_Link;
@@ -232,7 +214,7 @@ package body Ada.Directories.Inside is
    begin
       Get_Information (Name, Information, Error);
       if Error then
-         Raise_Exception (Name_Error'Identity);
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Get_Information;
 
@@ -273,15 +255,17 @@ package body Ada.Directories.Inside is
          Name'Length * System.Zero_Terminated_Strings.Expanding);
       Attributes : aliased C.sys.stat.struct_stat;
       Times : aliased array (0 .. 1) of aliased C.sys.time.struct_timeval;
+      Error : Boolean;
    begin
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
-      if C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) < 0 then
-         Raise_Exception (Name_Error'Identity);
+      Error := C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) < 0;
+      if not Error then
+         Times (0) := To_timeval (Attributes.st_atim);
+         Times (1) := To_timeval (Time);
+         Error := C.sys.time.lutimes (C_Name (0)'Access, Times (0)'Access) < 0;
       end if;
-      Times (0) := To_timeval (Attributes.st_atim);
-      Times (1) := To_timeval (Time);
-      if C.sys.time.lutimes (C_Name (0)'Access, Times (0)'Access) < 0 then
-         Raise_Exception (Use_Error'Identity);
+      if Error then
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Set_Modification_Time;
 

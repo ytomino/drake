@@ -1,14 +1,24 @@
 with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_WStrings;
 with C.windef;
-with C.winerror;
 with C.winnt;
 package body Ada.Directories.Inside is
    use Exception_Identification.From_Here;
+   use type Exception_Identification.Exception_Id;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
+
+   function IO_Exception_Id (errno : C.windef.DWORD)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.IO_Exception_Id;
+
+   function Named_IO_Exception_Id (errno : C.windef.DWORD)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
+
+   --  implementation
 
    function Current_Directory return String is
       Buffer : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
@@ -33,13 +43,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
       if C.winbase.SetCurrentDirectory (W_Directory (0)'Access) = 0 then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Set_Directory;
 
@@ -56,13 +60,7 @@ package body Ada.Directories.Inside is
          New_Directory,
          W_New_Directory (0)'Access);
       if C.winbase.CreateDirectory (W_New_Directory (0)'Access, null) = 0 then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Create_Directory;
 
@@ -73,13 +71,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
       if C.winbase.RemoveDirectory (W_Directory (0)'Access) = 0 then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Delete_Directory;
 
@@ -90,13 +82,7 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.DeleteFile (W_Name (0)'Access) = 0 then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Delete_File;
 
@@ -125,13 +111,7 @@ package body Ada.Directories.Inside is
          W_New (0)'Access,
          dwFlags => C.winbase.MOVEFILE_COPY_ALLOWED or Overwrite_Flag) = 0
       then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Rename;
 
@@ -158,13 +138,7 @@ package body Ada.Directories.Inside is
          W_Target_Name (0)'Access,
          bFailIfExists => Boolean'Pos (not Overwrite)) = 0
       then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Copy_File;
 
@@ -201,13 +175,7 @@ package body Ada.Directories.Inside is
              dwFlags => C.winbase.MOVEFILE_REPLACE_EXISTING) = 0;
       end if;
       if Error then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_PATH_NOT_FOUND =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Replace_File;
 
@@ -291,7 +259,7 @@ package body Ada.Directories.Inside is
          C.winbase.GetFileExInfoStandard,
          C.windef.LPVOID (Information'Address)) = 0
       then
-         Raise_Exception (Name_Error'Identity);
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Get_Information;
 
@@ -323,6 +291,8 @@ package body Ada.Directories.Inside is
       Name : String;
       Time : System.Native_Time.Native_Time)
    is
+      Exception_Id : Exception_Identification.Exception_Id :=
+         Exception_Identification.Null_Id;
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
          Name'Length * System.Zero_Terminated_WStrings.Expanding);
@@ -336,30 +306,37 @@ package body Ada.Directories.Inside is
          C.winbase.GetFileExInfoStandard,
          C.windef.LPVOID (Information'Address)) = 0
       then
-         Raise_Exception (Name_Error'Identity);
+         Exception_Id := Named_IO_Exception_Id (C.winbase.GetLastError);
+      else
+         Handle := C.winbase.CreateFile (
+            W_Name (0)'Access,
+            dwDesiredAccess => C.winnt.FILE_WRITE_ATTRIBUTES,
+            dwShareMode => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE,
+            lpSecurityAttributes => null,
+            dwCreationDisposition => C.winbase.OPEN_EXISTING,
+            dwFlagsAndAttributes => C.winbase.FILE_FLAG_BACKUP_SEMANTICS
+               or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
+            hTemplateFile => C.windef.LPVOID (System.Null_Address));
+         if Handle = C.winbase.INVALID_HANDLE_VALUE then
+            Exception_Id := Named_IO_Exception_Id (C.winbase.GetLastError);
+         else
+            if C.winbase.SetFileTime (
+               Handle,
+               Information.ftCreationTime'Access,
+               Information.ftLastAccessTime'Access,
+               Aliased_Time'Access) = 0
+            then
+               Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
+            end if;
+            if C.winbase.CloseHandle (Handle) = 0 then
+               if Exception_Id = Exception_Identification.Null_Id then
+                  Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
+               end if;
+            end if;
+         end if;
       end if;
-      Handle := C.winbase.CreateFile (
-         W_Name (0)'Access,
-         dwDesiredAccess => C.winnt.FILE_WRITE_ATTRIBUTES,
-         dwShareMode => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE,
-         lpSecurityAttributes => null,
-         dwCreationDisposition => C.winbase.OPEN_EXISTING,
-         dwFlagsAndAttributes => C.winbase.FILE_FLAG_BACKUP_SEMANTICS
-            or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
-         hTemplateFile => C.windef.LPVOID (System.Null_Address));
-      if Handle = C.winbase.INVALID_HANDLE_VALUE then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      if C.winbase.SetFileTime (
-         Handle,
-         Information.ftCreationTime'Access,
-         Information.ftLastAccessTime'Access,
-         Aliased_Time'Access) = 0
-      then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      if C.winbase.CloseHandle (Handle) = 0 then
-         Raise_Exception (Device_Error'Identity);
+      if Exception_Id /= Exception_Identification.Null_Id then
+         Raise_Exception (Exception_Id);
       end if;
    end Set_Modification_Time;
 

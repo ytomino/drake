@@ -7,10 +7,19 @@ with C.winbase;
 with C.winnt;
 package body Ada.Directories.Information is
    use Exception_Identification.From_Here;
+   use type Exception_Identification.Exception_Id;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
+
+   function IO_Exception_Id (errno : C.windef.DWORD)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.IO_Exception_Id;
+
+   function Named_IO_Exception_Id (errno : C.windef.DWORD)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
 
    function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
 
@@ -281,13 +290,13 @@ package body Ada.Directories.Information is
    end Is_Not_Indexed;
 
    function Identity (Name : String) return File_Id is
+      Exception_Id : Exception_Identification.Exception_Id :=
+         Exception_Identification.Null_Id;
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
          Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Handle : C.winnt.HANDLE;
       Info : aliased C.winbase.BY_HANDLE_FILE_INFORMATION;
-      Result : C.windef.WINBOOL;
-      Closed : C.windef.WINBOOL;
    begin
       System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Handle := C.winbase.CreateFile (
@@ -301,12 +310,19 @@ package body Ada.Directories.Information is
             or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
          hTemplateFile => C.windef.LPVOID (System.Null_Address));
       if Handle = C.winbase.INVALID_HANDLE_VALUE then
-         Raise_Exception (Name_Error'Identity);
+         Exception_Id := Named_IO_Exception_Id (C.winbase.GetLastError);
+      else
+         if C.winbase.GetFileInformationByHandle (Handle, Info'Access) = 0 then
+            Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
+         end if;
+         if C.winbase.CloseHandle (Handle) = 0 then
+            if Exception_Id = Exception_Identification.Null_Id then
+               Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
+            end if;
+         end if;
       end if;
-      Result := C.winbase.GetFileInformationByHandle (Handle, Info'Access);
-      Closed := C.winbase.CloseHandle (Handle);
-      if Result = 0 or else Closed = 0 then
-         Raise_Exception (Use_Error'Identity);
+      if Exception_Id /= Exception_Identification.Null_Id then
+         Raise_Exception (Exception_Id);
       end if;
       return (
          FileIndexLow => Info.nFileIndexLow,

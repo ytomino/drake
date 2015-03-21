@@ -32,13 +32,6 @@ package body System.Native_IO is
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
 
-   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line);
-   pragma No_Return (Raise_IO_Exception);
-   procedure Raise_IO_Exception (Line : Natural := Ada.Debug.Line) is
-   begin
-      Raise_Exception (IO_Exception_Id (C.errno.errno), Line => Line);
-   end Raise_IO_Exception;
-
    --  implementation
 
    procedure Free (Item : in out Name_Pointer) is
@@ -204,7 +197,7 @@ package body System.Native_IO is
          Handle := mkstemp (Out_Item);
       end;
       if Handle < 0 then
-         Raise_IO_Exception;
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
       Set_Close_On_Exec (Handle);
    end Open_Temporary;
@@ -299,10 +292,8 @@ package body System.Native_IO is
             when C.errno.ENOTDIR
                | C.errno.ENAMETOOLONG
                | C.errno.ENOENT
-               | C.errno.EACCES
                | C.errno.EEXIST -- O_EXCL
-               | C.errno.EISDIR
-               | C.errno.EROFS =>
+               | C.errno.EISDIR =>
                Raise_Exception (Name_Error'Identity);
             when others =>
                Raise_Exception (IO_Exception_Id (errno));
@@ -364,7 +355,7 @@ package body System.Native_IO is
    begin
       Error := C.unistd.close (Handle) < 0;
       if Error and then Raise_On_Error then
-         Raise_IO_Exception;
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
    end Close_Ordinary;
 
@@ -380,7 +371,7 @@ package body System.Native_IO is
          Error := C.unistd.unlink (Name) < 0;
       end if;
       if Error and then Raise_On_Error then
-         Raise_IO_Exception;
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
    end Delete_Ordinary;
 
@@ -422,7 +413,7 @@ package body System.Native_IO is
             File_Type : C.sys.types.mode_t;
          begin
             if C.sys.stat.fstat (Handle, Info'Access) < 0 then
-               Raise_Exception (Use_Error'Identity);
+               Raise_Exception (IO_Exception_Id (C.errno.errno));
             end if;
             File_Type := Info.st_mode and C.sys.stat.S_IFMT;
             if File_Type = C.sys.stat.S_IFIFO
@@ -503,7 +494,7 @@ package body System.Native_IO is
          C.sys.types.off_t (Relative_To),
          Whence);
       if Result < 0 then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
       New_Index := Ada.Streams.Stream_Element_Offset (Result) + 1;
    end Set_Relative_Index;
@@ -515,7 +506,7 @@ package body System.Native_IO is
    begin
       Result := C.unistd.lseek (Handle, 0, C.unistd.SEEK_CUR);
       if Result < 0 then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
       return Ada.Streams.Stream_Element_Offset (Result) + 1;
    end Index;
@@ -526,7 +517,7 @@ package body System.Native_IO is
       Info : aliased C.sys.stat.struct_stat;
    begin
       if C.sys.stat.fstat (Handle, Info'Access) < 0 then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
       return Ada.Streams.Stream_Element_Offset (Info.st_size);
    end Size;

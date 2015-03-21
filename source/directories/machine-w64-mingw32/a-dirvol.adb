@@ -17,6 +17,14 @@ package body Ada.Directories.Volumes is
    use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
 
+   function IO_Exception_Id (errno : C.windef.DWORD)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.IO_Exception_Id;
+
+   function Named_IO_Exception_Id (errno : C.windef.DWORD)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
+
    package Conv is
       new System.Address_To_Named_Access_Conversions (
          C.winnt.WCHAR,
@@ -44,7 +52,7 @@ package body Ada.Directories.Volumes is
             FileSystemNameBuffer,
             FileSystemNameSize) = 0
          then
-            Raise_Exception (Use_Error'Identity);
+            Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
          end if;
          --  save FileSystemFlags
          FS.FileSystemFlags_Valid := True;
@@ -81,7 +89,7 @@ package body Ada.Directories.Volumes is
          Root_Path (0)'Access,
          Root_Path'Length) = 0
       then
-         Raise_Exception (Name_Error'Identity);
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
       Root_Path_Length := C.string.wcslen (Root_Path (0)'Access);
       return Result : File_System do
@@ -117,7 +125,7 @@ package body Ada.Directories.Volumes is
          TotalNumberOfBytes'Access,
          null) = 0
       then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
       return File_Size (TotalNumberOfBytes.QuadPart);
    end Size;
@@ -134,7 +142,7 @@ package body Ada.Directories.Volumes is
          TotalNumberOfBytes'Access,
          null) = 0
       then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
       return File_Size (FreeBytesAvailable.QuadPart);
    end Free_Space;
@@ -170,14 +178,18 @@ package body Ada.Directories.Volumes is
          VolumeName (0)'Access,
          VolumeName'Length) = 0
       then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_PATH_NOT_FOUND =>
-               --  is it a network drive ?
-               --  should it call WNetGetConnection32 to get the UNC path?
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         declare
+            Error : constant C.windef.DWORD := C.winbase.GetLastError;
+         begin
+            case Error is
+               when C.winerror.ERROR_PATH_NOT_FOUND =>
+                  --  is it a network drive ?
+                  --  should it call WNetGetConnection32 to get the UNC path?
+                  Raise_Exception (Name_Error'Identity);
+               when others =>
+                  Raise_Exception (IO_Exception_Id (Error));
+            end case;
+         end;
       end if;
       return System.Zero_Terminated_WStrings.Value (VolumeName (0)'Access);
    end Device;

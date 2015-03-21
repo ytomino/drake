@@ -103,14 +103,18 @@ package body Ada.Directory_Searching is
             Directory_Entry);
       end;
       if Search.Handle = C.winbase.INVALID_HANDLE_VALUE then
-         case C.winbase.GetLastError is
-            when C.winerror.ERROR_FILE_NOT_FOUND
-               | C.winerror.ERROR_NO_MORE_FILES =>
-               --  no files match the pattern
-               Has_Next_Entry := False;
-            when others =>
-               Raise_Exception (Name_Error'Identity);
-         end case;
+         declare
+            Error : constant C.windef.DWORD := C.winbase.GetLastError;
+         begin
+            case Error is
+               when C.winerror.ERROR_FILE_NOT_FOUND
+                  | C.winerror.ERROR_NO_MORE_FILES =>
+                  --  no files match the pattern
+                  Has_Next_Entry := False;
+               when others =>
+                  Raise_Exception (Named_IO_Exception_Id (Error));
+            end case;
+         end;
       else
          Search.Filter := Filter;
          loop
@@ -119,14 +123,18 @@ package body Ada.Directory_Searching is
                exit; -- found
             end if;
             if C.winbase.FindNextFile (Search.Handle, Directory_Entry) = 0 then
-               case C.winbase.GetLastError is
-                  when C.winerror.ERROR_FILE_NOT_FOUND
-                     | C.winerror.ERROR_NO_MORE_FILES =>
-                     Has_Next_Entry := False;
-                     exit; -- end
-                  when others =>
-                     Raise_Exception (Use_Error'Identity);
-               end case;
+               declare
+                  Error : constant C.windef.DWORD := C.winbase.GetLastError;
+               begin
+                  case Error is
+                     when C.winerror.ERROR_FILE_NOT_FOUND
+                        | C.winerror.ERROR_NO_MORE_FILES =>
+                        Has_Next_Entry := False;
+                        exit; -- end
+                     when others =>
+                        Raise_Exception (IO_Exception_Id (Error));
+                  end case;
+               end;
             end if;
          end loop;
       end if;
@@ -142,7 +150,7 @@ package body Ada.Directory_Searching is
       if Handle /= C.winbase.INVALID_HANDLE_VALUE then
          if C.winbase.FindClose (Handle) = 0 then
             if Raise_On_Error then
-               Raise_Exception (Use_Error'Identity);
+               Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
             end if;
          end if;
       end if;
@@ -158,14 +166,18 @@ package body Ada.Directory_Searching is
       Directory_Entry := Search.Directory_Entry'Unchecked_Access;
       loop
          if C.winbase.FindNextFile (Search.Handle, Directory_Entry) = 0 then
-            case C.winbase.GetLastError is
-               when C.winerror.ERROR_FILE_NOT_FOUND
-                  | C.winerror.ERROR_NO_MORE_FILES =>
-                  Has_Next_Entry := False;
-                  exit; -- end
-               when others =>
-                  Raise_Exception (Use_Error'Identity);
-            end case;
+            declare
+               Error : constant C.windef.DWORD := C.winbase.GetLastError;
+            begin
+               case Error is
+                  when C.winerror.ERROR_FILE_NOT_FOUND
+                     | C.winerror.ERROR_NO_MORE_FILES =>
+                     Has_Next_Entry := False;
+                     exit; -- end
+                  when others =>
+                     Raise_Exception (IO_Exception_Id (Error));
+               end case;
+            end;
          end if;
          if Match_Filter (Search.Filter, Directory_Entry) then
             Has_Next_Entry := True;
@@ -229,5 +241,32 @@ package body Ada.Directory_Searching is
          return Ordinary_File;
       end if;
    end To_File_Kind;
+
+   function IO_Exception_Id (Error : C.windef.DWORD)
+      return Exception_Identification.Exception_Id is
+   begin
+      case Error is
+         when C.winerror.ERROR_WRITE_FAULT
+            | C.winerror.ERROR_READ_FAULT
+            | C.winerror.ERROR_GEN_FAILURE
+            | C.winerror.ERROR_IO_DEVICE =>
+            return Device_Error'Identity;
+         when others =>
+            return Use_Error'Identity;
+      end case;
+   end IO_Exception_Id;
+
+   function Named_IO_Exception_Id (Error : C.windef.DWORD)
+      return Exception_Identification.Exception_Id is
+   begin
+      case Error is
+         when C.winerror.ERROR_FILE_NOT_FOUND
+            | C.winerror.ERROR_PATH_NOT_FOUND
+            | C.winerror.ERROR_INVALID_NAME =>
+            return Name_Error'Identity;
+         when others =>
+            return IO_Exception_Id (Error);
+      end case;
+   end Named_IO_Exception_Id;
 
 end Ada.Directory_Searching;

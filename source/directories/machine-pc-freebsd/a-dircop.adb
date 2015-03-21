@@ -17,6 +17,16 @@ package body Ada.Directories.Copying is
    use type C.signed_long; -- 64bit ssize_t
    use type C.size_t;
 
+   function IO_Exception_Id (errno : C.signed_int)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.IO_Exception_Id;
+
+   function Named_IO_Exception_Id (errno : C.signed_int)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
+
+   --  implementation
+
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
@@ -47,10 +57,10 @@ package body Ada.Directories.Copying is
          C_Source_Name (0)'Access,
          C.fcntl.O_RDONLY);
       if Source < 0 then
-         Exception_Id := Name_Error'Identity;
+         Exception_Id := Named_IO_Exception_Id (C.errno.errno);
       else
          if C.sys.stat.fstat (Source, Data'Access) < 0 then
-            Exception_Id := Use_Error'Identity;
+            Exception_Id := IO_Exception_Id (C.errno.errno);
          else
             Map := C.sys.mman.mmap (
                C.void_ptr (System.Null_Address),
@@ -73,7 +83,7 @@ package body Ada.Directories.Copying is
                   C.signed_int (Flag),
                   Data.st_mode);
                if Target < 0 then
-                  Exception_Id := Name_Error'Identity;
+                  Exception_Id := Named_IO_Exception_Id (C.errno.errno);
                else
                   Written := C.unistd.write (
                      Target,
@@ -85,7 +95,7 @@ package body Ada.Directories.Copying is
                   --  close target
                   if C.unistd.close (Target) < 0 then
                      if Exception_Id = Exception_Identification.Null_Id then
-                        Exception_Id := Device_Error'Identity;
+                        Exception_Id := IO_Exception_Id (C.errno.errno);
                      end if;
                   end if;
                end if;
@@ -100,7 +110,7 @@ package body Ada.Directories.Copying is
          --  close source
          if C.unistd.close (Source) < 0 then
             if Exception_Id = Exception_Identification.Null_Id then
-               Exception_Id := Use_Error'Identity;
+               Exception_Id := IO_Exception_Id (C.errno.errno);
             end if;
          end if;
       end if;
@@ -147,15 +157,7 @@ package body Ada.Directories.Copying is
             C_Target_Name (0)'Access) < 0;
       end if;
       if Error then
-         case C.errno.errno is
-            when C.errno.ENOENT
-               | C.errno.ENOTDIR
-               | C.errno.EISDIR
-               | C.errno.ENAMETOOLONG =>
-               Raise_Exception (Name_Error'Identity);
-            when others =>
-               Raise_Exception (Use_Error'Identity);
-         end case;
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Replace_File;
 

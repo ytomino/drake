@@ -10,6 +10,10 @@ package body Ada.Directories.Temporary is
    use type C.windef.UINT;
    use type C.windef.WINBOOL;
 
+   function Named_IO_Exception_Id (errno : C.windef.DWORD)
+      return Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
+
    TMP : aliased constant C.winnt.WCHAR_array (0 .. 3) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('T')),
       C.winnt.WCHAR'Val (Wide_Character'Pos ('M')),
@@ -64,7 +68,7 @@ package body Ada.Directories.Temporary is
          0,
          Result (0)'Access) = 0
       then
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
       return System.Zero_Terminated_WStrings.Value (Result (0)'Access);
    end Create_Temporary_File;
