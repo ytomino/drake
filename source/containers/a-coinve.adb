@@ -273,7 +273,6 @@ package body Ada.Containers.Indefinite_Vectors is
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         Data.Super.Is_Aliased := True;
          return (Element => Data.Items (Index).all'Access);
       end;
    end Constant_Reference;
@@ -289,7 +288,6 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 
 --  diff (Constant_Reference)
---
 --
 --
 --
@@ -634,7 +632,6 @@ package body Ada.Containers.Indefinite_Vectors is
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         Data.Super.Is_Aliased := True;
          return (Element => Data.Items (Index).all'Access);
       end;
    end Reference;
@@ -652,7 +649,6 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 
 --  diff (Reference)
---
 --
 --
 --

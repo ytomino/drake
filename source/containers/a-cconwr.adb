@@ -310,25 +310,7 @@ package body Ada.Containers.Copy_On_Write is
             --  try to use reserved area
             pragma Assert (Target.Data /= null); -- Target_Capacity > 0
             System.Shared_Locking.Enter; -- emulate CAS
-            if Downcast (Target.Data).Max_Length = Target_Length
-               and then not Downcast (Target.Data).Is_Aliased
-            then
-               declare
-                  pragma Suppress (Accessibility_Check);
-                  Source : constant not null access Container :=
-                     Target.Data.Follower;
-                  To_Free : Data_Access;
-               begin
-                  if Target /= Source then
-                     pragma Assert (Target.Data = Source.Data);
-                     pragma Assert (Source.Data.Follower = Source);
-                     Unfollow (Target, To_Free);
-                     pragma Assert (To_Free = null); -- Source still have it
-                     Target.Data := Source.Data;
-                     Target.Next_Follower := Source;
-                     Source.Data.Follower := Target;
-                  end if;
-               end;
+            if Downcast (Target.Data).Max_Length = Target_Length then
                Downcast (Target.Data).Max_Length := New_Length;
                System.Shared_Locking.Leave;
             else

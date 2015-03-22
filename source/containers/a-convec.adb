@@ -273,7 +273,6 @@ package body Ada.Containers.Vectors is
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         Data.Super.Is_Aliased := True;
          return (Element => Data.Items (Index)'Access);
       end;
    end Constant_Reference;
@@ -298,7 +297,6 @@ package body Ada.Containers.Vectors is
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         Data.Super.Is_Aliased := True;
          return Slicing.Constant_Slice (
             Data.Items,
             First_Index,
@@ -634,7 +632,6 @@ package body Ada.Containers.Vectors is
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         Data.Super.Is_Aliased := True;
          return (Element => Data.Items (Index)'Access);
       end;
    end Reference;
@@ -661,7 +658,6 @@ package body Ada.Containers.Vectors is
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         Data.Super.Is_Aliased := True;
          return Slicing.Slice (
             Data.Items,
             First_Index,

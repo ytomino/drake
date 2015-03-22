@@ -79,16 +79,14 @@ private package Ada.Containers.Copy_On_Write is
 
    --  Copy and Reserve_Capacity also make it unique.
 
-   Integer_A : constant := Integer'Alignment * Standard'Storage_Unit;
-
-   Data_Ex_Size : constant := (Data_Size
-      + (Count_Type'Size + Integer_A - 1) / Integer_A * Integer_A
-      + (Boolean'Size + Integer_A - 1) / Integer_A * Integer_A);
+   Data_Ex_Size : constant :=
+      (Data_Size + Count_Type'Base'Size + Standard'Address_Size - 1)
+      / Standard'Address_Size
+      * Standard'Address_Size;
 
    type Data_Ex is limited record
       Super : aliased Data;
       Max_Length : aliased Count_Type := 0;
-      Is_Aliased : aliased Boolean := False;
    end record;
 
    for Data_Ex'Size use Data_Ex_Size;
