@@ -120,10 +120,10 @@ package body Ada.Containers.Copy_On_Write is
       Length : Count_Type;
       Capacity : Count_Type;
       Allocate : not null access procedure (
-         Target : out Data_Access;
+         Target : out not null Data_Access;
          Capacity : Count_Type);
       Copy : not null access procedure (
-         Target : out Data_Access;
+         Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type;
          Capacity : Count_Type))
@@ -182,15 +182,15 @@ package body Ada.Containers.Copy_On_Write is
       Capacity : Count_Type;
       To_Update : Boolean;
       Allocate : not null access procedure (
-         Target : out Data_Access;
+         Target : out not null Data_Access;
          Capacity : Count_Type);
       Move : not null access procedure (
-         Target : out Data_Access;
+         Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type;
          Capacity : Count_Type);
       Copy : not null access procedure (
-         Target : out Data_Access;
+         Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type;
          Capacity : Count_Type);
@@ -269,15 +269,15 @@ package body Ada.Containers.Copy_On_Write is
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
       Allocate : not null access procedure (
-         Target : out Data_Access;
+         Target : out not null Data_Access;
          Capacity : Count_Type);
       Move : not null access procedure (
-         Target : out Data_Access;
+         Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type;
          Capacity : Count_Type);
       Copy : not null access procedure (
-         Target : out Data_Access;
+         Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type;
          Capacity : Count_Type);

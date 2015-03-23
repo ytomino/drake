@@ -40,10 +40,10 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    end Equivalent_Element;
 
    procedure Allocate_Element (
-      Item : out Element_Access;
+      Item : out not null Element_Access;
       New_Item : Element_Type);
    procedure Allocate_Element (
-      Item : out Element_Access;
+      Item : out not null Element_Access;
       New_Item : Element_Type) is
    begin
       Item := new Element_Type'(New_Item);
@@ -90,10 +90,10 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    end Free_Node;
 
    procedure Allocate_Data (
-      Target : out Copy_On_Write.Data_Access;
+      Target : out not null Copy_On_Write.Data_Access;
       Capacity : Count_Type);
    procedure Allocate_Data (
-      Target : out Copy_On_Write.Data_Access;
+      Target : out not null Copy_On_Write.Data_Access;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Capacity);
@@ -107,12 +107,12 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    end Allocate_Data;
 
    procedure Copy_Data (
-      Target : out Copy_On_Write.Data_Access;
+      Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
-      Target : out Copy_On_Write.Data_Access;
+      Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
       Capacity : Count_Type)

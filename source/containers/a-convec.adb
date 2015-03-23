@@ -56,10 +56,10 @@ package body Ada.Containers.Vectors is
    end Free_Data;
 
    procedure Allocate_Data (
-      Target : out Copy_On_Write.Data_Access;
+      Target : out not null Copy_On_Write.Data_Access;
       Capacity : Count_Type);
    procedure Allocate_Data (
-      Target : out Copy_On_Write.Data_Access;
+      Target : out not null Copy_On_Write.Data_Access;
       Capacity : Count_Type)
    is
       New_Data : constant Data_Access := new Data'(
@@ -100,12 +100,12 @@ package body Ada.Containers.Vectors is
 --
 
    procedure Copy_Data (
-      Target : out Copy_On_Write.Data_Access;
+      Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Natural;
       Capacity : Natural);
    procedure Copy_Data (
-      Target : out Copy_On_Write.Data_Access;
+      Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Natural;
       Capacity : Natural)

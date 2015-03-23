@@ -132,12 +132,12 @@ package body Ada.Strings.Generic_Unbounded is
    end Free_Data;
 
    procedure Reallocate_Data (
-      Data : aliased in out System.Reference_Counting.Data_Access;
+      Data : aliased in out not null System.Reference_Counting.Data_Access;
       Length : System.Reference_Counting.Length_Type;
       Max_Length : System.Reference_Counting.Length_Type;
       Capacity : System.Reference_Counting.Length_Type);
    procedure Reallocate_Data (
-      Data : aliased in out System.Reference_Counting.Data_Access;
+      Data : aliased in out not null System.Reference_Counting.Data_Access;
       Length : System.Reference_Counting.Length_Type;
       Max_Length : System.Reference_Counting.Length_Type;
       Capacity : System.Reference_Counting.Length_Type)
@@ -154,13 +154,13 @@ package body Ada.Strings.Generic_Unbounded is
    end Reallocate_Data;
 
    procedure Copy_Data (
-      Target : out System.Reference_Counting.Data_Access;
+      Target : out not null System.Reference_Counting.Data_Access;
       Source : not null System.Reference_Counting.Data_Access;
       Length : System.Reference_Counting.Length_Type;
       Max_Length : System.Reference_Counting.Length_Type;
       Capacity : System.Reference_Counting.Length_Type);
    procedure Copy_Data (
-      Target : out System.Reference_Counting.Data_Access;
+      Target : out not null System.Reference_Counting.Data_Access;
       Source : not null System.Reference_Counting.Data_Access;
       Length : System.Reference_Counting.Length_Type;
       Max_Length : System.Reference_Counting.Length_Type;
