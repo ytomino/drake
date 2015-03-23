@@ -83,12 +83,12 @@ package body Ada.Containers.Unbounded_Priority_Queues is
          end if;
       end Dequeue_Only_High_Priority;
 
-      overriding function Current_Use return Count_Type is
+      function Current_Use return Count_Type is
       begin
          return Current_Length;
       end Current_Use;
 
-      overriding function Peak_Use return Count_Type is
+      function Peak_Use return Count_Type is
       begin
          return Peak_Length;
       end Peak_Use;
