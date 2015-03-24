@@ -313,14 +313,13 @@ package body Ada.Numerics.Generic_Arrays is
       Master_Sign : Number := One;
       Sign : Number;
    begin
-      return Result : Matrix (A'Range (1), A'Range (2)) do
+      return Result : Matrix (A'Range (2), A'Range (1)) do
          declare
-            Length_1 : constant Integer := Result'Length (1);
-            Length_2 : constant Integer := Result'Length (2);
+            Length : constant Integer := Result'Length (1); -- square matrix
          begin
-            for I in 0 .. Length_1 - 1 loop
+            for I in 0 .. Length - 1 loop
                Sign := Master_Sign;
-               for J in 0 .. Length_2 - 1 loop
+               for J in 0 .. Length - 1 loop
                   pragma Loop_Optimize (Vector);
                   Result (Result'First (1) + I, Result'First (2) + J) :=
                      Sign
