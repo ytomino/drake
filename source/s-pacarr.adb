@@ -88,7 +88,7 @@ package body System.Packed_Arrays is
             Arr
             + Address (N / 8 * (Record_8_Units'Size / Standard'Storage_Unit));
       begin
-         case Rem_8 (N rem (Record_8_Units'Size / Standard'Storage_Unit)) is
+         case Rem_8 (N rem 8) is
             when 0 => return Units.E0;
             when 1 => return Units.E1;
             when 2 => return Units.E2;
@@ -106,7 +106,7 @@ package body System.Packed_Arrays is
             Arr
             + Address (N / 8 * (Record_8_Units'Size / Standard'Storage_Unit));
       begin
-         case Rem_8 (N rem (Record_8_Units'Size / Standard'Storage_Unit)) is
+         case Rem_8 (N rem 8) is
             when 0 => Units.E0 := E;
             when 1 => Units.E1 := E;
             when 2 => Units.E2 := E;

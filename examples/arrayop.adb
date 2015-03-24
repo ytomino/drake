@@ -26,8 +26,6 @@ procedure arrayop is
 		z4 := fftt xor ftft; -- use s-boarop
 		pragma Assert (z4 = a'(False, True, True, False));
 		pragma Assert ((fftt xor a'(False, True, False, True)) = a'(False, True, True, False)); -- inlined
-		pragma Assert (Ada.Debug.Put (Integer'Image (a'Component_Size)));
-		null;
 	end Generic_Test_Bits;
 	generic
 		type e is (<>);
@@ -41,9 +39,23 @@ procedure arrayop is
 		pragma Assert (a'(e'First, e'First) < a'(e'First, e'First, e'First));
 		pragma Assert (a'(e'First, e'Last) > a'(e'First, e'First));
 		pragma Assert (a'(e'First, e'First, e'First) > a'(e'First, e'First));
-		pragma Assert (Ada.Debug.Put (Integer'Image (a'Component_Size)));
 		null;
 	end Generic_Test_Comparison;
+	generic
+		type e is mod <>;
+		type a is array (Positive range <>) of e;
+	procedure Generic_Test_Indexing;
+	procedure Generic_Test_Indexing is
+		a64 : a (1 .. 64);
+	begin
+		for I in a64'Range loop
+			a64 (I) := e'Mod (I);
+		end loop;
+		for I in a64'Range loop
+			pragma Assert (a64 (I) = e'Mod (I));
+			null;
+		end loop;
+	end Generic_Test_Indexing;
 	-- boolean
 	type ba is array (Positive range <>) of Boolean;
 	procedure tb_ba is new Generic_Test_Bits (Boolean, ba);
@@ -114,6 +126,8 @@ procedure arrayop is
 	for u1a'Component_Size use 1;
 	procedure tc_u1a is new Generic_Test_Comparison (u1, u1a);
 	pragma Debug (tc_u1a);
+	procedure ts_u1a is new Generic_Test_Indexing (u1, u1a);
+	pragma Debug (ts_u1a);
 	-- 2-bit width unsigned integers
 	type u2 is mod 2 ** 2;
 	for u2'Size use 2;
@@ -121,6 +135,8 @@ procedure arrayop is
 	for u2a'Component_Size use 2;
 	procedure tc_u2a is new Generic_Test_Comparison (u2, u2a);
 	pragma Debug (tc_u2a);
+	procedure ts_u2a is new Generic_Test_Indexing (u2, u2a);
+	pragma Debug (ts_u2a);
 	-- 3-bit width unsigned integers
 	type u3 is mod 2 ** 3;
 	for u3'Size use 3;
@@ -128,6 +144,8 @@ procedure arrayop is
 	for u3a'Component_Size use 3;
 	procedure tc_u3a is new Generic_Test_Comparison (u3, u3a);
 	pragma Debug (tc_u3a);
+	procedure ts_u3a is new Generic_Test_Indexing (u3, u3a);
+	pragma Debug (ts_u3a);
 	-- 4-bit width unsigned integers
 	type u4 is mod 2 ** 4;
 	for u4'Size use 4;
@@ -135,6 +153,8 @@ procedure arrayop is
 	for u4a'Component_Size use 4;
 	procedure tc_u4a is new Generic_Test_Comparison (u4, u4a);
 	pragma Debug (tc_u4a);
+	procedure ts_u4a is new Generic_Test_Indexing (u4, u4a);
+	pragma Debug (ts_u4a);
 	-- 5-bit width unsigned integers
 	type u5 is mod 2 ** 5;
 	for u5'Size use 5;
@@ -142,6 +162,8 @@ procedure arrayop is
 	for u5a'Component_Size use 5;
 	procedure tc_u5a is new Generic_Test_Comparison (u5, u5a);
 	pragma Debug (tc_u5a);
+	procedure ts_u5a is new Generic_Test_Indexing (u5, u5a);
+	pragma Debug (ts_u5a);
 	-- 6-bit width unsigned integers
 	type u6 is mod 2 ** 6;
 	for u6'Size use 6;
@@ -149,6 +171,8 @@ procedure arrayop is
 	for u6a'Component_Size use 6;
 	procedure tc_u6a is new Generic_Test_Comparison (u6, u6a);
 	pragma Debug (tc_u6a);
+	procedure ts_u6a is new Generic_Test_Indexing (u6, u6a);
+	pragma Debug (ts_u6a);
 	-- 7-bit width unsigned integers
 	type u7 is mod 2 ** 7;
 	for u7'Size use 7;
@@ -156,10 +180,14 @@ procedure arrayop is
 	for u7a'Component_Size use 7;
 	procedure tc_u7a is new Generic_Test_Comparison (u7, u7a);
 	pragma Debug (tc_u7a);
+	procedure ts_u7a is new Generic_Test_Indexing (u7, u7a);
+	pragma Debug (ts_u7a);
 	-- 8-bit width unsigned integers
 	type u8a is array (Positive range <>) of Interfaces.Unsigned_8;
 	procedure tc_u8a is new Generic_Test_Comparison (Interfaces.Unsigned_8, u8a);
 	pragma Debug (tc_u8a);
+	procedure ts_u8a is new Generic_Test_Indexing (Interfaces.Unsigned_8, u8a);
+	pragma Debug (ts_u8a);
 	-- 9-bit width unsigned integers
 	type u9 is mod 2 ** 9;
 	for u9'Size use 9;
@@ -167,6 +195,8 @@ procedure arrayop is
 	for u9a'Component_Size use 9;
 	procedure tc_u9a is new Generic_Test_Comparison (u9, u9a);
 	pragma Debug (tc_u9a);
+	procedure ts_u9a is new Generic_Test_Indexing (u9, u9a);
+	pragma Debug (ts_u9a);
 	-- 10-bit width unsigned integers
 	type u10 is mod 2 ** 10;
 	for u10'Size use 10;
@@ -174,6 +204,8 @@ procedure arrayop is
 	for u10a'Component_Size use 10;
 	procedure tc_u10a is new Generic_Test_Comparison (u10, u10a);
 	pragma Debug (tc_u10a);
+	procedure ts_u10a is new Generic_Test_Indexing (u10, u10a);
+	pragma Debug (ts_u10a);
 	-- 11-bit width unsigned integers
 	type u11 is mod 2 ** 11;
 	for u11'Size use 11;
@@ -181,6 +213,8 @@ procedure arrayop is
 	for u11a'Component_Size use 11;
 	procedure tc_u11a is new Generic_Test_Comparison (u11, u11a);
 	pragma Debug (tc_u11a);
+	procedure ts_u11a is new Generic_Test_Indexing (u11, u11a);
+	pragma Debug (ts_u11a);
 	-- 12-bit width unsigned integers
 	type u12 is mod 2 ** 12;
 	for u12'Size use 12;
@@ -188,6 +222,8 @@ procedure arrayop is
 	for u12a'Component_Size use 12;
 	procedure tc_u12a is new Generic_Test_Comparison (u12, u12a);
 	pragma Debug (tc_u12a);
+	procedure ts_u12a is new Generic_Test_Indexing (u12, u12a);
+	pragma Debug (ts_u12a);
 	-- 13-bit width unsigned integers
 	type u13 is mod 2 ** 13;
 	for u13'Size use 13;
@@ -195,6 +231,8 @@ procedure arrayop is
 	for u13a'Component_Size use 13;
 	procedure tc_u13a is new Generic_Test_Comparison (u13, u13a);
 	pragma Debug (tc_u13a);
+	procedure ts_u13a is new Generic_Test_Indexing (u13, u13a);
+	pragma Debug (ts_u13a);
 	-- 14-bit width unsigned integers
 	type u14 is mod 2 ** 14;
 	for u14'Size use 14;
@@ -202,6 +240,8 @@ procedure arrayop is
 	for u14a'Component_Size use 14;
 	procedure tc_u14a is new Generic_Test_Comparison (u14, u14a);
 	pragma Debug (tc_u14a);
+	procedure ts_u14a is new Generic_Test_Indexing (u14, u14a);
+	pragma Debug (ts_u14a);
 	-- 15-bit width unsigned integers
 	type u15 is mod 2 ** 15;
 	for u15'Size use 15;
@@ -209,18 +249,26 @@ procedure arrayop is
 	for u15a'Component_Size use 15;
 	procedure tc_u15a is new Generic_Test_Comparison (u15, u15a);
 	pragma Debug (tc_u15a);
-	-- 16-bit width signed integers
+	procedure ts_u15a is new Generic_Test_Indexing (u15, u15a);
+	pragma Debug (ts_u15a);
+	-- 16-bit width unsigned integers
 	type u16a is array (Positive range <>) of Interfaces.Unsigned_16;
 	procedure tc_u16a is new Generic_Test_Comparison (Interfaces.Unsigned_16, u16a);
 	pragma Debug (tc_u16a);
-	-- 32-bit width signed integers
+	procedure ts_u16a is new Generic_Test_Indexing (Interfaces.Unsigned_16, u16a);
+	pragma Debug (ts_u16a);
+	-- 32-bit width unsigned integers
 	type u32a is array (Positive range <>) of Interfaces.Unsigned_32;
 	procedure tc_u32a is new Generic_Test_Comparison (Interfaces.Unsigned_32, u32a);
 	pragma Debug (tc_u32a);
-	-- 64-bit width signed integers
+	procedure ts_u32a is new Generic_Test_Indexing (Interfaces.Unsigned_32, u32a);
+	pragma Debug (ts_u32a);
+	-- 64-bit width unsigned integers
 	type u64a is array (Positive range <>) of Interfaces.Unsigned_64;
 	procedure tc_u64a is new Generic_Test_Comparison (Interfaces.Unsigned_64, u64a);
 	pragma Debug (tc_u64a);
+	procedure ts_u64a is new Generic_Test_Indexing (Interfaces.Unsigned_64, u64a);
+	pragma Debug (ts_u64a);
 begin
 	pragma Assert (Ada.Debug.Put ("OK"));
 	null;
