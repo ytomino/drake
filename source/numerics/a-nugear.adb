@@ -188,8 +188,7 @@ package body Ada.Numerics.Generic_Arrays is
                Result : Number := Zero;
                Sign : Number := One;
             begin
-               for X in A'Range (1) loop
-                  pragma Loop_Optimize (Vector);
+               for X in A'Range (1) loop -- cannot vectorize
                   Result := Result
                      + Sign
                         * A (X, A'First (2))
@@ -318,15 +317,18 @@ package body Ada.Numerics.Generic_Arrays is
             Length : constant Integer := Result'Length (1); -- square matrix
          begin
             for I in 0 .. Length - 1 loop
-               Sign := Master_Sign;
                for J in 0 .. Length - 1 loop
                   pragma Loop_Optimize (Vector);
+                  if J rem 2 = 0 then
+                     Sign := Master_Sign;
+                  else
+                     Sign := -Master_Sign;
+                  end if;
                   Result (Result'First (1) + I, Result'First (2) + J) :=
                      Sign
                      * Determinant (
                         Minor (A, Result'First (1) + J, Result'First (2) + I))
                      / detA;
-                  Sign := -Sign;
                end loop;
                Master_Sign := -Master_Sign;
             end loop;
