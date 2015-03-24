@@ -21,8 +21,10 @@ package Ada.Containers.Vectors is
 
    type Vector is tagged private
       with
-         Constant_Indexing => Constant_Reference,
-         Variable_Indexing => Reference,
+--       Constant_Indexing => Constant_Reference, -- is overloaded
+--       Variable_Indexing => Reference,
+         Constant_Indexing => Constant_Indexing,
+         Variable_Indexing => Indexing,
          Default_Iterator => Iterate,
          Iterator_Element => Element_Type;
    pragma Preelaborable_Initialization (Vector);
@@ -467,5 +469,20 @@ private
    for Vector_Iterator'Input use Streaming.Missing_Input;
    for Vector_Iterator'Write use Streaming.Missing_Write;
    for Vector_Iterator'Output use Streaming.Missing_Write;
+
+   --  non-overloaded subprograms
+   function Constant_Indexing (
+      Container : aliased Vector'Class;
+      Index : Index_Type)
+      return Constant_Reference_Type
+      with Convention => Intrinsic;
+   function Indexing (
+      Container : aliased in out Vector'Class;
+      Index : Index_Type)
+      return Reference_Type
+      with Convention => Intrinsic;
+
+   pragma Inline_Always (Constant_Indexing);
+   pragma Inline_Always (Indexing);
 
 end Ada.Containers.Vectors;

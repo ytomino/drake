@@ -266,6 +266,14 @@ package body Ada.Containers.Limited_Vectors is
       Container.Length := 0;
    end Clear;
 
+--  diff (Constant_Indexing)
+--
+--
+--
+--
+--
+--
+
    function Constant_Reference (
       Container : aliased Vector;
       Index : Index_Type)
@@ -437,6 +445,14 @@ package body Ada.Containers.Limited_Vectors is
    begin
       return Position > No_Index;
    end Has_Element;
+
+--  diff (Indexing)
+--
+--
+--
+--
+--
+--
 
 --  diff (Insert)
 --

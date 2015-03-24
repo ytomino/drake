@@ -266,6 +266,14 @@ package body Ada.Containers.Vectors is
       Container.Length := 0;
    end Clear;
 
+   function Constant_Indexing (
+      Container : aliased Vector'Class;
+      Index : Index_Type)
+      return Constant_Reference_Type is
+   begin
+      return Constant_Reference (Container, Index);
+   end Constant_Indexing;
+
    function Constant_Reference (
       Container : aliased Vector;
       Index : Index_Type)
@@ -437,6 +445,14 @@ package body Ada.Containers.Vectors is
    begin
       return Position > No_Index;
    end Has_Element;
+
+   function Indexing (
+      Container : aliased in out Vector'Class;
+      Index : Index_Type)
+      return Reference_Type is
+   begin
+      return Reference (Container, Index);
+   end Indexing;
 
    procedure Insert (
       Container : in out Vector;

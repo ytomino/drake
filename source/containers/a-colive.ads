@@ -23,6 +23,8 @@ package Ada.Containers.Limited_Vectors is
       with
          Constant_Indexing => Constant_Reference,
          Variable_Indexing => Reference,
+--  diff
+--  diff
          Default_Iterator => Iterate,
          Iterator_Element => Element_Type;
    pragma Preelaborable_Initialization (Vector);
@@ -467,5 +469,20 @@ private
    for Vector_Iterator'Input use Streaming.Missing_Input;
    for Vector_Iterator'Write use Streaming.Missing_Write;
    for Vector_Iterator'Output use Streaming.Missing_Write;
+
+   --  non-overloaded subprograms
+--  diff (Constant_Indexing)
+--
+--
+--
+--
+--  diff (Indexing)
+--
+--
+--
+--
+
+--  diff (pragma Inline_Always)
+--  diff (pragma Inline_Always)
 
 end Ada.Containers.Limited_Vectors;
