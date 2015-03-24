@@ -6,6 +6,8 @@ with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Vectors is
    use type Copy_On_Write.Data_Access;
 
+   type Element_Array_Access is access all Element_Array;
+
    package Data_Cast is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
@@ -298,7 +300,7 @@ package body Ada.Containers.Vectors is
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
          return Slicing.Constant_Slice (
-            Data.Items,
+            Element_Array_Access'(Data.Items'Unrestricted_Access).all,
             First_Index,
             Last_Index);
       end;
@@ -659,7 +661,7 @@ package body Ada.Containers.Vectors is
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
          return Slicing.Slice (
-            Data.Items,
+            Element_Array_Access'(Data.Items'Unrestricted_Access).all,
             First_Index,
             Last_Index);
       end;

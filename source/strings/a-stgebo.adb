@@ -1,5 +1,7 @@
 package body Ada.Strings.Generic_Bounded is
 
+   type String_Access is access all String_Type;
+
    function Length (Source : Bounded_String) return Natural is
    begin
       return Source.Length;
@@ -223,7 +225,7 @@ package body Ada.Strings.Generic_Bounded is
       return Slicing.Constant_Reference_Type is
    begin
       return Slicing.Constant_Slice (
-         Source.Element,
+         String_Access'(Source.Element'Unrestricted_Access).all,
          First_Index,
          Last_Index);
    end Constant_Reference;
@@ -242,7 +244,7 @@ package body Ada.Strings.Generic_Bounded is
       return Slicing.Reference_Type is
    begin
       return Slicing.Slice (
-         Source.Element,
+         String_Access'(Source.Element'Unrestricted_Access).all,
          First_Index,
          Last_Index);
    end Reference;

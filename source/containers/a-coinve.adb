@@ -6,6 +6,8 @@ with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Indefinite_Vectors is
    use type Copy_On_Write.Data_Access;
 
+--  diff (Element_Array_Access)
+
    package Data_Cast is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
