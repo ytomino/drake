@@ -164,11 +164,20 @@ package body System.Arith_64 is
          declare
             Scaled_X : constant U64 := Interfaces.Shift_Right (Temp_XL, 1);
             --  Y <= Scaled_X < 2 ** 63
-            Temp_Q, Temp_R : U64;
          begin
-            Div (Scaled_X, Y, Temp_Q, Temp_R);
-            Q := Q + Interfaces.Shift_Left (Temp_Q, 1);
-            Temp_XL := Interfaces.Shift_Left (Temp_R, 1) or (Temp_XL and 1);
+            if Scaled_X < Y then
+               Q := Q + 1;
+               Temp_XL := Temp_XL - Y;
+            else
+               declare
+                  Temp_Q, Temp_R : U64;
+               begin
+                  Div (Scaled_X, Y, Temp_Q, Temp_R);
+                  Q := Q + Interfaces.Shift_Left (Temp_Q, 1);
+                  Temp_XL := Interfaces.Shift_Left (Temp_R, 1)
+                     or (Temp_XL and 1);
+               end;
+            end if;
          end;
       end if;
       Div (Temp_XL, Y, Rem_Q, R);
@@ -212,8 +221,14 @@ package body System.Arith_64 is
             AQ := AQ + 1;
          end if;
          if Q_Is_Minus then
+            if AQ > 2 ** 63 then
+               Unwind.Raising.Overflow;
+            end if;
             Q := -Interfaces.Integer_64 (AQ);
          else
+            if AQ >= 2 ** 63 then
+               Unwind.Raising.Overflow;
+            end if;
             Q := Interfaces.Integer_64 (AQ);
          end if;
          if XY_Is_Minus then
