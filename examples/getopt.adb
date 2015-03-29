@@ -24,7 +24,7 @@ procedure getopt is
 				Input_Cursor => Lists.Cursor,
 				Has_Element => Lists.Has_Element,
 				Input_Iterator_Interfaces => Lists.List_Iterator_Interfaces,
-				Input_Iterator => Arguments.Iterate,
+				Input_Iterator => Lists.Iterate (Arguments),
 				Argument => Lists.Element);
 	begin
 		for I in Parsing.Iterate loop
