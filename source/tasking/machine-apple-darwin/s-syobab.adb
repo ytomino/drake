@@ -25,7 +25,7 @@ package body System.Synchronous_Objects.Abortable is
                Wait (
                   Object,
                   Mutex,
-                  Timeout => Native_Time.To_Native_Time (N),
+                  Timeout => Native_Time.To_Native_Duration (N),
                   Notified => Notified);
                Aborted := Tasks.Is_Aborted;
                if Notified or else Aborted then

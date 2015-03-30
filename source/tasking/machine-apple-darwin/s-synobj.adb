@@ -3,6 +3,7 @@ with C.errno;
 package body System.Synchronous_Objects is
    use Ada.Exception_Identification.From_Here;
    use type C.signed_int;
+   use type C.signed_long;
 
    --  mutex
 
@@ -76,12 +77,20 @@ package body System.Synchronous_Objects is
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
       Timeout : Native_Time.Native_Time;
-      Notified : out Boolean) is
+      Notified : out Boolean)
+   is
+      Actual_Timeout : aliased Native_Time.Native_Time;
    begin
+      if Timeout.tv_sec < 0 then -- CXD2002
+         Actual_Timeout.tv_sec := 0;
+         Actual_Timeout.tv_nsec := 0;
+      else
+         Actual_Timeout := Timeout;
+      end if;
       case C.pthread.pthread_cond_timedwait (
          Object.Handle'Access,
          Mutex.Handle'Access,
-         Timeout'Unrestricted_Access)
+         Actual_Timeout'Access)
       is
          when 0 =>
             Notified := True;
