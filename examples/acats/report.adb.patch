@@ -1,14 +1,14 @@
---- support.build/report.adb.orig	2012-01-24 18:46:10.000000000 +0900
-+++ support.build/report.adb	2012-01-24 18:47:58.000000000 +0900
-@@ -61,6 +61,7 @@
- --      RLB  3/06/07  UPDATED ACATS VERSION STRING TO "2.6".
+--- support.build/report.adb.orig	2015-03-30 09:35:08.000000000 +0900
++++ support.build/report.adb	2015-03-30 09:36:33.000000000 +0900
+@@ -62,6 +62,7 @@
  --      RLB  3/22/07  UPDATED ACATS VERSION STRING TO "3.0".
+ --      RLB  1/20/14  UPDATED ACATS VERSION STRING TO "3.1".
  
 +with Ada.Command_Line;
  WITH TEXT_IO, CALENDAR;
  USE TEXT_IO, CALENDAR;
  PRAGMA ELABORATE (TEXT_IO, CALENDAR);
-@@ -216,14 +217,17 @@
+@@ -217,14 +218,17 @@
            WHEN DOES_NOT_APPLY =>
                 PUT_MSG ("++++ " & TEST_NAME (1..TEST_NAME_LEN) &
                          " NOT-APPLICABLE ++++++++++++++++++++.");
@@ -26,13 +26,11 @@
            END CASE;
            TEST_STATUS := FAIL;
            TEST_NAME_LEN := NO_NAME'LENGTH;
-@@ -288,6 +292,9 @@
-      BEGIN
-           IF X < 0 THEN
-                IF Y < 0 THEN
-+                    if X = Integer'First then
-+                       return Y = Integer'First;
-+                    end if;
-                     Z := EQUAL (-X, -Y);
-                ELSE Z := FALSE;
-                END IF;
+@@ -283,6 +287,7 @@
+      END IDENT_WIDE_STR;
+ 
+      FUNCTION EQUAL (X, Y : INTEGER) RETURN BOOLEAN IS
++          pragma Unsuppress (Overflow_Check);
+           REC_LIMIT : CONSTANT INTEGER RANGE 1..100 := 3;  -- RECURSION
+                                         -- LIMIT.
+           Z : BOOLEAN;                  -- RESULT.

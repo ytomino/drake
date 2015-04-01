@@ -174,34 +174,31 @@ $(SUPPORTDIR)/enum_check.adb: $(ACATSDIR)/support/enumchek.ada
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
-$(SUPPORTDIR)/fcndecl.ads: gcc_support/fcndecl.ada
+$(SUPPORTDIR)/fcndecl.ads: support/fcndecl.ada
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
-$(SUPPORTDIR)/impdef.adb: gcc_support/impdef.a $(SUPPORTDIR)/report.ads
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	patch -p0 < impdef.ads.patch
+$(SUPPORTDIR)/impdef.adb: support/impdef.a $(SUPPORTDIR)/report.ads
+	gnatchop -w --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
-$(SUPPORTDIR)/impdef-annex_c.adb: $(ACATSDIR)/support/impdefc.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	patch -p0 < impdef-annex_c.ads.patch
-	patch -p0 < impdef-annex_c.adb.patch
-	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
-
-$(SUPPORTDIR)/impdef-annex_d.ads: gcc_support/impdefd.a
+$(SUPPORTDIR)/impdef-annex_c.adb: support/impdefc.a
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
-$(SUPPORTDIR)/impdef-annex_e.ads: gcc_support/impdefe.a
+$(SUPPORTDIR)/impdef-annex_d.ads: support/impdefd.a
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
-$(SUPPORTDIR)/impdef-annex_g.adb: gcc_support/impdefg.a
+$(SUPPORTDIR)/impdef-annex_e.ads: support/impdefe.a
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
-$(SUPPORTDIR)/impdef-annex_h.ads: gcc_support/impdefh.a
+$(SUPPORTDIR)/impdef-annex_g.adb: support/impdefg.a
+	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
+
+$(SUPPORTDIR)/impdef-annex_h.ads: support/impdefh.a
 	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
@@ -228,7 +225,7 @@ $(SUPPORTDIR)/tctouch.adb: $(ACATSDIR)/support/tctouch.ada
 	$(TARGET)-gcc -o $(basename $@).o -c $(CARGS) $@
 
 $(SUPPORTDIR)/spprt13.ads: $(ACATSDIR)/support/spprt13s.tst $(MACROSUB)
-	ln -s ../gcc_support/MACRO.DFS $(SUPPORTDIR)/MACRO.DFS
+	ln -s ../support/MACRO.DFS $(SUPPORTDIR)/MACRO.DFS
 	ln -s ../$(ACATSDIR)/support/spprt13s.tst $(SUPPORTDIR)/spprt13s.tst
 	echo spprt13s.tst > $(SUPPORTDIR)/TSTTESTS.DAT
 	cd $(SUPPORTDIR) && ./macrosub

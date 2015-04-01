@@ -32,8 +32,6 @@ ce3115a N multiple internal files are supported in Text_IO
 ce3304a N -1 not in Text_IO.Count
 ce3413b N Text_IO.Count'Last is too large for test
 cxb4009 C it requites COBOL compiler
-cxb5004 C it requites Fortran compiler
-cxb5005 C it requites Fortran compiler
 cxd1003 F failed to rendezvous
 cxd1004 F failed to rendezvous
 cxd1005 F failed to rendezvous

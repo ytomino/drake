@@ -59,6 +59,8 @@
 --     13 Dec 96   SAIC    Added Address_Value_IO
 --     13 Sep 99   RLB     Added more external name string constants.
 --     16 Sep 99   RLB     Corrected definition of Non_State_String constant.
+--      5 Jul 12   RLB     Removed misleading comment.
+--     20 Jul 12   RLB     Added Maximum_Adjustment_To_Specified_Storage_Size.
 --
 --!
 
@@ -105,8 +107,6 @@ package ImpDef is
    Minimum_Task_Switch : constant Duration := 0.001;
    --                                         ^^^ --- MODIFY HERE AS NEEDED
 
-   Long_Minimum_Task_Switch : constant Duration := 0.1;
-
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
 
    -- This is the time required to activate another task and allow it
@@ -118,8 +118,6 @@ package ImpDef is
 
    Switch_To_New_Task : constant Duration := 0.001;
    --                                        ^^^ -- MODIFY HERE AS NEEDED
-
-   Long_Switch_To_New_Task : constant Duration := 0.1;
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
 
@@ -196,19 +194,16 @@ package ImpDef is
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
 
    -- The following address constant must be a valid address to locate
-   -- the C program CD30005_1.  It is shown here as a named number;
-   -- the implementation may choose to type the constant as appropriate.
+   -- the C program CD30005_1.
 
    function Cd30005_Proc (X : Integer) return Integer;
    pragma Import (C, Cd30005_Proc, "_cd30005_1");
  
-   pragma Linker_Options ("../support/cd300051.o");
+   pragma Linker_Options ("../support.build/cd300051.o");
  
-   CD30005_1_Foreign_Address : constant System.Address:= Cd30005_Proc'Address;
- 
-   -- CD30005_1_Foreign_Address : constant System.Address:=
-   --          System.Storage_Elements.To_Address ( 16#0000_0000# )
-   --               --MODIFY HERE AS REQUIRED --- ^^^^^^^^^^^^^
+   CD30005_1_Foreign_Address : constant System.Address:=
+                Cd30005_Proc'Address;
+   --                    MODIFY HERE AS REQUIRED --- ^^^^^^^^^^^^^
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
 
@@ -230,6 +225,16 @@ package ImpDef is
 
    Max_Linker_Alignment  : constant := Standard'Maximum_Alignment;
    --                                  ^ --- MODIFY HERE AS NEEDED
+
+--=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
+
+   -- The following constant represents the largest amount that a
+   -- reported Storage_Size will exceed that specified for an access type.
+   -- This should reflect any rounding up that the implementation may do
+   -- to a specified Storage_Size. Used in tests CDB0001 and CDB0002.
+
+   Maximum_Adjustment_To_Specified_Storage_Size : constant := 1024;
+   --                          MODIFY HERE AS NEEDED ---------^^^^
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
 
@@ -275,16 +280,16 @@ package ImpDef is
    -- Note that the use of these four string constants will be split between
    -- two tests, CXB5004 and CXB5005.
 
-   CXB50040_External_Name : constant String := "CXB50040";
+   CXB50040_External_Name : constant String := "args_";
    --                 MODIFY HERE AS NEEDED --- ^^^^^^^^
 
-   CXB50041_External_Name : constant String := "CXB50041";
+   CXB50041_External_Name : constant String := "tax_";
    --                 MODIFY HERE AS NEEDED --- ^^^^^^^^
 
-   CXB50050_External_Name : constant String := "CXB50050";
+   CXB50050_External_Name : constant String := "align_";
    --                 MODIFY HERE AS NEEDED --- ^^^^^^^^
 
-   CXB50051_External_Name : constant String := "CXB50051";
+   CXB50051_External_Name : constant String := "modify_";
    --                 MODIFY HERE AS NEEDED --- ^^^^^^^^
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
@@ -341,9 +346,6 @@ package ImpDef is
          new Ada.Text_IO.Modular_IO(System.Storage_Elements.Integer_Address);
 
 --=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====-=====--
-
-   One_Second : constant Duration := 0.001;
-   One_Long_Second : constant Duration := 0.1;
 
 end ImpDef;
 
