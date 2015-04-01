@@ -1,6 +1,38 @@
 package body System.Formatting is
    pragma Suppress (All_Checks);
 
+   function add_overflow (
+      a, b : Unsigned;
+      res : not null access Unsigned)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__builtin_uadd_overflow";
+
+   function add_overflow (
+      a, b : Longest_Unsigned;
+      res : not null access Longest_Unsigned)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__builtin_uaddll_overflow";
+
+   function mul_overflow (
+      a, b : Unsigned;
+      res : not null access Unsigned)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__builtin_umul_overflow";
+
+   function mul_overflow (
+      a, b : Longest_Unsigned;
+      res : not null access Longest_Unsigned)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__builtin_umulll_overflow";
+
    function Width_Digits (Value : Unsigned; Base : Number_Base)
       return Positive;
    function Width_Digits (Value : Unsigned; Base : Number_Base)
@@ -125,10 +157,11 @@ package body System.Formatting is
       Result : out Unsigned;
       Base : Number_Base;
       Skip_Underscore : Boolean;
-      Overflow : out Boolean) is
+      Overflow : out Boolean)
+   is
+      R : aliased Unsigned := 0;
    begin
       Last := Item'First - 1;
-      Result := 0;
       Overflow := False;
       while Last < Item'Last loop
          declare
@@ -144,14 +177,16 @@ package body System.Formatting is
             end if;
             Value (Item (Next), X, Is_Invalid);
             exit when Is_Invalid or else X >= Base;
-            if Result > (Unsigned'Last - Unsigned (X)) / Unsigned (Base) then
+            if mul_overflow (R, Unsigned (Base), R'Access)
+               or else add_overflow (R, Unsigned (X), R'Access)
+            then
                Overflow := True;
                exit;
             end if;
-            Result := Result * Unsigned (Base) + Unsigned (X);
             Last := Next;
          end;
       end loop;
+      Result := R;
    end Take_Digits;
 
    procedure Take_Digits (
@@ -167,14 +202,16 @@ package body System.Formatting is
       Result : out Longest_Unsigned;
       Base : Number_Base;
       Skip_Underscore : Boolean;
-      Overflow : out Boolean) is
+      Overflow : out Boolean)
+   is
+      R : aliased Longest_Unsigned := 0;
    begin
       if Standard'Word_Size < Longest_Unsigned'Size then
          --  optimized for 32bit
          Take_Digits (
             Item,
             Last,
-            Unsigned (Result),
+            Unsigned (R),
             Base,
             Skip_Underscore,
             Overflow);
@@ -192,15 +229,12 @@ package body System.Formatting is
                   end if;
                   Value (Item (Next), X, Is_Invalid);
                   exit when Is_Invalid or else X >= Base;
-                  if Result >
-                     (Longest_Unsigned'Last - Longest_Unsigned (X))
-                     / Longest_Unsigned (Base)
+                  if mul_overflow (R, Longest_Unsigned (Base), R'Access)
+                     or else add_overflow (R, Longest_Unsigned (X), R'Access)
                   then
                      Overflow := True;
                      exit;
                   end if;
-                  Result := Result * Longest_Unsigned (Base)
-                     + Longest_Unsigned (X);
                   Last := Next;
                end;
             end loop;
@@ -208,7 +242,6 @@ package body System.Formatting is
       else
          --  optimized for 64bit
          Last := Item'First - 1;
-         Result := 0;
          Overflow := False;
          while Last < Item'Last loop
             declare
@@ -224,19 +257,17 @@ package body System.Formatting is
                end if;
                Value (Item (Next), X, Is_Invalid);
                exit when Is_Invalid or else X >= Base;
-               if Result >
-                  (Longest_Unsigned'Last - Longest_Unsigned (X))
-                  / Longest_Unsigned (Base)
+               if mul_overflow (R, Longest_Unsigned (Base), R'Access)
+                  or else add_overflow (R, Longest_Unsigned (X), R'Access)
                then
                   Overflow := True;
                   exit;
                end if;
-               Result := Result * Longest_Unsigned (Base)
-                  + Longest_Unsigned (X);
                Last := Next;
             end;
          end loop;
       end if;
+      Result := R;
    end Take_Digits;
 
    --  implementation

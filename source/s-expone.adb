@@ -21,6 +21,20 @@ package body System.Exponentiations is
       else
          declare
             pragma Suppress (Division_Check); -- Left /= 0
+            function mul_overflow (
+               a, b : Integer;
+               res : not null access Integer)
+               return Boolean
+               with Import,
+                  Convention => Intrinsic,
+                  External_Name => "__builtin_smul_overflow";
+            function mul_overflow (
+               a, b : Long_Long_Integer;
+               res : not null access Long_Long_Integer)
+               return Boolean
+               with Import,
+                  Convention => Intrinsic,
+                  External_Name => "__builtin_smulll_overflow";
             Result : Integer_Type := 1;
             Factor : Integer_Type := Left;
             Exponent : Natural := Right;
@@ -33,23 +47,67 @@ package body System.Exponentiations is
             end if;
             loop
                if Exponent rem 2 /= 0 then
-                  if Result < 0 then
-                     if Integer_Type'First / Factor > Result then
+                  declare
+                     Overflow : Boolean;
+                  begin
+                     if Integer_Type'Size > Integer'Size then
+                        declare
+                           R : aliased Long_Long_Integer;
+                        begin
+                           Overflow := mul_overflow (
+                              Long_Long_Integer (Result),
+                              Long_Long_Integer (Factor),
+                              R'Access);
+                           Result := Integer_Type (R);
+                        end;
+                     else
+                        declare
+                           R : aliased Integer;
+                        begin
+                           Overflow := mul_overflow (
+                              Integer (Result),
+                              Integer (Factor),
+                              R'Access);
+                           Result := Integer_Type (R);
+                        end;
+                     end if;
+                     if Overflow then
                         Unwind.Raising.Overflow;
                      end if;
-                  else
-                     if Integer_Type'Last / Factor < Result then
-                        Unwind.Raising.Overflow;
-                     end if;
-                  end if;
-                  Result := Result * Factor;
+                  end;
                end if;
                Exponent := Exponent / 2;
                exit when Exponent = 0;
-               if Integer_Type'Last / Factor < Factor then
-                  Unwind.Raising.Overflow;
+               if Exponent rem 2 /= 0 then
+                  declare
+                     Overflow : Boolean;
+                  begin
+                     if Integer_Type'Size > Integer'Size then
+                        declare
+                           F : aliased Long_Long_Integer;
+                        begin
+                           Overflow := mul_overflow (
+                              Long_Long_Integer (Factor),
+                              Long_Long_Integer (Factor),
+                              F'Access);
+                           Factor := Integer_Type (F);
+                        end;
+                     else
+                        declare
+                           F : aliased Integer;
+                        begin
+                           Overflow := mul_overflow (
+                              Integer (Factor),
+                              Integer (Factor),
+                              F'Access);
+                           Factor := Integer_Type (F);
+                        end;
+                     end if;
+                     if Overflow then
+                        Unwind.Raising.Overflow;
+                     end if;
+                  end;
                end if;
-               Factor := Factor * Factor;
             end loop;
             return Result;
          end;

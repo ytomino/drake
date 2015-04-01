@@ -11,37 +11,35 @@ package body System.Arith_64 is
       Long_Long_Integer'Size /= 64,
       "Long_Long_Integer is not 64-bit.");
 
-   function Multiply_Overflow (X, Y : Interfaces.Integer_64) return Boolean;
-   function Multiply_Overflow (X, Y : Interfaces.Integer_64) return Boolean is
-   begin
-      if X > 0 then
-         if Y > 0 then
-            return X > Interfaces.Integer_64'Last / Y; -- Y > 0
-         else
-            return Y < Interfaces.Integer_64'First / X; -- X > 0
-         end if;
-      else
-         if Y > 0 then
-            return X < Interfaces.Integer_64'First / Y; -- Y > 0
-         elsif Y < 0 then
-            return X < Interfaces.Integer_64'Last / Y; -- Y < 0
-         else
-            return False; -- Y = 0
-         end if;
-      end if;
-   end Multiply_Overflow;
-
    subtype U32 is Interfaces.Unsigned_32;
    subtype U64 is Interfaces.Unsigned_64;
+
+   function add_overflow (
+      a, b : U64;
+      res : not null access U64)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__builtin_uaddll_overflow";
+
+   function mul_overflow (
+      a, b : Interfaces.Integer_64;
+      res : not null access Interfaces.Integer_64)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__builtin_smulll_overflow";
 
    procedure Add (X : U64; R1, R2, R3 : in out U32);
    procedure Add (X : U64; R1, R2, R3 : in out U32) is
       R : constant U64 := U64 (R1) or Interfaces.Shift_Left (U64 (R2), 32);
-      Result : constant U64 := X + R;
+      Result : aliased U64;
+      Overflow : Boolean;
    begin
+      Overflow := add_overflow (X, R, Result'Access);
       R1 := U32'Mod (Result);
       R2 := U32'Mod (Interfaces.Shift_Right (Result, 32));
-      if X > U64'Last - R then
+      if Overflow then
          R3 := R3 + 1;
       end if;
    end Add;
@@ -187,12 +185,14 @@ package body System.Arith_64 is
    --  implementation
 
    function Multiply (X, Y : Interfaces.Integer_64)
-      return Interfaces.Integer_64 is
+      return Interfaces.Integer_64
+   is
+      Result : aliased Interfaces.Integer_64;
    begin
-      if Multiply_Overflow (X, Y) then
+      if mul_overflow (X, Y, Result'Access) then
          Unwind.Raising.Overflow;
       end if;
-      return X * Y;
+      return Result;
    end Multiply;
 
    procedure Scaled_Divide (
@@ -242,31 +242,29 @@ package body System.Arith_64 is
    procedure Double_Divide (
       X, Y, Z : Interfaces.Integer_64;
       Q, R : out Interfaces.Integer_64;
-      Round : Boolean) is
+      Round : Boolean)
+   is
+      YZ : aliased Interfaces.Integer_64;
    begin
       if Y = 0 or else Z = 0 then
          Unwind.Raising.Zero_Division;
       end if;
-      if Multiply_Overflow (Y, Z) then
+      if mul_overflow (Y, Z, YZ'Access) then
          Q := 0;
          R := X;
       else
-         declare
-            YZ : constant Interfaces.Integer_64 := Y * Z;
-         begin
-            Long_Long_Integer_Divide (
-               Long_Long_Integer (X),
-               Long_Long_Integer (YZ),
-               Long_Long_Integer (Q),
-               Long_Long_Integer (R));
-            if Round and then U64 (abs R) > (U64 (abs YZ) - 1) / 2 then
-               if Q > 0 then
-                  Q := Q + 1;
-               else
-                  Q := Q - 1;
-               end if;
+         Long_Long_Integer_Divide (
+            Long_Long_Integer (X),
+            Long_Long_Integer (YZ),
+            Long_Long_Integer (Q),
+            Long_Long_Integer (R));
+         if Round and then U64 (abs R) > (U64 (abs YZ) - 1) / 2 then
+            if Q > 0 then
+               Q := Q + 1;
+            else
+               Q := Q - 1;
             end if;
-         end;
+         end if;
       end if;
    end Double_Divide;
 

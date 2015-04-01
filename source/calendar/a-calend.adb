@@ -136,54 +136,109 @@ package body Ada.Calendar is
    function "+" (Left : Time; Right : Duration) return Time is
    begin
       if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
-         if (Right > 0.0 and then Duration (Left) > Duration'Last - Right)
-            or else (Right < 0.0
-               and then Duration (Left) < Duration'First - Right)
-         then
-            raise Time_Error;
-         end if;
+         declare
+            function add_overflow (
+               a, b : System.Native_Time.Nanosecond_Number;
+               res : not null access System.Native_Time.Nanosecond_Number)
+               return Boolean
+               with Import,
+                  Convention => Intrinsic,
+                  External_Name => "__builtin_saddll_overflow";
+            Result : aliased System.Native_Time.Nanosecond_Number;
+         begin
+            if add_overflow (
+               System.Native_Time.Nanosecond_Number'Integer_Value (Left),
+               System.Native_Time.Nanosecond_Number'Integer_Value (Right),
+               Result'Access)
+            then
+               raise Time_Error;
+            end if;
+            return Time'Fixed_Value (Result);
+         end;
+      else
+         return Time (Duration (Left) + Right);
       end if;
-      return Time (Duration (Left) + Right);
    end "+";
 
    function "+" (Left : Duration; Right : Time) return Time is
    begin
       if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
-         if (Right > 0.0 and then Left > Duration'Last - Duration (Right))
-            or else (Right < 0.0
-               and then Left < Duration'First - Duration (Right))
-         then
-            raise Time_Error;
-         end if;
+         declare
+            function add_overflow (
+               a, b : System.Native_Time.Nanosecond_Number;
+               res : not null access System.Native_Time.Nanosecond_Number)
+               return Boolean
+               with Import,
+                  Convention => Intrinsic,
+                  External_Name => "__builtin_saddll_overflow";
+            Result : aliased System.Native_Time.Nanosecond_Number;
+         begin
+            if add_overflow (
+               System.Native_Time.Nanosecond_Number'Integer_Value (Left),
+               System.Native_Time.Nanosecond_Number'Integer_Value (Right),
+               Result'Access)
+            then
+               raise Time_Error;
+            end if;
+            return Time'Fixed_Value (Result);
+         end;
+      else
+         return Time (Left + Duration (Right));
       end if;
-      return Time (Left + Duration (Right));
    end "+";
 
    function "-" (Left : Time; Right : Duration) return Time is
    begin
       if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
-         if (Right > 0.0 and then Duration (Left) < Duration'First + Right)
-            or else (Right < 0.0
-               and then Duration (Left) > Duration'Last + Right)
-         then
-            raise Time_Error;
-         end if;
+         declare
+            function sub_overflow (
+               a, b : System.Native_Time.Nanosecond_Number;
+               res : not null access System.Native_Time.Nanosecond_Number)
+               return Boolean
+               with Import,
+                  Convention => Intrinsic,
+                  External_Name => "__builtin_ssubll_overflow";
+            Result : aliased System.Native_Time.Nanosecond_Number;
+         begin
+            if sub_overflow (
+               System.Native_Time.Nanosecond_Number'Integer_Value (Left),
+               System.Native_Time.Nanosecond_Number'Integer_Value (Right),
+               Result'Access)
+            then
+               raise Time_Error;
+            end if;
+            return Time'Fixed_Value (Result);
+         end;
+      else
+         return Time (Duration (Left) - Right);
       end if;
-      return Time (Duration (Left) - Right);
    end "-";
 
    function "-" (Left : Time; Right : Time) return Duration is
    begin
       if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
-         if (Right > 0.0
-            and then Duration (Left) < Duration'First + Duration (Right))
-            or else (Right < 0.0
-               and then Duration (Left) > Duration'Last + Duration (Right))
-         then
-            raise Time_Error;
-         end if;
+         declare
+            function sub_overflow (
+               a, b : System.Native_Time.Nanosecond_Number;
+               res : not null access System.Native_Time.Nanosecond_Number)
+               return Boolean
+               with Import,
+                  Convention => Intrinsic,
+                  External_Name => "__builtin_ssubll_overflow";
+            Result : aliased System.Native_Time.Nanosecond_Number;
+         begin
+            if sub_overflow (
+               System.Native_Time.Nanosecond_Number'Integer_Value (Left),
+               System.Native_Time.Nanosecond_Number'Integer_Value (Right),
+               Result'Access)
+            then
+               raise Time_Error;
+            end if;
+            return Duration'Fixed_Value (Result);
+         end;
+      else
+         return Duration (Left) - Duration (Right);
       end if;
-      return Duration (Left) - Duration (Right);
    end "-";
 
 end Ada.Calendar;
