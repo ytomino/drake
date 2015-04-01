@@ -3,6 +3,12 @@ with C.stdint;
 package body C.unwind_pe is
    pragma Suppress (All_Checks);
 
+   procedure unreachable
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_unreachable";
+
+   pragma No_Return (unreachable);
+
    procedure Increment (p : in out unsigned_char_const_ptr);
    procedure Increment (p : in out unsigned_char_const_ptr) is
       function Cast is
@@ -86,6 +92,9 @@ package body C.unwind_pe is
       loop
          byte := Mutable_p.all;
          Increment (Mutable_p);
+         if shift >= unwind.uleb128_t'Size then
+            unreachable;
+         end if;
          result := result or
             Shift_Left (unwind.uleb128_t (byte) and 16#7f#, Natural (shift));
          shift := shift + 7;
@@ -109,6 +118,9 @@ package body C.unwind_pe is
       loop
          byte := Mutable_p.all;
          Increment (Mutable_p);
+         if shift >= unwind.uleb128_t'Size then
+            unreachable;
+         end if;
          result := result or
             Shift_Left (unwind.uleb128_t (byte) and 16#7f#, Natural (shift));
          shift := shift + 7;
