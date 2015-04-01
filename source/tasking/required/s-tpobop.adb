@@ -2,7 +2,6 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
-with System.Synchronous_Control;
 with System.Synchronous_Objects.Abortable;
 with System.Tasks;
 package body System.Tasking.Protected_Objects.Operations is
@@ -247,7 +246,7 @@ package body System.Tasking.Protected_Objects.Operations is
                if Canceled then
                   Raise_Exception (Tasking_Error'Identity);
                end if;
-               Synchronous_Control.Unlock_Abort; -- Tasks.Enable_Abort;
+               Tasks.Enable_Abort;
                Entries.Lock_Entries (Object);
                Invoke (Object);
                Entries.Unlock_Entries (Object);
@@ -268,10 +267,7 @@ package body System.Tasking.Protected_Objects.Operations is
                      end if;
                   end;
                end if;
-               Synchronous_Control.Lock_Abort; -- Disable_Abort (Aborted);
-               if Aborted then
-                  delay 0.0; -- if aborted, raise here
-               end if;
+               Tasks.Disable_Abort (Aborted); -- if aborted, raise here
                if Ada.Exceptions.Exception_Identity (The_Node.X) /=
                   Ada.Exceptions.Null_Id
                then
