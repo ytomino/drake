@@ -12,13 +12,18 @@ package body Ada.Numerics.SFMT.Random is
 
    package Impl is new Inside;
 
-   function idxof (i : Integer) return Integer;
-   pragma Inline (idxof);
+   function idxof (i : Integer) return Integer
+      with Convention => Intrinsic;
 
-   function func1 (x : Unsigned_32) return Unsigned_32;
-   pragma Inline (func1);
-   function func2 (x : Unsigned_32) return Unsigned_32;
-   pragma Inline (func2);
+   pragma Inline_Always (idxof);
+
+   function func1 (x : Unsigned_32) return Unsigned_32
+      with Convention => Intrinsic;
+   function func2 (x : Unsigned_32) return Unsigned_32
+      with Convention => Intrinsic;
+
+   pragma Inline_Always (func1);
+   pragma Inline_Always (func2);
 
    procedure period_certification (
       psfmt32 : in out Unsigned_32_Array_N32);

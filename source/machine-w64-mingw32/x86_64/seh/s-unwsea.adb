@@ -37,7 +37,11 @@ package body System.Unwind.Searching is
          C.unsigned_char_const_ptr);
 
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
-      return C.unsigned_char_const_ptr;
+      return C.unsigned_char_const_ptr
+      with Convention => Intrinsic;
+
+   pragma Inline_Always ("+");
+
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr is
    begin
