@@ -61,18 +61,15 @@ package System.Startup is
    Leap_Seconds_Support : Integer := 0;
    pragma Export (C, Leap_Seconds_Support, "__gl_leap_seconds_support");
 
-   --  initialize Ada runtime (rtinit.c)
+   --  install handler (init.c)
 
-   procedure Runtime_Initialize (Install_Handler : Integer) is null
-      with Export,
-         Convention => C, External_Name => "__gnat_runtime_initialize";
+   Handler_Installed : Integer := 0;
+   pragma Export (C, Handler_Installed, "__gnat_handler_installed");
 
-   --  finalize Ada runtime 1 (rtfinal.c)
+   procedure Install_Handler is null;
+   pragma Export (C, Install_Handler, "__gnat_install_handler");
 
-   procedure Runtime_Finalize is null
-      with Export, Convention => C, External_Name => "__gnat_runtime_finalize";
-
-   --  finalize Ada runtime 2 (s-stalib.adb)
+   --  finalize Ada runtime (s-stalib.adb)
 
    procedure AdaFinal is null;
    pragma Export (C, AdaFinal, "system__standard_library__adafinal");

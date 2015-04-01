@@ -220,12 +220,10 @@ private
    subtype Set_Data is Naked_Maps.Character_Set;
    type Set_Data_Access is access all Set_Data;
 
-   pragma Warnings (Off, "uninitialized"); -- [gcc-5] Items
    Empty_Set_Data : aliased constant Set_Data := (
       Length => 0,
       Reference_Count => System.Reference_Counting.Static,
       Items => <>);
-   pragma Warnings (Off, "uninitialized");
 
    package Controlled_Sets is
 
@@ -271,13 +269,11 @@ private
    subtype Map_Data is Naked_Maps.Character_Mapping;
    type Map_Data_Access is access all Map_Data;
 
-   pragma Warnings (Off, "uninitialized"); -- [gcc-5] From and To
    Empty_Map_Data : aliased constant Map_Data := (
       Length => 0,
       Reference_Count => System.Reference_Counting.Static,
       From => <>,
       To => <>);
-   pragma Warnings (On, "uninitialized");
 
    package Controlled_Maps is
 

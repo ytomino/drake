@@ -113,21 +113,23 @@ package body System.Exponentiations is
    end Generic_Exp_Unsigned;
 
    function Generic_Exp_Modular (
-      Left : Unsigned_Type;
+      Left : Integer_Type;
       Modulus : Unsigned_Type;
       Right : Natural)
-      return Unsigned_Type
+      return Integer_Type
    is
+      pragma Compile_Time_Error (Integer_Type'Size /= Unsigned_Type'Size,
+         "size mismatch");
       pragma Suppress (Range_Check);
       pragma Suppress (Division_Check); -- Modulus > 0
    begin
       if Left = 2 and then Right < Unsigned_Type'Size then
-         return Shift_Left (1, Right) mod Modulus;
+         return Integer_Type (Shift_Left (1, Right) mod Modulus);
       else
          declare
             type Long_Long_Unsigned is mod 2 ** Long_Long_Integer'Size;
             Result : Unsigned_Type := 1;
-            Factor : Unsigned_Type := Left;
+            Factor : Unsigned_Type := Unsigned_Type'Mod (Left);
             Exponent : Natural := Right;
          begin
             loop
@@ -144,7 +146,7 @@ package body System.Exponentiations is
                   * Long_Long_Unsigned'Mod (Factor)
                   mod Long_Long_Unsigned'Mod (Modulus));
             end loop;
-            return Result;
+            return Integer_Type (Result);
          end;
       end if;
    end Generic_Exp_Modular;

@@ -53,8 +53,11 @@ procedure power is
 		pragma Assert (P (0, 1) = 0);
 		pragma Assert (P (2, 3) = 8);
 		pragma Assert (P (3, 3) = 27);
-		pragma Assert (P (-3, 3) = -27);
-		null;
+		if T'Modulus not in 2 ** (Integer'Size - 1) + 1 .. 2 ** Integer'Size - 1 then
+			-- [gcc-4.8] unnecessary overflow check since signed Integer is used for non-binary modular types
+			pragma Assert (P (-3, 3) = -27);
+			null;
+		end if;
 	end Generic_Unsigned_Test;
 	procedure Integer_Test is new Generic_Signed_Test (Integer);
 	procedure Long_Integer_Test is new Generic_Signed_Test (Long_Integer);

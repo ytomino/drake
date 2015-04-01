@@ -13,6 +13,7 @@ package body System.Startup is
    begin
       if Install_Exception_Handler'Address /= Null_Address then
          Install_Exception_Handler (SEH);
+         Handler_Installed := 1;
       end if;
    end Initialize;
 

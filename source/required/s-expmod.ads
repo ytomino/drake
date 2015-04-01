@@ -9,6 +9,7 @@ package System.Exp_Mod is
    --  modular type does not raise exceptions.
    function Exp_Modular is
       new Exponentiations.Generic_Exp_Modular (
+         Integer,
          System.Unsigned_Types.Unsigned,
          Shift_Left => System.Unsigned_Types.Shift_Left);
 

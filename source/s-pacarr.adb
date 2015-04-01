@@ -80,9 +80,8 @@ package body System.Packed_Arrays is
          or else Record_8_Units'Size rem Standard'Storage_Unit /= 0,
          "Is Storage_Unit not a mutiple of 8 ?");
 
-      function Get (Arr : Address; N : Natural) return Element_Type;
-      pragma Machine_Attribute (Get, "pure");
-      pragma Inline (Get);
+      --  implementation
+
       function Get (Arr : Address; N : Natural) return Element_Type is
          Units : Record_8_Units;
          for Units'Address use
@@ -101,8 +100,6 @@ package body System.Packed_Arrays is
          end case;
       end Get;
 
-      procedure Set (Arr : Address; N : Natural; E : Element_Type);
-      pragma Inline (Set);
       procedure Set (Arr : Address; N : Natural; E : Element_Type) is
          Units : Record_8_Units;
          for Units'Address use
@@ -119,84 +116,6 @@ package body System.Packed_Arrays is
             when 6 => Units.E6 := E;
             when 7 => Units.E7 := E;
          end case;
-      end Set;
-
-      Reversed_Bit_Order : constant := 1 - Standard'Default_Bit_Order;
-
-      type Reversed_Record_8_Units is new Record_8_Units;
-      for Reversed_Record_8_Units'Bit_Order use
-         Bit_Order'Val (Reversed_Bit_Order);
-      for Reversed_Record_8_Units'Scalar_Storage_Order use
-         Bit_Order'Val (Reversed_Bit_Order);
-      pragma Suppress_Initialization (Reversed_Record_8_Units);
-
-      function Get_Reversed (Arr : Address; N : Natural) return Element_Type;
-      pragma Machine_Attribute (Get_Reversed, "pure");
-      pragma Inline (Get_Reversed);
-      function Get_Reversed (Arr : Address; N : Natural) return Element_Type is
-         Units : Reversed_Record_8_Units;
-         for Units'Address use
-            Arr
-            + Address (N / 8 * (Record_8_Units'Size / Standard'Storage_Unit));
-      begin
-         case Rem_8 (N rem 8) is
-            when 0 => return Units.E0;
-            when 1 => return Units.E1;
-            when 2 => return Units.E2;
-            when 3 => return Units.E3;
-            when 4 => return Units.E4;
-            when 5 => return Units.E5;
-            when 6 => return Units.E6;
-            when 7 => return Units.E7;
-         end case;
-      end Get_Reversed;
-
-      procedure Set_Reversed (Arr : Address; N : Natural; E : Element_Type);
-      pragma Inline (Set_Reversed);
-      procedure Set_Reversed (Arr : Address; N : Natural; E : Element_Type) is
-         Units : Reversed_Record_8_Units;
-         for Units'Address use
-            Arr
-            + Address (N / 8 * (Record_8_Units'Size / Standard'Storage_Unit));
-      begin
-         case Rem_8 (N rem 8) is
-            when 0 => Units.E0 := E;
-            when 1 => Units.E1 := E;
-            when 2 => Units.E2 := E;
-            when 3 => Units.E3 := E;
-            when 4 => Units.E4 := E;
-            when 5 => Units.E5 := E;
-            when 6 => Units.E6 := E;
-            when 7 => Units.E7 := E;
-         end case;
-      end Set_Reversed;
-
-      --  implementation
-
-      function Get (
-         Arr : Address;
-         N : Natural;
-         Rev_SSO : Boolean)
-         return Element_Type is
-      begin
-         if Rev_SSO then
-            return Get_Reversed (Arr, N);
-         else
-            return Get (Arr, N);
-         end if;
-      end Get;
-
-      procedure Set (
-         Arr : Address;
-         N : Natural;
-         E : Element_Type;
-         Rev_SSO : Boolean) is
-      begin
-         if Rev_SSO then
-            Set_Reversed (Arr, N, E);
-         else
-            Set (Arr, N, E);
-         end if;
       end Set;
 
    end Indexing;

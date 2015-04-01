@@ -11,17 +11,9 @@ package System.Pack_11 is
    package Indexing is new Packed_Arrays.Indexing (Bits_11);
 
    --  required for accessing arrays by compiler
-   function Get_11 (
-      Arr : Address;
-      N : Natural;
-      Rev_SSO : Boolean)
-      return Bits_11
+   function Get_11 (Arr : Address; N : Natural) return Bits_11
       renames Indexing.Get;
-   procedure Set_11 (
-      Arr : Address;
-      N : Natural;
-      E : Bits_11;
-      Rev_SSO : Boolean)
+   procedure Set_11 (Arr : Address; N : Natural; E : Bits_11)
       renames Indexing.Set;
 
 end System.Pack_11;

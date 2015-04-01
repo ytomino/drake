@@ -11,31 +11,15 @@ package System.Pack_12 is
    package Indexing is new Packed_Arrays.Indexing (Bits_12);
 
    --  required for accessing aligned arrays by compiler
-   function Get_12 (
-      Arr : Address;
-      N : Natural;
-      Rev_SSO : Boolean)
-      return Bits_12
+   function Get_12 (Arr : Address; N : Natural) return Bits_12
       renames Indexing.Get;
-   procedure Set_12 (
-      Arr : Address;
-      N : Natural;
-      E : Bits_12;
-      Rev_SSO : Boolean)
+   procedure Set_12 (Arr : Address; N : Natural; E : Bits_12)
       renames Indexing.Set;
 
    --  required for accessing unaligned arrays by compiler
-   function GetU_12 (
-      Arr : Address;
-      N : Natural;
-      Rev_SSO : Boolean)
-      return Bits_12
+   function GetU_12 (Arr : Address; N : Natural) return Bits_12
       renames Indexing.Get;
-   procedure SetU_12 (
-      Arr : Address;
-      N : Natural;
-      E : Bits_12;
-      Rev_SSO : Boolean)
+   procedure SetU_12 (Arr : Address; N : Natural; E : Bits_12)
       renames Indexing.Set;
 
 end System.Pack_12;
