@@ -247,8 +247,6 @@ cxb4009 C it requites COBOL compiler
 cxb5001 C some Interfaces.Fortran features are unimplemented
 cxb5002 C some Interfaces.Fortran features are unimplemented
 cxb5003 C some Interfaces.Fortran features are unimplemented
-cxb5004 C it requites Fortran compiler
-cxb5005 C it requites Fortran compiler
 cxc7001 C unimplemented tasking features (select)
 cxc7004 C unimplemented tasking features
 cxc7006 C unimplemented tasking features (Ada.Task_Termination)
