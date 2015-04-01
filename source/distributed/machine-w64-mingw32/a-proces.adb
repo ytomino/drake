@@ -188,7 +188,7 @@ package body Ada.Processes is
       Status : out Ada.Command_Line.Exit_Status)
    is
       --  unimplemented, should use ShellExecute
-      P : Process := Create (Command_Line, Search_Path => True);
+      P : constant Process := Create (Command_Line, Search_Path => True);
    begin
       Wait (P, Status);
    end Shell;
