@@ -11,6 +11,12 @@ package body System.Arith_64 is
       Long_Long_Integer'Size /= 64,
       "Long_Long_Integer is not 64-bit.");
 
+   procedure unreachable
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_unreachable";
+
+   pragma No_Return (unreachable);
+
    subtype U32 is Interfaces.Unsigned_32;
    subtype U64 is Interfaces.Unsigned_64;
 
@@ -117,7 +123,7 @@ package body System.Arith_64 is
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64);
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64) is
       Temp_XL : U64 := XL;
-      Temp_XH : U64 := XH;
+      Temp_XH : U64 := XH; -- XH < 2 ** 62 (abs signed * positive signed ???)
       Rem_Q : U64;
    begin
       Q := 0;
@@ -127,11 +133,15 @@ package body System.Arith_64 is
             Scaling_W : constant Natural := XH_W + 1;
             --  "+1" means not using sign bit
             --  since Long_Long_Integer_Divide is signed
-            Scaled_X : constant U64 :=
+            Scaled_X : U64;
+         begin
+            if XH_W not in 1 .. 62 or else Scaling_W not in 2 .. 63 then
+               unreachable;
+            end if;
+            Scaled_X :=
                Interfaces.Shift_Left (Temp_XH, 64 - Scaling_W) or
                Interfaces.Shift_Right (Temp_XL, Scaling_W);
             --  0 < Scaled_X < 2 ** 63
-         begin
             if Scaled_X < Y then
                --  Y <= 2 ** 63 (original Y is signed)
                declare
