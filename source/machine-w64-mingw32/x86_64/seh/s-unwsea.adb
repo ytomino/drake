@@ -2,6 +2,7 @@ pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
+with System.Storage_Elements;
 with System.Unwind.Mapping;
 with System.Unwind.Representation;
 with C.basetsd;
@@ -9,6 +10,7 @@ with C.unwind_pe;
 package body System.Unwind.Searching is
    pragma Suppress (All_Checks);
    use type Representation.Machine_Occurrence_Access;
+   use type Storage_Elements.Storage_Offset;
    use type C.ptrdiff_t;
    use type C.signed_int;
    use type C.size_t;
@@ -29,18 +31,19 @@ package body System.Unwind.Searching is
    pragma Import (Intrinsic, builtin_eh_return_data_regno,
       "__builtin_eh_return_data_regno");
 
+   package unsigned_char_const_ptr_Conv is
+      new Address_To_Constant_Access_Conversions (
+         C.unsigned_char,
+         C.unsigned_char_const_ptr);
+
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr;
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
-      return C.unsigned_char_const_ptr
-   is
-      package uchar_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.unsigned_char,
-            C.unsigned_char_const_ptr);
+      return C.unsigned_char_const_ptr is
    begin
-      return uchar_Conv.To_Pointer (uchar_Conv.To_Address (Left)
-         + Address (Right));
+      return unsigned_char_const_ptr_Conv.To_Pointer (
+         unsigned_char_const_ptr_Conv.To_Address (Left)
+         + Storage_Elements.Storage_Offset (Right));
    end "+";
 
    function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean
@@ -83,36 +86,36 @@ package body System.Unwind.Searching is
       Unwind_Data : Address;
       Context_RSP : C.basetsd.ULONG64)
    is
-      package uchar_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.unsigned_char,
-            C.unsigned_char_const_ptr);
-      unw : Address := Unwind_Data;
+      unw : C.unsigned_char_const_ptr :=
+         unsigned_char_const_ptr_Conv.To_Pointer (Unwind_Data);
       rsp : C.basetsd.ULONG64 := Context_RSP;
       len : C.unsigned_char;
    begin
       --  Version = 1, no flags, no prolog.
-      if uchar_Conv.To_Pointer (unw).all /= 1
-         or else uchar_Conv.To_Pointer (unw + 1).all /= 0
-         or else uchar_Conv.To_Pointer (unw + 3).all /= 0 -- No frame pointer.
+      if unw.all /= 1
+         or else C.unsigned_char_const_ptr'(unw + 1).all /= 0
+         --  No frame pointer.
+         or else C.unsigned_char_const_ptr'(unw + 3).all /= 0
       then
          null;
       else
-         len := uchar_Conv.To_Pointer (unw + 2).all;
+         len := C.unsigned_char_const_ptr'(unw + 2).all;
          unw := unw + 4;
          while len > 0 loop
             --  Offset in prolog = 0.
-            exit when uchar_Conv.To_Pointer (unw).all /= 0;
-            case uchar_Conv.To_Pointer (unw + 1).all and 16#0f# is
+            exit when unw.all /= 0;
+            case C.unsigned_char_const_ptr'(unw + 1).all and 16#0f# is
                when UWOP_ALLOC_LARGE =>
                   --  Expect < 512KB.
                   exit when
-                     (uchar_Conv.To_Pointer (unw + 1).all and 16#f0#) /= 0;
+                     (C.unsigned_char_const_ptr'(unw + 1).all and 16#f0#) /= 0;
                   rsp :=
                      rsp
                      + 8
                         * C.basetsd.ULONG64 (
-                           PUINT16_Conv.To_Pointer (unw + 2).all);
+                           PUINT16_Conv.To_Pointer (
+                              unsigned_char_const_ptr_Conv.To_Address (
+                                 unw + 2)).all);
                   len := len - 1;
                   unw := unw + 2;
                when UWOP_SAVE_NONVOL | UWOP_SAVE_XMM128 =>
@@ -123,7 +126,7 @@ package body System.Unwind.Searching is
                      rip : C.basetsd.ULONG64;
                   begin
                      rip := rsp;
-                     if (uchar_Conv.To_Pointer (unw + 1).all and 16#f0#) =
+                     if (C.unsigned_char_const_ptr'(unw + 1).all and 16#f0#) =
                         16#10#
                      then
                         rip :=
@@ -207,11 +210,8 @@ package body System.Unwind.Searching is
             end if;
             base := C.unwind.Unwind_GetRegionStart (Context);
             declare
-               function Cast is
-                  new Ada.Unchecked_Conversion (
-                     C.void_ptr,
-                     C.unsigned_char_const_ptr);
-               p : C.unsigned_char_const_ptr := Cast (lsda);
+               p : C.unsigned_char_const_ptr :=
+                  unsigned_char_const_ptr_Conv.To_Pointer (Address (lsda));
                tmp : aliased C.unwind.uleb128_t;
                lpbase_encoding : C.unsigned_char;
             begin

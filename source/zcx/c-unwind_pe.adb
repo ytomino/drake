@@ -1,7 +1,10 @@
 with Ada.Unchecked_Conversion;
+with System.Address_To_Constant_Access_Conversions;
+with System.Storage_Elements;
 with C.stdint;
 package body C.unwind_pe is
    pragma Suppress (All_Checks);
+   use type System.Storage_Elements.Storage_Offset;
 
    procedure unreachable
       with Import,
@@ -9,17 +12,19 @@ package body C.unwind_pe is
 
    pragma No_Return (unreachable);
 
+   package unsigned_char_const_ptr_Conv is
+      new System.Address_To_Constant_Access_Conversions (
+         C.unsigned_char,
+         C.unsigned_char_const_ptr);
+
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr;
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
-      return C.unsigned_char_const_ptr
-   is
-      function Cast is
-         new Ada.Unchecked_Conversion (C.unsigned_char_const_ptr, C.ptrdiff_t);
-      function Cast is
-         new Ada.Unchecked_Conversion (C.ptrdiff_t, C.unsigned_char_const_ptr);
+      return C.unsigned_char_const_ptr is
    begin
-      return Cast (Cast (Left) + Right);
+      return unsigned_char_const_ptr_Conv.To_Pointer (
+         unsigned_char_const_ptr_Conv.To_Address (Left)
+         + System.Storage_Elements.Storage_Offset (Right));
    end "+";
 
    function size_of_encoded_value (encoding : unsigned_char)
@@ -132,14 +137,6 @@ package body C.unwind_pe is
    is
       function Cast is
          new Ada.Unchecked_Conversion (void_ptr, unwind.Unwind_Internal_Ptr);
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            unsigned_char_const_ptr,
-            unwind.Unwind_Internal_Ptr);
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            unwind.Unwind_Internal_Ptr,
-            unsigned_char_const_ptr);
       type Unwind_Internal_Ptr_ptr is access all unwind.Unwind_Internal_Ptr;
       function Cast is
          new Ada.Unchecked_Conversion (
@@ -177,12 +174,18 @@ package body C.unwind_pe is
    begin
       if encoding = DW_EH_PE_aligned then
          declare
-            a : unwind.Unwind_Internal_Ptr := Cast (Mutable_p);
+            a : unwind.Unwind_Internal_Ptr :=
+               unwind.Unwind_Internal_Ptr (
+                  System.Storage_Elements.To_Integer (
+                     unsigned_char_const_ptr_Conv.To_Address (Mutable_p)));
          begin
             a := (a + void_ptr'Size / Standard'Storage_Unit - 1) and
                -(void_ptr'Size / Standard'Storage_Unit);
             result := Cast (a).all;
-            Mutable_p := Cast (a + void_ptr'Size / Standard'Storage_Unit);
+            Mutable_p := unsigned_char_const_ptr_Conv.To_Pointer (
+               System'To_Address (
+                  System.Storage_Elements.Integer_Address (
+                     a + void_ptr'Size / Standard'Storage_Unit)));
          end;
       else
          case encoding and 16#0f# is
