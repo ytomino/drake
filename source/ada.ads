@@ -15,6 +15,10 @@ package Ada is
       pragma Import (Intrinsic, Source_Location);
       function Enclosing_Entity return String;
       pragma Import (Intrinsic, Enclosing_Entity);
+      function Compilation_Date return String
+         with Import, Convention => Intrinsic;
+      function Compilation_Time return String
+         with Import, Convention => Intrinsic;
       procedure Put (
          S : String;
          Source_Location : String := Debug.Source_Location;
