@@ -247,8 +247,11 @@ procedure run_acats is
 		if Ada.Directories.Exists (Test_Dir) then
 			declare
 				procedure Process (Dir_Entry : in Ada.Directories.Directory_Entry_Type) is
+					Simple_Name : constant String := Ada.Directories.Simple_Name (Dir_Entry);
 				begin
-					Ada.Directories.Delete_File (Ada.Directories.Full_Name (Dir_Entry));
+					if Simple_Name (Simple_Name'First) /= '.' then
+						Ada.Directories.Delete_File (Ada.Directories.Full_Name (Dir_Entry));
+					end if;
 				end Process;
 			begin
 				Ada.Directories.Search (
@@ -700,7 +703,7 @@ procedure run_acats is
 								Source => "../" & Ada.Directories.Compose (Directory, Simple_Name),
 								Destination => Simple_Name);
 							Symbolic_Link (
-								Source => "../gcc_support/MACRO.DFS",
+								Source => "../support/MACRO.DFS",
 								Destination => "MACRO.DFS");
 							Shell_Execute (Ada.Directories.Compose (
 								Containing_Directory => Ada.Directories.Compose ("..", Support_Dir),
