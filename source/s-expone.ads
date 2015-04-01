@@ -27,14 +27,13 @@ package System.Exponentiations is
 
    --  Modulus /= 2 ** N
    generic
-      type Integer_Type is range <>;
       type Unsigned_Type is mod <>;
       with function Shift_Left (Value : Unsigned_Type; Amount : Natural)
          return Unsigned_Type is <>;
    function Generic_Exp_Modular (
-      Left : Integer_Type;
+      Left : Unsigned_Type;
       Modulus : Unsigned_Type;
       Right : Natural)
-      return Integer_Type;
+      return Unsigned_Type;
 
 end System.Exponentiations;

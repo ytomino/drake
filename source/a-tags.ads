@@ -244,8 +244,10 @@ private
       Offset_Func : Offset_To_Top_Function_Ptr);
 
    --  required for library-level tagged types by compiler (s-exctab.ads)
-   procedure Register_Tag (T : Tag) is null; -- unimplemented
-   procedure Unregister_Tag (T : Tag) is null; -- unimplemented
+   --  [gcc-5] generates _finalize_spec/body without _elabs/_elabb
+   --    and gnatbind generates wrong code, if Register_Tag is null.
+--  procedure Register_Tag (T : Tag) is null; -- unimplemented
+--  procedure Unregister_Tag (T : Tag) is null; -- unimplemented
 
    --  required by compiler ??? (a-tags.ads)
 --  procedure Check_TSD (TSD : Type_Specific_Data_Ptr);

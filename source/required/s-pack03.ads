@@ -11,9 +11,17 @@ package System.Pack_03 is
    package Indexing is new Packed_Arrays.Indexing (Bits_03);
 
    --  required for accessing arrays by compiler
-   function Get_03 (Arr : Address; N : Natural) return Bits_03
+   function Get_03 (
+      Arr : Address;
+      N : Natural;
+      Rev_SSO : Boolean)
+      return Bits_03
       renames Indexing.Get;
-   procedure Set_03 (Arr : Address; N : Natural; E : Bits_03)
+   procedure Set_03 (
+      Arr : Address;
+      N : Natural;
+      E : Bits_03;
+      Rev_SSO : Boolean)
       renames Indexing.Set;
 
 end System.Pack_03;

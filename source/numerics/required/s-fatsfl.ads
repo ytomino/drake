@@ -74,11 +74,9 @@ package System.Fat_Sflt is
 
       --  required for Short_Float'Valid by compiler (s-fatgen.ads)
       function Valid (X : not null access Short_Float) return Boolean;
-      pragma Export (Ada, Valid, "system__fat_sflt__attr_short_float__valid");
-      function Unaligned_Valid (A : Address) return Boolean;
-      pragma Import (Ada, Unaligned_Valid,
-         "system__fat_sflt__attr_short_float__valid");
-      pragma Machine_Attribute (Unaligned_Valid, "pure");
+      type S is new String (1 .. Short_Float'Size / Character'Size);
+      type P is access all S;
+      for P'Storage_Size use 0;
 
    end Attr_Short_Float;
 

@@ -27,12 +27,23 @@ package System.Packed_Arrays is
       type Element_Type is (<>);
    package Indexing is
 
-      function Get (Arr : Address; N : Natural) return Element_Type;
-      pragma Machine_Attribute (Get, "pure");
-      pragma Inline (Get);
+      function Get (
+         Arr : Address;
+         N : Natural;
+         Rev_SSO : Boolean)
+         return Element_Type
+         with Convention => Intrinsic;
 
-      procedure Set (Arr : Address; N : Natural; E : Element_Type);
-      pragma Inline (Set);
+      procedure Set (
+         Arr : Address;
+         N : Natural;
+         E : Element_Type;
+         Rev_SSO : Boolean)
+         with Convention => Intrinsic;
+
+      pragma Machine_Attribute (Get, "pure");
+      pragma Inline_Always (Get);
+      pragma Inline_Always (Set);
 
    end Indexing;
 

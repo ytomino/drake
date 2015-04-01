@@ -108,9 +108,11 @@ private
       Super at 0 range 0 .. Weak_Access_Holders.Data_Size - 1;
    end record;
 
+   pragma Warnings (Off, "uninitialized"); -- [gcc-5] default value of Name
    Null_Data : aliased constant Data := (
       Super => (System.Reference_Counting.Static, null),
       Item => <>);
+   pragma Warnings (On, "uninitialized");
 
    type Data_Access is access all Data;
 

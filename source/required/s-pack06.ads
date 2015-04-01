@@ -11,15 +11,31 @@ package System.Pack_06 is
    package Indexing is new Packed_Arrays.Indexing (Bits_06);
 
    --  required for accessing aligned arrays by compiler
-   function Get_06 (Arr : Address; N : Natural) return Bits_06
+   function Get_06 (
+      Arr : Address;
+      N : Natural;
+      Rev_SSO : Boolean)
+      return Bits_06
       renames Indexing.Get;
-   procedure Set_06 (Arr : Address; N : Natural; E : Bits_06)
+   procedure Set_06 (
+      Arr : Address;
+      N : Natural;
+      E : Bits_06;
+      Rev_SSO : Boolean)
       renames Indexing.Set;
 
    --  required for accessing unaligned arrays by compiler
-   function GetU_06 (Arr : Address; N : Natural) return Bits_06
+   function GetU_06 (
+      Arr : Address;
+      N : Natural;
+      Rev_SSO : Boolean)
+      return Bits_06
       renames Indexing.Get;
-   procedure SetU_06 (Arr : Address; N : Natural; E : Bits_06)
+   procedure SetU_06 (
+      Arr : Address;
+      N : Natural;
+      E : Bits_06;
+      Rev_SSO : Boolean)
       renames Indexing.Set;
 
 end System.Pack_06;

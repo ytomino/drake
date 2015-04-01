@@ -31,11 +31,11 @@ translated headers
 Downloads
 ---------
 
-for gcc-4.9 ::
+for gcc-5 ::
 
  $ git clone git://github.com/ytomino/drake.git
 
-for old gcc (from 4.5 until 4.8) ::
+for old gcc (from 4.5 until 4.9) ::
 
  $ VERSION=$(expr $(gcc -dumpversion) : '^\([0-9]*\.[0-9]*\)') # X.Y
  $ git clone git://github.com/ytomino/drake.git -b gcc-$VERSION
