@@ -560,7 +560,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
    end Iterate;
 
-   function Iterate (Container : Set)
+   function Iterate (Container : Set'Class)
       return Set_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return Set_Iterator'(Container => Container'Unrestricted_Access);

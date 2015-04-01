@@ -581,7 +581,7 @@ package body Ada.Containers.Vectors is
       end loop;
    end Iterate;
 
-   function Iterate (Container : Vector)
+   function Iterate (Container : Vector'Class)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return Vector_Iterator'(
@@ -589,7 +589,7 @@ package body Ada.Containers.Vectors is
          Last => Last (Container));
    end Iterate;
 
-   function Iterate (Container : Vector; First, Last : Cursor)
+   function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Unreferenced (Container);

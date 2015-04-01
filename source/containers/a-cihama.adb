@@ -446,7 +446,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       end if;
    end Iterate;
 
-   function Iterate (Container : Map)
+   function Iterate (Container : Map'Class)
       return Map_Iterator_Interfaces.Forward_Iterator'Class is
    begin
       return Map_Iterator'(Container => Container'Unrestricted_Access);

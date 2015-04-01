@@ -217,7 +217,7 @@ package Ada.Directories is
    pragma Inline (Constant_Reference);
    package Search_Iterator_Interfaces is
       new Iterator_Interfaces (Cursor, Has_Element);
-   function Iterate (Container : Search_Type)
+   function Iterate (Container : Search_Type'Class)
       return Search_Iterator_Interfaces.Forward_Iterator'Class;
 
    --  Operations on Directory Entries:

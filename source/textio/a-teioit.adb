@@ -34,7 +34,7 @@ package body Ada.Text_IO.Iterators is
       return (Element => Container.Item);
    end Constant_Reference;
 
-   function Iterate (Container : Lines_Type)
+   function Iterate (Container : Lines_Type'Class)
       return Lines_Iterator_Interfaces.Forward_Iterator'Class is
    begin
       return Line_Iterator'(Lines => Container'Unrestricted_Access);

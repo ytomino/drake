@@ -206,14 +206,15 @@ package Ada.Containers.Doubly_Linked_Lists is
       Container : List'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : List)
+   --  modified
+   function Iterate (Container : List'Class) -- not primitive
       return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
 --  function Iterate (Container : List; Start : Cursor)
 --    return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
    --  extended
-   function Iterate (Container : List; First, Last : Cursor)
+   function Iterate (Container : List'Class; First, Last : Cursor)
       return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic

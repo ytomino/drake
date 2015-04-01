@@ -169,7 +169,8 @@ package Ada.Containers.Hashed_Maps is
       Container : Map'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : Map)
+   --  modified
+   function Iterate (Container : Map'Class) -- not primitive
       return Map_Iterator_Interfaces.Forward_Iterator'Class;
 
 --  diff (Equivalent)

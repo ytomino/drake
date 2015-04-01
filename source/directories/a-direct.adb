@@ -398,7 +398,7 @@ package body Ada.Directories is
       return (Element => Container.Next_Directory_Entry'Access);
    end Constant_Reference;
 
-   function Iterate (Container : Search_Type)
+   function Iterate (Container : Search_Type'Class)
       return Search_Iterator_Interfaces.Forward_Iterator'Class is
    begin
       return Search_Iterator'(Search => Container'Unrestricted_Access);

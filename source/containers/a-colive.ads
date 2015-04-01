@@ -326,14 +326,15 @@ package Ada.Containers.Limited_Vectors is
       Container : Vector'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : Vector)
+   --  modified
+   function Iterate (Container : Vector'Class) -- not primitive
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
 --  function Iterate (Container : Vector; Start : Cursor)
 --    return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    --  extended
-   function Iterate (Container : Vector; First, Last : Cursor)
+   function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic

@@ -395,7 +395,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end Iterate;
 
-   function Iterate (Container : List)
+   function Iterate (Container : List'Class)
       return List_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return List_Iterator'(
@@ -403,7 +403,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          Last => Last (Container));
    end Iterate;
 
-   function Iterate (Container : List; First, Last : Cursor)
+   function Iterate (Container : List'Class; First, Last : Cursor)
       return List_Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Unreferenced (Container);

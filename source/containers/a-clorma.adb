@@ -474,7 +474,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
    end Iterate;
 
-   function Iterate (Container : Map)
+   function Iterate (Container : Map'Class)
       return Map_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return Map_Iterator'(Container => Container'Unrestricted_Access);

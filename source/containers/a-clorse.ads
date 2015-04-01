@@ -177,7 +177,8 @@ package Ada.Containers.Limited_Ordered_Sets is
       Container : Set'Class; -- not primitive
       Process : not null access procedure (Position : Cursor));
 
-   function Iterate (Container : Set)
+   --  modified
+   function Iterate (Container : Set'Class) -- not primitive
       return Set_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic

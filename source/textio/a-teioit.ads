@@ -33,7 +33,7 @@ package Ada.Text_IO.Iterators is
    package Lines_Iterator_Interfaces is
       new Iterator_Interfaces (Line_Cursor, Has_Element);
 
-   function Iterate (Container : Lines_Type)
+   function Iterate (Container : Lines_Type'Class)
       return Lines_Iterator_Interfaces.Forward_Iterator'Class;
 
 private

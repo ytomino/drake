@@ -518,7 +518,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       end if;
    end Iterate;
 
-   function Iterate (Container : Set)
+   function Iterate (Container : Set'Class)
       return Set_Iterator_Interfaces.Forward_Iterator'Class is
    begin
       return Set_Iterator'(Container => Container'Unrestricted_Access);
