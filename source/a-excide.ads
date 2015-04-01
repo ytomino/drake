@@ -21,7 +21,7 @@ package Ada.Exception_Identification is
       E : Exception_Id;
       File : String := Debug.File;
       Line : Integer := Debug.Line)
-      with No_Return, Import,
+      with Import,
          Convention => Ada,
          External_Name => "__drake_raise_exception_from_here";
    procedure Raise_Exception_From_Here (
@@ -29,9 +29,11 @@ package Ada.Exception_Identification is
       File : String := Debug.File;
       Line : Integer := Debug.Line;
       Message : String)
-      with No_Return, Import,
+      with Import,
          Convention => Ada,
          External_Name => "__drake_raise_exception_from_here_with";
+
+   pragma No_Return (Raise_Exception_From_Here);
 
 private
 
