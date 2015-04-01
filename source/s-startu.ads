@@ -69,11 +69,6 @@ package System.Startup is
    procedure Install_Handler is null;
    pragma Export (C, Install_Handler, "__gnat_install_handler");
 
-   --  breakpoint on start (s-stalib.adb)
-
-   procedure Break_Start is null;
-   pragma Export (C, Break_Start, "__gnat_break_start");
-
    --  finalize Ada runtime (s-stalib.adb)
 
    procedure AdaFinal is null;
