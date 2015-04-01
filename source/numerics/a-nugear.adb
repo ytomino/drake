@@ -420,18 +420,23 @@ package body Ada.Numerics.Generic_Arrays is
             Length_Folded : constant Integer := Left'Length (2);
          begin
             for I in Result'Range (1) loop
-               for J in Result'Range (2) loop
-                  declare
-                     Z : Result_Type := Zero;
-                  begin
-                     for K in 0 .. Length_Folded - 1 loop
-                        pragma Loop_Optimize (Vector);
-                        Z := Z
+               for K in 0 .. Length_Folded - 1 loop
+                  for J in Result'Range (2) loop
+                     pragma Loop_Optimize (Vector);
+                     declare
+                        Z : Result_Type;
+                     begin
+                        if K = 0 then
+                           Z := Zero;
+                        else
+                           Z := Result (I, J);
+                        end if;
+                        Result (I, J) :=
+                           Z
                            + Left (I, Left'First (2) + K)
                               * Right (Right'First (1) + K, J);
-                     end loop;
-                     Result (I, J) := Z;
-                  end;
+                     end;
+                  end loop;
                end loop;
             end loop;
          end;
