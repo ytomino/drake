@@ -31,6 +31,8 @@ package body C.unwind_pe is
          + System.Storage_Elements.Storage_Offset (Right));
    end "+";
 
+   --  implementation
+
    function size_of_encoded_value (encoding : unsigned_char)
       return unsigned_int is
    begin

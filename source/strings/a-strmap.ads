@@ -224,7 +224,7 @@ private
    Empty_Set_Data : aliased constant Set_Data := (
       Length => 0,
       Reference_Count => System.Reference_Counting.Static,
-      Items => <>);
+      Items => <>); -- [gcc-4.9/5] only this form does not generates _elabs (?)
    pragma Warnings (Off, "uninitialized");
 
    package Controlled_Sets is
@@ -275,7 +275,7 @@ private
    Empty_Map_Data : aliased constant Map_Data := (
       Length => 0,
       Reference_Count => System.Reference_Counting.Static,
-      From => <>,
+      From => <>, -- [gcc-4.9/5] only this form does not generates _elabs (?)
       To => <>);
    pragma Warnings (On, "uninitialized");
 

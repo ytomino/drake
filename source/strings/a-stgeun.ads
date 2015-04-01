@@ -634,7 +634,7 @@ private
       Reference_Count : aliased System.Reference_Counting.Counter;
       Max_Length : aliased System.Reference_Counting.Length_Type;
       Items : not null String_Access;
-      --  the storage be allocated in here
+      --  the storage would be allocated in here
    end record;
    pragma Suppress_Initialization (Data);
    pragma Compile_Time_Error (Data'Size rem Integer'Size > 0, "misaligned");
