@@ -19,13 +19,13 @@ package Ada.Real_Time is
    pragma Inline (Clock);
 
    function "+" (Left : Time; Right : Time_Span) return Time
-      with Pure_Function, Import, Convention => Intrinsic;
+      with Import, Convention => Intrinsic;
    function "+" (Left : Time_Span; Right : Time) return Time
-      with Pure_Function, Import, Convention => Intrinsic;
+      with Import, Convention => Intrinsic;
    function "-" (Left : Time; Right : Time_Span) return Time
-      with Pure_Function, Import, Convention => Intrinsic;
+      with Import, Convention => Intrinsic;
    function "-" (Left : Time; Right : Time) return Time_Span
-      with Pure_Function, Import, Convention => Intrinsic;
+      with Import, Convention => Intrinsic;
 
    function "<" (Left, Right : Time) return Boolean;
    function "<=" (Left, Right : Time) return Boolean;
@@ -33,11 +33,11 @@ package Ada.Real_Time is
    function ">=" (Left, Right : Time) return Boolean;
 
    function "+" (Left, Right : Time_Span) return Time_Span
-      with Pure_Function, Import, Convention => Intrinsic;
+      with Import, Convention => Intrinsic;
    function "-" (Left, Right : Time_Span) return Time_Span
-      with Pure_Function, Import, Convention => Intrinsic;
+      with Import, Convention => Intrinsic;
    function "-" (Right : Time_Span) return Time_Span
-      with Pure_Function, Import, Convention => Intrinsic;
+      with Import, Convention => Intrinsic;
    function "*" (Left : Time_Span; Right : Integer) return Time_Span;
    function "*" (Left : Integer; Right : Time_Span) return Time_Span;
    pragma Pure_Function ("*");
@@ -48,7 +48,7 @@ package Ada.Real_Time is
    pragma Inline ("/");
 
    function "abs" (Right : Time_Span) return Time_Span
-      with Pure_Function, Import, Convention => Intrinsic;
+      with Import, Convention => Intrinsic;
 
    function "<" (Left, Right : Time_Span) return Boolean;
    function "<=" (Left, Right : Time_Span) return Boolean;
