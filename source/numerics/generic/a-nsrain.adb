@@ -7,16 +7,21 @@ package body Ada.Numerics.SFMT.Random.Inside is
    procedure rshift128 (
       Out_Item : out w128_t;
       In_Item : w128_t;
-      shift : Integer);
-   pragma Inline (rshift128);
+      shift : Integer)
+      with Convention => Intrinsic;
    procedure lshift128 (
       Out_Item : out w128_t;
       In_Item : w128_t;
-      shift : Integer);
-   pragma Inline (lshift128);
+      shift : Integer)
+      with Convention => Intrinsic;
 
-   procedure do_recursion (r : out w128_t; a, b, c, d : w128_t);
-   pragma Inline (do_recursion);
+   pragma Inline_Always (rshift128);
+   pragma Inline_Always (lshift128);
+
+   procedure do_recursion (r : out w128_t; a, b, c, d : w128_t)
+      with Convention => Intrinsic;
+
+   pragma Inline_Always (do_recursion);
 
    --  This function simulates SIMD 128-bit right shift by the standard C.
    --  The 128-bit integer given in in is shifted by (shift * 8) bits.

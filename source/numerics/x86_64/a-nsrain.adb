@@ -36,8 +36,11 @@ package body Ada.Numerics.SFMT.Random.Inside is
    function mm_xor_si128 (A, B : m128i) return m128i;
    pragma Import (Intrinsic, mm_xor_si128, "__builtin_ia32_pxor128");
 
-   procedure mm_recursion (r : out m128i; a, b, c, d : m128i);
-   pragma Inline (mm_recursion);
+   procedure mm_recursion (r : out m128i; a, b, c, d : m128i)
+      with Convention => Intrinsic;
+
+   pragma Inline_Always (mm_recursion);
+
    --  This function represents the recursion formula.
    procedure mm_recursion (r : out m128i; a, b, c, d : m128i) is
       --  parameters used by sse2.

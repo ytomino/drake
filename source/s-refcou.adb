@@ -17,7 +17,11 @@ package body System.Reference_Counting is
       A1 : not null access Length_Type;
       A2 : Length_Type;
       A3 : Length_Type)
-      return Boolean;
+      return Boolean
+      with Convention => Intrinsic;
+
+   pragma Inline_Always (sync_bool_compare_and_swap);
+
    function sync_bool_compare_and_swap (
       A1 : not null access Length_Type;
       A2 : Length_Type;

@@ -1,10 +1,12 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
+with System.Storage_Elements;
 with System.Unwind.Representation;
 with C.unwind_pe;
 package body System.Unwind.Searching is
    pragma Suppress (All_Checks);
+   use type Storage_Elements.Storage_Offset;
    use type C.ptrdiff_t;
    use type C.signed_int;
    use type C.size_t;
@@ -19,28 +21,23 @@ package body System.Unwind.Searching is
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
 
-   procedure Increment (p : in out C.unsigned_char_const_ptr);
-   procedure Increment (p : in out C.unsigned_char_const_ptr) is
-      package uchar_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.unsigned_char,
-            C.unsigned_char_const_ptr);
-   begin
-      p := uchar_Conv.To_Pointer (uchar_Conv.To_Address (p) + 1);
-   end Increment;
+   package unsigned_char_const_ptr_Conv is
+      new Address_To_Constant_Access_Conversions (
+         C.unsigned_char,
+         C.unsigned_char_const_ptr);
 
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
-      return C.unsigned_char_const_ptr;
-   function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr
-   is
-      package uchar_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.unsigned_char,
-            C.unsigned_char_const_ptr);
+      with Convention => Intrinsic;
+
+   pragma Inline_Always ("+");
+
+   function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
+      return C.unsigned_char_const_ptr is
    begin
-      return uchar_Conv.To_Pointer (uchar_Conv.To_Address (Left)
-         + Address (Right));
+      return unsigned_char_const_ptr_Conv.To_Pointer (
+         unsigned_char_const_ptr_Conv.To_Address (Left)
+         + Storage_Elements.Storage_Offset (Right));
    end "+";
 
    --  implementation
@@ -103,16 +100,13 @@ package body System.Unwind.Searching is
             end if;
             base := C.unwind.Unwind_GetRegionStart (Context);
             declare
-               function Cast is
-                  new Ada.Unchecked_Conversion (
-                     C.void_ptr,
-                     C.unsigned_char_const_ptr);
-               p : C.unsigned_char_const_ptr := Cast (lsda);
+               p : C.unsigned_char_const_ptr :=
+                  unsigned_char_const_ptr_Conv.To_Pointer (Address (lsda));
                tmp : aliased C.unwind.uleb128_t;
                lpbase_encoding : C.unsigned_char;
             begin
                lpbase_encoding := p.all;
-               Increment (p);
+               p := p + 1;
                if lpbase_encoding /= C.unwind_pe.DW_EH_PE_omit then
                   p := C.unwind_pe.read_encoded_value (
                      Context,
@@ -123,7 +117,7 @@ package body System.Unwind.Searching is
                   lp_base := base;
                end if;
                ttype_encoding := p.all;
-               Increment (p);
+               p := p + 1;
                if ttype_encoding /= C.unwind_pe.DW_EH_PE_omit then
                   p := C.unwind_pe.read_uleb128 (p, tmp'Access);
                   ttype_table := p + C.ptrdiff_t (tmp);
@@ -135,7 +129,7 @@ package body System.Unwind.Searching is
                ttype_base := C.unwind_pe.base_of_encoded_value (
                   ttype_encoding,
                   Context);
-               Increment (p);
+               p := p + 1;
                call_site_table := C.unwind_pe.read_uleb128 (p, tmp'Access);
                action_table := call_site_table + C.ptrdiff_t (tmp);
             end;
