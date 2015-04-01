@@ -9,16 +9,6 @@ package body C.unwind_pe is
 
    pragma No_Return (unreachable);
 
-   procedure Increment (p : in out unsigned_char_const_ptr);
-   procedure Increment (p : in out unsigned_char_const_ptr) is
-      function Cast is
-         new Ada.Unchecked_Conversion (unsigned_char_const_ptr, ptrdiff_t);
-      function Cast is
-         new Ada.Unchecked_Conversion (ptrdiff_t, unsigned_char_const_ptr);
-   begin
-      p := Cast (Cast (p) + 1);
-   end Increment;
-
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr;
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
@@ -91,7 +81,7 @@ package body C.unwind_pe is
       result := 0;
       loop
          byte := Mutable_p.all;
-         Increment (Mutable_p);
+         Mutable_p := Mutable_p + 1;
          if shift >= unwind.uleb128_t'Size then
             unreachable;
          end if;
@@ -117,7 +107,7 @@ package body C.unwind_pe is
       result := 0;
       loop
          byte := Mutable_p.all;
-         Increment (Mutable_p);
+         Mutable_p := Mutable_p + 1;
          if shift >= unwind.uleb128_t'Size then
             unreachable;
          end if;

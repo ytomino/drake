@@ -19,16 +19,6 @@ package body System.Unwind.Searching is
    pragma Import (Ada, Foreign_Exception,
       "system__exceptions__foreign_exception");
 
-   procedure Increment (p : in out C.unsigned_char_const_ptr);
-   procedure Increment (p : in out C.unsigned_char_const_ptr) is
-      package uchar_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.unsigned_char,
-            C.unsigned_char_const_ptr);
-   begin
-      p := uchar_Conv.To_Pointer (uchar_Conv.To_Address (p) + 1);
-   end Increment;
-
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
       return C.unsigned_char_const_ptr;
    function "+" (Left : C.unsigned_char_const_ptr; Right : C.ptrdiff_t)
@@ -112,7 +102,7 @@ package body System.Unwind.Searching is
                lpbase_encoding : C.unsigned_char;
             begin
                lpbase_encoding := p.all;
-               Increment (p);
+               p := p + 1;
                if lpbase_encoding /= C.unwind_pe.DW_EH_PE_omit then
                   p := C.unwind_pe.read_encoded_value (
                      Context,
@@ -123,7 +113,7 @@ package body System.Unwind.Searching is
                   lp_base := base;
                end if;
                ttype_encoding := p.all;
-               Increment (p);
+               p := p + 1;
                if ttype_encoding /= C.unwind_pe.DW_EH_PE_omit then
                   p := C.unwind_pe.read_uleb128 (p, tmp'Access);
                   ttype_table := p + C.ptrdiff_t (tmp);
@@ -135,7 +125,7 @@ package body System.Unwind.Searching is
                ttype_base := C.unwind_pe.base_of_encoded_value (
                   ttype_encoding,
                   Context);
-               Increment (p);
+               p := p + 1;
                call_site_table := C.unwind_pe.read_uleb128 (p, tmp'Access);
                action_table := call_site_table + C.ptrdiff_t (tmp);
             end;
