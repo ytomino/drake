@@ -309,27 +309,4 @@ private
    overriding function Next (Object : Search_Iterator; Position : Cursor)
       return Cursor;
 
-   package Streaming is
-
-      procedure Missing_Read (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : out Search_Iterator);
-      function Missing_Input (
-         Stream : not null access Streams.Root_Stream_Type'Class)
-         return Search_Iterator;
-      procedure Missing_Write (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Search_Iterator);
-
-      pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Input, "__drake_program_error");
-      pragma Import (Ada, Missing_Write, "__drake_program_error");
-
-   end Streaming;
-
-   for Search_Iterator'Read use Streaming.Missing_Read;
-   for Search_Iterator'Input use Streaming.Missing_Input;
-   for Search_Iterator'Write use Streaming.Missing_Write;
-   for Search_Iterator'Output use Streaming.Missing_Write;
-
 end Ada.Directories;

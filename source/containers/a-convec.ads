@@ -441,18 +441,7 @@ private
          Stream : access Streams.Root_Stream_Type'Class;
          Item : Reference_Type);
 
-      procedure Missing_Read (
-         Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Vector_Iterator);
-      function Missing_Input (
-         Stream : not null access Streams.Root_Stream_Type'Class)
-         return Vector_Iterator;
-      procedure Missing_Write (
-         Stream : access Streams.Root_Stream_Type'Class;
-         Item : Vector_Iterator);
-
       pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Input, "__drake_program_error");
       pragma Import (Ada, Missing_Write, "__drake_program_error");
 
    end Streaming;
@@ -465,11 +454,6 @@ private
 
    for Reference_Type'Read use Streaming.Missing_Read;
    for Reference_Type'Write use Streaming.Missing_Write;
-
-   for Vector_Iterator'Read use Streaming.Missing_Read;
-   for Vector_Iterator'Input use Streaming.Missing_Input;
-   for Vector_Iterator'Write use Streaming.Missing_Write;
-   for Vector_Iterator'Output use Streaming.Missing_Write;
 
    --  non-overloaded subprograms
    function Constant_Indexing (

@@ -8,6 +8,7 @@ package Ada.Iterator_Interfaces is
    pragma Pure;
 
    type Forward_Iterator is limited interface;
+   pragma No_Tagged_Streams (Forward_Iterator);
    function First (Object : Forward_Iterator) return Cursor is abstract;
    function Next (Object : Forward_Iterator; Position : Cursor)
       return Cursor is abstract;

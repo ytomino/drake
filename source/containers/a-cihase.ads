@@ -307,18 +307,7 @@ private
          Stream : access Streams.Root_Stream_Type'Class;
          Item : Constant_Reference_Type);
 
-      procedure Missing_Read (
-         Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Set_Iterator);
-      function Missing_Input (
-         Stream : not null access Streams.Root_Stream_Type'Class)
-         return Set_Iterator;
-      procedure Missing_Write (
-         Stream : access Streams.Root_Stream_Type'Class;
-         Item : Set_Iterator);
-
       pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Input, "__drake_program_error");
       pragma Import (Ada, Missing_Write, "__drake_program_error");
 
    end Streaming;
@@ -331,11 +320,6 @@ private
 
    for Constant_Reference_Type'Read use Streaming.Missing_Read;
    for Constant_Reference_Type'Write use Streaming.Missing_Write;
-
-   for Set_Iterator'Read use Streaming.Missing_Read;
-   for Set_Iterator'Input use Streaming.Missing_Input;
-   for Set_Iterator'Write use Streaming.Missing_Write;
-   for Set_Iterator'Output use Streaming.Missing_Write;
 
    No_Element : constant Cursor := null;
 

@@ -3,7 +3,6 @@ pragma License (Unrestricted);
 with Ada.Iterator_Interfaces;
 with Ada.References.Strings;
 private with Ada.Finalization;
-private with Ada.Streams;
 package Ada.Text_IO.Iterators is
    --  Iterators for Ada.Text_IO.File_Type.
 
@@ -60,28 +59,5 @@ private
    overriding function First (Object : Line_Iterator) return Line_Cursor;
    overriding function Next (Object : Line_Iterator; Position : Line_Cursor)
       return Line_Cursor;
-
-   package Streaming is
-
-      procedure Missing_Read (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : out Line_Iterator);
-      function Missing_Input (
-         Stream : not null access Streams.Root_Stream_Type'Class)
-         return Line_Iterator;
-      procedure Missing_Write (
-         Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Line_Iterator);
-
-      pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Input, "__drake_program_error");
-      pragma Import (Ada, Missing_Write, "__drake_program_error");
-
-   end Streaming;
-
-   for Line_Iterator'Read use Streaming.Missing_Read;
-   for Line_Iterator'Input use Streaming.Missing_Input;
-   for Line_Iterator'Write use Streaming.Missing_Write;
-   for Line_Iterator'Output use Streaming.Missing_Write;
 
 end Ada.Text_IO.Iterators;
