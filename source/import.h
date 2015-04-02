@@ -61,9 +61,7 @@
 #include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
 #include <dlfcn.h>
-#if !defined(__FreeBSD__) || __FreeBSD__ >= 8
 #include <spawn.h> /* spawn */
-#endif
 #if !defined(__linux__)
 #if defined(__FreeBSD__)
 #include <stdio.h> /* before wchar.h in FreeBSD */
@@ -214,6 +212,7 @@
 #endif
 #elif defined(__FreeBSD__)
 #pragma for Ada "dirent.h" include "sys/dirent.h"
+#pragma for Ada "pthread.h" include "signal.h" /* pthread_kill */
 #pragma for Ada "pthread.h" include "sys/_pthreadtypes.h"
 #pragma for Ada "signal.h" include "sys/select.h" /* sigset_t */
 #pragma for Ada "signal.h" include "sys/signal.h"
@@ -222,12 +221,9 @@
 #pragma for Ada "sys/time.h" include "sys/_timeval.h" /* timeval */
 #pragma for Ada "sys/uio.h" include "sys/_iovec.h" /* struct iovec */
 #pragma for Ada "time.h" include "sys/timespec.h" /* timespec */
+#pragma for Ada "time.h" include "sys/_timespec.h" /* struct timespec */
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
 #pragma for Ada "unistd.h" include "sys/unistd.h"
-#if __FreeBSD__ >= 8
-#pragma for Ada "pthread.h" include "signal.h" /* pthread_kill */
-#pragma for Ada "time.h" include "sys/_timespec.h" /* struct timespec */
-#endif
 #if __FreeBSD__ >= 9
 #pragma for Ada "stdint.h" include "machine/_types.h"
 #pragma for Ada "termios.h" include "sys/_termios.h"

@@ -58,6 +58,12 @@ package body System.Fat_LLF is
          return Adjacent (X, inf);
       end Succ;
 
+      function Unbiased_Rounding (X : Long_Long_Float)
+         return Long_Long_Float is
+      begin
+         return X - Remainder (X, 1.0);
+      end Unbiased_Rounding;
+
       function Valid (X : not null access Long_Long_Float) return Boolean is
       begin
          return isfinite (X.all) /= 0;

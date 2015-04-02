@@ -9,11 +9,6 @@ package System.Long_Long_Complex_Elementary_Functions is
    subtype Imaginary is Long_Long_Complex_Types.Imaginary;
    subtype Complex is Long_Long_Complex_Types.Complex;
 
-   function csqrtf (x : Complex) return Complex;
-   pragma Import (Intrinsic, csqrtf, "__builtin_csqrtf");
-   function Fast_Sqrt (X : Complex) return Complex
-      renames csqrtf;
-
    function clogf (x : Complex) return Complex;
    pragma Import (Intrinsic, clogf, "__builtin_clogf");
    function Fast_Log (X : Complex) return Complex
@@ -99,11 +94,6 @@ package System.Long_Long_Complex_Elementary_Functions is
    subtype Long_Imaginary is Long_Long_Complex_Types.Long_Imaginary;
    subtype Long_Complex is Long_Long_Complex_Types.Long_Complex;
 
-   function csqrt (x : Long_Complex) return Long_Complex;
-   pragma Import (Intrinsic, csqrt, "__builtin_csqrt");
-   function Fast_Sqrt (X : Long_Complex) return Long_Complex
-      renames csqrt;
-
    function clog (x : Long_Complex) return Long_Complex;
    pragma Import (Intrinsic, clog, "__builtin_clog");
    function Fast_Log (X : Long_Complex) return Long_Complex
@@ -188,11 +178,6 @@ package System.Long_Long_Complex_Elementary_Functions is
 
    subtype Long_Long_Imaginary is Long_Long_Complex_Types.Long_Long_Imaginary;
    subtype Long_Long_Complex is Long_Long_Complex_Types.Long_Long_Complex;
-
-   function csqrtl (x : Long_Long_Complex) return Long_Long_Complex;
-   pragma Import (Intrinsic, csqrtl, "__builtin_csqrtl");
-   function Fast_Sqrt (X : Long_Long_Complex) return Long_Long_Complex
-      renames csqrtl;
 
    function clogl (x : Long_Long_Complex) return Long_Long_Complex;
    pragma Import (Intrinsic, clogl, "__builtin_clogl");

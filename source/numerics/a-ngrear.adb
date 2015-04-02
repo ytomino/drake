@@ -1,5 +1,4 @@
 with Ada.Numerics.Generic_Arrays;
-with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Real_Arrays is
    pragma Suppress (All_Checks);
 
@@ -32,9 +31,14 @@ package body Ada.Numerics.Generic_Real_Arrays is
                return Float_Type'Base (sqrt (Long_Float (X)));
             end;
          else
-            return Float_Type'Base (
-               System.Long_Long_Elementary_Functions.Fast_Sqrt (
-                  Long_Long_Float (X)));
+            declare
+               function sqrtl (x : Long_Long_Float) return Long_Long_Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_sqrtl";
+            begin
+               return Float_Type'Base (sqrtl (Long_Long_Float (X)));
+            end;
          end if;
       end Sqrt;
 

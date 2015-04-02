@@ -1,7 +1,4 @@
-with Ada.Unchecked_Conversion;
 with Ada.Float;
-with System.Long_Long_Complex_Types;
-with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
 
@@ -38,9 +35,14 @@ package body Ada.Numerics.Generic_Complex_Types is
                return Float_Type'Base (sin (Long_Float (X)));
             end;
          else
-            return Float_Type'Base (
-               System.Long_Long_Elementary_Functions.Fast_Sin (
-                  Long_Long_Float (X)));
+            declare
+               function sinl (x : Long_Long_Float) return Long_Long_Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_sinl";
+            begin
+               return Float_Type'Base (sinl (Long_Long_Float (X)));
+            end;
          end if;
       end Sin;
 
@@ -61,54 +63,49 @@ package body Ada.Numerics.Generic_Complex_Types is
                return Float_Type'Base (cos (Long_Float (X)));
             end;
          else
-            return Float_Type'Base (
-               System.Long_Long_Elementary_Functions.Fast_Cos (
-                  Long_Long_Float (X)));
+            declare
+               function cosl (x : Long_Long_Float) return Long_Long_Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_cosl";
+            begin
+               return Float_Type'Base (cosl (Long_Long_Float (X)));
+            end;
          end if;
       end Cos;
 
    end Elementary_Functions;
-
-   pragma Warnings (Off);
-   function To_Complex is
-      new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Complex);
-   function To_Long_Complex is
-      new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Long_Complex);
-   function To_Long_Long_Complex is
-      new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Long_Long_Complex);
-   function From_Complex is
-      new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Complex,
-         Complex);
-   function From_Long_Complex is
-      new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Long_Complex,
-         Complex);
-   function From_Long_Long_Complex is
-      new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Long_Long_Complex,
-         Complex);
-   pragma Warnings (On);
 
    --  implementation
 
    function Argument (X : Complex) return Real'Base is
    begin
       if Real'Digits <= Float'Digits then
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
-            To_Complex (X)));
-      elsif Real'Digits <= Long_Float'Digits then
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
-            To_Long_Complex (X)));
+         declare
+            function cargf (x : Complex) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cargf";
+         begin
+            return Real'Base (cargf (X));
+         end;
+      elsif Real'Digits <= Long_Float'Digits
+         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+      then
+         declare
+            function carg (x : Complex) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_carg";
+         begin
+            return Real'Base (carg (X));
+         end;
       else
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
-            To_Long_Long_Complex (X)));
+         declare
+            function cargl (x : Complex) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cargl";
+         begin
+            return Real'Base (cargl (X));
+         end;
       end if;
    end Argument;
 
@@ -242,8 +239,13 @@ package body Ada.Numerics.Generic_Complex_Types is
             return Real'Base (cabs (X));
          end;
       else
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
-            To_Long_Long_Complex (X)));
+         declare
+            function cabsl (x : Complex) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabsl";
+         begin
+            return Real'Base (cabsl (X));
+         end;
       end if;
    end Modulus;
 

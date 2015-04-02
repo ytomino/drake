@@ -1,8 +1,4 @@
 with Ada.Numerics.Generic_Arrays;
-with Ada.Unchecked_Conversion;
-with System.Long_Long_Complex_Elementary_Functions;
-with System.Long_Long_Complex_Types;
-with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Arrays is
    pragma Suppress (All_Checks);
 
@@ -35,9 +31,14 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                return Float_Type'Base (sqrt (Long_Float (X)));
             end;
          else
-            return Float_Type'Base (
-               System.Long_Long_Elementary_Functions.Fast_Sqrt (
-                  Long_Long_Float (X)));
+            declare
+               function sqrtl (x : Long_Long_Float) return Long_Long_Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_sqrtl";
+            begin
+               return Float_Type'Base (sqrtl (Long_Long_Float (X)));
+            end;
          end if;
       end Sqrt;
 
@@ -53,47 +54,37 @@ package body Ada.Numerics.Generic_Complex_Arrays is
 
    package body Complex_Elementary_Functions is
 
-      pragma Warnings (Off);
-      function To_Complex is
-         new Unchecked_Conversion (
-            Complex,
-            System.Long_Long_Complex_Types.Complex);
-      function To_Long_Complex is
-         new Unchecked_Conversion (
-            Complex,
-            System.Long_Long_Complex_Types.Long_Complex);
-      function To_Long_Long_Complex is
-         new Unchecked_Conversion (
-            Complex,
-            System.Long_Long_Complex_Types.Long_Long_Complex);
-      function From_Complex is
-         new Unchecked_Conversion (
-            System.Long_Long_Complex_Types.Complex,
-            Complex);
-      function From_Long_Complex is
-         new Unchecked_Conversion (
-            System.Long_Long_Complex_Types.Long_Complex,
-            Complex);
-      function From_Long_Long_Complex is
-         new Unchecked_Conversion (
-            System.Long_Long_Complex_Types.Long_Long_Complex,
-            Complex);
-      pragma Warnings (On);
-
       function Sqrt (X : Complex) return Complex is
       begin
          if Real'Digits <= Float'Digits then
-            return From_Complex (
-               System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
-                  To_Complex (X)));
-         elsif Real'Digits <= Long_Float'Digits then
-            return From_Long_Complex (
-               System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
-                  To_Long_Complex (X)));
+            declare
+               function csqrtf (x : Complex) return Complex
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_csqrtf";
+            begin
+               return csqrtf (X);
+            end;
+         elsif Real'Digits <= Long_Float'Digits
+            and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+         then
+            declare
+               function csqrt (x : Complex) return Complex
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_csqrt";
+            begin
+               return csqrt (X);
+            end;
          else
-            return From_Long_Long_Complex (
-               System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
-                  To_Long_Long_Complex (X)));
+            declare
+               function csqrtl (x : Complex) return Complex
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_csqrtl";
+            begin
+               return csqrtl (X);
+            end;
          end if;
       end Sqrt;
 

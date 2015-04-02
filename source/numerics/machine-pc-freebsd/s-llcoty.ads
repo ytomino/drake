@@ -12,9 +12,6 @@ package System.Long_Long_Complex_Types is
    end record;
    pragma Complex_Representation (Complex);
 
-   function Fast_Argument (X : Complex) return Float;
-   pragma Inline (Fast_Argument);
-
    --  Long_Complex
 
    type Long_Imaginary is new Long_Float;
@@ -23,14 +20,6 @@ package System.Long_Long_Complex_Types is
       Re, Im : Long_Float;
    end record;
    pragma Complex_Representation (Long_Complex);
-
-   function Fast_Argument (X : Long_Complex) return Long_Float;
-   pragma Inline (Fast_Argument);
-
-   function cabs (x : Long_Complex) return Long_Float;
-   pragma Import (Intrinsic, cabs, "__builtin_cabs");
-   function Fast_Modulus (X : Long_Complex) return Long_Float
-      renames cabs;
 
    --  Long_Long_Complex
 
@@ -41,10 +30,9 @@ package System.Long_Long_Complex_Types is
    end record;
    pragma Complex_Representation (Long_Long_Complex);
 
-   function Fast_Argument (X : Long_Long_Complex) return Long_Long_Float;
-   pragma Inline (Fast_Argument);
-
-   function Fast_Modulus (X : Long_Long_Complex) return Long_Long_Float;
-   pragma Inline (Fast_Modulus);
+   function cabsl (x : Long_Long_Complex) return Long_Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_cabsl";
+   function Fast_Modulus (X : Long_Long_Complex) return Long_Long_Float
+      renames cabsl;
 
 end System.Long_Long_Complex_Types;

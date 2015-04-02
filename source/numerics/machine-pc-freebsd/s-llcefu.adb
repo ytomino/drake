@@ -18,11 +18,6 @@ package body System.Long_Long_Complex_Elementary_Functions is
       return (Re => Long_Long_Float (X.Re), Im => Long_Long_Float (X.Im));
    end To_Long_Long_Complex;
 
-   function Fast_Sqrt (X : Complex) return Complex is
-   begin
-      return To_Complex (Fast_Sqrt (To_Long_Long_Complex (X)));
-   end Fast_Sqrt;
-
    function Fast_Log (X : Complex) return Complex is
    begin
       return To_Complex (Fast_Log (To_Long_Long_Complex (X)));
@@ -118,11 +113,6 @@ package body System.Long_Long_Complex_Elementary_Functions is
    begin
       return (Re => Long_Long_Float (X.Re), Im => Long_Long_Float (X.Im));
    end To_Long_Long_Complex;
-
-   function Fast_Sqrt (X : Long_Complex) return Long_Complex is
-   begin
-      return To_Long_Complex (Fast_Sqrt (To_Long_Long_Complex (X)));
-   end Fast_Sqrt;
 
    function Fast_Log (X : Long_Complex) return Long_Complex is
    begin
@@ -238,57 +228,6 @@ package body System.Long_Long_Complex_Elementary_Functions is
       Sqrt_2 ** ((1 - Long_Long_Float'Model_Mantissa) / 2);
    Log_Inverse_Epsilon_2 : constant Long_Long_Float :=
       Long_Long_Float (Long_Long_Float'Model_Mantissa - 1) / 2.0;
-
-   function Fast_Sqrt (X : Long_Long_Complex) return Long_Long_Complex is
-   begin
-      if X.Re = 0.0 and then X.Im = 0.0 then
-         return X;
-      elsif X.Im = 0.0 then
-         if X.Re > 0.0 then
-            return (
-               Re => Long_Long_Elementary_Functions.Fast_Sqrt (X.Re),
-               Im => 0.0);
-         else
-            return (
-               Re => 0.0,
-               Im => Long_Long_Elementary_Functions.Fast_Sqrt (-X.Re));
-         end if;
-      elsif X.Re = 0.0 then
-         declare
-            Y : constant Long_Long_Float :=
-               Long_Long_Elementary_Functions.Fast_Sqrt (abs X.Im);
-         begin
-            if X.Im > 0.0 then
-               return (Re => Y, Im => Y);
-            else
-               return (Re => Y, Im => -Y);
-            end if;
-         end;
-      else
-         declare
-            A : constant Long_Long_Float :=
-               Long_Long_Elementary_Functions.Fast_Sqrt (
-                  0.5 * (abs X.Re
-                     + Long_Long_Elementary_Functions.Fast_Sqrt (
-                        Long_Long_Complex_Types.Fast_Modulus (X))));
-            B : constant Long_Long_Float := X.Im / (2.0 * A);
-         begin
-            if X.Re > 0.0 then
-               if X.Im > 0.0 then
-                  return (Re => A, Im => B);
-               else
-                  return (Re => A, Im => -B);
-               end if;
-            else
-               if X.Im > 0.0 then
-                  return (Re => B, Im => A);
-               else
-                  return (Re => B, Im => -A);
-               end if;
-            end if;
-         end;
-      end if;
-   end Fast_Sqrt;
 
    function Fast_Log (X : Long_Long_Complex) return Long_Long_Complex is
    begin

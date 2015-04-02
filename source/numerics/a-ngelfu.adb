@@ -36,9 +36,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             return Float_Type'Base (sqrt (Long_Float (X)));
          end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Sqrt (
-               Long_Long_Float (X)));
+         declare
+            function sqrtl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sqrtl";
+         begin
+            return Float_Type'Base (sqrtl (Long_Long_Float (X)));
+         end;
       end if;
    end Sqrt;
 
@@ -178,9 +182,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             return Float_Type'Base (sin (Long_Float (X)));
          end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Sin (
-               Long_Long_Float (X)));
+         declare
+            function sinl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sinl";
+         begin
+            return Float_Type'Base (sinl (Long_Long_Float (X)));
+         end;
       end if;
    end Sin;
 
@@ -237,9 +245,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             return Float_Type'Base (cos (Long_Float (X)));
          end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Cos (
-               Long_Long_Float (X)));
+         declare
+            function cosl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cosl";
+         begin
+            return Float_Type'Base (cosl (Long_Long_Float (X)));
+         end;
       end if;
    end Cos;
 
@@ -290,9 +302,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       elsif Float_Type'Digits <= Long_Float'Digits then
          return Float_Type'Base (tan (Long_Float (X)));
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Tan (
-               Long_Long_Float (X)));
+         declare
+            function tanl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_tanl";
+         begin
+            return Float_Type'Base (tanl (Long_Long_Float (X)));
+         end;
       end if;
    end Tan;
 
@@ -362,9 +378,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       elsif Float_Type'Digits <= Long_Float'Digits then
          return Float_Type'Base (asin (Long_Float (X)));
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Arcsin (
-               Long_Long_Float (X)));
+         declare
+            function asinl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_asinl";
+         begin
+            return Float_Type'Base (asinl (Long_Long_Float (X)));
+         end;
       end if;
    end Arcsin;
 
@@ -396,9 +416,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       elsif Float_Type'Digits <= Long_Float'Digits then
          return Float_Type'Base (acos (Long_Float (X)));
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Arccos (
-               Long_Long_Float (X)));
+         declare
+            function acosl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_acosl";
+         begin
+            return Float_Type'Base (acosl (Long_Long_Float (X)));
+         end;
       end if;
    end Arccos;
 
@@ -437,10 +461,14 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             return Float_Type'Base (atan2 (Long_Float (Y), Long_Float (X)));
          end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Arctan (
-               Long_Long_Float (Y),
-               Long_Long_Float (X)));
+         declare
+            function atan2l (y, x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_atan2l";
+         begin
+            return Float_Type'Base (
+               atan2l (Long_Long_Float (Y), Long_Long_Float (X)));
+         end;
       end if;
    end Arctan;
 
