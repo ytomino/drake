@@ -178,17 +178,31 @@ package body Ada.Numerics.Generic_Complex_Types is
    function Conjugate (X : Complex) return Complex is
    begin
       if Real'Digits <= Float'Digits then
-         return From_Complex (
-            System.Long_Long_Complex_Types.Fast_Conjugate (
-               To_Complex (X)));
-      elsif Real'Digits <= Long_Float'Digits then
-         return From_Long_Complex (
-            System.Long_Long_Complex_Types.Fast_Conjugate (
-               To_Long_Complex (X)));
+         declare
+            function conjf (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_conjf";
+         begin
+            return conjf (X);
+         end;
+      elsif Real'Digits <= Long_Float'Digits
+         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+      then
+         declare
+            function conj (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_conj";
+         begin
+            return conj (X);
+         end;
       else
-         return From_Long_Long_Complex (
-            System.Long_Long_Complex_Types.Fast_Conjugate (
-               To_Long_Long_Complex (X)));
+         declare
+            function conjl (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_conjl";
+         begin
+            return conjl (X);
+         end;
       end if;
    end Conjugate;
 
@@ -210,11 +224,23 @@ package body Ada.Numerics.Generic_Complex_Types is
    function Modulus (X : Complex) return Real'Base is
    begin
       if Real'Digits <= Float'Digits then
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
-            To_Complex (X)));
-      elsif Real'Digits <= Long_Float'Digits then
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
-            To_Long_Complex (X)));
+         declare
+            function cabsf (x : Complex) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabsf";
+         begin
+            return Real'Base (cabsf (X));
+         end;
+      elsif Real'Digits <= Long_Float'Digits
+         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+      then
+         declare
+            function cabs (x : Complex) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabs";
+         begin
+            return Real'Base (cabs (X));
+         end;
       else
          return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
             To_Long_Long_Complex (X)));
