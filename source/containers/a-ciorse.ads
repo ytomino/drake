@@ -241,18 +241,18 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
       --  dummy 'Read and 'Write
 
-      procedure Read (
+      procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
          Item : out Reference_Type);
-      procedure Write (
+      procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
          Item : Reference_Type);
 
-      for Reference_Type'Read use Read;
-      for Reference_Type'Write use Write;
+      for Reference_Type'Read use Missing_Read;
+      for Reference_Type'Write use Missing_Write;
 
-      pragma Import (Ada, Read, "__drake_program_error");
-      pragma Import (Ada, Write, "__drake_program_error");
+      pragma Import (Ada, Missing_Read, "__drake_program_error");
+      pragma Import (Ada, Missing_Write, "__drake_program_error");
 
    end Generic_Keys;
 
