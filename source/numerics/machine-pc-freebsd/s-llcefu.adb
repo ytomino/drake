@@ -1,8 +1,57 @@
-with Ada.Numerics.Long_Long_Complex_Types; -- ???
-with Ada.Unchecked_Conversion;
 with System.Long_Long_Elementary_Functions;
 package body System.Long_Long_Complex_Elementary_Functions is
    pragma Suppress (All_Checks);
+
+   function "-" (Left : Long_Long_Float; Right : Long_Long_Complex)
+      return Long_Long_Complex
+      with Convention => Intrinsic;
+   function "*" (Left : Long_Long_Float; Right : Long_Long_Complex)
+      return Long_Long_Complex
+      with Convention => Intrinsic;
+   function "*" (Left, Right : Long_Long_Complex) return Long_Long_Complex
+      with Convention => Intrinsic;
+   function "/" (Left, Right : Long_Long_Complex) return Long_Long_Complex
+      with Convention => Intrinsic;
+
+   pragma Inline_Always ("-");
+   pragma Inline_Always ("*");
+   pragma Inline_Always ("/");
+
+   function "-" (Left : Long_Long_Float; Right : Long_Long_Complex)
+      return Long_Long_Complex is
+   begin
+      return (Re => Left - Right.Re, Im => -Right.Im);
+   end "-";
+
+   function "*" (Left : Long_Long_Float; Right : Long_Long_Complex)
+      return Long_Long_Complex is
+   begin
+      return (Re => Left * Right.Re, Im => Left * Right.Im);
+   end "*";
+
+   function "*" (Left, Right : Long_Long_Complex) return Long_Long_Complex is
+      --  libgcc
+      function mulxc3 (Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)
+         return Long_Long_Complex
+         with Import, Convention => C, External_Name => "__mulxc3";
+      pragma Pure_Function (mulxc3);
+   begin
+      return mulxc3 (Left.Re, Left.Im, Right.Re, Right.Im);
+   end "*";
+
+   function "/" (Left, Right : Long_Long_Complex) return Long_Long_Complex is
+      --  libgcc
+      function divxc3 (
+         Left_Re : Long_Long_Float;
+         Left_Im : Long_Long_Float;
+         Right_Re : Long_Long_Float;
+         Right_Im : Long_Long_Float)
+         return Long_Long_Complex
+         with Import, Convention => C, External_Name => "__divxc3";
+      pragma Pure_Function (divxc3);
+   begin
+      return divxc3 (Left.Re, Left.Im, Right.Re, Right.Im);
+   end "/";
 
    --  Complex
 
@@ -198,19 +247,6 @@ package body System.Long_Long_Complex_Elementary_Functions is
 
    --  Long_Long_Complex
 
-   package Numerics_Complex_Types
-      renames Ada.Numerics.Long_Long_Complex_Types;
-   use type Numerics_Complex_Types.Complex;
-
-   function To_Numerics_Complex is
-      new Ada.Unchecked_Conversion (
-         Long_Long_Complex,
-         Numerics_Complex_Types.Complex);
-   function From_Numerics_Complex is
-      new Ada.Unchecked_Conversion (
-         Numerics_Complex_Types.Complex,
-         Long_Long_Complex);
-
    Pi : constant :=
       3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37511;
    --  same as Ada.Numerics.Pi
@@ -235,13 +271,13 @@ package body System.Long_Long_Complex_Elementary_Functions is
          and then abs X.Im < Root_Root_Epsilon
       then
          declare
-            Z : constant Numerics_Complex_Types.Complex := ( -- X - 1.0
+            Z : constant Long_Long_Complex := ( -- X - 1.0
                Re => X.Re - 1.0,
                Im => X.Im);
-            Result : constant Numerics_Complex_Types.Complex :=
+            Result : constant Long_Long_Complex :=
                (1.0 - (1.0 / 2.0 - (1.0 / 3.0 - (1.0 / 4.0) * Z) * Z) * Z) * Z;
          begin
-            return From_Numerics_Complex (Result);
+            return Result;
          end;
       else
          declare
@@ -282,9 +318,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       if (Left.Re = 0.0 or else Left.Re = 1.0) and then Left.Im = 0.0 then
          return Left;
       else
-         return Fast_Exp (From_Numerics_Complex (
-            To_Numerics_Complex (Right)
-               * To_Numerics_Complex (Fast_Log (Left))));
+         return Fast_Exp (Right * Fast_Log (Left));
       end if;
    end Fast_Pow;
 
@@ -323,9 +357,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       elsif X.Im < -Log_Inverse_Epsilon_2 then
          return (Re => 0.0, Im => -1.0);
       else
-         return From_Numerics_Complex (
-            To_Numerics_Complex (Fast_Sin (X))
-               / To_Numerics_Complex (Fast_Cos (X)));
+         return Fast_Sin (X) / Fast_Cos (X);
       end if;
    end Fast_Tan;
 
@@ -362,8 +394,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       else
          declare
             iX : constant Long_Long_Complex := (Re => -X.Im, Im => X.Re);
-            X_X : constant Long_Long_Complex := From_Numerics_Complex (
-               To_Numerics_Complex (X) * To_Numerics_Complex (X));
+            X_X : constant Long_Long_Complex := X * X;
             A : constant Long_Long_Complex := ( -- 1.0 - X_X
                Re => 1.0 - X_X.Re,
                Im => -X_X.Im);
@@ -428,8 +459,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
          end;
       else
          declare
-            X_X : constant Long_Long_Complex := From_Numerics_Complex (
-               To_Numerics_Complex (X) * To_Numerics_Complex (X));
+            X_X : constant Long_Long_Complex := X * X;
             A : constant Long_Long_Complex := ( -- 1.0 - X_X
                Re => 1.0 - X_X.Re,
                Im => -X_X.Im);
@@ -520,9 +550,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
       elsif X.Re < -Log_Inverse_Epsilon_2 then
          return (Re => -1.0, Im => 0.0);
       else
-         return From_Numerics_Complex (
-            To_Numerics_Complex (Fast_Sinh (X))
-               / To_Numerics_Complex (Fast_Cosh (X)));
+         return Fast_Sinh (X) / Fast_Cosh (X);
       end if;
    end Fast_Tanh;
 
@@ -551,8 +579,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
          end;
       else
          declare
-            X_X : constant Long_Long_Complex := From_Numerics_Complex (
-               To_Numerics_Complex (X) * To_Numerics_Complex (X));
+            X_X : constant Long_Long_Complex := X * X;
             A : constant Long_Long_Complex := ( -- 1.0 + X_X
                Re => 1.0 + X_X.Re,
                Im => X_X.Im);
