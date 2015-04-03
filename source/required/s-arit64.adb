@@ -111,10 +111,10 @@ package body System.Arith_64 is
    procedure Div (X : U64; Y : U64; Q : out U64; R : out U64) is
    begin
       Long_Long_Integer_Divisions.Divide (
-         Long_Long_Integer (X),
-         Long_Long_Integer (Y),
-         Long_Long_Integer (Q),
-         Long_Long_Integer (R));
+         Long_Long_Integer_Divisions.Longest_Unsigned (X),
+         Long_Long_Integer_Divisions.Longest_Unsigned (Y),
+         Long_Long_Integer_Divisions.Longest_Unsigned (Q),
+         Long_Long_Integer_Divisions.Longest_Unsigned (R));
    end Div;
 
    type Unsigned is mod 2 ** Integer'Size;
@@ -125,19 +125,16 @@ package body System.Arith_64 is
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64);
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64) is
       Temp_XL : U64 := XL;
-      Temp_XH : U64 := XH; -- XH < 2 ** 62 (abs signed * positive signed ???)
+      Temp_XH : U64 := XH; -- XH <= 2 ** 62 (abs signed * abs signed)
       Rem_Q : U64;
    begin
       Q := 0;
       while Temp_XH > 0 loop
          declare
-            XH_W : constant Natural := Natural (clz (Temp_XH) xor 63) + 1;
-            Scaling_W : constant Natural := XH_W + 1;
-            --  "+1" means not using sign bit
-            --  since Long_Long_Integer_Divide is signed
+            Scaling_W : constant Natural := Natural (clz (Temp_XH) xor 63) + 1;
             Scaled_X : U64;
          begin
-            if XH_W not in 1 .. 62 or else Scaling_W not in 2 .. 63 then
+            if Scaling_W not in 1 .. 63 then
                unreachable;
             end if;
             Scaled_X :=
@@ -147,10 +144,11 @@ package body System.Arith_64 is
             if Scaled_X < Y then
                --  Y <= 2 ** 63 (original Y is signed)
                declare
-                  YL : constant U64 := Interfaces.Shift_Left (Y, XH_W);
-                  YH : constant U64 := Interfaces.Shift_Right (Y, 64 - XH_W);
+                  YL : constant U64 := Interfaces.Shift_Left (Y, Scaling_W);
+                  YH : constant U64 :=
+                     Interfaces.Shift_Right (Y, 64 - Scaling_W);
                begin
-                  Q := Q + Interfaces.Shift_Left (1, XH_W);
+                  Q := Q + Interfaces.Shift_Left (1, Scaling_W);
                   if Temp_XL < YL then
                      Temp_XH := Temp_XH - 1; -- borrow
                   end if;
@@ -170,26 +168,6 @@ package body System.Arith_64 is
             end if;
          end;
       end loop;
-      if Temp_XL > U64 (Interfaces.Integer_64'Last) then
-         declare
-            Scaled_X : constant U64 := Interfaces.Shift_Right (Temp_XL, 1);
-            --  Y <= Scaled_X < 2 ** 63
-         begin
-            if Scaled_X < Y then
-               Q := Q + 1;
-               Temp_XL := Temp_XL - Y;
-            else
-               declare
-                  Temp_Q, Temp_R : U64;
-               begin
-                  Div (Scaled_X, Y, Temp_Q, Temp_R);
-                  Q := Q + Interfaces.Shift_Left (Temp_Q, 1);
-                  Temp_XL := Interfaces.Shift_Left (Temp_R, 1)
-                     or (Temp_XL and 1);
-               end;
-            end if;
-         end;
-      end if;
       Div (Temp_XL, Y, Rem_Q, R);
       Q := Q + Rem_Q;
    end Div;
@@ -258,23 +236,41 @@ package body System.Arith_64 is
          Unwind.Raising.Zero_Division;
       end if;
       if Multiply_Overflow (Y, Z) then
-         Q := 0;
-         R := X;
+         if X = Interfaces.Integer_64'First
+            and then (Y = -1 or else Z = -1)
+         then -- special case, Integer_64'First / (Integer_64'First * -1)
+            Q := -1;
+            R := 0;
+         else
+            Q := 0;
+            R := X;
+         end if;
       else
          declare
             YZ : constant Interfaces.Integer_64 := Y * Z;
+            AX : constant U64 := U64'Mod (abs X);
+            AYZ : constant U64 := U64'Mod (abs YZ);
+            AQ, AR : U64;
          begin
-            Long_Long_Integer_Divisions.Divide (
-               Long_Long_Integer (X),
-               Long_Long_Integer (YZ),
-               Long_Long_Integer (Q),
-               Long_Long_Integer (R));
-            if Round and then U64 (abs R) > (U64 (abs YZ) - 1) / 2 then
-               if Q > 0 then
-                  Q := Q + 1;
-               else
-                  Q := Q - 1;
+            Div (AX, AYZ, AQ, AR);
+            if Round and then AR > (AYZ - 1) / 2 then
+               AQ := AQ + 1;
+            end if;
+            if (X < 0) /= (YZ <= 0) then
+               if AQ > 2 ** 63 then
+                  Unwind.Raising.Overflow;
                end if;
+               Q := -Interfaces.Integer_64 (AQ);
+            else
+               if AQ >= 2 ** 63 then
+                  Unwind.Raising.Overflow;
+               end if;
+               Q := Interfaces.Integer_64 (AQ);
+            end if;
+            if X < 0 then
+               R := -Interfaces.Integer_64 (AR);
+            else
+               R := Interfaces.Integer_64 (AR);
             end if;
          end;
       end if;
