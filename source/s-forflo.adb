@@ -1,4 +1,4 @@
-with System.Long_Long_Float_Divide;
+with System.Long_Long_Float_Divisions;
 package body System.Formatting.Float is
    pragma Suppress (All_Checks);
 
@@ -107,7 +107,7 @@ package body System.Formatting.Float is
             Q : Long_Long_Float;
             R : Long_Long_Float;
          begin
-            Long_Long_Float_Divide (X, Long_Long_Float (Base), Q, R);
+            Long_Long_Float_Divisions.Divide (X, Long_Long_Float (Base), Q, R);
             Image (
                Digit (R),
                Item (I),
