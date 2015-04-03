@@ -36,17 +36,31 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    function Sqrt (X : Complex) return Complex is
    begin
       if Real'Digits <= Float'Digits then
-         return From_Complex (
-            System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
-               To_Complex (X)));
-      elsif Real'Digits <= Long_Float'Digits then
-         return From_Long_Complex (
-            System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
-               To_Long_Complex (X)));
+         declare
+            function csqrtf (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_csqrtf";
+         begin
+            return csqrtf (X);
+         end;
+      elsif Real'Digits <= Long_Float'Digits
+         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+      then
+         declare
+            function csqrt (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_csqrt";
+         begin
+            return csqrt (X);
+         end;
       else
-         return From_Long_Long_Complex (
-            System.Long_Long_Complex_Elementary_Functions.Fast_Sqrt (
-               To_Long_Long_Complex (X)));
+         declare
+            function csqrtl (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_csqrtl";
+         begin
+            return csqrtl (X);
+         end;
       end if;
    end Sqrt;
 

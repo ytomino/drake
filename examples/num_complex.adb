@@ -46,6 +46,8 @@ procedure num_complex is
 		pragma Assert (i > -i and then -i < i);
 		pragma Assert (i >= j and then j <= i);
 		-- primitives of complex
+		pragma Assert (Complex'(2.0 + 3.0 * i) * Complex'(4.0 - 5.0 * i) = Complex'(23.0 + 2.0 * i));
+		pragma Assert (Complex'(23.0 + 2.0 * i) / Complex'(2.0 + 3.0 * i) = Complex'(4.0 - 5.0 * i));
 		pragma Assert (Argument (1.0 + i) = Ada.Numerics.Pi / 4.0);
 		pragma Assert (abs (1.0 + i) + 0.0 * i = Sqrt (2.0 + 0.0 * i));
 		pragma Assert (Complex'(Conjugate (1.0 + i)) = 1.0 - i);

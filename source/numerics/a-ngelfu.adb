@@ -36,9 +36,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             return Float_Type'Base (sqrt (Long_Float (X)));
          end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Sqrt (
-               Long_Long_Float (X)));
+         declare
+            function sqrtl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sqrtl";
+         begin
+            return Float_Type'Base (sqrtl (Long_Long_Float (X)));
+         end;
       end if;
    end Sqrt;
 
@@ -102,24 +106,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    end Exp;
 
    function "**" (Left, Right : Float_Type'Base) return Float_Type'Base is
-      function powf (A1, A2 : Float) return Float;
-      pragma Import (Intrinsic, powf, "__builtin_powf");
-      function pow (A1, A2 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, pow, "__builtin_pow");
+      RR : Float_Type'Base;
+      Coef : Float_Type'Base;
+      Result : Float_Type'Base;
    begin
       if Standard'Fast_Math then
-         if Float_Type'Digits <= Float'Digits then
-            return Float_Type'Base (powf (Float (Left), Float (Right)));
-         elsif Float_Type'Digits <= Long_Float'Digits then
-            return Float_Type'Base (pow (
-               Long_Float (Left),
-               Long_Float (Right)));
-         else
-            return Float_Type'Base (
-               System.Long_Long_Elementary_Functions.Fast_Pow (
-                  Long_Long_Float (Left),
-                  Long_Long_Float (Right)));
-         end if;
+         RR := Right;
+         Coef := 1.0;
       else
          if Left < 0.0 or else (Left = 0.0 and then Right = 0.0) then
             raise Argument_Error; -- CXA5A09
@@ -129,9 +122,6 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             --  CXG2012 requires high precision
             declare
                RT : constant Float_Type'Base := Float_Type'Truncation (Right);
-               RR : Float_Type'Base;
-               Coef : Float_Type'Base;
-               Result : Float_Type'Base;
             begin
                if Right - RT = 0.25 then
                   RR := RT;
@@ -143,22 +133,31 @@ package body Ada.Numerics.Generic_Elementary_Functions is
                   RR := Right;
                   Coef := 1.0;
                end if;
-               if Float_Type'Digits <= Float'Digits then
-                  Result := Float_Type (powf (Float (Left), Float (RR)));
-               elsif Float_Type'Digits <= Long_Float'Digits then
-                  Result := Float_Type (pow (
-                     Long_Float (Left),
-                     Long_Float (RR)));
-               else
-                  Result := Float_Type'Base (
-                     System.Long_Long_Elementary_Functions.Fast_Pow (
-                        Long_Long_Float (Left),
-                        Long_Long_Float (RR)));
-               end if;
-               return Result * Coef;
             end;
          end if;
       end if;
+      if Float_Type'Digits <= Float'Digits then
+         declare
+            function powf (A1, A2 : Float) return Float;
+            pragma Import (Intrinsic, powf, "__builtin_powf");
+         begin
+            Result := Float_Type'Base (powf (Float (Left), Float (RR)));
+         end;
+      elsif Float_Type'Digits <= Long_Float'Digits then
+         declare
+            function pow (A1, A2 : Long_Float) return Long_Float;
+            pragma Import (Intrinsic, pow, "__builtin_pow");
+         begin
+            Result := Float_Type'Base (
+               pow (Long_Float (Left), Long_Float (RR)));
+         end;
+      else
+         Result := Float_Type'Base (
+            System.Long_Long_Elementary_Functions.Fast_Pow (
+               Long_Long_Float (Left),
+               Long_Long_Float (RR)));
+      end if;
+      return Result * Coef;
    end "**";
 
    function Sin (X : Float_Type'Base) return Float_Type'Base is
@@ -178,9 +177,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             return Float_Type'Base (sin (Long_Float (X)));
          end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Sin (
-               Long_Long_Float (X)));
+         declare
+            function sinl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sinl";
+         begin
+            return Float_Type'Base (sinl (Long_Long_Float (X)));
+         end;
       end if;
    end Sin;
 
@@ -237,9 +240,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             return Float_Type'Base (cos (Long_Float (X)));
          end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Cos (
-               Long_Long_Float (X)));
+         declare
+            function cosl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cosl";
+         begin
+            return Float_Type'Base (cosl (Long_Long_Float (X)));
+         end;
       end if;
    end Cos;
 
@@ -280,19 +287,29 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    end Cos;
 
    function Tan (X : Float_Type'Base) return Float_Type'Base is
-      function tanf (A1 : Float) return Float;
-      pragma Import (Intrinsic, tanf, "__builtin_tanf");
-      function tan (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, tan, "__builtin_tan");
    begin
       if Float_Type'Digits <= Float'Digits then
-         return Float_Type'Base (tanf (Float (X)));
+         declare
+            function tanf (A1 : Float) return Float;
+            pragma Import (Intrinsic, tanf, "__builtin_tanf");
+         begin
+            return Float_Type'Base (tanf (Float (X)));
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type'Base (tan (Long_Float (X)));
+         declare
+            function tan (A1 : Long_Float) return Long_Float;
+            pragma Import (Intrinsic, tan, "__builtin_tan");
+         begin
+            return Float_Type'Base (tan (Long_Float (X)));
+         end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Tan (
-               Long_Long_Float (X)));
+         declare
+            function tanl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_tanl";
+         begin
+            return Float_Type'Base (tanl (Long_Long_Float (X)));
+         end;
       end if;
    end Tan;
 
@@ -350,21 +367,31 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    end Cot;
 
    function Arcsin (X : Float_Type'Base) return Float_Type'Base is
-      function asinf (A1 : Float) return Float;
-      pragma Import (Intrinsic, asinf, "__builtin_asinf");
-      function asin (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, asin, "__builtin_asin");
    begin
       if not Standard'Fast_Math and then abs X > 1.0 then
          raise Argument_Error; -- CXA5A05
       elsif Float_Type'Digits <= Float'Digits then
-         return Float_Type'Base (asinf (Float (X)));
+         declare
+            function asinf (A1 : Float) return Float;
+            pragma Import (Intrinsic, asinf, "__builtin_asinf");
+         begin
+            return Float_Type'Base (asinf (Float (X)));
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type'Base (asin (Long_Float (X)));
+         declare
+            function asin (A1 : Long_Float) return Long_Float;
+            pragma Import (Intrinsic, asin, "__builtin_asin");
+         begin
+            return Float_Type'Base (asin (Long_Float (X)));
+         end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Arcsin (
-               Long_Long_Float (X)));
+         declare
+            function asinl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_asinl";
+         begin
+            return Float_Type'Base (asinl (Long_Long_Float (X)));
+         end;
       end if;
    end Arcsin;
 
@@ -384,21 +411,31 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    end Arcsin;
 
    function Arccos (X : Float_Type'Base) return Float_Type'Base is
-      function acosf (A1 : Float) return Float;
-      pragma Import (Intrinsic, acosf, "__builtin_acosf");
-      function acos (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, acos, "__builtin_acos");
    begin
       if not Standard'Fast_Math and then abs X > 1.0 then
          raise Argument_Error; -- CXA5A06
       elsif Float_Type'Digits <= Float'Digits then
-         return Float_Type'Base (acosf (Float (X)));
+         declare
+            function acosf (A1 : Float) return Float;
+            pragma Import (Intrinsic, acosf, "__builtin_acosf");
+         begin
+            return Float_Type'Base (acosf (Float (X)));
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type'Base (acos (Long_Float (X)));
+         declare
+            function acos (A1 : Long_Float) return Long_Float;
+            pragma Import (Intrinsic, acos, "__builtin_acos");
+         begin
+            return Float_Type'Base (acos (Long_Float (X)));
+         end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Arccos (
-               Long_Long_Float (X)));
+         declare
+            function acosl (x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_acosl";
+         begin
+            return Float_Type'Base (acosl (Long_Long_Float (X)));
+         end;
       end if;
    end Arccos;
 
@@ -437,10 +474,14 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             return Float_Type'Base (atan2 (Long_Float (Y), Long_Float (X)));
          end;
       else
-         return Float_Type'Base (
-            System.Long_Long_Elementary_Functions.Fast_Arctan (
-               Long_Long_Float (Y),
-               Long_Long_Float (X)));
+         declare
+            function atan2l (y, x : Long_Long_Float) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_atan2l";
+         begin
+            return Float_Type'Base (
+               atan2l (Long_Long_Float (Y), Long_Long_Float (X)));
+         end;
       end if;
    end Arctan;
 
@@ -551,15 +592,21 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    end Cosh;
 
    function Tanh (X : Float_Type'Base) return Float_Type'Base is
-      function tanhf (A1 : Float) return Float;
-      pragma Import (Intrinsic, tanhf, "__builtin_tanhf");
-      function tanh (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, tanh, "__builtin_tanh");
    begin
       if Float_Type'Digits <= Float'Digits then
-         return Float_Type'Base (tanhf (Float (X)));
+         declare
+            function tanhf (A1 : Float) return Float;
+            pragma Import (Intrinsic, tanhf, "__builtin_tanhf");
+         begin
+            return Float_Type'Base (tanhf (Float (X)));
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type'Base (tanh (Long_Float (X)));
+         declare
+            function tanh (A1 : Long_Float) return Long_Float;
+            pragma Import (Intrinsic, tanh, "__builtin_tanh");
+         begin
+            return Float_Type'Base (tanh (Long_Float (X)));
+         end;
       else
          return Float_Type'Base (
             System.Long_Long_Elementary_Functions.Fast_Tanh (
@@ -573,15 +620,21 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    end Coth;
 
    function Arcsinh (X : Float_Type'Base) return Float_Type'Base is
-      function asinhf (A1 : Float) return Float;
-      pragma Import (Intrinsic, asinhf, "__builtin_asinhf");
-      function asinh (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, asinh, "__builtin_asinh");
    begin
       if Float_Type'Digits <= Float'Digits then
-         return Float_Type'Base (asinhf (Float (X)));
+         declare
+            function asinhf (A1 : Float) return Float;
+            pragma Import (Intrinsic, asinhf, "__builtin_asinhf");
+         begin
+            return Float_Type'Base (asinhf (Float (X)));
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type'Base (asinh (Long_Float (X)));
+         declare
+            function asinh (A1 : Long_Float) return Long_Float;
+            pragma Import (Intrinsic, asinh, "__builtin_asinh");
+         begin
+            return Float_Type'Base (asinh (Long_Float (X)));
+         end;
       else
          return Float_Type'Base (
             System.Long_Long_Elementary_Functions.Fast_Arcsinh (
@@ -590,17 +643,23 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    end Arcsinh;
 
    function Arccosh (X : Float_Type'Base) return Float_Type'Base is
-      function acoshf (A1 : Float) return Float;
-      pragma Import (Intrinsic, acoshf, "__builtin_acoshf");
-      function acosh (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, acosh, "__builtin_acosh");
    begin
       if not Standard'Fast_Math and then X < 1.0 then
          raise Argument_Error; -- CXA5A06
       elsif Float_Type'Digits <= Float'Digits then
-         return Float_Type'Base (acoshf (Float (X)));
+         declare
+            function acoshf (A1 : Float) return Float;
+            pragma Import (Intrinsic, acoshf, "__builtin_acoshf");
+         begin
+            return Float_Type'Base (acoshf (Float (X)));
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type'Base (acosh (Long_Float (X)));
+         declare
+            function acosh (A1 : Long_Float) return Long_Float;
+            pragma Import (Intrinsic, acosh, "__builtin_acosh");
+         begin
+            return Float_Type'Base (acosh (Long_Float (X)));
+         end;
       else
          return Float_Type'Base (
             System.Long_Long_Elementary_Functions.Fast_Arccosh (
@@ -609,17 +668,23 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    end Arccosh;
 
    function Arctanh (X : Float_Type'Base) return Float_Type'Base is
-      function atanhf (A1 : Float) return Float;
-      pragma Import (Intrinsic, atanhf, "__builtin_atanhf");
-      function atanh (A1 : Long_Float) return Long_Float;
-      pragma Import (Intrinsic, atanh, "__builtin_atanh");
    begin
       if not Standard'Fast_Math and then abs X > 1.0 then
          raise Argument_Error; -- CXA5A03
       elsif Float_Type'Digits <= Float'Digits then
-         return Float_Type'Base (atanhf (Float (X)));
+         declare
+            function atanhf (A1 : Float) return Float;
+            pragma Import (Intrinsic, atanhf, "__builtin_atanhf");
+         begin
+            return Float_Type'Base (atanhf (Float (X)));
+         end;
       elsif Float_Type'Digits <= Long_Float'Digits then
-         return Float_Type'Base (atanh (Long_Float (X)));
+         declare
+            function atanh (A1 : Long_Float) return Long_Float;
+            pragma Import (Intrinsic, atanh, "__builtin_atanh");
+         begin
+            return Float_Type'Base (atanh (Long_Float (X)));
+         end;
       else
          return Float_Type'Base (
             System.Long_Long_Elementary_Functions.Fast_Arctanh (

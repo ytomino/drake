@@ -3,11 +3,6 @@ pragma License (Unrestricted);
 package System.Long_Long_Elementary_Functions is
    pragma Pure;
 
-   function sqrtl (x : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, sqrtl, "__builtin_sqrtl");
-   function Fast_Sqrt (X : Long_Long_Float) return Long_Long_Float
-      renames sqrtl;
-
    function logl (x : Long_Long_Float) return Long_Long_Float;
    pragma Import (Intrinsic, logl, "__builtin_logl");
    function Fast_Log (X : Long_Long_Float) return Long_Long_Float
@@ -22,37 +17,6 @@ package System.Long_Long_Elementary_Functions is
    pragma Import (Intrinsic, powl, "__builtin_powl");
    function Fast_Pow (Left, Right : Long_Long_Float) return Long_Long_Float
       renames powl;
-
-   function sinl (x : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, sinl, "__builtin_sinl");
-   function Fast_Sin (X : Long_Long_Float) return Long_Long_Float
-      renames sinl;
-
-   function cosl (x : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, cosl, "__builtin_cosl");
-   function Fast_Cos (X : Long_Long_Float) return Long_Long_Float
-      renames cosl;
-
-   function tanl (x : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, tanl, "__builtin_tanl");
-   function Fast_Tan (X : Long_Long_Float) return Long_Long_Float
-      renames tanl;
-
-   function asinl (x : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, asinl, "__builtin_asinl");
-   function Fast_Arcsin (X : Long_Long_Float) return Long_Long_Float
-      renames asinl;
-
-   function acosl (x : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, acosl, "__builtin_acosl");
-   function Fast_Arccos (X : Long_Long_Float) return Long_Long_Float
-      renames acosl;
-
-   function atan2l (y, x : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, atan2l, "__builtin_atan2l");
-   function Fast_Arctan (Y : Long_Long_Float; X : Long_Long_Float := 1.0)
-      return Long_Long_Float
-      renames atan2l;
 
    function sinhl (x : Long_Long_Float) return Long_Long_Float;
    pragma Import (Intrinsic, sinhl, "__builtin_sinhl");

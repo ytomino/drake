@@ -1,9 +1,11 @@
-with Ada.Unchecked_Conversion;
 with Ada.Float;
-with System.Long_Long_Complex_Types;
-with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
+
+   function constant_p (x : Complex) return Integer
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_constant_p";
+   pragma Warnings (Off, constant_p); -- [gcc-5] excessive prototype checking
 
    function Is_Infinity is new Float.Is_Infinity (Real'Base);
    procedure Modulo_Divide_By_1 is
@@ -38,9 +40,14 @@ package body Ada.Numerics.Generic_Complex_Types is
                return Float_Type'Base (sin (Long_Float (X)));
             end;
          else
-            return Float_Type'Base (
-               System.Long_Long_Elementary_Functions.Fast_Sin (
-                  Long_Long_Float (X)));
+            declare
+               function sinl (x : Long_Long_Float) return Long_Long_Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_sinl";
+            begin
+               return Float_Type'Base (sinl (Long_Long_Float (X)));
+            end;
          end if;
       end Sin;
 
@@ -61,54 +68,49 @@ package body Ada.Numerics.Generic_Complex_Types is
                return Float_Type'Base (cos (Long_Float (X)));
             end;
          else
-            return Float_Type'Base (
-               System.Long_Long_Elementary_Functions.Fast_Cos (
-                  Long_Long_Float (X)));
+            declare
+               function cosl (x : Long_Long_Float) return Long_Long_Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_cosl";
+            begin
+               return Float_Type'Base (cosl (Long_Long_Float (X)));
+            end;
          end if;
       end Cos;
 
    end Elementary_Functions;
-
-   pragma Warnings (Off);
-   function To_Complex is
-      new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Complex);
-   function To_Long_Complex is
-      new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Long_Complex);
-   function To_Long_Long_Complex is
-      new Unchecked_Conversion (
-         Complex,
-         System.Long_Long_Complex_Types.Long_Long_Complex);
-   function From_Complex is
-      new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Complex,
-         Complex);
-   function From_Long_Complex is
-      new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Long_Complex,
-         Complex);
-   function From_Long_Long_Complex is
-      new Unchecked_Conversion (
-         System.Long_Long_Complex_Types.Long_Long_Complex,
-         Complex);
-   pragma Warnings (On);
 
    --  implementation
 
    function Argument (X : Complex) return Real'Base is
    begin
       if Real'Digits <= Float'Digits then
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
-            To_Complex (X)));
-      elsif Real'Digits <= Long_Float'Digits then
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
-            To_Long_Complex (X)));
+         declare
+            function cargf (x : Complex) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cargf";
+         begin
+            return Real'Base (cargf (X));
+         end;
+      elsif Real'Digits <= Long_Float'Digits
+         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+      then
+         declare
+            function carg (x : Complex) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_carg";
+         begin
+            return Real'Base (carg (X));
+         end;
       else
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Argument (
-            To_Long_Long_Complex (X)));
+         declare
+            function cargl (x : Complex) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cargl";
+         begin
+            return Real'Base (cargl (X));
+         end;
       end if;
    end Argument;
 
@@ -178,17 +180,31 @@ package body Ada.Numerics.Generic_Complex_Types is
    function Conjugate (X : Complex) return Complex is
    begin
       if Real'Digits <= Float'Digits then
-         return From_Complex (
-            System.Long_Long_Complex_Types.Fast_Conjugate (
-               To_Complex (X)));
-      elsif Real'Digits <= Long_Float'Digits then
-         return From_Long_Complex (
-            System.Long_Long_Complex_Types.Fast_Conjugate (
-               To_Long_Complex (X)));
+         declare
+            function conjf (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_conjf";
+         begin
+            return conjf (X);
+         end;
+      elsif Real'Digits <= Long_Float'Digits
+         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+      then
+         declare
+            function conj (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_conj";
+         begin
+            return conj (X);
+         end;
       else
-         return From_Long_Long_Complex (
-            System.Long_Long_Complex_Types.Fast_Conjugate (
-               To_Long_Long_Complex (X)));
+         declare
+            function conjl (x : Complex) return Complex
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_conjl";
+         begin
+            return conjl (X);
+         end;
       end if;
    end Conjugate;
 
@@ -210,14 +226,31 @@ package body Ada.Numerics.Generic_Complex_Types is
    function Modulus (X : Complex) return Real'Base is
    begin
       if Real'Digits <= Float'Digits then
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
-            To_Complex (X)));
-      elsif Real'Digits <= Long_Float'Digits then
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
-            To_Long_Complex (X)));
+         declare
+            function cabsf (x : Complex) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabsf";
+         begin
+            return Real'Base (cabsf (X));
+         end;
+      elsif Real'Digits <= Long_Float'Digits
+         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+      then
+         declare
+            function cabs (x : Complex) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabs";
+         begin
+            return Real'Base (cabs (X));
+         end;
       else
-         return Real'Base (System.Long_Long_Complex_Types.Fast_Modulus (
-            To_Long_Long_Complex (X)));
+         declare
+            function cabsl (x : Complex) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabsl";
+         begin
+            return Real'Base (cabsl (X));
+         end;
       end if;
    end Modulus;
 
@@ -327,23 +360,92 @@ package body Ada.Numerics.Generic_Complex_Types is
    end "-";
 
    function "*" (Left, Right : Complex) return Complex is
-      Re : Real'Base := Left.Re * Right.Re - Left.Im * Right.Im;
-      Im : Real'Base := Left.Re * Right.Im + Left.Im * Right.Re;
+      Result : Complex;
    begin
-      if not Standard'Fast_Math then
-         --  CXG2020
-         if Is_Infinity (Re) then
-            Re := 4.0 * (
-               Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Re / 2.0)
-               - Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Im / 2.0));
+      if constant_p (Left) /= 0 and then constant_p (Right) /= 0 then
+         Result.Re := Real'Base (
+            Long_Long_Float (Left.Re) * Long_Long_Float (Right.Re)
+            - Long_Long_Float (Left.Im) * Long_Long_Float (Right.Im));
+         Result.Im := Real'Base (
+            Long_Long_Float (Left.Re) * Long_Long_Float (Right.Im)
+            + Long_Long_Float (Left.Im) * Long_Long_Float (Right.Re));
+      elsif Standard'Fast_Math then
+         Result.Re := Left.Re * Right.Re - Left.Im * Right.Im;
+         Result.Im := Left.Re * Right.Im + Left.Im * Right.Re;
+      else
+         --  use libgcc
+         if Real'Digits <= Float'Digits then
+            declare
+               function mulsc3 (
+                  Left_Re, Left_Im, Right_Re, Right_Im : Float)
+                  return Complex
+                  with Import, Convention => C, External_Name => "__mulsc3";
+               pragma Pure_Function (mulsc3);
+            begin
+               Result := mulsc3 (
+                  Float (Left.Re),
+                  Float (Left.Im),
+                  Float (Right.Re),
+                  Float (Right.Im));
+            end;
+         elsif Real'Digits <= Long_Float'Digits
+            and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+         then
+            declare
+               function muldc3 (
+                  Left_Re, Left_Im, Right_Re, Right_Im : Long_Float)
+                  return Complex
+                  with Import, Convention => C, External_Name => "__muldc3";
+               pragma Pure_Function (muldc3);
+            begin
+               Result := muldc3 (
+                  Long_Float (Left.Re),
+                  Long_Float (Left.Im),
+                  Long_Float (Right.Re),
+                  Long_Float (Right.Im));
+            end;
+         else
+            declare
+               function mulxc3 (
+                  Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)
+                  return Complex
+                  with Import, Convention => C, External_Name => "__mulxc3";
+               pragma Pure_Function (mulxc3);
+            begin
+               Result := mulxc3 (
+                  Long_Long_Float (Left.Re),
+                  Long_Long_Float (Left.Im),
+                  Long_Long_Float (Right.Re),
+                  Long_Long_Float (Right.Im));
+            end;
          end if;
-         if Is_Infinity (Im) then
-            Im := 4.0 * (
-               Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Im / 2.0)
-               + Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Re / 2.0));
+         --  CXG2020
+         if Is_Infinity (Result.Re) then
+            declare
+               Re_2 : constant Real'Base :=
+                  4.0 * (
+                     Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Re / 2.0)
+                     - Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Im / 2.0));
+            begin
+               if not Is_Infinity (Re_2) then -- keep a sign of INF or NaN
+                  Result.Re := Re_2;
+               end if;
+            end;
+         end if;
+         if Is_Infinity (Result.Im) then
+            declare
+               Im_2 : constant Real'Base :=
+                  4.0 * (
+                     Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Im / 2.0)
+                     + Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Re / 2.0));
+            begin
+               if not Is_Infinity (Im_2) then
+                  Result.Im := Im_2;
+               end if;
+            end;
          end if;
       end if;
-      return (Re, Im);
+      return Result;
    end "*";
 
    function "*" (Left, Right : Imaginary) return Real'Base is
@@ -386,12 +488,75 @@ package body Ada.Numerics.Generic_Complex_Types is
    end "*";
 
    function "/" (Left, Right : Complex) return Complex is
+      Result : Complex;
    begin
-      return (
-         Re => (Left.Re * Right.Re + Left.Im * Right.Im)
-            / (Right.Re * Right.Re + Right.Im * Right.Im),
-         Im => (Left.Im * Right.Re - Left.Re * Right.Im)
-            / (Right.Re * Right.Re + Right.Im * Right.Im));
+      if constant_p (Left) /= 0 and then constant_p (Right) /= 0 then
+         Result.Re := Real'Base (
+            (Long_Long_Float (Left.Re) * Long_Long_Float (Right.Re)
+               + Long_Long_Float (Left.Im) * Long_Long_Float (Right.Im))
+            / (Long_Long_Float (Right.Re) * Long_Long_Float (Right.Re)
+               + Long_Long_Float (Right.Im) * Long_Long_Float (Right.Im)));
+         Result.Im := Real'Base (
+            (Long_Long_Float (Left.Im) * Long_Long_Float (Right.Re)
+               - Long_Long_Float (Left.Re) * Long_Long_Float (Right.Im))
+            / (Long_Long_Float (Right.Re) * Long_Long_Float (Right.Re)
+               + Long_Long_Float (Right.Im) * Long_Long_Float (Right.Im)));
+      elsif Standard'Fast_Math then
+         Result.Re :=
+            (Left.Re * Right.Re + Left.Im * Right.Im)
+            / (Right.Re * Right.Re + Right.Im * Right.Im);
+         Result.Im :=
+            (Left.Im * Right.Re - Left.Re * Right.Im)
+            / (Right.Re * Right.Re + Right.Im * Right.Im);
+      else
+         --  use libgcc
+         if Real'Digits <= Float'Digits then
+            declare
+               function divsc3 (
+                  Left_Re, Left_Im, Right_Re, Right_Im : Float)
+                  return Complex
+                  with Import, Convention => C, External_Name => "__divsc3";
+               pragma Pure_Function (divsc3);
+            begin
+               Result := divsc3 (
+                  Float (Left.Re),
+                  Float (Left.Im),
+                  Float (Right.Re),
+                  Float (Right.Im));
+            end;
+         elsif Real'Digits <= Long_Float'Digits
+            and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+         then
+            declare
+               function divdc3 (
+                  Left_Re, Left_Im, Right_Re, Right_Im : Long_Float)
+                  return Complex
+                  with Import, Convention => C, External_Name => "__divdc3";
+               pragma Pure_Function (divdc3);
+            begin
+               Result := divdc3 (
+                  Long_Float (Left.Re),
+                  Long_Float (Left.Im),
+                  Long_Float (Right.Re),
+                  Long_Float (Right.Im));
+            end;
+         else
+            declare
+               function divxc3 (
+                  Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)
+                  return Complex
+                  with Import, Convention => C, External_Name => "__divxc3";
+               pragma Pure_Function (divxc3);
+            begin
+               Result := divxc3 (
+                  Long_Long_Float (Left.Re),
+                  Long_Long_Float (Left.Im),
+                  Long_Long_Float (Right.Re),
+                  Long_Long_Float (Right.Im));
+            end;
+         end if;
+      end if;
+      return Result;
    end "/";
 
    function "/" (Left, Right : Imaginary) return Real'Base is

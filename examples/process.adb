@@ -106,7 +106,7 @@ begin
 			Ada.Processes.Create (C, "acats"); -- dir
 			raise Program_Error;
 		exception
-			when Ada.Processes.Name_Error =>
+			when Ada.Processes.Use_Error =>
 				null;
 		end;
 	end;
