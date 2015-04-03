@@ -41,8 +41,7 @@ package body System.Formatting.Decimal is
             Rounded_Item : Formatting.Longest_Unsigned :=
                Formatting.Longest_Unsigned'Mod (abs Value);
             Sp : constant Formatting.Longest_Unsigned := 10 ** Scale;
-            Q : Long_Long_Integer;
-            R : Long_Long_Integer;
+            Q : Formatting.Longest_Unsigned;
             Aft : Formatting.Longest_Unsigned;
             Error : Boolean;
          begin
@@ -50,13 +49,12 @@ package body System.Formatting.Decimal is
                Rounded_Item := Rounded_Item + (10 ** (Scale - Aft_Width)) / 2;
             end if;
             Long_Long_Integer_Divisions.Divide (
-               Long_Long_Integer (Rounded_Item),
-               Long_Long_Integer (Sp),
-               Q,
-               R);
-            Aft := Formatting.Longest_Unsigned (R);
+               Long_Long_Integer_Divisions.Longest_Unsigned (Rounded_Item),
+               Long_Long_Integer_Divisions.Longest_Unsigned (Sp),
+               Long_Long_Integer_Divisions.Longest_Unsigned (Q),
+               Long_Long_Integer_Divisions.Longest_Unsigned (Aft));
             Formatting.Image (
-               Formatting.Longest_Unsigned (Q),
+               Q,
                Item (Last + 1 .. Item'Last),
                Last,
                Width => Fore_Width,

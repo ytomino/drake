@@ -1,18 +1,28 @@
-with C.stdlib;
-pragma Warnings (Off, C.stdlib); -- break "pure" rule
 package body System.Long_Long_Integer_Divisions is
    pragma Suppress (All_Checks);
 
    procedure Divide (
-      Left, Right : Long_Long_Integer;
-      Quotient, Remainder : out Long_Long_Integer)
-   is
-      Result : constant C.stdlib.lldiv_t := C.stdlib.lldiv (
-         C.signed_long_long (Left),
-         C.signed_long_long (Right));
+      Left, Right : Longest_Unsigned;
+      Quotient, Remainder : out Longest_Unsigned) is
    begin
-      Quotient := Long_Long_Integer (Result.quot);
-      Remainder := Long_Long_Integer (Result.F_rem);
+      if Long_Long_Integer'Size <= Standard'Word_Size then
+         --  word size "/" and "rem" would be optimized
+         Quotient := Left / Right;
+         Remainder := Left rem Right;
+      else
+         declare
+            --  libgcc
+            function udivmoddi4 (
+               a, b : Longest_Unsigned;
+               c : not null access Longest_Unsigned)
+               return Longest_Unsigned
+               with Import, Convention => C, External_Name => "__udivmoddi4";
+            Aliased_Remainder : aliased Longest_Unsigned;
+         begin
+            Quotient := udivmoddi4 (Left, Right, Aliased_Remainder'Access);
+            Remainder := Aliased_Remainder;
+         end;
+      end if;
    end Divide;
 
 end System.Long_Long_Integer_Divisions;
