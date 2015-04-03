@@ -1,4 +1,4 @@
-with System.Long_Long_Integer_Divide;
+with System.Long_Long_Integer_Divisions;
 package body System.Formatting.Decimal is
 
    procedure Image (
@@ -49,7 +49,7 @@ package body System.Formatting.Decimal is
             if Aft_Width < Scale then
                Rounded_Item := Rounded_Item + (10 ** (Scale - Aft_Width)) / 2;
             end if;
-            Long_Long_Integer_Divide (
+            Long_Long_Integer_Divisions.Divide (
                Long_Long_Integer (Rounded_Item),
                Long_Long_Integer (Sp),
                Q,

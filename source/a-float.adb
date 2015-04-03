@@ -1,4 +1,4 @@
-with System.Long_Long_Float_Divide;
+with System.Long_Long_Float_Divisions;
 package body Ada.Float is
    pragma Suppress (All_Checks);
 
@@ -124,7 +124,7 @@ package body Ada.Float is
       Quotient : out Quotient_Type;
       Remainder : out Remainder_Type) is
    begin
-      System.Long_Long_Float_Divide (
+      System.Long_Long_Float_Divisions.Divide (
          Long_Long_Float (Dividend),
          Long_Long_Float (Divisor),
          Long_Long_Float (Quotient),

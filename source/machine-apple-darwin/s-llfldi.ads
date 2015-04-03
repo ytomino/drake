@@ -1,6 +1,10 @@
 pragma License (Unrestricted);
 --  implementation unit
-procedure System.Long_Long_Float_Divide (
-   Left, Right : Long_Long_Float;
-   Quotient, Remainder : out Long_Long_Float);
-pragma Pure (System.Long_Long_Float_Divide);
+package System.Long_Long_Float_Divisions is
+   pragma Pure;
+
+   procedure Divide (
+      Left, Right : Long_Long_Float;
+      Quotient, Remainder : out Long_Long_Float);
+
+end System.Long_Long_Float_Divisions;

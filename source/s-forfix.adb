@@ -1,5 +1,5 @@
 with System.Formatting.Float;
-with System.Long_Long_Float_Divide;
+with System.Long_Long_Float_Divisions;
 package body System.Formatting.Fixed is
 
    procedure Image (
@@ -87,7 +87,11 @@ package body System.Formatting.Fixed is
             Q : Long_Long_Float;
             R : Long_Long_Float;
          begin
-            Long_Long_Float_Divide (Item_Fore, Long_Long_Float (Base), Q, R);
+            Long_Long_Float_Divisions.Divide (
+               Item_Fore,
+               Long_Long_Float (Base),
+               Q,
+               R);
             Image (
                Digit (R),
                Item (I),
