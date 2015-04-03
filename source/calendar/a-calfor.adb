@@ -1,6 +1,7 @@
 pragma Check_Policy (Validate, Off);
 with Ada.Calendar.Inside;
 with System.Formatting;
+with System.Long_Long_Integer_Divisions;
 with System.Native_Time;
 package body Ada.Calendar.Formatting is
 --  pragma Suppress (All_Checks);
@@ -92,18 +93,29 @@ package body Ada.Calendar.Formatting is
    is
       X : System.Native_Time.Nanosecond_Number
          := System.Native_Time.Nanosecond_Number'Integer_Value (Seconds);
-      Sub : System.Native_Time.Nanosecond_Number;
+      Q, R : System.Native_Time.Nanosecond_Number;
    begin
-      Sub := X rem 1000000000;
-      Sub_Second := Duration'Fixed_Value (Sub);
-      X := (X - Sub) / 1000000000; -- unit is 1-second
-      Sub := X rem 60;
-      Second := Second_Number (Sub);
-      X := (X - Sub) / 60; -- unit is 1-minute
-      Sub := X rem 60;
-      Minute := Minute_Number (Sub);
-      X := (X - Sub) / 60; -- unit is 1-hour
-      Hour := Integer (X);
+      System.Long_Long_Integer_Divisions.Divide (
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (X),
+         1000000000, -- unit is 1-second
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (Q),
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (R));
+      Sub_Second := Duration'Fixed_Value (R);
+      X := Q;
+      System.Long_Long_Integer_Divisions.Divide (
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (X),
+         60, -- unit is 1-minute
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (Q),
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (R));
+      Second := Second_Number (R);
+      X := Q;
+      System.Long_Long_Integer_Divisions.Divide (
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (X),
+         60, -- unit is 1-hour
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (Q),
+         System.Long_Long_Integer_Divisions.Longest_Unsigned (R));
+      Minute := Second_Number (R);
+      Hour := Integer (Q);
    end Split_Base;
 
    procedure Image (
