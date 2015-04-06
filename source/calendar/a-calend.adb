@@ -1,12 +1,7 @@
 with Ada.Calendar.Inside;
 with System.Native_Time;
 package body Ada.Calendar is
-   --  please use -gnato for overflow checking
-   RM_9_6_26_Overflow_Check : constant Boolean := Overflow_Check'Enabled;
-   --  it could not use 'Enabled in "+", "-" since Inline_Always.
-   pragma Warnings (Off, RM_9_6_26_Overflow_Check);
-   --  [gcc 4.5/4.6] condition is always False/True
-   pragma Suppress (All_Checks);
+   --  pragma Suppress (All_Checks); could not be placed here for "+" and "-".
    use type System.Native_Time.Nanosecond_Number;
 
    --  for Year, Month, Day
@@ -67,21 +62,25 @@ package body Ada.Calendar is
    end Clock;
 
    function Year (Date : Time) return Year_Number is
+      pragma Suppress (Range_Check);
    begin
       return Year_Number (Shift_Right (Packed_Split (Date), 16));
    end Year;
 
    function Month (Date : Time) return Month_Number is
+      pragma Suppress (Range_Check);
    begin
       return Month_Number (Shift_Right (Packed_Split (Date), 8) and 16#ff#);
    end Month;
 
    function Day (Date : Time) return Day_Number is
+      pragma Suppress (Range_Check);
    begin
       return Day_Number (Packed_Split (Date) and 16#ff#);
    end Day;
 
    function Seconds (Date : Time) return Day_Duration is
+      pragma Suppress (Range_Check);
    begin
       return Duration'Fixed_Value (
          System.Native_Time.Nanosecond_Number'Integer_Value (Date)
@@ -95,6 +94,7 @@ package body Ada.Calendar is
       Day : out Day_Number;
       Seconds : out Day_Duration)
    is
+      pragma Suppress (Range_Check);
       Hour : Inside.Hour_Number;
       Minute : Inside.Minute_Number;
       Second : Inside.Second_Number;
@@ -135,7 +135,7 @@ package body Ada.Calendar is
 
    function "+" (Left : Time; Right : Duration) return Time is
    begin
-      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
+      if not Standard'Fast_Math and then Overflow_Check'Enabled then
          declare
             function add_overflow (
                a, b : System.Native_Time.Nanosecond_Number;
@@ -162,7 +162,7 @@ package body Ada.Calendar is
 
    function "+" (Left : Duration; Right : Time) return Time is
    begin
-      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
+      if not Standard'Fast_Math and then Overflow_Check'Enabled then
          declare
             function add_overflow (
                a, b : System.Native_Time.Nanosecond_Number;
@@ -189,7 +189,7 @@ package body Ada.Calendar is
 
    function "-" (Left : Time; Right : Duration) return Time is
    begin
-      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
+      if not Standard'Fast_Math and then Overflow_Check'Enabled then
          declare
             function sub_overflow (
                a, b : System.Native_Time.Nanosecond_Number;
@@ -216,7 +216,7 @@ package body Ada.Calendar is
 
    function "-" (Left : Time; Right : Time) return Duration is
    begin
-      if not Standard'Fast_Math and then RM_9_6_26_Overflow_Check then
+      if not Standard'Fast_Math and then Overflow_Check'Enabled then
          declare
             function sub_overflow (
                a, b : System.Native_Time.Nanosecond_Number;
