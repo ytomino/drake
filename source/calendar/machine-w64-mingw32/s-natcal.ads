@@ -1,6 +1,18 @@
 pragma License (Unrestricted);
---  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
-package Ada.Calendar.Inside is
+--  implementation unit specialized for Windows
+package System.Native_Calendar is
+   pragma Preelaborate;
+
+   --  same as Ada.Calendar
+
+   subtype Time is Duration;
+
+   subtype Year_Number is Integer range 1901 .. 2399;
+   subtype Month_Number is Integer range 1 .. 12;
+   subtype Day_Number is Integer range 1 .. 31;
+   subtype Day_Duration is Duration range 0.0 .. 86_400.0;
+
+   --  same as Ada.Calendar.Formatting
 
    subtype Time_Offset is Integer range -28 * 60 .. 28 * 60;
 
@@ -10,6 +22,8 @@ package Ada.Calendar.Inside is
    subtype Minute_Number is Natural range 0 .. 59;
    subtype Second_Number is Natural range 0 .. 59;
    subtype Second_Duration is Day_Duration range 0.0 .. 1.0;
+
+   --  decomposing/composing
 
    procedure Split (
       Date : Time;
@@ -22,15 +36,17 @@ package Ada.Calendar.Inside is
       Sub_Second : out Second_Duration;
       Leap_Second : out Boolean;
       Day_of_Week : out Day_Name;
-      Time_Zone : Time_Offset);
+      Time_Zone : Time_Offset;
+      Error : out Boolean);
 
-   function Time_Of (
+   procedure Time_Of (
       Year : Year_Number;
       Month : Month_Number;
       Day : Day_Number;
       Seconds : Day_Duration;
       Leap_Second : Boolean;
-      Time_Zone : Time_Offset)
-      return Time;
+      Time_Zone : Time_Offset;
+      Result : out Time;
+      Error : out Boolean);
 
-end Ada.Calendar.Inside;
+end System.Native_Calendar;

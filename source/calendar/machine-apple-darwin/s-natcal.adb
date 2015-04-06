@@ -1,10 +1,8 @@
-with Ada.Exception_Identification.From_Here;
 with System.Native_Time;
 with C.sys.types;
 with C.time;
-package body Ada.Calendar.Inside is
+package body System.Native_Calendar is
    pragma Suppress (All_Checks);
-   use Exception_Identification.From_Here;
    use type C.signed_int; -- time_t is signed int or signed long
    use type C.signed_long;
 
@@ -21,15 +19,16 @@ package body Ada.Calendar.Inside is
       Sub_Second : out Second_Duration;
       Leap_Second : out Boolean;
       Day_of_Week : out Day_Name;
-      Time_Zone : Time_Offset)
+      Time_Zone : Time_Offset;
+      Error : out Boolean)
    is
-      timespec : aliased System.Native_Time.Native_Time :=
-         System.Native_Time.To_Native_Time (Duration (Date));
+      timespec : aliased Native_Time.Native_Time :=
+         Native_Time.To_Native_Time (Date);
       Buffer : aliased C.time.struct_tm := (others => <>); -- uninitialized
       tm : access C.time.struct_tm;
    begin
       Sub_Second := Duration'Fixed_Value (
-         System.Native_Time.Nanosecond_Number (timespec.tv_nsec));
+         Native_Time.Nanosecond_Number (timespec.tv_nsec));
       timespec.tv_sec := timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
       tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
       --  does gmtime_r return no error ?
@@ -41,16 +40,18 @@ package body Ada.Calendar.Inside is
       Second := Second_Number (tm.tm_sec);
       Leap_Second := False;
       Day_of_Week := (Integer (tm.tm_wday) + 6) rem 7; -- starts from Monday
+      Error := False;
    end Split;
 
-   function Time_Of (
+   procedure Time_Of (
       Year : Year_Number;
       Month : Month_Number;
       Day : Day_Number;
       Seconds : Day_Duration;
       Leap_Second : Boolean;
-      Time_Zone : Time_Offset)
-      return Time
+      Time_Zone : Time_Offset;
+      Result : out Time;
+      Error : out Boolean)
    is
       pragma Unreferenced (Leap_Second);
       tm : aliased C.time.struct_tm := (
@@ -66,19 +67,20 @@ package body Ada.Calendar.Inside is
          tm_gmtoff => 0,
          tm_zone => null);
       C_Result : constant C.sys.types.time_t := C.time.timegm (tm'Access);
-      Result : Duration;
    begin
+      Error := False;
       --  UNIX time starts until 1970, Year_Number stats unitl 1901...
       if C_Result = -1 then -- to pass negative UNIX time (?)
          if Year = 1901 and then Month = 1 and then Day = 1 then
             Result := -7857734400.0; -- first day in Time
          else
-            Raise_Exception (Time_Error'Identity);
+            Error := True;
+            return;
          end if;
       else
-         Result := System.Native_Time.To_Time (C_Result);
+         Result := Native_Time.To_Time (C_Result);
       end if;
-      return Time (Result - Duration (Time_Zone * 60) + Seconds);
+      Result := Result - Duration (Time_Zone * 60) + Seconds;
    end Time_Of;
 
-end Ada.Calendar.Inside;
+end System.Native_Calendar;

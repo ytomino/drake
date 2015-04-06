@@ -1,11 +1,9 @@
-with Ada.Exception_Identification.From_Here;
 with System.Native_Time;
 with C.winbase;
 with C.windef;
-package body Ada.Calendar.Inside is
+package body System.Native_Calendar is
    pragma Suppress (All_Checks);
-   use Exception_Identification.From_Here;
-   use type System.Native_Time.Nanosecond_Number;
+   use type Native_Time.Nanosecond_Number;
    use type C.windef.WINBOOL;
 
    --  implementation
@@ -21,24 +19,23 @@ package body Ada.Calendar.Inside is
       Sub_Second : out Second_Duration;
       Leap_Second : out Boolean;
       Day_of_Week : out Day_Name;
-      Time_Zone : Time_Offset)
+      Time_Zone : Time_Offset;
+      Error : out Boolean)
    is
       Local_Date : Duration;
-      FileTime : aliased System.Native_Time.Native_Time;
+      FileTime : aliased Native_Time.Native_Time;
       SystemTime : aliased C.winbase.SYSTEMTIME;
    begin
-      Local_Date := Duration (Date) + Duration (Time_Zone * 60);
+      Local_Date := Date + Duration (Time_Zone * 60);
       Sub_Second := Duration'Fixed_Value (
-         System.Native_Time.Nanosecond_Number'Integer_Value (Local_Date)
+         Native_Time.Nanosecond_Number'Integer_Value (Local_Date)
          mod 1000_000_000);
       Local_Date := Local_Date - Sub_Second;
-      FileTime := System.Native_Time.To_Native_Time (Local_Date);
-      if C.winbase.FileTimeToSystemTime (
+      FileTime := Native_Time.To_Native_Time (Local_Date);
+      Error := C.winbase.FileTimeToSystemTime (
          FileTime'Access,
-         SystemTime'Access) = 0
-      then
-         Raise_Exception (Time_Error'Identity);
-      else
+         SystemTime'Access) = 0;
+      if not Error then
          Year := Year_Number (SystemTime.wYear);
          Month := Month_Number (SystemTime.wMonth);
          Day := Day_Number (SystemTime.wDay);
@@ -51,14 +48,15 @@ package body Ada.Calendar.Inside is
       end if;
    end Split;
 
-   function Time_Of (
+   procedure Time_Of (
       Year : Year_Number;
       Month : Month_Number;
       Day : Day_Number;
       Seconds : Day_Duration;
       Leap_Second : Boolean;
-      Time_Zone : Time_Offset)
-      return Time
+      Time_Zone : Time_Offset;
+      Result : out Time;
+      Error : out Boolean)
    is
       pragma Unreferenced (Leap_Second);
       SystemTime : aliased C.winbase.SYSTEMTIME := (
@@ -72,17 +70,15 @@ package body Ada.Calendar.Inside is
          wMilliseconds => 0);
       FileTime : aliased C.windef.FILETIME;
    begin
-      if C.winbase.SystemTimeToFileTime (
+      Error := C.winbase.SystemTimeToFileTime (
          SystemTime'Access,
-         FileTime'Access) = 0
-      then
-         Raise_Exception (Time_Error'Identity);
-      else
-         return Time (
-            System.Native_Time.To_Time (FileTime)
+         FileTime'Access) = 0;
+      if not Error then
+         Result :=
+            Native_Time.To_Time (FileTime)
             - Duration (Time_Zone * 60)
-            + Seconds);
+            + Seconds;
       end if;
    end Time_Of;
 
-end Ada.Calendar.Inside;
+end System.Native_Calendar;

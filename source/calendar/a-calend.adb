@@ -1,7 +1,9 @@
-with Ada.Calendar.Inside;
+with Ada.Exception_Identification.From_Here;
+with System.Native_Calendar;
 with System.Native_Time;
 package body Ada.Calendar is
    --  pragma Suppress (All_Checks); could not be placed here for "+" and "-".
+   use Ada.Exception_Identification.From_Here;
    use type System.Native_Time.Nanosecond_Number;
 
    --  for Year, Month, Day
@@ -30,15 +32,16 @@ package body Ada.Calendar is
       Year : Year_Number;
       Month : Month_Number;
       Day : Day_Number;
-      Hour : Inside.Hour_Number;
-      Minute : Inside.Minute_Number;
-      Second : Inside.Second_Number;
-      Sub_Second : Inside.Second_Duration;
-      Day_of_Week : Inside.Day_Name;
+      Hour : System.Native_Calendar.Hour_Number;
+      Minute : System.Native_Calendar.Minute_Number;
+      Second : System.Native_Calendar.Second_Number;
+      Sub_Second : System.Native_Calendar.Second_Duration;
+      Day_of_Week : System.Native_Calendar.Day_Name;
       Leap_Second : Boolean;
+      Error : Boolean;
    begin
-      Inside.Split (
-         Date,
+      System.Native_Calendar.Split (
+         Duration (Date),
          Year => Year,
          Month => Month,
          Day => Day,
@@ -48,7 +51,11 @@ package body Ada.Calendar is
          Sub_Second => Sub_Second,
          Leap_Second => Leap_Second,
          Day_of_Week => Day_of_Week,
-         Time_Zone => 0); -- GMT
+         Time_Zone => 0, -- GMT
+         Error => Error);
+      if Error then
+         Raise_Exception (Time_Error'Identity);
+      end if;
       return Packed_Split_Time (Day)
          or Shift_Left (Packed_Split_Time (Month), 8)
          or Shift_Left (Packed_Split_Time (Year), 16);
@@ -95,15 +102,16 @@ package body Ada.Calendar is
       Seconds : out Day_Duration)
    is
       pragma Suppress (Range_Check);
-      Hour : Inside.Hour_Number;
-      Minute : Inside.Minute_Number;
-      Second : Inside.Second_Number;
-      Sub_Second : Inside.Second_Duration;
-      Day_of_Week : Inside.Day_Name;
+      Hour : System.Native_Calendar.Hour_Number;
+      Minute : System.Native_Calendar.Minute_Number;
+      Second : System.Native_Calendar.Second_Number;
+      Sub_Second : System.Native_Calendar.Second_Duration;
+      Day_of_Week : System.Native_Calendar.Day_Name;
       Leap_Second : Boolean;
+      Error : Boolean;
    begin
-      Inside.Split (
-         Date,
+      System.Native_Calendar.Split (
+         Duration (Date),
          Year => Year,
          Month => Month,
          Day => Day,
@@ -113,7 +121,11 @@ package body Ada.Calendar is
          Sub_Second => Sub_Second,
          Leap_Second => Leap_Second,
          Day_of_Week => Day_of_Week,
-         Time_Zone => 0); -- GMT
+         Time_Zone => 0, -- GMT
+         Error => Error);
+      if Error then
+         Raise_Exception (Time_Error'Identity);
+      end if;
       Seconds := Duration ((Hour * 60 + Minute) * 60 + Second) + Sub_Second;
    end Split;
 
@@ -122,15 +134,24 @@ package body Ada.Calendar is
       Month : Month_Number;
       Day : Day_Number;
       Seconds : Day_Duration := 0.0)
-      return Time is
+      return Time
+   is
+      Result : Duration;
+      Error : Boolean;
    begin
-      return Inside.Time_Of (
+      System.Native_Calendar.Time_Of (
          Year => Year,
          Month => Month,
          Day => Day,
          Seconds => Seconds,
          Leap_Second => False,
-         Time_Zone => 0);
+         Time_Zone => 0,
+         Result => Result,
+         Error => Error);
+      if Error then
+         Raise_Exception (Time_Error'Identity);
+      end if;
+      return Time (Result);
    end Time_Of;
 
    function "+" (Left : Time; Right : Duration) return Time is
