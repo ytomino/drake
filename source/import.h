@@ -26,24 +26,23 @@
 #include <stddef.h>
 #include <errno.h>
 #include <sys/types.h> /* before other system headers */
+#include <sys/ucontext.h> /* before signal.h */
+#include <signal.h> /* before unistd.h and time.h */
 #include <time.h> /* time and sleep */
+#include <sys/resource.h> /* get CPU time, before sys/time.h */
 #include <sys/time.h> /* get current time */
-#include <sys/uio.h> /* before signal.h */
-#include <signal.h> /* before unistd.h */
+#include <sys/uio.h>
 #include <string.h> /* strsignal */
 #include <sys/syscall.h> /* sigreturn */
 #if defined(__APPLE__)
-#include <sys/vm.h> /* before sys/vm.h */
+#include <sys/vm.h> /* before sys/sysctl.h */
+#include <sys/attr.h> /* before unistd.h */
 #endif
 #include <sys/sysctl.h>
-#include <sys/ucontext.h>
 #include <sys/mman.h> /* low-level memory op */
 #include <unistd.h> /* low-level I/O */
 #include <stdlib.h> /* abort, atexit, lldiv, getenv/setenv and memory op */
-#include <sys/resource.h> /* get CPU time */
 #include <sys/wait.h> /* waitpid */
-#include <pwd.h> /* user info */
-#include <grp.h> /* group info */
 #if defined(__linux__)
 #include <sys/stat.h> /* low-level file info, before fcntl.h */
 #include <fcntl.h> /* low-level file op */
@@ -52,13 +51,21 @@
 #include <sys/stat.h> /* low-level file info */
 #endif
 #include <sys/file.h> /* flock */
+#if defined(__linux__)
+#define _SYS_SOCKET_H
+#include <bits/socket.h> /* before netinet/in.h */
+#include <netinet/in.h> /* protocols, before sys/socket.h */
+#undef _SYS_SOCKET_H
+#endif
 #include <sys/socket.h> /* socket, before sys/mount.h */
+#include <netdb.h> /* getaddrinfo */
+#if !defined(__linux__)
+#include <netinet/in.h> /* protocols, after netdb.h in FreeBSD */
+#endif
 #include <sys/mount.h> /* filesystem */
 #include <dirent.h> /* directory searching */
 #include <fnmatch.h> /* wildcard */
 #include <termios.h> /* terminal control */
-#include <netdb.h> /* getaddrinfo */
-#include <netinet/in.h> /* protocols */
 #include <pthread.h> /* tasking */
 #include <dlfcn.h>
 #include <spawn.h> /* spawn */
@@ -67,6 +74,8 @@
 #include <stdio.h> /* before wchar.h in FreeBSD */
 #endif
 #include <wchar.h> /* before iconv.h in FreeBSD, after malloc.h in Linux */
+#include <pwd.h> /* user info, after stdio.h in Linux */
+#include <grp.h> /* group info */
 #endif
 #include <iconv.h>
 #endif
@@ -78,13 +87,13 @@
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
-#include <crt_externs.h> /* environment variable */
 #include <malloc/malloc.h> /* malloc_size */
 #include <copyfile.h> /* copyfile */
 #include <mach/mach_time.h> /* mach_absolute_time */
 #define _ARCHITECTURE_BYTE_ORDER_H_ /* headmaster can not translate some inline functions */
 #include <mach-o/dyld.h>
 #undef _ARCHITECTURE_BYTE_ORDER_H_
+#include <crt_externs.h> /* environment variable, after mach-o/dyld.h */
 #elif defined(__FreeBSD__)
 #undef _DONT_USE_CTYPE_INLINE_
 #undef d_fileno
@@ -108,10 +117,12 @@
 #include <link.h>
 #undef _GNU_SOURCE
 #undef __USE_GNU /* avoiding circular dependency between libio.h and stdio.h */
+#undef __USE_XOPEN2K8 /* avoiding circular dependency between wchar.h and stdio.h */
+#include <libio.h> /* before stdio.h */
 #undef _SC_NPROCESSORS_ONLN
 #include <malloc.h> /* malloc_usable_size */
-#undef __USE_XOPEN2K8 /* avoiding circular dependency between wchar.h and stdio.h */
-#include <wchar.h>
+#include <pwd.h> /* user info */
+#include <grp.h> /* group info */
 #undef _FILE_OFFSET_BITS
 #endif
 
@@ -182,6 +193,9 @@
 #pragma for Ada "pthread.h" include "sys/types.h"
 #pragma for Ada "signal.h" include "sys/_structs.h" /* stack_t */
 #pragma for Ada "signal.h" include "sys/signal.h"
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1090
+#pragma for Ada "signal.h" include "sys/ucontext.h" /* sigset_t */
+#endif
 #pragma for Ada "sys/file.h" include "sys/fcntl.h"
 #pragma for Ada "sys/stat.h" include "sys/fcntl.h" /* S_IF* */
 #pragma for Ada "sys/time.h" include "sys/_structs.h" /* timeval */
