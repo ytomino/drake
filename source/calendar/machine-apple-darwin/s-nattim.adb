@@ -16,13 +16,6 @@ package body System.Native_Time is
          tv_nsec => C.signed_long (X.tv_usec) * 1000);
    end To_timespec;
 
-   function To_Duration (D : C.sys.types.time_t) return Duration;
-   function To_Duration (D : C.sys.types.time_t) return Duration is
-   begin
-      return Duration'Fixed_Value (
-         (Nanosecond_Number (D)) * 1000_000_000);
-   end To_Duration;
-
    --  implementation
 
    function To_Native_Time (T : Duration) return Native_Time is
@@ -62,6 +55,12 @@ package body System.Native_Time is
    function To_Duration (D : C.sys.time.struct_timeval) return Duration is
    begin
       return To_Duration (To_timespec (D));
+   end To_Duration;
+
+   function To_Duration (D : C.sys.types.time_t) return Duration is
+   begin
+      return Duration'Fixed_Value (
+         (Nanosecond_Number (D)) * 1000_000_000);
    end To_Duration;
 
    function Clock return Native_Time is
