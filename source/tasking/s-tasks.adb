@@ -5,6 +5,7 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
+with System.Native_Calendar;
 with System.Native_Stack;
 with System.Native_Tasks.Yield;
 with System.Native_Time;
@@ -55,8 +56,8 @@ package body System.Tasks is
       Disable_Abort (Aborted);
    end Delay_For;
 
-   procedure Delay_Until (T : Native_Time.Native_Time);
-   procedure Delay_Until (T : Native_Time.Native_Time) is
+   procedure Delay_Until (T : Native_Calendar.Native_Time);
+   procedure Delay_Until (T : Native_Calendar.Native_Time) is
       Aborted : Boolean;
    begin
       Enable_Abort;
@@ -333,7 +334,8 @@ package body System.Tasks is
       Synchronous_Control.Yield_Hook := Synchronous_Control.Nop'Access;
       --  delay statement
       Native_Time.Delay_For_Hook := Native_Time.Simple_Delay_For'Access;
-      Native_Time.Delay_Until_Hook := Native_Time.Simple_Delay_Until'Access;
+      Native_Calendar.Delay_Until_Hook :=
+         Native_Calendar.Simple_Delay_Until'Access;
       --  attribute indexes
       Synchronous_Objects.Finalize (Attribute_Indexes_Lock);
       Attribute_Index_Sets.Clear (Attribute_Indexes, Attribute_Indexes_Length);
@@ -365,7 +367,7 @@ package body System.Tasks is
          Synchronous_Control.Yield_Hook := Native_Tasks.Yield'Access;
          --  delay statement
          Native_Time.Delay_For_Hook := Delay_For'Access;
-         Native_Time.Delay_Until_Hook := Delay_Until'Access;
+         Native_Calendar.Delay_Until_Hook := Delay_Until'Access;
          --  attribute indexes
          Synchronous_Objects.Initialize (Attribute_Indexes_Lock);
          --  task local storage (secondary stack and exception occurrence)

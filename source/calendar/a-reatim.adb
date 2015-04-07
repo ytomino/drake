@@ -1,10 +1,12 @@
+with System.Native_Time;
 package body Ada.Real_Time is
    pragma Suppress (All_Checks);
    use type System.Native_Time.Nanosecond_Number;
 
    function Clock return Time is
    begin
-      return Time (System.Native_Time.To_Time (System.Native_Time.Clock));
+      return Time (
+         System.Native_Real_Time.To_Duration (System.Native_Real_Time.Clock));
    end Clock;
 
    function Microseconds (US : Integer) return Time_Span is

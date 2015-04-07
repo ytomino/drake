@@ -232,14 +232,14 @@ package body Ada.Directories.Inside is
    end Size;
 
    function Modification_Time (Information : Directory_Entry_Information_Type)
-      return System.Native_Time.Native_Time is
+      return System.Native_Calendar.Native_Time is
    begin
       return Information.st_mtim;
    end Modification_Time;
 
    procedure Set_Modification_Time (
       Name : String;
-      Time : System.Native_Time.Native_Time)
+      Time : System.Native_Calendar.Native_Time)
    is
       function To_timeval (X : C.time.struct_timespec)
          return C.sys.time.struct_timeval;

@@ -82,7 +82,7 @@ LFLAGS_ALL+=-licucore
 else ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS_ALL+=-lm -lpthread -liconv -lgcc_eh
 else ifneq ($(findstring linux-gnu,$(TARGET)),)
-LFLAGS_ALL+=-lm -lpthread -ldl
+LFLAGS_ALL+=-lm -lpthread -ldl -lrt
 endif
 
 GCC=

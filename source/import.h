@@ -81,6 +81,7 @@
 #include <crt_externs.h> /* environment variable */
 #include <malloc/malloc.h> /* malloc_size */
 #include <copyfile.h> /* copyfile */
+#include <mach/mach_time.h> /* mach_absolute_time */
 #define _ARCHITECTURE_BYTE_ORDER_H_ /* headmaster can not translate some inline functions */
 #include <mach-o/dyld.h>
 #undef _ARCHITECTURE_BYTE_ORDER_H_
@@ -262,6 +263,7 @@
 #pragma for Ada "sys/types.h" include "bits/types.h" /* time_t */
 #pragma for Ada "sys/uio.h" include "bits/uio.h" /* struct iovec */
 #pragma for Ada "termios.h" include "bits/termios.h"
+#pragma for Ada "time.h" include "bits/time.h" /* CLOCK_MONOTONIC */
 #pragma for Ada "unistd.h" include "bits/confname.h" /* _SC_NPROCESSORS_ONLN */
 #endif
 

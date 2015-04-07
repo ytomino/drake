@@ -1,12 +1,40 @@
 with System.Native_Time;
-with C.sys.types;
-with C.time;
+with C.sys.time;
 package body System.Native_Calendar is
    pragma Suppress (All_Checks);
    use type C.signed_int; -- time_t is signed int or signed long
    use type C.signed_long;
 
+   Diff : constant := 5680281600.0;
+   --  seconds from 1970-01-01 (0 of POSIX time) to 2150-01-01 (0 of Ada time)
+
    --  implementation
+
+   function To_Native_Time (T : Duration) return Native_Time is
+   begin
+      return System.Native_Time.To_timespec (T + Diff);
+   end To_Native_Time;
+
+   function To_Time (T : Native_Time) return Duration is
+   begin
+      return System.Native_Time.To_Duration (T) - Diff;
+   end To_Time;
+
+   function To_Time (T : C.sys.types.time_t) return Duration is
+   begin
+      return System.Native_Time.To_Duration (T) - Diff;
+   end To_Time;
+
+   function Clock return Native_Time is
+      Result : aliased C.sys.time.struct_timeval;
+      R : C.signed_int;
+   begin
+      R := C.sys.time.gettimeofday (Result'Access, null);
+      if R < 0 then
+         raise Program_Error; -- ???
+      end if;
+      return System.Native_Time.To_timespec (Result);
+   end Clock;
 
    procedure Split (
       Date : Time;
@@ -22,13 +50,12 @@ package body System.Native_Calendar is
       Time_Zone : Time_Offset;
       Error : out Boolean)
    is
-      timespec : aliased Native_Time.Native_Time :=
-         Native_Time.To_Native_Time (Date);
+      timespec : aliased C.time.struct_timespec := To_Native_Time (Date);
       Buffer : aliased C.time.struct_tm := (others => <>); -- uninitialized
       tm : access C.time.struct_tm;
    begin
       Sub_Second := Duration'Fixed_Value (
-         Native_Time.Nanosecond_Number (timespec.tv_nsec));
+         System.Native_Time.Nanosecond_Number (timespec.tv_nsec));
       timespec.tv_sec := timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
       tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
       --  does gmtime_r return no error ?
@@ -78,9 +105,28 @@ package body System.Native_Calendar is
             return;
          end if;
       else
-         Result := Native_Time.To_Time (C_Result);
+         Result := To_Time (C_Result);
       end if;
       Result := Result - Duration (Time_Zone * 60) + Seconds;
    end Time_Of;
+
+   procedure Simple_Delay_Until (T : Native_Time) is
+      Timeout_T : constant Duration := System.Native_Time.To_Duration (T);
+      Current_T : constant Duration := System.Native_Time.To_Duration (Clock);
+   begin
+      if Timeout_T > Current_T then
+         System.Native_Time.Simple_Delay_For (Timeout_T - Current_T);
+      end if;
+   end Simple_Delay_Until;
+
+   procedure Delay_Until (T : Native_Time) is
+   begin
+      Delay_Until_Hook.all (T);
+   end Delay_Until;
+
+   procedure Generic_Delay_Until (T : Ada_Time) is
+   begin
+      Delay_Until (To_Native_Time (Duration (T)));
+   end Generic_Delay_Until;
 
 end System.Native_Calendar;

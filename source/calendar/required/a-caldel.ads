@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
 with System.Native_Time;
+private with System.Native_Calendar;
 private with Ada.Unchecked_Conversion;
 private package Ada.Calendar.Delays is
 
@@ -28,7 +29,7 @@ private
    --    if these instantiations are in the visible part.
 
    procedure Delay_Until_Body is
-      new System.Native_Time.Generic_Delay_Until (Time);
+      new System.Native_Calendar.Generic_Delay_Until (Time);
 
    procedure Delay_Until (T : Time)
       renames Delay_Until_Body;

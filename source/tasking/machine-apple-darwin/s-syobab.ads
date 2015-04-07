@@ -8,7 +8,7 @@ package System.Synchronous_Objects.Abortable is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Native_Time.Native_Time;
+      Timeout : Native_Calendar.Native_Time;
       Notified : out Boolean;
       Aborted : out Boolean);
    procedure Wait (
@@ -51,7 +51,7 @@ package System.Synchronous_Objects.Abortable is
       D : Duration;
       Aborted : out Boolean);
    procedure Delay_Until (
-      T : Native_Time.Native_Time;
+      T : Native_Calendar.Native_Time;
       Aborted : out Boolean);
 
 end System.Synchronous_Objects.Abortable;

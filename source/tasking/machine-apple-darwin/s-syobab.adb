@@ -1,3 +1,4 @@
+with System.Native_Time;
 with System.Tasks;
 package body System.Synchronous_Objects.Abortable is
 
@@ -8,7 +9,7 @@ package body System.Synchronous_Objects.Abortable is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Native_Time.Native_Time;
+      Timeout : Native_Calendar.Native_Time;
       Notified : out Boolean;
       Aborted : out Boolean) is
    begin
@@ -17,7 +18,7 @@ package body System.Synchronous_Objects.Abortable is
       if not Aborted then
          declare
             Timeout_T : constant Duration := Native_Time.To_Duration (Timeout);
-            N : Duration := Native_Time.To_Duration (Native_Time.Clock);
+            N : Duration := Native_Time.To_Duration (Native_Calendar.Clock);
          begin
             loop
                N := N + Abort_Checking_Span;
@@ -25,7 +26,7 @@ package body System.Synchronous_Objects.Abortable is
                Wait (
                   Object,
                   Mutex,
-                  Timeout => Native_Time.To_Native_Duration (N),
+                  Timeout => Native_Time.To_timespec (N),
                   Notified => Notified);
                Aborted := Tasks.Is_Aborted;
                if Notified or else Aborted then
@@ -220,7 +221,7 @@ package body System.Synchronous_Objects.Abortable is
    end Delay_For;
 
    procedure Delay_Until (
-      T : Native_Time.Native_Time;
+      T : Native_Calendar.Native_Time;
       Aborted : out Boolean)
    is
       M : Mutex;

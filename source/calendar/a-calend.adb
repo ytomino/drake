@@ -65,7 +65,8 @@ package body Ada.Calendar is
 
    function Clock return Time is
    begin
-      return Time (System.Native_Time.To_Time (System.Native_Time.Clock));
+      return Time (
+         System.Native_Calendar.To_Time (System.Native_Calendar.Clock));
    end Clock;
 
    function Year (Date : Time) return Year_Number is

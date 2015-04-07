@@ -1,7 +1,18 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Windows
+with C.windef;
 package System.Native_Calendar is
    pragma Preelaborate;
+
+   subtype Native_Time is C.windef.FILETIME;
+
+   function To_Native_Time (T : Duration) return Native_Time;
+   function To_Time (T : Native_Time) return Duration;
+
+   pragma Pure_Function (To_Native_Time);
+   pragma Pure_Function (To_Time);
+
+   function Clock return Native_Time;
 
    --  same as Ada.Calendar
 
@@ -48,5 +59,21 @@ package System.Native_Calendar is
       Time_Zone : Time_Offset;
       Result : out Time;
       Error : out Boolean);
+
+   --  for delay until
+
+   procedure Delay_Until (T : Native_Time); -- no hook for Windows
+
+   generic
+      type Ada_Time is new Duration;
+   procedure Generic_Delay_Until (T : Ada_Time);
+   pragma Inline (Generic_Delay_Until);
+
+   --  unused hook for System.Tasks
+   procedure Simple_Delay_Until (T : Native_Time)
+      renames Delay_Until;
+   type Delay_Until_Handler is access procedure (T : Native_Time);
+   Delay_Until_Hook : Delay_Until_Handler;
+   pragma Suppress (Access_Check, Delay_Until_Hook); -- not null
 
 end System.Native_Calendar;

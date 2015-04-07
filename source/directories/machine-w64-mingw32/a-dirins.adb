@@ -282,14 +282,14 @@ package body Ada.Directories.Inside is
    end Size;
 
    function Modification_Time (Information : Directory_Entry_Information_Type)
-      return System.Native_Time.Native_Time is
+      return System.Native_Calendar.Native_Time is
    begin
       return Information.ftLastWriteTime;
    end Modification_Time;
 
    procedure Set_Modification_Time (
       Name : String;
-      Time : System.Native_Time.Native_Time)
+      Time : System.Native_Calendar.Native_Time)
    is
       Exception_Id : Exception_Identification.Exception_Id :=
          Exception_Identification.Null_Id;
@@ -297,7 +297,7 @@ package body Ada.Directories.Inside is
          0 ..
          Name'Length * System.Zero_Terminated_WStrings.Expanding);
       Information : aliased Directory_Entry_Information_Type;
-      Aliased_Time : aliased System.Native_Time.Native_Time := Time;
+      Aliased_Time : aliased System.Native_Calendar.Native_Time := Time;
       Handle : C.winnt.HANDLE;
    begin
       System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);

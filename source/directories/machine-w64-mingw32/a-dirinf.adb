@@ -1,7 +1,7 @@
 with Ada.Directories.Inside;
 with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
-with System.Native_Time;
+with System.Native_Calendar;
 with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winnt;
@@ -29,7 +29,7 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Time.To_Time (
+      return Cast (System.Native_Calendar.To_Time (
          Information.ftCreationTime));
    end Creation_Time;
 
@@ -43,7 +43,7 @@ package body Ada.Directories.Information is
       if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return Cast (System.Native_Time.To_Time (
+      return Cast (System.Native_Calendar.To_Time (
          NC_Directory_Entry.Directory_Entry.ftLastWriteTime));
    end Creation_Time;
 
@@ -51,7 +51,7 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Time.To_Time (
+      return Cast (System.Native_Calendar.To_Time (
          Information.ftLastAccessTime));
    end Last_Access_Time;
 
@@ -65,7 +65,7 @@ package body Ada.Directories.Information is
       if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return Cast (System.Native_Time.To_Time (
+      return Cast (System.Native_Calendar.To_Time (
          NC_Directory_Entry.Directory_Entry.ftLastAccessTime));
    end Last_Access_Time;
 

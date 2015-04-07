@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with System.Native_Time;
+with System.Native_Calendar;
 private with C.pthread;
 package System.Synchronous_Objects is
    pragma Preelaborate;
@@ -28,7 +28,7 @@ package System.Synchronous_Objects is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Native_Time.Native_Time;
+      Timeout : Native_Calendar.Native_Time;
       Notified : out Boolean);
    procedure Wait (
       Object : in out Condition_Variable;

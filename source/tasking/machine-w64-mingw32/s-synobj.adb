@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with System.Native_Time;
 with C.winbase;
 with C.windef;
 with C.winerror;
@@ -304,12 +305,12 @@ package body System.Synchronous_Objects is
 
    procedure Wait (
       Object : in out Event;
-      Timeout : Native_Time.Native_Time;
+      Timeout : Native_Calendar.Native_Time;
       Value : out Boolean)
    is
       Timeout_T : constant Duration := Native_Time.To_Duration (Timeout);
       Current_T : constant Duration :=
-         Native_Time.To_Duration (Native_Time.Clock);
+         Native_Time.To_Duration (Native_Calendar.Clock);
       D : Duration;
    begin
       if Timeout_T > Current_T then
