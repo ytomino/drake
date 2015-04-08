@@ -306,6 +306,15 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       if Source.Length = 0 then
          Assign (Source, New_Item);
+      elsif Source.Data = New_Item.Data then
+         declare
+            Last : constant Natural := Source.Length;
+            Total_Length : constant Natural := Last * 2;
+         begin
+            Set_Length (Source, Total_Length);
+            Source.Data.Items (Last + 1 .. Total_Length) :=
+               Source.Data.Items (1 .. Last);
+         end;
       else
          Append (Source, New_Item.Data.Items (1 .. New_Item.Length));
       end if;
