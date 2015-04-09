@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with System.Native_Calendar;
+private with System.Native_Calendar;
 private with C.pthread;
 package System.Synchronous_Objects is
    pragma Preelaborate;
@@ -25,11 +25,6 @@ package System.Synchronous_Objects is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex);
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Native_Calendar.Native_Time;
-      Notified : out Boolean);
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
@@ -132,6 +127,12 @@ private
       Handle : aliased C.pthread.pthread_cond_t;
    end record;
    pragma Suppress_Initialization (Condition_Variable);
+
+   procedure Wait (
+      Object : in out Condition_Variable;
+      Mutex : in out Synchronous_Objects.Mutex;
+      Timeout : Native_Calendar.Native_Time;
+      Notified : out Boolean);
 
    type Queue is limited record
       Mutex : not null access Synchronous_Objects.Mutex;

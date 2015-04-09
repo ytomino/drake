@@ -185,21 +185,17 @@ package body System.Synchronous_Objects.Abortable is
       T : Native_Calendar.Native_Time;
       Aborted : out Boolean)
    is
-      Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
-         Tasks.Abort_Attribute;
+      Timeout_T : constant Duration := Native_Time.To_Duration (T);
+      Current_T : constant Duration :=
+         Native_Time.To_Duration (Native_Calendar.Clock);
+      D : Duration;
    begin
-      if Attr /= null and then not Attr.Blocked then
-         declare
-            Temp_Event : Event := (Handle => Attr.Event);
-            Value : Boolean;
-         begin
-            Wait (Temp_Event, T, Value);
-            Aborted := Tasks.Is_Aborted or else Value;
-         end;
+      if Timeout_T > Current_T then
+         D := Timeout_T - Current_T;
       else
-         Native_Calendar.Delay_Until (T);
-         Aborted := Tasks.Is_Aborted;
+         D := 0.0;
       end if;
+      Delay_For (D, Aborted);
    end Delay_Until;
 
 end System.Synchronous_Objects.Abortable;

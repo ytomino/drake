@@ -1,16 +1,11 @@
 pragma License (Unrestricted);
 --  implementation unit
+with System.Native_Calendar;
 package System.Synchronous_Objects.Abortable is
    pragma Preelaborate;
 
    --  condition variable
 
---  procedure Wait (
---    Object : in out Condition_Variable;
---    Mutex : in out Synchronous_Objects.Mutex;
---    Timeout : Native_Time.Native_Time;
---    Notified : out Boolean;
---    Aborted : out Boolean);
 --  procedure Wait (
 --    Object : in out Condition_Variable;
 --    Mutex : in out Synchronous_Objects.Mutex;
