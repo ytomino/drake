@@ -133,6 +133,7 @@ $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
 	cd $(BUILDDIR) && $(GNATPREFIX)gnatbind $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(BFLAGS_ALL)
 	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(LFLAGS_ALL)
 
+$(BUILDDIR)/nop$(EXEEXT): BFLAGS_ALL:=$(filter-out -E,$(BFLAGS_ALL))
 $(BUILDDIR)/nosignal$(EXEEXT): LFLAGS_ALL+=$(abspath $(BUILDDIR)/adalib/nosig.o)
 
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT) $(BINLN)

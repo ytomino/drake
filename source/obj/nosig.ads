@@ -4,9 +4,10 @@ with System;
 package nosig is
    pragma Preelaborate;
 
-   procedure Install_Exception_Handler (SEH : System.Address) is null;
-   pragma Export (Ada, Install_Exception_Handler,
-      "__drake_install_exception_handler");
+   procedure Install_Exception_Handler (SEH : System.Address) is null
+      with Export, -- for weak linking
+         Convention => Ada,
+         External_Name => "__drake_install_exception_handler";
 
    procedure Install_Task_Exception_Handler (
       SEH : System.Address;
@@ -24,15 +25,5 @@ package nosig is
       return System.Address is (System.Null_Address);
    pragma Export (Ada, New_Machine_Occurrence_From_SEH,
       "__drake_new_machine_occurrence_from_seh");
-
-private
-
-   --  for weak linking,
-   --  this symbol will be linked other symbols are used
-   Install_Exception_Handler_Ref : constant
-      not null access procedure (SEH : System.Address) :=
-      Install_Exception_Handler'Access;
-   pragma Export (Ada, Install_Exception_Handler_Ref,
-      "__drake_ref_install_exception_handler");
 
 end nosig;

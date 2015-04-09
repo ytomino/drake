@@ -2,14 +2,14 @@ package body System.Unwind is
    pragma Suppress (All_Checks);
 
    --  weak reference for System.Unwind.Backtrace
-   type Backtrace_Information_Handler is access procedure (
+   procedure Backtrace_Information (
       X : Exception_Occurrence;
       Params : Address;
       Put : not null access procedure (S : String; Params : Address);
-      New_Line : not null access procedure (Params : Address));
-   Backtrace_Information : constant Backtrace_Information_Handler;
-   pragma Import (Ada, Backtrace_Information,
-      "__drake_ref_backtrace_information");
+      New_Line : not null access procedure (Params : Address))
+      with Import, -- weak linking
+         Convention => Ada, External_Name => "__drake_backtrace_information";
+
    pragma Weak_External (Backtrace_Information);
 
    procedure Exception_Information (
