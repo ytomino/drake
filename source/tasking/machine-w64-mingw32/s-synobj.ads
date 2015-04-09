@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with System.Native_Time;
+with System.Native_Calendar;
 private with C.winnt;
 package System.Synchronous_Objects is
    pragma Preelaborate;
@@ -98,7 +98,7 @@ package System.Synchronous_Objects is
       Object : in out Event);
    procedure Wait (
       Object : in out Event;
-      Timeout : Native_Time.Native_Time;
+      Timeout : Native_Calendar.Native_Time;
       Value : out Boolean);
    procedure Wait (
       Object : in out Event;

@@ -82,7 +82,7 @@ LFLAGS_ALL+=-licucore
 else ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS_ALL+=-lm -lpthread -liconv -lgcc_eh
 else ifneq ($(findstring linux-gnu,$(TARGET)),)
-LFLAGS_ALL+=-lm -lpthread -ldl
+LFLAGS_ALL+=-lm -lpthread -ldl -lrt
 endif
 
 GCC=
@@ -133,6 +133,7 @@ $(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
 	cd $(BUILDDIR) && $(GNATPREFIX)gnatbind $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(BFLAGS_ALL)
 	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(LFLAGS_ALL)
 
+$(BUILDDIR)/nop$(EXEEXT): BFLAGS_ALL:=$(filter-out -E,$(BFLAGS_ALL))
 $(BUILDDIR)/nosignal$(EXEEXT): LFLAGS_ALL+=$(abspath $(BUILDDIR)/adalib/nosig.o)
 
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT) $(BINLN)

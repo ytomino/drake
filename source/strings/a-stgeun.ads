@@ -630,23 +630,28 @@ package Ada.Strings.Generic_Unbounded is
 
 private
 
+   subtype Fixed_String is String_Type (Positive);
+
+   type Fixed_String_Access is access all Fixed_String;
+
    type Data is record -- "limited" prevents No_Elaboration_Code
       Reference_Count : aliased System.Reference_Counting.Counter;
+      Capacity : Natural;
       Max_Length : aliased System.Reference_Counting.Length_Type;
-      Items : not null String_Access;
+      Items : Fixed_String_Access;
       --  the storage would be allocated in here
    end record;
    pragma Suppress_Initialization (Data);
-   pragma Compile_Time_Error (Data'Size rem Integer'Size > 0, "misaligned");
+   pragma Compile_Time_Error (Data'Size rem Wide_Wide_Character'Size > 0,
+      "misaligned");
 
    type Data_Access is access all Data;
 
-   Empty_String : aliased constant String_Type :=
-      (1 .. 0 => Character_Type'Val (0));
    Empty_Data : aliased constant Data := (
       Reference_Count => System.Reference_Counting.Static,
+      Capacity => 0,
       Max_Length => 0,
-      Items => Empty_String'Unrestricted_Access);
+      Items => null);
 
    type Unbounded_String is new Finalization.Controlled with record
       Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;

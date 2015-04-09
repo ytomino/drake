@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with System.Native_Time;
+with System.Native_Calendar;
 with C.sys.stat;
 package Ada.Directories.Inside is
 
@@ -54,10 +54,10 @@ package Ada.Directories.Inside is
       return File_Size;
 
    function Modification_Time (Information : Directory_Entry_Information_Type)
-      return System.Native_Time.Native_Time;
+      return System.Native_Calendar.Native_Time;
 
    procedure Set_Modification_Time (
       Name : String;
-      Time : System.Native_Time.Native_Time);
+      Time : System.Native_Calendar.Native_Time);
 
 end Ada.Directories.Inside;

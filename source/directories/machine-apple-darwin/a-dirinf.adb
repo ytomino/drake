@@ -3,8 +3,8 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
+with System.Native_Calendar;
 with System.Native_Credentials;
-with System.Native_Time;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
@@ -182,7 +182,7 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Time.To_Time (Information.st_atim));
+      return Cast (System.Native_Calendar.To_Time (Information.st_atim));
    end Last_Access_Time;
 
    function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
@@ -194,7 +194,7 @@ package body Ada.Directories.Information is
          Reference (Directory_Entry);
    begin
       Fill (NC_Directory_Entry);
-      return Cast (System.Native_Time.To_Time (
+      return Cast (System.Native_Calendar.To_Time (
          NC_Directory_Entry.Additional.Information.st_atim));
    end Last_Access_Time;
 
@@ -205,7 +205,7 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Time.To_Time (Information.st_ctim));
+      return Cast (System.Native_Calendar.To_Time (Information.st_ctim));
    end Last_Status_Change_Time;
 
    function Last_Status_Change_Time (Directory_Entry : Directory_Entry_Type)
@@ -217,7 +217,7 @@ package body Ada.Directories.Information is
          Reference (Directory_Entry);
    begin
       Fill (NC_Directory_Entry);
-      return Cast (System.Native_Time.To_Time (
+      return Cast (System.Native_Calendar.To_Time (
          NC_Directory_Entry.Additional.Information.st_ctim));
    end Last_Status_Change_Time;
 

@@ -28,9 +28,16 @@ package System.Storage_Pools.Overlaps is
       return Storage_Elements.Storage_Count;
    pragma Inline (Storage_Size);
 
-   Pool : Overlay_Pool := (Root_Storage_Pool with null record);
+   Pool : constant not null access Overlay_Pool;
    --  if a local pool is declared, all objects belongs to the local scope,
    --  then those be finalized when the local pool is out of scope...
    --  therefore it should use global pool
+
+private
+
+   Pool_Object : aliased Overlay_Pool := (Root_Storage_Pool with null record);
+
+   Pool : constant not null access Overlay_Pool :=
+      Pool_Object'Access;
 
 end System.Storage_Pools.Overlaps;

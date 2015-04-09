@@ -39,8 +39,7 @@ begin
       Index_Type'Base'Image (Last_Index)));
    --  reallocate
    if Name'Storage_Pool'Tag =
-      System.Storage_Pools.Standard_Pools.Standard_Pool'Class (
-         System.Storage_Pools.Standard_Pools.Standard_Storage_Pool)'Tag
+      System.Storage_Pools.Standard_Pools.Standard_Pool'Tag
    then
       --  standard storage pool
       --  delete from front

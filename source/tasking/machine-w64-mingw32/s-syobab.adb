@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Native_Tasks;
+with System.Native_Time;
 with System.Tasks;
 with C.winbase;
 with C.windef;
@@ -181,7 +182,7 @@ package body System.Synchronous_Objects.Abortable is
    end Delay_For;
 
    procedure Delay_Until (
-      T : Native_Time.Native_Time;
+      T : Native_Calendar.Native_Time;
       Aborted : out Boolean)
    is
       Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
@@ -196,7 +197,7 @@ package body System.Synchronous_Objects.Abortable is
             Aborted := Tasks.Is_Aborted or else Value;
          end;
       else
-         Native_Time.Simple_Delay_Until (T);
+         Native_Calendar.Delay_Until (T);
          Aborted := Tasks.Is_Aborted;
       end if;
    end Delay_Until;

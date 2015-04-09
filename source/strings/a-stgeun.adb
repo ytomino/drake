@@ -35,8 +35,7 @@ package body Ada.Strings.Generic_Unbounded is
       return System.Storage_Elements.Storage_Count
    is
       Header_Size : constant System.Storage_Elements.Storage_Count :=
-         Data'Size / Standard'Storage_Unit
-         + Integer'Size / Standard'Storage_Unit * 2; -- constraints
+         Data'Size / Standard'Storage_Unit;
       Item_Size : System.Storage_Elements.Storage_Count;
    begin
       if String_Type'Component_Size rem Standard'Storage_Unit = 0 then
@@ -56,44 +55,32 @@ package body Ada.Strings.Generic_Unbounded is
    procedure Adjust_Allocated (Data : not null Data_Access);
    procedure Adjust_Allocated (Data : not null Data_Access) is
       pragma Suppress (Alignment_Check);
+      package Fixed_String_Access_Conv is
+         new System.Address_To_Named_Access_Conversions (
+            Fixed_String,
+            Fixed_String_Access);
       Header_Size : constant System.Storage_Elements.Storage_Count :=
-         Generic_Unbounded.Data'Size / Standard'Storage_Unit
-         + Integer'Size / Standard'Storage_Unit * 2; -- constraints
+         Generic_Unbounded.Data'Size / Standard'Storage_Unit;
       M : constant System.Address := Data_Cast.To_Address (Data);
       Usable_Size : constant
          System.Storage_Elements.Storage_Count :=
          System.Standard_Allocators.Allocated_Size (M)
          - Header_Size;
-      type Repr is record
-         Data : System.Address;
-         Constraints : System.Address;
-      end record;
-      pragma Suppress_Initialization (Repr);
-      R : Repr;
-      for R'Address use Data.Items'Address;
-      First : Integer;
-      for First'Address use
-         M + Generic_Unbounded.Data'Size / Standard'Storage_Unit;
-      Last : Integer;
-      for Last'Address use
-         First'Address + Integer'Size / Standard'Storage_Unit;
    begin
-      First := 1;
       if String_Type'Component_Size
          rem Standard'Storage_Unit = 0
       then -- optimized for packed
-         Last := Integer (
+         Data.Capacity := Integer (
             Usable_Size
             / (String_Type'Component_Size
                / Standard'Storage_Unit));
       else -- unpacked
-         Last := Integer (
+         Data.Capacity := Integer (
             Usable_Size
             * Standard'Storage_Unit
             / String_Type'Component_Size);
       end if;
-      R.Constraints := First'Address;
-      R.Data := Last'Address + Integer'Size / Standard'Storage_Unit;
+      Data.Items := Fixed_String_Access_Conv.To_Pointer (M + Header_Size);
    end Adjust_Allocated;
 
    function Allocate_Data (
@@ -166,6 +153,7 @@ package body Ada.Strings.Generic_Unbounded is
       Max_Length : System.Reference_Counting.Length_Type;
       Capacity : System.Reference_Counting.Length_Type)
    is
+      pragma Suppress (Access_Check);
       Data : constant not null Data_Access :=
          Allocate_Data (Max_Length, Capacity);
       subtype R is Integer range 1 .. Integer (Length);
@@ -238,7 +226,7 @@ package body Ada.Strings.Generic_Unbounded is
 
    function Capacity (Source : Unbounded_String'Class) return Natural is
    begin
-      return Source.Data.Items'Last;
+      return Source.Data.Capacity;
    end Capacity;
 
    procedure Reserve_Capacity (
@@ -263,6 +251,7 @@ package body Ada.Strings.Generic_Unbounded is
    function To_Unbounded_String (Source : String_Type)
       return Unbounded_String
    is
+      pragma Suppress (Access_Check);
       Length : constant Natural := Source'Length;
       New_Data : constant not null Data_Access :=
          Allocate_Data (
@@ -285,6 +274,7 @@ package body Ada.Strings.Generic_Unbounded is
    end To_Unbounded_String;
 
    function To_String (Source : Unbounded_String) return String_Type is
+      pragma Suppress (Access_Check);
    begin
       return Source.Data.Items (1 .. Source.Length);
    end To_String;
@@ -293,6 +283,7 @@ package body Ada.Strings.Generic_Unbounded is
       Target : out Unbounded_String;
       Source : String_Type)
    is
+      pragma Suppress (Access_Check);
       Length : constant Natural := Source'Length;
    begin
       Target.Length := 0;
@@ -302,10 +293,21 @@ package body Ada.Strings.Generic_Unbounded is
 
    procedure Append (
       Source : in out Unbounded_String;
-      New_Item : Unbounded_String) is
+      New_Item : Unbounded_String)
+   is
+      pragma Suppress (Access_Check);
    begin
       if Source.Length = 0 then
          Assign (Source, New_Item);
+      elsif Source.Data = New_Item.Data then
+         declare
+            Last : constant Natural := Source.Length;
+            Total_Length : constant Natural := Last * 2;
+         begin
+            Set_Length (Source, Total_Length);
+            Source.Data.Items (Last + 1 .. Total_Length) :=
+               Source.Data.Items (1 .. Last);
+         end;
       else
          Append (Source, New_Item.Data.Items (1 .. New_Item.Length));
       end if;
@@ -395,7 +397,9 @@ package body Ada.Strings.Generic_Unbounded is
       Source : Unbounded_String;
       Low : Positive;
       High : Natural)
-      return String_Type is
+      return String_Type
+   is
+      pragma Suppress (Access_Check);
    begin
       return Source.Data.Items (Low .. High);
    end Slice;
@@ -415,7 +419,9 @@ package body Ada.Strings.Generic_Unbounded is
       Source : Unbounded_String;
       Target : out Unbounded_String;
       Low : Positive;
-      High : Natural) is
+      High : Natural)
+   is
+      pragma Suppress (Access_Check);
    begin
       if Low = 1 then
          Assign (Target, Source);
@@ -426,37 +432,47 @@ package body Ada.Strings.Generic_Unbounded is
    end Unbounded_Slice;
 
    overriding function "=" (Left, Right : Unbounded_String) return Boolean is
+      pragma Suppress (Access_Check);
    begin
       return Left.Data.Items (1 .. Left.Length) =
          Right.Data.Items (1 .. Right.Length);
    end "=";
 
    function "=" (Left : Unbounded_String; Right : String_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Suppress (Access_Check);
    begin
       return Left.Data.Items (1 .. Left.Length) = Right;
    end "=";
 
    function "=" (Left : String_Type; Right : Unbounded_String)
-      return Boolean is
+      return Boolean
+   is
+      pragma Suppress (Access_Check);
    begin
       return Left = Right.Data.Items (1 .. Right.Length);
    end "=";
 
    function "<" (Left, Right : Unbounded_String) return Boolean is
+      pragma Suppress (Access_Check);
    begin
       return Left.Data.Items (1 .. Left.Length) <
          Right.Data.Items (1 .. Right.Length);
    end "<";
 
    function "<" (Left : Unbounded_String; Right : String_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Suppress (Access_Check);
    begin
       return Left.Data.Items (1 .. Left.Length) < Right;
    end "<";
 
    function "<" (Left : String_Type; Right : Unbounded_String)
-      return Boolean is
+      return Boolean
+   is
+      pragma Suppress (Access_Check);
    begin
       return Left < Right.Data.Items (1 .. Right.Length);
    end "<";
@@ -523,10 +539,12 @@ package body Ada.Strings.Generic_Unbounded is
       Source : aliased Unbounded_String;
       First_Index : Positive;
       Last_Index : Natural)
-      return Slicing.Constant_Reference_Type is
+      return Slicing.Constant_Reference_Type
+   is
+      pragma Suppress (Access_Check);
    begin
       return Slicing.Constant_Slice (
-         Source.Data.Items.all,
+         String_Access'(Source.Data.Items.all'Unrestricted_Access).all,
          First_Index,
          Last_Index);
    end Constant_Reference;
@@ -542,11 +560,13 @@ package body Ada.Strings.Generic_Unbounded is
       Source : aliased in out Unbounded_String;
       First_Index : Positive;
       Last_Index : Natural)
-      return Slicing.Reference_Type is
+      return Slicing.Reference_Type
+   is
+      pragma Suppress (Access_Check);
    begin
       Unique (Source);
       return Slicing.Slice (
-         Source.Data.Items.all,
+         String_Access'(Source.Data.Items.all'Unrestricted_Access).all,
          First_Index,
          Last_Index);
    end Reference;
@@ -572,7 +592,9 @@ package body Ada.Strings.Generic_Unbounded is
          Pattern : String_Type;
          From : Positive;
          Going : Direction := Forward)
-         return Natural is
+         return Natural
+      is
+         pragma Suppress (Access_Check);
       begin
          return Fixed_Index_From (
             Source.Data.Items (1 .. Source.Length),
@@ -585,7 +607,9 @@ package body Ada.Strings.Generic_Unbounded is
          Source : Unbounded_String;
          Pattern : String_Type;
          Going : Direction := Forward)
-         return Natural is
+         return Natural
+      is
+         pragma Suppress (Access_Check);
       begin
          return Fixed_Index (
             Source.Data.Items (1 .. Source.Length),
@@ -597,7 +621,9 @@ package body Ada.Strings.Generic_Unbounded is
          Source : Unbounded_String;
          From : Positive;
          Going : Direction := Forward)
-         return Natural is
+         return Natural
+      is
+         pragma Suppress (Access_Check);
       begin
          return Fixed_Index_Non_Blank_From (
             Source.Data.Items (1 .. Source.Length),
@@ -608,7 +634,9 @@ package body Ada.Strings.Generic_Unbounded is
       function Index_Non_Blank (
          Source : Unbounded_String;
          Going : Direction := Forward)
-         return Natural is
+         return Natural
+      is
+         pragma Suppress (Access_Check);
       begin
          return Fixed_Index_Non_Blank (
             Source.Data.Items (1 .. Source.Length),
@@ -618,7 +646,9 @@ package body Ada.Strings.Generic_Unbounded is
       function Count (
          Source : Unbounded_String;
          Pattern : String_Type)
-         return Natural is
+         return Natural
+      is
+         pragma Suppress (Access_Check);
       begin
          return Fixed_Count (
             Source.Data.Items (1 .. Source.Length),
@@ -630,7 +660,9 @@ package body Ada.Strings.Generic_Unbounded is
          Low : Positive;
          High : Natural;
          By : String_Type)
-         return Unbounded_String is
+         return Unbounded_String
+      is
+         pragma Suppress (Access_Check);
       begin
          return To_Unbounded_String (
             Fixed_Replace_Slice (
@@ -644,7 +676,9 @@ package body Ada.Strings.Generic_Unbounded is
          Source : in out Unbounded_String;
          Low : Positive;
          High : Natural;
-         By : String_Type) is
+         By : String_Type)
+      is
+         pragma Suppress (Access_Check);
       begin
          Set_Unbounded_String (
             Source,
@@ -659,7 +693,9 @@ package body Ada.Strings.Generic_Unbounded is
          Source : Unbounded_String;
          Before : Positive;
          New_Item : String_Type)
-         return Unbounded_String is
+         return Unbounded_String
+      is
+         pragma Suppress (Access_Check);
       begin
          return To_Unbounded_String (
             Fixed_Insert (
@@ -671,7 +707,9 @@ package body Ada.Strings.Generic_Unbounded is
       procedure Insert (
          Source : in out Unbounded_String;
          Before : Positive;
-         New_Item : String_Type) is
+         New_Item : String_Type)
+      is
+         pragma Suppress (Access_Check);
       begin
          Set_Unbounded_String (
             Source,
@@ -685,7 +723,9 @@ package body Ada.Strings.Generic_Unbounded is
          Source : Unbounded_String;
          Position : Positive;
          New_Item : String_Type)
-         return Unbounded_String is
+         return Unbounded_String
+      is
+         pragma Suppress (Access_Check);
       begin
          return To_Unbounded_String (
             Fixed_Overwrite (
@@ -697,7 +737,9 @@ package body Ada.Strings.Generic_Unbounded is
       procedure Overwrite (
          Source : in out Unbounded_String;
          Position : Positive;
-         New_Item : String_Type) is
+         New_Item : String_Type)
+      is
+         pragma Suppress (Access_Check);
       begin
          Set_Unbounded_String (
             Source,
@@ -721,7 +763,9 @@ package body Ada.Strings.Generic_Unbounded is
       procedure Delete (
          Source : in out Unbounded_String;
          From : Positive;
-         Through : Natural) is
+         Through : Natural)
+      is
+         pragma Suppress (Access_Check);
       begin
          if From <= Through then
             declare
@@ -750,6 +794,7 @@ package body Ada.Strings.Generic_Unbounded is
          Blank : Character_Type := Space)
          return Unbounded_String
       is
+         pragma Suppress (Access_Check);
          First : Positive;
          Last : Natural;
       begin
@@ -767,6 +812,7 @@ package body Ada.Strings.Generic_Unbounded is
          Side : Trim_End;
          Blank : Character_Type := Space)
       is
+         pragma Suppress (Access_Check);
          First : Positive;
          Last : Natural;
       begin
@@ -783,7 +829,9 @@ package body Ada.Strings.Generic_Unbounded is
          Source : Unbounded_String;
          Count : Natural;
          Pad : Character_Type := Space)
-         return Unbounded_String is
+         return Unbounded_String
+      is
+         pragma Suppress (Access_Check);
       begin
          return To_Unbounded_String (
             Fixed_Head (
@@ -795,7 +843,9 @@ package body Ada.Strings.Generic_Unbounded is
       procedure Head (
          Source : in out Unbounded_String;
          Count : Natural;
-         Pad : Character_Type := Space) is
+         Pad : Character_Type := Space)
+      is
+         pragma Suppress (Access_Check);
       begin
          Set_Unbounded_String (
             Source,
@@ -809,7 +859,9 @@ package body Ada.Strings.Generic_Unbounded is
          Source : Unbounded_String;
          Count : Natural;
          Pad : Character_Type := Space)
-         return Unbounded_String is
+         return Unbounded_String
+      is
+         pragma Suppress (Access_Check);
       begin
          return To_Unbounded_String (
             Fixed_Tail (
@@ -821,7 +873,9 @@ package body Ada.Strings.Generic_Unbounded is
       procedure Tail (
          Source : in out Unbounded_String;
          Count : Natural;
-         Pad : Character_Type := Space) is
+         Pad : Character_Type := Space)
+      is
+         pragma Suppress (Access_Check);
       begin
          Set_Unbounded_String (
             Source,
@@ -844,7 +898,9 @@ package body Ada.Strings.Generic_Unbounded is
       end "*";
 
       function "*" (Left : Natural; Right : String_Type)
-         return Unbounded_String is
+         return Unbounded_String
+      is
+         pragma Suppress (Access_Check);
       begin
          return Result : constant Unbounded_String :=
             To_Unbounded_String (Left * Right'Length)
@@ -862,7 +918,9 @@ package body Ada.Strings.Generic_Unbounded is
       end "*";
 
       function "*" (Left : Natural; Right : Unbounded_String)
-         return Unbounded_String is
+         return Unbounded_String
+      is
+         pragma Suppress (Access_Check);
       begin
          return Left * Right.Data.Items (1 .. Right.Length);
       end "*";
@@ -875,7 +933,9 @@ package body Ada.Strings.Generic_Unbounded is
             From : Positive;
             Going : Direction := Forward;
             Mapping : Character_Mapping)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Index_Mapping_From (
                Source.Data.Items (1 .. Source.Length),
@@ -890,7 +950,9 @@ package body Ada.Strings.Generic_Unbounded is
             Pattern : String_Type;
             Going : Direction := Forward;
             Mapping : Character_Mapping)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Index_Mapping (
                Source.Data.Items (1 .. Source.Length),
@@ -906,7 +968,9 @@ package body Ada.Strings.Generic_Unbounded is
             Going : Direction := Forward;
             Mapping : not null access function (From : Wide_Wide_Character)
                return Wide_Wide_Character)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Index_Mapping_Function_From (
                Source.Data.Items (1 .. Source.Length),
@@ -922,7 +986,9 @@ package body Ada.Strings.Generic_Unbounded is
             Going : Direction := Forward;
             Mapping : not null access function (From : Wide_Wide_Character)
                return Wide_Wide_Character)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Index_Mapping_Function (
                Source.Data.Items (1 .. Source.Length),
@@ -938,7 +1004,9 @@ package body Ada.Strings.Generic_Unbounded is
             Going : Direction := Forward;
             Mapping : not null access function (From : Character_Type)
                return Character_Type)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Index_Mapping_Function_Per_Element_From (
                Source.Data.Items (1 .. Source.Length),
@@ -954,7 +1022,9 @@ package body Ada.Strings.Generic_Unbounded is
             Going : Direction := Forward;
             Mapping : not null access function (From : Character_Type)
                return Character_Type)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Index_Mapping_Function_Per_Element (
                Source.Data.Items (1 .. Source.Length),
@@ -969,7 +1039,9 @@ package body Ada.Strings.Generic_Unbounded is
             From : Positive;
             Test : Membership := Inside;
             Going : Direction := Forward)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Index_Set_From (
                Source.Data.Items (1 .. Source.Length),
@@ -984,7 +1056,9 @@ package body Ada.Strings.Generic_Unbounded is
             Set : Character_Set;
             Test : Membership := Inside;
             Going : Direction := Forward)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Index_Set (
                Source.Data.Items (1 .. Source.Length),
@@ -997,7 +1071,9 @@ package body Ada.Strings.Generic_Unbounded is
             Source : Unbounded_String;
             Pattern : String_Type;
             Mapping : Character_Mapping)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Count_Mapping (
                Source.Data.Items (1 .. Source.Length),
@@ -1010,7 +1086,9 @@ package body Ada.Strings.Generic_Unbounded is
             Pattern : String_Type;
             Mapping : not null access function (From : Wide_Wide_Character)
                return Wide_Wide_Character)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Count_Mapping_Function (
                Source.Data.Items (1 .. Source.Length),
@@ -1023,7 +1101,9 @@ package body Ada.Strings.Generic_Unbounded is
             Pattern : String_Type;
             Mapping : not null access function (From : Character_Type)
                return Character_Type)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Count_Mapping_Function_Per_Element (
                Source.Data.Items (1 .. Source.Length),
@@ -1032,7 +1112,9 @@ package body Ada.Strings.Generic_Unbounded is
          end Count_Per_Element;
 
          function Count (Source : Unbounded_String; Set : Character_Set)
-            return Natural is
+            return Natural
+         is
+            pragma Suppress (Access_Check);
          begin
             return Fixed_Count_Set (
                Source.Data.Items (1 .. Source.Length),
@@ -1045,7 +1127,9 @@ package body Ada.Strings.Generic_Unbounded is
             From : Positive;
             Test : Membership;
             First : out Positive;
-            Last : out Natural) is
+            Last : out Natural)
+         is
+            pragma Suppress (Access_Check);
          begin
             Fixed_Find_Token_From (
                Source.Data.Items (1 .. Source.Length),
@@ -1061,7 +1145,9 @@ package body Ada.Strings.Generic_Unbounded is
             Set : Character_Set;
             Test : Membership;
             First : out Positive;
-            Last : out Natural) is
+            Last : out Natural)
+         is
+            pragma Suppress (Access_Check);
          begin
             Fixed_Find_Token (
                Source.Data.Items (1 .. Source.Length),
@@ -1074,7 +1160,9 @@ package body Ada.Strings.Generic_Unbounded is
          function Translate (
             Source : Unbounded_String;
             Mapping : Character_Mapping)
-            return Unbounded_String is
+            return Unbounded_String
+         is
+            pragma Suppress (Access_Check);
          begin
             return To_Unbounded_String (
                Fixed_Translate_Mapping (
@@ -1084,7 +1172,9 @@ package body Ada.Strings.Generic_Unbounded is
 
          procedure Translate (
             Source : in out Unbounded_String;
-            Mapping : Character_Mapping) is
+            Mapping : Character_Mapping)
+         is
+            pragma Suppress (Access_Check);
          begin
             Set_Unbounded_String (
                Source,
@@ -1097,7 +1187,9 @@ package body Ada.Strings.Generic_Unbounded is
             Source : Unbounded_String;
             Mapping : not null access function (From : Wide_Wide_Character)
                return Wide_Wide_Character)
-            return Unbounded_String is
+            return Unbounded_String
+         is
+            pragma Suppress (Access_Check);
          begin
             return To_Unbounded_String (
                Fixed_Translate_Mapping_Function (
@@ -1108,7 +1200,9 @@ package body Ada.Strings.Generic_Unbounded is
          procedure Translate (
             Source : in out Unbounded_String;
             Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character) is
+               return Wide_Wide_Character)
+         is
+            pragma Suppress (Access_Check);
          begin
             Set_Unbounded_String (
                Source,
@@ -1121,7 +1215,9 @@ package body Ada.Strings.Generic_Unbounded is
             Source : Unbounded_String;
             Mapping : not null access function (From : Character_Type)
                return Character_Type)
-            return Unbounded_String is
+            return Unbounded_String
+         is
+            pragma Suppress (Access_Check);
          begin
             return To_Unbounded_String (
                Fixed_Translate_Mapping_Function_Per_Element (
@@ -1132,7 +1228,9 @@ package body Ada.Strings.Generic_Unbounded is
          procedure Translate_Per_Element (
             Source : in out Unbounded_String;
             Mapping : not null access function (From : Character_Type)
-               return Character_Type) is
+               return Character_Type)
+         is
+            pragma Suppress (Access_Check);
          begin
             Set_Unbounded_String (
                Source,
@@ -1147,6 +1245,7 @@ package body Ada.Strings.Generic_Unbounded is
             Right : Character_Set)
             return Unbounded_String
          is
+            pragma Suppress (Access_Check);
             First : Positive;
             Last : Natural;
          begin
@@ -1164,6 +1263,7 @@ package body Ada.Strings.Generic_Unbounded is
             Left : Character_Set;
             Right : Character_Set)
          is
+            pragma Suppress (Access_Check);
             First : Positive;
             Last : Natural;
          begin
@@ -1184,15 +1284,15 @@ package body Ada.Strings.Generic_Unbounded is
 
       S_Data : aliased constant Data := (
          Reference_Count => System.Reference_Counting.Static,
+         Capacity => Integer'Last,
          Max_Length => System.Reference_Counting.Length_Type (Integer'Last),
          Items => S.all'Unrestricted_Access);
 
       function Value return Unbounded_String is
       begin
-         if S'First /= 1 then
-            raise Constraint_Error;
-         end if;
-         return Create (Data => S_Data'Unrestricted_Access, Length => S'Last);
+         return Create (
+            Data => S_Data'Unrestricted_Access,
+            Length => S'Length);
       end Value;
 
    end Generic_Constant;
@@ -1203,6 +1303,7 @@ package body Ada.Strings.Generic_Unbounded is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : out Unbounded_String)
       is
+         pragma Suppress (Access_Check);
          First : Integer;
          Last : Integer;
       begin
@@ -1219,7 +1320,9 @@ package body Ada.Strings.Generic_Unbounded is
 
       procedure Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Unbounded_String) is
+         Item : Unbounded_String)
+      is
+         pragma Suppress (Access_Check);
       begin
          Integer'Write (Stream, 1);
          Integer'Write (Stream, Item.Length);

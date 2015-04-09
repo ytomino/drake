@@ -219,7 +219,7 @@ package body Ada.Directory_Searching is
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
-      return System.Native_Time.Native_Time
+      return System.Native_Calendar.Native_Time
    is
       pragma Unreferenced (Directory);
       pragma Unreferenced (Additional);

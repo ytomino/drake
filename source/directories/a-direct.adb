@@ -3,7 +3,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Form_Parameters;
-with System.Native_Time;
+with System.Native_Calendar;
 with System.Storage_Elements;
 package body Ada.Directories is
    use Exception_Identification.From_Here;
@@ -217,7 +217,7 @@ package body Ada.Directories is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Time.To_Time (
+      return Cast (System.Native_Calendar.To_Time (
          Inside.Modification_Time (Information)));
    end Modification_Time;
 
@@ -226,7 +226,7 @@ package body Ada.Directories is
    begin
       Inside.Set_Modification_Time (
          Name,
-         System.Native_Time.To_Native_Time (Cast (Time)));
+         System.Native_Calendar.To_Native_Time (Cast (Time)));
    end Set_Modification_Time;
 
    --  directory searching
@@ -501,7 +501,7 @@ package body Ada.Directories is
       if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return Cast (System.Native_Time.To_Time (
+      return Cast (System.Native_Calendar.To_Time (
          Directory_Searching.Modification_Time (
             NC_Directory_Entry.Path.all,
             NC_Directory_Entry.Directory_Entry,

@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with System.Native_Time;
 with C.errno;
 package body System.Synchronous_Objects is
    use Ada.Exception_Identification.From_Here;
@@ -76,10 +77,10 @@ package body System.Synchronous_Objects is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Native_Time.Native_Time;
+      Timeout : Native_Calendar.Native_Time;
       Notified : out Boolean)
    is
-      Actual_Timeout : aliased Native_Time.Native_Time;
+      Actual_Timeout : aliased Native_Calendar.Native_Time;
    begin
       if Timeout.tv_sec < 0 then -- CXD2002
          Actual_Timeout.tv_sec := 0;
@@ -107,10 +108,10 @@ package body System.Synchronous_Objects is
       Timeout : Duration;
       Notified : out Boolean)
    is
-      Timeout_T : Native_Time.Native_Time := Native_Time.Clock;
+      Timeout_T : Native_Calendar.Native_Time := Native_Calendar.Clock;
    begin
       if Timeout >= 0.0 then
-         Timeout_T := Native_Time.To_Native_Duration (
+         Timeout_T := Native_Time.To_timespec (
             Native_Time.To_Duration (Timeout_T) + Timeout);
       end if;
       Wait (

@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
-private with System.Native_Time;
+private with System.Native_Real_Time;
 private package Ada.Real_Time.Delays is
 
    --  required for delay until statement by compiler (a-retide.ads)
@@ -16,7 +16,7 @@ private
    --    if this instantiation is in the visible part.
 
    procedure Delay_Until_Body is
-      new System.Native_Time.Generic_Delay_Until (Time);
+      new System.Native_Real_Time.Generic_Delay_Until (Time);
 
    procedure Delay_Until (T : Time)
       renames Delay_Until_Body;

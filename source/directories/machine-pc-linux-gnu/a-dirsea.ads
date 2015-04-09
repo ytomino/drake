@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 with Ada.Exception_Identification;
 with Ada.IO_Exceptions;
 with Ada.Streams;
-with System.Native_Time;
+with System.Native_Calendar;
 with C.bits.dirent;
 with C.dirent;
 with C.sys.stat;
@@ -76,7 +76,7 @@ private package Ada.Directory_Searching is
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
-      return System.Native_Time.Native_Time;
+      return System.Native_Calendar.Native_Time;
 
    --  for Ada.Directories
 

@@ -1,10 +1,12 @@
 pragma Check_Policy (Validate, Off);
-with Ada.Calendar.Inside;
+with Ada.Exception_Identification.From_Here;
 with System.Formatting;
 with System.Long_Long_Integer_Divisions;
+with System.Native_Calendar;
 with System.Native_Time;
 package body Ada.Calendar.Formatting is
 --  pragma Suppress (All_Checks);
+   use Ada.Exception_Identification.From_Here;
    use type Time_Zones.Time_Offset;
    use type System.Formatting.Unsigned;
    use type System.Native_Time.Nanosecond_Number;
@@ -52,10 +54,11 @@ package body Ada.Calendar.Formatting is
       Second : Second_Number;
       Sub_Second : Second_Duration;
       Leap_Second : Boolean;
-      Day_of_Week : Inside.Day_Name;
+      Day_of_Week : System.Native_Calendar.Day_Name;
+      Error : Boolean;
    begin
-      Inside.Split (
-         Date,
+      System.Native_Calendar.Split (
+         Duration (Date),
          Year => Year,
          Month => Month,
          Day => Day,
@@ -65,7 +68,11 @@ package body Ada.Calendar.Formatting is
          Sub_Second => Sub_Second,
          Leap_Second => Leap_Second,
          Day_of_Week => Day_of_Week,
-         Time_Zone => Inside.Time_Offset (Time_Zone));
+         Time_Zone => System.Native_Calendar.Time_Offset (Time_Zone),
+         Error => Error);
+      if Error then
+         Raise_Exception (Time_Error'Identity);
+      end if;
       return Packed_Split_Time (Day)
          or Shift_Left (Packed_Split_Time (Month), 8)
          or Shift_Left (Packed_Split_Time (Year), 16)
@@ -303,15 +310,24 @@ package body Ada.Calendar.Formatting is
       Seconds : Day_Duration := 0.0;
       Leap_Second : Boolean := False;
       Time_Zone : Time_Zones.Time_Offset := 0)
-      return Time is
+      return Time
+   is
+      Result : Duration;
+      Error : Boolean;
    begin
-      return Inside.Time_Of (
+      System.Native_Calendar.Time_Of (
          Year => Year,
          Month => Month,
          Day => Day,
          Seconds => Seconds,
          Leap_Second => Leap_Second,
-         Time_Zone => Inside.Time_Offset (Time_Zone));
+         Time_Zone => System.Native_Calendar.Time_Offset (Time_Zone),
+         Result => Result,
+         Error => Error);
+      if Error then
+         Raise_Exception (Time_Error'Identity);
+      end if;
+      return Time (Result);
    end Time_Of;
 
    procedure Split (
@@ -352,10 +368,11 @@ package body Ada.Calendar.Formatting is
       Leap_Second : out Boolean;
       Time_Zone : Time_Zones.Time_Offset := 0)
    is
-      Day_of_Week : Inside.Day_Name;
+      Day_of_Week : System.Native_Calendar.Day_Name;
+      Error : Boolean;
    begin
-      Inside.Split (
-         Date,
+      System.Native_Calendar.Split (
+         Duration (Date),
          Year => Year,
          Month => Month,
          Day => Day,
@@ -365,7 +382,11 @@ package body Ada.Calendar.Formatting is
          Sub_Second => Sub_Second,
          Leap_Second => Leap_Second,
          Day_of_Week => Day_of_Week,
-         Time_Zone => Inside.Time_Offset (Time_Zone));
+         Time_Zone => System.Native_Calendar.Time_Offset (Time_Zone),
+         Error => Error);
+      if Error then
+         Raise_Exception (Time_Error'Identity);
+      end if;
    end Split;
 
    procedure Split (

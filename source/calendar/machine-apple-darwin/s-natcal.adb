@@ -1,14 +1,40 @@
-with Ada.Exception_Identification.From_Here;
 with System.Native_Time;
-with C.sys.types;
-with C.time;
-package body Ada.Calendar.Inside is
+with C.sys.time;
+package body System.Native_Calendar is
    pragma Suppress (All_Checks);
-   use Exception_Identification.From_Here;
    use type C.signed_int; -- time_t is signed int or signed long
    use type C.signed_long;
 
+   Diff : constant := 5680281600.0;
+   --  seconds from 1970-01-01 (0 of POSIX time) to 2150-01-01 (0 of Ada time)
+
    --  implementation
+
+   function To_Native_Time (T : Duration) return Native_Time is
+   begin
+      return System.Native_Time.To_timespec (T + Diff);
+   end To_Native_Time;
+
+   function To_Time (T : Native_Time) return Duration is
+   begin
+      return System.Native_Time.To_Duration (T) - Diff;
+   end To_Time;
+
+   function To_Time (T : C.sys.types.time_t) return Duration is
+   begin
+      return System.Native_Time.To_Duration (T) - Diff;
+   end To_Time;
+
+   function Clock return Native_Time is
+      Result : aliased C.sys.time.struct_timeval;
+      R : C.signed_int;
+   begin
+      R := C.sys.time.gettimeofday (Result'Access, null);
+      if R < 0 then
+         raise Program_Error; -- ???
+      end if;
+      return System.Native_Time.To_timespec (Result);
+   end Clock;
 
    procedure Split (
       Date : Time;
@@ -21,10 +47,10 @@ package body Ada.Calendar.Inside is
       Sub_Second : out Second_Duration;
       Leap_Second : out Boolean;
       Day_of_Week : out Day_Name;
-      Time_Zone : Time_Offset)
+      Time_Zone : Time_Offset;
+      Error : out Boolean)
    is
-      timespec : aliased System.Native_Time.Native_Time :=
-         System.Native_Time.To_Native_Time (Duration (Date));
+      timespec : aliased C.time.struct_timespec := To_Native_Time (Date);
       Buffer : aliased C.time.struct_tm := (others => <>); -- uninitialized
       tm : access C.time.struct_tm;
    begin
@@ -41,16 +67,18 @@ package body Ada.Calendar.Inside is
       Second := Second_Number (tm.tm_sec);
       Leap_Second := False;
       Day_of_Week := (Integer (tm.tm_wday) + 6) rem 7; -- starts from Monday
+      Error := False;
    end Split;
 
-   function Time_Of (
+   procedure Time_Of (
       Year : Year_Number;
       Month : Month_Number;
       Day : Day_Number;
       Seconds : Day_Duration;
       Leap_Second : Boolean;
-      Time_Zone : Time_Offset)
-      return Time
+      Time_Zone : Time_Offset;
+      Result : out Time;
+      Error : out Boolean)
    is
       pragma Unreferenced (Leap_Second);
       tm : aliased C.time.struct_tm := (
@@ -66,19 +94,39 @@ package body Ada.Calendar.Inside is
          tm_gmtoff => 0,
          tm_zone => null);
       C_Result : constant C.sys.types.time_t := C.time.timegm (tm'Access);
-      Result : Duration;
    begin
+      Error := False;
       --  UNIX time starts until 1970, Year_Number stats unitl 1901...
       if C_Result = -1 then -- to pass negative UNIX time (?)
          if Year = 1901 and then Month = 1 and then Day = 1 then
             Result := -7857734400.0; -- first day in Time
          else
-            Raise_Exception (Time_Error'Identity);
+            Error := True;
+            return;
          end if;
       else
-         Result := System.Native_Time.To_Time (C_Result);
+         Result := To_Time (C_Result);
       end if;
-      return Time (Result - Duration (Time_Zone * 60) + Seconds);
+      Result := Result - Duration (Time_Zone * 60) + Seconds;
    end Time_Of;
 
-end Ada.Calendar.Inside;
+   procedure Simple_Delay_Until (T : Native_Time) is
+      Timeout_T : constant Duration := System.Native_Time.To_Duration (T);
+      Current_T : constant Duration := System.Native_Time.To_Duration (Clock);
+   begin
+      if Timeout_T > Current_T then
+         System.Native_Time.Simple_Delay_For (Timeout_T - Current_T);
+      end if;
+   end Simple_Delay_Until;
+
+   procedure Delay_Until (T : Native_Time) is
+   begin
+      Delay_Until_Hook.all (T);
+   end Delay_Until;
+
+   procedure Generic_Delay_Until (T : Ada_Time) is
+   begin
+      Delay_Until (To_Native_Time (Duration (T)));
+   end Generic_Delay_Until;
+
+end System.Native_Calendar;

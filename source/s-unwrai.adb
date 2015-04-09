@@ -44,12 +44,16 @@ package body System.Unwind.Raising is
 
    --  weak reference for System.Unwind.Backtrace
 
-   Call_Chain : access procedure (Current : in out Exception_Occurrence);
-   pragma Import (Ada, Call_Chain, "__drake_ref_call_chain");
+   procedure Call_Chain (Current : in out Exception_Occurrence)
+      with Import, -- weak linking
+         Convention => Ada, External_Name => "ada__exceptions__call_chain";
+
    pragma Weak_External (Call_Chain);
 
-   Report_Backtrace : access procedure (X : Exception_Occurrence);
-   pragma Import (Ada, Report_Backtrace, "__drake_ref_report_backtrace");
+   procedure Report_Backtrace (X : Exception_Occurrence)
+      with Import, -- weak linking
+         Convention => Ada, External_Name => "__drake_report_backtrace";
+
    pragma Weak_External (Report_Backtrace);
 
    --  (a-elchha.ads)

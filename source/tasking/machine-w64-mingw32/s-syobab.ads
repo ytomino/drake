@@ -51,7 +51,7 @@ package System.Synchronous_Objects.Abortable is
       D : Duration;
       Aborted : out Boolean);
    procedure Delay_Until (
-      T : Native_Time.Native_Time;
+      T : Native_Calendar.Native_Time;
       Aborted : out Boolean);
 
 end System.Synchronous_Objects.Abortable;

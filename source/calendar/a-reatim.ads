@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
-private with System.Native_Time;
+private with System.Native_Real_Time;
 package Ada.Real_Time is
 
    type Time is private;
@@ -103,6 +103,6 @@ private
    Time_Span_Zero : constant Time_Span := 0.0;
    Time_Span_Unit : constant Time_Span := Time_Span'Delta;
 
-   Tick : constant Time_Span := System.Native_Time.Tick;
+   Tick : constant Time_Span := System.Native_Real_Time.Tick;
 
 end Ada.Real_Time;
