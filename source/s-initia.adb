@@ -5,7 +5,7 @@ package body System.Initialization is
    pragma Suppress (All_Checks);
 
    type Object_Access is access all Object;
-   for Object_Access'Storage_Pool use Storage_Pools.Overlaps.Pool;
+   for Object_Access'Storage_Pool use Storage_Pools.Overlaps.Pool.all;
 
    procedure Free is
       new Ada.Unchecked_Deallocation (Object, Object_Access);

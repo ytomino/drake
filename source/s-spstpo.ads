@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
+private with Ada.Tags;
 package System.Storage_Pools.Standard_Pools is
    pragma Preelaborate;
 
@@ -23,7 +24,13 @@ package System.Storage_Pools.Standard_Pools is
       return Storage_Elements.Storage_Count;
 
    --  the "standard storage pool" object defined in RM
-   Standard_Storage_Pool : Standard_Pool := (
-      Storage_Pools.Root_Storage_Pool with null record);
+   Standard_Storage_Pool : constant not null access Standard_Pool;
+
+private
+
+   Dispatcher : aliased constant Ada.Tags.Tag := Standard_Pool'Tag;
+
+   Standard_Storage_Pool : constant not null access Standard_Pool :=
+      Standard_Pool'Deref (Dispatcher'Address)'Unrestricted_Access;
 
 end System.Storage_Pools.Standard_Pools;

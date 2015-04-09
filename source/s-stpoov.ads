@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit for System.Initialization
+private with Ada.Tags;
 package System.Storage_Pools.Overlaps is
    pragma Preelaborate;
 
@@ -28,9 +29,16 @@ package System.Storage_Pools.Overlaps is
       return Storage_Elements.Storage_Count;
    pragma Inline (Storage_Size);
 
-   Pool : Overlay_Pool := (Root_Storage_Pool with null record);
+   Pool : constant not null access Overlay_Pool;
    --  if a local pool is declared, all objects belongs to the local scope,
    --  then those be finalized when the local pool is out of scope...
    --  therefore it should use global pool
+
+private
+
+   Dispatcher : aliased constant Ada.Tags.Tag := Overlay_Pool'Tag;
+
+   Pool : constant not null access Overlay_Pool :=
+      Overlay_Pool'Deref (Dispatcher'Address)'Unrestricted_Access;
 
 end System.Storage_Pools.Overlaps;
