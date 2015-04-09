@@ -1,6 +1,6 @@
 with C.winbase;
 with C.windef;
-package body Ada.Calendar.Time_Zones.Inside is
+package body System.Native_Calendar.Time_Zones is
    pragma Suppress (All_Checks);
    use type C.windef.DWORD;
 
@@ -27,4 +27,4 @@ package body Ada.Calendar.Time_Zones.Inside is
 
 begin
    Initialize;
-end Ada.Calendar.Time_Zones.Inside;
+end System.Native_Calendar.Time_Zones;

@@ -1,5 +1,5 @@
 with C.time;
-package body Ada.Calendar.Time_Zones.Inside is
+package body System.Native_Calendar.Time_Zones is
    pragma Suppress (All_Checks);
    use type C.signed_long;
 
@@ -16,4 +16,4 @@ package body Ada.Calendar.Time_Zones.Inside is
 begin
    C.time.tzset;
    Time_Offset_Value := Time_Offset (C.time.timezone / (-60));
-end Ada.Calendar.Time_Zones.Inside;
+end System.Native_Calendar.Time_Zones;
