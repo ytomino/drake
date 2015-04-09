@@ -5,15 +5,13 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
-with System.Native_Calendar;
 with System.Native_Stack;
 with System.Native_Tasks.Yield;
-with System.Native_Time;
 with System.Runtime_Context;
 with System.Shared_Locking;
 with System.Standard_Allocators;
 with System.Synchronous_Control;
-with System.Synchronous_Objects.Abortable;
+with System.Synchronous_Objects.Abortable.Delays;
 with System.Termination;
 with System.Unbounded_Stack_Allocators;
 with System.Unwind.Raising;
@@ -42,30 +40,6 @@ package body System.Tasks is
       A2 : Counter)
       return Counter;
    pragma Import (Intrinsic, sync_add_and_fetch, "__sync_add_and_fetch_4");
-
-   --  delay statement
-
-   procedure Delay_For (D : Duration);
-   procedure Delay_For (D : Duration) is
-      Aborted : Boolean;
-   begin
-      Enable_Abort;
-      Synchronous_Objects.Abortable.Delay_For (
-         D,
-         Aborted => Aborted);
-      Disable_Abort (Aborted);
-   end Delay_For;
-
-   procedure Delay_Until (T : Native_Calendar.Native_Time);
-   procedure Delay_Until (T : Native_Calendar.Native_Time) is
-      Aborted : Boolean;
-   begin
-      Enable_Abort;
-      Synchronous_Objects.Abortable.Delay_Until (
-         T,
-         Aborted => Aborted);
-      Disable_Abort (Aborted);
-   end Delay_Until;
 
    --  shared lock
 
@@ -333,9 +307,7 @@ package body System.Tasks is
       --  yield
       Synchronous_Control.Yield_Hook := Synchronous_Control.Nop'Access;
       --  delay statement
-      Native_Time.Delay_For_Hook := Native_Time.Simple_Delay_For'Access;
-      Native_Calendar.Delay_Until_Hook :=
-         Native_Calendar.Simple_Delay_Until'Access;
+      Synchronous_Objects.Abortable.Delays.Unregister_Delays;
       --  attribute indexes
       Synchronous_Objects.Finalize (Attribute_Indexes_Lock);
       Attribute_Index_Sets.Clear (Attribute_Indexes, Attribute_Indexes_Length);
@@ -366,8 +338,7 @@ package body System.Tasks is
          --  yield
          Synchronous_Control.Yield_Hook := Native_Tasks.Yield'Access;
          --  delay statement
-         Native_Time.Delay_For_Hook := Delay_For'Access;
-         Native_Calendar.Delay_Until_Hook := Delay_Until'Access;
+         Synchronous_Objects.Abortable.Delays.Register_Delays;
          --  attribute indexes
          Synchronous_Objects.Initialize (Attribute_Indexes_Lock);
          --  task local storage (secondary stack and exception occurrence)

@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-with System.Native_Calendar;
+private with System.Native_Calendar;
 package System.Synchronous_Objects.Abortable is
    pragma Preelaborate;
 
@@ -38,15 +38,6 @@ package System.Synchronous_Objects.Abortable is
    procedure Wait (
       Object : in out Barrier;
       Notified : out Boolean;
-      Aborted : out Boolean);
-
-   --  delay
-
-   procedure Delay_For (
-      D : Duration;
-      Aborted : out Boolean);
-   procedure Delay_Until (
-      T : Native_Calendar.Native_Time;
       Aborted : out Boolean);
 
 private

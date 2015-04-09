@@ -69,11 +69,4 @@ package System.Native_Calendar is
    procedure Generic_Delay_Until (T : Ada_Time);
    pragma Inline (Generic_Delay_Until);
 
-   --  unused hook for System.Tasks
-   procedure Simple_Delay_Until (T : Native_Time)
-      renames Delay_Until;
-   type Delay_Until_Handler is access procedure (T : Native_Time);
-   Delay_Until_Hook : Delay_Until_Handler;
-   pragma Suppress (Access_Check, Delay_Until_Hook); -- not null
-
 end System.Native_Calendar;
