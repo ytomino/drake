@@ -1,1 +1,1 @@
-../machine-apple-darwin/s-soabde.ads
+../machine-pc-freebsd/s-soabde.ads

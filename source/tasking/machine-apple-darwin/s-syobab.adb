@@ -2,8 +2,6 @@ with System.Native_Time;
 with System.Tasks;
 package body System.Synchronous_Objects.Abortable is
 
-   Abort_Checking_Span : constant Duration := 1.0;
-
    --  condition variable
 
    procedure Wait (

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
+--  implementation unit specialized for Darwin
 with System.Native_Calendar;
 package System.Synchronous_Objects.Abortable.Delays is
    pragma Preelaborate;

@@ -1,1 +1,1 @@
-../machine-apple-darwin/s-soabde.adb
+../machine-pc-freebsd/s-soabde.adb

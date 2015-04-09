@@ -42,6 +42,8 @@ package System.Synchronous_Objects.Abortable is
 
 private
 
+   Abort_Checking_Span : constant Duration := 1.0;
+
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
