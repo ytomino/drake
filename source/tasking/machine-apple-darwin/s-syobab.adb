@@ -9,6 +9,33 @@ package body System.Synchronous_Objects.Abortable is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
+      Timeout : Duration;
+      Notified : out Boolean;
+      Aborted : out Boolean) is
+   begin
+      Notified := False;
+      Aborted := Tasks.Is_Aborted;
+      if not Aborted then
+         declare
+            R : Duration := Timeout;
+         begin
+            while R > Abort_Checking_Span loop
+               Wait (Object, Mutex, Abort_Checking_Span, Notified);
+               Aborted := Tasks.Is_Aborted;
+               if Notified or else Aborted then
+                  return;
+               end if;
+               R := R - Abort_Checking_Span;
+            end loop;
+            Wait (Object, Mutex, R, Notified);
+            Aborted := Tasks.Is_Aborted;
+         end;
+      end if;
+   end Wait;
+
+   procedure Wait (
+      Object : in out Condition_Variable;
+      Mutex : in out Synchronous_Objects.Mutex;
       Timeout : Native_Calendar.Native_Time;
       Notified : out Boolean;
       Aborted : out Boolean) is
@@ -34,33 +61,6 @@ package body System.Synchronous_Objects.Abortable is
                end if;
             end loop;
             Wait (Object, Mutex, Timeout, Notified);
-            Aborted := Tasks.Is_Aborted;
-         end;
-      end if;
-   end Wait;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Duration;
-      Notified : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Notified := False;
-      Aborted := Tasks.Is_Aborted;
-      if not Aborted then
-         declare
-            R : Duration := Timeout;
-         begin
-            while R > Abort_Checking_Span loop
-               Wait (Object, Mutex, Abort_Checking_Span, Notified);
-               Aborted := Tasks.Is_Aborted;
-               if Notified or else Aborted then
-                  return;
-               end if;
-               R := R - Abort_Checking_Span;
-            end loop;
-            Wait (Object, Mutex, R, Notified);
             Aborted := Tasks.Is_Aborted;
          end;
       end if;
