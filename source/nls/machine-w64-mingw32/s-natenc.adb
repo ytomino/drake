@@ -343,6 +343,7 @@ package body System.Native_Encoding is
                      Buffer (1)'Access,
                      Buffer'Length);
                   if Buffer_Length = 0 then
+                     Out_Last := Out_Item'First - 1;
                      Status := Illegal_Sequence;
                      pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
                      return;
@@ -507,6 +508,7 @@ package body System.Native_Encoding is
       for Buffer_As_SEA'Address use Buffer'Address;
       Buffer_Length : C.signed_int;
    begin
+      Last := Item'Last;
       case Object.From is
          when UTF_16 =>
             Buffer_As_SEA (1 .. Item_Length) := Item;

@@ -140,6 +140,9 @@ package body System.Synchronous_Objects.Abortable.Delays is
          end if;
          Finalize (M);
       end;
+      if Error then
+         Aborted := Tasks.Is_Aborted;
+      end if;
       Tasks.Disable_Abort (Aborted);
       if Error then
          Raise_Exception (Tasking_Error'Identity);
