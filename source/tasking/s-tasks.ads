@@ -31,7 +31,7 @@ package System.Tasks is
 
    function Current_Task_Id return Task_Id;
    pragma Export (Ada, Current_Task_Id, "__drake_current_task");
-   function Main_Task_Id return Task_Id;
+   function Environment_Task_Id return Task_Id;
 
    type Master_Record is limited private;
    type Master_Access is access all Master_Record;
@@ -177,7 +177,7 @@ private
    end record;
    pragma Suppress_Initialization (Activation_Chain_Data);
 
-   type Task_Kind is (Main, Sub);
+   type Task_Kind is (Environment, Sub);
    pragma Discard_Names (Task_Kind);
 
    type Finalize_Handler is access procedure (Params : Address);
@@ -239,7 +239,7 @@ private
       Master_Top : Master_Access; -- stack
       --  for sub task
       case Kind is
-         when Main =>
+         when Environment =>
             null;
          when Sub =>
             Params : Address;

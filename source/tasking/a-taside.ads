@@ -38,7 +38,7 @@ private
       renames Current_Task_Id; -- inherited
 
    function Environment_Task return Task_Id
-      renames Main_Task_Id; -- inherited
+      renames Environment_Task_Id; -- inherited
 
    procedure Abort_Task (T : Task_Id)
       renames Send_Abort; -- inherited

@@ -68,9 +68,9 @@ begin
 		end T2;
 	begin
 		Joined := False;
-		Ada.Debug.Put ("main: "
+		Ada.Debug.Put ("environment: "
 			& Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
-		Ada.Debug.Put ("master level of main: "
+		Ada.Debug.Put ("master level of environment: "
 			& Integer'Image (System.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
 	end;
 	pragma Assert (Joined);
@@ -107,9 +107,9 @@ begin
 		end T3;
 	begin
 		Joined := False;
-		Ada.Debug.Put ("main: "
+		Ada.Debug.Put ("environment: "
 			& Ada.Task_Identification.Image (Ada.Task_Identification.Current_Task));
-		Ada.Debug.Put ("master level of main: "
+		Ada.Debug.Put ("master level of environment: "
 			& Integer'Image (System.Tasks.Master_Level_Of (Cast (Ada.Task_Identification.Current_Task))));
 		-- wait end of T3 and Dynamic_Task here
 		-- memory of Dynamic_Task be leak !!!

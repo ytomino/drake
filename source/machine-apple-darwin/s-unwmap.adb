@@ -110,7 +110,7 @@ package body System.Unwind.Mapping is
    is
       pragma Unreferenced (SEH);
    begin
-      --  sigaction setting would be inherited from the main thread.
+      --  sigaction setting would be inherited from environment task.
       Set_Signal_Stack (Signal_Stack);
    end Install_Task_Exception_Handler;
 

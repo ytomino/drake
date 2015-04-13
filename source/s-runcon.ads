@@ -16,7 +16,7 @@ package System.Runtime_Context is
    type Task_Local_Storage_Access is access all Task_Local_Storage;
    for Task_Local_Storage_Access'Storage_Size use 0;
 
-   function Get_Main_Task_Local_Storage
+   function Get_Environment_Task_Local_Storage
       return not null Task_Local_Storage_Access;
 
    type Get_Task_Local_Storage_Handler is
@@ -24,7 +24,7 @@ package System.Runtime_Context is
    pragma Suppress (Access_Check, Get_Task_Local_Storage_Handler);
 
    Get_Task_Local_Storage_Hook : Get_Task_Local_Storage_Handler :=
-      Get_Main_Task_Local_Storage'Access;
+      Get_Environment_Task_Local_Storage'Access;
    pragma Suppress (Access_Check, Get_Task_Local_Storage_Hook); -- not null
 
    function Get_Task_Local_Storage

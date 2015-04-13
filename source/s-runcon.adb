@@ -2,15 +2,15 @@ package body System.Runtime_Context is
    pragma Suppress (All_Checks);
 
    --  I hope it will be zero-initialized...
-   Main_Task_Local_Storage : aliased Task_Local_Storage;
+   Environment_Task_Local_Storage : aliased Task_Local_Storage;
 
    --  implementation
 
-   function Get_Main_Task_Local_Storage
+   function Get_Environment_Task_Local_Storage
       return not null Task_Local_Storage_Access is
    begin
-      return Main_Task_Local_Storage'Access;
-   end Get_Main_Task_Local_Storage;
+      return Environment_Task_Local_Storage'Access;
+   end Get_Environment_Task_Local_Storage;
 
    function Get_Task_Local_Storage
       return not null Task_Local_Storage_Access is
