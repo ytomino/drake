@@ -1,11 +1,9 @@
 with Ada;
-with System.Unwind.Raising; -- raising exception in compiler unit
-with System.Unwind.Standard;
 with C.basetsd;
 with C.winbase;
 with C.windef;
 with C.winnt;
-package body System.Standard_Allocators is
+package body System.Native_Allocators is
    pragma Suppress (All_Checks);
    use type C.windef.WINBOOL;
 --  use type C.basetsd.SIZE_T;
@@ -19,12 +17,9 @@ package body System.Standard_Allocators is
    pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
    pragma Machine_Attribute (Runtime_Error, "noreturn");
 
-   Heap_Exhausted : constant String := "heap exhausted";
-
    --  implementation
 
-   function Allocate (
-      Size : Storage_Elements.Storage_Count)
+   function Allocate (Size : Storage_Elements.Storage_Count)
       return Address
    is
       use type C.basetsd.SIZE_T;
@@ -38,18 +33,11 @@ package body System.Standard_Allocators is
       else
          Actual_Size := (Actual_Size + 7) and not 7;
       end if;
-      return Result : constant Address := Address (
+      return Address (
          C.winbase.HeapAlloc (
             C.winbase.GetProcessHeap,
             0,
-            Actual_Size))
-      do
-         if Result = Null_Address then
-            Unwind.Raising.Raise_Exception_From_Here_With (
-               Unwind.Standard.Storage_Error'Access,
-               Message => Heap_Exhausted);
-         end if;
-      end return;
+            Actual_Size));
    end Allocate;
 
    procedure Free (Storage_Address : Address) is
@@ -68,26 +56,19 @@ package body System.Standard_Allocators is
       Size : Storage_Elements.Storage_Count)
       return Address is
    begin
-      return Result : Address := Address (
-         C.winbase.HeapReAlloc (
-            C.winbase.GetProcessHeap,
-            0,
-            C.windef.LPVOID (Storage_Address),
-            C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
+      return Result : Address := Address (C.winbase.HeapReAlloc (
+         C.winbase.GetProcessHeap,
+         0,
+         C.windef.LPVOID (Storage_Address),
+         C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
             if Storage_Address = Null_Address then
                Result := Allocate (Size); -- Reallocate (null, ...)
-            else
-               Unwind.Raising.Raise_Exception_From_Here_With (
-                  Unwind.Standard.Storage_Error'Access,
-                  Message => Heap_Exhausted);
             end if;
          end if;
       end return;
    end Reallocate;
-
-   Page_Exhausted : constant String := "page exhausted";
 
    function Page_Size return Storage_Elements.Storage_Count is
       Info : aliased C.winbase.SYSTEM_INFO;
@@ -97,8 +78,7 @@ package body System.Standard_Allocators is
    end Page_Size;
 
    function Map (
-      Size : Storage_Elements.Storage_Count;
-      Raise_On_Error : Boolean := True)
+      Size : Storage_Elements.Storage_Count)
       return Address
    is
       use type C.windef.DWORD;
@@ -109,29 +89,18 @@ package body System.Standard_Allocators is
          C.basetsd.SIZE_T (Size),
          C.winnt.MEM_RESERVE or C.winnt.MEM_COMMIT,
          C.winnt.PAGE_READWRITE);
-      if Address (Mapped_Address) = Null_Address and then Raise_On_Error then
-         Unwind.Raising.Raise_Exception_From_Here_With (
-            Unwind.Standard.Storage_Error'Access,
-            Message => Page_Exhausted);
-      end if;
       return Address (Mapped_Address);
    end Map;
 
    function Map (
       Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count;
-      Raise_On_Error : Boolean := True)
+      Size : Storage_Elements.Storage_Count)
       return Address
    is
       pragma Unreferenced (Storage_Address);
       pragma Unreferenced (Size);
    begin
       --  VirtualAlloc and VirtualFree should be one-to-one correspondence
-      if Raise_On_Error then
-         Unwind.Raising.Raise_Exception_From_Here_With (
-            Unwind.Standard.Storage_Error'Access,
-            Message => Page_Exhausted);
-      end if;
       return Null_Address;
    end Map;
 
@@ -159,4 +128,4 @@ package body System.Standard_Allocators is
                "failed to VirtualFree (..., MEM_RELEASE)"));
    end Unmap;
 
-end System.Standard_Allocators;
+end System.Native_Allocators;

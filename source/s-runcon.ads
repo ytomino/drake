@@ -10,7 +10,7 @@ package System.Runtime_Context is
       Overlaid_Allocation : Address; -- for System.Storage_Pools.Overlaps
       SEH : Address; -- Win32 only
       Machine_Occurrence : Unwind.Representation.Machine_Occurrence_Access;
-      Foreign_Occurrence : aliased Unwind.Exception_Occurrence;
+      Secondary_Occurrence : aliased Unwind.Representation.Machine_Occurrence;
    end record;
    pragma Suppress_Initialization (Task_Local_Storage);
    type Task_Local_Storage_Access is access all Task_Local_Storage;

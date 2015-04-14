@@ -1,11 +1,9 @@
 pragma Check_Policy (Trace, Off);
 with Ada;
-with System.Unwind.Raising; -- raising exception in compiler unit
-with System.Unwind.Standard;
 with C.stdlib;
 with C.sys.mman;
 with C.unistd;
-package body System.Standard_Allocators is
+package body System.Native_Allocators is
    pragma Suppress (All_Checks);
    use type C.signed_int;
 
@@ -17,24 +15,15 @@ package body System.Standard_Allocators is
    pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
    pragma Machine_Attribute (Runtime_Error, "noreturn");
 
-   Heap_Exhausted : constant String := "heap exhausted";
-
    --  implementation
 
    function Allocate (
       Size : Storage_Elements.Storage_Count)
       return Address is
    begin
-      return Result : constant Address := Address (
+      return Address (
          C.stdlib.malloc (
-            C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
-      do
-         if Result = Null_Address then
-            Unwind.Raising.Raise_Exception_From_Here_With (
-               Unwind.Standard.Storage_Error'Access,
-               Message => Heap_Exhausted);
-         end if;
-      end return;
+            C.size_t (Storage_Elements.Storage_Count'Max (1, Size))));
    end Allocate;
 
    procedure Free (Storage_Address : Address) is
@@ -47,20 +36,11 @@ package body System.Standard_Allocators is
       Size : Storage_Elements.Storage_Count)
       return Address is
    begin
-      return Result : constant Address := Address (
+      return Address (
          C.stdlib.realloc (
             C.void_ptr (Storage_Address),
-            C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
-      do
-         if Result = Null_Address then
-            Unwind.Raising.Raise_Exception_From_Here_With (
-               Unwind.Standard.Storage_Error'Access,
-               Message => Heap_Exhausted);
-         end if;
-      end return;
+            C.size_t (Storage_Elements.Storage_Count'Max (1, Size))));
    end Reallocate;
-
-   Page_Exhausted : constant String := "page exhausted";
 
    function Page_Size return Storage_Elements.Storage_Count is
    begin
@@ -68,8 +48,7 @@ package body System.Standard_Allocators is
    end Page_Size;
 
    function Map (
-      Size : Storage_Elements.Storage_Count;
-      Raise_On_Error : Boolean := True)
+      Size : Storage_Elements.Storage_Count)
       return Address
    is
       Mapped_Address : C.void_ptr;
@@ -82,12 +61,8 @@ package body System.Standard_Allocators is
          C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE,
          -1,
          0);
-      if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED)
-         and then Raise_On_Error
-      then
-         Unwind.Raising.Raise_Exception_From_Here_With (
-            Unwind.Standard.Storage_Error'Access,
-            Message => Page_Exhausted);
+      if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED) then
+         Mapped_Address := C.void_ptr (Null_Address); -- failed
       end if;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
       return Address (Mapped_Address);
@@ -95,8 +70,7 @@ package body System.Standard_Allocators is
 
    function Map (
       Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count;
-      Raise_On_Error : Boolean := True)
+      Size : Storage_Elements.Storage_Count)
       return Address
    is
       Mapped_Address : C.void_ptr;
@@ -109,12 +83,8 @@ package body System.Standard_Allocators is
          C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE + C.sys.mman.MAP_FIXED,
          -1,
          0);
-      if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED)
-         and then Raise_On_Error
-      then
-         Unwind.Raising.Raise_Exception_From_Here_With (
-            Unwind.Standard.Storage_Error'Access,
-            Message => Page_Exhausted);
+      if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED) then
+         Mapped_Address := C.void_ptr (Null_Address); -- failed
       end if;
       pragma Check (Trace, Ada.Debug.Put ("leave"));
       return Address (Mapped_Address);
@@ -122,8 +92,7 @@ package body System.Standard_Allocators is
 
    procedure Unmap (
       Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count)
-   is
+      Size : Storage_Elements.Storage_Count) is
       R : C.signed_int;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
@@ -133,4 +102,4 @@ package body System.Standard_Allocators is
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unmap;
 
-end System.Standard_Allocators;
+end System.Native_Allocators;

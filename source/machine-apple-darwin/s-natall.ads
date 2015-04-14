@@ -1,40 +1,35 @@
 pragma License (Unrestricted);
 --  runtime unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with System.Storage_Elements;
-package System.Standard_Allocators is
+package System.Native_Allocators is
    pragma Preelaborate;
 
-   --  heap (s-memory.ads)
+   --  heap
 
    function Allocate (
       Size : Storage_Elements.Storage_Count)
-      return Address;
-   pragma Export (C, Allocate, "__gnat_malloc");
+      return Address; -- Null_Address if it failed
 
    procedure Free (Storage_Address : Address);
-   pragma Export (C, Free, "__gnat_free");
 
    function Reallocate (
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
-      return Address;
-   pragma Export (C, Reallocate, "__gnat_realloc");
+      return Address; -- Null_Address if it failed
 
    --  memory mapping
 
    function Page_Size return Storage_Elements.Storage_Count;
 
    function Map (
-      Size : Storage_Elements.Storage_Count;
-      Raise_On_Error : Boolean := True)
-      return Address;
+      Size : Storage_Elements.Storage_Count)
+      return Address; -- Null_Address if it failed
    function Map (
       Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count;
-      Raise_On_Error : Boolean := True)
-      return Address;
+      Size : Storage_Elements.Storage_Count)
+      return Address; -- Null_Address if it failed
    procedure Unmap (
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count);
 
-end System.Standard_Allocators;
+end System.Native_Allocators;

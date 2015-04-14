@@ -1,6 +1,6 @@
 pragma Check_Policy (Trace, Off);
 with Ada.Unchecked_Conversion;
-with System.Standard_Allocators;
+with System.Native_Allocators;
 with System.Unwind.Representation;
 with System.Unwind.Searching;
 with C.unwind;
@@ -38,7 +38,7 @@ package body Separated is
             C.unwind.struct_Unwind_Exception_ptr);
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Standard_Allocators.Free (Conv.To_Address (Exception_Object));
+      Native_Allocators.Free (Conv.To_Address (Exception_Object));
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Cleanup;
 
@@ -84,14 +84,25 @@ package body Separated is
          new Address_To_Named_Access_Conversions (
             Representation.Machine_Occurrence,
             Representation.Machine_Occurrence_Access);
-      Result : constant not null Representation.Machine_Occurrence_Access :=
+      Result : not null Representation.Machine_Occurrence_Access :=
          Conv.To_Pointer (
-            Standard_Allocators.Allocate (
+            Native_Allocators.Allocate (
                Representation.Machine_Occurrence'Size
                / Standard'Storage_Unit));
    begin
+      if Result = null then
+         declare -- fallback for the heap is exhausted
+            TLS : constant
+               not null Runtime_Context.Task_Local_Storage_Access :=
+               Runtime_Context.Get_Task_Local_Storage;
+         begin
+            Result := TLS.Secondary_Occurrence'Access;
+         end;
+         Result.Header.exception_cleanup := null; -- statically allocated
+      else
+         Result.Header.exception_cleanup := Cleanup'Access;
+      end if;
       Result.Header.exception_class := Representation.GNAT_Exception_Class;
-      Result.Header.exception_cleanup := Cleanup'Access;
       --  fill 0 to private area
       pragma Compile_Time_Error (
          C.unwind.Unwind_Exception_Class'Size rem Standard'Word_Size /= 0,

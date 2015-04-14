@@ -716,7 +716,7 @@ package body System.Unwind.Raising is
       then
          Result := Machine_Occurrence.Occurrence'Access;
       else
-         Result := TLS.Foreign_Occurrence'Access;
+         Result := TLS.Secondary_Occurrence.Occurrence'Access;
          Set_Foreign_Occurrence (Result.all, Machine_Occurrence);
       end if;
       return Result;
