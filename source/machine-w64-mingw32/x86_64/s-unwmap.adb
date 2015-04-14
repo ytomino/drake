@@ -3,7 +3,7 @@ with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
 with System.Native_Stack;
-with System.Unwind.Raising;
+with System.Unwind.Occurrences;
 with System.Unwind.Standard;
 with C.basetsd;
 with C.vadefs;
@@ -166,13 +166,14 @@ package body System.Unwind.Mapping is
             declare
                Result : constant
                   not null Representation.Machine_Occurrence_Access :=
-                  Raising.New_Machine_Occurrence (Stack_Guard => Stack_Guard);
+                  Occurrences.New_Machine_Occurrence (
+                     Stack_Guard => Stack_Guard);
             begin
-               Raising.Set_Exception_Message (
+               Occurrences.Set_Exception_Message (
                   Id => Eexception_Id,
                   Message => Message,
                   X => Result.Occurrence);
-               Raising.Backtrace (Result.Occurrence);
+               Occurrences.Backtrace (Result.Occurrence);
                pragma Check (Trace, Ada.Debug.Put ("leave, mapped"));
                return Result;
             end;

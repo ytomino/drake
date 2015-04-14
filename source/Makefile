@@ -139,7 +139,7 @@ SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGE
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/$(SIMDSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]) \
 	$(wildcard $(EH)/*.ad[sb]))
 
-SEPARATED=$(EH)/s-unbase.adb $(EH)/s-unrase.adb
+SEPARATED=$(EH)/s-unbase.adb $(EH)/s-unocse.adb $(EH)/s-unrase.adb
 
 LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 
@@ -556,6 +556,7 @@ endif
 # separated
 
 $(LIBGNAT_BUILDDIR)/s-unwbac.o : $(EH)/s-unbase.adb
+$(LIBGNAT_BUILDDIR)/s-unwocc.o : $(EH)/s-unocse.adb
 $(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
 
 # nested

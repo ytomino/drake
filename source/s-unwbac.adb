@@ -70,7 +70,7 @@ package body System.Unwind.Backtrace is
             Current.Num_Tracebacks, -- Tracebacks_Array'First = 1
             Raising.AAA,
             Raising.ZZZ,
-            2); -- Call_Chain and Separated.Backtrace
+            3); -- Occurrences.Backtrace, Call_Chain and Separated.Backtrace
          pragma Check (Trace, Ada.Debug.Put ("Call_Chain"));
          pragma Check (Trace, Report);
       end if;

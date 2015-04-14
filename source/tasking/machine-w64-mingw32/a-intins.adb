@@ -2,7 +2,7 @@ with Ada.Exceptions;
 with Ada.Interrupts.Names;
 with Ada.Unchecked_Conversion;
 with System.Formatting;
-with System.Unwind.Raising;
+with System.Unwind.Occurrences;
 with C.signal;
 package body Ada.Interrupts.Inside is
    use type System.Address;
@@ -32,7 +32,7 @@ package body Ada.Interrupts.Inside is
          Name (Name_Prefix'Length + 1 .. Name'Last),
          Name_Last,
          Error => Error);
-      System.Unwind.Raising.Report (Cast (Current), Name (1 .. Name_Last));
+      System.Unwind.Occurrences.Report (Cast (Current), Name (1 .. Name_Last));
    end Report;
 
    type Signal_Rec is record

@@ -1,13 +1,9 @@
 pragma License (Unrestricted);
 --  runtime unit
 with Ada;
-with System.Runtime_Context;
 with System.Unwind.Representation;
 package System.Unwind.Raising is
    pragma Preelaborate;
-
-   --  (s-stalib.ads)
-   Local_Partition_ID : Natural := 0;
 
    --  equivalent to Raise_With_Location_And_Msg (a-except-2005.adb)
    procedure Raise_Exception (
@@ -223,57 +219,9 @@ package System.Unwind.Raising is
    pragma Export (Ada, Save_Exception_From_Here_With,
       "__drake_save_exception_from_here_with");
 
-   procedure Backtrace (X : in out Exception_Occurrence);
-
-   --  equivalent to Set_Exception_C_Msg (a-exexda.adb)
-   procedure Set_Exception_Message (
-      Id : not null Exception_Data_Access;
-      File : String := "";
-      Line : Integer := 0;
-      Column : Integer := 0;
-      Message : String;
-      X : in out Exception_Occurrence);
-
    --  excluding code range
    function AAA return Address;
    function ZZZ return Address;
-
-   function New_Machine_Occurrence (Stack_Guard : Address)
-      return not null Representation.Machine_Occurrence_Access;
-
-   procedure Free (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access);
-
-   --  (a-exexpr-gcc.adb)
-   procedure Set_Foreign_Occurrence (
-      X : in out Exception_Occurrence;
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
-
-   --  equivalent to Get_Current_Excep_NT (s-soflin.adb),
-   --     Get_Current_Excep (s-tarest.adb)
-   --     and Setup_Current_Excep (a-exexpr-gcc.adb)
-   function Get_Current_Occurrence (
-      TLS : not null Runtime_Context.Task_Local_Storage_Access)
-      return Exception_Occurrence_Access;
-
-   procedure Set_Current_Machine_Occurrence (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access);
-
-   --  implementation for tasking (a-except-2005.adb)
-   function Triggered_By_Abort return Boolean;
-   pragma Export (Ada, Triggered_By_Abort,
-      "ada__exceptions__triggered_by_abort");
-
-   --  output the information of unhandled exception
-   procedure Report (X : Exception_Occurrence; Where : String);
-
-   --  unhandled handler (a-exexpr-gcc.adb)
-   --  the symbol is required only in Win64 SEH.
-   procedure Unhandled_Except_Handler (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
-   pragma No_Return (Unhandled_Except_Handler);
-   pragma Export (C, Unhandled_Except_Handler,
-      "__gnat_unhandled_except_handler");
 
    --  gdb knows some names for "catch exception" command.
    --  but, it works incompletely with not GNAT-GPL but official gcc.

@@ -14,7 +14,7 @@ with System.Synchronous_Control;
 with System.Synchronous_Objects.Abortable.Delays;
 with System.Termination;
 with System.Unbounded_Stack_Allocators;
-with System.Unwind.Raising;
+with System.Unwind.Occurrences;
 package body System.Tasks is
    use Ada.Exception_Identification.From_Here;
    use type Synchronous_Objects.Queue_Node_Access;
@@ -398,7 +398,7 @@ package body System.Tasks is
             Name_Last + Formatting.Address.Address_String'Length),
          Set => Formatting.Upper_Case);
       Name_Last := Name_Last + Formatting.Address.Address_String'Length;
-      Unwind.Raising.Report (Cast (Current), Name (1 .. Name_Last));
+      Unwind.Occurrences.Report (Cast (Current), Name (1 .. Name_Last));
    end Report;
 
    --  Native_Tasks.Result_Type is void * in POSIX, or DWORD in Windows.
