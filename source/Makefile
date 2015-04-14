@@ -173,6 +173,7 @@ COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-unwhan.o \
 	s-unwind.o \
 	s-unwmap.o \
+	s-unwocc.o \
 	s-unwrai.o \
 	s-unwrep.o \
 	s-unwsea.o \

@@ -1,6 +1,7 @@
 pragma Check_Policy (Trace, Off);
 with Ada;
 with System.Unwind.Mapping;
+with System.Unwind.Occurrences;
 with System.Unwind.Raising;
 package body System.Unwind.Handling is
    pragma Suppress (All_Checks);
@@ -48,7 +49,7 @@ package body System.Unwind.Handling is
       if Machine_Occurrence.Header.exception_class =
          Representation.GNAT_Exception_Class
       then
-         Save_Occurrence (X.all, Machine_Occurrence.Occurrence);
+         Occurrences.Save_Occurrence (X.all, Machine_Occurrence.Occurrence);
       else
          Raising.Set_Foreign_Occurrence (X.all, Machine_Occurrence);
       end if;

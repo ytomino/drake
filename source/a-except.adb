@@ -1,4 +1,5 @@
 with Ada.Unchecked_Conversion;
+with System.Unwind.Occurrences;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_8_To_32;
 package body Ada.Exceptions is
@@ -59,7 +60,7 @@ package body Ada.Exceptions is
             Context : aliased Information_Context_Type;
          begin
             Context.Last := 0;
-            System.Unwind.Exception_Information (
+            System.Unwind.Occurrences.Exception_Information (
                System.Unwind.Exception_Occurrence (X),
                Context'Address,
                Put => Put'Access,

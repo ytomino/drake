@@ -3,6 +3,7 @@ with Ada;
 with System.Formatting.Address;
 with System.Runtime_Information;
 with System.Termination;
+with System.Unwind.Occurrences;
 with System.Unwind.Raising;
 package body System.Unwind.Backtrace is
    pragma Suppress (All_Checks);
@@ -118,7 +119,7 @@ package body System.Unwind.Backtrace is
       Context : Information_Context_Type;
    begin
       Context.Last := 0;
-      Exception_Information (
+      Occurrences.Exception_Information (
          X,
          Context'Address,
          Put => Put'Access,

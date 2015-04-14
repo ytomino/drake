@@ -46,18 +46,4 @@ package System.Unwind is
    type Exception_Occurrence_Access is access all Exception_Occurrence;
    for Exception_Occurrence_Access'Storage_Size use 0;
 
-   --  implementation for catching object (a-except-2005.adb)
-   procedure Save_Occurrence (
-      Target : out Exception_Occurrence;
-      Source : Exception_Occurrence);
-   pragma Export (Ada, Save_Occurrence,
-      "ada__exceptions__save_occurrence");
-
-   --  equivalent to Append_Info_Exception_Information (a-exexda.adb)
-   procedure Exception_Information (
-      X : Exception_Occurrence;
-      Params : Address;
-      Put : not null access procedure (S : String; Params : Address);
-      New_Line : not null access procedure (Params : Address));
-
 end System.Unwind;

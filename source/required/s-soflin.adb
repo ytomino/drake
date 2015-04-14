@@ -1,6 +1,7 @@
 with Ada.Unchecked_Conversion;
 with System.Runtime_Context;
 with System.Startup;
+with System.Unwind.Occurrences;
 with System.Unwind.Raising;
 package body System.Soft_Links is
    pragma Suppress (All_Checks);
@@ -45,7 +46,9 @@ package body System.Soft_Links is
       if not Startup.Library_Exception_Set then
          Startup.Library_Exception_Set := True;
          if E /= null then
-            Unwind.Save_Occurrence (Startup.Library_Exception.X, Cast (E).all);
+            Unwind.Occurrences.Save_Occurrence (
+               Startup.Library_Exception.X,
+               Cast (E).all);
          end if;
       end if;
    end Save_Library_Occurrence;

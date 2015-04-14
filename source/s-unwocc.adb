@@ -1,4 +1,4 @@
-package body System.Unwind is
+package body System.Unwind.Occurrences is
    pragma Suppress (All_Checks);
 
    --  weak reference for System.Unwind.Backtrace
@@ -57,4 +57,4 @@ package body System.Unwind is
       end if;
    end Exception_Information;
 
-end System.Unwind;
+end System.Unwind.Occurrences;
