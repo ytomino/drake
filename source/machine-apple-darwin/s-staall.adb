@@ -21,11 +21,13 @@ package body System.Standard_Allocators is
 
    --  implementation
 
-   function Allocate (Size : Storage_Elements.Storage_Count)
+   function Allocate (
+      Size : Storage_Elements.Storage_Count)
       return Address is
    begin
-      return Result : constant Address := Address (C.stdlib.malloc (
-         C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
+      return Result : constant Address := Address (
+         C.stdlib.malloc (
+            C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
             Unwind.Raising.Raise_Exception_From_Here_With (
@@ -45,9 +47,10 @@ package body System.Standard_Allocators is
       Size : Storage_Elements.Storage_Count)
       return Address is
    begin
-      return Result : constant Address := Address (C.stdlib.realloc (
-         C.void_ptr (Storage_Address),
-         C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
+      return Result : constant Address := Address (
+         C.stdlib.realloc (
+            C.void_ptr (Storage_Address),
+            C.size_t (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
             Unwind.Raising.Raise_Exception_From_Here_With (
@@ -119,7 +122,8 @@ package body System.Standard_Allocators is
 
    procedure Unmap (
       Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count) is
+      Size : Storage_Elements.Storage_Count)
+   is
       R : C.signed_int;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));

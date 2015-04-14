@@ -23,7 +23,8 @@ package body System.Standard_Allocators is
 
    --  implementation
 
-   function Allocate (Size : Storage_Elements.Storage_Count)
+   function Allocate (
+      Size : Storage_Elements.Storage_Count)
       return Address
    is
       use type C.basetsd.SIZE_T;
@@ -37,10 +38,11 @@ package body System.Standard_Allocators is
       else
          Actual_Size := (Actual_Size + 7) and not 7;
       end if;
-      return Result : constant Address := Address (C.winbase.HeapAlloc (
-         C.winbase.GetProcessHeap,
-         0,
-         Actual_Size))
+      return Result : constant Address := Address (
+         C.winbase.HeapAlloc (
+            C.winbase.GetProcessHeap,
+            0,
+            Actual_Size))
       do
          if Result = Null_Address then
             Unwind.Raising.Raise_Exception_From_Here_With (
@@ -66,11 +68,12 @@ package body System.Standard_Allocators is
       Size : Storage_Elements.Storage_Count)
       return Address is
    begin
-      return Result : Address := Address (C.winbase.HeapReAlloc (
-         C.winbase.GetProcessHeap,
-         0,
-         C.windef.LPVOID (Storage_Address),
-         C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
+      return Result : Address := Address (
+         C.winbase.HeapReAlloc (
+            C.winbase.GetProcessHeap,
+            0,
+            C.windef.LPVOID (Storage_Address),
+            C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
             if Storage_Address = Null_Address then
@@ -134,7 +137,8 @@ package body System.Standard_Allocators is
 
    procedure Unmap (
       Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count) is
+      Size : Storage_Elements.Storage_Count)
+   is
       R : C.windef.WINBOOL;
    begin
       R := C.winbase.VirtualFree (

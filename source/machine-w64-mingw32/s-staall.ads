@@ -6,7 +6,9 @@ package System.Standard_Allocators is
 
    --  heap (s-memory.ads)
 
-   function Allocate (Size : Storage_Elements.Storage_Count) return Address;
+   function Allocate (
+      Size : Storage_Elements.Storage_Count)
+      return Address;
    pragma Export (C, Allocate, "__gnat_malloc");
 
    procedure Free (Storage_Address : Address);
