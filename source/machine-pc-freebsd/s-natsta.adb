@@ -6,12 +6,13 @@ package body System.Native_Stack is
    use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
 
-   procedure Runtime_Error (
-      Condition : Boolean;
+   function Runtime_Error (
       S : String;
       Source_Location : String := Ada.Debug.Source_Location;
-      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity);
+      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity)
+      return Boolean;
    pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
+   pragma Machine_Attribute (Runtime_Error, "noreturn");
 
    procedure Get (
       Thread : C.pthread.pthread_t := C.pthread.pthread_self;
@@ -30,8 +31,9 @@ package body System.Native_Stack is
                C_Addr'Access,
                C_Size'Access) = 0;
          R := C.pthread.pthread_attr_destroy (Attr'Access);
-         pragma Debug (Runtime_Error (R < 0,
-            "failed to pthread_attr_destroy"));
+         pragma Check (Debug,
+            Check => not (R < 0)
+               or else Runtime_Error ("failed to pthread_attr_destroy"));
       end if;
       if not OK then
          Top := Null_Address;

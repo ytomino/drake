@@ -11,12 +11,13 @@ package body System.Standard_Allocators is
 --  use type C.basetsd.SIZE_T;
 --  use type C.windef.DWORD;
 
-   procedure Runtime_Error (
-      Condition : Boolean;
+   function Runtime_Error (
       S : String;
       Source_Location : String := Ada.Debug.Source_Location;
-      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity);
+      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity)
+      return Boolean;
    pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
+   pragma Machine_Attribute (Runtime_Error, "noreturn");
 
    Heap_Exhausted : constant String := "heap exhausted";
 
@@ -56,7 +57,8 @@ package body System.Standard_Allocators is
          C.winbase.GetProcessHeap,
          0,
          C.windef.LPVOID (Storage_Address));
-      pragma Debug (Runtime_Error (R = 0, "failed to HeapFree"));
+      pragma Check (Debug,
+         Check => R /= 0 or else Runtime_Error ("failed to HeapFree"));
    end Free;
 
    function Reallocate (
@@ -139,14 +141,18 @@ package body System.Standard_Allocators is
          C.windef.LPVOID (Storage_Address),
          C.basetsd.SIZE_T (Size),
          C.winnt.MEM_DECOMMIT);
-      pragma Debug (Runtime_Error (R = 0,
-         "failed to VirtualFree (..., MEM_DECOMMIT)"));
+      pragma Check (Debug,
+         Check => R /= 0
+            or else Runtime_Error (
+               "failed to VirtualFree (..., MEM_DECOMMIT)"));
       R := C.winbase.VirtualFree (
          C.windef.LPVOID (Storage_Address),
          0,
          C.winnt.MEM_RELEASE);
-      pragma Debug (Runtime_Error (R = 0,
-         "failed to VirtualFree (..., MEM_RELEASE)"));
+      pragma Check (Debug,
+         Check => R /= 0
+            or else Runtime_Error (
+               "failed to VirtualFree (..., MEM_RELEASE)"));
    end Unmap;
 
 end System.Standard_Allocators;

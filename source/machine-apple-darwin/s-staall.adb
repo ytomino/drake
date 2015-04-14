@@ -9,12 +9,13 @@ package body System.Standard_Allocators is
    pragma Suppress (All_Checks);
    use type C.signed_int;
 
-   procedure Runtime_Error (
-      Condition : Boolean;
+   function Runtime_Error (
       S : String;
       Source_Location : String := Ada.Debug.Source_Location;
-      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity);
+      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity)
+      return Boolean;
    pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
+   pragma Machine_Attribute (Runtime_Error, "noreturn");
 
    Heap_Exhausted : constant String := "heap exhausted";
 
@@ -123,7 +124,8 @@ package body System.Standard_Allocators is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       R := C.sys.mman.munmap (C.void_ptr (Storage_Address), C.size_t (Size));
-      pragma Debug (Runtime_Error (R < 0, "failed to unmap"));
+      pragma Check (Debug,
+         Check => not (R < 0) or else Runtime_Error ("failed to unmap"));
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unmap;
 
