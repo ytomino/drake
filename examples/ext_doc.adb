@@ -114,6 +114,7 @@ procedure ext_doc is
 							if Line /= "--  runtime unit"
 								and then not Start_With (Line, "--  runtime unit ")
 								and then Line /= "--  optional runtime unit"
+								and then not Start_With (Line, "--  optional runtime unit specialized ")
 								and then Line /= "--  overridable runtime unit"
 								and then not Start_With (Line, "--  overridable runtime unit specialized ")
 							then

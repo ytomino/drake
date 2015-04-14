@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  optional runtime unit
+--  optional runtime unit specialized for Windows
 package System.Wide_Startup is
    pragma Preelaborate;
    pragma Linker_Options ("-municode");

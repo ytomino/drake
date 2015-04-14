@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  runtime unit specialized for Windows
 with C.windef;
 with C.winnt;
 package System.Native_Stack is

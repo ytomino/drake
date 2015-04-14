@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  runtime unit specialized for Windows
 with System.Storage_Elements;
 package System.Standard_Allocators is
    pragma Preelaborate;
