@@ -702,15 +702,6 @@ package body System.Unwind.Raising is
       X.Num_Tracebacks := 0;
    end Set_Foreign_Occurrence;
 
-   procedure Set_Current_Machine_Occurrence (
-      Machine_Occurrence : Representation.Machine_Occurrence_Access)
-   is
-      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
-         Runtime_Context.Get_Task_Local_Storage;
-   begin
-      TLS.Machine_Occurrence := Machine_Occurrence;
-   end Set_Current_Machine_Occurrence;
-
    function Get_Current_Occurrence (
       TLS : not null Runtime_Context.Task_Local_Storage_Access)
       return Exception_Occurrence_Access
@@ -730,6 +721,15 @@ package body System.Unwind.Raising is
       end if;
       return Result;
    end Get_Current_Occurrence;
+
+   procedure Set_Current_Machine_Occurrence (
+      Machine_Occurrence : Representation.Machine_Occurrence_Access)
+   is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Runtime_Context.Get_Task_Local_Storage;
+   begin
+      TLS.Machine_Occurrence := Machine_Occurrence;
+   end Set_Current_Machine_Occurrence;
 
    function Triggered_By_Abort return Boolean is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=

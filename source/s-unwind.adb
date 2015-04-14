@@ -12,6 +12,20 @@ package body System.Unwind is
 
    pragma Weak_External (Backtrace_Information);
 
+   procedure Save_Occurrence (
+      Target : out Exception_Occurrence;
+      Source : Exception_Occurrence) is
+   begin
+      Target.Id := Source.Id;
+      Target.Msg_Length := Source.Msg_Length;
+      Target.Num_Tracebacks := Source.Num_Tracebacks;
+      Target.Pid := Source.Pid;
+      Target.Msg (1 .. Target.Msg_Length) :=
+         Source.Msg (1 .. Target.Msg_Length);
+      Target.Tracebacks (1 .. Target.Num_Tracebacks) :=
+         Source.Tracebacks (1 .. Target.Num_Tracebacks);
+   end Save_Occurrence;
+
    procedure Exception_Information (
       X : Exception_Occurrence;
       Params : Address;
@@ -42,19 +56,5 @@ package body System.Unwind is
             New_Line => New_Line);
       end if;
    end Exception_Information;
-
-   procedure Save_Occurrence (
-      Target : out Exception_Occurrence;
-      Source : Exception_Occurrence) is
-   begin
-      Target.Id := Source.Id;
-      Target.Msg_Length := Source.Msg_Length;
-      Target.Num_Tracebacks := Source.Num_Tracebacks;
-      Target.Pid := Source.Pid;
-      Target.Msg (1 .. Target.Msg_Length) :=
-         Source.Msg (1 .. Target.Msg_Length);
-      Target.Tracebacks (1 .. Target.Num_Tracebacks) :=
-         Source.Tracebacks (1 .. Target.Num_Tracebacks);
-   end Save_Occurrence;
 
 end System.Unwind;
