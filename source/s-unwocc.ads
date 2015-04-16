@@ -78,6 +78,19 @@ package System.Unwind.Occurrences is
       New_Line : not null access procedure (Params : Address));
 
    --  output the information of unhandled exception
+
+   procedure Default_Report (X : Exception_Occurrence; Where : String);
+
+   type Report_Handler is
+      access procedure (X : Exception_Occurrence; Where : String);
+   pragma Suppress (Access_Check, Report_Handler);
+
+   Report_Hook : Report_Handler := Default_Report'Access -- not null
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_report_exception_occurrence_hook";
+   pragma Suppress (Access_Check, Report_Hook);
+
    procedure Report (X : Exception_Occurrence; Where : String);
 
 end System.Unwind.Occurrences;

@@ -303,7 +303,7 @@ package body System.Unwind.Occurrences is
       end if;
    end Exception_Information;
 
-   procedure Report (X : Exception_Occurrence; Where : String) is
+   procedure Default_Report (X : Exception_Occurrence; Where : String) is
       subtype Buffer_Type is String (1 .. 256 + Exception_Msg_Max_Length);
       procedure Put (
          Buffer : in out Buffer_Type;
@@ -376,6 +376,11 @@ package body System.Unwind.Occurrences is
          end if;
          Termination.Error_Put_Line (Buffer (1 .. Last));
       end if;
+   end Default_Report;
+
+   procedure Report (X : Exception_Occurrence; Where : String) is
+   begin
+      Report_Hook (X, Where);
    end Report;
 
 end System.Unwind.Occurrences;
