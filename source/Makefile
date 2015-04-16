@@ -73,6 +73,7 @@ GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 BUILDDIR=$(RTSDIR)/adalib
 LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat.build
 NOSIG_BUILDDIR=$(BUILDDIR)/nosig.build
+NOTB_BUILDDIR=$(BUILDDIR)/notb.build
 
 SUBDIRS=ada83 calendar containers directories distributed environment hash image interfaces nls numerics pools streams strings tasking textio
 
@@ -179,6 +180,9 @@ COMPILER_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 
 EXTRA_OBJS=$(addprefix $(RTSDIR)/adalib/, \
 	nosig.o)
+ifneq ($(findstring darwin,$(TARGET)),)
+EXTRA_OBJS+=$(RTSDIR)/adalib/notb.o
+endif
 
 # s-maccod.o and s-stoele.o are also standard library
 
@@ -273,6 +277,9 @@ $(RTSDIR)/adalib/libgnat.a: $(TREE) $(ALL_OBJS)
 $(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o
 	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@
 
+$(RTSDIR)/adalib/notb.o: $(TREE) $(NOTB_BUILDDIR)/notb.o
+	install -m 444 $(NOTB_BUILDDIR)/notb.o $@
+
 $(RTSDIR)/adainclude:
 	mkdir -p $@
 
@@ -283,6 +290,9 @@ $(LIBGNAT_BUILDDIR):
 	mkdir $@
 
 $(NOSIG_BUILDDIR):
+	mkdir $@
+
+$(NOTB_BUILDDIR):
 	mkdir $@
 
 $(RTSDIR)/adainclude/system.ads:
@@ -540,6 +550,9 @@ $(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 
 $(NOSIG_BUILDDIR)/nosig.o: obj/nosig.ads $(NOSIG_BUILDDIR)
+	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $(abspath $<)
+
+$(NOTB_BUILDDIR)/notb.o: obj/notb.ads $(NOTB_BUILDDIR)
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $(abspath $<)
 
 $(RTSDIR)/adalib/%.ali: $(LIBGNAT_BUILDDIR)/%.o

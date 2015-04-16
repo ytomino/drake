@@ -109,6 +109,7 @@ procedure ext_doc is
 						elsif Start_With (Line, "--  runtime")
 							or else Start_With (Line, "--  optional runtime")
 							or else Start_With (Line, "--  overridable runtime")
+							or else Start_With (Line, "--  optional/overridable runtime")
 						then
 							Kind := Runtime_Unit;
 							if Line /= "--  runtime unit"
@@ -117,6 +118,7 @@ procedure ext_doc is
 								and then not Start_With (Line, "--  optional runtime unit specialized ")
 								and then Line /= "--  overridable runtime unit"
 								and then not Start_With (Line, "--  overridable runtime unit specialized ")
+								and then Line /= "--  optional/overridable runtime unit"
 							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);
