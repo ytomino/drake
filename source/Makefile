@@ -139,8 +139,6 @@ SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGE
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/$(SIMDSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]) \
 	$(wildcard $(EH)/*.ad[sb]))
 
-SEPARATED=$(EH)/s-unbase.adb $(EH)/s-unocse.adb $(EH)/s-unrase.adb
-
 LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 
 ifdef EH # all mechanisms (zcx, sjlj, seh)
@@ -149,9 +147,8 @@ else # unknown mechanism
 EH_OBJS=
 endif
 
-COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
+COMPILER_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	$(EH_OBJS) \
-	system.o \
 	s-debug.o \
 	s-exctab.o \
 	s-foradd.o \
@@ -177,14 +174,18 @@ COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-unwrai.o \
 	s-unwrep.o \
 	s-unwsea.o \
-	s-unwsta.o)
+	s-unwsta.o \
+	system.o)
+
+EXTRA_OBJS=$(addprefix $(RTSDIR)/adalib/, \
+	nosig.o)
 
 # s-maccod.o and s-stoele.o are also standard library
 
 ifneq ($(WITHA),0)
-ALL_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/,\
-	system.o \
-	$(sort $(addsuffix .o,$(basename $(notdir $(filter-out $(SEPARATED),$(SRC)))))))
+ALL_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
+	$(sort $(addsuffix .o,$(basename $(notdir $(filter %.ads,$(SRC)))))) \
+	system.o)
 else
 ALL_OBJS=$(COMPILER_OBJS)
 endif
@@ -247,34 +248,30 @@ endif
 
 CFLAGS=
 
-CFLAGS_FOR_COMPILER_UNIT=$(strip -pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP \
+CFLAGS_FOR_COMPILER_UNIT=$(strip \
+	-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP \
 	$(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS))
+
+TREE= \
+	$(RTSDIR)/adainclude \
+	$(RTSDIR)/adainclude/system.ads \
+	$(LIBRARY_SRCS) \
+	$(RTSDIR)/adalib \
+	$(LIBGNAT_BUILDDIR) \
+	$(IMPORT_HEADERS)
 
 .PHONY: all tree import_objs c-archive
 
-all: $(RTSDIR)/adalib/libgnat.a $(RTSDIR)/adalib/nosig.o $(ALL_ALI)
+all: $(EXTRA_OBJS) $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
 
-tree: \
-		$(RTSDIR)/adainclude \
-		$(RTSDIR)/adainclude/system.ads \
-		$(LIBRARY_SRCS) \
-		$(RTSDIR)/adalib \
-		$(LIBGNAT_BUILDDIR) \
-		$(IMPORT_HEADERS)
+tree: $(TREE)
 
-$(RTSDIR)/adalib/libgnat.a: \
-		$(RTSDIR)/adainclude \
-		$(RTSDIR)/adainclude/system.ads \
-		$(LIBRARY_SRCS) \
-		$(RTSDIR)/adalib \
-		$(LIBGNAT_BUILDDIR) \
-		$(IMPORT_HEADERS) \
-		$(ALL_OBJS)
+$(RTSDIR)/adalib/libgnat.a: $(TREE) $(ALL_OBJS)
 	-rm $@ 2> /dev/null
 	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
 
-$(RTSDIR)/adalib/nosig.o: $(NOSIG_BUILDDIR)/nosig.o
-	install -m 444 $< $@
+$(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o
+	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@
 
 $(RTSDIR)/adainclude:
 	mkdir -p $@
@@ -543,7 +540,7 @@ $(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 
 $(NOSIG_BUILDDIR)/nosig.o: obj/nosig.ads $(NOSIG_BUILDDIR)
-	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
+	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $(abspath $<)
 
 $(RTSDIR)/adalib/%.ali: $(LIBGNAT_BUILDDIR)/%.o
 	install -m 444 $(basename $<).ali $@
@@ -564,7 +561,7 @@ $(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
 ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad[sb]) $(IMPORTDIR)/c.ads
-IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata c-icucore,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
+IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata c-icucore,$(basename $(notdir $(filter %.ads,$(IMPLIB_SRC)))))
 IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(LIBGNAT_BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 
@@ -598,7 +595,7 @@ endif
 c-archive: $(IMPORTDIR)/c.ads
 ifneq ($(DESTDIR),)
 	-rm $(DESTDIR)/$(TARGET).tar.bz2 2> /dev/null
-	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/$(TARGET).tar.bz2) c.ads c-*
+	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/$(TARGET).tar.bz2) c-*.ad[sb] c.ads
 else
 	@echo please tell DESTDIR=[DIRECTORY]
 endif

@@ -114,17 +114,38 @@ BFLAGS_ALL:=$(strip $(BFLAGS_ALL) $(BFLAGS))
 LFLAGS_ALL:=$(strip $(LFLAGS_ALL) $(LFLAGS))
 FFLAGS_ALL:=$(strip $(FFLAGS_ALL) $(FFLAGS))
 
-.PHONY: all tree clean xfind xfindall
+.PHONY: all tree cleanup-rts clean xfind xfindall
 
 all: $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
 
 tree:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
 
+cleanup-rts: # rm duplicated object files in $(BUILDDIR) and $(BUILDDIR)/adalib/libgnat.a
+	@sh -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat.build) ; do \
+		if [[ -f $(BUILDDIR)/$$I ]] ; then \
+			echo rm $$I ; \
+			rm $(BUILDDIR)/$$I ; \
+			rm $(BUILDDIR)/adalib/libgnat.build/$$I ; \
+			REMOVED_A=1 ; \
+			if [[ $$I =~ ^c- ]] ; then \
+				REMOVED_C=1 ; \
+			fi ; \
+		fi ; \
+	done ; \
+	if [[ $$REMOVED_C = 1 && -f $(BUILDDIR)/adalib/libgnat.build/c.o ]] ; then \
+		echo rm c.o ; \
+		rm $(BUILDDIR)/adalib/libgnat.build/c.o ; \
+	fi ; \
+	if [[ $$REMOVED_A = 1 && -f $(BUILDDIR)/adalib/libgnat.a ]] ; then \
+		echo rm libgnat.a ; \
+		rm $(BUILDDIR)/adalib/libgnat.a ; \
+	fi'
+
 $(BINLN):
 	ln -s $(BUILDDIR) $(BINLN)
 
-$(BUILDDIR)/adalib/libgnat.a: $(wildcard $(BUILDDIR)/adainclude/*.ad?)
+$(BUILDDIR)/adalib/libgnat.a: $(wildcard $(BUILDDIR)/adainclude/*.ad?) $(wildcard ../source/obj/*.ad?)
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	touch $@
 
