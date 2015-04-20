@@ -209,7 +209,8 @@ endif
 ifeq ($(DEBUG),0)
 CFLAGS_DEBUG=
 OPTIMIZE=1
-else ifeq ($(DEBUG),1)
+else
+ifeq ($(DEBUG),1)
 CFLAGS_DEBUG=-ggdb1
 OPTIMIZE=1
 else
@@ -217,6 +218,10 @@ CFLAGS_DEBUG=-ggdb -gnata
 OPTIMIZE=0
 ifeq ($(EH),sjlj)
 CFLAGS_DEBUG+=-fno-omit-frame-pointer
+endif
+endif
+ifeq ($(OBJFMT),ELF)
+CFLAGS_DEBUG+=-Wa,--compress-debug-sections
 endif
 endif
 
