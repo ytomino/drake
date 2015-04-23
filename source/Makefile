@@ -68,7 +68,6 @@ PHASE=
 
 RTSDIR=.
 IMPORTDIR=$(RTSDIR)/adainclude
-GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib
 LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat.build
@@ -301,7 +300,7 @@ $(NOTB_BUILDDIR):
 	mkdir $@
 
 $(RTSDIR)/adainclude/system.ads:
-	ln -s $(GCCLIBDIR)/adainclude/system.ads $@
+	ln -s $(dir $(shell $(GCC) -print-libgcc-file-name))adainclude/system.ads $@
 
 $(RTSDIR)/adainclude/%.ads: %.ads
 	$(INSTALL) $(abspath $<) $@
