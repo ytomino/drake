@@ -261,11 +261,8 @@ CFLAGS_FOR_COMPILER_UNIT=$(strip \
 	$(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS))
 
 TREE= \
-	$(RTSDIR)/adainclude \
 	$(RTSDIR)/adainclude/system.ads \
 	$(LIBRARY_SRCS) \
-	$(RTSDIR)/adalib \
-	$(LIBGNAT_BUILDDIR) \
 	$(IMPORT_HEADERS)
 
 .PHONY: all tree import_objs c-archive
@@ -274,32 +271,32 @@ all: $(EXTRA_OBJS) $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
 
 tree: $(TREE)
 
-$(RTSDIR)/adalib/libgnat.a: $(TREE) $(ALL_OBJS)
+$(RTSDIR)/adalib/libgnat.a: $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
 	-rm $@ 2> /dev/null
 	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
 
-$(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o
+$(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
 	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@
 
-$(RTSDIR)/adalib/notb.o: $(TREE) $(NOTB_BUILDDIR)/notb.o
+$(RTSDIR)/adalib/notb.o: $(TREE) $(NOTB_BUILDDIR)/notb.o | $(RTSDIR)/adalib/
 	install -m 444 $(NOTB_BUILDDIR)/notb.o $@
 
 $(RTSDIR)/adainclude:
 	mkdir -p $@
 
 $(RTSDIR)/adalib:
-	mkdir $@
+	mkdir -p $@
 
 $(LIBGNAT_BUILDDIR):
-	mkdir $@
+	mkdir -p $@
 
 $(NOSIG_BUILDDIR):
-	mkdir $@
+	mkdir -p $@
 
 $(NOTB_BUILDDIR):
-	mkdir $@
+	mkdir -p $@
 
-$(RTSDIR)/adainclude/system.ads:
+$(RTSDIR)/adainclude/system.ads: | $(RTSDIR)/adainclude
 	ln -s $(dir $(shell $(GCC) -print-libgcc-file-name))adainclude/system.ads $@
 
 $(RTSDIR)/adainclude/%.ads: %.ads
@@ -547,19 +544,19 @@ $(LIBGNAT_BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 endif
 endif
 
-$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
+$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads | $(LIBGNAT_BUILDDIR)
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 
-$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
+$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads | $(LIBGNAT_BUILDDIR)
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 
-$(NOSIG_BUILDDIR)/nosig.o: obj/nosig.ads $(NOSIG_BUILDDIR)
+$(NOSIG_BUILDDIR)/nosig.o: obj/nosig.ads | $(NOSIG_BUILDDIR)
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $(abspath $<)
 
-$(NOTB_BUILDDIR)/notb.o: obj/notb.ads $(NOTB_BUILDDIR)
+$(NOTB_BUILDDIR)/notb.o: obj/notb.ads | $(NOTB_BUILDDIR)
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $(abspath $<)
 
-$(RTSDIR)/adalib/%.ali: $(LIBGNAT_BUILDDIR)/%.o
+$(RTSDIR)/adalib/%.ali: $(LIBGNAT_BUILDDIR)/%.o | $(RTSDIR)/adalib
 	install -m 444 $(basename $<).ali $@
 
 ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)
