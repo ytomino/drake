@@ -19,6 +19,54 @@ package body Ada.Processes is
    use type C.signed_int;
    use type C.size_t;
 
+   subtype Arguments_Type is C.char_ptr_array (0 .. 255);
+
+   procedure Split_Argument (
+      Command_Line : in out C.char_array;
+      Arguments : in out Arguments_Type);
+   procedure Split_Argument (
+      Command_Line : in out C.char_array;
+      Arguments : in out Arguments_Type)
+   is
+      I : C.size_t := Command_Line'First;
+      Argument_Index : C.size_t := Arguments'First;
+   begin
+      Arguments (Argument_Index) := null;
+      loop
+         --  skip spaces
+         while Command_Line (I) = ' ' loop
+            I := I + 1;
+         end loop;
+         exit when Command_Line (I) = C.char'Val (0);
+         --  take on argument
+         Arguments (Argument_Index) := Command_Line (I)'Unchecked_Access;
+         declare
+            J : C.size_t := I;
+         begin
+            loop
+               if Command_Line (I) = '\' then
+                  I := I + 1;
+                  exit when Command_Line (I) = C.char'Val (0);
+               end if;
+               Command_Line (J) := Command_Line (I);
+               I := I + 1;
+               J := J + 1;
+               if Command_Line (I) = ' ' then
+                  I := I + 1;
+                  exit;
+               end if;
+               exit when Command_Line (I) = C.char'Val (0);
+            end loop;
+            Command_Line (J) := C.char'Val (0);
+         end;
+         Argument_Index := Argument_Index + 1;
+         if Argument_Index > Arguments'Last then
+            raise Constraint_Error;
+         end if;
+      end loop;
+      Arguments (Argument_Index) := null;
+   end Split_Argument;
+
    procedure Spawn (
       Child : out C.sys.types.pid_t;
       Command_Line : String;
@@ -307,48 +355,5 @@ package body Ada.Processes is
          end if;
       end loop;
    end Append_Argument;
-
-   procedure Split_Argument (
-      Command_Line : in out C.char_array;
-      Arguments : in out Arguments_Type)
-   is
-      I : C.size_t := Command_Line'First;
-      Argument_Index : C.size_t := Arguments'First;
-   begin
-      Arguments (Argument_Index) := null;
-      loop
-         --  skip spaces
-         while Command_Line (I) = ' ' loop
-            I := I + 1;
-         end loop;
-         exit when Command_Line (I) = C.char'Val (0);
-         --  take on argument
-         Arguments (Argument_Index) := Command_Line (I)'Unchecked_Access;
-         declare
-            J : C.size_t := I;
-         begin
-            loop
-               if Command_Line (I) = '\' then
-                  I := I + 1;
-                  exit when Command_Line (I) = C.char'Val (0);
-               end if;
-               Command_Line (J) := Command_Line (I);
-               I := I + 1;
-               J := J + 1;
-               if Command_Line (I) = ' ' then
-                  I := I + 1;
-                  exit;
-               end if;
-               exit when Command_Line (I) = C.char'Val (0);
-            end loop;
-            Command_Line (J) := C.char'Val (0);
-         end;
-         Argument_Index := Argument_Index + 1;
-         if Argument_Index > Arguments'Last then
-            raise Constraint_Error;
-         end if;
-      end loop;
-      Arguments (Argument_Index) := null;
-   end Split_Argument;
 
 end Ada.Processes;

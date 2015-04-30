@@ -57,10 +57,4 @@ private
 
    type Process is new C.sys.types.pid_t;
 
-   subtype Arguments_Type is C.char_ptr_array (0 .. 255);
-
-   procedure Split_Argument (
-      Command_Line : in out C.char_array;
-      Arguments : in out Arguments_Type);
-
 end Ada.Processes;
