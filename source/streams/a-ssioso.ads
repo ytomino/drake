@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 private with Ada.Finalization;
-private with C.netdb;
+private with System.Native_IO.Sockets;
 package Ada.Streams.Stream_IO.Sockets is
    --  There are subprograms to create socket.
    pragma Preelaborate;
@@ -26,13 +26,13 @@ private
 
       function Reference (
          Object : End_Point)
-         return not null access C.netdb.struct_addrinfo_ptr;
+         return not null access System.Native_IO.Sockets.End_Point;
       pragma Inline (Reference);
 
    private
 
       type End_Point is limited new Finalization.Limited_Controlled with record
-         Data : aliased C.netdb.struct_addrinfo_ptr := null;
+         Data : aliased System.Native_IO.Sockets.End_Point := null;
       end record;
 
       overriding procedure Finalize (Object : in out End_Point);

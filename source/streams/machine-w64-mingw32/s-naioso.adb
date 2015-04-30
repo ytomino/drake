@@ -1,5 +1,3 @@
-with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Stream_IO.Naked;
 with Ada.Unchecked_Conversion;
 with System.Formatting;
 with System.Once;
@@ -9,14 +7,13 @@ with C.psdk_inc.qsocket_types;
 with C.psdk_inc.qwsadata;
 with C.winnt;
 with C.winsock2;
-package body Ada.Streams.Stream_IO.Sockets is
-   use Exception_Identification.From_Here;
+package body System.Native_IO.Sockets is
    use type C.signed_int;
    use type C.size_t;
    use type C.psdk_inc.qsocket_types.SOCKET;
    use type C.ws2tcpip.struct_addrinfoW_ptr;
 
-   Flag : aliased System.Once.Flag := 0;
+   Flag : aliased Once.Flag := 0;
    Failed_To_Initialize : Boolean;
    Data : aliased C.psdk_inc.qwsadata.WSADATA := (others => <>);
 
@@ -31,7 +28,7 @@ package body Ada.Streams.Stream_IO.Sockets is
    procedure Initialize;
    procedure Initialize is
    begin
-      System.Termination.Register_Exit (Finalize'Access);
+      Termination.Register_Exit (Finalize'Access);
       if C.winsock2.WSAStartup (16#0202#, Data'Access) /= 0 then
          Failed_To_Initialize := True;
       end if;
@@ -40,7 +37,7 @@ package body Ada.Streams.Stream_IO.Sockets is
    procedure Check_Initialize;
    procedure Check_Initialize is
    begin
-      System.Once.Initialize (Flag'Access, Initialize'Access);
+      Once.Initialize (Flag'Access, Initialize'Access);
       if Failed_To_Initialize then
          raise Program_Error; -- ??
       end if;
@@ -66,11 +63,9 @@ package body Ada.Streams.Stream_IO.Sockets is
          Hints,
          Data'Access);
       if Result /= 0 then
-         Raise_Exception (Use_Error'Identity);
+         return null; -- Use_Error
       else
-         return Result : End_Point do
-            Reference (Result).all := Data;
-         end return;
+         return Data;
       end if;
    end Get;
 
@@ -92,15 +87,15 @@ package body Ada.Streams.Stream_IO.Sockets is
             ai_next => null);
          W_Host_Name : C.winnt.WCHAR_array (
             0 ..
-            Host_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+            Host_Name'Length * Zero_Terminated_WStrings.Expanding);
          W_Service : C.winnt.WCHAR_array (
             0 ..
-            Service'Length * System.Zero_Terminated_WStrings.Expanding);
+            Service'Length * Zero_Terminated_WStrings.Expanding);
       begin
-         System.Zero_Terminated_WStrings.To_C (
+         Zero_Terminated_WStrings.To_C (
             Host_Name,
             W_Host_Name (0)'Access);
-         System.Zero_Terminated_WStrings.To_C (
+         Zero_Terminated_WStrings.To_C (
             Service,
             W_Service (0)'Access);
          return Get (
@@ -126,24 +121,24 @@ package body Ada.Streams.Stream_IO.Sockets is
             ai_next => null);
          W_Host_Name : C.winnt.WCHAR_array (
             0 ..
-            Host_Name'Length * System.Zero_Terminated_WStrings.Expanding);
+            Host_Name'Length * Zero_Terminated_WStrings.Expanding);
          Service : String (1 .. 5);
          Service_Last : Natural;
          W_Service : C.winnt.WCHAR_array (
             0 ..
-            Service'Length * System.Zero_Terminated_WStrings.Expanding);
+            Service'Length * Zero_Terminated_WStrings.Expanding);
          Error : Boolean;
       begin
-         System.Zero_Terminated_WStrings.To_C (
+         Zero_Terminated_WStrings.To_C (
             Host_Name,
             W_Host_Name (0)'Access);
-         System.Formatting.Image (
-            System.Formatting.Unsigned (Port),
+         Formatting.Image (
+            Formatting.Unsigned (Port),
             Service,
             Service_Last,
             Base => 10,
             Error => Error);
-         System.Zero_Terminated_WStrings.To_C (
+         Zero_Terminated_WStrings.To_C (
             Service (1 .. Service_Last),
             W_Service (0)'Access);
          return Get (
@@ -153,14 +148,13 @@ package body Ada.Streams.Stream_IO.Sockets is
       end;
    end Resolve;
 
-   procedure Connect (File : in out File_Type; Peer : End_Point) is
+   procedure Connect (Handle : out Handle_Type; Peer : End_Point) is
       function Cast is
-         new Unchecked_Conversion (
+         new Ada.Unchecked_Conversion (
             C.psdk_inc.qsocket_types.SOCKET,
             C.winnt.HANDLE);
-      Socket : C.psdk_inc.qsocket_types.SOCKET :=
-         C.psdk_inc.qsocket_types.INVALID_SOCKET;
-      I : C.ws2tcpip.struct_addrinfoW_ptr := Reference (Peer).all;
+      Socket : C.psdk_inc.qsocket_types.SOCKET;
+      I : C.ws2tcpip.struct_addrinfoW_ptr := Peer;
    begin
       while I /= null loop
          Socket := C.winsock2.WSASocket (
@@ -171,53 +165,31 @@ package body Ada.Streams.Stream_IO.Sockets is
             0,
             0);
          if Socket /= C.psdk_inc.qsocket_types.INVALID_SOCKET then
-            exit when C.winsock2.WSAConnect (
+            if C.winsock2.WSAConnect (
                Socket,
                I.ai_addr,
                C.signed_int (I.ai_addrlen),
                null,
                null,
                null,
-               null) = 0;
-            if C.winsock2.closesocket (Socket) /= 0 then
-               null; -- ignore error
+               null) = 0
+            then
+               --  connected
+               Handle := Cast (Socket);
+               return;
             end if;
-            Socket := C.psdk_inc.qsocket_types.INVALID_SOCKET;
+            if C.winsock2.closesocket (Socket) /= 0 then
+               exit; -- Use_Error or Device_Error ?
+            end if;
          end if;
          I := I.ai_next;
       end loop;
-      if Socket = C.psdk_inc.qsocket_types.INVALID_SOCKET then
-         Raise_Exception (Use_Error'Identity);
-      else
-         Naked.Open (
-            File,
-            Append_File, -- Inout
-            Cast (Socket),
-            To_Close => True);
-      end if;
+      Handle := Invalid_Handle;
    end Connect;
 
-   function Connect (Peer : End_Point) return File_Type is
+   procedure Finalize (Item : End_Point) is
    begin
-      return Result : File_Type do
-         Connect (Result, Peer);
-      end return;
-   end Connect;
+      C.ws2tcpip.FreeAddrInfoW (Item);
+   end Finalize;
 
-   package body End_Points is
-
-      function Reference (
-         Object : End_Point)
-         return not null access C.ws2tcpip.struct_addrinfoW_ptr is
-      begin
-         return Object.Data'Unrestricted_Access;
-      end Reference;
-
-      overriding procedure Finalize (Object : in out End_Point) is
-      begin
-         C.ws2tcpip.FreeAddrInfoW (Object.Data);
-      end Finalize;
-
-   end End_Points;
-
-end Ada.Streams.Stream_IO.Sockets;
+end System.Native_IO.Sockets;

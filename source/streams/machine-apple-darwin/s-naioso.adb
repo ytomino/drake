@@ -1,14 +1,8 @@
-with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Stream_IO.Naked;
-with System.Zero_Terminated_Strings;
 with System.Formatting;
-with System.Native_IO;
 with C.netinet.in_h;
 with C.sys.socket;
 with C.unistd;
-package body Ada.Streams.Stream_IO.Sockets is
-   use Exception_Identification.From_Here;
-   use type C.signed_int;
+package body System.Native_IO.Sockets is
    use type C.size_t;
    use type C.netdb.struct_addrinfo_ptr;
 
@@ -32,11 +26,9 @@ package body Ada.Streams.Stream_IO.Sockets is
          Hints,
          Data'Access);
       if Result /= 0 then
-         Raise_Exception (Use_Error'Identity);
+         return null; -- Use_Error
       else
-         return Result : End_Point do
-            Reference (Result).all := Data;
-         end return;
+         return Data;
       end if;
    end Get;
 
@@ -56,13 +48,13 @@ package body Ada.Streams.Stream_IO.Sockets is
          ai_next => null);
       C_Host_Name : C.char_array (
          0 ..
-         Host_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Host_Name'Length * Zero_Terminated_Strings.Expanding);
       C_Service : C.char_array (
          0 ..
-         Service'Length * System.Zero_Terminated_Strings.Expanding);
+         Service'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Host_Name, C_Host_Name (0)'Access);
-      System.Zero_Terminated_Strings.To_C (Service, C_Service (0)'Access);
+      Zero_Terminated_Strings.To_C (Host_Name, C_Host_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Service, C_Service (0)'Access);
       return Get (C_Host_Name (0)'Access, C_Service (0)'Access, Hints'Access);
    end Resolve;
 
@@ -80,19 +72,19 @@ package body Ada.Streams.Stream_IO.Sockets is
          ai_next => null);
       C_Host_Name : C.char_array (
          0 ..
-         Host_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Host_Name'Length * Zero_Terminated_Strings.Expanding);
       Service : C.char_array (0 .. 5); -- "65535" & NUL
       Service_Length : C.size_t;
       Error : Boolean;
    begin
-      System.Zero_Terminated_Strings.To_C (Host_Name, C_Host_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Host_Name, C_Host_Name (0)'Access);
       declare
          Service_As_String : String (1 .. 5);
          for Service_As_String'Address use Service'Address;
          Service_Last : Natural;
       begin
-         System.Formatting.Image (
-            System.Formatting.Unsigned (Port),
+         Formatting.Image (
+            Formatting.Unsigned (Port),
             Service_As_String,
             Service_Last,
             Base => 10,
@@ -103,9 +95,8 @@ package body Ada.Streams.Stream_IO.Sockets is
       return Get (C_Host_Name (0)'Access, Service (0)'Access, Hints'Access);
    end Resolve;
 
-   procedure Connect (File : in out File_Type; Peer : End_Point) is
-      Handle : System.Native_IO.Handle_Type := -1;
-      I : C.netdb.struct_addrinfo_ptr := Reference (Peer).all;
+   procedure Connect (Handle : out Handle_Type; Peer : End_Point) is
+      I : C.netdb.struct_addrinfo_ptr := Peer;
    begin
       while I /= null loop
          Handle := C.sys.socket.socket (
@@ -113,50 +104,27 @@ package body Ada.Streams.Stream_IO.Sockets is
             I.ai_socktype,
             I.ai_protocol);
          if Handle >= 0 then
-            exit when C.sys.socket.connect (
+            if C.sys.socket.connect (
                Handle,
                I.ai_addr,
-               I.ai_addrlen) = 0;
-            if C.unistd.close (Handle) < 0 then
-               Raise_Exception (Use_Error'Identity);
+               I.ai_addrlen) = 0
+            then
+               --  connected
+               Set_Close_On_Exec (Handle);
+               return;
             end if;
-            Handle := -1;
+            if C.unistd.close (Handle) < 0 then
+               exit; -- Use_Error or Device_Error ?
+            end if;
          end if;
          I := I.ai_next;
       end loop;
-      if Handle < 0 then
-         Raise_Exception (Use_Error'Identity);
-      else
-         System.Native_IO.Set_Close_On_Exec (Handle);
-         Naked.Open (
-            File,
-            Append_File, -- Inout
-            Handle,
-            To_Close => True);
-      end if;
+      Handle := Invalid_Handle;
    end Connect;
 
-   function Connect (Peer : End_Point) return File_Type is
+   procedure Finalize (Item : End_Point) is
    begin
-      return Result : File_Type do
-         Connect (Result, Peer);
-      end return;
-   end Connect;
+      C.netdb.freeaddrinfo (Item);
+   end Finalize;
 
-   package body End_Points is
-
-      function Reference (
-         Object : End_Point)
-         return not null access C.netdb.struct_addrinfo_ptr is
-      begin
-         return Object.Data'Unrestricted_Access;
-      end Reference;
-
-      overriding procedure Finalize (Object : in out End_Point) is
-      begin
-         C.netdb.freeaddrinfo (Object.Data);
-      end Finalize;
-
-   end End_Points;
-
-end Ada.Streams.Stream_IO.Sockets;
+end System.Native_IO.Sockets;
