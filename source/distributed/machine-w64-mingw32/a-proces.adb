@@ -150,7 +150,10 @@ package body Ada.Processes is
       end return;
    end Create;
 
-   procedure Wait (Child : Process; Status : out Command_Line.Exit_Status) is
+   procedure Wait (
+      Child : Process;
+      Status : out Command_Line.Exit_Status)
+   is
       Handle : constant C.winnt.HANDLE := Reference (Child).all;
    begin
       if C.winbase.WaitForSingleObject (
@@ -176,7 +179,9 @@ package body Ada.Processes is
       end if;
    end Wait;
 
-   procedure Wait (Child : Process) is
+   procedure Wait (
+      Child : Process)
+   is
       Dummy : Command_Line.Exit_Status;
       pragma Unreferenced (Dummy);
    begin

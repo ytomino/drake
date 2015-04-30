@@ -256,7 +256,10 @@ package body Ada.Processes is
       end return;
    end Create;
 
-   procedure Wait (Child : Process; Status : out Command_Line.Exit_Status) is
+   procedure Wait (
+      Child : Process;
+      Status : out Command_Line.Exit_Status)
+   is
       Result : C.sys.types.pid_t;
       Code : aliased C.signed_int;
    begin
@@ -283,7 +286,9 @@ package body Ada.Processes is
       end loop;
    end Wait;
 
-   procedure Wait (Child : Process) is
+   procedure Wait (
+      Child : Process)
+   is
       Dummy : Command_Line.Exit_Status;
       pragma Unreferenced (Dummy);
    begin

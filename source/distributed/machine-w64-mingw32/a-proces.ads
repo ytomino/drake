@@ -34,8 +34,11 @@ package Ada.Processes is
          Streams.Stream_IO.Standard_Files.Standard_Error.all)
       return Process;
 
-   procedure Wait (Child : Process; Status : out Command_Line.Exit_Status);
-   procedure Wait (Child : Process);
+   procedure Wait (
+      Child : Process;
+      Status : out Command_Line.Exit_Status);
+   procedure Wait (
+      Child : Process);
 
    procedure Shell (
       Command_Line : String;
@@ -67,7 +70,9 @@ private
 
    private
 
-      type Process is limited new Finalization.Limited_Controlled with record
+      type Process is
+         limited new Finalization.Limited_Controlled with
+      record
          Handle : aliased C.winnt.HANDLE := C.winbase.INVALID_HANDLE_VALUE;
       end record;
 

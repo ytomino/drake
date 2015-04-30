@@ -32,8 +32,11 @@ package Ada.Processes is
          Streams.Stream_IO.Standard_Files.Standard_Error.all)
       return Process;
 
-   procedure Wait (Child : Process; Status : out Command_Line.Exit_Status);
-   procedure Wait (Child : Process);
+   procedure Wait (
+      Child : Process;
+      Status : out Command_Line.Exit_Status);
+   procedure Wait (
+      Child : Process);
 
    procedure Shell (
       Command_Line : String;
