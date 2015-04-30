@@ -1,13 +1,12 @@
 pragma License (Unrestricted);
---  extended unit specialized for Windows
+--  implementation unit specialized for Windows
 with Ada.Command_Line;
 with Ada.IO_Exceptions;
-with Ada.Streams.Stream_IO.Standard_Files;
+with Ada.Streams.Naked_Stream_IO;
+with C.winbase;
+with C.winnt;
 private with Ada.Finalization;
-private with C.winbase;
-private with C.winnt;
-package Ada.Processes is
-   --  This package provides the way to execute new child process.
+package System.Native_Processes is
 
    type Process is limited private;
 
@@ -16,35 +15,17 @@ package Ada.Processes is
       Command_Line : String;
       Directory : String := "";
       Search_Path : Boolean := False;
-      Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Input.all;
-      Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Output.all;
-      Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Error.all);
-   function Create (
-      Command_Line : String;
-      Directory : String := "";
-      Search_Path : Boolean := False;
-      Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Input.all;
-      Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Output.all;
-      Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Error.all)
-      return Process;
+      Input : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Output : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Error : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type);
 
-   procedure Wait (
+   procedure Do_Wait (
       Child : Process;
       Status : out Ada.Command_Line.Exit_Status);
-   procedure Wait (
-      Child : Process);
 
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);
-   procedure Shell (
-      Command_Line : String);
 
    procedure Append_Argument (
       Command_Line : in out String;
@@ -82,4 +63,4 @@ private
 
    type Process is new Controlled.Process;
 
-end Ada.Processes;
+end System.Native_Processes;

@@ -230,6 +230,7 @@ procedure ext_doc is
 				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   --")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   pragma")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  pragma")
+					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   use type")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  use")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   type")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  type")

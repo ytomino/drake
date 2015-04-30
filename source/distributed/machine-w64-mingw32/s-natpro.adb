@@ -1,13 +1,12 @@
 with Ada.Exception_Identification.From_Here;
-with Ada.Streams.Naked_Stream_IO;
-with Ada.Streams.Stream_IO.Naked;
+with Ada.Streams.Naked_Stream_IO.Standard_Files;
 with System.Native_IO;
 with System.Zero_Terminated_WStrings;
 with C.windef;
 with C.winerror;
-package body Ada.Processes is
-   use Exception_Identification.From_Here;
-   use type Command_Line.Exit_Status;
+package body System.Native_Processes is
+   use Ada.Exception_Identification.From_Here;
+   use type Ada.Command_Line.Exit_Status;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
@@ -20,17 +19,14 @@ package body Ada.Processes is
       Command_Line : String;
       Directory : String := "";
       Search_Path : Boolean := False;
-      Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Input.all;
-      Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Output.all;
-      Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Error.all)
+      Input : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Output : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Error : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type)
    is
       pragma Unreferenced (Search_Path);
       W_Command_Line : aliased C.winnt.WCHAR_array (
          0 ..
-         Command_Line'Length * System.Zero_Terminated_WStrings.Expanding);
+         Command_Line'Length * Zero_Terminated_WStrings.Expanding);
       W_Directory : aliased C.winnt.WCHAR_array (0 .. Directory'Length);
       Directory_Ref : access constant C.winnt.WCHAR;
       Startup_Info : aliased C.winbase.STARTUPINFO;
@@ -38,7 +34,7 @@ package body Ada.Processes is
       Current_Process : constant C.winnt.HANDLE := C.winbase.GetCurrentProcess;
       subtype Handle_Index is Integer range 0 .. 2;
       Source_Files : array (Handle_Index) of
-         access Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+         access constant Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Target_Handles : array (Handle_Index) of C.winnt.HANDLE;
       Duplicated_Handles : array (Handle_Index) of aliased C.winnt.HANDLE;
       Result : C.windef.WINBOOL;
@@ -46,15 +42,17 @@ package body Ada.Processes is
       C.winbase.GetStartupInfo (Startup_Info'Access);
       Startup_Info.dwFlags := C.winbase.STARTF_USESTDHANDLES
          or C.winbase.STARTF_FORCEOFFFEEDBACK;
-      Source_Files (0) := Streams.Stream_IO.Naked.Non_Controlled (Input);
-      Source_Files (1) := Streams.Stream_IO.Naked.Non_Controlled (Output);
-      Source_Files (2) := Streams.Stream_IO.Naked.Non_Controlled (Error);
+      Source_Files (0) := Input'Access;
+      Source_Files (1) := Output'Access;
+      Source_Files (2) := Error'Access;
       for I in Handle_Index loop
          declare
             Source_Handle : constant C.winnt.HANDLE :=
-               Streams.Naked_Stream_IO.Handle (Source_Files (I).all);
+               Ada.Streams.Naked_Stream_IO.Handle (Source_Files (I).all);
          begin
-            if Streams.Naked_Stream_IO.Is_Standard (Source_Files (I).all) then
+            if Ada.Streams.Naked_Stream_IO.Is_Standard (
+               Source_Files (I).all)
+            then
                Duplicated_Handles (I) := C.winbase.INVALID_HANDLE_VALUE;
                Target_Handles (I) := Source_Handle;
             else
@@ -76,11 +74,11 @@ package body Ada.Processes is
       Startup_Info.hStdInput := Target_Handles (0);
       Startup_Info.hStdOutput := Target_Handles (1);
       Startup_Info.hStdError := Target_Handles (2);
-      System.Zero_Terminated_WStrings.To_C (
+      Zero_Terminated_WStrings.To_C (
          Command_Line,
          W_Command_Line (0)'Access);
       if Directory'Length > 0 then
-         System.Zero_Terminated_WStrings.To_C (
+         Zero_Terminated_WStrings.To_C (
             Directory,
             W_Directory (0)'Access);
          Directory_Ref := W_Directory (0)'Access;
@@ -94,7 +92,7 @@ package body Ada.Processes is
          lpThreadAttributes => null,
          bInheritHandles => 1,
          dwCreationFlags => 0,
-         lpEnvironment => C.windef.LPVOID (System.Null_Address),
+         lpEnvironment => C.windef.LPVOID (Null_Address),
          lpCurrentDirectory => Directory_Ref,
          lpStartupInfo => Startup_Info'Access,
          lpProcessInformation => Process_Info'Access);
@@ -115,7 +113,7 @@ package body Ada.Processes is
                   | C.winerror.ERROR_INVALID_NAME =>
                   Raise_Exception (Name_Error'Identity);
                when others =>
-                  Raise_Exception (System.Native_IO.IO_Exception_Id (Error));
+                  Raise_Exception (Native_IO.IO_Exception_Id (Error));
             end case;
          end;
       else
@@ -126,33 +124,9 @@ package body Ada.Processes is
       end if;
    end Create;
 
-   function Create (
-      Command_Line : String;
-      Directory : String := "";
-      Search_Path : Boolean := False;
-      Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Input.all;
-      Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Output.all;
-      Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Error.all)
-      return Process is
-   begin
-      return Result : Process do
-         Create (
-            Result,
-            Command_Line,
-            Directory,
-            Search_Path,
-            Input,
-            Output,
-            Error);
-      end return;
-   end Create;
-
-   procedure Wait (
+   procedure Do_Wait (
       Child : Process;
-      Status : out Command_Line.Exit_Status)
+      Status : out Ada.Command_Line.Exit_Status)
    is
       Handle : constant C.winnt.HANDLE := Reference (Child).all;
    begin
@@ -170,41 +144,28 @@ package body Ada.Processes is
                Raise_Exception (Use_Error'Identity);
             end if;
             if Exit_Code < Max then
-               Status := Command_Line.Exit_Status (Exit_Code);
+               Status := Ada.Command_Line.Exit_Status (Exit_Code);
             else
                --  terminated by an unhandled exception
-               Status := Command_Line.Exit_Status'Last;
+               Status := Ada.Command_Line.Exit_Status'Last;
             end if;
          end;
       end if;
-   end Wait;
-
-   procedure Wait (
-      Child : Process)
-   is
-      Dummy : Command_Line.Exit_Status;
-      pragma Unreferenced (Dummy);
-   begin
-      Wait (Child, Dummy);
-   end Wait;
+   end Do_Wait;
 
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status)
    is
       --  unimplemented, should use ShellExecute
-      P : constant Process := Create (Command_Line, Search_Path => True);
+      P : Process;
    begin
-      Wait (P, Status);
-   end Shell;
-
-   procedure Shell (
-      Command_Line : String)
-   is
-      Dummy : Ada.Command_Line.Exit_Status;
-      pragma Unreferenced (Dummy);
-   begin
-      Shell (Command_Line, Dummy);
+      Create (P, Command_Line,
+         Search_Path => True,
+         Input => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Input,
+         Output => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Output,
+         Error => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Error);
+      Do_Wait (P, Status);
    end Shell;
 
    procedure Append_Argument (
@@ -273,4 +234,4 @@ package body Ada.Processes is
 
    end Controlled;
 
-end Ada.Processes;
+end System.Native_Processes;

@@ -3,9 +3,9 @@ pragma License (Unrestricted);
 package Ada.Streams.Naked_Stream_IO.Standard_Files is
    pragma Elaborate_Body;
 
-   Standard_Input : constant Non_Controlled_File_Type;
-   Standard_Output : constant Non_Controlled_File_Type;
-   Standard_Error : constant Non_Controlled_File_Type;
+   Standard_Input : aliased constant Non_Controlled_File_Type;
+   Standard_Output : aliased constant Non_Controlled_File_Type;
+   Standard_Error : aliased constant Non_Controlled_File_Type;
 
 private
 
@@ -86,11 +86,11 @@ private
       Closer => null,
       Dispatcher => (Tags.No_Tag, null));
 
-   Standard_Input : constant Non_Controlled_File_Type :=
+   Standard_Input : aliased constant Non_Controlled_File_Type :=
       Standard_Input_Stream'Access;
-   Standard_Output : constant Non_Controlled_File_Type :=
+   Standard_Output : aliased constant Non_Controlled_File_Type :=
       Standard_Output_Stream'Access;
-   Standard_Error : constant Non_Controlled_File_Type :=
+   Standard_Error : aliased constant Non_Controlled_File_Type :=
       Standard_Error_Stream'Access;
 
 end Ada.Streams.Naked_Stream_IO.Standard_Files;
