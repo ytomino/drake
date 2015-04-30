@@ -36,7 +36,7 @@ package Ada.Processes is
 
    procedure Wait (
       Child : Process;
-      Status : out Command_Line.Exit_Status);
+      Status : out Ada.Command_Line.Exit_Status);
    procedure Wait (
       Child : Process);
 
@@ -52,11 +52,11 @@ package Ada.Processes is
       Argument : String);
 
    Name_Error : exception
-      renames IO_Exceptions.Name_Error;
+      renames Ada.IO_Exceptions.Name_Error;
    Use_Error : exception
-      renames IO_Exceptions.Use_Error;
+      renames Ada.IO_Exceptions.Use_Error;
    Device_Error : exception
-      renames IO_Exceptions.Device_Error;
+      renames Ada.IO_Exceptions.Device_Error;
 
 private
 
@@ -71,7 +71,7 @@ private
    private
 
       type Process is
-         limited new Finalization.Limited_Controlled with
+         limited new Ada.Finalization.Limited_Controlled with
       record
          Handle : aliased C.winnt.HANDLE := C.winbase.INVALID_HANDLE_VALUE;
       end record;
