@@ -13,7 +13,7 @@ package System.Native_IO.Sockets is
    function Resolve (Host_Name : String; Port : Port_Number)
       return End_Point;
 
-   procedure Connect (Handle : out Handle_Type; Peer : End_Point);
+   procedure Connect (Handle : aliased out Handle_Type; Peer : End_Point);
 
    procedure Finalize (Item : End_Point);
 

@@ -100,7 +100,7 @@ package body System.Native_IO.Sockets is
       return Get (C_Host_Name (0)'Access, Service (0)'Access, Hints'Access);
    end Resolve;
 
-   procedure Connect (Handle : out Handle_Type; Peer : End_Point) is
+   procedure Connect (Handle : aliased out Handle_Type; Peer : End_Point) is
       I : C.netdb.struct_addrinfo_ptr := Peer;
    begin
       while I /= null loop

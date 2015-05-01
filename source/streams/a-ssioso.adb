@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Exceptions.Finally;
 with Ada.Streams.Stream_IO.Naked;
 with System.Native_IO;
 package body Ada.Streams.Stream_IO.Sockets is
@@ -45,8 +46,26 @@ package body Ada.Streams.Stream_IO.Sockets is
    end Resolve;
 
    procedure Connect (File : in out File_Type; Peer : End_Point) is
-      Handle : System.Native_IO.Handle_Type;
+      procedure Finally (X : not null access System.Native_IO.Handle_Type);
+      procedure Finally (X : not null access System.Native_IO.Handle_Type) is
+         Dummy_Name : aliased System.Native_IO.Name_String :=
+            (0 => System.Native_IO.Name_Character'Val (0));
+      begin
+         if X.all /= System.Native_IO.Invalid_Handle then
+            System.Native_IO.Close_Ordinary (
+               X.all,
+               Dummy_Name (0)'Unchecked_Access,
+               Raise_On_Error => False);
+         end if;
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            System.Native_IO.Handle_Type,
+            Finally);
+      Handle : aliased System.Native_IO.Handle_Type :=
+         System.Native_IO.Invalid_Handle;
    begin
+      Holder.Assign (Handle'Access);
       System.Native_IO.Sockets.Connect (
          Handle,
          Reference (Peer).all);
@@ -58,6 +77,8 @@ package body Ada.Streams.Stream_IO.Sockets is
             Append_File, -- Inout
             Handle,
             To_Close => True);
+         --  complete
+         Holder.Clear;
       end if;
    end Connect;
 

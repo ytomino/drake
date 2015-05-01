@@ -148,7 +148,7 @@ package body System.Native_IO.Sockets is
       end;
    end Resolve;
 
-   procedure Connect (Handle : out Handle_Type; Peer : End_Point) is
+   procedure Connect (Handle : aliased out Handle_Type; Peer : End_Point) is
       function Cast is
          new Ada.Unchecked_Conversion (
             C.psdk_inc.qsocket_types.SOCKET,
