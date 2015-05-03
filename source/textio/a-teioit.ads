@@ -40,7 +40,7 @@ private
    type Lines_Type is limited new Finalization.Limited_Controlled with record
       File : File_Access;
       Item : String_Access;
-      Line : Count;
+      Count : Natural;
    end record;
 
    overriding procedure Finalize (Object : in out Lines_Type);
@@ -48,7 +48,7 @@ private
    type Lines_Access is access all Lines_Type;
    for Lines_Access'Storage_Size use 0;
 
-   type Line_Cursor is new Count;
+   type Line_Cursor is new Natural;
 
    type Line_Iterator is
       new Lines_Iterator_Interfaces.Forward_Iterator with
