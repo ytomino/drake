@@ -1,5 +1,4 @@
-pragma Check_Policy (Validate, Off);
-pragma Check_Policy (Trace, Disable);
+pragma Check_Policy (Trace => Disable, Validate => Ignore);
 --  with Ada;
 with System.Shared_Locking;
 --  with System.Storage_Elements.Formatting;

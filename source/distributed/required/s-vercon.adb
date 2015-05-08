@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with System.Formatting;
 package body System.Version_Control is
 

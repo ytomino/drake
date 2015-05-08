@@ -1,5 +1,4 @@
-pragma Check_Policy (Trace, Off);
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Trace => Ignore, Validate => Ignore);
 with Ada.Float;
 package body Ada.Colors is
    pragma Suppress (All_Checks);

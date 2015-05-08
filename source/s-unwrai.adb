@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with System.Startup;
 with System.Storage_Elements;
 with System.Synchronous_Control;

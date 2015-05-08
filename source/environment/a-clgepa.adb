@@ -1,7 +1,7 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 package body Ada.Command_Line.Generic_Parsing is
-   pragma Check_Policy (Trace, Off); -- inside of package because generic
+   pragma Check_Policy (Trace => Ignore); -- inside of package because generic
 
    procedure Finally (Context : not null access Argument_Context_Access);
    procedure Finally (Context : not null access Argument_Context_Access) is

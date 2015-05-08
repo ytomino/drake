@@ -1,6 +1,6 @@
 --  reference:
 --  http://www.loc.gov/standards/iso639-2/php/code_list.php
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Locales.Inside;
 with System.Once;
 package body Ada.Locales is

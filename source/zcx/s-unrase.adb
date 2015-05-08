@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada.Unchecked_Conversion;
 with System.Unwind.Representation;
 with System.Unwind.Searching;

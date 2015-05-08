@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Numerics.Initiator;
 with Ada.Numerics.SFMT.Random.Inside;
 with System.Formatting;

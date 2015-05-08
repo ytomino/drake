@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada;
 with C.stdlib;
 with C.sys.mman;

@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 package body System.Tasking.Protected_Objects.Entries is
 
    procedure Cancel_Call (Call : not null Node_Access);

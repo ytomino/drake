@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada.Command_Line;
 with Ada.Environment_Variables;
 with Ada.Processes;

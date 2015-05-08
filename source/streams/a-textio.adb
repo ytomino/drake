@@ -18,7 +18,7 @@
 --     68cd50941308f5a9/5d2b3f163916189c#5d2b3f163916189c
 --
 --  ***************************************************************************
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Streams.Naked_Stream_IO;

@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Forward_Iterators is
 

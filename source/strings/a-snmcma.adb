@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.UCD.Simple_Case_Mapping;
 with System.Once;
 with System.Reference_Counting;

@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Containers.Array_Sorting;
 --  diff (Ada.Unchecked_Conversion)
 with Ada.Unchecked_Deallocation;

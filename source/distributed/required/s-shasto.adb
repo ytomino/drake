@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 package body System.Shared_Storage is
 
    function Nop (Key : String)

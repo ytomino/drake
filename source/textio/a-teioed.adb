@@ -1,5 +1,4 @@
-pragma Check_Policy (Validate, Off);
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore, Validate => Ignore);
 with Ada.Exception_Identification.From_Here;
 with Ada.Text_IO.Formatting;
 with System.Formatting.Decimal;

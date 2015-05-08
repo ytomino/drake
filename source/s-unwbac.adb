@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada;
 with System.Formatting.Address;
 with System.Runtime_Information;

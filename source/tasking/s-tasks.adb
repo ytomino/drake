@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;

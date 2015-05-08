@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Numerics.Initiator;
 with System.Storage_Elements;
 with System.Formatting;

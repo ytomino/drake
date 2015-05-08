@@ -1,6 +1,6 @@
 --  reference:
 --  http://www.unicode.org/reports/tr15/
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Characters.Conversions;
 with Ada.UCD.Normalization;
 with System.Once;

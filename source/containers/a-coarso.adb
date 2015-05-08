@@ -1,6 +1,6 @@
 --  reference:
 --  http://thomas.baudel.name/Visualisation/VisuTri/inplacestablesort.html
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 package body Ada.Containers.Array_Sorting is
 
    function GCD (X, Y : Positive) return Positive;
