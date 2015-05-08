@@ -36,12 +36,15 @@ package body Ada.Text_IO.Enumeration_IO is
       Item : out Enum);
    procedure Get_From_Field (
       From : String;
-      Item : out Enum) is
+      Item : out Enum)
+   is
+      B : Enum'Base;
    begin
-      Item := Enum'Value (From);
-      if Item < Enum'First or else Item > Enum'Last then
+      B := Enum'Base'Value (From);
+      if B not in Enum then
          raise Data_Error;
       end if;
+      Item := B;
    exception
       when Constraint_Error =>
          raise Data_Error;
