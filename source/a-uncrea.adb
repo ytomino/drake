@@ -9,7 +9,7 @@ procedure Ada.Unchecked_Reallocation (
    First_Index : Index_Type;
    Last_Index : Index_Type'Base)
 is
-   pragma Check_Policy (Trace => Disable); -- ignored if placed outside ???
+   pragma Check_Policy (Trace => Disable);
    pragma Suppress (All_Checks);
    use type Tags.Tag;
    Old_First_Index : constant Index_Type := X.all'First;

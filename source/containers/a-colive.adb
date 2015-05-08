@@ -1,9 +1,9 @@
-pragma Check_Policy (Validate => Ignore);
 with Ada.Containers.Array_Sorting;
 --  diff (Ada.Unchecked_Conversion)
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Limited_Vectors is
+   pragma Check_Policy (Validate => Ignore);
 --  diff
 
 --  diff (Element_Array_Access)

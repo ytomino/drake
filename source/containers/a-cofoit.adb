@@ -1,6 +1,6 @@
-pragma Check_Policy (Validate => Ignore);
 with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Forward_Iterators is
+   pragma Check_Policy (Validate => Ignore);
 
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Node, Node_Access);
