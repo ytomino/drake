@@ -1,5 +1,5 @@
 with System.Formatting.Literals;
-with System.Value_Error;
+with System.Value_Errors;
 package body System.Val_Uns is
    pragma Suppress (All_Checks);
 
@@ -19,7 +19,7 @@ package body System.Val_Uns is
             return Result;
          end if;
       end if;
-      Value_Error ("Unsigned", Str);
+      Value_Errors.Raise_Value_Failure ("Unsigned", Str);
    end Value_Unsigned;
 
 end System.Val_Uns;

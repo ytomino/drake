@@ -1,5 +1,5 @@
 with System.Formatting.Literals;
-with System.Value_Error;
+with System.Value_Errors;
 package body System.Val_LLU is
    pragma Suppress (All_Checks);
 
@@ -21,7 +21,7 @@ package body System.Val_LLU is
             return Result;
          end if;
       end if;
-      Value_Error ("Long_Long_Unsigned", Str);
+      Value_Errors.Raise_Value_Failure ("Long_Long_Unsigned", Str);
    end Value_Long_Long_Unsigned;
 
 end System.Val_LLU;

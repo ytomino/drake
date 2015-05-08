@@ -1,5 +1,5 @@
 with System.Formatting.Literals.Float;
-with System.Value_Error;
+with System.Value_Errors;
 package body System.Val_Dec is
    pragma Suppress (All_Checks);
 
@@ -15,7 +15,7 @@ package body System.Val_Dec is
             return Integer (Result * 10.0 ** Scale);
          end if;
       end if;
-      Value_Error ("Decimal", Str);
+      Value_Errors.Raise_Value_Failure ("Decimal", Str);
    end Value_Decimal;
 
 end System.Val_Dec;

@@ -1,5 +1,5 @@
 with System.Formatting.Literals.Float;
-with System.Value_Error;
+with System.Value_Errors;
 package body System.Val_Real is
    pragma Suppress (All_Checks);
 
@@ -15,7 +15,7 @@ package body System.Val_Real is
             return Result;
          end if;
       end if;
-      Value_Error ("Float", Str);
+      Value_Errors.Raise_Value_Failure ("Float", Str);
    end Value_Real;
 
 end System.Val_Real;

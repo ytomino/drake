@@ -1,7 +1,7 @@
 with System.Formatting;
 with System.Img_Char;
 with System.Val_Enum;
-with System.Value_Error;
+with System.Value_Errors;
 package body System.Val_Char is
    pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
@@ -56,7 +56,7 @@ package body System.Val_Char is
             end if;
          end;
       end if;
-      Value_Error ("Character", Str);
+      Value_Errors.Raise_Value_Failure ("Character", Str);
    end Value_Character;
 
    procedure Get_Named (
