@@ -19,7 +19,13 @@ package body System.Val_Uns is
             return Result;
          end if;
       end if;
-      Value_Errors.Raise_Value_Failure ("Unsigned", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Unsigned", Str);
+      declare
+         Uninitialized : Unsigned_Types.Unsigned;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Unsigned;
 
 end System.Val_Uns;

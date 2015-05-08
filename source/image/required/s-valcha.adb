@@ -56,7 +56,13 @@ package body System.Val_Char is
             end if;
          end;
       end if;
-      Value_Errors.Raise_Value_Failure ("Character", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Character", Str);
+      declare
+         Uninitialized : Character;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Character;
 
    procedure Get_Named (

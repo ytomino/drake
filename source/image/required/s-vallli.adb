@@ -15,7 +15,13 @@ package body System.Val_LLI is
             return Result;
          end if;
       end if;
-      Value_Errors.Raise_Value_Failure ("Long_Long_Integer", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Long_Long_Integer", Str);
+      declare
+         Uninitialized : Long_Long_Integer;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Long_Long_Integer;
 
 end System.Val_LLI;

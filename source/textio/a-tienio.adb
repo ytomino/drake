@@ -1,4 +1,6 @@
+with Ada.Exceptions.Finally;
 with Ada.Text_IO.Formatting;
+with System.Runtime_Context;
 package body Ada.Text_IO.Enumeration_IO is
 
    procedure Put_To_Field (
@@ -38,16 +40,32 @@ package body Ada.Text_IO.Enumeration_IO is
       From : String;
       Item : out Enum)
    is
+      procedure Finally (
+         TLS : not null access System.Runtime_Context.Task_Local_Storage);
+      procedure Finally (
+         TLS : not null access System.Runtime_Context.Task_Local_Storage) is
+      begin
+         TLS.No_Discrete_Value_Failure_Propagation := False;
+      end Finally;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            System.Runtime_Context.Task_Local_Storage,
+            Finally);
+      TLS : constant
+         not null System.Runtime_Context.Task_Local_Storage_Access :=
+         System.Runtime_Context.Get_Task_Local_Storage;
       B : Enum'Base;
    begin
+      Holder.Assign (TLS);
+      TLS.No_Discrete_Value_Failure_Propagation := True;
+      TLS.Discrete_Value_Failure := False;
+      --  dispatching
       B := Enum'Base'Value (From);
-      if B not in Enum then
+      --  checking
+      if TLS.Discrete_Value_Failure or else B not in Enum then
          raise Data_Error;
       end if;
       Item := B;
-   exception
-      when Constraint_Error =>
-         raise Data_Error;
    end Get_From_Field;
 
    --  implementation

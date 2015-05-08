@@ -11,6 +11,8 @@ package System.Runtime_Context is
       SEH : Address; -- Win32 only
       Machine_Occurrence : Unwind.Representation.Machine_Occurrence_Access;
       Secondary_Occurrence : aliased Unwind.Representation.Machine_Occurrence;
+      No_Discrete_Value_Failure_Propagation : Boolean;
+      Discrete_Value_Failure : Boolean;
    end record;
    pragma Suppress_Initialization (Task_Local_Storage);
    type Task_Local_Storage_Access is access all Task_Local_Storage;

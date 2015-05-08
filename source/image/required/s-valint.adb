@@ -15,7 +15,13 @@ package body System.Val_Int is
             return Result;
          end if;
       end if;
-      Value_Errors.Raise_Value_Failure ("Integer", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Integer", Str);
+      declare
+         Uninitialized : Integer;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Integer;
 
 end System.Val_Int;
