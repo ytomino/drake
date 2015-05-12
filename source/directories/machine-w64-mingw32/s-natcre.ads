@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 package System.Native_Credentials is
    pragma Preelaborate;
 

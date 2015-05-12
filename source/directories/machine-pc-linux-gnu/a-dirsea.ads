@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit for Ada.Directories
+--  implementation unit specialized for Linux
 with Ada.Exception_Identification;
 with Ada.IO_Exceptions;
 with Ada.Streams;

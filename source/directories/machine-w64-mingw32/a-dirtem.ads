@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Windows
 with Ada.IO_Exceptions;
 package Ada.Directories.Temporary is
    --  There are subprograms to create temporary file or directory.

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 with System.Native_Calendar;
 with C.winbase;
 package Ada.Directories.Inside is

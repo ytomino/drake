@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Linux
 private with C.sys.statvfs;
 package Ada.Directories.Volumes is
    --  File system information.

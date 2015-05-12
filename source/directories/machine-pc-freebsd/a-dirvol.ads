@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for FreeBSD
 private with C.sys.mount;
 package Ada.Directories.Volumes is
    --  File system information.
