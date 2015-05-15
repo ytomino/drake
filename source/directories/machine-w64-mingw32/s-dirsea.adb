@@ -4,9 +4,9 @@ with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.winerror;
-package body Ada.Directory_Searching is
-   use Exception_Identification.From_Here;
-   use type System.Storage_Elements.Storage_Offset;
+package body System.Directory_Searching is
+   use Ada.Exception_Identification.From_Here;
+   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
    use type C.size_t;
    use type C.windef.DWORD;
@@ -14,7 +14,7 @@ package body Ada.Directory_Searching is
    use type C.winnt.WCHAR;
 
    package WIN32_FIND_DATA_ptr_Conv is
-      new System.Address_To_Named_Access_Conversions (
+      new Address_To_Named_Access_Conversions (
          C.winbase.WIN32_FIND_DATA,
          C.winbase.struct_WIN32_FIND_DATAW_ptr);
 
@@ -48,7 +48,7 @@ package body Ada.Directory_Searching is
       Result : Directory_Entry_Access;
    begin
       Result := WIN32_FIND_DATA_ptr_Conv.To_Pointer (
-         System.Standard_Allocators.Allocate (
+         Standard_Allocators.Allocate (
             C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
       Result.all := Source.all;
       return Result;
@@ -56,7 +56,7 @@ package body Ada.Directory_Searching is
 
    procedure Free (X : in out Directory_Entry_Access) is
    begin
-      System.Standard_Allocators.Free (
+      Standard_Allocators.Free (
          WIN32_FIND_DATA_ptr_Conv.To_Address (X));
       X := null;
    end Free;
@@ -76,12 +76,12 @@ package body Ada.Directory_Searching is
          Wildcard : C.winnt.WCHAR_array (
             0 ..
             (Directory'Length + Pattern'Length)
-               * System.Zero_Terminated_WStrings.Expanding
+               * Zero_Terminated_WStrings.Expanding
                + 1); -- '/'
          Wildcard_Length : C.size_t;
       begin
          --  compose wildcard
-         System.Zero_Terminated_WStrings.To_C (
+         Zero_Terminated_WStrings.To_C (
             Directory,
             Wildcard (0)'Access,
             Wildcard_Length);
@@ -93,7 +93,7 @@ package body Ada.Directory_Searching is
                   C.winnt.WCHAR'Val (Character'Pos ('\'));
                Wildcard_Length := Wildcard_Length + 1;
          end case;
-         System.Zero_Terminated_WStrings.To_C (
+         Zero_Terminated_WStrings.To_C (
             Pattern,
             Wildcard (Wildcard_Length)'Access);
          --  start search
@@ -146,7 +146,7 @@ package body Ada.Directory_Searching is
    is
       Handle : constant C.winnt.HANDLE := Search.Handle;
    begin
-      Search.Handle := Handle_Type (System.Null_Address);
+      Search.Handle := Handle_Type (Null_Address);
       if Handle /= C.winbase.INVALID_HANDLE_VALUE then
          if C.winbase.FindClose (Handle) = 0 then
             if Raise_On_Error then
@@ -189,7 +189,7 @@ package body Ada.Directory_Searching is
    function Simple_Name (Directory_Entry : not null Directory_Entry_Access)
       return String is
    begin
-      return System.Zero_Terminated_WStrings.Value (
+      return Zero_Terminated_WStrings.Value (
          Directory_Entry.cFileName (0)'Access);
    end Simple_Name;
 
@@ -203,7 +203,7 @@ package body Ada.Directory_Searching is
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
-      return Streams.Stream_Element_Count
+      return Ada.Streams.Stream_Element_Count
    is
       pragma Unreferenced (Directory);
       pragma Unreferenced (Additional);
@@ -212,14 +212,14 @@ package body Ada.Directory_Searching is
          LowPart => Directory_Entry.nFileSizeLow,
          HighPart => Directory_Entry.nFileSizeHigh);
    begin
-      return Streams.Stream_Element_Count (U.QuadPart);
+      return Ada.Streams.Stream_Element_Count (U.QuadPart);
    end Size;
 
    function Modification_Time (
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
-      return System.Native_Calendar.Native_Time
+      return Native_Calendar.Native_Time
    is
       pragma Unreferenced (Directory);
       pragma Unreferenced (Additional);
@@ -243,7 +243,7 @@ package body Ada.Directory_Searching is
    end To_File_Kind;
 
    function IO_Exception_Id (Error : C.windef.DWORD)
-      return Exception_Identification.Exception_Id is
+      return Ada.Exception_Identification.Exception_Id is
    begin
       case Error is
          when C.winerror.ERROR_WRITE_FAULT
@@ -257,7 +257,7 @@ package body Ada.Directory_Searching is
    end IO_Exception_Id;
 
    function Named_IO_Exception_Id (Error : C.windef.DWORD)
-      return Exception_Identification.Exception_Id is
+      return Ada.Exception_Identification.Exception_Id is
    begin
       case Error is
          when C.winerror.ERROR_FILE_NOT_FOUND
@@ -269,4 +269,4 @@ package body Ada.Directory_Searching is
       end case;
    end Named_IO_Exception_Id;
 
-end Ada.Directory_Searching;
+end System.Directory_Searching;

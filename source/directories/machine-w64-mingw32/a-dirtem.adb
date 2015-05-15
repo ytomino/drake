@@ -12,7 +12,7 @@ package body Ada.Directories.Temporary is
 
    function Named_IO_Exception_Id (errno : C.windef.DWORD)
       return Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames System.Directory_Searching.Named_IO_Exception_Id;
 
    TMP : aliased constant C.winnt.WCHAR_array (0 .. 3) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('T')),

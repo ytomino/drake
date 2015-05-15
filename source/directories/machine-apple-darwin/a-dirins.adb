@@ -19,7 +19,7 @@ package body Ada.Directories.Inside is
 
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames System.Directory_Searching.Named_IO_Exception_Id;
 
    procedure Get_Information (
       Name : String;
@@ -221,8 +221,9 @@ package body Ada.Directories.Inside is
    function Kind (Information : Directory_Entry_Information_Type)
       return File_Kind is
    begin
-      return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
-         Directory_Searching.To_File_Kind (Information.st_mode)));
+      return File_Kind'Enum_Val (
+         System.Directory_Searching.File_Kind'Enum_Rep (
+            System.Directory_Searching.To_File_Kind (Information.st_mode)));
    end Kind;
 
    function Size (Information : Directory_Entry_Information_Type)

@@ -5,9 +5,9 @@ with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.fnmatch;
-package body Ada.Directory_Searching is
-   use Exception_Identification.From_Here;
-   use type System.Storage_Elements.Storage_Offset;
+package body System.Directory_Searching is
+   use Ada.Exception_Identification.From_Here;
+   use type Storage_Elements.Storage_Offset;
    use type C.char;
    use type C.signed_int;
    use type C.unsigned_char; -- d_namelen in FreeBSD
@@ -17,17 +17,17 @@ package body Ada.Directory_Searching is
    use type C.sys.types.mode_t;
 
    package char_ptr_Conv is
-      new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
 
    package dirent_ptr_Conv is
-      new System.Address_To_Named_Access_Conversions (
+      new Address_To_Named_Access_Conversions (
          C.dirent.struct_dirent,
          C.sys.dirent.struct_dirent_ptr);
 
    procedure memcpy (
       dst : not null C.sys.dirent.struct_dirent_ptr;
       src : not null C.sys.dirent.struct_dirent_ptr;
-      n : System.Storage_Elements.Storage_Count);
+      n : Storage_Elements.Storage_Count);
    pragma Import (Intrinsic, memcpy, "__builtin_memcpy");
 
    --  implementation
@@ -38,18 +38,18 @@ package body Ada.Directory_Searching is
       Result : Directory_Entry_Access;
    begin
       Result := dirent_ptr_Conv.To_Pointer (
-         System.Standard_Allocators.Allocate (
-            System.Storage_Elements.Storage_Count (Source.d_reclen)));
+         Standard_Allocators.Allocate (
+            Storage_Elements.Storage_Count (Source.d_reclen)));
       memcpy (
          Result,
          Source,
-         System.Storage_Elements.Storage_Count (Source.d_reclen));
+         Storage_Elements.Storage_Count (Source.d_reclen));
       return Result;
    end New_Directory_Entry;
 
    procedure Free (X : in out Directory_Entry_Access) is
    begin
-      System.Standard_Allocators.Free (dirent_ptr_Conv.To_Address (X));
+      Standard_Allocators.Free (dirent_ptr_Conv.To_Address (X));
       X := null;
    end Free;
 
@@ -67,9 +67,9 @@ package body Ada.Directory_Searching is
       declare
          C_Directory : C.char_array (
             0 ..
-            Directory'Length * System.Zero_Terminated_Strings.Expanding);
+            Directory'Length * Zero_Terminated_Strings.Expanding);
       begin
-         System.Zero_Terminated_Strings.To_C (
+         Zero_Terminated_Strings.To_C (
             Directory,
             C_Directory (0)'Access);
          Search.Handle := C.dirent.opendir (C_Directory (0)'Access);
@@ -82,11 +82,11 @@ package body Ada.Directory_Searching is
          Pattern_Length : constant Natural := Pattern'Length;
       begin
          Search.Pattern := char_ptr_Conv.To_Pointer (
-            System.Standard_Allocators.Allocate (
-               System.Storage_Elements.Storage_Offset (
-                  Pattern_Length * System.Zero_Terminated_Strings.Expanding)
+            Standard_Allocators.Allocate (
+               Storage_Elements.Storage_Offset (
+                  Pattern_Length * Zero_Terminated_Strings.Expanding)
                + 1)); -- NUL
-         System.Zero_Terminated_Strings.To_C (Pattern, Search.Pattern);
+         Zero_Terminated_Strings.To_C (Pattern, Search.Pattern);
       end;
       Get_Next_Entry (Search, Directory_Entry, Has_Next_Entry);
    end Start_Search;
@@ -98,7 +98,7 @@ package body Ada.Directory_Searching is
       Handle : constant C.dirent.DIR_ptr := Search.Handle;
    begin
       Search.Handle := null;
-      System.Standard_Allocators.Free (
+      Standard_Allocators.Free (
          char_ptr_Conv.To_Address (Search.Pattern));
       Search.Pattern := null;
       if C.dirent.closedir (Handle) < 0 then
@@ -147,7 +147,7 @@ package body Ada.Directory_Searching is
    function Simple_Name (Directory_Entry : not null Directory_Entry_Access)
       return String is
    begin
-      return System.Zero_Terminated_Strings.Value (
+      return Zero_Terminated_Strings.Value (
          Directory_Entry.d_name (0)'Access,
          C.size_t (Directory_Entry.d_namlen));
    end Simple_Name;
@@ -164,7 +164,7 @@ package body Ada.Directory_Searching is
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
-      return Streams.Stream_Element_Count is
+      return Ada.Streams.Stream_Element_Count is
    begin
       if not Additional.Filled then
          Get_Information (
@@ -173,14 +173,15 @@ package body Ada.Directory_Searching is
             Additional.Information);
          Additional.Filled := True;
       end if;
-      return Streams.Stream_Element_Offset (Additional.Information.st_size);
+      return Ada.Streams.Stream_Element_Offset (
+         Additional.Information.st_size);
    end Size;
 
    function Modification_Time (
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
-      return System.Native_Calendar.Native_Time is
+      return Native_Calendar.Native_Time is
    begin
       if not Additional.Filled then
          Get_Information (
@@ -212,13 +213,13 @@ package body Ada.Directory_Searching is
       S_Length : constant C.size_t := C.size_t (Directory_Entry.d_namlen);
       Full_Name : C.char_array (
          0 ..
-         Directory'Length * System.Zero_Terminated_Strings.Expanding
+         Directory'Length * Zero_Terminated_Strings.Expanding
             + 1 -- '/'
             + S_Length);
       Full_Name_Length : C.size_t;
    begin
       --  compose
-      System.Zero_Terminated_Strings.To_C (
+      Zero_Terminated_Strings.To_C (
          Directory,
          Full_Name (0)'Access,
          Full_Name_Length);
@@ -238,7 +239,7 @@ package body Ada.Directory_Searching is
    end Get_Information;
 
    function IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id is
+      return Ada.Exception_Identification.Exception_Id is
    begin
       case errno is
          when C.errno.EIO =>
@@ -249,7 +250,7 @@ package body Ada.Directory_Searching is
    end IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id is
+      return Ada.Exception_Identification.Exception_Id is
    begin
       case errno is
          when C.errno.ENOENT
@@ -262,4 +263,4 @@ package body Ada.Directory_Searching is
       end case;
    end Named_IO_Exception_Id;
 
-end Ada.Directory_Searching;
+end System.Directory_Searching;

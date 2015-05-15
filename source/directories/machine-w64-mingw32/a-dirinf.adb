@@ -15,11 +15,11 @@ package body Ada.Directories.Information is
 
    function IO_Exception_Id (errno : C.windef.DWORD)
       return Exception_Identification.Exception_Id
-      renames Directory_Searching.IO_Exception_Id;
+      renames System.Directory_Searching.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.windef.DWORD)
       return Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames System.Directory_Searching.Named_IO_Exception_Id;
 
    function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
 

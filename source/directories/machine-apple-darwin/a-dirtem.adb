@@ -13,11 +13,11 @@ package body Ada.Directories.Temporary is
 
    function IO_Exception_Id (errno : C.signed_int)
       return Exception_Identification.Exception_Id
-      renames Directory_Searching.IO_Exception_Id;
+      renames System.Directory_Searching.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames System.Directory_Searching.Named_IO_Exception_Id;
 
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);

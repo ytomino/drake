@@ -12,7 +12,7 @@ package body Ada.Directories.Volumes is
 
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames System.Directory_Searching.Named_IO_Exception_Id;
 
    --  implementation
 

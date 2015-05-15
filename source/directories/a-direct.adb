@@ -7,7 +7,7 @@ with System.Native_Calendar;
 with System.Storage_Elements;
 package body Ada.Directories is
    use Exception_Identification.From_Here;
-   use type Directory_Searching.Handle_Type;
+   use type System.Directory_Searching.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
 
    procedure Free is new Unchecked_Deallocation (String, String_Access);
@@ -63,7 +63,7 @@ package body Ada.Directories is
       Raise_On_Error : Boolean) is
    begin
       Free (Search.Path);
-      Directory_Searching.End_Search (
+      System.Directory_Searching.End_Search (
          Search.Search,
          Raise_On_Error => Raise_On_Error);
    end End_Search;
@@ -82,7 +82,7 @@ package body Ada.Directories is
             not null access Non_Controlled_Directory_Entry_Type :=
             Reference (Search.Next_Directory_Entry);
       begin
-         Directory_Searching.Get_Next_Entry (
+         System.Directory_Searching.Get_Next_Entry (
             Search.Search,
             NC_Directory_Entry.Directory_Entry,
             Has_Next);
@@ -238,10 +238,12 @@ package body Ada.Directories is
       Filter : Filter_Type := (others => True))
    is
       function Cast is new
-         Unchecked_Conversion (Filter_Type, Directory_Searching.Filter_Type);
+         Unchecked_Conversion (
+            Filter_Type,
+            System.Directory_Searching.Filter_Type);
       Has_Next : Boolean;
    begin
-      if Search.Search.Handle /= Directory_Searching.Null_Handle then
+      if Search.Search.Handle /= System.Directory_Searching.Null_Handle then
          Raise_Exception (Status_Error'Identity);
       end if;
       Search.Next_Is_Queried := True;
@@ -252,7 +254,7 @@ package body Ada.Directories is
             not null access Non_Controlled_Directory_Entry_Type :=
             Reference (Search.Next_Directory_Entry);
       begin
-         Directory_Searching.Start_Search (
+         System.Directory_Searching.Start_Search (
             Search.Search,
             Directory,
             Pattern,
@@ -282,7 +284,7 @@ package body Ada.Directories is
 
    procedure End_Search (Search : in out Search_Type) is
    begin
-      if Search.Search.Handle = Directory_Searching.Null_Handle then
+      if Search.Search.Handle = System.Directory_Searching.Null_Handle then
          Raise_Exception (Status_Error'Identity);
       end if;
       End_Search (Search, Raise_On_Error => True);
@@ -290,7 +292,7 @@ package body Ada.Directories is
 
    function More_Entries (Search : Search_Type) return Boolean is
    begin
-      if Search.Search.Handle = Directory_Searching.Null_Handle then
+      if Search.Search.Handle = System.Directory_Searching.Null_Handle then
          Raise_Exception (Status_Error'Identity);
       end if;
       if not Search.Next_Is_Queried then
@@ -308,7 +310,7 @@ package body Ada.Directories is
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Search.Next_Directory_Entry);
    begin
-      if Search.Search.Handle = Directory_Searching.Null_Handle
+      if Search.Search.Handle = System.Directory_Searching.Null_Handle
          or else Source_NC_Directory_Entry.Status = Empty
       then
          Raise_Exception (Status_Error'Identity);
@@ -332,7 +334,7 @@ package body Ada.Directories is
 
    overriding procedure Finalize (Search : in out Search_Type) is
    begin
-      if Search.Search.Handle /= Directory_Searching.Null_Handle then
+      if Search.Search.Handle /= System.Directory_Searching.Null_Handle then
          End_Search (Search, Raise_On_Error => False);
       end if;
    end Finalize;
@@ -379,7 +381,7 @@ package body Ada.Directories is
             Target_NC_Directory_Entry.Path :=
                new String'(Source_NC_Directory_Entry.Path.all);
             Target_NC_Directory_Entry.Directory_Entry :=
-               Directory_Searching.New_Directory_Entry (
+               System.Directory_Searching.New_Directory_Entry (
                   Source_NC_Directory_Entry.Directory_Entry);
             Target_NC_Directory_Entry.Additional.Filled := False;
             Target_NC_Directory_Entry.Status := Detached;
@@ -406,7 +408,7 @@ package body Ada.Directories is
 
    overriding function First (Object : Search_Iterator) return Cursor is
    begin
-      if Object.Search.Search.Handle = Directory_Searching.Null_Handle
+      if Object.Search.Search.Handle = System.Directory_Searching.Null_Handle
          or else Object.Search.Count /= 1
       then
          Raise_Exception (Status_Error'Identity);
@@ -445,7 +447,7 @@ package body Ada.Directories is
       if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return Directory_Searching.Simple_Name (
+      return System.Directory_Searching.Simple_Name (
          NC_Directory_Entry.Directory_Entry);
    end Simple_Name;
 
@@ -468,8 +470,10 @@ package body Ada.Directories is
       if NC_Directory_Entry.Status = Empty then
          Raise_Exception (Status_Error'Identity);
       end if;
-      return File_Kind'Enum_Val (Directory_Searching.File_Kind'Enum_Rep (
-         Directory_Searching.Kind (NC_Directory_Entry.Directory_Entry)));
+      return File_Kind'Enum_Val (
+         System.Directory_Searching.File_Kind'Enum_Rep (
+            System.Directory_Searching.Kind (
+               NC_Directory_Entry.Directory_Entry)));
    end Kind;
 
    function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
@@ -482,7 +486,7 @@ package body Ada.Directories is
                not null access Non_Controlled_Directory_Entry_Type :=
                Reference (Directory_Entry);
          begin
-            return Directory_Searching.Size (
+            return System.Directory_Searching.Size (
                NC_Directory_Entry.Path.all,
                NC_Directory_Entry.Directory_Entry,
                NC_Directory_Entry.Additional);
@@ -502,7 +506,7 @@ package body Ada.Directories is
          Raise_Exception (Status_Error'Identity);
       end if;
       return Cast (System.Native_Calendar.To_Time (
-         Directory_Searching.Modification_Time (
+         System.Directory_Searching.Modification_Time (
             NC_Directory_Entry.Path.all,
             NC_Directory_Entry.Directory_Entry,
             NC_Directory_Entry.Additional)));
@@ -520,7 +524,7 @@ package body Ada.Directories is
       begin
          if Object.Data.Status = Detached then
             Free (Object.Data.Path);
-            Directory_Searching.Free (Object.Data.Directory_Entry);
+            System.Directory_Searching.Free (Object.Data.Directory_Entry);
          end if;
       end Finalize;
 

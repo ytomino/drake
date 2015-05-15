@@ -1,17 +1,15 @@
 pragma License (Unrestricted);
---  implementation unit specialized for Darwin (or FreeBSD)
+--  implementation unit specialized for Windows
 with Ada.Exception_Identification;
 with Ada.IO_Exceptions;
 with Ada.Streams;
 with System.Native_Calendar;
-with C.dirent;
-with C.sys.dirent;
-with C.sys.stat;
-with C.sys.types;
-private package Ada.Directory_Searching is
-   pragma Preelaborate;
+with C.winbase;
+with C.windef;
+with C.winnt;
+package System.Directory_Searching is
 
-   subtype Directory_Entry_Access is C.sys.dirent.struct_dirent_ptr;
+   subtype Directory_Entry_Access is C.winbase.struct_WIN32_FIND_DATAW_ptr;
 
    function New_Directory_Entry (Source : not null Directory_Entry_Access)
       return not null Directory_Entry_Access;
@@ -20,7 +18,6 @@ private package Ada.Directory_Searching is
 
    type Directory_Entry_Additional_Type is record
       Filled : Boolean;
-      Information : aliased C.sys.stat.struct_stat;
    end record;
    pragma Suppress_Initialization (Directory_Entry_Additional_Type);
 
@@ -32,14 +29,14 @@ private package Ada.Directory_Searching is
    pragma Pack (Filter_Type);
    pragma Suppress_Initialization (Filter_Type);
 
-   subtype Handle_Type is C.dirent.DIR_ptr;
+   subtype Handle_Type is C.winnt.HANDLE;
 
-   Null_Handle : constant Handle_Type := null;
+   Null_Handle : constant Handle_Type := Handle_Type (Null_Address);
 
    type Search_Type is record
-      Handle : C.dirent.DIR_ptr;
-      Pattern : C.char_ptr;
+      Handle : C.winnt.HANDLE;
       Filter : Filter_Type;
+      Directory_Entry : aliased C.winbase.WIN32_FIND_DATA;
    end record;
    pragma Suppress_Initialization (Search_Type);
 
@@ -70,36 +67,31 @@ private package Ada.Directory_Searching is
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
-      return Streams.Stream_Element_Count;
+      return Ada.Streams.Stream_Element_Count;
 
    function Modification_Time (
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
       Additional : aliased in out Directory_Entry_Additional_Type)
-      return System.Native_Calendar.Native_Time;
+      return Native_Calendar.Native_Time;
 
    --  for Ada.Directories
 
-   function To_File_Kind (mode : C.sys.types.mode_t) return File_Kind;
-
-   procedure Get_Information (
-      Directory : String;
-      Directory_Entry : not null Directory_Entry_Access;
-      Information : aliased out C.sys.stat.struct_stat);
+   function To_File_Kind (Attributes : C.windef.DWORD) return File_Kind;
 
    --  exceptions
 
-   function IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id;
+   function IO_Exception_Id (Error : C.windef.DWORD)
+      return Ada.Exception_Identification.Exception_Id;
 
-   function Named_IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id;
+   function Named_IO_Exception_Id (Error : C.windef.DWORD)
+      return Ada.Exception_Identification.Exception_Id;
 
    Name_Error : exception
-      renames IO_Exceptions.Name_Error;
+      renames Ada.IO_Exceptions.Name_Error;
    Use_Error : exception
-      renames IO_Exceptions.Use_Error;
+      renames Ada.IO_Exceptions.Use_Error;
    Device_Error : exception
       renames Ada.IO_Exceptions.Device_Error;
 
-end Ada.Directory_Searching;
+end System.Directory_Searching;
