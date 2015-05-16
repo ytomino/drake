@@ -10,6 +10,9 @@ package Ada.Directories.Temporary is
    function Temporary_Directory return String;
    procedure Set_Temporary_Directory (Name : String);
 
+   pragma Inline (Temporary_Directory); -- renamed
+   pragma Inline (Set_Temporary_Directory); -- renamed
+
    --  creating new entries
 
    function Create_Temporary_File (
@@ -18,6 +21,9 @@ package Ada.Directories.Temporary is
    function Create_Temporary_Directory (
       Directory : String := Temporary_Directory)
       return String;
+
+   pragma Inline (Create_Temporary_File); -- renamed
+   pragma Inline (Create_Temporary_Directory); -- renamed
 
    --  exceptions
 
