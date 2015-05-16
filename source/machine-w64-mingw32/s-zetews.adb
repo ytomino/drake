@@ -1,4 +1,3 @@
-pragma License (Unrestricted);
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 with C.string;

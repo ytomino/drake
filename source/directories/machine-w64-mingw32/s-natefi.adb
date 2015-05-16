@@ -1,4 +1,3 @@
-pragma License (Unrestricted);
 with Ada.Exception_Identification.From_Here;
 with System.Directory_Searching;
 with System.Zero_Terminated_WStrings;
