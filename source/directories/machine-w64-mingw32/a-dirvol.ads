@@ -12,6 +12,7 @@ package Ada.Directories.Volumes is
 
    function Size (FS : File_System) return File_Size;
    function Free_Space (FS : File_System) return File_Size;
+
    function Format_Name (FS : File_System) return String;
    function Directory (FS : File_System) return String; -- root directory
    function Device (FS : File_System) return String; -- GUID name

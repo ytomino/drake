@@ -8,13 +8,8 @@ package System.Native_Temporary_Files is
    function Temporary_Directory return String;
    procedure Set_Temporary_Directory (Name : String);
 
-   function Create_Temporary_File (
-      Directory : String)
-      return String;
-
-   function Create_Temporary_Directory (
-      Directory : String)
-      return String;
+   function Create_Temporary_File (Directory : String) return String;
+   function Create_Temporary_Directory (Directory : String) return String;
 
    Use_Error : exception
       renames Ada.IO_Exceptions.Use_Error;

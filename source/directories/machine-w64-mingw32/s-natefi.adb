@@ -52,10 +52,7 @@ package body System.Native_Temporary_Files is
       end if;
    end Set_Temporary_Directory;
 
-   function Create_Temporary_File (
-      Directory : String)
-      return String
-   is
+   function Create_Temporary_File (Directory : String) return String is
       W_Directory : C.winnt.WCHAR_array (
          0 ..
          Directory'Length * Zero_Terminated_WStrings.Expanding);
@@ -73,10 +70,7 @@ package body System.Native_Temporary_Files is
       return Zero_Terminated_WStrings.Value (Result (0)'Access);
    end Create_Temporary_File;
 
-   function Create_Temporary_Directory (
-      Directory : String)
-      return String
-   is
+   function Create_Temporary_Directory (Directory : String) return String is
       Name : constant String := Create_Temporary_File (Directory);
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..

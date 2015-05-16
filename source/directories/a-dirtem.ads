@@ -15,7 +15,6 @@ package Ada.Directories.Temporary is
    function Create_Temporary_File (
       Directory : String := Temporary_Directory)
       return String;
-
    function Create_Temporary_Directory (
       Directory : String := Temporary_Directory)
       return String;
