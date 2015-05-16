@@ -1,10 +1,12 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Hierarchical_File_Names;
+with System.Directory_Searching;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdlib;
 with C.unistd;
-package body Ada.Directories.Temporary is
-   use Exception_Identification.From_Here;
+package body System.Native_Temporary_Files is
+   use Ada.Exception_Identification.From_Here;
    use type C.char;
    use type C.char_array;
    use type C.char_ptr;
@@ -12,12 +14,12 @@ package body Ada.Directories.Temporary is
    use type C.size_t;
 
    function IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.IO_Exception_Id;
+      return Ada.Exception_Identification.Exception_Id
+      renames Directory_Searching.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
+      return Ada.Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
 
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
@@ -30,7 +32,7 @@ package body Ada.Directories.Temporary is
       Length : in out C.size_t) is
    begin
       if Length > 0
-         and then not Hierarchical_File_Names.Is_Path_Delimiter (
+         and then not Ada.Hierarchical_File_Names.Is_Path_Delimiter (
             Character (S (Length - 1)))
       then
          S (Length) := '/';
@@ -46,18 +48,18 @@ package body Ada.Directories.Temporary is
       Temp_Dir := C.stdlib.getenv (
          Temp_Variable (Temp_Variable'First)'Access);
       if Temp_Dir = null then
-         return Current_Directory;
+         return "."; -- Is_Current_Directory_Name (".") = True
       else
-         return System.Zero_Terminated_Strings.Value (Temp_Dir);
+         return Zero_Terminated_Strings.Value (Temp_Dir);
       end if;
    end Temporary_Directory;
 
    procedure Set_Temporary_Directory (Name : String) is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       if C.stdlib.setenv (
          Temp_Variable (Temp_Variable'First)'Access,
          C_Name (C_Name'First)'Access,
@@ -67,17 +69,15 @@ package body Ada.Directories.Temporary is
       end if;
    end Set_Temporary_Directory;
 
-   function Create_Temporary_File (
-      Directory : String := Temporary_Directory) return String
-   is
+   function Create_Temporary_File (Directory : String) return String is
       Template : C.char_array (
          0 ..
-         Directory'Length * System.Zero_Terminated_Strings.Expanding
+         Directory'Length * Zero_Terminated_Strings.Expanding
             + 1 -- '/'
             + Temp_Template'Length);
       Length : C.size_t;
    begin
-      System.Zero_Terminated_Strings.To_C (
+      Zero_Terminated_Strings.To_C (
          Directory,
          Template (0)'Access,
          Length);
@@ -100,22 +100,20 @@ package body Ada.Directories.Temporary is
             Raise_Exception (IO_Exception_Id (C.errno.errno));
          end if;
       end;
-      return System.Zero_Terminated_Strings.Value (
+      return Zero_Terminated_Strings.Value (
          Template (0)'Access,
          Length);
    end Create_Temporary_File;
 
-   function Create_Temporary_Directory (
-      Directory : String := Temporary_Directory) return String
-   is
+   function Create_Temporary_Directory (Directory : String) return String is
       Template : C.char_array (
          0 ..
-         Directory'Length * System.Zero_Terminated_Strings.Expanding
+         Directory'Length * Zero_Terminated_Strings.Expanding
             + 1 -- '/'
             + Temp_Template'Length);
       Length : C.size_t;
    begin
-      System.Zero_Terminated_Strings.To_C (
+      Zero_Terminated_Strings.To_C (
          Directory,
          Template (0)'Access,
          Length);
@@ -135,9 +133,9 @@ package body Ada.Directories.Temporary is
             Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
          end if;
       end;
-      return System.Zero_Terminated_Strings.Value (
+      return Zero_Terminated_Strings.Value (
          Template (0)'Access,
          Length);
    end Create_Temporary_Directory;
 
-end Ada.Directories.Temporary;
+end System.Native_Temporary_Files;

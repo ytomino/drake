@@ -8,6 +8,7 @@ with C.winbase;
 with C.windef;
 with C.winnt;
 package System.Directory_Searching is
+   pragma Preelaborate;
 
    subtype Directory_Entry_Access is C.winbase.struct_WIN32_FIND_DATAW_ptr;
 
