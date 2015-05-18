@@ -1,33 +1,29 @@
 with Ada.Exception_Identification.From_Here;
+with System.Directory_Searching;
 with System.Zero_Terminated_Strings;
 with C.errno;
-package body Ada.Directories.Volumes is
-   use Exception_Identification.From_Here;
+package body System.File_Systems is
+   use Ada.Exception_Identification.From_Here;
    use type File_Size;
    use type C.signed_int;
    use type C.size_t;
 
    function Named_IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
+      return Ada.Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
 
    --  implementation
 
-   function Where (Name : String) return File_System is
+   procedure Get (Name : String; FS : aliased out File_System) is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
-      return Result : File_System do
-         if C.sys.statvfs.statvfs64 (
-            C_Name (0)'Access,
-            Result.Info'Access) < 0
-         then
-            Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
-         end if;
-      end return;
-   end Where;
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      if C.sys.statvfs.statvfs64 (C_Name (0)'Access, FS.Info'Access) < 0 then
+         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
+      end if;
+   end Get;
 
    function Size (FS : File_System) return File_Size is
    begin
@@ -57,4 +53,10 @@ package body Ada.Directories.Volumes is
       return False;
    end Is_HFS;
 
-end Ada.Directories.Volumes;
+   function Reference (Item : Root_File_System)
+      return not null access File_System is
+   begin
+      return Item.Data'Unrestricted_Access;
+   end Reference;
+
+end System.File_Systems;

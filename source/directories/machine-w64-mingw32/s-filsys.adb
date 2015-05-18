@@ -1,15 +1,16 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
+with System.Directory_Searching;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.string;
 with C.winbase;
 with C.winerror;
-package body Ada.Directories.Volumes is
-   use Exception_Identification.From_Here;
+package body System.File_Systems is
+   use Ada.Exception_Identification.From_Here;
    use type File_Size;
-   use type System.Storage_Elements.Storage_Offset;
+   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
    use type C.size_t;
    use type C.windef.DWORD;
@@ -18,15 +19,15 @@ package body Ada.Directories.Volumes is
    use type C.winnt.WCHAR;
 
    function IO_Exception_Id (errno : C.windef.DWORD)
-      return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.IO_Exception_Id;
+      return Ada.Exception_Identification.Exception_Id
+      renames Directory_Searching.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.windef.DWORD)
-      return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
+      return Ada.Exception_Identification.Exception_Id
+      renames Directory_Searching.Named_IO_Exception_Id;
 
    package Conv is
-      new System.Address_To_Named_Access_Conversions (
+      new Address_To_Named_Access_Conversions (
          C.winnt.WCHAR,
          C.winnt.LPWSTR);
 
@@ -76,14 +77,17 @@ package body Ada.Directories.Volumes is
 
    --  implementation
 
-   function Where (Name : String) return File_System is
+   procedure Get (
+      Name : String;
+      FS : aliased out Non_Controlled_File_System)
+   is
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
-         Name'Length * System.Zero_Terminated_WStrings.Expanding);
+         Name'Length * Zero_Terminated_WStrings.Expanding);
       Root_Path : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
       Root_Path_Length : C.size_t;
    begin
-      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.GetVolumePathName (
          W_Name (0)'Access,
          Root_Path (0)'Access,
@@ -92,35 +96,29 @@ package body Ada.Directories.Volumes is
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
       Root_Path_Length := C.string.wcslen (Root_Path (0)'Access);
-      return Result : File_System do
-         declare
-            pragma Suppress (Alignment_Check);
-            NC_Result : constant not null access Non_Controlled_File_System :=
-               Reference (Result);
-            Dest : constant System.Address :=
-               System.Standard_Allocators.Allocate (
-                  System.Storage_Elements.Storage_Count (
-                     NC_Result.Root_Path_Length + 1)
-                  * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
-            Dest_A : C.winnt.WCHAR_array (C.size_t);
-            for Dest_A'Address use Dest;
-         begin
-            NC_Result.Root_Path_Length := Root_Path_Length;
-            Dest_A (0 .. Root_Path_Length) :=
-               Root_Path (0 .. Root_Path_Length);
-            NC_Result.Root_Path := Conv.To_Pointer (Dest);
-         end;
-      end return;
-   end Where;
+      declare
+         pragma Suppress (Alignment_Check);
+         Dest : constant Address :=
+            Standard_Allocators.Allocate (
+               Storage_Elements.Storage_Count (Root_Path_Length + 1)
+               * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+         Dest_A : C.winnt.WCHAR_array (C.size_t);
+         for Dest_A'Address use Dest;
+      begin
+         FS.Root_Path_Length := Root_Path_Length;
+         Dest_A (0 .. Root_Path_Length) := Root_Path (0 .. Root_Path_Length);
+         FS.Root_Path := Conv.To_Pointer (Dest);
+      end;
+      FS.FileSystemFlags_Valid := False;
+      FS.Is_NTFS_Valid := False;
+   end Get;
 
    function Size (FS : File_System) return File_Size is
-      NC_FS : constant not null access Non_Controlled_File_System :=
-         Reference (FS);
       FreeBytesAvailable : aliased C.winnt.ULARGE_INTEGER;
       TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
    begin
       if C.winbase.GetDiskFreeSpaceEx (
-         NC_FS.Root_Path,
+         FS.Root_Path,
          FreeBytesAvailable'Access,
          TotalNumberOfBytes'Access,
          null) = 0
@@ -131,13 +129,11 @@ package body Ada.Directories.Volumes is
    end Size;
 
    function Free_Space (FS : File_System) return File_Size is
-      NC_FS : constant not null access Non_Controlled_File_System :=
-         Reference (FS);
       FreeBytesAvailable : aliased C.winnt.ULARGE_INTEGER;
       TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
    begin
       if C.winbase.GetDiskFreeSpaceEx (
-         NC_FS.Root_Path,
+         FS.Root_Path,
          FreeBytesAvailable'Access,
          TotalNumberOfBytes'Access,
          null) = 0
@@ -147,34 +143,28 @@ package body Ada.Directories.Volumes is
       return File_Size (FreeBytesAvailable.QuadPart);
    end Free_Space;
 
-   function Format_Name (FS : File_System) return String is
-      NC_FS : constant not null access Non_Controlled_File_System :=
-         Reference (FS);
+   function Format_Name (FS : aliased in out File_System) return String is
       FileSystem : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       GetVolumeInformation (
-         NC_FS.all,
+         FS,
          FileSystem (0)'Access,
          FileSystem'Length);
-      return System.Zero_Terminated_WStrings.Value (FileSystem (0)'Access);
+      return Zero_Terminated_WStrings.Value (FileSystem (0)'Access);
    end Format_Name;
 
    function Directory (FS : File_System) return String is
-      NC_FS : constant not null access Non_Controlled_File_System :=
-         Reference (FS);
    begin
-      return System.Zero_Terminated_WStrings.Value (
-         NC_FS.Root_Path,
-         NC_FS.Root_Path_Length);
+      return Zero_Terminated_WStrings.Value (
+         FS.Root_Path,
+         FS.Root_Path_Length);
    end Directory;
 
    function Device (FS : File_System) return String is
-      NC_FS : constant not null access Non_Controlled_File_System :=
-         Reference (FS);
       VolumeName : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       if C.winbase.GetVolumeNameForVolumeMountPoint (
-         NC_FS.Root_Path,
+         FS.Root_Path,
          VolumeName (0)'Access,
          VolumeName'Length) = 0
       then
@@ -191,30 +181,25 @@ package body Ada.Directories.Volumes is
             end case;
          end;
       end if;
-      return System.Zero_Terminated_WStrings.Value (VolumeName (0)'Access);
+      return Zero_Terminated_WStrings.Value (VolumeName (0)'Access);
    end Device;
 
-   function Case_Preserving (FS : File_System) return Boolean is
-      NC_FS : constant not null access Non_Controlled_File_System :=
-         Reference (FS);
+   function Case_Preserving (FS : aliased in out File_System) return Boolean is
    begin
-      GetVolumeInformation (NC_FS.all, null, 0);
-      return (NC_FS.FileSystemFlags and C.winbase.FS_CASE_IS_PRESERVED) /= 0;
+      GetVolumeInformation (FS, null, 0);
+      return (FS.FileSystemFlags and C.winbase.FS_CASE_IS_PRESERVED) /= 0;
    end Case_Preserving;
 
-   function Case_Sensitive (FS : File_System) return Boolean is
-      NC_FS : constant not null access Non_Controlled_File_System :=
-         Reference (FS);
+   function Case_Sensitive (FS : aliased in out File_System) return Boolean is
    begin
-      if NC_FS.Is_NTFS_Valid then
+      if FS.Is_NTFS_Valid then
          --  GetVolumeInformation reports FS_CASE_SENSITIVE at NTFS
          --    though NTFS is case insensitive in the truth.
-         if NC_FS.Is_NTFS then
+         if FS.Is_NTFS then
             return False;
          else
-            GetVolumeInformation (NC_FS.all, null, 0);
-            return (NC_FS.FileSystemFlags and C.winbase.FS_CASE_SENSITIVE) /=
-               0;
+            GetVolumeInformation (FS, null, 0);
+            return (FS.FileSystemFlags and C.winbase.FS_CASE_SENSITIVE) /= 0;
          end if;
       else
          declare
@@ -222,12 +207,12 @@ package body Ada.Directories.Volumes is
                C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
          begin
             GetVolumeInformation (
-               NC_FS.all,
+               FS,
                FileSystem (0)'Access,
                FileSystem'Length);
          end;
-         return (NC_FS.FileSystemFlags and C.winbase.FS_CASE_SENSITIVE) /= 0
-            and then not NC_FS.Is_NTFS;
+         return (FS.FileSystemFlags and C.winbase.FS_CASE_SENSITIVE) /= 0
+            and then not FS.Is_NTFS;
       end if;
    end Case_Sensitive;
 
@@ -249,15 +234,15 @@ package body Ada.Directories.Volumes is
       begin
          if Object.Data.Root_Path /= null then
             declare
-               Source : constant System.Address :=
+               Source : constant Address :=
                   Conv.To_Address (Object.Data.Root_Path);
             begin
                Object.Data.Root_Path := null;
                declare
                   pragma Suppress (Alignment_Check);
-                  Dest : constant System.Address :=
-                     System.Standard_Allocators.Allocate (
-                        System.Storage_Elements.Storage_Count (
+                  Dest : constant Address :=
+                     Standard_Allocators.Allocate (
+                        Storage_Elements.Storage_Count (
                            Object.Data.Root_Path_Length + 1)
                         * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
                   Source_A : C.winnt.WCHAR_array (C.size_t);
@@ -275,10 +260,9 @@ package body Ada.Directories.Volumes is
 
       overriding procedure Finalize (Object : in out File_System) is
       begin
-         System.Standard_Allocators.Free (
-            Conv.To_Address (Object.Data.Root_Path));
+         Standard_Allocators.Free (Conv.To_Address (Object.Data.Root_Path));
       end Finalize;
 
    end Controlled;
 
-end Ada.Directories.Volumes;
+end System.File_Systems;

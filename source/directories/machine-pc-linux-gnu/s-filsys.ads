@@ -1,12 +1,19 @@
 pragma License (Unrestricted);
---  extended unit specialized for Linux
-private with C.sys.statvfs;
-package Ada.Directories.Volumes is
+--  implementation unit specialized for Linux
+with Ada.Streams;
+with C.sys.statvfs;
+package System.File_Systems is
    --  File system information.
+   pragma Preelaborate;
 
-   type File_System is private;
+   subtype File_Size is Ada.Streams.Stream_Element_Count;
 
-   function Where (Name : String) return File_System;
+   type File_System is record
+      Info : aliased C.sys.statvfs.struct_statvfs64;
+   end record;
+   pragma Suppress_Initialization (File_System);
+
+   procedure Get (Name : String; FS : aliased out File_System);
 
    function Size (FS : File_System) return File_Size;
    function Free_Space (FS : File_System) return File_Size;
@@ -31,11 +38,12 @@ package Ada.Directories.Volumes is
    pragma Import (Ada, Directory, "__drake_program_error");
    pragma Import (Ada, Device, "__drake_program_error");
 
-private
-
-   type File_System is record
-      Info : aliased C.sys.statvfs.struct_statvfs64;
+   type Root_File_System is record
+      Data : aliased File_System;
    end record;
-   pragma Suppress_Initialization (File_System);
+   pragma Suppress_Initialization (Root_File_System);
 
-end Ada.Directories.Volumes;
+   function Reference (Item : Root_File_System)
+      return not null access File_System;
+
+end System.File_Systems;

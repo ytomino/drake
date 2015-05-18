@@ -1,34 +1,15 @@
 pragma License (Unrestricted);
---  extended unit specialized for Windows
+--  implementation unit specialized for Windows
+with Ada.IO_Exceptions;
+with Ada.Streams;
+with C.windef;
+with C.winnt;
 private with Ada.Finalization;
-private with C.windef;
-private with C.winnt;
-package Ada.Directories.Volumes is
+package System.File_Systems is
    --  File system information.
+   pragma Preelaborate;
 
-   type File_System is private;
-
-   function Where (Name : String) return File_System;
-
-   function Size (FS : File_System) return File_Size;
-   function Free_Space (FS : File_System) return File_Size;
-
-   function Format_Name (FS : File_System) return String;
-   function Directory (FS : File_System) return String; -- root directory
-   function Device (FS : File_System) return String; -- GUID name
-
-   function Case_Preserving (FS : File_System) return Boolean;
-   function Case_Sensitive (FS : File_System) return Boolean;
-
-   function Is_HFS (FS : File_System) return Boolean;
-
-   pragma Inline (Is_HFS);
-
-   --  unimplemented
-   function Owner (FS : File_System) return String;
-   pragma Import (Ada, Owner, "__drake_program_error");
-
-private
+   subtype File_Size is Ada.Streams.Stream_Element_Count;
 
    type Non_Controlled_File_System is record
       Root_Path : C.winnt.LPWSTR;
@@ -40,6 +21,30 @@ private
    end record;
    pragma Suppress_Initialization (Non_Controlled_File_System);
 
+   subtype File_System is Non_Controlled_File_System;
+
+   procedure Get (
+      Name : String;
+      FS : aliased out Non_Controlled_File_System);
+
+   function Size (FS : File_System) return File_Size;
+   function Free_Space (FS : File_System) return File_Size;
+
+   function Format_Name (FS : aliased in out File_System) return String;
+   function Directory (FS : File_System) return String; -- root directory
+   function Device (FS : File_System) return String; -- GUID name
+
+   function Case_Preserving (FS : aliased in out File_System) return Boolean;
+   function Case_Sensitive (FS : aliased in out File_System) return Boolean;
+
+   function Is_HFS (FS : File_System) return Boolean;
+
+   pragma Inline (Is_HFS);
+
+   --  unimplemented
+   function Owner (FS : File_System) return String;
+   pragma Import (Ada, Owner, "__drake_program_error");
+
    package Controlled is
 
       type File_System is private;
@@ -50,7 +55,7 @@ private
 
    private
 
-      type File_System is new Finalization.Controlled with record
+      type File_System is new Ada.Finalization.Controlled with record
          Data : aliased Non_Controlled_File_System := (
             Root_Path => null,
             Root_Path_Length => 0,
@@ -65,6 +70,11 @@ private
 
    end Controlled;
 
-   type File_System is new Controlled.File_System;
+   type Root_File_System is new Controlled.File_System;
 
-end Ada.Directories.Volumes;
+   --  exceptions
+
+   Name_Error : exception
+      renames Ada.IO_Exceptions.Name_Error;
+
+end System.File_Systems;

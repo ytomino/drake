@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-private with C.sys.mount;
+private with System.File_Systems;
 package Ada.Directories.Volumes is
    --  File system information.
 
@@ -23,6 +23,6 @@ package Ada.Directories.Volumes is
 
 private
 
-   type File_System is new C.sys.mount.struct_statfs64;
+   type File_System is new System.File_Systems.Root_File_System;
 
 end Ada.Directories.Volumes;
