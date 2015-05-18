@@ -8,42 +8,44 @@ package System.File_Systems is
 
    subtype File_Size is Ada.Streams.Stream_Element_Count;
 
-   type File_System is record
+   type Non_Controlled_File_System is record
       Info : aliased C.sys.statvfs.struct_statvfs64;
    end record;
-   pragma Suppress_Initialization (File_System);
+   pragma Suppress_Initialization (Non_Controlled_File_System);
 
-   procedure Get (Name : String; FS : aliased out File_System);
+   procedure Get (
+      Name : String;
+      FS : aliased out Non_Controlled_File_System);
 
-   function Size (FS : File_System) return File_Size;
-   function Free_Space (FS : File_System) return File_Size;
+   function Size (FS : Non_Controlled_File_System) return File_Size;
+   function Free_Space (FS : Non_Controlled_File_System) return File_Size;
 
-   function Case_Preserving (FS : File_System) return Boolean;
-   function Case_Sensitive (FS : File_System) return Boolean;
+   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean;
+   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean;
 
    pragma Inline (Case_Preserving);
    pragma Inline (Case_Sensitive);
 
-   function Is_HFS (FS : File_System) return Boolean;
+   function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
 
    pragma Inline (Is_HFS);
 
    --  unimplemented
-   function Owner (FS : File_System) return String;
-   function Format_Name (FS : File_System) return String;
-   function Directory (FS : File_System) return String; -- mounted to
-   function Device (FS : File_System) return String; -- mouted from
+   function Owner (FS : Non_Controlled_File_System) return String;
+   function Format_Name (FS : Non_Controlled_File_System) return String;
+   function Directory (FS : Non_Controlled_File_System) return String;
+   function Device (FS : Non_Controlled_File_System) return String;
    pragma Import (Ada, Owner, "__drake_program_error");
    pragma Import (Ada, Format_Name, "__drake_program_error");
    pragma Import (Ada, Directory, "__drake_program_error");
    pragma Import (Ada, Device, "__drake_program_error");
 
-   type Root_File_System is record
-      Data : aliased File_System;
+   type File_System is record
+      Data : aliased Non_Controlled_File_System;
    end record;
-   pragma Suppress_Initialization (Root_File_System);
+   pragma Suppress_Initialization (File_System);
 
-   function Reference (Item : Root_File_System)
-      return not null access File_System;
+   function Reference (Item : File_System)
+      return not null access Non_Controlled_File_System;
 
 end System.File_Systems;

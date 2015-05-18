@@ -21,28 +21,29 @@ package System.File_Systems is
    end record;
    pragma Suppress_Initialization (Non_Controlled_File_System);
 
-   subtype File_System is Non_Controlled_File_System;
-
    procedure Get (
       Name : String;
       FS : aliased out Non_Controlled_File_System);
 
-   function Size (FS : File_System) return File_Size;
-   function Free_Space (FS : File_System) return File_Size;
+   function Size (FS : Non_Controlled_File_System) return File_Size;
+   function Free_Space (FS : Non_Controlled_File_System) return File_Size;
 
-   function Format_Name (FS : aliased in out File_System) return String;
-   function Directory (FS : File_System) return String; -- root directory
-   function Device (FS : File_System) return String; -- GUID name
+   function Format_Name (FS : aliased in out Non_Controlled_File_System)
+      return String;
+   function Directory (FS : Non_Controlled_File_System) return String;
+   function Device (FS : Non_Controlled_File_System) return String; -- GUID
 
-   function Case_Preserving (FS : aliased in out File_System) return Boolean;
-   function Case_Sensitive (FS : aliased in out File_System) return Boolean;
+   function Case_Preserving (FS : aliased in out Non_Controlled_File_System)
+      return Boolean;
+   function Case_Sensitive (FS : aliased in out Non_Controlled_File_System)
+      return Boolean;
 
-   function Is_HFS (FS : File_System) return Boolean;
+   function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
 
    pragma Inline (Is_HFS);
 
    --  unimplemented
-   function Owner (FS : File_System) return String;
+   function Owner (FS : Non_Controlled_File_System) return String;
    pragma Import (Ada, Owner, "__drake_program_error");
 
    package Controlled is
@@ -70,7 +71,7 @@ package System.File_Systems is
 
    end Controlled;
 
-   type Root_File_System is new Controlled.File_System;
+   type File_System is new Controlled.File_System;
 
    --  exceptions
 

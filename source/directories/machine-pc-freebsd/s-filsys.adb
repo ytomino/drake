@@ -15,7 +15,10 @@ package body System.File_Systems is
 
    --  implementation
 
-   procedure Get (Name : String; FS : aliased out File_System) is
+   procedure Get (
+      Name : String;
+      FS : aliased out Non_Controlled_File_System)
+   is
       C_Name : C.char_array (
          0 ..
          Name'Length * Zero_Terminated_Strings.Expanding);
@@ -26,56 +29,56 @@ package body System.File_Systems is
       end if;
    end Get;
 
-   function Size (FS : File_System) return File_Size is
+   function Size (FS : Non_Controlled_File_System) return File_Size is
    begin
       return File_Size (FS.f_blocks) * File_Size (FS.f_bsize);
    end Size;
 
-   function Free_Space (FS : File_System) return File_Size is
+   function Free_Space (FS : Non_Controlled_File_System) return File_Size is
    begin
       return File_Size (FS.f_bfree) * File_Size (FS.f_bsize);
    end Free_Space;
 
-   function Owner (FS : File_System) return String is
+   function Owner (FS : Non_Controlled_File_System) return String is
    begin
       return Native_Credentials.User_Name (FS.f_owner);
    end Owner;
 
-   function Format_Name (FS : File_System) return String is
+   function Format_Name (FS : Non_Controlled_File_System) return String is
    begin
       return Zero_Terminated_Strings.Value (FS.f_fstypename (0)'Access);
    end Format_Name;
 
-   function Directory (FS : File_System) return String is
+   function Directory (FS : Non_Controlled_File_System) return String is
    begin
       return Zero_Terminated_Strings.Value (FS.f_mntonname (0)'Access);
    end Directory;
 
-   function Device (FS : File_System) return String is
+   function Device (FS : Non_Controlled_File_System) return String is
    begin
       return Zero_Terminated_Strings.Value (FS.f_mntfromname (0)'Access);
    end Device;
 
-   function Case_Preserving (FS : File_System) return Boolean is
+   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean is
       pragma Unreferenced (FS);
    begin
       return True;
    end Case_Preserving;
 
-   function Case_Sensitive (FS : File_System) return Boolean is
+   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean is
       pragma Unreferenced (FS);
    begin
       return True;
    end Case_Sensitive;
 
-   function Is_HFS (FS : File_System) return Boolean is
+   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is
       pragma Unreferenced (FS);
    begin
       return False;
    end Is_HFS;
 
-   function Reference (Item : Root_File_System)
-      return not null access File_System is
+   function Reference (Item : File_System)
+      return not null access Non_Controlled_File_System is
    begin
       return Item.Data'Unrestricted_Access;
    end Reference;

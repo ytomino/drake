@@ -113,7 +113,7 @@ package body System.File_Systems is
       FS.Is_NTFS_Valid := False;
    end Get;
 
-   function Size (FS : File_System) return File_Size is
+   function Size (FS : Non_Controlled_File_System) return File_Size is
       FreeBytesAvailable : aliased C.winnt.ULARGE_INTEGER;
       TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
    begin
@@ -128,7 +128,7 @@ package body System.File_Systems is
       return File_Size (TotalNumberOfBytes.QuadPart);
    end Size;
 
-   function Free_Space (FS : File_System) return File_Size is
+   function Free_Space (FS : Non_Controlled_File_System) return File_Size is
       FreeBytesAvailable : aliased C.winnt.ULARGE_INTEGER;
       TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
    begin
@@ -143,7 +143,9 @@ package body System.File_Systems is
       return File_Size (FreeBytesAvailable.QuadPart);
    end Free_Space;
 
-   function Format_Name (FS : aliased in out File_System) return String is
+   function Format_Name (FS : aliased in out Non_Controlled_File_System)
+      return String
+   is
       FileSystem : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       GetVolumeInformation (
@@ -153,14 +155,14 @@ package body System.File_Systems is
       return Zero_Terminated_WStrings.Value (FileSystem (0)'Access);
    end Format_Name;
 
-   function Directory (FS : File_System) return String is
+   function Directory (FS : Non_Controlled_File_System) return String is
    begin
       return Zero_Terminated_WStrings.Value (
          FS.Root_Path,
          FS.Root_Path_Length);
    end Directory;
 
-   function Device (FS : File_System) return String is
+   function Device (FS : Non_Controlled_File_System) return String is
       VolumeName : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       if C.winbase.GetVolumeNameForVolumeMountPoint (
@@ -184,13 +186,15 @@ package body System.File_Systems is
       return Zero_Terminated_WStrings.Value (VolumeName (0)'Access);
    end Device;
 
-   function Case_Preserving (FS : aliased in out File_System) return Boolean is
+   function Case_Preserving (FS : aliased in out Non_Controlled_File_System)
+      return Boolean is
    begin
       GetVolumeInformation (FS, null, 0);
       return (FS.FileSystemFlags and C.winbase.FS_CASE_IS_PRESERVED) /= 0;
    end Case_Preserving;
 
-   function Case_Sensitive (FS : aliased in out File_System) return Boolean is
+   function Case_Sensitive (FS : aliased in out Non_Controlled_File_System)
+      return Boolean is
    begin
       if FS.Is_NTFS_Valid then
          --  GetVolumeInformation reports FS_CASE_SENSITIVE at NTFS
@@ -216,7 +220,7 @@ package body System.File_Systems is
       end if;
    end Case_Sensitive;
 
-   function Is_HFS (FS : File_System) return Boolean is
+   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is
       pragma Unreferenced (FS);
    begin
       return False;

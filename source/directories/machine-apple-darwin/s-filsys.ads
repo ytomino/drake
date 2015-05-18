@@ -8,7 +8,12 @@ package System.File_Systems is
 
    subtype File_Size is Ada.Streams.Stream_Element_Count;
 
-   subtype Non_Controlled_File_System is C.sys.mount.struct_statfs64;
+   type Non_Controlled_File_System is record
+      Statistics : aliased C.sys.mount.struct_statfs64;
+      Case_Sensitive : Boolean;
+      Case_Sensitive_Valid : Boolean;
+   end record;
+   pragma Suppress_Initialization (Non_Controlled_File_System);
 
    procedure Get (
       Name : String;
@@ -23,7 +28,8 @@ package System.File_Systems is
    function Device (FS : Non_Controlled_File_System) return String;
 
    function Case_Preserving (FS : Non_Controlled_File_System) return Boolean;
-   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean;
+   function Case_Sensitive (FS : aliased in out Non_Controlled_File_System)
+      return Boolean;
 
    function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
 
@@ -31,8 +37,6 @@ package System.File_Systems is
       Data : aliased Non_Controlled_File_System;
    end record;
    pragma Suppress_Initialization (File_System);
-
-   subtype Root_File_System is File_System;
 
    function Reference (Item : File_System)
       return not null access Non_Controlled_File_System;

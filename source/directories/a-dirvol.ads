@@ -23,6 +23,6 @@ package Ada.Directories.Volumes is
 
 private
 
-   type File_System is new System.File_Systems.Root_File_System;
+   type File_System is new System.File_Systems.File_System;
 
 end Ada.Directories.Volumes;
