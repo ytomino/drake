@@ -231,6 +231,12 @@ package body Ada.Directories.Volumes is
       end if;
    end Case_Sensitive;
 
+   function Is_HFS (FS : File_System) return Boolean is
+      pragma Unreferenced (FS);
+   begin
+      return False;
+   end Is_HFS;
+
    package body Controlled is
 
       function Reference (Object : File_System)

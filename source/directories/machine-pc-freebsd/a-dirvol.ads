@@ -22,6 +22,10 @@ package Ada.Directories.Volumes is
    pragma Inline (Case_Preserving);
    pragma Inline (Case_Sensitive);
 
+   function Is_HFS (FS : File_System) return Boolean;
+
+   pragma Inline (Is_HFS);
+
 private
 
    type File_System is new C.sys.mount.struct_statfs;

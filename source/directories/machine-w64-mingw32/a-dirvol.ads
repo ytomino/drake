@@ -20,6 +20,10 @@ package Ada.Directories.Volumes is
    function Case_Preserving (FS : File_System) return Boolean;
    function Case_Sensitive (FS : File_System) return Boolean;
 
+   function Is_HFS (FS : File_System) return Boolean;
+
+   pragma Inline (Is_HFS);
+
    --  unimplemented
    function Owner (FS : File_System) return String;
    pragma Import (Ada, Owner, "__drake_program_error");

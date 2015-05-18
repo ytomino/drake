@@ -70,4 +70,10 @@ package body Ada.Directories.Volumes is
       return True;
    end Case_Sensitive;
 
+   function Is_HFS (FS : File_System) return Boolean is
+      pragma Unreferenced (FS);
+   begin
+      return False;
+   end Is_HFS;
+
 end Ada.Directories.Volumes;
