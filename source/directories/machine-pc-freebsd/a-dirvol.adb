@@ -58,4 +58,16 @@ package body Ada.Directories.Volumes is
          FS.f_mntfromname (0)'Access);
    end Device;
 
+   function Case_Preserving (FS : File_System) return Boolean is
+      pragma Unreferenced (FS);
+   begin
+      return True;
+   end Case_Preserving;
+
+   function Case_Sensitive (FS : File_System) return Boolean is
+      pragma Unreferenced (FS);
+   begin
+      return True;
+   end Case_Sensitive;
+
 end Ada.Directories.Volumes;

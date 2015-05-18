@@ -458,8 +458,15 @@ package body Ada.Directories.File_Names is
       end if;
    end Push;
 
-   function HFS_Compare (Left, Right : String) return Integer;
-   function HFS_Compare (Left, Right : String) return Integer is
+   function HFS_Compare (
+      Left, Right : String;
+      Case_Sensitive : Boolean)
+      return Integer;
+   function HFS_Compare (
+      Left, Right : String;
+      Case_Sensitive : Boolean)
+      return Integer
+   is
       L_Stack : Stack_Type (1 .. Left'Length + Expanding - 1);
       R_Stack : Stack_Type (1 .. Right'Length + Expanding - 1);
       L_Top : Natural := 0;
@@ -485,11 +492,13 @@ package body Ada.Directories.File_Names is
             Push (Right, R_Index, R_Stack, R_Top);
          end if;
          declare
-            L_Code : System.UTF_Conversions.UCS_4;
-            R_Code : System.UTF_Conversions.UCS_4;
+            L_Code : System.UTF_Conversions.UCS_4 := L_Stack (L_Top);
+            R_Code : System.UTF_Conversions.UCS_4 := R_Stack (R_Top);
          begin
-            L_Code := To_Lower (L_Stack (L_Top));
-            R_Code := To_Lower (R_Stack (R_Top));
+            if not Case_Sensitive then
+               L_Code := To_Lower (L_Code);
+               R_Code := To_Lower (R_Code);
+            end if;
             if L_Code /= R_Code then
                if L_Code < R_Code then
                   return -1;
@@ -512,7 +521,7 @@ package body Ada.Directories.File_Names is
    begin
       if Volumes.Is_HFS (FS) then
          System.Once.Initialize (Flag'Access, InitCompareTables'Access);
-         return HFS_Compare (Left, Right) = 0;
+         return HFS_Compare (Left, Right, Volumes.Case_Sensitive (FS)) = 0;
       else
          return Left = Right;
       end if;
@@ -525,7 +534,7 @@ package body Ada.Directories.File_Names is
    begin
       if Volumes.Is_HFS (FS) then
          System.Once.Initialize (Flag'Access, InitCompareTables'Access);
-         return HFS_Compare (Left, Right) < 0;
+         return HFS_Compare (Left, Right, Volumes.Case_Sensitive (FS)) < 0;
       else
          return Left < Right;
       end if;

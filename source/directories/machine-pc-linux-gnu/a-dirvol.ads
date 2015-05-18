@@ -11,6 +11,12 @@ package Ada.Directories.Volumes is
    function Size (FS : File_System) return File_Size;
    function Free_Space (FS : File_System) return File_Size;
 
+   function Case_Preserving (FS : File_System) return Boolean;
+   function Case_Sensitive (FS : File_System) return Boolean;
+
+   pragma Inline (Case_Preserving);
+   pragma Inline (Case_Sensitive);
+
    --  unimplemented
    function Owner (FS : File_System) return String;
    function Format_Name (FS : File_System) return String;

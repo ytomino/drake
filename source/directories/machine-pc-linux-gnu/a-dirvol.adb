@@ -39,4 +39,16 @@ package body Ada.Directories.Volumes is
       return File_Size (FS.Info.f_bfree) * File_Size (FS.Info.f_bsize);
    end Free_Space;
 
+   function Case_Preserving (FS : File_System) return Boolean is
+      pragma Unreferenced (FS);
+   begin
+      return True;
+   end Case_Preserving;
+
+   function Case_Sensitive (FS : File_System) return Boolean is
+      pragma Unreferenced (FS);
+   begin
+      return True;
+   end Case_Sensitive;
+
 end Ada.Directories.Volumes;

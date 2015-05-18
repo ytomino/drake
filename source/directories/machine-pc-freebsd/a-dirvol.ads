@@ -16,6 +16,12 @@ package Ada.Directories.Volumes is
    function Directory (FS : File_System) return String; -- mounted to
    function Device (FS : File_System) return String; -- mouted from
 
+   function Case_Preserving (FS : File_System) return Boolean;
+   function Case_Sensitive (FS : File_System) return Boolean;
+
+   pragma Inline (Case_Preserving);
+   pragma Inline (Case_Sensitive);
+
 private
 
    type File_System is new C.sys.mount.struct_statfs;

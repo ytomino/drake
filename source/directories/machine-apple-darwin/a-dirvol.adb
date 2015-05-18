@@ -3,12 +3,18 @@ with System.Native_Credentials;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdint;
+with C.unistd;
 package body Ada.Directories.Volumes is
    use Exception_Identification.From_Here;
    use type File_Size;
    use type C.signed_int;
+   use type C.signed_long;
    use type C.size_t;
    use type C.stdint.uint32_t;
+
+   function IO_Exception_Id (errno : C.signed_int)
+      return Exception_Identification.Exception_Id
+      renames System.Directory_Searching.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Exception_Identification.Exception_Id
@@ -59,6 +65,30 @@ package body Ada.Directories.Volumes is
       return System.Zero_Terminated_Strings.Value (
          FS.f_mntfromname (0)'Access);
    end Device;
+
+   function Case_Preserving (FS : File_System) return Boolean is
+      R : C.signed_long;
+   begin
+      R := C.unistd.pathconf (
+         FS.f_mntonname (0)'Access,
+         C.unistd.PC_CASE_PRESERVING);
+      if R < 0 then
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
+      end if;
+      return R /= 0;
+   end Case_Preserving;
+
+   function Case_Sensitive (FS : File_System) return Boolean is
+      R : C.signed_long;
+   begin
+      R := C.unistd.pathconf (
+         FS.f_mntonname (0)'Access,
+         C.unistd.PC_CASE_SENSITIVE);
+      if R < 0 then
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
+      end if;
+      return R /= 0;
+   end Case_Sensitive;
 
    function Is_HFS (FS : File_System) return Boolean is
    begin
