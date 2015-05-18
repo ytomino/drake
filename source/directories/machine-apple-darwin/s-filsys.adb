@@ -15,11 +15,11 @@ package body System.File_Systems is
 
    function IO_Exception_Id (errno : C.signed_int)
       return Ada.Exception_Identification.Exception_Id
-      renames System.Directory_Searching.IO_Exception_Id;
+      renames Directory_Searching.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Ada.Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
+      renames Directory_Searching.Named_IO_Exception_Id;
 
    --  implementation
 
@@ -29,9 +29,9 @@ package body System.File_Systems is
    is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       if C.sys.mount.statfs64 (C_Name (0)'Access, FS'Access) < 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
@@ -49,23 +49,22 @@ package body System.File_Systems is
 
    function Owner (FS : Non_Controlled_File_System) return String is
    begin
-      return System.Native_Credentials.User_Name (FS.f_owner);
+      return Native_Credentials.User_Name (FS.f_owner);
    end Owner;
 
    function Format_Name (FS : Non_Controlled_File_System) return String is
    begin
-      return System.Zero_Terminated_Strings.Value (FS.f_fstypename (0)'Access);
+      return Zero_Terminated_Strings.Value (FS.f_fstypename (0)'Access);
    end Format_Name;
 
    function Directory (FS : Non_Controlled_File_System) return String is
    begin
-      return System.Zero_Terminated_Strings.Value (FS.f_mntonname (0)'Access);
+      return Zero_Terminated_Strings.Value (FS.f_mntonname (0)'Access);
    end Directory;
 
    function Device (FS : Non_Controlled_File_System) return String is
    begin
-      return System.Zero_Terminated_Strings.Value (
-         FS.f_mntfromname (0)'Access);
+      return Zero_Terminated_Strings.Value (FS.f_mntfromname (0)'Access);
    end Device;
 
    function Case_Preserving (FS : Non_Controlled_File_System) return Boolean is
