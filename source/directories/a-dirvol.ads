@@ -4,7 +4,7 @@ private with System.File_Systems;
 package Ada.Directories.Volumes is
    --  File system information.
 
-   type File_System is private;
+   type File_System is limited private;
 
    function Where (Name : String) return File_System;
 

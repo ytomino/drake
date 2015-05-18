@@ -234,34 +234,6 @@ package body System.File_Systems is
          return Object.Data'Unrestricted_Access;
       end Reference;
 
-      overriding procedure Adjust (Object : in out File_System) is
-      begin
-         if Object.Data.Root_Path /= null then
-            declare
-               Source : constant Address :=
-                  Conv.To_Address (Object.Data.Root_Path);
-            begin
-               Object.Data.Root_Path := null;
-               declare
-                  pragma Suppress (Alignment_Check);
-                  Dest : constant Address :=
-                     Standard_Allocators.Allocate (
-                        Storage_Elements.Storage_Count (
-                           Object.Data.Root_Path_Length + 1)
-                        * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
-                  Source_A : C.winnt.WCHAR_array (C.size_t);
-                  for Source_A'Address use Source;
-                  Dest_A : C.winnt.WCHAR_array (C.size_t);
-                  for Dest_A'Address use Dest;
-               begin
-                  Dest_A (0 .. Object.Data.Root_Path_Length) :=
-                     Source_A (0 .. Object.Data.Root_Path_Length);
-                  Object.Data.Root_Path := Conv.To_Pointer (Dest);
-               end;
-            end;
-         end if;
-      end Adjust;
-
       overriding procedure Finalize (Object : in out File_System) is
       begin
          Standard_Allocators.Free (Conv.To_Address (Object.Data.Root_Path));

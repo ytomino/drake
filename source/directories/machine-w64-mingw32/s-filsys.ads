@@ -48,7 +48,7 @@ package System.File_Systems is
 
    package Controlled is
 
-      type File_System is private;
+      type File_System is limited private;
 
       function Reference (Object : File_System)
          return not null access Non_Controlled_File_System;
@@ -56,7 +56,9 @@ package System.File_Systems is
 
    private
 
-      type File_System is new Ada.Finalization.Controlled with record
+      type File_System is
+         limited new Ada.Finalization.Limited_Controlled with
+      record
          Data : aliased Non_Controlled_File_System := (
             Root_Path => null,
             Root_Path_Length => 0,
@@ -66,12 +68,11 @@ package System.File_Systems is
             Is_NTFS_Valid => False);
       end record;
 
-      overriding procedure Adjust (Object : in out File_System);
       overriding procedure Finalize (Object : in out File_System);
 
    end Controlled;
 
-   type File_System is new Controlled.File_System;
+   type File_System is limited new Controlled.File_System;
 
    --  exceptions
 
