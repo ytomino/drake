@@ -14,7 +14,7 @@ package Ada.Directories.Volumes is
    function Owner (FS : File_System) return String;
    function Format_Name (FS : File_System) return String;
    function Directory (FS : File_System) return String; -- mounted to
-   function Device (FS : File_System) return String; -- mouted from
+   function Device (FS : File_System) return String; -- mounted from
 
    function Case_Preserving (FS : File_System) return Boolean;
    function Case_Sensitive (FS : File_System) return Boolean;
