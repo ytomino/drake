@@ -14,7 +14,6 @@ package body System.Arith_64 is
    procedure unreachable
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_unreachable";
-
    pragma No_Return (unreachable);
 
    subtype U32 is Interfaces.Unsigned_32;

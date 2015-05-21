@@ -9,7 +9,6 @@ package body C.unwind_pe is
    procedure unreachable
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_unreachable";
-
    pragma No_Return (unreachable);
 
    package unsigned_char_const_ptr_Conv is

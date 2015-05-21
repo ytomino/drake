@@ -18,6 +18,7 @@ package body System.Unwind.Mapping is
       Context : C.void_ptr);
    pragma Convention (C, sigaction_Handler);
    pragma No_Return (sigaction_Handler);
+
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
       Info : access C.signal.siginfo_t;
