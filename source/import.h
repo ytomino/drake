@@ -66,6 +66,13 @@
 #include <dirent.h> /* directory searching */
 #include <fnmatch.h> /* wildcard */
 #include <termios.h> /* terminal control */
+#if defined(__APPLE__) || defined(__FreeBSD__)
+#define _SYS_SOCKIO_H_ /* sys/sockio.h has many bad macros */
+#endif
+#include <sys/ioctl.h>
+#if defined(__APPLE__) || defined(__FreeBSD__)
+#undef _SYS_SOCKIO_H_
+#endif
 #include <pthread.h> /* tasking */
 #include <dlfcn.h>
 #include <spawn.h> /* spawn */
@@ -176,6 +183,7 @@
 #pragma instance pthread_cond_t "PTHREAD_COND_INITIALIZER"
 #pragma instance pthread_once_t "PTHREAD_ONCE_INIT"
 #pragma for Ada overload int fcntl(int, int, int)
+#pragma for Ada overload int ioctl(int, unsigned long, struct winsize *)
 #if !defined(__linux__)
 #pragma for Ada overload int open(const char *, int, mode_t)
 #pragma for Ada overload int syscall(int, void *, unsigned int)
@@ -197,6 +205,7 @@
 #pragma for Ada "signal.h" include "sys/ucontext.h" /* sigset_t */
 #endif
 #pragma for Ada "sys/file.h" include "sys/fcntl.h"
+#pragma for Ada "sys/ioctl.h" include "sys/ttycom.h" /* struct winsize */
 #pragma for Ada "sys/stat.h" include "sys/fcntl.h" /* S_IF* */
 #pragma for Ada "sys/time.h" include "sys/_structs.h" /* timeval */
 #pragma for Ada "sys/ucontext.h" include "sys/_structs.h" /* ucontext_t */
@@ -232,6 +241,9 @@
 #pragma for Ada "signal.h" include "sys/select.h" /* sigset_t */
 #pragma for Ada "signal.h" include "sys/signal.h"
 #pragma for Ada "sys/file.h" include "fcntl.h"
+#pragma for Ada "sys/ioccom.h" include "sys/ttycom.h" /* struct winsize */
+#pragma for Ada "sys/ioctl.h" include "sys/ioccom.h"
+#pragma for Ada "sys/ioctl.h" include "sys/ttycom.h" /* struct winsize */
 #pragma for Ada "sys/mman.h" include "sys/types.h" /* mmap */
 #pragma for Ada "sys/time.h" include "sys/_timeval.h" /* timeval */
 #pragma for Ada "sys/uio.h" include "sys/_iovec.h" /* struct iovec */
@@ -266,6 +278,8 @@
 #pragma for Ada "signal.h" monolithic_include "bits/sigaction.h"
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
 #pragma for Ada "sys/file.h" include "bits/fcntl.h"
+#pragma for Ada "sys/ioctl.h" include "asm-generic/ioctls.h"
+#pragma for Ada "sys/ioctl.h" include "bits/ioctl-types.h"
 #pragma for Ada "sys/mman.h" include "bits/mman.h"
 #pragma for Ada "sys/resource.h" include "bits/resource.h"
 #pragma for Ada "sys/socket.h" include "bits/socket.h"

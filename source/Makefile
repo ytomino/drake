@@ -68,11 +68,11 @@ PHASE=
 
 RTSDIR=.
 IMPORTDIR=$(RTSDIR)/adainclude
-GCCLIBDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 BUILDDIR=$(RTSDIR)/adalib
 LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat.build
 NOSIG_BUILDDIR=$(BUILDDIR)/nosig.build
+NOTB_BUILDDIR=$(BUILDDIR)/notb.build
 
 SUBDIRS=ada83 calendar containers directories distributed environment hash image interfaces nls numerics pools streams strings tasking textio
 
@@ -139,8 +139,6 @@ SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGE
 	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/$(SIMDSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]) \
 	$(wildcard $(EH)/*.ad[sb]))
 
-SEPARATED=$(EH)/s-unbase.adb $(EH)/s-unrase.adb
-
 LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 
 ifdef EH # all mechanisms (zcx, sjlj, seh)
@@ -149,14 +147,14 @@ else # unknown mechanism
 EH_OBJS=
 endif
 
-COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
+COMPILER_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	$(EH_OBJS) \
-	system.o \
 	s-debug.o \
 	s-exctab.o \
 	s-foradd.o \
 	s-format.o \
 	s-maccod.o \
+	s-natall.o \
 	s-natsta.o \
 	s-runcon.o \
 	s-runinf.o \
@@ -172,17 +170,25 @@ COMPILER_OBJS= $(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-unwhan.o \
 	s-unwind.o \
 	s-unwmap.o \
+	s-unwocc.o \
 	s-unwrai.o \
 	s-unwrep.o \
 	s-unwsea.o \
-	s-unwsta.o)
+	s-unwsta.o \
+	system.o)
+
+EXTRA_OBJS=$(addprefix $(RTSDIR)/adalib/, \
+	nosig.o)
+ifneq ($(findstring darwin,$(TARGET)),)
+EXTRA_OBJS+=$(RTSDIR)/adalib/notb.o
+endif
 
 # s-maccod.o and s-stoele.o are also standard library
 
 ifneq ($(WITHA),0)
-ALL_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/,\
-	system.o \
-	$(sort $(addsuffix .o,$(basename $(notdir $(filter-out $(SEPARATED),$(SRC)))))))
+ALL_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
+	$(sort $(addsuffix .o,$(basename $(notdir $(filter %.ads,$(SRC)))))) \
+	system.o)
 else
 ALL_OBJS=$(COMPILER_OBJS)
 endif
@@ -202,7 +208,8 @@ endif
 ifeq ($(DEBUG),0)
 CFLAGS_DEBUG=
 OPTIMIZE=1
-else ifeq ($(DEBUG),1)
+else
+ifeq ($(DEBUG),1)
 CFLAGS_DEBUG=-ggdb1
 OPTIMIZE=1
 else
@@ -210,6 +217,10 @@ CFLAGS_DEBUG=-ggdb -gnata
 OPTIMIZE=0
 ifeq ($(EH),sjlj)
 CFLAGS_DEBUG+=-fno-omit-frame-pointer
+endif
+endif
+ifeq ($(OBJFMT),ELF)
+CFLAGS_DEBUG+=-Wa,--compress-debug-sections
 endif
 endif
 
@@ -245,49 +256,48 @@ endif
 
 CFLAGS=
 
-CFLAGS_FOR_COMPILER_UNIT=$(strip -pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP \
+CFLAGS_FOR_COMPILER_UNIT=$(strip \
+	-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP \
 	$(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS))
+
+TREE= \
+	$(RTSDIR)/adainclude/system.ads \
+	$(LIBRARY_SRCS) \
+	$(IMPORT_HEADERS)
 
 .PHONY: all tree import_objs c-archive
 
-all: $(RTSDIR)/adalib/libgnat.a $(RTSDIR)/adalib/nosig.o $(ALL_ALI)
+all: $(EXTRA_OBJS) $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
 
-tree: \
-		$(RTSDIR)/adainclude \
-		$(RTSDIR)/adainclude/system.ads \
-		$(LIBRARY_SRCS) \
-		$(RTSDIR)/adalib \
-		$(LIBGNAT_BUILDDIR) \
-		$(IMPORT_HEADERS)
+tree: $(TREE)
 
-$(RTSDIR)/adalib/libgnat.a: \
-		$(RTSDIR)/adainclude \
-		$(RTSDIR)/adainclude/system.ads \
-		$(LIBRARY_SRCS) \
-		$(RTSDIR)/adalib \
-		$(LIBGNAT_BUILDDIR) \
-		$(IMPORT_HEADERS) \
-		$(ALL_OBJS)
+$(RTSDIR)/adalib/libgnat.a: $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
 	-rm $@ 2> /dev/null
 	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
 
-$(RTSDIR)/adalib/nosig.o: $(NOSIG_BUILDDIR)/nosig.o
-	install -m 444 $< $@
+$(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
+	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@
+
+$(RTSDIR)/adalib/notb.o: $(TREE) $(NOTB_BUILDDIR)/notb.o | $(RTSDIR)/adalib/
+	install -m 444 $(NOTB_BUILDDIR)/notb.o $@
 
 $(RTSDIR)/adainclude:
 	mkdir -p $@
 
 $(RTSDIR)/adalib:
-	mkdir $@
+	mkdir -p $@
 
 $(LIBGNAT_BUILDDIR):
-	mkdir $@
+	mkdir -p $@
 
 $(NOSIG_BUILDDIR):
-	mkdir $@
+	mkdir -p $@
 
-$(RTSDIR)/adainclude/system.ads:
-	ln -s $(GCCLIBDIR)/adainclude/system.ads $@
+$(NOTB_BUILDDIR):
+	mkdir -p $@
+
+$(RTSDIR)/adainclude/system.ads: | $(RTSDIR)/adainclude
+	ln -s $(dir $(shell $(GCC) -print-libgcc-file-name))adainclude/system.ads $@
 
 $(RTSDIR)/adainclude/%.ads: %.ads
 	$(INSTALL) $(abspath $<) $@
@@ -534,16 +544,19 @@ $(LIBGNAT_BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 endif
 endif
 
-$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads
+$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.adb $(RTSDIR)/adainclude/%.ads | $(LIBGNAT_BUILDDIR)
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 
-$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads
+$(LIBGNAT_BUILDDIR)/%.o: $(RTSDIR)/adainclude/%.ads | $(LIBGNAT_BUILDDIR)
 	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
 
-$(NOSIG_BUILDDIR)/nosig.o: obj/nosig.ads $(NOSIG_BUILDDIR)
-	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $<
+$(NOSIG_BUILDDIR)/nosig.o: obj/nosig.ads | $(NOSIG_BUILDDIR)
+	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $(abspath $<)
 
-$(RTSDIR)/adalib/%.ali: $(LIBGNAT_BUILDDIR)/%.o
+$(NOTB_BUILDDIR)/notb.o: obj/notb.ads | $(NOTB_BUILDDIR)
+	$(GCC) $(CFLAGS_FOR_COMPILER_UNIT) -c -o $@ $(abspath $<)
+
+$(RTSDIR)/adalib/%.ali: $(LIBGNAT_BUILDDIR)/%.o | $(RTSDIR)/adalib
 	install -m 444 $(basename $<).ali $@
 
 ifeq ($(IMPORTDIR),$(RTSDIR)/adainclude)
@@ -554,6 +567,7 @@ endif
 # separated
 
 $(LIBGNAT_BUILDDIR)/s-unwbac.o : $(EH)/s-unbase.adb
+$(LIBGNAT_BUILDDIR)/s-unwocc.o : $(EH)/s-unocse.adb
 $(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
 
 # nested
@@ -561,7 +575,7 @@ $(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
 ifeq ($(PHASE),2)
 
 IMPLIB_SRC=$(wildcard $(IMPORTDIR)/c-*.ad[sb]) $(IMPORTDIR)/c.ads
-IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata c-icucore,$(sort $(basename $(notdir $(IMPLIB_SRC)))))
+IMPLIB_ITEMS=$(filter-out c-unwind_pe c-hfs_casetables c-vfs_utfconvdata c-icucore,$(basename $(notdir $(filter %.ads,$(IMPLIB_SRC)))))
 IMPLIB_OBJS=$(addsuffix .o,$(addprefix $(LIBGNAT_BUILDDIR)/,$(IMPLIB_ITEMS)))
 IMPLIB_ALI=$(addsuffix .ali,$(addprefix $(RTSDIR)/adalib/,$(IMPLIB_ITEMS)))
 
@@ -595,7 +609,7 @@ endif
 c-archive: $(IMPORTDIR)/c.ads
 ifneq ($(DESTDIR),)
 	-rm $(DESTDIR)/$(TARGET).tar.bz2 2> /dev/null
-	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/$(TARGET).tar.bz2) c.ads c-*
+	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/$(TARGET).tar.bz2) c-*.ad[sb] c.ads
 else
 	@echo please tell DESTDIR=[DIRECTORY]
 endif

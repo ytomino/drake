@@ -18,7 +18,7 @@
 --     68cd50941308f5a9/5d2b3f163916189c#5d2b3f163916189c
 --
 --  ***************************************************************************
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Streams.Naked_Stream_IO;
@@ -916,11 +916,11 @@ package body Ada.Text_IO is
       Item : out String;
       Last : out Natural) is
    begin
+      Last := Item'First - 1;
       if Item'Length > 0 then
          if End_Of_File (File) then
             Raise_Exception (End_Error'Identity);
          end if;
-         Last := Item'First - 1;
          while Last < Item'Last loop
             if End_Of_Line (File) then
                Skip_Line (File);
@@ -938,11 +938,11 @@ package body Ada.Text_IO is
       Item : out Wide_String;
       Last : out Natural) is
    begin
+      Last := Item'First - 1;
       if Item'Length > 0 then
          if End_Of_File (File) then
             Raise_Exception (End_Error'Identity);
          end if;
-         Last := Item'First - 1;
          while Last < Item'Last loop
             if End_Of_Line (File) then
                Skip_Line (File);
@@ -960,11 +960,11 @@ package body Ada.Text_IO is
       Item : out Wide_Wide_String;
       Last : out Natural) is
    begin
+      Last := Item'First - 1;
       if Item'Length > 0 then
          if End_Of_File (File) then
             Raise_Exception (End_Error'Identity);
          end if;
-         Last := Item'First - 1;
          while Last < Item'Last loop
             if End_Of_Line (File) then
                Skip_Line (File);

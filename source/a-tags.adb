@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;

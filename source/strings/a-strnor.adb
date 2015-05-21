@@ -1,6 +1,6 @@
 --  reference:
 --  http://www.unicode.org/reports/tr15/
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Characters.Conversions;
 with Ada.UCD.Normalization;
 with System.Once;
@@ -629,13 +629,12 @@ package body Ada.Strings.Normalization is
                --  encoding
                if Decomposed then
                   Encode (Buffer (1 .. Buffer_Last), Out_Item, Out_Last);
-               else
-                  Out_Last := Out_Item'First + (Last - Item'First);
-                  Out_Item (Out_Item'First .. Out_Last) :=
-                     Item (Item'First .. Last);
+                  return;
                end if;
             end;
          end if;
+         Out_Last := Out_Item'First + (Last - Item'First);
+         Out_Item (Out_Item'First .. Out_Last) := Item (Item'First .. Last);
       end Decompose_No_Length_Check;
 
       procedure Decompose (
@@ -745,13 +744,12 @@ package body Ada.Strings.Normalization is
                --  encoding
                if Decomposed or else Composed then
                   Encode (Buffer (1 .. Buffer_Last), Out_Item, Out_Last);
-               else
-                  Out_Last := Out_Item'First + (Last - Item'First);
-                  Out_Item (Out_Item'First .. Out_Last) :=
-                     Item (Item'First .. Last);
+                  return;
                end if;
             end;
          end if;
+         Out_Last := Out_Item'First + (Last - Item'First);
+         Out_Item (Out_Item'First .. Out_Last) := Item (Item'First .. Last);
       end Compose_No_Length_Check;
 
       procedure Compose (

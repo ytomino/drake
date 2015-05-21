@@ -1,5 +1,5 @@
 with System.Val_Enum;
-with System.Value_Error;
+with System.Value_Errors;
 package body System.Val_Bool is
    pragma Suppress (All_Checks);
 
@@ -25,7 +25,13 @@ package body System.Val_Bool is
             end if;
          end;
       end if;
-      Value_Error ("Boolean", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Boolean", Str);
+      declare
+         Uninitialized : Boolean;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Boolean;
 
 end System.Val_Bool;

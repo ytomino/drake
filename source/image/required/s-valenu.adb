@@ -1,4 +1,4 @@
-with System.Value_Error;
+with System.Value_Errors;
 package body System.Val_Enum is
    pragma Suppress (All_Checks);
 
@@ -34,7 +34,13 @@ package body System.Val_Enum is
             end;
          end loop;
       end;
-      Value_Error ("Enum", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Enum", Str);
+      declare
+         Uninitialized : Natural;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Enumeration_8;
 
    function Value_Enumeration_16 (
@@ -69,7 +75,13 @@ package body System.Val_Enum is
             end;
          end loop;
       end;
-      Value_Error ("Enum", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Enum", Str);
+      declare
+         Uninitialized : Natural;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Enumeration_16;
 
    function Value_Enumeration_32 (
@@ -104,7 +116,13 @@ package body System.Val_Enum is
             end;
          end loop;
       end;
-      Value_Error ("Enum", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Enum", Str);
+      declare
+         Uninitialized : Natural;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Enumeration_32;
 
    procedure Trim (S : String; First : out Positive; Last : out Natural) is

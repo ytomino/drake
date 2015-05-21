@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with C;
 package System.Zero_Terminated_Strings is
    pragma Preelaborate;

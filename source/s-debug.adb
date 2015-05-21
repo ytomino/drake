@@ -32,19 +32,18 @@ package body System.Debug is
       return Put_Hook (S, Source_Location, Enclosing_Entity);
    end Put_Impl;
 
-   procedure Runtime_Error (
-      Condition : Boolean;
+   function Runtime_Error (
       S : String;
       Source_Location : String := Debug.Source_Location;
       Enclosing_Entity : String := Debug.Enclosing_Entity)
+      return Boolean
    is
       Dummy : Boolean;
       pragma Unreferenced (Dummy);
    begin
-      if Condition then
-         Dummy := Put (S, Source_Location, Enclosing_Entity);
-         Termination.Force_Abort;
-      end if;
+      Dummy := Put (S, Source_Location, Enclosing_Entity);
+      Termination.Force_Abort;
+      return False;
    end Runtime_Error;
 
 end System.Debug;

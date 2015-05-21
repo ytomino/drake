@@ -1,1 +1,0 @@
-../machine-apple-darwin/s-staall.adb

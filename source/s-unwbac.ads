@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  optional/overridable runtime unit
 package System.Unwind.Backtrace is
    --  This package will be linked when "__gl_exception_tracebacks" is used.
    pragma Preelaborate;
@@ -13,6 +13,8 @@ package System.Unwind.Backtrace is
       with Export, -- for weak linking
          Convention => Ada, External_Name => "ada__exceptions__call_chain";
 
+   pragma No_Inline (Call_Chain);
+
    --  equivalent to Append_Info_Basic_Exception_Traceback (a-exexda.adb)
    procedure Backtrace_Information (
       X : Exception_Occurrence;
@@ -22,8 +24,12 @@ package System.Unwind.Backtrace is
       with Export, -- for weak linking
          Convention => Ada, External_Name => "__drake_backtrace_information";
 
+   pragma No_Inline (Backtrace_Information);
+
    procedure Report_Backtrace (X : Exception_Occurrence)
       with Export, -- for weak linking
          Convention => Ada, External_Name => "__drake_report_backtrace";
+
+   pragma No_Inline (Report_Backtrace);
 
 end System.Unwind.Backtrace;

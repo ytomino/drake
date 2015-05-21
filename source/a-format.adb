@@ -3,20 +3,32 @@ with System.Formatting.Fixed;
 with System.Formatting.Float;
 package body Ada.Formatting is
    pragma Suppress (All_Checks);
+   use type System.Formatting.Longest_Unsigned;
+   use type System.Formatting.Unsigned;
 
    pragma Compile_Time_Error (No_Sign /= System.Formatting.No_Sign,
       "No_Sign mismatch");
 
    function Integer_Image (Item : T) return String is
-      Abs_Item : T := Item;
+      Longest_Abs_Item : System.Formatting.Longest_Unsigned;
+      Abs_Item : System.Formatting.Unsigned;
       Result : String (
          1 ..
          4 + Long_Long_Integer'Width + Width); -- "16##"
       Last : Natural := Result'First - 1;
       Error : Boolean;
    begin
+      if T'Size > System.Formatting.Unsigned'Size then
+         Longest_Abs_Item := System.Formatting.Longest_Unsigned'Mod (Item);
+      else
+         Abs_Item := System.Formatting.Unsigned'Mod (Item);
+      end if;
       if Item < 0 then
-         Abs_Item := -Item;
+         if T'Size > System.Formatting.Unsigned'Size then
+            Longest_Abs_Item := -Longest_Abs_Item;
+         else
+            Abs_Item := -Abs_Item;
+         end if;
          if Signs (-1) /= No_Sign then
             Last := Last + 1;
             Result (Last) := Signs (-1);
@@ -43,7 +55,7 @@ package body Ada.Formatting is
       end if;
       if T'Size > System.Formatting.Unsigned'Size then
          System.Formatting.Image (
-            System.Formatting.Longest_Unsigned (Abs_Item),
+            Longest_Abs_Item,
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,
@@ -54,7 +66,7 @@ package body Ada.Formatting is
             Error => Error);
       else
          System.Formatting.Image (
-            System.Formatting.Unsigned (Abs_Item),
+            Abs_Item,
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,

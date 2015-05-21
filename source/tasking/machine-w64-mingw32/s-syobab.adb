@@ -1,6 +1,5 @@
 with Ada.Exception_Identification.From_Here;
 with System.Native_Tasks;
-with System.Native_Time;
 with System.Tasks;
 with C.winbase;
 with C.windef;
@@ -157,49 +156,5 @@ package body System.Synchronous_Objects.Abortable is
          Aborted := Tasks.Is_Aborted;
       end if;
    end Wait;
-
-   --  delay
-
-   procedure Delay_For (
-      D : Duration;
-      Aborted : out Boolean)
-   is
-      Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
-         Tasks.Abort_Attribute;
-   begin
-      if Attr /= null and then not Attr.Blocked then
-         declare
-            Temp_Event : Event := (Handle => Attr.Event);
-            Value : Boolean;
-         begin
-            Wait (Temp_Event, D, Value);
-            Aborted := Tasks.Is_Aborted or else Value;
-         end;
-      else
-         Native_Time.Simple_Delay_For (D);
-         Aborted := Tasks.Is_Aborted;
-      end if;
-   end Delay_For;
-
-   procedure Delay_Until (
-      T : Native_Calendar.Native_Time;
-      Aborted : out Boolean)
-   is
-      Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
-         Tasks.Abort_Attribute;
-   begin
-      if Attr /= null and then not Attr.Blocked then
-         declare
-            Temp_Event : Event := (Handle => Attr.Event);
-            Value : Boolean;
-         begin
-            Wait (Temp_Event, T, Value);
-            Aborted := Tasks.Is_Aborted or else Value;
-         end;
-      else
-         Native_Calendar.Delay_Until (T);
-         Aborted := Tasks.Is_Aborted;
-      end if;
-   end Delay_Until;
 
 end System.Synchronous_Objects.Abortable;

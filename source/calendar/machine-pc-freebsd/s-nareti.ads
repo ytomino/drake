@@ -3,6 +3,7 @@ pragma License (Unrestricted);
 with System.Native_Time;
 with C.time;
 package System.Native_Real_Time is
+   pragma Preelaborate; -- only for FreeBSD (or Linux)
 
    subtype Native_Time is C.time.struct_timespec;
 

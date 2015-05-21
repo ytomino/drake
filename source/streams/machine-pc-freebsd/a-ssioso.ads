@@ -1,1 +1,0 @@
-../machine-apple-darwin/a-ssioso.ads

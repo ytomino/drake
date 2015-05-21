@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Windows
 with Ada.IO_Exceptions;
 package Ada.Hierarchical_File_Names is
    --  This package is "Pure" version of

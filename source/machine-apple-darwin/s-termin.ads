@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  runtime unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 package System.Termination is
    pragma Preelaborate;
 

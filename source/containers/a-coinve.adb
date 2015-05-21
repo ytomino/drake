@@ -1,9 +1,9 @@
-pragma Check_Policy (Validate, Off);
 with Ada.Containers.Array_Sorting;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Indefinite_Vectors is
+   pragma Check_Policy (Validate => Ignore);
    use type Copy_On_Write.Data_Access;
 
 --  diff (Element_Array_Access)

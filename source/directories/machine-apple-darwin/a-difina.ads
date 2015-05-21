@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Darwin
 with Ada.Directories.Volumes;
 private package Ada.Directories.File_Names is
 

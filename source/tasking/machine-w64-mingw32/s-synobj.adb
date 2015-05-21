@@ -1,5 +1,4 @@
 with Ada.Exception_Identification.From_Here;
-with System.Native_Time;
 with C.winbase;
 with C.windef;
 with C.winerror;
@@ -301,24 +300,6 @@ package body System.Synchronous_Objects is
       then
          Raise_Exception (Tasking_Error'Identity);
       end if;
-   end Wait;
-
-   procedure Wait (
-      Object : in out Event;
-      Timeout : Native_Calendar.Native_Time;
-      Value : out Boolean)
-   is
-      Timeout_T : constant Duration := Native_Time.To_Duration (Timeout);
-      Current_T : constant Duration :=
-         Native_Time.To_Duration (Native_Calendar.Clock);
-      D : Duration;
-   begin
-      if Timeout_T > Current_T then
-         D := Timeout_T - Current_T;
-      else
-         D := 0.0;
-      end if;
-      Wait (Object, Timeout => D, Value => Value);
    end Wait;
 
    procedure Wait (

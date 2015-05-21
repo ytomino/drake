@@ -9,7 +9,7 @@ package body Ada.Text_IO.Iterators is
       return (Finalization.Limited_Controlled with
          File => File'Unrestricted_Access,
          Item => null,
-         Line => 0);
+         Count => 0);
    end Lines;
 
    function Has_Element (Position : Line_Cursor) return Boolean is
@@ -28,7 +28,7 @@ package body Ada.Text_IO.Iterators is
       Position : Line_Cursor)
       return References.Strings.Constant_Reference_Type is
    begin
-      if Count (Position) /= Container.Line then
+      if Integer (Position) /= Container.Count then
          Raise_Exception (Status_Error'Identity);
       end if;
       return (Element => Container.Item);
@@ -51,18 +51,18 @@ package body Ada.Text_IO.Iterators is
          return 0; -- No_Element
       else
          Free (Object.Lines.Item);
-         Object.Lines.Line := Line (Object.Lines.File.all);
+         Object.Lines.Count := Object.Lines.Count + 1;
          Overloaded_Get_Line (
             Object.Lines.File.all,
             Object.Lines.Item); -- allocation
-         return Line_Cursor (Object.Lines.Line);
+         return Line_Cursor (Object.Lines.Count);
       end if;
    end First;
 
    overriding function Next (Object : Line_Iterator; Position : Line_Cursor)
       return Line_Cursor is
    begin
-      if Count (Position) /= Object.Lines.Line then
+      if Integer (Position) /= Object.Lines.Count then
          Raise_Exception (Status_Error'Identity);
       end if;
       return First (Object);

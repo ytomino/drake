@@ -20,7 +20,7 @@ package body Ada.Directories.Information is
 
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames System.Directory_Searching.Named_IO_Exception_Id;
 
    procedure Fill (
       Directory_Entry : not null access Non_Controlled_Directory_Entry_Type);
@@ -31,7 +31,7 @@ package body Ada.Directories.Information is
          Raise_Exception (Status_Error'Identity);
       end if;
       if not Directory_Entry.Additional.Filled then
-         Directory_Searching.Get_Information (
+         System.Directory_Searching.Get_Information (
             Directory_Entry.Path.all,
             Directory_Entry.Directory_Entry,
             Directory_Entry.Additional.Information);

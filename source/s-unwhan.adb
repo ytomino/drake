@@ -1,7 +1,7 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada;
 with System.Unwind.Mapping;
-with System.Unwind.Raising;
+with System.Unwind.Occurrences;
 package body System.Unwind.Handling is
    pragma Suppress (All_Checks);
    use type System.Unwind.Representation.Machine_Occurrence_Access;
@@ -19,7 +19,7 @@ package body System.Unwind.Handling is
       Machine_Occurrence : Representation.Machine_Occurrence_Access) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Raising.Set_Current_Machine_Occurrence (Machine_Occurrence);
+      Occurrences.Set_Current_Machine_Occurrence (Machine_Occurrence);
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Begin_Handler;
 
@@ -32,8 +32,8 @@ package body System.Unwind.Handling is
             "Machine_Occurrence = null, reraised"));
          null;
       else
-         Raising.Free (Machine_Occurrence);
-         Raising.Set_Current_Machine_Occurrence (null);
+         Occurrences.Free (Machine_Occurrence);
+         Occurrences.Set_Current_Machine_Occurrence (null);
          --  in Win32 SEH, the chain may be rollback, so restore it
          Mapping.Reinstall_Exception_Handler;
       end if;
@@ -48,9 +48,9 @@ package body System.Unwind.Handling is
       if Machine_Occurrence.Header.exception_class =
          Representation.GNAT_Exception_Class
       then
-         Save_Occurrence (X.all, Machine_Occurrence.Occurrence);
+         Occurrences.Save_Occurrence (X.all, Machine_Occurrence.Occurrence);
       else
-         Raising.Set_Foreign_Occurrence (X.all, Machine_Occurrence);
+         Occurrences.Set_Foreign_Occurrence (X.all, Machine_Occurrence);
       end if;
    end Set_Exception_Parameter;
 

@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Exception_Identification.From_Here;
 with System.Formatting;
 with System.Long_Long_Integer_Divisions;

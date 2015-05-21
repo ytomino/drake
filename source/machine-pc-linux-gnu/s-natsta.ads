@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  runtime unit specialized for Linux
 with C.pthread;
 package System.Native_Stack is
    pragma Preelaborate;

@@ -2,7 +2,7 @@ with System.Formatting;
 with System.Img_WChar;
 with System.Val_Char;
 with System.Val_Enum;
-with System.Value_Error;
+with System.Value_Errors;
 with System.UTF_Conversions;
 package body System.Val_WChar is
    pragma Suppress (All_Checks);
@@ -92,7 +92,13 @@ package body System.Val_WChar is
             end if;
          end;
       end if;
-      Value_Error ("Wide_Character", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Wide_Character", Str);
+      declare
+         Uninitialized : Wide_Character;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Wide_Character;
 
    function Value_Wide_Wide_Character (Str : String; EM : WC_Encoding_Method)
@@ -167,7 +173,13 @@ package body System.Val_WChar is
             end if;
          end;
       end if;
-      Value_Error ("Wide_Wide_Character", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Wide_Wide_Character", Str);
+      declare
+         Uninitialized : Wide_Wide_Character;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Wide_Wide_Character;
 
    procedure Get_Named (

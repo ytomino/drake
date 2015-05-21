@@ -1,8 +1,9 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada;
 with System.Formatting.Address;
 with System.Runtime_Information;
 with System.Termination;
+with System.Unwind.Occurrences;
 with System.Unwind.Raising;
 package body System.Unwind.Backtrace is
    pragma Suppress (All_Checks);
@@ -69,7 +70,7 @@ package body System.Unwind.Backtrace is
             Current.Num_Tracebacks, -- Tracebacks_Array'First = 1
             Raising.AAA,
             Raising.ZZZ,
-            2); -- Call_Chain and Separated.Backtrace
+            3); -- Occurrences.Backtrace, Call_Chain and Separated.Backtrace
          pragma Check (Trace, Ada.Debug.Put ("Call_Chain"));
          pragma Check (Trace, Report);
       end if;
@@ -118,7 +119,7 @@ package body System.Unwind.Backtrace is
       Context : Information_Context_Type;
    begin
       Context.Last := 0;
-      Exception_Information (
+      Occurrences.Exception_Information (
          X,
          Context'Address,
          Put => Put'Access,

@@ -100,6 +100,8 @@ begin
 		Ada.Debug.Put (Ada.Directories.Volumes.Format_Name (FS));
 		Ada.Debug.Put (Ada.Directories.Volumes.Directory (FS));
 		Ada.Debug.Put (Ada.Directories.Volumes.Device (FS));
+		Ada.Debug.Put ("case preserving: " & Boolean'Image (Ada.Directories.Volumes.Case_Preserving (FS)));
+		Ada.Debug.Put ("case sensitive: " & Boolean'Image (Ada.Directories.Volumes.Case_Sensitive (FS)));
 	end;
 	Ada.Debug.Put ("OK");
 end directories;

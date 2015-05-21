@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Runtime_Context;

@@ -1,9 +1,10 @@
 --  reference:
 --  http://www.geocities.jp/m_hiroi/light/pyalgo53.html
 --  http://www.softpedia.com/get/Others/Home-Education/AA-Visual-2007.shtml
-pragma Check_Policy (Dump, Disable);
-pragma Check_Policy (Dump_On_Removing, Disable);
-pragma Check_Policy (Validate, Disable);
+pragma Check_Policy (
+   Dump => Disable,
+   Dump_On_Removing => Disable,
+   Validate => Disable);
 --  with Ada.Containers.Binary_Trees.Arne_Andersson.Debug;
 with Ada.Unchecked_Conversion;
 package body Ada.Containers.Binary_Trees.Arne_Andersson is

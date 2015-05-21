@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with System.Zero_Terminated_Strings;
 with C.mach_o.dyld;
 with C.stdint;

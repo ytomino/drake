@@ -1,4 +1,4 @@
-pragma Check_Policy (Validate, Off);
+pragma Check_Policy (Validate => Ignore);
 with Ada.UCD.General_Category;
 with System.Once;
 with System.Reference_Counting;

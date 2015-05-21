@@ -4,8 +4,8 @@ with Ada.Hierarchical_File_Names;
 with Ada.IO_Exceptions;
 with Ada.Iterator_Interfaces;
 with Ada.Streams;
-private with Ada.Directory_Searching;
 private with Ada.Finalization;
+private with System.Directory_Searching;
 package Ada.Directories is
 
    --  Directory and file operations:
@@ -258,8 +258,9 @@ private
 
    type Non_Controlled_Directory_Entry_Type is record
       Path : String_Access;
-      Directory_Entry : Directory_Searching.Directory_Entry_Access;
-      Additional : aliased Directory_Searching.Directory_Entry_Additional_Type;
+      Directory_Entry : System.Directory_Searching.Directory_Entry_Access;
+      Additional : aliased
+         System.Directory_Searching.Directory_Entry_Additional_Type;
       Status : Directory_Entry_Status := Empty;
    end record;
 
@@ -286,8 +287,8 @@ private
    type Directory_Entry_Type is new Controlled.Directory_Entry_Type;
 
    type Search_Type is limited new Finalization.Limited_Controlled with record
-      Search : aliased Directory_Searching.Search_Type := (
-         Handle => Directory_Searching.Null_Handle,
+      Search : aliased System.Directory_Searching.Search_Type := (
+         Handle => System.Directory_Searching.Null_Handle,
          others => <>);
       Path : String_Access;
       Next_Directory_Entry : aliased Directory_Entry_Type;

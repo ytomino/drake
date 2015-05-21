@@ -1,7 +1,7 @@
 with Ada.Unchecked_Conversion;
 with System.Runtime_Context;
 with System.Startup;
-with System.Unwind.Raising;
+with System.Unwind.Occurrences;
 package body System.Soft_Links is
    pragma Suppress (All_Checks);
    use type Ada.Exceptions.Exception_Occurrence_Access;
@@ -18,7 +18,7 @@ package body System.Soft_Links is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
    begin
-      return Cast (System.Unwind.Raising.Get_Current_Occurrence (TLS));
+      return Cast (System.Unwind.Occurrences.Get_Current_Occurrence (TLS));
    end Do_Get_Current_Excep;
 
    function Get_GNAT_Exception return Ada.Exceptions.Exception_Id is
@@ -45,7 +45,9 @@ package body System.Soft_Links is
       if not Startup.Library_Exception_Set then
          Startup.Library_Exception_Set := True;
          if E /= null then
-            Unwind.Save_Occurrence (Startup.Library_Exception.X, Cast (E).all);
+            Unwind.Occurrences.Save_Occurrence (
+               Startup.Library_Exception.X,
+               Cast (E).all);
          end if;
       end if;
    end Save_Library_Occurrence;

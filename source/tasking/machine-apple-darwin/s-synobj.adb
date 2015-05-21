@@ -77,6 +77,25 @@ package body System.Synchronous_Objects is
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
+      Timeout : Duration;
+      Notified : out Boolean)
+   is
+      Timeout_T : Native_Calendar.Native_Time := Native_Calendar.Clock;
+   begin
+      if Timeout >= 0.0 then
+         Timeout_T := Native_Time.To_timespec (
+            Native_Time.To_Duration (Timeout_T) + Timeout);
+      end if;
+      Wait (
+         Object,
+         Mutex,
+         Timeout => Timeout_T,
+         Notified => Notified);
+   end Wait;
+
+   procedure Wait (
+      Object : in out Condition_Variable;
+      Mutex : in out Synchronous_Objects.Mutex;
       Timeout : Native_Calendar.Native_Time;
       Notified : out Boolean)
    is
@@ -100,25 +119,6 @@ package body System.Synchronous_Objects is
          when others =>
             Raise_Exception (Tasking_Error'Identity);
       end case;
-   end Wait;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Duration;
-      Notified : out Boolean)
-   is
-      Timeout_T : Native_Calendar.Native_Time := Native_Calendar.Clock;
-   begin
-      if Timeout >= 0.0 then
-         Timeout_T := Native_Time.To_timespec (
-            Native_Time.To_Duration (Timeout_T) + Timeout);
-      end if;
-      Wait (
-         Object,
-         Mutex,
-         Timeout => Timeout_T,
-         Notified => Notified);
    end Wait;
 
    --  queue

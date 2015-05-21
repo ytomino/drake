@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada.Unchecked_Conversion;
 with System.Shared_Locking;
 package body Ada.Containers.Copy_On_Write is

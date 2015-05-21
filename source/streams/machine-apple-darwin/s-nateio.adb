@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Formatting;
+with C.sys.ioctl;
 package body System.Native_Text_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
@@ -140,38 +141,14 @@ package body System.Native_Text_IO is
       Handle : Handle_Type;
       Line_Length, Page_Length : out Natural)
    is
-      Seq : constant String (1 .. 5) := (
-         Character'Val (16#1b#), '[', '1', '8', 't');
-      Old_Settings : aliased C.termios.struct_termios;
-      Buffer : String (1 .. 256);
-      Last : Natural;
+      WS : aliased C.sys.ioctl.struct_winsize;
    begin
-      --  non-canonical mode and disable echo
-      tcgetsetattr (
-         Handle,
-         C.termios.TCSAFLUSH,
-         not (C.termios.ECHO or C.termios.ICANON),
-         1,
-         Old_Settings'Access);
-      --  output
-      Write (Handle, Seq);
-      --  input
-      Read_Escape_Sequence (Handle, Buffer, Last, 't');
-      --  restore terminal mode
-      if C.termios.tcsetattr (
-         Handle,
-         C.termios.TCSANOW,
-         Old_Settings'Access) < 0
-      then
+      if C.sys.ioctl.ioctl (Handle, C.sys.ioctl.TIOCGWINSZ, WS'Access) < 0 then
          Raise_Exception (Device_Error'Identity);
+      else
+         Line_Length := Natural (WS.ws_col);
+         Page_Length := Natural (WS.ws_row);
       end if;
-      --  parse
-      Parse_Escape_Sequence (
-         Buffer (1 .. Last),
-         Character'Val (16#1b#) & "[8;",
-         't',
-         Formatting.Unsigned (Page_Length),
-         Formatting.Unsigned (Line_Length));
    end Terminal_Size;
 
    procedure Set_Terminal_Size (

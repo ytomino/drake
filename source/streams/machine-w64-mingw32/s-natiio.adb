@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
+with System.Native_Allocators;
 with System.Standard_Allocators;
 with C.basetsd;
 with C.string;
@@ -367,7 +368,7 @@ package body System.Native_IO is
       else
          --  disk file
          Result := Ada.Streams.Stream_Element_Offset (
-            Standard_Allocators.Page_Size);
+            Native_Allocators.Page_Size);
       end if;
       return Result;
    end Block_Size;

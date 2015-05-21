@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 with C.winnt;
 package System.Zero_Terminated_WStrings is
    pragma Preelaborate;

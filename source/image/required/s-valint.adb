@@ -1,5 +1,5 @@
 with System.Formatting.Literals;
-with System.Value_Error;
+with System.Value_Errors;
 package body System.Val_Int is
    pragma Suppress (All_Checks);
 
@@ -15,7 +15,13 @@ package body System.Val_Int is
             return Result;
          end if;
       end if;
-      Value_Error ("Integer", Str);
+      Value_Errors.Raise_Discrete_Value_Failure ("Integer", Str);
+      declare
+         Uninitialized : Integer;
+         pragma Unmodified (Uninitialized);
+      begin
+         return Uninitialized;
+      end;
    end Value_Integer;
 
 end System.Val_Int;

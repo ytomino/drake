@@ -1,9 +1,9 @@
-pragma Check_Policy (Validate, Off);
 with Ada.Numerics.Initiator;
 with Ada.Numerics.SFMT.Random.Inside;
 with System.Formatting;
 with System.Storage_Elements;
 package body Ada.Numerics.SFMT.Random is
+   pragma Check_Policy (Validate => Ignore);
    pragma Suppress (All_Checks);
    use type Unsigned_32;
    use type Unsigned_64;

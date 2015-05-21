@@ -47,12 +47,13 @@ package System.Debug is
    pragma Import (Ada, Put, "__drake_debug_put");
 
    --  for compiler-units
-   procedure Runtime_Error (
-      Condition : Boolean;
+   function Runtime_Error (
       S : String;
       Source_Location : String := Debug.Source_Location;
-      Enclosing_Entity : String := Debug.Enclosing_Entity);
+      Enclosing_Entity : String := Debug.Enclosing_Entity)
+      return Boolean;
    pragma Export (Ada, Runtime_Error, "__drake_runtime_error");
+   pragma Machine_Attribute (Runtime_Error, "noreturn");
 
 private
 

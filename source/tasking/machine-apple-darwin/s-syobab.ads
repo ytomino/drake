@@ -1,16 +1,11 @@
 pragma License (Unrestricted);
 --  implementation unit
+private with System.Native_Calendar;
 package System.Synchronous_Objects.Abortable is
    pragma Preelaborate;
 
    --  condition variable
 
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Native_Calendar.Native_Time;
-      Notified : out Boolean;
-      Aborted : out Boolean);
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex;
@@ -45,13 +40,15 @@ package System.Synchronous_Objects.Abortable is
       Notified : out Boolean;
       Aborted : out Boolean);
 
-   --  delay
+private
 
-   procedure Delay_For (
-      D : Duration;
-      Aborted : out Boolean);
-   procedure Delay_Until (
-      T : Native_Calendar.Native_Time;
+   Abort_Checking_Span : constant Duration := 1.0;
+
+   procedure Wait (
+      Object : in out Condition_Variable;
+      Mutex : in out Synchronous_Objects.Mutex;
+      Timeout : Native_Calendar.Native_Time;
+      Notified : out Boolean;
       Aborted : out Boolean);
 
 end System.Synchronous_Objects.Abortable;

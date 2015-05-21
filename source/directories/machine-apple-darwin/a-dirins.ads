@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with System.Native_Calendar;
 with C.sys.stat;
 package Ada.Directories.Inside is

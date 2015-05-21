@@ -1,22 +1,20 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
-with System.Native_Calendar;
 with System.Native_Stack;
 with System.Native_Tasks.Yield;
-with System.Native_Time;
 with System.Runtime_Context;
 with System.Shared_Locking;
 with System.Standard_Allocators;
 with System.Synchronous_Control;
-with System.Synchronous_Objects.Abortable;
+with System.Synchronous_Objects.Abortable.Delays;
 with System.Termination;
 with System.Unbounded_Stack_Allocators;
-with System.Unwind.Raising;
+with System.Unwind.Occurrences;
 package body System.Tasks is
    use Ada.Exception_Identification.From_Here;
    use type Synchronous_Objects.Queue_Node_Access;
@@ -42,30 +40,6 @@ package body System.Tasks is
       A2 : Counter)
       return Counter;
    pragma Import (Intrinsic, sync_add_and_fetch, "__sync_add_and_fetch_4");
-
-   --  delay statement
-
-   procedure Delay_For (D : Duration);
-   procedure Delay_For (D : Duration) is
-      Aborted : Boolean;
-   begin
-      Enable_Abort;
-      Synchronous_Objects.Abortable.Delay_For (
-         D,
-         Aborted => Aborted);
-      Disable_Abort (Aborted);
-   end Delay_For;
-
-   procedure Delay_Until (T : Native_Calendar.Native_Time);
-   procedure Delay_Until (T : Native_Calendar.Native_Time) is
-      Aborted : Boolean;
-   begin
-      Enable_Abort;
-      Synchronous_Objects.Abortable.Delay_Until (
-         T,
-         Aborted => Aborted);
-      Disable_Abort (Aborted);
-   end Delay_Until;
 
    --  shared lock
 
@@ -264,7 +238,7 @@ package body System.Tasks is
    TLS_Current_Task_Id : Task_Id := null;
    pragma Thread_Local_Storage (TLS_Current_Task_Id);
 
-   Main_Task_Record : aliased Task_Record (Main);
+   Environment_Task_Record : aliased Task_Record (Environment);
 
    --  task local storage (secondary stack and exception occurrence)
 
@@ -281,7 +255,7 @@ package body System.Tasks is
 
    --  name
 
-   Main_Name : aliased constant String := "*main";
+   Environment_Task_Name : aliased constant String := "*environment";
    Null_Name : aliased constant String := "";
 
    --  signal handler
@@ -296,7 +270,7 @@ package body System.Tasks is
       if T.Abort_Handler /= null then
          T.Abort_Handler (T);
       end if;
-      if T.Kind = Main then
+      if T.Kind = Environment then
          Native_Tasks.Uninstall_Abort_Handler;
          Native_Tasks.Send_Abort_Signal (
             T.Handle,
@@ -316,15 +290,15 @@ package body System.Tasks is
    procedure Unregister is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      --  main thread id
-      if Main_Task_Record.Master_Top /= null then
-         pragma Assert (Main_Task_Record.Master_Top.Within =
+      --  environment task id
+      if Environment_Task_Record.Master_Top /= null then
+         pragma Assert (Environment_Task_Record.Master_Top.Within =
             Library_Task_Level);
          Leave_Master;
-         pragma Assert (Main_Task_Record.Master_Top = null);
+         pragma Assert (Environment_Task_Record.Master_Top = null);
       end if;
-      Clear_Attributes (Main_Task_Record'Access);
-      pragma Assert (Main_Task_Record.Abort_Locking = 2);
+      Clear_Attributes (Environment_Task_Record'Access);
+      pragma Assert (Environment_Task_Record.Abort_Locking = 2);
       TLS_Current_Task_Id := null;
       --  shared lock
       Synchronous_Objects.Finalize (Shared_Lock);
@@ -333,17 +307,15 @@ package body System.Tasks is
       --  yield
       Synchronous_Control.Yield_Hook := Synchronous_Control.Nop'Access;
       --  delay statement
-      Native_Time.Delay_For_Hook := Native_Time.Simple_Delay_For'Access;
-      Native_Calendar.Delay_Until_Hook :=
-         Native_Calendar.Simple_Delay_Until'Access;
+      Synchronous_Objects.Abortable.Delays.Unregister_Delays;
       --  attribute indexes
       Synchronous_Objects.Finalize (Attribute_Indexes_Lock);
       Attribute_Index_Sets.Clear (Attribute_Indexes, Attribute_Indexes_Length);
       --  task local storage (secondary stack and exception occurrence)
       Runtime_Context.Get_Task_Local_Storage_Hook :=
-         Runtime_Context.Get_Main_Task_Local_Storage'Access;
-      --  main thread id
-      Native_Tasks.Finalize (Main_Task_Record.Abort_Attribute);
+         Runtime_Context.Get_Environment_Task_Local_Storage'Access;
+      --  environment task id
+      Native_Tasks.Finalize (Environment_Task_Record.Abort_Attribute);
       --  signal handler
       Native_Tasks.Uninstall_Abort_Handler;
       --  clear
@@ -366,26 +338,25 @@ package body System.Tasks is
          --  yield
          Synchronous_Control.Yield_Hook := Native_Tasks.Yield'Access;
          --  delay statement
-         Native_Time.Delay_For_Hook := Delay_For'Access;
-         Native_Calendar.Delay_Until_Hook := Delay_Until'Access;
+         Synchronous_Objects.Abortable.Delays.Register_Delays;
          --  attribute indexes
          Synchronous_Objects.Initialize (Attribute_Indexes_Lock);
          --  task local storage (secondary stack and exception occurrence)
-         TLS_Data := Runtime_Context.Get_Main_Task_Local_Storage;
+         TLS_Data := Runtime_Context.Get_Environment_Task_Local_Storage;
          Runtime_Context.Get_Task_Local_Storage_Hook := Get_TLS'Access;
-         --  main thread id
-         TLS_Current_Task_Id := Main_Task_Record'Access;
-         Main_Task_Record.Handle := Native_Tasks.Current;
-         Main_Task_Record.Aborted := False;
-         Main_Task_Record.Abort_Handler := null;
-         Main_Task_Record.Abort_Locking := 2;
-         Main_Task_Record.Attributes := null;
-         Main_Task_Record.Attributes_Length := 0;
-         Main_Task_Record.Activation_State := AS_Active;
-         Main_Task_Record.Termination_State := TS_Active;
-         Main_Task_Record.Master_Level := Environment_Task_Level;
-         Main_Task_Record.Master_Top := null; -- start from Library_Task_Level
-         Native_Tasks.Initialize (Main_Task_Record.Abort_Attribute);
+         --  environment task id
+         TLS_Current_Task_Id := Environment_Task_Record'Access;
+         Environment_Task_Record.Handle := Native_Tasks.Current;
+         Environment_Task_Record.Aborted := False;
+         Environment_Task_Record.Abort_Handler := null;
+         Environment_Task_Record.Abort_Locking := 2;
+         Environment_Task_Record.Attributes := null;
+         Environment_Task_Record.Attributes_Length := 0;
+         Environment_Task_Record.Activation_State := AS_Active;
+         Environment_Task_Record.Termination_State := TS_Active;
+         Environment_Task_Record.Master_Level := Environment_Task_Level;
+         Environment_Task_Record.Master_Top := null; -- from Library_Task_Level
+         Native_Tasks.Initialize (Environment_Task_Record.Abort_Attribute);
          --  signal handler
          Native_Tasks.Install_Abort_Handler (Abort_Signal_Handler'Access);
          pragma Check (Trace, Ada.Debug.Put ("leave"));
@@ -427,7 +398,7 @@ package body System.Tasks is
             Name_Last + Formatting.Address.Address_String'Length),
          Set => Formatting.Upper_Case);
       Name_Last := Name_Last + Formatting.Address.Address_String'Length;
-      Unwind.Raising.Report (Cast (Current), Name (1 .. Name_Last));
+      Unwind.Occurrences.Report (Cast (Current), Name (1 .. Name_Last));
    end Report;
 
    --  Native_Tasks.Result_Type is void * in POSIX, or DWORD in Windows.
@@ -854,11 +825,11 @@ package body System.Tasks is
       return TLS_Current_Task_Id;
    end Current_Task_Id;
 
-   function Main_Task_Id return Task_Id is
+   function Environment_Task_Id return Task_Id is
    begin
       Register;
-      return Main_Task_Record'Access;
-   end Main_Task_Id;
+      return Environment_Task_Record'Access;
+   end Environment_Task_Id;
 
    procedure Create (
       T : out Task_Id;
@@ -1032,7 +1003,8 @@ package body System.Tasks is
    begin
       if T = null then
          raise Program_Error; -- RM C.7.1(15)
-      elsif Registered_State = Unregistered then -- main has been terminated
+      elsif Registered_State = Unregistered then
+         --  environment task has been terminated
          return True;
       else
          return T.Termination_State = TS_Terminated;
@@ -1043,7 +1015,8 @@ package body System.Tasks is
    begin
       if T = null then
          raise Program_Error; -- RM C.7.1(15)
-      elsif Registered_State = Unregistered then -- main has been terminated
+      elsif Registered_State = Unregistered then
+         --  environment task has been terminated
          return True;
       else
          return T.Activation_State in AS_Active_Before_Activation .. AS_Active;
@@ -1080,8 +1053,8 @@ package body System.Tasks is
    function Name (T : not null Task_Id)
       return not null access constant String is
    begin
-      if T.Kind = Main then
-         return Main_Name'Access;
+      if T.Kind = Environment then
+         return Environment_Task_Name'Access;
       elsif T.Name = null then
          return Null_Name'Access;
       else
@@ -1305,7 +1278,7 @@ package body System.Tasks is
 
    function Parent (T : not null Task_Id) return Task_Id is
    begin
-      if T.Kind = Main or else T.Master_Of_Parent = null then
+      if T.Kind = Environment or else T.Master_Of_Parent = null then
          return null;
       else
          return T.Master_Of_Parent.Parent;
@@ -1440,7 +1413,7 @@ package body System.Tasks is
       end loop;
       if Result = null then
          --  library level
-         pragma Assert (Parent = Main_Task_Record'Access);
+         pragma Assert (Parent = Environment_Task_Record'Access);
          if Parent.Master_Top = null then
             Enter_Master;
             pragma Assert (Parent.Master_Top.Within = Library_Task_Level + 1);

@@ -109,13 +109,16 @@ procedure ext_doc is
 						elsif Start_With (Line, "--  runtime")
 							or else Start_With (Line, "--  optional runtime")
 							or else Start_With (Line, "--  overridable runtime")
+							or else Start_With (Line, "--  optional/overridable runtime")
 						then
 							Kind := Runtime_Unit;
 							if Line /= "--  runtime unit"
 								and then not Start_With (Line, "--  runtime unit ")
 								and then Line /= "--  optional runtime unit"
+								and then not Start_With (Line, "--  optional runtime unit specialized ")
 								and then Line /= "--  overridable runtime unit"
 								and then not Start_With (Line, "--  overridable runtime unit specialized ")
+								and then Line /= "--  optional/overridable runtime unit"
 							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "  " & Line);
@@ -227,6 +230,7 @@ procedure ext_doc is
 				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   --")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   pragma")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  pragma")
+					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   use type")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  use")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   type")
 					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  type")

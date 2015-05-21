@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace, Off);
+pragma Check_Policy (Trace => Ignore);
 with C.unwind;
 separate (System.Unwind.Backtrace)
 package body Separated is

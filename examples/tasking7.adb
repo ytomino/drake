@@ -11,7 +11,7 @@ begin
 		task T1;
 		task body T1 is
 		begin
-			-- force switching to main thread
+			-- force switching to environment task
 			for I in 1 .. 500 loop
 				System.Native_Tasks.Yield;
 			end loop;
@@ -30,7 +30,7 @@ begin
 		task T2;
 		task body T2 is
 		begin
-			-- force switching to main thread
+			-- force switching to environment task
 			for I in 1 .. 500 loop
 				System.Native_Tasks.Yield;
 			end loop;
