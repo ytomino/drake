@@ -40,11 +40,12 @@ package Ada.Real_Time is
       with Import, Convention => Intrinsic;
    function "*" (Left : Time_Span; Right : Integer) return Time_Span;
    function "*" (Left : Integer; Right : Time_Span) return Time_Span;
-   pragma Pure_Function ("*");
-   pragma Inline ("*");
    function "/" (Left, Right : Time_Span) return Integer;
    function "/" (Left : Time_Span; Right : Integer) return Time_Span;
+
+   pragma Pure_Function ("*");
    pragma Pure_Function ("/");
+   pragma Inline ("*");
    pragma Inline ("/");
 
    function "abs" (Right : Time_Span) return Time_Span
@@ -56,25 +57,27 @@ package Ada.Real_Time is
    function ">=" (Left, Right : Time_Span) return Boolean;
 
    function To_Duration (TS : Time_Span) return Duration;
-   pragma Pure_Function (To_Duration);
-   pragma Inline (To_Duration);
    function To_Time_Span (D : Duration) return Time_Span;
+
+   pragma Pure_Function (To_Duration);
    pragma Pure_Function (To_Time_Span);
+   pragma Inline (To_Duration);
    pragma Inline (To_Time_Span);
 
    function Nanoseconds (NS : Integer) return Time_Span;
-   pragma Pure_Function (Nanoseconds);
-   pragma Inline (Nanoseconds);
    function Microseconds (US : Integer) return Time_Span;
-   pragma Pure_Function (Microseconds);
-   pragma Inline (Microseconds);
    function Milliseconds (MS : Integer) return Time_Span;
-   pragma Pure_Function (Milliseconds);
-   pragma Inline (Milliseconds);
    function Seconds (S : Integer) return Time_Span;
-   pragma Pure_Function (Seconds);
-   pragma Inline (Seconds);
 --  function Minutes (M : Integer) return Time_Span;
+
+   pragma Pure_Function (Nanoseconds);
+   pragma Pure_Function (Microseconds);
+   pragma Pure_Function (Milliseconds);
+   pragma Pure_Function (Seconds);
+   pragma Inline (Nanoseconds);
+   pragma Inline (Microseconds);
+   pragma Inline (Milliseconds);
+   pragma Inline (Seconds);
 
    type Seconds_Count is range
       -(2 ** (Duration'Size - 1)) / 1000000000 ..

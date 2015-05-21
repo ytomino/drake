@@ -19,12 +19,13 @@ package System.Storage_Elements is
    function "+" (Left : Address; Right : Storage_Offset) return Address;
    function "+" (Left : Storage_Offset; Right : Address) return Address;
    pragma Convention (Intrinsic, "+");
-   pragma Pure_Function ("+");
-   pragma Inline_Always ("+");
    function "-" (Left : Address; Right : Storage_Offset) return Address;
    function "-" (Left, Right : Address) return Storage_Offset;
    pragma Convention (Intrinsic, "-");
+
+   pragma Pure_Function ("+");
    pragma Pure_Function ("-");
+   pragma Inline_Always ("+");
    pragma Inline_Always ("-");
 
    function "mod" (Left : Address; Right : Storage_Offset)
@@ -38,11 +39,12 @@ package System.Storage_Elements is
    type Integer_Address is mod Memory_Size; -- implementation-defined
    function To_Address (Value : Integer_Address) return Address;
    pragma Convention (Intrinsic, To_Address);
-   pragma Pure_Function (To_Address);
-   pragma Inline_Always (To_Address);
    function To_Integer (Value : Address) return Integer_Address;
    pragma Convention (Intrinsic, To_Integer);
+
+   pragma Pure_Function (To_Address);
    pragma Pure_Function (To_Integer);
+   pragma Inline_Always (To_Address);
    pragma Inline_Always (To_Integer);
 
 --  pragma Convention (Intrinsic, "+");

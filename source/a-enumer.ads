@@ -11,26 +11,24 @@ package Ada.Enumeration is
 
       function "+" (Left : Enum; Right : Distance) return Enum
          with Convention => Intrinsic;
-      pragma Pure_Function ("+");
-      pragma Inline_Always ("+");
       function "+" (Left : Distance; Right : Enum) return Enum
          with Convention => Intrinsic;
-      pragma Pure_Function ("+");
-      pragma Inline_Always ("+");
       function "-" (Left : Enum; Right : Distance) return Enum
          with Convention => Intrinsic;
-      pragma Pure_Function ("-");
-      pragma Inline_Always ("-");
       function "-" (Left, Right : Enum) return Distance
          with Convention => Intrinsic;
+
+      pragma Pure_Function ("+");
       pragma Pure_Function ("-");
+      pragma Inline_Always ("+");
       pragma Inline_Always ("-");
 
       procedure Increment (Ref : in out Enum)
          with Convention => Intrinsic;
-      pragma Inline_Always (Increment);
       procedure Decrement (Ref : in out Enum)
          with Convention => Intrinsic;
+
+      pragma Inline_Always (Increment);
       pragma Inline_Always (Decrement);
 
    end Arithmetic;
