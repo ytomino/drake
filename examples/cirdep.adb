@@ -1,5 +1,4 @@
 -- find circular dependency
-pragma Ada_2012;
 with Ada.Command_Line;
 with Ada.Containers.Indefinite_Ordered_Maps;
 with Ada.Containers.Indefinite_Ordered_Sets;

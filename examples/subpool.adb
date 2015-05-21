@@ -1,4 +1,3 @@
-pragma Ada_2012;
 -- for MR_Pool
 with System.Storage_Pools.Subpools;
 with System.Storage_Elements;

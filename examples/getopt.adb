@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Command_Line.Generic_Parsing;
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Ada.Strings.Unbounded;
