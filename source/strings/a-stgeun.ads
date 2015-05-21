@@ -638,7 +638,7 @@ private
       Reference_Count : aliased System.Reference_Counting.Counter;
       Capacity : Natural;
       Max_Length : aliased System.Reference_Counting.Length_Type;
-      Items : Fixed_String_Access;
+      Items : not null Fixed_String_Access;
       --  the storage would be allocated in here
    end record;
    pragma Suppress_Initialization (Data);
@@ -647,11 +647,13 @@ private
 
    type Data_Access is access all Data;
 
+   Empty_String : aliased constant String_Type (1 .. 0) :=
+      (others => Character_Type'Val (0));
    Empty_Data : aliased constant Data := (
       Reference_Count => System.Reference_Counting.Static,
       Capacity => 0,
       Max_Length => 0,
-      Items => null);
+      Items => Fixed_String'Deref (Empty_String'Address)'Unrestricted_Access);
 
    type Unbounded_String is new Finalization.Controlled with record
       Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;
