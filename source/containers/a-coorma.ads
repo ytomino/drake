@@ -289,10 +289,10 @@ private
          Stream : access Streams.Root_Stream_Type'Class;
          Item : Cursor);
 
---  diff (Read)
+--  diff (Missing_Read)
 --
 --
---  diff (Write)
+--  diff (Missing_Write)
 --
 --
 

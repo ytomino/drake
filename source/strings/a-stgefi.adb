@@ -20,7 +20,6 @@ package body Ada.Strings.Generic_Fixed is
             for P'Storage_Size use 0;
             package Conv is
                new System.Address_To_Named_Access_Conversions (Character, P);
-            --  gcc's builtin-function
             procedure memset (
                b : not null P;
                c : Integer;
@@ -126,7 +125,6 @@ package body Ada.Strings.Generic_Fixed is
             for P'Storage_Size use 0;
             package Conv is
                new System.Address_To_Named_Access_Conversions (Character, P);
-            --  gcc's builtin-function
             function memchr (
                s : not null P;
                c : Integer;
