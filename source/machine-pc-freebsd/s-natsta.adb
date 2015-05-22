@@ -10,8 +10,8 @@ package body System.Native_Stack is
       S : String;
       Source_Location : String := Ada.Debug.Source_Location;
       Enclosing_Entity : String := Ada.Debug.Enclosing_Entity)
-      return Boolean;
-   pragma Import (Ada, Runtime_Error, "__drake_runtime_error");
+      return Boolean
+      with Import, Convention => Ada, External_Name => "__drake_runtime_error";
    pragma Machine_Attribute (Runtime_Error, "noreturn");
 
    procedure Get (

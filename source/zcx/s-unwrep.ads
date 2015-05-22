@@ -17,8 +17,8 @@ package System.Unwind.Representation is
       --  shortcut for phase2 (see exception.c in libobjc)
       landing_pad : C.unwind.Unwind_Ptr;
       ttype_filter : C.unwind.Unwind_Sword;
-   end record;
-   pragma Convention (C, Machine_Occurrence);
+   end record
+      with Convention => C;
    pragma Suppress_Initialization (Machine_Occurrence);
 
    type Machine_Occurrence_Access is access all Machine_Occurrence;

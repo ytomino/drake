@@ -18,12 +18,15 @@ package body Separated is
    procedure memset (
       b : not null access C.winnt.UNWIND_HISTORY_TABLE;
       c : Integer;
-      n : Storage_Elements.Storage_Count);
+      n : Storage_Elements.Storage_Count)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memset";
    procedure memset (
       b : not null access C.winnt.KNONVOLATILE_CONTEXT_POINTERS;
       c : Integer;
-      n : Storage_Elements.Storage_Count);
-   pragma Import (Intrinsic, memset, "__builtin_memset");
+      n : Storage_Elements.Storage_Count)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memset";
 
    --  implementation
 

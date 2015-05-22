@@ -314,17 +314,19 @@ private
 
       procedure Missing_Read (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : out Search_Iterator);
+         Item : out Search_Iterator)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       function Missing_Input (
          Stream : not null access Streams.Root_Stream_Type'Class)
-         return Search_Iterator;
+         return Search_Iterator
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       procedure Missing_Write (
          Stream : not null access Streams.Root_Stream_Type'Class;
-         Item : Search_Iterator);
-
-      pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Input, "__drake_program_error");
-      pragma Import (Ada, Missing_Write, "__drake_program_error");
+         Item : Search_Iterator)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
 
    end Streaming;
 

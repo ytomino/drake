@@ -37,39 +37,37 @@ package Interfaces.C.Pointers is
    function "+" (
       Left : Pointer; -- CXB3015 requires null
       Right : ptrdiff_t)
-      return not null Pointer;
-   pragma Convention (Intrinsic, "+");
-   pragma Pure_Function ("+");
-   pragma Inline_Always ("+");
+      return not null Pointer
+      with Convention => Intrinsic;
    function "+" (
       Left : ptrdiff_t;
       Right : not null Pointer)
-      return not null Pointer;
-   pragma Convention (Intrinsic, "+");
-   pragma Pure_Function ("+");
-   pragma Inline_Always ("+");
+      return not null Pointer
+      with Convention => Intrinsic;
    function "-" (
       Left : Pointer; -- CXB3015 requires null
       Right : ptrdiff_t)
-      return not null Pointer;
-   pragma Convention (Intrinsic, "-");
-   pragma Pure_Function ("-");
-   pragma Inline_Always ("-");
+      return not null Pointer
+      with Convention => Intrinsic;
    --  modified
 --  function "-" (Left : Pointer; Right : Pointer) return ptrdiff_t;
    function "-" (
       Left : not null Pointer;
       Right : not null access constant Element)
-      return ptrdiff_t;
-   pragma Convention (Intrinsic, "-");
+      return ptrdiff_t
+      with Convention => Intrinsic;
+
+   pragma Pure_Function ("+");
    pragma Pure_Function ("-");
+   pragma Inline_Always ("+");
    pragma Inline_Always ("-");
 
-   procedure Increment (Ref : in out not null Pointer);
-   pragma Convention (Intrinsic, Increment);
+   procedure Increment (Ref : in out not null Pointer)
+      with Convention => Intrinsic;
+   procedure Decrement (Ref : in out Pointer) -- CXB3015 requires null
+      with Convention => Intrinsic;
+
    pragma Inline_Always (Increment);
-   procedure Decrement (Ref : in out Pointer); -- CXB3015 requires null
-   pragma Convention (Intrinsic, Decrement);
    pragma Inline_Always (Decrement);
 
    --  modified
@@ -110,33 +108,31 @@ package Interfaces.C.Pointers is
    pragma No_Strict_Aliasing (Constant_Pointer);
 
    function "+" (Left : not null Constant_Pointer; Right : ptrdiff_t)
-      return not null Constant_Pointer;
-   pragma Convention (Intrinsic, "+");
-   pragma Pure_Function ("+");
-   pragma Inline_Always ("+");
+      return not null Constant_Pointer
+      with Convention => Intrinsic;
    function "+" (Left : ptrdiff_t; Right : not null Constant_Pointer)
-      return not null Constant_Pointer;
-   pragma Convention (Intrinsic, "+");
-   pragma Pure_Function ("+");
-   pragma Inline_Always ("+");
+      return not null Constant_Pointer
+      with Convention => Intrinsic;
    function "-" (Left : not null Constant_Pointer; Right : ptrdiff_t)
-      return not null Constant_Pointer;
-   pragma Convention (Intrinsic, "-");
-   pragma Pure_Function ("-");
-   pragma Inline_Always ("-");
+      return not null Constant_Pointer
+      with Convention => Intrinsic;
    function "-" (
       Left : not null Constant_Pointer;
       Right : not null access constant Element)
-      return ptrdiff_t;
-   pragma Convention (Intrinsic, "-");
+      return ptrdiff_t
+      with Convention => Intrinsic;
+
+   pragma Pure_Function ("+");
    pragma Pure_Function ("-");
+   pragma Inline_Always ("+");
    pragma Inline_Always ("-");
 
-   procedure Increment (Ref : in out not null Constant_Pointer);
-   pragma Convention (Intrinsic, Increment);
+   procedure Increment (Ref : in out not null Constant_Pointer)
+      with Convention => Intrinsic;
+   procedure Decrement (Ref : in out not null Constant_Pointer)
+      with Convention => Intrinsic;
+
    pragma Inline_Always (Increment);
-   procedure Decrement (Ref : in out not null Constant_Pointer);
-   pragma Convention (Intrinsic, Decrement);
    pragma Inline_Always (Decrement);
 
 end Interfaces.C.Pointers;

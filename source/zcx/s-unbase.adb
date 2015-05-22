@@ -16,8 +16,8 @@ package body Separated is
    function Unwind_Trace (
       Context : access C.unwind.struct_Unwind_Context;
       Argument : C.void_ptr)
-      return C.unwind.Unwind_Reason_Code;
-   pragma Convention (C, Unwind_Trace);
+      return C.unwind.Unwind_Reason_Code
+      with Convention => C;
 
    function Unwind_Trace (
       Context : access C.unwind.struct_Unwind_Context;

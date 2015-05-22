@@ -21,97 +21,96 @@ package Interfaces is
    for Unsigned_64'Size use 64;
 
    function Shift_Left (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Shift_Left (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Shift_Left (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Shift_Left (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Shift_Left);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    function Shift_Right (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Shift_Right (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Shift_Right (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Shift_Right (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Shift_Right);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    function Shift_Right_Arithmetic (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Shift_Right_Arithmetic (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Shift_Right_Arithmetic (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Shift_Right_Arithmetic (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Shift_Right_Arithmetic);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    function Rotate_Left (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Rotate_Left (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Rotate_Left (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Rotate_Left (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Rotate_Left);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    function Rotate_Right (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Rotate_Right (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Rotate_Right (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Rotate_Right (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Rotate_Right);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    --  extended from here
    --  Builtin-functions of gcc.
 
-   function atomic_load (
-      A1 : not null access Integer_8;
-      Model : Natural)
+   function atomic_load (A1 : not null access Integer_8; Model : Natural)
       return Integer_8
       with Import, Convention => Intrinsic, External_Name => "__atomic_load_1";
-   function atomic_load (
-      A1 : not null access Integer_16;
-      Model : Natural)
+   function atomic_load (A1 : not null access Integer_16; Model : Natural)
       return Integer_16
       with Import, Convention => Intrinsic, External_Name => "__atomic_load_2";
-   function atomic_load (
-      A1 : not null access Integer_32;
-      Model : Natural)
+   function atomic_load (A1 : not null access Integer_32; Model : Natural)
       return Integer_32
       with Import, Convention => Intrinsic, External_Name => "__atomic_load_4";
-   function atomic_load (
-      A1 : not null access Integer_64;
-      Model : Natural)
+   function atomic_load (A1 : not null access Integer_64; Model : Natural)
       return Integer_64
       with Import, Convention => Intrinsic, External_Name => "__atomic_load_8";
 
-   function atomic_load (
-      A1 : not null access Unsigned_8;
-      Model : Natural)
+   function atomic_load (A1 : not null access Unsigned_8; Model : Natural)
       return Unsigned_8
       with Import, Convention => Intrinsic, External_Name => "__atomic_load_1";
-   function atomic_load (
-      A1 : not null access Unsigned_16;
-      Model : Natural)
+   function atomic_load (A1 : not null access Unsigned_16; Model : Natural)
       return Unsigned_16
       with Import, Convention => Intrinsic, External_Name => "__atomic_load_2";
-   function atomic_load (
-      A1 : not null access Unsigned_32;
-      Model : Natural)
+   function atomic_load (A1 : not null access Unsigned_32; Model : Natural)
       return Unsigned_32
       with Import, Convention => Intrinsic, External_Name => "__atomic_load_4";
-   function atomic_load (
-      A1 : not null access Unsigned_64;
-      Model : Natural)
+   function atomic_load (A1 : not null access Unsigned_64; Model : Natural)
       return Unsigned_64
       with Import, Convention => Intrinsic, External_Name => "__atomic_load_8";
 

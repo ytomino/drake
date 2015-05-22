@@ -5,24 +5,25 @@ package System.Debug is
 
    --  implementation of Ada.Debug
 
-   function File return String;
-   pragma Import (Intrinsic, File);
+   function File return String
+      with Import, Convention => Intrinsic;
 
-   function Line return Positive;
-   pragma Import (Intrinsic, Line);
+   function Line return Positive
+      with Import, Convention => Intrinsic;
 
-   function Source_Location return String;
-   pragma Import (Intrinsic, Source_Location);
+   function Source_Location return String
+      with Import, Convention => Intrinsic;
 
-   function Enclosing_Entity return String;
-   pragma Import (Intrinsic, Enclosing_Entity);
+   function Enclosing_Entity return String
+      with Import, Convention => Intrinsic;
 
    function Default_Put (
       S : String;
       Source_Location : String;
       Enclosing_Entity : String)
-      return Boolean;
-   pragma Export (Ada, Default_Put, "__drake_debug_default_put");
+      return Boolean
+      with Export,
+         Convention => Ada, External_Name => "__drake_debug_default_put";
 
    type Put_Handler is access function (
       S : String;
@@ -31,28 +32,30 @@ package System.Debug is
       return Boolean;
    pragma Suppress (Access_Check, Put_Handler);
 
-   Put_Hook : Put_Handler := Default_Put'Access; -- not null
+   Put_Hook : Put_Handler := Default_Put'Access -- not null
+      with Export,
+         Convention => Ada, External_Name => "__drake_debug_put_hook";
    pragma Suppress (Access_Check, Put_Hook);
-   pragma Export (Ada, Put_Hook, "__drake_debug_put_hook");
 
    procedure Put (
       S : String;
       Source_Location : String := Debug.Source_Location;
-      Enclosing_Entity : String := Debug.Enclosing_Entity);
+      Enclosing_Entity : String := Debug.Enclosing_Entity)
+      with Import, Convention => Ada, External_Name => "__drake_debug_put";
    function Put (
       S : String;
       Source_Location : String := Debug.Source_Location;
       Enclosing_Entity : String := Debug.Enclosing_Entity)
-      return Boolean;
-   pragma Import (Ada, Put, "__drake_debug_put");
+      return Boolean
+      with Import, Convention => Ada, External_Name => "__drake_debug_put";
 
    --  for compiler-units
    function Runtime_Error (
       S : String;
       Source_Location : String := Debug.Source_Location;
       Enclosing_Entity : String := Debug.Enclosing_Entity)
-      return Boolean;
-   pragma Export (Ada, Runtime_Error, "__drake_runtime_error");
+      return Boolean
+      with Export, Convention => Ada, External_Name => "__drake_runtime_error";
    pragma Machine_Attribute (Runtime_Error, "noreturn");
 
 private
@@ -61,7 +64,7 @@ private
       S : String;
       Source_Location : String := Debug.Source_Location;
       Enclosing_Entity : String := Debug.Enclosing_Entity)
-      return Boolean;
-   pragma Export (Ada, Put_Impl, "__drake_debug_put");
+      return Boolean
+      with Export, Convention => Ada, External_Name => "__drake_debug_put";
 
 end System.Debug;

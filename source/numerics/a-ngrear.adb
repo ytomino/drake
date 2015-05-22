@@ -18,15 +18,19 @@ package body Ada.Numerics.Generic_Real_Arrays is
             raise Argument_Error; -- CXA5A10
          elsif Float_Type'Digits <= Float'Digits then
             declare
-               function sqrtf (A1 : Float) return Float;
-               pragma Import (Intrinsic, sqrtf, "__builtin_sqrtf");
+               function sqrtf (A1 : Float) return Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_sqrtf";
             begin
                return Float_Type'Base (sqrtf (Float (X)));
             end;
          elsif Float_Type'Digits <= Long_Float'Digits then
             declare
-               function sqrt (A1 : Long_Float) return Long_Float;
-               pragma Import (Intrinsic, sqrt, "__builtin_sqrt");
+               function sqrt (A1 : Long_Float) return Long_Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_sqrt";
             begin
                return Float_Type'Base (sqrt (Long_Float (X)));
             end;

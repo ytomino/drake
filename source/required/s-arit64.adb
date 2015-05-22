@@ -14,7 +14,6 @@ package body System.Arith_64 is
    procedure unreachable
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_unreachable";
-
    pragma No_Return (unreachable);
 
    function Multiply_Overflow (X, Y : Interfaces.Integer_64) return Boolean;
@@ -119,8 +118,8 @@ package body System.Arith_64 is
 
    type Unsigned is mod 2 ** Integer'Size;
 
-   function clz (X : U64) return Unsigned;
-   pragma Import (Intrinsic, clz, "__builtin_clzll");
+   function clz (X : U64) return Unsigned
+      with Import, Convention => Intrinsic, External_Name => "__builtin_clzll";
 
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64);
    procedure Div (XL, XH : U64; Y : U64; Q : out U64; R : out U64) is

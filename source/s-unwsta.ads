@@ -13,8 +13,8 @@ package System.Unwind.Standard is
       Full_Name => Constraint_Error_Name'Address,
       HTable_Ptr => null,
       Foreign_Data => Null_Address,
-      Raise_Hook => null);
-   pragma Export (Ada, Constraint_Error, "constraint_error");
+      Raise_Hook => null)
+      with Export, Convention => Ada, External_Name => "constraint_error";
 
    --  Standard.Program_Error (s-stalib.ads)
    Program_Error_Name : aliased constant String (1 .. 14) :=
@@ -26,8 +26,8 @@ package System.Unwind.Standard is
       Full_Name => Program_Error_Name'Address,
       HTable_Ptr => null,
       Foreign_Data => Null_Address,
-      Raise_Hook => null);
-   pragma Export (Ada, Program_Error, "program_error");
+      Raise_Hook => null)
+      with Export, Convention => Ada, External_Name => "program_error";
 
    --  Standard.Storage_Error (s-stalib.ads)
    Storage_Error_Name : aliased constant String (1 .. 14) :=
@@ -39,8 +39,8 @@ package System.Unwind.Standard is
       Full_Name => Storage_Error_Name'Address,
       HTable_Ptr => null,
       Foreign_Data => Null_Address,
-      Raise_Hook => null);
-   pragma Export (Ada, Storage_Error, "storage_error");
+      Raise_Hook => null)
+      with Export, Convention => Ada, External_Name => "storage_error";
 
    --  Standard.Tasking_Error (s-stalib.ads)
    Tasking_Error_Name : aliased constant String (1 .. 14) :=
@@ -52,8 +52,8 @@ package System.Unwind.Standard is
       Full_Name => Tasking_Error_Name'Address,
       HTable_Ptr => null,
       Foreign_Data => Null_Address,
-      Raise_Hook => null);
-   pragma Export (Ada, Tasking_Error, "tasking_error");
+      Raise_Hook => null)
+      with Export, Convention => Ada, External_Name => "tasking_error";
 
    --  Standard'Abort_Signal (s-stalib.ads)
    Abort_Signal_Name : aliased constant String (1 .. 14) :=
@@ -65,7 +65,7 @@ package System.Unwind.Standard is
       Full_Name => Abort_Signal_Name'Address,
       HTable_Ptr => null,
       Foreign_Data => Null_Address,
-      Raise_Hook => null);
-   pragma Export (Ada, Abort_Signal, "_abort_signal");
+      Raise_Hook => null)
+      with Export, Convention => Ada, External_Name => "_abort_signal";
 
 end System.Unwind.Standard;

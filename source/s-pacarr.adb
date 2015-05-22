@@ -20,8 +20,10 @@ package body System.Packed_Arrays is
                   s1 : Address;
                   s2 : Address;
                   n : Storage_Elements.Storage_Count)
-                  return Integer;
-               pragma Import (Intrinsic, memcmp, "__builtin_memcmp");
+                  return Integer
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_memcmp";
                Result : constant Integer := memcmp (
                   Left,
                   Right,

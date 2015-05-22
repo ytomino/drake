@@ -24,8 +24,8 @@ begin
 				end;
 		end;
 		declare
-			function zlibVersion return Interfaces.C.Strings.const_chars_ptr;
-			pragma Import (C, zlibVersion);
+			function zlibVersion return Interfaces.C.Strings.const_chars_ptr
+				with Import, Convention => C;
 			for zlibVersion'Address use
 				System.Program.Dynamic_Linking.Import (zlib, "zlibVersion");
 		begin

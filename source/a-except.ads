@@ -33,10 +33,11 @@ package Ada.Exceptions is
 
    --  extended
    --  Same as Reraise_Occurrence without checking Null_Occurrence.
-   procedure Unchecked_Reraise_Occurrence (X : Exception_Occurrence);
+   procedure Unchecked_Reraise_Occurrence (X : Exception_Occurrence)
+      with Import,
+         Convention => Ada,
+         External_Name => "ada__exceptions__reraise_occurrence_always";
    pragma No_Return (Unchecked_Reraise_Occurrence);
-   pragma Import (Ada, Unchecked_Reraise_Occurrence,
-      "ada__exceptions__reraise_occurrence_always");
 
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id;
@@ -52,8 +53,10 @@ package Ada.Exceptions is
 
    procedure Save_Occurrence (
       Target : out Exception_Occurrence;
-      Source : Exception_Occurrence);
-   pragma Import (Ada, Save_Occurrence, "ada__exceptions__save_occurrence");
+      Source : Exception_Occurrence)
+      with Import,
+         Convention => Ada,
+         External_Name => "ada__exceptions__save_occurrence";
    function Save_Occurrence (
       Source : Exception_Occurrence)
       return Exception_Occurrence_Access;
@@ -123,22 +126,25 @@ private
 
    --  required by compiler (a-except-2005.ads)
    --  for reraising from when all others (exp_ch11.adb)
-   procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence);
+   procedure Reraise_Occurrence_No_Defer (X : Exception_Occurrence)
+      with Import,
+         Convention => Ada,
+         External_Name => "ada__exceptions__reraise_occurrence_no_defer";
    pragma No_Return (Reraise_Occurrence_No_Defer);
-   pragma Import (Ada, Reraise_Occurrence_No_Defer,
-      "ada__exceptions__reraise_occurrence_no_defer");
 
    --  optionally required by compiler (a-except-2005.ads)
    --  raise Program_Error if not existing (exp_ch7.adb)
-   procedure Raise_From_Controlled_Operation (X : Exception_Occurrence);
-   pragma Import (Ada, Raise_From_Controlled_Operation,
-      "__gnat_raise_from_controlled_operation");
+   procedure Raise_From_Controlled_Operation (X : Exception_Occurrence)
+      with Import,
+         Convention => Ada,
+         External_Name => "__gnat_raise_from_controlled_operation";
 
    --  required by compiler (a-except-2005.ads)
    --  for finalizer (exp_ch7.adb)
-   function Triggered_By_Abort return Boolean;
-   pragma Import (Ada, Triggered_By_Abort,
-      "ada__exceptions__triggered_by_abort");
+   function Triggered_By_Abort return Boolean
+      with Import,
+         Convention => Ada,
+         External_Name => "ada__exceptions__triggered_by_abort";
 
    --  required by compiler (a-except-2005.ads)
    --  for intrinsic function Exception_Name (exp_intr.adb)

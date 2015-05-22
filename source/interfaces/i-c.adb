@@ -314,8 +314,9 @@ package body Interfaces.C is
          s : not null char_const_ptr;
          c : int;
          n : size_t)
-         return char_const_ptr;
-      pragma Import (Intrinsic, memchr, "__builtin_memchr");
+         return char_const_ptr
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_memchr";
    begin
       return memchr (s, 0, n);
    end Find_nul;
@@ -353,8 +354,8 @@ package body Interfaces.C is
          ws : not null wchar_t_const_ptr;
          wc : int;
          n : size_t)
-         return wchar_t_const_ptr;
-      pragma Import (C, wmemchr);
+         return wchar_t_const_ptr
+         with Import, Convention => C;
    begin
       return wmemchr (s, 0, n);
    end Find_nul;

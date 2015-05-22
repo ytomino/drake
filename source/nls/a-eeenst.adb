@@ -368,8 +368,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    is
       pragma Suppress (Accessibility_Check);
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
-         return System.Address;
-      pragma Import (Intrinsic, To_Address);
+         return System.Address
+         with Import, Convention => Intrinsic;
    begin
       return Result : In_Type do
          Result.Stream := To_Address (Stream);
@@ -398,8 +398,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Last : out Streams.Stream_Element_Offset)
    is
       function To_Pointer (Value : System.Address)
-         return access Streams.Root_Stream_Type'Class;
-      pragma Import (Intrinsic, To_Pointer);
+         return access Streams.Root_Stream_Type'Class
+         with Import, Convention => Intrinsic;
    begin
       Read (
          To_Pointer (Object.Stream),
@@ -418,8 +418,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    is
       pragma Suppress (Accessibility_Check);
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
-         return System.Address;
-      pragma Import (Intrinsic, To_Address);
+         return System.Address
+         with Import, Convention => Intrinsic;
    begin
       return Result : Out_Type do
          Result.Stream := To_Address (Stream);
@@ -444,8 +444,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    procedure Finish (Object : in out Out_Type) is
       function To_Pointer (Value : System.Address)
-         return access Streams.Root_Stream_Type'Class;
-      pragma Import (Intrinsic, To_Pointer);
+         return access Streams.Root_Stream_Type'Class
+         with Import, Convention => Intrinsic;
    begin
       if not Is_Open (Object) then
          Raise_Exception (Status_Error'Identity);
@@ -461,8 +461,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Item : Streams.Stream_Element_Array)
    is
       function To_Pointer (Value : System.Address)
-         return access Streams.Root_Stream_Type'Class;
-      pragma Import (Intrinsic, To_Pointer);
+         return access Streams.Root_Stream_Type'Class
+         with Import, Convention => Intrinsic;
    begin
       Write (
          To_Pointer (Object.Stream),
@@ -481,8 +481,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    is
       pragma Suppress (Accessibility_Check);
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
-         return System.Address;
-      pragma Import (Intrinsic, To_Address);
+         return System.Address
+         with Import, Convention => Intrinsic;
    begin
       return Result : Inout_Type do
          Result.Internal := Internal;
@@ -542,8 +542,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    procedure Finish (Object : in out Inout_Type) is
       function To_Pointer (Value : System.Address)
-         return access Streams.Root_Stream_Type'Class;
-      pragma Import (Intrinsic, To_Pointer);
+         return access Streams.Root_Stream_Type'Class
+         with Import, Convention => Intrinsic;
    begin
       if not Is_Open (Object) then
          Raise_Exception (Status_Error'Identity);
@@ -562,8 +562,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Last : out Streams.Stream_Element_Offset)
    is
       function To_Pointer (Value : System.Address)
-         return access Streams.Root_Stream_Type'Class;
-      pragma Import (Intrinsic, To_Pointer);
+         return access Streams.Root_Stream_Type'Class
+         with Import, Convention => Intrinsic;
    begin
       if not Is_Open (Object.Reading_Converter) then
          Open (
@@ -589,8 +589,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Item : Streams.Stream_Element_Array)
    is
       function To_Pointer (Value : System.Address)
-         return access Streams.Root_Stream_Type'Class;
-      pragma Import (Intrinsic, To_Pointer);
+         return access Streams.Root_Stream_Type'Class
+         with Import, Convention => Intrinsic;
    begin
       if not Is_Open (Object.Writing_Converter) then
          Open (

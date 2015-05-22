@@ -125,21 +125,26 @@ private
    pragma Atomic (Counter);
 
    function sync_add_and_fetch (A1 : not null access Counter; A2 : Counter)
-      return Counter;
-   procedure sync_add_and_fetch (A1 : not null access Counter; A2 : Counter);
-   pragma Import (Intrinsic, sync_add_and_fetch, "__sync_add_and_fetch_4");
+      return Counter
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_4";
+   procedure sync_add_and_fetch (A1 : not null access Counter; A2 : Counter)
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_4";
 
    function sync_sub_and_fetch (A1 : not null access Counter; A2 : Counter)
-      return Counter;
-   pragma Import (Intrinsic, sync_sub_and_fetch, "__sync_sub_and_fetch_4");
+      return Counter
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_4";
 
    function sync_bool_compare_and_swap (
       A1 : not null access Counter;
       A2 : Counter;
       A3 : Counter)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap,
-      "__sync_bool_compare_and_swap_4");
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__sync_bool_compare_and_swap_4";
 
    type Mutex is limited record
       Handle : C.winnt.HANDLE;

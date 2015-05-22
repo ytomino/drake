@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Command_Line;
 with Ada.Environment_Variables;
 procedure cmdline is

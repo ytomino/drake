@@ -5,12 +5,13 @@ package body System.Secondary_Stack is
 
    type Unsigned is mod 2 ** Integer'Size;
 
-   function clz (X : Unsigned) return Unsigned;
-   pragma Import (Intrinsic, clz, "__builtin_clz");
+   function clz (X : Unsigned) return Unsigned
+      with Import, Convention => Intrinsic, External_Name => "__builtin_clz";
 
-   procedure unreachable;
+   procedure unreachable
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_unreachable";
    pragma No_Return (unreachable);
-   pragma Import (Intrinsic, unreachable, "__builtin_unreachable");
 
    --  implementation
 

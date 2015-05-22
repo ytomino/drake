@@ -78,16 +78,19 @@ package Ada.Directories.Information is
    function Identity (Directory_Entry : Directory_Entry_Type) return File_Id;
 
    --  unimplemented, source-level compatibility with POSIX
-   function Owner (Name : String) return String;
-   function Owner (Directory_Entry : Directory_Entry_Type) return String;
-   function Group (Name : String) return String;
-   function Group (Directory_Entry : Directory_Entry_Type) return String;
-   function Read_Symbolic_Link (Name : String) return String;
+   function Owner (Name : String) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
+   function Owner (Directory_Entry : Directory_Entry_Type) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
+   function Group (Name : String) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
+   function Group (Directory_Entry : Directory_Entry_Type) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
+   function Read_Symbolic_Link (Name : String) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
    function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
-      return String;
-   pragma Import (Ada, Owner, "__drake_program_error");
-   pragma Import (Ada, Group, "__drake_program_error");
-   pragma Import (Ada, Read_Symbolic_Link, "__drake_program_error");
+      return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
 
 private
 

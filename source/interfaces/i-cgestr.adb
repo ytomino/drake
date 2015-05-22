@@ -7,11 +7,13 @@ package body Interfaces.C.Generic_Strings is
 
    package libc is
 
-      function malloc (size : size_t) return chars_ptr;
-      pragma Import (Intrinsic, malloc, "__builtin_malloc");
+      function malloc (size : size_t) return chars_ptr
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_malloc";
 
-      procedure free (ptr : chars_ptr);
-      pragma Import (Intrinsic, free, "__builtin_free");
+      procedure free (ptr : chars_ptr)
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_free";
 
    end libc;
 
@@ -231,8 +233,10 @@ package body Interfaces.C.Generic_Strings is
                   s : not null access constant Element;
                   c : int;
                   n : size_t)
-                  return const_chars_ptr;
-               pragma Import (Intrinsic, memchr, "__builtin_memchr");
+                  return const_chars_ptr
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_memchr";
                P : constant const_chars_ptr := memchr (Item, 0, Length);
             begin
                if P = null then
@@ -248,8 +252,8 @@ package body Interfaces.C.Generic_Strings is
                   ws : not null access constant Element;
                   wc : int;
                   n : size_t)
-                  return const_chars_ptr;
-               pragma Import (C, wmemchr);
+                  return const_chars_ptr
+                  with Import, Convention => C;
                P : constant const_chars_ptr := wmemchr (Item, 0, Length);
             begin
                if P = null then
@@ -328,8 +332,9 @@ package body Interfaces.C.Generic_Strings is
       then
          declare
             function strlen (Item : not null access constant Element)
-               return size_t;
-            pragma Import (Intrinsic, strlen, "__builtin_strlen");
+               return size_t
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_strlen";
          begin
             return strlen (Item);
          end;
@@ -338,8 +343,8 @@ package body Interfaces.C.Generic_Strings is
       then
          declare
             function wcslen (Item : not null access constant Element)
-               return size_t;
-            pragma Import (C, wcslen);
+               return size_t
+               with Import, Convention => C;
          begin
             return wcslen (Item);
          end;

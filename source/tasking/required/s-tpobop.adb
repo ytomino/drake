@@ -77,8 +77,8 @@ package body System.Tasking.Protected_Objects.Operations is
          Entries.Downcast (The_Node);
       --  Params to access Entries.Protection_Entries'Class
       function To_Pointer (Value : Address)
-         return access Entries.Protection_Entries'Class;
-      pragma Import (Intrinsic, To_Pointer);
+         return access Entries.Protection_Entries'Class
+         with Import, Convention => Intrinsic;
       Object : constant not null access Entries.Protection_Entries'Class :=
          To_Pointer (Params);
       Index : constant Positive_Protected_Entry_Index :=
@@ -111,8 +111,8 @@ package body System.Tasking.Protected_Objects.Operations is
       Object : not null access Entries.Protection_Entries'Class)
    is
       function To_Address (Value : access Entries.Protection_Entries'Class)
-         return Address;
-      pragma Import (Intrinsic, To_Address);
+         return Address
+         with Import, Convention => Intrinsic;
       Taken : Synchronous_Objects.Queue_Node_Access;
    begin
       pragma Assert (Object.Entry_Bodies'First = 1);

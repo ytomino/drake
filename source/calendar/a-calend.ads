@@ -12,16 +12,17 @@ package Ada.Calendar is
    pragma Inline (Clock);
 
    function Year (Date : Time) return Year_Number;
-   pragma Pure_Function (Year);
-   pragma Inline (Year);
    function Month (Date : Time) return Month_Number;
-   pragma Pure_Function (Month);
-   pragma Inline (Month);
    function Day (Date : Time) return Day_Number;
-   pragma Pure_Function (Day);
-   pragma Inline (Day);
    function Seconds (Date : Time) return Day_Duration;
+
+   pragma Pure_Function (Year);
+   pragma Pure_Function (Month);
+   pragma Pure_Function (Day);
    pragma Pure_Function (Seconds);
+   pragma Inline (Year);
+   pragma Inline (Month);
+   pragma Inline (Day);
    pragma Inline (Seconds);
 
    procedure Split (
@@ -38,25 +39,28 @@ package Ada.Calendar is
       Seconds : Day_Duration := 0.0)
       return Time;
 
-   function "+" (Left : Time; Right : Duration) return Time;
-   function "+" (Left : Duration; Right : Time) return Time;
-   pragma Convention (Intrinsic, "+");
+   function "+" (Left : Time; Right : Duration) return Time
+      with Convention => Intrinsic;
+   function "+" (Left : Duration; Right : Time) return Time
+      with Convention => Intrinsic;
+   function "-" (Left : Time; Right : Duration) return Time
+      with Convention => Intrinsic;
+   function "-" (Left : Time; Right : Time) return Duration
+      with Convention => Intrinsic;
+
    pragma Pure_Function ("+");
-   pragma Inline_Always ("+");
-   function "-" (Left : Time; Right : Duration) return Time;
-   function "-" (Left : Time; Right : Time) return Duration;
-   pragma Convention (Intrinsic, "-");
    pragma Pure_Function ("-");
+   pragma Inline_Always ("+");
    pragma Inline_Always ("-");
 
-   function "<" (Left, Right : Time) return Boolean;
-   pragma Import (Intrinsic, "<");
-   function "<=" (Left, Right : Time) return Boolean;
-   pragma Import (Intrinsic, "<=");
-   function ">" (Left, Right : Time) return Boolean;
-   pragma Import (Intrinsic, ">");
-   function ">=" (Left, Right : Time) return Boolean;
-   pragma Import (Intrinsic, ">=");
+   function "<" (Left, Right : Time) return Boolean
+      with Import, Convention => Intrinsic;
+   function "<=" (Left, Right : Time) return Boolean
+      with Import, Convention => Intrinsic;
+   function ">" (Left, Right : Time) return Boolean
+      with Import, Convention => Intrinsic;
+   function ">=" (Left, Right : Time) return Boolean
+      with Import, Convention => Intrinsic;
 
    Time_Error : exception;
 

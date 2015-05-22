@@ -26,11 +26,11 @@ package body Ada.Calendar.Formatting is
 --  end record;
 
    function Shift_Left (Value : Packed_Split_Time; Amount : Natural)
-      return Packed_Split_Time;
-   pragma Import (Intrinsic, Shift_Left);
+      return Packed_Split_Time
+      with Import, Convention => Intrinsic;
    function Shift_Right (Value : Packed_Split_Time; Amount : Natural)
-      return Packed_Split_Time;
-   pragma Import (Intrinsic, Shift_Right);
+      return Packed_Split_Time
+      with Import, Convention => Intrinsic;
 
    function Packed_Split (
       Date : Time;

@@ -5,8 +5,9 @@ package System.Unwind.Backtrace is
    pragma Preelaborate;
 
    --  filled by gnatbind (init.c)
-   Exception_Tracebacks : Integer := 0; -- set by "-E" option
-   pragma Export (C, Exception_Tracebacks, "__gl_exception_tracebacks");
+   Exception_Tracebacks : Integer := 0 -- set by "-E" option
+      with Export,
+         Convention => C, External_Name => "__gl_exception_tracebacks";
 
    --  backtrace (a-excach.adb)
    procedure Call_Chain (Current : in out Exception_Occurrence)

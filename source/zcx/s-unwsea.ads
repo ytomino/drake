@@ -17,11 +17,11 @@ package System.Unwind.Searching is
       renames C.unwind.Unwind_ForcedUnwind;
 
    --  (a-exexpr-gcc.adb)
-   Others_Value : aliased constant C.char := 'O';
-   pragma Export (C, Others_Value, "__gnat_others_value");
+   Others_Value : aliased constant C.char := 'O'
+      with Export, Convention => C, External_Name => "__gnat_others_value";
 
-   All_Others_Value : aliased constant C.char := 'A';
-   pragma Export (C, All_Others_Value, "__gnat_all_others_value");
+   All_Others_Value : aliased constant C.char := 'A'
+      with Export, Convention => C, External_Name => "__gnat_all_others_value";
 
    --  personality function (raise-gcc.c)
    function Personality (
@@ -30,8 +30,9 @@ package System.Unwind.Searching is
       Exception_Class : C.unwind.Unwind_Exception_Class;
       Exception_Object : access C.unwind.struct_Unwind_Exception;
       Context : access C.unwind.struct_Unwind_Context)
-      return C.unwind.Unwind_Reason_Code;
-   pragma Export (C, Personality, "__gnat_personality_v0");
+      return C.unwind.Unwind_Reason_Code
+      with Export, Convention => C, External_Name => "__gnat_personality_v0";
+
    pragma Compile_Time_Error (
       Personality'Access = C.unwind.Unwind_Personality_Fn'(null),
       "this expression is always false, for type check purpose");

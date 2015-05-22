@@ -87,14 +87,14 @@ package Ada.Numerics.Generic_Complex_Types is
 
    function "**" (Left : Imaginary; Right : Integer) return Complex;
 
-   function "<" (Left, Right : Imaginary) return Boolean;
-   pragma Import (Intrinsic, "<");
-   function "<=" (Left, Right : Imaginary) return Boolean;
-   pragma Import (Intrinsic, "<=");
-   function ">" (Left, Right : Imaginary) return Boolean;
-   pragma Import (Intrinsic, ">");
-   function ">=" (Left, Right : Imaginary) return Boolean;
-   pragma Import (Intrinsic, ">=");
+   function "<" (Left, Right : Imaginary) return Boolean
+      with Import, Convention => Intrinsic;
+   function "<=" (Left, Right : Imaginary) return Boolean
+      with Import, Convention => Intrinsic;
+   function ">" (Left, Right : Imaginary) return Boolean
+      with Import, Convention => Intrinsic;
+   function ">=" (Left, Right : Imaginary) return Boolean
+      with Import, Convention => Intrinsic;
 
    function "+" (Left : Complex; Right : Real'Base) return Complex;
    function "+" (Left : Real'Base; Right : Complex) return Complex;

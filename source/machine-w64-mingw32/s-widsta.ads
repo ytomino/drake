@@ -4,17 +4,17 @@ package System.Wide_Startup is
    pragma Preelaborate;
    pragma Linker_Options ("-municode");
 
-   wargc : Integer;
-   pragma Export (C, wargc, "__drake_wargc");
+   wargc : Integer
+      with Export, Convention => C, External_Name => "__drake_wargc";
 
-   wargv : Address;
-   pragma Export (C, wargv, "__drake_wargv");
+   wargv : Address
+      with Export, Convention => C, External_Name => "__drake_wargv";
 
-   wenvp : Address;
-   pragma Export (C, wenvp, "__drake_wenvp");
+   wenvp : Address
+      with Export, Convention => C, External_Name => "__drake_wenvp";
 
    function wmain (argc : Integer; argv : Address; envp : Address)
-      return Integer;
-   pragma Export (C, wmain, "wmain");
+      return Integer
+      with Export, Convention => C, External_Name => "wmain";
 
 end System.Wide_Startup;

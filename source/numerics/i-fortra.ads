@@ -9,9 +9,9 @@ package Interfaces.Fortran is
    type Real is new Float; -- implementation-defined
    type Double_Precision is new Long_Float; -- implementation-defined
 
-   type Logical is new Boolean;
+   type Logical is new Boolean
+      with Convention => Fortran;
    for Logical'Size use Integer'Size;
-   pragma Convention (Fortran, Logical);
 
    package Single_Precision_Complex_Types is
       new Ada.Numerics.Generic_Complex_Types (Real);
@@ -85,18 +85,18 @@ package Interfaces.Fortran is
 
    --  Logical_Star_n and Logical_Kind_n
 
-   type Logical_Kind_1 is new Boolean;
+   type Logical_Kind_1 is new Boolean
+      with Convention => Fortran;
    for Logical_Kind_1'Size use 8;
-   pragma Convention (Fortran, Logical_Kind_1);
-   type Logical_Kind_2 is new Boolean;
+   type Logical_Kind_2 is new Boolean
+      with Convention => Fortran;
    for Logical_Kind_2'Size use 16;
-   pragma Convention (Fortran, Logical_Kind_2);
-   type Logical_Kind_4 is new Boolean;
+   type Logical_Kind_4 is new Boolean
+      with Convention => Fortran;
    for Logical_Kind_4'Size use 32;
-   pragma Convention (Fortran, Logical_Kind_4);
-   type Logical_Kind_8 is new Boolean;
+   type Logical_Kind_8 is new Boolean
+      with Convention => Fortran;
    for Logical_Kind_8'Size use 64;
-   pragma Convention (Fortran, Logical_Kind_8);
 --  type Logical_Kind_16 is ...; -- supported in gfortran, but not in GNAT
 
    subtype Logical_Star_1 is Logical_Kind_1;

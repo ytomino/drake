@@ -31,14 +31,14 @@ package System.File_Systems is
    pragma Inline (Is_HFS);
 
    --  unimplemented
-   function Owner (FS : Non_Controlled_File_System) return String;
-   function Format_Name (FS : Non_Controlled_File_System) return String;
-   function Directory (FS : Non_Controlled_File_System) return String;
-   function Device (FS : Non_Controlled_File_System) return String;
-   pragma Import (Ada, Owner, "__drake_program_error");
-   pragma Import (Ada, Format_Name, "__drake_program_error");
-   pragma Import (Ada, Directory, "__drake_program_error");
-   pragma Import (Ada, Device, "__drake_program_error");
+   function Owner (FS : Non_Controlled_File_System) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
+   function Format_Name (FS : Non_Controlled_File_System) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
+   function Directory (FS : Non_Controlled_File_System) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
+   function Device (FS : Non_Controlled_File_System) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
 
    type File_System is record
       Data : aliased Non_Controlled_File_System;

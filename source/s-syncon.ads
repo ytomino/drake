@@ -26,9 +26,10 @@ package System.Synchronous_Control is
 
    --  enter abortable region (default is unabortable)
    --  also, implementation of System.Standard_Library.Abort_Undefer_Direct
-   procedure Unlock_Abort;
-   pragma Export (Ada, Unlock_Abort,
-      "system__standard_library__abort_undefer_direct");
+   procedure Unlock_Abort
+      with Export,
+         Convention => Ada,
+         External_Name => "system__standard_library__abort_undefer_direct";
 
    type Lock_Abort_Handler is access procedure;
    pragma Suppress (Access_Check, Lock_Abort_Handler);

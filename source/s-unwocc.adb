@@ -24,9 +24,10 @@ package body System.Unwind.Occurrences is
 
    --  for Set_Foreign_Occurrence
 
-   Foreign_Exception : aliased Exception_Data;
-   pragma Import (Ada, Foreign_Exception,
-      "system__exceptions__foreign_exception");
+   Foreign_Exception : aliased Exception_Data
+      with Import,
+         Convention => Ada,
+         External_Name => "system__exceptions__foreign_exception";
 
    --  weak reference for System.Unwind.Backtrace
 

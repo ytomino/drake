@@ -13,17 +13,18 @@ package body System.Unwind.Raising is
       --  equivalent to Propagate_GCC_Exception (a-exexpr-gcc.adb)
       procedure Propagate_Machine_Occurrence (
          Machine_Occurrence :
-            not null Representation.Machine_Occurrence_Access);
+            not null Representation.Machine_Occurrence_Access)
+         with Convention => C;
       pragma No_Return (Propagate_Machine_Occurrence);
-      pragma Convention (C, Propagate_Machine_Occurrence);
 
    end Separated;
 
    package body Separated is separate;
 
    function strlen (s : not null access Character)
-      return Storage_Elements.Storage_Count;
-   pragma Import (Intrinsic, strlen, "__builtin_strlen");
+      return Storage_Elements.Storage_Count
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
    --  equivalent to Complete_And_Propagate_Occurrence (a-exexpr-gcc.adb)
    procedure Propagate_Machine_Occurrence (

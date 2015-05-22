@@ -20,7 +20,7 @@ package Ada.Decimal is
       Divisor : Divisor_Type;
       Quotient : out Quotient_Type;
       Remainder : out Remainder_Type);
---  pragma Convention (Intrinsic, Divide);
+--    with Convention => Intrinsic; -- [gcc-4.9] cannot import it with aspect
    pragma Import (Intrinsic, Divide);
 
 end Ada.Decimal;

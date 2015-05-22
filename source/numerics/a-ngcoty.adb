@@ -27,15 +27,18 @@ package body Ada.Numerics.Generic_Complex_Types is
       begin
          if Float_Type'Digits <= Float'Digits then
             declare
-               function sinf (A1 : Float) return Float;
-               pragma Import (Intrinsic, sinf, "__builtin_sinf");
+               function sinf (A1 : Float) return Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_sinf";
             begin
                return Float_Type'Base (sinf (Float (X)));
             end;
          elsif Float_Type'Digits <= Long_Float'Digits then
             declare
-               function sin (A1 : Long_Float) return Long_Float;
-               pragma Import (Intrinsic, sin, "__builtin_sin");
+               function sin (A1 : Long_Float) return Long_Float
+                  with Import,
+                     Convention => Intrinsic, External_Name => "__builtin_sin";
             begin
                return Float_Type'Base (sin (Long_Float (X)));
             end;
@@ -55,15 +58,18 @@ package body Ada.Numerics.Generic_Complex_Types is
       begin
          if Float_Type'Digits <= Float'Digits then
             declare
-               function cosf (A1 : Float) return Float;
-               pragma Import (Intrinsic, cosf, "__builtin_cosf");
+               function cosf (A1 : Float) return Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_cosf";
             begin
                return Float_Type'Base (cosf (Float (X)));
             end;
          elsif Float_Type'Digits <= Long_Float'Digits then
             declare
-               function cos (A1 : Long_Float) return Long_Float;
-               pragma Import (Intrinsic, cos, "__builtin_cos");
+               function cos (A1 : Long_Float) return Long_Float
+                  with Import,
+                     Convention => Intrinsic, External_Name => "__builtin_cos";
             begin
                return Float_Type'Base (cos (Long_Float (X)));
             end;

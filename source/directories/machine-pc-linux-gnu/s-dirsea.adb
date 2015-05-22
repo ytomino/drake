@@ -27,8 +27,9 @@ package body System.Directory_Searching is
    procedure memcpy (
       dst : not null C.bits.dirent.struct_dirent64_ptr;
       src : not null C.bits.dirent.struct_dirent64_ptr;
-      n : Storage_Elements.Storage_Count);
-   pragma Import (Intrinsic, memcpy, "__builtin_memcpy");
+      n : Storage_Elements.Storage_Count)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memcpy";
 
    --  implementation
 

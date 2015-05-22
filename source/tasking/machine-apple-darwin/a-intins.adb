@@ -50,8 +50,9 @@ package body Ada.Interrupts.Inside is
    procedure Handler (
       Signal_Number : C.signed_int;
       Info : access C.signal.siginfo_t;
-      Context : C.void_ptr);
-   pragma Convention (C, Handler);
+      Context : C.void_ptr)
+      with Convention => C;
+
    procedure Handler (
       Signal_Number : C.signed_int;
       Info : access C.signal.siginfo_t;

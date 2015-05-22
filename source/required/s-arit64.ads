@@ -6,8 +6,8 @@ package System.Arith_64 is
 
    --  implementation for multiplication with Overflow_Check (arit64.c)
    function Multiply (X, Y : Interfaces.Integer_64)
-      return Interfaces.Integer_64;
-   pragma Export (C, Multiply, "__gnat_mulv64");
+      return Interfaces.Integer_64
+      with Export, Convention => C, External_Name => "__gnat_mulv64";
 
    --  required for fixed-decimal (X * Y) / Z by compiler (s-arit64.ads)
    procedure Scaled_Divide (

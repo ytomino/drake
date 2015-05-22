@@ -23,8 +23,9 @@ package body System.Native_IO is
    pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
       "off_t is not 64bit");
 
-   function strlen (Item : not null access constant C.char) return C.size_t;
-   pragma Import (Intrinsic, strlen, "__builtin_strlen");
+   function strlen (Item : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
    package Name_Pointer_Conv is
       new Address_To_Named_Access_Conversions (Name_Character, Name_Pointer);

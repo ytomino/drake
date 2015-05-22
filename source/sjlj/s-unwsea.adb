@@ -17,9 +17,10 @@ package body System.Unwind.Searching is
    use type C.unsigned_long_long;
    use type C.unwind.sleb128_t;
 
-   Foreign_Exception : aliased Exception_Data;
-   pragma Import (Ada, Foreign_Exception,
-      "system__exceptions__foreign_exception");
+   Foreign_Exception : aliased Exception_Data
+      with Import,
+         Convention => Ada,
+         External_Name => "system__exceptions__foreign_exception";
 
    package unsigned_char_const_ptr_Conv is
       new Address_To_Constant_Access_Conversions (

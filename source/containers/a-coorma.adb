@@ -711,11 +711,11 @@ package body Ada.Containers.Ordered_Maps is
          Item : Map)
       is
          function To_Pointer (Value : System.Address)
-            return access Streams.Root_Stream_Type'Class;
-         pragma Import (Intrinsic, To_Pointer);
+            return access Streams.Root_Stream_Type'Class
+            with Import, Convention => Intrinsic;
          function To_Address (Value : access Streams.Root_Stream_Type'Class)
-            return System.Address;
-         pragma Import (Intrinsic, To_Address);
+            return System.Address
+            with Import, Convention => Intrinsic;
          procedure Process (
             Position : not null Binary_Trees.Node_Access;
             Params : System.Address);

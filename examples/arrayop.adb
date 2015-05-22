@@ -84,8 +84,8 @@ procedure arrayop is
 	procedure tc_ba4 is new Generic_Test_Comparison (Boolean, ba4);
 	pragma Debug (tc_ba4);
 	-- WordBool, see http://gcc.gnu.org/onlinedocs/gnat_rm/Effect-of-Convention-on-Representation.html
-	type Boolean_16 is new Boolean;
-	pragma Convention (C, Boolean_16);
+	type Boolean_16 is new Boolean
+		with Convention => C;
 	for Boolean_16'Size use 16;
 	type ba16 is array (Positive range <>) of Boolean_16;
 	procedure tb_ba16 is new Generic_Test_Bits (Boolean_16, ba16);
@@ -93,8 +93,8 @@ procedure arrayop is
 	procedure tc_ba16 is new Generic_Test_Comparison (Boolean_16, ba16);
 	pragma Debug (tc_ba16);
 	-- LongBool
-	type Boolean_32 is new Boolean;
-	pragma Convention (C, Boolean_32);
+	type Boolean_32 is new Boolean
+		with Convention => C;
 	for Boolean_32'Size use 32;
 	type ba32 is array (Positive range <>) of Boolean_32;
 	procedure tb_ba32 is new Generic_Test_Bits (Boolean_32, ba32);

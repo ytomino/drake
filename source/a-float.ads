@@ -28,6 +28,7 @@ package Ada.Float is
       type Float_Type is digits <>;
    function Is_Negative (X : Float_Type) return Boolean;
    pragma Import (Intrinsic, Is_Negative);
+   --  [gcc-4.9] cannot import it with aspect
 
    generic
       type Dividend_Type is digits <>;

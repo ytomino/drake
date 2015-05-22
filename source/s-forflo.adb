@@ -2,10 +2,12 @@ with System.Long_Long_Float_Divisions;
 package body System.Formatting.Float is
    pragma Suppress (All_Checks);
 
-   function roundl (X : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, roundl, "__builtin_roundl");
-   function truncl (X : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, truncl, "__builtin_truncl");
+   function roundl (X : Long_Long_Float) return Long_Long_Float
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_roundl";
+   function truncl (X : Long_Long_Float) return Long_Long_Float
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_truncl";
 
    procedure Split (
       X : Longest_Unsigned_Float;
@@ -176,12 +178,15 @@ package body System.Formatting.Float is
    is
       pragma Suppress (All_Checks);
       use type Unsigned;
-      function isnan (X : Long_Long_Float) return Integer;
-      pragma Import (Intrinsic, isnan, "__builtin_isnanl");
-      function isinf (X : Long_Long_Float) return Integer;
-      pragma Import (Intrinsic, isinf, "__builtin_isinfl");
-      function signbit (X : Long_Long_Float) return Integer;
-      pragma Import (Intrinsic, signbit, "__builtin_signbitl");
+      function isnan (X : Long_Long_Float) return Integer
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_isnanl";
+      function isinf (X : Long_Long_Float) return Integer
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_isinfl";
+      function signbit (X : Long_Long_Float) return Integer
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_signbitl";
    begin
       Last := Item'First - 1;
       if signbit (Value) /= 0 then

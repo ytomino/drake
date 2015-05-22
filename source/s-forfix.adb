@@ -17,11 +17,13 @@ package body System.Formatting.Fixed is
       Aft_Width : Positive)
    is
       pragma Suppress (All_Checks);
-      function signbit (X : Long_Long_Float) return Integer;
-      pragma Import (Intrinsic, signbit, "__builtin_signbitl");
+      function signbit (X : Long_Long_Float) return Integer
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_signbitl";
       function modfl (value : Long_Long_Float; iptr : access Long_Long_Float)
-         return Long_Long_Float;
-      pragma Import (Intrinsic, modfl, "__builtin_modfl");
+         return Long_Long_Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_modfl";
       Item_Fore : aliased Long_Long_Float;
       Aft : Long_Long_Float;
       Scaled_Aft : Long_Long_Float;

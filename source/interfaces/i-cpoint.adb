@@ -4,10 +4,10 @@ package body Interfaces.C.Pointers is
    use type System.Storage_Elements.Storage_Offset;
 
    --  no System.Address_To_Access_Conversions for modifying to Pure
-   function To_Pointer (Value : System.Address) return access Element;
-   pragma Import (Intrinsic, To_Pointer);
-   function To_Address (Value : access constant Element) return System.Address;
-   pragma Import (Intrinsic, To_Address);
+   function To_Pointer (Value : System.Address) return access Element
+      with Import, Convention => Intrinsic;
+   function To_Address (Value : access constant Element) return System.Address
+      with Import, Convention => Intrinsic;
 
    --  implementation
 

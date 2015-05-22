@@ -5,8 +5,8 @@ package System.Exp_LLI is
    pragma Pure;
 
    function Shift_Left (Value : Long_Long_Integer; Amount : Natural)
-      return Long_Long_Integer;
-   pragma Import (Intrinsic, Shift_Left);
+      return Long_Long_Integer
+      with Import, Convention => Intrinsic;
 
    --  required for "**" with checking by compiler (s-explli.ads)
    function Exp_Long_Long_Integer is

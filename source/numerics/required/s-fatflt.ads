@@ -6,26 +6,30 @@ package System.Fat_Flt is
    package Attr_Float is
 
       --  required for Float'Adjacent by compiler (s-fatgen.ads)
-      function Adjacent (X, Towards : Float) return Float;
-      pragma Import (Intrinsic, Adjacent, "__builtin_nextafterf");
+      function Adjacent (X, Towards : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_nextafterf";
 
       --  required for Float'Ceiling by compiler (s-fatgen.ads)
-      function Ceiling (X : Float) return Float;
-      pragma Import (Intrinsic, Ceiling, "__builtin_ceilf");
+      function Ceiling (X : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_ceilf";
 
       --  required for Float'Compose by compiler (s-fatgen.ads)
       function Compose (Fraction : Float; Exponent : Integer) return Float;
 
       --  required for Float'Copy_Sign by compiler (s-fatgen.ads)
-      function Copy_Sign (X, Y : Float) return Float;
-      pragma Import (Intrinsic, Copy_Sign, "__builtin_copysignf");
+      function Copy_Sign (X, Y : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_copysignf";
 
       --  required for Float'Exponent by compiler (s-fatgen.ads)
       function Exponent (X : Float) return Integer;
 
       --  required for Float'Floor by compiler (s-fatgen.ads)
-      function Floor (X : Float) return Float;
-      pragma Import (Intrinsic, Floor, "__builtin_floorf");
+      function Floor (X : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_floorf";
 
       --  required for Float'Fraction by compiler (s-fatgen.ads)
       function Fraction (X : Float) return Float;
@@ -37,8 +41,9 @@ package System.Fat_Flt is
       function Machine (X : Float) return Float;
 
       --  required for Float'Machine_Rounding by compiler (s-fatgen.ads)
-      function Machine_Rounding (X : Float) return Float;
-      pragma Import (Intrinsic, Machine_Rounding, "__builtin_nearbyintf");
+      function Machine_Rounding (X : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_nearbyintf";
 
       --  required for Float'Model by compiler (s-fatgen.ads)
       function Model (X : Float) return Float
@@ -48,23 +53,27 @@ package System.Fat_Flt is
       function Pred (X : Float) return Float;
 
       --  required for Float'Remainder by compiler (s-fatgen.ads)
-      function Remainder (X, Y : Float) return Float;
-      pragma Import (Intrinsic, Remainder, "__builtin_remainderf");
+      function Remainder (X, Y : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_remainderf";
 
       --  required for Float'Rounding by compiler (s-fatgen.ads)
-      function Rounding (X : Float) return Float;
-      pragma Import (Intrinsic, Rounding, "__builtin_roundf");
+      function Rounding (X : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_roundf";
 
       --  required for Float'Scaling by compiler (s-fatgen.ads)
-      function Scaling (X : Float; Adjustment : Integer) return Float;
-      pragma Import (Intrinsic, Scaling, "__builtin_ldexpf");
+      function Scaling (X : Float; Adjustment : Integer) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_ldexpf";
 
       --  required for Float'Succ by compiler (s-fatgen.ads)
       function Succ (X : Float) return Float;
 
       --  required for Float'Truncation by compiler (s-fatgen.ads)
-      function Truncation (X : Float) return Float;
-      pragma Import (Intrinsic, Truncation, "__builtin_truncf");
+      function Truncation (X : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_truncf";
 
       --  required for Float'Unbiased_Rounding by compiler (s-fatgen.ads)
       function Unbiased_Rounding (X : Float) return Float;

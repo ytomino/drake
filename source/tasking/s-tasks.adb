@@ -26,20 +26,25 @@ package body System.Tasks is
       A1 : not null access Activation_State;
       A2 : Activation_State;
       A3 : Activation_State)
-      return Boolean;
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__sync_bool_compare_and_swap_1";
    function sync_bool_compare_and_swap (
       A1 : not null access Termination_State;
       A2 : Termination_State;
       A3 : Termination_State)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap,
-      "__sync_bool_compare_and_swap_1");
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__sync_bool_compare_and_swap_1";
 
    function sync_add_and_fetch (
       A1 : not null access Counter;
       A2 : Counter)
-      return Counter;
-   pragma Import (Intrinsic, sync_add_and_fetch, "__sync_add_and_fetch_4");
+      return Counter
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_4";
 
    --  shared lock
 
@@ -407,8 +412,9 @@ package body System.Tasks is
    TR_Not_Freed : constant := 1;
 
    function Thread (Rec : Native_Tasks.Parameter_Type)
-      return Native_Tasks.Result_Type;
-   pragma Convention (Thread_Body_CC, Thread);
+      return Native_Tasks.Result_Type
+      with Convention => Thread_Body_CC;
+
    function Thread (Rec : Native_Tasks.Parameter_Type)
       return Native_Tasks.Result_Type
    is

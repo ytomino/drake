@@ -28,72 +28,85 @@ package System.Unwind.Raising is
    --  implementation for raising (a-except-2005.adb)
    procedure Raise_E (
       E : Exception_Data_Access;
-      Message : String);
+      Message : String)
+      with Export,
+         Convention => Ada,
+         External_Name => "ada__exceptions__raise_exception";
    pragma No_Return (Raise_E);
-   pragma Export (Ada, Raise_E, "ada__exceptions__raise_exception");
 
    procedure Raise_Exception_From_Here (
       E : not null Exception_Data_Access;
       File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line);
+      Line : Integer := Ada.Debug.Line)
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_raise_exception_from_here";
    pragma No_Return (Raise_Exception_From_Here);
-   pragma Export (Ada, Raise_Exception_From_Here,
-      "__drake_raise_exception_from_here");
 
    procedure Raise_Exception_From_Here_With (
       E : not null Exception_Data_Access;
       File : String := Ada.Debug.File;
       Line : Integer := Ada.Debug.Line;
-      Message : String);
+      Message : String)
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_raise_exception_from_here_with";
    pragma No_Return (Raise_Exception_From_Here_With);
-   pragma Export (Ada, Raise_Exception_From_Here_With,
-      "__drake_raise_exception_from_here_with");
 
    --  implementation for reraising (a-except-2005.adb)
-   procedure Reraise (X : Exception_Occurrence);
+   procedure Reraise (X : Exception_Occurrence)
+      with Export,
+         Convention => Ada,
+         External_Name => "ada__exceptions__reraise_occurrence_always";
    pragma No_Return (Reraise);
-   pragma Export (Ada, Reraise, "ada__exceptions__reraise_occurrence_always");
 
    --  implementation for reraising from when all others (a-except-2005.adb)
-   procedure Reraise_From_All_Others (X : Exception_Occurrence);
+   procedure Reraise_From_All_Others (X : Exception_Occurrence)
+      with Export,
+         Convention => Ada,
+         External_Name => "ada__exceptions__reraise_occurrence_no_defer";
    pragma No_Return (Reraise_From_All_Others);
-   pragma Export (Ada, Reraise_From_All_Others,
-      "ada__exceptions__reraise_occurrence_no_defer");
 
    --  implementation for raising from controlled objects (a-except-2005.adb)
-   procedure Reraise_From_Controlled_Operation (X : Exception_Occurrence);
+   procedure Reraise_From_Controlled_Operation (X : Exception_Occurrence)
+      with Export,
+         Convention => Ada,
+         External_Name => "__gnat_raise_from_controlled_operation";
    pragma No_Return (Reraise_From_Controlled_Operation);
-   pragma Export (Ada, Reraise_From_Controlled_Operation,
-      "__gnat_raise_from_controlled_operation");
 
    --  equivalent to Reraise_GCC_Exception (a-exexpr-gcc.adb)
    --  for nested controlled types
    procedure Reraise_Machine_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
-   pragma Export (C, Reraise_Machine_Occurrence, "__gnat_reraise_zcx");
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
+      with Export, Convention => C, External_Name => "__gnat_reraise_zcx";
 
    --  implementation for raising from finalize_library (a-except-2005.adb)
-   procedure Reraise_Library_Exception_If_Any;
-   pragma Export (Ada, Reraise_Library_Exception_If_Any,
-      "__gnat_reraise_library_exception_if_any");
+   procedure Reraise_Library_Exception_If_Any
+      with Export,
+         Convention => Ada,
+         External_Name => "__gnat_reraise_library_exception_if_any";
 
    --  utility for implementing a dummy subprogram
-   procedure Raise_Program_Error;
-   pragma Export (Ada, Raise_Program_Error, "__drake_program_error");
+   procedure Raise_Program_Error
+      with Export, Convention => Ada, External_Name => "__drake_program_error";
 
    --  for runtime checks (a-except-2005.adb)
 
-   procedure rcheck_00 (File : not null access Character; Line : Integer);
+   procedure rcheck_00 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Access_Check";
    pragma No_Return (rcheck_00);
-   pragma Export (C, rcheck_00, "__gnat_rcheck_CE_Access_Check");
 
-   procedure rcheck_02 (File : not null access Character; Line : Integer);
+   procedure rcheck_02 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_CE_Discriminant_Check";
    pragma No_Return (rcheck_02);
-   pragma Export (C, rcheck_02, "__gnat_rcheck_CE_Discriminant_Check");
 
-   procedure rcheck_03 (File : not null access Character; Line : Integer);
+   procedure rcheck_03 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Divide_By_Zero";
    pragma No_Return (rcheck_03);
-   pragma Export (C, rcheck_03, "__gnat_rcheck_CE_Divide_By_Zero");
 
    --  equivalent to rcheck_03
    procedure Zero_Division (
@@ -101,29 +114,35 @@ package System.Unwind.Raising is
       Line : Integer := Ada.Debug.Line);
    pragma No_Return (Zero_Division);
 
-   procedure rcheck_04 (File : not null access Character; Line : Integer);
+   procedure rcheck_04 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Explicit_Raise";
    pragma No_Return (rcheck_04);
-   pragma Export (C, rcheck_04, "__gnat_rcheck_CE_Explicit_Raise");
 
-   procedure rcheck_05 (File : not null access Character; Line : Integer);
+   procedure rcheck_05 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Index_Check";
    pragma No_Return (rcheck_05);
-   pragma Export (C, rcheck_05, "__gnat_rcheck_CE_Index_Check");
 
-   procedure rcheck_06 (File : not null access Character; Line : Integer);
+   procedure rcheck_06 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Invalid_Data";
    pragma No_Return (rcheck_06);
-   pragma Export (C, rcheck_06, "__gnat_rcheck_CE_Invalid_Data");
 
-   procedure rcheck_07 (File : not null access Character; Line : Integer);
+   procedure rcheck_07 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Length_Check";
    pragma No_Return (rcheck_07);
-   pragma Export (C, rcheck_07, "__gnat_rcheck_CE_Length_Check");
 
-   procedure rcheck_09 (File : not null access Character; Line : Integer);
+   procedure rcheck_09 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Null_Not_Allowed";
    pragma No_Return (rcheck_09);
-   pragma Export (C, rcheck_09, "__gnat_rcheck_CE_Null_Not_Allowed");
 
-   procedure rcheck_10 (File : not null access Character; Line : Integer);
+   procedure rcheck_10 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Overflow_Check";
    pragma No_Return (rcheck_10);
-   pragma Export (C, rcheck_10, "__gnat_rcheck_CE_Overflow_Check");
 
    --  equivalent to rcheck_10
    procedure Overflow (
@@ -131,62 +150,82 @@ package System.Unwind.Raising is
       Line : Integer := Ada.Debug.Line);
    pragma No_Return (Overflow);
 
-   procedure rcheck_12 (File : not null access Character; Line : Integer);
+   procedure rcheck_12 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Range_Check";
    pragma No_Return (rcheck_12);
-   pragma Export (C, rcheck_12, "__gnat_rcheck_CE_Range_Check");
 
-   procedure rcheck_13 (File : not null access Character; Line : Integer);
+   procedure rcheck_13 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_CE_Tag_Check";
    pragma No_Return (rcheck_13);
-   pragma Export (C, rcheck_13, "__gnat_rcheck_CE_Tag_Check");
 
-   procedure rcheck_14 (File : not null access Character; Line : Integer);
+   procedure rcheck_14 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_PE_Access_Before_Elaboration";
    pragma No_Return (rcheck_14);
-   pragma Export (C, rcheck_14, "__gnat_rcheck_PE_Access_Before_Elaboration");
 
-   procedure rcheck_15 (File : not null access Character; Line : Integer);
+   procedure rcheck_15 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_PE_Accessibility_Check";
    pragma No_Return (rcheck_15);
-   pragma Export (C, rcheck_15, "__gnat_rcheck_PE_Accessibility_Check");
 
-   procedure rcheck_22 (File : not null access Character; Line : Integer);
+   procedure rcheck_22 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_PE_Explicit_Raise";
    pragma No_Return (rcheck_22);
-   pragma Export (C, rcheck_22, "__gnat_rcheck_PE_Explicit_Raise");
 
-   procedure rcheck_23 (File : not null access Character; Line : Integer);
+   procedure rcheck_23 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_PE_Finalize_Raised_Exception";
    pragma No_Return (rcheck_23);
-   pragma Export (C, rcheck_23, "__gnat_rcheck_PE_Finalize_Raised_Exception");
 
-   procedure rcheck_24 (File : not null access Character; Line : Integer);
+   procedure rcheck_24 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_PE_Implicit_Return";
    pragma No_Return (rcheck_24);
-   pragma Export (C, rcheck_24, "__gnat_rcheck_PE_Implicit_Return");
 
-   procedure rcheck_25 (File : not null access Character; Line : Integer);
+   procedure rcheck_25 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_PE_Misaligned_Address_Value";
    pragma No_Return (rcheck_25);
-   pragma Export (C, rcheck_25, "__gnat_rcheck_PE_Misaligned_Address_Value");
 
-   procedure rcheck_26 (File : not null access Character; Line : Integer);
+   procedure rcheck_26 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_PE_Missing_Return";
    pragma No_Return (rcheck_26);
-   pragma Export (C, rcheck_26, "__gnat_rcheck_PE_Missing_Return");
 
-   procedure rcheck_27 (File : not null access Character; Line : Integer);
+   procedure rcheck_27 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_PE_Overlaid_Controlled_Object";
    pragma No_Return (rcheck_27);
-   pragma Export (C, rcheck_27, "__gnat_rcheck_PE_Overlaid_Controlled_Object");
 
-   procedure rcheck_30 (File : not null access Character; Line : Integer);
+   procedure rcheck_30 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_PE_Unchecked_Union_Restriction";
    pragma No_Return (rcheck_30);
-   pragma Export (C, rcheck_30,
-      "__gnat_rcheck_PE_Unchecked_Union_Restriction");
 
-   procedure rcheck_32 (File : not null access Character; Line : Integer);
+   procedure rcheck_32 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_SE_Empty_Storage_Pool";
    pragma No_Return (rcheck_32);
-   pragma Export (C, rcheck_32, "__gnat_rcheck_SE_Empty_Storage_Pool");
 
-   procedure rcheck_33 (File : not null access Character; Line : Integer);
+   procedure rcheck_33 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_SE_Explicit_Raise";
    pragma No_Return (rcheck_33);
-   pragma Export (C, rcheck_33, "__gnat_rcheck_SE_Explicit_Raise");
 
-   procedure rcheck_35 (File : not null access Character; Line : Integer);
+   procedure rcheck_35 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C, External_Name => "__gnat_rcheck_SE_Object_Too_Large";
    pragma No_Return (rcheck_35);
-   pragma Export (C, rcheck_35, "__gnat_rcheck_SE_Object_Too_Large");
 
    procedure Save_Exception (
       X : out Exception_Occurrence;
@@ -199,25 +238,28 @@ package System.Unwind.Raising is
    procedure Save_E (
       X : out Exception_Occurrence;
       E : not null Exception_Data_Access;
-      Message : String);
-   pragma Export (Ada, Save_E, "__drake_save_exception");
+      Message : String)
+      with Export,
+         Convention => Ada, External_Name => "__drake_save_exception";
 
    procedure Save_Exception_From_Here (
       X : out Exception_Occurrence;
       E : not null Exception_Data_Access;
       File : String := Ada.Debug.File;
-      Line : Integer := Ada.Debug.Line);
-   pragma Export (Ada, Save_Exception_From_Here,
-      "__drake_save_exception_from_here");
+      Line : Integer := Ada.Debug.Line)
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_save_exception_from_here";
 
    procedure Save_Exception_From_Here_With (
       X : out Exception_Occurrence;
       E : not null Exception_Data_Access;
       File : String := Ada.Debug.File;
       Line : Integer := Ada.Debug.Line;
-      Message : String);
-   pragma Export (Ada, Save_Exception_From_Here_With,
-      "__drake_save_exception_from_here_with");
+      Message : String)
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_save_exception_from_here_with";
 
    --  excluding code range
    function AAA return Address;
@@ -228,8 +270,9 @@ package System.Unwind.Raising is
    --  in drake, only the simple form of "catch exception" is supported.
 
    --  (s-excdeb.ads)
-   procedure Debug_Raise_Exception (E : not null Exception_Data_Access);
-   pragma Export (Ada, Debug_Raise_Exception, "__gnat_debug_raise_exception");
+   procedure Debug_Raise_Exception (E : not null Exception_Data_Access)
+      with Export,
+         Convention => Ada, External_Name => "__gnat_debug_raise_exception";
 
 --  procedure __gnat_unhandled_exception (E : Exception_Data_Ptr);
 --  procedure __gnat_debug_raise_assert_failure;

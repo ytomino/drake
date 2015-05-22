@@ -66,15 +66,18 @@ package body Ada.Numerics.Distributions is
       begin
          if Float_Type'Digits <= Float'Digits then
             declare
-               function logf (A1 : Float) return Float;
-               pragma Import (Intrinsic, logf, "__builtin_logf");
+               function logf (A1 : Float) return Float
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__builtin_logf";
             begin
                return Float_Type'Base (logf (Float (X)));
             end;
          elsif Float_Type'Digits <= Long_Float'Digits then
             declare
-               function log (A1 : Long_Float) return Long_Float;
-               pragma Import (Intrinsic, log, "__builtin_log");
+               function log (A1 : Long_Float) return Long_Float
+                  with Import,
+                     Convention => Intrinsic, External_Name => "__builtin_log";
             begin
                return Float_Type'Base (log (Long_Float (X)));
             end;

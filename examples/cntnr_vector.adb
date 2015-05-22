@@ -1,4 +1,3 @@
-pragma Ada_2012;
 with Ada.Characters.ASCII.Handling;
 with Ada.Containers.Indefinite_Vectors;
 with Ada.Containers.Limited_Vectors;

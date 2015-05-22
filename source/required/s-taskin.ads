@@ -60,8 +60,8 @@ package System.Tasking is
    pragma Suppress_Initialization (Task_List);
 
    --  required for abort statement by compiler (s-taskin.ads)
-   function Self return Task_Id;
-   pragma Import (Ada, Self, "__drake_current_task");
+   function Self return Task_Id
+      with Import, Convention => Ada, External_Name => "__drake_current_task";
 
    type Storage_Size_Handler is access function (T : Task_Id)
       return Storage_Elements.Storage_Count;

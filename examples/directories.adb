@@ -1,5 +1,4 @@
 -- *** this line is for test ***
-pragma Ada_2012;
 with Ada.Calendar;
 with Ada.Command_Line;
 with Ada.Credentials;

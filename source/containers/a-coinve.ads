@@ -428,31 +428,41 @@ private
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Constant_Reference_Type);
+         Item : out Constant_Reference_Type)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Constant_Reference_Type);
+         Item : Constant_Reference_Type)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Reference_Type);
+         Item : out Reference_Type)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Reference_Type);
+         Item : Reference_Type)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Vector_Iterator);
+         Item : out Vector_Iterator)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       function Missing_Input (
          Stream : not null access Streams.Root_Stream_Type'Class)
-         return Vector_Iterator;
+         return Vector_Iterator
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Vector_Iterator);
-
-      pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Input, "__drake_program_error");
-      pragma Import (Ada, Missing_Write, "__drake_program_error");
+         Item : Vector_Iterator)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
 
    end Streaming;
 

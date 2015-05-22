@@ -11,19 +11,22 @@ package nosig is
 
    procedure Install_Task_Exception_Handler (
       SEH : System.Address;
-      Signal_Stack : System.Address) is null;
-   pragma Export (Ada, Install_Task_Exception_Handler,
-      "__drake_install_task_exception_handler");
+      Signal_Stack : System.Address) is null
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_install_task_exception_handler";
 
-   procedure Reinstall_Exception_Handler is null;
-   pragma Export (Ada, Reinstall_Exception_Handler,
-      "__drake_reinstall_exception_handler");
+   procedure Reinstall_Exception_Handler is null
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_reinstall_exception_handler";
 
    --  Win64 SEH only
    function New_Machine_Occurrence_From_SEH (
       Exception_Record : System.Address)
-      return System.Address is (System.Null_Address);
-   pragma Export (Ada, New_Machine_Occurrence_From_SEH,
-      "__drake_new_machine_occurrence_from_seh");
+      return System.Address is (System.Null_Address)
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_new_machine_occurrence_from_seh";
 
 end nosig;

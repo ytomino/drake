@@ -11,9 +11,10 @@ package System.Unwind.Occurrences is
    --  implementation for catching object (a-except-2005.adb)
    procedure Save_Occurrence (
       Target : out Exception_Occurrence;
-      Source : Exception_Occurrence);
-   pragma Export (Ada, Save_Occurrence,
-      "ada__exceptions__save_occurrence");
+      Source : Exception_Occurrence)
+      with Export,
+         Convention => Ada,
+         External_Name => "ada__exceptions__save_occurrence";
 
    --  preparing
 
@@ -54,19 +55,21 @@ package System.Unwind.Occurrences is
       Machine_Occurrence : Representation.Machine_Occurrence_Access);
 
    --  implementation for tasking (a-except-2005.adb)
-   function Triggered_By_Abort return Boolean;
-   pragma Export (Ada, Triggered_By_Abort,
-      "ada__exceptions__triggered_by_abort");
+   function Triggered_By_Abort return Boolean
+      with Export,
+         Convention => Ada,
+         External_Name => "ada__exceptions__triggered_by_abort";
 
    --  handler
 
    --  unhandled handler (a-exexpr-gcc.adb)
    --  the symbol is required only in Win64 SEH.
    procedure Unhandled_Except_Handler (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
+      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_unhandled_except_handler";
    pragma No_Return (Unhandled_Except_Handler);
-   pragma Export (C, Unhandled_Except_Handler,
-      "__gnat_unhandled_except_handler");
 
    --  reporting
 

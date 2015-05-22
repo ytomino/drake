@@ -17,8 +17,8 @@ package System.Native_Tasks is
    subtype Result_Type is C.void_ptr;
 
    type Thread_Body_Type is access
-      function (Parameter : Parameter_Type) return Result_Type;
-   pragma Convention (C, Thread_Body_Type);
+      function (Parameter : Parameter_Type) return Result_Type
+      with Convention => C;
    pragma Convention_Identifier (Thread_Body_CC, C);
 
    procedure Create (
