@@ -21,54 +21,69 @@ package Interfaces is
    for Unsigned_64'Size use 64;
 
    function Shift_Left (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Shift_Left (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Shift_Left (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Shift_Left (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Shift_Left);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    function Shift_Right (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Shift_Right (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Shift_Right (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Shift_Right (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Shift_Right);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    function Shift_Right_Arithmetic (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Shift_Right_Arithmetic (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Shift_Right_Arithmetic (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Shift_Right_Arithmetic (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Shift_Right_Arithmetic);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    function Rotate_Left (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Rotate_Left (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Rotate_Left (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Rotate_Left (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Rotate_Left);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    function Rotate_Right (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8;
+      return Unsigned_8
+      with Import, Convention => Intrinsic;
    function Rotate_Right (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16;
+      return Unsigned_16
+      with Import, Convention => Intrinsic;
    function Rotate_Right (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32;
+      return Unsigned_32
+      with Import, Convention => Intrinsic;
    function Rotate_Right (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64;
-   pragma Import (Intrinsic, Rotate_Right);
+      return Unsigned_64
+      with Import, Convention => Intrinsic;
 
    --  extended from here
    --  Builtin-functions of gcc.

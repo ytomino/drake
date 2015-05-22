@@ -20,19 +20,19 @@ package C.icucore is
 
          U_SIZEOF_UCHAR : constant := 2;
 
-         type UChar is new Wide_Character;
-         pragma Convention (C, UChar);
-         type UChar_ptr is access all UChar;
+         type UChar is new Wide_Character
+            with Convention => C;
+         type UChar_ptr is access all UChar
+            with Convention => C;
          for UChar_ptr'Storage_Size use 0;
-         pragma Convention (C, UChar_ptr);
-         type UChar_const_ptr is access constant UChar;
+         type UChar_const_ptr is access constant UChar
+            with Convention => C;
          for UChar_const_ptr'Storage_Size use 0;
-         pragma Convention (C, UChar_const_ptr);
-         type UChar_array is array (C.size_t range <>) of aliased UChar;
-         pragma Convention (C, UChar_array);
+         type UChar_array is array (C.size_t range <>) of aliased UChar
+            with Convention => C;
 
-         type UChar32 is new Wide_Wide_Character;
-         pragma Convention (C, UChar32);
+         type UChar32 is new Wide_Wide_Character
+            with Convention => C;
 
       end umachine;
 
@@ -60,7 +60,8 @@ package C.icucore is
             U_BUFFER_OVERFLOW_ERROR,
             U_UNSUPPORTED_ERROR,
             U_STANDARD_ERROR_LIMIT,
-            U_PLUGIN_ERROR_LIMIT);
+            U_PLUGIN_ERROR_LIMIT)
+            with Convention => C;
          for UErrorCode use (
             U_USING_FALLBACK_WARNING => -128,
             U_ERROR_WARNING_LIMIT => -119,
@@ -83,7 +84,6 @@ package C.icucore is
             U_UNSUPPORTED_ERROR => 16,
             U_STANDARD_ERROR_LIMIT => 31,
             U_PLUGIN_ERROR_LIMIT => 16#10502#);
-         pragma Convention (C, UErrorCode);
          pragma Discard_Names (UErrorCode);
 
          function U_ERROR_LIMIT return UErrorCode
@@ -104,8 +104,8 @@ package C.icucore is
             UCNV_IRREGULAR,
             UCNV_RESET,
             UCNV_CLOSE,
-            UCNV_CLONE);
-         pragma Convention (C, UConverterCallbackReason);
+            UCNV_CLONE)
+            with Convention => C;
          pragma Discard_Names (UConverterCallbackReason);
 
          type UConverterFromUnicodeArgs is record
@@ -117,8 +117,8 @@ package C.icucore is
             target : access char;
             targetLimit : access constant char;
             offsets : access stdint.int32_t;
-         end record;
-         pragma Convention (C, UConverterFromUnicodeArgs);
+         end record
+            with Convention => C;
          pragma Suppress_Initialization (UConverterFromUnicodeArgs);
 
          type UConverterToUnicodeArgs is record
@@ -130,8 +130,8 @@ package C.icucore is
             target : access umachine.UChar;
             targetLimit : access constant umachine.UChar;
             offsets : access stdint.int32_t;
-         end record;
-         pragma Convention (C, UConverterToUnicodeArgs);
+         end record
+            with Convention => C;
          pragma Suppress_Initialization (UConverterToUnicodeArgs);
 
          procedure UCNV_FROM_U_CALLBACK_STOP (
@@ -141,9 +141,9 @@ package C.icucore is
             length : stdint.int32_t;
             codePoint : umachine.UChar32;
             reason : UConverterCallbackReason;
-            err : access utypes.UErrorCode);
-         pragma Import (C, UCNV_FROM_U_CALLBACK_STOP,
-            "UCNV_FROM_U_CALLBACK_STOP");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "UCNV_FROM_U_CALLBACK_STOP";
 
          procedure UCNV_TO_U_CALLBACK_STOP (
             context : void_const_ptr;
@@ -151,9 +151,9 @@ package C.icucore is
             codeUnits : access constant char;
             length : stdint.int32_t;
             reason : UConverterCallbackReason;
-            err : access utypes.UErrorCode);
-         pragma Import (C, UCNV_TO_U_CALLBACK_STOP,
-            "UCNV_TO_U_CALLBACK_STOP");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "UCNV_TO_U_CALLBACK_STOP";
 
          procedure UCNV_FROM_U_CALLBACK_SKIP (
             context : void_const_ptr;
@@ -162,9 +162,9 @@ package C.icucore is
             length : stdint.int32_t;
             codePoint : umachine.UChar32;
             reason : UConverterCallbackReason;
-            err : access utypes.UErrorCode);
-         pragma Import (C, UCNV_FROM_U_CALLBACK_SKIP,
-            "UCNV_FROM_U_CALLBACK_SKIP");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "UCNV_FROM_U_CALLBACK_SKIP";
 
          procedure UCNV_FROM_U_CALLBACK_SUBSTITUTE (
             context : void_const_ptr;
@@ -173,9 +173,10 @@ package C.icucore is
             length : stdint.int32_t;
             codePoint : umachine.UChar32;
             reason : UConverterCallbackReason;
-            err : access utypes.UErrorCode);
-         pragma Import (C, UCNV_FROM_U_CALLBACK_SUBSTITUTE,
-            "UCNV_FROM_U_CALLBACK_SUBSTITUTE");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C,
+               External_Name => "UCNV_FROM_U_CALLBACK_SUBSTITUTE";
 
          procedure UCNV_FROM_U_CALLBACK_ESCAPE (
             context : void_const_ptr;
@@ -184,9 +185,9 @@ package C.icucore is
             length : stdint.int32_t;
             codePoint : umachine.UChar32;
             reason : UConverterCallbackReason;
-            err : access utypes.UErrorCode);
-         pragma Import (C, UCNV_FROM_U_CALLBACK_ESCAPE,
-            "UCNV_FROM_U_CALLBACK_ESCAPE");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "UCNV_FROM_U_CALLBACK_ESCAPE";
 
          procedure UCNV_TO_U_CALLBACK_SKIP (
             context : void_const_ptr;
@@ -194,9 +195,9 @@ package C.icucore is
             codeUnits : access constant char;
             length : stdint.int32_t;
             reason : UConverterCallbackReason;
-            err : access utypes.UErrorCode);
-         pragma Import (C, UCNV_TO_U_CALLBACK_SKIP,
-            "UCNV_TO_U_CALLBACK_SKIP");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "UCNV_TO_U_CALLBACK_SKIP";
 
          procedure UCNV_TO_U_CALLBACK_SUBSTITUTE (
             context : void_const_ptr;
@@ -204,9 +205,10 @@ package C.icucore is
             codeUnits : access constant char;
             length : stdint.int32_t;
             reason : UConverterCallbackReason;
-            err : access utypes.UErrorCode);
-         pragma Import (C, UCNV_TO_U_CALLBACK_SUBSTITUTE,
-            "UCNV_TO_U_CALLBACK_SUBSTITUTE");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C,
+               External_Name => "UCNV_TO_U_CALLBACK_SUBSTITUTE";
 
          procedure UCNV_TO_U_CALLBACK_ESCAPE (
             context : void_const_ptr;
@@ -214,14 +216,14 @@ package C.icucore is
             codeUnits : access constant char;
             length : stdint.int32_t;
             reason : UConverterCallbackReason;
-            err : access utypes.UErrorCode);
-         pragma Import (C, UCNV_TO_U_CALLBACK_ESCAPE,
-            "UCNV_TO_U_CALLBACK_ESCAPE");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "UCNV_TO_U_CALLBACK_ESCAPE";
 
       private
 
-         type UConverter is null record;
-         pragma Convention (C, UConverter);
+         type UConverter is null record
+            with Convention => C;
          pragma Suppress_Initialization (UConverter);
 
       end ucnv_err;
@@ -235,8 +237,8 @@ package C.icucore is
             codeUnits : access constant char;
             length : stdint.int32_t;
             reason : ucnv_err.UConverterCallbackReason;
-            pErrorCode : access utypes.UErrorCode);
-         pragma Convention (C, UConverterToUCallback);
+            pErrorCode : access utypes.UErrorCode)
+            with Convention => C;
 
          type UConverterFromUCallback is access procedure (
             context : void_const_ptr;
@@ -245,49 +247,54 @@ package C.icucore is
             length : stdint.int32_t;
             codePoint : umachine.UChar32;
             reason : ucnv_err.UConverterCallbackReason;
-            pErrorCode : access utypes.UErrorCode);
-         pragma Convention (C, UConverterFromUCallback);
+            pErrorCode : access utypes.UErrorCode)
+            with Convention => C;
 
          function ucnv_open (
             converterName : access constant char;
             err : access utypes.UErrorCode)
-            return ucnv_err.UConverter_ptr;
-         pragma Import (C, ucnv_open, "ucnv_open");
+            return ucnv_err.UConverter_ptr
+            with Import, Convention => C, External_Name => "ucnv_open";
 
          procedure ucnv_close (
-            converter : access ucnv_err.UConverter);
-         pragma Import (C, ucnv_close, "ucnv_close");
+            converter : access ucnv_err.UConverter)
+            with Import, Convention => C, External_Name => "ucnv_close";
 
          procedure ucnv_getSubstChars (
             converter : access constant ucnv_err.UConverter;
             subChars : access char;
             len : access stdint.int8_t;
-            err : access utypes.UErrorCode);
-         pragma Import (C, ucnv_getSubstChars, "ucnv_getSubstChars");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "ucnv_getSubstChars";
 
          procedure ucnv_setSubstChars (
             converter : access ucnv_err.UConverter;
             subChars : access constant char;
             len : stdint.int8_t;
-            err : access utypes.UErrorCode);
-         pragma Import (C, ucnv_setSubstChars, "ucnv_setSubstChars");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "ucnv_setSubstChars";
 
          function ucnv_getMinCharSize (
             converter : access constant ucnv_err.UConverter)
-            return stdint.int8_t;
-         pragma Import (C, ucnv_getMinCharSize, "ucnv_getMinCharSize");
+            return stdint.int8_t
+            with Import,
+               Convention => C, External_Name => "ucnv_getMinCharSize";
 
          procedure ucnv_getToUCallBack (
             converter : access constant ucnv_err.UConverter;
             action : access UConverterToUCallback;
-            context : access void_const_ptr);
-         pragma Import (C, ucnv_getToUCallBack, "ucnv_getToUCallBack");
+            context : access void_const_ptr)
+            with Import,
+               Convention => C, External_Name => "ucnv_getToUCallBack";
 
          procedure ucnv_getFromUCallBack (
             converter : access constant ucnv_err.UConverter;
             action : access UConverterFromUCallback;
-            context : access void_const_ptr);
-         pragma Import (C, ucnv_getFromUCallBack, "ucnv_getFromUCallBack");
+            context : access void_const_ptr)
+            with Import,
+               Convention => C, External_Name => "ucnv_getFromUCallBack";
 
          procedure ucnv_setToUCallBack (
             converter : access ucnv_err.UConverter;
@@ -295,8 +302,9 @@ package C.icucore is
             newContext : void_const_ptr;
             oldAction : access UConverterToUCallback;
             oldContext : access void_const_ptr;
-            err : access utypes.UErrorCode);
-         pragma Import (C, ucnv_setToUCallBack, "ucnv_setToUCallBack");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "ucnv_setToUCallBack";
 
          procedure ucnv_setFromUCallBack (
             converter : access ucnv_err.UConverter;
@@ -304,8 +312,9 @@ package C.icucore is
             newContext : void_const_ptr;
             oldAction : access UConverterFromUCallback;
             oldContext : access void_const_ptr;
-            err : access utypes.UErrorCode);
-         pragma Import (C, ucnv_setFromUCallBack, "ucnv_setFromUCallBack");
+            err : access utypes.UErrorCode)
+            with Import,
+               Convention => C, External_Name => "ucnv_setFromUCallBack";
 
          procedure ucnv_fromUnicode (
             converter : access ucnv_err.UConverter;
@@ -315,8 +324,8 @@ package C.icucore is
             sourceLimit : access constant umachine.UChar;
             offsets : access stdint.int32_t;
             flush : umachine.UBool;
-            err : access utypes.UErrorCode);
-         pragma Import (C, ucnv_fromUnicode, "ucnv_fromUnicode");
+            err : access utypes.UErrorCode)
+            with Import, Convention => C, External_Name => "ucnv_fromUnicode";
 
          procedure ucnv_toUnicode (
             converter : access ucnv_err.UConverter;
@@ -326,8 +335,8 @@ package C.icucore is
             sourceLimit : access constant char;
             offsets : access stdint.int32_t;
             flush : umachine.UBool;
-            err : access utypes.UErrorCode);
-         pragma Import (C, ucnv_toUnicode, "ucnv_toUnicode");
+            err : access utypes.UErrorCode)
+            with Import, Convention => C, External_Name => "ucnv_toUnicode";
 
       end ucnv;
 

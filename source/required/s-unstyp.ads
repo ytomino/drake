@@ -10,10 +10,11 @@ package System.Unsigned_Types is
    type Long_Unsigned is mod 2 ** Long_Integer'Size;
    type Long_Long_Unsigned is mod 2 ** Long_Long_Integer'Size;
 
-   function Shift_Left (Value : Unsigned; Amount : Natural) return Unsigned;
+   function Shift_Left (Value : Unsigned; Amount : Natural) return Unsigned
+      with Import, Convention => Intrinsic;
    function Shift_Left (Value : Long_Long_Unsigned; Amount : Natural)
-      return Long_Long_Unsigned;
-   pragma Import (Intrinsic, Shift_Left);
+      return Long_Long_Unsigned
+      with Import, Convention => Intrinsic;
 
    --  required for packed boolean arrays by compiler (s-unstyp.ads)
 

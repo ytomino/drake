@@ -13,9 +13,10 @@ package body Ada.Naked_Text_IO is
    use type Streams.Stream_Element_Offset;
    use type System.UTF_Conversions.UCS_4;
 
-   procedure unreachable;
+   procedure unreachable
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_unreachable";
    pragma No_Return (unreachable);
-   pragma Import (Intrinsic, unreachable, "__builtin_unreachable");
 
    --  the parameter Form
 
@@ -258,8 +259,8 @@ package body Ada.Naked_Text_IO is
          Form => Form.Stream_Form);
       declare
          function To_Address (Value : access Streams.Root_Stream_Type'Class)
-            return System.Address;
-         pragma Import (Intrinsic, To_Address);
+            return System.Address
+            with Import, Convention => Intrinsic;
       begin
          New_File.Stream := To_Address (
             Streams.Naked_Stream_IO.Stream (New_File.File));
@@ -285,8 +286,8 @@ package body Ada.Naked_Text_IO is
       return not null access Streams.Root_Stream_Type'Class
    is
       function To_Pointer (Value : System.Address)
-         return access Streams.Root_Stream_Type'Class;
-      pragma Import (Intrinsic, To_Pointer);
+         return access Streams.Root_Stream_Type'Class
+         with Import, Convention => Intrinsic;
    begin
       return To_Pointer (File.Stream).all'Unchecked_Access;
    end Unchecked_Stream;
@@ -859,8 +860,8 @@ package body Ada.Naked_Text_IO is
          end;
          declare
             function To_Address (Value : access Streams.Root_Stream_Type'Class)
-               return System.Address;
-            pragma Import (Intrinsic, To_Address);
+               return System.Address
+               with Import, Convention => Intrinsic;
          begin
             File.Stream := To_Address (
                Streams.Naked_Stream_IO.Stream (File.File));
@@ -1674,8 +1675,8 @@ package body Ada.Naked_Text_IO is
       Form : System.Native_Text_IO.Packed_Form := Default_Form)
    is
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
-         return System.Address;
-      pragma Import (Intrinsic, To_Address);
+         return System.Address
+         with Import, Convention => Intrinsic;
    begin
       if Is_Open (File) then
          Raise_Exception (Status_Error'Identity);
@@ -1720,8 +1721,8 @@ package body Ada.Naked_Text_IO is
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type);
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type) is
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
-         return System.Address;
-      pragma Import (Intrinsic, To_Address);
+         return System.Address
+         with Import, Convention => Intrinsic;
    begin
       File.Stream := To_Address (Streams.Naked_Stream_IO.Stream (File.File));
       if System.Native_IO.Is_Terminal (

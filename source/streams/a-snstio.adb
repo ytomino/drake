@@ -716,8 +716,8 @@ package body Ada.Streams.Naked_Stream_IO is
       end if;
       declare
          pragma Suppress (Alignment_Check);
-         S : aliased Dispatchers.Root_Dispatcher;
-         pragma Import (Ada, S);
+         S : aliased Dispatchers.Root_Dispatcher
+            with Import, Convention => Ada;
          for S'Address use File.Dispatcher'Address;
       begin
          return S'Unchecked_Access;

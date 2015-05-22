@@ -23,15 +23,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Argument_Error; -- CXA5A10
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function sqrtf (A1 : Float) return Float;
-            pragma Import (Intrinsic, sqrtf, "__builtin_sqrtf");
+            function sqrtf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sqrtf";
          begin
             return Float_Type'Base (sqrtf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function sqrt (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, sqrt, "__builtin_sqrt");
+            function sqrt (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sqrt";
          begin
             return Float_Type'Base (sqrt (Long_Float (X)));
          end;
@@ -54,15 +56,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Constraint_Error; -- CXG2011
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function logf (A1 : Float) return Float;
-            pragma Import (Intrinsic, logf, "__builtin_logf");
+            function logf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_logf";
          begin
             return Float_Type'Base (logf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function log (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, log, "__builtin_log");
+            function log (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_log";
          begin
             return Float_Type'Base (log (Long_Float (X)));
          end;
@@ -86,15 +90,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if Float_Type'Digits <= Float'Digits then
          declare
-            function expf (A1 : Float) return Float;
-            pragma Import (Intrinsic, expf, "__builtin_expf");
+            function expf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_expf";
          begin
             return Float_Type'Base (expf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function exp (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, exp, "__builtin_exp");
+            function exp (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_exp";
          begin
             return Float_Type'Base (exp (Long_Float (X)));
          end;
@@ -138,15 +144,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       end if;
       if Float_Type'Digits <= Float'Digits then
          declare
-            function powf (A1, A2 : Float) return Float;
-            pragma Import (Intrinsic, powf, "__builtin_powf");
+            function powf (A1, A2 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_powf";
          begin
             Result := Float_Type'Base (powf (Float (Left), Float (RR)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function pow (A1, A2 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, pow, "__builtin_pow");
+            function pow (A1, A2 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_pow";
          begin
             Result := Float_Type'Base (
                pow (Long_Float (Left), Long_Float (RR)));
@@ -164,15 +172,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if Float_Type'Digits <= Float'Digits then
          declare
-            function sinf (A1 : Float) return Float;
-            pragma Import (Intrinsic, sinf, "__builtin_sinf");
+            function sinf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sinf";
          begin
             return Float_Type'Base (sinf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function sin (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, sin, "__builtin_sin");
+            function sin (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sin";
          begin
             return Float_Type'Base (sin (Long_Float (X)));
          end;
@@ -227,15 +237,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if Float_Type'Digits <= Float'Digits then
          declare
-            function cosf (A1 : Float) return Float;
-            pragma Import (Intrinsic, cosf, "__builtin_cosf");
+            function cosf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cosf";
          begin
             return Float_Type'Base (cosf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function cos (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, cos, "__builtin_cos");
+            function cos (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cos";
          begin
             return Float_Type'Base (cos (Long_Float (X)));
          end;
@@ -290,15 +302,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if Float_Type'Digits <= Float'Digits then
          declare
-            function tanf (A1 : Float) return Float;
-            pragma Import (Intrinsic, tanf, "__builtin_tanf");
+            function tanf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_tanf";
          begin
             return Float_Type'Base (tanf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function tan (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, tan, "__builtin_tan");
+            function tan (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_tan";
          begin
             return Float_Type'Base (tan (Long_Float (X)));
          end;
@@ -372,15 +386,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Argument_Error; -- CXA5A05
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function asinf (A1 : Float) return Float;
-            pragma Import (Intrinsic, asinf, "__builtin_asinf");
+            function asinf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_asinf";
          begin
             return Float_Type'Base (asinf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function asin (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, asin, "__builtin_asin");
+            function asin (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_asin";
          begin
             return Float_Type'Base (asin (Long_Float (X)));
          end;
@@ -416,15 +432,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Argument_Error; -- CXA5A06
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function acosf (A1 : Float) return Float;
-            pragma Import (Intrinsic, acosf, "__builtin_acosf");
+            function acosf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_acosf";
          begin
             return Float_Type'Base (acosf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function acos (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, acos, "__builtin_acos");
+            function acos (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_acos";
          begin
             return Float_Type'Base (acos (Long_Float (X)));
          end;
@@ -461,15 +479,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Argument_Error; -- CXA5A07
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function atan2f (A1, A2 : Float) return Float;
-            pragma Import (Intrinsic, atan2f, "__builtin_atan2f");
+            function atan2f (A1, A2 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_atan2f";
          begin
             return Float_Type'Base (atan2f (Float (Y), Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function atan2 (A1, A2 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, atan2, "__builtin_atan2");
+            function atan2 (A1, A2 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_atan2";
          begin
             return Float_Type'Base (atan2 (Long_Float (Y), Long_Float (X)));
          end;
@@ -538,15 +558,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          end;
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function sinhf (A1 : Float) return Float;
-            pragma Import (Intrinsic, sinhf, "__builtin_sinhf");
+            function sinhf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sinhf";
          begin
             return Float_Type'Base (sinhf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function sinh (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, sinh, "__builtin_sinh");
+            function sinh (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_sinh";
          begin
             return Float_Type'Base (sinh (Long_Float (X)));
          end;
@@ -572,15 +594,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          end;
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function coshf (A1 : Float) return Float;
-            pragma Import (Intrinsic, coshf, "__builtin_coshf");
+            function coshf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_coshf";
          begin
             return Float_Type'Base (coshf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function cosh (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, cosh, "__builtin_cosh");
+            function cosh (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cosh";
          begin
             return Float_Type'Base (cosh (Long_Float (X)));
          end;
@@ -595,15 +619,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if Float_Type'Digits <= Float'Digits then
          declare
-            function tanhf (A1 : Float) return Float;
-            pragma Import (Intrinsic, tanhf, "__builtin_tanhf");
+            function tanhf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_tanhf";
          begin
             return Float_Type'Base (tanhf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function tanh (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, tanh, "__builtin_tanh");
+            function tanh (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_tanh";
          begin
             return Float_Type'Base (tanh (Long_Float (X)));
          end;
@@ -623,15 +649,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if Float_Type'Digits <= Float'Digits then
          declare
-            function asinhf (A1 : Float) return Float;
-            pragma Import (Intrinsic, asinhf, "__builtin_asinhf");
+            function asinhf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_asinhf";
          begin
             return Float_Type'Base (asinhf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function asinh (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, asinh, "__builtin_asinh");
+            function asinh (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_asinh";
          begin
             return Float_Type'Base (asinh (Long_Float (X)));
          end;
@@ -648,15 +676,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Argument_Error; -- CXA5A06
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function acoshf (A1 : Float) return Float;
-            pragma Import (Intrinsic, acoshf, "__builtin_acoshf");
+            function acoshf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_acoshf";
          begin
             return Float_Type'Base (acoshf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function acosh (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, acosh, "__builtin_acosh");
+            function acosh (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_acosh";
          begin
             return Float_Type'Base (acosh (Long_Float (X)));
          end;
@@ -673,15 +703,17 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Argument_Error; -- CXA5A03
       elsif Float_Type'Digits <= Float'Digits then
          declare
-            function atanhf (A1 : Float) return Float;
-            pragma Import (Intrinsic, atanhf, "__builtin_atanhf");
+            function atanhf (A1 : Float) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_atanhf";
          begin
             return Float_Type'Base (atanhf (Float (X)));
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function atanh (A1 : Long_Float) return Long_Float;
-            pragma Import (Intrinsic, atanh, "__builtin_atanh");
+            function atanh (A1 : Long_Float) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_atanh";
          begin
             return Float_Type'Base (atanh (Long_Float (X)));
          end;

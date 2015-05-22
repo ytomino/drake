@@ -104,13 +104,14 @@ private
 
          procedure Missing_Read (
             Stream : not null access Root_Stream_Type'Class;
-            Item : out Buffer_Type);
+            Item : out Buffer_Type)
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
          function Missing_Input (
             Stream : not null access Streams.Root_Stream_Type'Class)
-            return Buffer_Type;
-
-         pragma Import (Ada, Missing_Read, "__drake_program_error");
-         pragma Import (Ada, Missing_Input, "__drake_program_error");
+            return Buffer_Type
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
          --  "out" parameter destructs size info, and result is also
 
          procedure Write (

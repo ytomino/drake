@@ -2,8 +2,8 @@ pragma License (Unrestricted);
 package Ada.Assertions is
    pragma Pure;
 
-   Assertion_Error : exception;
-   pragma Export (Ada, Assertion_Error, "assertion_error");
+   Assertion_Error : exception
+      with Export, Convention => Ada, External_Name => "assertion_error";
 
    --  modified
    --  Assert reports the source location if it's called without message.

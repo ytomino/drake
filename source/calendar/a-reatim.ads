@@ -27,10 +27,14 @@ package Ada.Real_Time is
    function "-" (Left : Time; Right : Time) return Time_Span
       with Import, Convention => Intrinsic;
 
-   function "<" (Left, Right : Time) return Boolean;
-   function "<=" (Left, Right : Time) return Boolean;
-   function ">" (Left, Right : Time) return Boolean;
-   function ">=" (Left, Right : Time) return Boolean;
+   function "<" (Left, Right : Time) return Boolean
+      with Import, Convention => Intrinsic;
+   function "<=" (Left, Right : Time) return Boolean
+      with Import, Convention => Intrinsic;
+   function ">" (Left, Right : Time) return Boolean
+      with Import, Convention => Intrinsic;
+   function ">=" (Left, Right : Time) return Boolean
+      with Import, Convention => Intrinsic;
 
    function "+" (Left, Right : Time_Span) return Time_Span
       with Import, Convention => Intrinsic;
@@ -51,10 +55,14 @@ package Ada.Real_Time is
    function "abs" (Right : Time_Span) return Time_Span
       with Import, Convention => Intrinsic;
 
-   function "<" (Left, Right : Time_Span) return Boolean;
-   function "<=" (Left, Right : Time_Span) return Boolean;
-   function ">" (Left, Right : Time_Span) return Boolean;
-   function ">=" (Left, Right : Time_Span) return Boolean;
+   function "<" (Left, Right : Time_Span) return Boolean
+      with Import, Convention => Intrinsic;
+   function "<=" (Left, Right : Time_Span) return Boolean
+      with Import, Convention => Intrinsic;
+   function ">" (Left, Right : Time_Span) return Boolean
+      with Import, Convention => Intrinsic;
+   function ">=" (Left, Right : Time_Span) return Boolean
+      with Import, Convention => Intrinsic;
 
    function To_Duration (TS : Time_Span) return Duration;
    function To_Time_Span (D : Duration) return Time_Span;
@@ -86,11 +94,6 @@ package Ada.Real_Time is
    --  what is Split meaning? because origin point of Time is unspecified...
 --  procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
 --  function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
-
-   pragma Import (Intrinsic, "<");
-   pragma Import (Intrinsic, "<=");
-   pragma Import (Intrinsic, ">");
-   pragma Import (Intrinsic, ">=");
 
 private
 

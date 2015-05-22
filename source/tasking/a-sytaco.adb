@@ -6,9 +6,10 @@ package body Ada.Synchronous_Task_Control is
       A1 : not null access Flag;
       A2 : Flag;
       A3 : Flag)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap,
-      "__sync_bool_compare_and_swap_1");
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__sync_bool_compare_and_swap_1";
 
    --  implementation
 

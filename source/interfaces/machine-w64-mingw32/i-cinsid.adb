@@ -43,8 +43,8 @@ package body Interfaces.C.Inside is
       else
          declare
             function To_Pointer (Value : System.Address)
-               return Standard.C.winnt.LPSTR;
-            pragma Import (Intrinsic, To_Pointer);
+               return Standard.C.winnt.LPSTR
+               with Import, Convention => Intrinsic;
             W_Item : Standard.C.winnt.WCHAR_array (
                0 ..
                Standard.C.size_t (Natural'(Item'Length) - 1));
@@ -92,8 +92,8 @@ package body Interfaces.C.Inside is
       else
          declare
             function To_Pointer (Value : System.Address)
-               return Standard.C.winnt.LPSTR;
-            pragma Import (Intrinsic, To_Pointer);
+               return Standard.C.winnt.LPSTR
+               with Import, Convention => Intrinsic;
             W_Item : Standard.C.winnt.WCHAR_array (
                0 ..
                Standard.C.size_t (Natural'(Item'Length) - 1));

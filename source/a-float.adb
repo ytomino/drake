@@ -6,22 +6,25 @@ package body Ada.Float is
    begin
       if Float_Type'Digits <= Standard.Float'Digits then
          declare
-            function inff return Standard.Float;
-            pragma Import (Intrinsic, inff, "__builtin_inff");
+            function inff return Standard.Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_inff";
          begin
             return Float_Type (inff);
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function inf return Long_Float;
-            pragma Import (Intrinsic, inf, "__builtin_inf");
+            function inf return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_inf";
          begin
             return Float_Type (inf);
          end;
       else
          declare
-            function infl return Long_Long_Float;
-            pragma Import (Intrinsic, infl, "__builtin_infl");
+            function infl return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_infl";
          begin
             return Float_Type (infl);
          end;
@@ -33,8 +36,9 @@ package body Ada.Float is
       if Float_Type'Digits <= Standard.Float'Digits then
          declare
             function nanf (tagp : access constant Character)
-               return Standard.Float;
-            pragma Import (Intrinsic, nanf, "__builtin_nanf");
+               return Standard.Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_nanf";
             Z : constant array (0 .. 0) of aliased Character :=
                (0 => Character'Val (0));
          begin
@@ -42,8 +46,9 @@ package body Ada.Float is
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function nan (tagp : access constant Character) return Long_Float;
-            pragma Import (Intrinsic, nan, "__builtin_nan");
+            function nan (tagp : access constant Character) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_nan";
             Z : constant array (0 .. 0) of aliased Character :=
                (0 => Character'Val (0));
          begin
@@ -52,8 +57,9 @@ package body Ada.Float is
       else
          declare
             function nanl (tagp : access constant Character)
-               return Long_Long_Float;
-            pragma Import (Intrinsic, nanl, "__builtin_nanl");
+               return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_nanl";
             Z : constant array (0 .. 0) of aliased Character :=
                (0 => Character'Val (0));
          begin
@@ -66,24 +72,27 @@ package body Ada.Float is
    begin
       if Float_Type'Digits <= Standard.Float'Digits then
          declare
-            function isinff (x : Standard.Float) return Integer;
-            pragma Import (Intrinsic, isinff, "__builtin_isinff");
+            function isinff (x : Standard.Float) return Integer
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_isinff";
          begin
             return isinff (Standard.Float (X)) /= 0;
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function isinf (x : Long_Float) return Integer;
+            function isinf (x : Long_Float) return Integer
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_isinf";
             pragma Warnings (Off, isinf);
             --  [gcc 4.6] excessive prototype checking
-            pragma Import (Intrinsic, isinf, "__builtin_isinf");
          begin
             return isinf (Long_Float (X)) /= 0;
          end;
       else
          declare
-            function isinfl (x : Long_Long_Float) return Integer;
-            pragma Import (Intrinsic, isinfl, "__builtin_isinfl");
+            function isinfl (x : Long_Long_Float) return Integer
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_isinfl";
          begin
             return isinfl (Long_Long_Float (X)) /= 0;
          end;
@@ -94,24 +103,27 @@ package body Ada.Float is
    begin
       if Float_Type'Digits <= Standard.Float'Digits then
          declare
-            function isnanf (x : Standard.Float) return Integer;
-            pragma Import (Intrinsic, isnanf, "__builtin_isnanf");
+            function isnanf (x : Standard.Float) return Integer
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_isnanf";
          begin
             return isnanf (Standard.Float (X)) /= 0;
          end;
       elsif Float_Type'Digits <= Long_Float'Digits then
          declare
-            function isnan (x : Long_Float) return Integer;
+            function isnan (x : Long_Float) return Integer
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_isnan";
             pragma Warnings (Off, isnan);
             --  [gcc 4.6] excessive prototype checking
-            pragma Import (Intrinsic, isnan, "__builtin_isnan");
          begin
             return isnan (Long_Float (X)) /= 0;
          end;
       else
          declare
-            function isnanl (x : Long_Long_Float) return Integer;
-            pragma Import (Intrinsic, isnanl, "__builtin_isnanl");
+            function isnanl (x : Long_Long_Float) return Integer
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_isnanl";
          begin
             return isnanl (Long_Long_Float (X)) /= 0;
          end;
@@ -141,8 +153,9 @@ package body Ada.Float is
             function modff (
                value : Standard.Float;
                iptr : access Standard.Float)
-               return Standard.Float;
-            pragma Import (Intrinsic, modff, "__builtin_modff");
+               return Standard.Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_modff";
             Q : aliased Standard.Float;
          begin
             Remainder := Remainder_Type (modff (
@@ -155,8 +168,9 @@ package body Ada.Float is
             function modf (
                value : Long_Float;
                iptr : access Long_Float)
-               return Long_Float;
-            pragma Import (Intrinsic, modf, "__builtin_modf");
+               return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_modf";
             Q : aliased Long_Float;
          begin
             Remainder := Remainder_Type (modf (
@@ -169,8 +183,9 @@ package body Ada.Float is
             function modfl (
                value : Long_Long_Float;
                iptr : access Long_Long_Float)
-               return Long_Long_Float;
-            pragma Import (Intrinsic, modfl, "__builtin_modfl");
+               return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_modfl";
             Q : aliased Long_Long_Float;
          begin
             Remainder := Remainder_Type (modfl (

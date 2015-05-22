@@ -10,9 +10,9 @@ package body System.Runtime_Information is
          new Address_To_Named_Access_Conversions (
             C.char,
             C.char_ptr);
-      type Link_map_ptr is access C.sys.link_elf.Link_map;
+      type Link_map_ptr is access C.sys.link_elf.Link_map
+         with Convention => C;
       for Link_map_ptr'Storage_Size use 0;
-      pragma Convention (C, Link_map_ptr);
       Map : aliased Link_map_ptr;
    begin
       if C.dlfcn.dlinfo (

@@ -5,14 +5,15 @@ package body Separated is
    pragma Suppress (All_Checks);
    --  in sjlj mode, Unwind_Backtrace does not work
 
-   procedure main;
-   pragma Import (C, main);
+   procedure main
+      with Import, Convention => C;
 
    type Address_Access is access constant Address;
    for Address_Access'Storage_Size use 0;
 
-   function builtin_frame_address (A1 : Natural) return Address_Access;
-   pragma Import (Intrinsic, builtin_frame_address, "__builtin_frame_address");
+   function builtin_frame_address (A1 : Natural) return Address_Access
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_frame_address";
 
    Parent_Offset : constant := 0; -- [BP + x] = Parent's BP
    Return_Offset : constant := Standard'Address_Size / Standard'Storage_Unit;

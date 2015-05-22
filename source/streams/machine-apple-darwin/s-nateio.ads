@@ -36,15 +36,15 @@ package System.Native_Text_IO is
       Buffer : aliased DBCS_Buffer_Type;
       Last : Natural;
       Out_Buffer : out Buffer_Type;
-      Out_Last : out Natural);
-   pragma Import (Ada, To_UTF_8, "__drake_program_error");
+      Out_Last : out Natural)
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
 
    procedure To_DBCS (
       Buffer : Buffer_Type;
       Last : Natural;
       Out_Buffer : aliased out DBCS_Buffer_Type;
-      Out_Last : out Natural);
-   pragma Import (Ada, To_DBCS, "__drake_program_error");
+      Out_Last : out Natural)
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
 
    --  terminal
 

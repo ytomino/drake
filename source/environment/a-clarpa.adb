@@ -111,8 +111,10 @@ package body Ada.Command_Line.Argument_Parsing is
                      s : not null Character_Access;
                      c : Integer;
                      n : System.Storage_Elements.Storage_Count)
-                     return Character_Access;
-                  pragma Import (Intrinsic, memchr, "__builtin_memchr");
+                     return Character_Access
+                     with Import,
+                        Convention => Intrinsic,
+                        External_Name => "__builtin_memchr";
                   S : constant not null Character_Access :=
                      Argument (First.Index)'Unrestricted_Access;
                   P : constant Character_Access := memchr (

@@ -16,14 +16,18 @@ package System.Unwind.Mapping is
 
    procedure Install_Task_Exception_Handler (
       SEH : Address;
-      Signal_Stack : not null access Signal_Stack_Type);
-   pragma Export (Ada, Install_Task_Exception_Handler,
-      "__drake_install_task_exception_handler");
+      Signal_Stack : not null access Signal_Stack_Type)
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_install_task_exception_handler";
+
    pragma No_Inline (Install_Task_Exception_Handler);
 
-   procedure Reinstall_Exception_Handler;
-   pragma Export (Ada, Reinstall_Exception_Handler,
-      "__drake_reinstall_exception_handler");
+   procedure Reinstall_Exception_Handler
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_reinstall_exception_handler";
+
    pragma No_Inline (Reinstall_Exception_Handler);
 
 private

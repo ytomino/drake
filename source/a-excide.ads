@@ -11,9 +11,12 @@ package Ada.Exception_Identification is
 
    function Exception_Name (Id : Exception_Id) return String;
 
-   procedure Raise_Exception (E : Exception_Id; Message : String := "");
+   procedure Raise_Exception (E : Exception_Id; Message : String := "")
+      with Import,
+         Convention => Ada,
+         External_Name => "ada__exceptions__raise_exception";
+
    pragma No_Return (Raise_Exception);
-   pragma Import (Ada, Raise_Exception, "ada__exceptions__raise_exception");
 
    --  These functions raise a new occurrence of the identified exception
    --    with source location.

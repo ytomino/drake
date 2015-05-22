@@ -33,8 +33,9 @@ package body Ada.Tags is
          Offset_To_Top_Ptr);
 
    function strlen (Item : not null Cstring_Ptr)
-      return System.Storage_Elements.Storage_Count;
-   pragma Import (Intrinsic, strlen, "__builtin_strlen");
+      return System.Storage_Elements.Storage_Count
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
    type E_Node;
    type E_Node_Access is access E_Node;

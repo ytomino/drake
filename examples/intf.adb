@@ -6,14 +6,14 @@ with Interfaces.C.Wide_WStrings;
 with Interfaces.C.Wide_Wide_WStrings;
 procedure intf is
 begin
-	-- pragma Import
+	-- Import
 	declare
 		type Unsigned_Long_Long is mod 2 ** Long_Long_Integer'Size;
 		type P is access all Character;
-		function strtoll (str : String; endptr : access P; base : Integer) return Long_Long_Integer;
-		pragma Import (C, strtoll);
-		function strtoull (str : String; endptr : access P; base : Integer) return Unsigned_Long_Long;
-		pragma Import (C, strtoull);
+		function strtoll (str : String; endptr : access P; base : Integer) return Long_Long_Integer
+			with Import, Convention => C;
+		function strtoull (str : String; endptr : access P; base : Integer) return Unsigned_Long_Long
+			with Import, Convention => C;
 		N : aliased Long_Long_Integer := -1;
 		U : aliased Unsigned_Long_Long := -1;
 	begin

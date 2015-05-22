@@ -19,8 +19,7 @@ package Ada.Decimal is
       Dividend : Dividend_Type;
       Divisor : Divisor_Type;
       Quotient : out Quotient_Type;
-      Remainder : out Remainder_Type);
---  pragma Convention (Intrinsic, Divide);
-   pragma Import (Intrinsic, Divide);
+      Remainder : out Remainder_Type)
+      with Import, Convention => Intrinsic;
 
 end Ada.Decimal;

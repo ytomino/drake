@@ -29,8 +29,8 @@ package System.Tasks is
    type Task_Record (<>) is limited private;
    type Task_Id is access all Task_Record;
 
-   function Current_Task_Id return Task_Id;
-   pragma Export (Ada, Current_Task_Id, "__drake_current_task");
+   function Current_Task_Id return Task_Id
+      with Export, Convention => Ada, External_Name => "__drake_current_task";
    function Environment_Task_Id return Task_Id;
 
    type Master_Record is limited private;

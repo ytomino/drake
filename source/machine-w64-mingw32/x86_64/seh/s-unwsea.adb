@@ -22,14 +22,16 @@ package body System.Unwind.Searching is
    use type C.unwind.sleb128_t;
    use type C.winnt.PRUNTIME_FUNCTION;
 
-   Foreign_Exception : aliased Exception_Data;
-   pragma Import (Ada, Foreign_Exception,
-      "system__exceptions__foreign_exception");
+   Foreign_Exception : aliased Exception_Data
+      with Import,
+         Convention => Ada,
+         External_Name => "system__exceptions__foreign_exception";
 
    function builtin_eh_return_data_regno (A1 : C.signed_int)
-      return C.signed_int;
-   pragma Import (Intrinsic, builtin_eh_return_data_regno,
-      "__builtin_eh_return_data_regno");
+      return C.signed_int
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__builtin_eh_return_data_regno";
 
    package unsigned_char_const_ptr_Conv is
       new Address_To_Constant_Access_Conversions (

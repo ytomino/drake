@@ -32,8 +32,8 @@ package body Ada.Exceptions.Finally is
       pragma Unreferenced (Object);
 
       procedure Assign (Item : access Parameters) is
-         function To_Address (Value : access Parameters) return System.Address;
-         pragma Import (Intrinsic, To_Address);
+         function To_Address (Value : access Parameters) return System.Address
+            with Import, Convention => Intrinsic;
       begin
          Object.Params := To_Address (Item);
       end Assign;

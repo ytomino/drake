@@ -19,54 +19,61 @@ package System.Machine_Code is
       Outputs : Asm_Output_Operand_List;
       Inputs : Asm_Input_Operand_List;
       Clobber : String := "";
-      Volatile : Boolean := False);
+      Volatile : Boolean := False)
+      with Import, Convention => Intrinsic;
    procedure Asm (
       Template : String;
       Outputs : Asm_Output_Operand := No_Output_Operands;
       Inputs : Asm_Input_Operand_List;
       Clobber : String := "";
-      Volatile : Boolean := False);
+      Volatile : Boolean := False)
+      with Import, Convention => Intrinsic;
    procedure Asm (
       Template : String;
       Outputs : Asm_Output_Operand_List;
       Inputs : Asm_Input_Operand := No_Input_Operands;
       Clobber : String := "";
-      Volatile : Boolean := False);
+      Volatile : Boolean := False)
+      with Import, Convention => Intrinsic;
    procedure Asm (
       Template : String;
       Outputs : Asm_Output_Operand := No_Output_Operands;
       Inputs : Asm_Input_Operand := No_Input_Operands;
       Clobber : String := "";
-      Volatile : Boolean := False);
+      Volatile : Boolean := False)
+      with Import, Convention => Intrinsic;
    function Asm (
       Template : String;
       Outputs : Asm_Output_Operand_List;
       Inputs : Asm_Input_Operand_List;
       Clobber : String := "";
       Volatile : Boolean := False)
-      return Asm_Insn;
+      return Asm_Insn
+      with Import, Convention => Intrinsic;
    function Asm (
       Template : String;
       Outputs : Asm_Output_Operand := No_Output_Operands;
       Inputs : Asm_Input_Operand_List;
       Clobber : String := "";
       Volatile : Boolean := False)
-      return Asm_Insn;
+      return Asm_Insn
+      with Import, Convention => Intrinsic;
    function Asm (
       Template : String;
       Outputs : Asm_Output_Operand_List;
       Inputs : Asm_Input_Operand := No_Input_Operands;
       Clobber : String := "";
       Volatile : Boolean := False)
-      return Asm_Insn;
+      return Asm_Insn
+      with Import, Convention => Intrinsic;
    function Asm (
       Template : String;
       Outputs : Asm_Output_Operand := No_Output_Operands;
       Inputs : Asm_Input_Operand := No_Input_Operands;
       Clobber : String := "";
       Volatile : Boolean := False)
-      return Asm_Insn;
-   pragma Import (Intrinsic, Asm);
+      return Asm_Insn
+      with Import, Convention => Intrinsic;
 
 private
 

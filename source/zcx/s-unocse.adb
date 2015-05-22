@@ -13,14 +13,15 @@ package body Separated is
    procedure memset (
       b : Address;
       c : Integer;
-      n : Storage_Elements.Storage_Count);
-   pragma Import (Intrinsic, memset, "__builtin_memset");
+      n : Storage_Elements.Storage_Count)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memset";
 
    --  equivalent to GNAT_GCC_Exception_Cleanup (a-exexpr-gcc.adb)
    procedure Cleanup (
       Reason : C.unwind.Unwind_Reason_Code;
-      Exception_Object : access C.unwind.struct_Unwind_Exception);
-   pragma Convention (C, Cleanup);
+      Exception_Object : access C.unwind.struct_Unwind_Exception)
+      with Convention => C;
 
    procedure Cleanup (
       Reason : C.unwind.Unwind_Reason_Code;

@@ -15,8 +15,8 @@ package body System.Unwind.Mapping is
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
       Info : access C.signal.siginfo_t;
-      Context : C.void_ptr);
-   pragma Convention (C, sigaction_Handler);
+      Context : C.void_ptr)
+      with Convention => C;
    pragma No_Return (sigaction_Handler);
 
    procedure sigaction_Handler (
@@ -40,8 +40,8 @@ package body System.Unwind.Mapping is
             Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
             Stack_Guard := Stack_Guard + C.signal.MINSIGSTKSZ;
             declare
-               uc : C.sys.ucontext.ucontext_t;
-               pragma Import (C, uc);
+               uc : C.sys.ucontext.ucontext_t
+                  with Import, Convention => C;
                for uc'Address use Address (Context);
                pragma Inspection_Point (uc);
             begin

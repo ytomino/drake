@@ -21,8 +21,8 @@ package body Separated is
       Exception_Object : access C.unwind.struct_Unwind_Exception;
       Context : access C.unwind.struct_Unwind_Context;
       Argument : C.void_ptr)
-      return C.unwind.Unwind_Reason_Code;
-   pragma Convention (C, CleanupUnwind_Handler);
+      return C.unwind.Unwind_Reason_Code
+      with Convention => C;
 
    function CleanupUnwind_Handler (
       ABI_Version : C.signed_int;

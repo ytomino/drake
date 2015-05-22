@@ -23,8 +23,9 @@ package body Ada.Strings.Generic_Fixed is
             procedure memset (
                b : not null P;
                c : Integer;
-               n : System.Storage_Elements.Storage_Count);
-            pragma Import (Intrinsic, memset, "__builtin_memset");
+               n : System.Storage_Elements.Storage_Count)
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_memset";
          begin
             memset (
                Conv.To_Pointer (Target'Address),
@@ -129,8 +130,9 @@ package body Ada.Strings.Generic_Fixed is
                s : not null P;
                c : Integer;
                n : System.Storage_Elements.Storage_Count)
-               return P;
-            pragma Import (Intrinsic, memchr, "__builtin_memchr");
+               return P
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_memchr";
             Result : constant System.Address := Conv.To_Address (
                memchr (
                   Conv.To_Pointer (Source'Address),

@@ -72,17 +72,19 @@ private
 
          procedure Missing_Read (
             Stream : access Streams.Root_Stream_Type'Class;
-            Item : out Cursor);
+            Item : out Cursor)
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
          function Missing_Input (
             Stream : not null access Streams.Root_Stream_Type'Class)
-            return Cursor;
+            return Cursor
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
          procedure Missing_Write (
             Stream : access Streams.Root_Stream_Type'Class;
-            Item : Cursor);
-
-         pragma Import (Ada, Missing_Read, "__drake_program_error");
-         pragma Import (Ada, Missing_Input, "__drake_program_error");
-         pragma Import (Ada, Missing_Write, "__drake_program_error");
+            Item : Cursor)
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
 
       end Streaming;
 

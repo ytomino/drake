@@ -4,11 +4,13 @@ package body System.Zero_Terminated_Strings is
    pragma Suppress (All_Checks);
    use type C.size_t;
 
-   function strlen (Item : not null access constant C.char) return C.size_t;
-   pragma Import (Intrinsic, strlen, "__builtin_strlen");
+   function strlen (Item : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
-   procedure memcpy (s1, s2 : Address; n : C.size_t);
-   pragma Import (Intrinsic, memcpy, "__builtin_memcpy");
+   procedure memcpy (s1, s2 : Address; n : C.size_t)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memcpy";
 
    --  implementation
 

@@ -43,8 +43,8 @@ package System.File_Systems is
    pragma Inline (Is_HFS);
 
    --  unimplemented
-   function Owner (FS : Non_Controlled_File_System) return String;
-   pragma Import (Ada, Owner, "__drake_program_error");
+   function Owner (FS : Non_Controlled_File_System) return String
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
 
    package Controlled is
 

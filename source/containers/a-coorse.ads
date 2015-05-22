@@ -243,16 +243,17 @@ package Ada.Containers.Ordered_Sets is
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Reference_Type);
+         Item : out Reference_Type)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Reference_Type);
+         Item : Reference_Type)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
 
       for Reference_Type'Read use Missing_Read;
       for Reference_Type'Write use Missing_Write;
-
-      pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Write, "__drake_program_error");
 
    end Generic_Keys;
 
@@ -327,20 +328,25 @@ private
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Cursor);
+         Item : out Cursor)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Cursor);
+         Item : Cursor)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
 
       procedure Missing_Read (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : out Constant_Reference_Type);
+         Item : out Constant_Reference_Type)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
       procedure Missing_Write (
          Stream : access Streams.Root_Stream_Type'Class;
-         Item : Constant_Reference_Type);
-
-      pragma Import (Ada, Missing_Read, "__drake_program_error");
-      pragma Import (Ada, Missing_Write, "__drake_program_error");
+         Item : Constant_Reference_Type)
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
 
    end Streaming;
 

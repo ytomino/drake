@@ -36,8 +36,8 @@ package body System.Unwind.Mapping is
       Establisher_Frame : C.void_ptr;
       Context_Record : C.winnt.struct_CONTEXT_ptr;
       Dispatcher_Context : C.void_ptr)
-      return C.signed_int;
-   pragma Convention (C, SEH_Handler);
+      return C.signed_int
+      with Convention => C;
    type SEH_Record is record
       ExceptionList : aliased C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr;
       Handler : aliased SEH_Handler;
@@ -50,8 +50,9 @@ package body System.Unwind.Mapping is
       Establisher_Frame : C.void_ptr;
       Context_Record : C.winnt.struct_CONTEXT_ptr;
       Dispatcher_Context : C.void_ptr)
-      return C.signed_int;
-   pragma Convention (C, Ada_SEH_Handler);
+      return C.signed_int
+      with Convention => C;
+
    function Ada_SEH_Handler (
       Exception_Record : C.winnt.struct_EXCEPTION_RECORD_ptr;
       Establisher_Frame : C.void_ptr;

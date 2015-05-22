@@ -14,8 +14,9 @@ package body System.Runtime_Information is
       Info : access C.link.struct_dl_phdr_info;
       Size : C.size_t;
       Data : C.void_ptr)
-      return C.signed_int;
-   pragma Convention (C, Callback);
+      return C.signed_int
+      with Convention => C;
+
    function Callback (
       Info : access C.link.struct_dl_phdr_info;
       Size : C.size_t;
@@ -31,8 +32,8 @@ package body System.Runtime_Information is
             use type C.elf.Elf32_Half; -- dlpi_phnum
             use type C.elf.Elf32_Word; -- p_type and p_vaddr
             type Elf32_Phdr_array is
-               array (C.size_t) of aliased C.elf.Elf32_Phdr;
-            pragma Convention (C, Elf32_Phdr_array);
+               array (C.size_t) of aliased C.elf.Elf32_Phdr
+               with Convention => C;
             dlpi_phdr : Elf32_Phdr_array;
             for dlpi_phdr'Address use Info.dlpi_phdr.all'Address;
          begin
@@ -51,8 +52,8 @@ package body System.Runtime_Information is
             use type C.elf.Elf64_Word; -- p_type
             use type C.elf.Elf64_Addr; -- p_vaddr
             type Elf64_Phdr_array is
-               array (C.size_t) of aliased C.elf.Elf64_Phdr;
-            pragma Convention (C, Elf64_Phdr_array);
+               array (C.size_t) of aliased C.elf.Elf64_Phdr
+               with Convention => C;
             dlpi_phdr : Elf64_Phdr_array;
             for dlpi_phdr'Address use Info.dlpi_phdr.all'Address;
          begin

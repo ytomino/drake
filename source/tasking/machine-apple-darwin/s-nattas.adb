@@ -16,8 +16,9 @@ package body System.Native_Tasks is
    procedure SIGTERM_Handler (
       Signal_Number : C.signed_int;
       Info : access C.signal.siginfo_t;
-      Context : C.void_ptr);
-   pragma Convention (C, SIGTERM_Handler);
+      Context : C.void_ptr)
+      with Convention => C;
+
    procedure SIGTERM_Handler (
       Signal_Number : C.signed_int;
       Info : access C.signal.siginfo_t;

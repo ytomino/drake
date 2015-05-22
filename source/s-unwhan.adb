@@ -10,8 +10,10 @@ package body System.Unwind.Handling is
    --  force to link System.Unwind.Mapping
    --    to convert signals or SEH exceptions to standard exceptions.
 
-   Force_Use : Address := Mapping.Install_Exception_Handler'Address;
-   pragma Export (Ada, Force_Use, "__drake_use_install_exception_handler");
+   Force_Use : Address := Mapping.Install_Exception_Handler'Address
+      with Export,
+         Convention => Ada,
+         External_Name => "__drake_use_install_exception_handler";
 
    --  implementation
 

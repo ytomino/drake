@@ -22,9 +22,10 @@ package body System.Finalization_Masters is
       A1 : not null access Finalization_State;
       A2 : Finalization_State;
       A3 : Finalization_State)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap,
-      "__sync_bool_compare_and_swap_1");
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__sync_bool_compare_and_swap_1";
 
    procedure Free is new Ada.Unchecked_Deallocation (FM_List, FM_List_Access);
 

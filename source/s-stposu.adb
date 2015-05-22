@@ -12,9 +12,10 @@ package body System.Storage_Pools.Subpools is
       A1 : not null access Finalization_State;
       A2 : Finalization_State;
       A3 : Finalization_State)
-      return Boolean;
-   pragma Import (Intrinsic, sync_bool_compare_and_swap,
-      "__sync_bool_compare_and_swap_1");
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__sync_bool_compare_and_swap_1";
 
    package FM_Node_Ptr_Conv is
       new Address_To_Named_Access_Conversions (

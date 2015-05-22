@@ -5,48 +5,48 @@ package System.Long_Long_Elementary_Functions is
 
    --  Long_Float
 
-   function log (x : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, log, "__builtin_log");
+   function log (x : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_log";
    function Fast_Log (X : Long_Float) return Long_Float
       renames log;
 
-   function exp (x : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, exp, "__builtin_exp");
+   function exp (x : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_exp";
    function Fast_Exp (X : Long_Float) return Long_Float
       renames exp;
 
-   function pow (x, y : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, pow, "__builtin_pow");
+   function pow (x, y : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_pow";
    function Fast_Pow (Left, Right : Long_Float) return Long_Float
       renames pow;
 
-   function sinh (x : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, sinh, "__builtin_sinh");
+   function sinh (x : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_sinh";
    function Fast_Sinh (X : Long_Float) return Long_Float
       renames sinh;
 
-   function cosh (x : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, cosh, "__builtin_cosh");
+   function cosh (x : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_cosh";
    function Fast_Cosh (X : Long_Float) return Long_Float
       renames cosh;
 
-   function tanh (x : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, tanh, "__builtin_tanh");
+   function tanh (x : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_tanh";
    function Fast_Tanh (X : Long_Float) return Long_Float
       renames tanh;
 
-   function asinh (x : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, asinh, "__builtin_asinh");
+   function asinh (x : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_asinh";
    function Fast_Arcsinh (X : Long_Float) return Long_Float
       renames asinh;
 
-   function acosh (x : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, acosh, "__builtin_acosh");
+   function acosh (x : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_acosh";
    function Fast_Arccosh (X : Long_Float) return Long_Float
       renames acosh;
 
-   function atanh (x : Long_Float) return Long_Float;
-   pragma Import (Intrinsic, atanh, "__builtin_atanh");
+   function atanh (x : Long_Float) return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_atanh";
    function Fast_Arctanh (X : Long_Float) return Long_Float
       renames atanh;
 

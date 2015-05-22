@@ -10,9 +10,10 @@ package body System.Once is
       A1 : not null access Flag;
       A2 : Flag;
       A3 : Flag)
-      return Flag;
-   pragma Import (Intrinsic, sync_val_compare_and_swap,
-      "__sync_val_compare_and_swap_1");
+      return Flag
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__sync_val_compare_and_swap_1";
 
    --  implementation
 

@@ -5,8 +5,8 @@ package System.Exn_Int is
    pragma Pure;
 
    function Shift_Left (Value : Integer; Amount : Natural)
-      return Integer;
-   pragma Import (Intrinsic, Shift_Left);
+      return Integer
+      with Import, Convention => Intrinsic;
 
    --  required for "**" without checking by compiler (s-exnint.ads)
    function Exn_Integer is

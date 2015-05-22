@@ -48,8 +48,9 @@ package body Ada.Interrupts.Inside is
 
    Table : Signal_Vec;
 
-   procedure Handler (Signal_Number : C.signed_int);
-   pragma Convention (C, Handler);
+   procedure Handler (Signal_Number : C.signed_int)
+      with Convention => C;
+
    procedure Handler (Signal_Number : C.signed_int) is
    begin
       Table (Interrupt_Id (Signal_Number)).Installed_Handler.all;

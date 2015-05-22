@@ -1,10 +1,12 @@
 package body System.Formatting.Literals.Float is
    pragma Suppress (All_Checks);
 
-   function copysignl (X, Y : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, copysignl, "__builtin_copysignl");
-   function truncl (X : Long_Long_Float) return Long_Long_Float;
-   pragma Import (Intrinsic, truncl, "__builtin_truncl");
+   function copysignl (X, Y : Long_Long_Float) return Long_Long_Float
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_copysignl";
+   function truncl (X : Long_Long_Float) return Long_Long_Float
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_truncl";
 
    procedure Get_Aft (
       Item : String;

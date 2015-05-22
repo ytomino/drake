@@ -18,23 +18,29 @@ package body Ada.Numerics.SFMT.Random.Inside is
    function To_v4si is new Unchecked_Conversion (m128i, v4si);
    function To_m128i is new Unchecked_Conversion (v4si, m128i);
 
-   function ia32_psrldi128 (A : v4si; B : Integer) return v4si;
-   pragma Import (Intrinsic, ia32_psrldi128, "__builtin_ia32_psrldi128");
+   function ia32_psrldi128 (A : v4si; B : Integer) return v4si
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_ia32_psrldi128";
 
-   function ia32_pslldi128 (A : v4si; B : Integer) return v4si;
-   pragma Import (Intrinsic, ia32_pslldi128, "__builtin_ia32_pslldi128");
+   function ia32_pslldi128 (A : v4si; B : Integer) return v4si
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_ia32_pslldi128";
 
-   function mm_srli_si128 (A : m128i; B : Integer) return m128i;
-   pragma Import (Intrinsic, mm_srli_si128, "__builtin_ia32_psrldqi128");
+   function mm_srli_si128 (A : m128i; B : Integer) return m128i
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_ia32_psrldqi128";
 
-   function mm_slli_si128 (A : m128i; B : Integer) return m128i;
-   pragma Import (Intrinsic, mm_slli_si128, "__builtin_ia32_pslldqi128");
+   function mm_slli_si128 (A : m128i; B : Integer) return m128i
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_ia32_pslldqi128";
 
-   function mm_and_si128 (A, B : m128i) return m128i;
-   pragma Import (Intrinsic, mm_and_si128, "__builtin_ia32_pand128");
+   function mm_and_si128 (A, B : m128i) return m128i
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_ia32_pand128";
 
-   function mm_xor_si128 (A, B : m128i) return m128i;
-   pragma Import (Intrinsic, mm_xor_si128, "__builtin_ia32_pxor128");
+   function mm_xor_si128 (A, B : m128i) return m128i
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_ia32_pxor128";
 
    procedure mm_recursion (r : out m128i; a, b, c, d : m128i)
       with Convention => Intrinsic;

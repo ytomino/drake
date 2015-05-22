@@ -2,15 +2,16 @@ package body System.Fat_Lflt is
    pragma Suppress (All_Checks);
 
    function frexp (value : Long_Float; exp : access Integer)
-      return Long_Float;
-   pragma Import (Intrinsic, frexp, "__builtin_frexp");
+      return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_frexp";
 
-   function inf return Long_Float;
-   pragma Import (Intrinsic, inf, "__builtin_inf");
+   function inf return Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_inf";
 
-   function isfinite (X : Long_Float) return Integer;
+   function isfinite (X : Long_Float) return Integer
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_isfinite";
    pragma Warnings (Off, isfinite); -- [gcc 4.6] excessive prototype checking
-   pragma Import (Intrinsic, isfinite, "__builtin_isfinite");
 
    package body Attr_Long_Float is
 

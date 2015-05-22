@@ -4,14 +4,16 @@ package body System.Reference_Counting is
 
    procedure sync_add_and_fetch_32 (
       A1 : not null access Counter;
-      A2 : Counter);
-   pragma Import (Intrinsic, sync_add_and_fetch_32, "__sync_add_and_fetch_4");
+      A2 : Counter)
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_4";
 
    function sync_sub_and_fetch_32 (
       A1 : not null access Counter;
       A2 : Counter)
-      return Counter;
-   pragma Import (Intrinsic, sync_sub_and_fetch_32, "__sync_sub_and_fetch_4");
+      return Counter
+      with Import,
+         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_4";
 
    function sync_bool_compare_and_swap (
       A1 : not null access Length_Type;
@@ -39,9 +41,10 @@ package body System.Reference_Counting is
                A1 : not null access Storage_Elements.Storage_Count;
                A2 : Storage_Elements.Storage_Offset;
                A3 : Storage_Elements.Storage_Offset)
-               return Boolean;
-            pragma Import (Intrinsic, sync_bool_compare_and_swap_32,
-               "__sync_bool_compare_and_swap_4");
+               return Boolean
+               with Import,
+                  Convention => Intrinsic,
+                  External_Name => "__sync_bool_compare_and_swap_4";
          begin
             return sync_bool_compare_and_swap_32 (A1, A2, A3);
          end;
@@ -51,9 +54,10 @@ package body System.Reference_Counting is
                A1 : not null access Storage_Elements.Storage_Count;
                A2 : Storage_Elements.Storage_Offset;
                A3 : Storage_Elements.Storage_Offset)
-               return Boolean;
-            pragma Import (Intrinsic, sync_bool_compare_and_swap_64,
-               "__sync_bool_compare_and_swap_8");
+               return Boolean
+               with Import,
+                  Convention => Intrinsic,
+                  External_Name => "__sync_bool_compare_and_swap_8";
          begin
             return sync_bool_compare_and_swap_64 (A1, A2, A3);
          end;

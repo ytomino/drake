@@ -12,10 +12,10 @@ procedure exception_cpp is
 	type type_info is record
 		vtbl : System.Address;
 		name : Interfaces.C.Strings.const_chars_ptr;
-	end record;
-	pragma Convention (Cpp, type_info);
-	char_const_ptr : aliased constant type_info;
-	pragma Import (Cpp, char_const_ptr, "_ZTIPKc");
+	end record
+		with Convention => Cpp;
+	char_const_ptr : aliased constant type_info
+		with Import, Convention => Cpp, External_Name => "_ZTIPKc";
 	Message : aliased constant Interfaces.C.char_array := "This is a C++ exception!" & Interfaces.C.nul;
 	package Conv is
 		new System.Address_To_Access_Conversions (
@@ -24,13 +24,13 @@ begin
 	declare
 		function cxa_allocate_exception (
 			size : Interfaces.C.size_t)
-			return System.Address;
-		pragma Import (C, cxa_allocate_exception, "__cxa_allocate_exception");
+			return System.Address
+			with Import, Convention => C, External_Name => "__cxa_allocate_exception";
 		procedure cxa_throw (
 			obj : System.Address;
 			tinfo : access constant type_info;
-			dest : System.Address);
-		pragma Import (C, cxa_throw, "__cxa_throw");
+			dest : System.Address)
+			with Import, Convention => C, External_Name => "__cxa_throw";
 		pragma No_Return (cxa_throw);
 		Cpp_Exception : System.Address;
 	begin

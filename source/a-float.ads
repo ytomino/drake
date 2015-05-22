@@ -26,8 +26,8 @@ package Ada.Float is
 
    generic
       type Float_Type is digits <>;
-   function Is_Negative (X : Float_Type) return Boolean;
-   pragma Import (Intrinsic, Is_Negative);
+   function Is_Negative (X : Float_Type) return Boolean
+      with Import, Convention => Intrinsic;
 
    generic
       type Dividend_Type is digits <>;

@@ -43,9 +43,10 @@ package body System.Interrupt_Handlers is
                   A1 : not null access Node_Access;
                   A2 : Node_Access;
                   A3 : Node_Access)
-                  return Boolean;
-               pragma Import (Intrinsic, sync_bool_compare_and_swap_32,
-                  "__sync_bool_compare_and_swap_4");
+                  return Boolean
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__sync_bool_compare_and_swap_4";
                pragma Warnings (Off, sync_bool_compare_and_swap_32);
                --  [gcc-4.8] excessive prototype checking
             begin
@@ -60,9 +61,10 @@ package body System.Interrupt_Handlers is
                   A1 : not null access Node_Access;
                   A2 : Node_Access;
                   A3 : Node_Access)
-                  return Boolean;
-               pragma Import (Intrinsic, sync_bool_compare_and_swap_64,
-                  "__sync_bool_compare_and_swap_8");
+                  return Boolean
+                  with Import,
+                     Convention => Intrinsic,
+                     External_Name => "__sync_bool_compare_and_swap_8";
                pragma Warnings (Off, sync_bool_compare_and_swap_64);
                --  [gcc-4.8] excessive prototype checking
             begin
