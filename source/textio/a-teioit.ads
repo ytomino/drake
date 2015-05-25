@@ -14,7 +14,9 @@ package Ada.Text_IO.Iterators is
          Default_Iterator => Iterate,
          Iterator_Element => String;
 
-   function Lines (File : File_Type) return Lines_Type;
+   function Lines (
+      File : File_Type) -- Input_File_Type
+      return Lines_Type;
 
    type Line_Cursor is private;
    pragma Preelaborable_Initialization (Line_Cursor);

@@ -24,19 +24,27 @@ package body Ada.Text_IO.Terminal is
 
    --  implementation
 
-   function Is_Terminal (File : File_Type) return Boolean is
+   function Is_Terminal (
+      File : File_Type)
+      return Boolean
+   is
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Reference (File).all;
    begin
       return Naked_Text_IO.External (NC_File) = IO_Modes.Terminal;
    end Is_Terminal;
 
-   procedure Set_Size (File : File_Type; Size : Size_Type) is
+   procedure Set_Size (
+      File : File_Type;
+      Size : Size_Type) is
    begin
       Set_Size (File, Size.Line_Length, Size.Page_Length);
    end Set_Size;
 
-   procedure Set_Size (File : File_Type; Line_Length, Page_Length : Count) is
+   procedure Set_Size (
+      File : File_Type;
+      Line_Length, Page_Length : Count)
+   is
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Reference (File).all;
    begin
@@ -47,14 +55,19 @@ package body Ada.Text_IO.Terminal is
          Integer (Page_Length));
    end Set_Size;
 
-   function Size (File : File_Type) return Size_Type is
+   function Size (
+      File : File_Type)
+      return Size_Type is
    begin
       return Result : Size_Type do
          Size (File, Result.Line_Length, Result.Page_Length);
       end return;
    end Size;
 
-   procedure Size (File : File_Type; Line_Length, Page_Length : out Count) is
+   procedure Size (
+      File : File_Type;
+      Line_Length, Page_Length : out Count)
+   is
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Reference (File).all;
    begin
@@ -65,7 +78,9 @@ package body Ada.Text_IO.Terminal is
          Natural'Base (Page_Length));
    end Size;
 
-   function View (File : File_Type) return View_Type is
+   function View (
+      File : File_Type)
+      return View_Type is
    begin
       return R : View_Type do
          View (File, R.Left, R.Top, R.Right, R.Bottom);
@@ -89,12 +104,17 @@ package body Ada.Text_IO.Terminal is
          Natural'Base (Bottom));
    end View;
 
-   procedure Set_Position (File : File_Type; Position : Position_Type) is
+   procedure Set_Position (
+      File : File_Type;
+      Position : Position_Type) is
    begin
       Set_Position (File, Position.Col, Position.Line);
    end Set_Position;
 
-   procedure Set_Position (File : File_Type; Col, Line : Positive_Count) is
+   procedure Set_Position (
+      File : File_Type;
+      Col, Line : Positive_Count)
+   is
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Reference (File).all;
    begin
@@ -105,7 +125,10 @@ package body Ada.Text_IO.Terminal is
          Integer (Line));
    end Set_Position;
 
-   procedure Set_Col (File : File_Type; To : Positive_Count) is
+   procedure Set_Col (
+      File : File_Type;
+      To : Positive_Count)
+   is
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Reference (File).all;
    begin
@@ -115,7 +138,9 @@ package body Ada.Text_IO.Terminal is
          Integer (To));
    end Set_Col;
 
-   function Position (File : File_Type) return Position_Type is
+   function Position (
+      File : File_Type)
+      return Position_Type is
    begin
       return Result : Position_Type do
          Position (
@@ -125,7 +150,10 @@ package body Ada.Text_IO.Terminal is
       end return;
    end Position;
 
-   procedure Position (File : File_Type; Col, Line : out Positive_Count) is
+   procedure Position (
+      File : File_Type;
+      Col, Line : out Positive_Count)
+   is
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Reference (File).all;
    begin

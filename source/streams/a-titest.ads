@@ -25,7 +25,9 @@ package Ada.Text_IO.Text_Streams is
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target);
    pragma Inline (Open);
 
-   function Stream (File : File_Type) return Stream_Access;
+   function Stream (
+      File : File_Type) -- Open_File_Type
+      return Stream_Access;
    pragma Inline (Stream);
 
 end Ada.Text_IO.Text_Streams;

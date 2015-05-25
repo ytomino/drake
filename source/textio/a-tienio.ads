@@ -8,7 +8,7 @@ package Ada.Text_IO.Enumeration_IO is
    Default_Setting : Type_Set := Upper_Case;
 
    procedure Get (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Enum);
    procedure Get (
       Item : out Enum);
@@ -17,7 +17,7 @@ package Ada.Text_IO.Enumeration_IO is
       Item : out Enum); -- alt
 
    procedure Put (
-      File : File_Type;
+      File : File_Type; -- Output_File_Type
       Item : Enum;
       Width : Field := Default_Width;
       Set : Type_Set := Default_Setting);

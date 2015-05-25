@@ -3,28 +3,28 @@ with Ada.Strings.Unbounded;
 package Ada.Text_IO.Unbounded_IO is
 
    procedure Put (
-      File : File_Type;
+      File : File_Type; -- Output_File_Type
       Item : Strings.Unbounded.Unbounded_String);
 
    procedure Put (
       Item : Strings.Unbounded.Unbounded_String);
 
    procedure Put_Line (
-      File : File_Type;
+      File : File_Type; -- Output_File_Type
       Item : Strings.Unbounded.Unbounded_String);
 
    procedure Put_Line (
       Item : Strings.Unbounded.Unbounded_String);
 
    function Get_Line (
-      File : File_Type)
+      File : File_Type) -- Input_File_Type
       return Strings.Unbounded.Unbounded_String;
 
    function Get_Line
       return Strings.Unbounded.Unbounded_String;
 
    procedure Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Strings.Unbounded.Unbounded_String);
 
    procedure Get_Line (

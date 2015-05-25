@@ -86,7 +86,7 @@ package body Ada.Text_IO is
    end Finally;
 
    procedure Raw_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : aliased out String_Access;
       Last : out Natural);
    procedure Raw_Get_Line (
@@ -104,7 +104,7 @@ package body Ada.Text_IO is
    end Raw_Get_Line;
 
    procedure Raw_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : aliased out Wide_String_Access;
       Last : out Natural);
    procedure Raw_Get_Line (
@@ -122,7 +122,7 @@ package body Ada.Text_IO is
    end Raw_Get_Line;
 
    procedure Raw_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : aliased out Wide_Wide_String_Access;
       Last : out Natural);
    procedure Raw_Get_Line (
@@ -267,12 +267,16 @@ package body Ada.Text_IO is
       Reset (File, Mode (File));
    end Reset;
 
-   function Mode (File : File_Type) return File_Mode is
+   function Mode (
+      File : File_Type)
+      return File_Mode is
    begin
       return File_Mode (Naked_Text_IO.Mode (Reference (File).all));
    end Mode;
 
-   function Name (File : File_Type) return String is
+   function Name (
+      File : File_Type)
+      return String is
    begin
       return Naked_Text_IO.Name (Reference (File).all);
    end Name;
@@ -282,7 +286,10 @@ package body Ada.Text_IO is
       return Name (File.all);
    end Name;
 
-   function Form (File : File_Type) return String is
+   function Form (
+      File : File_Type)
+      return String
+   is
       Non_Controlled_File : constant Naked_Text_IO.Non_Controlled_File_Type :=
          Reference (File).all;
       Result : Streams.Naked_Stream_IO.Form_String;
@@ -375,7 +382,8 @@ package body Ada.Text_IO is
 
    --  implementation of Buffer control
 
-   procedure Flush (File : File_Type) is
+   procedure Flush (
+      File : File_Type) is
    begin
       Naked_Text_IO.Flush (Reference (File).all);
    end Flush;
@@ -387,7 +395,9 @@ package body Ada.Text_IO is
 
    --  implementation of Specification of line and page lengths
 
-   procedure Set_Line_Length (File : File_Type; To : Count) is
+   procedure Set_Line_Length (
+      File : File_Type;
+      To : Count) is
    begin
       Naked_Text_IO.Set_Line_Length (Reference (File).all, Integer (To));
    end Set_Line_Length;
@@ -402,7 +412,9 @@ package body Ada.Text_IO is
       Set_Line_Length (File.all, To);
    end Set_Line_Length;
 
-   procedure Set_Page_Length (File : File_Type; To : Count) is
+   procedure Set_Page_Length (
+      File : File_Type;
+      To : Count) is
    begin
       Naked_Text_IO.Set_Page_Length (Reference (File).all, Integer (To));
    end Set_Page_Length;
@@ -417,7 +429,9 @@ package body Ada.Text_IO is
       Set_Page_Length (File.all, To);
    end Set_Page_Length;
 
-   function Line_Length (File : File_Type) return Count is
+   function Line_Length (
+      File : File_Type)
+      return Count is
    begin
       return Count (Naked_Text_IO.Line_Length (Reference (File).all));
    end Line_Length;
@@ -427,7 +441,9 @@ package body Ada.Text_IO is
       return Line_Length (Current_Output.all);
    end Line_Length;
 
-   function Page_Length (File : File_Type) return Count is
+   function Page_Length (
+      File : File_Type)
+      return Count is
    begin
       return Count (Naked_Text_IO.Page_Length (Reference (File).all));
    end Page_Length;
@@ -439,7 +455,9 @@ package body Ada.Text_IO is
 
    --  implementation of Column, Line, and Page Control
 
-   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1) is
+   procedure New_Line (
+      File : File_Type;
+      Spacing : Positive_Count := 1) is
    begin
       Naked_Text_IO.New_Line (Reference (File).all, Integer (Spacing));
    end New_Line;
@@ -456,7 +474,9 @@ package body Ada.Text_IO is
       New_Line (File.all, Spacing);
    end New_Line;
 
-   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1) is
+   procedure Skip_Line (
+      File : File_Type;
+      Spacing : Positive_Count := 1) is
    begin
       Naked_Text_IO.Skip_Line (Reference (File).all, Integer (Spacing));
    end Skip_Line;
@@ -473,7 +493,9 @@ package body Ada.Text_IO is
       Skip_Line (File.all, Spacing);
    end Skip_Line;
 
-   function End_Of_Line (File : File_Type) return Boolean is
+   function End_Of_Line (
+      File : File_Type)
+      return Boolean is
    begin
       return Naked_Text_IO.End_Of_Line (Reference (File).all);
    end End_Of_Line;
@@ -483,7 +505,8 @@ package body Ada.Text_IO is
       return End_Of_Line (Current_Input.all);
    end End_Of_Line;
 
-   procedure New_Page (File : File_Type) is
+   procedure New_Page (
+      File : File_Type) is
    begin
       Naked_Text_IO.New_Page (Reference (File).all);
    end New_Page;
@@ -498,7 +521,8 @@ package body Ada.Text_IO is
       New_Page (File.all);
    end New_Page;
 
-   procedure Skip_Page (File : File_Type) is
+   procedure Skip_Page (
+      File : File_Type) is
    begin
       Naked_Text_IO.Skip_Page (Reference (File).all);
    end Skip_Page;
@@ -513,7 +537,9 @@ package body Ada.Text_IO is
       Skip_Page (File.all);
    end Skip_Page;
 
-   function End_Of_Page (File : File_Type) return Boolean is
+   function End_Of_Page (
+      File : File_Type)
+      return Boolean is
    begin
       return Naked_Text_IO.End_Of_Page (Reference (File).all);
    end End_Of_Page;
@@ -528,7 +554,9 @@ package body Ada.Text_IO is
       return End_Of_Page (File.all);
    end End_Of_Page;
 
-   function End_Of_File (File : File_Type) return Boolean is
+   function End_Of_File (
+      File : File_Type)
+      return Boolean is
    begin
       return Naked_Text_IO.End_Of_File (Reference (File).all);
    end End_Of_File;
@@ -543,7 +571,9 @@ package body Ada.Text_IO is
       return End_Of_File (File.all);
    end End_Of_File;
 
-   procedure Set_Col (File : File_Type; To : Positive_Count) is
+   procedure Set_Col (
+      File : File_Type;
+      To : Positive_Count) is
    begin
       Naked_Text_IO.Set_Col (Reference (File).all, Integer (To));
    end Set_Col;
@@ -558,7 +588,9 @@ package body Ada.Text_IO is
       Set_Col (File.all, To);
    end Set_Col;
 
-   procedure Set_Line (File : File_Type; To : Positive_Count) is
+   procedure Set_Line (
+      File : File_Type;
+      To : Positive_Count) is
    begin
       Naked_Text_IO.Set_Line (Reference (File).all, Integer (To));
    end Set_Line;
@@ -573,7 +605,9 @@ package body Ada.Text_IO is
       Set_Line (File.all, To);
    end Set_Line;
 
-   function Col (File : File_Type) return Positive_Count is
+   function Col (
+      File : File_Type)
+      return Positive_Count is
    begin
       return Count (Naked_Text_IO.Col (Reference (File).all));
    end Col;
@@ -588,7 +622,9 @@ package body Ada.Text_IO is
       return Col (File.all);
    end Col;
 
-   function Line (File : File_Type) return Positive_Count is
+   function Line (
+      File : File_Type)
+      return Positive_Count is
    begin
       return Count (Naked_Text_IO.Line (Reference (File).all));
    end Line;
@@ -603,7 +639,9 @@ package body Ada.Text_IO is
       return Line (File.all);
    end Line;
 
-   function Page (File : File_Type) return Positive_Count is
+   function Page (
+      File : File_Type)
+      return Positive_Count is
    begin
       return Count (Naked_Text_IO.Page (Reference (File).all));
    end Page;
@@ -661,17 +699,23 @@ package body Ada.Text_IO is
       Get (File.all, Item);
    end Get;
 
-   procedure Overloaded_Put (File : File_Type; Item : Character) is
+   procedure Overloaded_Put (
+      File : File_Type;
+      Item : Character) is
    begin
       Naked_Text_IO.Put (Reference (File).all, Item);
    end Overloaded_Put;
 
-   procedure Overloaded_Put (File : File_Type; Item : Wide_Character) is
+   procedure Overloaded_Put (
+      File : File_Type;
+      Item : Wide_Character) is
    begin
       Naked_Text_IO.Put (Reference (File).all, Item);
    end Overloaded_Put;
 
-   procedure Overloaded_Put (File : File_Type; Item : Wide_Wide_Character) is
+   procedure Overloaded_Put (
+      File : File_Type;
+      Item : Wide_Wide_Character) is
    begin
       Naked_Text_IO.Put (Reference (File).all, Item);
    end Overloaded_Put;
@@ -741,7 +785,8 @@ package body Ada.Text_IO is
       Overloaded_Look_Ahead (Current_Input.all, Item, End_Of_Line);
    end Overloaded_Look_Ahead;
 
-   procedure Skip_Ahead (File : File_Type) is
+   procedure Skip_Ahead (
+      File : File_Type) is
    begin
       Naked_Text_IO.Skip_Ahead (Reference (File).all);
    end Skip_Ahead;
@@ -829,21 +874,27 @@ package body Ada.Text_IO is
 
    --  implementation of String Input-Output
 
-   procedure Overloaded_Get (File : File_Type; Item : out String) is
+   procedure Overloaded_Get (
+      File : File_Type;
+      Item : out String) is
    begin
       for I in Item'Range loop
          Overloaded_Get (File, Item (I));
       end loop;
    end Overloaded_Get;
 
-   procedure Overloaded_Get (File : File_Type; Item : out Wide_String) is
+   procedure Overloaded_Get (
+      File : File_Type;
+      Item : out Wide_String) is
    begin
       for I in Item'Range loop
          Overloaded_Get (File, Item (I));
       end loop;
    end Overloaded_Get;
 
-   procedure Overloaded_Get (File : File_Type; Item : out Wide_Wide_String) is
+   procedure Overloaded_Get (
+      File : File_Type;
+      Item : out Wide_Wide_String) is
    begin
       for I in Item'Range loop
          Overloaded_Get (File, Item (I));
@@ -870,21 +921,27 @@ package body Ada.Text_IO is
       Get (File.all, Item);
    end Get;
 
-   procedure Overloaded_Put (File : File_Type; Item : String) is
+   procedure Overloaded_Put (
+      File : File_Type;
+      Item : String) is
    begin
       for I in Item'Range loop
          Overloaded_Put (File, Item (I));
       end loop;
    end Overloaded_Put;
 
-   procedure Overloaded_Put (File : File_Type; Item : Wide_String) is
+   procedure Overloaded_Put (
+      File : File_Type;
+      Item : Wide_String) is
    begin
       for I in Item'Range loop
          Overloaded_Put (File, Item (I));
       end loop;
    end Overloaded_Put;
 
-   procedure Overloaded_Put (File : File_Type; Item : Wide_Wide_String) is
+   procedure Overloaded_Put (
+      File : File_Type;
+      Item : Wide_Wide_String) is
    begin
       for I in Item'Range loop
          Overloaded_Put (File, Item (I));
@@ -1060,7 +1117,10 @@ package body Ada.Text_IO is
       Item := Aliased_Item;
    end Overloaded_Get_Line;
 
-   function Overloaded_Get_Line (File : File_Type) return String is
+   function Overloaded_Get_Line (
+      File : File_Type)
+      return String
+   is
       Aliased_Item : aliased String_Access;
       Last : Natural;
       package Holder is
@@ -1073,7 +1133,10 @@ package body Ada.Text_IO is
       return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;
 
-   function Overloaded_Get_Line (File : File_Type) return Wide_String is
+   function Overloaded_Get_Line (
+      File : File_Type)
+      return Wide_String
+   is
       Aliased_Item : aliased Wide_String_Access;
       Last : Natural;
       package Holder is
@@ -1086,7 +1149,10 @@ package body Ada.Text_IO is
       return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;
 
-   function Overloaded_Get_Line (File : File_Type) return Wide_Wide_String is
+   function Overloaded_Get_Line (
+      File : File_Type)
+      return Wide_Wide_String
+   is
       Aliased_Item : aliased Wide_Wide_String_Access;
       Last : Natural;
       package Holder is
@@ -1114,19 +1180,25 @@ package body Ada.Text_IO is
       return Overloaded_Get_Line (Current_Input.all);
    end Overloaded_Get_Line;
 
-   procedure Overloaded_Put_Line (File : File_Type; Item : String) is
+   procedure Overloaded_Put_Line (
+      File : File_Type;
+      Item : String) is
    begin
       Overloaded_Put (File, Item);
       New_Line (File);
    end Overloaded_Put_Line;
 
-   procedure Overloaded_Put_Line (File : File_Type; Item : Wide_String) is
+   procedure Overloaded_Put_Line (
+      File : File_Type;
+      Item : Wide_String) is
    begin
       Overloaded_Put (File, Item);
       New_Line (File);
    end Overloaded_Put_Line;
 
-   procedure Overloaded_Put_Line (File : File_Type; Item : Wide_Wide_String) is
+   procedure Overloaded_Put_Line (
+      File : File_Type;
+      Item : Wide_Wide_String) is
    begin
       Overloaded_Put (File, Item);
       New_Line (File);

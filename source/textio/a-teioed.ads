@@ -108,7 +108,7 @@ package Ada.Text_IO.Editing is
 
       --  extended
       procedure Overloaded_Put (
-         File : File_Type;
+         File : File_Type; -- Output_File_Type
          Item : Num;
          Pic : Picture;
          Currency : String;
@@ -116,7 +116,7 @@ package Ada.Text_IO.Editing is
          Separator : Character;
          Radix_Mark : Character);
       procedure Overloaded_Put (
-         File : File_Type;
+         File : File_Type; -- Output_File_Type
          Item : Num;
          Pic : Picture;
          Currency : Wide_String;
@@ -124,7 +124,7 @@ package Ada.Text_IO.Editing is
          Separator : Wide_Character;
          Radix_Mark : Wide_Character);
       procedure Overloaded_Put (
-         File : File_Type;
+         File : File_Type; -- Output_File_Type
          Item : Num;
          Pic : Picture;
          Currency : Wide_Wide_String;
@@ -133,7 +133,7 @@ package Ada.Text_IO.Editing is
          Radix_Mark : Wide_Wide_Character);
 
       procedure Put (
-         File : File_Type;
+         File : File_Type; -- Output_File_Type
          Item : Num;
          Pic : Picture;
          Currency : String := Default_Currency;
