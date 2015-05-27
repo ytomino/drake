@@ -205,6 +205,40 @@ else
 IMPORT_HEADERS=$(IMPORTDIR)/c.ads
 endif
 
+# files to be compiled with -O2 instead of -Os
+SPEED_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
+	s-arit64.o \
+	s-boarop.o \
+	s-carsi8.o \
+	s-carun8.o \
+	s-casi16.o \
+	s-casi32.o \
+	s-casi64.o \
+	s-caun16.o \
+	s-caun32.o \
+	s-caun64.o \
+	s-exnint.o \
+	s-exnlli.o \
+	s-expint.o \
+	s-explli.o \
+	s-expllu.o \
+	s-expmod.o \
+	s-expuns.o)
+
+# in numerics
+SPEED_OBJS+=$(addprefix $(LIBGNAT_BUILDDIR)/, \
+	a-nlcoar.o \
+	a-nllcar.o \
+	a-nllrar.o \
+	a-nlrear.o \
+	a-nscoar.o \
+	a-nsrear.o \
+	a-nucoar.o \
+	a-nummt1.o \
+	a-nurear.o \
+	a-nusf19.o \
+	a-nusf21.o)
+
 ifeq ($(DEBUG),0)
 CFLAGS_DEBUG=
 OPTIMIZE=1
@@ -532,6 +566,9 @@ $(RTSDIR)/adainclude/%.ads: $(EH)/%.ads
 
 $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
+
+# optimize for speed instead of size
+$(SPEED_OBJS): CFLAGS_OPTIMIZE:=$(subst -Os,-O2,$(CFLAGS_OPTIMIZE))
 
 # keep the order from AAA to ZZZ
 $(LIBGNAT_BUILDDIR)/s-unwrai.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
