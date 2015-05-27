@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 private generic
-package Ada.Numerics.SFMT.Random.Inside is
+package Ada.Numerics.SFMT_Random.Inside is
    --  SSE2 version
    pragma Preelaborate;
 
@@ -15,4 +15,4 @@ package Ada.Numerics.SFMT.Random.Inside is
       size : Integer);
    pragma Inline (gen_rand_array);
 
-end Ada.Numerics.SFMT.Random.Inside;
+end Ada.Numerics.SFMT_Random.Inside;
