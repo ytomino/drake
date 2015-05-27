@@ -1,5 +1,5 @@
 with Ada.Unchecked_Conversion;
-package body Ada.Numerics.SFMT_Random.Inside is
+package body Ada.Numerics.SFMT.Generating is
    --  SSE2 version
    pragma Suppress (All_Checks);
 
@@ -175,4 +175,4 @@ package body Ada.Numerics.SFMT_Random.Inside is
       end loop;
    end gen_rand_array;
 
-end Ada.Numerics.SFMT_Random.Inside;
+end Ada.Numerics.SFMT.Generating;

@@ -61,7 +61,7 @@ generic
    PARITY2 : Interfaces.Unsigned_32 := 16#00000000#;
    PARITY3 : Interfaces.Unsigned_32 := 16#00000000#;
    PARITY4 : Interfaces.Unsigned_32 := 16#c98e126a#;
-package Ada.Numerics.SFMT_Random is
+package Ada.Numerics.SFMT is
    pragma Preelaborate;
 
    subtype Unsigned_32 is Interfaces.Unsigned_32;
@@ -215,4 +215,4 @@ private
       sfmt : State := Initialize (Default_Initiator);
    end record;
 
-end Ada.Numerics.SFMT_Random;
+end Ada.Numerics.SFMT;

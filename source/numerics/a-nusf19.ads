@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  translated unit from SFMT
-with Ada.Numerics.SFMT_Random;
+with Ada.Numerics.SFMT;
 package Ada.Numerics.SFMT_19937 is
-   new SFMT_Random (
+   new SFMT (
       MEXP => 19937,
       POS1 => 122,
       SL1 => 18,
