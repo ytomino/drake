@@ -332,11 +332,34 @@ procedure ext_doc is
 											elsif Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "pragma") then
 												Skip_F := Ex_F;
 												Comment_Only := False;
-											elsif Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "with Import") then
-												C := Ada.Strings.Unbounded.Element (Document, Ada.Strings.Unbounded.Length (Document) - 1);
-												if C /= ';' and then C /= '.' then
-													Ada.Strings.Unbounded.Insert (Document, Ada.Strings.Unbounded.Length (Document), ";");
-												end if;
+											elsif Ex_F > 0
+												and then (Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "with Import")
+													or else Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "with Convention"))
+											then
+												declare
+													Line_First : Integer :=
+														Ada.Strings.Unbounded.Index (
+															Document,
+															Pattern => (1 => ASCII.LF),
+															From => Ada.Strings.Unbounded.Length (Document) - 1,
+															Going => Ada.Strings.Backward)
+														+ 1;
+													Insertion_Index : Integer;
+												begin
+													if Ada.Strings.Unbounded.Element (Document, Line_First) /= '|' then
+														C := Ada.Strings.Unbounded.Element (Document, Ada.Strings.Unbounded.Length (Document) - 1);
+														if C /= ';' then
+															Insertion_Index := Ada.Strings.Unbounded.Index (
+																Document,
+																Pattern => " --",
+																From => Line_First);
+															if Insertion_Index = 0 then
+																Insertion_Index := Ada.Strings.Unbounded.Length (Document);
+															end if;
+															Ada.Strings.Unbounded.Insert (Document, Insertion_Index, ";");
+														end if;
+													end if;
+												end;
 												Skip_F := Ex_F;
 												Comment_Only := False;
 											elsif Start_With (Ex_Line, "--  diff")
