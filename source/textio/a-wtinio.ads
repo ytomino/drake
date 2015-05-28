@@ -8,7 +8,7 @@ package Ada.Wide_Text_IO.Integer_IO is
    Default_Base : Number_Base := 10;
 
 --  procedure Get (
---    File : File_Type;
+--    File : File_Type; -- Input_File_Type
 --    Item : out Num;
 --    Width : Field := 0);
 --  procedure Get (
@@ -16,7 +16,7 @@ package Ada.Wide_Text_IO.Integer_IO is
 --    Width : Field := 0);
 
 --  procedure Put (
---    File : File_Type;
+--    File : File_Type; -- Output_File_Type
 --    Item : Num;
 --    Width : Field := Default_Width;
 --    Base : Number_Base := Default_Base);

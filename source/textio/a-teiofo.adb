@@ -10,8 +10,11 @@ package body Ada.Text_IO.Formatting is
       Free (X.all);
    end Finally;
 
-   procedure Skip_Spaces (File : File_Type);
-   procedure Skip_Spaces (File : File_Type) is
+   procedure Skip_Spaces (
+      File : File_Type); -- Input_File_Type
+   procedure Skip_Spaces (
+      File : File_Type)
+   is
       Item : Character;
       End_Of_Line : Boolean;
    begin
@@ -26,8 +29,13 @@ package body Ada.Text_IO.Formatting is
       end loop;
    end Skip_Spaces;
 
-   procedure Adjust (File : File_Type; Width : Field);
-   procedure Adjust (File : File_Type; Width : Field) is
+   procedure Adjust (
+      File : File_Type; -- Output_File_Type
+      Width : Field);
+   procedure Adjust (
+      File : File_Type;
+      Width : Field)
+   is
       Line : constant Count := Line_Length (File);
    begin
       if Line = 0 then
@@ -64,7 +72,7 @@ package body Ada.Text_IO.Formatting is
    end Add;
 
    procedure Get_Num (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Buffer : in out String_Access;
       Last : in out Natural;
       Based : Boolean);
@@ -261,7 +269,9 @@ package body Ada.Text_IO.Formatting is
       end if;
    end Modular_Image;
 
-   function Get_Numeric_Literal (File : File_Type; Real : Boolean)
+   function Get_Numeric_Literal (
+      File : File_Type;
+      Real : Boolean)
       return String is
    begin
       Skip_Spaces (File);
@@ -328,7 +338,10 @@ package body Ada.Text_IO.Formatting is
       end;
    end Get_Numeric_Literal;
 
-   function Get_Complex_Literal (File : File_Type) return String is
+   function Get_Complex_Literal (
+      File : File_Type)
+      return String
+   is
       Item : Character;
       End_Of_Line : Boolean;
       Paren : Boolean;
@@ -364,7 +377,9 @@ package body Ada.Text_IO.Formatting is
       end;
    end Get_Complex_Literal;
 
-   function Get_Enum_Literal (File : File_Type) return String is
+   function Get_Enum_Literal (
+      File : File_Type)
+      return String is
    begin
       Skip_Spaces (File);
       declare
@@ -465,7 +480,10 @@ package body Ada.Text_IO.Formatting is
       end if;
    end Get_Field;
 
-   procedure Head (File : File_Type; Item : String; Width : Field) is
+   procedure Head (
+      File : File_Type;
+      Item : String;
+      Width : Field) is
    begin
       Adjust (File, Field'Max (Width, Item'Last));
       Put (File, Item);
@@ -474,7 +492,10 @@ package body Ada.Text_IO.Formatting is
       end loop;
    end Head;
 
-   procedure Tail (File : File_Type; Item : String; Width : Field) is
+   procedure Tail (
+      File : File_Type;
+      Item : String;
+      Width : Field) is
    begin
       Adjust (File, Field'Max (Width, Item'Last));
       for I in Item'Length + 1 .. Width loop

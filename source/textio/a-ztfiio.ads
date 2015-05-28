@@ -9,7 +9,7 @@ package Ada.Wide_Wide_Text_IO.Fixed_IO is
    Default_Exp : Field := 0;
 
 --  procedure Get (
---    File : File_Type;
+--    File : File_Type; -- Input_File_Type
 --    Item : out Num;
 --    Width : Field := 0);
 --  procedure Get (
@@ -17,7 +17,7 @@ package Ada.Wide_Wide_Text_IO.Fixed_IO is
 --    Width : Field := 0);
 
 --  procedure Put (
---    File : File_Type;
+--    File : File_Type; -- Output_File_Type
 --    Item : Num;
 --    Fore : Field := Default_Fore;
 --    Aft : Field := Default_Aft;

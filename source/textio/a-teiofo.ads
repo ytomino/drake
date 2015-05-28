@@ -36,24 +36,36 @@ private package Ada.Text_IO.Formatting is
       Padding_Width : Field);
 
    --  for Integer_IO, Modular_IO, Float_IO, Fixed_IO
-   function Get_Numeric_Literal (File : File_Type; Real : Boolean)
+   function Get_Numeric_Literal (
+      File : File_Type; -- Input_File_Type
+      Real : Boolean)
       return String;
 
    --  for Complex_IO
-   function Get_Complex_Literal (File : File_Type) return String;
+   function Get_Complex_Literal (
+      File : File_Type) -- Input_File_Type
+      return String;
 
    --  for Enumeration_IO
-   function Get_Enum_Literal (File : File_Type) return String;
+   function Get_Enum_Literal (
+      File : File_Type) -- Input_File_Type
+      return String;
 
    --  for Get (..., Width);
    procedure Get_Field (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out String;
       Last : out Natural);
 
    --  put with layout
-   procedure Head (File : File_Type; Item : String; Width : Field);
-   procedure Tail (File : File_Type; Item : String; Width : Field);
+   procedure Head (
+      File : File_Type; -- Output_File_Type
+      Item : String;
+      Width : Field);
+   procedure Tail (
+      File : File_Type; -- Output_File_Type
+      Item : String;
+      Width : Field);
 
    --  get from string
    procedure Get_Head (
