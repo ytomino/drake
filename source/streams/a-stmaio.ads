@@ -19,6 +19,11 @@ package Ada.Storage_Mapped_IO is
 
    type Storage_Type is limited private;
 
+--  subtype Mapped_Storage_Type is Storage_Type
+--    with
+--       Dynamic_Predicate => Is_Mapped (Mapped_Storage_Type),
+--       Predicate_Failure => raise Status_Error;
+
    function Is_Mapped (Object : Storage_Type) return Boolean;
    pragma Inline (Is_Mapped);
 
@@ -38,9 +43,12 @@ package Ada.Storage_Mapped_IO is
 
    procedure Unmap (Object : in out Storage_Type);
 
-   function Storage_Address (Object : Storage_Type) return System.Address;
+   function Storage_Address (
+      Object : Storage_Type) -- Mapped_Storage_Type
+      return System.Address;
    pragma Inline (Storage_Address);
-   function Storage_Size (Object : Storage_Type)
+   function Storage_Size (
+      Object : Storage_Type) -- Mapped_Storage_Type
       return System.Storage_Elements.Storage_Count;
    pragma Inline (Storage_Size);
 
