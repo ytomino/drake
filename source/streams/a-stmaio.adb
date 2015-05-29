@@ -55,12 +55,12 @@ package body Ada.Storage_Mapped_IO is
 
    --  implementation
 
-   function Is_Map (Object : Storage_Type) return Boolean is
+   function Is_Mapped (Object : Storage_Type) return Boolean is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
       return NC_Mapping.Mapping.Storage_Address /= System.Null_Address;
-   end Is_Map;
+   end Is_Mapped;
 
    procedure Map (
       Object : out Storage_Type;

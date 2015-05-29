@@ -19,8 +19,8 @@ package Ada.Storage_Mapped_IO is
 
    type Storage_Type is limited private;
 
-   function Is_Map (Object : Storage_Type) return Boolean;
-   pragma Inline (Is_Map);
+   function Is_Mapped (Object : Storage_Type) return Boolean;
+   pragma Inline (Is_Mapped);
 
    procedure Map (
       Object : out Storage_Type;
