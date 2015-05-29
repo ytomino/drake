@@ -17,30 +17,30 @@ package Ada.Storage_Mapped_IO is
    function "=" (Left, Right : File_Mode) return Boolean
       renames Streams.Stream_IO."=";
 
-   type Mapping is limited private;
+   type Storage_Type is limited private;
 
-   function Is_Map (Object : Mapping) return Boolean;
+   function Is_Map (Object : Storage_Type) return Boolean;
    pragma Inline (Is_Map);
 
    procedure Map (
-      Object : out Mapping;
+      Object : out Storage_Type;
       File : Streams.Stream_IO.File_Type;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0);
 
    procedure Map (
-      Object : out Mapping;
+      Object : out Storage_Type;
       Mode : File_Mode := In_File;
       Name : String;
       Form : String := "";
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0);
 
-   procedure Unmap (Object : in out Mapping);
+   procedure Unmap (Object : in out Storage_Type);
 
-   function Storage_Address (Object : Mapping) return System.Address;
+   function Storage_Address (Object : Storage_Type) return System.Address;
    pragma Inline (Storage_Address);
-   function Storage_Size (Object : Mapping)
+   function Storage_Size (Object : Storage_Type)
       return System.Storage_Elements.Storage_Count;
    pragma Inline (Storage_Size);
 
@@ -59,15 +59,17 @@ private
 
    package Controlled is
 
-      type Mapping is limited private;
+      type Storage_Type is limited private;
 
-      function Reference (Object : Mapping)
+      function Reference (Object : Storage_Type)
          return not null access Non_Controlled_Mapping;
       pragma Inline (Reference);
 
    private
 
-      type Mapping is limited new Finalization.Limited_Controlled with record
+      type Storage_Type is
+         limited new Finalization.Limited_Controlled with
+      record
          Data : aliased Non_Controlled_Mapping := (
             Mapping => (
                Storage_Address => System.Null_Address,
@@ -76,10 +78,10 @@ private
             File => null);
       end record;
 
-      overriding procedure Finalize (Object : in out Mapping);
+      overriding procedure Finalize (Object : in out Storage_Type);
 
    end Controlled;
 
-   type Mapping is new Controlled.Mapping;
+   type Storage_Type is new Controlled.Storage_Type;
 
 end Ada.Storage_Mapped_IO;

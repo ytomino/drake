@@ -55,7 +55,7 @@ package body Ada.Storage_Mapped_IO is
 
    --  implementation
 
-   function Is_Map (Object : Mapping) return Boolean is
+   function Is_Map (Object : Storage_Type) return Boolean is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
@@ -63,7 +63,7 @@ package body Ada.Storage_Mapped_IO is
    end Is_Map;
 
    procedure Map (
-      Object : out Mapping;
+      Object : out Storage_Type;
       File : Streams.Stream_IO.File_Type;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
@@ -86,7 +86,7 @@ package body Ada.Storage_Mapped_IO is
    end Map;
 
    procedure Map (
-      Object : out Mapping;
+      Object : out Storage_Type;
       Mode : File_Mode := In_File;
       Name : String;
       Form : String := "";
@@ -117,7 +117,7 @@ package body Ada.Storage_Mapped_IO is
          Writable => Mode /= In_File);
    end Map;
 
-   procedure Unmap (Object : in out Mapping) is
+   procedure Unmap (Object : in out Storage_Type) is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
@@ -127,14 +127,14 @@ package body Ada.Storage_Mapped_IO is
       Unmap (NC_Mapping.all, Raise_On_Error => True);
    end Unmap;
 
-   function Storage_Address (Object : Mapping) return System.Address is
+   function Storage_Address (Object : Storage_Type) return System.Address is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
       return NC_Mapping.Mapping.Storage_Address;
    end Storage_Address;
 
-   function Storage_Size (Object : Mapping)
+   function Storage_Size (Object : Storage_Type)
       return System.Storage_Elements.Storage_Count
    is
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
@@ -145,13 +145,13 @@ package body Ada.Storage_Mapped_IO is
 
    package body Controlled is
 
-      function Reference (Object : Mapping)
+      function Reference (Object : Storage_Type)
          return not null access Non_Controlled_Mapping is
       begin
          return Object.Data'Unrestricted_Access;
       end Reference;
 
-      overriding procedure Finalize (Object : in out Mapping) is
+      overriding procedure Finalize (Object : in out Storage_Type) is
       begin
          if Object.Data.Mapping.Storage_Address /= System.Null_Address then
             Unmap (Object.Data, Raise_On_Error => False);
