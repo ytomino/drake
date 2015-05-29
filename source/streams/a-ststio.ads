@@ -11,6 +11,24 @@ package Ada.Streams.Stream_IO is
 
    type File_Type is limited private;
 
+   --  Similar to Text_IO in AI12-0054-2:
+--  subtype Open_File_Type is File_Type
+--     with
+--       Dynamic_Predicate => Is_Open (Open_File_Type),
+--       Predicate_Failure => raise Status_Error with "File not open";
+--  subtype Input_File_Type is Open_File_Type
+--    with
+--       Dynamic_Predicate => Mode (Input_File_Type) /= Out_File,
+--       Predicate_Failure =>
+--          raise Mode_Error with
+--             "Cannot read file: " & Name (Input_File_Type);
+--  subtype Output_File_Type is Open_File_Type
+--    with
+--       Dynamic_Predicate => Mode (Output_File_Type) /= In_File,
+--       Predicate_Failure =>
+--         raise Mode_Error with
+--            "Cannot write file: " & Name (Output_File_Type);
+
 --  type File_Mode is (In_File, Out_File, Append_File);
    type File_Mode is new IO_Modes.File_Mode; -- for conversion
 
@@ -74,53 +92,70 @@ package Ada.Streams.Stream_IO is
    procedure Reset (File : in out File_Type; Mode : File_Mode);
    procedure Reset (File : in out File_Type);
 
-   function Mode (File : File_Type) return File_Mode;
+   function Mode (
+      File : File_Type) -- Open_File_Type
+      return File_Mode;
    pragma Inline (Mode);
-   function Name (File : File_Type) return String;
+   function Name (
+      File : File_Type) -- Open_File_Type
+      return String;
    pragma Inline (Name);
-   function Form (File : File_Type) return String;
+   function Form (
+      File : File_Type) -- Open_File_Type
+      return String;
 
    function Is_Open (File : File_Type) return Boolean;
    pragma Inline (Is_Open);
-   function End_Of_File (File : File_Type) return Boolean;
+   function End_Of_File (
+      File : File_Type) -- Open_File_Type
+      return Boolean;
    pragma Inline (End_Of_File);
 
-   function Stream (File : File_Type) return Stream_Access;
+   function Stream (
+      File : File_Type) -- Open_File_Type
+      return Stream_Access;
    pragma Inline (Stream);
    --  Return stream access for use with T'Input and T'Output
 
    --  Read array of stream elements from file
    procedure Read (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset;
       From : Positive_Count);
    procedure Read (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset);
 
    --  Write array of stream elements into file
    procedure Write (
-      File : File_Type;
+      File : File_Type; -- Output_File_Type
       Item : Stream_Element_Array;
       To : Positive_Count);
    procedure Write (
-      File : File_Type;
+      File : File_Type; -- Output_File_Type
       Item : Stream_Element_Array);
 
    --  Operations on position within file
 
-   procedure Set_Index (File : File_Type; To : Positive_Count);
+   procedure Set_Index (
+      File : File_Type; -- Open_File_Type
+      To : Positive_Count);
 
-   function Index (File : File_Type) return Positive_Count;
+   function Index (
+      File : File_Type) -- Open_File_Type
+      return Positive_Count;
    pragma Inline (Index);
-   function Size (File : File_Type) return Count;
+   function Size (
+      File : File_Type) -- Open_File_Type
+      return Count;
    pragma Inline (Size);
 
    procedure Set_Mode (File : in out File_Type; Mode : File_Mode);
 
-   procedure Flush (File : File_Type);
+   procedure Flush (
+      File : File_Type); -- Output_File_Type
 
    --  exceptions
 

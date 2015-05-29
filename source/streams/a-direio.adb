@@ -69,19 +69,25 @@ package body Ada.Direct_IO is
       Streams.Stream_IO.Set_Index (Streams.Stream_IO.File_Type (File), 1);
    end Reset;
 
-   function Mode (File : File_Type) return File_Mode is
+   function Mode (
+      File : File_Type)
+      return File_Mode is
    begin
       return From_Mode (Streams.Stream_IO.Mode (
          Streams.Stream_IO.File_Type (File)));
    end Mode;
 
-   function Name (File : File_Type) return String is
+   function Name (
+      File : File_Type)
+      return String is
    begin
       return Streams.Stream_IO.Name (
          Streams.Stream_IO.File_Type (File));
    end Name;
 
-   function Form (File : File_Type) return String is
+   function Form (
+      File : File_Type)
+      return String is
    begin
       return Streams.Stream_IO.Form (Streams.Stream_IO.File_Type (File));
    end Form;
@@ -100,7 +106,10 @@ package body Ada.Direct_IO is
       Read (File, Item);
    end Read;
 
-   procedure Read (File : File_Type; Item : out Element_Type) is
+   procedure Read (
+      File : File_Type;
+      Item : out Element_Type)
+   is
       pragma Warnings (Off,
          "constrained for private type is an obsolescent feature (RM J.4)");
       Constrained : constant Boolean := Element_Type'Constrained;
@@ -155,7 +164,10 @@ package body Ada.Direct_IO is
       Write (File, Item);
    end Write;
 
-   procedure Write (File : File_Type; Item : Element_Type) is
+   procedure Write (
+      File : File_Type;
+      Item : Element_Type)
+   is
       Buffer : Streams.Stream_Element_Array (
          1 ..
          Element_Type'Max_Size_In_Storage_Elements);
@@ -166,7 +178,10 @@ package body Ada.Direct_IO is
          Buffer);
    end Write;
 
-   procedure Set_Index (File : File_Type; To : Positive_Count) is
+   procedure Set_Index (
+      File : File_Type;
+      To : Positive_Count)
+   is
       Raw_Index : constant Streams.Stream_IO.Positive_Count :=
          Streams.Stream_IO.Positive_Count (
             (To - 1) * Element_Type'Max_Size_In_Storage_Elements + 1);
@@ -176,7 +191,10 @@ package body Ada.Direct_IO is
          Raw_Index);
    end Set_Index;
 
-   function Index (File : File_Type) return Positive_Count is
+   function Index (
+      File : File_Type)
+      return Positive_Count
+   is
       Raw_Index : constant Positive_Count := Positive_Count (
          Streams.Stream_IO.Index (Streams.Stream_IO.File_Type (File)));
       Index_From_0 : constant Count := Raw_Index - 1;
@@ -187,7 +205,10 @@ package body Ada.Direct_IO is
       return Index_From_0 / Element_Type'Max_Size_In_Storage_Elements + 1;
    end Index;
 
-   function Size (File : File_Type) return Count is
+   function Size (
+      File : File_Type)
+      return Count
+   is
       Raw_Size : constant Count := Count (
          Streams.Stream_IO.Size (Streams.Stream_IO.File_Type (File)));
    begin
@@ -197,7 +218,9 @@ package body Ada.Direct_IO is
       return Raw_Size / Element_Type'Max_Size_In_Storage_Elements;
    end Size;
 
-   function End_Of_File (File : File_Type) return Boolean is
+   function End_Of_File (
+      File : File_Type)
+      return Boolean is
    begin
       if Mode (File) = Out_File then
          Raise_Exception (Mode_Error'Identity);

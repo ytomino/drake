@@ -8,6 +8,24 @@ package Ada.Sequential_IO is
 
    type File_Type is limited private;
 
+   --  Similar to Text_IO in AI12-0054-2:
+--  subtype Open_File_Type is File_Type
+--     with
+--       Dynamic_Predicate => Is_Open (Open_File_Type),
+--       Predicate_Failure => raise Status_Error with "File not open";
+--  subtype Input_File_Type is Open_File_Type
+--    with
+--       Dynamic_Predicate => Mode (Input_File_Type) = In_File,
+--       Predicate_Failure =>
+--          raise Mode_Error with
+--             "Cannot read file: " & Name (Input_File_Type);
+--  subtype Output_File_Type is Open_File_Type
+--    with
+--       Dynamic_Predicate => Mode (Output_File_Type) /= In_File,
+--       Predicate_Failure =>
+--         raise Mode_Error with
+--            "Cannot write file: " & Name (Output_File_Type);
+
 --  type File_Mode is (In_File, Out_File, Append_File);
    type File_Mode is new IO_Modes.File_Mode; -- for conversion
 
@@ -30,11 +48,17 @@ package Ada.Sequential_IO is
    procedure Reset (File : in out File_Type; Mode : File_Mode);
    procedure Reset (File : in out File_Type);
 
-   function Mode (File : File_Type) return File_Mode;
+   function Mode (
+      File : File_Type) -- Open_File_Type
+      return File_Mode;
    pragma Inline (Mode);
-   function Name (File : File_Type) return String;
+   function Name (
+      File : File_Type) -- Open_File_Type
+      return String;
    pragma Inline (Name);
-   function Form (File : File_Type) return String;
+   function Form (
+      File : File_Type) -- Open_File_Type
+      return String;
    pragma Inline (Form);
 
    function Is_Open (File : File_Type) return Boolean;
@@ -42,10 +66,16 @@ package Ada.Sequential_IO is
 
    --  Input and output operations
 
-   procedure Read (File : File_Type; Item : out Element_Type);
-   procedure Write (File : File_Type; Item : Element_Type);
+   procedure Read (
+      File : File_Type; -- Input_File_Type
+      Item : out Element_Type);
+   procedure Write (
+      File : File_Type; -- Output_File_Type
+      Item : Element_Type);
 
-   function End_Of_File (File : File_Type) return Boolean;
+   function End_Of_File (
+      File : File_Type) -- Input_File_Type
+      return Boolean;
 
    --  Exceptions
 

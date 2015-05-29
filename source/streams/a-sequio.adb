@@ -51,18 +51,24 @@ package body Ada.Sequential_IO is
       Streams.Stream_IO.Reset (Streams.Stream_IO.File_Type (File));
    end Reset;
 
-   function Mode (File : File_Type) return File_Mode is
+   function Mode (
+      File : File_Type)
+      return File_Mode is
    begin
       return File_Mode (Streams.Stream_IO.Mode (
          Streams.Stream_IO.File_Type (File)));
    end Mode;
 
-   function Name (File : File_Type) return String is
+   function Name (
+      File : File_Type)
+      return String is
    begin
       return Streams.Stream_IO.Name (Streams.Stream_IO.File_Type (File));
    end Name;
 
-   function Form (File : File_Type) return String is
+   function Form (
+      File : File_Type)
+      return String is
    begin
       return Streams.Stream_IO.Form (
          Streams.Stream_IO.File_Type (File));
@@ -73,7 +79,10 @@ package body Ada.Sequential_IO is
       return Streams.Stream_IO.Is_Open (Streams.Stream_IO.File_Type (File));
    end Is_Open;
 
-   procedure Read (File : File_Type; Item : out Element_Type) is
+   procedure Read (
+      File : File_Type;
+      Item : out Element_Type)
+   is
       Unit : constant := Streams.Stream_Element'Size;
       Size : constant Streams.Stream_Element_Count :=
          (Item'Size + Unit - 1) / Unit;
@@ -117,7 +126,10 @@ package body Ada.Sequential_IO is
       end if;
    end Read;
 
-   procedure Write (File : File_Type; Item : Element_Type) is
+   procedure Write (
+      File : File_Type;
+      Item : Element_Type)
+   is
       Unit : constant := Streams.Stream_Element'Size;
       Size : constant Streams.Stream_Element_Count :=
          (Item'Size + Unit - 1) / Unit;
@@ -138,7 +150,9 @@ package body Ada.Sequential_IO is
       end;
    end Write;
 
-   function End_Of_File (File : File_Type) return Boolean is
+   function End_Of_File (
+      File : File_Type)
+      return Boolean is
    begin
       if Mode (File) /= In_File then
          Raise_Exception (Mode_Error'Identity);
