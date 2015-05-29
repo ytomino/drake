@@ -231,6 +231,16 @@ package body Ada.Directories is
 
    --  directory searching
 
+   function Is_Assigned (Directory_Entry : Directory_Entry_Type)
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      return NC_Directory_Entry.Status /= Empty;
+   end Is_Assigned;
+
    procedure Start_Search (
       Search : in out Search_Type;
       Directory : String;
@@ -338,6 +348,11 @@ package body Ada.Directories is
          End_Search (Search, Raise_On_Error => False);
       end if;
    end Finalize;
+
+   function Is_Open (Search : Search_Type) return Boolean is
+   begin
+      return Search.Search.Handle /= System.Directory_Searching.Null_Handle;
+   end Is_Open;
 
    procedure Search (
       Directory : String;

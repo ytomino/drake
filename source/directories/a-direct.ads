@@ -155,6 +155,11 @@ package Ada.Directories is
 
    type Directory_Entry_Type is limited private;
 
+   --  extended
+   function Is_Assigned (Directory_Entry : Directory_Entry_Type)
+      return Boolean;
+   pragma Inline (Is_Assigned);
+
    type Filter_Type is array (File_Kind) of Boolean;
    pragma Pack (Filter_Type);
 
@@ -190,6 +195,10 @@ package Ada.Directories is
    procedure Get_Next_Entry (
       Search : in out Search_Type;
       Directory_Entry : out Directory_Entry_Type);
+
+   --  extended
+   function Is_Open (Search : Search_Type) return Boolean;
+   pragma Inline (Is_Open);
 
    --  modified
    procedure Search (
