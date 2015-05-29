@@ -15,11 +15,6 @@ package body Ada.Direct_IO is
 
    --  implementation
 
-   procedure Close (File : in out File_Type) is
-   begin
-      Streams.Stream_IO.Close (Streams.Stream_IO.File_Type (File));
-   end Close;
-
    procedure Create (
       File : in out File_Type;
       Mode : File_Mode := Inout_File;
@@ -32,53 +27,6 @@ package body Ada.Direct_IO is
          Name,
          Form);
    end Create;
-
-   procedure Delete (File : in out File_Type) is
-   begin
-      Streams.Stream_IO.Delete (Streams.Stream_IO.File_Type (File));
-   end Delete;
-
-   function End_Of_File (File : File_Type) return Boolean is
-   begin
-      if Mode (File) = Out_File then
-         Raise_Exception (Mode_Error'Identity);
-      end if;
-      return Streams.Stream_IO.End_Of_File (
-         Streams.Stream_IO.File_Type (File));
-   end End_Of_File;
-
-   function Form (File : File_Type) return String is
-   begin
-      return Streams.Stream_IO.Form (Streams.Stream_IO.File_Type (File));
-   end Form;
-
-   function Index (File : File_Type) return Positive_Count is
-      Raw_Index : constant Positive_Count := Positive_Count (
-         Streams.Stream_IO.Index (Streams.Stream_IO.File_Type (File)));
-      Index_From_0 : constant Count := Raw_Index - 1;
-   begin
-      if Index_From_0 rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      return Index_From_0 / Element_Type'Max_Size_In_Storage_Elements + 1;
-   end Index;
-
-   function Is_Open (File : File_Type) return Boolean is
-   begin
-      return Streams.Stream_IO.Is_Open (Streams.Stream_IO.File_Type (File));
-   end Is_Open;
-
-   function Mode (File : File_Type) return File_Mode is
-   begin
-      return From_Mode (Streams.Stream_IO.Mode (
-         Streams.Stream_IO.File_Type (File)));
-   end Mode;
-
-   function Name (File : File_Type) return String is
-   begin
-      return Streams.Stream_IO.Name (
-         Streams.Stream_IO.File_Type (File));
-   end Name;
 
    procedure Open (
       File : in out File_Type;
@@ -96,6 +44,52 @@ package body Ada.Direct_IO is
          Streams.Stream_IO.File_Type (File),
          1);
    end Open;
+
+   procedure Close (File : in out File_Type) is
+   begin
+      Streams.Stream_IO.Close (Streams.Stream_IO.File_Type (File));
+   end Close;
+
+   procedure Delete (File : in out File_Type) is
+   begin
+      Streams.Stream_IO.Delete (Streams.Stream_IO.File_Type (File));
+   end Delete;
+
+   procedure Reset (File : in out File_Type; Mode : File_Mode) is
+   begin
+      Streams.Stream_IO.Reset (
+         Streams.Stream_IO.File_Type (File),
+         To_Mode (Mode));
+      Streams.Stream_IO.Set_Index (Streams.Stream_IO.File_Type (File), 1);
+   end Reset;
+
+   procedure Reset (File : in out File_Type) is
+   begin
+      Streams.Stream_IO.Reset (Streams.Stream_IO.File_Type (File));
+      Streams.Stream_IO.Set_Index (Streams.Stream_IO.File_Type (File), 1);
+   end Reset;
+
+   function Mode (File : File_Type) return File_Mode is
+   begin
+      return From_Mode (Streams.Stream_IO.Mode (
+         Streams.Stream_IO.File_Type (File)));
+   end Mode;
+
+   function Name (File : File_Type) return String is
+   begin
+      return Streams.Stream_IO.Name (
+         Streams.Stream_IO.File_Type (File));
+   end Name;
+
+   function Form (File : File_Type) return String is
+   begin
+      return Streams.Stream_IO.Form (Streams.Stream_IO.File_Type (File));
+   end Form;
+
+   function Is_Open (File : File_Type) return Boolean is
+   begin
+      return Streams.Stream_IO.Is_Open (Streams.Stream_IO.File_Type (File));
+   end Is_Open;
 
    procedure Read (
       File : File_Type;
@@ -152,40 +146,6 @@ package body Ada.Direct_IO is
       end if;
    end Read;
 
-   procedure Reset (File : in out File_Type; Mode : File_Mode) is
-   begin
-      Streams.Stream_IO.Reset (
-         Streams.Stream_IO.File_Type (File),
-         To_Mode (Mode));
-      Streams.Stream_IO.Set_Index (Streams.Stream_IO.File_Type (File), 1);
-   end Reset;
-
-   procedure Reset (File : in out File_Type) is
-   begin
-      Streams.Stream_IO.Reset (Streams.Stream_IO.File_Type (File));
-      Streams.Stream_IO.Set_Index (Streams.Stream_IO.File_Type (File), 1);
-   end Reset;
-
-   procedure Set_Index (File : File_Type; To : Positive_Count) is
-      Raw_Index : constant Streams.Stream_IO.Positive_Count :=
-         Streams.Stream_IO.Positive_Count (
-            (To - 1) * Element_Type'Max_Size_In_Storage_Elements + 1);
-   begin
-      Streams.Stream_IO.Set_Index (
-         Streams.Stream_IO.File_Type (File),
-         Raw_Index);
-   end Set_Index;
-
-   function Size (File : File_Type) return Count is
-      Raw_Size : constant Count := Count (
-         Streams.Stream_IO.Size (Streams.Stream_IO.File_Type (File)));
-   begin
-      if Raw_Size rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-      return Raw_Size / Element_Type'Max_Size_In_Storage_Elements;
-   end Size;
-
    procedure Write (
       File : File_Type;
       Item : Element_Type;
@@ -205,5 +165,45 @@ package body Ada.Direct_IO is
          Streams.Stream_IO.File_Type (File),
          Buffer);
    end Write;
+
+   procedure Set_Index (File : File_Type; To : Positive_Count) is
+      Raw_Index : constant Streams.Stream_IO.Positive_Count :=
+         Streams.Stream_IO.Positive_Count (
+            (To - 1) * Element_Type'Max_Size_In_Storage_Elements + 1);
+   begin
+      Streams.Stream_IO.Set_Index (
+         Streams.Stream_IO.File_Type (File),
+         Raw_Index);
+   end Set_Index;
+
+   function Index (File : File_Type) return Positive_Count is
+      Raw_Index : constant Positive_Count := Positive_Count (
+         Streams.Stream_IO.Index (Streams.Stream_IO.File_Type (File)));
+      Index_From_0 : constant Count := Raw_Index - 1;
+   begin
+      if Index_From_0 rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      return Index_From_0 / Element_Type'Max_Size_In_Storage_Elements + 1;
+   end Index;
+
+   function Size (File : File_Type) return Count is
+      Raw_Size : constant Count := Count (
+         Streams.Stream_IO.Size (Streams.Stream_IO.File_Type (File)));
+   begin
+      if Raw_Size rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      return Raw_Size / Element_Type'Max_Size_In_Storage_Elements;
+   end Size;
+
+   function End_Of_File (File : File_Type) return Boolean is
+   begin
+      if Mode (File) = Out_File then
+         Raise_Exception (Mode_Error'Identity);
+      end if;
+      return Streams.Stream_IO.End_Of_File (
+         Streams.Stream_IO.File_Type (File));
+   end End_Of_File;
 
 end Ada.Direct_IO;

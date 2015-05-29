@@ -60,21 +60,43 @@ package body Ada.Directories.Information is
 
    --  implementation
 
+   function Last_Access_Time (Name : String) return Calendar.Time is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
+      Information : aliased Inside.Directory_Entry_Information_Type;
+   begin
+      Inside.Get_Information (Name, Information);
+      return Cast (System.Native_Calendar.To_Time (Information.st_atim));
+   end Last_Access_Time;
+
+   function Last_Status_Change_Time (Name : String)
+      return Calendar.Time
+   is
+      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
+      Information : aliased Inside.Directory_Entry_Information_Type;
+   begin
+      Inside.Get_Information (Name, Information);
+      return Cast (System.Native_Calendar.To_Time (Information.st_ctim));
+   end Last_Status_Change_Time;
+
+   function Permission_Set (Name : String) return Permission_Set_Type is
+      Information : aliased Inside.Directory_Entry_Information_Type;
+   begin
+      Inside.Get_Information (Name, Information);
+      return To_Permission_Set (Information.st_mode);
+   end Permission_Set;
+
+   function Owner (Name : String) return String is
+      Information : aliased Inside.Directory_Entry_Information_Type;
+   begin
+      Inside.Get_Information (Name, Information);
+      return System.Native_Credentials.User_Name (Information.st_uid);
+   end Owner;
+
    function Group (Name : String) return String is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
       return System.Native_Credentials.Group_Name (Information.st_gid);
-   end Group;
-
-   function Group (Directory_Entry : Directory_Entry_Type) return String is
-      NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Directory_Entry);
-   begin
-      Fill (NC_Directory_Entry);
-      return System.Native_Credentials.Group_Name (
-         NC_Directory_Entry.Additional.Information.st_gid);
    end Group;
 
    function Is_Block_Special_File (Name : String) return Boolean is
@@ -85,36 +107,12 @@ package body Ada.Directories.Information is
          C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
 
-   function Is_Block_Special_File (Directory_Entry : Directory_Entry_Type)
-      return Boolean
-   is
-      NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Directory_Entry);
-   begin
-      Fill (NC_Directory_Entry);
-      return (NC_Directory_Entry.Additional.Information.st_mode
-         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFBLK;
-   end Is_Block_Special_File;
-
    function Is_Character_Special_File (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFCHR;
-   end Is_Character_Special_File;
-
-   function Is_Character_Special_File (Directory_Entry : Directory_Entry_Type)
-      return Boolean
-   is
-      NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Directory_Entry);
-   begin
-      Fill (NC_Directory_Entry);
-      return (NC_Directory_Entry.Additional.Information.st_mode
-         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
 
    function Is_FIFO (Name : String) return Boolean is
@@ -125,38 +123,6 @@ package body Ada.Directories.Information is
          C.sys.stat.S_IFIFO;
    end Is_FIFO;
 
-   function Is_FIFO (Directory_Entry : Directory_Entry_Type)
-      return Boolean
-   is
-      NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Directory_Entry);
-   begin
-      Fill (NC_Directory_Entry);
-      return (NC_Directory_Entry.Additional.Information.st_mode
-         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFIFO;
-   end Is_FIFO;
-
-   function Is_Socket (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
-   begin
-      Inside.Get_Information (Name, Information);
-      return (Information.st_mode and C.sys.stat.S_IFMT) =
-         C.sys.stat.S_IFSOCK;
-   end Is_Socket;
-
-   function Is_Socket (Directory_Entry : Directory_Entry_Type)
-      return Boolean
-   is
-      NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Directory_Entry);
-   begin
-      Fill (NC_Directory_Entry);
-      return (NC_Directory_Entry.Additional.Information.st_mode
-         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFSOCK;
-   end Is_Socket;
-
    function Is_Symbolic_Link (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
@@ -165,25 +131,13 @@ package body Ada.Directories.Information is
          C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
 
-   function Is_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
-      return Boolean
-   is
-      NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Directory_Entry);
-   begin
-      Fill (NC_Directory_Entry);
-      return (NC_Directory_Entry.Additional.Information.st_mode
-         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFLNK;
-   end Is_Symbolic_Link;
-
-   function Last_Access_Time (Name : String) return Calendar.Time is
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
+   function Is_Socket (Name : String) return Boolean is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Calendar.To_Time (Information.st_atim));
-   end Last_Access_Time;
+      return (Information.st_mode and C.sys.stat.S_IFMT) =
+         C.sys.stat.S_IFSOCK;
+   end Is_Socket;
 
    function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
@@ -198,16 +152,6 @@ package body Ada.Directories.Information is
          NC_Directory_Entry.Additional.Information.st_atim));
    end Last_Access_Time;
 
-   function Last_Status_Change_Time (Name : String)
-      return Calendar.Time
-   is
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Information : aliased Inside.Directory_Entry_Information_Type;
-   begin
-      Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Calendar.To_Time (Information.st_ctim));
-   end Last_Status_Change_Time;
-
    function Last_Status_Change_Time (Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
@@ -221,30 +165,6 @@ package body Ada.Directories.Information is
          NC_Directory_Entry.Additional.Information.st_ctim));
    end Last_Status_Change_Time;
 
-   function Owner (Name : String) return String is
-      Information : aliased Inside.Directory_Entry_Information_Type;
-   begin
-      Inside.Get_Information (Name, Information);
-      return System.Native_Credentials.User_Name (Information.st_uid);
-   end Owner;
-
-   function Owner (Directory_Entry : Directory_Entry_Type) return String is
-      NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Directory_Entry);
-   begin
-      Fill (NC_Directory_Entry);
-      return System.Native_Credentials.User_Name (
-         NC_Directory_Entry.Additional.Information.st_uid);
-   end Owner;
-
-   function Permission_Set (Name : String) return Permission_Set_Type is
-      Information : aliased Inside.Directory_Entry_Information_Type;
-   begin
-      Inside.Get_Information (Name, Information);
-      return To_Permission_Set (Information.st_mode);
-   end Permission_Set;
-
    function Permission_Set (Directory_Entry : Directory_Entry_Type)
       return Permission_Set_Type
    is
@@ -256,6 +176,86 @@ package body Ada.Directories.Information is
       return To_Permission_Set (
          NC_Directory_Entry.Additional.Information.st_mode);
    end Permission_Set;
+
+   function Owner (Directory_Entry : Directory_Entry_Type) return String is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      Fill (NC_Directory_Entry);
+      return System.Native_Credentials.User_Name (
+         NC_Directory_Entry.Additional.Information.st_uid);
+   end Owner;
+
+   function Group (Directory_Entry : Directory_Entry_Type) return String is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      Fill (NC_Directory_Entry);
+      return System.Native_Credentials.Group_Name (
+         NC_Directory_Entry.Additional.Information.st_gid);
+   end Group;
+
+   function Is_Block_Special_File (Directory_Entry : Directory_Entry_Type)
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFBLK;
+   end Is_Block_Special_File;
+
+   function Is_Character_Special_File (Directory_Entry : Directory_Entry_Type)
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFCHR;
+   end Is_Character_Special_File;
+
+   function Is_FIFO (Directory_Entry : Directory_Entry_Type)
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFIFO;
+   end Is_FIFO;
+
+   function Is_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFLNK;
+   end Is_Symbolic_Link;
+
+   function Is_Socket (Directory_Entry : Directory_Entry_Type)
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      Fill (NC_Directory_Entry);
+      return (NC_Directory_Entry.Additional.Information.st_mode
+         and C.sys.stat.S_IFMT) = C.sys.stat.S_IFSOCK;
+   end Is_Socket;
 
    function Read_Symbolic_Link (Name : String) return String is
       package Conv is
