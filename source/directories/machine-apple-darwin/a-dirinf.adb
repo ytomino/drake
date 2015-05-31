@@ -139,7 +139,8 @@ package body Ada.Directories.Information is
          C.sys.stat.S_IFSOCK;
    end Is_Socket;
 
-   function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
+   function Last_Access_Time (
+      Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
@@ -152,7 +153,8 @@ package body Ada.Directories.Information is
          NC_Directory_Entry.Additional.Information.st_atim));
    end Last_Access_Time;
 
-   function Last_Status_Change_Time (Directory_Entry : Directory_Entry_Type)
+   function Last_Status_Change_Time (
+      Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
@@ -165,7 +167,8 @@ package body Ada.Directories.Information is
          NC_Directory_Entry.Additional.Information.st_ctim));
    end Last_Status_Change_Time;
 
-   function Permission_Set (Directory_Entry : Directory_Entry_Type)
+   function Permission_Set (
+      Directory_Entry : Directory_Entry_Type)
       return Permission_Set_Type
    is
       NC_Directory_Entry : constant
@@ -177,7 +180,10 @@ package body Ada.Directories.Information is
          NC_Directory_Entry.Additional.Information.st_mode);
    end Permission_Set;
 
-   function Owner (Directory_Entry : Directory_Entry_Type) return String is
+   function Owner (
+      Directory_Entry : Directory_Entry_Type)
+      return String
+   is
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -187,7 +193,10 @@ package body Ada.Directories.Information is
          NC_Directory_Entry.Additional.Information.st_uid);
    end Owner;
 
-   function Group (Directory_Entry : Directory_Entry_Type) return String is
+   function Group (
+      Directory_Entry : Directory_Entry_Type)
+      return String
+   is
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -197,7 +206,8 @@ package body Ada.Directories.Information is
          NC_Directory_Entry.Additional.Information.st_gid);
    end Group;
 
-   function Is_Block_Special_File (Directory_Entry : Directory_Entry_Type)
+   function Is_Block_Special_File (
+      Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
       NC_Directory_Entry : constant
@@ -209,7 +219,8 @@ package body Ada.Directories.Information is
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
 
-   function Is_Character_Special_File (Directory_Entry : Directory_Entry_Type)
+   function Is_Character_Special_File (
+      Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
       NC_Directory_Entry : constant
@@ -221,7 +232,8 @@ package body Ada.Directories.Information is
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
 
-   function Is_FIFO (Directory_Entry : Directory_Entry_Type)
+   function Is_FIFO (
+      Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
       NC_Directory_Entry : constant
@@ -233,7 +245,8 @@ package body Ada.Directories.Information is
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFIFO;
    end Is_FIFO;
 
-   function Is_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+   function Is_Symbolic_Link (
+      Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
       NC_Directory_Entry : constant
@@ -245,7 +258,8 @@ package body Ada.Directories.Information is
          and C.sys.stat.S_IFMT) = C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
 
-   function Is_Socket (Directory_Entry : Directory_Entry_Type)
+   function Is_Socket (
+      Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
       NC_Directory_Entry : constant
@@ -308,7 +322,8 @@ package body Ada.Directories.Information is
       end loop;
    end Read_Symbolic_Link;
 
-   function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+   function Read_Symbolic_Link (
+      Directory_Entry : Directory_Entry_Type)
       return String is
    begin
       return Read_Symbolic_Link (Full_Name (Directory_Entry));
@@ -321,7 +336,10 @@ package body Ada.Directories.Information is
       return File_Id (Information.st_ino);
    end Identity;
 
-   function Identity (Directory_Entry : Directory_Entry_Type) return File_Id is
+   function Identity (
+      Directory_Entry : Directory_Entry_Type)
+      return File_Id
+   is
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
