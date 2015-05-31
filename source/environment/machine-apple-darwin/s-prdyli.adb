@@ -66,7 +66,11 @@ package body System.Program.Dynamic_Linking is
       return Address (Reference (Lib).all) /= Null_Address;
    end Is_Open;
 
-   function Import (Lib : Library; Symbol : String) return Address is
+   function Import (
+      Lib : Library;
+      Symbol : String)
+      return Address
+   is
       Handle : constant C.void_ptr := Reference (Lib).all;
    begin
       if Address (Handle) = Null_Address then
