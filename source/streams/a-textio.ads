@@ -11,6 +11,25 @@ package Ada.Text_IO is
    type File_Access is access constant File_Type; -- moved from below
    for File_Access'Storage_Size use 0; -- modified
 
+   --  AI12-0054-2, Text_IO (see A.10.1) could have used predicates to describe
+   --    some common exceptional conditions as follows:
+--  subtype Open_File_Type is File_Type
+--    with
+--       Dynamic_Predicate => Is_Open (Open_File_Type),
+--       Predicate_Failure => raise Status_Error with "File not open";
+--  subtype Input_File_Type is Open_File_Type
+--    with
+--       Dynamic_Predicate => Mode (Input_File_Type) = In_File,
+--       Predicate_Failure =>
+--          raise Mode_Error with
+--             "Cannot read file: " & Name (Input_File_Type);
+--  subtype Output_File_Type is Open_File_Type
+--    with
+--       Dynamic_Predicate => Mode (Output_File_Type) /= In_File,
+--       Predicate_Failure =>
+--         raise Mode_Error with
+--            "Cannot write file: " & Name (Output_File_Type);
+
 --  type File_Mode is (In_File, Out_File, Append_File);
    type File_Mode is new IO_Modes.File_Mode; -- for conversion
 
@@ -98,12 +117,18 @@ package Ada.Text_IO is
    procedure Reset (File : in out File_Type; Mode : File_Mode);
    procedure Reset (File : in out File_Type);
 
-   function Mode (File : File_Type) return File_Mode;
+   function Mode (
+      File : File_Type) -- Open_File_Type
+      return File_Mode;
    pragma Inline (Mode);
-   function Name (File : File_Type) return String;
+   function Name (
+      File : File_Type) -- Open_File_Type
+      return String;
    function Name (File : not null File_Access) return String; -- alt
    pragma Inline (Name);
-   function Form (File : File_Type) return String;
+   function Form (
+      File : File_Type) -- Open_File_Type
+      return String;
 
    function Is_Open (File : File_Type) return Boolean;
    function Is_Open (File : not null File_Access) return Boolean; -- alt
@@ -145,84 +170,115 @@ package Ada.Text_IO is
    pragma Inline (Current_Error);
 
    --  Buffer control
-   procedure Flush (File : File_Type);
+   procedure Flush (
+      File : File_Type); -- Output_File_Type
    procedure Flush;
 
    --  Specification of line and page lengths
 
-   procedure Set_Line_Length (File : File_Type; To : Count);
+   procedure Set_Line_Length (
+      File : File_Type; -- Output_File_Type
+      To : Count);
    procedure Set_Line_Length (To : Count);
    procedure Set_Line_Length (File : not null File_Access; To : Count); -- alt
 
-   procedure Set_Page_Length (File : File_Type; To : Count);
+   procedure Set_Page_Length (
+      File : File_Type; -- Output_File_Type
+      To : Count);
    procedure Set_Page_Length (To : Count);
    procedure Set_Page_Length (File : not null File_Access; To : Count); -- alt
 
-   function Line_Length (File : File_Type) return Count;
+   function Line_Length (
+      File : File_Type) -- Output_File_Type
+      return Count;
    function Line_Length return Count;
    pragma Inline (Line_Length);
 
-   function Page_Length (File : File_Type) return Count;
+   function Page_Length (
+      File : File_Type) -- Output_File_Type
+      return Count;
    function Page_Length return Count;
    pragma Inline (Page_Length);
 
    --  Column, Line, and Page Control
 
-   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1);
+   procedure New_Line (
+      File : File_Type; -- Output_File_Type
+      Spacing : Positive_Count := 1);
    procedure New_Line (Spacing : Positive_Count := 1);
    procedure New_Line (
       File : not null File_Access;
       Spacing : Positive_Count := 1); -- alt
 
-   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1);
+   procedure Skip_Line (
+      File : File_Type; -- Input_File_Type
+      Spacing : Positive_Count := 1);
    procedure Skip_Line (Spacing : Positive_Count := 1);
    procedure Skip_Line (
       File : not null File_Access;
       Spacing : Positive_Count := 1); -- alt
 
-   function End_Of_Line (File : File_Type) return Boolean;
+   function End_Of_Line (
+      File : File_Type) -- Input_File_Type
+      return Boolean;
    function End_Of_Line return Boolean;
    pragma Inline (End_Of_Line);
 
-   procedure New_Page (File : File_Type);
+   procedure New_Page (
+      File : File_Type); -- Output_File_Type
    procedure New_Page;
    procedure New_Page (File : not null File_Access); -- alt
 
-   procedure Skip_Page (File : File_Type);
+   procedure Skip_Page (
+      File : File_Type); -- Input_File_Type
    procedure Skip_Page;
    procedure Skip_Page (File : not null File_Access); -- alt
 
-   function End_Of_Page (File : File_Type) return Boolean;
+   function End_Of_Page (
+      File : File_Type) -- Input_File_Type
+      return Boolean;
    function End_Of_Page return Boolean;
    function End_Of_Page (File : not null File_Access) return Boolean; -- alt
    pragma Inline (End_Of_Page);
 
-   function End_Of_File (File : File_Type) return Boolean;
+   function End_Of_File (
+      File : File_Type) -- Input_File_Type
+      return Boolean;
    function End_Of_File return Boolean;
    function End_Of_File (File : not null File_Access) return Boolean; -- alt
    pragma Inline (End_Of_File);
 
-   procedure Set_Col (File : File_Type; To : Positive_Count);
+   procedure Set_Col (
+      File : File_Type; -- Open_File_Type
+      To : Positive_Count);
    procedure Set_Col (To : Positive_Count);
    procedure Set_Col (File : not null File_Access; To : Positive_Count); -- alt
 
-   procedure Set_Line (File : File_Type; To : Positive_Count);
+   procedure Set_Line (
+      File : File_Type; -- Open_File_Type
+      To : Positive_Count);
    procedure Set_Line (To : Positive_Count);
    procedure Set_Line (
       File : not null File_Access;
       To : Positive_Count); -- alt
 
-   function Col (File : File_Type) return Positive_Count;
+   function Col (
+      File : File_Type) -- Open_File_Type
+      return Positive_Count;
    function Col return Positive_Count;
    function Col (File : not null File_Access) return Positive_Count; -- alt
    pragma Inline (Col);
 
-   function Line (File : File_Type) return Positive_Count;
+   function Line (
+      File : File_Type) -- Open_File_Type
+      return Positive_Count;
    function Line return Positive_Count;
    function Line (File : not null File_Access) return Positive_Count; -- alt
    pragma Inline (Line);
 
-   function Page (File : File_Type) return Positive_Count;
+   function Page (
+      File : File_Type) -- Open_File_Type
+      return Positive_Count;
    function Page return Positive_Count;
    function Page (File : not null File_Access) return Positive_Count; -- alt
    pragma Inline (Page);
@@ -231,33 +287,43 @@ package Ada.Text_IO is
 
    --  extended
    procedure Overloaded_Get (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Character);
    procedure Overloaded_Get (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Character);
    procedure Overloaded_Get (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Wide_Character);
    procedure Overloaded_Get (Item : out Character);
    procedure Overloaded_Get (Item : out Wide_Character);
    procedure Overloaded_Get (Item : out Wide_Wide_Character);
 
-   procedure Get (File : File_Type; Item : out Character)
+   procedure Get (
+      File : File_Type; -- Input_File_Type
+      Item : out Character)
       renames Overloaded_Get;
    procedure Get (Item : out Character)
       renames Overloaded_Get;
    procedure Get (File : not null File_Access; Item : out Character); -- alt
 
    --  extended
-   procedure Overloaded_Put (File : File_Type; Item : Character);
-   procedure Overloaded_Put (File : File_Type; Item : Wide_Character);
-   procedure Overloaded_Put (File : File_Type; Item : Wide_Wide_Character);
+   procedure Overloaded_Put (
+      File : File_Type; -- Output_File_Type
+      Item : Character);
+   procedure Overloaded_Put (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_Character);
+   procedure Overloaded_Put (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_Wide_Character);
    procedure Overloaded_Put (Item : Character);
    procedure Overloaded_Put (Item : Wide_Character);
    procedure Overloaded_Put (Item : Wide_Wide_Character);
 
-   procedure Put (File : File_Type; Item : Character)
+   procedure Put (
+      File : File_Type; -- Output_File_Type
+      Item : Character)
       renames Overloaded_Put;
    procedure Put (Item : Character)
       renames Overloaded_Put;
@@ -265,15 +331,15 @@ package Ada.Text_IO is
 
    --  extended
    procedure Overloaded_Look_Ahead (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Character;
       End_Of_Line : out Boolean);
    procedure Overloaded_Look_Ahead (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Character;
       End_Of_Line : out Boolean);
    procedure Overloaded_Look_Ahead (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Wide_Character;
       End_Of_Line : out Boolean);
    procedure Overloaded_Look_Ahead (
@@ -287,7 +353,7 @@ package Ada.Text_IO is
       End_Of_Line : out Boolean);
 
    procedure Look_Ahead (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Character;
       End_Of_Line : out Boolean)
       renames Overloaded_Look_Ahead;
@@ -299,38 +365,41 @@ package Ada.Text_IO is
    --  extended
    --  Skip one character or mark of new-line
    --    looked by last calling of Look_Ahead.
-   procedure Skip_Ahead (File : File_Type);
+   procedure Skip_Ahead (
+      File : File_Type); -- Input_File_Type
 
    --  extended
    procedure Overloaded_Get_Immediate (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Character);
    procedure Overloaded_Get_Immediate (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Character);
    procedure Overloaded_Get_Immediate (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Wide_Character);
    procedure Overloaded_Get_Immediate (Item : out Character);
    procedure Overloaded_Get_Immediate (Item : out Wide_Character);
    procedure Overloaded_Get_Immediate (Item : out Wide_Wide_Character);
 
-   procedure Get_Immediate (File : File_Type; Item : out Character)
+   procedure Get_Immediate (
+      File : File_Type; -- Input_File_Type
+      Item : out Character)
       renames Overloaded_Get_Immediate;
    procedure Get_Immediate (Item : out Character)
       renames Overloaded_Get_Immediate;
 
    --  extended
    procedure Overloaded_Get_Immediate (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Character;
       Available : out Boolean);
    procedure Overloaded_Get_Immediate (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Character;
       Available : out Boolean);
    procedure Overloaded_Get_Immediate (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Wide_Character;
       Available : out Boolean);
    procedure Overloaded_Get_Immediate (
@@ -344,7 +413,7 @@ package Ada.Text_IO is
       Available : out Boolean);
 
    procedure Get_Immediate (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Character;
       Available : out Boolean)
       renames Overloaded_Get_Immediate;
@@ -356,28 +425,44 @@ package Ada.Text_IO is
    --  String Input-Output
 
    --  extended
-   procedure Overloaded_Get (File : File_Type; Item : out String);
-   procedure Overloaded_Get (File : File_Type; Item : out Wide_String);
-   procedure Overloaded_Get (File : File_Type; Item : out Wide_Wide_String);
+   procedure Overloaded_Get (
+      File : File_Type; -- Input_File_Type
+      Item : out String);
+   procedure Overloaded_Get (
+      File : File_Type; -- Input_File_Type
+      Item : out Wide_String);
+   procedure Overloaded_Get (
+      File : File_Type; -- Input_File_Type
+      Item : out Wide_Wide_String);
    procedure Overloaded_Get (Item : out String);
    procedure Overloaded_Get (Item : out Wide_String);
    procedure Overloaded_Get (Item : out Wide_Wide_String);
 
-   procedure Get (File : File_Type; Item : out String)
+   procedure Get (
+      File : File_Type; -- Input_File_Type
+      Item : out String)
       renames Overloaded_Get;
    procedure Get (Item : out String)
       renames Overloaded_Get;
    procedure Get (File : not null File_Access; Item : out String); -- alt
 
    --  extended
-   procedure Overloaded_Put (File : File_Type; Item : String);
-   procedure Overloaded_Put (File : File_Type; Item : Wide_String);
-   procedure Overloaded_Put (File : File_Type; Item : Wide_Wide_String);
+   procedure Overloaded_Put (
+      File : File_Type; -- Output_File_Type
+      Item : String);
+   procedure Overloaded_Put (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_String);
+   procedure Overloaded_Put (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_Wide_String);
    procedure Overloaded_Put (Item : String);
    procedure Overloaded_Put (Item : Wide_String);
    procedure Overloaded_Put (Item : Wide_Wide_String);
 
-   procedure Put (File : File_Type; Item : String)
+   procedure Put (
+      File : File_Type; -- Output_File_Type
+      Item : String)
       renames Overloaded_Put;
    procedure Put (Item : String)
       renames Overloaded_Put;
@@ -385,15 +470,15 @@ package Ada.Text_IO is
 
    --  extended
    procedure Overloaded_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out String;
       Last : out Natural);
    procedure Overloaded_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_String;
       Last : out Natural);
    procedure Overloaded_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Wide_String;
       Last : out Natural);
    procedure Overloaded_Get_Line (
@@ -407,7 +492,7 @@ package Ada.Text_IO is
       Last : out Natural);
 
    procedure Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out String;
       Last : out Natural)
       renames Overloaded_Get_Line;
@@ -422,37 +507,53 @@ package Ada.Text_IO is
 
    --  extended
    procedure Overloaded_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out String_Access);
    procedure Overloaded_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_String_Access);
    procedure Overloaded_Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Wide_String_Access);
 
    --  extended
-   function Overloaded_Get_Line (File : File_Type) return String;
-   function Overloaded_Get_Line (File : File_Type) return Wide_String;
-   function Overloaded_Get_Line (File : File_Type) return Wide_Wide_String;
+   function Overloaded_Get_Line (
+      File : File_Type) -- Input_File_Type
+      return String;
+   function Overloaded_Get_Line (
+      File : File_Type) -- Input_File_Type
+      return Wide_String;
+   function Overloaded_Get_Line (
+      File : File_Type) -- Input_File_Type
+      return Wide_Wide_String;
    function Overloaded_Get_Line return String;
    function Overloaded_Get_Line return Wide_String;
    function Overloaded_Get_Line return Wide_Wide_String;
 
-   function Get_Line (File : File_Type) return String
+   function Get_Line (
+      File : File_Type) -- Input_File_Type
+      return String
       renames Overloaded_Get_Line;
    function Get_Line return String
       renames Overloaded_Get_Line;
 
    --  extended
-   procedure Overloaded_Put_Line (File : File_Type; Item : String);
-   procedure Overloaded_Put_Line (File : File_Type; Item : Wide_String);
-   procedure Overloaded_Put_Line (File : File_Type; Item : Wide_Wide_String);
+   procedure Overloaded_Put_Line (
+      File : File_Type; -- Output_File_Type
+      Item : String);
+   procedure Overloaded_Put_Line (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_String);
+   procedure Overloaded_Put_Line (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_Wide_String);
    procedure Overloaded_Put_Line (Item : String);
    procedure Overloaded_Put_Line (Item : Wide_String);
    procedure Overloaded_Put_Line (Item : Wide_Wide_String);
 
-   procedure Put_Line (File : File_Type; Item : String)
+   procedure Put_Line (
+      File : File_Type; -- Output_File_Type
+      Item : String)
       renames Overloaded_Put_Line;
    procedure Put_Line (Item : String)
       renames Overloaded_Put_Line;

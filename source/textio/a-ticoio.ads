@@ -10,7 +10,7 @@ package Ada.Text_IO.Complex_IO is
    Default_Exp : Field := 3;
 
    procedure Get (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Complex_Types.Complex;
       Width : Field := 0);
    procedure Get (
@@ -18,7 +18,7 @@ package Ada.Text_IO.Complex_IO is
       Width : Field := 0);
 
    procedure Put (
-      File : File_Type;
+      File : File_Type; -- Output_File_Type
       Item : Complex_Types.Complex;
       Fore : Field := Default_Fore;
       Aft : Field := Default_Aft;

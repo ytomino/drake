@@ -7,6 +7,25 @@ package Ada.Wide_Text_IO is
 --  type File_Type is limited private;
    subtype File_Type is Text_IO.File_Type;
 
+   --  AI12-0054-2, Text_IO (see A.10.1) could have used predicates to describe
+   --    some common exceptional conditions as follows:
+--  subtype Open_File_Type is File_Type
+--    with
+--       Dynamic_Predicate => Is_Open (Open_File_Type),
+--       Predicate_Failure => raise Status_Error with "File not open";
+--  subtype Input_File_Type is Open_File_Type
+--    with
+--       Dynamic_Predicate => Mode (Input_File_Type) = In_File,
+--       Predicate_Failure =>
+--          raise Mode_Error with
+--             "Cannot read file: " & Name (Input_File_Type);
+--  subtype Output_File_Type is Open_File_Type
+--    with
+--       Dynamic_Predicate => Mode (Output_File_Type) /= In_File,
+--       Predicate_Failure =>
+--         raise Mode_Error with
+--            "Cannot write file: " & Name (Output_File_Type);
+
 --  type File_Mode is (In_File, Out_File, Append_File);
    subtype File_Mode is Text_IO.File_Mode;
    function In_File return File_Mode
@@ -57,11 +76,17 @@ package Ada.Wide_Text_IO is
    procedure Reset (File : in out File_Type)
       renames Text_IO.Reset;
 
-   function Mode (File : File_Type) return File_Mode
+   function Mode (
+      File : File_Type) -- Open_File_Type
+      return File_Mode
       renames Text_IO.Mode;
-   function Name (File : File_Type) return String
+   function Name (
+      File : File_Type) -- Open_File_Type
+      return String
       renames Text_IO.Name;
-   function Form (File : File_Type) return String
+   function Form (
+      File : File_Type) -- Open_File_Type
+      return String
       renames Text_IO.Form;
 
    function Is_Open (File : File_Type) return Boolean
@@ -102,109 +127,144 @@ package Ada.Wide_Text_IO is
       renames Text_IO.Current_Error;
 
    --  Buffer control
-   procedure Flush (File : File_Type)
+   procedure Flush (
+      File : File_Type) -- Output_File_Type
       renames Text_IO.Flush;
    procedure Flush
       renames Text_IO.Flush;
 
    --  Specification of line and page lengths
 
-   procedure Set_Line_Length (File : File_Type; To : Count)
+   procedure Set_Line_Length (
+      File : File_Type; -- Output_File_Type
+      To : Count)
       renames Text_IO.Set_Line_Length;
    procedure Set_Line_Length (To : Count)
       renames Text_IO.Set_Line_Length;
 
-   procedure Set_Page_Length (File : File_Type; To : Count)
+   procedure Set_Page_Length (
+      File : File_Type; -- Output_File_Type
+      To : Count)
       renames Text_IO.Set_Page_Length;
    procedure Set_Page_Length (To : Count)
       renames Text_IO.Set_Page_Length;
 
-   function Line_Length (File : File_Type) return Count
+   function Line_Length (
+      File : File_Type) -- Output_File_Type
+      return Count
       renames Text_IO.Line_Length;
    function Line_Length return Count
       renames Text_IO.Line_Length;
 
-   function Page_Length (File : File_Type) return Count
+   function Page_Length (
+      File : File_Type) -- Output_File_Type
+      return Count
       renames Text_IO.Page_Length;
    function Page_Length return Count
       renames Text_IO.Page_Length;
 
    --  Column, Line, and Page Control
 
-   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1)
+   procedure New_Line (
+      File : File_Type; -- Output_File_Type
+      Spacing : Positive_Count := 1)
       renames Text_IO.New_Line;
    procedure New_Line (Spacing : Positive_Count := 1)
       renames Text_IO.New_Line;
 
-   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1)
+   procedure Skip_Line (
+      File : File_Type; -- Input_File_Type
+      Spacing : Positive_Count := 1)
       renames Text_IO.Skip_Line;
    procedure Skip_Line (Spacing : Positive_Count := 1)
       renames Text_IO.Skip_Line;
 
-   function End_Of_Line (File : File_Type) return Boolean
+   function End_Of_Line (
+      File : File_Type) -- Input_File_Type
+      return Boolean
       renames Text_IO.End_Of_Line;
    function End_Of_Line return Boolean
       renames Text_IO.End_Of_Line;
 
-   procedure New_Page (File : File_Type)
+   procedure New_Page (
+      File : File_Type) -- Output_File_Type
       renames Text_IO.New_Page;
    procedure New_Page
       renames Text_IO.New_Page;
 
-   procedure Skip_Page (File : File_Type)
+   procedure Skip_Page (
+      File : File_Type) -- Input_File_Type
       renames Text_IO.Skip_Page;
    procedure Skip_Page
       renames Text_IO.Skip_Page;
 
-   function End_Of_Page (File : File_Type) return Boolean
+   function End_Of_Page (
+      File : File_Type) -- Input_File_Type
+      return Boolean
       renames Text_IO.End_Of_Page;
    function End_Of_Page return Boolean
       renames Text_IO.End_Of_Page;
 
-   function End_Of_File (File : File_Type) return Boolean
+   function End_Of_File (
+      File : File_Type) -- Input_File_Type
+      return Boolean
       renames Text_IO.End_Of_File;
    function End_Of_File return Boolean
       renames Text_IO.End_Of_File;
 
-   procedure Set_Col (File : File_Type; To : Positive_Count)
+   procedure Set_Col (
+      File : File_Type; -- Open_File_Type
+      To : Positive_Count)
       renames Text_IO.Set_Col;
    procedure Set_Col (To : Positive_Count)
       renames Text_IO.Set_Col;
 
-   procedure Set_Line (File : File_Type; To : Positive_Count)
+   procedure Set_Line (
+      File : File_Type; -- Open_File_Type
+      To : Positive_Count)
       renames Text_IO.Set_Line;
    procedure Set_Line (To : Positive_Count)
       renames Text_IO.Set_Line;
 
-   function Col (File : File_Type) return Positive_Count
+   function Col (
+      File : File_Type) -- Open_File_Type
+      return Positive_Count
       renames Text_IO.Col;
    function Col return Positive_Count
       renames Text_IO.Col;
 
-   function Line (File : File_Type) return Positive_Count
+   function Line (
+      File : File_Type) -- Open_File_Type
+      return Positive_Count
       renames Text_IO.Line;
    function Line return Positive_Count
       renames Text_IO.Line;
 
-   function Page (File : File_Type) return Positive_Count
+   function Page (
+      File : File_Type) -- Open_File_Type
+      return Positive_Count
       renames Text_IO.Page;
    function Page return Positive_Count
       renames Text_IO.Page;
 
    --  Character Input-Output
 
-   procedure Get (File : File_Type; Item : out Wide_Character)
+   procedure Get (
+      File : File_Type; -- Input_File_Type
+      Item : out Wide_Character)
       renames Text_IO.Overloaded_Get;
    procedure Get (Item : out Wide_Character)
       renames Text_IO.Overloaded_Get;
 
-   procedure Put (File : File_Type; Item : Wide_Character)
+   procedure Put (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_Character)
       renames Text_IO.Overloaded_Put;
    procedure Put (Item : Wide_Character)
       renames Text_IO.Overloaded_Put;
 
    procedure Look_Ahead (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Character;
       End_Of_Line : out Boolean)
       renames Text_IO.Overloaded_Look_Ahead;
@@ -213,13 +273,15 @@ package Ada.Wide_Text_IO is
       End_Of_Line : out Boolean)
       renames Text_IO.Overloaded_Look_Ahead;
 
-   procedure Get_Immediate (File : File_Type; Item : out Wide_Character)
+   procedure Get_Immediate (
+      File : File_Type; -- Input_File_Type
+      Item : out Wide_Character)
       renames Text_IO.Overloaded_Get_Immediate;
    procedure Get_Immediate (Item : out Wide_Character)
       renames Text_IO.Overloaded_Get_Immediate;
 
    procedure Get_Immediate (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_Character;
       Available : out Boolean)
       renames Text_IO.Overloaded_Get_Immediate;
@@ -230,18 +292,22 @@ package Ada.Wide_Text_IO is
 
    --  String Input-Output
 
-   procedure Get (File : File_Type; Item : out Wide_String)
+   procedure Get (
+      File : File_Type; -- Input_File_Type
+      Item : out Wide_String)
       renames Text_IO.Overloaded_Get;
    procedure Get (Item : out Wide_String)
       renames Text_IO.Overloaded_Get;
 
-   procedure Put (File : File_Type; Item : Wide_String)
+   procedure Put (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_String)
       renames Text_IO.Overloaded_Put;
    procedure Put (Item : Wide_String)
       renames Text_IO.Overloaded_Put;
 
    procedure Get_Line (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Wide_String;
       Last : out Natural)
       renames Text_IO.Overloaded_Get_Line;
@@ -250,12 +316,16 @@ package Ada.Wide_Text_IO is
       Last : out Natural)
       renames Text_IO.Overloaded_Get_Line;
 
-   function Get_Line (File : File_Type) return Wide_String
+   function Get_Line (
+      File : File_Type) -- Input_File_Type
+      return Wide_String
       renames Text_IO.Overloaded_Get_Line;
    function Get_Line return Wide_String
       renames Text_IO.Overloaded_Get_Line;
 
-   procedure Put_Line (File : File_Type; Item : Wide_String)
+   procedure Put_Line (
+      File : File_Type; -- Output_File_Type
+      Item : Wide_String)
       renames Text_IO.Overloaded_Put_Line;
    procedure Put_Line (Item : Wide_String)
       renames Text_IO.Overloaded_Put_Line;

@@ -39,33 +39,46 @@ package Ada.Directories.Information is
 
    function Is_Socket (Name : String) return Boolean;
 
-   function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
+   function Last_Access_Time (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Calendar.Time;
 
-   function Last_Status_Change_Time (Directory_Entry : Directory_Entry_Type)
+   function Last_Status_Change_Time (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Calendar.Time;
 
-   function Permission_Set (Directory_Entry : Directory_Entry_Type)
+   function Permission_Set (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Permission_Set_Type;
 
-   function Owner (Directory_Entry : Directory_Entry_Type) return String;
+   function Owner (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return String;
    --  See Owner above.
 
-   function Group (Directory_Entry : Directory_Entry_Type) return String;
+   function Group (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return String;
    --  See Group above.
 
-   function Is_Block_Special_File (Directory_Entry : Directory_Entry_Type)
+   function Is_Block_Special_File (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_Character_Special_File (Directory_Entry : Directory_Entry_Type)
+   function Is_Character_Special_File (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_FIFO (Directory_Entry : Directory_Entry_Type) return Boolean;
-
-   function Is_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+   function Is_FIFO (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_Socket (Directory_Entry : Directory_Entry_Type)
+   function Is_Symbolic_Link (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return Boolean;
+
+   function Is_Socket (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
    --  Additional implementation-defined subprograms allowed here.
@@ -73,13 +86,16 @@ package Ada.Directories.Information is
    --  extended
    --  Read a target path of a symbolic link.
    function Read_Symbolic_Link (Name : String) return String;
-   function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+   function Read_Symbolic_Link (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return String;
 
    --  extended
    --  Unique file identifier.
    type File_Id is mod 2 ** 64; -- 64bit inode
    function Identity (Name : String) return File_Id;
-   function Identity (Directory_Entry : Directory_Entry_Type) return File_Id;
+   function Identity (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return File_Id;
 
 end Ada.Directories.Information;

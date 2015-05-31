@@ -231,6 +231,16 @@ package body Ada.Directories is
 
    --  directory searching
 
+   function Is_Assigned (Directory_Entry : Directory_Entry_Type)
+      return Boolean
+   is
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+   begin
+      return NC_Directory_Entry.Status /= Empty;
+   end Is_Assigned;
+
    procedure Start_Search (
       Search : in out Search_Type;
       Directory : String;
@@ -290,7 +300,9 @@ package body Ada.Directories is
       End_Search (Search, Raise_On_Error => True);
    end End_Search;
 
-   function More_Entries (Search : Search_Type) return Boolean is
+   function More_Entries (
+      Search : Search_Type)
+      return Boolean is
    begin
       if Search.Search.Handle = System.Directory_Searching.Null_Handle then
          Raise_Exception (Status_Error'Identity);
@@ -339,6 +351,11 @@ package body Ada.Directories is
       end if;
    end Finalize;
 
+   function Is_Open (Search : Search_Type) return Boolean is
+   begin
+      return Search.Search.Handle /= System.Directory_Searching.Null_Handle;
+   end Is_Open;
+
    procedure Search (
       Directory : String;
       Pattern : String := "*";
@@ -364,7 +381,9 @@ package body Ada.Directories is
       return Position > 0;
    end Has_Element;
 
-   function Element (Container : Search_Type'Class; Position : Cursor)
+   function Element (
+      Container : Search_Type'Class;
+      Position : Cursor)
       return Directory_Entry_Type is
    begin
       return Result : Directory_Entry_Type do
@@ -400,7 +419,8 @@ package body Ada.Directories is
       return (Element => Container.Next_Directory_Entry'Access);
    end Constant_Reference;
 
-   function Iterate (Container : Search_Type)
+   function Iterate (
+      Container : Search_Type)
       return Search_Iterator_Interfaces.Forward_Iterator'Class is
    begin
       return Search_Iterator'(Search => Container'Unrestricted_Access);
@@ -437,7 +457,8 @@ package body Ada.Directories is
 
    --  operations on directory entries
 
-   function Simple_Name (Directory_Entry : Directory_Entry_Type)
+   function Simple_Name (
+      Directory_Entry : Directory_Entry_Type)
       return String
    is
       NC_Directory_Entry : constant
@@ -451,7 +472,10 @@ package body Ada.Directories is
          NC_Directory_Entry.Directory_Entry);
    end Simple_Name;
 
-   function Full_Name (Directory_Entry : Directory_Entry_Type) return String is
+   function Full_Name (
+      Directory_Entry : Directory_Entry_Type)
+      return String
+   is
       Name : constant String := Simple_Name (Directory_Entry);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
@@ -462,7 +486,10 @@ package body Ada.Directories is
          Name);
    end Full_Name;
 
-   function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
+   function Kind (
+      Directory_Entry : Directory_Entry_Type)
+      return File_Kind
+   is
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -476,7 +503,9 @@ package body Ada.Directories is
                NC_Directory_Entry.Directory_Entry)));
    end Kind;
 
-   function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
+   function Size (
+      Directory_Entry : Directory_Entry_Type)
+      return File_Size is
    begin
       if Kind (Directory_Entry) /= Ordinary_File then
          raise Constraint_Error; -- implementation-defined
@@ -494,7 +523,8 @@ package body Ada.Directories is
       end if;
    end Size;
 
-   function Modification_Time (Directory_Entry : Directory_Entry_Type)
+   function Modification_Time (
+      Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);

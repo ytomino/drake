@@ -27,7 +27,9 @@ package Ada.Wide_Text_IO.Text_Streams is
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       renames Text_IO.Text_Streams.Open;
 
-   function Stream (File : File_Type) return Stream_Access
+   function Stream (
+      File : File_Type) -- Open_File_Type
+      return Stream_Access
       renames Text_IO.Text_Streams.Stream;
 
 end Ada.Wide_Text_IO.Text_Streams;

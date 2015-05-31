@@ -4,7 +4,9 @@ package body Ada.Text_IO.Iterators is
 
    --  implementation
 
-   function Lines (File : File_Type) return Lines_Type is
+   function Lines (
+      File : File_Type)
+      return Lines_Type is
    begin
       return (Finalization.Limited_Controlled with
          File => File'Unrestricted_Access,

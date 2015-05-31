@@ -34,7 +34,9 @@ package body Ada.Text_IO.Text_Streams is
          Form => ((Shared, Wait, Overwrite), External, New_Line));
    end Open;
 
-   function Stream (File : File_Type) return Stream_Access is
+   function Stream (
+      File : File_Type)
+      return Stream_Access is
    begin
       return Naked_Text_IO.Stream (Reference (File).all);
    end Stream;

@@ -31,42 +31,54 @@ package Ada.Directories.Information is
 
    function Is_Not_Indexed (Name : String) return Boolean;
 
-   function Creation_Time (Directory_Entry : Directory_Entry_Type)
+   function Creation_Time (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Calendar.Time;
 
-   function Last_Access_Time (Directory_Entry : Directory_Entry_Type)
+   function Last_Access_Time (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Calendar.Time;
 
-   function Is_Read_Only (Directory_Entry : Directory_Entry_Type)
+   function Is_Read_Only (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Needs_Archiving (Directory_Entry : Directory_Entry_Type)
+   function Needs_Archiving (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
    --  This generally means that the file needs to be backed up.
    --  The flag is only cleared by backup programs.
 
-   function Is_Compressed (Directory_Entry : Directory_Entry_Type)
+   function Is_Compressed (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_Encrypted (Directory_Entry : Directory_Entry_Type)
+   function Is_Encrypted (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_Hidden (Directory_Entry : Directory_Entry_Type)
+   function Is_Hidden (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_System (Directory_Entry : Directory_Entry_Type)
+   function Is_System (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_Offline (Directory_Entry : Directory_Entry_Type)
+   function Is_Offline (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_Temporary (Directory_Entry : Directory_Entry_Type)
+   function Is_Temporary (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_Sparse (Directory_Entry : Directory_Entry_Type)
+   function Is_Sparse (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
-   function Is_Not_Indexed (Directory_Entry : Directory_Entry_Type)
+   function Is_Not_Indexed (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
 
    --  Additional implementation-defined subprograms allowed here.
@@ -75,20 +87,27 @@ package Ada.Directories.Information is
    --  Unique file identifier.
    type File_Id is private;
    function Identity (Name : String) return File_Id;
-   function Identity (Directory_Entry : Directory_Entry_Type) return File_Id;
+   function Identity (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return File_Id;
 
    --  unimplemented, source-level compatibility with POSIX
    function Owner (Name : String) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Owner (Directory_Entry : Directory_Entry_Type) return String
+   function Owner (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
    function Group (Name : String) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Group (Directory_Entry : Directory_Entry_Type) return String
+   function Group (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
    function Read_Symbolic_Link (Name : String) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Read_Symbolic_Link (Directory_Entry : Directory_Entry_Type)
+   function Read_Symbolic_Link (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
 

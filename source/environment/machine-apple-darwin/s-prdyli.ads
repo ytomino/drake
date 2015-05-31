@@ -9,6 +9,11 @@ package System.Program.Dynamic_Linking is
 
    type Library is limited private;
 
+--  subtype Open_Library is Library
+--    with
+--       Dynamic_Predicate => Is_Open (Open_Library),
+--       Predicate_Failure => raise Status_Error;
+
    procedure Open (Lib : in out Library; Name : String);
    function Open (Name : String) return Library;
    pragma Inline (Open);
@@ -18,7 +23,10 @@ package System.Program.Dynamic_Linking is
    function Is_Open (Lib : Library) return Boolean;
    pragma Inline (Is_Open);
 
-   function Import (Lib : Library; Symbol : String) return Address;
+   function Import (
+      Lib : Library; -- Open_Library
+      Symbol : String)
+      return Address;
 
    Status_Error : exception
       renames Ada.IO_Exceptions.Status_Error;

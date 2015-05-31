@@ -1,6 +1,6 @@
 with Ada.Storage_Mapped_IO;
 procedure mappedio is
-	Mapping : Ada.Storage_Mapped_IO.Mapping;
+	Mapping : Ada.Storage_Mapped_IO.Storage_Type;
 begin
 	Ada.Storage_Mapped_IO.Map (Mapping, Name => "mappedio.adb"); -- this file
 	declare

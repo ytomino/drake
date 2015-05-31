@@ -112,17 +112,24 @@ package body Ada.Streams.Stream_IO is
       Reset (File, Mode (File));
    end Reset;
 
-   function Mode (File : File_Type) return File_Mode is
+   function Mode (
+      File : File_Type)
+      return File_Mode is
    begin
       return File_Mode (Naked_Stream_IO.Mode (Reference (File).all));
    end Mode;
 
-   function Name (File : File_Type) return String is
+   function Name (
+      File : File_Type)
+      return String is
    begin
       return Naked_Stream_IO.Name (Reference (File).all);
    end Name;
 
-   function Form (File : File_Type) return String is
+   function Form (
+      File : File_Type)
+      return String
+   is
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
@@ -141,12 +148,16 @@ package body Ada.Streams.Stream_IO is
       return Naked_Stream_IO.Is_Open (Reference (File).all);
    end Is_Open;
 
-   function End_Of_File (File : File_Type) return Boolean is
+   function End_Of_File (
+      File : File_Type)
+      return Boolean is
    begin
       return Naked_Stream_IO.End_Of_File (Reference (File).all);
    end End_Of_File;
 
-   function Stream (File : File_Type) return Stream_Access is
+   function Stream (
+      File : File_Type)
+      return Stream_Access is
    begin
       return Naked_Stream_IO.Stream (Reference (File).all);
    end Stream;
@@ -199,7 +210,10 @@ package body Ada.Streams.Stream_IO is
       Naked_Stream_IO.Write (Non_Controlled_File, Item);
    end Write;
 
-   procedure Set_Index (File : File_Type; To : Positive_Count) is
+   procedure Set_Index (
+      File : File_Type;
+      To : Positive_Count)
+   is
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
@@ -210,7 +224,10 @@ package body Ada.Streams.Stream_IO is
       Naked_Stream_IO.Set_Index (Non_Controlled_File, To);
    end Set_Index;
 
-   function Index (File : File_Type) return Positive_Count is
+   function Index (
+      File : File_Type)
+      return Positive_Count
+   is
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
@@ -221,7 +238,10 @@ package body Ada.Streams.Stream_IO is
       return Naked_Stream_IO.Index (Non_Controlled_File);
    end Index;
 
-   function Size (File : File_Type) return Count is
+   function Size (
+      File : File_Type)
+      return Count
+   is
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
@@ -239,7 +259,8 @@ package body Ada.Streams.Stream_IO is
          IO_Modes.File_Mode (Mode));
    end Set_Mode;
 
-   procedure Flush (File : File_Type) is
+   procedure Flush (
+      File : File_Type) is
    begin
       Naked_Stream_IO.Flush (Reference (File).all);
    end Flush;

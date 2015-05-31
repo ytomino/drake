@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  translated unit from SFMT
-with Ada.Numerics.SFMT.Random;
-package Ada.Numerics.SFMT.Params_216091 is
-   new Random (
+with Ada.Numerics.SFMT;
+package Ada.Numerics.SFMT_216091 is
+   new SFMT (
       MEXP => 216091,
       POS1 => 627,
       SL1 => 11,
@@ -17,4 +17,4 @@ package Ada.Numerics.SFMT.Params_216091 is
       PARITY2 => 16#89e80709#,
       PARITY3 => 16#3bd2b64b#,
       PARITY4 => 16#0c64b1e4#);
-pragma Preelaborate (Ada.Numerics.SFMT.Params_216091);
+pragma Preelaborate (Ada.Numerics.SFMT_216091);

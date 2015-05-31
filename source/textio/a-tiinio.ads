@@ -11,7 +11,7 @@ package Ada.Text_IO.Integer_IO is
    Default_Padding : Character := ' ';
 
    procedure Get (
-      File : File_Type;
+      File : File_Type; -- Input_File_Type
       Item : out Num;
       Width : Field := 0);
    procedure Get (
@@ -24,7 +24,7 @@ package Ada.Text_IO.Integer_IO is
 
    --  modified
    procedure Put (
-      File : File_Type;
+      File : File_Type; -- Output_File_Type
       Item : Num;
       Width : Field := Default_Width;
       Base : Number_Base := Default_Base;

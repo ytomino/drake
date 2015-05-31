@@ -1,4 +1,4 @@
-package body Ada.Numerics.SFMT.Random.Inside is
+package body Ada.Numerics.SFMT.Generating is
    --  no SIMD version
    pragma Suppress (All_Checks);
    use type Unsigned_32;
@@ -169,4 +169,4 @@ package body Ada.Numerics.SFMT.Random.Inside is
       end loop;
    end gen_rand_array;
 
-end Ada.Numerics.SFMT.Random.Inside;
+end Ada.Numerics.SFMT.Generating;

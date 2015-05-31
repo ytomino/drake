@@ -155,6 +155,16 @@ package Ada.Directories is
 
    type Directory_Entry_Type is limited private;
 
+--  subtype Assigned_Directory_Entry_Type is Directory_Entry_Type
+--    with
+--       Dynamic_Predicate => Is_Assigned (Assigned_Directory_Entry_Type),
+--       Predicate_Failure => raise Status_Error;
+
+   --  extended
+   function Is_Assigned (Directory_Entry : Directory_Entry_Type)
+      return Boolean;
+   pragma Inline (Is_Assigned);
+
    type Filter_Type is array (File_Kind) of Boolean;
    pragma Pack (Filter_Type);
 
@@ -166,6 +176,11 @@ package Ada.Directories is
          Constant_Indexing => Constant_Reference,
          Default_Iterator => Iterate,
          Iterator_Element => Directory_Entry_Type;
+
+--  subtype Open_Search_Type is Search_Type
+--    with
+--       Dynamic_Predicate => Is_Open (Open_Search_Type),
+--       Predicate_Failure => raise Status_Error;
 
    --  modified
    procedure Start_Search (
@@ -185,11 +200,17 @@ package Ada.Directories is
 
    procedure End_Search (Search : in out Search_Type);
 
-   function More_Entries (Search : Search_Type) return Boolean;
+   function More_Entries (
+      Search : Search_Type) -- Open_Search_Type
+      return Boolean;
 
    procedure Get_Next_Entry (
-      Search : in out Search_Type;
+      Search : in out Search_Type; -- Open_Search_Type
       Directory_Entry : out Directory_Entry_Type);
+
+   --  extended
+   function Is_Open (Search : Search_Type) return Boolean;
+   pragma Inline (Is_Open);
 
    --  modified
    procedure Search (
@@ -205,36 +226,44 @@ package Ada.Directories is
    pragma Preelaborable_Initialization (Cursor);
    function Has_Element (Position : Cursor) return Boolean;
    pragma Inline (Has_Element);
-   function Element (Container : Search_Type'Class; Position : Cursor)
+   function Element (
+      Container : Search_Type'Class; -- Open_Search_Type'Class
+      Position : Cursor)
       return Directory_Entry_Type;
    type Constant_Reference_Type (
       Element : not null access constant Directory_Entry_Type) is null record
       with Implicit_Dereference => Element;
    function Constant_Reference (
-      Container : aliased Search_Type;
+      Container : aliased Search_Type; -- Open_Search_Type
       Position : Cursor)
       return Constant_Reference_Type;
    pragma Inline (Constant_Reference);
    package Search_Iterator_Interfaces is
       new Iterator_Interfaces (Cursor, Has_Element);
-   function Iterate (Container : Search_Type)
+   function Iterate (
+      Container : Search_Type) -- Open_Search_Type'Class
       return Search_Iterator_Interfaces.Forward_Iterator'Class;
 
    --  Operations on Directory Entries:
 
-   function Simple_Name (Directory_Entry : Directory_Entry_Type)
+   function Simple_Name (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return String;
 
-   function Full_Name (Directory_Entry : Directory_Entry_Type)
+   function Full_Name (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return String;
 
-   function Kind (Directory_Entry : Directory_Entry_Type)
+   function Kind (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return File_Kind;
 
-   function Size (Directory_Entry : Directory_Entry_Type)
+   function Size (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return File_Size;
 
-   function Modification_Time (Directory_Entry : Directory_Entry_Type)
+   function Modification_Time (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Calendar.Time;
 
    Status_Error : exception

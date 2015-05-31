@@ -70,7 +70,11 @@ package body System.Program.Dynamic_Linking is
       return Reference (Lib).all /= null;
    end Is_Open;
 
-   function Import (Lib : Library; Symbol : String) return Address is
+   function Import (
+      Lib : Library;
+      Symbol : String)
+      return Address
+   is
       Handle : constant C.windef.HMODULE := Reference (Lib).all;
    begin
       if Handle = null then

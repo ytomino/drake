@@ -371,7 +371,7 @@ package body System.Native_Encoding is
       overriding procedure Finalize (Object : in out Converter) is
       begin
          if C.iconv.iconv_close (Object.Data.iconv) /= 0 then
-            null; -- raise Status_Error;
+            null; -- raise Use_Error;
          end if;
       end Finalize;
 

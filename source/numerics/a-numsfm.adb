@@ -1,8 +1,8 @@
 with Ada.Numerics.Initiator;
-with Ada.Numerics.SFMT.Random.Inside;
+with Ada.Numerics.SFMT.Generating;
 with System.Formatting;
 with System.Storage_Elements;
-package body Ada.Numerics.SFMT.Random is
+package body Ada.Numerics.SFMT is
    pragma Check_Policy (Validate => Ignore);
    pragma Suppress (All_Checks);
    use type Unsigned_32;
@@ -10,7 +10,7 @@ package body Ada.Numerics.SFMT.Random is
    use type System.Bit_Order;
    use type System.Storage_Elements.Storage_Count;
 
-   package Impl is new Inside;
+   package Impl is new Generating;
 
    function idxof (i : Integer) return Integer
       with Convention => Intrinsic;
@@ -671,4 +671,4 @@ package body Ada.Numerics.SFMT.Random is
 
    --  Note: to_res53_mix and genrand_res53_mix are unimplemented.
 
-end Ada.Numerics.SFMT.Random;
+end Ada.Numerics.SFMT;

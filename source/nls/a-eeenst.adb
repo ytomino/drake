@@ -383,7 +383,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return Object.Stream /= System.Null_Address;
    end Is_Open;
 
-   function Stream (Object : aliased in out In_Type)
+   function Stream (
+      Object : aliased in out In_Type)
       return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
@@ -433,7 +434,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return Object.Stream /= System.Null_Address;
    end Is_Open;
 
-   function Stream (Object : aliased in out Out_Type)
+   function Stream (
+      Object : aliased in out Out_Type)
       return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
@@ -442,7 +444,9 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return Object'Unchecked_Access;
    end Stream;
 
-   procedure Finish (Object : in out Out_Type) is
+   procedure Finish (
+      Object : in out Out_Type)
+   is
       function To_Pointer (Value : System.Address)
          return access Streams.Root_Stream_Type'Class
          with Import, Convention => Intrinsic;
@@ -499,7 +503,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return Object.Stream /= System.Null_Address;
    end Is_Open;
 
-   function Substitute (Object : Inout_Type)
+   function Substitute (
+      Object : Inout_Type)
       return Streams.Stream_Element_Array is
    begin
       if Object.Substitute_Length < 0 then
@@ -531,7 +536,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       end if;
    end Set_Substitute;
 
-   function Stream (Object : aliased in out Inout_Type)
+   function Stream (
+      Object : aliased in out Inout_Type)
       return not null access Streams.Root_Stream_Type'Class is
    begin
       if not Is_Open (Object) then
@@ -540,7 +546,9 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       return Object'Unchecked_Access;
    end Stream;
 
-   procedure Finish (Object : in out Inout_Type) is
+   procedure Finish (
+      Object : in out Inout_Type)
+   is
       function To_Pointer (Value : System.Address)
          return access Streams.Root_Stream_Type'Class
          with Import, Convention => Intrinsic;

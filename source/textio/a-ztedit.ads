@@ -68,7 +68,7 @@ package Ada.Wide_Wide_Text_IO.Editing is
          renames Strings.Overloaded_Image;
 
       procedure Put (
-         File : File_Type;
+         File : File_Type; -- Output_File_Type
          Item : Num;
          Pic : Picture;
          Currency : Wide_Wide_String := Default_Currency;
