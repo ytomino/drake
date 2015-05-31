@@ -318,17 +318,15 @@ package body Ada.Directories is
       Directory_Entry : out Directory_Entry_Type)
    is
       pragma Unmodified (Directory_Entry); -- modified via Reference
-      Source_NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Search.Next_Directory_Entry);
    begin
-      if Search.Search.Handle = System.Directory_Searching.Null_Handle
-         or else Source_NC_Directory_Entry.Status = Empty
-      then
-         Raise_Exception (Status_Error'Identity);
+      if not More_Entries (Search) then
+         Raise_Exception (Use_Error'Identity); -- RM A.16 (110/3)
       else
          --  current buffer
          declare
+            Source_NC_Directory_Entry : constant
+               not null access Non_Controlled_Directory_Entry_Type :=
+               Reference (Search.Next_Directory_Entry);
             Target_NC_Directory_Entry : constant
                not null access Non_Controlled_Directory_Entry_Type :=
                Reference (Directory_Entry);
