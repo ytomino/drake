@@ -4,7 +4,8 @@ package body Ada.Environment_Encoding is
 
    --  implementation
 
-   function Min_Size_In_From_Stream_Elements (Object : Converter)
+   function Min_Size_In_From_Stream_Elements (
+      Object : Converter)
       return Streams.Stream_Element_Offset is
    begin
       if not Is_Open (Object) then
@@ -13,7 +14,8 @@ package body Ada.Environment_Encoding is
       return Min_Size_In_From_Stream_Elements_No_Check (Object);
    end Min_Size_In_From_Stream_Elements;
 
-   function Substitute (Object : Converter)
+   function Substitute (
+      Object : Converter)
       return Streams.Stream_Element_Array is
    begin
       if not Is_Open (Object) then

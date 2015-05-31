@@ -8,40 +8,60 @@ package Ada.Environment_Encoding.Encoding_Streams is
 
    type In_Type is limited private;
 
+--  subtype Open_In_Type is In_Type
+--    with
+--       Dynamic_Predicate => Is_Open (Open_In_Type),
+--       Predicate_Failure => raise Status_Error;
+
    --  management
    function Open (
-      Decoder : Converter; -- neither access nor aliased for derived types
+      Decoder : Converter; -- Open_Converter
       Stream : not null access Streams.Root_Stream_Type'Class)
       return In_Type;
+   --  The parameter Decoder is neither access nor aliased for derived types.
+   --  The same applies hereafter.
    function Is_Open (Object : In_Type) return Boolean;
    pragma Inline (Is_Open);
 
    --  stream access
-   function Stream (Object : aliased in out In_Type)
+   function Stream (
+      Object : aliased in out In_Type) -- Open_In_Type
       return not null access Streams.Root_Stream_Type'Class;
 
    --  only writing
 
    type Out_Type is limited private;
 
+--  subtype Open_Out_Type is Out_Type
+--    with
+--       Dynamic_Predicate => Is_Open (Open_Out_Type),
+--       Predicate_Failure => raise Status_Error;
+
    --  management
    function Open (
-      Encoder : Converter; -- same as above
+      Encoder : Converter; -- Open_Converter
       Stream : not null access Streams.Root_Stream_Type'Class)
       return Out_Type;
    function Is_Open (Object : Out_Type) return Boolean;
    pragma Inline (Is_Open);
 
    --  stream access
-   function Stream (Object : aliased in out Out_Type)
+   function Stream (
+      Object : aliased in out Out_Type) -- Open_Out_Type
       return not null access Streams.Root_Stream_Type'Class;
 
    --  finish writing
-   procedure Finish (Object : in out Out_Type);
+   procedure Finish (
+      Object : in out Out_Type); -- Open_Out_Type
 
    --  bidirectional
 
    type Inout_Type is limited private;
+
+--  subtype Open_Inout_Type is Out_Type
+--    with
+--       Dynamic_Predicate => Is_Open (Open_Inout_Type),
+--       Predicate_Failure => raise Status_Error;
 
    --  management
    function Open (
@@ -53,18 +73,21 @@ package Ada.Environment_Encoding.Encoding_Streams is
    pragma Inline (Is_Open);
 
    --  substitute (encoded as internal)
-   function Substitute (Object : Inout_Type)
+   function Substitute (
+      Object : Inout_Type) -- Open_Inout_Type
       return Streams.Stream_Element_Array;
    procedure Set_Substitute (
-      Object : in out Inout_Type;
+      Object : in out Inout_Type; -- Open_Inout_Type
       Substitute : Streams.Stream_Element_Array);
 
    --  stream access
-   function Stream (Object : aliased in out Inout_Type)
+   function Stream (
+      Object : aliased in out Inout_Type) -- Open_Inout_Type
       return not null access Streams.Root_Stream_Type'Class;
 
    --  finish writing
-   procedure Finish (Object : in out Inout_Type);
+   procedure Finish (
+      Object : in out Inout_Type); -- Open_Inout_Type
 
    --  exceptions
 

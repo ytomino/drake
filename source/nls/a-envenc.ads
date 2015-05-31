@@ -62,22 +62,29 @@ package Ada.Environment_Encoding is
 
    type Converter is limited private;
 
+--  subtype Open_Converter is Converter
+--    with
+--       Dynamic_Predicate => Is_Open (Converter),
+--       Predicate_Failure => raise Status_Error;
+
    function Is_Open (Object : Converter) return Boolean;
    pragma Inline (Is_Open); -- renamed
 
-   function Min_Size_In_From_Stream_Elements (Object : Converter)
+   function Min_Size_In_From_Stream_Elements (
+      Object : Converter) -- Open_Converter
       return Streams.Stream_Element_Offset;
 
-   function Substitute (Object : Converter)
+   function Substitute (
+      Object : Converter) -- Open_Converter
       return Streams.Stream_Element_Array;
 
    procedure Set_Substitute (
-      Object : in out Converter;
+      Object : in out Converter; -- Open_Converter
       Substitute : Streams.Stream_Element_Array);
 
    --  convert subsequence
    procedure Convert (
-      Object : Converter;
+      Object : Converter; -- Open_Converter
       Item : Streams.Stream_Element_Array;
       Last : out Streams.Stream_Element_Offset;
       Out_Item : out Streams.Stream_Element_Array;
@@ -86,7 +93,7 @@ package Ada.Environment_Encoding is
       Status : out Subsequence_Status_Type);
 
    procedure Convert (
-      Object : Converter;
+      Object : Converter; -- Open_Converter
       Item : Streams.Stream_Element_Array;
       Last : out Streams.Stream_Element_Offset;
       Out_Item : out Streams.Stream_Element_Array;
@@ -94,7 +101,7 @@ package Ada.Environment_Encoding is
       Status : out Continuing_Status_Type);
 
    procedure Convert (
-      Object : Converter;
+      Object : Converter; -- Open_Converter
       Out_Item : out Streams.Stream_Element_Array;
       Out_Last : out Streams.Stream_Element_Offset;
       Finish : True_Only;
@@ -102,7 +109,7 @@ package Ada.Environment_Encoding is
 
    --  convert all character sequence
    procedure Convert (
-      Object : Converter;
+      Object : Converter; -- Open_Converter
       Item : Streams.Stream_Element_Array;
       Last : out Streams.Stream_Element_Offset;
       Out_Item : out Streams.Stream_Element_Array;
@@ -112,7 +119,7 @@ package Ada.Environment_Encoding is
 
    --  convert all character sequence with substitute
    procedure Convert (
-      Object : Converter;
+      Object : Converter; -- Open_Converter
       Item : Streams.Stream_Element_Array;
       Last : out Streams.Stream_Element_Offset;
       Out_Item : out Streams.Stream_Element_Array;
