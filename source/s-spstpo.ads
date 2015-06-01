@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
-private with Ada.Tags;
+with Ada.Tags; -- [gcc-5] is confused in C390004 if this line is "private with"
 package System.Storage_Pools.Standard_Pools is
    pragma Preelaborate;
 
