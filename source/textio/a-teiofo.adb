@@ -19,7 +19,7 @@ package body Ada.Text_IO.Formatting is
       End_Of_Line : Boolean;
    begin
       loop
-         Look_Ahead (File, Item, End_Of_Line);
+         Look_Ahead (File, Item, End_Of_Line); -- checking the predicate
          if End_Of_Line then
             Skip_Line (File);
          else
@@ -36,7 +36,7 @@ package body Ada.Text_IO.Formatting is
       File : File_Type;
       Width : Field)
    is
-      Line : constant Count := Line_Length (File);
+      Line : constant Count := Line_Length (File); -- checking the predicate
    begin
       if Line = 0 then
          null;
@@ -86,7 +86,7 @@ package body Ada.Text_IO.Formatting is
       Item : Character;
       End_Of_Line : Boolean;
    begin
-      Look_Ahead (File, Item, End_Of_Line);
+      Look_Ahead (File, Item, End_Of_Line); -- checking the predicate
       loop
          if Item = '_' then
             exit when Last = Start;
@@ -274,7 +274,7 @@ package body Ada.Text_IO.Formatting is
       Real : Boolean)
       return String is
    begin
-      Skip_Spaces (File);
+      Skip_Spaces (File); -- checking the predicate
       declare
          Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
@@ -346,7 +346,7 @@ package body Ada.Text_IO.Formatting is
       End_Of_Line : Boolean;
       Paren : Boolean;
    begin
-      Skip_Spaces (File);
+      Skip_Spaces (File); -- checking the predicate
       Look_Ahead (File, Item, End_Of_Line);
       Paren := Item = '(';
       if Paren then
@@ -381,7 +381,7 @@ package body Ada.Text_IO.Formatting is
       File : File_Type)
       return String is
    begin
-      Skip_Spaces (File);
+      Skip_Spaces (File); -- checking the predicate
       declare
          Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
@@ -456,6 +456,10 @@ package body Ada.Text_IO.Formatting is
       Item : out String;
       Last : out Natural)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
       Has_Data : Boolean := False;
       End_Of_Line : Boolean;
    begin
@@ -485,7 +489,7 @@ package body Ada.Text_IO.Formatting is
       Item : String;
       Width : Field) is
    begin
-      Adjust (File, Field'Max (Width, Item'Last));
+      Adjust (File, Field'Max (Width, Item'Last)); -- checking the predicate
       Put (File, Item);
       for I in Item'Length + 1 .. Width loop
          Put (File, ' ');
@@ -497,7 +501,7 @@ package body Ada.Text_IO.Formatting is
       Item : String;
       Width : Field) is
    begin
-      Adjust (File, Field'Max (Width, Item'Last));
+      Adjust (File, Field'Max (Width, Item'Last)); -- checking the predicate
       for I in Item'Length + 1 .. Width loop
          Put (File, ' ');
       end loop;

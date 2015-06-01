@@ -399,6 +399,7 @@ procedure run_acats is
 			Ada.Strings.Unbounded.Append (Command, Support_Dir);
 		end if;
 		Ada.Strings.Unbounded.Append (Command, " -gnat05"); -- default version
+		Ada.Strings.Unbounded.Append (Command, " -gnata"); -- assertions
 		if Stack_Check then
 			Ada.Strings.Unbounded.Append (Command, " -fstack-check");
 		end if;

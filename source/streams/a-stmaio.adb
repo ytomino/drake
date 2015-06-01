@@ -1,8 +1,6 @@
-with Ada.Exception_Identification.From_Here;
 with Ada.IO_Modes;
 with Ada.Streams.Stream_IO.Naked;
 package body Ada.Storage_Mapped_IO is
-   use Exception_Identification.From_Here;
    use type Streams.Stream_Element_Offset;
    use type System.Address;
 
@@ -68,13 +66,11 @@ package body Ada.Storage_Mapped_IO is
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
    is
+      pragma Check (Pre,
+         Check => not Is_Mapped (Object) or else raise Status_Error);
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
-      --  check already opened
-      if NC_Mapping.Mapping.Storage_Address /= System.Null_Address then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       --  map
       Map (
          NC_Mapping.all,
@@ -92,13 +88,11 @@ package body Ada.Storage_Mapped_IO is
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
    is
+      pragma Check (Pre,
+         Check => not Is_Mapped (Object) or else raise Status_Error);
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
-      --  check already opened
-      if NC_Mapping.Mapping.Storage_Address /= System.Null_Address then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       --  open file
       --  this file will be closed in Finalize even if any exception is raised
       Streams.Naked_Stream_IO.Open (
@@ -116,12 +110,11 @@ package body Ada.Storage_Mapped_IO is
    end Map;
 
    procedure Unmap (Object : in out Storage_Type) is
+      pragma Check (Pre,
+         Check => Is_Mapped (Object) or else raise Status_Error);
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
-      if NC_Mapping.Mapping.Storage_Address = System.Null_Address then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Unmap (NC_Mapping.all, Raise_On_Error => True);
    end Unmap;
 
@@ -129,6 +122,8 @@ package body Ada.Storage_Mapped_IO is
       Object : Storage_Type)
       return System.Address
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Mapped (Object) or else raise Status_Error);
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
@@ -139,6 +134,8 @@ package body Ada.Storage_Mapped_IO is
       Object : Storage_Type)
       return System.Storage_Elements.Storage_Count
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Mapped (Object) or else raise Status_Error);
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin

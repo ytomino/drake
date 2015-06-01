@@ -125,13 +125,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Cast (System.Native_Calendar.To_Time (
          NC_Directory_Entry.Directory_Entry.ftLastWriteTime));
    end Creation_Time;
@@ -140,13 +139,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Cast (System.Native_Calendar.To_Time (
          NC_Directory_Entry.Directory_Entry.ftLastAccessTime));
    end Last_Access_Time;
@@ -155,13 +153,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_READONLY) /= 0;
    end Is_Read_Only;
@@ -170,13 +167,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ARCHIVE) /= 0;
    end Needs_Archiving;
@@ -185,13 +181,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_COMPRESSED) /= 0;
    end Is_Compressed;
@@ -200,13 +195,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ENCRYPTED) /= 0;
    end Is_Encrypted;
@@ -215,13 +209,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_HIDDEN) /= 0;
    end Is_Hidden;
@@ -230,13 +223,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SYSTEM) /= 0;
    end Is_System;
@@ -245,13 +237,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_OFFLINE) /= 0;
    end Is_Offline;
@@ -260,13 +251,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_TEMPORARY) /= 0;
    end Is_Temporary;
@@ -275,13 +265,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SPARSE_FILE) /= 0;
    end Is_Sparse;
@@ -290,13 +279,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) /= 0;
    end Is_Not_Indexed;
@@ -347,7 +335,7 @@ package body Ada.Directories.Information is
       return File_Id is
    begin
       --  WIN32_FILE_ATTRIBUTE_DATA does not contain the file index
-      return Identity (Full_Name (Directory_Entry));
+      return Identity (Full_Name (Directory_Entry)); -- checking the predicate
    end Identity;
 
 end Ada.Directories.Information;

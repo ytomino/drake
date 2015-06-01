@@ -80,7 +80,7 @@ package body Ada.Text_IO.Decimal_IO is
             Last_1 : Natural;
             Last_2 : Natural;
          begin
-            Formatting.Get_Field (File, S, Last_1);
+            Formatting.Get_Field (File, S, Last_1); -- checking the predicate
             Get_From_Field (S (1 .. Last_1), Item, Last_2);
             if Last_2 /= Last_1 then
                raise Data_Error;
@@ -89,7 +89,9 @@ package body Ada.Text_IO.Decimal_IO is
       else
          declare
             S : constant String :=
-               Formatting.Get_Numeric_Literal (File, Real => True);
+               Formatting.Get_Numeric_Literal (
+                  File, -- checking the predicate
+                  Real => True);
             Last : Natural;
          begin
             Get_From_Field (S, Item, Last);
@@ -120,7 +122,10 @@ package body Ada.Text_IO.Decimal_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Aft, Exp);
-      Formatting.Tail (File, S (1 .. Last), Fore + Aft + Exp + 1);
+      Formatting.Tail (
+         File, -- checking the predicate
+         S (1 .. Last),
+         Fore + Aft + Exp + 1);
    end Put;
 
    procedure Put (

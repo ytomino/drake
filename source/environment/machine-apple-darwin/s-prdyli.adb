@@ -38,13 +38,11 @@ package body System.Program.Dynamic_Linking is
    --  implementation
 
    procedure Open (Lib : in out Library; Name : String) is
+      pragma Check (Pre,
+         Check => not Is_Open (Lib) or else raise Status_Error);
       Handle : constant not null access C.void_ptr := Reference (Lib);
    begin
-      if Address (Handle.all) /= Null_Address then
-         Raise_Exception (Status_Error'Identity);
-      else
-         Open (Handle.all, Name);
-      end if;
+      Open (Handle.all, Name);
    end Open;
 
    function Open (Name : String) return Library is
@@ -55,6 +53,8 @@ package body System.Program.Dynamic_Linking is
    end Open;
 
    procedure Close (Lib : in out Library) is
+      pragma Check (Pre,
+         Check => Is_Open (Lib) or else raise Status_Error);
       Handle : constant not null access C.void_ptr := Reference (Lib);
    begin
       Close (Handle.all, Raise_On_Error => True);
@@ -71,25 +71,20 @@ package body System.Program.Dynamic_Linking is
       Symbol : String)
       return Address
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Lib) or else raise Status_Error);
       Handle : constant C.void_ptr := Reference (Lib).all;
+      C_Symbol : C.char_array (
+         0 ..
+         Symbol'Length * Zero_Terminated_Strings.Expanding);
+      Result : C.void_ptr;
    begin
-      if Address (Handle) = Null_Address then
-         Raise_Exception (Status_Error'Identity);
+      Zero_Terminated_Strings.To_C (Symbol, C_Symbol (0)'Access);
+      Result := C.dlfcn.dlsym (Handle, C_Symbol (0)'Access);
+      if Address (Result) = Null_Address then
+         Raise_Exception (Data_Error'Identity);
       else
-         declare
-            C_Symbol : C.char_array (
-               0 ..
-               Symbol'Length * Zero_Terminated_Strings.Expanding);
-            Result : C.void_ptr;
-         begin
-            Zero_Terminated_Strings.To_C (Symbol, C_Symbol (0)'Access);
-            Result := C.dlfcn.dlsym (Handle, C_Symbol (0)'Access);
-            if Address (Result) = Null_Address then
-               Raise_Exception (Data_Error'Identity);
-            else
-               return Address (Result);
-            end if;
-         end;
+         return Address (Result);
       end if;
    end Import;
 

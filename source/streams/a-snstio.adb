@@ -14,6 +14,11 @@ package body Ada.Streams.Naked_Stream_IO is
    use type System.Native_IO.Name_Pointer;
    use type System.Storage_Elements.Storage_Offset;
 
+   procedure unreachable
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_unreachable";
+   pragma No_Return (unreachable);
+
    --  the parameter Form
 
    procedure Set (
@@ -303,18 +308,6 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Clear;
    end Allocate_And_Open;
 
-   procedure Check_File_Open (
-      File : Non_Controlled_File_Type;
-      Line : Integer := Ada.Debug.Line);
-   procedure Check_File_Open (
-      File : Non_Controlled_File_Type;
-      Line : Integer := Ada.Debug.Line) is
-   begin
-      if File = null then
-         Raise_Exception (Status_Error'Identity, Line => Line);
-      end if;
-   end Check_File_Open;
-
    procedure Get_Buffer (File : not null Non_Controlled_File_Type);
    procedure Get_Buffer (File : not null Non_Controlled_File_Type) is
    begin
@@ -532,11 +525,11 @@ package body Ada.Streams.Naked_Stream_IO is
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode := IO_Modes.Out_File;
       Name : String := "";
-      Form : System.Native_IO.Packed_Form := Default_Form) is
+      Form : System.Native_IO.Packed_Form := Default_Form)
+   is
+      pragma Check (Pre,
+         Check => not Is_Open (File) or else raise Status_Error);
    begin
-      if File /= null then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Allocate_And_Open (
          Method => System.Native_IO.Create,
          File => File,
@@ -549,11 +542,11 @@ package body Ada.Streams.Naked_Stream_IO is
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
       Name : String;
-      Form : System.Native_IO.Packed_Form := Default_Form) is
+      Form : System.Native_IO.Packed_Form := Default_Form)
+   is
+      pragma Check (Pre,
+         Check => not Is_Open (File) or else raise Status_Error);
    begin
-      if File /= null then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Allocate_And_Open (
          Method => System.Native_IO.Open,
          File => File,
@@ -564,15 +557,18 @@ package body Ada.Streams.Naked_Stream_IO is
 
    procedure Close (
       File : aliased in out Non_Controlled_File_Type;
-      Raise_On_Error : Boolean := True) is
+      Raise_On_Error : Boolean := True)
+   is
+      pragma Check (Pre,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
-      Check_File_Open (File);
       Close_And_Deallocate (File, Raise_On_Error => Raise_On_Error);
    end Close;
 
    procedure Delete (File : aliased in out Non_Controlled_File_Type) is
+      pragma Check (Pre,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
-      Check_File_Open (File);
       case File.Kind is
          when Ordinary =>
             File.Closer := System.Native_IO.Delete_Ordinary'Access;
@@ -580,81 +576,80 @@ package body Ada.Streams.Naked_Stream_IO is
          when Temporary =>
             Close_And_Deallocate (File, Raise_On_Error => True);
          when External | External_No_Close | Standard_Handle =>
-            Raise_Exception (Status_Error'Identity);
+            pragma Check (Pre, Boolean'(raise Status_Error));
+            unreachable;
       end case;
    end Delete;
 
    procedure Reset (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : IO_Modes.File_Mode) is
+      Mode : IO_Modes.File_Mode)
+   is
+      pragma Check (Pre,
+         Check => Is_Open (File) or else raise Status_Error);
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Scoped_Handle_And_File_And_Name,
+            Finally);
+      Scoped : aliased Scoped_Handle_And_File_And_Name :=
+         (System.Native_IO.Invalid_Handle, null, null, File.Closer);
    begin
-      Check_File_Open (File);
-      declare
-         package Holder is
-            new Exceptions.Finally.Scoped_Holder (
-               Scoped_Handle_And_File_And_Name,
-               Finally);
-         Scoped : aliased Scoped_Handle_And_File_And_Name :=
-            (System.Native_IO.Invalid_Handle, null, null, File.Closer);
-      begin
-         Holder.Assign (Scoped'Access);
-         case File.all.Kind is
-            when Ordinary =>
-               Scoped.Handle := File.Handle;
-               Scoped.File := File;
-               Scoped.Name := File.Name;
-               File := null;
+      Holder.Assign (Scoped'Access);
+      case File.all.Kind is
+         when Ordinary =>
+            Scoped.Handle := File.Handle;
+            Scoped.File := File;
+            Scoped.Name := File.Name;
+            File := null;
+            Flush_Writing_Buffer (Scoped.File);
+            --  close explicitly in below
+            Scoped.Handle := System.Native_IO.Invalid_Handle;
+            System.Native_IO.Close_Ordinary (
+               Scoped.File.Handle,
+               Scoped.File.Name,
+               Raise_On_Error => True);
+            Scoped.File.Buffer_Index := 0;
+            Scoped.File.Reading_Index := Scoped.File.Buffer_Index;
+            Scoped.File.Writing_Index := Scoped.File.Buffer_Index;
+            System.Native_IO.Open_Ordinary (
+               Method => System.Native_IO.Reset,
+               Handle => Scoped.Handle,
+               Mode => Mode,
+               Name => Scoped.File.Name,
+               Form => Scoped.File.Form);
+            Scoped.File.Handle := Scoped.Handle;
+            Scoped.File.Mode := Mode;
+            if Mode = IO_Modes.Append_File then
+               Set_Index_To_Append (Scoped.File);
+            end if;
+         when Temporary =>
+            Scoped.Handle := File.Handle;
+            Scoped.File := File;
+            Scoped.Name := File.Name;
+            File := null;
+            Scoped.File.Mode := Mode;
+            if Mode = IO_Modes.Append_File then
                Flush_Writing_Buffer (Scoped.File);
-               --  close explicitly in below
-               Scoped.Handle := System.Native_IO.Invalid_Handle;
-               System.Native_IO.Close_Ordinary (
-                  Scoped.File.Handle,
-                  Scoped.File.Name,
-                  Raise_On_Error => True);
-               Scoped.File.Buffer_Index := 0;
-               Scoped.File.Reading_Index := Scoped.File.Buffer_Index;
-               Scoped.File.Writing_Index := Scoped.File.Buffer_Index;
-               System.Native_IO.Open_Ordinary (
-                  Method => System.Native_IO.Reset,
-                  Handle => Scoped.Handle,
-                  Mode => Mode,
-                  Name => Scoped.File.Name,
-                  Form => Scoped.File.Form);
-               Scoped.File.Handle := Scoped.Handle;
-               Scoped.File.Mode := Mode;
-               if Mode = IO_Modes.Append_File then
-                  Set_Index_To_Append (Scoped.File);
-               end if;
-            when Temporary =>
-               Scoped.Handle := File.Handle;
-               Scoped.File := File;
-               Scoped.Name := File.Name;
-               File := null;
-               Scoped.File.Mode := Mode;
-               if Mode = IO_Modes.Append_File then
-                  Flush_Writing_Buffer (Scoped.File);
-                  Set_Index_To_Append (Scoped.File);
-               else
-                  Set_Index (Scoped.File, 1);
-               end if;
-            when External | External_No_Close | Standard_Handle =>
-               Raise_Exception (Status_Error'Identity);
-         end case;
-         File := Scoped.File;
-         --  complete
-         Holder.Clear;
-      end;
+               Set_Index_To_Append (Scoped.File);
+            else
+               Set_Index (Scoped.File, 1);
+            end if;
+         when External | External_No_Close | Standard_Handle =>
+            pragma Check (Pre, Boolean'(raise Status_Error));
+            unreachable;
+      end case;
+      File := Scoped.File;
+      --  complete
+      Holder.Clear;
    end Reset;
 
    function Mode (File : Non_Controlled_File_Type) return IO_Modes.File_Mode is
    begin
-      Check_File_Open (File);
       return File.Mode;
    end Mode;
 
    function Name (File : Non_Controlled_File_Type) return String is
    begin
-      Check_File_Open (File);
       return System.Native_IO.Value (
          File.Name,
          File.Name_Length);
@@ -663,7 +658,6 @@ package body Ada.Streams.Naked_Stream_IO is
    function Form (File : Non_Controlled_File_Type)
       return System.Native_IO.Packed_Form is
    begin
-      Check_File_Open (File);
       return File.Form;
    end Form;
 
@@ -674,7 +668,6 @@ package body Ada.Streams.Naked_Stream_IO is
 
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
    begin
-      Check_File_Open (File);
       Get_Buffer (File);
       if File.Buffer_Length = 0 then -- not ordinary file
          if File.Reading_Index = File.Buffer_Index then
@@ -705,7 +698,6 @@ package body Ada.Streams.Naked_Stream_IO is
    function Stream (File : Non_Controlled_File_Type)
       return not null access Root_Stream_Type'Class is
    begin
-      Check_File_Open (File);
       if File.Dispatcher.Tag = Tags.No_Tag then
          if not System.Native_IO.Is_Seekable (File.Handle) then
             File.Dispatcher.Tag := Dispatchers.Root_Dispatcher'Tag;
@@ -729,9 +721,6 @@ package body Ada.Streams.Naked_Stream_IO is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset) is
    begin
-      if File.Mode = IO_Modes.Out_File then
-         Raise_Exception (Mode_Error'Identity);
-      end if;
       Last := Item'First - 1;
       if Item'First > Item'Last then
          return;
@@ -817,9 +806,6 @@ package body Ada.Streams.Naked_Stream_IO is
    is
       First : Stream_Element_Offset;
    begin
-      if File.Mode = IO_Modes.In_File then
-         Raise_Exception (Mode_Error'Identity);
-      end if;
       First := Item'First;
       if File.Writing_Index > File.Buffer_Index then
          --  append to writing buffer
@@ -919,66 +905,65 @@ package body Ada.Streams.Naked_Stream_IO is
 
    procedure Set_Mode (
       File : aliased in out Non_Controlled_File_Type;
-      Mode : IO_Modes.File_Mode) is
+      Mode : IO_Modes.File_Mode)
+   is
+      pragma Check (Pre,
+         Check => Is_Open (File) or else raise Status_Error);
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            Scoped_Handle_And_File_And_Name,
+            Finally);
+      Scoped : aliased Scoped_Handle_And_File_And_Name :=
+         (System.Native_IO.Invalid_Handle, null, null, File.Closer);
+      Current : Stream_Element_Positive_Count;
    begin
-      Check_File_Open (File);
-      declare
-         package Holder is
-            new Exceptions.Finally.Scoped_Holder (
-               Scoped_Handle_And_File_And_Name,
-               Finally);
-         Scoped : aliased Scoped_Handle_And_File_And_Name :=
-            (System.Native_IO.Invalid_Handle, null, null, File.Closer);
-         Current : Stream_Element_Positive_Count;
-      begin
-         Holder.Assign (Scoped'Access);
-         case File.all.Kind is
-            when Ordinary =>
-               Scoped.Handle := File.Handle;
-               Scoped.File := File;
-               Scoped.Name := File.Name;
-               File := null;
-               Current := Index (Scoped.File);
-               Flush_Writing_Buffer (Scoped.File);
-               --  close explicitly in below
-               Scoped.Handle := System.Native_IO.Invalid_Handle;
-               System.Native_IO.Close_Ordinary (
-                  Scoped.File.Handle,
-                  Scoped.File.Name,
-                  Raise_On_Error => True);
-               System.Native_IO.Open_Ordinary (
-                  Method => System.Native_IO.Reset,
-                  Handle => Scoped.Handle,
-                  Mode => Mode,
-                  Name => Scoped.File.Name,
-                  Form => Scoped.File.Form);
-               Scoped.File.Handle := Scoped.Handle;
-               Scoped.File.Mode := Mode;
-            when Temporary =>
-               Scoped.Handle := File.Handle;
-               Scoped.File := File;
-               Scoped.Name := File.Name;
-               File := null;
-               Current := Index (Scoped.File);
-               Flush_Writing_Buffer (Scoped.File);
-               Scoped.File.Mode := Mode;
-            when External | External_No_Close | Standard_Handle =>
-               Raise_Exception (Status_Error'Identity);
-         end case;
-         if Mode = IO_Modes.Append_File then
-            Set_Index_To_Append (Scoped.File);
-         else
-            Set_Index (Scoped.File, Current);
-         end if;
-         File := Scoped.File;
-         --  complete
-         Holder.Clear;
-      end;
+      Holder.Assign (Scoped'Access);
+      case File.all.Kind is
+         when Ordinary =>
+            Scoped.Handle := File.Handle;
+            Scoped.File := File;
+            Scoped.Name := File.Name;
+            File := null;
+            Current := Index (Scoped.File);
+            Flush_Writing_Buffer (Scoped.File);
+            --  close explicitly in below
+            Scoped.Handle := System.Native_IO.Invalid_Handle;
+            System.Native_IO.Close_Ordinary (
+               Scoped.File.Handle,
+               Scoped.File.Name,
+               Raise_On_Error => True);
+            System.Native_IO.Open_Ordinary (
+               Method => System.Native_IO.Reset,
+               Handle => Scoped.Handle,
+               Mode => Mode,
+               Name => Scoped.File.Name,
+               Form => Scoped.File.Form);
+            Scoped.File.Handle := Scoped.Handle;
+            Scoped.File.Mode := Mode;
+         when Temporary =>
+            Scoped.Handle := File.Handle;
+            Scoped.File := File;
+            Scoped.Name := File.Name;
+            File := null;
+            Current := Index (Scoped.File);
+            Flush_Writing_Buffer (Scoped.File);
+            Scoped.File.Mode := Mode;
+         when External | External_No_Close | Standard_Handle =>
+            pragma Check (Pre, Boolean'(raise Status_Error));
+            unreachable;
+      end case;
+      if Mode = IO_Modes.Append_File then
+         Set_Index_To_Append (Scoped.File);
+      else
+         Set_Index (Scoped.File, Current);
+      end if;
+      File := Scoped.File;
+      --  complete
+      Holder.Clear;
    end Set_Mode;
 
    procedure Flush (File : Non_Controlled_File_Type) is
    begin
-      Check_File_Open (File);
       Flush_Writing_Buffer (File);
       System.Native_IO.Flush (File.Handle);
    end Flush;
@@ -993,6 +978,8 @@ package body Ada.Streams.Naked_Stream_IO is
       Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False)
    is
+      pragma Check (Pre,
+         Check => not Is_Open (File) or else raise Status_Error);
       package Name_Holder is
          new Exceptions.Finally.Scoped_Holder (
             System.Native_IO.Name_Pointer,
@@ -1002,9 +989,6 @@ package body Ada.Streams.Naked_Stream_IO is
       Full_Name : aliased System.Native_IO.Name_Pointer;
       Full_Name_Length : System.Native_IO.Name_Length;
    begin
-      if File /= null then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       if To_Close then
          Kind := External;
          Closer := System.Native_IO.Close_Ordinary'Access;
@@ -1032,7 +1016,6 @@ package body Ada.Streams.Naked_Stream_IO is
    function Handle (File : Non_Controlled_File_Type)
       return System.Native_IO.Handle_Type is
    begin
-      Check_File_Open (File);
       return File.Handle;
    end Handle;
 
@@ -1046,14 +1029,22 @@ package body Ada.Streams.Naked_Stream_IO is
       overriding procedure Read (
          Stream : in out Root_Dispatcher;
          Item : out Stream_Element_Array;
-         Last : out Stream_Element_Offset) is
+         Last : out Stream_Element_Offset)
+      is
+         pragma Check (Pre,
+            Check => Mode (Stream.File) /= IO_Modes.Out_File
+               or else raise Mode_Error);
       begin
          Read (Stream.File, Item, Last);
       end Read;
 
       overriding procedure Write (
          Stream : in out Root_Dispatcher;
-         Item : Stream_Element_Array) is
+         Item : Stream_Element_Array)
+      is
+         pragma Check (Pre,
+            Check => Mode (Stream.File) /= IO_Modes.In_File
+               or else raise Mode_Error);
       begin
          Write (Stream.File, Item);
       end Write;
@@ -1061,14 +1052,22 @@ package body Ada.Streams.Naked_Stream_IO is
       overriding procedure Read (
          Stream : in out Seekable_Dispatcher;
          Item : out Stream_Element_Array;
-         Last : out Stream_Element_Offset) is
+         Last : out Stream_Element_Offset)
+      is
+         pragma Check (Pre,
+            Check => Mode (Stream.File) /= IO_Modes.Out_File
+               or else raise Mode_Error);
       begin
          Read (Stream.File, Item, Last);
       end Read;
 
       overriding procedure Write (
          Stream : in out Seekable_Dispatcher;
-         Item : Stream_Element_Array) is
+         Item : Stream_Element_Array)
+      is
+         pragma Check (Pre,
+            Check => Mode (Stream.File) /= IO_Modes.In_File
+               or else raise Mode_Error);
       begin
          Write (Stream.File, Item);
       end Write;

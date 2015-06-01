@@ -366,6 +366,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Stream : not null access Streams.Root_Stream_Type'Class)
       return In_Type
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Decoder) or else raise Status_Error);
       pragma Suppress (Accessibility_Check);
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
          return System.Address
@@ -385,11 +387,11 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    function Stream (
       Object : aliased in out In_Type)
-      return not null access Streams.Root_Stream_Type'Class is
+      return not null access Streams.Root_Stream_Type'Class
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Object'Unchecked_Access;
    end Stream;
 
@@ -417,6 +419,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Stream : not null access Streams.Root_Stream_Type'Class)
       return Out_Type
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Encoder) or else raise Status_Error);
       pragma Suppress (Accessibility_Check);
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
          return System.Address
@@ -436,24 +440,23 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    function Stream (
       Object : aliased in out Out_Type)
-      return not null access Streams.Root_Stream_Type'Class is
+      return not null access Streams.Root_Stream_Type'Class
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Object'Unchecked_Access;
    end Stream;
 
    procedure Finish (
       Object : in out Out_Type)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
       function To_Pointer (Value : System.Address)
          return access Streams.Root_Stream_Type'Class
          with Import, Convention => Intrinsic;
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Finish (
          To_Pointer (Object.Stream),
          Object.Writing_Converter.all,
@@ -505,7 +508,10 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    function Substitute (
       Object : Inout_Type)
-      return Streams.Stream_Element_Array is
+      return Streams.Stream_Element_Array
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
    begin
       if Object.Substitute_Length < 0 then
          return Default_Substitute (Object.Internal);
@@ -516,7 +522,10 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    procedure Set_Substitute (
       Object : in out Inout_Type;
-      Substitute : Streams.Stream_Element_Array) is
+      Substitute : Streams.Stream_Element_Array)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
    begin
       if Substitute'Length > Object.Substitute'Length then
          raise Constraint_Error;
@@ -538,24 +547,23 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    function Stream (
       Object : aliased in out Inout_Type)
-      return not null access Streams.Root_Stream_Type'Class is
+      return not null access Streams.Root_Stream_Type'Class
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Object'Unchecked_Access;
    end Stream;
 
    procedure Finish (
       Object : in out Inout_Type)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
       function To_Pointer (Value : System.Address)
          return access Streams.Root_Stream_Type'Class
          with Import, Convention => Intrinsic;
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       if Is_Open (Object.Writing_Converter) then
          Finish (
             To_Pointer (Object.Stream),

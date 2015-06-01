@@ -42,13 +42,11 @@ package body System.Program.Dynamic_Linking is
    --  implementation
 
    procedure Open (Lib : in out Library; Name : String) is
+      pragma Check (Pre,
+         Check => not Is_Open (Lib) or else raise Status_Error);
       Handle : constant not null access C.windef.HMODULE := Reference (Lib);
    begin
-      if Handle.all /= null then
-         Raise_Exception (Status_Error'Identity);
-      else
-         Open (Handle.all, Name);
-      end if;
+      Open (Handle.all, Name);
    end Open;
 
    function Open (Name : String) return Library is
@@ -59,6 +57,8 @@ package body System.Program.Dynamic_Linking is
    end Open;
 
    procedure Close (Lib : in out Library) is
+      pragma Check (Pre,
+         Check => Is_Open (Lib) or else raise Status_Error);
       Handle : constant not null access C.windef.HMODULE := Reference (Lib);
    begin
       Close (Handle.all, Raise_On_Error => True);
@@ -75,26 +75,21 @@ package body System.Program.Dynamic_Linking is
       Symbol : String)
       return Address
    is
+      pragma Check (Pre,
+         Check => Is_Open (Lib) or else raise Status_Error);
+      function Cast is
+         new Ada.Unchecked_Conversion (C.windef.FARPROC, Address);
       Handle : constant C.windef.HMODULE := Reference (Lib).all;
+      Z_Symbol : String := Symbol & Character'Val (0);
+      C_Symbol : C.char_array (C.size_t);
+      for C_Symbol'Address use Z_Symbol'Address;
+      Result : C.windef.FARPROC;
    begin
-      if Handle = null then
-         Raise_Exception (Status_Error'Identity);
+      Result := C.winbase.GetProcAddress (Handle, C_Symbol (0)'Access);
+      if Result = null then
+         Raise_Exception (Data_Error'Identity);
       else
-         declare
-            function Cast is
-               new Ada.Unchecked_Conversion (C.windef.FARPROC, Address);
-            Z_Symbol : String := Symbol & Character'Val (0);
-            C_Symbol : C.char_array (C.size_t);
-            for C_Symbol'Address use Z_Symbol'Address;
-            Result : C.windef.FARPROC;
-         begin
-            Result := C.winbase.GetProcAddress (Handle, C_Symbol (0)'Access);
-            if Result = null then
-               Raise_Exception (Data_Error'Identity);
-            else
-               return Cast (Result);
-            end if;
-         end;
+         return Cast (Result);
       end if;
    end Import;
 

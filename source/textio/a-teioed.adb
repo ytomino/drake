@@ -825,7 +825,7 @@ package body Ada.Text_IO.Editing is
          Radix_Mark : Character) is
       begin
          Overloaded_Put (
-            File,
+            File, -- checking the predicate
             Overloaded_Image (
                Item,
                Pic,
@@ -845,7 +845,7 @@ package body Ada.Text_IO.Editing is
          Radix_Mark : Wide_Character) is
       begin
          Overloaded_Put (
-            File,
+            File, -- checking the predicate
             Overloaded_Image (
                Item,
                Pic,
@@ -865,7 +865,7 @@ package body Ada.Text_IO.Editing is
          Radix_Mark : Wide_Wide_Character) is
       begin
          Overloaded_Put (
-            File,
+            File, -- checking the predicate
             Overloaded_Image (
                Item,
                Pic,

@@ -27,9 +27,6 @@ package body Ada.Directories.Information is
    procedure Fill (
       Directory_Entry : not null access Non_Controlled_Directory_Entry_Type) is
    begin
-      if Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       if not Directory_Entry.Additional.Filled then
          System.Directory_Searching.Get_Information (
             Directory_Entry.Path.all,
@@ -143,6 +140,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
@@ -157,6 +156,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
@@ -171,6 +172,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Permission_Set_Type
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -184,6 +187,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return String
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -197,6 +202,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return String
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -210,6 +217,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -223,6 +232,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -236,6 +247,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -249,6 +262,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -262,6 +277,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return Boolean
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -326,7 +343,8 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return String is
    begin
-      return Read_Symbolic_Link (Full_Name (Directory_Entry));
+      return Read_Symbolic_Link (
+         Full_Name (Directory_Entry)); -- checking the predicate
    end Read_Symbolic_Link;
 
    function Identity (Name : String) return File_Id is
@@ -340,13 +358,12 @@ package body Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type)
       return File_Id
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return File_Id (NC_Directory_Entry.Directory_Entry.d_ino);
    end Identity;
 

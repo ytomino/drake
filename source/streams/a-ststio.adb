@@ -1,6 +1,4 @@
-with Ada.Exception_Identification.From_Here;
 package body Ada.Streams.Stream_IO is
-   use Exception_Identification.From_Here;
 
    procedure Create (
       File : in out File_Type;
@@ -114,14 +112,20 @@ package body Ada.Streams.Stream_IO is
 
    function Mode (
       File : File_Type)
-      return File_Mode is
+      return File_Mode
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return File_Mode (Naked_Stream_IO.Mode (Reference (File).all));
    end Mode;
 
    function Name (
       File : File_Type)
-      return String is
+      return String
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return Naked_Stream_IO.Name (Reference (File).all);
    end Name;
@@ -130,6 +134,8 @@ package body Ada.Streams.Stream_IO is
       File : File_Type)
       return String
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
@@ -150,14 +156,20 @@ package body Ada.Streams.Stream_IO is
 
    function End_Of_File (
       File : File_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return Naked_Stream_IO.End_Of_File (Reference (File).all);
    end End_Of_File;
 
    function Stream (
       File : File_Type)
-      return Stream_Access is
+      return Stream_Access
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return Naked_Stream_IO.Stream (Reference (File).all);
    end Stream;
@@ -166,7 +178,12 @@ package body Ada.Streams.Stream_IO is
       File : File_Type;
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset;
-      From : Positive_Count) is
+      From : Positive_Count)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= Out_File or else raise Mode_Error);
    begin
       Set_Index (File, From);
       Read (File, Item, Last);
@@ -177,20 +194,26 @@ package body Ada.Streams.Stream_IO is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= Out_File or else raise Mode_Error);
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
    begin
-      if not Naked_Stream_IO.Is_Open (Non_Controlled_File) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Naked_Stream_IO.Read (Non_Controlled_File, Item, Last);
    end Read;
 
    procedure Write (
       File : File_Type;
       Item : Stream_Element_Array;
-      To : Positive_Count) is
+      To : Positive_Count)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Set_Index (File, To);
       Write (File, Item);
@@ -200,13 +223,14 @@ package body Ada.Streams.Stream_IO is
       File : File_Type;
       Item : Stream_Element_Array)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
    begin
-      if not Naked_Stream_IO.Is_Open (Non_Controlled_File) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Naked_Stream_IO.Write (Non_Controlled_File, Item);
    end Write;
 
@@ -214,13 +238,12 @@ package body Ada.Streams.Stream_IO is
       File : File_Type;
       To : Positive_Count)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
    begin
-      if not Naked_Stream_IO.Is_Open (Non_Controlled_File) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Naked_Stream_IO.Set_Index (Non_Controlled_File, To);
    end Set_Index;
 
@@ -228,13 +251,12 @@ package body Ada.Streams.Stream_IO is
       File : File_Type)
       return Positive_Count
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
    begin
-      if not Naked_Stream_IO.Is_Open (Non_Controlled_File) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Naked_Stream_IO.Index (Non_Controlled_File);
    end Index;
 
@@ -242,13 +264,12 @@ package body Ada.Streams.Stream_IO is
       File : File_Type)
       return Count
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
       Non_Controlled_File : constant
          Naked_Stream_IO.Non_Controlled_File_Type :=
          Reference (File).all;
    begin
-      if not Naked_Stream_IO.Is_Open (Non_Controlled_File) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Naked_Stream_IO.Size (Non_Controlled_File);
    end Size;
 
@@ -260,7 +281,12 @@ package body Ada.Streams.Stream_IO is
    end Set_Mode;
 
    procedure Flush (
-      File : File_Type) is
+      File : File_Type)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Stream_IO.Flush (Reference (File).all);
    end Flush;

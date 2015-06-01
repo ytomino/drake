@@ -112,12 +112,11 @@ package body Ada.Containers.Forward_Iterators is
    end Finalize;
 
    overriding function First (Object : Iterator) return Cursor is
+      pragma Check (Pre,
+         Check => Object.State = First or else raise Status_Error);
       Mutable_Object : Iterator
          renames Object'Unrestricted_Access.all;
    begin
-      if Mutable_Object.State /= First then
-         raise Status_Error;
-      end if;
       return Result : Cursor do
          Mutable_Object.Last_Input_Cursor :=
             Input_Iterator_Interfaces.First (Input_Iterator);
