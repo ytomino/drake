@@ -1283,7 +1283,9 @@ package body Ada.Text_IO is
       overriding procedure Finalize (Object : in out File_Type) is
       begin
          pragma Check (Trace, Debug.Put ("enter"));
-         Naked_Text_IO.Close (Reference (Object).all, Raise_On_Error => False);
+         if Naked_Text_IO.Is_Open (Object.Text) then
+            Naked_Text_IO.Close (Object.Text, Raise_On_Error => False);
+         end if;
          pragma Check (Trace, Debug.Put ("leave"));
       end Finalize;
 

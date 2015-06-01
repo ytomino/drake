@@ -799,24 +799,22 @@ package body Ada.Naked_Text_IO is
       File : aliased in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean := True) is
    begin
-      if Is_Open (File) then
-         declare
-            Internal : aliased
-               Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
-               File.File;
-         begin
-            if not Streams.Naked_Stream_IO.Is_Standard (Internal) then
-               Free (File);
-            end if;
-            if Streams.Naked_Stream_IO.Is_Open (Internal) then
-               Streams.Naked_Stream_IO.Close (
-                  Internal,
-                  Raise_On_Error => Raise_On_Error);
-            end if;
-         end;
-      elsif Raise_On_Error then
+      if not Is_Open (File) then
          Raise_Exception (Status_Error'Identity);
       end if;
+      declare
+         Internal : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
+            File.File;
+      begin
+         if not Streams.Naked_Stream_IO.Is_Standard (Internal) then
+            Free (File);
+         end if;
+         if Streams.Naked_Stream_IO.Is_Open (Internal) then
+            Streams.Naked_Stream_IO.Close (
+               Internal,
+               Raise_On_Error => Raise_On_Error);
+         end if;
+      end;
    end Close;
 
    procedure Delete (File : aliased in out Non_Controlled_File_Type) is
