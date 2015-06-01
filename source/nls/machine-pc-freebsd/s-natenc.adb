@@ -93,8 +93,7 @@ package body System.Native_Encoding is
       return UTF_8_Name (0)'Access;
    end Get_Current_Encoding;
 
-   procedure Open (Object : out Converter; From, To : Encoding_Id) is
-      pragma Unmodified (Object); -- modified via Reference
+   procedure Open (Object : in out Converter; From, To : Encoding_Id) is
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);
       Error : constant C.iconv.iconv_t :=

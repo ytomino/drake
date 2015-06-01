@@ -113,7 +113,7 @@ package System.Native_Encoding is
 
    type Converter is new Controlled.Converter;
 
-   procedure Open (Object : out Converter; From, To : Encoding_Id);
+   procedure Open (Object : in out Converter; From, To : Encoding_Id);
 
    function Get_Is_Open (Object : Converter) return Boolean;
    pragma Inline (Get_Is_Open);

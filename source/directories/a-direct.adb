@@ -55,6 +55,15 @@ package body Ada.Directories is
       return Overwrite;
    end Pack_For_Copy_File;
 
+   procedure Finalize (Object : in out Non_Controlled_Directory_Entry_Type);
+   procedure Finalize (Object : in out Non_Controlled_Directory_Entry_Type) is
+   begin
+      if Object.Status = Detached then
+         Free (Object.Path);
+         System.Directory_Searching.Free (Object.Directory_Entry);
+      end if;
+   end Finalize;
+
    procedure End_Search (
       Search : in out Search_Type;
       Raise_On_Error : Boolean);
@@ -331,6 +340,7 @@ package body Ada.Directories is
                not null access Non_Controlled_Directory_Entry_Type :=
                Reference (Directory_Entry);
          begin
+            Finalize (Target_NC_Directory_Entry.all);
             Target_NC_Directory_Entry.Path := Search.Path;
             Target_NC_Directory_Entry.Directory_Entry :=
                Source_NC_Directory_Entry.Directory_Entry;
@@ -550,10 +560,7 @@ package body Ada.Directories is
 
       overriding procedure Finalize (Object : in out Directory_Entry_Type) is
       begin
-         if Object.Data.Status = Detached then
-            Free (Object.Data.Path);
-            System.Directory_Searching.Free (Object.Data.Directory_Entry);
-         end if;
+         Finalize (Object.Data);
       end Finalize;
 
    end Controlled;

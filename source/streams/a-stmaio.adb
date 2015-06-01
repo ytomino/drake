@@ -63,12 +63,11 @@ package body Ada.Storage_Mapped_IO is
    end Is_Mapped;
 
    procedure Map (
-      Object : out Storage_Type;
+      Object : in out Storage_Type;
       File : Streams.Stream_IO.File_Type;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
    is
-      pragma Unmodified (Object); -- modified via 'Unrestricted_Access
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
@@ -86,14 +85,13 @@ package body Ada.Storage_Mapped_IO is
    end Map;
 
    procedure Map (
-      Object : out Storage_Type;
+      Object : in out Storage_Type;
       Mode : File_Mode := In_File;
       Name : String;
       Form : String := "";
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
    is
-      pragma Unmodified (Object); -- modified via 'Unrestricted_Access
       NC_Mapping : constant not null access Non_Controlled_Mapping :=
          Reference (Object);
    begin
