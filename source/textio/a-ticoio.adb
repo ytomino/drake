@@ -47,7 +47,7 @@ package body Ada.Text_IO.Complex_IO is
             Last_1 : Natural;
             Last_2 : Natural;
          begin
-            Formatting.Get_Field (File, S, Last_1);
+            Formatting.Get_Field (File, S, Last_1); -- checking the predicate
             Get_From_Field (S (1 .. Last_1), Item, Last_2);
             if Last_2 /= Last_1 then
                raise Data_Error;
@@ -55,7 +55,8 @@ package body Ada.Text_IO.Complex_IO is
          end;
       else
          declare
-            S : constant String := Formatting.Get_Complex_Literal (File);
+            S : constant String :=
+               Formatting.Get_Complex_Literal (File); -- checking the predicate
             Last : Natural;
          begin
             Get_From_Field (S, Item, Last);
@@ -80,7 +81,7 @@ package body Ada.Text_IO.Complex_IO is
       Aft : Field := Default_Aft;
       Exp : Field := Default_Exp) is
    begin
-      Put (File, '(');
+      Put (File, '('); -- checking the predicate
       Real_IO.Put (File, Item.Re, Fore, Aft, Exp);
       Put (File, ',');
       Real_IO.Put (File, Item.Im, Fore, Aft, Exp);

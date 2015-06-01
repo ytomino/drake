@@ -4,7 +4,9 @@ package body Ada.Text_IO.Unbounded_IO is
       File : File_Type;
       Item : Strings.Unbounded.Unbounded_String) is
    begin
-      Put (File, Item.Constant_Reference.Element.all);
+      Put (
+         File, -- checking the predicate
+         Item.Constant_Reference.Element.all);
    end Put;
 
    procedure Put (
@@ -17,7 +19,9 @@ package body Ada.Text_IO.Unbounded_IO is
       File : File_Type;
       Item : Strings.Unbounded.Unbounded_String) is
    begin
-      Put_Line (File, Item.Constant_Reference.Element.all);
+      Put_Line (
+         File, -- checking the predicate
+         Item.Constant_Reference.Element.all);
    end Put_Line;
 
    procedure Put_Line (
@@ -31,7 +35,7 @@ package body Ada.Text_IO.Unbounded_IO is
       return Strings.Unbounded.Unbounded_String is
    begin
       return Result : Strings.Unbounded.Unbounded_String do
-         Get_Line (File, Result);
+         Get_Line (File, Result); -- checking the predicate
       end return;
    end Get_Line;
 
@@ -51,7 +55,7 @@ package body Ada.Text_IO.Unbounded_IO is
       loop
          Strings.Unbounded.Set_Length (Item, Capacity);
          Get_Line (
-            File,
+            File, -- checking the predicate
             Item.Reference.Element.all (Last + 1 .. Capacity),
             Last);
          exit when Last < Capacity;

@@ -4,7 +4,7 @@ package body Ada.Text_IO.Bounded_IO is
       File : File_Type;
       Item : Bounded.Bounded_String) is
    begin
-      Put (File, Item.Element (1 .. Item.Length));
+      Put (File, Item.Element (1 .. Item.Length)); -- checking the predicate
    end Put;
 
    procedure Put (
@@ -17,7 +17,9 @@ package body Ada.Text_IO.Bounded_IO is
       File : File_Type;
       Item : Bounded.Bounded_String) is
    begin
-      Put_Line (File, Item.Element (1 .. Item.Length));
+      Put_Line (
+         File, -- checking the predicate
+         Item.Element (1 .. Item.Length));
    end Put_Line;
 
    procedure Put_Line (
@@ -31,7 +33,7 @@ package body Ada.Text_IO.Bounded_IO is
       return Bounded.Bounded_String is
    begin
       return Result : Bounded.Bounded_String do
-         Get_Line (File, Result);
+         Get_Line (File, Result); -- checking the predicate
       end return;
    end Get_Line;
 
@@ -45,7 +47,7 @@ package body Ada.Text_IO.Bounded_IO is
       File : File_Type;
       Item : out Bounded.Bounded_String) is
    begin
-      Get_Line (File, Item.Element, Item.Length);
+      Get_Line (File, Item.Element, Item.Length); -- checking the predicate
    end Get_Line;
 
    procedure Get_Line (

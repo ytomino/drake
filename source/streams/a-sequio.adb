@@ -55,15 +55,17 @@ package body Ada.Sequential_IO is
       File : File_Type)
       return File_Mode is
    begin
-      return File_Mode (Streams.Stream_IO.Mode (
-         Streams.Stream_IO.File_Type (File)));
+      return File_Mode (
+         Streams.Stream_IO.Mode (
+            Streams.Stream_IO.File_Type (File))); -- checking the predicate
    end Mode;
 
    function Name (
       File : File_Type)
       return String is
    begin
-      return Streams.Stream_IO.Name (Streams.Stream_IO.File_Type (File));
+      return Streams.Stream_IO.Name (
+         Streams.Stream_IO.File_Type (File)); -- checking the predicate
    end Name;
 
    function Form (
@@ -71,7 +73,7 @@ package body Ada.Sequential_IO is
       return String is
    begin
       return Streams.Stream_IO.Form (
-         Streams.Stream_IO.File_Type (File));
+         Streams.Stream_IO.File_Type (File)); -- checking the predicate
    end Form;
 
    function Is_Open (File : File_Type) return Boolean is
@@ -94,7 +96,9 @@ package body Ada.Sequential_IO is
          declare
             Read_Size : Streams.Stream_Element_Count;
          begin
-            Streams.Stream_Element_Count'Read (Stream (File), Read_Size);
+            Streams.Stream_Element_Count'Read (
+               Stream (File), -- checking the predicate
+               Read_Size);
             declare
                Image : Streams.Stream_Element_Array (1 .. Read_Size);
                for Image'Address use Item'Address;
@@ -116,7 +120,7 @@ package body Ada.Sequential_IO is
             Last : Streams.Stream_Element_Offset;
          begin
             Streams.Stream_IO.Read (
-               Streams.Stream_IO.File_Type (File),
+               Streams.Stream_IO.File_Type (File), -- checking the predicate
                Image,
                Last);
             if Last < Image'Last then
@@ -138,25 +142,29 @@ package body Ada.Sequential_IO is
          or else Element_Type'Has_Discriminants
       then
          --  indefinite (or unconstrained) types
-         Streams.Stream_Element_Count'Write (Stream (File), Size);
+         Streams.Stream_Element_Count'Write (
+            Stream (File), -- checking the predicate, or below
+            Size);
       end if;
       declare
          Image : Streams.Stream_Element_Array (1 .. Size);
          for Image'Address use Item'Address;
       begin
          Streams.Stream_IO.Write (
-            Streams.Stream_IO.File_Type (File),
+            Streams.Stream_IO.File_Type (File), -- checking the predicate
             Image);
       end;
    end Write;
 
    function End_Of_File (
       File : File_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
-      if Mode (File) /= In_File then
-         Raise_Exception (Mode_Error'Identity);
-      end if;
       return Streams.Stream_IO.End_Of_File (
          Streams.Stream_IO.File_Type (File));
    end End_Of_File;

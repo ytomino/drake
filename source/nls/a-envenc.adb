@@ -1,36 +1,34 @@
-with Ada.Exception_Identification.From_Here;
 package body Ada.Environment_Encoding is
-   use Exception_Identification.From_Here;
 
    --  implementation
 
    function Min_Size_In_From_Stream_Elements (
       Object : Converter)
-      return Streams.Stream_Element_Offset is
+      return Streams.Stream_Element_Offset
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Min_Size_In_From_Stream_Elements_No_Check (Object);
    end Min_Size_In_From_Stream_Elements;
 
    function Substitute (
       Object : Converter)
-      return Streams.Stream_Element_Array is
+      return Streams.Stream_Element_Array
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Substitute_No_Check (Object);
    end Substitute;
 
    procedure Set_Substitute (
       Object : in out Converter;
-      Substitute : Streams.Stream_Element_Array) is
+      Substitute : Streams.Stream_Element_Array)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Set_Substitute_No_Check (Object, Substitute);
    end Set_Substitute;
 
@@ -43,11 +41,10 @@ package body Ada.Environment_Encoding is
       Finish : Boolean;
       Status : out Subsequence_Status_Type)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
       N_Status : System.Native_Encoding.Subsequence_Status_Type;
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Convert_No_Check (Object,
          Item,
          Last,
@@ -67,11 +64,10 @@ package body Ada.Environment_Encoding is
       Out_Last : out Streams.Stream_Element_Offset;
       Status : out Continuing_Status_Type)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
       N_Status : System.Native_Encoding.Continuing_Status_Type;
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Convert_No_Check (
          Object,
          Item,
@@ -90,11 +86,10 @@ package body Ada.Environment_Encoding is
       Finish : True_Only;
       Status : out Finishing_Status_Type)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
       N_Status : System.Native_Encoding.Finishing_Status_Type;
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Convert_No_Check (
          Object,
          Out_Item,
@@ -117,7 +112,7 @@ package body Ada.Environment_Encoding is
       Subsequence_Status : Subsequence_Status_Type;
    begin
       Convert (
-         Object,
+         Object, -- checking the predicate
          Item,
          Last,
          Out_Item,
@@ -139,11 +134,10 @@ package body Ada.Environment_Encoding is
       Finish : True_Only;
       Status : out Substituting_Status_Type)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Object) or else raise Status_Error);
       N_Status : System.Native_Encoding.Substituting_Status_Type;
    begin
-      if not Is_Open (Object) then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Convert_No_Check (
          Object,
          Item,

@@ -73,8 +73,9 @@ package body Ada.Direct_IO is
       File : File_Type)
       return File_Mode is
    begin
-      return From_Mode (Streams.Stream_IO.Mode (
-         Streams.Stream_IO.File_Type (File)));
+      return From_Mode (
+         Streams.Stream_IO.Mode (
+            Streams.Stream_IO.File_Type (File))); -- checking the predicate
    end Mode;
 
    function Name (
@@ -82,14 +83,15 @@ package body Ada.Direct_IO is
       return String is
    begin
       return Streams.Stream_IO.Name (
-         Streams.Stream_IO.File_Type (File));
+         Streams.Stream_IO.File_Type (File)); -- checking the predicate
    end Name;
 
    function Form (
       File : File_Type)
       return String is
    begin
-      return Streams.Stream_IO.Form (Streams.Stream_IO.File_Type (File));
+      return Streams.Stream_IO.Form (
+         Streams.Stream_IO.File_Type (File)); -- checking the predicate
    end Form;
 
    function Is_Open (File : File_Type) return Boolean is
@@ -100,7 +102,12 @@ package body Ada.Direct_IO is
    procedure Read (
       File : File_Type;
       Item : out Element_Type;
-      From : Positive_Count) is
+      From : Positive_Count)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= Out_File or else raise Mode_Error);
    begin
       Set_Index (File, From);
       Read (File, Item);
@@ -128,7 +135,7 @@ package body Ada.Direct_IO is
             Last : Streams.Stream_Element_Offset;
          begin
             Streams.Stream_IO.Read (
-               Streams.Stream_IO.File_Type (File),
+               Streams.Stream_IO.File_Type (File), -- checking the predicate
                Buffer,
                Last);
             if Last < Buffer'Last then
@@ -145,7 +152,7 @@ package body Ada.Direct_IO is
             Last : Streams.Stream_Element_Offset;
          begin
             Streams.Stream_IO.Read (
-               Streams.Stream_IO.File_Type (File),
+               Streams.Stream_IO.File_Type (File), -- checking the predicate
                Buffer,
                Last);
             if Last < Buffer'Last then
@@ -158,7 +165,12 @@ package body Ada.Direct_IO is
    procedure Write (
       File : File_Type;
       Item : Element_Type;
-      To : Positive_Count) is
+      To : Positive_Count)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Set_Index (File, To);
       Write (File, Item);
@@ -174,7 +186,7 @@ package body Ada.Direct_IO is
       for Buffer'Address use Item'Address;
    begin
       Streams.Stream_IO.Write (
-         Streams.Stream_IO.File_Type (File),
+         Streams.Stream_IO.File_Type (File), -- checking the predicate
          Buffer);
    end Write;
 
@@ -187,7 +199,7 @@ package body Ada.Direct_IO is
             (To - 1) * Element_Type'Max_Size_In_Storage_Elements + 1);
    begin
       Streams.Stream_IO.Set_Index (
-         Streams.Stream_IO.File_Type (File),
+         Streams.Stream_IO.File_Type (File), -- checking the predicate
          Raw_Index);
    end Set_Index;
 
@@ -195,8 +207,10 @@ package body Ada.Direct_IO is
       File : File_Type)
       return Positive_Count
    is
-      Raw_Index : constant Positive_Count := Positive_Count (
-         Streams.Stream_IO.Index (Streams.Stream_IO.File_Type (File)));
+      Raw_Index : constant Positive_Count :=
+         Positive_Count (
+            Streams.Stream_IO.Index (
+               Streams.Stream_IO.File_Type (File))); -- checking the predicate
       Index_From_0 : constant Count := Raw_Index - 1;
    begin
       if Index_From_0 rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
@@ -210,7 +224,8 @@ package body Ada.Direct_IO is
       return Count
    is
       Raw_Size : constant Count := Count (
-         Streams.Stream_IO.Size (Streams.Stream_IO.File_Type (File)));
+         Streams.Stream_IO.Size (
+            Streams.Stream_IO.File_Type (File))); -- checking the predicate
    begin
       if Raw_Size rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
          Raise_Exception (Use_Error'Identity);
@@ -220,11 +235,13 @@ package body Ada.Direct_IO is
 
    function End_Of_File (
       File : File_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= Out_File or else raise Mode_Error);
    begin
-      if Mode (File) = Out_File then
-         Raise_Exception (Mode_Error'Identity);
-      end if;
       return Streams.Stream_IO.End_Of_File (
          Streams.Stream_IO.File_Type (File));
    end End_Of_File;

@@ -28,13 +28,13 @@ package Ada.Storage_Mapped_IO is
    pragma Inline (Is_Mapped);
 
    procedure Map (
-      Object : out Storage_Type;
+      Object : in out Storage_Type;
       File : Streams.Stream_IO.File_Type;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0);
 
    procedure Map (
-      Object : out Storage_Type;
+      Object : in out Storage_Type;
       Mode : File_Mode := In_File;
       Name : String;
       Form : String := "";

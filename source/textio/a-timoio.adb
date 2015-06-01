@@ -97,7 +97,7 @@ package body Ada.Text_IO.Modular_IO is
             Last_1 : Natural;
             Last_2 : Natural;
          begin
-            Formatting.Get_Field (File, S, Last_1);
+            Formatting.Get_Field (File, S, Last_1); -- checking the predicate
             Get_From_Field (S (1 .. Last_1), Item, Last_2);
             if Last_2 /= Last_1 then
                raise Data_Error;
@@ -106,7 +106,9 @@ package body Ada.Text_IO.Modular_IO is
       else
          declare
             S : constant String :=
-               Formatting.Get_Numeric_Literal (File, Real => False);
+               Formatting.Get_Numeric_Literal (
+                  File, -- checking the predicate
+                  Real => False);
             Last : Natural;
          begin
             Get_From_Field (S, Item, Last);
@@ -135,7 +137,7 @@ package body Ada.Text_IO.Modular_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Base, Padding, Width);
-      Formatting.Tail (File, S (1 .. Last), Width);
+      Formatting.Tail (File, S (1 .. Last), Width); -- checking the predicate
    end Put;
 
    procedure Put (

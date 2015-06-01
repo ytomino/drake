@@ -55,6 +55,15 @@ package body Ada.Directories is
       return Overwrite;
    end Pack_For_Copy_File;
 
+   procedure Finalize (Object : in out Non_Controlled_Directory_Entry_Type);
+   procedure Finalize (Object : in out Non_Controlled_Directory_Entry_Type) is
+   begin
+      if Object.Status = Detached then
+         Free (Object.Path);
+         System.Directory_Searching.Free (Object.Directory_Entry);
+      end if;
+   end Finalize;
+
    procedure End_Search (
       Search : in out Search_Type;
       Raise_On_Error : Boolean);
@@ -247,15 +256,14 @@ package body Ada.Directories is
       Pattern : String := "*";
       Filter : Filter_Type := (others => True))
    is
+      pragma Check (Pre,
+         Check => not Is_Open (Search) or else raise Status_Error);
       function Cast is new
          Unchecked_Conversion (
             Filter_Type,
             System.Directory_Searching.Filter_Type);
       Has_Next : Boolean;
    begin
-      if Search.Search.Handle /= System.Directory_Searching.Null_Handle then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       Search.Next_Is_Queried := True;
       Search.Path := new String'(Full_Name (Directory));
       Search.Count := 1;
@@ -293,20 +301,19 @@ package body Ada.Directories is
    end Start_Search;
 
    procedure End_Search (Search : in out Search_Type) is
+      pragma Check (Pre,
+         Check => Is_Open (Search) or else raise Status_Error);
    begin
-      if Search.Search.Handle = System.Directory_Searching.Null_Handle then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       End_Search (Search, Raise_On_Error => True);
    end End_Search;
 
    function More_Entries (
       Search : Search_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Search) or else raise Status_Error);
    begin
-      if Search.Search.Handle = System.Directory_Searching.Null_Handle then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       if not Search.Next_Is_Queried then
          Next (Search'Unrestricted_Access.all);
       end if;
@@ -318,21 +325,20 @@ package body Ada.Directories is
       Directory_Entry : out Directory_Entry_Type)
    is
       pragma Unmodified (Directory_Entry); -- modified via Reference
-      Source_NC_Directory_Entry : constant
-         not null access Non_Controlled_Directory_Entry_Type :=
-         Reference (Search.Next_Directory_Entry);
    begin
-      if Search.Search.Handle = System.Directory_Searching.Null_Handle
-         or else Source_NC_Directory_Entry.Status = Empty
-      then
-         Raise_Exception (Status_Error'Identity);
+      if not More_Entries (Search) then -- checking the predicate
+         Raise_Exception (Use_Error'Identity); -- RM A.16 (110/3)
       else
          --  current buffer
          declare
+            Source_NC_Directory_Entry : constant
+               not null access Non_Controlled_Directory_Entry_Type :=
+               Reference (Search.Next_Directory_Entry);
             Target_NC_Directory_Entry : constant
                not null access Non_Controlled_Directory_Entry_Type :=
                Reference (Directory_Entry);
          begin
+            Finalize (Target_NC_Directory_Entry.all);
             Target_NC_Directory_Entry.Path := Search.Path;
             Target_NC_Directory_Entry.Directory_Entry :=
                Source_NC_Directory_Entry.Directory_Entry;
@@ -389,13 +395,15 @@ package body Ada.Directories is
       return Result : Directory_Entry_Type do
          pragma Unmodified (Result); -- modified via Reference
          declare
+            Source_Reference : constant Constant_Reference_Type :=
+               Constant_Reference (Container, Position);
+            --  checking the predicate and Position in Constant_Reference
             Target_NC_Directory_Entry : constant
                not null access Non_Controlled_Directory_Entry_Type :=
                Reference (Result);
             Source_NC_Directory_Entry : constant
                not null access Non_Controlled_Directory_Entry_Type :=
-               Reference (
-                  Constant_Reference (Container, Position).Element.all);
+               Reference (Source_Reference.Element.all);
          begin
             Target_NC_Directory_Entry.Path :=
                new String'(Source_NC_Directory_Entry.Path.all);
@@ -411,28 +419,33 @@ package body Ada.Directories is
    function Constant_Reference (
       Container : aliased Search_Type;
       Position : Cursor)
-      return Constant_Reference_Type is
+      return Constant_Reference_Type
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Container) or else raise Status_Error);
+      pragma Check (Pre,
+         Check => Integer (Position) = Container.Count
+            or else raise Status_Error);
    begin
-      if Integer (Position) /= Container.Count then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (Element => Container.Next_Directory_Entry'Access);
    end Constant_Reference;
 
    function Iterate (
       Container : Search_Type)
-      return Search_Iterator_Interfaces.Forward_Iterator'Class is
+      return Search_Iterator_Interfaces.Forward_Iterator'Class
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Container) or else raise Status_Error);
    begin
       return Search_Iterator'(Search => Container'Unrestricted_Access);
    end Iterate;
 
    overriding function First (Object : Search_Iterator) return Cursor is
+      pragma Check (Pre,
+         Check =>
+            (Is_Open (Object.Search.all) and then Object.Search.Count = 1)
+            or else raise Status_Error);
    begin
-      if Object.Search.Search.Handle = System.Directory_Searching.Null_Handle
-         or else Object.Search.Count /= 1
-      then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       if Reference (Object.Search.Next_Directory_Entry).Status = Empty then
          return 0; -- No_Element
       else
@@ -441,11 +454,12 @@ package body Ada.Directories is
    end First;
 
    overriding function Next (Object : Search_Iterator; Position : Cursor)
-      return Cursor is
+      return Cursor
+   is
+      pragma Check (Pre,
+         Check => Integer (Position) = Object.Search.Count
+            or else raise Status_Error);
    begin
-      if Integer (Position) /= Object.Search.Count then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       --  increment and search next
       Next (Object.Search.all);
       if Reference (Object.Search.Next_Directory_Entry).Status = Empty then
@@ -461,13 +475,12 @@ package body Ada.Directories is
       Directory_Entry : Directory_Entry_Type)
       return String
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return System.Directory_Searching.Simple_Name (
          NC_Directory_Entry.Directory_Entry);
    end Simple_Name;
@@ -476,7 +489,8 @@ package body Ada.Directories is
       Directory_Entry : Directory_Entry_Type)
       return String
    is
-      Name : constant String := Simple_Name (Directory_Entry);
+      Name : constant String :=
+         Simple_Name (Directory_Entry); -- checking the predicate
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
@@ -490,13 +504,12 @@ package body Ada.Directories is
       Directory_Entry : Directory_Entry_Type)
       return File_Kind
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return File_Kind'Enum_Val (
          System.Directory_Searching.File_Kind'Enum_Rep (
             System.Directory_Searching.Kind (
@@ -507,7 +520,7 @@ package body Ada.Directories is
       Directory_Entry : Directory_Entry_Type)
       return File_Size is
    begin
-      if Kind (Directory_Entry) /= Ordinary_File then
+      if Kind (Directory_Entry) /= Ordinary_File then -- checking the predicate
          raise Constraint_Error; -- implementation-defined
       else
          declare
@@ -527,14 +540,13 @@ package body Ada.Directories is
       Directory_Entry : Directory_Entry_Type)
       return Calendar.Time
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       NC_Directory_Entry : constant
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      if NC_Directory_Entry.Status = Empty then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return Cast (System.Native_Calendar.To_Time (
          System.Directory_Searching.Modification_Time (
             NC_Directory_Entry.Path.all,
@@ -552,10 +564,7 @@ package body Ada.Directories is
 
       overriding procedure Finalize (Object : in out Directory_Entry_Type) is
       begin
-         if Object.Data.Status = Detached then
-            Free (Object.Data.Path);
-            System.Directory_Searching.Free (Object.Data.Directory_Entry);
-         end if;
+         Finalize (Object.Data);
       end Finalize;
 
    end Controlled;

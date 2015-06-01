@@ -32,20 +32,6 @@ package body Ada.Text_IO is
    function To_Controlled_File_Access is
       new Unchecked_Conversion (File_Access, Controlled.File_Access);
 
-   procedure Check_File_Mode (
-      File : File_Type;
-      Expected : File_Mode;
-      Line : Natural := Debug.Line);
-   procedure Check_File_Mode (
-      File : File_Type;
-      Expected : File_Mode;
-      Line : Natural := Debug.Line) is
-   begin
-      if (Mode (File) = In_File) /= (Expected = In_File) then
-         Raise_Exception (Mode_Error'Identity, Line => Line);
-      end if;
-   end Check_File_Mode;
-
    procedure Reallocate is
       new Unchecked_Reallocation (
          Positive,
@@ -97,7 +83,10 @@ package body Ada.Text_IO is
       Item := new String (1 .. 256);
       Last := 0;
       loop
-         Overloaded_Get_Line (File, Item (Last + 1 .. Item'Last), Last);
+         Overloaded_Get_Line (
+            File, -- checking the predicate
+            Item (Last + 1 .. Item'Last),
+            Last);
          exit when Last < Item'Last;
          Reallocate (Item, 1, Item'Last * 2);
       end loop;
@@ -115,7 +104,10 @@ package body Ada.Text_IO is
       Item := new Wide_String (1 .. 256);
       Last := 0;
       loop
-         Overloaded_Get_Line (File, Item (Last + 1 .. Item'Last), Last);
+         Overloaded_Get_Line (
+            File, -- checking the predicate
+            Item (Last + 1 .. Item'Last),
+            Last);
          exit when Last < Item'Last;
          Reallocate (Item, 1, Item'Last * 2);
       end loop;
@@ -133,7 +125,10 @@ package body Ada.Text_IO is
       Item := new Wide_Wide_String (1 .. 256);
       Last := 0;
       loop
-         Overloaded_Get_Line (File, Item (Last + 1 .. Item'Last), Last);
+         Overloaded_Get_Line (
+            File, -- checking the predicate
+            Item (Last + 1 .. Item'Last),
+            Last);
          exit when Last < Item'Last;
          Reallocate (Item, 1, Item'Last * 2);
       end loop;
@@ -250,16 +245,15 @@ package body Ada.Text_IO is
    end Delete;
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
+      pragma Check (Pre,
+         Check =>
+            (File'Unrestricted_Access /= Current_Input
+               and then File'Unrestricted_Access /= Current_Output
+               and then File'Unrestricted_Access /= Current_Error)
+            or else Text_IO.Mode (File) = Mode
+            or else raise Mode_Error);
    begin
-      if (File'Unrestricted_Access = Current_Input
-         or else File'Unrestricted_Access = Current_Output
-         or else File'Unrestricted_Access = Current_Error)
-         and then Text_IO.Mode (File) /= Mode
-      then
-         Raise_Exception (Mode_Error'Identity);
-      else
-         Naked_Text_IO.Reset (Reference (File).all, IO_Modes.File_Mode (Mode));
-      end if;
+      Naked_Text_IO.Reset (Reference (File).all, IO_Modes.File_Mode (Mode));
    end Reset;
 
    procedure Reset (File : in out File_Type) is
@@ -269,14 +263,20 @@ package body Ada.Text_IO is
 
    function Mode (
       File : File_Type)
-      return File_Mode is
+      return File_Mode
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return File_Mode (Naked_Text_IO.Mode (Reference (File).all));
    end Mode;
 
    function Name (
       File : File_Type)
-      return String is
+      return String
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return Naked_Text_IO.Name (Reference (File).all);
    end Name;
@@ -290,6 +290,8 @@ package body Ada.Text_IO is
       File : File_Type)
       return String
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
       Non_Controlled_File : constant Naked_Text_IO.Non_Controlled_File_Type :=
          Reference (File).all;
       Result : Streams.Naked_Stream_IO.Form_String;
@@ -320,8 +322,9 @@ package body Ada.Text_IO is
    end Set_Input;
 
    procedure Set_Input (File : not null File_Access) is
+      pragma Check (Pre,
+         Check => Mode (File.all) = In_File or else raise Mode_Error);
    begin
-      Check_File_Mode (File.all, In_File);
       Controlled.Reference_Current_Input.all :=
          To_Controlled_File_Access (File);
    end Set_Input;
@@ -332,8 +335,9 @@ package body Ada.Text_IO is
    end Set_Output;
 
    procedure Set_Output (File : not null File_Access) is
+      pragma Check (Pre,
+         Check => Mode (File.all) /= In_File or else raise Mode_Error);
    begin
-      Check_File_Mode (File.all, Out_File);
       Controlled.Reference_Current_Output.all :=
          To_Controlled_File_Access (File);
    end Set_Output;
@@ -344,8 +348,9 @@ package body Ada.Text_IO is
    end Set_Error;
 
    procedure Set_Error (File : not null File_Access) is
+      pragma Check (Pre,
+         Check => Mode (File.all) /= In_File or else raise Mode_Error);
    begin
-      Check_File_Mode (File.all, Out_File);
       Controlled.Reference_Current_Error.all :=
          To_Controlled_File_Access (File);
    end Set_Error;
@@ -383,7 +388,12 @@ package body Ada.Text_IO is
    --  implementation of Buffer control
 
    procedure Flush (
-      File : File_Type) is
+      File : File_Type)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Flush (Reference (File).all);
    end Flush;
@@ -397,7 +407,12 @@ package body Ada.Text_IO is
 
    procedure Set_Line_Length (
       File : File_Type;
-      To : Count) is
+      To : Count)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Set_Line_Length (Reference (File).all, Integer (To));
    end Set_Line_Length;
@@ -414,7 +429,12 @@ package body Ada.Text_IO is
 
    procedure Set_Page_Length (
       File : File_Type;
-      To : Count) is
+      To : Count)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Set_Page_Length (Reference (File).all, Integer (To));
    end Set_Page_Length;
@@ -431,7 +451,12 @@ package body Ada.Text_IO is
 
    function Line_Length (
       File : File_Type)
-      return Count is
+      return Count
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       return Count (Naked_Text_IO.Line_Length (Reference (File).all));
    end Line_Length;
@@ -443,7 +468,12 @@ package body Ada.Text_IO is
 
    function Page_Length (
       File : File_Type)
-      return Count is
+      return Count
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       return Count (Naked_Text_IO.Page_Length (Reference (File).all));
    end Page_Length;
@@ -457,7 +487,12 @@ package body Ada.Text_IO is
 
    procedure New_Line (
       File : File_Type;
-      Spacing : Positive_Count := 1) is
+      Spacing : Positive_Count := 1)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.New_Line (Reference (File).all, Integer (Spacing));
    end New_Line;
@@ -476,7 +511,12 @@ package body Ada.Text_IO is
 
    procedure Skip_Line (
       File : File_Type;
-      Spacing : Positive_Count := 1) is
+      Spacing : Positive_Count := 1)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Skip_Line (Reference (File).all, Integer (Spacing));
    end Skip_Line;
@@ -495,7 +535,12 @@ package body Ada.Text_IO is
 
    function End_Of_Line (
       File : File_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       return Naked_Text_IO.End_Of_Line (Reference (File).all);
    end End_Of_Line;
@@ -506,7 +551,12 @@ package body Ada.Text_IO is
    end End_Of_Line;
 
    procedure New_Page (
-      File : File_Type) is
+      File : File_Type)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.New_Page (Reference (File).all);
    end New_Page;
@@ -522,7 +572,12 @@ package body Ada.Text_IO is
    end New_Page;
 
    procedure Skip_Page (
-      File : File_Type) is
+      File : File_Type)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Skip_Page (Reference (File).all);
    end Skip_Page;
@@ -539,7 +594,12 @@ package body Ada.Text_IO is
 
    function End_Of_Page (
       File : File_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       return Naked_Text_IO.End_Of_Page (Reference (File).all);
    end End_Of_Page;
@@ -556,7 +616,12 @@ package body Ada.Text_IO is
 
    function End_Of_File (
       File : File_Type)
-      return Boolean is
+      return Boolean
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       return Naked_Text_IO.End_Of_File (Reference (File).all);
    end End_Of_File;
@@ -573,7 +638,10 @@ package body Ada.Text_IO is
 
    procedure Set_Col (
       File : File_Type;
-      To : Positive_Count) is
+      To : Positive_Count)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       Naked_Text_IO.Set_Col (Reference (File).all, Integer (To));
    end Set_Col;
@@ -590,7 +658,10 @@ package body Ada.Text_IO is
 
    procedure Set_Line (
       File : File_Type;
-      To : Positive_Count) is
+      To : Positive_Count)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       Naked_Text_IO.Set_Line (Reference (File).all, Integer (To));
    end Set_Line;
@@ -607,7 +678,10 @@ package body Ada.Text_IO is
 
    function Col (
       File : File_Type)
-      return Positive_Count is
+      return Positive_Count
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return Count (Naked_Text_IO.Col (Reference (File).all));
    end Col;
@@ -624,7 +698,10 @@ package body Ada.Text_IO is
 
    function Line (
       File : File_Type)
-      return Positive_Count is
+      return Positive_Count
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return Count (Naked_Text_IO.Line (Reference (File).all));
    end Line;
@@ -641,7 +718,10 @@ package body Ada.Text_IO is
 
    function Page (
       File : File_Type)
-      return Positive_Count is
+      return Positive_Count
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
    begin
       return Count (Naked_Text_IO.Page (Reference (File).all));
    end Page;
@@ -660,21 +740,36 @@ package body Ada.Text_IO is
 
    procedure Overloaded_Get (
       File : File_Type;
-      Item : out Character) is
+      Item : out Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get (Reference (File).all, Item);
    end Overloaded_Get;
 
    procedure Overloaded_Get (
       File : File_Type;
-      Item : out Wide_Character) is
+      Item : out Wide_Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get (Reference (File).all, Item);
    end Overloaded_Get;
 
    procedure Overloaded_Get (
       File : File_Type;
-      Item : out Wide_Wide_Character) is
+      Item : out Wide_Wide_Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get (Reference (File).all, Item);
    end Overloaded_Get;
@@ -701,21 +796,36 @@ package body Ada.Text_IO is
 
    procedure Overloaded_Put (
       File : File_Type;
-      Item : Character) is
+      Item : Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Put (Reference (File).all, Item);
    end Overloaded_Put;
 
    procedure Overloaded_Put (
       File : File_Type;
-      Item : Wide_Character) is
+      Item : Wide_Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Put (Reference (File).all, Item);
    end Overloaded_Put;
 
    procedure Overloaded_Put (
       File : File_Type;
-      Item : Wide_Wide_Character) is
+      Item : Wide_Wide_Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Put (Reference (File).all, Item);
    end Overloaded_Put;
@@ -743,7 +853,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Look_Ahead (
       File : File_Type;
       Item : out Character;
-      End_Of_Line : out Boolean) is
+      End_Of_Line : out Boolean)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Look_Ahead (Reference (File).all, Item, End_Of_Line);
    end Overloaded_Look_Ahead;
@@ -751,7 +866,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Look_Ahead (
       File : File_Type;
       Item : out Wide_Character;
-      End_Of_Line : out Boolean) is
+      End_Of_Line : out Boolean)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Look_Ahead (Reference (File).all, Item, End_Of_Line);
    end Overloaded_Look_Ahead;
@@ -759,7 +879,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Look_Ahead (
       File : File_Type;
       Item : out Wide_Wide_Character;
-      End_Of_Line : out Boolean) is
+      End_Of_Line : out Boolean)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Look_Ahead (Reference (File).all, Item, End_Of_Line);
    end Overloaded_Look_Ahead;
@@ -786,28 +911,48 @@ package body Ada.Text_IO is
    end Overloaded_Look_Ahead;
 
    procedure Skip_Ahead (
-      File : File_Type) is
+      File : File_Type)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Skip_Ahead (Reference (File).all);
    end Skip_Ahead;
 
    procedure Overloaded_Get_Immediate (
       File : File_Type;
-      Item : out Character) is
+      Item : out Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get_Immediate (Reference (File).all, Item);
    end Overloaded_Get_Immediate;
 
    procedure Overloaded_Get_Immediate (
       File : File_Type;
-      Item : out Wide_Character) is
+      Item : out Wide_Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get_Immediate (Reference (File).all, Item);
    end Overloaded_Get_Immediate;
 
    procedure Overloaded_Get_Immediate (
       File : File_Type;
-      Item : out Wide_Wide_Character) is
+      Item : out Wide_Wide_Character)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get_Immediate (Reference (File).all, Item);
    end Overloaded_Get_Immediate;
@@ -830,7 +975,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Get_Immediate (
       File : File_Type;
       Item : out Character;
-      Available : out Boolean) is
+      Available : out Boolean)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get_Immediate (Reference (File).all, Item, Available);
    end Overloaded_Get_Immediate;
@@ -838,7 +988,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Get_Immediate (
       File : File_Type;
       Item : out Wide_Character;
-      Available : out Boolean) is
+      Available : out Boolean)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get_Immediate (Reference (File).all, Item, Available);
    end Overloaded_Get_Immediate;
@@ -846,7 +1001,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Get_Immediate (
       File : File_Type;
       Item : out Wide_Wide_Character;
-      Available : out Boolean) is
+      Available : out Boolean)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Naked_Text_IO.Get_Immediate (Reference (File).all, Item, Available);
    end Overloaded_Get_Immediate;
@@ -876,7 +1036,12 @@ package body Ada.Text_IO is
 
    procedure Overloaded_Get (
       File : File_Type;
-      Item : out String) is
+      Item : out String)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       for I in Item'Range loop
          Overloaded_Get (File, Item (I));
@@ -885,7 +1050,12 @@ package body Ada.Text_IO is
 
    procedure Overloaded_Get (
       File : File_Type;
-      Item : out Wide_String) is
+      Item : out Wide_String)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       for I in Item'Range loop
          Overloaded_Get (File, Item (I));
@@ -894,7 +1064,12 @@ package body Ada.Text_IO is
 
    procedure Overloaded_Get (
       File : File_Type;
-      Item : out Wide_Wide_String) is
+      Item : out Wide_Wide_String)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       for I in Item'Range loop
          Overloaded_Get (File, Item (I));
@@ -923,7 +1098,12 @@ package body Ada.Text_IO is
 
    procedure Overloaded_Put (
       File : File_Type;
-      Item : String) is
+      Item : String)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       for I in Item'Range loop
          Overloaded_Put (File, Item (I));
@@ -932,7 +1112,12 @@ package body Ada.Text_IO is
 
    procedure Overloaded_Put (
       File : File_Type;
-      Item : Wide_String) is
+      Item : Wide_String)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       for I in Item'Range loop
          Overloaded_Put (File, Item (I));
@@ -941,7 +1126,12 @@ package body Ada.Text_IO is
 
    procedure Overloaded_Put (
       File : File_Type;
-      Item : Wide_Wide_String) is
+      Item : Wide_Wide_String)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
    begin
       for I in Item'Range loop
          Overloaded_Put (File, Item (I));
@@ -971,7 +1161,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Get_Line (
       File : File_Type;
       Item : out String;
-      Last : out Natural) is
+      Last : out Natural)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Last := Item'First - 1;
       if Item'Length > 0 then
@@ -993,7 +1188,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Get_Line (
       File : File_Type;
       Item : out Wide_String;
-      Last : out Natural) is
+      Last : out Natural)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Last := Item'First - 1;
       if Item'Length > 0 then
@@ -1015,7 +1215,12 @@ package body Ada.Text_IO is
    procedure Overloaded_Get_Line (
       File : File_Type;
       Item : out Wide_Wide_String;
-      Last : out Natural) is
+      Last : out Natural)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       Last := Item'First - 1;
       if Item'Length > 0 then
@@ -1075,7 +1280,7 @@ package body Ada.Text_IO is
             Finally);
    begin
       Holder.Assign (Aliased_Item'Access);
-      Raw_Get_Line (File, Aliased_Item, Last);
+      Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       Reallocate (Aliased_Item, 1, Last);
       Holder.Clear;
       Item := Aliased_Item;
@@ -1093,7 +1298,7 @@ package body Ada.Text_IO is
             Finally);
    begin
       Holder.Assign (Aliased_Item'Access);
-      Raw_Get_Line (File, Aliased_Item, Last);
+      Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       Reallocate (Aliased_Item, 1, Last);
       Holder.Clear;
       Item := Aliased_Item;
@@ -1111,7 +1316,7 @@ package body Ada.Text_IO is
             Finally);
    begin
       Holder.Assign (Aliased_Item'Access);
-      Raw_Get_Line (File, Aliased_Item, Last);
+      Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       Reallocate (Aliased_Item, 1, Last);
       Holder.Clear;
       Item := Aliased_Item;
@@ -1129,7 +1334,7 @@ package body Ada.Text_IO is
             Finally);
    begin
       Holder.Assign (Aliased_Item'Access);
-      Raw_Get_Line (File, Aliased_Item, Last);
+      Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;
 
@@ -1145,7 +1350,7 @@ package body Ada.Text_IO is
             Finally);
    begin
       Holder.Assign (Aliased_Item'Access);
-      Raw_Get_Line (File, Aliased_Item, Last);
+      Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;
 
@@ -1161,7 +1366,7 @@ package body Ada.Text_IO is
             Finally);
    begin
       Holder.Assign (Aliased_Item'Access);
-      Raw_Get_Line (File, Aliased_Item, Last);
+      Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;
 
@@ -1184,7 +1389,7 @@ package body Ada.Text_IO is
       File : File_Type;
       Item : String) is
    begin
-      Overloaded_Put (File, Item);
+      Overloaded_Put (File, Item); -- checking the predicate
       New_Line (File);
    end Overloaded_Put_Line;
 
@@ -1192,7 +1397,7 @@ package body Ada.Text_IO is
       File : File_Type;
       Item : Wide_String) is
    begin
-      Overloaded_Put (File, Item);
+      Overloaded_Put (File, Item); -- checking the predicate
       New_Line (File);
    end Overloaded_Put_Line;
 
@@ -1200,7 +1405,7 @@ package body Ada.Text_IO is
       File : File_Type;
       Item : Wide_Wide_String) is
    begin
-      Overloaded_Put (File, Item);
+      Overloaded_Put (File, Item); -- checking the predicate
       New_Line (File);
    end Overloaded_Put_Line;
 
@@ -1283,7 +1488,9 @@ package body Ada.Text_IO is
       overriding procedure Finalize (Object : in out File_Type) is
       begin
          pragma Check (Trace, Debug.Put ("enter"));
-         Naked_Text_IO.Close (Reference (Object).all, Raise_On_Error => False);
+         if Naked_Text_IO.Is_Open (Object.Text) then
+            Naked_Text_IO.Close (Object.Text, Raise_On_Error => False);
+         end if;
          pragma Check (Trace, Debug.Put ("leave"));
       end Finalize;
 

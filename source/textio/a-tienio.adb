@@ -74,7 +74,8 @@ package body Ada.Text_IO.Enumeration_IO is
       File : File_Type;
       Item : out Enum)
    is
-      S : constant String := Formatting.Get_Enum_Literal (File);
+      S : constant String :=
+         Formatting.Get_Enum_Literal (File); -- checking the predicate
    begin
       Get_From_Field (S, Item);
    end Get;
@@ -102,7 +103,7 @@ package body Ada.Text_IO.Enumeration_IO is
       Last : Natural;
    begin
       Put_To_Field (S, Last, Item, Set);
-      Formatting.Head (File, S (1 .. Last), Width);
+      Formatting.Head (File, S (1 .. Last), Width); -- checking the predicate
    end Put;
 
    procedure Put (

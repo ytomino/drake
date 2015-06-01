@@ -630,6 +630,8 @@ package body Ada.Locales is
    end Lang_Map_3_Init;
 
    function To_Alpha_2 (Item : ISO_639_Alpha_3) return ISO_639_Alpha_2 is
+      pragma Check (Dynamic_Predicate,
+         Check => (for all E of Item => E in 'a' .. 'z'));
    begin
       System.Once.Initialize (Lang_Map_3_Flag'Access, Lang_Map_3_Init'Access);
       declare
@@ -718,6 +720,8 @@ package body Ada.Locales is
    end Lang_Map_2_Init;
 
    function To_Alpha_3 (Item : ISO_639_Alpha_2) return ISO_639_Alpha_3 is
+      pragma Check (Dynamic_Predicate,
+         Check => (for all E of Item => E in 'a' .. 'z'));
    begin
       System.Once.Initialize (Lang_Map_2_Flag'Access, Lang_Map_2_Init'Access);
       declare

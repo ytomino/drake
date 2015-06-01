@@ -1,6 +1,4 @@
-with Ada.Exception_Identification.From_Here;
 package body Ada.Text_IO.Iterators is
-   use Exception_Identification.From_Here;
 
    --  implementation
 
@@ -28,11 +26,12 @@ package body Ada.Text_IO.Iterators is
    function Constant_Reference (
       Container : aliased Lines_Type;
       Position : Line_Cursor)
-      return References.Strings.Constant_Reference_Type is
+      return References.Strings.Constant_Reference_Type
+   is
+      pragma Check (Pre,
+         Check => Integer (Position) = Container.Count
+            or else raise Status_Error);
    begin
-      if Integer (Position) /= Container.Count then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return (Element => Container.Item);
    end Constant_Reference;
 
@@ -62,11 +61,12 @@ package body Ada.Text_IO.Iterators is
    end First;
 
    overriding function Next (Object : Line_Iterator; Position : Line_Cursor)
-      return Line_Cursor is
+      return Line_Cursor
+   is
+      pragma Check (Pre,
+         Check => Integer (Position) = Object.Lines.Count
+            or else raise Status_Error);
    begin
-      if Integer (Position) /= Object.Lines.Count then
-         Raise_Exception (Status_Error'Identity);
-      end if;
       return First (Object);
    end Next;
 
