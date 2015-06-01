@@ -1510,10 +1510,11 @@ package body Ada.Naked_Text_IO is
    end Look_Ahead;
 
    procedure Skip_Ahead (File : Non_Controlled_File_Type) is
+      pragma Check (Pre,
+         Check => File.Looked_Ahead_Last /= 0
+            or else raise Status_Error); -- Look_Ahead should be called before
    begin
-      if File.Looked_Ahead_Last = 0 then
-         raise Program_Error; -- Look_Ahead should be called before
-      elsif File.Ahead_Last = 0 then -- File.End_Of_File = True
+      if File.Ahead_Last = 0 then -- File.End_Of_File = True
          Raise_Exception (End_Error'Identity);
       end if;
       declare
