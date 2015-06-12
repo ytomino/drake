@@ -3,6 +3,10 @@ with Ada.Float;
 package body Ada.Colors is
    pragma Suppress (All_Checks);
 
+   subtype Float is Standard.Float; -- hiding "Float" package
+
+   --  implementation
+
    function To_HSV (Color : RGB) return HSV is
       pragma Check (Trace, Debug.Put (
          "R =" & Brightness'Image (Color.Red)
@@ -56,7 +60,7 @@ package body Ada.Colors is
          & ", S =" & Brightness'Image (Color.Saturation)
          & ", V =" & Brightness'Image (Color.Value)));
       procedure Divide_By_1 is
-         new Float.Divide_By_1 (
+         new Ada.Float.Divide_By_1 (
             Brightness'Base,
             Hue'Base,
             Brightness'Base);
@@ -118,18 +122,56 @@ package body Ada.Colors is
       return Luminance (To_RGB (Color));
    end Luminance;
 
-   function RGB_Distance (Left, Right : RGB) return Standard.Float is
+   function RGB_Distance (Left, Right : RGB) return Float is
    begin
+      --  sum of squares
       return (Left.Red - Right.Red) ** 2
          + (Left.Green - Right.Green) ** 2
          + (Left.Blue - Right.Blue) ** 2;
    end RGB_Distance;
 
-   function HSV_Distance (Left, Right : HSV) return Standard.Float is
+   function HSV_Distance (Left, Right : HSV) return Float is
+      pragma Check (Trace,
+         Check => Debug.Put (
+            "Left = (H =" & Hue'Image (Left.Hue)
+            & ", S =" & Brightness'Image (Left.Saturation)
+            & ", V =" & Brightness'Image (Left.Value)
+            & ")"));
+      pragma Check (Trace,
+         Check => Debug.Put (
+            "Right = (H =" & Hue'Image (Right.Hue)
+            & ", S =" & Brightness'Image (Right.Saturation)
+            & ", V =" & Brightness'Image (Right.Value)
+            & ")"));
+      --  cone model
+      function Sin (X : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_sinf";
+      function Cos (X : Float) return Float
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_cosf";
+      LR : constant Float := Left.Saturation * Left.Value / 2.0;
+      LX : constant Float := Cos (Left.Hue) * LR;
+      LY : constant Float := Sin (Left.Hue) * LR;
+      LZ : constant Float := Left.Value;
+      RR : constant Float := Right.Saturation * Right.Value / 2.0;
+      RX : constant Float := Cos (Right.Hue) * RR;
+      RY : constant Float := Sin (Right.Hue) * RR;
+      RZ : constant Float := Right.Value;
+      pragma Check (Trace,
+         Check => Debug.Put (
+            "Left = (X =" & Float'Image (LX)
+            & ", Y =" & Float'Image (LY)
+            & ", Z =" & Float'Image (LZ)
+            & ")"));
+      pragma Check (Trace,
+         Check => Debug.Put (
+            "Right = (X =" & Float'Image (RX)
+            & ", Y =" & Float'Image (RY)
+            & ", Z =" & Float'Image (RZ)
+            & ")"));
    begin
-      return ((Left.Hue - Right.Hue) / (2.0 * Numerics.Pi)) ** 2
-         + (Left.Saturation - Right.Saturation) ** 2
-         + (Left.Value - Right.Value) ** 2;
+      return (LX - RX) ** 2 + (LY - RY) ** 2 + (LZ - RZ) ** 2;
    end HSV_Distance;
 
 end Ada.Colors;

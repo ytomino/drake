@@ -1,8 +1,27 @@
 with Ada.Colors;
+with Ada.Numerics;
 procedure Color is
 	use type Ada.Colors.RGB;
 	P : constant := 16#0.0001#; -- 1/65536
 begin
+	pragma Assert (
+		abs (
+			Ada.Colors.HSV_Distance (
+				(Hue => 0.0, Saturation => 0.0, Value => 1.0),
+				(Hue => Ada.Numerics.Pi / 2.0, Saturation => 0.0, Value => 1.0))
+			- 0.0) < P);
+	pragma Assert (
+		abs (
+			Ada.Colors.HSV_Distance (
+				(Hue => 0.0, Saturation => 1.0, Value => 1.0),
+				(Hue => Ada.Numerics.Pi / 2.0, Saturation => 1.0, Value => 1.0))
+			- 0.5) < P); -- Sqrt (2.0) ** 2 / 2.0 = 0.5
+	pragma Assert (
+		abs (
+			Ada.Colors.HSV_Distance (
+				(Hue => 0.0, Saturation => 1.0, Value => 1.0),
+				(Hue => Ada.Numerics.Pi, Saturation => 1.0, Value => 1.0))
+			- 1.0) < P);
 	for R in 0 .. 4 loop
 		for G in 0 .. 4 loop
 			for B in 0 .. 4 loop
