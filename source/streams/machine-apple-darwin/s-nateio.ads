@@ -105,8 +105,15 @@ package System.Native_Text_IO is
       Handle : Handle_Type;
       Settings : aliased Setting);
 
+   subtype Output_State is Natural; -- stacking count
+
+   procedure Save_State (Handle : Handle_Type; To_State : out Output_State);
+   procedure Reset_State (Handle : Handle_Type; From_State : Output_State);
+
    --  exceptions
 
+   Status_Error : exception
+      renames Ada.IO_Exceptions.Status_Error;
    Device_Error : exception
       renames Ada.IO_Exceptions.Device_Error;
    Data_Error : exception

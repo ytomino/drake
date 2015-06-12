@@ -135,6 +135,8 @@ package body System.Native_Text_IO is
       Raise_Exception (Data_Error'Identity);
    end Parse_Escape_Sequence;
 
+   State_Stack_Count : Natural := 0;
+
    --  implementation
 
    procedure Terminal_Size (
@@ -321,5 +323,24 @@ package body System.Native_Text_IO is
          Raise_Exception (Device_Error'Identity);
       end if;
    end Restore;
+
+   procedure Save_State (Handle : Handle_Type; To_State : out Output_State) is
+      Seq : constant String (1 .. 2) := (
+         Character'Val (16#1b#), '7');
+   begin
+      State_Stack_Count := State_Stack_Count + 1;
+      To_State := State_Stack_Count;
+      Write (Handle, Seq);
+   end Save_State;
+
+   procedure Reset_State (Handle : Handle_Type; From_State : Output_State) is
+      pragma Check (Pre,
+         Check => From_State = State_Stack_Count or else raise Status_Error);
+      Seq : constant String (1 .. 2) := (
+         Character'Val (16#1b#), '8');
+   begin
+      State_Stack_Count := State_Stack_Count - 1;
+      Write (Handle, Seq);
+   end Reset_State;
 
 end System.Native_Text_IO;

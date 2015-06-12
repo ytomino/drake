@@ -5,7 +5,8 @@ procedure tty2 is
 	use Ada.Text_IO.Terminal;
 	package Count_IO is new Integer_IO (Count);
 	use Count_IO;
-	Try_Resize, Try_Move, Try_Col : Boolean := False;
+	Try_Resize, Try_Move, Try_Col, Try_Save : Boolean := False;
+	State : Terminal.Output_State;
 begin
 	Count_IO.Default_Width := 0;
 	for I in 1 .. Ada.Command_Line.Argument_Count loop
@@ -18,11 +19,16 @@ begin
 				Try_Move := True;
 			elsif Arg = "--col" then
 				Try_Col := True;
+			elsif Arg = "--save" then
+				Try_Save := True;
 			else
 				Put (Standard_Error, "unknown option: "); Put (Standard_Error, Arg); New_Line (Standard_Error);
 			end if;
 		end;
 	end loop;
+	if Try_Save then
+		Save_State (Standard_Output.all, State);
+	end if;
 	Put ("isatty(stdin) = "); Put (Boolean'Image (Is_Terminal (Standard_Input.all))); New_Line;
 	Put ("isatty(stdout) = "); Put (Boolean'Image (Is_Terminal (Standard_Output.all))); New_Line;
 	Put ("isatty(stderr) = "); Put (Boolean'Image (Is_Terminal (Standard_Error.all))); New_Line;
@@ -51,4 +57,7 @@ begin
 	begin
 		Put ("position = ("); Put (P.Col); Put (", "); Put (P.Line); Put (")"); New_Line;
 	end;
+	if Try_Save then
+		Reset_State (Standard_Output.all, State);
+	end if;
 end tty2;

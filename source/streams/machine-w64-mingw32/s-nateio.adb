@@ -2,7 +2,6 @@ with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.UTF_Conversions.From_8_To_16;
 with System.UTF_Conversions.From_16_To_8;
-with C.wincon;
 with C.winnls;
 with C.winnt;
 package body System.Native_Text_IO is
@@ -439,5 +438,32 @@ package body System.Native_Text_IO is
          Raise_Exception (Device_Error'Identity);
       end if;
    end Restore;
+
+   procedure Set_Terminal_Attributes (
+      Handle : Handle_Type;
+      Attributes : C.windef.WORD) is
+   begin
+      if C.wincon.SetConsoleTextAttribute (Handle, Attributes) = 0 then
+         Raise_Exception (Device_Error'Identity);
+      end if;
+   end Set_Terminal_Attributes;
+
+   procedure Save_State (Handle : Handle_Type; To_State : out Output_State) is
+      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+   begin
+      if C.wincon.GetConsoleScreenBufferInfo (Handle, Info'Access) = 0 then
+         Raise_Exception (Device_Error'Identity);
+      end if;
+      To_State.Position := Info.dwCursorPosition;
+      To_State.Attributes := Info.wAttributes;
+   end Save_State;
+
+   procedure Reset_State (Handle : Handle_Type; From_State : Output_State) is
+   begin
+      Set_Terminal_Attributes (Handle, From_State.Attributes);
+      Set_Terminal_Position (Handle,
+         Col => Integer (From_State.Position.X + 1),
+         Line => Integer (From_State.Position.Y + 1));
+   end Reset_State;
 
 end System.Native_Text_IO;
