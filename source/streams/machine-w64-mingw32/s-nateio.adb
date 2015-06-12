@@ -346,13 +346,8 @@ package body System.Native_Text_IO is
 
    procedure Set_Terminal_Position (
       Handle : Handle_Type;
-      Col, Line : Positive)
-   is
-      Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
+      Col, Line : Positive) is
    begin
-      GetConsoleScreenBufferInfo (
-         Handle,
-         Info'Access);
       if C.wincon.SetConsoleCursorPosition (
          Handle,
          C.wincon.COORD'(
