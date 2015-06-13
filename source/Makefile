@@ -558,6 +558,12 @@ $(RTSDIR)/adainclude/%.adb: tasking/required/%.adb
 $(RTSDIR)/adainclude/%.ads: textio/%.ads
 	$(INSTALL) $(abspath $<) $@
 
+$(RTSDIR)/adainclude/%.adb: textio/$(TARGETSUBDIR)/%.adb
+	$(INSTALL) $(abspath $<) $@
+
+$(RTSDIR)/adainclude/%.ads: textio/$(TARGETSUBDIR)/%.ads
+	$(INSTALL) $(abspath $<) $@
+
 $(RTSDIR)/adainclude/%.adb: textio/%.adb
 	$(INSTALL) $(abspath $<) $@
 

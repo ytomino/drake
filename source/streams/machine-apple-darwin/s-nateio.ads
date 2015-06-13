@@ -46,6 +46,10 @@ package System.Native_Text_IO is
       Out_Last : out Natural)
       with Import, Convention => Ada, External_Name => "__drake_program_error";
 
+   procedure Write_Just (
+      Handle : Handle_Type;
+      Item : String);
+
    --  terminal
 
    procedure Terminal_Get (
