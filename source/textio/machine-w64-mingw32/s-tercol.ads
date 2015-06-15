@@ -12,6 +12,7 @@ package System.Terminal_Colors is
 
    procedure Set (
       Handle : Native_IO.Handle_Type;
+      Reset : Boolean;
       Bold_Changing : Boolean;
       Bold : Boolean;
       Underline_Changing : Boolean;

@@ -12,6 +12,7 @@ package body Ada.Text_IO.Terminal.Colors is
 
    procedure Set_Color (
       File : File_Type; -- Output_File_Type
+      Reset : Boolean := False;
       Bold : Boolean_Parameter := (Changing => False);
       Underline : Boolean_Parameter := (Changing => False);
       Blink : Boolean_Parameter := (Changing => False);
@@ -50,6 +51,7 @@ package body Ada.Text_IO.Terminal.Colors is
       end if;
       System.Terminal_Colors.Set (
          Naked_Text_IO.Terminal_Handle (Reference (File).all),
+         Reset,
          Bold.Changing,
          Bold_Item,
          Underline.Changing,

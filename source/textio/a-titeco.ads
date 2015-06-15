@@ -37,6 +37,7 @@ package Ada.Text_IO.Terminal.Colors is
 
    procedure Set_Color (
       File : File_Type; -- Output_File_Type
+      Reset : Boolean := False;
       Bold : Boolean_Parameter := (Changing => False); -- only POSIX
       Underline : Boolean_Parameter := (Changing => False);
       Blink : Boolean_Parameter := (Changing => False); -- only POSIX

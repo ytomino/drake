@@ -143,6 +143,7 @@ package body System.Terminal_Colors is
 
    procedure Set (
       Handle : Native_IO.Handle_Type;
+      Reset : Boolean;
       Bold_Changing : Boolean;
       Bold : Boolean;
       Underline_Changing : Boolean;
@@ -164,7 +165,15 @@ package body System.Terminal_Colors is
       Seq (2) := '[';
       Last := 2;
       --  changing
+      if Reset then
+         Last := Last + 1;
+         Seq (Last) := '0';
+      end if;
       if Bold_Changing and then Bold then
+         if Last > 2 then
+            Last := Last + 1;
+            Seq (Last) := ';';
+         end if;
          Last := Last + 1;
          Seq (Last) := '1';
       end if;

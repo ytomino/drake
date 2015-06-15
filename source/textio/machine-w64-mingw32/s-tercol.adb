@@ -59,6 +59,7 @@ package body System.Terminal_Colors is
 
    procedure Set (
       Handle : Native_IO.Handle_Type;
+      Reset : Boolean;
       Bold_Changing : Boolean;
       Bold : Boolean;
       Underline_Changing : Boolean;
@@ -85,10 +86,14 @@ package body System.Terminal_Colors is
    begin
       --  getting
       Native_Text_IO.Save_State (Handle, State);
-      Attributes := State.Attributes;
       if not Initial_Attributes_Assigned then
          Initial_Attributes_Assigned := True;
-         Initial_Attributes := Attributes;
+         Initial_Attributes := State.Attributes;
+      end if;
+      if Reset then
+         Attributes := Initial_Attributes;
+      else
+         Attributes := State.Attributes;
       end if;
       --  changing
 --    if Underline_Changing then
