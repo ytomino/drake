@@ -111,6 +111,9 @@ package body Ada.Numerics.Distributions is
       return Target
    is
       type Longest_Unsigned is mod 2 ** Long_Long_Integer'Size;
+      function popcount (x : Longest_Unsigned) return Integer
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_popcountl";
       Source_W : constant Longest_Unsigned :=
          Source'Pos (Source'Last) - Source'Pos (Source'First);
       Target_W : constant Longest_Unsigned :=
@@ -128,32 +131,45 @@ package body Ada.Numerics.Distributions is
                X
                + Target'Pos (Target'First));
          end;
+      elsif Source_W > Target_W
+         and then (
+            Source_W = Longest_Unsigned'Last
+            or else popcount (Source_W + 1) = 1)
+         and then popcount (Target_W + 1) = 1
+      then
+         --  narrow, and 2 ** n
+         declare
+            X : constant Longest_Unsigned := Longest_Unsigned (Get (Gen));
+         begin
+            return Target'Val (
+               X / (Source_W / (Target_W + 1) + 1)
+               + Target'Pos (Target'First));
+         end;
       else
          loop
             declare
+               Max : Longest_Unsigned;
                X : Longest_Unsigned;
             begin
                if Source_W > Target_W then
                   --  narrow
+                  Max := Source_W;
                   X := Longest_Unsigned (Get (Gen));
                else
                   --  wide
-                  declare
-                     M : Longest_Unsigned := 0;
-                  begin
-                     X := 0;
-                     loop
-                        declare
-                           Old_M : constant Longest_Unsigned := M;
-                        begin
-                           M := (M * (Source_W + 1))
-                              or Source_W;
-                           X := (X * (Source_W + 1))
-                              or Longest_Unsigned (Get (Gen));
-                           exit when M >= Target_W or else M <= Old_M;
-                        end;
-                     end loop;
-                  end;
+                  Max := 0;
+                  X := 0;
+                  loop
+                     declare
+                        Old_Max : constant Longest_Unsigned := Max;
+                     begin
+                        Max := (Max * (Source_W + 1)) + Source_W;
+                        X := (X * (Source_W + 1))
+                           + Longest_Unsigned (Get (Gen));
+                        exit when Max >= Target_W
+                           or else Max <= Old_Max; -- overflow
+                     end;
+                  end loop;
                end if;
                if Target_W = Longest_Unsigned'Last then
                   --  Source'Range_Length < Target'RL = Longest_Unsigned'RL
@@ -161,13 +177,13 @@ package body Ada.Numerics.Distributions is
                      X
                      + Target'Pos (Target'First));
                else
-                  --  Target'Range_Length < Source'RL <= Longest_Unsigned'RL
                   declare
-                     --  (Source_W + 1) mod (Target_W + 1)
+                     --  (Max + 1) mod (Target_W + 1)
                      R : constant Longest_Unsigned :=
-                        (Source_W mod (Target_W + 1) + 1) mod (Target_W + 1);
+                        (Max mod (Target_W + 1) + 1) mod (Target_W + 1);
                   begin
-                     if X <= Source_W - R then
+                     --  (Max - R + 1) mod (Target_W + 1) = 0
+                     if R = 0 or else X <= Max - R then
                         return Target'Val (
                            X mod (Target_W + 1)
                            + Target'Pos (Target'First));

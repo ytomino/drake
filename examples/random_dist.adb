@@ -180,9 +180,21 @@ begin
 	begin
 		Check;
 	end;
-	Ada.Text_IO.Put_Line ("  ==== narrow ====");
+	Ada.Text_IO.Put_Line ("  ==== narrow (2 ** n) ====");
 	declare
 		type T is range 2 .. 9;
+		function Random is new D.Uniform_Discrete_Random (R.Unsigned_64, T, R.Generator, R.Random_64);
+		procedure Process (X : out T) is
+		begin
+			X := Random (Gen);
+		end Process;
+		procedure Check is new Generic_Check (T, Process);
+	begin
+		Check;
+	end;
+	Ada.Text_IO.Put_Line ("  ==== narrow ====");
+	declare
+		type T is range 3 .. 12;
 		function Random is new D.Uniform_Discrete_Random (R.Unsigned_64, T, R.Generator, R.Random_64);
 		procedure Process (X : out T) is
 		begin
@@ -207,7 +219,7 @@ begin
 	end;
 	Ada.Text_IO.Put_Line ("Uniform_Float_Random_0_To_1");
 	declare
-		function Random is new D.Uniform_Float_Random_0_To_Less_Than_1 (R.Unsigned_32, Float'Base, R.Generator, R.Random_32);
+		function Random is new D.Uniform_Float_Random_0_To_1 (R.Unsigned_32, Float'Base, R.Generator, R.Random_32);
 		type T is range 0 .. 9;
 		procedure Process (X : out T) is
 			Z : T'Base;
