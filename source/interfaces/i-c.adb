@@ -95,13 +95,13 @@ package body Interfaces.C is
          Item : String_Type;
          Target : out Element_Array;
          Count : out size_t;
-         Substitute : Element); -- unreferenced
+         Substitute : Element_Array); -- unreferenced
 
       procedure From_Non_Nul_Terminated (
          Item : Element_Array;
          Target : out String_Type;
          Count : out Natural;
-         Substitute : Character_Type); -- unreferenced
+         Substitute : String_Type); -- unreferenced
 
    end Simple_Conversions;
 
@@ -111,7 +111,7 @@ package body Interfaces.C is
          Item : String_Type;
          Target : out Element_Array;
          Count : out size_t;
-         Substitute : Element)
+         Substitute : Element_Array)
       is
          pragma Unreferenced (Substitute);
          C_Item : Element_Array (0 .. Item'Length - 1);
@@ -128,7 +128,7 @@ package body Interfaces.C is
          Item : Element_Array;
          Target : out String_Type;
          Count : out Natural;
-         Substitute : Character_Type)
+         Substitute : String_Type)
       is
          pragma Unreferenced (Substitute);
          Ada_Item : String_Type (1 .. Item'Length);
@@ -154,45 +154,45 @@ package body Interfaces.C is
          Item : String_Type;
          Target : out Element_Array;
          Count : out size_t;
-         Substitute : Element);
+         Substitute : Element_Array);
       with procedure From_Non_Nul_Terminated (
          Item : Element_Array;
          Target : out String_Type;
          Count : out Natural;
-         Substitute : Character_Type);
+         Substitute : String_Type);
       Expanding_To_C : size_t;
-      Expanding_To_Ada : size_t;
+      Expanding_To_Ada : Positive;
    package Functions is
 
       function To_Nul_Terminated (
          Item : String_Type;
-         Substitute : Element)
+         Substitute : Element_Array)
          return Element_Array;
       function To_Non_Nul_Terminated (
          Item : String_Type;
-         Substitute : Element)
+         Substitute : Element_Array)
          return Element_Array;
 
       function From_Nul_Terminated (
          Item : Element_Array;
-         Substitute : Character_Type)
+         Substitute : String_Type)
          return String_Type;
       function From_Non_Nul_Terminated (
          Item : Element_Array;
-         Substitute : Character_Type)
+         Substitute : String_Type)
          return String_Type;
 
       procedure To_Nul_Terminated (
          Item : String_Type;
          Target : out Element_Array;
          Count : out size_t;
-         Substitute : Element);
+         Substitute : Element_Array);
 
       procedure From_Nul_Terminated (
          Item : Element_Array;
          Target : out String_Type;
          Count : out Natural;
-         Substitute : Character_Type);
+         Substitute : String_Type);
 
    end Functions;
 
@@ -200,12 +200,13 @@ package body Interfaces.C is
 
       function To_Nul_Terminated (
          Item : String_Type;
-         Substitute : Element)
+         Substitute : Element_Array)
          return Element_Array
       is
          Result : Element_Array (
             0 ..
-            Expanding_To_C * Item'Length); -- +1 for nul
+            Item'Length * C.size_t'Max (Expanding_To_C, Substitute'Length));
+            --  +1 for nul
          Count : size_t;
       begin
          To_Non_Nul_Terminated (Item, Result, Count,
@@ -217,12 +218,13 @@ package body Interfaces.C is
 
       function To_Non_Nul_Terminated (
          Item : String_Type;
-         Substitute : Element)
+         Substitute : Element_Array)
          return Element_Array
       is
          Result : Element_Array (
             0 ..
-            Expanding_To_C * Item'Length - 1);
+            Item'Length * C.size_t'Max (Expanding_To_C, Substitute'Length)
+               - 1);
          Count : size_t;
       begin
          To_Non_Nul_Terminated (Item, Result, Count,
@@ -232,32 +234,38 @@ package body Interfaces.C is
 
       function From_Nul_Terminated (
          Item : Element_Array;
-         Substitute : Character_Type)
+         Substitute : String_Type)
          return String_Type
       is
          Item_Length : constant size_t := Length (Item);
          Result : String_Type (
             1 ..
-            Natural (Expanding_To_Ada * Item_Length));
+            Natural (Item_Length)
+               * Integer'Max (Expanding_To_Ada, Substitute'Length));
          Count : Natural;
       begin
-         From_Non_Nul_Terminated (
-            Item (Item'First .. Item'First + Item_Length - 1),
-            Result,
-            Count,
-            Substitute => Substitute);
+         if Item_Length = 0 then
+            Count := 0;
+         else
+            From_Non_Nul_Terminated (
+               Item (Item'First .. Item'First + Item_Length - 1),
+               Result,
+               Count,
+               Substitute => Substitute);
+         end if;
          return Result (1 .. Count);
       end From_Nul_Terminated;
 
       function From_Non_Nul_Terminated (
          Item : Element_Array;
-         Substitute : Character_Type)
+         Substitute : String_Type)
          return String_Type
       is
          Item_Length : constant size_t := Item'Length;
          Result : String_Type (
             1 ..
-            Natural (Expanding_To_Ada * Item_Length));
+            Natural (Item_Length)
+               * Integer'Max (Expanding_To_Ada, Substitute'Length));
          Count : Natural;
       begin
          From_Non_Nul_Terminated (
@@ -272,7 +280,7 @@ package body Interfaces.C is
          Item : String_Type;
          Target : out Element_Array;
          Count : out size_t;
-         Substitute : Element) is
+         Substitute : Element_Array) is
       begin
          To_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
@@ -287,15 +295,19 @@ package body Interfaces.C is
          Item : Element_Array;
          Target : out String_Type;
          Count : out Natural;
-         Substitute : Character_Type)
+         Substitute : String_Type)
       is
          Item_Length : constant size_t := Length (Item);
       begin
-         From_Non_Nul_Terminated (
-            Item (Item'First .. Item'First + Item_Length - 1),
-            Target,
-            Count,
-            Substitute => Substitute);
+         if Item_Length = 0 then
+            Count := 0;
+         else
+            From_Non_Nul_Terminated (
+               Item (Item'First .. Item'First + Item_Length - 1),
+               Target,
+               Count,
+               Substitute => Substitute);
+         end if;
       end From_Nul_Terminated;
 
    end Functions;
@@ -530,7 +542,7 @@ package body Interfaces.C is
    function To_char_array (
       Item : String;
       Append_Nul : Boolean := True;
-      Substitute : char := '?')
+      Substitute : char_array := (0 => '?'))
       return char_array is
    begin
       if Append_Nul then
@@ -545,7 +557,7 @@ package body Interfaces.C is
    function To_String (
       Item : char_array;
       Trim_Nul : Boolean := True;
-      Substitute : Character := '?')
+      Substitute : String := "?")
       return String is
    begin
       if Trim_Nul then
@@ -562,7 +574,7 @@ package body Interfaces.C is
       Target : out char_array;
       Count : out size_t;
       Append_Nul : Boolean := True;
-      Substitute : char := '?') is
+      Substitute : char_array := (0 => '?')) is
    begin
       if Append_Nul then
          char_Func.To_Nul_Terminated (Item, Target, Count,
@@ -578,7 +590,7 @@ package body Interfaces.C is
       Target : out String;
       Count : out Natural;
       Trim_Nul : Boolean := True;
-      Substitute : Character := '?') is
+      Substitute : String := "?") is
    begin
       if Trim_Nul then
          char_Func.From_Nul_Terminated (Item, Target, Count,
@@ -601,7 +613,7 @@ package body Interfaces.C is
       Item : Wide_Character)
       return wchar_t is
    begin
-      return To_wchar_t (Item, Substitute => Wide_Character'Pos ('?'));
+      return To_wchar_t (Item, Substitute => Character'Pos ('?'));
    end To_wchar_t;
 
    function To_Wide_Character (
@@ -626,7 +638,7 @@ package body Interfaces.C is
    function To_wchar_array (
       Item : Wide_String;
       Append_Nul : Boolean := True;
-      Substitute : wchar_t := Wide_Character'Pos ('?'))
+      Substitute : wchar_array := (0 => Character'Pos ('?')))
       return wchar_array is
    begin
       if Append_Nul then
@@ -641,7 +653,7 @@ package body Interfaces.C is
    function To_Wide_String (
       Item : wchar_array;
       Trim_Nul : Boolean := True;
-      Substitute : Wide_Character := '?')
+      Substitute : Wide_String := "?")
       return Wide_String is
    begin
       if Trim_Nul then
@@ -658,7 +670,7 @@ package body Interfaces.C is
       Target : out wchar_array;
       Count : out size_t;
       Append_Nul : Boolean := True;
-      Substitute : wchar_t := Wide_Character'Pos ('?')) is
+      Substitute : wchar_array := (0 => Character'Pos ('?'))) is
    begin
       if Append_Nul then
          wchar_Wide_Func.To_Nul_Terminated (Item, Target, Count,
@@ -674,7 +686,7 @@ package body Interfaces.C is
       Target : out Wide_String;
       Count : out Natural;
       Trim_Nul : Boolean := True;
-      Substitute : Wide_Character := '?') is
+      Substitute : Wide_String := "?") is
    begin
       if Trim_Nul then
          wchar_Wide_Func.From_Nul_Terminated (Item, Target, Count,
@@ -689,7 +701,7 @@ package body Interfaces.C is
 
    function To_wchar_t (
       Item : Wide_Wide_Character;
-      Substitute : wchar_t := Wide_Wide_Character'Pos ('?'))
+      Substitute : wchar_t := Character'Pos ('?'))
       return wchar_t
       renames Inside.To_wchar_t;
 
@@ -702,7 +714,7 @@ package body Interfaces.C is
    function To_wchar_array (
       Item : Wide_Wide_String;
       Append_Nul : Boolean := True;
-      Substitute : wchar_t := Wide_Wide_Character'Pos ('?'))
+      Substitute : wchar_array := (0 => Character'Pos ('?')))
       return wchar_array is
    begin
       if Append_Nul then
@@ -717,7 +729,7 @@ package body Interfaces.C is
    function To_Wide_Wide_String (
       Item : wchar_array;
       Trim_Nul : Boolean := True;
-      Substitute : Wide_Wide_Character := '?')
+      Substitute : Wide_Wide_String := "?")
       return Wide_Wide_String is
    begin
       if Trim_Nul then
@@ -734,7 +746,7 @@ package body Interfaces.C is
       Target : out wchar_array;
       Count : out size_t;
       Append_Nul : Boolean := True;
-      Substitute : wchar_t := Wide_Wide_Character'Pos ('?')) is
+      Substitute : wchar_array := (0 => Character'Pos ('?'))) is
    begin
       if Append_Nul then
          wchar_Wide_Wide_Func.To_Nul_Terminated (Item, Target, Count,
@@ -750,7 +762,7 @@ package body Interfaces.C is
       Target : out Wide_Wide_String;
       Count : out Natural;
       Trim_Nul : Boolean := True;
-      Substitute : Wide_Wide_Character := '?') is
+      Substitute : Wide_Wide_String := "?") is
    begin
       if Trim_Nul then
          wchar_Wide_Wide_Func.From_Nul_Terminated (Item, Target, Count,
@@ -787,10 +799,10 @@ package body Interfaces.C is
    begin
       if Append_Nul then
          return char16_Func.To_Nul_Terminated (Item,
-            Substitute => char16_nul);
+            Substitute => (1 .. 0 => <>)); -- unreferenced
       else
          return char16_Func.To_Non_Nul_Terminated (Item,
-            Substitute => char16_nul);
+            Substitute => (1 .. 0 => <>)); -- unreferenced
       end if;
    end To_C;
 
@@ -799,10 +811,10 @@ package body Interfaces.C is
    begin
       if Trim_Nul then
          return char16_Func.From_Nul_Terminated (Item,
-            Substitute => Wide_Character'Val (0));
+            Substitute => ""); -- unreferenced
       else
          return char16_Func.From_Non_Nul_Terminated (Item,
-            Substitute => Wide_Character'Val (0));
+            Substitute => ""); -- unreferenced
       end if;
    end To_Ada;
 
@@ -814,10 +826,10 @@ package body Interfaces.C is
    begin
       if Append_Nul then
          char16_Func.To_Nul_Terminated (Item, Target, Count,
-            Substitute => char16_nul);
+            Substitute => (1 .. 0 => <>)); -- unreferenced
       else
          char16_Conv.To_Non_Nul_Terminated (Item, Target, Count,
-            Substitute => char16_nul);
+            Substitute => (1 .. 0 => <>)); -- unreferenced
       end if;
    end To_C;
 
@@ -829,10 +841,10 @@ package body Interfaces.C is
    begin
       if Trim_Nul then
          char16_Func.From_Nul_Terminated (Item, Target, Count,
-            Substitute => Wide_Character'Val (0));
+            Substitute => ""); -- unreferenced
       else
          char16_Conv.From_Non_Nul_Terminated (Item, Target, Count,
-            Substitute => Wide_Character'Val (0));
+            Substitute => ""); -- unreferenced
       end if;
    end To_Ada;
 
@@ -859,10 +871,10 @@ package body Interfaces.C is
    begin
       if Append_Nul then
          return char32_Func.To_Nul_Terminated (Item,
-            Substitute => char32_nul);
+            Substitute => (1 .. 0 => <>)); -- unreferenced
       else
          return char32_Func.To_Non_Nul_Terminated (Item,
-            Substitute => char32_nul);
+            Substitute => (1 .. 0 => <>)); -- unreferenced
       end if;
    end To_C;
 
@@ -871,10 +883,10 @@ package body Interfaces.C is
    begin
       if Trim_Nul then
          return char32_Func.From_Nul_Terminated (Item,
-            Substitute => Wide_Wide_Character'Val (0));
+            Substitute => ""); -- unreferenced
       else
          return char32_Func.From_Non_Nul_Terminated (Item,
-            Substitute => Wide_Wide_Character'Val (0));
+            Substitute => ""); -- unreferenced
       end if;
    end To_Ada;
 
@@ -886,10 +898,10 @@ package body Interfaces.C is
    begin
       if Append_Nul then
          char32_Func.To_Nul_Terminated (Item, Target, Count,
-            Substitute => char32_nul);
+            Substitute => (1 .. 0 => <>)); -- unreferenced
       else
          char32_Conv.To_Non_Nul_Terminated (Item, Target, Count,
-            Substitute => char32_nul);
+            Substitute => (1 .. 0 => <>)); -- unreferenced
       end if;
    end To_C;
 
@@ -901,10 +913,10 @@ package body Interfaces.C is
    begin
       if Trim_Nul then
          char32_Func.From_Nul_Terminated (Item, Target, Count,
-            Substitute => Wide_Wide_Character'Val (0));
+            Substitute => ""); -- unreferenced
       else
          char32_Conv.From_Non_Nul_Terminated (Item, Target, Count,
-            Substitute => Wide_Wide_Character'Val (0));
+            Substitute => ""); -- unreferenced
       end if;
    end To_Ada;
 

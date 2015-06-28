@@ -95,13 +95,13 @@ package Ada.Characters.Handling is
 
    function To_Wide_Character (
       Item : Character;
-      Substitute : Wide_Character := ' ')
+      Substitute : Wide_Character := ' ') -- additional
       return Wide_Character
       renames Conversions.To_Wide_Character;
 
    function To_Wide_String (
       Item : String;
-      Substitute : Wide_Character := ' ')
+      Substitute : Wide_String := " ") -- additional
       return Wide_String
       renames Conversions.To_Wide_String;
 

@@ -28,7 +28,7 @@ package body Interfaces.C.Inside is
       Item : String;
       Target : out char_array;
       Count : out size_t;
-      Substitute : char)
+      Substitute : char_array)
    is
       pragma Unreferenced (Substitute);
       C_Item : char_array (0 .. Item'Length - 1);
@@ -45,7 +45,7 @@ package body Interfaces.C.Inside is
       Item : char_array;
       Target : out String;
       Count : out Natural;
-      Substitute : Character)
+      Substitute : String)
    is
       pragma Unreferenced (Substitute);
       Ada_Item : String (1 .. Item'Length);
@@ -90,19 +90,20 @@ package body Interfaces.C.Inside is
       Item : Wide_String;
       Target : out wchar_array;
       Count : out size_t;
-      Substitute : wchar_t)
+      Substitute : wchar_array)
    is
       Ada_Target : Wide_Wide_String (1 .. Target'Length);
       for Ada_Target'Address use Target'Address;
       Item_Index : Natural := Item'First;
-      Target_Index : Natural := Ada_Target'First;
+      Target_Index : C.size_t := Target'First;
    begin
       while Item_Index <= Item'Last loop
          declare
             Code : System.UTF_Conversions.UCS_4;
             Item_Used : Natural;
             From_Status : System.UTF_Conversions.From_Status_Type;
-            Target_Last : Natural;
+            Ada_Target_Last : Natural;
+            Target_Last : C.size_t;
             To_Status : System.UTF_Conversions.To_Status_Type;
          begin
             System.UTF_Conversions.From_UTF_16 (
@@ -113,77 +114,96 @@ package body Interfaces.C.Inside is
             Item_Index := Item_Used + 1;
             case From_Status is
                when System.UTF_Conversions.Success =>
-                  null;
+                  System.UTF_Conversions.To_UTF_32 (
+                     Code,
+                     Ada_Target (
+                        Ada_Target'First
+                           + Integer (Target_Index - Target'First) ..
+                        Ada_Target'Last),
+                     Ada_Target_Last,
+                     To_Status);
+                  Target_Last := Target'First
+                     + C.size_t (Ada_Target_Last - Ada_Target'First);
+                  case To_Status is
+                     when System.UTF_Conversions.Success =>
+                        null;
+                     when System.UTF_Conversions.Overflow
+                        | System.UTF_Conversions.Unmappable =>
+                        --  all values of UTF-16 are mappable to UTF-32
+                        raise Constraint_Error;
+                  end case;
                when System.UTF_Conversions.Illegal_Sequence
                   | System.UTF_Conversions.Truncated =>
-                  Code := wchar_t'Pos (Substitute);
-            end case;
-            System.UTF_Conversions.To_UTF_32 (
-               Code,
-               Ada_Target (Target_Index .. Ada_Target'Last),
-               Target_Last,
-               To_Status);
-            case To_Status is
-               when System.UTF_Conversions.Success =>
-                  null;
-               when System.UTF_Conversions.Overflow
-                  | System.UTF_Conversions.Unmappable =>
-                  --  all values of UTF-16 are mappable to UTF-32
-                  raise Constraint_Error;
+                  Target_Last := Target_Index + Substitute'Length - 1;
+                  if Target_Last > Target'Last then
+                     raise Constraint_Error; -- overflow
+                  end if;
+                  Target (Target_Index .. Target_Last) := Substitute;
             end case;
             Target_Index := Target_Last + 1;
          end;
       end loop;
-      Count := size_t (Target_Index - Ada_Target'First);
+      Count := Target_Index - Target'First;
    end To_Non_Nul_Terminated;
 
    procedure From_Non_Nul_Terminated (
       Item : wchar_array;
       Target : out Wide_String;
       Count : out Natural;
-      Substitute : Wide_Character)
+      Substitute : Wide_String)
    is
       Ada_Item : Wide_Wide_String (1 .. Item'Length);
       for Ada_Item'Address use Item'Address;
-      Item_Index : Natural := Ada_Item'First;
+      Item_Index : C.size_t := Item'First;
       Target_Index : Natural := Target'First;
    begin
-      while Item_Index <= Ada_Item'Last loop
+      while Item_Index <= Item'Last loop
          declare
             Code : System.UTF_Conversions.UCS_4;
-            Item_Used : Natural;
+            Ada_Item_Used : Natural;
+            Item_Used : C.size_t;
             From_Status : System.UTF_Conversions.From_Status_Type;
             Target_Last : Natural;
             To_Status : System.UTF_Conversions.To_Status_Type;
+            Put_Substitute : Boolean;
          begin
             System.UTF_Conversions.From_UTF_32 (
-               Ada_Item (Item_Index .. Ada_Item'Last),
-               Item_Used,
+               Ada_Item (
+                  Ada_Item'First + Integer (Item_Index - Item'First) ..
+                  Ada_Item'Last),
+               Ada_Item_Used,
                Code,
                From_Status);
+            Item_Used := Item'First
+               + C.size_t (Ada_Item_Used - Ada_Item'First);
             Item_Index := Item_Used + 1;
             case From_Status is
                when System.UTF_Conversions.Success =>
-                  null;
+                  System.UTF_Conversions.To_UTF_16 (
+                     Code,
+                     Target (Target_Index .. Target'Last),
+                     Target_Last,
+                     To_Status);
+                  case To_Status is
+                     when System.UTF_Conversions.Success =>
+                        Put_Substitute := False;
+                     when System.UTF_Conversions.Overflow =>
+                        raise Constraint_Error;
+                     when System.UTF_Conversions.Unmappable =>
+                        Put_Substitute := True;
+                  end case;
                when System.UTF_Conversions.Illegal_Sequence
                   | System.UTF_Conversions.Truncated =>
                   --  Truncated does not returned in UTF-32
-                  Code := Wide_Character'Pos (Substitute);
+                  Put_Substitute := True;
             end case;
-            System.UTF_Conversions.To_UTF_16 (
-               Code,
-               Target (Target_Index .. Target'Last),
-               Target_Last,
-               To_Status);
-            case To_Status is
-               when System.UTF_Conversions.Success =>
-                  null;
-               when System.UTF_Conversions.Overflow =>
-                  raise Constraint_Error;
-               when System.UTF_Conversions.Unmappable =>
-                  Target (Target_Index) := Substitute;
-                  Target_Last := Target_Index;
-            end case;
+            if Put_Substitute then
+               Target_Last := Target_Index + Substitute'Length - 1;
+               if Target_Last > Target'Last then
+                  raise Constraint_Error; -- overflow
+               end if;
+               Target (Target_Index .. Target_Last) := Substitute;
+            end if;
             Target_Index := Target_Last + 1;
          end;
       end loop;
@@ -216,7 +236,7 @@ package body Interfaces.C.Inside is
       Item : Wide_Wide_String;
       Target : out wchar_array;
       Count : out size_t;
-      Substitute : wchar_t)
+      Substitute : wchar_array)
    is
       pragma Unreferenced (Substitute);
       C_Item : wchar_array (0 .. Item'Length - 1);
@@ -233,7 +253,7 @@ package body Interfaces.C.Inside is
       Item : wchar_array;
       Target : out Wide_Wide_String;
       Count : out Natural;
-      Substitute : Wide_Wide_Character)
+      Substitute : Wide_Wide_String)
    is
       pragma Unreferenced (Substitute);
       Ada_Item : Wide_Wide_String (1 .. Item'Length);

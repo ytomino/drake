@@ -60,7 +60,7 @@ package Ada.Characters.Conversions is
       return Wide_Character;
    function To_Wide_String (
       Item : String;
-      Substitute : Wide_Character := ' ') -- additional
+      Substitute : Wide_String := " ") -- additional
       return Wide_String;
 
    --  modified
@@ -70,7 +70,7 @@ package Ada.Characters.Conversions is
       return Wide_Wide_Character;
    function To_Wide_Wide_String (
       Item : String;
-      Substitute : Wide_Wide_Character := ' ') -- additional
+      Substitute : Wide_Wide_String := " ") -- additional
       return Wide_Wide_String;
 
    --  modified
@@ -80,7 +80,7 @@ package Ada.Characters.Conversions is
       return Wide_Wide_Character;
    function To_Wide_Wide_String (
       Item : Wide_String;
-      Substitute : Wide_Wide_Character := ' ') -- additional
+      Substitute : Wide_Wide_String := " ") -- additional
       return Wide_Wide_String;
 
    function To_Character (
@@ -91,6 +91,11 @@ package Ada.Characters.Conversions is
       Item : Wide_String;
       Substitute : Character := ' ')
       return String;
+   --  extended
+   function To_String (
+      Item : Wide_String;
+      Substitute : String)
+      return String;
 
    function To_Character (
       Item : Wide_Wide_Character;
@@ -99,6 +104,11 @@ package Ada.Characters.Conversions is
    function To_String (
       Item : Wide_Wide_String;
       Substitute : Character := ' ')
+      return String;
+   --  extended
+   function To_String (
+      Item : Wide_Wide_String;
+      Substitute : String)
       return String;
 
    function To_Wide_Character (
@@ -109,10 +119,15 @@ package Ada.Characters.Conversions is
       Item : Wide_Wide_String;
       Substitute : Wide_Character := ' ')
       return Wide_String;
+   --  extended
+   function To_Wide_String (
+      Item : Wide_Wide_String;
+      Substitute : Wide_String)
+      return Wide_String;
 
-   pragma Inline (To_String); -- renamed
-   pragma Inline (To_Wide_String); -- renamed
-   pragma Inline (To_Wide_Wide_String); -- renamed
+   pragma Inline (To_String); -- renamed, or normal inline
+   pragma Inline (To_Wide_String); -- renamed, or normal inline
+   pragma Inline (To_Wide_Wide_String); -- renamed, or normal inline
 
    --  extended
    --  There are subprograms for code-point based decoding iteration.
@@ -227,32 +242,32 @@ private
 
    function To_Wide_String (
       Item : String;
-      Substitute : Wide_Character := ' ')
+      Substitute : Wide_String := " ")
       return Wide_String
       renames System.UTF_Conversions.From_8_To_16.Convert;
    function To_Wide_Wide_String (
       Item : String;
-      Substitute : Wide_Wide_Character := ' ')
+      Substitute : Wide_Wide_String := " ")
       return Wide_Wide_String
       renames System.UTF_Conversions.From_8_To_32.Convert;
    function To_Wide_Wide_String (
       Item : Wide_String;
-      Substitute : Wide_Wide_Character := ' ')
+      Substitute : Wide_Wide_String := " ")
       return Wide_Wide_String
       renames System.UTF_Conversions.From_16_To_32.Convert;
    function To_String (
       Item : Wide_String;
-      Substitute : Character := ' ')
+      Substitute : String)
       return String
       renames System.UTF_Conversions.From_16_To_8.Convert;
    function To_String (
       Item : Wide_Wide_String;
-      Substitute : Character := ' ')
+      Substitute : String)
       return String
       renames System.UTF_Conversions.From_32_To_8.Convert;
    function To_Wide_String (
       Item : Wide_Wide_String;
-      Substitute : Wide_Character := ' ')
+      Substitute : Wide_String)
       return Wide_String
       renames System.UTF_Conversions.From_32_To_16.Convert;
 

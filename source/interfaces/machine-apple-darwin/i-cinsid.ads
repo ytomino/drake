@@ -21,13 +21,13 @@ package Interfaces.C.Inside is
       Item : String;
       Target : out char_array;
       Count : out size_t;
-      Substitute : char); -- unreferenced
+      Substitute : char_array); -- unreferenced
 
    procedure From_Non_Nul_Terminated (
       Item : char_array;
       Target : out String;
       Count : out Natural;
-      Substitute : Character); -- unreferenced
+      Substitute : String); -- unreferenced
 
    Expanding_To_char : constant := 1;
    Expanding_To_Character : constant := 1;
@@ -48,13 +48,13 @@ package Interfaces.C.Inside is
       Item : Wide_String;
       Target : out wchar_array;
       Count : out size_t;
-      Substitute : wchar_t);
+      Substitute : wchar_array);
 
    procedure From_Non_Nul_Terminated (
       Item : wchar_array;
       Target : out Wide_String;
       Count : out Natural;
-      Substitute : Wide_Character);
+      Substitute : Wide_String);
 
    Expanding_From_Wide_To_wchar_t : constant := 1; -- Expanding_From_16_To_32
    Expanding_From_wchar_t_To_Wide : constant := 2; -- Expanding_From_32_To_16
@@ -75,13 +75,13 @@ package Interfaces.C.Inside is
       Item : Wide_Wide_String;
       Target : out wchar_array;
       Count : out size_t;
-      Substitute : wchar_t); -- unreferenced
+      Substitute : wchar_array); -- unreferenced
 
    procedure From_Non_Nul_Terminated (
       Item : wchar_array;
       Target : out Wide_Wide_String;
       Count : out Natural;
-      Substitute : Wide_Wide_Character); -- unreferenced
+      Substitute : Wide_Wide_String); -- unreferenced
 
    Expanding_From_Wide_Wide_To_wchar_t : constant := 1;
    Expanding_From_wchar_t_To_Wide_Wide : constant := 1;

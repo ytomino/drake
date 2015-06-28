@@ -50,7 +50,14 @@ begin
 		pragma Assert (Interfaces.C.To_Ada (Interfaces.C.char32_array'(0 => Interfaces.C.char32_nul)) = Wide_Wide_String'(""));
 		-- contains nul
 		pragma Assert (Interfaces.C.To_Ada (Interfaces.C.char_array'(0 => Interfaces.C.nul), Trim_Nul => False) = String'(1 => Character'Val (0)));
-		null;
+		-- substitute
+		if Interfaces.C.wchar_t'Size /= Wide_Character'Size then
+			pragma Assert (Interfaces.C.To_Wide_String (Interfaces.C.wchar_array'(16#d800#, Interfaces.C.wide_nul), Substitute => "ILSEQ") = "ILSEQ");
+			null;
+		else
+			pragma Assert (Interfaces.C.To_Wide_Wide_String (Interfaces.C.wchar_array'(16#d800#, Interfaces.C.wide_nul), Substitute => "ILSEQ") = "ILSEQ");
+			null;
+		end if;
 	end;
 	-- Interfaces.C.Pointers
 	declare
