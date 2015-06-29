@@ -11,7 +11,7 @@ package Ada.Text_IO.Terminal.Colors is
 
    pragma Inline (To_Color); -- renamed
 
-   type Boolean_Parameter (Changing : Boolean) is record
+   type Boolean_Parameter (Changing : Boolean := False) is record
       case Changing is
          when False =>
             null;
@@ -20,7 +20,7 @@ package Ada.Text_IO.Terminal.Colors is
       end case;
    end record;
 
-   type Color_Parameter (Changing : Boolean) is record
+   type Color_Parameter (Changing : Boolean := False) is record
       case Changing is
          when False =>
             null;
