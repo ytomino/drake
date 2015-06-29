@@ -9,8 +9,7 @@ package Ada.Characters.Conversions is
    pragma Pure;
 
    --  extended
-   --  This function returns False if Item is in UTF-8 multibyte sequence,
-   --    otherwise True.
+   --  This function checks if Item is a UTF-8 multibyte sequence.
    function Is_Wide_Character (Item : Character) return Boolean;
 
    --  extended
@@ -193,7 +192,7 @@ package Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean);
 
    --  extended
-   --  There are encoding subprograms.
+   --  Encoding subprograms:
    procedure Put (
       Value : Wide_Wide_Character;
       Item : out String;
@@ -208,8 +207,8 @@ package Ada.Characters.Conversions is
       Last : out Natural);
 
    --  extended
-   --  Max lengthes of each one multi-byte character,
-   --    and the rates of expansion.
+   --  Max lengths of each one multi-byte character,
+   --    and the rates of expansion:
    Max_Length_In_String : constant := 6;
    Max_Length_In_Wide_String : constant := 2;
    Max_Length_In_Wide_Wide_String : constant := 1;

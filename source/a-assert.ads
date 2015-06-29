@@ -6,7 +6,7 @@ package Ada.Assertions is
       with Export, Convention => Ada, External_Name => "assertion_error";
 
    --  modified
-   --  Assert reports the source location if it's called without message.
+   --  Assert reports the source location if it's called without a message.
 --  procedure Assert (Check : Boolean);
 --  procedure Assert (Check : Boolean; Message : String);
    procedure Assert (
