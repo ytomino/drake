@@ -230,8 +230,8 @@ package body System.Unwind.Mapping is
          EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH);
       --  memory the stack area of main
       TLS.SEH := SEH;
-      --  note, raising an exception from SetUnhandledExceptionFilter is
-      --    probably too late
+      --  Note: SetUnhandledExceptionFilter is probably too late
+      --    to raise Ada exceptions.
    end Install_Exception_Handler;
 
    procedure Install_Task_Exception_Handler (

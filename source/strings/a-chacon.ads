@@ -9,36 +9,39 @@ package Ada.Characters.Conversions is
    pragma Pure;
 
    --  extended
-   --  This function checks if Item is a UTF-8 multibyte sequence.
-   function Is_Wide_Character (Item : Character) return Boolean;
-
-   --  extended
-   --  This function returns False if Item is not in BMP or surrogate pair,
-   --    otherwise True.
+   --  Use Is_Wide_String instead of Is_Wide_Character for multi-byte sequence.
+   --  Is_Wide_String checks if all code-points of Item can be converted to
+   --    UTF-16 Wide_String (each code-point is in BMP or surrogate pair).
    --  These functions Is_XXX_String assume Item contains a legal sequence.
+   function Is_Wide_Character (Item : Character) return Boolean;
    function Is_Wide_String (Item : String) return Boolean;
 
    --  extended
-   --  This function returns False if Item is in UTF-8 multibyte sequence,
-   --    otherwise True.
+   --  Use Is_Wide_Wide_String instead of Is_Wide_Wide_Character for multi-byte
+   --    sequence.
+   --  UTF-8 String can always be converted to UTF-32 Wide_Wide_String.
    function Is_Wide_Wide_Character (Item : Character) return Boolean
       renames Is_Wide_Character;
-
 --  function Is_Wide_Wide_String (Item : String) return Boolean; -- True
 
+   --  Do not use Is_Character for Item that is greater than 16#7F#.
+   --  UTF-16 Wide_String can always be converted to UTF-8 String.
    function Is_Character (Item : Wide_Character) return Boolean;
    function Is_String (Item : Wide_String) return Boolean; -- True
 
    --  extended
-   --  This function returns False if Item is in UTF-16 surrogate pair,
-   --    otherwise True.
+   --  Do not use Is_Wide_Wide_Character for surrogate pair.
+   --  UTF-16 Wide_String can always be converted to UTF-32 Wide_Wide_String.
    function Is_Wide_Wide_Character (Item : Wide_Character) return Boolean;
-
 --  function Is_Wide_Wide_String (Item : Wide_String) return Boolean; -- True
 
+   --  Do not use Is_Character for Item that is greater than 16#7F#.
+   --  UTF-32 Wide_Wide_String can always be converted to UTF-8 String.
    function Is_Character (Item : Wide_Wide_Character) return Boolean;
    function Is_String (Item : Wide_Wide_String) return Boolean; -- True
 
+   --  Use Is_Wide_String instead of Is_Wide_Character for Item that is greater
+   --    than 16#FFFF#.
    function Is_Wide_Character (Item : Wide_Wide_Character) return Boolean;
    function Is_Wide_String (Item : Wide_Wide_String) return Boolean;
 
@@ -46,10 +49,6 @@ package Ada.Characters.Conversions is
    pragma Inline (Is_Wide_Character);
    pragma Inline (Is_Wide_Wide_Character);
    pragma Inline (Is_String);
-
-   --  Is_Character return False when 16#7F# .. 16#FF# and greater
-   --  Is_Wide_Character return False when surrogate pair and greater
-   --  Is_String, Is_Wide_String return True always
 
    --  modified
    --  These functions use Substitute if Item contains illegal byte sequence.
