@@ -38,25 +38,6 @@ package body System.Native_Text_IO is
       end if;
    end tcgetsetattr;
 
-   procedure Write (
-      Handle : Handle_Type;
-      Item : String);
-   procedure Write (
-      Handle : Handle_Type;
-      Item : String)
-   is
-      Written_Length : Ada.Streams.Stream_Element_Offset;
-   begin
-      Native_IO.Write (
-         Handle,
-         Item'Address,
-         Item'Length,
-         Written_Length);
-      if Written_Length < 0 then
-         Raise_Exception (Device_Error'Identity);
-      end if;
-   end Write;
-
    procedure Read_Escape_Sequence (
       Handle : Handle_Type;
       Item : out String;
@@ -135,7 +116,25 @@ package body System.Native_Text_IO is
       Raise_Exception (Data_Error'Identity);
    end Parse_Escape_Sequence;
 
+   State_Stack_Count : Natural := 0;
+
    --  implementation
+
+   procedure Write_Just (
+      Handle : Handle_Type;
+      Item : String)
+   is
+      Written_Length : Ada.Streams.Stream_Element_Offset;
+   begin
+      Native_IO.Write (
+         Handle,
+         Item'Address,
+         Item'Length,
+         Written_Length);
+      if Written_Length < 0 then
+         Raise_Exception (Device_Error'Identity);
+      end if;
+   end Write_Just;
 
    procedure Terminal_Size (
       Handle : Handle_Type;
@@ -178,7 +177,7 @@ package body System.Native_Text_IO is
          Error => Error);
       Last := Last + 1;
       Seq (Last) := 't';
-      Write (Handle, Seq (1 .. Last));
+      Write_Just (Handle, Seq (1 .. Last));
    end Set_Terminal_Size;
 
    procedure Terminal_View (
@@ -209,7 +208,7 @@ package body System.Native_Text_IO is
          1,
          Old_Settings'Access);
       --  output
-      Write (Handle, Seq);
+      Write_Just (Handle, Seq);
       --  input
       Read_Escape_Sequence (Handle, Buffer, Last, 'R');
       --  restore terminal mode
@@ -254,7 +253,7 @@ package body System.Native_Text_IO is
          Error => Error);
       Last := Last + 1;
       Seq (Last) := 'H';
-      Write (Handle, Seq (1 .. Last));
+      Write_Just (Handle, Seq (1 .. Last));
    end Set_Terminal_Position;
 
    procedure Set_Terminal_Col (
@@ -275,7 +274,7 @@ package body System.Native_Text_IO is
          Error => Error);
       Last := Last + 1;
       Seq (Last) := 'G';
-      Write (Handle, Seq (1 .. Last));
+      Write_Just (Handle, Seq (1 .. Last));
    end Set_Terminal_Col;
 
    procedure Terminal_Clear (
@@ -293,7 +292,7 @@ package body System.Native_Text_IO is
          '0',
          'H');
    begin
-      Write (Handle, Code);
+      Write_Just (Handle, Code);
    end Terminal_Clear;
 
    procedure Set_Non_Canonical_Mode (
@@ -321,5 +320,24 @@ package body System.Native_Text_IO is
          Raise_Exception (Device_Error'Identity);
       end if;
    end Restore;
+
+   procedure Save_State (Handle : Handle_Type; To_State : out Output_State) is
+      Seq : constant String (1 .. 2) := (
+         Character'Val (16#1b#), '7');
+   begin
+      State_Stack_Count := State_Stack_Count + 1;
+      To_State := State_Stack_Count;
+      Write_Just (Handle, Seq);
+   end Save_State;
+
+   procedure Reset_State (Handle : Handle_Type; From_State : Output_State) is
+      pragma Check (Pre,
+         Check => From_State = State_Stack_Count or else raise Status_Error);
+      Seq : constant String (1 .. 2) := (
+         Character'Val (16#1b#), '8');
+   begin
+      State_Stack_Count := State_Stack_Count - 1;
+      Write_Just (Handle, Seq);
+   end Reset_State;
 
 end System.Native_Text_IO;

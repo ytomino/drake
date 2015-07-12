@@ -1,5 +1,4 @@
 with Ada.Naked_Text_IO;
-with System.Native_Text_IO;
 package body Ada.Text_IO.Terminal is
    use type IO_Modes.File_Mode;
    use type IO_Modes.File_External;
@@ -179,5 +178,33 @@ package body Ada.Text_IO.Terminal is
          Positive'Base (Col),
          Positive'Base (Line));
    end Position;
+
+   procedure Save_State (
+      File : File_Type;
+      To_State : out Output_State)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
+   begin
+      System.Native_Text_IO.Save_State (
+         Naked_Text_IO.Terminal_Handle (Reference (File).all),
+         System.Native_Text_IO.Output_State (To_State));
+   end Save_State;
+
+   procedure Reset_State (
+      File : File_Type;
+      From_State : Output_State)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) /= In_File or else raise Mode_Error);
+   begin
+      System.Native_Text_IO.Reset_State (
+         Naked_Text_IO.Terminal_Handle (Reference (File).all),
+         System.Native_Text_IO.Output_State (From_State));
+   end Reset_State;
 
 end Ada.Text_IO.Terminal;

@@ -28,7 +28,7 @@ package Ada.Colors is
    function Luminance (Color : RGB) return Brightness;
    function Luminance (Color : HSV) return Brightness;
 
-   --  sum of squares of the distances
+   --  distances in the color spaces
    function RGB_Distance (Left, Right : RGB) return Float;
    function HSV_Distance (Left, Right : HSV) return Float;
 

@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
+with System.Native_Text_IO;
 package Ada.Text_IO.Terminal is
    --  Additional terminal handling subprograms.
 
@@ -69,5 +70,20 @@ package Ada.Text_IO.Terminal is
    procedure Position (
       File : File_Type; -- Output_File_Type
       Col, Line : out Positive_Count);
+
+   --  save and reset current position and colors
+
+   type Output_State is private;
+
+   procedure Save_State (
+      File : File_Type; -- Output_File_Type
+      To_State : out Output_State);
+   procedure Reset_State (
+      File : File_Type; -- Output_File_Type
+      From_State : Output_State);
+
+private
+
+   type Output_State is new System.Native_Text_IO.Output_State;
 
 end Ada.Text_IO.Terminal;

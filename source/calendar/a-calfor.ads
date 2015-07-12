@@ -64,7 +64,7 @@ package Ada.Calendar.Formatting is
 
    --  extended
    --  This function returns seconds in a day
-   --    including the offset of the time zone.
+   --    (including the offset of the time zone).
    function Seconds (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Day_Duration;
    pragma Pure_Function (Seconds);

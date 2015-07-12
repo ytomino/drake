@@ -98,7 +98,8 @@ package System.UTF_Conversions is
       Source : Source_Type;
       Result : out Target_Type;
       Last : out Natural;
-      Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#));
+      Substitute : Target_Type :=
+         (1 => Target_Element_Type'Val (Character'Pos ('?'))));
 
    generic
       type Source_Element_Type is (<>);
@@ -110,10 +111,11 @@ package System.UTF_Conversions is
          Source : Source_Type;
          Result : out Target_Type;
          Last : out Natural;
-         Substitute : Target_Element_Type);
+         Substitute : Target_Type);
    function Convert_Function (
       Source : Source_Type;
-      Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
+      Substitute : Target_Type :=
+         (1 => Target_Element_Type'Val (Character'Pos ('?'))))
       return Target_Type;
 
    --  the rates of expansion

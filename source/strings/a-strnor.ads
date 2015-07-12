@@ -191,8 +191,7 @@ package Ada.Strings.Normalization is
          return Boolean)
       return Boolean;
 
-   --  note 1: this package does not execute unreversible normalization on NFS+
-   --  note 2: sorting by combining class is unimplemented
-   --  note 3: Decompose is faster than Compose on current implementation
+   --  Note: This package does not execute unreversible normalization on NFS+,
+   --    and sorting by combining class is unimplemented.
 
 end Ada.Strings.Normalization;

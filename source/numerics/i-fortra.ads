@@ -25,27 +25,48 @@ package Interfaces.Fortran is
    function i return Imaginary renames Single_Precision_Complex_Types.i;
    function j return Imaginary renames Single_Precision_Complex_Types.j;
 
+   --  Note: character(kind=ascii) is treated as Latin-1
+   --    and character(kind=ucs4) is treated as UTF-32 in gfortran.
+
    type Character_Set is
       new Character; -- implementation-defined character type
 
    type Fortran_Character is array (Positive range <>) of Character_Set;
    pragma Pack (Fortran_Character);
 
---  function To_Fortran (Item : Character) return Character_Set;
---  function To_Ada (Item : Character_Set) return Character;
+   --  modified
+   function To_Fortran (
+      Item : Character;
+      Substitute : Character_Set := '?') -- additional
+      return Character_Set;
+   function To_Ada (
+      Item : Character_Set;
+      Substitute : Character := '?') -- additional
+      return Character;
 
---  function To_Fortran (Item : String) return Fortran_Character;
---  function To_Ada (Item : Fortran_Character) return String;
+   --  modified
+   function To_Fortran (
+      Item : String;
+      Substitute : Fortran_Character := "?") -- additional
+      return Fortran_Character;
+   function To_Ada (
+      Item : Fortran_Character;
+      Substitute : String := "?") -- additional, and unreferenced
+      return String;
 
---  procedure To_Fortran (
---    Item : String;
---    Target : out Fortran_Character;
---    Last : out Natural);
+   --  modified
+   procedure To_Fortran (
+      Item : String;
+      Target : out Fortran_Character;
+      Last : out Natural;
+      Substitute : Fortran_Character := "?"); -- additional
 
---  procedure To_Ada (
---    Item : Fortran_Character;
---    Target : out String;
---    Last : out Natural);
+   --  modified
+   procedure To_Ada (
+      Item : Fortran_Character;
+      Target : out String;
+      Last : out Natural;
+      Substitute : String := "?"); -- additional, and unreferenced
 
    --  B.5(21), Integer_Star_n, Real_Star_n, Logical_Star_n, Complex_Star_n,
    --    Integer_Kind_n, Real_Kind_n, Logical_Kind_n, Complex_Kind_n,
@@ -125,10 +146,8 @@ package Interfaces.Fortran is
 
    --  Character_Kind_n
 
-   --  character(kind=ascii) is treated as Latin-1 in gfortran
    subtype Character_Set_Kind_1 is Character_Set;
    subtype Character_Kind_1 is Fortran_Character;
-   --  character(kind=ucs4) is treated as UTF-32 in gfortran
    type Character_Set_Kind_4 is new Wide_Wide_Character;
    type Character_Kind_4 is array (Positive range <>) of Character_Set_Kind_4;
 

@@ -95,7 +95,7 @@ package body Interfaces.C.Generic_Strings is
 
    function New_String (
       Str : String_Type;
-      Substitute : Element := Element'Val (Character'Pos ('?')))
+      Substitute : Element_Array := (0 => Element'Val (Character'Pos ('?'))))
       return not null chars_ptr
    is
       C : constant Element_Array :=
@@ -295,7 +295,8 @@ package body Interfaces.C.Generic_Strings is
 
    function Value (
       Item : access constant Element;
-      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
+      Substitute : String_Type :=
+         (1 => Character_Type'Val (Character'Pos ('?'))))
       return String_Type
    is
       C : constant Element_Array := Value (Item);
@@ -309,7 +310,8 @@ package body Interfaces.C.Generic_Strings is
    function Value (
       Item : access constant Element;
       Length : size_t;
-      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
+      Substitute : String_Type :=
+         (1 => Character_Type'Val (Character'Pos ('?'))))
       return String_Type
    is
       C : constant Element_Array := Value (Item, Length, Append_Nul => True);
@@ -388,7 +390,8 @@ package body Interfaces.C.Generic_Strings is
       Offset : size_t;
       Str : String_Type;
       Check : Boolean := True;
-      Substitute : Element := Element'Val (Character'Pos ('?'))) is
+      Substitute : Element_Array :=
+         (0 => Element'Val (Character'Pos ('?')))) is
    begin
       Update (
          Item,

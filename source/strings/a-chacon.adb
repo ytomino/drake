@@ -111,6 +111,14 @@ package body Ada.Characters.Conversions is
       end if;
    end To_Character;
 
+   function To_String (
+      Item : Wide_String;
+      Substitute : Character := ' ')
+      return String is
+   begin
+      return To_String (Item, Substitute => (1 => Substitute));
+   end To_String;
+
    function To_Wide_Wide_Character (
       Item : Wide_Character;
       Substitute : Wide_Wide_Character := ' ')
@@ -135,6 +143,14 @@ package body Ada.Characters.Conversions is
       end if;
    end To_Character;
 
+   function To_String (
+      Item : Wide_Wide_String;
+      Substitute : Character := ' ')
+      return String is
+   begin
+      return To_String (Item, Substitute => (1 => Substitute));
+   end To_String;
+
    function To_Wide_Character (
       Item : Wide_Wide_Character;
       Substitute : Wide_Character := ' ')
@@ -146,6 +162,14 @@ package body Ada.Characters.Conversions is
          return Substitute;
       end if;
    end To_Wide_Character;
+
+   function To_Wide_String (
+      Item : Wide_Wide_String;
+      Substitute : Wide_Character := ' ')
+      return Wide_String is
+   begin
+      return To_Wide_String (Item, Substitute => (1 => Substitute));
+   end To_Wide_String;
 
    procedure Get (
       Item : String;

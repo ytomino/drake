@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  separated and auto-loaded by compiler
-generic
+private generic
    type Num is range <>;
 package Ada.Wide_Text_IO.Integer_IO is
 

@@ -782,8 +782,8 @@ package body System.Tasks is
             Synchronous_Objects.Leave (C.Mutex);
          end;
       end if;
-      --  note, this procedure does not free activation chain
-      --  it must call above Activate taking chain
+      --  Note: This procedure does not free activation chain,
+      --    so it must call above Activate for taking activation chain.
    end Activate;
 
    --  completion

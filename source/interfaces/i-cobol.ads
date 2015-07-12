@@ -1,7 +1,6 @@
 pragma License (Unrestricted);
 package Interfaces.COBOL is
---  pragma Preelaborate;
-   pragma Pure;
+   pragma Preelaborate;
 
    --  Types and operations for internal data representations
 
@@ -21,27 +20,49 @@ package Interfaces.COBOL is
    type COBOL_Character is
       new Character; -- implementation-defined character type
 
+   --  modified
 --  Ada_To_COBOL : array (Character) of COBOL_Character :=
 --    implementation-defined;
+   function Ada_To_COBOL (
+      Item : Character;
+      Substitute : COBOL_Character := '?')
+      return COBOL_Character;
 
+   --  modified
 --  COBOL_To_Ada : array (COBOL_Character) of Character :=
 --    implementation-defined;
+   function COBOL_To_Ada (
+      Item : COBOL_Character;
+      Substitute : Character := '?')
+      return Character;
 
    type Alphanumeric is array (Positive range <>) of COBOL_Character;
    pragma Pack (Alphanumeric);
 
---  function To_COBOL (Item : String) return Alphanumeric;
---  function To_Ada (Item : Alphanumeric) return String;
+   --  modified
+   function To_COBOL (
+      Item : String;
+      Substitute : Alphanumeric := "?") -- additional
+      return Alphanumeric;
+   --  modified
+   function To_Ada (
+      Item : Alphanumeric;
+      Substitute : String := "?") -- additional
+      return String;
 
---  procedure To_COBOL (
---    Item : String;
---    Target : out Alphanumeric;
---    Last : out Natural);
+   --  modified
+   procedure To_COBOL (
+      Item : String;
+      Target : out Alphanumeric;
+      Last : out Natural;
+      Substitute : Alphanumeric := "?"); -- additional
 
---  procedure To_Ada (
---    Item : Alphanumeric;
---    Target : out String;
---    Last : out Natural);
+   --  modified
+   procedure To_Ada (
+      Item : Alphanumeric;
+      Target : out String;
+      Last : out Natural;
+      Substitute : String := "?"); -- additional
 
    type Numeric is array (Positive range <>) of COBOL_Character;
    pragma Pack (Numeric);
@@ -81,13 +102,16 @@ package Interfaces.COBOL is
 
       --  Display Formats: data values are represented as Numeric
 
---    function Valid (Item : Numeric; Format : Display_Format) return Boolean;
+      function Valid (Item : Numeric; Format : Display_Format)
+         return Boolean;
 
---    function Length (Format : Display_Format) return Natural;
+      function Length (Format : Display_Format) return Natural;
 
---    function To_Decimal (Item : Numeric; Format : Display_Format) return Num;
+      function To_Decimal (Item : Numeric; Format : Display_Format)
+         return Num;
 
---    function To_Display (Item : Num; Format : Display_Format) return Numeric;
+      function To_Display (Item : Num; Format : Display_Format)
+         return Numeric;
 
       --  Packed Formats: data values are represented as Packed_Decimal
 
@@ -124,6 +148,12 @@ package Interfaces.COBOL is
 --    function To_Long_Binary (Item : Num) return Long_Binary;
 
    end Decimal_Conversions;
+
+   --  Note: This implementation assumes to interface with OpenCOBOL.
+   --    Nonseparated negative '0' .. '9' are encoded as 'p' .. 'y' in the
+   --      display formats Leading_Nonseparate and Trailing_Nonseparate.
+   --    'C', 'A', 'E' and 'F' are positive, 'B' and 'D' are negative in the
+   --      packed format Packed_Signed.
 
 private
 

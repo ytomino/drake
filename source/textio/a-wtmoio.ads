@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  separated and auto-loaded by compiler
-generic
+private generic
    type Num is mod <>;
 package Ada.Wide_Text_IO.Modular_IO is
 

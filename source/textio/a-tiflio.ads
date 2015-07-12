@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  separated and auto-loaded by compiler
-generic
+private generic
    type Num is digits <>;
 package Ada.Text_IO.Float_IO is
 

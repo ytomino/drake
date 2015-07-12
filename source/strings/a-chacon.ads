@@ -9,37 +9,39 @@ package Ada.Characters.Conversions is
    pragma Pure;
 
    --  extended
-   --  This function returns False if Item is in UTF-8 multibyte sequence,
-   --    otherwise True.
-   function Is_Wide_Character (Item : Character) return Boolean;
-
-   --  extended
-   --  This function returns False if Item is not in BMP or surrogate pair,
-   --    otherwise True.
+   --  Use Is_Wide_String instead of Is_Wide_Character for multi-byte sequence.
+   --  Is_Wide_String checks if all code-points of Item can be converted to
+   --    UTF-16 Wide_String (each code-point is in BMP or surrogate pair).
    --  These functions Is_XXX_String assume Item contains a legal sequence.
+   function Is_Wide_Character (Item : Character) return Boolean;
    function Is_Wide_String (Item : String) return Boolean;
 
    --  extended
-   --  This function returns False if Item is in UTF-8 multibyte sequence,
-   --    otherwise True.
+   --  Use Is_Wide_Wide_String instead of Is_Wide_Wide_Character for multi-byte
+   --    sequence.
+   --  UTF-8 String can always be converted to UTF-32 Wide_Wide_String.
    function Is_Wide_Wide_Character (Item : Character) return Boolean
       renames Is_Wide_Character;
-
 --  function Is_Wide_Wide_String (Item : String) return Boolean; -- True
 
+   --  Do not use Is_Character for Item that is greater than 16#7F#.
+   --  UTF-16 Wide_String can always be converted to UTF-8 String.
    function Is_Character (Item : Wide_Character) return Boolean;
    function Is_String (Item : Wide_String) return Boolean; -- True
 
    --  extended
-   --  This function returns False if Item is in UTF-16 surrogate pair,
-   --    otherwise True.
+   --  Do not use Is_Wide_Wide_Character for surrogate pair.
+   --  UTF-16 Wide_String can always be converted to UTF-32 Wide_Wide_String.
    function Is_Wide_Wide_Character (Item : Wide_Character) return Boolean;
-
 --  function Is_Wide_Wide_String (Item : Wide_String) return Boolean; -- True
 
+   --  Do not use Is_Character for Item that is greater than 16#7F#.
+   --  UTF-32 Wide_Wide_String can always be converted to UTF-8 String.
    function Is_Character (Item : Wide_Wide_Character) return Boolean;
    function Is_String (Item : Wide_Wide_String) return Boolean; -- True
 
+   --  Use Is_Wide_String instead of Is_Wide_Character for Item that is greater
+   --    than 16#FFFF#.
    function Is_Wide_Character (Item : Wide_Wide_Character) return Boolean;
    function Is_Wide_String (Item : Wide_Wide_String) return Boolean;
 
@@ -47,10 +49,6 @@ package Ada.Characters.Conversions is
    pragma Inline (Is_Wide_Character);
    pragma Inline (Is_Wide_Wide_Character);
    pragma Inline (Is_String);
-
-   --  Is_Character return False when 16#7F# .. 16#FF# and greater
-   --  Is_Wide_Character return False when surrogate pair and greater
-   --  Is_String, Is_Wide_String return True always
 
    --  modified
    --  These functions use Substitute if Item contains illegal byte sequence.
@@ -60,7 +58,7 @@ package Ada.Characters.Conversions is
       return Wide_Character;
    function To_Wide_String (
       Item : String;
-      Substitute : Wide_Character := ' ') -- additional
+      Substitute : Wide_String := " ") -- additional
       return Wide_String;
 
    --  modified
@@ -70,7 +68,7 @@ package Ada.Characters.Conversions is
       return Wide_Wide_Character;
    function To_Wide_Wide_String (
       Item : String;
-      Substitute : Wide_Wide_Character := ' ') -- additional
+      Substitute : Wide_Wide_String := " ") -- additional
       return Wide_Wide_String;
 
    --  modified
@@ -80,7 +78,7 @@ package Ada.Characters.Conversions is
       return Wide_Wide_Character;
    function To_Wide_Wide_String (
       Item : Wide_String;
-      Substitute : Wide_Wide_Character := ' ') -- additional
+      Substitute : Wide_Wide_String := " ") -- additional
       return Wide_Wide_String;
 
    function To_Character (
@@ -91,6 +89,11 @@ package Ada.Characters.Conversions is
       Item : Wide_String;
       Substitute : Character := ' ')
       return String;
+   --  extended
+   function To_String (
+      Item : Wide_String;
+      Substitute : String)
+      return String;
 
    function To_Character (
       Item : Wide_Wide_Character;
@@ -99,6 +102,11 @@ package Ada.Characters.Conversions is
    function To_String (
       Item : Wide_Wide_String;
       Substitute : Character := ' ')
+      return String;
+   --  extended
+   function To_String (
+      Item : Wide_Wide_String;
+      Substitute : String)
       return String;
 
    function To_Wide_Character (
@@ -109,10 +117,15 @@ package Ada.Characters.Conversions is
       Item : Wide_Wide_String;
       Substitute : Wide_Character := ' ')
       return Wide_String;
+   --  extended
+   function To_Wide_String (
+      Item : Wide_Wide_String;
+      Substitute : Wide_String)
+      return Wide_String;
 
-   pragma Inline (To_String); -- renamed
-   pragma Inline (To_Wide_String); -- renamed
-   pragma Inline (To_Wide_Wide_String); -- renamed
+   pragma Inline (To_String); -- renamed, or normal inline
+   pragma Inline (To_Wide_String); -- renamed, or normal inline
+   pragma Inline (To_Wide_Wide_String); -- renamed, or normal inline
 
    --  extended
    --  There are subprograms for code-point based decoding iteration.
@@ -178,7 +191,7 @@ package Ada.Characters.Conversions is
       Is_Illegal_Sequence : out Boolean);
 
    --  extended
-   --  There are encoding subprograms.
+   --  Encoding subprograms:
    procedure Put (
       Value : Wide_Wide_Character;
       Item : out String;
@@ -193,8 +206,8 @@ package Ada.Characters.Conversions is
       Last : out Natural);
 
    --  extended
-   --  Max lengthes of each one multi-byte character,
-   --    and the rates of expansion.
+   --  Max lengths of each one multi-byte character,
+   --    and the rates of expansion:
    Max_Length_In_String : constant := 6;
    Max_Length_In_Wide_String : constant := 2;
    Max_Length_In_Wide_Wide_String : constant := 1;
@@ -227,32 +240,32 @@ private
 
    function To_Wide_String (
       Item : String;
-      Substitute : Wide_Character := ' ')
+      Substitute : Wide_String := " ")
       return Wide_String
       renames System.UTF_Conversions.From_8_To_16.Convert;
    function To_Wide_Wide_String (
       Item : String;
-      Substitute : Wide_Wide_Character := ' ')
+      Substitute : Wide_Wide_String := " ")
       return Wide_Wide_String
       renames System.UTF_Conversions.From_8_To_32.Convert;
    function To_Wide_Wide_String (
       Item : Wide_String;
-      Substitute : Wide_Wide_Character := ' ')
+      Substitute : Wide_Wide_String := " ")
       return Wide_Wide_String
       renames System.UTF_Conversions.From_16_To_32.Convert;
    function To_String (
       Item : Wide_String;
-      Substitute : Character := ' ')
+      Substitute : String)
       return String
       renames System.UTF_Conversions.From_16_To_8.Convert;
    function To_String (
       Item : Wide_Wide_String;
-      Substitute : Character := ' ')
+      Substitute : String)
       return String
       renames System.UTF_Conversions.From_32_To_8.Convert;
    function To_Wide_String (
       Item : Wide_Wide_String;
-      Substitute : Wide_Character := ' ')
+      Substitute : Wide_String)
       return Wide_String
       renames System.UTF_Conversions.From_32_To_16.Convert;
 

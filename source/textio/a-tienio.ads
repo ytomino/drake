@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  separated and auto-loaded by compiler
-generic
+private generic
    type Enum is (<>);
 package Ada.Text_IO.Enumeration_IO is
 

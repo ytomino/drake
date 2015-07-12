@@ -47,7 +47,7 @@ package System.Tasking is
    Null_Task_Entry : constant := Null_Entry;
 
    --  required for protected entry by compiler (s-taskin.ads)
-   --  note, compiler may crash if Call_Modes is not declared as enum.
+   --  compiler may crash if Call_Modes is not declared as enum
    type Call_Modes is (
       Simple_Call, -- 0
       Conditional_Call, -- 1

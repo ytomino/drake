@@ -4,6 +4,7 @@ with Ada.IO_Exceptions;
 with Ada.IO_Modes;
 with Ada.Streams;
 with System.Native_IO;
+with C.wincon;
 with C.windef;
 package System.Native_Text_IO is
    pragma Preelaborate;
@@ -99,6 +100,19 @@ package System.Native_Text_IO is
    procedure Restore (
       Handle : Handle_Type;
       Settings : aliased Setting);
+
+   procedure Set_Terminal_Attributes (
+      Handle : Handle_Type;
+      Attributes : C.windef.WORD);
+
+   type Output_State is record
+      Position : C.wincon.COORD;
+      Attributes : C.windef.WORD;
+   end record;
+   pragma Suppress_Initialization (Output_State);
+
+   procedure Save_State (Handle : Handle_Type; To_State : out Output_State);
+   procedure Reset_State (Handle : Handle_Type; From_State : Output_State);
 
    --  exceptions
 

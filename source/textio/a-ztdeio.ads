@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  separated and auto-loaded by compiler
-generic
+private generic
    type Num is delta <> digits <>;
 package Ada.Wide_Wide_Text_IO.Decimal_IO is
 

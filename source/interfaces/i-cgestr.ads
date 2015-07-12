@@ -15,12 +15,12 @@ generic
    with function To_C (
       Item : String_Type;
       Append_Nul : Boolean := True;
-      Substitute : Element := Element'Val (Character'Pos ('?')))
+      Substitute : Element_Array)
       return Element_Array;
    with function To_Ada (
       Item : Element_Array;
       Trim_Nul : Boolean := True;
-      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
+      Substitute : String_Type)
       return String_Type;
 package Interfaces.C.Generic_Strings is
    pragma Preelaborate;
@@ -74,7 +74,7 @@ package Interfaces.C.Generic_Strings is
 --  function New_String (Str : String) return chars_ptr;
    function New_String (
       Str : String_Type;
-      Substitute : Element := Element'Val (Character'Pos ('?')))
+      Substitute : Element_Array := (0 => Element'Val (Character'Pos ('?'))))
       return not null chars_ptr;
 
    --  extended
@@ -112,14 +112,16 @@ package Interfaces.C.Generic_Strings is
 --  function Value (Item : chars_ptr) return String;
    function Value (
       Item : access constant Element; -- CXB3011 requires null
-      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
+      Substitute : String_Type :=
+         (1 => Character_Type'Val (Character'Pos ('?'))))
       return String_Type;
 
 --  function Value (Item : chars_ptr; Length : size_t) return String;
    function Value (
       Item : access constant Element;
       Length : size_t;
-      Substitute : Character_Type := Character_Type'Val (Character'Pos ('?')))
+      Substitute : String_Type :=
+         (1 => Character_Type'Val (Character'Pos ('?'))))
       return String_Type;
 
 --  function Strlen (Item : chars_ptr) return size_t;
@@ -147,7 +149,8 @@ package Interfaces.C.Generic_Strings is
       Offset : size_t;
       Str : String_Type;
       Check : Boolean := True;
-      Substitute : Element := Element'Val (Character'Pos ('?')));
+      Substitute : Element_Array :=
+         (0 => Element'Val (Character'Pos ('?'))));
 
    --  extended
    procedure Update (

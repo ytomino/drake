@@ -529,7 +529,7 @@ package body System.Native_Encoding is
                   WW,
                   Buffer_As_W,
                   Natural (Buffer_Length),
-                  Substitute => '?'); -- use Substitute
+                  Substitute => "?"); -- use Substitute
             end;
             if Item_Length rem 4 /= 0 then
                Buffer_Length := Buffer_Length + 1;
@@ -581,7 +581,7 @@ package body System.Native_Encoding is
                   Buffer_As_W,
                   Out_WW,
                   Out_WW_Length,
-                  Substitute => '?'); -- use Substitute
+                  Substitute => "?"); -- use Substitute
                declare
                   Out_WW_Length_In_SEA : constant
                      Ada.Streams.Stream_Element_Offset :=

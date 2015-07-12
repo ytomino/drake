@@ -433,7 +433,8 @@ package body System.UTF_Conversions is
       Source : Source_Type;
       Result : out Target_Type;
       Last : out Natural;
-      Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
+      Substitute : Target_Type :=
+         (1 => Target_Element_Type'Val (Character'Pos ('?'))))
    is
       Source_Last : Natural := Source'First - 1;
    begin
@@ -450,8 +451,8 @@ package body System.UTF_Conversions is
                Code,
                From_Status);
             if From_Status /= Success then
-               Last := Last + 1;
-               Result (Last) := Substitute;
+               Result (Last + 1 .. Last + Substitute'Length) := Substitute;
+               Last := Last + Substitute'Length;
             else
                To_UTF (
                   Code,
@@ -466,10 +467,13 @@ package body System.UTF_Conversions is
 
    function Convert_Function (
       Source : Source_Type;
-      Substitute : Target_Element_Type := Target_Element_Type'Val (16#20#))
+      Substitute : Target_Type :=
+         (1 => Target_Element_Type'Val (Character'Pos ('?'))))
       return Target_Type
    is
-      Result : Target_Type (1 .. Source'Length * Expanding);
+      Result : Target_Type (
+         1 ..
+         Source'Length * Integer'Max (Expanding, Substitute'Length));
       Last : Natural;
    begin
       Convert_Procedure (Source, Result, Last, Substitute);
