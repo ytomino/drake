@@ -102,13 +102,16 @@ package Interfaces.COBOL is
 
       --  Display Formats: data values are represented as Numeric
 
---    function Valid (Item : Numeric; Format : Display_Format) return Boolean;
+      function Valid (Item : Numeric; Format : Display_Format)
+         return Boolean;
 
---    function Length (Format : Display_Format) return Natural;
+      function Length (Format : Display_Format) return Natural;
 
---    function To_Decimal (Item : Numeric; Format : Display_Format) return Num;
+      function To_Decimal (Item : Numeric; Format : Display_Format)
+         return Num;
 
---    function To_Display (Item : Num; Format : Display_Format) return Numeric;
+      function To_Display (Item : Num; Format : Display_Format)
+         return Numeric;
 
       --  Packed Formats: data values are represented as Packed_Decimal
 
@@ -145,6 +148,12 @@ package Interfaces.COBOL is
 --    function To_Long_Binary (Item : Num) return Long_Binary;
 
    end Decimal_Conversions;
+
+   --  Note: This implementation assumes to interface with OpenCOBOL.
+   --    Nonseparated negative '0' .. '9' are encoded as 'p' .. 'y' in the
+   --      display formats Leading_Nonseparate and Trailing_Nonseparate.
+   --    'C', 'A', 'E' and 'F' are positive, 'B' and 'D' are negative in the
+   --      packed format Packed_Signed.
 
 private
 
