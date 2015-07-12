@@ -1,28 +1,29 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Windows
-package Interfaces.C.Inside is
-   pragma Pure;
+with C;
+package System.C_Encoding is
+   pragma Preelaborate;
 
    --  Character (UTF-8) from/to char (MBCS)
 
    function To_char (
       Item : Character;
-      Substitute : char)
-      return char;
+      Substitute : C.char)
+      return C.char;
 
    function To_Character (
-      Item : char;
+      Item : C.char;
       Substitute : Character)
       return Character;
 
    procedure To_Non_Nul_Terminated (
       Item : String;
-      Target : out char_array;
-      Count : out size_t;
-      Substitute : char_array);
+      Target : out C.char_array;
+      Count : out C.size_t;
+      Substitute : C.char_array);
 
    procedure From_Non_Nul_Terminated (
-      Item : char_array;
+      Item : C.char_array;
       Target : out String;
       Count : out Natural;
       Substitute : String); -- unreferenced
@@ -34,22 +35,22 @@ package Interfaces.C.Inside is
 
    function To_wchar_t (
       Item : Wide_Character;
-      Substitute : wchar_t) -- unreferenced
-      return wchar_t;
+      Substitute : C.wchar_t) -- unreferenced
+      return C.wchar_t;
 
    function To_Wide_Character (
-      Item : wchar_t;
+      Item : C.wchar_t;
       Substitute : Wide_Character) -- unreferenced
       return Wide_Character;
 
    procedure To_Non_Nul_Terminated (
       Item : Wide_String;
-      Target : out wchar_array;
-      Count : out size_t;
-      Substitute : wchar_array); -- unreferenced
+      Target : out C.wchar_t_array;
+      Count : out C.size_t;
+      Substitute : C.wchar_t_array); -- unreferenced
 
    procedure From_Non_Nul_Terminated (
-      Item : wchar_array;
+      Item : C.wchar_t_array;
       Target : out Wide_String;
       Count : out Natural;
       Substitute : Wide_String); -- unreferenced
@@ -61,22 +62,22 @@ package Interfaces.C.Inside is
 
    function To_wchar_t (
       Item : Wide_Wide_Character;
-      Substitute : wchar_t)
-      return wchar_t;
+      Substitute : C.wchar_t)
+      return C.wchar_t;
 
    function To_Wide_Wide_Character (
-      Item : wchar_t;
+      Item : C.wchar_t;
       Substitute : Wide_Wide_Character)
       return Wide_Wide_Character;
 
    procedure To_Non_Nul_Terminated (
       Item : Wide_Wide_String;
-      Target : out wchar_array;
-      Count : out size_t;
-      Substitute : wchar_array);
+      Target : out C.wchar_t_array;
+      Count : out C.size_t;
+      Substitute : C.wchar_t_array);
 
    procedure From_Non_Nul_Terminated (
-      Item : wchar_array;
+      Item : C.wchar_t_array;
       Target : out Wide_Wide_String;
       Count : out Natural;
       Substitute : Wide_Wide_String);
@@ -86,4 +87,4 @@ package Interfaces.C.Inside is
    Expanding_From_wchar_t_To_Wide_Wide : constant :=
       1; -- Expanding_From_16_To_32
 
-end Interfaces.C.Inside;
+end System.C_Encoding;

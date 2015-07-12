@@ -1,7 +1,6 @@
 pragma License (Unrestricted);
 package Interfaces.COBOL is
---  pragma Preelaborate;
-   pragma Pure;
+   pragma Preelaborate;
 
    --  Types and operations for internal data representations
 
@@ -21,27 +20,49 @@ package Interfaces.COBOL is
    type COBOL_Character is
       new Character; -- implementation-defined character type
 
+   --  modified
 --  Ada_To_COBOL : array (Character) of COBOL_Character :=
 --    implementation-defined;
+   function Ada_To_COBOL (
+      Item : Character;
+      Substitute : COBOL_Character := '?')
+      return COBOL_Character;
 
+   --  modified
 --  COBOL_To_Ada : array (COBOL_Character) of Character :=
 --    implementation-defined;
+   function COBOL_To_Ada (
+      Item : COBOL_Character;
+      Substitute : Character := '?')
+      return Character;
 
    type Alphanumeric is array (Positive range <>) of COBOL_Character;
    pragma Pack (Alphanumeric);
 
---  function To_COBOL (Item : String) return Alphanumeric;
---  function To_Ada (Item : Alphanumeric) return String;
+   --  modified
+   function To_COBOL (
+      Item : String;
+      Substitute : Alphanumeric := "?") -- additional
+      return Alphanumeric;
+   --  modified
+   function To_Ada (
+      Item : Alphanumeric;
+      Substitute : String := "?") -- additional
+      return String;
 
---  procedure To_COBOL (
---    Item : String;
---    Target : out Alphanumeric;
---    Last : out Natural);
+   --  modified
+   procedure To_COBOL (
+      Item : String;
+      Target : out Alphanumeric;
+      Last : out Natural;
+      Substitute : Alphanumeric := "?"); -- additional
 
---  procedure To_Ada (
---    Item : Alphanumeric;
---    Target : out String;
---    Last : out Natural);
+   --  modified
+   procedure To_Ada (
+      Item : Alphanumeric;
+      Target : out String;
+      Last : out Natural;
+      Substitute : String := "?"); -- additional
 
    type Numeric is array (Positive range <>) of COBOL_Character;
    pragma Pack (Numeric);

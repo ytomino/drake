@@ -1,6 +1,9 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
-with Interfaces.C.Inside;
+with System.C_Encoding;
+pragma Warnings (Off, System.C_Encoding); -- break "pure" rule
+with C;
+pragma Warnings (Off, C); -- break "pure" rule
 package body Interfaces.C is
    pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
@@ -333,6 +336,58 @@ package body Interfaces.C is
       return memchr (s, 0, n);
    end Find_nul;
 
+   procedure To_Non_Nul_Terminated (
+      Item : String;
+      Target : out char_array;
+      Count : out size_t;
+      Substitute : char_array);
+
+   procedure To_Non_Nul_Terminated (
+      Item : String;
+      Target : out char_array;
+      Count : out size_t;
+      Substitute : char_array)
+   is
+      Target_As : Standard.C.char_array (
+         Standard.C.size_t (Target'First) ..
+         Standard.C.size_t (Target'Last));
+      for Target_As'Address use Target'Address;
+      Substitute_As : Standard.C.char_array (
+         Standard.C.size_t (Substitute'First) ..
+         Standard.C.size_t (Substitute'Last));
+      for Substitute_As'Address use Substitute'Address;
+   begin
+      System.C_Encoding.To_Non_Nul_Terminated (
+         Item,
+         Target_As,
+         Standard.C.size_t (Count),
+         Substitute => Substitute_As);
+   end To_Non_Nul_Terminated;
+
+   procedure From_Non_Nul_Terminated (
+      Item : char_array;
+      Target : out String;
+      Count : out Natural;
+      Substitute : String);
+
+   procedure From_Non_Nul_Terminated (
+      Item : char_array;
+      Target : out String;
+      Count : out Natural;
+      Substitute : String)
+   is
+      Item_As : Standard.C.char_array (
+         Standard.C.size_t (Item'First) ..
+         Standard.C.size_t (Item'Last));
+      for Item_As'Address use Item'Address;
+   begin
+      System.C_Encoding.From_Non_Nul_Terminated (
+         Item_As,
+         Target,
+         Count,
+         Substitute => Substitute);
+   end From_Non_Nul_Terminated;
+
    package char_Lengths is
       new Lengths (
          char,
@@ -347,10 +402,10 @@ package body Interfaces.C is
          char,
          char_array,
          char_Lengths.Length,
-         Inside.To_Non_Nul_Terminated,
-         Inside.From_Non_Nul_Terminated,
-         Expanding_To_C => Inside.Expanding_To_char,
-         Expanding_To_Ada => Inside.Expanding_To_Character);
+         To_Non_Nul_Terminated,
+         From_Non_Nul_Terminated,
+         Expanding_To_C => System.C_Encoding.Expanding_To_char,
+         Expanding_To_Ada => System.C_Encoding.Expanding_To_Character);
 
    --  wchar_t
 
@@ -372,6 +427,110 @@ package body Interfaces.C is
       return wmemchr (s, 0, n);
    end Find_nul;
 
+   procedure To_Non_Nul_Terminated (
+      Item : Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Substitute : wchar_array);
+
+   procedure To_Non_Nul_Terminated (
+      Item : Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Substitute : wchar_array)
+   is
+      Target_As : Standard.C.wchar_t_array (
+         Standard.C.size_t (Target'First) ..
+         Standard.C.size_t (Target'Last));
+      for Target_As'Address use Target'Address;
+      Substitute_As : Standard.C.wchar_t_array (
+         Standard.C.size_t (Substitute'First) ..
+         Standard.C.size_t (Substitute'Last));
+      for Substitute_As'Address use Substitute'Address;
+   begin
+      System.C_Encoding.To_Non_Nul_Terminated (
+         Item,
+         Target_As,
+         Standard.C.size_t (Count),
+         Substitute => Substitute_As);
+   end To_Non_Nul_Terminated;
+
+   procedure From_Non_Nul_Terminated (
+      Item : wchar_array;
+      Target : out Wide_String;
+      Count : out Natural;
+      Substitute : Wide_String);
+
+   procedure From_Non_Nul_Terminated (
+      Item : wchar_array;
+      Target : out Wide_String;
+      Count : out Natural;
+      Substitute : Wide_String)
+   is
+      Item_As : Standard.C.wchar_t_array (
+         Standard.C.size_t (Item'First) ..
+         Standard.C.size_t (Item'Last));
+      for Item_As'Address use Item'Address;
+   begin
+      System.C_Encoding.From_Non_Nul_Terminated (
+         Item_As,
+         Target,
+         Count,
+         Substitute => Substitute);
+   end From_Non_Nul_Terminated;
+
+   procedure To_Non_Nul_Terminated (
+      Item : Wide_Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Substitute : wchar_array);
+
+   procedure To_Non_Nul_Terminated (
+      Item : Wide_Wide_String;
+      Target : out wchar_array;
+      Count : out size_t;
+      Substitute : wchar_array)
+   is
+      Target_As : Standard.C.wchar_t_array (
+         Standard.C.size_t (Target'First) ..
+         Standard.C.size_t (Target'Last));
+      for Target_As'Address use Target'Address;
+      Substitute_As : Standard.C.wchar_t_array (
+         Standard.C.size_t (Substitute'First) ..
+         Standard.C.size_t (Substitute'Last));
+      for Substitute_As'Address use Substitute'Address;
+   begin
+      System.C_Encoding.To_Non_Nul_Terminated (
+         Item,
+         Target_As,
+         Standard.C.size_t (Count),
+         Substitute => Substitute_As);
+   end To_Non_Nul_Terminated;
+
+   procedure From_Non_Nul_Terminated (
+      Item : wchar_array;
+      Target : out Wide_Wide_String;
+      Count : out Natural;
+      Substitute : Wide_Wide_String);
+
+   procedure From_Non_Nul_Terminated (
+      Item : wchar_array;
+      Target : out Wide_Wide_String;
+      Count : out Natural;
+      Substitute : Wide_Wide_String)
+   is
+      Item_As : Standard.C.wchar_t_array (
+         Standard.C.size_t (Item'First) ..
+         Standard.C.size_t (Item'Last));
+      for Item_As'Address use Item'Address;
+   begin
+      System.C_Encoding.From_Non_Nul_Terminated (
+         Item_As,
+         Target,
+         Count,
+         Substitute => Substitute);
+   end From_Non_Nul_Terminated;
+
    package wchar_Lengths is
       new Lengths (
          wchar_t,
@@ -386,10 +545,10 @@ package body Interfaces.C is
          wchar_t,
          wchar_array,
          wchar_Lengths.Length,
-         Inside.To_Non_Nul_Terminated,
-         Inside.From_Non_Nul_Terminated,
-         Expanding_To_C => Inside.Expanding_From_Wide_To_wchar_t,
-         Expanding_To_Ada => Inside.Expanding_From_wchar_t_To_Wide);
+         To_Non_Nul_Terminated,
+         From_Non_Nul_Terminated,
+         Expanding_To_C => System.C_Encoding.Expanding_From_Wide_To_wchar_t,
+         Expanding_To_Ada => System.C_Encoding.Expanding_From_wchar_t_To_Wide);
 
    package wchar_Wide_Wide_Func is
       new Functions (
@@ -398,10 +557,12 @@ package body Interfaces.C is
          wchar_t,
          wchar_array,
          wchar_Lengths.Length,
-         Inside.To_Non_Nul_Terminated,
-         Inside.From_Non_Nul_Terminated,
-         Expanding_To_C => Inside.Expanding_From_Wide_Wide_To_wchar_t,
-         Expanding_To_Ada => Inside.Expanding_From_wchar_t_To_Wide_Wide);
+         To_Non_Nul_Terminated,
+         From_Non_Nul_Terminated,
+         Expanding_To_C =>
+            System.C_Encoding.Expanding_From_Wide_Wide_To_wchar_t,
+         Expanding_To_Ada =>
+            System.C_Encoding.Expanding_From_wchar_t_To_Wide_Wide);
 
    --  char16_t
 
@@ -510,8 +671,13 @@ package body Interfaces.C is
    function To_char (
       Item : Character;
       Substitute : char)
-      return char
-      renames Inside.To_char;
+      return char is
+   begin
+      return char (
+         System.C_Encoding.To_char (
+            Item,
+            Substitute => Standard.C.char (Substitute)));
+   end To_char;
 
    function To_char (
       Item : Character)
@@ -523,8 +689,12 @@ package body Interfaces.C is
    function To_Character (
       Item : char;
       Substitute : Character)
-      return Character
-      renames Inside.To_Character;
+      return Character is
+   begin
+      return System.C_Encoding.To_Character (
+         Standard.C.char (Item),
+         Substitute => Substitute);
+   end To_Character;
 
    function To_Character (
       Item : char)
@@ -580,7 +750,7 @@ package body Interfaces.C is
          char_Func.To_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       else
-         Inside.To_Non_Nul_Terminated (Item, Target, Count,
+         To_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       end if;
    end To_char_array;
@@ -596,7 +766,7 @@ package body Interfaces.C is
          char_Func.From_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       else
-         Inside.From_Non_Nul_Terminated (Item, Target, Count,
+         From_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       end if;
    end To_String;
@@ -606,8 +776,13 @@ package body Interfaces.C is
    function To_wchar_t (
       Item : Wide_Character;
       Substitute : wchar_t)
-      return wchar_t
-      renames Inside.To_wchar_t;
+      return wchar_t is
+   begin
+      return wchar_t (
+         System.C_Encoding.To_wchar_t (
+            Item,
+            Substitute => Standard.C.wchar_t (Substitute)));
+   end To_wchar_t;
 
    function To_wchar_t (
       Item : Wide_Character)
@@ -619,8 +794,12 @@ package body Interfaces.C is
    function To_Wide_Character (
       Item : wchar_t;
       Substitute : Wide_Character)
-      return Wide_Character
-      renames Inside.To_Wide_Character;
+      return Wide_Character is
+   begin
+      return System.C_Encoding.To_Wide_Character (
+         Standard.C.wchar_t (Item),
+         Substitute => Substitute);
+   end To_Wide_Character;
 
    function To_Wide_Character (
       Item : wchar_t)
@@ -676,7 +855,7 @@ package body Interfaces.C is
          wchar_Wide_Func.To_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       else
-         Inside.To_Non_Nul_Terminated (Item, Target, Count,
+         To_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       end if;
    end To_wchar_array;
@@ -692,7 +871,7 @@ package body Interfaces.C is
          wchar_Wide_Func.From_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       else
-         Inside.From_Non_Nul_Terminated (Item, Target, Count,
+         From_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       end if;
    end To_Wide_String;
@@ -702,14 +881,23 @@ package body Interfaces.C is
    function To_wchar_t (
       Item : Wide_Wide_Character;
       Substitute : wchar_t := Character'Pos ('?'))
-      return wchar_t
-      renames Inside.To_wchar_t;
+      return wchar_t is
+   begin
+      return wchar_t (
+         System.C_Encoding.To_wchar_t (
+            Item,
+            Substitute => Standard.C.wchar_t (Substitute)));
+   end To_wchar_t;
 
    function To_Wide_Wide_Character (
       Item : wchar_t;
       Substitute : Wide_Wide_Character := '?')
-      return Wide_Wide_Character
-      renames Inside.To_Wide_Wide_Character;
+      return Wide_Wide_Character is
+   begin
+      return System.C_Encoding.To_Wide_Wide_Character (
+         Standard.C.wchar_t (Item),
+         Substitute => Substitute);
+   end To_Wide_Wide_Character;
 
    function To_wchar_array (
       Item : Wide_Wide_String;
@@ -752,7 +940,7 @@ package body Interfaces.C is
          wchar_Wide_Wide_Func.To_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       else
-         Inside.To_Non_Nul_Terminated (Item, Target, Count,
+         To_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       end if;
    end To_wchar_array;
@@ -768,7 +956,7 @@ package body Interfaces.C is
          wchar_Wide_Wide_Func.From_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       else
-         Inside.From_Non_Nul_Terminated (Item, Target, Count,
+         From_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
       end if;
    end To_Wide_Wide_String;
