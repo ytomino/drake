@@ -128,15 +128,15 @@ package Interfaces.COBOL is
 
       --  Binary Formats: external data values are represented as Byte_Array
 
---    function Valid (Item : Byte_Array; Format : Binary_Format)
---       return Boolean;
+      function Valid (Item : Byte_Array; Format : Binary_Format)
+         return Boolean;
 
---    function Length (Format : Binary_Format) return Natural;
---    function To_Decimal (Item : Byte_Array; Format : Binary_Format)
---       return Num;
+      function Length (Format : Binary_Format) return Natural;
+      function To_Decimal (Item : Byte_Array; Format : Binary_Format)
+         return Num;
 
---    function To_Binary (Item : Num; Format : Binary_Format)
---       return Byte_Array;
+      function To_Binary (Item : Num; Format : Binary_Format)
+         return Byte_Array;
 
       --  Internal Binary formats:
       --  data values are of type Binary or Long_Binary

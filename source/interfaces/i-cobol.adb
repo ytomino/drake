@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Unchecked_Conversion;
 with System.C_Encoding;
 with System.Formatting;
 with System.Long_Long_Integer_Divisions;
@@ -6,6 +7,7 @@ with C;
 package body Interfaces.COBOL is
    pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
+   use type System.Bit_Order;
    use type System.Formatting.Unsigned;
    use type C.size_t;
 
@@ -24,6 +26,11 @@ package body Interfaces.COBOL is
       with Import,
          Convention => Intrinsic,
          External_Name => "__builtin_smulll_overflow";
+
+   function bswap (x : Long_Long_Integer) return Long_Long_Integer
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__builtin_bswap64";
 
    procedure unreachable
       with Import,
@@ -468,6 +475,118 @@ package body Interfaces.COBOL is
       end return;
    end To_Packed_Signed;
 
+   --  binary formats
+
+   subtype Byte_Array_1 is Byte_Array (1 .. 1);
+   subtype Byte_Array_2 is Byte_Array (1 .. 2);
+   subtype Byte_Array_4 is Byte_Array (1 .. 4);
+   subtype Byte_Array_8 is Byte_Array (1 .. 8);
+
+   function To_Integer_8 is
+      new Ada.Unchecked_Conversion (Byte_Array_1, Integer_8);
+   function To_Integer_16 is
+      new Ada.Unchecked_Conversion (Byte_Array_2, Integer_16);
+   function To_Integer_32 is
+      new Ada.Unchecked_Conversion (Byte_Array_4, Integer_32);
+   function To_Integer_64 is
+      new Ada.Unchecked_Conversion (Byte_Array_8, Integer_64);
+
+   function To_Byte_Array is
+      new Ada.Unchecked_Conversion (Integer_8, Byte_Array_1);
+   function To_Byte_Array is
+      new Ada.Unchecked_Conversion (Integer_16, Byte_Array_2);
+   function To_Byte_Array is
+      new Ada.Unchecked_Conversion (Integer_32, Byte_Array_4);
+   function To_Byte_Array is
+      new Ada.Unchecked_Conversion (Integer_64, Byte_Array_8);
+
+   function High_Order_First_To_Decimal (Item : Byte_Array)
+      return Long_Long_Integer;
+   function Low_Order_First_To_Decimal (Item : Byte_Array)
+      return Long_Long_Integer;
+   function Native_Binary_To_Decimal (Item : Byte_Array)
+      return Long_Long_Integer;
+
+   function High_Order_First_To_Decimal (Item : Byte_Array)
+      return Long_Long_Integer
+   is
+      Result : Long_Long_Integer := Native_Binary_To_Decimal (Item);
+   begin
+      if System.Default_Bit_Order /= System.High_Order_First then
+         Result := bswap (Result);
+      end if;
+      return Result;
+   end High_Order_First_To_Decimal;
+
+   function Low_Order_First_To_Decimal (Item : Byte_Array)
+      return Long_Long_Integer
+   is
+      Result : Long_Long_Integer := Native_Binary_To_Decimal (Item);
+   begin
+      if System.Default_Bit_Order /= System.Low_Order_First then
+         Result := bswap (Result);
+      end if;
+      return Result;
+   end Low_Order_First_To_Decimal;
+
+   function Native_Binary_To_Decimal (Item : Byte_Array)
+      return Long_Long_Integer is
+   begin
+      case Item'Length is
+         when 1 =>
+            return Long_Long_Integer (To_Integer_8 (Item));
+         when 2 =>
+            return Long_Long_Integer (To_Integer_16 (Item));
+         when 4 =>
+            return Long_Long_Integer (To_Integer_32 (Item));
+         when 8 =>
+            return Long_Long_Integer (To_Integer_64 (Item));
+         when others =>
+            Raise_Exception (Conversion_Error'Identity);
+      end case;
+   end Native_Binary_To_Decimal;
+
+   function To_Binary_High_Order_First (Item : Long_Long_Integer)
+      return Byte_Array;
+   function To_Binary_Low_Order_First (Item : Long_Long_Integer)
+      return Byte_Array;
+   function To_Native_Binary (Item : Long_Long_Integer) return Byte_Array;
+
+   function To_Binary_High_Order_First (Item : Long_Long_Integer)
+      return Byte_Array
+   is
+      X : Long_Long_Integer := Item;
+   begin
+      if System.Default_Bit_Order /= System.High_Order_First then
+         X := bswap (X);
+      end if;
+      return To_Native_Binary (X);
+   end To_Binary_High_Order_First;
+
+   function To_Binary_Low_Order_First (Item : Long_Long_Integer)
+      return Byte_Array
+   is
+      X : Long_Long_Integer := Item;
+   begin
+      if System.Default_Bit_Order /= System.Low_Order_First then
+         X := bswap (X);
+      end if;
+      return To_Native_Binary (X);
+   end To_Binary_Low_Order_First;
+
+   function To_Native_Binary (Item : Long_Long_Integer) return Byte_Array is
+   begin
+      if Item in -16#80# .. 16#7F# then
+         return To_Byte_Array (Integer_8 (Item));
+      elsif Item in -16#8000# .. 16#7FFF# then
+         return To_Byte_Array (Integer_16 (Item));
+      elsif Item in -16#8000_0000# .. 16#7FFF_FFFF# then
+         return To_Byte_Array (Integer_32 (Item));
+      else
+         return To_Byte_Array (Integer_64 (Item));
+      end if;
+   end To_Native_Binary;
+
    --  implementation
 
    function Ada_To_COBOL (
@@ -682,6 +801,95 @@ package body Interfaces.COBOL is
                   Long_Long_Integer'Integer_Value (Item));
          end case;
       end To_Packed;
+
+      function Valid (Item : Byte_Array; Format : Binary_Format)
+         return Boolean is
+      begin
+         --  CXB4007 checks a value in the range
+         case Item'Length is
+            when 1 | 2 | 4 | 8 =>
+               declare
+                  Result : Num'Base;
+               begin
+                  case Format is
+                     when H => -- High_Order_First
+                        Result := Num'Base'Fixed_Value (
+                           High_Order_First_To_Decimal (Item));
+                     when L => -- Low_Order_First
+                        Result := Num'Base'Fixed_Value (
+                           Low_Order_First_To_Decimal (Item));
+                     when N => -- Native_Binary
+                        Result := Num'Base'Fixed_Value (
+                           Native_Binary_To_Decimal (Item));
+                  end case;
+                  return Result in Num;
+               end;
+            when others =>
+               return False;
+         end case;
+      end Valid;
+
+      function Length (Format : Binary_Format) return Natural is
+         pragma Unreferenced (Format);
+         First : constant Long_Long_Integer :=
+            Long_Long_Integer'Integer_Value (Num'First);
+         Last : constant Long_Long_Integer :=
+            Long_Long_Integer'Integer_Value (Num'Last);
+      begin
+         if First in -16#80# .. 16#7F#
+            and then Last in -16#80# .. 16#7F#
+         then
+            return 1;
+         elsif First in -16#8000# .. 16#7FFF#
+            and then Last in -16#8000# .. 16#7FFF#
+         then
+            return 2;
+         elsif First in -16#8000_0000# .. 16#7FFF_FFFF#
+            and then Last in -16#8000_0000# .. 16#7FFF_FFFF#
+         then
+            return 4;
+         else
+            return 8;
+         end if;
+      end Length;
+
+      function To_Decimal (Item : Byte_Array; Format : Binary_Format)
+         return Num
+      is
+         Result : Num'Base;
+      begin
+         case Format is
+            when H => -- High_Order_First
+               Result := Num'Base'Fixed_Value (
+                  High_Order_First_To_Decimal (Item));
+            when L => -- Low_Order_First
+               Result := Num'Base'Fixed_Value (
+                  Low_Order_First_To_Decimal (Item));
+            when N => -- Native_Binary
+               Result := Num'Base'Fixed_Value (
+                  Native_Binary_To_Decimal (Item));
+         end case;
+         if Result not in Num then
+            raise Conversion_Error;
+         end if;
+         return Result;
+      end To_Decimal;
+
+      function To_Binary (Item : Num; Format : Binary_Format)
+         return Byte_Array is
+      begin
+         case Format is
+            when H => -- High_Order_First
+               return To_Binary_High_Order_First (
+                  Long_Long_Integer'Integer_Value (Item));
+            when L => -- Low_Order_First
+               return To_Binary_Low_Order_First (
+                  Long_Long_Integer'Integer_Value (Item));
+            when N => -- Native_Binary
+               return To_Native_Binary (
+                  Long_Long_Integer'Integer_Value (Item));
+         end case;
+      end To_Binary;
 
    end Decimal_Conversions;
 
