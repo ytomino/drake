@@ -115,16 +115,16 @@ package Interfaces.COBOL is
 
       --  Packed Formats: data values are represented as Packed_Decimal
 
---    function Valid (Item : Packed_Decimal; Format : Packed_Format)
---       return Boolean;
+      function Valid (Item : Packed_Decimal; Format : Packed_Format)
+         return Boolean;
 
---    function Length (Format : Packed_Format) return Natural;
+      function Length (Format : Packed_Format) return Natural;
 
---    function To_Decimal (Item : Packed_Decimal; Format : Packed_Format)
---       return Num;
+      function To_Decimal (Item : Packed_Decimal; Format : Packed_Format)
+         return Num;
 
---    function To_Packed (Item : Num; Format : Packed_Format)
---       return Packed_Decimal;
+      function To_Packed (Item : Num; Format : Packed_Format)
+         return Packed_Decimal;
 
       --  Binary Formats: external data values are represented as Byte_Array
 

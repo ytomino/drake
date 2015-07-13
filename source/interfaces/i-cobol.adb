@@ -1,10 +1,12 @@
 with Ada.Exception_Identification.From_Here;
 with System.C_Encoding;
 with System.Formatting;
+with System.Long_Long_Integer_Divisions;
 with C;
 package body Interfaces.COBOL is
    pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
+   use type System.Formatting.Unsigned;
    use type C.size_t;
 
    function add_overflow (
@@ -28,6 +30,8 @@ package body Interfaces.COBOL is
          Convention => Intrinsic, External_Name => "__builtin_unreachable";
 
    pragma No_Return (unreachable);
+
+   --  display formats
 
    function Valid_Unsigned (Item : Numeric) return Boolean;
    function Valid_Leading_Separate (Item : Numeric) return Boolean;
@@ -329,6 +333,141 @@ package body Interfaces.COBOL is
       end return;
    end To_Display_Trailing_Nonseparate;
 
+   --  packed formats
+
+   function Valid_Unsigned (Item : Packed_Decimal) return Boolean;
+   function Valid_Signed (Item : Packed_Decimal) return Boolean;
+
+   function Valid_Unsigned (Item : Packed_Decimal) return Boolean is
+   begin
+      return Valid_Signed (Item)
+         and then Item (Item'Last) /= 16#B#
+         and then Item (Item'Last) /= 16#D#;
+   end Valid_Unsigned;
+
+   function Valid_Signed (Item : Packed_Decimal) return Boolean is
+      Length : constant Natural := Item'Length;
+   begin
+      if Length = 0
+         or else Length rem 2 /= 0
+         or else Item (Item'Last) < 16#A#
+      then
+         return False;
+      else
+         for I in Item'First .. Item'Last - 1 loop
+            if Item (I) >= 16#A# then
+               return False;
+            end if;
+         end loop;
+         return True;
+      end if;
+   end Valid_Signed;
+
+   function Unchecked_Unsigned_To_Decimal (Item : Packed_Decimal)
+      return Long_Long_Integer;
+   function Unsigned_To_Decimal (Item : Packed_Decimal)
+      return Long_Long_Integer;
+   function Signed_To_Decimal (Item : Packed_Decimal)
+      return Long_Long_Integer;
+
+   function Unchecked_Unsigned_To_Decimal (Item : Packed_Decimal)
+      return Long_Long_Integer
+   is
+      Result : aliased Long_Long_Integer := 0;
+   begin
+      for I in Item'First .. Item'Last - 1 loop
+         if mul_overflow (Result, 10, Result'Access) then
+            Raise_Exception (Conversion_Error'Identity);
+         end if;
+         if add_overflow (
+            Result,
+            Long_Long_Integer (Item (I)),
+            Result'Access)
+         then
+            Raise_Exception (Conversion_Error'Identity);
+         end if;
+      end loop;
+      return Result;
+   end Unchecked_Unsigned_To_Decimal;
+
+   function Unsigned_To_Decimal (Item : Packed_Decimal)
+      return Long_Long_Integer is
+   begin
+      if Valid_Unsigned (Item) then
+         return Unchecked_Unsigned_To_Decimal (Item);
+      else
+         Raise_Exception (Conversion_Error'Identity);
+      end if;
+   end Unsigned_To_Decimal;
+
+   function Signed_To_Decimal (Item : Packed_Decimal)
+      return Long_Long_Integer is
+   begin
+      if Valid_Signed (Item) then
+         declare
+            Result : Long_Long_Integer := Unchecked_Unsigned_To_Decimal (Item);
+         begin
+            if Item (Item'Last) = 16#B# or Item (Item'Last) = 16#D# then
+               Result := -Result;
+            end if;
+            return Result;
+         end;
+      else
+         Raise_Exception (Conversion_Error'Identity);
+      end if;
+   end Signed_To_Decimal;
+
+   function Length_To_Packed (Item : Long_Long_Integer) return Natural;
+   function To_Packed_Unsigned (Item : Long_Long_Integer)
+      return Packed_Decimal;
+   function To_Packed_Signed (Item : Long_Long_Integer)
+      return Packed_Decimal;
+
+   function Length_To_Packed (Item : Long_Long_Integer) return Natural is
+   begin
+      return 2
+         + Natural (
+            System.Formatting.Unsigned (
+               System.Formatting.Width (
+                  System.Formatting.Longest_Unsigned (Item)))
+            and not 1);
+   end Length_To_Packed;
+
+   function To_Packed_Unsigned (Item : Long_Long_Integer)
+      return Packed_Decimal is
+   begin
+      if Item < 0 then
+         Raise_Exception (Conversion_Error'Identity);
+      end if;
+      return Result : Packed_Decimal (1 .. Length_To_Packed (Item)) do
+         declare
+            X : System.Long_Long_Integer_Divisions.Longest_Unsigned :=
+               System.Long_Long_Integer_Divisions.Longest_Unsigned (Item);
+         begin
+            for I in reverse Result'First .. Result'Last - 1 loop
+               System.Long_Long_Integer_Divisions.Divide (X, 10,
+                  Quotient => X,
+                  Remainder =>
+                     System.Long_Long_Integer_Divisions.Longest_Unsigned (
+                        Result (I)));
+            end loop;
+         end;
+         Result (Result'Last) := 16#F#;
+      end return;
+   end To_Packed_Unsigned;
+
+   function To_Packed_Signed (Item : Long_Long_Integer)
+      return Packed_Decimal is
+   begin
+      return Result : Packed_Decimal := To_Packed_Unsigned (abs Item) do
+         if Item < 0 then
+            Result (Result'Last) := 16#D#;
+         else
+            Result (Result'Last) := 16#C#;
+         end if;
+      end return;
+   end To_Packed_Signed;
+
    --  implementation
 
    function Ada_To_COBOL (
@@ -495,6 +634,54 @@ package body Interfaces.COBOL is
                   Long_Long_Integer'Integer_Value (Item));
          end case;
       end To_Display;
+
+      function Valid (Item : Packed_Decimal; Format : Packed_Format)
+         return Boolean is
+      begin
+         case Format is
+            when U => -- Packed_Unsigned
+               return Valid_Unsigned (Item);
+            when S => -- Packed_Signed
+               return Valid_Signed (Item);
+         end case;
+      end Valid;
+
+      function Length (Format : Packed_Format) return Natural is
+         pragma Unreferenced (Format);
+      begin
+         return 2
+            + Natural (System.Formatting.Unsigned'(Num'Digits) and not 1);
+      end Length;
+
+      function To_Decimal (Item : Packed_Decimal; Format : Packed_Format)
+         return Num
+      is
+         Result : Num'Base;
+      begin
+         case Format is
+            when U => -- Packed_Unsigned
+               Result := Num'Base'Fixed_Value (Unsigned_To_Decimal (Item));
+            when S => -- Packed_Signed
+               Result := Num'Base'Fixed_Value (Signed_To_Decimal (Item));
+         end case;
+         if Result not in Num then
+            raise Conversion_Error;
+         end if;
+         return Result;
+      end To_Decimal;
+
+      function To_Packed (Item : Num; Format : Packed_Format)
+         return Packed_Decimal is
+      begin
+         case Format is
+            when U => -- Packed_Unsigned
+               return To_Packed_Unsigned (
+                  Long_Long_Integer'Integer_Value (Item));
+            when S => -- Packed_Signed
+               return To_Packed_Signed (
+                  Long_Long_Integer'Integer_Value (Item));
+         end case;
+      end To_Packed;
 
    end Decimal_Conversions;
 
