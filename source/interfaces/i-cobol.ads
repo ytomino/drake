@@ -141,11 +141,11 @@ package Interfaces.COBOL is
       --  Internal Binary formats:
       --  data values are of type Binary or Long_Binary
 
---    function To_Decimal (Item : Binary) return Num;
---    function To_Decimal (Item : Long_Binary) return Num;
+      function To_Decimal (Item : Binary) return Num;
+      function To_Decimal (Item : Long_Binary) return Num;
 
---    function To_Binary (Item : Num) return Binary;
---    function To_Long_Binary (Item : Num) return Long_Binary;
+      function To_Binary (Item : Num) return Binary;
+      function To_Long_Binary (Item : Num) return Long_Binary;
 
    end Decimal_Conversions;
 

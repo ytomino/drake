@@ -891,6 +891,40 @@ package body Interfaces.COBOL is
          end case;
       end To_Binary;
 
+      function To_Decimal (Item : Binary) return Num is
+         Result : constant Num'Base := Num'Fixed_Value (Item);
+      begin
+         if Result not in Num then
+            raise Conversion_Error;
+         end if;
+         return Result;
+      end To_Decimal;
+
+      function To_Decimal (Item : Long_Binary) return Num is
+         Result : constant Num'Base := Num'Fixed_Value (Item);
+      begin
+         if Result not in Num then
+            raise Conversion_Error;
+         end if;
+         return Result;
+      end To_Decimal;
+
+      function To_Binary (Item : Num) return Binary is
+      begin
+         if Long_Long_Integer'Integer_Value (Item) not in
+            Long_Long_Integer (Binary'First) ..
+            Long_Long_Integer (Binary'Last)
+         then
+            raise Conversion_Error;
+         end if;
+         return Binary'Integer_Value (Item);
+      end To_Binary;
+
+      function To_Long_Binary (Item : Num) return Long_Binary is
+      begin
+         return Long_Binary'Integer_Value (Item);
+      end To_Long_Binary;
+
    end Decimal_Conversions;
 
 end Interfaces.COBOL;
