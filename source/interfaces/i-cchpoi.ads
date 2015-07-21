@@ -7,4 +7,5 @@ package Interfaces.C.Char_Pointers is
       Element => char,
       Element_Array => char_array,
       Default_Terminator => char'Val (0));
+--  The instance of Interfaces.C.Pointers for char.
 pragma Pure (Interfaces.C.Char_Pointers);

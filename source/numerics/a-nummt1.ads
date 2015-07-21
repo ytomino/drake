@@ -46,6 +46,7 @@ pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Interfaces;
 package Ada.Numerics.MT19937 is
+   --  Mersenne Twister.
    pragma Preelaborate;
 
    subtype Cardinal is Interfaces.Unsigned_32;

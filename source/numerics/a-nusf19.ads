@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  translated unit from SFMT
+--  translated unit from SFMT (SFMT-params19937.h)
 with Ada.Numerics.SFMT;
 package Ada.Numerics.SFMT_19937 is
    new SFMT (
@@ -17,4 +17,5 @@ package Ada.Numerics.SFMT_19937 is
       PARITY2 => 16#00000000#,
       PARITY3 => 16#00000000#,
       PARITY4 => 16#13c9e684#);
+--  For normal use.
 pragma Preelaborate (Ada.Numerics.SFMT_19937);
