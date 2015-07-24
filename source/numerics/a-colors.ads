@@ -21,8 +21,8 @@ package Ada.Colors is
       Value : Brightness;
    end record;
 
-   function To_HSV (Color : RGB) return HSV;
    function To_RGB (Color : HSV) return RGB;
+   function To_HSV (Color : RGB) return HSV;
 
    --  NTSC luminance
    function Luminance (Color : RGB) return Brightness;

@@ -7,53 +7,6 @@ package body Ada.Colors is
 
    --  implementation
 
-   function To_HSV (Color : RGB) return HSV is
-      pragma Check (Trace, Debug.Put (
-         "R =" & Brightness'Image (Color.Red)
-         & ", G =" & Brightness'Image (Color.Green)
-         & ", B =" & Brightness'Image (Color.Blue)));
-      Max : constant Brightness'Base :=
-         Brightness'Base'Max (
-            Color.Red,
-            Brightness'Base'Max (
-               Color.Green,
-               Color.Blue));
-      Min : constant Brightness'Base :=
-         Brightness'Base'Min (
-            Color.Red,
-            Brightness'Base'Min (
-               Color.Green,
-               Color.Blue));
-      Diff : constant Brightness'Base := Max - Min;
-      Hue : Colors.Hue'Base;
-      Saturation : Brightness'Base;
-      Value : Brightness'Base;
-   begin
-      Value := Max;
-      if Diff > 0.0 then
-         Saturation := Diff / Max;
-         if Color.Blue = Max then
-            Hue := 4.0 * Diff + (Color.Red - Color.Green);
-         elsif Color.Green = Max then
-            Hue := 2.0 * Diff + (Color.Blue - Color.Red);
-         else -- Red
-            Hue := (Color.Green - Color.Blue);
-            if Hue < 0.0 then
-               Hue := Hue + 6.0 * Diff;
-            end if;
-         end if;
-         Hue := 2.0 * Numerics.Pi / 6.0 * Hue / Diff;
-      else
-         Saturation := 0.0;
-         Hue := 0.0;
-      end if;
-      pragma Check (Trace, Debug.Put (
-         "H =" & Colors.Hue'Image (Hue)
-         & ", S =" & Brightness'Image (Saturation)
-         & ", V =" & Brightness'Image (Value)));
-      return (Hue => Hue, Saturation => Saturation, Value => Value);
-   end To_HSV;
-
    function To_RGB (Color : HSV) return RGB is
       pragma Check (Trace, Debug.Put (
          "H =" & Hue'Image (Color.Hue)
@@ -109,6 +62,53 @@ package body Ada.Colors is
          & ", B =" & Brightness'Image (Blue)));
       return (Red => Red, Green => Green, Blue => Blue);
    end To_RGB;
+
+   function To_HSV (Color : RGB) return HSV is
+      pragma Check (Trace, Debug.Put (
+         "R =" & Brightness'Image (Color.Red)
+         & ", G =" & Brightness'Image (Color.Green)
+         & ", B =" & Brightness'Image (Color.Blue)));
+      Max : constant Brightness'Base :=
+         Brightness'Base'Max (
+            Color.Red,
+            Brightness'Base'Max (
+               Color.Green,
+               Color.Blue));
+      Min : constant Brightness'Base :=
+         Brightness'Base'Min (
+            Color.Red,
+            Brightness'Base'Min (
+               Color.Green,
+               Color.Blue));
+      Diff : constant Brightness'Base := Max - Min;
+      Hue : Colors.Hue'Base;
+      Saturation : Brightness'Base;
+      Value : Brightness'Base;
+   begin
+      Value := Max;
+      if Diff > 0.0 then
+         Saturation := Diff / Max;
+         if Color.Blue = Max then
+            Hue := 4.0 * Diff + (Color.Red - Color.Green);
+         elsif Color.Green = Max then
+            Hue := 2.0 * Diff + (Color.Blue - Color.Red);
+         else -- Red
+            Hue := (Color.Green - Color.Blue);
+            if Hue < 0.0 then
+               Hue := Hue + 6.0 * Diff;
+            end if;
+         end if;
+         Hue := 2.0 * Numerics.Pi / 6.0 * Hue / Diff;
+      else
+         Saturation := 0.0;
+         Hue := 0.0;
+      end if;
+      pragma Check (Trace, Debug.Put (
+         "H =" & Colors.Hue'Image (Hue)
+         & ", S =" & Brightness'Image (Saturation)
+         & ", V =" & Brightness'Image (Value)));
+      return (Hue => Hue, Saturation => Saturation, Value => Value);
+   end To_HSV;
 
    function Luminance (Color : RGB) return Brightness is
    begin
