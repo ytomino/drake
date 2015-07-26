@@ -27,7 +27,7 @@ package body Interfaces.COBOL is
          Convention => Intrinsic,
          External_Name => "__builtin_smulll_overflow";
 
-   function bswap (x : Long_Long_Integer) return Long_Long_Integer
+   function bswap64 (x : Long_Long_Integer) return Long_Long_Integer
       with Import,
          Convention => Intrinsic,
          External_Name => "__builtin_bswap64";
@@ -513,7 +513,7 @@ package body Interfaces.COBOL is
       Result : Long_Long_Integer := Native_Binary_To_Decimal (Item);
    begin
       if System.Default_Bit_Order /= System.High_Order_First then
-         Result := bswap (Result);
+         Result := bswap64 (Result);
       end if;
       return Result;
    end High_Order_First_To_Decimal;
@@ -524,7 +524,7 @@ package body Interfaces.COBOL is
       Result : Long_Long_Integer := Native_Binary_To_Decimal (Item);
    begin
       if System.Default_Bit_Order /= System.Low_Order_First then
-         Result := bswap (Result);
+         Result := bswap64 (Result);
       end if;
       return Result;
    end Low_Order_First_To_Decimal;
@@ -558,7 +558,7 @@ package body Interfaces.COBOL is
       X : Long_Long_Integer := Item;
    begin
       if System.Default_Bit_Order /= System.High_Order_First then
-         X := bswap (X);
+         X := bswap64 (X);
       end if;
       return To_Native_Binary (X);
    end To_Binary_High_Order_First;
@@ -569,7 +569,7 @@ package body Interfaces.COBOL is
       X : Long_Long_Integer := Item;
    begin
       if System.Default_Bit_Order /= System.Low_Order_First then
-         X := bswap (X);
+         X := bswap64 (X);
       end if;
       return To_Native_Binary (X);
    end To_Binary_Low_Order_First;

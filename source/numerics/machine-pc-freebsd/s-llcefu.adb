@@ -2,6 +2,17 @@ with System.Long_Long_Elementary_Functions;
 package body System.Long_Long_Complex_Elementary_Functions is
    pragma Suppress (All_Checks);
 
+   --  libgcc
+   function mulxc3 (Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)
+      return Long_Long_Complex
+      with Import, Convention => C, External_Name => "__mulxc3";
+   function divxc3 (Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)
+      return Long_Long_Complex
+      with Import, Convention => C, External_Name => "__divxc3";
+
+   pragma Pure_Function (mulxc3);
+   pragma Pure_Function (divxc3);
+
    function "-" (Left : Long_Long_Float; Right : Long_Long_Complex)
       return Long_Long_Complex
       with Convention => Intrinsic;
@@ -30,25 +41,11 @@ package body System.Long_Long_Complex_Elementary_Functions is
    end "*";
 
    function "*" (Left, Right : Long_Long_Complex) return Long_Long_Complex is
-      --  libgcc
-      function mulxc3 (Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)
-         return Long_Long_Complex
-         with Import, Convention => C, External_Name => "__mulxc3";
-      pragma Pure_Function (mulxc3);
    begin
       return mulxc3 (Left.Re, Left.Im, Right.Re, Right.Im);
    end "*";
 
    function "/" (Left, Right : Long_Long_Complex) return Long_Long_Complex is
-      --  libgcc
-      function divxc3 (
-         Left_Re : Long_Long_Float;
-         Left_Im : Long_Long_Float;
-         Right_Re : Long_Long_Float;
-         Right_Im : Long_Long_Float)
-         return Long_Long_Complex
-         with Import, Convention => C, External_Name => "__divxc3";
-      pragma Pure_Function (divxc3);
    begin
       return divxc3 (Left.Re, Left.Im, Right.Re, Right.Im);
    end "/";

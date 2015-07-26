@@ -2,10 +2,15 @@ with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Distributions is
    pragma Suppress (All_Checks);
 
+   type Longest_Unsigned is mod 2 ** Long_Long_Integer'Size;
+
+   function popcountll (x : Longest_Unsigned) return Integer
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_popcountll";
+
    --  Simple distributions
 
    function Linear_Discrete (X : Source) return Target is
-      type Longest_Unsigned is mod 2 ** Long_Long_Integer'Size;
       Source_W : constant Longest_Unsigned :=
          Source'Pos (Source'Last) - Source'Pos (Source'First);
       Target_W : constant Longest_Unsigned :=
@@ -110,10 +115,6 @@ package body Ada.Numerics.Distributions is
    function Uniform_Discrete_Random (Gen : aliased in out Generator)
       return Target
    is
-      type Longest_Unsigned is mod 2 ** Long_Long_Integer'Size;
-      function popcount (x : Longest_Unsigned) return Integer
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_popcountl";
       Source_W : constant Longest_Unsigned :=
          Source'Pos (Source'Last) - Source'Pos (Source'First);
       Target_W : constant Longest_Unsigned :=
@@ -134,8 +135,8 @@ package body Ada.Numerics.Distributions is
       elsif Source_W > Target_W
          and then (
             Source_W = Longest_Unsigned'Last
-            or else popcount (Source_W + 1) = 1)
-         and then popcount (Target_W + 1) = 1
+            or else popcountll (Source_W + 1) = 1)
+         and then popcountll (Target_W + 1) = 1
       then
          --  narrow, and 2 ** n
          declare

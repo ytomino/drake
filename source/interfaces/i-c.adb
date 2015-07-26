@@ -327,18 +327,18 @@ package body Interfaces.C is
    type char_const_ptr is access constant char;
    for char_const_ptr'Storage_Size use 0;
 
+   function memchr (
+      s : not null char_const_ptr;
+      c : int;
+      n : size_t)
+      return char_const_ptr
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memchr";
+
    function Find_nul (s : not null char_const_ptr; n : size_t)
       return char_const_ptr;
    function Find_nul (s : not null char_const_ptr; n : size_t)
-      return char_const_ptr
-   is
-      function memchr (
-         s : not null char_const_ptr;
-         c : int;
-         n : size_t)
-         return char_const_ptr
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_memchr";
+      return char_const_ptr is
    begin
       return memchr (s, 0, n);
    end Find_nul;
@@ -419,17 +419,18 @@ package body Interfaces.C is
    type wchar_t_const_ptr is access constant wchar_t;
    for wchar_t_const_ptr'Storage_Size use 0;
 
+   --  libc
+   function wmemchr (
+      ws : not null wchar_t_const_ptr;
+      wc : int;
+      n : size_t)
+      return wchar_t_const_ptr
+      with Import, Convention => C;
+
    function Find_nul (s : not null wchar_t_const_ptr; n : size_t)
       return wchar_t_const_ptr;
    function Find_nul (s : not null wchar_t_const_ptr; n : size_t)
-      return wchar_t_const_ptr
-   is
-      function wmemchr (
-         ws : not null wchar_t_const_ptr;
-         wc : int;
-         n : size_t)
-         return wchar_t_const_ptr
-         with Import, Convention => C;
+      return wchar_t_const_ptr is
    begin
       return wmemchr (s, 0, n);
    end Find_nul;

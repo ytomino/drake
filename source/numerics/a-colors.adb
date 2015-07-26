@@ -5,6 +5,11 @@ package body Ada.Colors is
 
    subtype Float is Standard.Float; -- hiding "Float" package
 
+   function sinf (X : Float) return Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_sinf";
+   function cosf (X : Float) return Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_cosf";
+
    function To_Hue (Color : RGB; Diff, Max : Brightness'Base)
       return Hue'Base;
    function To_Hue (Color : RGB; Diff, Max : Brightness'Base)
@@ -297,19 +302,13 @@ package body Ada.Colors is
             & ", V =" & Brightness'Image (Right.Value)
             & ")"));
       --  cone model
-      function Sin (X : Float) return Float
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_sinf";
-      function Cos (X : Float) return Float
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_cosf";
       LR : constant Float := Left.Saturation * Left.Value / 2.0;
-      LX : constant Float := Cos (Left.Hue) * LR;
-      LY : constant Float := Sin (Left.Hue) * LR;
+      LX : constant Float := cosf (Left.Hue) * LR;
+      LY : constant Float := sinf (Left.Hue) * LR;
       LZ : constant Float := Left.Value;
       RR : constant Float := Right.Saturation * Right.Value / 2.0;
-      RX : constant Float := Cos (Right.Hue) * RR;
-      RY : constant Float := Sin (Right.Hue) * RR;
+      RX : constant Float := cosf (Right.Hue) * RR;
+      RY : constant Float := sinf (Right.Hue) * RR;
       RZ : constant Float := Right.Value;
       pragma Check (Trace,
          Check => Debug.Put (
@@ -341,21 +340,15 @@ package body Ada.Colors is
             & ", L =" & Brightness'Image (Right.Lightness)
             & ")"));
       --  double cone model
-      function Sin (X : Float) return Float
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_sinf";
-      function Cos (X : Float) return Float
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_cosf";
       LR : constant Float :=
          Left.Saturation * (0.5 - abs (Left.Lightness - 0.5));
-      LX : constant Float := Cos (Left.Hue) * LR;
-      LY : constant Float := Sin (Left.Hue) * LR;
+      LX : constant Float := cosf (Left.Hue) * LR;
+      LY : constant Float := sinf (Left.Hue) * LR;
       LZ : constant Float := Left.Lightness;
       RR : constant Float :=
          Right.Saturation * (0.5 - abs (Right.Lightness - 0.5));
-      RX : constant Float := Cos (Right.Hue) * RR;
-      RY : constant Float := Sin (Right.Hue) * RR;
+      RX : constant Float := cosf (Right.Hue) * RR;
+      RY : constant Float := sinf (Right.Hue) * RR;
       RZ : constant Float := Right.Lightness;
       pragma Check (Trace,
          Check => Debug.Put (

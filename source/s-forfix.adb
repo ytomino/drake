@@ -2,6 +2,16 @@ with System.Formatting.Float;
 with System.Long_Long_Float_Divisions;
 package body System.Formatting.Fixed is
 
+   function signbitl (X : Long_Long_Float) return Integer
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_signbitl";
+
+   function modfl (value : Long_Long_Float; iptr : access Long_Long_Float)
+      return Long_Long_Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_modfl";
+
+   --  implementation
+
    procedure Image (
       Value : Long_Long_Float;
       Item : out String;
@@ -17,13 +27,6 @@ package body System.Formatting.Fixed is
       Aft_Width : Positive)
    is
       pragma Suppress (All_Checks);
-      function signbit (X : Long_Long_Float) return Integer
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_signbitl";
-      function modfl (value : Long_Long_Float; iptr : access Long_Long_Float)
-         return Long_Long_Float
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_modfl";
       Item_Fore : aliased Long_Long_Float;
       Aft : Long_Long_Float;
       Scaled_Aft : Long_Long_Float;
@@ -32,7 +35,7 @@ package body System.Formatting.Fixed is
       Error : Boolean;
    begin
       Last := Item'First - 1;
-      if signbit (Value) /= 0 then
+      if signbitl (Value) /= 0 then
          if Minus_Sign /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);

@@ -6,6 +6,19 @@ package body Ada.Calendar is
    use Ada.Exception_Identification.From_Here;
    use type System.Native_Time.Nanosecond_Number;
 
+   function add_overflow (
+      a, b : System.Native_Time.Nanosecond_Number;
+      res : not null access System.Native_Time.Nanosecond_Number)
+      return Boolean
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_saddll_overflow";
+   function sub_overflow (
+      a, b : System.Native_Time.Nanosecond_Number;
+      res : not null access System.Native_Time.Nanosecond_Number)
+      return Boolean
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_ssubll_overflow";
+
    --  for Year, Month, Day
 
    type Packed_Split_Time is mod 2 ** 32;
@@ -159,13 +172,6 @@ package body Ada.Calendar is
    begin
       if not Standard'Fast_Math and then Overflow_Check'Enabled then
          declare
-            function add_overflow (
-               a, b : System.Native_Time.Nanosecond_Number;
-               res : not null access System.Native_Time.Nanosecond_Number)
-               return Boolean
-               with Import,
-                  Convention => Intrinsic,
-                  External_Name => "__builtin_saddll_overflow";
             Result : aliased System.Native_Time.Nanosecond_Number;
          begin
             if add_overflow (
@@ -186,13 +192,6 @@ package body Ada.Calendar is
    begin
       if not Standard'Fast_Math and then Overflow_Check'Enabled then
          declare
-            function add_overflow (
-               a, b : System.Native_Time.Nanosecond_Number;
-               res : not null access System.Native_Time.Nanosecond_Number)
-               return Boolean
-               with Import,
-                  Convention => Intrinsic,
-                  External_Name => "__builtin_saddll_overflow";
             Result : aliased System.Native_Time.Nanosecond_Number;
          begin
             if add_overflow (
@@ -213,13 +212,6 @@ package body Ada.Calendar is
    begin
       if not Standard'Fast_Math and then Overflow_Check'Enabled then
          declare
-            function sub_overflow (
-               a, b : System.Native_Time.Nanosecond_Number;
-               res : not null access System.Native_Time.Nanosecond_Number)
-               return Boolean
-               with Import,
-                  Convention => Intrinsic,
-                  External_Name => "__builtin_ssubll_overflow";
             Result : aliased System.Native_Time.Nanosecond_Number;
          begin
             if sub_overflow (
@@ -240,13 +232,6 @@ package body Ada.Calendar is
    begin
       if not Standard'Fast_Math and then Overflow_Check'Enabled then
          declare
-            function sub_overflow (
-               a, b : System.Native_Time.Nanosecond_Number;
-               res : not null access System.Native_Time.Nanosecond_Number)
-               return Boolean
-               with Import,
-                  Convention => Intrinsic,
-                  External_Name => "__builtin_ssubll_overflow";
             Result : aliased System.Native_Time.Nanosecond_Number;
          begin
             if sub_overflow (
