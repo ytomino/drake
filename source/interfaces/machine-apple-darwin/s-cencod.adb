@@ -32,14 +32,19 @@ package body System.C_Encoding is
       Substitute : C.char_array)
    is
       pragma Unreferenced (Substitute);
-      C_Item : C.char_array (0 .. Item'Length - 1);
-      for C_Item'Address use Item'Address;
    begin
-      Count := C_Item'Length;
-      if Count > Target'Length then
-         raise Constraint_Error;
+      Count := Item'Length;
+      if Count > 0 then
+         if Count > Target'Length then
+            raise Constraint_Error;
+         end if;
+         declare
+            C_Item : C.char_array (0 .. Count - 1);
+            for C_Item'Address use Item'Address;
+         begin
+            Target (Target'First .. Target'First + Count - 1) := C_Item;
+         end;
       end if;
-      Target (Target'First .. Target'First + C_Item'Length - 1) := C_Item;
    end To_Non_Nul_Terminated;
 
    procedure From_Non_Nul_Terminated (
@@ -49,15 +54,17 @@ package body System.C_Encoding is
       Substitute : String)
    is
       pragma Unreferenced (Substitute);
-      Ada_Item : String (1 .. Item'Length);
-      for Ada_Item'Address use Item'Address;
    begin
       Count := Item'Length;
       if Count > Target'Length then
          raise Constraint_Error;
       end if;
-      Target (Target'First .. Target'First + Count - 1) :=
-         Ada_Item (1 .. Count);
+      declare
+         Ada_Item : String (1 .. Count);
+         for Ada_Item'Address use Item'Address;
+      begin
+         Target (Target'First .. Target'First + Count - 1) := Ada_Item;
+      end;
    end From_Non_Nul_Terminated;
 
    --  implementation of Wide_Character (UTF-16) from/to wchar_t (UTF-32)
@@ -240,14 +247,19 @@ package body System.C_Encoding is
       Substitute : C.wchar_t_array)
    is
       pragma Unreferenced (Substitute);
-      C_Item : C.wchar_t_array (0 .. Item'Length - 1);
-      for C_Item'Address use Item'Address;
    begin
-      Count := C_Item'Length;
-      if Count > Target'Length then
-         raise Constraint_Error;
+      Count := Item'Length;
+      if Count > 0 then
+         if Count > Target'Length then
+            raise Constraint_Error;
+         end if;
+         declare
+            C_Item : C.wchar_t_array (0 .. Count - 1);
+            for C_Item'Address use Item'Address;
+         begin
+            Target (Target'First .. Target'First + Count - 1) := C_Item;
+         end;
       end if;
-      Target (Target'First .. Target'First + C_Item'Length - 1) := C_Item;
    end To_Non_Nul_Terminated;
 
    procedure From_Non_Nul_Terminated (
@@ -257,15 +269,17 @@ package body System.C_Encoding is
       Substitute : Wide_Wide_String)
    is
       pragma Unreferenced (Substitute);
-      Ada_Item : Wide_Wide_String (1 .. Item'Length);
-      for Ada_Item'Address use Item'Address;
    begin
       Count := Item'Length;
       if Count > Target'Length then
          raise Constraint_Error;
       end if;
-      Target (Target'First .. Target'First + Count - 1) :=
-         Ada_Item (1 .. Count);
+      declare
+         Ada_Item : Wide_Wide_String (1 .. Count);
+         for Ada_Item'Address use Item'Address;
+      begin
+         Target (Target'First .. Target'First + Count - 1) := Ada_Item;
+      end;
    end From_Non_Nul_Terminated;
 
 end System.C_Encoding;

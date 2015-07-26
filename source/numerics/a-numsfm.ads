@@ -62,6 +62,7 @@ generic
    PARITY3 : Interfaces.Unsigned_32 := 16#00000000#;
    PARITY4 : Interfaces.Unsigned_32 := 16#c98e126a#;
 package Ada.Numerics.SFMT is
+   --  SIMD-oriented Fast Mersenne Twister.
    pragma Preelaborate;
 
    subtype Unsigned_32 is Interfaces.Unsigned_32;

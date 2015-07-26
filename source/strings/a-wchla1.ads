@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit, not in RM
 package Ada.Wide_Characters.Latin_1 is
+   --  Wide_Character version of Ada.Characters.Latin_1.
    pragma Pure;
 
    --  Control characters:

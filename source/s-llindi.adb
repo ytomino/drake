@@ -1,6 +1,15 @@
 package body System.Long_Long_Integer_Divisions is
    pragma Suppress (All_Checks);
 
+   --  libgcc
+   function udivmoddi4 (
+      a, b : Longest_Unsigned;
+      c : not null access Longest_Unsigned)
+      return Longest_Unsigned
+      with Import, Convention => C, External_Name => "__udivmoddi4";
+
+   --  implementation
+
    procedure Divide (
       Left, Right : Longest_Unsigned;
       Quotient, Remainder : out Longest_Unsigned) is
@@ -11,12 +20,6 @@ package body System.Long_Long_Integer_Divisions is
          Remainder := Left rem Right;
       else
          declare
-            --  libgcc
-            function udivmoddi4 (
-               a, b : Longest_Unsigned;
-               c : not null access Longest_Unsigned)
-               return Longest_Unsigned
-               with Import, Convention => C, External_Name => "__udivmoddi4";
             Aliased_Remainder : aliased Longest_Unsigned;
          begin
             Quotient := udivmoddi4 (Left, Right, Aliased_Remainder'Access);

@@ -117,14 +117,19 @@ package body Interfaces.C is
          Substitute : Element_Array)
       is
          pragma Unreferenced (Substitute);
-         C_Item : Element_Array (0 .. Item'Length - 1);
-         for C_Item'Address use Item'Address;
       begin
-         Count := C_Item'Length;
-         if Count > Target'Length then
-            raise Constraint_Error;
+         Count := Item'Length;
+         if Count > 0 then
+            if Count > Target'Length then
+               raise Constraint_Error;
+            end if;
+            declare
+               C_Item : Element_Array (0 .. Count - 1);
+               for C_Item'Address use Item'Address;
+            begin
+               Target (Target'First .. Target'First + Count - 1) := C_Item;
+            end;
          end if;
-         Target (Target'First .. Target'First + C_Item'Length - 1) := C_Item;
       end To_Non_Nul_Terminated;
 
       procedure From_Non_Nul_Terminated (
@@ -134,15 +139,17 @@ package body Interfaces.C is
          Substitute : String_Type)
       is
          pragma Unreferenced (Substitute);
-         Ada_Item : String_Type (1 .. Item'Length);
-         for Ada_Item'Address use Item'Address;
       begin
          Count := Item'Length;
          if Count > Target'Length then
             raise Constraint_Error;
          end if;
-         Target (Target'First .. Target'First + Count - 1) :=
-            Ada_Item (1 .. Count);
+         declare
+            Ada_Item : String_Type (1 .. Count);
+            for Ada_Item'Address use Item'Address;
+         begin
+            Target (Target'First .. Target'First + Count - 1) := Ada_Item;
+         end;
       end From_Non_Nul_Terminated;
 
    end Simple_Conversions;
@@ -320,18 +327,18 @@ package body Interfaces.C is
    type char_const_ptr is access constant char;
    for char_const_ptr'Storage_Size use 0;
 
+   function memchr (
+      s : not null char_const_ptr;
+      c : int;
+      n : size_t)
+      return char_const_ptr
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memchr";
+
    function Find_nul (s : not null char_const_ptr; n : size_t)
       return char_const_ptr;
    function Find_nul (s : not null char_const_ptr; n : size_t)
-      return char_const_ptr
-   is
-      function memchr (
-         s : not null char_const_ptr;
-         c : int;
-         n : size_t)
-         return char_const_ptr
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_memchr";
+      return char_const_ptr is
    begin
       return memchr (s, 0, n);
    end Find_nul;
@@ -412,17 +419,18 @@ package body Interfaces.C is
    type wchar_t_const_ptr is access constant wchar_t;
    for wchar_t_const_ptr'Storage_Size use 0;
 
+   --  libc
+   function wmemchr (
+      ws : not null wchar_t_const_ptr;
+      wc : int;
+      n : size_t)
+      return wchar_t_const_ptr
+      with Import, Convention => C;
+
    function Find_nul (s : not null wchar_t_const_ptr; n : size_t)
       return wchar_t_const_ptr;
    function Find_nul (s : not null wchar_t_const_ptr; n : size_t)
-      return wchar_t_const_ptr
-   is
-      function wmemchr (
-         ws : not null wchar_t_const_ptr;
-         wc : int;
-         n : size_t)
-         return wchar_t_const_ptr
-         with Import, Convention => C;
+      return wchar_t_const_ptr is
    begin
       return wmemchr (s, 0, n);
    end Find_nul;

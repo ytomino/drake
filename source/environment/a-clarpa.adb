@@ -1,7 +1,15 @@
-with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 package body Ada.Command_Line.Argument_Parsing is
+   use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
+
+   function memchr (
+      s : System.Address;
+      c : Integer;
+      n : System.Storage_Elements.Storage_Count)
+      return System.Address
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memchr";
 
    function Match (
       Argument : String;
@@ -101,35 +109,18 @@ package body Ada.Command_Line.Argument_Parsing is
                First.Kind := Long_Option;
                First.Index := Argument'First + 2;
                declare
-                  type Character_Access is access constant Character;
-                  for Character_Access'Storage_Size use 0;
-                  package Conv is
-                     new System.Address_To_Constant_Access_Conversions (
-                        Character,
-                        Character_Access);
-                  function memchr (
-                     s : not null Character_Access;
-                     c : Integer;
-                     n : System.Storage_Elements.Storage_Count)
-                     return Character_Access
-                     with Import,
-                        Convention => Intrinsic,
-                        External_Name => "__builtin_memchr";
-                  S : constant not null Character_Access :=
-                     Argument (First.Index)'Unrestricted_Access;
-                  P : constant Character_Access := memchr (
+                  S : constant System.Address :=
+                     Argument (First.Index)'Address;
+                  P : constant System.Address := memchr (
                      S,
                      Character'Pos ('='),
                      System.Storage_Elements.Storage_Offset (
                         Argument'Last - First.Index + 1));
                begin
-                  if P = null then
+                  if P = System.Null_Address then
                      First.Option_Index := Argument'Last + 2;
                   else
-                     First.Option_Index :=
-                        First.Index
-                        + Integer (Conv.To_Address (P) - Conv.To_Address (S)
-                        + 1);
+                     First.Option_Index := First.Index + Integer (P - S + 1);
                   end if;
                end;
             end if;

@@ -11,4 +11,5 @@ package Interfaces.C.Wide_WStrings is
       Pointers => WChar_Pointers,
       To_C => To_wchar_array,
       To_Ada => To_Wide_String);
+--  Wide_String and wchar_t version of Interfaces.C.Strings.
 pragma Preelaborate (Interfaces.C.Wide_WStrings);

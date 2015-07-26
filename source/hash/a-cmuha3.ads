@@ -6,6 +6,7 @@ pragma License (Unrestricted);
 --
 --  Ada version: 2014 yt
 package Ada.Containers.Murmur_Hash_3 is
+   --  32bit version MurmurHash3 that targets low latency for hash table use.
    pragma Pure;
 
    type State is private;

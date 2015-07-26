@@ -17,23 +17,26 @@ package body System.Val_Enum is
       Last : Natural;
    begin
       Trim (Str, First, Last);
-      declare
-         S : String := Str (First .. Last);
-      begin
-         if S (First) /= ''' then
-            To_Upper (S);
-         end if;
-         for I in 0 .. Num loop
-            declare
-               First : constant Natural := Natural (Indexes_2 (I));
-               Next : constant Natural := Natural (Indexes_2 (I + 1));
-            begin
-               if S = Names (First .. Next - 1) then
-                  return I;
-               end if;
-            end;
-         end loop;
-      end;
+      if First <= Last then
+         declare
+            S : String := Str (First .. Last);
+            Next : Natural := Natural (Indexes_2 (0));
+         begin
+            if S (First) /= ''' then
+               To_Upper (S);
+            end if;
+            for I in 0 .. Num loop
+               declare
+                  P : constant Positive := Next;
+               begin
+                  Next := Natural (Indexes_2 (I + 1));
+                  if S = Names (P .. Next - 1) then
+                     return I;
+                  end if;
+               end;
+            end loop;
+         end;
+      end if;
       Value_Errors.Raise_Discrete_Value_Failure ("Enum", Str);
       declare
          Uninitialized : Natural;
@@ -58,23 +61,26 @@ package body System.Val_Enum is
       Last : Natural;
    begin
       Trim (Str, First, Last);
-      declare
-         S : String := Str (First .. Last);
-      begin
-         if S (First) /= ''' then
-            To_Upper (S);
-         end if;
-         for I in 0 .. Num loop
-            declare
-               First : constant Natural := Natural (Indexes_2 (I));
-               Next : constant Natural := Natural (Indexes_2 (I + 1));
-            begin
-               if S = Names (First .. Next - 1) then
-                  return I;
-               end if;
-            end;
-         end loop;
-      end;
+      if First <= Last then
+         declare
+            S : String := Str (First .. Last);
+            Next : Natural := Natural (Indexes_2 (0));
+         begin
+            if S (First) /= ''' then
+               To_Upper (S);
+            end if;
+            for I in 0 .. Num loop
+               declare
+                  P : constant Positive := Next;
+               begin
+                  Next := Natural (Indexes_2 (I + 1));
+                  if S = Names (P .. Next - 1) then
+                     return I;
+                  end if;
+               end;
+            end loop;
+         end;
+      end if;
       Value_Errors.Raise_Discrete_Value_Failure ("Enum", Str);
       declare
          Uninitialized : Natural;
@@ -99,23 +105,26 @@ package body System.Val_Enum is
       Last : Natural;
    begin
       Trim (Str, First, Last);
-      declare
-         S : String := Str (First .. Last);
-      begin
-         if S (First) /= ''' then
-            To_Upper (S);
-         end if;
-         for I in 0 .. Num loop
-            declare
-               First : constant Natural := Natural (Indexes_2 (I));
-               Next : constant Natural := Natural (Indexes_2 (I + 1));
-            begin
-               if S = Names (First .. Next - 1) then
-                  return I;
-               end if;
-            end;
-         end loop;
-      end;
+      if First <= Last then
+         declare
+            S : String := Str (First .. Last);
+            Next : Natural := Natural (Indexes_2 (0));
+         begin
+            if S (First) /= ''' then
+               To_Upper (S);
+            end if;
+            for I in 0 .. Num loop
+               declare
+                  P : constant Positive := Next;
+               begin
+                  Next := Natural (Indexes_2 (I + 1));
+                  if S = Names (P .. Next - 1) then
+                     return I;
+                  end if;
+               end;
+            end loop;
+         end;
+      end if;
       Value_Errors.Raise_Discrete_Value_Failure ("Enum", Str);
       declare
          Uninitialized : Natural;

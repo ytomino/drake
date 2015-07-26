@@ -5,6 +5,21 @@ package body Ada.Strings.Generic_Fixed is
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
+   procedure memset (
+      b : System.Address;
+      c : Integer;
+      n : System.Storage_Elements.Storage_Count)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memset";
+
+   function memchr (
+      s : System.Address;
+      c : Integer;
+      n : System.Storage_Elements.Storage_Count)
+      return System.Address
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memchr";
+
    procedure Fill (
       Target : out String_Type;
       Pad : Character_Type := Space);
@@ -15,23 +30,7 @@ package body Ada.Strings.Generic_Fixed is
       if Character_Type'Size = Standard'Storage_Unit
          and then String_Type'Component_Size = Standard'Storage_Unit
       then
-         declare
-            type P is access all Character;
-            for P'Storage_Size use 0;
-            package Conv is
-               new System.Address_To_Named_Access_Conversions (Character, P);
-            procedure memset (
-               b : not null P;
-               c : Integer;
-               n : System.Storage_Elements.Storage_Count)
-               with Import,
-                  Convention => Intrinsic, External_Name => "__builtin_memset";
-         begin
-            memset (
-               Conv.To_Pointer (Target'Address),
-               Character_Type'Pos (Pad),
-               Target'Length);
-         end;
+         memset (Target'Address, Character_Type'Pos (Pad), Target'Length);
       else
          for I in Target'Range loop
             Target (I) := Pad;
@@ -122,22 +121,11 @@ package body Ada.Strings.Generic_Fixed is
          and then String_Type'Component_Size = Standard'Storage_Unit
       then
          declare
-            type P is access all Character;
-            for P'Storage_Size use 0;
-            package Conv is
-               new System.Address_To_Named_Access_Conversions (Character, P);
-            function memchr (
-               s : not null P;
-               c : Integer;
-               n : System.Storage_Elements.Storage_Count)
-               return P
-               with Import,
-                  Convention => Intrinsic, External_Name => "__builtin_memchr";
-            Result : constant System.Address := Conv.To_Address (
+            Result : constant System.Address :=
                memchr (
-                  Conv.To_Pointer (Source'Address),
+                  Source'Address,
                   Character_Type'Pos (Pattern),
-                  Source'Length));
+                  Source'Length);
          begin
             if Result = System.Null_Address then
                return 0;

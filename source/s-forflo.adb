@@ -9,6 +9,17 @@ package body System.Formatting.Float is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_truncl";
 
+   function isnanl (X : Long_Long_Float) return Integer
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_isnanl";
+   function isinfl (X : Long_Long_Float) return Integer
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_isinfl";
+
+   function signbitl (X : Long_Long_Float) return Integer
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_signbitl";
+
    procedure Split (
       X : Longest_Unsigned_Float;
       Fore : out Digit; -- Fore < Base
@@ -178,18 +189,9 @@ package body System.Formatting.Float is
    is
       pragma Suppress (All_Checks);
       use type Unsigned;
-      function isnan (X : Long_Long_Float) return Integer
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_isnanl";
-      function isinf (X : Long_Long_Float) return Integer
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_isinfl";
-      function signbit (X : Long_Long_Float) return Integer
-         with Import,
-            Convention => Intrinsic, External_Name => "__builtin_signbitl";
    begin
       Last := Item'First - 1;
-      if signbit (Value) /= 0 then
+      if signbitl (Value) /= 0 then
          if Minus_Sign /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
@@ -208,7 +210,7 @@ package body System.Formatting.Float is
             Item (Last) := Zero_Sign;
          end if;
       end if;
-      if isnan (Value) /= 0 then
+      if isnanl (Value) /= 0 then
          declare
             First : constant Positive := Last + 1;
          begin
@@ -216,7 +218,7 @@ package body System.Formatting.Float is
             pragma Assert (Last <= Item'Last);
             Item (First .. Last) := NaN;
          end;
-      elsif isinf (Value) /= 0 then
+      elsif isinfl (Value) /= 0 then
          declare
             First : constant Positive := Last + 1;
          begin

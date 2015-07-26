@@ -11,7 +11,7 @@ package body Interfaces.COBOL is
    use type System.Formatting.Unsigned;
    use type C.size_t;
 
-   function bswap (x : Long_Long_Integer) return Long_Long_Integer
+   function bswap64 (x : Long_Long_Integer) return Long_Long_Integer
       with Import,
          Convention => Intrinsic,
          External_Name => "__builtin_bswap64";
@@ -497,7 +497,7 @@ package body Interfaces.COBOL is
       Result : Long_Long_Integer := Native_Binary_To_Decimal (Item);
    begin
       if System.Default_Bit_Order /= System.High_Order_First then
-         Result := bswap (Result);
+         Result := bswap64 (Result);
       end if;
       return Result;
    end High_Order_First_To_Decimal;
@@ -508,7 +508,7 @@ package body Interfaces.COBOL is
       Result : Long_Long_Integer := Native_Binary_To_Decimal (Item);
    begin
       if System.Default_Bit_Order /= System.Low_Order_First then
-         Result := bswap (Result);
+         Result := bswap64 (Result);
       end if;
       return Result;
    end Low_Order_First_To_Decimal;
@@ -542,7 +542,7 @@ package body Interfaces.COBOL is
       X : Long_Long_Integer := Item;
    begin
       if System.Default_Bit_Order /= System.High_Order_First then
-         X := bswap (X);
+         X := bswap64 (X);
       end if;
       return To_Native_Binary (X);
    end To_Binary_High_Order_First;
@@ -553,7 +553,7 @@ package body Interfaces.COBOL is
       X : Long_Long_Integer := Item;
    begin
       if System.Default_Bit_Order /= System.Low_Order_First then
-         X := bswap (X);
+         X := bswap64 (X);
       end if;
       return To_Native_Binary (X);
    end To_Binary_Low_Order_First;
@@ -874,6 +874,40 @@ package body Interfaces.COBOL is
                   Long_Long_Integer'Integer_Value (Item));
          end case;
       end To_Binary;
+
+      function To_Decimal (Item : Binary) return Num is
+         Result : constant Num'Base := Num'Fixed_Value (Item);
+      begin
+         if Result not in Num then
+            raise Conversion_Error;
+         end if;
+         return Result;
+      end To_Decimal;
+
+      function To_Decimal (Item : Long_Binary) return Num is
+         Result : constant Num'Base := Num'Fixed_Value (Item);
+      begin
+         if Result not in Num then
+            raise Conversion_Error;
+         end if;
+         return Result;
+      end To_Decimal;
+
+      function To_Binary (Item : Num) return Binary is
+      begin
+         if Long_Long_Integer'Integer_Value (Item) not in
+            Long_Long_Integer (Binary'First) ..
+            Long_Long_Integer (Binary'Last)
+         then
+            raise Conversion_Error;
+         end if;
+         return Binary'Integer_Value (Item);
+      end To_Binary;
+
+      function To_Long_Binary (Item : Num) return Long_Binary is
+      begin
+         return Long_Binary'Integer_Value (Item);
+      end To_Long_Binary;
 
    end Decimal_Conversions;
 

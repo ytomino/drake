@@ -4,6 +4,13 @@ package body System.Packed_Arrays is
 
    package body Ordering is
 
+      function memcmp (s1, s2 : Address; n : Storage_Elements.Storage_Count)
+         return Integer
+         with Import,
+            Convention => Intrinsic, External_Name => "__builtin_memcmp";
+
+      --  implementation
+
       function Compare (
          Left : Address;
          Right : Address;
@@ -16,14 +23,6 @@ package body System.Packed_Arrays is
          then
             declare
                pragma Suppress (Range_Check);
-               function memcmp (
-                  s1 : Address;
-                  s2 : Address;
-                  n : Storage_Elements.Storage_Count)
-                  return Integer
-                  with Import,
-                     Convention => Intrinsic,
-                     External_Name => "__builtin_memcmp";
                Result : constant Integer := memcmp (
                   Left,
                   Right,

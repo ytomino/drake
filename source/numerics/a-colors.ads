@@ -21,15 +21,27 @@ package Ada.Colors is
       Value : Brightness;
    end record;
 
-   function To_HSV (Color : RGB) return HSV;
+   type HSL is record
+      Hue : Colors.Hue;
+      Saturation : Brightness;
+      Lightness : Brightness;
+   end record;
+
    function To_RGB (Color : HSV) return RGB;
+   function To_RGB (Color : HSL) return RGB;
+   function To_HSV (Color : RGB) return HSV;
+   function To_HSV (Color : HSL) return HSV;
+   function To_HSL (Color : RGB) return HSL;
+   function To_HSL (Color : HSV) return HSL;
 
    --  NTSC luminance
    function Luminance (Color : RGB) return Brightness;
    function Luminance (Color : HSV) return Brightness;
+   function Luminance (Color : HSL) return Brightness;
 
    --  distances in the color spaces
    function RGB_Distance (Left, Right : RGB) return Float;
    function HSV_Distance (Left, Right : HSV) return Float;
+   function HSL_Distance (Left, Right : HSL) return Float;
 
 end Ada.Colors;

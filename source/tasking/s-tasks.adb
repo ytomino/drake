@@ -681,8 +681,7 @@ package body System.Tasks is
    procedure Set_Active (T : not null Task_Id; State : Activation_State) is
    begin
       if not Elaborated (T) then
-         pragma Check (Trance, Ada.Debug.Put (
-            "elab error in " & Name (T).all));
+         pragma Check (Trace, Ada.Debug.Put ("elab error in " & Name (T).all));
          T.Activation_Chain.Error := Elaboration_Error;
       end if;
       T.Activation_State := State;

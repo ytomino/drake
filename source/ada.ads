@@ -5,7 +5,7 @@ package Ada is
    --  extended
    --  This package creates usable debug output.
    --  It is placed in the package Ada directly,
-   --    therefore it does force you to use any additional "with" clause.
+   --    therefore it does not need to write any additional "with" clause.
    package Debug is
       function File return String
          with Import, Convention => Intrinsic;

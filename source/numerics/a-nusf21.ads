@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  translated unit from SFMT
+--  translated unit from SFMT (SFMT-params216091.h)
 with Ada.Numerics.SFMT;
 package Ada.Numerics.SFMT_216091 is
    new SFMT (
@@ -17,4 +17,5 @@ package Ada.Numerics.SFMT_216091 is
       PARITY2 => 16#89e80709#,
       PARITY3 => 16#3bd2b64b#,
       PARITY4 => 16#0c64b1e4#);
+--  The largest periods.
 pragma Preelaborate (Ada.Numerics.SFMT_216091);

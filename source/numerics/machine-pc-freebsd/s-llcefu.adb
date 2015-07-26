@@ -6,11 +6,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
    function mulxc3 (Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)
       return Long_Long_Complex
       with Import, Convention => C, External_Name => "__mulxc3";
-   function divxc3 (
-      Left_Re : Long_Long_Float;
-      Left_Im : Long_Long_Float;
-      Right_Re : Long_Long_Float;
-      Right_Im : Long_Long_Float)
+   function divxc3 (Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)
       return Long_Long_Complex
       with Import, Convention => C, External_Name => "__divxc3";
 
