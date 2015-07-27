@@ -3,11 +3,6 @@ with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Elementary_Functions is
    pragma Suppress (All_Checks);
 
-   procedure Modulo_Divide_By_1 is
-      new Float.Modulo_Divide_By_1 (
-         Float_Type'Base,
-         Float_Type'Base,
-         Float_Type'Base);
    subtype Float is Standard.Float; -- hiding "Float" package
 
    --  constants for Sinh/Cosh on high precision mode
@@ -213,6 +208,11 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          --  CXA5A01 requires just result that is 0.0, 1.0 or -1.0
          --  CXG2004 requires just result that is 0.5
          declare
+            procedure Modulo_Divide_By_1 is
+               new Ada.Float.Modulo_Divide_By_1 (
+                  Float_Type'Base,
+                  Float_Type'Base,
+                  Float_Type'Base);
             Q : Float_Type'Base;
          begin
             Modulo_Divide_By_1 (X / Cycle, Q, R);
@@ -277,6 +277,11 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          --  CXA5A02 requires just result that is 0.0, 1.0 or -1.0
          --  CXG2004 requires just result that is 0.5
          declare
+            procedure Modulo_Divide_By_1 is
+               new Ada.Float.Modulo_Divide_By_1 (
+                  Float_Type'Base,
+                  Float_Type'Base,
+                  Float_Type'Base);
             Q : Float_Type'Base;
          begin
             Modulo_Divide_By_1 (X / Cycle, Q, R);
@@ -340,6 +345,11 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          end if;
          --  CXG2013 requires just result that is 0.0
          declare
+            procedure Modulo_Divide_By_1 is
+               new Ada.Float.Modulo_Divide_By_1 (
+                  Float_Type'Base,
+                  Float_Type'Base,
+                  Float_Type'Base);
             Q : Float_Type'Base;
          begin
             Modulo_Divide_By_1 (X / Cycle, Q, R);
@@ -367,6 +377,11 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          end if;
          --  CXG2013 requires just result that is 0.0
          declare
+            procedure Modulo_Divide_By_1 is
+               new Ada.Float.Modulo_Divide_By_1 (
+                  Float_Type'Base,
+                  Float_Type'Base,
+                  Float_Type'Base);
             Q : Float_Type'Base;
          begin
             Modulo_Divide_By_1 (X / Cycle, Q, R);

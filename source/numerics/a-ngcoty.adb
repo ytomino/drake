@@ -2,15 +2,12 @@ with Ada.Float;
 package body Ada.Numerics.Generic_Complex_Types is
    pragma Suppress (All_Checks);
 
+   subtype Float is Standard.Float; -- hiding "Float" package
+
    function constant_p (x : Complex) return Integer
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_constant_p";
    pragma Warnings (Off, constant_p); -- [gcc-5] excessive prototype checking
-
-   function Is_Infinity is new Float.Is_Infinity (Real'Base);
-   procedure Modulo_Divide_By_1 is
-      new Float.Modulo_Divide_By_1 (Real'Base, Real'Base, Real'Base);
-   subtype Float is Standard.Float; -- hiding "Float" package
 
    package Elementary_Functions is
 
@@ -161,6 +158,11 @@ package body Ada.Numerics.Generic_Complex_Types is
             raise Argument_Error; -- CXG2007
          end if;
          declare
+            procedure Modulo_Divide_By_1 is
+               new Ada.Float.Modulo_Divide_By_1 (
+                  Real'Base,
+                  Real'Base,
+                  Real'Base);
             Q : Real'Base;
          begin
             Modulo_Divide_By_1 (Argument / Cycle, Q, R);
@@ -418,30 +420,38 @@ package body Ada.Numerics.Generic_Complex_Types is
       end if;
       if not Standard'Fast_Math then
          --  CXG2020
-         if Is_Infinity (Result.Re) then
-            declare
-               Re_2 : constant Real'Base :=
-                  4.0 * (
-                     Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Re / 2.0)
-                     - Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Im / 2.0));
-            begin
-               if not Is_Infinity (Re_2) then -- keep a sign of INF or NaN
-                  Result.Re := Re_2;
-               end if;
-            end;
-         end if;
-         if Is_Infinity (Result.Im) then
-            declare
-               Im_2 : constant Real'Base :=
-                  4.0 * (
-                     Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Im / 2.0)
-                     + Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Re / 2.0));
-            begin
-               if not Is_Infinity (Im_2) then
-                  Result.Im := Im_2;
-               end if;
-            end;
-         end if;
+         declare
+            function Is_Infinity is new Ada.Float.Is_Infinity (Real'Base);
+         begin
+            if Is_Infinity (Result.Re) then
+               declare
+                  Re_2 : constant Real'Base :=
+                     4.0 * (
+                        Real'Base'(Left.Re / 2.0)
+                           * Real'Base'(Right.Re / 2.0)
+                        - Real'Base'(Left.Im / 2.0)
+                           * Real'Base'(Right.Im / 2.0));
+               begin
+                  if not Is_Infinity (Re_2) then -- keep a sign of INF or NaN
+                     Result.Re := Re_2;
+                  end if;
+               end;
+            end if;
+            if Is_Infinity (Result.Im) then
+               declare
+                  Im_2 : constant Real'Base :=
+                     4.0 * (
+                        Real'Base'(Left.Re / 2.0)
+                           * Real'Base'(Right.Im / 2.0)
+                        + Real'Base'(Left.Im / 2.0)
+                           * Real'Base'(Right.Re / 2.0));
+               begin
+                  if not Is_Infinity (Im_2) then
+                     Result.Im := Im_2;
+                  end if;
+               end;
+            end if;
+         end;
       end if;
       return Result;
    end "*";
