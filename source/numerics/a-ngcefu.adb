@@ -117,16 +117,17 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function "**" (Left : Complex; Right : Complex) return Complex is
    begin
-      if not Standard'Fast_Math
-         and then Left.Re = 0.0 and then Left.Im = 0.0
-         and then Right.Re = 0.0 and then Right.Im = 0.0
-      then
-         raise Argument_Error; -- CXG1004
-      elsif not Standard'Fast_Math
-         and then Right.Re = 1.0 and then Right.Im = 0.0
-      then
-         return Left; -- CXG1005
-      elsif Real'Digits <= Float'Digits then
+      if not Standard'Fast_Math then
+         if not (Left.Re /= 0.0) and then not (Left.Im /= 0.0)
+            and then not (Right.Re /= 0.0) and then not (Right.Im /= 0.0)
+         then
+            raise Argument_Error; -- CXG1004
+         end if;
+         if Right.Re = 1.0 and then Right.Im = 0.0 then
+            return Left; -- CXG1005
+         end if;
+      end if;
+      if Real'Digits <= Float'Digits then
          return From_Complex (
             System.Long_Long_Complex_Elementary_Functions.Fast_Pow (
                To_Complex (Left),
