@@ -279,12 +279,16 @@ package body Interfaces.C.Generic_Strings is
          Actual_Length := Actual_Length + 1; -- including nul
       end if;
       if Append_Nul and then Length < Actual_Length then
-         declare
-            Source : Element_Array (0 .. Actual_Length - 1);
-            for Source'Address use Conv.To_Address (Item);
-         begin
-            return Source (0 .. Length - 1) & Element'Val (0);
-         end;
+         if Length = 0 then
+            return (0 => Element'Val (0));
+         else
+            declare
+               Source : Element_Array (0 .. Actual_Length - 1);
+               for Source'Address use Conv.To_Address (Item);
+            begin
+               return Source (0 .. Length - 1) & Element'Val (0);
+            end;
+         end if;
       else
          return Pointers.Value (
             Item,
