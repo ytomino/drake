@@ -109,6 +109,11 @@ package Interfaces.C.Generic_Strings is
       Append_Nul : Boolean := False) -- additional
       return Element_Array;
 
+   --  Note: Value (no Append_Nul, default) produces an unterminated result
+   --    if there is no nul in the first Length elements of Item.
+   --  This behavior is danger similar to strncpy.
+   --  Insert the parameter Append_Nul => True.
+
 --  function Value (Item : chars_ptr) return String;
    function Value (
       Item : access constant Element; -- CXB3011 requires null
@@ -126,6 +131,12 @@ package Interfaces.C.Generic_Strings is
 
 --  function Strlen (Item : chars_ptr) return size_t;
    function Strlen (Item : access constant Element) -- CXB3011 requires null
+      return size_t;
+
+   --  extended
+   --  This overloaded version Strlen gets the length of Item
+   --    less than or equal to Limit.
+   function Strlen (Item : not null access constant Element; Limit : size_t)
       return size_t;
 
 --  procedure Update (

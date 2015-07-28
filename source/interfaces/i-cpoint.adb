@@ -75,6 +75,24 @@ package body Interfaces.C.Pointers is
       end if;
    end Virtual_Length;
 
+   function Virtual_Length (
+      Ref : not null access constant Element;
+      Limit : ptrdiff_t;
+      Terminator : Element := Default_Terminator)
+      return ptrdiff_t
+   is
+      Source : Element_Array (Index);
+      for Source'Address use To_Address (Ref);
+      Result : ptrdiff_t := 0;
+   begin
+      while Result < Limit loop
+         exit when Source (Index'Val (Index'Pos (Index'First) + Result)) =
+            Terminator;
+         Result := Result + 1;
+      end loop;
+      return Result;
+   end Virtual_Length;
+
    procedure Copy_Terminated_Array (
       Source : access constant Element;
       Target : access Element;
@@ -83,14 +101,20 @@ package body Interfaces.C.Pointers is
    begin
       if Source = null or else Target = null then
          raise Dereference_Error; -- CXB3016
-      else
-         declare
-            Length : constant ptrdiff_t :=
-               Virtual_Length (Source, Terminator) + 1; -- including nul
-         begin
-            Copy_Array (Source, Target, ptrdiff_t'Min (Length, Limit));
-         end;
       end if;
+      declare
+         Length : ptrdiff_t;
+      begin
+         if Limit < ptrdiff_t'Last then
+            Length := Virtual_Length (Source, Limit, Terminator);
+            if Length < Limit then
+               Length := Length + 1; -- including nul
+            end if;
+         else -- unlimited
+            Length := Virtual_Length (Source, Terminator) + 1; -- including nul
+         end if;
+         Copy_Array (Source, Target, Length);
+      end;
    end Copy_Terminated_Array;
 
    procedure Copy_Array (

@@ -80,6 +80,15 @@ package Interfaces.C.Pointers is
       Terminator : Element := Default_Terminator)
       return ptrdiff_t;
 
+   --  extended
+   --  This overloaded version Virtual_Length gets the length of Ref
+   --    less than or equal to Limit.
+   function Virtual_Length (
+      Ref : not null access constant Element;
+      Limit : ptrdiff_t;
+      Terminator : Element := Default_Terminator)
+      return ptrdiff_t;
+
 --  procedure Copy_Terminated_Array (
 --    Source : Pointer;
 --    Target : Pointer;
@@ -90,6 +99,11 @@ package Interfaces.C.Pointers is
       Target : access Element;
       Limit : ptrdiff_t := ptrdiff_t'Last;
       Terminator : Element := Default_Terminator);
+
+   --  Note: Copy_Terminated_Array (..., Limit) produces an unterminated Target
+   --    if there is no Terminator in the first Limit elements of Source.
+   --  This behavior is danger similar to strncpy.
+   --  Use Virtual_Length and Copy_Array, or imported strlcpy, instead of it.
 
    --  modified
 --  procedure Copy_Array (
