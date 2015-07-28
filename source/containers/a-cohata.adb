@@ -3,6 +3,8 @@ package body Ada.Containers.Hash_Tables is
 
    procedure Free is new Unchecked_Deallocation (Table, Table_Access);
 
+   subtype Positive_Hash_Type is Hash_Type range 1 .. Hash_Type'Last;
+
    function Find_Node (
       Container : Table_Access;
       Node : not null Node_Access;
@@ -23,7 +25,7 @@ package body Ada.Containers.Hash_Tables is
       if Container /= null then
          declare
             Index : constant Hash_Type :=
-               Node.Hash rem Container.Entries'Length;
+               Node.Hash rem Positive_Hash_Type'(Container.Entries'Length);
             Position : Node_Access := Container.Entries (Index).First;
          begin
             if Position /= null then
@@ -52,7 +54,8 @@ package body Ada.Containers.Hash_Tables is
       Hash : Hash_Type;
       New_Item : not null Node_Access)
    is
-      Index : constant Hash_Type := Hash rem Container.Entries'Length;
+      Index : constant Hash_Type :=
+         Hash rem Positive_Hash_Type'(Container.Entries'Length);
    begin
       New_Item.Hash := Hash;
       New_Item.Index := Index;
@@ -168,7 +171,8 @@ package body Ada.Containers.Hash_Tables is
    begin
       if Container /= null then
          declare
-            Index : constant Hash_Type := Hash rem Container.Entries'Length;
+            Index : constant Hash_Type :=
+               Hash rem Positive_Hash_Type'(Container.Entries'Length);
             Position : Node_Access := Container.Entries (Index).First;
          begin
             if Position /= null then

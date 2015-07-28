@@ -114,7 +114,7 @@ package body Ada.Numerics.MT19937 is
                   S.Vector (0) := S.Vector (N - 1);
                   i := 1;
                end if;
-               j := (j + 1) rem Initiator_Length;
+               j := (j + 1) rem Positive'(Initiator_Length);
             end loop;
             for K in reverse 1 .. (N - 1) loop
                declare
