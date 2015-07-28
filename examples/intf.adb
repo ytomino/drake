@@ -88,7 +88,7 @@ begin
 		p : Interfaces.C.Strings.chars_ptr := Interfaces.C.Strings.New_String ("ABC");
 	begin
 		pragma Assert (Interfaces.C.Strings.Value (p) = String'("ABC"));
-		Interfaces.C.Strings.Update (p, 1, String'("Z"));
+		Interfaces.C.Strings.Update (p, 1, Interfaces.C.char_array'("Z"));
 		pragma Assert (Interfaces.C.Strings.Value (p) = String'("AZC"));
 		pragma Assert (Interfaces.C.Strings.Value (p, 1, Append_Nul => True) = ('A', Interfaces.C.nul));
 		Interfaces.C.Strings.Free (p);
@@ -102,7 +102,7 @@ begin
 		p : Interfaces.C.Wide_WStrings.chars_ptr := Interfaces.C.Wide_WStrings.New_String ("ABC");
 	begin
 		pragma Assert (Interfaces.C.Wide_WStrings.Value (p) = Wide_String'("ABC"));
-		Interfaces.C.Wide_WStrings.Update (p, 1, Wide_String'("Z"));
+		Interfaces.C.Wide_WStrings.Update (p, 1, Interfaces.C.wchar_array'(0 => Interfaces.C.wchar_t'Val (Character'Pos ('Z'))));
 		pragma Assert (Interfaces.C.Wide_WStrings.Value (p) = Wide_String'("AZC"));
 		pragma Assert (Interfaces.C.Wide_WStrings.Value (p, 1, Append_Nul => True) = (Interfaces.C.wchar_t'Val (Character'Pos ('A')), Interfaces.C.wide_nul));
 		Interfaces.C.Wide_WStrings.Free (p);

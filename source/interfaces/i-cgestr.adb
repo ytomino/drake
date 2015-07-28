@@ -455,16 +455,4 @@ package body Interfaces.C.Generic_Strings is
          Length => ptrdiff_t (Length));
    end Update;
 
-   procedure Update (
-      Item : not null access Element;
-      Offset : size_t;
-      Source : not null access constant Element) is
-   begin
-      Update (
-         Item,
-         Offset,
-         Source,
-         Strlen (Source));
-   end Update;
-
 end Interfaces.C.Generic_Strings;
