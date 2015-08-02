@@ -191,6 +191,7 @@ package body Ada.Numerics.SFMT is
       return Unsigned_32
    is
       pragma Suppress (Alignment_Check);
+      pragma Suppress (Index_Check);
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Gen.sfmt.state'Address;
       r : Unsigned_32;
@@ -213,6 +214,7 @@ package body Ada.Numerics.SFMT is
       return Unsigned_64
    is
       pragma Suppress (Alignment_Check);
+      pragma Suppress (Index_Check);
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Gen.sfmt.state'Address;
       psfmt64 : Unsigned_64_Array_N64;
@@ -259,6 +261,7 @@ package body Ada.Numerics.SFMT is
       Gen : aliased in out Generator;
       Item : out Unsigned_32_Array)
    is
+      pragma Suppress (Range_Check);
       size : constant Integer := Item'Length;
    begin
       if Gen.sfmt.idx /= N32
@@ -289,6 +292,7 @@ package body Ada.Numerics.SFMT is
       Gen : aliased in out Generator;
       Item : out Unsigned_64_Array)
    is
+      pragma Suppress (Range_Check);
       size : constant Integer := Item'Length;
    begin
       if Gen.sfmt.idx /= N32
