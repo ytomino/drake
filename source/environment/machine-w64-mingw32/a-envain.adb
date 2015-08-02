@@ -184,6 +184,7 @@ package body Ada.Environment_Variables.Inside is
                begin
                   Do_Separate (Item, Name_Length, Value);
                   declare
+                     pragma Suppress (Alignment_Check);
                      Item_A : C.winnt.WCHAR_array (C.size_t);
                      for Item_A'Address use LPCWCH_Conv.To_Address (Item);
                      Name : aliased C.winnt.WCHAR_array (0 .. Name_Length);

@@ -26,6 +26,7 @@ package body System.Pool_Size is
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
    is
+      pragma Suppress (Alignment_Check);
       Actual_Alignment : constant Positive_Storage_Count :=
          Storage_Elements.Storage_Offset'Max (
             Allocator.Alignment,
@@ -149,6 +150,7 @@ package body System.Pool_Size is
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
    is
+      pragma Suppress (Alignment_Check);
       Actual_Alignment : constant Positive_Storage_Count :=
          Storage_Elements.Storage_Offset'Max (
             Allocator.Alignment,

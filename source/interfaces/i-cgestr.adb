@@ -210,6 +210,7 @@ package body Interfaces.C.Generic_Strings is
       Append_Nul : Boolean := False)
       return Element_Array
    is
+      pragma Suppress (Alignment_Check);
       Actual_Length : size_t;
    begin
       if not Append_Nul and then Length = 0 then
@@ -248,6 +249,7 @@ package body Interfaces.C.Generic_Strings is
          (1 => Character_Type'Val (Character'Pos ('?'))))
       return String_Type
    is
+      pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item); -- checking
       Source : Element_Array (size_t);
       for Source'Address use Conv.To_Address (Item);
@@ -278,6 +280,7 @@ package body Interfaces.C.Generic_Strings is
          raise Dereference_Error; -- CXB3011
       end if;
       declare
+         pragma Suppress (Alignment_Check);
          Actual_Length : constant size_t := Strlen (Item, Limit => Length);
          Source : Element_Array (size_t);
          for Source'Address use Conv.To_Address (Item);

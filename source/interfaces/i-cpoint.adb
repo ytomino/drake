@@ -35,6 +35,7 @@ package body Interfaces.C.Pointers is
          raise Dereference_Error; -- CXB3014
       end if;
       declare
+         pragma Suppress (Alignment_Check);
          Result : Element_Array (Index);
          for Result'Address use To_Address (Ref);
          First : Index;
@@ -60,6 +61,7 @@ package body Interfaces.C.Pointers is
          raise Dereference_Error; -- CXB3016
       else
          declare
+            pragma Suppress (Alignment_Check);
             Result : Element_Array (Index);
             for Result'Address use To_Address (Ref);
             I : Index'Base := Index'First;
@@ -80,6 +82,7 @@ package body Interfaces.C.Pointers is
       Terminator : Element := Default_Terminator)
       return ptrdiff_t
    is
+      pragma Suppress (Alignment_Check);
       Source : Element_Array (Index);
       for Source'Address use To_Address (Ref);
       Result : ptrdiff_t := 0;
@@ -126,6 +129,7 @@ package body Interfaces.C.Pointers is
       end if;
       if Length > 0 then
          declare
+            pragma Suppress (Alignment_Check);
             subtype R is
                Index range
                   Index'First ..
