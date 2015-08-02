@@ -643,12 +643,13 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Clear;
    end Reset;
 
-   function Mode (File : Non_Controlled_File_Type) return IO_Modes.File_Mode is
+   function Mode (File : not null Non_Controlled_File_Type)
+      return IO_Modes.File_Mode is
    begin
       return File.Mode;
    end Mode;
 
-   function Name (File : Non_Controlled_File_Type) return String is
+   function Name (File : not null Non_Controlled_File_Type) return String is
    begin
       return System.Native_IO.Value (
          File.Name,
@@ -666,7 +667,8 @@ package body Ada.Streams.Naked_Stream_IO is
       return File /= null;
    end Is_Open;
 
-   function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
+   function End_Of_File (File : not null Non_Controlled_File_Type)
+      return Boolean is
    begin
       Get_Buffer (File);
       if File.Buffer_Length = 0 then -- not ordinary file
@@ -695,7 +697,7 @@ package body Ada.Streams.Naked_Stream_IO is
       end if;
    end End_Of_File;
 
-   function Stream (File : Non_Controlled_File_Type)
+   function Stream (File : not null Non_Controlled_File_Type)
       return not null access Root_Stream_Type'Class is
    begin
       if File.Dispatcher.Tag = Tags.No_Tag then
@@ -962,7 +964,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Clear;
    end Set_Mode;
 
-   procedure Flush (File : Non_Controlled_File_Type) is
+   procedure Flush (File : not null Non_Controlled_File_Type) is
    begin
       Flush_Writing_Buffer (File);
       System.Native_IO.Flush (File.Handle);
@@ -1013,15 +1015,16 @@ package body Ada.Streams.Naked_Stream_IO is
       Name_Holder.Clear;
    end Open;
 
-   function Handle (File : Non_Controlled_File_Type)
+   function Handle (File : not null Non_Controlled_File_Type)
       return System.Native_IO.Handle_Type is
    begin
       return File.Handle;
    end Handle;
 
-   function Is_Standard (File : Non_Controlled_File_Type) return Boolean is
+   function Is_Standard (File : not null Non_Controlled_File_Type)
+      return Boolean is
    begin
-      return File /= null and then File.Kind = Standard_Handle;
+      return File.Kind = Standard_Handle;
    end Is_Standard;
 
    package body Dispatchers is

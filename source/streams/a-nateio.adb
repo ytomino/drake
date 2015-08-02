@@ -762,7 +762,9 @@ package body Ada.Naked_Text_IO is
       Internal : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
          File.File;
    begin
-      if not Streams.Naked_Stream_IO.Is_Standard (Internal) then
+      if not Streams.Naked_Stream_IO.Is_Open (Internal)
+         or else not Streams.Naked_Stream_IO.Is_Standard (Internal)
+      then
          Free (File);
       end if;
       if Streams.Naked_Stream_IO.Is_Open (Internal) then
