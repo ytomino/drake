@@ -1,7 +1,6 @@
 with Ada.Command_Line.Inside;
 with System.Startup;
 package body Ada.Command_Line is
-   pragma Suppress (All_Checks);
 
    --  implementation
 

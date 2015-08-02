@@ -1,6 +1,5 @@
 with System.Storage_Elements;
 package body Interfaces.C.Pointers is
-   pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Offset;
 
    --  no System.Address_To_Access_Conversions for modifying to Pure
@@ -34,18 +33,22 @@ package body Interfaces.C.Pointers is
    begin
       if Ref = null then
          raise Dereference_Error; -- CXB3014
-      else
-         declare
-            subtype R is
-               Index range
-                  Index'First ..
-                  Index'Val (Index'Pos (Index'First) + Length - 1);
-            Result : Element_Array (R);
-            for Result'Address use To_Address (Ref);
-         begin
-            return Result;
-         end;
       end if;
+      declare
+         Result : Element_Array (Index);
+         for Result'Address use To_Address (Ref);
+         First : Index;
+         Last : Index'Base;
+      begin
+         if Index'First = Index'Base'First and then Length = 0 then
+            First := Index'Succ (Index'First);
+            Last := Index'First;
+         else
+            First := Index'First;
+            Last := Index'Base'Val (Index'Pos (Index'First) + Length - 1);
+         end if;
+         return Result (First .. Last);
+      end;
    end Value;
 
    function Virtual_Length (
@@ -71,6 +74,24 @@ package body Interfaces.C.Pointers is
       end if;
    end Virtual_Length;
 
+   function Virtual_Length (
+      Ref : not null access constant Element;
+      Limit : ptrdiff_t;
+      Terminator : Element := Default_Terminator)
+      return ptrdiff_t
+   is
+      Source : Element_Array (Index);
+      for Source'Address use To_Address (Ref);
+      Result : ptrdiff_t := 0;
+   begin
+      while Result < Limit loop
+         exit when Source (Index'Val (Index'Pos (Index'First) + Result)) =
+            Terminator;
+         Result := Result + 1;
+      end loop;
+      return Result;
+   end Virtual_Length;
+
    procedure Copy_Terminated_Array (
       Source : access constant Element;
       Target : access Element;
@@ -79,14 +100,20 @@ package body Interfaces.C.Pointers is
    begin
       if Source = null or else Target = null then
          raise Dereference_Error; -- CXB3016
-      else
-         declare
-            Length : constant ptrdiff_t :=
-               Virtual_Length (Source, Terminator) + 1; -- including nul
-         begin
-            Copy_Array (Source, Target, ptrdiff_t'Min (Length, Limit));
-         end;
       end if;
+      declare
+         Length : ptrdiff_t;
+      begin
+         if Limit < ptrdiff_t'Last then
+            Length := Virtual_Length (Source, Limit, Terminator);
+            if Length < Limit then
+               Length := Length + 1; -- including nul
+            end if;
+         else -- unlimited
+            Length := Virtual_Length (Source, Terminator) + 1; -- including nul
+         end if;
+         Copy_Array (Source, Target, Length);
+      end;
    end Copy_Terminated_Array;
 
    procedure Copy_Array (
@@ -96,7 +123,8 @@ package body Interfaces.C.Pointers is
    begin
       if Source = null or else Target = null then
          raise Dereference_Error; -- CXB3016
-      else
+      end if;
+      if Length > 0 then
          declare
             subtype R is
                Index range

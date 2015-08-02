@@ -334,7 +334,7 @@ package body Ada.Streams.Naked_Stream_IO is
       File : not null Non_Controlled_File_Type;
       Error : out Boolean)
    is
-      Buffer_Length : constant Stream_Element_Count :=
+      Buffer_Length : constant Stream_Element_Positive_Count :=
          Stream_Element_Offset'Max (1, File.Buffer_Length);
    begin
       --  reading buffer is from File.Reading_Index until File.Buffer_Index

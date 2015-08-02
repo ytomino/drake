@@ -1,7 +1,6 @@
 with System.Native_Time;
 with C.sys.resource;
 package body System.Native_Execution_Time is
-   pragma Suppress (All_Checks);
    use type C.signed_int;
 
    function Clock return CPU_Time is

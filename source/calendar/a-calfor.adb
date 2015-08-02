@@ -5,7 +5,6 @@ with System.Long_Long_Integer_Divisions;
 with System.Native_Calendar;
 with System.Native_Time;
 package body Ada.Calendar.Formatting is
---  pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
    use type Time_Zones.Time_Offset;
    use type System.Formatting.Unsigned;

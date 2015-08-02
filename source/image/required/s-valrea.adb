@@ -1,7 +1,6 @@
 with System.Formatting.Literals.Float;
 with System.Value_Errors;
 package body System.Val_Real is
-   pragma Suppress (All_Checks);
 
    function Value_Real (Str : String) return Long_Long_Float is
       Last : Natural := Str'First - 1;

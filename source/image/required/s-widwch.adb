@@ -1,6 +1,5 @@
 with System.Wid_Char;
 package body System.Wid_WChar is
-   pragma Suppress (All_Checks);
 
    function Width_Wide_Character (Lo, Hi : Wide_Character) return Natural is
    begin

@@ -1,5 +1,4 @@
 package body System.Storage_Pools.Unbounded is
-   pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
 
    overriding procedure Initialize (Object : in out Unbounded_Pool) is

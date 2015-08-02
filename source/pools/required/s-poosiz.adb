@@ -3,10 +3,14 @@ pragma Check_Policy (Trace => Disable, Validate => Ignore);
 with System.Shared_Locking;
 --  with System.Storage_Elements.Formatting;
 package body System.Pool_Size is
-   pragma Suppress (All_Checks);
 
    type Unaligned_Storage_Offset is new Storage_Elements.Storage_Offset;
    for Unaligned_Storage_Offset'Alignment use 1;
+
+   subtype Positive_Storage_Count is
+      Storage_Elements.Storage_Offset range
+         1 ..
+         Storage_Elements.Storage_Offset'Last;
 
    type Freed_Chunk is record
       Size : Storage_Elements.Storage_Count;
@@ -22,13 +26,13 @@ package body System.Pool_Size is
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
    is
-      Actual_Alignment : constant Storage_Elements.Storage_Count :=
+      Actual_Alignment : constant Positive_Storage_Count :=
          Storage_Elements.Storage_Offset'Max (
             Allocator.Alignment,
             Freed_Chunk'Size / Standard'Storage_Unit);
       Error : Boolean := False;
    begin
-      if Allocator.Alignment rem Alignment /= 0 then
+      if Allocator.Alignment rem Positive_Storage_Count'(Alignment) /= 0 then
          raise Constraint_Error;
       end if;
       Shared_Locking.Enter;
@@ -145,14 +149,14 @@ package body System.Pool_Size is
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
    is
-      Actual_Alignment : constant Storage_Elements.Storage_Count :=
+      Actual_Alignment : constant Positive_Storage_Count :=
          Storage_Elements.Storage_Offset'Max (
             Allocator.Alignment,
             Freed_Chunk'Size / Standard'Storage_Unit);
    begin
       pragma Check (Trace, Ada.Debug.Put (
          System.Storage_Elements.Formatting.Image (Storage_Address)));
-      if Allocator.Alignment rem Alignment /= 0 then
+      if Allocator.Alignment rem Positive_Storage_Count'(Alignment) /= 0 then
          raise Constraint_Error;
       end if;
       Shared_Locking.Enter;
@@ -310,10 +314,11 @@ package body System.Pool_Size is
                Standard'Storage_Unit,
             --  component size
             Allocator.Component_Size
-               + (-Allocator.Component_Size) mod Allocator.Alignment);
+               + (-Allocator.Component_Size)
+                  mod Positive_Storage_Count'(Allocator.Alignment));
       Error : Boolean := False;
    begin
-      if Allocator.Alignment rem Alignment /= 0
+      if Allocator.Alignment rem Positive_Storage_Count'(Alignment) /= 0
          or else Size_In_Storage_Elements /= Allocator.Component_Size
       then
          raise Constraint_Error;

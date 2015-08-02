@@ -42,15 +42,19 @@ package Ada.Real_Time is
       with Import, Convention => Intrinsic;
    function "-" (Right : Time_Span) return Time_Span
       with Import, Convention => Intrinsic;
-   function "*" (Left : Time_Span; Right : Integer) return Time_Span;
-   function "*" (Left : Integer; Right : Time_Span) return Time_Span;
-   function "/" (Left, Right : Time_Span) return Integer;
-   function "/" (Left : Time_Span; Right : Integer) return Time_Span;
+   function "*" (Left : Time_Span; Right : Integer) return Time_Span
+      with Convention => Intrinsic;
+   function "*" (Left : Integer; Right : Time_Span) return Time_Span
+      with Convention => Intrinsic;
+   function "/" (Left, Right : Time_Span) return Integer
+      with Convention => Intrinsic;
+   function "/" (Left : Time_Span; Right : Integer) return Time_Span
+      with Convention => Intrinsic;
 
    pragma Pure_Function ("*");
    pragma Pure_Function ("/");
-   pragma Inline ("*");
-   pragma Inline ("/");
+   pragma Inline_Always ("*");
+   pragma Inline_Always ("/");
 
    function "abs" (Right : Time_Span) return Time_Span
       with Import, Convention => Intrinsic;

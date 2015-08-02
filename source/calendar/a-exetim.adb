@@ -1,6 +1,5 @@
 private with System.Native_Execution_Time;
 package body Ada.Execution_Time is
-   pragma Suppress (All_Checks);
 
    function Clock return CPU_Time is
    begin

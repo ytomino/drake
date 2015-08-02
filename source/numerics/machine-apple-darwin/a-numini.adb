@@ -7,7 +7,6 @@ procedure Ada.Numerics.Initiator (
    Item : System.Address;
    Size : System.Storage_Elements.Storage_Count)
 is
-   pragma Suppress (All_Checks);
    use Exception_Identification.From_Here;
    use type C.char_array;
    use type C.signed_int; -- ssize_t is signed int or signed long

@@ -9,7 +9,6 @@ procedure Ada.Numerics.Initiator (
    Item : System.Address;
    Size : System.Storage_Elements.Storage_Count)
 is
-   pragma Suppress (All_Checks);
    use Exception_Identification.From_Here;
    use type C.windef.WINBOOL;
    use type C.windef.DWORD; -- error code

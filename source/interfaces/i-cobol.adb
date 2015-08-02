@@ -5,7 +5,6 @@ with System.Formatting;
 with System.Long_Long_Integer_Divisions;
 with C;
 package body Interfaces.COBOL is
-   pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
    use type System.Bit_Order;
    use type System.Formatting.Unsigned;

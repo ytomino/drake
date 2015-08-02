@@ -1,16 +1,12 @@
 with Ada.Float;
 package body Ada.Numerics.Generic_Complex_Types is
-   pragma Suppress (All_Checks);
+
+   subtype Float is Standard.Float; -- hiding "Float" package
 
    function constant_p (x : Complex) return Integer
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_constant_p";
    pragma Warnings (Off, constant_p); -- [gcc-5] excessive prototype checking
-
-   function Is_Infinity is new Float.Is_Infinity (Real'Base);
-   procedure Modulo_Divide_By_1 is
-      new Float.Modulo_Divide_By_1 (Real'Base, Real'Base, Real'Base);
-   subtype Float is Standard.Float; -- hiding "Float" package
 
    package Elementary_Functions is
 
@@ -122,11 +118,10 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    function Argument (X : Complex; Cycle : Real'Base) return Real'Base is
    begin
-      if not Standard'Fast_Math and then Cycle <= 0.0 then
+      if not Standard'Fast_Math and then not (Cycle > 0.0) then
          raise Argument_Error; -- CXG2006
-      else
-         return Argument (X) * Cycle / (2.0 * Real'Base'(Pi));
       end if;
+      return Argument (X) * Cycle / (2.0 * Real'Base'(Pi));
    end Argument;
 
    function Compose_From_Cartesian (Re, Im : Real'Base) return Complex is
@@ -153,34 +148,35 @@ package body Ada.Numerics.Generic_Complex_Types is
    end Compose_From_Polar;
 
    function Compose_From_Polar (Modulus, Argument, Cycle : Real'Base)
-      return Complex is
+      return Complex
+   is
+      R : Real'Base;
    begin
-      if Standard'Fast_Math then
-         return Compose_From_Polar (
-            Modulus,
-            (2.0 * Real'Base'(Pi)) * Argument / Cycle);
-      else
-         if Cycle <= 0.0 then
+      if not Standard'Fast_Math then
+         if not (Cycle > 0.0) then
             raise Argument_Error; -- CXG2007
-         else
-            declare
-               Q, R : Real'Base;
-            begin
-               Modulo_Divide_By_1 (Argument / Cycle, Q, R);
-               if R = 0.25 then
-                  return (Re => 0.0, Im => Modulus);
-               elsif R = 0.5 then
-                  return (Re => -Modulus, Im => 0.0);
-               elsif R = 0.75 then
-                  return (Re => 0.0, Im => -Modulus);
-               else
-                  return Compose_From_Polar (
-                     Modulus,
-                     (2.0 * Real'Base'(Pi)) * R);
-               end if;
-            end;
          end if;
+         declare
+            procedure Modulo_Divide_By_1 is
+               new Ada.Float.Modulo_Divide_By_1 (
+                  Real'Base,
+                  Real'Base,
+                  Real'Base);
+            Q : Real'Base;
+         begin
+            Modulo_Divide_By_1 (Argument / Cycle, Q, R);
+            if R = 0.25 then
+               return (Re => 0.0, Im => Modulus);
+            elsif R = 0.5 then
+               return (Re => -Modulus, Im => 0.0);
+            elsif R = 0.75 then
+               return (Re => 0.0, Im => -Modulus);
+            end if;
+         end;
+      else
+         R := Argument / Cycle;
       end if;
+      return Compose_From_Polar (Modulus, 2.0 * Real'Base'(Pi) * R);
    end Compose_From_Polar;
 
    function Conjugate (X : Complex) return Complex is
@@ -368,14 +364,9 @@ package body Ada.Numerics.Generic_Complex_Types is
    function "*" (Left, Right : Complex) return Complex is
       Result : Complex;
    begin
-      if constant_p (Left) /= 0 and then constant_p (Right) /= 0 then
-         Result.Re := Real'Base (
-            Long_Long_Float (Left.Re) * Long_Long_Float (Right.Re)
-            - Long_Long_Float (Left.Im) * Long_Long_Float (Right.Im));
-         Result.Im := Real'Base (
-            Long_Long_Float (Left.Re) * Long_Long_Float (Right.Im)
-            + Long_Long_Float (Left.Im) * Long_Long_Float (Right.Re));
-      elsif Standard'Fast_Math then
+      if Standard'Fast_Math
+         or else (constant_p (Left) /= 0 and then constant_p (Right) /= 0)
+      then
          Result.Re := Left.Re * Right.Re - Left.Im * Right.Im;
          Result.Im := Left.Re * Right.Im + Left.Im * Right.Re;
       else
@@ -425,31 +416,41 @@ package body Ada.Numerics.Generic_Complex_Types is
                   Long_Long_Float (Right.Im));
             end;
          end if;
+      end if;
+      if not Standard'Fast_Math then
          --  CXG2020
-         if Is_Infinity (Result.Re) then
-            declare
-               Re_2 : constant Real'Base :=
-                  4.0 * (
-                     Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Re / 2.0)
-                     - Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Im / 2.0));
-            begin
-               if not Is_Infinity (Re_2) then -- keep a sign of INF or NaN
-                  Result.Re := Re_2;
-               end if;
-            end;
-         end if;
-         if Is_Infinity (Result.Im) then
-            declare
-               Im_2 : constant Real'Base :=
-                  4.0 * (
-                     Real'Base'(Left.Re / 2.0) * Real'Base'(Right.Im / 2.0)
-                     + Real'Base'(Left.Im / 2.0) * Real'Base'(Right.Re / 2.0));
-            begin
-               if not Is_Infinity (Im_2) then
-                  Result.Im := Im_2;
-               end if;
-            end;
-         end if;
+         declare
+            function Is_Infinity is new Ada.Float.Is_Infinity (Real'Base);
+         begin
+            if Is_Infinity (Result.Re) then
+               declare
+                  Re_2 : constant Real'Base :=
+                     4.0 * (
+                        Real'Base'(Left.Re / 2.0)
+                           * Real'Base'(Right.Re / 2.0)
+                        - Real'Base'(Left.Im / 2.0)
+                           * Real'Base'(Right.Im / 2.0));
+               begin
+                  if not Is_Infinity (Re_2) then -- keep a sign of INF or NaN
+                     Result.Re := Re_2;
+                  end if;
+               end;
+            end if;
+            if Is_Infinity (Result.Im) then
+               declare
+                  Im_2 : constant Real'Base :=
+                     4.0 * (
+                        Real'Base'(Left.Re / 2.0)
+                           * Real'Base'(Right.Im / 2.0)
+                        + Real'Base'(Left.Im / 2.0)
+                           * Real'Base'(Right.Re / 2.0));
+               begin
+                  if not Is_Infinity (Im_2) then
+                     Result.Im := Im_2;
+                  end if;
+               end;
+            end if;
+         end;
       end if;
       return Result;
    end "*";
@@ -496,18 +497,9 @@ package body Ada.Numerics.Generic_Complex_Types is
    function "/" (Left, Right : Complex) return Complex is
       Result : Complex;
    begin
-      if constant_p (Left) /= 0 and then constant_p (Right) /= 0 then
-         Result.Re := Real'Base (
-            (Long_Long_Float (Left.Re) * Long_Long_Float (Right.Re)
-               + Long_Long_Float (Left.Im) * Long_Long_Float (Right.Im))
-            / (Long_Long_Float (Right.Re) * Long_Long_Float (Right.Re)
-               + Long_Long_Float (Right.Im) * Long_Long_Float (Right.Im)));
-         Result.Im := Real'Base (
-            (Long_Long_Float (Left.Im) * Long_Long_Float (Right.Re)
-               - Long_Long_Float (Left.Re) * Long_Long_Float (Right.Im))
-            / (Long_Long_Float (Right.Re) * Long_Long_Float (Right.Re)
-               + Long_Long_Float (Right.Im) * Long_Long_Float (Right.Im)));
-      elsif Standard'Fast_Math then
+      if Standard'Fast_Math
+         or else (constant_p (Left) /= 0 and then constant_p (Right) /= 0)
+      then
          Result.Re :=
             (Left.Re * Right.Re + Left.Im * Right.Im)
             / (Right.Re * Right.Re + Right.Im * Right.Im);

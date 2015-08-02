@@ -2,7 +2,6 @@ with C.basetsd;
 with C.winbase;
 with C.windef;
 package body System.Storage_Pools.Unbounded is
-   pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr

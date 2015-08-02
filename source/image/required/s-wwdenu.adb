@@ -1,6 +1,5 @@
 with System.Wid_Enum;
 package body System.WWd_Enum is
-   pragma Suppress (All_Checks);
 
    function Wide_Width_Enumeration_8 (
       Names : String;

@@ -1,6 +1,5 @@
 with System.UTF_Conversions;
 package body Interfaces.Fortran is
-   pragma Suppress (All_Checks);
    use type System.UTF_Conversions.From_Status_Type;
    use type System.UTF_Conversions.To_Status_Type;
    use type System.UTF_Conversions.UCS_4;

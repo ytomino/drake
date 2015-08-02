@@ -1,5 +1,4 @@
 package body System.Native_Time is
-   pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.signed_long;
 

@@ -2,7 +2,6 @@ with System.UTF_Conversions;
 with C.winnls;
 with C.winnt;
 package body System.C_Encoding is
-   pragma Suppress (All_Checks);
    use type C.char_array;
    use type C.size_t;
 

@@ -4,7 +4,6 @@ with System.Formatting;
 with System.Storage_Elements;
 package body Ada.Numerics.SFMT is
    pragma Check_Policy (Validate => Ignore);
-   pragma Suppress (All_Checks);
    use type Unsigned_32;
    use type Unsigned_64;
    use type System.Bit_Order;

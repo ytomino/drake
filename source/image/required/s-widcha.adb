@@ -1,6 +1,5 @@
 with System.Img_Char;
 package body System.Wid_Char is
-   pragma Suppress (All_Checks);
 
    function Width_Character (Lo, Hi : Character) return Natural is
    begin

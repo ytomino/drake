@@ -2,7 +2,6 @@ with Ada.Exception_Identification.From_Here;
 with System.Zero_Terminated_Strings;
 with C.dlfcn;
 package body System.Program.Dynamic_Linking is
-   pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.size_t;

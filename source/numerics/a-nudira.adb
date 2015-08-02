@@ -1,6 +1,5 @@
 with Ada.Numerics.Distributions;
 package body Ada.Numerics.Discrete_Random is
-   pragma Suppress (All_Checks);
 
    function Random (Gen : Generator) return Result_Subtype is
       function To is

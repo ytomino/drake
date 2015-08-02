@@ -1,6 +1,5 @@
 with System.Formatting;
 package body System.Wid_LLU is
-   pragma Suppress (All_Checks);
    use type Unsigned_Types.Long_Long_Unsigned;
 
    function Width_Long_Long_Unsigned (

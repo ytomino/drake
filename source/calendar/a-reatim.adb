@@ -1,6 +1,5 @@
 with System.Native_Time;
 package body Ada.Real_Time is
-   pragma Suppress (All_Checks);
    use type System.Native_Time.Nanosecond_Number;
 
    function Clock return Time is

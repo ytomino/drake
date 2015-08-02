@@ -2,7 +2,6 @@ with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
-   pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Offset;
 
    package libc is
@@ -196,18 +195,13 @@ package body Interfaces.C.Generic_Strings is
    end Free;
 
    function Value (Item : access constant Element)
-      return Element_Array is
+      return Element_Array
+   is
+      Length : constant size_t := Strlen (Item); -- checking Dereference_Error
    begin
-      if const_chars_ptr (Item) = null then
-         raise Dereference_Error; -- CXB3010
-      end if;
-      declare
-         Length : constant size_t := Strlen (Item);
-      begin
-         return Pointers.Value (
-            Item,
-            ptrdiff_t (Length + 1)); -- CXB3009, including nul
-      end;
+      return Pointers.Value (
+         Item,
+         ptrdiff_t (Length + 1)); -- CXB3009, including nul
    end Value;
 
    function Value (
@@ -227,64 +221,19 @@ package body Interfaces.C.Generic_Strings is
          end if;
          Actual_Length := 0;
       else
-         if Element'Size = char'Size then
-            declare
-               function memchr (
-                  s : not null access constant Element;
-                  c : int;
-                  n : size_t)
-                  return const_chars_ptr
-                  with Import,
-                     Convention => Intrinsic,
-                     External_Name => "__builtin_memchr";
-               P : constant const_chars_ptr := memchr (Item, 0, Length);
-            begin
-               if P = null then
-                  Actual_Length := Length;
-               else
-                  Actual_Length := C.size_t (
-                     const_Conv.To_Address (P) - const_Conv.To_Address (Item));
-               end if;
-            end;
-         elsif Element'Size = wchar_t'Size then
-            declare
-               function wmemchr (
-                  ws : not null access constant Element;
-                  wc : int;
-                  n : size_t)
-                  return const_chars_ptr
-                  with Import, Convention => C;
-               P : constant const_chars_ptr := wmemchr (Item, 0, Length);
-            begin
-               if P = null then
-                  Actual_Length := Length;
-               else
-                  Actual_Length := C.size_t (
-                     (const_Conv.To_Address (P) - const_Conv.To_Address (Item))
-                     / (wchar_t'Size / Standard'Storage_Unit));
-               end if;
-            end;
-         else
-            declare
-               Source : Element_Array (0 .. Length - 1);
-               for Source'Address use Conv.To_Address (Item);
-            begin
-               Actual_Length := 0;
-               while Actual_Length < Length loop
-                  exit when Source (Actual_Length) = Element'Val (0);
-                  Actual_Length := Actual_Length + 1;
-               end loop;
-            end;
-         end if;
-         Actual_Length := Actual_Length + 1; -- including nul
+         Actual_Length := Strlen (Item, Limit => Length) + 1; -- including nul
       end if;
       if Append_Nul and then Length < Actual_Length then
-         declare
-            Source : Element_Array (0 .. Actual_Length - 1);
-            for Source'Address use Conv.To_Address (Item);
-         begin
-            return Source (0 .. Length - 1) & Element'Val (0);
-         end;
+         if Length = 0 then
+            return (0 => Element'Val (0));
+         else
+            declare
+               Source : Element_Array (0 .. Actual_Length - 1);
+               for Source'Address use Conv.To_Address (Item);
+            begin
+               return Source (0 .. Length - 1) & Element'Val (0);
+            end;
+         end if;
       else
          return Pointers.Value (
             Item,
@@ -299,10 +248,21 @@ package body Interfaces.C.Generic_Strings is
          (1 => Character_Type'Val (Character'Pos ('?'))))
       return String_Type
    is
-      C : constant Element_Array := Value (Item);
+      Actual_Length : constant size_t := Strlen (Item); -- checking
+      Source : Element_Array (size_t);
+      for Source'Address use Conv.To_Address (Item);
+      First : size_t;
+      Last : size_t;
    begin
+      if Actual_Length = 0 then
+         First := 1;
+         Last := 0;
+      else
+         First := 0;
+         Last := Actual_Length - 1;
+      end if;
       return To_Ada (
-         C (C'First .. C'Last - 1),
+         Source (First .. Last),
          Trim_Nul => False,
          Substitute => Substitute);
    end Value;
@@ -312,14 +272,30 @@ package body Interfaces.C.Generic_Strings is
       Length : size_t;
       Substitute : String_Type :=
          (1 => Character_Type'Val (Character'Pos ('?'))))
-      return String_Type
-   is
-      C : constant Element_Array := Value (Item, Length, Append_Nul => True);
+      return String_Type is
    begin
-      return To_Ada (
-         C (C'First .. C'Last - 1),
-         Trim_Nul => False,
-         Substitute => Substitute);
+      if const_chars_ptr (Item) = null then
+         raise Dereference_Error; -- CXB3011
+      end if;
+      declare
+         Actual_Length : constant size_t := Strlen (Item, Limit => Length);
+         Source : Element_Array (size_t);
+         for Source'Address use Conv.To_Address (Item);
+         First : size_t;
+         Last : size_t;
+      begin
+         if Actual_Length = 0 then
+            First := 1;
+            Last := 0;
+         else
+            First := 0;
+            Last := Actual_Length - 1;
+         end if;
+         return To_Ada (
+            Source (First .. Last),
+            Trim_Nul => False,
+            Substitute => Substitute);
+      end;
    end Value;
 
    function Strlen (Item : access constant Element)
@@ -364,6 +340,66 @@ package body Interfaces.C.Generic_Strings is
             return Length;
          end;
       end if;
+   end Strlen;
+
+   function Strlen (Item : not null access constant Element; Limit : size_t)
+      return size_t
+   is
+      Result : size_t;
+   begin
+      if Element'Size = char'Size
+         and then Element_Array'Component_Size = char_array'Component_Size
+      then
+         declare
+            function memchr (
+               s : not null access constant Element;
+               c : int;
+               n : size_t)
+               return const_chars_ptr
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_memchr";
+            P : constant const_chars_ptr := memchr (Item, 0, Limit);
+         begin
+            if P = null then
+               Result := Limit;
+            else
+               Result := C.size_t (
+                  const_Conv.To_Address (P) - const_Conv.To_Address (Item));
+            end if;
+         end;
+      elsif Element'Size = wchar_t'Size
+         and then Element_Array'Component_Size = wchar_array'Component_Size
+      then
+         declare
+            function wmemchr (
+               ws : not null access constant Element;
+               wc : int;
+               n : size_t)
+               return const_chars_ptr
+               with Import, Convention => C;
+            P : constant const_chars_ptr := wmemchr (Item, 0, Limit);
+         begin
+            if P = null then
+               Result := Limit;
+            else
+               Result := C.size_t (
+                  (const_Conv.To_Address (P) - const_Conv.To_Address (Item))
+                  / (wchar_t'Size / Standard'Storage_Unit));
+            end if;
+         end;
+      else
+         declare
+            Source : Element_Array (0 .. Limit - 1);
+            for Source'Address use Conv.To_Address (Item);
+         begin
+            Result := 0;
+            while Result < Limit loop
+               exit when Source (Result) = Element'Val (0);
+               Result := Result + 1;
+            end loop;
+         end;
+      end if;
+      return Result;
    end Strlen;
 
    procedure Update (
@@ -416,18 +452,6 @@ package body Interfaces.C.Generic_Strings is
          Source => Source,
          Target => Offsetted_Item,
          Length => ptrdiff_t (Length));
-   end Update;
-
-   procedure Update (
-      Item : not null access Element;
-      Offset : size_t;
-      Source : not null access constant Element) is
-   begin
-      Update (
-         Item,
-         Offset,
-         Source,
-         Strlen (Source));
    end Update;
 
 end Interfaces.C.Generic_Strings;

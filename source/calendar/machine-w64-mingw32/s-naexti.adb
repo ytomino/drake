@@ -2,7 +2,6 @@ with System.Native_Time;
 with C.windef;
 with C.winbase;
 package body System.Native_Execution_Time is
-   pragma Suppress (All_Checks);
    use type C.windef.WINBOOL;
 
    --  implementation

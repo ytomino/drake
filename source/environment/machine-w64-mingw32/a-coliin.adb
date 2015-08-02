@@ -2,7 +2,6 @@ with System.Wide_Startup; -- force to be an unicode application
 with System.Zero_Terminated_WStrings;
 with C.winnt;
 package body Ada.Command_Line.Inside is
-   pragma Suppress (All_Checks);
 
    function Argument (Number : Natural) return String is
       type wchar_t_ptr_Array is array (Natural) of C.winnt.LPCWSTR;

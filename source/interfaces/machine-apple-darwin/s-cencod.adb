@@ -1,6 +1,5 @@
 with System.UTF_Conversions;
 package body System.C_Encoding is
-   pragma Suppress (All_Checks);
    use type C.size_t;
 
    --  implementation of Character (UTF-8) from/to char (UTF-8)

@@ -1,6 +1,5 @@
 with Ada.Environment_Variables.Inside;
 package body Ada.Environment_Variables is
-   pragma Suppress (All_Checks);
 
    procedure Start (Object : out Iterator);
    procedure Start (Object : out Iterator) is

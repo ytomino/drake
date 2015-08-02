@@ -1,7 +1,6 @@
 with System.Native_Time;
 with C.sys.time;
 package body System.Native_Calendar is
-   pragma Suppress (All_Checks);
    use type C.signed_int; -- time_t is signed int or signed long
    use type C.signed_long;
 

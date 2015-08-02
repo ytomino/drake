@@ -3,7 +3,6 @@ with System.Zero_Terminated_Strings;
 with C.mach_o.dyld;
 with C.stdint;
 package body System.Program is
-   pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.stdint.uint32_t;
 

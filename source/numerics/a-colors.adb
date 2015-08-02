@@ -1,9 +1,8 @@
 pragma Check_Policy (Trace => Ignore, Validate => Ignore);
-with Ada.Float;
 package body Ada.Colors is
-   pragma Suppress (All_Checks);
 
-   subtype Float is Standard.Float; -- hiding "Float" package
+   function modff (value : Float; iptr : access Float) return Float
+      with Import, Convention => Intrinsic, External_Name => "__builtin_modff";
 
    function sinf (X : Float) return Float
       with Import, Convention => Intrinsic, External_Name => "__builtin_sinf";
@@ -39,20 +38,14 @@ package body Ada.Colors is
          "H =" & Hue'Image (Color.Hue)
          & ", S =" & Brightness'Image (Color.Saturation)
          & ", V =" & Brightness'Image (Color.Value)));
-      procedure Divide_By_1 is
-         new Ada.Float.Divide_By_1 (
-            Brightness'Base,
-            Hue'Base,
-            Brightness'Base);
-      Q : Hue'Base;
+      H : Hue'Base;
+      Q : aliased Hue'Base;
       Diff : Brightness'Base;
       N1, N2, N3 : Brightness'Base;
       Red, Green, Blue : Brightness'Base;
    begin
-      Divide_By_1 (
-         Dividend => 6.0 / (2.0 * Numerics.Pi) * Color.Hue,
-         Quotient => Q,
-         Remainder => Diff);
+      H := 6.0 / (2.0 * Numerics.Pi) * Color.Hue;
+      Diff := modff (H, Q'Access);
       N1 := Color.Value * (1.0 - Color.Saturation);
       N2 := Color.Value * (1.0 - Color.Saturation * Diff);
       N3 := Color.Value * (1.0 - Color.Saturation * (1.0 - Diff));
@@ -95,18 +88,14 @@ package body Ada.Colors is
          "H =" & Hue'Image (Color.Hue)
          & ", S =" & Brightness'Image (Color.Saturation)
          & ", L =" & Brightness'Image (Color.Lightness)));
-      procedure Divide_By_1 is
-         new Ada.Float.Divide_By_1 (
-            Brightness'Base,
-            Hue'Base,
-            Brightness'Base);
-      H, Q : Hue'Base;
+      H : Hue'Base;
+      Q : aliased Hue'Base;
       Diff : Brightness'Base;
       X, C, Max, Min : Brightness'Base;
       Red, Green, Blue : Brightness'Base;
    begin
       H := 3.0 / (2.0 * Numerics.Pi) * Color.Hue;
-      Divide_By_1 (Dividend => H, Quotient => Q, Remainder => Diff);
+      Diff := modff (H, Q'Access);
       C := (1.0 - abs (2.0 * Color.Lightness - 1.0)) * Color.Saturation;
       Min := Color.Lightness - C / 2.0;
       Max := C + Min;

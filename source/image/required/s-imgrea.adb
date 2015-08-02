@@ -1,7 +1,6 @@
 with System.Formatting.Fixed;
 with System.Formatting.Float;
 package body System.Img_Real is
-   pragma Suppress (All_Checks);
 
    procedure Image_Ordinary_Fixed_Point (
       V : Long_Long_Float;

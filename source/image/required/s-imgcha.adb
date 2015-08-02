@@ -2,7 +2,6 @@
 --  Violated ACATS tests: C352001
 with System.Formatting;
 package body System.Img_Char is
-   pragma Suppress (All_Checks);
 
    procedure Image_Character_05 (
       V : Character;

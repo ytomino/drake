@@ -6,7 +6,6 @@ with System.Zero_Terminated_Strings;
 with C.errno;
 with C.sys.sysctl;
 package body System.Program is
-   pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.size_t;
 

@@ -2,7 +2,6 @@ with System.Native_Time;
 with C.winbase;
 with C.windef;
 package body System.Native_Real_Time is
-   pragma Suppress (All_Checks);
    use type C.windef.WINBOOL;
    use type C.winnt.LONGLONG;
 

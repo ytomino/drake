@@ -1,5 +1,4 @@
 package body System.Long_Long_Elementary_Functions is
-   pragma Suppress (All_Checks);
 
    function Fast_Log (X : Long_Long_Float) return Long_Long_Float is
    begin

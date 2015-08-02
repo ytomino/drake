@@ -1,6 +1,5 @@
 package body Ada.Numerics.SFMT.Generating is
    --  no SIMD version
-   pragma Suppress (All_Checks);
    use type Unsigned_32;
    use type Unsigned_64;
 

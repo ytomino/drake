@@ -3,7 +3,6 @@ with System.Img_Char;
 with System.Val_Enum;
 with System.Value_Errors;
 package body System.Val_Char is
-   pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
 
    function Value_Character (Str : String) return Character is

@@ -1,7 +1,6 @@
 with System.Formatting;
 with System.Unsigned_Types;
 package body System.Img_Int is
-   pragma Suppress (All_Checks);
 
    procedure Image_Integer (
       V : Integer;

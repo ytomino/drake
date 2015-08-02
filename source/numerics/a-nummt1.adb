@@ -3,7 +3,6 @@ with Ada.Numerics.Initiator;
 with System.Storage_Elements;
 with System.Formatting;
 package body Ada.Numerics.MT19937 is
-   pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Count;
    use type Cardinal;
 
@@ -114,7 +113,7 @@ package body Ada.Numerics.MT19937 is
                   S.Vector (0) := S.Vector (N - 1);
                   i := 1;
                end if;
-               j := (j + 1) rem Initiator_Length;
+               j := (j + 1) rem Positive'(Initiator_Length);
             end loop;
             for K in reverse 1 .. (N - 1) loop
                declare

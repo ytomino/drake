@@ -1,5 +1,4 @@
 package body System.Wid_Enum is
-   pragma Suppress (All_Checks);
 
    function Width_Enumeration_8 (
       Names : String;

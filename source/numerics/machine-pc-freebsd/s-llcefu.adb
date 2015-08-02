@@ -1,6 +1,5 @@
 with System.Long_Long_Elementary_Functions;
 package body System.Long_Long_Complex_Elementary_Functions is
-   pragma Suppress (All_Checks);
 
    --  libgcc
    function mulxc3 (Left_Re, Left_Im, Right_Re, Right_Im : Long_Long_Float)

@@ -2,7 +2,6 @@ with System.Native_Time;
 with C.winbase;
 with C.winnt;
 package body System.Native_Calendar is
-   pragma Suppress (All_Checks);
    use type System.Native_Time.Nanosecond_Number;
    use type C.windef.WINBOOL;
 

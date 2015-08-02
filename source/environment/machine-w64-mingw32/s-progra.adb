@@ -7,7 +7,6 @@ with C.winbase;
 with C.windef;
 with C.winnt;
 package body System.Program is
-   pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
    use type C.windef.DWORD;
 
