@@ -3,7 +3,6 @@ pragma Check_Policy (Trace => Disable, Validate => Ignore);
 with System.Shared_Locking;
 --  with System.Storage_Elements.Formatting;
 package body System.Pool_Size is
-   pragma Suppress (All_Checks);
 
    type Unaligned_Storage_Offset is new Storage_Elements.Storage_Offset;
    for Unaligned_Storage_Offset'Alignment use 1;

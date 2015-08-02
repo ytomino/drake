@@ -1,5 +1,4 @@
 package body System.Wid_Bool is
-   pragma Suppress (All_Checks);
 
    function Width_Boolean (Lo, Hi : Boolean) return Natural is
    begin

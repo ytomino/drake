@@ -1,6 +1,5 @@
 with C.time;
 package body System.Native_Calendar.Time_Zones is
-   pragma Suppress (All_Checks);
    use type C.signed_long;
 
    Time_Offset_Value : Time_Offset;

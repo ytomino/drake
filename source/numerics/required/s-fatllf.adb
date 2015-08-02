@@ -1,5 +1,4 @@
 package body System.Fat_LLF is
-   pragma Suppress (All_Checks);
 
    function frexp (value : Long_Long_Float; exp : access Integer)
       return Long_Long_Float

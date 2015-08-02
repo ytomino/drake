@@ -3,7 +3,6 @@ with System.Native_Calendar;
 with C.sys.types;
 with C.time;
 package body System.Native_Calendar.Time_Zones is
-   pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
    use type C.sys.types.time_t;
 

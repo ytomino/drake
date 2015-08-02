@@ -1,6 +1,5 @@
 with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Distributions is
-   pragma Suppress (All_Checks);
 
    type Longest_Unsigned is mod 2 ** Long_Long_Integer'Size;
 

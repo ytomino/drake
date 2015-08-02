@@ -1,7 +1,6 @@
 with Ada.Float;
 with System.Long_Long_Elementary_Functions;
 package body Ada.Numerics.Generic_Elementary_Functions is
-   pragma Suppress (All_Checks);
 
    subtype Float is Standard.Float; -- hiding "Float" package
 

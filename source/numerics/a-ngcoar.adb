@@ -1,6 +1,5 @@
 with Ada.Numerics.Generic_Arrays;
 package body Ada.Numerics.Generic_Complex_Arrays is
-   pragma Suppress (All_Checks);
 
    package Elementary_Functions is
 

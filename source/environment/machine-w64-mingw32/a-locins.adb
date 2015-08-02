@@ -1,7 +1,6 @@
 with C.winnls;
 with C.winnt;
 package body Ada.Locales.Inside is
-   pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.winnt.WCHAR;
 

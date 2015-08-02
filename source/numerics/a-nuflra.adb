@@ -1,5 +1,4 @@
 package body Ada.Numerics.Float_Random is
-   pragma Suppress (All_Checks);
 
    function Random (Gen : Generator) return Uniformly_Distributed is
    begin

@@ -1,7 +1,6 @@
 with Ada.Unchecked_Conversion;
 package body Ada.Numerics.SFMT.Generating is
    --  SSE2 version
-   pragma Suppress (All_Checks);
 
    type v4si is array (1 .. 4) of Unsigned_32;
    for v4si'Alignment use 16;

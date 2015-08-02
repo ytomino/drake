@@ -6,7 +6,6 @@ with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.string;
 package body Ada.Environment_Variables.Inside is
-   pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Offset;
    use type C.char_ptr;
    use type C.char_ptr_ptr;

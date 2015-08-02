@@ -4,7 +4,6 @@ with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winnt;
 package body System.Program.Dynamic_Linking is
-   pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
    use type C.size_t;
    use type C.windef.FARPROC;

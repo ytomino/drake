@@ -1,5 +1,4 @@
 package body System.Fat_Flt is
-   pragma Suppress (All_Checks);
 
    function frexp (value : Float; exp : access Integer)
       return Float

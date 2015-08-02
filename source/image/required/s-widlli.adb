@@ -1,7 +1,6 @@
 with System.Formatting;
 with System.Unsigned_Types;
 package body System.Wid_LLI is
-   pragma Suppress (All_Checks);
 
    function Width_Long_Long_Integer (Lo, Hi : Long_Long_Integer)
       return Natural is

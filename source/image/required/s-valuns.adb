@@ -1,7 +1,6 @@
 with System.Formatting.Literals;
 with System.Value_Errors;
 package body System.Val_Uns is
-   pragma Suppress (All_Checks);
 
    function Value_Unsigned (Str : String) return Unsigned_Types.Unsigned is
       Last : Natural;

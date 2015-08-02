@@ -2,7 +2,6 @@ with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
-   pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Offset;
 
    package libc is

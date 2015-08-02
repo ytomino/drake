@@ -1,7 +1,6 @@
 with System.Formatting.Literals.Float;
 with System.Value_Errors;
 package body System.Val_Dec is
-   pragma Suppress (All_Checks);
 
    function Value_Decimal (Str : String; Scale : Integer) return Integer is
       Last : Natural := Str'First - 1;

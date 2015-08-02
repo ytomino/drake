@@ -1,7 +1,6 @@
 with System.Formatting.Literals;
 with System.Value_Errors;
 package body System.Val_Int is
-   pragma Suppress (All_Checks);
 
    function Value_Integer (Str : String) return Integer is
       Last : Natural;

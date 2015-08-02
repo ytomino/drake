@@ -1,7 +1,6 @@
 with System.UTF_Conversions.From_16_To_8;
 with System.UTF_Conversions.From_32_To_8;
 package body System.WCh_WtS is
-   pragma Suppress (All_Checks);
 
    function Wide_String_To_String (
       S : Wide_String;

@@ -1,6 +1,5 @@
 with System.Native_Time;
 package body System.Native_Real_Time is
-   pragma Suppress (All_Checks);
 
    function To_uint64_t (D : Duration) return C.stdint.uint64_t;
 

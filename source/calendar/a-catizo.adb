@@ -1,6 +1,5 @@
 with System.Native_Calendar.Time_Zones;
 package body Ada.Calendar.Time_Zones is
-   pragma Suppress (All_Checks);
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
    begin

@@ -1,6 +1,5 @@
 with System.Storage_Elements;
 package body Interfaces.C.Pointers is
-   pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Offset;
 
    --  no System.Address_To_Access_Conversions for modifying to Pure

@@ -6,7 +6,6 @@ with System.Zero_Terminated_Strings;
 with C.sys.types;
 with C.unistd;
 package body System.Program is
-   pragma Suppress (All_Checks);
    use type C.char_array;
    use type C.size_t;
    use type C.sys.types.ssize_t;

@@ -1,7 +1,6 @@
 with System.Runtime_Context;
 pragma Warnings (Off, System.Runtime_Context); -- break "pure" rule
 package body System.Value_Errors is
-   pragma Suppress (All_Checks);
 
    procedure Raise_Value_Failure (T : String; S : String) is
       Message : String (1 .. T'Length + S'Length * 2 + 11);

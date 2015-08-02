@@ -4,7 +4,6 @@ pragma Check_Policy (Validate => Ignore);
 with Ada.Locales.Inside;
 with System.Once;
 package body Ada.Locales is
-   pragma Suppress (All_Checks);
 
    type Alpha_2_NP is new String (1 .. 2); -- no predicate
    type Alpha_3_NP is new String (1 .. 3);

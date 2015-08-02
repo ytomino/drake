@@ -8,7 +8,6 @@ with C.windef;
 with C.winerror;
 with C.winnt;
 package body Ada.Environment_Variables.Inside is
-   pragma Suppress (All_Checks);
    use type System.Storage_Elements.Storage_Offset;
    use type C.size_t;
    use type C.windef.DWORD;

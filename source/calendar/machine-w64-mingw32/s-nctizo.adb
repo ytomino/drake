@@ -1,7 +1,6 @@
 with C.winbase;
 with C.windef;
 package body System.Native_Calendar.Time_Zones is
-   pragma Suppress (All_Checks);
    use type C.windef.DWORD;
 
    Time_Offset_Value : Time_Offset := 0;

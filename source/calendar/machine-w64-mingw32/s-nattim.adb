@@ -1,7 +1,6 @@
 with C.winbase;
 with C.winnt;
 package body System.Native_Time is
-   pragma Suppress (All_Checks);
 
    --  implementation
 

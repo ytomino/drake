@@ -5,7 +5,6 @@ with System.Val_Enum;
 with System.Value_Errors;
 with System.UTF_Conversions;
 package body System.Val_WChar is
-   pragma Suppress (All_Checks);
    use type Formatting.Unsigned;
    use type UTF_Conversions.From_Status_Type;
    use type UTF_Conversions.To_Status_Type;

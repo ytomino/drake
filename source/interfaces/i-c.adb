@@ -5,7 +5,6 @@ pragma Warnings (Off, System.C_Encoding); -- break "pure" rule
 with C;
 pragma Warnings (Off, C); -- break "pure" rule
 package body Interfaces.C is
-   pragma Suppress (All_Checks);
    use Ada.Exception_Identification.From_Here;
 
    generic

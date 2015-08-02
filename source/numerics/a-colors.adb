@@ -1,6 +1,5 @@
 pragma Check_Policy (Trace => Ignore, Validate => Ignore);
 package body Ada.Colors is
-   pragma Suppress (All_Checks);
 
    function modff (value : Float; iptr : access Float) return Float
       with Import, Convention => Intrinsic, External_Name => "__builtin_modff";

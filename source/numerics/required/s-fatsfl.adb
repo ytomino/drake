@@ -1,5 +1,4 @@
 package body System.Fat_Sflt is
-   pragma Suppress (All_Checks);
 
    function frexp (value : Short_Float; exp : access Integer)
       return Short_Float

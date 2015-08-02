@@ -1,7 +1,6 @@
 with System.Address_To_Named_Access_Conversions;
 with C.stdlib;
 package body Ada.Locales.Inside is
-   pragma Suppress (All_Checks);
    use type C.char;
    use type C.char_array;
    use type C.char_ptr;

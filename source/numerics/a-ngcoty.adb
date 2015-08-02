@@ -1,6 +1,5 @@
 with Ada.Float;
 package body Ada.Numerics.Generic_Complex_Types is
-   pragma Suppress (All_Checks);
 
    subtype Float is Standard.Float; -- hiding "Float" package
 
