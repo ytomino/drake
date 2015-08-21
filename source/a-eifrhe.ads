@@ -16,6 +16,4 @@ package Ada.Exception_Identification.From_Here is
       Message : String)
       renames Raise_Exception_From_Here;
 
-   pragma No_Return (Raise_Exception);
-
 end Ada.Exception_Identification.From_Here;

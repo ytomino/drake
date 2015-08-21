@@ -11,6 +11,5 @@ package System.Assertions is
    --  required for pragma Assert by compiler, and gdb knows (s-assert.ads)
    procedure Raise_Assert_Failure (Msg : String)
       renames Ada.Assertions.Raise_Assertion_Error;
-   pragma No_Return (Raise_Assert_Failure);
 
 end System.Assertions;
