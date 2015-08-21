@@ -3,6 +3,7 @@ with C.winnls;
 with C.winnt;
 package body System.C_Encoding is
    use type C.char_array;
+   use type C.signed_int;
    use type C.size_t;
 
    --  implementation of Character (UTF-8) from/to char (MBCS)
@@ -47,32 +48,34 @@ package body System.C_Encoding is
             W_Item : C.winnt.WCHAR_array (
                0 ..
                C.size_t (Natural'(Item'Length) - 1));
-            W_Length : C.size_t;
+            W_Length : C.signed_int;
             Sub : aliased constant C.char_array :=
                Substitute & C.char'Val (0);
+            Target_Length : C.signed_int;
          begin
-            W_Length := C.size_t (C.winnls.MultiByteToWideChar (
+            W_Length := C.winnls.MultiByteToWideChar (
                C.winnls.CP_UTF8,
                0,
                To_Pointer (Item'Address),
                Item'Length,
                W_Item (0)'Access,
-               W_Item'Length));
+               W_Item'Length);
             if W_Length = 0 then
                raise Constraint_Error;
             end if;
-            Count := C.size_t (C.winnls.WideCharToMultiByte (
+            Target_Length := C.winnls.WideCharToMultiByte (
                C.winnls.CP_ACP,
                0,
                W_Item (0)'Access,
-               C.signed_int (W_Length),
+               W_Length,
                To_Pointer (Target'Address),
                Target'Length,
                Sub (Sub'First)'Access,
-               null));
-            if Count = 0 then
+               null);
+            if Target_Length = 0 then
                raise Constraint_Error;
             end if;
+            Count := C.size_t (Target_Length);
          end;
       end if;
    end To_Non_Nul_Terminated;
@@ -95,30 +98,32 @@ package body System.C_Encoding is
             W_Item : C.winnt.WCHAR_array (
                0 ..
                C.size_t (Natural'(Item'Length) - 1));
-            W_Length : C.size_t;
+            W_Length : C.signed_int;
+            Target_Length : C.signed_int;
          begin
-            W_Length := C.size_t (C.winnls.MultiByteToWideChar (
+            W_Length := C.winnls.MultiByteToWideChar (
                C.winnls.CP_ACP,
                0,
                To_Pointer (Item'Address),
                Item'Length,
                W_Item (0)'Access,
-               W_Item'Length));
+               W_Item'Length);
             if W_Length = 0 then
                raise Constraint_Error;
             end if;
-            Count := Natural (C.winnls.WideCharToMultiByte (
+            Target_Length := C.winnls.WideCharToMultiByte (
                C.winnls.CP_UTF8,
                0,
                W_Item (0)'Access,
-               C.signed_int (W_Length),
+               W_Length,
                To_Pointer (Target'Address),
                Target'Length,
                null,
-               null));
-            if Count = 0 then
+               null);
+            if Target_Length = 0 then
                raise Constraint_Error;
             end if;
+            Count := Natural (Target_Length);
          end;
       end if;
    end From_Non_Nul_Terminated;

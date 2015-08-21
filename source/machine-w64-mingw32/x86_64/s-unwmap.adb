@@ -150,15 +150,16 @@ package body System.Unwind.Mapping is
                   Message (Message_Last + 1) := '.';
                   Message_Last := Message_Last + 1;
                else
-                  Message_Last := Natural (C.winnls.WideCharToMultiByte (
-                     C.winnls.CP_UTF8,
-                     0,
-                     LPWSTR_Conv.To_Pointer (Wide_Message'Address),
-                     C.signed_int (Wide_Message_Last),
-                     LPSTR_Conv.To_Pointer (Message'Address),
-                     Message'Length,
-                     null,
-                     null));
+                  Message_Last := Natural (
+                     C.winnls.WideCharToMultiByte (
+                        C.winnls.CP_UTF8,
+                        0,
+                        LPWSTR_Conv.To_Pointer (Wide_Message'Address),
+                        C.signed_int (Wide_Message_Last),
+                        LPSTR_Conv.To_Pointer (Message'Address),
+                        Message'Length,
+                        null,
+                        null));
                end if;
             end;
             Dummy := C.winbase.LocalFree (
