@@ -11,29 +11,29 @@ package body Ada.Locales is
    function Compare (Left, Right : Alpha_2_NP) return Integer;
    function Compare (Left, Right : Alpha_2_NP) return Integer is
       type Compare_Integer is mod 16#10000#;
+      Left_Value : constant Compare_Integer :=
+         Character'Pos (Left (1)) * 16#100#
+         or Character'Pos (Left (2));
+      Right_Value : constant Compare_Integer :=
+         Character'Pos (Right (1)) * 16#100#
+         or Character'Pos (Right (2));
    begin
-      return
-         Integer (Compare_Integer'(
-            Character'Pos (Left (1)) * 16#100#
-            or Character'Pos (Left (2))))
-         - Integer (Compare_Integer'(
-            Character'Pos (Right (1)) * 16#100#
-            or Character'Pos (Right (2))));
+      return Integer (Left_Value) - Integer (Right_Value);
    end Compare;
 
    function Compare (Left, Right : Alpha_3_NP) return Integer;
    function Compare (Left, Right : Alpha_3_NP) return Integer is
       type Compare_Integer is mod 16#1000000#;
+      Left_Value : constant Compare_Integer :=
+         Character'Pos (Left (1)) * 16#10000#
+         or Character'Pos (Left (2)) * 16#100#
+         or Character'Pos (Left (3));
+      Right_Value : constant Compare_Integer :=
+         Character'Pos (Right (1)) * 16#10000#
+         or Character'Pos (Right (2)) * 16#100#
+         or Character'Pos (Right (3));
    begin
-      return
-         Integer (Compare_Integer'(
-            Character'Pos (Left (1)) * 16#10000#
-            or Character'Pos (Left (2)) * 16#100#
-            or Character'Pos (Left (3))))
-         - Integer (Compare_Integer'(
-            Character'Pos (Right (1)) * 16#10000#
-            or Character'Pos (Right (2)) * 16#100#
-            or Character'Pos (Right (3))));
+      return Integer (Left_Value) - Integer (Right_Value);
    end Compare;
 
    type Language_Table_Element is record
