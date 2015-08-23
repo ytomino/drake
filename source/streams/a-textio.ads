@@ -71,7 +71,6 @@ package Ada.Text_IO is
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target);
-
    --  extended
    function Create (
       Mode : File_Mode := Out_File;
@@ -99,7 +98,6 @@ package Ada.Text_IO is
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target);
-
    --  extended
    function Open (
       Mode : File_Mode;
@@ -120,15 +118,16 @@ package Ada.Text_IO is
    function Mode (
       File : File_Type) -- Open_File_Type
       return File_Mode;
-   pragma Inline (Mode);
    function Name (
       File : File_Type) -- Open_File_Type
       return String;
    function Name (File : not null File_Access) return String; -- alt
-   pragma Inline (Name);
    function Form (
       File : File_Type) -- Open_File_Type
       return String;
+
+   pragma Inline (Mode);
+   pragma Inline (Name);
 
    function Is_Open (File : File_Type) return Boolean;
    function Is_Open (File : not null File_Access) return Boolean; -- alt
@@ -156,17 +155,19 @@ package Ada.Text_IO is
    --  declarated in above
 
    function Standard_Input return File_Access;
-   pragma Inline (Standard_Input);
    function Standard_Output return File_Access;
-   pragma Inline (Standard_Output);
    function Standard_Error return File_Access;
+
+   pragma Inline (Standard_Input);
+   pragma Inline (Standard_Output);
    pragma Inline (Standard_Error);
 
    function Current_Input return File_Access;
-   pragma Inline (Current_Input);
    function Current_Output return File_Access;
-   pragma Inline (Current_Output);
    function Current_Error return File_Access;
+
+   pragma Inline (Current_Input);
+   pragma Inline (Current_Output);
    pragma Inline (Current_Error);
 
    --  Buffer control
@@ -594,17 +595,19 @@ private
       for File_Access'Storage_Size use 0;
 
       function Standard_Input return File_Access;
-      pragma Inline (Standard_Input);
       function Standard_Output return File_Access;
-      pragma Inline (Standard_Output);
       function Standard_Error return File_Access;
+
+      pragma Inline (Standard_Input);
+      pragma Inline (Standard_Output);
       pragma Inline (Standard_Error);
 
       function Reference_Current_Input return access File_Access;
-      pragma Inline (Reference_Current_Input);
       function Reference_Current_Output return access File_Access;
-      pragma Inline (Reference_Current_Output);
       function Reference_Current_Error return access File_Access;
+
+      pragma Inline (Reference_Current_Input);
+      pragma Inline (Reference_Current_Output);
       pragma Inline (Reference_Current_Error);
 
       function Reference (File : File_Type)

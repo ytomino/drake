@@ -14,7 +14,6 @@ package System.Native_Time is
    --  convert time span
 
    function To_Duration (D : C.windef.FILETIME) return Duration;
-
    pragma Pure_Function (To_Duration);
 
    --  for delay

@@ -8,7 +8,6 @@ package Ada.Text_IO.Terminal.Colors is
    type Color is private;
 
    function To_Color (Item : Ada.Colors.RGB) return Color;
-
    pragma Inline (To_Color); -- renamed
 
    type Boolean_Parameter (Changing : Boolean := False) is record
@@ -32,7 +31,6 @@ package Ada.Text_IO.Terminal.Colors is
    --  for shorthand
    function "+" (Item : Boolean) return Boolean_Parameter;
    function "+" (Item : Color) return Color_Parameter;
-
    pragma Inline ("+");
 
    procedure Set_Color (

@@ -15,6 +15,7 @@ package Ada.Environment_Variables.Inside is
 
    function Has_Element (Position : Cursor) return Boolean;
    pragma Inline (Has_Element);
+
    function Name (Position : Cursor) return String;
    function Value (Position : Cursor) return String;
 
@@ -22,8 +23,9 @@ package Ada.Environment_Variables.Inside is
    procedure Release_Block (Block : System.Address);
 
    function First (Block : System.Address) return Cursor;
-   pragma Inline (First);
    function Next (Block : System.Address; Position : Cursor) return Cursor;
+
+   pragma Inline (First);
    pragma Inline (Next);
 
 end Ada.Environment_Variables.Inside;

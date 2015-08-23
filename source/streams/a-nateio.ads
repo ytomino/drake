@@ -74,8 +74,9 @@ package Ada.Naked_Text_IO is
       Line_Length, Page_Length : out Natural);
 
    function Line_Length (File : Non_Controlled_File_Type) return Natural;
-   pragma Inline (Line_Length);
    function Page_Length (File : Non_Controlled_File_Type) return Natural;
+
+   pragma Inline (Line_Length);
    pragma Inline (Page_Length);
 
    procedure New_Line (
@@ -101,10 +102,11 @@ package Ada.Naked_Text_IO is
       Col, Line : out Positive);
 
    function Col (File : Non_Controlled_File_Type) return Positive;
-   pragma Inline (Col);
    function Line (File : Non_Controlled_File_Type) return Positive;
-   pragma Inline (Line);
    function Page (File : Non_Controlled_File_Type) return Positive;
+
+   pragma Inline (Col);
+   pragma Inline (Line);
    pragma Inline (Page);
 
    procedure Get (

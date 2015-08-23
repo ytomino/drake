@@ -21,182 +21,146 @@ package System.Stream_Attributes is
 
    function I_AD (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Fat_Pointer;
-   pragma Inline (I_AD);
-
    function I_AS (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Thin_Pointer;
-   pragma Inline (I_AS);
-
    function I_B (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Boolean;
-   pragma Inline (I_B);
-
    function I_C (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Character;
-   pragma Inline (I_C);
-
    function I_F (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Float;
-   pragma Inline (I_F);
-
    function I_I (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Integer;
-   pragma Inline (I_I);
-
    function I_LF (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Long_Float;
-   pragma Inline (I_LF);
-
    function I_LI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Long_Integer;
-   pragma Inline (I_LI);
-
    function I_LLF (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Long_Long_Float;
-   pragma Inline (I_LLF);
-
    function I_LLI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Long_Long_Integer;
-   pragma Inline (I_LLI);
-
    function I_LLU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Long_Long_Unsigned;
-   pragma Inline (I_LLU);
-
    function I_LU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Long_Unsigned;
-   pragma Inline (I_LU);
-
    function I_SF (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Short_Float;
-   pragma Inline (I_SF);
-
    function I_SI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Short_Integer;
-   pragma Inline (I_SI);
-
    function I_SSI (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Short_Short_Integer;
-   pragma Inline (I_SSI);
-
    function I_SSU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Short_Short_Unsigned;
-   pragma Inline (I_SSU);
-
    function I_SU (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Short_Unsigned;
-   pragma Inline (I_SU);
-
    function I_U (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Unsigned_Types.Unsigned;
-   pragma Inline (I_U);
-
    function I_WC (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Wide_Character;
-   pragma Inline (I_WC);
-
    function I_WWC (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
       return Wide_Wide_Character;
+
+   pragma Inline (I_AD);
+   pragma Inline (I_AS);
+   pragma Inline (I_B);
+   pragma Inline (I_C);
+   pragma Inline (I_F);
+   pragma Inline (I_I);
+   pragma Inline (I_LF);
+   pragma Inline (I_LI);
+   pragma Inline (I_LLF);
+   pragma Inline (I_LLI);
+   pragma Inline (I_LLU);
+   pragma Inline (I_LU);
+   pragma Inline (I_SF);
+   pragma Inline (I_SI);
+   pragma Inline (I_SSI);
+   pragma Inline (I_SSU);
+   pragma Inline (I_SU);
+   pragma Inline (I_U);
+   pragma Inline (I_WC);
    pragma Inline (I_WWC);
 
    procedure W_AD (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Fat_Pointer);
-   pragma Inline (W_AD);
-
    procedure W_AS (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Thin_Pointer);
-   pragma Inline (W_AS);
-
    procedure W_B (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Boolean);
-   pragma Inline (W_B);
-
    procedure W_C (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Character);
-   pragma Inline (W_C);
-
    procedure W_F (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Float);
-   pragma Inline (W_F);
-
    procedure W_I (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Integer);
-   pragma Inline (W_I);
-
    procedure W_LF (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Long_Float);
-   pragma Inline (W_LF);
-
    procedure W_LI (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Long_Integer);
-   pragma Inline (W_LI);
-
    procedure W_LLF (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Long_Long_Float);
-   pragma Inline (W_LLF);
-
    procedure W_LLI (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Long_Long_Integer);
-   pragma Inline (W_LLI);
-
    procedure W_LLU (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Long_Long_Unsigned);
-   pragma Inline (W_LLU);
-
    procedure W_LU (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Long_Unsigned);
-   pragma Inline (W_LU);
-
    procedure W_SF (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Short_Float);
-   pragma Inline (W_SF);
-
    procedure W_SI (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Short_Integer);
-   pragma Inline (W_SI);
-
    procedure W_SSI (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Short_Short_Integer);
-   pragma Inline (W_SSI);
-
    procedure W_SSU (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Short_Short_Unsigned);
-   pragma Inline (W_SSU);
-
    procedure W_SU (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Short_Unsigned);
-   pragma Inline (W_SU);
-
    procedure W_U (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Unsigned_Types.Unsigned);
-   pragma Inline (W_U);
-
    procedure W_WC (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Wide_Character);
-   pragma Inline (W_WC);
-
    procedure W_WWC (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Wide_Wide_Character);
+
+   pragma Inline (W_AD);
+   pragma Inline (W_AS);
+   pragma Inline (W_B);
+   pragma Inline (W_C);
+   pragma Inline (W_F);
+   pragma Inline (W_I);
+   pragma Inline (W_LF);
+   pragma Inline (W_LI);
+   pragma Inline (W_LLF);
+   pragma Inline (W_LLI);
+   pragma Inline (W_LLU);
+   pragma Inline (W_LU);
+   pragma Inline (W_SF);
+   pragma Inline (W_SI);
+   pragma Inline (W_SSI);
+   pragma Inline (W_SSU);
+   pragma Inline (W_SU);
+   pragma Inline (W_U);
+   pragma Inline (W_WC);
    pragma Inline (W_WWC);
 
    --  required for default 'Read/'Write attributes by compiler (s-stratt.ads)

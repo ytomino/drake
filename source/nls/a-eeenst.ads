@@ -21,6 +21,7 @@ package Ada.Environment_Encoding.Encoding_Streams is
    --  The parameter Decoder is neither access nor aliased for derived types.
    --  The same applies hereafter.
    function Is_Open (Object : In_Type) return Boolean;
+
    pragma Inline (Is_Open);
 
    --  stream access
@@ -43,6 +44,7 @@ package Ada.Environment_Encoding.Encoding_Streams is
       Stream : not null access Streams.Root_Stream_Type'Class)
       return Out_Type;
    function Is_Open (Object : Out_Type) return Boolean;
+
    pragma Inline (Is_Open);
 
    --  stream access
@@ -70,6 +72,7 @@ package Ada.Environment_Encoding.Encoding_Streams is
       Stream : not null access Streams.Root_Stream_Type'Class)
       return Inout_Type;
    function Is_Open (Object : Inout_Type) return Boolean;
+
    pragma Inline (Is_Open);
 
    --  substitute (encoded as internal)

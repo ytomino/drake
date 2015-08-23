@@ -33,7 +33,6 @@ package System.Packed_Arrays is
          Rev_SSO : Boolean)
          return Element_Type
          with Convention => Intrinsic;
-
       procedure Set (
          Arr : Address;
          N : Natural;

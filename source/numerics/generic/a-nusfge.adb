@@ -19,7 +19,6 @@ package body Ada.Numerics.SFMT.Generating is
 
    procedure do_recursion (r : out w128_t; a, b, c, d : w128_t)
       with Convention => Intrinsic;
-
    pragma Inline_Always (do_recursion);
 
    --  This function simulates SIMD 128-bit right shift by the standard C.

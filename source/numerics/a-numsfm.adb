@@ -13,7 +13,6 @@ package body Ada.Numerics.SFMT is
 
    function idxof (i : Integer) return Integer
       with Convention => Intrinsic;
-
    pragma Inline_Always (idxof);
 
    function func1 (x : Unsigned_32) return Unsigned_32

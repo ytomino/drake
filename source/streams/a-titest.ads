@@ -12,7 +12,6 @@ package Ada.Text_IO.Text_Streams is
       Stream : Stream_Access;
       Name : String := "";
       Form : String); -- removed default
-   pragma Inline (Open);
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;

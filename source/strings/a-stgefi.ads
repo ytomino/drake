@@ -26,7 +26,6 @@ package Ada.Strings.Generic_Fixed is
       From : Positive;
       Going : Direction := Forward)
       return Natural;
-   pragma Inline (Index);
    function Index (
       Source : String_Type;
       Pattern : Character_Type;

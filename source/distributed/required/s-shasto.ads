@@ -33,8 +33,9 @@ package System.Shared_Storage is
    --  required for a protected in a package with pragma Shared_Passive
    --    by compiler (s-shasto.ads)
    procedure Shared_Var_Lock (Var : String);
-   pragma Inline (Shared_Var_Lock);
    procedure Shared_Var_Unlock (Var : String);
+
+   pragma Inline (Shared_Var_Lock);
    pragma Inline (Shared_Var_Unlock);
 
    --  required for a variable in a package with pragma Shared_Passive

@@ -34,7 +34,6 @@ package body System.Unwind.Occurrences is
    procedure Call_Chain (Current : in out Exception_Occurrence)
       with Import, -- weak linking
          Convention => Ada, External_Name => "ada__exceptions__call_chain";
-
    pragma Weak_External (Call_Chain);
 
    --  weak reference for System.Unwind.Backtrace
@@ -45,19 +44,18 @@ package body System.Unwind.Occurrences is
       New_Line : not null access procedure (Params : Address))
       with Import, -- weak linking
          Convention => Ada, External_Name => "__drake_backtrace_information";
-
    pragma Weak_External (Backtrace_Information);
 
    procedure Report_Backtrace (X : Exception_Occurrence)
       with Import, -- weak linking
          Convention => Ada, External_Name => "__drake_report_backtrace";
-
    pragma Weak_External (Report_Backtrace);
 
    --  (a-elchha.ads)
    procedure Last_Chance_Handler (
       Current : Exception_Occurrence);
    pragma No_Return (Last_Chance_Handler);
+
    procedure Last_Chance_Handler (
       Current : Exception_Occurrence) is
    begin
@@ -72,6 +70,7 @@ package body System.Unwind.Occurrences is
    procedure Unhandled_Exception_Terminate (
       Current : not null Exception_Occurrence_Access);
    pragma No_Return (Unhandled_Exception_Terminate);
+
    procedure Unhandled_Exception_Terminate (
       Current : not null Exception_Occurrence_Access) is
    begin

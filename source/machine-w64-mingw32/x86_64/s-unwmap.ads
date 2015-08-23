@@ -34,7 +34,6 @@ package System.Unwind.Mapping is
       with Export,
          Convention => Ada,
          External_Name => "__drake_new_machine_occurrence_from_seh";
-
    pragma No_Inline (New_Machine_Occurrence_From_SEH);
 
 private

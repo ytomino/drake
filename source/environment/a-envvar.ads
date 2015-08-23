@@ -32,8 +32,9 @@ package Ada.Environment_Variables is
    pragma Inline (Has_Element); -- renamed
 
    function Name (Position : Cursor) return String;
-   pragma Inline (Name); -- renamed
    function Value (Position : Cursor) return String;
+
+   pragma Inline (Name); -- renamed
    pragma Inline (Value); -- renamed
 
    package Iterator_Interfaces is

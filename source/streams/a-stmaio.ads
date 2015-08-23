@@ -46,10 +46,11 @@ package Ada.Storage_Mapped_IO is
    function Storage_Address (
       Object : Storage_Type) -- Mapped_Storage_Type
       return System.Address;
-   pragma Inline (Storage_Address);
    function Storage_Size (
       Object : Storage_Type) -- Mapped_Storage_Type
       return System.Storage_Elements.Storage_Count;
+
+   pragma Inline (Storage_Address);
    pragma Inline (Storage_Size);
 
    Status_Error : exception

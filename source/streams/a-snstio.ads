@@ -56,17 +56,19 @@ package Ada.Streams.Naked_Stream_IO is
 
    function Mode (File : not null Non_Controlled_File_Type)
       return IO_Modes.File_Mode;
-   pragma Inline (Mode);
    function Name (File : not null Non_Controlled_File_Type) return String;
-   pragma Inline (Name);
    function Form (File : Non_Controlled_File_Type)
       return System.Native_IO.Packed_Form;
+
+   pragma Inline (Mode);
+   pragma Inline (Name);
    pragma Inline (Form);
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean;
-   pragma Inline (Is_Open);
    function End_Of_File (File : not null Non_Controlled_File_Type)
       return Boolean;
+
+   pragma Inline (Is_Open);
 
    function Stream (File : not null Non_Controlled_File_Type)
       return not null access Root_Stream_Type'Class;

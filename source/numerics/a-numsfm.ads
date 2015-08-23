@@ -86,8 +86,9 @@ package Ada.Numerics.SFMT is
    type Generator is limited private;
 
    function Random_32 (Gen : aliased in out Generator) return Unsigned_32;
-   pragma Inline (Random_32);
    function Random_64 (Gen : aliased in out Generator) return Unsigned_64;
+
+   pragma Inline (Random_32);
    pragma Inline (Random_64);
 
    procedure Fill_Random_32 (

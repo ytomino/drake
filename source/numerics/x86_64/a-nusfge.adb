@@ -43,7 +43,6 @@ package body Ada.Numerics.SFMT.Generating is
 
    procedure mm_recursion (r : out m128i; a, b, c, d : m128i)
       with Convention => Intrinsic;
-
    pragma Inline_Always (mm_recursion);
 
    --  This function represents the recursion formula.

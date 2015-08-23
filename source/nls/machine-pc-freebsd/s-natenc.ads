@@ -41,9 +41,9 @@ package System.Native_Encoding is
    UTF_32 : constant Encoding_Id := UTF_32_Names (Default_Bit_Order)(0)'Access;
 
    function Get_Current_Encoding return Encoding_Id;
-   pragma Inline (Get_Current_Encoding);
    --  In POSIX, other packages (Ada.Command_Line, Ada.Environment_Variables,
    --    Ada.Text_IO, etc) also assume that system encoding is UTF-8.
+   pragma Inline (Get_Current_Encoding);
 
    --  subsidiary types to converter
 
