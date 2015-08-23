@@ -9,7 +9,6 @@ package body System.Native_Real_Time is
    Frequency : aliased C.winnt.LARGE_INTEGER;
 
    function To_LARGE_INTEGER (D : Duration) return C.winnt.LARGE_INTEGER;
-
    pragma Pure_Function (To_LARGE_INTEGER);
 
    function To_LARGE_INTEGER (D : Duration) return C.winnt.LARGE_INTEGER is

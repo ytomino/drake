@@ -15,7 +15,6 @@ package Ada.Exception_Identification is
       with Import,
          Convention => Ada,
          External_Name => "ada__exceptions__raise_exception";
-
    pragma No_Return (Raise_Exception);
 
    --  These functions raise a new occurrence of the identified exception
@@ -35,7 +34,6 @@ package Ada.Exception_Identification is
       with Import,
          Convention => Ada,
          External_Name => "__drake_raise_exception_from_here_with";
-
    pragma No_Return (Raise_Exception_From_Here);
 
 private

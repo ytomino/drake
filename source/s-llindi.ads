@@ -8,7 +8,6 @@ package System.Long_Long_Integer_Divisions is
    procedure Divide (
       Left, Right : Longest_Unsigned;
       Quotient, Remainder : out Longest_Unsigned);
-
    pragma Inline (Divide);
 
 end System.Long_Long_Integer_Divisions;

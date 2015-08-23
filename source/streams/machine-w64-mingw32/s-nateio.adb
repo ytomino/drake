@@ -140,22 +140,22 @@ package body System.Native_Text_IO is
       Ada_Buffer : Wide_String (1 .. 2);
       W_Buffer : C.winnt.WCHAR_array (0 .. 1);
       for W_Buffer'Address use Ada_Buffer'Address;
-      W_Buffer_Length : Natural;
+      W_Buffer_Length : C.signed_int;
       DBCS_Seq : Natural;
    begin
       DBCS_Seq := 1 + Boolean'Pos (
          C.winnls.IsDBCSLeadByte (
             C.windef.BYTE'(Character'Pos (Buffer (1)))) /= 0);
       if Last = DBCS_Seq then
-         W_Buffer_Length := Natural (C.winnls.MultiByteToWideChar (
+         W_Buffer_Length := C.winnls.MultiByteToWideChar (
             C.winnls.CP_ACP,
             0,
             LPSTR_Conv.To_Pointer (Buffer (1)'Address),
             C.signed_int (Last),
             W_Buffer (0)'Access,
-            2));
+            2);
          UTF_Conversions.From_16_To_8.Convert (
-            Ada_Buffer (1 .. W_Buffer_Length),
+            Ada_Buffer (1 .. Natural (W_Buffer_Length)),
             Out_Buffer,
             Out_Last);
       else
@@ -173,12 +173,13 @@ package body System.Native_Text_IO is
       Ada_Buffer_Last : Natural;
       W_Buffer : C.winnt.WCHAR_array (0 .. 1);
       for W_Buffer'Address use Ada_Buffer'Address;
+      Out_Length : C.signed_int;
    begin
       UTF_Conversions.From_8_To_16.Convert (
          Buffer (1 .. Last),
          Ada_Buffer,
          Ada_Buffer_Last);
-      Out_Last := Natural (C.winnls.WideCharToMultiByte (
+      Out_Length := C.winnls.WideCharToMultiByte (
          C.winnls.CP_ACP,
          0,
          W_Buffer (0)'Access,
@@ -186,10 +187,12 @@ package body System.Native_Text_IO is
          LPSTR_Conv.To_Pointer (Out_Buffer (1)'Address),
          Out_Buffer'Length,
          null,
-         null));
-      if Out_Last = 0 then
+         null);
+      if Out_Length = 0 then
          Out_Buffer (1) := '?';
          Out_Last := 1;
+      else
+         Out_Last := Natural (Out_Length);
       end if;
    end To_DBCS;
 

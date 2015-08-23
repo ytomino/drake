@@ -13,6 +13,8 @@ package body Ada.Numerics.MT19937 is
    --  implementation
 
    function Random_32 (Gen : aliased in out Generator) return Cardinal is
+      pragma Suppress (Index_Check);
+      pragma Suppress (Range_Check);
       mag01 : constant array (Cardinal range 0 .. 1) of Cardinal :=
          (0, MATRIX_A);
       y : Cardinal;

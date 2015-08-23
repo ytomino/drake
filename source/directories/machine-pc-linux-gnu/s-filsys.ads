@@ -27,7 +27,6 @@ package System.File_Systems is
    pragma Inline (Case_Sensitive);
 
    function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
-
    pragma Inline (Is_HFS);
 
    --  unimplemented

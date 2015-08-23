@@ -41,8 +41,6 @@ package System.Unwind.Raising is
       with Export,
          Convention => Ada,
          External_Name => "__drake_raise_exception_from_here";
-   pragma No_Return (Raise_Exception_From_Here);
-
    procedure Raise_Exception_From_Here_With (
       E : not null Exception_Data_Access;
       File : String := Ada.Debug.File;
@@ -51,6 +49,8 @@ package System.Unwind.Raising is
       with Export,
          Convention => Ada,
          External_Name => "__drake_raise_exception_from_here_with";
+
+   pragma No_Return (Raise_Exception_From_Here);
    pragma No_Return (Raise_Exception_From_Here_With);
 
    --  implementation for reraising (a-except-2005.adb)

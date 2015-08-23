@@ -50,7 +50,6 @@ package Interfaces.C is
       Item : Character;
       Substitute : char) -- Windows only
       return char;
-   pragma Inline (To_char);
    function To_char (
       Item : Character)
       return char;
@@ -64,7 +63,6 @@ package Interfaces.C is
       Item : char;
       Substitute : Character) -- Windows only
       return Character;
-   pragma Inline (To_Character);
    function To_Character (
       Item : char)
       return Character;
@@ -164,7 +162,6 @@ package Interfaces.C is
       Item : Wide_Character;
       Substitute : wchar_t) -- POSIX only
       return wchar_t;
-   pragma Inline (To_wchar_t);
    function To_wchar_t (
       Item : Wide_Character)
       return wchar_t;
@@ -178,7 +175,6 @@ package Interfaces.C is
       Item : wchar_t;
       Substitute : Wide_Character) -- POSIX only
       return Wide_Character;
-   pragma Inline (To_Wide_Character);
    function To_Wide_Character (
       Item : wchar_t)
       return Wide_Character;

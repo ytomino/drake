@@ -54,19 +54,23 @@ package Ada.Streams.Naked_Stream_IO is
       File : aliased in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode);
 
-   function Mode (File : Non_Controlled_File_Type) return IO_Modes.File_Mode;
-   pragma Inline (Mode);
-   function Name (File : Non_Controlled_File_Type) return String;
-   pragma Inline (Name);
+   function Mode (File : not null Non_Controlled_File_Type)
+      return IO_Modes.File_Mode;
+   function Name (File : not null Non_Controlled_File_Type) return String;
    function Form (File : Non_Controlled_File_Type)
       return System.Native_IO.Packed_Form;
+
+   pragma Inline (Mode);
+   pragma Inline (Name);
    pragma Inline (Form);
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean;
-   pragma Inline (Is_Open);
-   function End_Of_File (File : Non_Controlled_File_Type) return Boolean;
+   function End_Of_File (File : not null Non_Controlled_File_Type)
+      return Boolean;
 
-   function Stream (File : Non_Controlled_File_Type)
+   pragma Inline (Is_Open);
+
+   function Stream (File : not null Non_Controlled_File_Type)
       return not null access Root_Stream_Type'Class;
    pragma Inline (Stream);
 
@@ -92,7 +96,7 @@ package Ada.Streams.Naked_Stream_IO is
       File : aliased in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode);
 
-   procedure Flush (File : Non_Controlled_File_Type);
+   procedure Flush (File : not null Non_Controlled_File_Type);
 
    --  handle for non-controlled
 
@@ -104,11 +108,12 @@ package Ada.Streams.Naked_Stream_IO is
       Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False);
 
-   function Handle (File : Non_Controlled_File_Type)
+   function Handle (File : not null Non_Controlled_File_Type)
       return System.Native_IO.Handle_Type;
    pragma Inline (Handle);
 
-   function Is_Standard (File : Non_Controlled_File_Type) return Boolean;
+   function Is_Standard (File : not null Non_Controlled_File_Type)
+      return Boolean;
    pragma Inline (Is_Standard);
 
    --  exceptions

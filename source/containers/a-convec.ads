@@ -344,10 +344,13 @@ package Ada.Containers.Vectors is
       procedure Merge (Target : in out Vector; Source : in out Vector);
    end Generic_Sorting;
 
-   --  extended
+   --  extended from here
+
    type Element_Array is array (Index_Type range <>) of aliased Element_Type;
+
    package Slicing is
       new References.Generic_Slicing (Index_Type, Element_Type, Element_Array);
+
    function Constant_Reference (
       Container : aliased Vector)
       return Slicing.Constant_Reference_Type;
@@ -364,7 +367,6 @@ package Ada.Containers.Vectors is
       First_Index : Index_Type;
       Last_Index : Extended_Index)
       return Slicing.Reference_Type;
---  diff
 
    --  extended
    generic

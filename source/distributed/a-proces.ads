@@ -37,7 +37,6 @@ package Ada.Processes is
       Status : out Command_Line.Exit_Status);
    procedure Wait (
       Child : Process);
-
    pragma Inline (Wait); -- renamed, or for shorthand
 
    procedure Shell (
@@ -45,14 +44,12 @@ package Ada.Processes is
       Status : out Ada.Command_Line.Exit_Status);
    procedure Shell (
       Command_Line : String);
-
    pragma Inline (Shell); -- renamed, or for shorthand
 
    procedure Append_Argument (
       Command_Line : in out String;
       Last : in out Natural;
       Argument : String);
-
    pragma Inline (Append_Argument); -- renamed
 
    Name_Error : exception

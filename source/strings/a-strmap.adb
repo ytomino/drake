@@ -173,9 +173,8 @@ package body Ada.Strings.Maps is
    Full_Set_Data : aliased constant Set_Data := (
       Length => 1,
       Reference_Count => System.Reference_Counting.Static,
-      Items => (1 => (
-         Low => Wide_Wide_Character'First,
-         High => Wide_Wide_Character'Last)));
+      Items => (
+         1 => (Wide_Wide_Character'First, Wide_Wide_Character'Last)));
 
    --  implementation of sets
 
@@ -430,17 +429,19 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Set (Span : Character_Range)
       return Character_Set is
    begin
-      return Overloaded_To_Set (Wide_Wide_Character_Range'(
-         Low => Naked_Maps.To_Wide_Wide_Character (Span.Low),
-         High => Naked_Maps.To_Wide_Wide_Character (Span.High)));
+      return Overloaded_To_Set (
+         Wide_Wide_Character_Range'(
+            Naked_Maps.To_Wide_Wide_Character (Span.Low),
+            Naked_Maps.To_Wide_Wide_Character (Span.High)));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Wide_Character_Range)
       return Character_Set is
    begin
-      return Overloaded_To_Set (Wide_Wide_Character_Range'(
-         Low => To_Wide_Wide_Character (Span.Low),
-         High => To_Wide_Wide_Character (Span.High)));
+      return Overloaded_To_Set (
+         Wide_Wide_Character_Range'(
+            To_Wide_Wide_Character (Span.Low),
+            To_Wide_Wide_Character (Span.High)));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Wide_Wide_Character_Range)
@@ -523,7 +524,7 @@ package body Ada.Strings.Maps is
          new Set_Data'(
             Length => 1,
             Reference_Count => 1,
-            Items => (1 => (Low => Singleton, High => Singleton))));
+            Items => (1 => (Singleton, Singleton))));
    end Overloaded_To_Set;
 
    overriding function "=" (Left, Right : Character_Set) return Boolean is

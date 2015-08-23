@@ -13,22 +13,25 @@ package Ada.Streams.Unbounded_Storage_IO is
    procedure Reset (Object : in out Buffer_Type);
 
    function Size (Object : Buffer_Type) return Stream_Element_Count;
-   pragma Inline (Size);
    procedure Set_Size (
       Object : in out Buffer_Type;
       Size : Stream_Element_Count);
 
+   pragma Inline (Size);
+
    function Capacity (Object : Buffer_Type) return Stream_Element_Count;
-   pragma Inline (Capacity);
    procedure Reserve_Capacity (
       Object : in out Buffer_Type;
       Capacity : Stream_Element_Count);
+
+   pragma Inline (Capacity);
 
    --  direct storage accessing
    function Storage_Address (Object : aliased in out Buffer_Type)
       return System.Address;
    function Storage_Size (Object : Buffer_Type)
       return System.Storage_Elements.Storage_Count;
+
    pragma Inline (Storage_Size);
 
    --  streaming

@@ -18,7 +18,6 @@ package body Interfaces.COBOL is
    procedure unreachable
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_unreachable";
-
    pragma No_Return (unreachable);
 
    --  display formats

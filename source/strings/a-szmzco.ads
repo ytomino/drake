@@ -97,10 +97,11 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
    --  (Character_Set is excluded 16#7F# .. 16#FF#)
 --  Wide_Character_Set : constant Wide_Wide_Maps.Wide_Wide_Character_Set;
    function Wide_Character_Set return Wide_Wide_Character_Set;
-   pragma Inline (Wide_Character_Set);
    --  Contains each Wide_Wide_Character value WWC such that
    --  Characters.Conversions.Is_Wide_Character(WWC) is True
    --  (Wide_Character_Set is excluded surrogate pair)
+
+   pragma Inline (Wide_Character_Set);
 
 private
 

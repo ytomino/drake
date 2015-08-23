@@ -57,8 +57,9 @@ package System.Native_Tasks is
    type Abort_Handler is access procedure;
 
    procedure Install_Abort_Handler (Handler : Abort_Handler);
-   pragma Inline (Install_Abort_Handler);
    procedure Uninstall_Abort_Handler;
+
+   pragma Inline (Install_Abort_Handler);
    pragma Inline (Uninstall_Abort_Handler);
 
    type Task_Attribute_Of_Abort is record
@@ -76,8 +77,9 @@ package System.Native_Tasks is
       Error : out Boolean);
 
    procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort);
-   pragma Inline (Block_Abort_Signal);
    procedure Unblock_Abort_Signal (Attr : in out Task_Attribute_Of_Abort);
+
+   pragma Inline (Block_Abort_Signal);
    pragma Inline (Unblock_Abort_Signal);
 
 end System.Native_Tasks;

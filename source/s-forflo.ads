@@ -29,8 +29,8 @@ package System.Formatting.Float is
       return Positive;
    function Fore_Width (First, Last : Longest_Float; Base : Number_Base := 10)
       return Positive;
-   pragma Inline (Fore_Width);
    --  return width of integer part
+   pragma Inline (Fore_Width);
 
    procedure Image (
       Value : Longest_Float;

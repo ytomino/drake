@@ -7,11 +7,10 @@ private package Ada.Calendar.Delays is
 
    --  required for delay statement by compiler (a-caldel.ads)
    procedure Delay_For (D : Duration);
+   pragma Inline (Delay_For); -- renamed
 
    --  required for delay until statement by compiler (a-caldel.ads)
    procedure Delay_Until (T : Time);
-
-   pragma Inline (Delay_For); -- renamed
    pragma Inline (Delay_Until); -- renamed
 
    --  required for select or delay by compiler (a-caldel.ads)

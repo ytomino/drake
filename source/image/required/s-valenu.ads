@@ -10,22 +10,21 @@ package System.Val_Enum is
       Num : Natural;
       Str : String)
       return Natural;
-   pragma Pure_Function (Value_Enumeration_8);
-
    function Value_Enumeration_16 (
       Names : String;
       Indexes : Address;
       Num : Natural;
       Str : String)
       return Natural;
-   pragma Pure_Function (Value_Enumeration_16);
-
    function Value_Enumeration_32 (
       Names : String;
       Indexes : Address;
       Num : Natural;
       Str : String)
       return Natural;
+
+   pragma Pure_Function (Value_Enumeration_8);
+   pragma Pure_Function (Value_Enumeration_16);
    pragma Pure_Function (Value_Enumeration_32);
 
    --  helper

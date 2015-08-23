@@ -52,7 +52,6 @@ package Ada.Streams.Stream_IO is
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
       Overwrite : Boolean := True);
-
    --  extended
    function Create (
       Mode : File_Mode := Out_File;
@@ -76,7 +75,6 @@ package Ada.Streams.Stream_IO is
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
       Overwrite : Boolean := True);
-
    --  extended
    function Open (
       Mode : File_Mode;
@@ -95,27 +93,29 @@ package Ada.Streams.Stream_IO is
    function Mode (
       File : File_Type) -- Open_File_Type
       return File_Mode;
-   pragma Inline (Mode);
    function Name (
       File : File_Type) -- Open_File_Type
       return String;
-   pragma Inline (Name);
    function Form (
       File : File_Type) -- Open_File_Type
       return String;
 
+   pragma Inline (Mode);
+   pragma Inline (Name);
+
    function Is_Open (File : File_Type) return Boolean;
-   pragma Inline (Is_Open);
    function End_Of_File (
       File : File_Type) -- Open_File_Type
       return Boolean;
+
+   pragma Inline (Is_Open);
    pragma Inline (End_Of_File);
 
    function Stream (
       File : File_Type) -- Open_File_Type
       return Stream_Access;
-   pragma Inline (Stream);
    --  Return stream access for use with T'Input and T'Output
+   pragma Inline (Stream);
 
    --  Read array of stream elements from file
    procedure Read (
@@ -146,10 +146,11 @@ package Ada.Streams.Stream_IO is
    function Index (
       File : File_Type) -- Open_File_Type
       return Positive_Count;
-   pragma Inline (Index);
    function Size (
       File : File_Type) -- Open_File_Type
       return Count;
+
+   pragma Inline (Index);
    pragma Inline (Size);
 
    procedure Set_Mode (File : in out File_Type; Mode : File_Mode);

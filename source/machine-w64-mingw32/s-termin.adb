@@ -6,6 +6,7 @@ with C.winnls;
 with C.winnt;
 package body System.Termination is
    pragma Suppress (All_Checks);
+   use type C.signed_int;
 
    package LPSTR_Conv is
       new Address_To_Named_Access_Conversions (C.winnt.C_CHAR, C.winnt.LPSTR);
@@ -19,37 +20,37 @@ package body System.Termination is
       Dummy : C.windef.WINBOOL;
       pragma Unreferenced (Dummy);
       S16 : Wide_String (1 .. S'Length);
-      S16_Last : Natural;
+      S16_Length : C.signed_int;
       SL : String (1 .. S16'Length * 2 + 2);
-      SL_Last : Natural;
+      SL_Length : C.signed_int;
    begin
       --  convert S that is UTF-8 to active codepage
-      S16_Last := Natural (C.winnls.MultiByteToWideChar (
+      S16_Length := C.winnls.MultiByteToWideChar (
          C.winnls.CP_UTF8,
          0,
          LPSTR_Conv.To_Pointer (S'Address),
          S'Length,
          LPWSTR_Conv.To_Pointer (S16'Address),
-         S16'Length));
-      SL_Last := Natural (C.winnls.WideCharToMultiByte (
+         S16'Length);
+      SL_Length := C.winnls.WideCharToMultiByte (
          C.winnls.CP_ACP,
          0,
          LPWSTR_Conv.To_Pointer (S16'Address),
-         C.signed_int (S16_Last),
+         S16_Length,
          LPSTR_Conv.To_Pointer (SL'Address),
          SL'Length,
          null,
-         null));
+         null);
       --  newline
-      SL_Last := SL_Last + 1;
-      SL (SL_Last) := Character'Val (13);
-      SL_Last := SL_Last + 1;
-      SL (SL_Last) := Character'Val (10);
+      SL_Length := SL_Length + 1;
+      SL (Natural (SL_Length)) := Character'Val (13);
+      SL_Length := SL_Length + 1;
+      SL (Natural (SL_Length)) := Character'Val (10);
       --  output
       Dummy := C.winbase.WriteFile (
          C.winbase.GetStdHandle (C.winbase.STD_ERROR_HANDLE),
          C.windef.LPCVOID (SL'Address),
-         C.windef.DWORD (SL_Last),
+         C.windef.DWORD (SL_Length),
          Written'Access,
          null);
    end Error_Put_Line;

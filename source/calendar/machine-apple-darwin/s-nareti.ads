@@ -7,7 +7,6 @@ package System.Native_Real_Time is
    subtype Native_Time is C.stdint.uint64_t;
 
    function To_Duration (D : Native_Time) return Duration;
-
    pragma Pure_Function (To_Duration);
 
    function Clock return Native_Time

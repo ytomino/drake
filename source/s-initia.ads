@@ -27,12 +27,14 @@ package System.Initialization is
       Value : Object)
       return Object_Pointer;
 
---  procedure Delete_Object (Storage : in out Object_Storage);
-   --  extended, Object_Storage is not tagged type,
+   --  modified
+   --  Because Object_Storage is not tagged type,
    --  so it is not assured to pass-by-reference (?)
+--  procedure Delete_Object (Storage : in out Object_Storage);
    procedure Delete_Object (Storage : not null access Object_Storage);
-   --  extended, naming of New - Delete seems like sense of C++,
-   --  but naming of New - Dispose is suitable for sense of Pascal :-)
+   --  extended
+   --  New and Delete seems like sense of C++,
+   --  but New and Dispose is suitable for sense of Pascal :-)
    procedure Dispose_Object (Storage : not null access Object_Storage)
       renames Delete_Object;
 

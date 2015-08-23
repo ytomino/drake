@@ -6,7 +6,6 @@ package body System.Startup is
       with Import, -- weak linking
          Convention => Ada,
          External_Name => "__drake_install_exception_handler";
-
    pragma Weak_External (Install_Exception_Handler);
 
    --  implementation

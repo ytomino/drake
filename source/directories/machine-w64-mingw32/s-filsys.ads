@@ -39,7 +39,6 @@ package System.File_Systems is
       return Boolean;
 
    function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
-
    pragma Inline (Is_HFS);
 
    --  unimplemented

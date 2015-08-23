@@ -27,7 +27,6 @@ package Ada.Exceptions is
 
    procedure Raise_Exception (E : Exception_Id; Message : String := "")
       renames Exception_Identification.Raise_Exception;
-   pragma No_Return (Raise_Exception);
    function Exception_Message (X : Exception_Occurrence) return String;
    procedure Reraise_Occurrence (X : Exception_Occurrence);
 
@@ -116,13 +115,11 @@ private
    --  for raising, Raise_Exception may be called if not existing (exp_ch6.adb)
    procedure Raise_Exception_Always (E : Exception_Id; Message : String := "")
       renames Raise_Exception;
-   pragma No_Return (Raise_Exception_Always);
 
    --  required by compiler (a-except-2005.ads)
    --  for reraising (exp_ch11.adb)
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence)
       renames Unchecked_Reraise_Occurrence;
-   pragma No_Return (Reraise_Occurrence_Always);
 
    --  required by compiler (a-except-2005.ads)
    --  for reraising from when all others (exp_ch11.adb)

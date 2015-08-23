@@ -4,6 +4,7 @@ with C;
 package body Ada.Command_Line.Inside is
 
    function Argument (Number : Natural) return String is
+      pragma Suppress (Alignment_Check);
       argv : C.char_const_ptr_array (C.size_t)
          with Import, Convention => C;
       for argv'Address use System.Startup.argv;

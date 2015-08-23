@@ -12,7 +12,6 @@ package System.Unwind.Mapping is
       with Export, -- for weak linking
          Convention => Ada,
          External_Name => "__drake_install_exception_handler";
-
    pragma No_Inline (Install_Exception_Handler);
 
    procedure Install_Task_Exception_Handler (
@@ -21,7 +20,6 @@ package System.Unwind.Mapping is
       with Export,
          Convention => Ada,
          External_Name => "__drake_install_task_exception_handler";
-
    pragma No_Inline (Install_Task_Exception_Handler);
 
    procedure Reinstall_Exception_Handler is null

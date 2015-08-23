@@ -13,7 +13,6 @@ package System.Unwind.Backtrace is
    procedure Call_Chain (Current : in out Exception_Occurrence)
       with Export, -- for weak linking
          Convention => Ada, External_Name => "ada__exceptions__call_chain";
-
    pragma No_Inline (Call_Chain);
 
    --  equivalent to Append_Info_Basic_Exception_Traceback (a-exexda.adb)
@@ -24,13 +23,11 @@ package System.Unwind.Backtrace is
       New_Line : not null access procedure (Params : Address))
       with Export, -- for weak linking
          Convention => Ada, External_Name => "__drake_backtrace_information";
-
    pragma No_Inline (Backtrace_Information);
 
    procedure Report_Backtrace (X : Exception_Occurrence)
       with Export, -- for weak linking
          Convention => Ada, External_Name => "__drake_report_backtrace";
-
    pragma No_Inline (Report_Backtrace);
 
 end System.Unwind.Backtrace;

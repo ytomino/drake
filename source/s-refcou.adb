@@ -21,7 +21,6 @@ package body System.Reference_Counting is
       A3 : Length_Type)
       return Boolean
       with Convention => Intrinsic;
-
    pragma Inline_Always (sync_bool_compare_and_swap);
 
    function sync_bool_compare_and_swap (

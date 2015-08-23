@@ -18,20 +18,23 @@ package Ada.Strings.Generic_Fixed is
 
    --  Search subprograms
 
-   --  extended, character searching
+   --  extended
+   --  Character searching.
    function Index (
       Source : String_Type;
       Pattern : Character_Type;
       From : Positive;
       Going : Direction := Forward)
       return Natural;
-   pragma Inline (Index);
    function Index (
       Source : String_Type;
       Pattern : Character_Type;
       Going : Direction := Forward)
       return Natural;
    pragma Inline (Index);
+
+   --  extended
+   --  Forward or backward only version.
    function Index_Forward (Source : String_Type; Pattern : Character_Type)
       return Natural;
    function Index_Backward (Source : String_Type; Pattern : Character_Type)
@@ -52,7 +55,8 @@ package Ada.Strings.Generic_Fixed is
       return Natural;
    pragma Inline (Index);
 
-   --  extended, forward or backward only version
+   --  extended
+   --  Forward or backward only version.
    function Index_Forward (Source : String_Type; Pattern : String_Type)
       return Natural;
    function Index_Backward (Source : String_Type; Pattern : String_Type)
@@ -71,7 +75,8 @@ package Ada.Strings.Generic_Fixed is
       return Natural;
    pragma Inline (Index_Non_Blank);
 
-   --  extended, forward or backward only version
+   --  extended
+   --  Forward or backward only version.
    function Index_Non_Blank_Forward (
       Source : String_Type;
       Blank : Character_Type := Space)
@@ -141,7 +146,8 @@ package Ada.Strings.Generic_Fixed is
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
 
-   --  extended, for Bounede_String and Unbounede_String
+   --  extended
+   --  For Bounede_String and Unbounede_String.
    procedure Delete (
       Source : in out String_Type;
       Last : in out Natural;
@@ -162,7 +168,8 @@ package Ada.Strings.Generic_Fixed is
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
 
-   --  extended, explicit blank (default parameter is wrong for CXA4025)
+   --  extended
+   --  Explicit blank. (default parameter is wrong for CXA4025)
    procedure Trim (
       Source : in out String_Type;
       Side : Trim_End;
@@ -170,7 +177,8 @@ package Ada.Strings.Generic_Fixed is
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
 
-   --  extended, no copying
+   --  extended
+   --  No copying.
    procedure Trim (
       Source : String_Type;
       Side : Trim_End;
@@ -257,7 +265,8 @@ package Ada.Strings.Generic_Fixed is
          return Natural;
       pragma Inline (Index);
 
-      --  extended, forward or backward only version
+      --  extended
+      --  Forward or backward only version.
       function Index_Forward (
          Source : String_Type;
          Pattern : String_Type;
@@ -288,7 +297,8 @@ package Ada.Strings.Generic_Fixed is
          return Natural;
       pragma Inline (Index);
 
-      --  extended, forward or backward only version
+      --  extended
+      --  Forward or backward only version.
       function Index_Forward (
          Source : String_Type;
          Pattern : String_Type;
@@ -321,7 +331,8 @@ package Ada.Strings.Generic_Fixed is
          return Natural;
       pragma Inline (Index_Per_Element);
 
-      --  extended, forward or backward only version
+      --  extended
+      --  Forward or backward only version.
       function Index_Per_Element_Forward (
          Source : String_Type;
          Pattern : String_Type;
@@ -352,7 +363,8 @@ package Ada.Strings.Generic_Fixed is
          return Natural;
       pragma Inline (Index);
 
-      --  extended, forward or backward only version
+      --  extended
+      --  Forward or backward only version.
       function Index_Forward (
          Source : String_Type;
          Set : Character_Set;
@@ -405,6 +417,7 @@ package Ada.Strings.Generic_Fixed is
          Last : out Natural);
 
       --  extended
+      --  Only First or only Last.
       function Find_Token_Last (
          Source : String_Type;
          Set : Character_Set;
@@ -470,7 +483,8 @@ package Ada.Strings.Generic_Fixed is
          Justify : Alignment := Strings.Left;
          Pad : Character_Type := Space);
 
-      --  extended, no copying
+      --  extended
+      --  No copying.
       procedure Trim (
          Source : String_Type;
          Left : Character_Set;

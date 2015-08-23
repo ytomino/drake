@@ -14,46 +14,49 @@ package Ada.Characters.Handling is
    --  Character classification functions
 
    function Is_Control (Item : Character) return Boolean;
-   pragma Inline (Is_Control);
    function Is_Graphic (Item : Character) return Boolean;
-   pragma Inline (Is_Graphic);
    function Is_Letter (Item : Character) return Boolean;
-   pragma Inline (Is_Letter);
    function Is_Lower (Item : Character) return Boolean;
-   pragma Inline (Is_Lower);
    function Is_Upper (Item : Character) return Boolean;
-   pragma Inline (Is_Upper);
 --  function Is_Basic (Item : Character) return Boolean;
    function Is_Digit (Item : Character) return Boolean;
-   pragma Inline (Is_Digit);
    function Is_Decimal_Digit (Item : Character) return Boolean
       renames Is_Digit;
    function Is_Hexadecimal_Digit (Item : Character) return Boolean;
-   pragma Inline (Is_Hexadecimal_Digit);
    function Is_Alphanumeric (Item : Character) return Boolean;
-   pragma Inline (Is_Alphanumeric);
    function Is_Special (Item : Character) return Boolean;
+
+   pragma Inline (Is_Control);
+   pragma Inline (Is_Graphic);
+   pragma Inline (Is_Letter);
+   pragma Inline (Is_Lower);
+   pragma Inline (Is_Upper);
+   pragma Inline (Is_Digit);
+   pragma Inline (Is_Hexadecimal_Digit);
+   pragma Inline (Is_Alphanumeric);
    pragma Inline (Is_Special);
 
    --  Conversion functions for Character and String
 
    function To_Lower (Item : Character) return Character;
-   pragma Inline (To_Lower);
    function To_Upper (Item : Character) return Character;
-   pragma Inline (To_Upper);
 --  function To_Basic (Item : Character) return Character;
    --  extended
    --  Unicode case folding for comparison.
    function To_Case_Folding (Item : Character) return Character;
+
+   pragma Inline (To_Lower);
+   pragma Inline (To_Upper);
    pragma Inline (To_Case_Folding);
 
    function To_Lower (Item : String) return String;
-   pragma Inline (To_Lower);
    function To_Upper (Item : String) return String;
-   pragma Inline (To_Upper);
 --  function To_Basic (Item : String) return String;
    --  extended
    function To_Case_Folding (Item : String) return String;
+
+   pragma Inline (To_Lower);
+   pragma Inline (To_Upper);
    pragma Inline (To_Case_Folding);
 
    --  Classifications of and conversions between Character and ISO 646
@@ -61,7 +64,6 @@ package Ada.Characters.Handling is
    subtype ISO_646 is Character range Character'Val (0) .. Character'Val (127);
 
    function Is_ISO_646 (Item : Character) return Boolean;
-   pragma Inline (Is_ISO_646);
    function Is_ISO_646 (Item : String) return Boolean;
    pragma Inline (Is_ISO_646);
 

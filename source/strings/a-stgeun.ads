@@ -19,7 +19,8 @@ generic
 package Ada.Strings.Generic_Unbounded is
    pragma Preelaborate;
 
-   --  modified, tagged for dot notation
+   --  modified
+   --  Unbounded_String is declared as tagged for dot notation.
 --  type Unbounded_String is private;
    type Unbounded_String is tagged private;
    pragma Preelaborable_Initialization (Unbounded_String);
@@ -38,10 +39,11 @@ package Ada.Strings.Generic_Unbounded is
    --  extended
    procedure Set_Length (Source : in out Unbounded_String; Length : Natural);
    function Capacity (Source : Unbounded_String'Class) return Natural;
-   pragma Inline (Capacity);
    procedure Reserve_Capacity (
       Item : in out Unbounded_String;
       Capacity : Natural);
+
+   pragma Inline (Capacity);
 
    type String_Access is access all String_Type;
 --  procedure Free (X : in out String_Access);

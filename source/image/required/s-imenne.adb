@@ -7,6 +7,7 @@ package body System.Img_Enum_New is
       Names : String;
       Indexes : Address)
    is
+      pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 8;
       type Array_Type is array (Natural) of Index_Type;
       Indexes_2 : Array_Type;
@@ -26,6 +27,7 @@ package body System.Img_Enum_New is
       Names : String;
       Indexes : Address)
    is
+      pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 16;
       type Array_Type is array (Natural) of Index_Type;
       Indexes_2 : Array_Type;
@@ -45,6 +47,7 @@ package body System.Img_Enum_New is
       Names : String;
       Indexes : Address)
    is
+      pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 32;
       type Array_Type is array (Natural) of Index_Type;
       Indexes_2 : Array_Type;

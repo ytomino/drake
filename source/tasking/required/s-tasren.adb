@@ -64,6 +64,7 @@ package body System.Tasking.Rendezvous is
    procedure Exceptional_Complete_Rendezvous (
       X : Ada.Exceptions.Exception_Occurrence);
    pragma No_Return (Exceptional_Complete_Rendezvous);
+
    procedure Exceptional_Complete_Rendezvous (
       X : Ada.Exceptions.Exception_Occurrence)
    is

@@ -16,34 +16,35 @@ package Ada.Strings.Maps.Constants is
    --  extended
    --  There are sets of unicode category.
    function Unassigned_Set return Character_Set;
-   pragma Inline (Unassigned_Set); -- renamed, the followings are the same
    function Uppercase_Letter_Set return Character_Set;
-   pragma Inline (Uppercase_Letter_Set);
    function Lowercase_Letter_Set return Character_Set;
-   pragma Inline (Lowercase_Letter_Set);
    function Titlecase_Letter_Set return Character_Set;
-   pragma Inline (Titlecase_Letter_Set);
    function Modifier_Letter_Set return Character_Set;
-   pragma Inline (Modifier_Letter_Set);
    function Other_Letter_Set return Character_Set;
-   pragma Inline (Other_Letter_Set);
    function Decimal_Number_Set return Character_Set;
-   pragma Inline (Decimal_Number_Set);
    function Letter_Number_Set return Character_Set;
-   pragma Inline (Letter_Number_Set);
    function Other_Number_Set return Character_Set;
-   pragma Inline (Other_Number_Set);
    function Line_Separator_Set return Character_Set;
-   pragma Inline (Line_Separator_Set);
    function Paragraph_Separator_Set return Character_Set;
-   pragma Inline (Paragraph_Separator_Set);
    function Control_Set return Character_Set;
-   pragma Inline (Control_Set);
    function Format_Set return Character_Set;
-   pragma Inline (Format_Set);
    function Private_Use_Set return Character_Set;
-   pragma Inline (Private_Use_Set);
    function Surrogate_Set return Character_Set;
+
+   pragma Inline (Unassigned_Set); -- renamed, the followings are the same
+   pragma Inline (Uppercase_Letter_Set);
+   pragma Inline (Lowercase_Letter_Set);
+   pragma Inline (Titlecase_Letter_Set);
+   pragma Inline (Modifier_Letter_Set);
+   pragma Inline (Other_Letter_Set);
+   pragma Inline (Decimal_Number_Set);
+   pragma Inline (Letter_Number_Set);
+   pragma Inline (Other_Number_Set);
+   pragma Inline (Line_Separator_Set);
+   pragma Inline (Paragraph_Separator_Set);
+   pragma Inline (Control_Set);
+   pragma Inline (Format_Set);
+   pragma Inline (Private_Use_Set);
    pragma Inline (Surrogate_Set);
 
    --  relation of constants for Latin-1 in RM A.3.2
@@ -91,10 +92,8 @@ package Ada.Strings.Maps.Constants is
    --  (Control_Set is declared as unicode category in above)
 --  Graphic_Set : constant Character_Set;
    function Graphic_Set return Character_Set;
-   pragma Inline (Graphic_Set);
 --  Letter_Set : constant Character_Set;
    function Letter_Set return Character_Set;
-   pragma Inline (Letter_Set);
 --  Lower_Set : constant Character_Set;
    function Lower_Set return Character_Set
       renames Lowercase_Letter_Set;
@@ -105,35 +104,38 @@ package Ada.Strings.Maps.Constants is
    --  (Upper_Set is extended for all unicode characters)
 --  Basic_Set : constant Character_Set;
    function Decimal_Digit_Set return Character_Set;
-   pragma Inline (Decimal_Digit_Set);
    function Hexadecimal_Digit_Set return Character_Set;
-   pragma Inline (Hexadecimal_Digit_Set);
    --  (Decimal_Digit_Set, Hexadecimal_Digit_Set are NOT extended, for parsing)
 --  Alphanumeric_Set : constant Character_Set;
    function Alphanumeric_Set return Character_Set;
-   pragma Inline (Alphanumeric_Set);
 --  Special_Set : constant Character_Set;
    function Special_Set return Character_Set;
-   pragma Inline (Special_Set);
 --  ISO_646_Set : constant Character_Set;
    function ISO_646_Set return Character_Set;
+
+   pragma Inline (Graphic_Set);
+   pragma Inline (Letter_Set);
+   pragma Inline (Decimal_Digit_Set);
+   pragma Inline (Hexadecimal_Digit_Set);
+   pragma Inline (Alphanumeric_Set);
+   pragma Inline (Special_Set);
    pragma Inline (ISO_646_Set);
 
 --  Lower_Case_Map : constant Character_Mapping;
    function Lower_Case_Map return Character_Mapping;
-   pragma Inline (Lower_Case_Map);
    --  Maps to lower case for letters, else identity
    --  (Lower_Case_Map is extended for all unicode characters)
 --  Upper_Case_Map : constant Character_Mapping;
    function Upper_Case_Map return Character_Mapping;
-   pragma Inline (Upper_Case_Map);
    --  Maps to upper case for letters, else identity
    --  (Upper_Case_Map is extended for all unicode characters)
 --  Basic_Map : constant Character_Mapping;
    --  Maps to basic letter for letters, else identity
-
    --  extended
    function Case_Folding_Map return Character_Mapping;
+
+   pragma Inline (Lower_Case_Map);
+   pragma Inline (Upper_Case_Map);
    pragma Inline (Case_Folding_Map);
 
 private

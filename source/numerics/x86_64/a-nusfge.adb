@@ -43,7 +43,6 @@ package body Ada.Numerics.SFMT.Generating is
 
    procedure mm_recursion (r : out m128i; a, b, c, d : m128i)
       with Convention => Intrinsic;
-
    pragma Inline_Always (mm_recursion);
 
    --  This function represents the recursion formula.
@@ -71,6 +70,7 @@ package body Ada.Numerics.SFMT.Generating is
    procedure gen_rand_all (
       sfmt : in out w128_t_Array_N)
    is
+      pragma Suppress (Alignment_Check);
       i : Integer;
       r1, r2 : m128i;
       pstate_si : array (0 .. sfmt'Size / 128 - 1) of aliased m128i;
@@ -110,6 +110,7 @@ package body Ada.Numerics.SFMT.Generating is
       Item : in out w128_t_Array_Fixed;
       size : Integer)
    is
+      pragma Suppress (Alignment_Check);
       i, j : Integer;
       r1, r2 : m128i;
       pstate_si : array (0 .. sfmt'Size / 128 - 1) of aliased m128i;

@@ -51,14 +51,15 @@ package Ada.Direct_IO is
    function Mode (
       File : File_Type) -- Open_File_Type
       return File_Mode;
-   pragma Inline (Mode);
    function Name (
       File : File_Type) -- Open_File_Type
       return String;
-   pragma Inline (Name);
    function Form (
       File : File_Type) -- Open_File_Type
       return String;
+
+   pragma Inline (Mode);
+   pragma Inline (Name);
    pragma Inline (Form);
 
    function Is_Open (File : File_Type) return Boolean;

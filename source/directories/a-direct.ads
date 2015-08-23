@@ -220,29 +220,38 @@ package Ada.Directories is
       Process : not null access procedure (
          Directory_Entry : Directory_Entry_Type));
 
-   --  extended
+   --  extended from here
    --  There is an iterator for AI12-0009-1 (?)
+
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
+
    function Has_Element (Position : Cursor) return Boolean;
    pragma Inline (Has_Element);
+
    function Element (
       Container : Search_Type'Class; -- Open_Search_Type'Class
       Position : Cursor)
       return Directory_Entry_Type;
+
    type Constant_Reference_Type (
       Element : not null access constant Directory_Entry_Type) is null record
       with Implicit_Dereference => Element;
+
    function Constant_Reference (
       Container : aliased Search_Type; -- Open_Search_Type
       Position : Cursor)
       return Constant_Reference_Type;
    pragma Inline (Constant_Reference);
+
    package Search_Iterator_Interfaces is
       new Iterator_Interfaces (Cursor, Has_Element);
+
    function Iterate (
       Container : Search_Type) -- Open_Search_Type'Class
       return Search_Iterator_Interfaces.Forward_Iterator'Class;
+
+   --  to here
 
    --  Operations on Directory Entries:
 

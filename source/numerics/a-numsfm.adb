@@ -13,7 +13,6 @@ package body Ada.Numerics.SFMT is
 
    function idxof (i : Integer) return Integer
       with Convention => Intrinsic;
-
    pragma Inline_Always (idxof);
 
    function func1 (x : Unsigned_32) return Unsigned_32
@@ -190,6 +189,8 @@ package body Ada.Numerics.SFMT is
    function Random_32 (Gen : aliased in out Generator)
       return Unsigned_32
    is
+      pragma Suppress (Alignment_Check);
+      pragma Suppress (Index_Check);
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Gen.sfmt.state'Address;
       r : Unsigned_32;
@@ -211,6 +212,8 @@ package body Ada.Numerics.SFMT is
    function Random_64 (Gen : aliased in out Generator)
       return Unsigned_64
    is
+      pragma Suppress (Alignment_Check);
+      pragma Suppress (Index_Check);
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Gen.sfmt.state'Address;
       psfmt64 : Unsigned_64_Array_N64;
@@ -257,6 +260,7 @@ package body Ada.Numerics.SFMT is
       Gen : aliased in out Generator;
       Item : out Unsigned_32_Array)
    is
+      pragma Suppress (Range_Check);
       size : constant Integer := Item'Length;
    begin
       if Gen.sfmt.idx /= N32
@@ -268,6 +272,7 @@ package body Ada.Numerics.SFMT is
          end loop;
       else
          declare
+            pragma Suppress (Alignment_Check);
             the_array : w128_t_Array_Fixed;
             for the_array'Address use Item'Address;
          begin
@@ -286,6 +291,7 @@ package body Ada.Numerics.SFMT is
       Gen : aliased in out Generator;
       Item : out Unsigned_64_Array)
    is
+      pragma Suppress (Range_Check);
       size : constant Integer := Item'Length;
    begin
       if Gen.sfmt.idx /= N32
@@ -297,6 +303,7 @@ package body Ada.Numerics.SFMT is
          end loop;
       else
          declare
+            pragma Suppress (Alignment_Check);
             the_array : w128_t_Array_Fixed;
             for the_array'Address use Item'Address;
          begin
@@ -367,6 +374,7 @@ package body Ada.Numerics.SFMT is
          idx => N32)
       do
          declare
+            pragma Suppress (Alignment_Check);
             psfmt32 : Unsigned_32_Array_N32;
             for psfmt32'Address use Result.state'Address;
          begin
@@ -412,6 +420,7 @@ package body Ada.Numerics.SFMT is
          idx => N32)
       do
          declare
+            pragma Suppress (Alignment_Check);
             psfmt32 : Unsigned_32_Array_N32;
             for psfmt32'Address use Result.state'Address;
          begin
@@ -533,6 +542,7 @@ package body Ada.Numerics.SFMT is
             Error => Error);
          pragma Check (Validate, not Error and then Last = To'Last);
       end Hex_Put;
+      pragma Suppress (Alignment_Check);
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Of_State.state'Address;
       Last : Natural := 0;
@@ -580,6 +590,7 @@ package body Ada.Numerics.SFMT is
       end if;
       return Result : State do
          declare
+            pragma Suppress (Alignment_Check);
             psfmt32 : Unsigned_32_Array_N32;
             for psfmt32'Address use Result.state'Address;
          begin

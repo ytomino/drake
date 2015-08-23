@@ -9,15 +9,20 @@ package Ada.Command_Line is
 
    function Argument (Number : Positive) return String;
 
-   --  extended
+   --  extended from here
    --  The iterator.
+
    function Has_Element (Position : Natural) return Boolean;
    pragma Inline (Has_Element);
+
    package Iterator_Interfaces is
       new Ada.Iterator_Interfaces (Natural, Has_Element);
+
    function Iterate return Iterator_Interfaces.Reversible_Iterator'Class;
    function Iterate (First : Positive; Last : Natural)
       return Iterator_Interfaces.Reversible_Iterator'Class;
+
+   --  to here
 
    function Command_Name return String;
 

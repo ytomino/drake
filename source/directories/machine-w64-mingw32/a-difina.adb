@@ -38,21 +38,23 @@ package body Ada.Directories.File_Names is
                Right,
                W_Right (0)'Access,
                W_Right_Length);
-            W_Left_Length := C.size_t (C.winnls.LCMapString (
-               C.winnt.LOCALE_INVARIANT,
-               C.winnls.LCMAP_UPPERCASE,
-               W_Left (0)'Access,
-               C.signed_int (W_Left_Length),
-               W_Left (0)'Access, -- overwritable when only LCMAP_UPPERCASE
-               C.signed_int (W_Left_Length)));
+            W_Left_Length := C.size_t (
+               C.winnls.LCMapString (
+                  C.winnt.LOCALE_INVARIANT,
+                  C.winnls.LCMAP_UPPERCASE,
+                  W_Left (0)'Access,
+                  C.signed_int (W_Left_Length),
+                  W_Left (0)'Access, -- overwritable when only LCMAP_UPPERCASE
+                  C.signed_int (W_Left_Length)));
             W_Left (W_Left_Length) := C.winnt.WCHAR'Val (0);
-            W_Right_Length := C.size_t (C.winnls.LCMapString (
-               C.winnt.LOCALE_INVARIANT,
-               C.winnls.LCMAP_UPPERCASE,
-               W_Right (0)'Access,
-               C.signed_int (W_Right_Length),
-               W_Right (0)'Access,
-               C.signed_int (W_Right_Length)));
+            W_Right_Length := C.size_t (
+               C.winnls.LCMapString (
+                  C.winnt.LOCALE_INVARIANT,
+                  C.winnls.LCMAP_UPPERCASE,
+                  W_Right (0)'Access,
+                  C.signed_int (W_Right_Length),
+                  W_Right (0)'Access,
+                  C.signed_int (W_Right_Length)));
             W_Right (W_Right_Length) := C.winnt.WCHAR'Val (0);
             return Integer (
                C.string.wcscmp (W_Left (0)'Access, W_Right (0)'Access));
