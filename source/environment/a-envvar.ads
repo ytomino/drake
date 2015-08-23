@@ -22,18 +22,23 @@ package Ada.Environment_Variables is
    procedure Iterate (
       Process : not null access procedure (Name, Value : String));
 
-   --  extended
+   --  extended from here
    --  There is an iterator for AI12-0009-1 (?)
+
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
+
    function Has_Element (Position : Cursor) return Boolean;
    pragma Inline (Has_Element); -- renamed
+
    function Name (Position : Cursor) return String;
    pragma Inline (Name); -- renamed
    function Value (Position : Cursor) return String;
    pragma Inline (Value); -- renamed
+
    package Iterator_Interfaces is
       new Ada.Iterator_Interfaces (Cursor, Has_Element);
+
    function Iterate return Iterator_Interfaces.Forward_Iterator'Class;
 
 private

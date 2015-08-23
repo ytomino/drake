@@ -366,6 +366,8 @@ package Ada.Containers.Limited_Vectors is
       function Contains (Container : Vector; Item : Element_Type)
          return Boolean;
    end Equivalents;
+--  diff
+--  diff
 
 --  diff (Generic_Array_To_Vector)
 --

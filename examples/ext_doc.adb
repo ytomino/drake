@@ -66,7 +66,7 @@ procedure ext_doc is
 		Instantiation : Ada.Strings.Unbounded.Unbounded_String;
 		Reference : Ada.Strings.Unbounded.Unbounded_String;
 		Document : Ada.Strings.Unbounded.Unbounded_String;
-		Rest_Of_Name_Line : aliased Ada.Strings.Unbounded.Unbounded_String;
+		Rest_Line : aliased Ada.Strings.Unbounded.Unbounded_String;
 	begin
 		-- Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
 		Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Name);
@@ -148,7 +148,7 @@ procedure ext_doc is
 					then
 						Kind := Standard_Unit;
 						if Line /= "generic" then
-							Get_Unit_Name (Line, Unit_Name, Rest_Of_Name_Line);
+							Get_Unit_Name (Line, Unit_Name, Rest_Line);
 						end if;
 						exit;
 					end if;
@@ -172,7 +172,7 @@ procedure ext_doc is
 						or else (Start_With (Line, "generic")
 							and then Line /= "generic")
 					then
-						Get_Unit_Name (Line, Unit_Name, Rest_Of_Name_Line);
+						Get_Unit_Name (Line, Unit_Name, Rest_Line);
 						exit;
 					end if;
 				end;
@@ -214,60 +214,58 @@ procedure ext_doc is
 			end Get_Base;
 		begin
 			Detect_Instantiantion_Or_Renamed : loop
-				if Rest_Of_Name_Line = " is"
-					or else Rest_Of_Name_Line.Is_Null
-				then
-					Rest_Of_Name_Line := +Ada.Text_IO.Get_Line (File);
-				elsif Rest_Of_Name_Line = ";" then
-					Rest_Of_Name_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
+				if Rest_Line = " is" or else Rest_Line.Is_Null then
+					Rest_Line := +Ada.Text_IO.Get_Line (File);
+				elsif Rest_Line = ";" then
+					Rest_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
 					exit;
-				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, " (") then
-					if Rest_Of_Name_Line.Element (Rest_Of_Name_Line.Length) /= ';' then
+				elsif Start_With (Rest_Line.Constant_Reference.Element.all, " (") then
+					if Rest_Line.Element (Rest_Line.Length) /= ';' then
 						Skip_Formal_Parameters;
 					end if;
-					Rest_Of_Name_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
+					Rest_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
 					exit;
-				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   --")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   pragma")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  pragma")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   use type")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  use")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   type")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "--  type")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   subtype")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   procedure")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   function")
-					or else Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "end")
-					or else Ada.Strings.Unbounded.Index (Rest_Of_Name_Line, " : ") > 0
+				elsif Start_With (Rest_Line.Constant_Reference.Element.all, "   --")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "   pragma")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "--  pragma")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "   use type")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "--  use")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "   type")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "--  type")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "   subtype")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "   procedure")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "   function")
+					or else Start_With (Rest_Line.Constant_Reference.Element.all, "end")
+					or else Ada.Strings.Unbounded.Index (Rest_Line, " : ") > 0
 				then
 					exit;
-				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, " return ") then
-					Renamed := +Get_Base (Rest_Of_Name_Line.Slice (1 + 8, Rest_Of_Name_Line.Length));
-					Rest_Of_Name_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
+				elsif Start_With (Rest_Line.Constant_Reference.Element.all, " return ") then
+					Renamed := +Get_Base (Rest_Line.Slice (1 + 8, Rest_Line.Length));
+					Rest_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
 					exit;
-				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, " renames ") then
-					Renamed := +Get_Base (Rest_Of_Name_Line.Slice (1 + 9, Rest_Of_Name_Line.Length));
-					Rest_Of_Name_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
+				elsif Start_With (Rest_Line.Constant_Reference.Element.all, " renames ") then
+					Renamed := +Get_Base (Rest_Line.Slice (1 + 9, Rest_Line.Length));
+					Rest_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
 					exit;
-				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, " is new ") then
-					Instantiation := +Get_Base (Rest_Of_Name_Line.Slice (1 + 8, Rest_Of_Name_Line.Length));
-					Rest_Of_Name_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
+				elsif Start_With (Rest_Line.Constant_Reference.Element.all, " is new ") then
+					Instantiation := +Get_Base (Rest_Line.Slice (1 + 8, Rest_Line.Length));
+					Rest_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
 					exit;
-				elsif Start_With (Rest_Of_Name_Line.Constant_Reference.Element.all, "   new ") then
-					Instantiation := +Get_Base (Rest_Of_Name_Line.Slice (1 + 7, Rest_Of_Name_Line.Length));
-					Rest_Of_Name_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
+				elsif Start_With (Rest_Line.Constant_Reference.Element.all, "   new ") then
+					Instantiation := +Get_Base (Rest_Line.Slice (1 + 7, Rest_Line.Length));
+					Rest_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
 					exit;
 				else
-					raise Parse_Error with Name & " """ & Rest_Of_Name_Line.Constant_Reference.Element.all & """";
+					raise Parse_Error with Name & " """ & Rest_Line.Constant_Reference.Element.all & """";
 				end if;
 			end loop Detect_Instantiantion_Or_Renamed;
 		end;
 		declare
 			function Get_Next_Line return String is
 			begin
-				if not Rest_Of_Name_Line.Is_Null then
-					return Result : String := Rest_Of_Name_Line.Constant_Reference.Element.all do
-						Rest_Of_Name_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
+				if not Rest_Line.Is_Null then
+					return Result : String := Rest_Line.Constant_Reference.Element.all do
+						Rest_Line := Ada.Strings.Unbounded.Null_Unbounded_String;
 					end return;
 				else
 					return Ada.Text_IO.Get_Line (File);
@@ -287,14 +285,13 @@ procedure ext_doc is
 										raise Extended_Style_Error with Name & " """ & Line & """";
 									end if;
 								end Should_Be_Empty;
-								procedure Process (Block : in Boolean; Line : String; F : Integer) is
+								procedure Process (Block : in Boolean; Line : in String; F : in Integer) is
 									type State_T is (Start, Comment, Code);
 									State : State_T := Start;
 									Indent : Natural := F - Line'First;
 									Skip_F : Integer := 0;
-									Comment_Only : Boolean := Block;
-									Hiding : Boolean := False;
-									C : Character;
+									Code_F : Integer;
+									Code_Line_Count : Natural := 0;
 								begin
 									if Added_In_File then
 										Ada.Strings.Unbounded.Append (Document, ASCII.LF);
@@ -305,14 +302,17 @@ procedure ext_doc is
 											Ex_Line : constant String := Get_Next_Line;
 											Ex_F : Integer := Ada.Strings.Fixed.Index_Non_Blank (Ex_Line);
 										begin
-											if (not Block or else Ex_Line /= "") and then Ex_F - Ex_Line'First < Indent and then not Start_With (Ex_Line, "--") then
+											if (not Block or else Ex_F > 0) and then Ex_F - Ex_Line'First < Indent and then not Start_With (Ex_Line, "--") then
 												if State = Start then
 													raise Extended_Style_Error with Name & " """ & Ex_Line & """";
 												end if;
 												exit;
-											elsif Block and then Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "--  extended") then
-												Should_Be_Empty (Ex_Line (Ex_F + 12 .. Ex_Line'Last), Ex_Line);
-												Process (False, Ex_Line, Ex_F); -- switch to a normal extended section
+											elsif Ex_F > 0
+												and then (Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "--  extended")
+													or else Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "--  modified")
+													or else (Block and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "--  to here")))
+											then
+												Rest_Line := +Ex_Line;
 												exit;
 											end if;
 											if State < Code and then Ex_F - Ex_Line'First = Indent and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "--  ") then
@@ -326,12 +326,8 @@ procedure ext_doc is
 													Ada.Strings.Unbounded.Append (Document, "| " & Ex_Line (Ex_F + 4 .. Ex_Line'Last));
 												end if;
 												State := Comment;
-												if Comment_Only then
-													Hiding := True;
-												end if;
 											elsif Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "pragma") then
 												Skip_F := Ex_F;
-												Comment_Only := False;
 											elsif Ex_F > 0
 												and then (Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "with Import")
 													or else Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "with Convention"))
@@ -345,6 +341,7 @@ procedure ext_doc is
 															Going => Ada.Strings.Backward)
 														+ 1;
 													Insertion_Index : Integer;
+													C : Character;
 												begin
 													if Ada.Strings.Unbounded.Element (Document, Line_First) /= '|' then
 														C := Ada.Strings.Unbounded.Element (Document, Ada.Strings.Unbounded.Length (Document) - 1);
@@ -361,37 +358,42 @@ procedure ext_doc is
 													end if;
 												end;
 												Skip_F := Ex_F;
-												Comment_Only := False;
 											elsif Start_With (Ex_Line, "--  diff")
 												or else (Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "--  pragma"))
 											then
 												null;
 											elsif Skip_F = 0 or else Ex_F <= Skip_F then
 												Skip_F := 0;
-												Comment_Only := False;
-												if Hiding then
+												if State /= Code then
 													if State = Comment then
-														Ada.Strings.Unbounded.Append (Document, ASCII.LF);
+														Ada.Strings.Unbounded.Append (Document, ASCII.LF & ASCII.LF);
 													end if;
-												else
-													if State /= Code then
-														if State = Comment then
-															Ada.Strings.Unbounded.Append (Document, ASCII.LF & ASCII.LF);
-														end if;
-														Ada.Strings.Unbounded.Append (Document, ".. code-block:: ada" & ASCII.LF & ASCII.LF);
-													end if;
-													if Ex_Line'Length > 0 and then Ex_Line (Ex_Line'First) /= ' ' then
-														Ada.Strings.Unbounded.Append (Document, ' ' & Ex_Line & ASCII.LF);
-													else
-														Ada.Strings.Unbounded.Append (Document, ' ' & Ex_Line (Ex_Line'First + Indent .. Ex_Line'Last) & ASCII.LF);
-													end if;
+													Code_F := Ada.Strings.Unbounded.Length (Document) + 1;
+													Ada.Strings.Unbounded.Append (Document, ".. code-block:: ada" & ASCII.LF & ASCII.LF);
+													State := Code;
 												end if;
-												State := Code;
+												if Ex_Line'Length = 0 then
+													-- current position is neither start of code-block nor double blank lines
+													if Ada.Strings.Unbounded.Element (Document, Ada.Strings.Unbounded.Length (Document) - 1) /= ASCII.LF
+														and then (Ada.Strings.Unbounded.Element (Document, Ada.Strings.Unbounded.Length (Document) - 2) /= ASCII.LF
+															or else Ada.Strings.Unbounded.Element (Document, Ada.Strings.Unbounded.Length (Document) - 1) /= ' ')
+													then
+														Ada.Strings.Unbounded.Append (Document, ' ' & ASCII.LF);
+													end if;
+												elsif Ex_Line'Length > 0 and then Ex_Line (Ex_Line'First) /= ' ' then
+													Ada.Strings.Unbounded.Append (Document, ' ' & Ex_Line & ASCII.LF);
+												else
+													Ada.Strings.Unbounded.Append (Document, ' ' & Ex_Line (Ex_Line'First + Indent .. Ex_Line'Last) & ASCII.LF);
+												end if;
+												Code_Line_Count := Code_Line_Count + 1;
 											end if;
 										end;
 									end loop;
 									if State = Comment then
 										Ada.Strings.Unbounded.Append (Document, ASCII.LF);
+									elsif State = Code and then Code_Line_Count > 100 then
+										Ada.Strings.Unbounded.Delete (Document, Code_F, Ada.Strings.Unbounded.Length (Document));
+										Ada.Strings.Unbounded.Append (Document, "*(over 100 lines)*" & ASCII.LF);
 									end if;
 								end Process;
 								Line : constant String := Get_Next_Line;
@@ -404,6 +406,9 @@ procedure ext_doc is
 									elsif Start_With (Line (F .. Line'Last), "--  extended") then
 										Should_Be_Empty (Line (F + 12 .. Line'Last), Line);
 										Process (False, Line, F);
+									elsif Start_With (Line (F .. Line'Last), "--  modified from here") then
+										Should_Be_Empty (Line (F + 22 .. Line'Last), Line);
+										Process (True, Line, F); -- hiding the code
 									elsif Start_With (Line (F .. Line'Last), "--  modified") then
 										Should_Be_Empty (Line (F + 12 .. Line'Last), Line);
 										Process (False, Line, F);

@@ -19,7 +19,8 @@ generic
 package Ada.Strings.Generic_Unbounded is
    pragma Preelaborate;
 
-   --  modified, tagged for dot notation
+   --  modified
+   --  Unbounded_String is declared as tagged for dot notation.
 --  type Unbounded_String is private;
    type Unbounded_String is tagged private;
    pragma Preelaborable_Initialization (Unbounded_String);

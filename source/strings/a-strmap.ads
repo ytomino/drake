@@ -27,17 +27,21 @@ package Ada.Strings.Maps is
 
    type Character_Ranges is array (Positive range <>) of Character_Range;
 
-   --  extended
+   --  extended from here
+
    type Wide_Character_Range is record
       Low : Wide_Character;
       High : Wide_Character;
    end record;
+
    type Wide_Character_Ranges is
       array (Positive range <>) of Wide_Character_Range;
+
    type Wide_Wide_Character_Range is record
       Low : Wide_Wide_Character;
       High : Wide_Wide_Character;
    end record;
+
    type Wide_Wide_Character_Ranges is
       array (Positive range <>) of Wide_Wide_Character_Range;
 

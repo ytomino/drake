@@ -366,6 +366,8 @@ package Ada.Containers.Indefinite_Vectors is
 --
 --
 --
+--
+--
 
 --  diff (Generic_Array_To_Vector)
 --
