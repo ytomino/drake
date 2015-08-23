@@ -64,8 +64,7 @@ package body Ada.Interrupts.Inside is
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean is
    begin
       return Interrupt not in
-         Names.First_Interrupt_Id ..
-         Names.Last_Interrupt_Id;
+         Names.First_Interrupt_Id .. Names.Last_Interrupt_Id;
       --  SIGKILL and SIGSTOP are not declared in mingw
    end Is_Reserved;
 

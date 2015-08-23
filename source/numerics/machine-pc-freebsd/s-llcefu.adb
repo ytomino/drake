@@ -80,9 +80,8 @@ package body System.Long_Long_Complex_Elementary_Functions is
 
    function Fast_Pow (Left, Right : Complex) return Complex is
    begin
-      return To_Complex (Fast_Pow (
-         To_Long_Long_Complex (Left),
-         To_Long_Long_Complex (Right)));
+      return To_Complex (
+         Fast_Pow (To_Long_Long_Complex (Left), To_Long_Long_Complex (Right)));
    end Fast_Pow;
 
    function Fast_Sin (X : Complex) return Complex is
@@ -176,9 +175,8 @@ package body System.Long_Long_Complex_Elementary_Functions is
 
    function Fast_Pow (Left, Right : Long_Complex) return Long_Complex is
    begin
-      return To_Long_Complex (Fast_Pow (
-         To_Long_Long_Complex (Left),
-         To_Long_Long_Complex (Right)));
+      return To_Long_Complex (
+         Fast_Pow (To_Long_Long_Complex (Left), To_Long_Long_Complex (Right)));
    end Fast_Pow;
 
    function Fast_Sin (X : Long_Complex) return Long_Complex is

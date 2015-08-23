@@ -134,9 +134,8 @@ package body System.Arith_64 is
             if Scaling_W not in 1 .. 63 then
                unreachable;
             end if;
-            Scaled_X :=
-               Interfaces.Shift_Left (Temp_XH, 64 - Scaling_W) or
-               Interfaces.Shift_Right (Temp_XL, Scaling_W);
+            Scaled_X := Interfaces.Shift_Left (Temp_XH, 64 - Scaling_W)
+               or Interfaces.Shift_Right (Temp_XL, Scaling_W);
             --  0 < Scaled_X < 2 ** 63
             if Scaled_X < Y then
                --  Y <= 2 ** 63 (original Y is signed)
@@ -159,8 +158,9 @@ package body System.Arith_64 is
                   Div (Scaled_X, Y, Temp_Q, Temp_R);
                   Q := Q + Interfaces.Shift_Left (Temp_Q, Scaling_W);
                   Temp_XH := Interfaces.Shift_Right (Temp_R, 64 - Scaling_W);
-                  Temp_XL := Interfaces.Shift_Left (Temp_R, Scaling_W) or
-                     (Temp_XL and (Interfaces.Shift_Left (1, Scaling_W) - 1));
+                  Temp_XL := Interfaces.Shift_Left (Temp_R, Scaling_W)
+                     or (Temp_XL
+                        and (Interfaces.Shift_Left (1, Scaling_W) - 1));
                end;
             end if;
          end;

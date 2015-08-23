@@ -35,10 +35,11 @@ package body System.Storage_Pools.Unbounded is
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count) is
    begin
-      Storage_Address := Address (C.winbase.HeapAlloc (
-         Pool.Heap,
-         0,
-         C.basetsd.SIZE_T (Size_In_Storage_Elements)));
+      Storage_Address := Address (
+         C.winbase.HeapAlloc (
+            Pool.Heap,
+            0,
+            C.basetsd.SIZE_T (Size_In_Storage_Elements)));
       if Storage_Address = Null_Address then
          raise Storage_Error;
       elsif Storage_Address mod Alignment /= 0 then

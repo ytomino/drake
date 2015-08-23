@@ -30,16 +30,16 @@ package body System.Boolean_Array_Operations is
                   Right : Word;
                   for Right'Address use Source_R;
                begin
-                  Result := (
-                     2 ** 0 or
-                     2 ** Standard'Storage_Unit or
-                     2 ** (Standard'Storage_Unit * 2) or
-                     2 ** (Standard'Storage_Unit * 3) or
-                     2 ** (Standard'Storage_Unit * 4) or
-                     2 ** (Standard'Storage_Unit * 5) or
-                     2 ** (Standard'Storage_Unit * 6) or
-                     2 ** (Standard'Storage_Unit * 7)) xor
-                     Right;
+                  Result :=
+                     (2 ** 0
+                        or 2 ** Standard'Storage_Unit
+                        or 2 ** (Standard'Storage_Unit * 2)
+                        or 2 ** (Standard'Storage_Unit * 3)
+                        or 2 ** (Standard'Storage_Unit * 4)
+                        or 2 ** (Standard'Storage_Unit * 5)
+                        or 2 ** (Standard'Storage_Unit * 6)
+                        or 2 ** (Standard'Storage_Unit * 7))
+                     xor Right;
                end;
                Dest := Dest + Address'(Word_Unit);
                Source_R := Source_R + Address'(Word_Unit);

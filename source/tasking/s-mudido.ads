@@ -40,7 +40,7 @@ package System.Multiprocessors.Dispatching_Domains is
 
 --  function Get_CPU (
 --    T : Ada.Task_Identification.Task_Id :=
---    Ada.Task_Identification.Current_Task)
+--       Ada.Task_Identification.Current_Task)
 --    return CPU_Range;
 
 --  procedure Delay_Until_And_Set_CPU (

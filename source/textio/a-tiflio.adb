@@ -58,8 +58,7 @@ package body Ada.Text_IO.Float_IO is
          Error => Error);
       if Error
          or else Result not in
-            Long_Long_Float (Num'First) ..
-            Long_Long_Float (Num'Last)
+            Long_Long_Float (Num'First) .. Long_Long_Float (Num'Last)
       then
          raise Data_Error;
       end if;

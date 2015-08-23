@@ -28,8 +28,8 @@ package body System.Program is
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
       Buffer_Length : C.size_t := 1024;
-      Buffer : aliased C.char_ptr :=
-         Conv.To_Pointer (Standard_Allocators.Allocate (
+      Buffer : aliased C.char_ptr := Conv.To_Pointer (
+         Standard_Allocators.Allocate (
             Storage_Elements.Storage_Count (Buffer_Length)));
    begin
       Holder.Assign (Buffer'Access);

@@ -102,15 +102,23 @@ package body Ada.Numerics.SFMT.Generating is
       r2 := sfmt (N - 1)'Access;
       i := 0;
       while i < N - POS1 loop
-         do_recursion (sfmt (i), sfmt (i), sfmt (i + POS1),
-            r1.all, r2.all);
+         do_recursion (
+            sfmt (i),
+            sfmt (i),
+            sfmt (i + POS1),
+            r1.all,
+            r2.all);
          r1 := r2;
          r2 := sfmt (i)'Access;
          i := i + 1;
       end loop;
       while i < N loop
-         do_recursion (sfmt (i), sfmt (i), sfmt (i + POS1 - N),
-            r1.all, r2.all);
+         do_recursion (
+            sfmt (i),
+            sfmt (i),
+            sfmt (i + POS1 - N),
+            r1.all,
+            r2.all);
          r1 := r2;
          r2 := sfmt (i)'Access;
          i := i + 1;
@@ -131,22 +139,34 @@ package body Ada.Numerics.SFMT.Generating is
       r2 := sfmt (N - 1)'Access;
       i := 0;
       while i < N - POS1 loop
-         do_recursion (Item (i), sfmt (i), sfmt (i + POS1),
-            r1.all, r2.all);
+         do_recursion (
+            Item (i),
+            sfmt (i),
+            sfmt (i + POS1),
+            r1.all,
+            r2.all);
          r1 := r2;
          r2 := Item (i)'Access;
          i := i + 1;
       end loop;
       while i < N loop
-         do_recursion (Item (i), sfmt (i), Item (i + POS1 - N),
-            r1.all, r2.all);
+         do_recursion (
+            Item (i),
+            sfmt (i),
+            Item (i + POS1 - N),
+            r1.all,
+            r2.all);
          r1 := r2;
          r2 := Item (i)'Access;
          i := i + 1;
       end loop;
       while i < size - N loop
-         do_recursion (Item (i), Item (i - N), Item (i + POS1 - N),
-            r1.all, r2.all);
+         do_recursion (
+            Item (i),
+            Item (i - N),
+            Item (i + POS1 - N),
+            r1.all,
+            r2.all);
          r1 := r2;
          r2 := Item (i)'Access;
          i := i + 1;
@@ -157,8 +177,12 @@ package body Ada.Numerics.SFMT.Generating is
          j := j + 1;
       end loop;
       while i < size loop
-         do_recursion (Item (i), Item (i - N), Item (i + POS1 - N),
-            r1.all, r2.all);
+         do_recursion (
+            Item (i),
+            Item (i - N),
+            Item (i + POS1 - N),
+            r1.all,
+            r2.all);
          r1 := r2;
          r2 := Item (i)'Access;
          sfmt (j) := Item (i);

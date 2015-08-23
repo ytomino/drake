@@ -158,9 +158,8 @@ package body Ada.Float is
                   Convention => Intrinsic, External_Name => "__builtin_modff";
             Q : aliased Standard.Float;
          begin
-            Remainder := Remainder_Type (modff (
-               Standard.Float (Dividend),
-               Q'Access));
+            Remainder := Remainder_Type (
+               modff (Standard.Float (Dividend), Q'Access));
             Quotient := Quotient_Type (Q);
          end;
       elsif Dividend_Type'Digits <= Long_Float'Digits then
@@ -173,9 +172,8 @@ package body Ada.Float is
                   Convention => Intrinsic, External_Name => "__builtin_modf";
             Q : aliased Long_Float;
          begin
-            Remainder := Remainder_Type (modf (
-               Long_Float (Dividend),
-               Q'Access));
+            Remainder := Remainder_Type (
+               modf (Long_Float (Dividend), Q'Access));
             Quotient := Quotient_Type (Q);
          end;
       else
@@ -188,9 +186,8 @@ package body Ada.Float is
                   Convention => Intrinsic, External_Name => "__builtin_modfl";
             Q : aliased Long_Long_Float;
          begin
-            Remainder := Remainder_Type (modfl (
-               Long_Long_Float (Dividend),
-               Q'Access));
+            Remainder := Remainder_Type (
+               modfl (Long_Long_Float (Dividend), Q'Access));
             Quotient := Quotient_Type (Q);
          end;
       end if;

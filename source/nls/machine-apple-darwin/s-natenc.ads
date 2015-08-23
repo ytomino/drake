@@ -78,8 +78,8 @@ package System.Native_Encoding is
 
    --  converter
 
-   Half_Buffer_Length : constant := 64
-      / (C.icucore.UChar'Size / Standard'Storage_Unit);
+   Half_Buffer_Length : constant :=
+      64 / (C.icucore.UChar'Size / Standard'Storage_Unit);
 
    subtype Buffer_Type is
       C.icucore.UChar_array (0 .. 2 * Half_Buffer_Length - 1);

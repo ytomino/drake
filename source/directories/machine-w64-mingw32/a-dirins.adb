@@ -200,20 +200,22 @@ package body Ada.Directories.Inside is
    begin
       System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       --  expand short filename to long filename
-      Long_Last := C.size_t (C.winbase.GetLongPathName (
-         W_Name (0)'Access,
-         Long (0)'Access,
-         Long'Length));
+      Long_Last := C.size_t (
+         C.winbase.GetLongPathName (
+            W_Name (0)'Access,
+            Long (0)'Access,
+            Long'Length));
       if Long_Last = 0 or else Long_Last > Long'Last then
          Long (0 .. Name_Length) := W_Name (0 .. Name_Length);
          Long_Last := Name_Length;
       end if;
       --  expand directories
-      Full_Last := C.size_t (C.winbase.GetFullPathName (
-         Long (0)'Access,
-         Full'Length,
-         Full (0)'Access,
-         null));
+      Full_Last := C.size_t (
+         C.winbase.GetFullPathName (
+            Long (0)'Access,
+            Full'Length,
+            Full (0)'Access,
+            null));
       if Full_Last = 0 or else Full_Last > Full'Last then
          Full (0 .. Long_Last) := Long (0 .. Long_Last);
          Full_Last := Long_Last;

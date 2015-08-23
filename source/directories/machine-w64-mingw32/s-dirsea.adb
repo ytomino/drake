@@ -231,10 +231,10 @@ package body System.Directory_Searching is
    begin
       if (Attributes and C.winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0 then
          return Directory;
-      elsif (Attributes and (
-         C.winnt.FILE_ATTRIBUTE_DEVICE
-         or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
-         or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
+      elsif (Attributes
+         and (C.winnt.FILE_ATTRIBUTE_DEVICE
+            or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
+            or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
       then
          return Special_File;
       else

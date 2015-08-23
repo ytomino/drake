@@ -28,7 +28,8 @@ package body Interfaces.C.Pointers is
    end Value;
 
    function Value (
-      Ref : access constant Element; Length : ptrdiff_t)
+      Ref : access constant Element;
+      Length : ptrdiff_t)
       return Element_Array is
    begin
       if Ref = null then

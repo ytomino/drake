@@ -72,8 +72,7 @@ package body Ada.Interrupts.Inside is
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean is
    begin
       return Interrupt not in
-         Names.First_Interrupt_Id ..
-         Names.Last_Interrupt_Id
+         Names.First_Interrupt_Id .. Names.Last_Interrupt_Id
          or else Interrupt = C.signal.SIGKILL
          or else Interrupt = C.signal.SIGSTOP;
    end Is_Reserved;
@@ -99,9 +98,8 @@ package body Ada.Interrupts.Inside is
                (Unchecked_Tag => 1, sa_sigaction => Handler'Access),
                others => <>); -- uninitialized
          begin
-            Action.sa_flags := C.signed_int (C.unsigned_int'(
-               C.signal.SA_SIGINFO
-               or C.signal.SA_RESTART));
+            Action.sa_flags := C.signed_int (
+               C.unsigned_int'(C.signal.SA_SIGINFO or C.signal.SA_RESTART));
             if C.signal.sigemptyset (Action.sa_mask'Access) < 0 then
                raise Program_Error;
             end if;

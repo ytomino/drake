@@ -12,9 +12,8 @@ package body System.Long_Long_Elementary_Functions is
 
    function Fast_Pow (Left, Right : Long_Long_Float) return Long_Long_Float is
    begin
-      return Long_Long_Float (Fast_Pow (
-         Long_Float (Left),
-         Long_Float (Right)));
+      return Long_Long_Float (
+         Fast_Pow (Long_Float (Left), Long_Float (Right)));
    end Fast_Pow;
 
    function Fast_Sinh (X : Long_Long_Float) return Long_Long_Float is

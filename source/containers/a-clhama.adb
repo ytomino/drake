@@ -257,6 +257,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
 
    procedure Delete (Container : in out Map; Key : Key_Type) is
       Position : Cursor := Find (Container, Key);

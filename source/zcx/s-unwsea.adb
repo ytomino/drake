@@ -179,9 +179,7 @@ package body System.Unwind.Searching is
                         call_site_encoding,
                         p,
                         cs_lp'Access);
-                     p := C.unwind_pe.read_uleb128 (
-                        p,
-                        cs_action'Access);
+                     p := C.unwind_pe.read_uleb128 (p, cs_action'Access);
                      if ip < base + cs_start then
                         pragma Check (Trace, Ada.Debug.Put (
                            "leave, ip < base + cs_start"));
@@ -195,8 +193,8 @@ package body System.Unwind.Searching is
                            return C.unwind.URC_CONTINUE_UNWIND;
                         end if;
                         if cs_action /= 0 then
-                           table_entry := action_table
-                              + C.ptrdiff_t (cs_action - 1);
+                           table_entry :=
+                              action_table + C.ptrdiff_t (cs_action - 1);
                         else
                            table_entry := null;
                         end if;

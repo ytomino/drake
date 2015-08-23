@@ -23,21 +23,24 @@ package body Ada.Numerics.MT19937 is
    begin
       if S.Condition >= N then
          for kk in 0 .. (N - M - 1) loop
-            y := (S.Vector (kk) and UPPER_MASK) or
-               (S.Vector (kk + 1) and LOWER_MASK);
-            S.Vector (kk) := S.Vector (kk + M) xor
-               Interfaces.Shift_Right (y, 1) xor mag01 (y and 1);
+            y := (S.Vector (kk) and UPPER_MASK)
+               or (S.Vector (kk + 1) and LOWER_MASK);
+            S.Vector (kk) := S.Vector (kk + M)
+               xor Interfaces.Shift_Right (y, 1)
+               xor mag01 (y and 1);
          end loop;
          for kk in (N - M) .. (N - 2) loop
-            y := (S.Vector (kk) and UPPER_MASK) or
-               (S.Vector (kk + 1) and LOWER_MASK);
-            S.Vector (kk) := S.Vector (kk + (M - N)) xor
-               Interfaces.Shift_Right (y, 1) xor mag01 (y and 1);
+            y := (S.Vector (kk) and UPPER_MASK)
+               or (S.Vector (kk + 1) and LOWER_MASK);
+            S.Vector (kk) := S.Vector (kk + (M - N))
+               xor Interfaces.Shift_Right (y, 1)
+               xor mag01 (y and 1);
          end loop;
-         y := (S.Vector (N - 1) and UPPER_MASK) or
-            (S.Vector (0) and LOWER_MASK);
-         S.Vector (N - 1) := S.Vector (M - 1) xor
-            Interfaces.Shift_Right (y, 1) xor mag01 (y and 1);
+         y := (S.Vector (N - 1) and UPPER_MASK)
+            or (S.Vector (0) and LOWER_MASK);
+         S.Vector (N - 1) := S.Vector (M - 1)
+            xor Interfaces.Shift_Right (y, 1)
+            xor mag01 (y and 1);
          S.Condition := 0;
       end if;
       y := S.Vector (Integer (S.Condition));
@@ -106,8 +109,9 @@ package body Ada.Numerics.MT19937 is
                declare
                   P : constant Cardinal := S.Vector (i - 1);
                begin
-                  S.Vector (i) := (S.Vector (i) xor
-                     ((P xor Interfaces.Shift_Right (P, 30)) * 1664525))
+                  S.Vector (i) :=
+                     (S.Vector (i)
+                        xor ((P xor Interfaces.Shift_Right (P, 30)) * 1664525))
                      + Initiator (Initiator'First + j) + Cardinal (j);
                end;
                i := i + 1;
@@ -122,8 +126,9 @@ package body Ada.Numerics.MT19937 is
                   P : constant Cardinal := S.Vector (i - 1);
                begin
                   S.Vector (i) :=
-                     (S.Vector (i) xor
-                        ((P xor Interfaces.Shift_Right (P, 30)) * 1566083941))
+                     (S.Vector (i)
+                        xor ((P xor Interfaces.Shift_Right (P, 30))
+                           * 1566083941))
                      - Cardinal (i);
                end;
                i := i + 1;

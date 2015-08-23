@@ -239,12 +239,13 @@ package body Ada.Containers.Hashed_Sets is
 
    function Copy (Source : Set; Capacity : Count_Type := 0) return Set is
    begin
-      return (Finalization.Controlled with Super => Copy_On_Write.Copy (
-         Source.Super'Access,
-         0, -- Length is unused
-         Count_Type'Max (Capacity, Length (Source)),
-         Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access));
+      return (Finalization.Controlled with
+         Super => Copy_On_Write.Copy (
+            Source.Super'Access,
+            0, -- Length is unused
+            Count_Type'Max (Capacity, Length (Source)),
+            Allocate => Allocate_Data'Access,
+            Copy => Copy_Data'Access));
    end Copy;
 
    procedure Delete (Container : in out Set; Item : Element_Type) is

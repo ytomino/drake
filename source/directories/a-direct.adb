@@ -226,8 +226,9 @@ package body Ada.Directories is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Calendar.To_Time (
-         Inside.Modification_Time (Information)));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            Inside.Modification_Time (Information)));
    end Modification_Time;
 
    procedure Set_Modification_Time (Name : String; Time : Calendar.Time) is
@@ -547,11 +548,12 @@ package body Ada.Directories is
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      return Cast (System.Native_Calendar.To_Time (
-         System.Directory_Searching.Modification_Time (
-            NC_Directory_Entry.Path.all,
-            NC_Directory_Entry.Directory_Entry,
-            NC_Directory_Entry.Additional)));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            System.Directory_Searching.Modification_Time (
+               NC_Directory_Entry.Path.all,
+               NC_Directory_Entry.Directory_Entry,
+               NC_Directory_Entry.Additional)));
    end Modification_Time;
 
    package body Controlled is

@@ -514,10 +514,7 @@ package body Ada.Text_IO.Editing is
                   Result (Result_Index) := Radix_Mark;
                   Result_Index := Result_Index + 1;
                end if;
-               for I in
-                  Item_Image'First + Fore + 2 ..
-                  Item_Image'Last
-               loop
+               for I in Item_Image'First + Fore + 2 .. Item_Image'Last loop
                   exit when Pic_Index > Pic.Length;
                   if Pic.Expanded (Pic_Index) = '_' then
                      pragma Check (Validate, Result_Index <= Result'Last);
@@ -555,8 +552,7 @@ package body Ada.Text_IO.Editing is
                            end;
                            Result (
                               Result_Index ..
-                              Result_Index + Currency'Length - 1) :=
-                              Currency;
+                              Result_Index + Currency'Length - 1) := Currency;
                            Result_Index := Result_Index + Currency'Length;
                            Currency_Filled := True;
                         end if;
@@ -765,8 +761,7 @@ package body Ada.Text_IO.Editing is
                   Result (I) := Radix_Mark;
                   I := I + 1;
                when others =>
-                  Result (I) :=
-                     Wide_Character'Val (Character'Pos (Image (I)));
+                  Result (I) := Wide_Character'Val (Character'Pos (Image (I)));
                   I := I + 1;
             end case;
          end loop;

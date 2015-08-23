@@ -250,12 +250,13 @@ package body Ada.Containers.Hashed_Maps is
 
    function Copy (Source : Map; Capacity : Count_Type := 0) return Map is
    begin
-      return (Finalization.Controlled with Super => Copy_On_Write.Copy (
-         Source.Super'Access,
-         0, -- Length is unused
-         Count_Type'Max (Capacity, Length (Source)),
-         Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access));
+      return (Finalization.Controlled with
+         Super => Copy_On_Write.Copy (
+            Source.Super'Access,
+            0, -- Length is unused
+            Count_Type'Max (Capacity, Length (Source)),
+            Allocate => Allocate_Data'Access,
+            Copy => Copy_Data'Access));
    end Copy;
 
    procedure Delete (Container : in out Map; Key : Key_Type) is

@@ -56,11 +56,12 @@ package body System.Native_Allocators is
       Size : Storage_Elements.Storage_Count)
       return Address is
    begin
-      return Result : Address := Address (C.winbase.HeapReAlloc (
-         C.winbase.GetProcessHeap,
-         0,
-         C.windef.LPVOID (Storage_Address),
-         C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
+      return Result : Address := Address (
+         C.winbase.HeapReAlloc (
+            C.winbase.GetProcessHeap,
+            0,
+            C.windef.LPVOID (Storage_Address),
+            C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
       do
          if Result = Null_Address then
             if Storage_Address = Null_Address then

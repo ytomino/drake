@@ -29,16 +29,16 @@ package body Ada.Directories.Information is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Calendar.To_Time (
-         Information.ftCreationTime));
+      return Cast (
+         System.Native_Calendar.To_Time (Information.ftCreationTime));
    end Creation_Time;
 
    function Last_Access_Time (Name : String) return Calendar.Time is
       Information : aliased Inside.Directory_Entry_Information_Type;
    begin
       Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Calendar.To_Time (
-         Information.ftLastAccessTime));
+      return Cast (
+         System.Native_Calendar.To_Time (Information.ftLastAccessTime));
    end Last_Access_Time;
 
    function Is_Read_Only (Name : String) return Boolean is
@@ -131,8 +131,9 @@ package body Ada.Directories.Information is
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      return Cast (System.Native_Calendar.To_Time (
-         NC_Directory_Entry.Directory_Entry.ftLastWriteTime));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            NC_Directory_Entry.Directory_Entry.ftLastWriteTime));
    end Creation_Time;
 
    function Last_Access_Time (
@@ -145,8 +146,9 @@ package body Ada.Directories.Information is
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      return Cast (System.Native_Calendar.To_Time (
-         NC_Directory_Entry.Directory_Entry.ftLastAccessTime));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            NC_Directory_Entry.Directory_Entry.ftLastAccessTime));
    end Last_Access_Time;
 
    function Is_Read_Only (

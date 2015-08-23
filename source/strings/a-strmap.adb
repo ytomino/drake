@@ -887,10 +887,8 @@ package body Ada.Strings.Maps is
       if From'Length = 0 then
          New_Data := Empty_Map_Data'Unrestricted_Access;
       else
-         New_Data := new Map_Data'(Naked_Maps.To_Mapping (
-            From,
-            To,
-            Initial_Reference_Count => 1));
+         New_Data := new Map_Data'(
+            Naked_Maps.To_Mapping (From, To, Initial_Reference_Count => 1));
       end if;
       return Create (New_Data);
    end Overloaded_To_Mapping;
@@ -1004,10 +1002,11 @@ package body Ada.Strings.Maps is
                      Wide_Wide_Character'Read (Stream, From (I));
                      Wide_Wide_Character'Read (Stream, To (I));
                   end loop;
-                  Item.Data := new Map_Data'(Naked_Maps.To_Mapping (
-                     From,
-                     To,
-                     Initial_Reference_Count => 1));
+                  Item.Data := new Map_Data'(
+                     Naked_Maps.To_Mapping (
+                        From,
+                        To,
+                        Initial_Reference_Count => 1));
                end;
             end if;
          end Read;

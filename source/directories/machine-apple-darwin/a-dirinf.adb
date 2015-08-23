@@ -148,8 +148,9 @@ package body Ada.Directories.Information is
          Reference (Directory_Entry);
    begin
       Fill (NC_Directory_Entry);
-      return Cast (System.Native_Calendar.To_Time (
-         NC_Directory_Entry.Additional.Information.st_atim));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            NC_Directory_Entry.Additional.Information.st_atim));
    end Last_Access_Time;
 
    function Last_Status_Change_Time (
@@ -164,8 +165,9 @@ package body Ada.Directories.Information is
          Reference (Directory_Entry);
    begin
       Fill (NC_Directory_Entry);
-      return Cast (System.Native_Calendar.To_Time (
-         NC_Directory_Entry.Additional.Information.st_ctim));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            NC_Directory_Entry.Additional.Information.st_ctim));
    end Last_Status_Change_Time;
 
    function Permission_Set (
@@ -302,8 +304,8 @@ package body Ada.Directories.Information is
          0 ..
          Name'Length * System.Zero_Terminated_Strings.Expanding);
       Buffer_Length : C.size_t := 1024;
-      Buffer : aliased C.char_ptr :=
-         Conv.To_Pointer (System.Standard_Allocators.Allocate (
+      Buffer : aliased C.char_ptr := Conv.To_Pointer (
+         System.Standard_Allocators.Allocate (
             System.Storage_Elements.Storage_Count (Buffer_Length)));
    begin
       Holder.Assign (Buffer'Access);
