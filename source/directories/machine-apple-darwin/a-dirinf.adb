@@ -14,6 +14,7 @@ with C.sys.types;
 with C.unistd;
 package body Ada.Directories.Information is
    use Exception_Identification.From_Here;
+   use type System.Bit_Order;
    use type C.size_t;
    use type C.sys.types.mode_t;
    use type C.sys.types.ssize_t;
@@ -39,20 +40,46 @@ package body Ada.Directories.Information is
    function To_Permission_Set (Mode : C.sys.types.mode_t)
       return Permission_Set_Type;
    function To_Permission_Set (Mode : C.sys.types.mode_t)
-      return Permission_Set_Type is
+      return Permission_Set_Type
+   is
+      Castable : constant Boolean :=
+         System.Default_Bit_Order = System.Low_Order_First
+         and then C.sys.stat.S_IXOTH = 8#001#
+         and then C.sys.stat.S_IWOTH = 8#002#
+         and then C.sys.stat.S_IROTH = 8#004#
+         and then C.sys.stat.S_IXGRP = 8#010#
+         and then C.sys.stat.S_IWGRP = 8#020#
+         and then C.sys.stat.S_IRGRP = 8#040#
+         and then C.sys.stat.S_IXUSR = 8#100#
+         and then C.sys.stat.S_IWUSR = 8#200#
+         and then C.sys.stat.S_IRUSR = 8#400#
+         and then C.sys.stat.S_ISVTX = 8#1000#
+         and then C.sys.stat.S_ISGID = 8#2000#
+         and then C.sys.stat.S_ISUID = 8#4000#;
    begin
-      return (
-         Others_Execute => (Mode and C.sys.stat.S_IXOTH) /= 0,
-         Others_Write => (Mode and C.sys.stat.S_IWOTH) /= 0,
-         Others_Read => (Mode and C.sys.stat.S_IROTH) /= 0,
-         Group_Execute => (Mode and C.sys.stat.S_IXGRP) /= 0,
-         Group_Write => (Mode and C.sys.stat.S_IWGRP) /= 0,
-         Group_Read => (Mode and C.sys.stat.S_IRGRP) /= 0,
-         Owner_Execute => (Mode and C.sys.stat.S_IXUSR) /= 0,
-         Owner_Write => (Mode and C.sys.stat.S_IWUSR) /= 0,
-         Owner_Read => (Mode and C.sys.stat.S_IRUSR) /= 0,
-         Set_Group_ID => (Mode and C.sys.stat.S_ISGID) /= 0,
-         Set_User_ID => (Mode and C.sys.stat.S_ISUID) /= 0);
+      if Castable then
+         declare
+            type Unsigned_12 is mod 2 ** 12;
+            function Cast is
+               new Unchecked_Conversion (Unsigned_12, Permission_Set_Type);
+         begin
+            return Cast (Unsigned_12'Mod (Mode and 8#7777#));
+         end;
+      else
+         return (
+            Others_Execute => (Mode and C.sys.stat.S_IXOTH) /= 0,
+            Others_Write => (Mode and C.sys.stat.S_IWOTH) /= 0,
+            Others_Read => (Mode and C.sys.stat.S_IROTH) /= 0,
+            Group_Execute => (Mode and C.sys.stat.S_IXGRP) /= 0,
+            Group_Write => (Mode and C.sys.stat.S_IWGRP) /= 0,
+            Group_Read => (Mode and C.sys.stat.S_IRGRP) /= 0,
+            Owner_Execute => (Mode and C.sys.stat.S_IXUSR) /= 0,
+            Owner_Write => (Mode and C.sys.stat.S_IWUSR) /= 0,
+            Owner_Read => (Mode and C.sys.stat.S_IRUSR) /= 0,
+            Sticky => (Mode and C.sys.stat.S_ISVTX) /= 0,
+            Set_Group_ID => (Mode and C.sys.stat.S_ISGID) /= 0,
+            Set_User_ID => (Mode and C.sys.stat.S_ISUID) /= 0);
+      end if;
    end To_Permission_Set;
 
    --  implementation

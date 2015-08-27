@@ -8,10 +8,12 @@ package Ada.Directories.Information is
 
    function Last_Status_Change_Time (Name : String) return Calendar.Time;
 
+   --  modified
    type Permission is (
       Others_Execute, Others_Write, Others_Read,
       Group_Execute, Group_Write, Group_Read,
       Owner_Execute, Owner_Write, Owner_Read,
+      Sticky, -- additional
       Set_Group_ID, Set_User_ID);
 
    type Permission_Set_Type is array (Permission) of Boolean;
