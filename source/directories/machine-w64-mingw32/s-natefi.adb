@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with System.Directory_Searching;
+with System.Native_Directories;
 with System.Zero_Terminated_WStrings;
 with C.windef;
 with C.winbase;
@@ -12,7 +12,7 @@ package body System.Native_Temporary_Files is
 
    function Named_IO_Exception_Id (errno : C.windef.DWORD)
       return Ada.Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames Native_Directories.Named_IO_Exception_Id;
 
    TMP : aliased constant C.winnt.WCHAR_array (0 .. 3) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('T')),

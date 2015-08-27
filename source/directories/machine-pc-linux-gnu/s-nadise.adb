@@ -6,7 +6,7 @@ with System.Zero_Terminated_Strings;
 with C.errno;
 with C.fnmatch;
 with C.string;
-package body System.Directory_Searching is
+package body System.Native_Directories.Searching is
    use Ada.Exception_Identification.From_Here;
    use type Storage_Elements.Storage_Offset;
    use type C.char;
@@ -156,7 +156,7 @@ package body System.Directory_Searching is
       return File_Kind is
    begin
       --  DTTOIF
-      return To_File_Kind (
+      return Kind (
          C.Shift_Left (C.sys.types.mode_t (Directory_Entry.d_type), 12));
    end Kind;
 
@@ -193,18 +193,6 @@ package body System.Directory_Searching is
       return Additional.Information.st_mtim;
    end Modification_Time;
 
-   function To_File_Kind (mode : C.sys.types.mode_t) return File_Kind is
-      Masked_Type : constant C.sys.types.mode_t := mode and C.sys.stat.S_IFMT;
-   begin
-      if Masked_Type = C.sys.stat.S_IFDIR then
-         return Directory;
-      elsif Masked_Type = C.sys.stat.S_IFREG then
-         return Ordinary_File;
-      else
-         return Special_File;
-      end if;
-   end To_File_Kind;
-
    procedure Get_Information (
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
@@ -239,29 +227,4 @@ package body System.Directory_Searching is
       end if;
    end Get_Information;
 
-   function IO_Exception_Id (errno : C.signed_int)
-      return Ada.Exception_Identification.Exception_Id is
-   begin
-      case errno is
-         when C.errno.EIO =>
-            return Device_Error'Identity;
-         when others =>
-            return Use_Error'Identity;
-      end case;
-   end IO_Exception_Id;
-
-   function Named_IO_Exception_Id (errno : C.signed_int)
-      return Ada.Exception_Identification.Exception_Id is
-   begin
-      case errno is
-         when C.errno.ENOENT
-            | C.errno.ENOTDIR
-            | C.errno.EISDIR
-            | C.errno.ENAMETOOLONG =>
-            return Name_Error'Identity;
-         when others =>
-            return IO_Exception_Id (errno);
-      end case;
-   end Named_IO_Exception_Id;
-
-end System.Directory_Searching;
+end System.Native_Directories.Searching;

@@ -1,25 +1,21 @@
-with Ada.Directories.Copying;
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
+with Ada.Hierarchical_File_Names;
 with System.Address_To_Named_Access_Conversions;
+with System.Native_Directories.Copying;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdio; -- rename(2)
 with C.stdlib;
 with C.sys.time;
-with C.sys.types;
 with C.time;
 with C.unistd;
-package body Ada.Directories.Inside is
-   use Exception_Identification.From_Here;
+package body System.Native_Directories is
+   use Ada.Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.signed_long;
    use type C.size_t;
    use type C.sys.types.mode_t;
-
-   function Named_IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
 
    procedure Get_Information (
       Name : String;
@@ -32,9 +28,9 @@ package body Ada.Directories.Inside is
    is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       Error := C.sys.stat.lstat (C_Name (0)'Access, Information'Access) < 0;
    end Get_Information;
 
@@ -44,43 +40,35 @@ package body Ada.Directories.Inside is
       procedure Finally (X : not null access C.char_ptr);
       procedure Finally (X : not null access C.char_ptr) is
          package Conv is
-            new System.Address_To_Named_Access_Conversions (
-               C.char,
-               C.char_ptr);
+            new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       begin
          C.stdlib.free (C.void_ptr (Conv.To_Address (X.all)));
       end Finally;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
+         new Ada.Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
       Path : aliased C.char_ptr := C.unistd.getcwd (null, 0);
    begin
       Holder.Assign (Path'Access);
-      return System.Zero_Terminated_Strings.Value (Path);
+      return Zero_Terminated_Strings.Value (Path);
    end Current_Directory;
 
    procedure Set_Directory (Directory : String) is
       C_Directory : C.char_array (
          0 ..
-         Directory'Length * System.Zero_Terminated_Strings.Expanding);
+         Directory'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
+      Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
       if C.unistd.chdir (C_Directory (0)'Access) /= 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Set_Directory;
 
-   procedure Create_Directory (
-      New_Directory : String;
-      Form : String)
-   is
-      pragma Unreferenced (Form);
+   procedure Create_Directory (New_Directory : String) is
       C_New_Directory : C.char_array (
          0 ..
-         New_Directory'Length * System.Zero_Terminated_Strings.Expanding);
+         New_Directory'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (
-         New_Directory,
-         C_New_Directory (0)'Access);
+      Zero_Terminated_Strings.To_C (New_Directory, C_New_Directory (0)'Access);
       if C.sys.stat.mkdir (C_New_Directory (0)'Access, 8#755#) /= 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
@@ -89,9 +77,9 @@ package body Ada.Directories.Inside is
    procedure Delete_Directory (Directory : String) is
       C_Directory : C.char_array (
          0 ..
-         Directory'Length * System.Zero_Terminated_Strings.Expanding);
+         Directory'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
+      Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
       if C.unistd.rmdir (C_Directory (0)'Access) < 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
@@ -100,9 +88,9 @@ package body Ada.Directories.Inside is
    procedure Delete_File (Name : String) is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       if C.unistd.unlink (C_Name (0)'Access) < 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
@@ -115,14 +103,14 @@ package body Ada.Directories.Inside is
    is
       C_Old_Name : C.char_array (
          0 ..
-         Old_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Old_Name'Length * Zero_Terminated_Strings.Expanding);
       C_New_Name : C.char_array (
          0 ..
-         New_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         New_Name'Length * Zero_Terminated_Strings.Expanding);
       Error : Boolean;
    begin
-      System.Zero_Terminated_Strings.To_C (Old_Name, C_Old_Name (0)'Access);
-      System.Zero_Terminated_Strings.To_C (New_Name, C_New_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Old_Name, C_Old_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (New_Name, C_New_Name (0)'Access);
       if Overwrite then
          Error := C.stdio.rename (
             C_Old_Name (0)'Access,
@@ -158,17 +146,13 @@ package body Ada.Directories.Inside is
    is
       C_Source_Name : C.char_array (
          0 ..
-         Source_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Source_Name'Length * Zero_Terminated_Strings.Expanding);
       C_Target_Name : C.char_array (
          0 ..
-         Target_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Target_Name'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (
-         Source_Name,
-         C_Source_Name (0)'Access);
-      System.Zero_Terminated_Strings.To_C (
-         Target_Name,
-         C_Target_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Source_Name, C_Source_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Target_Name, C_Target_Name (0)'Access);
       declare
          path1 : constant not null access constant C.char :=
             C_Source_Name (0)'Access;
@@ -191,8 +175,10 @@ package body Ada.Directories.Inside is
 
    function Full_Name (Name : String) return String is
    begin
-      if Hierarchical_File_Names.Is_Relative_Name (Name) then
-         return Compose (Current_Directory, Name);
+      if Ada.Hierarchical_File_Names.Is_Relative_Name (Name) then
+         return Ada.Hierarchical_File_Names.Unfolded_Compose (
+            Current_Directory,
+            Name);
       else
          return Name;
       end if;
@@ -218,29 +204,40 @@ package body Ada.Directories.Inside is
       end if;
    end Get_Information;
 
+   function Kind (mode : C.sys.types.mode_t) return File_Kind is
+      Masked_Type : constant C.sys.types.mode_t := mode and C.sys.stat.S_IFMT;
+   begin
+      if Masked_Type = C.sys.stat.S_IFDIR then
+         return Directory;
+      elsif Masked_Type = C.sys.stat.S_IFREG then
+         return Ordinary_File;
+      else
+         return Special_File;
+      end if;
+   end Kind;
+
    function Kind (Information : Directory_Entry_Information_Type)
       return File_Kind is
    begin
       return File_Kind'Enum_Val (
-         System.Directory_Searching.File_Kind'Enum_Rep (
-            System.Directory_Searching.To_File_Kind (Information.st_mode)));
+         File_Kind'Enum_Rep (Kind (Information.st_mode)));
    end Kind;
 
    function Size (Information : Directory_Entry_Information_Type)
-      return File_Size is
+      return Ada.Streams.Stream_Element_Count is
    begin
-      return File_Size (Information.st_size);
+      return Ada.Streams.Stream_Element_Count (Information.st_size);
    end Size;
 
    function Modification_Time (Information : Directory_Entry_Information_Type)
-      return System.Native_Calendar.Native_Time is
+      return Native_Calendar.Native_Time is
    begin
       return Information.st_mtim;
    end Modification_Time;
 
    procedure Set_Modification_Time (
       Name : String;
-      Time : System.Native_Calendar.Native_Time)
+      Time : Native_Calendar.Native_Time)
    is
       function To_timeval (X : C.time.struct_timespec)
          return C.sys.time.struct_timeval;
@@ -253,12 +250,12 @@ package body Ada.Directories.Inside is
       end To_timeval;
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
       Attributes : aliased C.sys.stat.struct_stat;
       Times : aliased array (0 .. 1) of aliased C.sys.time.struct_timeval;
       Error : Boolean;
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       Error := C.sys.stat.lstat (C_Name (0)'Access, Attributes'Access) < 0;
       if not Error then
          Times (0) := To_timeval (Attributes.st_atim);
@@ -270,4 +267,29 @@ package body Ada.Directories.Inside is
       end if;
    end Set_Modification_Time;
 
-end Ada.Directories.Inside;
+   function IO_Exception_Id (errno : C.signed_int)
+      return Ada.Exception_Identification.Exception_Id is
+   begin
+      case errno is
+         when C.errno.EIO =>
+            return Device_Error'Identity;
+         when others =>
+            return Use_Error'Identity;
+      end case;
+   end IO_Exception_Id;
+
+   function Named_IO_Exception_Id (errno : C.signed_int)
+      return Ada.Exception_Identification.Exception_Id is
+   begin
+      case errno is
+         when C.errno.ENOENT
+            | C.errno.ENOTDIR
+            | C.errno.EISDIR
+            | C.errno.ENAMETOOLONG =>
+            return Name_Error'Identity;
+         when others =>
+            return IO_Exception_Id (errno);
+      end case;
+   end Named_IO_Exception_Id;
+
+end System.Native_Directories;

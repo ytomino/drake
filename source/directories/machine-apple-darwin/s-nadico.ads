@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Darwin
-private package Ada.Directories.Copying is
+package System.Native_Directories.Copying is
+   pragma Preelaborate;
 
    procedure Copy_File (
       Source_Name : String;
@@ -11,4 +12,4 @@ private package Ada.Directories.Copying is
       Source_Name : String;
       Target_Name : String);
 
-end Ada.Directories.Copying;
+end System.Native_Directories.Copying;

@@ -1,6 +1,6 @@
 with Ada.Exception_Identification.From_Here;
-with System.Directory_Searching;
 with System.Native_Credentials;
+with System.Native_Directories;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdint;
@@ -15,11 +15,11 @@ package body System.File_Systems is
 
    function IO_Exception_Id (errno : C.signed_int)
       return Ada.Exception_Identification.Exception_Id
-      renames Directory_Searching.IO_Exception_Id;
+      renames Native_Directories.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Ada.Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames Native_Directories.Named_IO_Exception_Id;
 
    --  implementation
 

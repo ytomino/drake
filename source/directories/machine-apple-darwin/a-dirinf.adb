@@ -1,4 +1,3 @@
-with Ada.Directories.Inside;
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
@@ -19,9 +18,12 @@ package body Ada.Directories.Information is
    use type C.sys.types.mode_t;
    use type C.sys.types.ssize_t;
 
+   subtype Directory_Entry_Information_Type is
+      System.Native_Directories.Directory_Entry_Information_Type;
+
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
+      renames System.Native_Directories.Named_IO_Exception_Id;
 
    procedure Fill (
       Directory_Entry : not null access Non_Controlled_Directory_Entry_Type);
@@ -29,7 +31,7 @@ package body Ada.Directories.Information is
       Directory_Entry : not null access Non_Controlled_Directory_Entry_Type) is
    begin
       if not Directory_Entry.Additional.Filled then
-         System.Directory_Searching.Get_Information (
+         System.Native_Directories.Searching.Get_Information (
             Directory_Entry.Path.all,
             Directory_Entry.Directory_Entry,
             Directory_Entry.Additional.Information);
@@ -86,9 +88,9 @@ package body Ada.Directories.Information is
 
    function Last_Access_Time (Name : String) return Calendar.Time is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return Cast (System.Native_Calendar.To_Time (Information.st_atim));
    end Last_Access_Time;
 
@@ -96,69 +98,69 @@ package body Ada.Directories.Information is
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return Cast (System.Native_Calendar.To_Time (Information.st_ctim));
    end Last_Status_Change_Time;
 
    function Permission_Set (Name : String) return Permission_Set_Type is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return To_Permission_Set (Information.st_mode);
    end Permission_Set;
 
    function Owner (Name : String) return String is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return System.Native_Credentials.User_Name (Information.st_uid);
    end Owner;
 
    function Group (Name : String) return String is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return System.Native_Credentials.Group_Name (Information.st_gid);
    end Group;
 
    function Is_Block_Special_File (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
 
    function Is_Character_Special_File (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
 
    function Is_FIFO (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFIFO;
    end Is_FIFO;
 
    function Is_Symbolic_Link (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
 
    function Is_Socket (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFSOCK;
    end Is_Socket;
@@ -377,9 +379,9 @@ package body Ada.Directories.Information is
    end Read_Symbolic_Link;
 
    function Identity (Name : String) return File_Id is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return File_Id (Information.st_ino);
    end Identity;
 

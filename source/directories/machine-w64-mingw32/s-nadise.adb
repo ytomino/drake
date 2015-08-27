@@ -4,7 +4,7 @@ with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.winerror;
-package body System.Directory_Searching is
+package body System.Native_Directories.Searching is
    use Ada.Exception_Identification.From_Here;
    use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
@@ -27,7 +27,7 @@ package body System.Directory_Searching is
       Directory_Entry : not null Directory_Entry_Access)
       return Boolean is
    begin
-      return Filter (To_File_Kind (Directory_Entry.dwFileAttributes))
+      return Filter (Kind (Directory_Entry.dwFileAttributes))
          and then (
             Directory_Entry.cFileName (0) /=
                C.winnt.WCHAR'Val (Wide_Character'Pos ('.'))
@@ -196,7 +196,7 @@ package body System.Directory_Searching is
    function Kind (Directory_Entry : not null Directory_Entry_Access)
       return File_Kind is
    begin
-      return To_File_Kind (Directory_Entry.dwFileAttributes);
+      return Kind (Directory_Entry.dwFileAttributes);
    end Kind;
 
    function Size (
@@ -227,46 +227,4 @@ package body System.Directory_Searching is
       return Directory_Entry.ftLastWriteTime;
    end Modification_Time;
 
-   function To_File_Kind (Attributes : C.windef.DWORD) return File_Kind is
-   begin
-      if (Attributes and C.winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0 then
-         return Directory;
-      elsif (Attributes
-         and (C.winnt.FILE_ATTRIBUTE_DEVICE
-            or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
-            or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
-      then
-         return Special_File;
-      else
-         return Ordinary_File;
-      end if;
-   end To_File_Kind;
-
-   function IO_Exception_Id (Error : C.windef.DWORD)
-      return Ada.Exception_Identification.Exception_Id is
-   begin
-      case Error is
-         when C.winerror.ERROR_WRITE_FAULT
-            | C.winerror.ERROR_READ_FAULT
-            | C.winerror.ERROR_GEN_FAILURE
-            | C.winerror.ERROR_IO_DEVICE =>
-            return Device_Error'Identity;
-         when others =>
-            return Use_Error'Identity;
-      end case;
-   end IO_Exception_Id;
-
-   function Named_IO_Exception_Id (Error : C.windef.DWORD)
-      return Ada.Exception_Identification.Exception_Id is
-   begin
-      case Error is
-         when C.winerror.ERROR_FILE_NOT_FOUND
-            | C.winerror.ERROR_PATH_NOT_FOUND
-            | C.winerror.ERROR_INVALID_NAME =>
-            return Name_Error'Identity;
-         when others =>
-            return IO_Exception_Id (Error);
-      end case;
-   end Named_IO_Exception_Id;
-
-end System.Directory_Searching;
+end System.Native_Directories.Searching;

@@ -5,7 +5,7 @@ with Ada.IO_Exceptions;
 with Ada.Iterator_Interfaces;
 with Ada.Streams;
 private with Ada.Finalization;
-private with System.Directory_Searching;
+private with System.Native_Directories.Searching;
 package Ada.Directories is
 
    --  Directory and file operations:
@@ -19,7 +19,7 @@ package Ada.Directories is
    procedure Create_Directory (
       New_Directory : String;
       Form : String := "");
-   pragma Inline (Create_Directory); -- renamed
+   pragma Inline (Create_Directory);
 
    procedure Delete_Directory (Directory : String);
    pragma Inline (Delete_Directory); -- renamed
@@ -50,7 +50,7 @@ package Ada.Directories is
       Source_Name : String;
       Target_Name : String;
       Overwrite : Boolean := True);
-   pragma Inline (Copy_File); -- renamed
+   pragma Inline (Copy_File); -- renamed, or normal inline
 
    --  extended
    --  Overwrite a target file with another source file,
@@ -286,6 +286,55 @@ package Ada.Directories is
 
 private
 
+   --  directory and file operations
+
+   function Current_Directory return String
+      renames System.Native_Directories.Current_Directory;
+
+   procedure Set_Directory (Directory : String)
+      renames System.Native_Directories.Set_Directory;
+
+   procedure Delete_Directory (Directory : String)
+      renames System.Native_Directories.Delete_Directory;
+
+   procedure Delete_File (Name : String)
+      renames System.Native_Directories.Delete_File;
+
+   procedure Rename (
+      Old_Name : String;
+      New_Name : String;
+      Overwrite : Boolean := True)
+      renames System.Native_Directories.Rename;
+
+   procedure Copy_File (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean := True)
+      renames System.Native_Directories.Copy_File;
+
+   procedure Replace_File (
+      Source_Name : String;
+      Target_Name : String)
+      renames System.Native_Directories.Replace_File;
+
+   procedure Symbolic_Link (
+      Source_Name : String;
+      Target_Name : String;
+      Overwrite : Boolean := True)
+      renames System.Native_Directories.Symbolic_Link;
+
+   --  file and directory name operations
+
+   function Full_Name (Name : String) return String
+      renames System.Native_Directories.Full_Name;
+
+   --  file and directory queries
+
+   function Exists (Name : String) return Boolean
+      renames System.Native_Directories.Exists;
+
+   --  directory searching
+
    type String_Access is access String;
 
    type Search_Access is access Search_Type;
@@ -296,9 +345,10 @@ private
 
    type Non_Controlled_Directory_Entry_Type is record
       Path : String_Access;
-      Directory_Entry : System.Directory_Searching.Directory_Entry_Access;
+      Directory_Entry :
+         System.Native_Directories.Searching.Directory_Entry_Access;
       Additional : aliased
-         System.Directory_Searching.Directory_Entry_Additional_Type;
+         System.Native_Directories.Searching.Directory_Entry_Additional_Type;
       Status : Directory_Entry_Status := Empty;
    end record;
 
@@ -325,8 +375,8 @@ private
    type Directory_Entry_Type is new Controlled.Directory_Entry_Type;
 
    type Search_Type is limited new Finalization.Limited_Controlled with record
-      Search : aliased System.Directory_Searching.Search_Type := (
-         Handle => System.Directory_Searching.Null_Handle,
+      Search : aliased System.Native_Directories.Searching.Search_Type := (
+         Handle => System.Native_Directories.Searching.Null_Handle,
          others => <>);
       Path : String_Access;
       Next_Directory_Entry : aliased Directory_Entry_Type;

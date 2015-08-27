@@ -3,16 +3,11 @@ with System.Zero_Terminated_Strings;
 with C.copyfile;
 with C.errno;
 with C.stdio; -- rename(2)
-with C.sys.stat;
-package body Ada.Directories.Copying is
-   use Exception_Identification.From_Here;
+package body System.Native_Directories.Copying is
+   use Ada.Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.size_t;
    use type C.unsigned_int;
-
-   function Named_IO_Exception_Id (errno : C.signed_int)
-      return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
 
    --  implementation
 
@@ -23,19 +18,15 @@ package body Ada.Directories.Copying is
    is
       C_Source_Name : C.char_array (
          0 ..
-         Source_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Source_Name'Length * Zero_Terminated_Strings.Expanding);
       C_Target_Name : C.char_array (
          0 ..
-         Target_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Target_Name'Length * Zero_Terminated_Strings.Expanding);
       Flag : C.unsigned_int :=
          C.copyfile.COPYFILE_ALL or C.copyfile.COPYFILE_NOFOLLOW;
    begin
-      System.Zero_Terminated_Strings.To_C (
-         Source_Name,
-         C_Source_Name (0)'Access);
-      System.Zero_Terminated_Strings.To_C (
-         Target_Name,
-         C_Target_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Source_Name, C_Source_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Target_Name, C_Target_Name (0)'Access);
       if not Overwrite then
          Flag := Flag or C.copyfile.COPYFILE_EXCL;
       end if;
@@ -64,19 +55,15 @@ package body Ada.Directories.Copying is
    is
       C_Source_Name : C.char_array (
          0 ..
-         Source_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Source_Name'Length * Zero_Terminated_Strings.Expanding);
       C_Target_Name : C.char_array (
          0 ..
-         Target_Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Target_Name'Length * Zero_Terminated_Strings.Expanding);
       Info : aliased C.sys.stat.struct_stat;
       Error : Boolean;
    begin
-      System.Zero_Terminated_Strings.To_C (
-         Source_Name,
-         C_Source_Name (0)'Access);
-      System.Zero_Terminated_Strings.To_C (
-         Target_Name,
-         C_Target_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Source_Name, C_Source_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Target_Name, C_Target_Name (0)'Access);
       --  check whether the source is existing or not.
       Error := C.sys.stat.lstat (C_Source_Name (0)'Access, Info'Access) < 0;
       if not Error then
@@ -109,4 +96,4 @@ package body Ada.Directories.Copying is
       end if;
    end Replace_File;
 
-end Ada.Directories.Copying;
+end System.Native_Directories.Copying;

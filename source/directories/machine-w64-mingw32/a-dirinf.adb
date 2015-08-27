@@ -1,4 +1,3 @@
-with Ada.Directories.Inside;
 with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with System.Native_Calendar;
@@ -13,110 +12,113 @@ package body Ada.Directories.Information is
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
 
+   subtype Directory_Entry_Information_Type is
+      System.Native_Directories.Directory_Entry_Information_Type;
+
    function IO_Exception_Id (errno : C.windef.DWORD)
       return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.IO_Exception_Id;
+      renames System.Native_Directories.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.windef.DWORD)
       return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
+      renames System.Native_Directories.Named_IO_Exception_Id;
 
    function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
 
    --  implementation
 
    function Creation_Time (Name : String) return Calendar.Time is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return Cast (
          System.Native_Calendar.To_Time (Information.ftCreationTime));
    end Creation_Time;
 
    function Last_Access_Time (Name : String) return Calendar.Time is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return Cast (
          System.Native_Calendar.To_Time (Information.ftLastAccessTime));
    end Last_Access_Time;
 
    function Is_Read_Only (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SPARSE_FILE) /= 0;
    end Is_Read_Only;
 
    function Needs_Archiving (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ARCHIVE) /= 0;
    end Needs_Archiving;
 
    function Is_Compressed (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_COMPRESSED) /= 0;
    end Is_Compressed;
 
    function Is_Encrypted (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_ENCRYPTED) /= 0;
    end Is_Encrypted;
 
    function Is_Hidden (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_HIDDEN) /= 0;
    end Is_Hidden;
 
    function Is_System (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SYSTEM) /= 0;
    end Is_System;
 
    function Is_Offline (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_OFFLINE) /= 0;
    end Is_Offline;
 
    function Is_Temporary (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_TEMPORARY) /= 0;
    end Is_Temporary;
 
    function Is_Sparse (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_SPARSE_FILE) /= 0;
    end Is_Sparse;
 
    function Is_Not_Indexed (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) /= 0;
    end Is_Not_Indexed;
