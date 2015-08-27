@@ -1,8 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
-with Ada.Finalization;
-with Ada.Iterator_Interfaces;
 private with Ada.Command_Line.Argument_Parsing;
+private with Ada.Finalization;
 generic
    type Input_Cursor is private;
    with function Has_Element (Position : Input_Cursor) return Boolean is <>;

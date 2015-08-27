@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  implementation unit
-private with System.Native_Calendar;
 package System.Synchronous_Objects.Abortable is
    pragma Preelaborate;
 
