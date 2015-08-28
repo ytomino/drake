@@ -42,7 +42,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    procedure Set_Substitute_To_Reading_Converter (
       Object : in out Converter;
       Substitute : Streams.Stream_Element_Array)
-      renames Set_Substitute; -- System.Native_Encoding.Set_Substitute
+      renames Set_Substitute;
+   --  inherited from System.Native_Environment_Encoding.Set_Substitute
 
    procedure Read (
       Stream : not null access Streams.Root_Stream_Type'Class;
@@ -89,7 +90,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
             --  try to convert subsequence
             declare
                Taken : Stream_Element_Offset;
-               Status : System.Native_Encoding.Subsequence_Status_Type;
+               Status :
+                  System.Native_Environment_Encoding.Subsequence_Status_Type;
             begin
                Convert_No_Check (
                   Object,
@@ -102,20 +104,20 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                   Finish => Context.Status > Continuing,
                   Status => Status);
                case Status is
-                  when System.Native_Encoding.Finished =>
+                  when System.Native_Environment_Encoding.Finished =>
                      Context.Status := Ended;
-                  when System.Native_Encoding.Success =>
+                  when System.Native_Environment_Encoding.Success =>
                      null;
-                  when System.Native_Encoding.Overflow =>
+                  when System.Native_Environment_Encoding.Overflow =>
                      if Context.Converted_Last < Context.Converted_First then
                         raise Constraint_Error; -- Converted is too smaller
                      end if;
-                  when System.Native_Encoding.Truncated =>
+                  when System.Native_Environment_Encoding.Truncated =>
                      pragma Assert (Context.Status = Continuing);
                      if Context.Converted_Last < Context.Converted_First then
                         exit; -- wait tail-bytes
                      end if;
-                  when System.Native_Encoding.Illegal_Sequence =>
+                  when System.Native_Environment_Encoding.Illegal_Sequence =>
                      declare
                         Is_Overflow : Boolean;
                      begin
@@ -192,7 +194,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       --  convert substitute from internal to external
       loop
          declare
-            Status : System.Native_Encoding.Substituting_Status_Type;
+            Status :
+               System.Native_Environment_Encoding.Substituting_Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -203,11 +206,11 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                Finish => True,
                Status => Status);
             case Status is
-               when System.Native_Encoding.Finished =>
+               when System.Native_Environment_Encoding.Finished =>
                   exit;
-               when System.Native_Encoding.Success =>
+               when System.Native_Environment_Encoding.Success =>
                   null;
-               when System.Native_Encoding.Overflow =>
+               when System.Native_Environment_Encoding.Overflow =>
                   raise Constraint_Error;
             end case;
          end;
@@ -259,7 +262,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
             Taken : Stream_Element_Offset;
             Out_Buffer : Streams.Stream_Element_Array (0 .. 63);
             Out_Last : Stream_Element_Offset;
-            Status : System.Native_Encoding.Continuing_Status_Type;
+            Status : System.Native_Environment_Encoding.Continuing_Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -269,17 +272,17 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                Out_Last,
                Status => Status);
             case Status is
-               when System.Native_Encoding.Success =>
+               when System.Native_Environment_Encoding.Success =>
                   null;
-               when System.Native_Encoding.Overflow =>
+               when System.Native_Environment_Encoding.Overflow =>
                   if Out_Last < Out_Buffer'First then
                      raise Constraint_Error; -- Out_Buffer is too smaller
                   end if;
-               when System.Native_Encoding.Truncated =>
+               when System.Native_Environment_Encoding.Truncated =>
                   if Out_Last < Out_Buffer'First then
                      exit; -- wait tail-bytes
                   end if;
-               when System.Native_Encoding.Illegal_Sequence =>
+               when System.Native_Environment_Encoding.Illegal_Sequence =>
                   declare
                      Is_Overflow : Boolean;
                   begin
@@ -320,7 +323,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    is
       Out_Buffer : Streams.Stream_Element_Array (0 .. 63);
       Out_Last : Stream_Element_Offset := -1;
-      Status : System.Native_Encoding.Finishing_Status_Type;
+      Status : System.Native_Environment_Encoding.Finishing_Status_Type;
    begin
       if Context.First <= Context.Last then
          --  put substitute instead of incomplete sequence in the buffer
@@ -347,11 +350,11 @@ package body Ada.Environment_Encoding.Encoding_Streams is
             Stream.all,
             Out_Buffer (Out_Buffer'First .. Out_Last));
          case Status is
-            when System.Native_Encoding.Finished =>
+            when System.Native_Environment_Encoding.Finished =>
                exit;
-            when System.Native_Encoding.Success =>
+            when System.Native_Environment_Encoding.Success =>
                null;
-            when System.Native_Encoding.Overflow =>
+            when System.Native_Environment_Encoding.Overflow =>
                if Out_Last < Out_Buffer'First then
                   raise Constraint_Error; -- Out_Buffer is too smaller
                end if;
@@ -584,8 +587,10 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       if not Is_Open (Object.Reading_Converter) then
          Open (
             Object.Reading_Converter,
-            From => System.Native_Encoding.Encoding_Id (Object.External),
-            To => System.Native_Encoding.Encoding_Id (Object.Internal));
+            From => System.Native_Environment_Encoding.Encoding_Id (
+               Object.External),
+            To => System.Native_Environment_Encoding.Encoding_Id (
+               Object.Internal));
          if Object.Substitute_Length >= 0 then
             Set_Substitute_To_Reading_Converter (
                Object.Reading_Converter,
@@ -611,8 +616,10 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       if not Is_Open (Object.Writing_Converter) then
          Open (
             Object.Writing_Converter,
-            From => System.Native_Encoding.Encoding_Id (Object.Internal),
-            To => System.Native_Encoding.Encoding_Id (Object.External));
+            From => System.Native_Environment_Encoding.Encoding_Id (
+               Object.Internal),
+            To => System.Native_Environment_Encoding.Encoding_Id (
+               Object.External));
          if Object.Substitute_Length >= 0 then
             Set_Substitute_To_Writing_Converter (
                Object.Writing_Converter,

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 private with C.winnt;
 package System.Synchronous_Objects is
    pragma Preelaborate;

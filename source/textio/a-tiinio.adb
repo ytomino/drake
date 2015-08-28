@@ -57,8 +57,7 @@ package body Ada.Text_IO.Integer_IO is
                Error => Error);
             if Error
                or else Result not in
-                  Long_Long_Integer (Num'First) ..
-                  Long_Long_Integer (Num'Last)
+                  Long_Long_Integer (Num'First) .. Long_Long_Integer (Num'Last)
             then
                raise Data_Error;
             end if;
@@ -75,9 +74,7 @@ package body Ada.Text_IO.Integer_IO is
                Result,
                Error => Error);
             if Error
-               or else Result not in
-                  Integer (Num'First) ..
-                  Integer (Num'Last)
+               or else Result not in Integer (Num'First) .. Integer (Num'Last)
             then
                raise Data_Error;
             end if;

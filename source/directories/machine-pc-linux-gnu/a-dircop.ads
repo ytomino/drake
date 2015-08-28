@@ -1,1 +1,0 @@
-../machine-pc-freebsd/a-dircop.ads

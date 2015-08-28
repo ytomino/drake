@@ -121,12 +121,13 @@ package body Ada.Containers.Indefinite_Holders is
 
    function Copy (Source : Holder) return Holder is
    begin
-      return (Finalization.Controlled with Super => Copy_On_Write.Copy (
-         Source.Super'Access,
-         0, -- Length is unused
-         0, -- Capacity is unused
-         Allocate => Allocate_Data'Access,
-         Copy => Copy_Data'Access));
+      return (Finalization.Controlled with
+         Super => Copy_On_Write.Copy (
+            Source.Super'Access,
+            0, -- Length is unused
+            0, -- Capacity is unused
+            Allocate => Allocate_Data'Access,
+            Copy => Copy_Data'Access));
    end Copy;
 
    function Element (Container : Holder'Class) return Element_Type is

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for FreeBSD (or Linux)
 private with C;
 package Ada.Environment_Encoding.Names is
    --  Constants for schemes of platform-depended text encoding.
@@ -28,14 +28,14 @@ private
    use type C.char_array;
 
    UTF_16BE : constant Encoding_Id :=
-      System.Native_Encoding.UTF_16_Names (System.High_Order_First)(0)'Access;
+      Encoding_Id (System.Native_Environment_Encoding.UTF_16BE);
    UTF_16LE : constant Encoding_Id :=
-      System.Native_Encoding.UTF_16_Names (System.Low_Order_First)(0)'Access;
+      Encoding_Id (System.Native_Environment_Encoding.UTF_16LE);
 
    UTF_32BE : constant Encoding_Id :=
-      System.Native_Encoding.UTF_32_Names (System.High_Order_First)(0)'Access;
+      Encoding_Id (System.Native_Environment_Encoding.UTF_32BE);
    UTF_32LE : constant Encoding_Id :=
-      System.Native_Encoding.UTF_32_Names (System.Low_Order_First)(0)'Access;
+      Encoding_Id (System.Native_Environment_Encoding.UTF_32LE);
 
    Latin_1_Name : aliased constant C.char_array (0 .. 5) :=
       "CP819" & C.char'Val (0);

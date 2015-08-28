@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+--  specialized for FreeBSD
 private with C.signal;
 package Ada.Interrupts.Names is
 

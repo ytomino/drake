@@ -337,10 +337,8 @@ package body Ada.Strings.Generic_Fixed is
          1 ..
          Source'Length - (Actual_High - Low + 1) + By'Length)
       do
-         Result (1 .. Previous_Length) :=
-            Source (Source'First .. Low - 1);
-         Result (Previous_Length + 1 .. Previous_Length + By'Length) :=
-            By;
+         Result (1 .. Previous_Length) := Source (Source'First .. Low - 1);
+         Result (Previous_Length + 1 .. Previous_Length + By'Length) := By;
          Result (Previous_Length + By'Length + 1 .. Result'Last) :=
             Source (Actual_High + 1 .. Source'Last);
       end return;
@@ -375,8 +373,7 @@ package body Ada.Strings.Generic_Fixed is
          raise Index_Error;
       end if;
       return Result : String_Type (1 .. Source'Length + New_Item'Length) do
-         Result (1 .. Previous_Length) :=
-            Source (Source'First .. Before - 1);
+         Result (1 .. Previous_Length) := Source (Source'First .. Before - 1);
          Result (Previous_Length + 1 .. Previous_Length + New_Item'Length) :=
             New_Item;
          Result (Previous_Length + New_Item'Length + 1 .. Result'Last) :=
@@ -1123,8 +1120,7 @@ package body Ada.Strings.Generic_Fixed is
             raise Pattern_Error;
          else
             for Current in
-               Source'First ..
-               Source'Last - Pattern'Length + 1
+               Source'First .. Source'Last - Pattern'Length + 1
             loop
                declare
                   J, P : Positive;

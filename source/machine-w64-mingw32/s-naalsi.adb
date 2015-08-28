@@ -6,8 +6,9 @@ function System.Native_Allocators.Allocated_Size (
 is
    pragma Suppress (All_Checks);
 begin
-   return Storage_Elements.Storage_Count (C.winbase.HeapSize (
-      C.winbase.GetProcessHeap,
-      0,
-      C.windef.LPCVOID (Storage_Address)));
+   return Storage_Elements.Storage_Count (
+      C.winbase.HeapSize (
+         C.winbase.GetProcessHeap,
+         0,
+         C.windef.LPCVOID (Storage_Address)));
 end System.Native_Allocators.Allocated_Size;

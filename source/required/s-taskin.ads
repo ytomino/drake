@@ -17,7 +17,7 @@ package System.Tasking is
    type Task_Procedure_Access is access procedure (Params : Address);
 
    --  required for task by compiler (s-taskin.ads)
-   subtype Task_Id is Address; -- Inside.Task_Id
+   subtype Task_Id is Address; -- same as System.Tasks.Task_Id
 
    --  required for task by compiler (s-taskin.ads)
    --  "limited" is important to force pass-by-reference for Stages.Create_Task

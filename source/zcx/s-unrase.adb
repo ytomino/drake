@@ -1,3 +1,4 @@
+--  for ZCX (or SjLj, or Win64 SEH)
 pragma Check_Policy (Trace => Ignore);
 with Ada.Unchecked_Conversion;
 with System.Unwind.Representation;

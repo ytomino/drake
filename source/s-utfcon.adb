@@ -74,8 +74,8 @@ package body System.UTF_Conversions is
       end if;
       Code_2 := Code;
       for J in reverse 2 .. Length loop
-         Result (I + J - 1) := Character'Val (
-            2#10000000# or (Code_2 and (2 ** 6 - 1)));
+         Result (I + J - 1) :=
+            Character'Val (2#10000000# or (Code_2 and (2 ** 6 - 1)));
          Code_2 := Code_2 / (2 ** 6);
       end loop;
    end To_UTF_8;
@@ -140,8 +140,7 @@ package body System.UTF_Conversions is
                exit;
             end if;
          end if;
-         Code := Code * (2 ** 6) or
-            (Character'Pos (Trail) and (2 ** 6 - 1));
+         Code := Code * (2 ** 6) or (Character'Pos (Trail) and (2 ** 6 - 1));
       end loop;
       if Status = Success then
          UTF_8_Length (

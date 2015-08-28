@@ -94,8 +94,10 @@ package body C.unwind_pe is
          if shift >= unwind.uleb128_t'Size then
             unreachable;
          end if;
-         result := result or
-            Shift_Left (unwind.uleb128_t (byte) and 16#7f#, Natural (shift));
+         result := result
+            or Shift_Left (
+               unwind.uleb128_t (byte) and 16#7f#,
+               Natural (shift));
          shift := shift + 7;
          exit when not ((byte and 16#80#) /= 0);
       end loop;
@@ -120,8 +122,10 @@ package body C.unwind_pe is
          if shift >= unwind.uleb128_t'Size then
             unreachable;
          end if;
-         result := result or
-            Shift_Left (unwind.uleb128_t (byte) and 16#7f#, Natural (shift));
+         result := result
+            or Shift_Left (
+               unwind.uleb128_t (byte) and 16#7f#,
+               Natural (shift));
          shift := shift + 7;
          exit when not ((byte and 16#80#) /= 0);
       end loop;
@@ -178,13 +182,12 @@ package body C.unwind_pe is
    begin
       if encoding = DW_EH_PE_aligned then
          declare
-            a : unwind.Unwind_Internal_Ptr :=
-               unwind.Unwind_Internal_Ptr (
-                  System.Storage_Elements.To_Integer (
-                     unsigned_char_const_ptr_Conv.To_Address (Mutable_p)));
+            a : unwind.Unwind_Internal_Ptr := unwind.Unwind_Internal_Ptr (
+               System.Storage_Elements.To_Integer (
+                  unsigned_char_const_ptr_Conv.To_Address (Mutable_p)));
          begin
-            a := (a + void_ptr'Size / Standard'Storage_Unit - 1) and
-               -(void_ptr'Size / Standard'Storage_Unit);
+            a := (a + void_ptr'Size / Standard'Storage_Unit - 1)
+               and -(void_ptr'Size / Standard'Storage_Unit);
             result := Cast (a).all;
             Mutable_p := unsigned_char_const_ptr_Conv.To_Pointer (
                System'To_Address (

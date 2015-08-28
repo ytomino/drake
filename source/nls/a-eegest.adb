@@ -77,8 +77,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
       return Result : Decoder do
          Open (
             Converter (Result),
-            From => System.Native_Encoding.Encoding_Id (Id),
-            To => System.Native_Encoding.Encoding_Id (Current_Id));
+            From => System.Native_Environment_Encoding.Encoding_Id (Id),
+            To => System.Native_Environment_Encoding.Encoding_Id (Current_Id));
       end return;
    end From;
 
@@ -243,8 +243,9 @@ package body Ada.Environment_Encoding.Generic_Strings is
       return Result : Encoder do
          Open (
             Converter (Result),
-            From => System.Native_Encoding.Encoding_Id (Current_Id),
-            To => System.Native_Encoding.Encoding_Id (Id));
+            From => System.Native_Environment_Encoding.Encoding_Id (
+               Current_Id),
+            To => System.Native_Environment_Encoding.Encoding_Id (Id));
       end return;
    end To;
 

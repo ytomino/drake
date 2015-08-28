@@ -32,6 +32,7 @@ procedure ext_doc is
 		procedure Get_Unit_Name (
 			Line : in String;
 			Unit_Name : out Ada.Strings.Unbounded.Unbounded_String;
+			Is_Private : in out Boolean;
 			Rest : out Ada.Strings.Unbounded.Unbounded_String)
 		is
 			F : Positive := Line'First;
@@ -45,11 +46,13 @@ procedure ext_doc is
 				if L < F then
 					raise Unknown_Unit_Name_Error with Name & " """ & Line & """";
 				end if;
-				if Line (F .. L) = "package"
+				if Line (F .. L) = "private" then
+					Is_Private := True;
+					F := Ada.Strings.Fixed.Index_Non_Blank (Line, From => L + 1);
+				elsif Line (F .. L) = "package"
 					or else Line (F .. L) = "procedure"
 					or else Line (F .. L) = "function"
 					or else Line (F .. L) = "generic"
-					or else Line (F .. L) = "private"
 				then
 					F := Ada.Strings.Fixed.Index_Non_Blank (Line, From => L + 1);
 				else
@@ -61,6 +64,7 @@ procedure ext_doc is
 		end Get_Unit_Name;
 		File : Ada.Text_IO.File_Type;
 		Unit_Name : aliased Ada.Strings.Unbounded.Unbounded_String;
+		Is_Private : Boolean := False;
 		Kind : Unit_Kind;
 		Renamed : Ada.Strings.Unbounded.Unbounded_String;
 		Instantiation : Ada.Strings.Unbounded.Unbounded_String;
@@ -81,7 +85,11 @@ procedure ext_doc is
 					Line : constant String := Ada.Text_IO.Get_Line (File);
 				begin
 					if Start_With (Line, "--") then
-						if Start_With (Line, "--  Ada") or else Line = "--  separated and auto-loaded by compiler" then
+						if Start_With (Line, "--  Ada")
+							or else Start_With (Line, "--  AARM")
+							or else Line = "--  separated and auto-loaded by compiler"
+							or else Start_With (Line, "--  specialized for ")
+						then
 							Kind := Standard_Unit;
 							exit;
 						elsif Start_With (Line, "--  extended unit, please see ") then
@@ -91,7 +99,7 @@ procedure ext_doc is
 						elsif Start_With (Line, "--  extended ") then
 							Kind := Extended_Unit;
 							if Line /= "--  extended unit"
-								and then not Start_With (Line, "--  extended unit specialized ")
+								and then not Start_With (Line, "--  extended unit specialized for ")
 								and then not Start_With (Line, "--  extended unit, ")
 							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
@@ -113,11 +121,13 @@ procedure ext_doc is
 						then
 							Kind := Runtime_Unit;
 							if Line /= "--  runtime unit"
-								and then not Start_With (Line, "--  runtime unit ")
+								and then not Start_With (Line, "--  runtime unit for ")
+								and then not Start_With (Line, "--  runtime unit specialized for ")
+								and then not Start_With (Line, "--  runtime unit required ")
 								and then Line /= "--  optional runtime unit"
-								and then not Start_With (Line, "--  optional runtime unit specialized ")
+								and then not Start_With (Line, "--  optional runtime unit specialized for ")
 								and then Line /= "--  overridable runtime unit"
-								and then not Start_With (Line, "--  overridable runtime unit specialized ")
+								and then not Start_With (Line, "--  overridable runtime unit specialized for ")
 								and then Line /= "--  optional/overridable runtime unit"
 							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
@@ -128,8 +138,8 @@ procedure ext_doc is
 							Kind := Implementation_Unit;
 							if Line /= "--  implementation unit"
 								and then not Start_With (Line, "--  implementation unit for ")
+								and then not Start_With (Line, "--  implementation unit specialized for ")
 								and then not Start_With (Line, "--  implementation unit required ")
-								and then not Start_With (Line, "--  implementation unit specialized ")
 								and then not Start_With (Line, "--  implementation unit,") -- translated or proposed in AI
 							then
 								Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Name);
@@ -148,7 +158,7 @@ procedure ext_doc is
 					then
 						Kind := Standard_Unit;
 						if Line /= "generic" then
-							Get_Unit_Name (Line, Unit_Name, Rest_Line);
+							Get_Unit_Name (Line, Unit_Name, Is_Private, Rest_Line);
 						end if;
 						exit;
 					end if;
@@ -163,7 +173,9 @@ procedure ext_doc is
 				declare
 					Line : constant String := Ada.Text_IO.Get_Line (File);
 				begin
-					if Start_With (Line, "package")
+					if Line = "private generic" then
+						Is_Private := True;
+					elsif Start_With (Line, "package")
 						or else Start_With (Line, "procedure")
 						or else Start_With (Line, "function")
 						or else Start_With (Line, "private package")
@@ -172,11 +184,14 @@ procedure ext_doc is
 						or else (Start_With (Line, "generic")
 							and then Line /= "generic")
 					then
-						Get_Unit_Name (Line, Unit_Name, Rest_Line);
+						Get_Unit_Name (Line, Unit_Name, Is_Private, Rest_Line);
 						exit;
 					end if;
 				end;
 			end loop Detect_Name;
+		end if;
+		if Kind = Extended_Unit and then Is_Private then
+			Kind := Implementation_Unit;
 		end if;
 		declare
 			procedure Skip_Formal_Parameters is
@@ -465,7 +480,6 @@ procedure ext_doc is
 					or else Extendeds.Constant_Reference (Position).Element.Instantiation /= Instantiation
 					or else Extendeds.Constant_Reference (Position).Element.Reference /= Reference
 					or else (Extendeds.Constant_Reference (Position).Element.Document /= Document
-						and then Unit_Name /= "Interfaces.C" -- wchar_t is different
 						and then Unit_Name /= "Ada.Directories.Information")
 				then
 					raise Mismatch_Error with Name;

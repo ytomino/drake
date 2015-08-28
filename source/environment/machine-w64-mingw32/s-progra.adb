@@ -23,8 +23,8 @@ package body System.Program is
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.winnt.LPWSTR, Finally);
       Buffer_Length : C.windef.DWORD := 1024;
-      Buffer : aliased C.winnt.LPWSTR :=
-         Conv.To_Pointer (Standard_Allocators.Allocate (
+      Buffer : aliased C.winnt.LPWSTR := Conv.To_Pointer (
+         Standard_Allocators.Allocate (
             Storage_Elements.Storage_Count (Buffer_Length)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
    begin

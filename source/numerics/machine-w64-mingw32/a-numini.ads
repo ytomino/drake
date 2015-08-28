@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 with System.Storage_Elements;
 private procedure Ada.Numerics.Initiator (
    Item : System.Address;

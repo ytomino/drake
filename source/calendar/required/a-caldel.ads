@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit required by compiler
-with System.Native_Time;
 private with System.Native_Calendar;
+private with System.Native_Time;
 private with Ada.Unchecked_Conversion;
 private package Ada.Calendar.Delays is
 

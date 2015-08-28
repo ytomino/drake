@@ -62,8 +62,7 @@ package body System.Formatting.Literals is
             Mark := Item (Last + 1);
             Last := Last + 1;
             if Result in
-               Unsigned (Number_Base'First) ..
-               Unsigned (Number_Base'Last)
+               Unsigned (Number_Base'First) .. Unsigned (Number_Base'Last)
             then
                Base := Number_Base (Result);
                Get (Item, Last, Result, Base => Base, Error => Error);

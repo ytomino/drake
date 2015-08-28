@@ -31,8 +31,7 @@ package body Ada.Naked_Text_IO is
          when IO_Modes.Locale =>
             declare
                Locale_Support : constant Boolean :=
-                  System.Native_Text_IO.Default_External =
-                  IO_Modes.Locale;
+                  System.Native_Text_IO.Default_External = IO_Modes.Locale;
             begin
                if Locale_Support then
                   return IO_Modes.Locale; -- Windows
@@ -661,8 +660,7 @@ package body Ada.Naked_Text_IO is
       then
          declare
             Locale_Support : constant Boolean :=
-               System.Native_Text_IO.Default_External =
-               IO_Modes.Locale;
+               System.Native_Text_IO.Default_External = IO_Modes.Locale;
          begin
             if not Locale_Support then
                unreachable;
@@ -1275,8 +1273,7 @@ package body Ada.Naked_Text_IO is
    begin
       if File.Last > 0 then
          if Item in
-            Wide_Character'Val (16#dc00#) ..
-            Wide_Character'Val (16#dfff#)
+            Wide_Character'Val (16#dc00#) .. Wide_Character'Val (16#dfff#)
          then
             declare
                First : System.UTF_Conversions.UCS_4;

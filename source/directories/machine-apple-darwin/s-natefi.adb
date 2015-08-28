@@ -1,6 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Hierarchical_File_Names;
-with System.Directory_Searching;
+with System.Native_Directories;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdlib;
@@ -15,11 +15,11 @@ package body System.Native_Temporary_Files is
 
    function IO_Exception_Id (errno : C.signed_int)
       return Ada.Exception_Identification.Exception_Id
-      renames Directory_Searching.IO_Exception_Id;
+      renames Native_Directories.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Ada.Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames Native_Directories.Named_IO_Exception_Id;
 
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);

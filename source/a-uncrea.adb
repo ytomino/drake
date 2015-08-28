@@ -50,8 +50,8 @@ begin
             Move_Length : constant Index_Type'Base :=
                Min_Last_Index - First_Index + 1;
          begin
-            X (Old_First_Index .. Old_First_Index + Move_Length - 1) := X (
-               First_Index .. First_Index + Move_Length - 1);
+            X (Old_First_Index .. Old_First_Index + Move_Length - 1) :=
+               X (First_Index .. First_Index + Move_Length - 1);
          end;
       end if;
       --  real reallocation

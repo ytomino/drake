@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+--  specialized for Linux
 private with C.signal;
 package Ada.Interrupts.Names is
 

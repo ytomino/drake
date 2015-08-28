@@ -259,19 +259,22 @@ package body Ada.Containers.Generic_Arrays is
          declare
             S : Array_Access := Container;
          begin
-            Container := new Array_Type'(Container (
-               Container'First ..
-               Container'First + Index_Type'Base (Length) - 1));
+            Container := new Array_Type'(
+               Container (
+                  Container'First ..
+                  Container'First + Index_Type'Base (Length) - 1));
             Free (S);
          end;
       elsif Length > Container'Length then
          declare
             S : Array_Access := Container;
          begin
-            Container := new Array_Type'(Container.all & Array_Type'(
-               Index_Type'First ..
-               Index_Type'First
-                  + Index_Type'Base (Length - Container'Length) - 1 => <>));
+            Container := new Array_Type'(
+               Container.all
+               & Array_Type'(
+                  Index_Type'First ..
+                  Index_Type'First
+                     + Index_Type'Base (Length - Container'Length) - 1 => <>));
             Free (S);
          end;
       end if;

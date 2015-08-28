@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 with C.winbase;
 with C.windef;
 with C.winnt;

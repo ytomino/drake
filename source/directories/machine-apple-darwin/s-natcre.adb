@@ -16,7 +16,7 @@ package body System.Native_Credentials is
       end if;
    end User_Name;
 
-   function Group_Name (Id : Group_Id := Current_User) return String is
+   function Group_Name (Id : Group_Id := Current_Group) return String is
       Info : C.grp.struct_group_ptr;
    begin
       Info := C.grp.getgrgid (Id);

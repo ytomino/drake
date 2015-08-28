@@ -246,6 +246,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
 
    procedure Delete (Container : in out Set; Item : Element_Type) is
       Position : Cursor := Find (Container, Item);

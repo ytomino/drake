@@ -1,4 +1,3 @@
-with Ada.Directories.Inside;
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
@@ -14,13 +13,17 @@ with C.sys.types;
 with C.unistd;
 package body Ada.Directories.Information is
    use Exception_Identification.From_Here;
+   use type System.Bit_Order;
    use type C.size_t;
    use type C.sys.types.mode_t;
    use type C.sys.types.ssize_t;
 
+   subtype Directory_Entry_Information_Type is
+      System.Native_Directories.Directory_Entry_Information_Type;
+
    function Named_IO_Exception_Id (errno : C.signed_int)
       return Exception_Identification.Exception_Id
-      renames System.Directory_Searching.Named_IO_Exception_Id;
+      renames System.Native_Directories.Named_IO_Exception_Id;
 
    procedure Fill (
       Directory_Entry : not null access Non_Controlled_Directory_Entry_Type);
@@ -28,7 +31,7 @@ package body Ada.Directories.Information is
       Directory_Entry : not null access Non_Controlled_Directory_Entry_Type) is
    begin
       if not Directory_Entry.Additional.Filled then
-         System.Directory_Searching.Get_Information (
+         System.Native_Directories.Searching.Get_Information (
             Directory_Entry.Path.all,
             Directory_Entry.Directory_Entry,
             Directory_Entry.Additional.Information);
@@ -39,29 +42,55 @@ package body Ada.Directories.Information is
    function To_Permission_Set (Mode : C.sys.types.mode_t)
       return Permission_Set_Type;
    function To_Permission_Set (Mode : C.sys.types.mode_t)
-      return Permission_Set_Type is
+      return Permission_Set_Type
+   is
+      Castable : constant Boolean :=
+         System.Default_Bit_Order = System.Low_Order_First
+         and then C.sys.stat.S_IXOTH = 8#001#
+         and then C.sys.stat.S_IWOTH = 8#002#
+         and then C.sys.stat.S_IROTH = 8#004#
+         and then C.sys.stat.S_IXGRP = 8#010#
+         and then C.sys.stat.S_IWGRP = 8#020#
+         and then C.sys.stat.S_IRGRP = 8#040#
+         and then C.sys.stat.S_IXUSR = 8#100#
+         and then C.sys.stat.S_IWUSR = 8#200#
+         and then C.sys.stat.S_IRUSR = 8#400#
+         and then C.sys.stat.S_ISVTX = 8#1000#
+         and then C.sys.stat.S_ISGID = 8#2000#
+         and then C.sys.stat.S_ISUID = 8#4000#;
    begin
-      return (
-         Others_Execute => (Mode and C.sys.stat.S_IXOTH) /= 0,
-         Others_Write => (Mode and C.sys.stat.S_IWOTH) /= 0,
-         Others_Read => (Mode and C.sys.stat.S_IROTH) /= 0,
-         Group_Execute => (Mode and C.sys.stat.S_IXGRP) /= 0,
-         Group_Write => (Mode and C.sys.stat.S_IWGRP) /= 0,
-         Group_Read => (Mode and C.sys.stat.S_IRGRP) /= 0,
-         Owner_Execute => (Mode and C.sys.stat.S_IXUSR) /= 0,
-         Owner_Write => (Mode and C.sys.stat.S_IWUSR) /= 0,
-         Owner_Read => (Mode and C.sys.stat.S_IRUSR) /= 0,
-         Set_Group_ID => (Mode and C.sys.stat.S_ISGID) /= 0,
-         Set_User_ID => (Mode and C.sys.stat.S_ISUID) /= 0);
+      if Castable then
+         declare
+            type Unsigned_12 is mod 2 ** 12;
+            function Cast is
+               new Unchecked_Conversion (Unsigned_12, Permission_Set_Type);
+         begin
+            return Cast (Unsigned_12'Mod (Mode and 8#7777#));
+         end;
+      else
+         return (
+            Others_Execute => (Mode and C.sys.stat.S_IXOTH) /= 0,
+            Others_Write => (Mode and C.sys.stat.S_IWOTH) /= 0,
+            Others_Read => (Mode and C.sys.stat.S_IROTH) /= 0,
+            Group_Execute => (Mode and C.sys.stat.S_IXGRP) /= 0,
+            Group_Write => (Mode and C.sys.stat.S_IWGRP) /= 0,
+            Group_Read => (Mode and C.sys.stat.S_IRGRP) /= 0,
+            Owner_Execute => (Mode and C.sys.stat.S_IXUSR) /= 0,
+            Owner_Write => (Mode and C.sys.stat.S_IWUSR) /= 0,
+            Owner_Read => (Mode and C.sys.stat.S_IRUSR) /= 0,
+            Sticky => (Mode and C.sys.stat.S_ISVTX) /= 0,
+            Set_Group_ID => (Mode and C.sys.stat.S_ISGID) /= 0,
+            Set_User_ID => (Mode and C.sys.stat.S_ISUID) /= 0);
+      end if;
    end To_Permission_Set;
 
    --  implementation
 
    function Last_Access_Time (Name : String) return Calendar.Time is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return Cast (System.Native_Calendar.To_Time (Information.st_atim));
    end Last_Access_Time;
 
@@ -69,69 +98,69 @@ package body Ada.Directories.Information is
       return Calendar.Time
    is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return Cast (System.Native_Calendar.To_Time (Information.st_ctim));
    end Last_Status_Change_Time;
 
    function Permission_Set (Name : String) return Permission_Set_Type is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return To_Permission_Set (Information.st_mode);
    end Permission_Set;
 
    function Owner (Name : String) return String is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return System.Native_Credentials.User_Name (Information.st_uid);
    end Owner;
 
    function Group (Name : String) return String is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return System.Native_Credentials.Group_Name (Information.st_gid);
    end Group;
 
    function Is_Block_Special_File (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFBLK;
    end Is_Block_Special_File;
 
    function Is_Character_Special_File (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFCHR;
    end Is_Character_Special_File;
 
    function Is_FIFO (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFIFO;
    end Is_FIFO;
 
    function Is_Symbolic_Link (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFLNK;
    end Is_Symbolic_Link;
 
    function Is_Socket (Name : String) return Boolean is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return (Information.st_mode and C.sys.stat.S_IFMT) =
          C.sys.stat.S_IFSOCK;
    end Is_Socket;
@@ -148,8 +177,9 @@ package body Ada.Directories.Information is
          Reference (Directory_Entry);
    begin
       Fill (NC_Directory_Entry);
-      return Cast (System.Native_Calendar.To_Time (
-         NC_Directory_Entry.Additional.Information.st_atim));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            NC_Directory_Entry.Additional.Information.st_atim));
    end Last_Access_Time;
 
    function Last_Status_Change_Time (
@@ -164,8 +194,9 @@ package body Ada.Directories.Information is
          Reference (Directory_Entry);
    begin
       Fill (NC_Directory_Entry);
-      return Cast (System.Native_Calendar.To_Time (
-         NC_Directory_Entry.Additional.Information.st_ctim));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            NC_Directory_Entry.Additional.Information.st_ctim));
    end Last_Status_Change_Time;
 
    function Permission_Set (
@@ -302,8 +333,8 @@ package body Ada.Directories.Information is
          0 ..
          Name'Length * System.Zero_Terminated_Strings.Expanding);
       Buffer_Length : C.size_t := 1024;
-      Buffer : aliased C.char_ptr :=
-         Conv.To_Pointer (System.Standard_Allocators.Allocate (
+      Buffer : aliased C.char_ptr := Conv.To_Pointer (
+         System.Standard_Allocators.Allocate (
             System.Storage_Elements.Storage_Count (Buffer_Length)));
    begin
       Holder.Assign (Buffer'Access);
@@ -348,9 +379,9 @@ package body Ada.Directories.Information is
    end Read_Symbolic_Link;
 
    function Identity (Name : String) return File_Id is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
+      System.Native_Directories.Get_Information (Name, Information);
       return File_Id (Information.st_ino);
    end Identity;
 

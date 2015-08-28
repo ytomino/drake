@@ -88,14 +88,19 @@ package body Ada.Strings.East_Asian_Width is
    begin
       case Code is
          when 0 .. 16#FFFF# =>
-            return Width_Kind'Val (UCD.East_Asian_Width_Type'Pos (
-               Search (UCD.East_Asian_Width.Table_XXXX, Code)));
+            return Width_Kind'Val (
+               UCD.East_Asian_Width_Type'Pos (
+                  Search (UCD.East_Asian_Width.Table_XXXX, Code)));
          when 16#10000# .. 16#1FFFF# =>
-            return Width_Kind'Val (UCD.East_Asian_Width_Type'Pos (
-               Search (UCD.East_Asian_Width.Table_1XXXX, Code - 16#10000#)));
+            return Width_Kind'Val (
+               UCD.East_Asian_Width_Type'Pos (
+                  Search (
+                     UCD.East_Asian_Width.Table_1XXXX,
+                     Code - 16#10000#)));
          when 16#20000# .. 16#7FFFFFFF# =>
-            return Width_Kind'Val (UCD.East_Asian_Width_Type'Pos (
-               Search (UCD.East_Asian_Width.Table_XXXXXXXX, Code)));
+            return Width_Kind'Val (
+               UCD.East_Asian_Width_Type'Pos (
+                  Search (UCD.East_Asian_Width.Table_XXXXXXXX, Code)));
       end case;
    end Kind;
 

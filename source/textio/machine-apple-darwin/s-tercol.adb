@@ -19,8 +19,7 @@ package body System.Terminal_Colors is
 
    procedure Support_256_Color_Init;
    procedure Support_256_Color_Init is
-      TERM : constant C.char_ptr :=
-         C.stdlib.getenv (TERM_Variable (0)'Access);
+      TERM : constant C.char_ptr := C.stdlib.getenv (TERM_Variable (0)'Access);
    begin
       if TERM /= null
          and then C.string.strlen (TERM) = xterm_256color'Length
@@ -276,8 +275,8 @@ package body System.Terminal_Colors is
    procedure Reset (
       Handle : Native_IO.Handle_Type)
    is
-      Seq : constant String (1 .. 4) := (
-         Character'Val (16#1b#), '[', '0', 'm');
+      Seq : constant String (1 .. 4) :=
+         (Character'Val (16#1b#), '[', '0', 'm');
    begin
       Native_Text_IO.Write_Just (Handle, Seq);
    end Reset;

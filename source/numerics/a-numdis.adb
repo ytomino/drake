@@ -40,8 +40,9 @@ package body Ada.Numerics.Distributions is
                   Long_Long_Float);
          begin
             return Target'Val (
-               Longest_Unsigned (Long_Long_Float'Floor (
-                  To_Float (X) * (Long_Long_Float (Target_W) + 1.0)))
+               Longest_Unsigned (
+                  Long_Long_Float'Floor (
+                     To_Float (X) * (Long_Long_Float (Target_W) + 1.0)))
                + Target'Pos (Target'First));
          end;
       end if;

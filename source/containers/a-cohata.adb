@@ -201,8 +201,8 @@ package body Ada.Containers.Hash_Tables is
          return Boolean)
       return Boolean is
    begin
-      return Left_Length = Right_Length and then
-         Is_Subset (Left, Right, Equivalent);
+      return Left_Length = Right_Length
+         and then Is_Subset (Left, Right, Equivalent);
    end Equivalent;
 
    function Overlap (
@@ -485,19 +485,9 @@ package body Ada.Containers.Hash_Tables is
          Target := null;
          Length := 0;
       elsif Left_Length = 0 and then In_Only_Right then
-         Hash_Tables.Copy (
-            Target,
-            Length,
-            Right,
-            Right_Length,
-            Copy => Copy);
+         Hash_Tables.Copy (Target, Length, Right, Right_Length, Copy => Copy);
       elsif Right_Length = 0 and then In_Only_Left then
-         Hash_Tables.Copy (
-            Target,
-            Length,
-            Left,
-            Left_Length,
-            Copy => Copy);
+         Hash_Tables.Copy (Target, Length, Left, Left_Length, Copy => Copy);
       elsif Left_Length = 0 or else Right_Length = 0 then
          Target := null;
          Length := 0;

@@ -1,9 +1,9 @@
-with Ada.Interrupts.Inside;
 with System.Interrupt_Handlers;
+with System.Native_Interrupts;
 package body Ada.Interrupts is
 
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean
-      renames Inside.Is_Reserved;
+      renames System.Native_Interrupts.Is_Reserved;
 
    function Is_Attached (Interrupt : Interrupt_Id) return Boolean is
    begin
@@ -16,7 +16,7 @@ package body Ada.Interrupts is
       if Is_Reserved (Interrupt) then
          raise Program_Error;
       end if;
-      return Inside.Current_Handler (Interrupt);
+      return System.Native_Interrupts.Current_Handler (Interrupt);
    end Current_Handler;
 
    procedure Attach_Handler (
@@ -43,7 +43,10 @@ package body Ada.Interrupts is
       then
          raise Program_Error;
       end if;
-      Inside.Exchange_Handler (Old_Handler, New_Handler, Interrupt);
+      System.Native_Interrupts.Exchange_Handler (
+         Old_Handler,
+         New_Handler,
+         Interrupt);
    end Exchange_Handler;
 
    procedure Detach_Handler (Interrupt : Interrupt_Id) is
@@ -67,9 +70,9 @@ package body Ada.Interrupts is
       Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
       Interrupt : Interrupt_Id)
-      renames Inside.Exchange_Handler;
+      renames System.Native_Interrupts.Exchange_Handler;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id)
-      renames Inside.Raise_Interrupt;
+      renames System.Native_Interrupts.Raise_Interrupt;
 
 end Ada.Interrupts;

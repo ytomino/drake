@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  translated unit from SFMT (SFMT-common.h)
 private generic
 package Ada.Numerics.SFMT.Generating is
    --  no SIMD version

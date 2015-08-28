@@ -1,0 +1,1 @@
+../machine-apple-darwin/s-nadise.adb

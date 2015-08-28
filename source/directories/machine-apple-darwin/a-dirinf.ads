@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  Ada 2005, this package defined by Ada 2005 AARM A.16 (124.b/2)
+--  AARM A.16 (124.cc/2), specialized for POSIX (Darwin, FreeBSD or Linux)
 package Ada.Directories.Information is
    --  System-specific directory information.
    --  Unix and similar systems version.
@@ -8,10 +8,12 @@ package Ada.Directories.Information is
 
    function Last_Status_Change_Time (Name : String) return Calendar.Time;
 
+   --  modified
    type Permission is (
       Others_Execute, Others_Write, Others_Read,
       Group_Execute, Group_Write, Group_Read,
       Owner_Execute, Owner_Write, Owner_Read,
+      Sticky, -- additional
       Set_Group_ID, Set_User_ID);
 
    type Permission_Set_Type is array (Permission) of Boolean;

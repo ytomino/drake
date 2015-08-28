@@ -1,4 +1,3 @@
-with Ada.Directories.Inside;
 with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
@@ -7,8 +6,12 @@ with System.Native_Calendar;
 with System.Storage_Elements;
 package body Ada.Directories is
    use Exception_Identification.From_Here;
-   use type System.Directory_Searching.Handle_Type;
+   use type System.Native_Directories.File_Kind;
+   use type System.Native_Directories.Searching.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
+
+   subtype Directory_Entry_Information_Type is
+      System.Native_Directories.Directory_Entry_Information_Type;
 
    procedure Free is new Unchecked_Deallocation (String, String_Access);
 
@@ -60,7 +63,7 @@ package body Ada.Directories is
    begin
       if Object.Status = Detached then
          Free (Object.Path);
-         System.Directory_Searching.Free (Object.Directory_Entry);
+         System.Native_Directories.Searching.Free (Object.Directory_Entry);
       end if;
    end Finalize;
 
@@ -72,7 +75,7 @@ package body Ada.Directories is
       Raise_On_Error : Boolean) is
    begin
       Free (Search.Path);
-      System.Directory_Searching.End_Search (
+      System.Native_Directories.Searching.End_Search (
          Search.Search,
          Raise_On_Error => Raise_On_Error);
    end End_Search;
@@ -91,7 +94,7 @@ package body Ada.Directories is
             not null access Non_Controlled_Directory_Entry_Type :=
             Reference (Search.Next_Directory_Entry);
       begin
-         System.Directory_Searching.Get_Next_Entry (
+         System.Native_Directories.Searching.Get_Next_Entry (
             Search.Search,
             NC_Directory_Entry.Directory_Entry,
             Has_Next);
@@ -105,17 +108,11 @@ package body Ada.Directories is
 
    --  directory and file operations
 
-   function Current_Directory return String
-      renames Inside.Current_Directory;
-
-   procedure Set_Directory (Directory : String)
-      renames Inside.Set_Directory;
-
-   procedure Create_Directory (New_Directory : String; Form : String := "")
-      renames Inside.Create_Directory;
-
-   procedure Delete_Directory (Directory : String)
-      renames Inside.Delete_Directory;
+   procedure Create_Directory (New_Directory : String; Form : String := "") is
+      pragma Unreferenced (Form);
+   begin
+      System.Native_Directories.Create_Directory (New_Directory);
+   end Create_Directory;
 
    procedure Create_Path (New_Directory : String; Form : String := "") is
       pragma Unreferenced (Form);
@@ -159,81 +156,55 @@ package body Ada.Directories is
       Delete_Directory (Directory);
    end Delete_Tree;
 
-   procedure Delete_File (Name : String)
-      renames Inside.Delete_File;
-
-   procedure Rename (
-      Old_Name : String;
-      New_Name : String;
-      Overwrite : Boolean := True)
-      renames Inside.Rename;
-
    procedure Copy_File (
       Source_Name : String;
       Target_Name : String;
       Form : String) is
    begin
-      Inside.Copy_File (Source_Name, Target_Name, Pack_For_Copy_File (Form));
+      System.Native_Directories.Copy_File (
+         Source_Name,
+         Target_Name,
+         Overwrite => Pack_For_Copy_File (Form));
    end Copy_File;
-
-   procedure Copy_File (
-      Source_Name : String;
-      Target_Name : String;
-      Overwrite : Boolean := True)
-      renames Inside.Copy_File;
-
-   procedure Replace_File (
-      Source_Name : String;
-      Target_Name : String)
-      renames Inside.Replace_File;
-
-   procedure Symbolic_Link (
-      Source_Name : String;
-      Target_Name : String;
-      Overwrite : Boolean := True)
-      renames Inside.Symbolic_Link;
-
-   --  file and directory name operations
-
-   function Full_Name (Name : String) return String
-      renames Inside.Full_Name;
 
    --  file and directory queries
 
-   function Exists (Name : String) return Boolean
-      renames Inside.Exists;
-
    function Kind (Name : String) return File_Kind is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
-      return Inside.Kind (Information);
+      System.Native_Directories.Get_Information (Name, Information);
+      return File_Kind'Enum_Val (
+         System.Native_Directories.File_Kind'Enum_Rep (
+            System.Native_Directories.Kind (Information)));
    end Kind;
 
    function Size (Name : String) return File_Size is
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
-      if Inside.Kind (Information) /= Ordinary_File then
+      System.Native_Directories.Get_Information (Name, Information);
+      if System.Native_Directories.Kind (Information) /=
+         System.Native_Directories.Ordinary_File
+      then
          raise Constraint_Error; -- implementation-defined
       else
-         return Inside.Size (Information);
+         return System.Native_Directories.Size (Information);
       end if;
    end Size;
 
    function Modification_Time (Name : String) return Calendar.Time is
       function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
-      Information : aliased Inside.Directory_Entry_Information_Type;
+      Information : aliased Directory_Entry_Information_Type;
    begin
-      Inside.Get_Information (Name, Information);
-      return Cast (System.Native_Calendar.To_Time (
-         Inside.Modification_Time (Information)));
+      System.Native_Directories.Get_Information (Name, Information);
+      return Cast (
+         System.Native_Calendar.To_Time (
+            System.Native_Directories.Modification_Time (Information)));
    end Modification_Time;
 
    procedure Set_Modification_Time (Name : String; Time : Calendar.Time) is
       function Cast is new Unchecked_Conversion (Calendar.Time, Duration);
    begin
-      Inside.Set_Modification_Time (
+      System.Native_Directories.Set_Modification_Time (
          Name,
          System.Native_Calendar.To_Native_Time (Cast (Time)));
    end Set_Modification_Time;
@@ -261,7 +232,7 @@ package body Ada.Directories is
       function Cast is new
          Unchecked_Conversion (
             Filter_Type,
-            System.Directory_Searching.Filter_Type);
+            System.Native_Directories.Searching.Filter_Type);
       Has_Next : Boolean;
    begin
       Search.Next_Is_Queried := True;
@@ -272,7 +243,7 @@ package body Ada.Directories is
             not null access Non_Controlled_Directory_Entry_Type :=
             Reference (Search.Next_Directory_Entry);
       begin
-         System.Directory_Searching.Start_Search (
+         System.Native_Directories.Searching.Start_Search (
             Search.Search,
             Directory,
             Pattern,
@@ -352,14 +323,17 @@ package body Ada.Directories is
 
    overriding procedure Finalize (Search : in out Search_Type) is
    begin
-      if Search.Search.Handle /= System.Directory_Searching.Null_Handle then
+      if Search.Search.Handle /=
+         System.Native_Directories.Searching.Null_Handle
+      then
          End_Search (Search, Raise_On_Error => False);
       end if;
    end Finalize;
 
    function Is_Open (Search : Search_Type) return Boolean is
    begin
-      return Search.Search.Handle /= System.Directory_Searching.Null_Handle;
+      return Search.Search.Handle /=
+         System.Native_Directories.Searching.Null_Handle;
    end Is_Open;
 
    procedure Search (
@@ -408,7 +382,7 @@ package body Ada.Directories is
             Target_NC_Directory_Entry.Path :=
                new String'(Source_NC_Directory_Entry.Path.all);
             Target_NC_Directory_Entry.Directory_Entry :=
-               System.Directory_Searching.New_Directory_Entry (
+               System.Native_Directories.Searching.New_Directory_Entry (
                   Source_NC_Directory_Entry.Directory_Entry);
             Target_NC_Directory_Entry.Additional.Filled := False;
             Target_NC_Directory_Entry.Status := Detached;
@@ -481,7 +455,7 @@ package body Ada.Directories is
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      return System.Directory_Searching.Simple_Name (
+      return System.Native_Directories.Searching.Simple_Name (
          NC_Directory_Entry.Directory_Entry);
    end Simple_Name;
 
@@ -511,8 +485,8 @@ package body Ada.Directories is
          Reference (Directory_Entry);
    begin
       return File_Kind'Enum_Val (
-         System.Directory_Searching.File_Kind'Enum_Rep (
-            System.Directory_Searching.Kind (
+         System.Native_Directories.File_Kind'Enum_Rep (
+            System.Native_Directories.Searching.Kind (
                NC_Directory_Entry.Directory_Entry)));
    end Kind;
 
@@ -528,7 +502,7 @@ package body Ada.Directories is
                not null access Non_Controlled_Directory_Entry_Type :=
                Reference (Directory_Entry);
          begin
-            return System.Directory_Searching.Size (
+            return System.Native_Directories.Searching.Size (
                NC_Directory_Entry.Path.all,
                NC_Directory_Entry.Directory_Entry,
                NC_Directory_Entry.Additional);
@@ -547,11 +521,12 @@ package body Ada.Directories is
          not null access Non_Controlled_Directory_Entry_Type :=
          Reference (Directory_Entry);
    begin
-      return Cast (System.Native_Calendar.To_Time (
-         System.Directory_Searching.Modification_Time (
-            NC_Directory_Entry.Path.all,
-            NC_Directory_Entry.Directory_Entry,
-            NC_Directory_Entry.Additional)));
+      return Cast (
+         System.Native_Calendar.To_Time (
+            System.Native_Directories.Searching.Modification_Time (
+               NC_Directory_Entry.Path.all,
+               NC_Directory_Entry.Directory_Entry,
+               NC_Directory_Entry.Additional)));
    end Modification_Time;
 
    package body Controlled is

@@ -165,8 +165,8 @@ package body System.Val_WChar is
                begin
                   Get_Named (S, Result, Error);
                   if not Error then
-                     return Wide_Wide_Character'Val (Wide_Character'Pos (
-                        Result));
+                     return Wide_Wide_Character'Val (
+                        Wide_Character'Pos (Result));
                   end if;
                end;
             end if;

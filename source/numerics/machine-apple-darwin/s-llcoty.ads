@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Darwin (or Linux, or Windows)
 package System.Long_Long_Complex_Types is
    pragma Pure;
 

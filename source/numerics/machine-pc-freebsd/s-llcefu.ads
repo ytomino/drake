@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for FreeBSD
 with System.Long_Long_Complex_Types;
 package System.Long_Long_Complex_Elementary_Functions is
    pragma Pure;

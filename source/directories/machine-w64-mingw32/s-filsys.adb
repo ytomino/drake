@@ -1,6 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
-with System.Directory_Searching;
+with System.Native_Directories;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
@@ -20,11 +20,11 @@ package body System.File_Systems is
 
    function IO_Exception_Id (errno : C.windef.DWORD)
       return Ada.Exception_Identification.Exception_Id
-      renames Directory_Searching.IO_Exception_Id;
+      renames Native_Directories.IO_Exception_Id;
 
    function Named_IO_Exception_Id (errno : C.windef.DWORD)
       return Ada.Exception_Identification.Exception_Id
-      renames Directory_Searching.Named_IO_Exception_Id;
+      renames Native_Directories.Named_IO_Exception_Id;
 
    package Conv is
       new Address_To_Named_Access_Conversions (

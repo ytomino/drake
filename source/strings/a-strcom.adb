@@ -300,8 +300,7 @@ package body Ada.Strings.Composites is
                renames UCD.Combining_Class.Table_XXXX (I);
          begin
             for J in
-               Item.Start ..
-               Item.Start + UCD.UCS_4 (Item.Length) - 1
+               Item.Start .. Item.Start + UCD.UCS_4 (Item.Length) - 1
             loop
                Process (
                   Wide_Wide_Character'Val (J),
@@ -315,8 +314,7 @@ package body Ada.Strings.Composites is
                renames UCD.Combining_Class.Table_1XXXX (I);
          begin
             for J in
-               Item.Start ..
-               Item.Start + UCD.UCS_4 (Item.Length) - 1
+               Item.Start .. Item.Start + UCD.UCS_4 (Item.Length) - 1
             loop
                Process (
                   Wide_Wide_Character'Val (J + 16#10000#),

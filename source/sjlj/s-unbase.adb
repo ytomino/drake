@@ -1,9 +1,10 @@
+--  for SjLj
 pragma Check_Policy (Trace => Ignore);
 with System.Address_To_Constant_Access_Conversions;
 separate (System.Unwind.Backtrace)
 package body Separated is
    pragma Suppress (All_Checks);
-   --  in sjlj mode, Unwind_Backtrace does not work
+   --  in SjLj mode, Unwind_Backtrace does not work
 
    procedure main
       with Import, Convention => C;
