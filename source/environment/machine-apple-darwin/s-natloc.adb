@@ -1,6 +1,6 @@
 with System.Address_To_Named_Access_Conversions;
 with C.stdlib;
-package body Ada.Locales.Inside is
+package body System.Native_Locales is
    use type C.char;
    use type C.char_array;
    use type C.char_ptr;
@@ -14,7 +14,7 @@ package body Ada.Locales.Inside is
 
    function Language return ISO_639_Alpha_2 is
       package Conv is
-         new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+         new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
    begin
       if P /= null then
@@ -31,17 +31,17 @@ package body Ada.Locales.Inside is
             end if;
          end;
       end if;
-      return ISO_639_Alpha_2_Unknown;
+      return Ada.Locales.ISO_639_Alpha_2_Unknown;
    end Language;
 
    function Language return ISO_639_Alpha_3 is
    begin
-      return To_Alpha_3 (Language);
+      return Ada.Locales.To_Alpha_3 (Language);
    end Language;
 
    function Country return ISO_3166_1_Alpha_2 is
       package Conv is
-         new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+         new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
    begin
       if P /= null then
@@ -67,7 +67,7 @@ package body Ada.Locales.Inside is
             end if;
          end;
       end if;
-      return ISO_3166_1_Alpha_2_Unknown;
+      return Ada.Locales.ISO_3166_1_Alpha_2_Unknown;
    end Country;
 
-end Ada.Locales.Inside;
+end System.Native_Locales;

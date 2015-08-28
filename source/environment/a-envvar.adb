@@ -1,31 +1,12 @@
-with Ada.Environment_Variables.Inside;
 package body Ada.Environment_Variables is
 
    procedure Start (Object : out Iterator);
    procedure Start (Object : out Iterator) is
    begin
-      Object.Block := Inside.Get_Block;
+      Object.Block := System.Native_Environment_Variables.Get_Block;
    end Start;
 
    --  implementation
-
-   function Value (Name : String) return String
-      renames Inside.Value;
-
-   function Value (Name : String; Default : String) return String
-      renames Inside.Value;
-
-   function Exists (Name : String) return Boolean
-      renames Inside.Exists;
-
-   procedure Set (Name : String; Value : String)
-      renames Inside.Set;
-
-   procedure Clear (Name : String)
-      renames Inside.Clear;
-
-   procedure Clear
-      renames Inside.Clear;
 
    procedure Iterate (
       Process : not null access procedure (Name, Value : String))
@@ -41,14 +22,23 @@ package body Ada.Environment_Variables is
       end loop;
    end Iterate;
 
-   function Has_Element (Position : Cursor) return Boolean
-      renames Inside.Has_Element;
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      return System.Native_Environment_Variables.Has_Element (
+         System.Native_Environment_Variables.Cursor (Position));
+   end Has_Element;
 
-   function Name (Position : Cursor) return String
-      renames Inside.Name;
+   function Name (Position : Cursor) return String is
+   begin
+      return System.Native_Environment_Variables.Name (
+         System.Native_Environment_Variables.Cursor (Position));
+   end Name;
 
-   function Value (Position : Cursor) return String
-      renames Inside.Value;
+   function Value (Position : Cursor) return String is
+   begin
+      return System.Native_Environment_Variables.Value (
+         System.Native_Environment_Variables.Cursor (Position));
+   end Value;
 
    function Iterate return Iterator_Interfaces.Forward_Iterator'Class is
    begin
@@ -59,18 +49,21 @@ package body Ada.Environment_Variables is
 
    overriding procedure Finalize (Object : in out Iterator) is
    begin
-      Inside.Release_Block (Object.Block);
+      System.Native_Environment_Variables.Release_Block (Object.Block);
    end Finalize;
 
    overriding function First (Object : Iterator) return Cursor is
    begin
-      return Inside.First (Object.Block);
+      return Cursor (System.Native_Environment_Variables.First (Object.Block));
    end First;
 
    overriding function Next (Object : Iterator; Position : Cursor)
       return Cursor is
    begin
-      return Inside.Next (Object.Block, Position);
+      return Cursor (
+         System.Native_Environment_Variables.Next (
+            Object.Block,
+            System.Native_Environment_Variables.Cursor (Position)));
    end Next;
 
 end Ada.Environment_Variables;

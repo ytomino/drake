@@ -1,8 +1,9 @@
 pragma License (Unrestricted);
---  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
-with System;
-package Ada.Environment_Variables.Inside is
+--  implementation unit specialized for Windows
+package System.Native_Environment_Variables is
    pragma Preelaborate;
+
+   subtype Cursor is Address;
 
    function Value (Name : String) return String;
    function Value (Name : String; Default : String) return String;
@@ -19,15 +20,13 @@ package Ada.Environment_Variables.Inside is
    function Name (Position : Cursor) return String;
    function Value (Position : Cursor) return String;
 
-   function Get_Block return System.Address;
-   procedure Release_Block (Block : System.Address) is null;
+   function Get_Block return Address;
+   procedure Release_Block (Block : Address);
 
-   pragma Inline (Get_Block);
-
-   function First (Block : System.Address) return Cursor;
-   function Next (Block : System.Address; Position : Cursor) return Cursor;
+   function First (Block : Address) return Cursor;
+   function Next (Block : Address; Position : Cursor) return Cursor;
 
    pragma Inline (First);
    pragma Inline (Next);
 
-end Ada.Environment_Variables.Inside;
+end System.Native_Environment_Variables;

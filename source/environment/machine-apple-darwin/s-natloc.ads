@@ -1,7 +1,12 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
-package Ada.Locales.Inside is
+with Ada.Locales;
+package System.Native_Locales is
    pragma Preelaborate;
+
+   subtype ISO_639_Alpha_2 is Ada.Locales.ISO_639_Alpha_2;
+   subtype ISO_639_Alpha_3 is Ada.Locales.ISO_639_Alpha_3;
+   subtype ISO_3166_1_Alpha_2 is Ada.Locales.ISO_3166_1_Alpha_2;
 
    --  language code defined by ISO 639-1/2
 
@@ -12,4 +17,4 @@ package Ada.Locales.Inside is
 
    function Country return ISO_3166_1_Alpha_2;
 
-end Ada.Locales.Inside;
+end System.Native_Locales;

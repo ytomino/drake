@@ -7,8 +7,8 @@ with C.winbase;
 with C.windef;
 with C.winerror;
 with C.winnt;
-package body Ada.Environment_Variables.Inside is
-   use type System.Storage_Elements.Storage_Offset;
+package body System.Native_Environment_Variables is
+   use type Storage_Elements.Storage_Offset;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
@@ -16,7 +16,7 @@ package body Ada.Environment_Variables.Inside is
    use type C.winnt.WCHAR;
 
    package LPCWCH_Conv is
-      new System.Address_To_Constant_Access_Conversions (
+      new Address_To_Constant_Access_Conversions (
          C.winnt.WCHAR,
          C.winnt.LPCWCH);
 
@@ -51,7 +51,7 @@ package body Ada.Environment_Variables.Inside is
          Name,
          Result (0)'Access,
          Result'Length);
-      return System.Zero_Terminated_WStrings.Value (
+      return Zero_Terminated_WStrings.Value (
          Result (0)'Access,
          C.size_t (Result_Length));
    end Get_2;
@@ -68,7 +68,8 @@ package body Ada.Environment_Variables.Inside is
       --  skip first '=', it means special variable
       Next : constant C.winnt.LPCWCH := LPCWCH_Conv.To_Pointer (
          LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item))
-         + (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+         + Storage_Elements.Storage_Offset'(
+            C.winnt.WCHAR'Size / Standard'Storage_Unit));
       P : C.wchar_t_ptr;
    begin
       P := C.string.wcschr (Next, C.wchar_t'Val (Character'Pos ('=')));
@@ -76,15 +77,17 @@ package body Ada.Environment_Variables.Inside is
          Name_Length := C.size_t (
             (LPCWCH_Conv.To_Address (C.winnt.LPCWCH (P))
                - LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item)))
-            / (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+            / Storage_Elements.Storage_Offset'(
+               C.winnt.WCHAR'Size / Standard'Storage_Unit));
          Value := LPCWCH_Conv.To_Pointer (
             LPCWCH_Conv.To_Address (C.winnt.LPCWCH (P))
-            + (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+            + Storage_Elements.Storage_Offset'(
+               C.winnt.WCHAR'Size / Standard'Storage_Unit));
       else
          Name_Length := C.string.wcslen (Item);
          Value := LPCWCH_Conv.To_Pointer (
             LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item))
-            + System.Storage_Elements.Storage_Offset (Name_Length)
+            + Storage_Elements.Storage_Offset (Name_Length)
                * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
       end if;
    end Do_Separate;
@@ -94,11 +97,11 @@ package body Ada.Environment_Variables.Inside is
    function Value (Name : String) return String is
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
-         Name'Length * System.Zero_Terminated_WStrings.Expanding);
+         Name'Length * Zero_Terminated_WStrings.Expanding);
       Length : C.windef.DWORD;
       Found : Boolean;
    begin
-      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Get_1 (W_Name (0)'Access, Length, Found => Found);
       if not Found then
          raise Constraint_Error;
@@ -110,11 +113,11 @@ package body Ada.Environment_Variables.Inside is
    function Value (Name : String; Default : String) return String is
       W_Name : C.winnt.WCHAR_array (
          0 ..
-         Name'Length * System.Zero_Terminated_WStrings.Expanding);
+         Name'Length * Zero_Terminated_WStrings.Expanding);
       Length : C.windef.DWORD;
       Found : Boolean;
    begin
-      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Get_1 (W_Name (0)'Access, Length, Found => Found);
       if not Found then
          return Default;
@@ -126,11 +129,11 @@ package body Ada.Environment_Variables.Inside is
    function Exists (Name : String) return Boolean is
       W_Name : C.winnt.WCHAR_array (
          0 ..
-         Name'Length * System.Zero_Terminated_WStrings.Expanding);
+         Name'Length * Zero_Terminated_WStrings.Expanding);
       Length : C.windef.DWORD;
       Found : Boolean;
    begin
-      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Get_1 (W_Name (0)'Access, Length, Found => Found);
       return Found;
    end Exists;
@@ -138,13 +141,13 @@ package body Ada.Environment_Variables.Inside is
    procedure Set (Name : String; Value : String) is
       W_Name : C.winnt.WCHAR_array (
          0 ..
-         Name'Length * System.Zero_Terminated_WStrings.Expanding);
+         Name'Length * Zero_Terminated_WStrings.Expanding);
       W_Value : C.winnt.WCHAR_array (
          0 ..
-         Value'Length * System.Zero_Terminated_WStrings.Expanding);
+         Value'Length * Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      System.Zero_Terminated_WStrings.To_C (Value, W_Value (0)'Access);
+      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+      Zero_Terminated_WStrings.To_C (Value, W_Value (0)'Access);
       if C.winbase.SetEnvironmentVariable (
          W_Name (0)'Access,
          W_Value (0)'Access) = 0
@@ -156,9 +159,9 @@ package body Ada.Environment_Variables.Inside is
    procedure Clear (Name : String) is
       W_Name : C.winnt.WCHAR_array (
          0 ..
-         Name'Length * System.Zero_Terminated_WStrings.Expanding);
+         Name'Length * Zero_Terminated_WStrings.Expanding);
    begin
-      System.Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.SetEnvironmentVariable (
          W_Name (0)'Access,
          null) = 0
@@ -168,14 +171,14 @@ package body Ada.Environment_Variables.Inside is
    end Clear;
 
    procedure Clear is
-      Block : constant System.Address := Get_Block;
+      Block : constant Address := Get_Block;
       I : Cursor := First (Block);
       Error : Boolean := False;
    begin
       while Has_Element (I) loop
          declare
             Item : constant C.winnt.LPCWCH :=
-               LPCWCH_Conv.To_Pointer (System.Address (I));
+               LPCWCH_Conv.To_Pointer (Address (I));
          begin
             if Item.all /= Character'Pos ('=') then -- skip special variable
                declare
@@ -213,31 +216,31 @@ package body Ada.Environment_Variables.Inside is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return LPCWCH_Conv.To_Pointer (System.Address (Position)).all /=
+      return LPCWCH_Conv.To_Pointer (Address (Position)).all /=
          C.winnt.WCHAR'Val (0);
    end Has_Element;
 
    function Name (Position : Cursor) return String is
       Item : constant C.winnt.LPCWCH :=
-         LPCWCH_Conv.To_Pointer (System.Address (Position));
+         LPCWCH_Conv.To_Pointer (Address (Position));
       Name_Length : C.size_t;
       Value : C.winnt.LPCWCH;
    begin
       Do_Separate (Item, Name_Length, Value);
-      return System.Zero_Terminated_WStrings.Value (Item, Name_Length);
+      return Zero_Terminated_WStrings.Value (Item, Name_Length);
    end Name;
 
    function Value (Position : Cursor) return String is
       Item : constant C.winnt.LPCWCH :=
-         LPCWCH_Conv.To_Pointer (System.Address (Position));
+         LPCWCH_Conv.To_Pointer (Address (Position));
       Name_Length : C.size_t;
       Value : C.winnt.LPCWCH;
    begin
       Do_Separate (Item, Name_Length, Value);
-      return System.Zero_Terminated_WStrings.Value (Value);
+      return Zero_Terminated_WStrings.Value (Value);
    end Value;
 
-   function Get_Block return System.Address is
+   function Get_Block return Address is
       --  a trailing W for calling GetEnvironmentStringsW is necessary.
       --  since kernel32.dll exports not GetEnvironmentStringsA
       --  but GetEnvironmentStrings.
@@ -250,9 +253,9 @@ package body Ada.Environment_Variables.Inside is
       end if;
    end Get_Block;
 
-   procedure Release_Block (Block : System.Address) is
+   procedure Release_Block (Block : Address) is
       package LPWCH_Conv is
-         new System.Address_To_Named_Access_Conversions (
+         new Address_To_Named_Access_Conversions (
             C.winnt.WCHAR,
             C.winnt.LPWCH);
    begin
@@ -263,20 +266,20 @@ package body Ada.Environment_Variables.Inside is
       end if;
    end Release_Block;
 
-   function First (Block : System.Address) return Cursor is
+   function First (Block : Address) return Cursor is
    begin
       return Cursor (Block);
    end First;
 
-   function Next (Block : System.Address; Position : Cursor) return Cursor is
+   function Next (Block : Address; Position : Cursor) return Cursor is
       pragma Unreferenced (Block);
       Item_Length : constant C.size_t :=
-         C.string.wcslen (LPCWCH_Conv.To_Pointer (System.Address (Position)));
+         C.string.wcslen (LPCWCH_Conv.To_Pointer (Address (Position)));
    begin
       return Cursor (
-         System.Address (Position)
-         + (System.Storage_Elements.Storage_Offset (Item_Length) + 1)
+         Address (Position)
+         + (Storage_Elements.Storage_Offset (Item_Length) + 1)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
    end Next;
 
-end Ada.Environment_Variables.Inside;
+end System.Native_Environment_Variables;

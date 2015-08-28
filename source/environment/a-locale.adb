@@ -1,7 +1,7 @@
 --  reference:
 --  http://www.loc.gov/standards/iso639-2/php/code_list.php
 pragma Check_Policy (Validate => Ignore);
-with Ada.Locales.Inside;
+with System.Native_Locales;
 with System.Once;
 package body Ada.Locales is
 
@@ -753,10 +753,12 @@ package body Ada.Locales is
    end To_Alpha_3;
 
    function Language return ISO_639_Alpha_2
-      renames Inside.Language;
+      renames System.Native_Locales.Language;
+
    function Language return ISO_639_Alpha_3
-      renames Inside.Language;
+      renames System.Native_Locales.Language;
+
    function Country return ISO_3166_1_Alpha_2
-      renames Inside.Country;
+      renames System.Native_Locales.Country;
 
 end Ada.Locales;

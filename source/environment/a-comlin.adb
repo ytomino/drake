@@ -1,18 +1,14 @@
-with Ada.Command_Line.Inside;
 with System.Startup;
 package body Ada.Command_Line is
 
    --  implementation
 
-   function Argument_Count return Natural
-      renames Inside.Argument_Count;
-
    function Argument (Number : Positive) return String is
    begin
-      if Number > Inside.Argument_Count then
+      if Number > System.Native_Command_Line.Argument_Count then
          raise Constraint_Error;
       else
-         return Inside.Argument (Number);
+         return System.Native_Command_Line.Argument (Number);
       end if;
    end Argument;
 
@@ -34,7 +30,7 @@ package body Ada.Command_Line is
 
    function Command_Name return String is
    begin
-      return Inside.Argument (0);
+      return System.Native_Command_Line.Argument (0);
    end Command_Name;
 
    procedure Set_Exit_Status (Code : Exit_Status) is

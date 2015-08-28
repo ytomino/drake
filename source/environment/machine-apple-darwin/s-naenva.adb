@@ -5,8 +5,8 @@ with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.string;
-package body Ada.Environment_Variables.Inside is
-   use type System.Storage_Elements.Storage_Offset;
+package body System.Native_Environment_Variables is
+   use type Storage_Elements.Storage_Offset;
    use type C.char_ptr;
    use type C.char_ptr_ptr;
    use type C.signed_int;
@@ -14,22 +14,18 @@ package body Ada.Environment_Variables.Inside is
    use type C.size_t;
 
    package char_const_ptr_Conv is
-      new System.Address_To_Constant_Access_Conversions (
-         C.char,
-         C.char_const_ptr);
+      new Address_To_Constant_Access_Conversions (C.char, C.char_const_ptr);
 
    package char_ptr_ptr_Conv is
-      new System.Address_To_Named_Access_Conversions (
-         C.char_ptr,
-         C.char_ptr_ptr);
+      new Address_To_Named_Access_Conversions (C.char_ptr, C.char_ptr_ptr);
 
    function getenv (Name : String) return C.char_ptr;
    function getenv (Name : String) return C.char_ptr is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       return C.stdlib.getenv (C_Name (0)'Access);
    end getenv;
 
@@ -50,12 +46,13 @@ package body Ada.Environment_Variables.Inside is
             char_const_ptr_Conv.To_Address (C.char_const_ptr (P))
             - char_const_ptr_Conv.To_Address (C.char_const_ptr (Item)));
          Value := char_const_ptr_Conv.To_Pointer (
-            char_const_ptr_Conv.To_Address (C.char_const_ptr (P)) + 1);
+            char_const_ptr_Conv.To_Address (C.char_const_ptr (P))
+            + Storage_Elements.Storage_Offset'(1));
       else
          Name_Length := C.string.strlen (Item);
          Value := char_const_ptr_Conv.To_Pointer (
             char_const_ptr_Conv.To_Address (C.char_const_ptr (Item))
-            + System.Storage_Elements.Storage_Offset (Name_Length));
+            + Storage_Elements.Storage_Offset (Name_Length));
       end if;
    end Do_Separate;
 
@@ -67,7 +64,7 @@ package body Ada.Environment_Variables.Inside is
       if Result = null then
          raise Constraint_Error;
       else
-         return System.Zero_Terminated_Strings.Value (Result);
+         return Zero_Terminated_Strings.Value (Result);
       end if;
    end Value;
 
@@ -77,7 +74,7 @@ package body Ada.Environment_Variables.Inside is
       if Result = null then
          return Default;
       else
-         return System.Zero_Terminated_Strings.Value (Result);
+         return Zero_Terminated_Strings.Value (Result);
       end if;
    end Value;
 
@@ -90,13 +87,13 @@ package body Ada.Environment_Variables.Inside is
    procedure Set (Name : String; Value : String) is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
       C_Value : C.char_array (
          0 ..
-         Value'Length * System.Zero_Terminated_Strings.Expanding);
+         Value'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
-      System.Zero_Terminated_Strings.To_C (Value, C_Value (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Value, C_Value (0)'Access);
       if C.stdlib.setenv (C_Name (0)'Access, C_Value (0)'Access, 1) < 0 then
          raise Constraint_Error;
       end if;
@@ -105,27 +102,29 @@ package body Ada.Environment_Variables.Inside is
    procedure Clear (Name : String) is
       C_Name : C.char_array (
          0 ..
-         Name'Length * System.Zero_Terminated_Strings.Expanding);
+         Name'Length * Zero_Terminated_Strings.Expanding);
    begin
-      System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       if C.stdlib.unsetenv (C_Name (0)'Access) < 0 then
          raise Constraint_Error;
       end if;
    end Clear;
 
    procedure Clear is
-      Block : constant C.char_ptr_ptr := System.Environment_Block;
+      Block : constant C.char_ptr_ptr := Environment_Block;
       I : C.char_ptr_ptr := Block;
    begin
       while I.all /= null loop
          I := char_ptr_ptr_Conv.To_Pointer (
             char_ptr_ptr_Conv.To_Address (I)
-            + C.char_ptr'Size / Standard'Storage_Unit);
+            + Storage_Elements.Storage_Offset'(
+               C.char_ptr'Size / Standard'Storage_Unit));
       end loop;
       while I /= Block loop
          I := char_ptr_ptr_Conv.To_Pointer (
             char_ptr_ptr_Conv.To_Address (I)
-            - C.char_ptr'Size / Standard'Storage_Unit);
+            - Storage_Elements.Storage_Offset'(
+               C.char_ptr'Size / Standard'Storage_Unit));
          declare
             Item : constant C.char_ptr := I.all;
             Name_Length : C.size_t;
@@ -150,47 +149,48 @@ package body Ada.Environment_Variables.Inside is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all /=
+      return char_ptr_ptr_Conv.To_Pointer (Address (Position)).all /=
          null;
    end Has_Element;
 
    function Name (Position : Cursor) return String is
       Item : constant C.char_ptr :=
-         char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all;
+         char_ptr_ptr_Conv.To_Pointer (Address (Position)).all;
       Name_Length : C.size_t;
       Value : C.char_const_ptr;
    begin
       Do_Separate (Item, Name_Length, Value);
-      return System.Zero_Terminated_Strings.Value (Item, Name_Length);
+      return Zero_Terminated_Strings.Value (Item, Name_Length);
    end Name;
 
    function Value (Position : Cursor) return String is
       Item : constant C.char_ptr :=
-         char_ptr_ptr_Conv.To_Pointer (System.Address (Position)).all;
+         char_ptr_ptr_Conv.To_Pointer (Address (Position)).all;
       Name_Length : C.size_t;
       Value : C.char_const_ptr;
    begin
       Do_Separate (Item, Name_Length, Value);
-      return System.Zero_Terminated_Strings.Value (Value);
+      return Zero_Terminated_Strings.Value (Value);
    end Value;
 
-   function Get_Block return System.Address is
+   function Get_Block return Address is
    begin
-      return System.Null_Address;
+      return Null_Address;
    end Get_Block;
 
-   function First (Block : System.Address) return Cursor is
+   function First (Block : Address) return Cursor is
       pragma Unreferenced (Block);
    begin
-      return Cursor (char_ptr_ptr_Conv.To_Address (System.Environment_Block));
+      return Cursor (char_ptr_ptr_Conv.To_Address (Environment_Block));
    end First;
 
-   function Next (Block : System.Address; Position : Cursor) return Cursor is
+   function Next (Block : Address; Position : Cursor) return Cursor is
       pragma Unreferenced (Block);
    begin
       return Cursor (
-         System.Address (Position)
-         + C.char_ptr'Size / Standard'Storage_Unit);
+         Address (Position)
+         + Storage_Elements.Storage_Offset'(
+            C.char_ptr'Size / Standard'Storage_Unit));
    end Next;
 
-end Ada.Environment_Variables.Inside;
+end System.Native_Environment_Variables;

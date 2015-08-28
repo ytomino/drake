@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 with Ada.Iterator_Interfaces;
+private with System.Native_Command_Line;
 package Ada.Command_Line is
    pragma Preelaborate;
 
@@ -33,6 +34,9 @@ package Ada.Command_Line is
    procedure Set_Exit_Status (Code : Exit_Status);
 
 private
+
+   function Argument_Count return Natural
+      renames System.Native_Command_Line.Argument_Count;
 
    type Iterator is new Iterator_Interfaces.Reversible_Iterator with record
       First : Positive;

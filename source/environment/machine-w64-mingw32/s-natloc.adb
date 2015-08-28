@@ -1,6 +1,6 @@
 with C.winnls;
 with C.winnt;
-package body Ada.Locales.Inside is
+package body System.Native_Locales is
    use type C.signed_int;
    use type C.winnt.WCHAR;
 
@@ -16,7 +16,7 @@ package body Ada.Locales.Inside is
          Buffer (0)'Access,
          Buffer'Length);
       if R /= 3 then
-         return ISO_639_Alpha_2_Unknown;
+         return Ada.Locales.ISO_639_Alpha_2_Unknown;
       else
          return (
             Character'Val (C.winnt.WCHAR'Pos (Buffer (0))),
@@ -26,7 +26,7 @@ package body Ada.Locales.Inside is
 
    function Language return ISO_639_Alpha_3 is
    begin
-      return To_Alpha_3 (Language);
+      return Ada.Locales.To_Alpha_3 (Language);
    end Language;
 
    function Country return ISO_3166_1_Alpha_2 is
@@ -39,7 +39,7 @@ package body Ada.Locales.Inside is
          Buffer (0)'Access,
          Buffer'Length);
       if R /= 3 then
-         return ISO_3166_1_Alpha_2_Unknown;
+         return Ada.Locales.ISO_3166_1_Alpha_2_Unknown;
       else
          return (
             Character'Val (C.winnt.WCHAR'Pos (Buffer (0))),
@@ -47,4 +47,4 @@ package body Ada.Locales.Inside is
       end if;
    end Country;
 
-end Ada.Locales.Inside;
+end System.Native_Locales;

@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 with Ada.Iterator_Interfaces;
 private with Ada.Finalization;
-private with System;
+private with System.Native_Environment_Variables;
 package Ada.Environment_Variables is
    pragma Preelaborate;
 
@@ -29,13 +29,13 @@ package Ada.Environment_Variables is
    pragma Preelaborable_Initialization (Cursor);
 
    function Has_Element (Position : Cursor) return Boolean;
-   pragma Inline (Has_Element); -- renamed
+   pragma Inline (Has_Element);
 
    function Name (Position : Cursor) return String;
    function Value (Position : Cursor) return String;
 
-   pragma Inline (Name); -- renamed
-   pragma Inline (Value); -- renamed
+   pragma Inline (Name);
+   pragma Inline (Value);
 
    package Iterator_Interfaces is
       new Ada.Iterator_Interfaces (Cursor, Has_Element);
@@ -44,7 +44,25 @@ package Ada.Environment_Variables is
 
 private
 
-   type Cursor is new System.Address;
+   function Value (Name : String) return String
+      renames System.Native_Environment_Variables.Value;
+
+   function Value (Name : String; Default : String) return String
+      renames System.Native_Environment_Variables.Value;
+
+   function Exists (Name : String) return Boolean
+      renames System.Native_Environment_Variables.Exists;
+
+   procedure Set (Name : String; Value : String)
+      renames System.Native_Environment_Variables.Set;
+
+   procedure Clear (Name : String)
+      renames System.Native_Environment_Variables.Clear;
+
+   procedure Clear
+      renames System.Native_Environment_Variables.Clear;
+
+   type Cursor is new System.Native_Environment_Variables.Cursor;
 
    type Iterator is limited new Finalization.Limited_Controlled
       and Iterator_Interfaces.Forward_Iterator with
