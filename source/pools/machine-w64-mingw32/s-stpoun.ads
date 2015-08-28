@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Windows
 private with C.winnt;
 package System.Storage_Pools.Unbounded is
    --  This package provides a separated stogae pool for local scope.

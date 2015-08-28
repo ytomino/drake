@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 package Ada.Interrupts.Inside is
 
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean;

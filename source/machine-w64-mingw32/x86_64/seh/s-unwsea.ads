@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  runtime unit for Win64 SEH
 with C.excpt;
 with C.unwind;
 with C.winnt;

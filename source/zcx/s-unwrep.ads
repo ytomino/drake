@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  runtime unit
+--  runtime unit for ZCX (or SjLj, or Win64 SEH)
 with C.unwind;
 package System.Unwind.Representation is
    pragma Preelaborate;

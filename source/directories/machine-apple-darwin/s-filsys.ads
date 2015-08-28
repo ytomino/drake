@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit for Darwin
+--  implementation unit specialized for Darwin
 with Ada.Streams;
 with C.sys.mount;
 package System.File_Systems is

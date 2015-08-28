@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Windows
 package Ada.Environment_Encoding.Names is
    --  Constants for schemes of platform-depended text encoding.
    pragma Preelaborate;

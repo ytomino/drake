@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 private with System.Native_Calendar;
 private with C.pthread;
 package System.Synchronous_Objects is

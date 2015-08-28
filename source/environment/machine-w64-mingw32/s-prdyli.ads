@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Windows
 with Ada.IO_Exceptions;
 private with Ada.Finalization;
 private with C.windef;

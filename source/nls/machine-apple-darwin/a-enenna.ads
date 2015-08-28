@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit
+--  extended unit specialized for Darwin
 private with C;
 package Ada.Environment_Encoding.Names is
    --  Constants for schemes of platform-depended text encoding.

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 package System.Synchronous_Objects.Abortable is
    pragma Preelaborate;
 

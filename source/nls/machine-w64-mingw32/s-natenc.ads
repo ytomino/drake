@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for Windows
 with Ada.IO_Exceptions;
 with Ada.Streams;
 with C.windef;

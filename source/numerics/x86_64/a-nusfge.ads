@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  translated unit from SFMT (SFMT-sse2.h)
 private generic
 package Ada.Numerics.SFMT.Generating is
    --  SSE2 version

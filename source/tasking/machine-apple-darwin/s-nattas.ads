@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with C.pthread;
 package System.Native_Tasks is
    pragma Preelaborate;

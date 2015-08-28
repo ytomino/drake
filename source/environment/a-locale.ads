@@ -5,7 +5,7 @@ package Ada.Locales is
    pragma Remote_Types;
 
    --  extended from here
-   --  These are language code for ISO 639-1.
+   --  These are language code defined by ISO 639-1/2.
    --  Ada RM requires alpha-3 in spite of that
    --    almost all the operating systems use alpha-2.
 
@@ -27,7 +27,7 @@ package Ada.Locales is
    pragma Inline (Language); -- renamed
 
    --  extended from here
-   --  These are country code for ISO 3166.
+   --  These are country code defined by ISO 3166-1.
 
    type ISO_3166_1_Alpha_2 is new String (1 .. 2);
 --    with Dynamic_Predicate => -- [gcc-4.8] rejects

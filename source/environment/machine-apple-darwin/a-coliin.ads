@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit
+--  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 package Ada.Command_Line.Inside is
    pragma Preelaborate;
 

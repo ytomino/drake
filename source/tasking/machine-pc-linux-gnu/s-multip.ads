@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  Ada 2012
+--  Ada 2012, specialized for Linux
 package System.Multiprocessors is
    pragma Preelaborate;
 
