@@ -1,6 +1,10 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
-package Ada.Interrupts.Inside is
+with Ada.Interrupts;
+package System.Native_Interrupts is
+
+   subtype Interrupt_Id is Ada.Interrupts.Interrupt_Id;
+   subtype Parameterless_Handler is Ada.Interrupts.Parameterless_Handler;
 
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean;
 
@@ -14,4 +18,4 @@ package Ada.Interrupts.Inside is
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id);
 
-end Ada.Interrupts.Inside;
+end System.Native_Interrupts;
