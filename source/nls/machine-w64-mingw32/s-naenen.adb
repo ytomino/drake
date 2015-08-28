@@ -8,7 +8,7 @@ with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winerror;
 with C.winnt;
-package body System.Native_Encoding is
+package body System.Native_Environment_Encoding is
    use Ada.Exception_Identification.From_Here;
    use type UTF_Conversions.From_Status_Type;
    use type UTF_Conversions.To_Status_Type;
@@ -660,4 +660,4 @@ package body System.Native_Encoding is
       end if;
    end Put_Substitute;
 
-end System.Native_Encoding;
+end System.Native_Environment_Encoding;

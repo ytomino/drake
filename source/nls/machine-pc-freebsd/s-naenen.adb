@@ -3,7 +3,7 @@ with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Zero_Terminated_Strings;
 with C.errno;
-package body System.Native_Encoding is
+package body System.Native_Environment_Encoding is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
    use type C.iconv.iconv_t; -- C.void_ptr
@@ -376,4 +376,4 @@ package body System.Native_Encoding is
 
    end Controlled;
 
-end System.Native_Encoding;
+end System.Native_Environment_Encoding;

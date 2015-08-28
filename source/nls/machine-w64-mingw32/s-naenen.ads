@@ -1,14 +1,13 @@
 pragma License (Unrestricted);
---  implementation unit specialized for Darwin
+--  implementation unit specialized for Windows
 with Ada.IO_Exceptions;
 with Ada.Streams;
-with C.icucore;
-private with Ada.Finalization;
-package System.Native_Encoding is
+with C.windef;
+with C.winnls;
+package System.Native_Environment_Encoding is
    --  Platform-depended text encoding.
    pragma Preelaborate;
-   use type C.char_array;
-   use type C.size_t;
+   use type Ada.Streams.Stream_Element_Offset;
 
    --  max length of one multi-byte character
 
@@ -16,8 +15,7 @@ package System.Native_Encoding is
 
    --  encoding identifier
 
-   type Encoding_Id is access constant C.char;
-   for Encoding_Id'Storage_Size use 0;
+   type Encoding_Id is new C.windef.UINT;
 
    function Get_Image (Encoding : Encoding_Id) return String;
 
@@ -27,24 +25,13 @@ package System.Native_Encoding is
    function Get_Min_Size_In_Stream_Elements (Encoding : Encoding_Id)
       return Ada.Streams.Stream_Element_Offset;
 
-   UTF_8_Name : aliased constant C.char_array (0 .. 5) :=
-      "UTF-8" & C.char'Val (0);
-   UTF_8 : constant Encoding_Id := UTF_8_Name (0)'Access;
-   UTF_16_Names : aliased constant
-      array (Bit_Order) of aliased C.char_array (0 .. 8) := (
-         High_Order_First => "UTF-16BE" & C.char'Val (0),
-         Low_Order_First => "UTF-16LE" & C.char'Val (0));
-   UTF_16 : constant Encoding_Id := UTF_16_Names (Default_Bit_Order)(0)'Access;
-   UTF_32_Names : aliased constant
-      array (Bit_Order) of aliased C.char_array (0 .. 8) := (
-         High_Order_First => "UTF-32BE" & C.char'Val (0),
-         Low_Order_First => "UTF-32LE" & C.char'Val (0));
-   UTF_32 : constant Encoding_Id := UTF_32_Names (Default_Bit_Order)(0)'Access;
+   UTF_8 : constant Encoding_Id := C.winnls.CP_UTF8;
+   UTF_16 : constant Encoding_Id := 16#ffff_ff10#; -- dummy value
+   UTF_32 : constant Encoding_Id := 16#ffff_ff20#; -- dummy value
 
    function Get_Current_Encoding return Encoding_Id;
-   --  In POSIX, other packages (Ada.Command_Line, Ada.Environment_Variables,
-   --    Ada.Text_IO, etc) also assume that system encoding is UTF-8.
-   pragma Inline (Get_Current_Encoding);
+
+   Invalid_Encoding_Id : constant := 16#ffff_ffff#; -- dummy value
 
    --  subsidiary types to converter
 
@@ -78,54 +65,16 @@ package System.Native_Encoding is
 
    --  converter
 
-   Half_Buffer_Length : constant :=
-      64 / (C.icucore.UChar'Size / Standard'Storage_Unit);
-
-   subtype Buffer_Type is
-      C.icucore.UChar_array (0 .. 2 * Half_Buffer_Length - 1);
-
-   type Non_Controlled_Converter is record
-      --  about "From"
-      From_uconv : C.icucore.UConverter_ptr;
-      --  intermediate
-      Buffer : Buffer_Type;
-      Buffer_First : aliased C.icucore.UChar_const_ptr;
-      Buffer_Limit : aliased C.icucore.UChar_ptr; -- Last + 1
-      --  about "To"
-      To_uconv : C.icucore.UConverter_ptr;
+   type Converter is record
+      From : Encoding_Id := Invalid_Encoding_Id;
+      To : Encoding_Id;
       Substitute_Length : Ada.Streams.Stream_Element_Offset;
-      Substitute : Ada.Streams.Stream_Element_Array (
+      Substitute : aliased Ada.Streams.Stream_Element_Array (
          1 ..
-         Max_Substitute_Length);
+         Max_Substitute_Length + 1); -- zero terminated
    end record;
-   pragma Suppress_Initialization (Non_Controlled_Converter);
 
-   package Controlled is
-
-      type Converter is limited private;
-
-      function Reference (Object : Converter)
-         return not null access Non_Controlled_Converter;
-      pragma Inline (Reference);
-
-   private
-
-      type Converter is
-         limited new Ada.Finalization.Limited_Controlled with
-      record
-         Data : aliased Non_Controlled_Converter := (
-            From_uconv => null,
-            To_uconv => null,
-            others => <>);
-      end record;
-
-      overriding procedure Finalize (Object : in out Converter);
-
-   end Controlled;
-
-   type Converter is new Controlled.Converter;
-
-   procedure Open (Object : in out Converter; From, To : Encoding_Id);
+   procedure Open (Object : out Converter; From, To : Encoding_Id);
 
    function Get_Is_Open (Object : Converter) return Boolean;
    pragma Inline (Get_Is_Open);
@@ -200,4 +149,4 @@ package System.Native_Encoding is
    Use_Error : exception
       renames Ada.IO_Exceptions.Use_Error;
 
-end System.Native_Encoding;
+end System.Native_Environment_Encoding;

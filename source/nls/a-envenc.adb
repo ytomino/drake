@@ -43,7 +43,7 @@ package body Ada.Environment_Encoding is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Object) or else raise Status_Error);
-      N_Status : System.Native_Encoding.Subsequence_Status_Type;
+      N_Status : System.Native_Environment_Encoding.Subsequence_Status_Type;
    begin
       Convert_No_Check (Object,
          Item,
@@ -53,7 +53,8 @@ package body Ada.Environment_Encoding is
          Finish,
          N_Status);
       Status := Subsequence_Status_Type'Enum_Val (
-         System.Native_Encoding.Subsequence_Status_Type'Enum_Rep (N_Status));
+         System.Native_Environment_Encoding.Subsequence_Status_Type'Enum_Rep (
+            N_Status));
    end Convert;
 
    procedure Convert (
@@ -66,7 +67,7 @@ package body Ada.Environment_Encoding is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Object) or else raise Status_Error);
-      N_Status : System.Native_Encoding.Continuing_Status_Type;
+      N_Status : System.Native_Environment_Encoding.Continuing_Status_Type;
    begin
       Convert_No_Check (
          Object,
@@ -76,7 +77,8 @@ package body Ada.Environment_Encoding is
          Out_Last,
          N_Status);
       Status := Continuing_Status_Type'Enum_Val (
-         System.Native_Encoding.Continuing_Status_Type'Enum_Rep (N_Status));
+         System.Native_Environment_Encoding.Continuing_Status_Type'Enum_Rep (
+            N_Status));
    end Convert;
 
    procedure Convert (
@@ -88,7 +90,7 @@ package body Ada.Environment_Encoding is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Object) or else raise Status_Error);
-      N_Status : System.Native_Encoding.Finishing_Status_Type;
+      N_Status : System.Native_Environment_Encoding.Finishing_Status_Type;
    begin
       Convert_No_Check (
          Object,
@@ -97,7 +99,8 @@ package body Ada.Environment_Encoding is
          Finish,
          N_Status);
       Status := Finishing_Status_Type'Enum_Val (
-         System.Native_Encoding.Finishing_Status_Type'Enum_Rep (N_Status));
+         System.Native_Environment_Encoding.Finishing_Status_Type'Enum_Rep (
+            N_Status));
    end Convert;
 
    procedure Convert (
@@ -136,7 +139,7 @@ package body Ada.Environment_Encoding is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Object) or else raise Status_Error);
-      N_Status : System.Native_Encoding.Substituting_Status_Type;
+      N_Status : System.Native_Environment_Encoding.Substituting_Status_Type;
    begin
       Convert_No_Check (
          Object,
@@ -147,7 +150,8 @@ package body Ada.Environment_Encoding is
          Finish,
          N_Status);
       Status := Substituting_Status_Type'Enum_Val (
-         System.Native_Encoding.Substituting_Status_Type'Enum_Rep (N_Status));
+         System.Native_Environment_Encoding.Substituting_Status_Type'Enum_Rep (
+            N_Status));
    end Convert;
 
 end Ada.Environment_Encoding;

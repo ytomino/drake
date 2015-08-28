@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.IO_Exceptions;
 with Ada.Streams;
-private with System.Native_Encoding;
+private with System.Native_Environment_Encoding;
 package Ada.Environment_Encoding is
    --  Platform-depended text encoding.
    pragma Preelaborate;
@@ -141,11 +141,11 @@ private
    --  max length of one multi-byte character
 
    Max_Substitute_Length : constant :=
-      System.Native_Encoding.Max_Substitute_Length;
+      System.Native_Environment_Encoding.Max_Substitute_Length;
 
    --  encoding identifier
 
-   type Encoding_Id is new System.Native_Encoding.Encoding_Id;
+   type Encoding_Id is new System.Native_Environment_Encoding.Encoding_Id;
 
    function Image (Encoding : Encoding_Id) return String
       renames Get_Image;
@@ -159,18 +159,18 @@ private
       renames Get_Min_Size_In_Stream_Elements;
 
    UTF_8 : constant Encoding_Id :=
-      Encoding_Id (System.Native_Encoding.UTF_8);
+      Encoding_Id (System.Native_Environment_Encoding.UTF_8);
    UTF_16 : constant Encoding_Id :=
-      Encoding_Id (System.Native_Encoding.UTF_16);
+      Encoding_Id (System.Native_Environment_Encoding.UTF_16);
    UTF_32 : constant Encoding_Id :=
-      Encoding_Id (System.Native_Encoding.UTF_32);
+      Encoding_Id (System.Native_Environment_Encoding.UTF_32);
 
    function Current_Encoding return Encoding_Id
       renames Get_Current_Encoding;
 
    --  converter
 
-   type Converter is new System.Native_Encoding.Converter;
+   type Converter is new System.Native_Environment_Encoding.Converter;
 
    function Is_Open (Object : Converter) return Boolean
       renames Get_Is_Open;
