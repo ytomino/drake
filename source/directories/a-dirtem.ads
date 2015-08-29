@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  extended unit
-with Ada.IO_Exceptions;
 private with System.Native_Directories.Temporary;
 package Ada.Directories.Temporary is
    --  There are subprograms to create temporary file or directory.
@@ -24,11 +23,6 @@ package Ada.Directories.Temporary is
 
    pragma Inline (Create_Temporary_File); -- renamed
    pragma Inline (Create_Temporary_Directory); -- renamed
-
-   --  exceptions
-
-   Use_Error : exception
-      renames IO_Exceptions.Use_Error;
 
 private
 

@@ -107,12 +107,12 @@ package body System.Native_Text_IO is
             1,
             Rect'Access) = 0
          then
-            Raise_Exception (Layout_Error'Identity); -- Size is too large
+            Raise_Exception (Layout_Error'Identity);
          end if;
       end if;
       --  resize screen buffer
       if C.wincon.SetConsoleScreenBufferSize (ConsoleOutput, Size) = 0 then
-         Raise_Exception (Device_Error'Identity);
+         Raise_Exception (Layout_Error'Identity); -- Size is too large
       end if;
       --  maximize viewport
       GetConsoleScreenBufferInfo (ConsoleOutput, Info'Access);

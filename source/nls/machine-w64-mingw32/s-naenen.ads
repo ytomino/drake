@@ -142,8 +142,6 @@ package System.Native_Environment_Encoding is
 
    --  exceptions
 
-   Status_Error : exception
-      renames Ada.IO_Exceptions.Status_Error;
    Name_Error : exception
       renames Ada.IO_Exceptions.Name_Error;
    Use_Error : exception
