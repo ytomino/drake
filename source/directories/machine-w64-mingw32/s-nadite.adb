@@ -1,18 +1,11 @@
 with Ada.Exception_Identification.From_Here;
-with System.Native_Directories;
 with System.Zero_Terminated_WStrings;
-with C.windef;
-with C.winbase;
 with C.winnt;
-package body System.Native_Temporary_Files is
+package body System.Native_Directories.Temporary is
    use Ada.Exception_Identification.From_Here;
    use type C.size_t;
    use type C.windef.UINT;
    use type C.windef.WINBOOL;
-
-   function Named_IO_Exception_Id (errno : C.windef.DWORD)
-      return Ada.Exception_Identification.Exception_Id
-      renames Native_Directories.Named_IO_Exception_Id;
 
    TMP : aliased constant C.winnt.WCHAR_array (0 .. 3) := (
       C.winnt.WCHAR'Val (Wide_Character'Pos ('T')),
@@ -86,4 +79,4 @@ package body System.Native_Temporary_Files is
       return Name;
    end Create_Temporary_Directory;
 
-end System.Native_Temporary_Files;
+end System.Native_Directories.Temporary;

@@ -1,14 +1,18 @@
 pragma License (Unrestricted);
---  implementation unit specialized for FreeBSD
-with Ada.Streams;
+--  implementation unit specialized for Darwin
 with C.sys.mount;
-package System.File_Systems is
+package System.Native_Directories.Volumes is
    --  File system information.
    pragma Preelaborate;
 
    subtype File_Size is Ada.Streams.Stream_Element_Count;
 
-   subtype Non_Controlled_File_System is C.sys.mount.struct_statfs;
+   type Non_Controlled_File_System is record
+      Statistics : aliased C.sys.mount.struct_statfs64;
+      Case_Sensitive : Boolean;
+      Case_Sensitive_Valid : Boolean;
+   end record;
+   pragma Suppress_Initialization (Non_Controlled_File_System);
 
    procedure Get (
       Name : String;
@@ -23,13 +27,10 @@ package System.File_Systems is
    function Device (FS : Non_Controlled_File_System) return String;
 
    function Case_Preserving (FS : Non_Controlled_File_System) return Boolean;
-   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean;
-
-   pragma Inline (Case_Preserving);
-   pragma Inline (Case_Sensitive);
+   function Case_Sensitive (FS : aliased in out Non_Controlled_File_System)
+      return Boolean;
 
    function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
-   pragma Inline (Is_HFS);
 
    type File_System is record
       Data : aliased Non_Controlled_File_System;
@@ -39,4 +40,4 @@ package System.File_Systems is
    function Reference (Item : File_System)
       return not null access Non_Controlled_File_System;
 
-end System.File_Systems;
+end System.Native_Directories.Volumes;

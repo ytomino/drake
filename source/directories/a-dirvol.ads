@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-private with System.File_Systems;
+private with System.Native_Directories.Volumes;
 package Ada.Directories.Volumes is
    --  File system information.
 
@@ -23,6 +23,6 @@ package Ada.Directories.Volumes is
 
 private
 
-   type File_System is new System.File_Systems.File_System;
+   type File_System is new System.Native_Directories.Volumes.File_System;
 
 end Ada.Directories.Volumes;

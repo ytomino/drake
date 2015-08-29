@@ -1,17 +1,12 @@
 with Ada.Exception_Identification.From_Here;
 with System.Native_Credentials;
-with System.Native_Directories;
 with System.Zero_Terminated_Strings;
 with C.errno;
-package body System.File_Systems is
+package body System.Native_Directories.Volumes is
    use Ada.Exception_Identification.From_Here;
    use type File_Size;
    use type C.signed_int;
    use type C.size_t;
-
-   function Named_IO_Exception_Id (errno : C.signed_int)
-      return Ada.Exception_Identification.Exception_Id
-      renames Native_Directories.Named_IO_Exception_Id;
 
    --  implementation
 
@@ -83,4 +78,4 @@ package body System.File_Systems is
       return Item.Data'Unrestricted_Access;
    end Reference;
 
-end System.File_Systems;
+end System.Native_Directories.Volumes;

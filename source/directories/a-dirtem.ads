@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 with Ada.IO_Exceptions;
-private with System.Native_Temporary_Files;
+private with System.Native_Directories.Temporary;
 package Ada.Directories.Temporary is
    --  There are subprograms to create temporary file or directory.
 
@@ -33,19 +33,19 @@ package Ada.Directories.Temporary is
 private
 
    function Temporary_Directory return String
-      renames System.Native_Temporary_Files.Temporary_Directory;
+      renames System.Native_Directories.Temporary.Temporary_Directory;
 
    procedure Set_Temporary_Directory (Name : String)
-      renames System.Native_Temporary_Files.Set_Temporary_Directory;
+      renames System.Native_Directories.Temporary.Set_Temporary_Directory;
 
    function Create_Temporary_File (
       Directory : String := Temporary_Directory)
       return String
-      renames System.Native_Temporary_Files.Create_Temporary_File;
+      renames System.Native_Directories.Temporary.Create_Temporary_File;
 
    function Create_Temporary_Directory (
       Directory : String := Temporary_Directory)
       return String
-      renames System.Native_Temporary_Files.Create_Temporary_Directory;
+      renames System.Native_Directories.Temporary.Create_Temporary_Directory;
 
 end Ada.Directories.Temporary;
