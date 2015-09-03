@@ -200,9 +200,15 @@ package body System.Unwind.Raising is
             if X.Msg_Length > 0 then
                New_Message (Last + 1 .. Last + 2) := ": ";
                Last := Last + 2;
-               New_Message (Last + 1 .. Last + X.Msg_Length) :=
-                  X.Msg (1 .. X.Msg_Length);
-               Last := Last + X.Msg_Length;
+               declare
+                  Copy_Length : constant Natural := Integer'Min (
+                     X.Msg_Length,
+                     New_Message'Length - Last);
+               begin
+                  New_Message (Last + 1 .. Last + Copy_Length) :=
+                     X.Msg (1 .. Copy_Length);
+                  Last := Last + Copy_Length;
+               end;
             end if;
             Raise_Exception_No_Defer (
                Unwind.Standard.Program_Error'Access,
