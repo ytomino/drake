@@ -120,7 +120,6 @@ package body System.Tasking.Rendezvous is
 
    procedure Accept_Trivial (E : Task_Entry_Index) is
       Dummy : Address;
-      pragma Unreferenced (Dummy);
    begin
       Accept_Call (E, Dummy);
       Complete_Rendezvous;

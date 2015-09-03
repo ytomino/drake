@@ -241,7 +241,7 @@ package body System.Native_Environment_Encoding is
    is
       NC_Converter : constant not null access Non_Controlled_Converter :=
          Reference (Object);
-      Unused_Buffer_Limit : constant C.icucore.UChar_const_ptr :=
+      Unfilled_Buffer_Limit : constant C.icucore.UChar_const_ptr :=
          UChar_const_ptr_Conv.To_Pointer (
             NC_Converter.Buffer'Address
             + Storage_Elements.Storage_Offset'(Buffer_Type'Length));
@@ -270,7 +270,7 @@ package body System.Native_Environment_Encoding is
       C.icucore.unicode.ucnv.ucnv_toUnicode (
          NC_Converter.From_uconv,
          NC_Converter.Buffer_Limit'Access,
-         Unused_Buffer_Limit,
+         Unfilled_Buffer_Limit,
          Pointer'Access,
          Limit,
          null,

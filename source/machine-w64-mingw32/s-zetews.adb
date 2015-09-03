@@ -45,7 +45,6 @@ package body System.Zero_Terminated_WStrings is
       Result : not null access C.winnt.WCHAR)
    is
       Dummy : C.size_t;
-      pragma Unreferenced (Dummy);
    begin
       To_C (Source, Result, Dummy);
    end To_C;

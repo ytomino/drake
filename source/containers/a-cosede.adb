@@ -9,7 +9,6 @@ package body Ada.Containers.Ordered_Sets.Debug is
    procedure Dump (Source : Set; Message : String := "") is
       Container : Binary_Trees.Node_Access;
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
    begin
       if Source.Super.Data = null then
          Container := null;

@@ -24,7 +24,6 @@ package body System.Fat_Sflt is
       function Exponent (X : Short_Float) return Integer is
          Result : aliased Integer;
          Dummy : Short_Float;
-         pragma Unreferenced (Dummy);
       begin
          Dummy := frexp (X, Result'Access);
          return Result;

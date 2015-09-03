@@ -41,7 +41,6 @@ package body System.Zero_Terminated_Strings is
       Result : not null access C.char)
    is
       Dummy : C.size_t;
-      pragma Unreferenced (Dummy);
    begin
       To_C (Source, Result, Dummy);
    end To_C;

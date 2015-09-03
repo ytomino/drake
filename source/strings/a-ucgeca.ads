@@ -64,12 +64,12 @@ package Ada.UCD.General_Category is
    Pf_Total : constant := 10;
    Pf_Range_Length : constant := 10;
 
-   Dummy_XXXXx1 : constant UCS_2_Array (1 .. 0) := (others => 0);
-   Dummy_XXXXx2 : constant Set_16_Type (1 .. 0) := (others => (0, 0));
-   Dummy_1XXXXx1 : UCS_2_Array renames Dummy_XXXXx1;
-   Dummy_1XXXXx2 : Set_16_Type renames Dummy_XXXXx2;
-   Dummy_XXXXXXXXx1 : constant UCS_4_Array (1 .. 0) := (others => 0);
-   Dummy_XXXXXXXXx2 : constant Set_32_Type (1 .. 0) := (others => (0, 0));
+   Empty_XXXXx1 : constant UCS_2_Array (1 .. 0) := (others => 0);
+   Empty_XXXXx2 : constant Set_16_Type (1 .. 0) := (others => (0, 0));
+   Empty_1XXXXx1 : UCS_2_Array renames Empty_XXXXx1;
+   Empty_1XXXXx2 : Set_16_Type renames Empty_XXXXx2;
+   Empty_XXXXXXXXx1 : constant UCS_4_Array (1 .. 0) := (others => 0);
+   Empty_XXXXXXXXx2 : constant Set_32_Type (1 .. 0) := (others => (0, 0));
 
    Cn_Table_XXXXx1 : constant UCS_2_Array (1 .. 138) := (
       16#038B#,
@@ -609,7 +609,7 @@ package Ada.UCD.General_Category is
       (16#F6C6#, 16#F6FF#),
       (16#F774#, 16#FFFF#));
 
-   Cn_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Cn_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
    Cn_Table_XXXXXXXXx2 : constant Set_32_Type (1 .. 9) := (
       (16#2A6D7#, 16#2A6FF#),
@@ -1238,9 +1238,9 @@ package Ada.UCD.General_Category is
       (16#D756#, 16#D76E#),
       (16#D790#, 16#D7A8#));
 
-   Lu_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Lu_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Lu_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Lu_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Ll_Table_XXXXx1 : constant UCS_2_Array (1 .. 518) := (
       16#00B5#,
@@ -1861,9 +1861,9 @@ package Ada.UCD.General_Category is
       (16#D7AA#, 16#D7C2#),
       (16#D7C4#, 16#D7C9#));
 
-   Ll_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Ll_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Ll_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Ll_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Lt_Table_XXXXx1 : constant UCS_2_Array (1 .. 7) := (
       16#01C5#,
@@ -1879,13 +1879,13 @@ package Ada.UCD.General_Category is
       (16#1F98#, 16#1F9F#),
       (16#1FA8#, 16#1FAF#));
 
-   Lt_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Lt_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Lt_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Lt_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Lt_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Lt_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Lt_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Lt_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Lm_Table_XXXXx1 : constant UCS_2_Array (1 .. 33) := (
       16#02EC#,
@@ -1942,14 +1942,14 @@ package Ada.UCD.General_Category is
       (16#AAF3#, 16#AAF4#),
       (16#FF9E#, 16#FF9F#));
 
-   Lm_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Lm_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
    Lm_Table_1XXXXx2 : constant Set_16_Type (1 .. 1) := (
       1 => (16#6F93#, 16#6F9F#));
 
-   Lm_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Lm_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Lm_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Lm_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Lo_Table_XXXXx1 : constant UCS_2_Array (1 .. 55) := (
       16#00AA#,
@@ -2326,7 +2326,7 @@ package Ada.UCD.General_Category is
       (16#EEA5#, 16#EEA9#),
       (16#EEAB#, 16#EEBB#));
 
-   Lo_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Lo_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
    Lo_Table_XXXXXXXXx2 : constant Set_32_Type (1 .. 4) := (
       (16#20000#, 16#2A6D6#),
@@ -2561,12 +2561,12 @@ package Ada.UCD.General_Category is
       (16#D1AA#, 16#D1AD#),
       (16#D242#, 16#D244#));
 
-   Mn_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Mn_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
    Mn_Table_XXXXXXXXx2 : constant Set_32_Type (1 .. 1) := (
       1 => (16#E0100#, 16#E01EF#));
 
-   Me_Table_XXXXx1 : UCS_2_Array renames Dummy_XXXXx1;
+   Me_Table_XXXXx1 : UCS_2_Array renames Empty_XXXXx1;
 
    Me_Table_XXXXx2 : constant Set_16_Type (1 .. 4) := (
       (16#0488#, 16#0489#),
@@ -2574,13 +2574,13 @@ package Ada.UCD.General_Category is
       (16#20E2#, 16#20E4#),
       (16#A670#, 16#A672#));
 
-   Me_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Me_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Me_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Me_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Me_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Me_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Me_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Me_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Mc_Table_XXXXx1 : constant UCS_2_Array (1 .. 36) := (
       16#0903#,
@@ -2716,11 +2716,11 @@ package Ada.UCD.General_Category is
       (16#D165#, 16#D166#),
       (16#D16D#, 16#D172#));
 
-   Mc_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Mc_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Mc_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Mc_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
-   Nd_Table_XXXXx1 : UCS_2_Array renames Dummy_XXXXx1;
+   Nd_Table_XXXXx1 : UCS_2_Array renames Empty_XXXXx1;
 
    Nd_Table_XXXXx2 : constant Set_16_Type (1 .. 35) := (
       (16#0030#, 16#0039#),
@@ -2759,7 +2759,7 @@ package Ada.UCD.General_Category is
       (16#ABF0#, 16#ABF9#),
       (16#FF10#, 16#FF19#));
 
-   Nd_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Nd_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
    Nd_Table_1XXXXx2 : constant Set_16_Type (1 .. 7) := (
       (16#04A0#, 16#04A9#),
@@ -2770,9 +2770,9 @@ package Ada.UCD.General_Category is
       (16#16C0#, 16#16C9#),
       (16#D7CE#, 16#D7FF#));
 
-   Nd_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Nd_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Nd_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Nd_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Nl_Table_XXXXx1 : constant UCS_2_Array (1 .. 1) := (
       1 => 16#3007#);
@@ -2794,9 +2794,9 @@ package Ada.UCD.General_Category is
       (16#03D1#, 16#03D5#),
       (16#2400#, 16#2462#));
 
-   Nl_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Nl_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Nl_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Nl_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    No_Table_XXXXx1 : constant UCS_2_Array (1 .. 5) := (
       16#00B9#,
@@ -2848,9 +2848,9 @@ package Ada.UCD.General_Category is
       (16#D360#, 16#D371#),
       (16#F100#, 16#F10A#));
 
-   No_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   No_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   No_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   No_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Zs_Table_XXXXx1 : constant UCS_2_Array (1 .. 7) := (
       16#0020#,
@@ -2864,53 +2864,53 @@ package Ada.UCD.General_Category is
    Zs_Table_XXXXx2 : constant Set_16_Type (1 .. 1) := (
       1 => (16#2000#, 16#200A#));
 
-   Zs_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Zs_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Zs_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Zs_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Zs_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Zs_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Zs_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Zs_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Zl_Table_XXXXx1 : constant UCS_2_Array (1 .. 1) := (
       1 => 16#2028#);
 
-   Zl_Table_XXXXx2 : Set_16_Type renames Dummy_XXXXx2;
+   Zl_Table_XXXXx2 : Set_16_Type renames Empty_XXXXx2;
 
-   Zl_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Zl_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Zl_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Zl_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Zl_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Zl_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Zl_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Zl_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Zp_Table_XXXXx1 : constant UCS_2_Array (1 .. 1) := (
       1 => 16#2029#);
 
-   Zp_Table_XXXXx2 : Set_16_Type renames Dummy_XXXXx2;
+   Zp_Table_XXXXx2 : Set_16_Type renames Empty_XXXXx2;
 
-   Zp_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Zp_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Zp_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Zp_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Zp_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Zp_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Zp_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Zp_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
-   Cc_Table_XXXXx1 : UCS_2_Array renames Dummy_XXXXx1;
+   Cc_Table_XXXXx1 : UCS_2_Array renames Empty_XXXXx1;
 
    Cc_Table_XXXXx2 : constant Set_16_Type (1 .. 2) := (
       (16#0000#, 16#001F#),
       (16#007F#, 16#009F#));
 
-   Cc_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Cc_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Cc_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Cc_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Cc_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Cc_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Cc_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Cc_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Cf_Table_XXXXx1 : constant UCS_2_Array (1 .. 4) := (
       16#00AD#,
@@ -2938,33 +2938,33 @@ package Ada.UCD.General_Category is
    Cf_Table_XXXXXXXXx2 : constant Set_32_Type (1 .. 1) := (
       1 => (16#E0020#, 16#E007F#));
 
-   Co_Table_XXXXx1 : UCS_2_Array renames Dummy_XXXXx1;
+   Co_Table_XXXXx1 : UCS_2_Array renames Empty_XXXXx1;
 
    Co_Table_XXXXx2 : constant Set_16_Type (1 .. 1) := (
       1 => (16#E000#, 16#F8FF#));
 
-   Co_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Co_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Co_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Co_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Co_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Co_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
    Co_Table_XXXXXXXXx2 : constant Set_32_Type (1 .. 2) := (
       (16#F0000#, 16#FFFFD#),
       (16#100000#, 16#10FFFD#));
 
-   Cs_Table_XXXXx1 : UCS_2_Array renames Dummy_XXXXx1;
+   Cs_Table_XXXXx1 : UCS_2_Array renames Empty_XXXXx1;
 
    Cs_Table_XXXXx2 : constant Set_16_Type (1 .. 1) := (
       1 => (16#D800#, 16#DFFF#));
 
-   Cs_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Cs_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Cs_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Cs_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Cs_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Cs_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Cs_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Cs_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Pd_Table_XXXXx1 : constant UCS_2_Array (1 .. 13) := (
       16#002D#,
@@ -2986,13 +2986,13 @@ package Ada.UCD.General_Category is
       (16#2E3A#, 16#2E3B#),
       (16#FE31#, 16#FE32#));
 
-   Pd_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Pd_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Pd_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Pd_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Pd_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Pd_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Pd_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Pd_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Ps_Table_XXXXx1 : constant UCS_2_Array (1 .. 72) := (
       16#0028#,
@@ -3068,15 +3068,15 @@ package Ada.UCD.General_Category is
       16#FF5F#,
       16#FF62#);
 
-   Ps_Table_XXXXx2 : Set_16_Type renames Dummy_XXXXx2;
+   Ps_Table_XXXXx2 : Set_16_Type renames Empty_XXXXx2;
 
-   Ps_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Ps_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Ps_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Ps_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Ps_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Ps_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Ps_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Ps_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Pe_Table_XXXXx1 : constant UCS_2_Array (1 .. 69) := (
       16#0029#,
@@ -3152,13 +3152,13 @@ package Ada.UCD.General_Category is
    Pe_Table_XXXXx2 : constant Set_16_Type (1 .. 1) := (
       1 => (16#301E#, 16#301F#));
 
-   Pe_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Pe_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Pe_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Pe_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Pe_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Pe_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Pe_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Pe_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Pc_Table_XXXXx1 : constant UCS_2_Array (1 .. 3) := (
       16#005F#,
@@ -3170,13 +3170,13 @@ package Ada.UCD.General_Category is
       (16#FE33#, 16#FE34#),
       (16#FE4D#, 16#FE4F#));
 
-   Pc_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Pc_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Pc_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Pc_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Pc_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Pc_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Pc_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Pc_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Po_Table_XXXXx1 : constant UCS_2_Array (1 .. 40) := (
       16#002A#,
@@ -3321,9 +3321,9 @@ package Ada.UCD.General_Category is
       (16#11C5#, 16#11C8#),
       (16#2470#, 16#2473#));
 
-   Po_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Po_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Po_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Po_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Sm_Table_XXXXx1 : constant UCS_2_Array (1 .. 28) := (
       16#002B#,
@@ -3398,9 +3398,9 @@ package Ada.UCD.General_Category is
    Sm_Table_1XXXXx2 : constant Set_16_Type (1 .. 1) := (
       1 => (16#EEF0#, 16#EEF1#));
 
-   Sm_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Sm_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Sm_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Sm_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Sc_Table_XXXXx1 : constant UCS_2_Array (1 .. 12) := (
       16#0024#,
@@ -3423,13 +3423,13 @@ package Ada.UCD.General_Category is
       (16#FFE0#, 16#FFE1#),
       (16#FFE5#, 16#FFE6#));
 
-   Sc_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Sc_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Sc_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Sc_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Sc_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Sc_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Sc_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Sc_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Sk_Table_XXXXx1 : constant UCS_2_Array (1 .. 12) := (
       16#005E#,
@@ -3462,13 +3462,13 @@ package Ada.UCD.General_Category is
       (16#A789#, 16#A78A#),
       (16#FBB2#, 16#FBC1#));
 
-   Sk_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Sk_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Sk_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Sk_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Sk_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Sk_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Sk_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Sk_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    So_Table_XXXXx1 : constant UCS_2_Array (1 .. 33) := (
       16#00A6#,
@@ -3631,9 +3631,9 @@ package Ada.UCD.General_Category is
       (16#F680#, 16#F6C5#),
       (16#F700#, 16#F773#));
 
-   So_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   So_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   So_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   So_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Pi_Table_XXXXx1 : constant UCS_2_Array (1 .. 10) := (
       16#00AB#,
@@ -3650,13 +3650,13 @@ package Ada.UCD.General_Category is
    Pi_Table_XXXXx2 : constant Set_16_Type (1 .. 1) := (
       1 => (16#201B#, 16#201C#));
 
-   Pi_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Pi_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Pi_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Pi_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Pi_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Pi_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Pi_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Pi_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
    Pf_Table_XXXXx1 : constant UCS_2_Array (1 .. 10) := (
       16#00BB#,
@@ -3670,14 +3670,14 @@ package Ada.UCD.General_Category is
       16#2E1D#,
       16#2E21#);
 
-   Pf_Table_XXXXx2 : Set_16_Type renames Dummy_XXXXx2;
+   Pf_Table_XXXXx2 : Set_16_Type renames Empty_XXXXx2;
 
-   Pf_Table_1XXXXx1 : UCS_2_Array renames Dummy_1XXXXx1;
+   Pf_Table_1XXXXx1 : UCS_2_Array renames Empty_1XXXXx1;
 
-   Pf_Table_1XXXXx2 : Set_16_Type renames Dummy_1XXXXx2;
+   Pf_Table_1XXXXx2 : Set_16_Type renames Empty_1XXXXx2;
 
-   Pf_Table_XXXXXXXXx1 : UCS_4_Array renames Dummy_XXXXXXXXx1;
+   Pf_Table_XXXXXXXXx1 : UCS_4_Array renames Empty_XXXXXXXXx1;
 
-   Pf_Table_XXXXXXXXx2 : Set_32_Type renames Dummy_XXXXXXXXx2;
+   Pf_Table_XXXXXXXXx2 : Set_32_Type renames Empty_XXXXXXXXx2;
 
 end Ada.UCD.General_Category;

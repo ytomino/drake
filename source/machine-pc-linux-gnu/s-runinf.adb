@@ -75,7 +75,6 @@ package body System.Runtime_Information is
    function Load_Address return Address is
       R : aliased Rec;
       Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       R.First_Load_Address := Null_Address;
       Dummy := C.link.dl_iterate_phdr (

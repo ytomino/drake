@@ -50,10 +50,10 @@ package body Separated is
    --  implementation
 
    procedure Propagate_Machine_Occurrence (
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
+      Machine_Occurrence :
+         not null Representation.Machine_Occurrence_Access)
    is
       Dummy : C.unwind.Unwind_Reason_Code;
-      pragma Unreferenced (Dummy);
    begin
       pragma Check (Trace, Ada.Debug.Put ("Unwind_RaiseException"));
       Dummy := Searching.Unwind_RaiseException (

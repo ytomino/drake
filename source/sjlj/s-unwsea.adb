@@ -182,12 +182,14 @@ package body System.Unwind.Searching is
                declare
                   p : C.unsigned_char_const_ptr := table_entry;
                   ar_filter, ar_disp : aliased C.unwind.sleb128_t;
-                  Dummy : C.unsigned_char_const_ptr;
-                  pragma Unreferenced (Dummy);
                begin
                   loop
                      p := C.unwind_pe.read_sleb128 (p, ar_filter'Access);
-                     Dummy := C.unwind_pe.read_sleb128 (p, ar_disp'Access);
+                     declare
+                        Dummy : C.unsigned_char_const_ptr;
+                     begin
+                        Dummy := C.unwind_pe.read_sleb128 (p, ar_disp'Access);
+                     end;
                      if ar_filter = 0 then
                         ttype_filter := 0;
                         if ar_disp = 0 then
@@ -214,6 +216,7 @@ package body System.Unwind.Searching is
                                     ttype_encoding));
                            choice : aliased C.unwind.Unwind_Ptr;
                            is_handled : Boolean;
+                           Dummy : C.unsigned_char_const_ptr;
                         begin
                            Dummy := C.unwind_pe.read_encoded_value_with_base (
                               ttype_encoding,
