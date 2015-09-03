@@ -1,5 +1,6 @@
 with Ada.Numerics.Discrete_Random;
 with Ada.Streams.Stream_IO.Naked;
+with System.Arith_64; -- why is __gnat_mulv64 required ???
 with System.Native_IO;
 procedure streamiobuf is
 	use type Ada.Streams.Stream_Element;
