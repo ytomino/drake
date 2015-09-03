@@ -91,7 +91,8 @@ package body System.Unwind.Raising is
    begin
       Machine_Occurrence := Occurrences.New_Machine_Occurrence (
          Stack_Guard => Null_Address);
-      Occurrences.Set_Exception_Message (E, File, Line, Column, Message,
+      Occurrences.Set_Exception_Message (E, File, Line, Column,
+         Message => Message,
          X => Machine_Occurrence.Occurrence);
       Propagate_Machine_Occurrence (Machine_Occurrence);
    end Raise_Exception_No_Defer;
@@ -101,8 +102,18 @@ package body System.Unwind.Raising is
       File : String := "";
       Line : Integer := 0;
       Column : Integer := 0;
-      Message : String := "";
-      Stack_Guard : Address := Null_Address)
+      Message : String := "") is
+   begin
+      if not ZCX_By_Default then
+         Synchronous_Control.Lock_Abort;
+      end if;
+      Raise_Exception_No_Defer (E, File, Line, Column, Message);
+   end Raise_Exception;
+
+   procedure Raise_From_Signal_Handler (
+      E : not null Exception_Data_Access;
+      Message : String;
+      Stack_Guard : Address)
    is
       Machine_Occurrence : Representation.Machine_Occurrence_Access;
    begin
@@ -111,10 +122,11 @@ package body System.Unwind.Raising is
       end if;
       Machine_Occurrence := Occurrences.New_Machine_Occurrence (
          Stack_Guard => Stack_Guard);
-      Occurrences.Set_Exception_Message (E, File, Line, Column, Message,
+      Occurrences.Set_Exception_Message (E,
+         Message => Message,
          X => Machine_Occurrence.Occurrence);
       Propagate_Machine_Occurrence (Machine_Occurrence);
-   end Raise_Exception;
+   end Raise_From_Signal_Handler;
 
    procedure Raise_E (
       E : Exception_Data_Access;
