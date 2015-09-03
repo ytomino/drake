@@ -56,7 +56,8 @@ package Ada.Streams.Block_Transmission is
 
    end Stream_Element_Arrays;
 
-   --  for shorthand
+   --  exceptions
+
    End_Error : exception
       renames IO_Exceptions.End_Error;
    Data_Error : exception

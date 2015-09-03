@@ -1,11 +1,8 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Windows
-with Ada.IO_Exceptions;
-with Ada.Streams;
-with C.windef;
 with C.winnt;
 private with Ada.Finalization;
-package System.File_Systems is
+package System.Native_Directories.Volumes is
    --  File system information.
    pragma Preelaborate;
 
@@ -73,9 +70,4 @@ package System.File_Systems is
 
    type File_System is limited new Controlled.File_System;
 
-   --  exceptions
-
-   Name_Error : exception
-      renames Ada.IO_Exceptions.Name_Error;
-
-end System.File_Systems;
+end System.Native_Directories.Volumes;

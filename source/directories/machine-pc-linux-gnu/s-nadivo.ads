@@ -1,8 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Linux
-with Ada.Streams;
 with C.sys.statvfs;
-package System.File_Systems is
+package System.Native_Directories.Volumes is
    --  File system information.
    pragma Preelaborate;
 
@@ -47,4 +46,4 @@ package System.File_Systems is
    function Reference (Item : File_System)
       return not null access Non_Controlled_File_System;
 
-end System.File_Systems;
+end System.Native_Directories.Volumes;

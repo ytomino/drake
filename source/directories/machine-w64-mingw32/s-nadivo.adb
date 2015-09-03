@@ -1,13 +1,11 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
-with System.Native_Directories;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.string;
-with C.winbase;
 with C.winerror;
-package body System.File_Systems is
+package body System.Native_Directories.Volumes is
    use Ada.Exception_Identification.From_Here;
    use type File_Size;
    use type Storage_Elements.Storage_Offset;
@@ -17,14 +15,6 @@ package body System.File_Systems is
    use type C.winnt.LPWSTR;
    use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
-
-   function IO_Exception_Id (errno : C.windef.DWORD)
-      return Ada.Exception_Identification.Exception_Id
-      renames Native_Directories.IO_Exception_Id;
-
-   function Named_IO_Exception_Id (errno : C.windef.DWORD)
-      return Ada.Exception_Identification.Exception_Id
-      renames Native_Directories.Named_IO_Exception_Id;
 
    package Conv is
       new Address_To_Named_Access_Conversions (
@@ -241,4 +231,4 @@ package body System.File_Systems is
 
    end Controlled;
 
-end System.File_Systems;
+end System.Native_Directories.Volumes;

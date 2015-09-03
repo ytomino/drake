@@ -1,7 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
-with Ada.IO_Exceptions;
-package System.Native_Temporary_Files is
+package System.Native_Directories.Temporary is
    --  There are subprograms to create temporary file or directory.
    pragma Preelaborate;
 
@@ -11,7 +10,4 @@ package System.Native_Temporary_Files is
    function Create_Temporary_File (Directory : String) return String;
    function Create_Temporary_Directory (Directory : String) return String;
 
-   Use_Error : exception
-      renames Ada.IO_Exceptions.Use_Error;
-
-end System.Native_Temporary_Files;
+end System.Native_Directories.Temporary;

@@ -167,7 +167,8 @@ package System.Stream_Attributes is
    --  in original libgnat, Block_IO_OK is a function, but constant is ok (?)
    Block_IO_OK : constant Boolean := True;
 
-   --  for shorthand
+   --  exceptions
+
    End_Error : exception
       renames Ada.IO_Exceptions.End_Error;
 
