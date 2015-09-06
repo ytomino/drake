@@ -2,9 +2,11 @@ pragma Check_Policy (Trace => Ignore);
 with Ada;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
+with System.Storage_Elements;
 with System.Termination;
 package body System.Unwind.Occurrences is
    pragma Suppress (All_Checks);
+   use type Storage_Elements.Storage_Offset;
    use type Representation.Machine_Occurrence_Access;
    use type Representation.Unwind_Exception_Class;
 
@@ -21,6 +23,14 @@ package body System.Unwind.Occurrences is
    end Separated;
 
    package body Separated is separate;
+
+   --  for Save_Occurrence
+
+   procedure memcpy (
+      dst, src : Address;
+      n : Storage_Elements.Storage_Count)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memcpy";
 
    --  for Set_Foreign_Occurrence
 
@@ -165,14 +175,14 @@ package body System.Unwind.Occurrences is
       Target : out Exception_Occurrence;
       Source : Exception_Occurrence) is
    begin
-      Target.Id := Source.Id;
-      Target.Msg_Length := Source.Msg_Length;
-      Target.Num_Tracebacks := Source.Num_Tracebacks;
-      Target.Pid := Source.Pid;
-      Target.Msg (1 .. Target.Msg_Length) :=
-         Source.Msg (1 .. Target.Msg_Length);
-      Target.Tracebacks (1 .. Target.Num_Tracebacks) :=
-         Source.Tracebacks (1 .. Target.Num_Tracebacks);
+      memcpy (
+         Target'Address,
+         Source'Address,
+         Target.Tracebacks'Position
+            + (Tracebacks_Array'Component_Size / Standard'Storage_Unit)
+               * Storage_Elements.Storage_Offset (Source.Num_Tracebacks));
+      Target.Machine_Occurrence := Null_Address;
+      Target.Exception_Raised := False;
    end Save_Occurrence;
 
    function New_Machine_Occurrence (Stack_Guard : Address)
