@@ -14,7 +14,7 @@ package body System.Terminal_Colors is
 
    xterm_256color : constant String (1 .. 14) := "xterm-256color";
 
-   Support_256_Color_Flag : aliased System.Once.Flag := 0;
+   Support_256_Color_Flag : aliased Once.Flag := 0;
    Support_256_Color : Boolean;
 
    procedure Support_256_Color_Init;

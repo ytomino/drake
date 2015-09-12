@@ -1,5 +1,5 @@
 function Ada.Strings.Generic_Unbounded.Generic_Hash (Key : Unbounded_String)
-   return Ada.Containers.Hash_Type
+   return Containers.Hash_Type
 is
    pragma Suppress (Access_Check);
 begin

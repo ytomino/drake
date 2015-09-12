@@ -1446,7 +1446,7 @@ package body Ada.Naked_Text_IO is
       if End_Of_Line then
          Item := Wide_Wide_Character'Val (0);
       else
-         if File.External = Ada.IO_Modes.Locale then
+         if File.External = IO_Modes.Locale then
             declare
                Locale_Support : constant Boolean :=
                   System.Native_Text_IO.Default_External = IO_Modes.Locale;

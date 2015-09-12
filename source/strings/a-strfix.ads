@@ -352,7 +352,7 @@ package Ada.Strings.Fixed is
       Source : in out String;
       Side : Trim_End;
       Blank : Character;
-      Justify : Alignment := Strings.Left;
+      Justify : Alignment := Left;
       Pad : Character := Space)
       renames Functions.Trim;
 

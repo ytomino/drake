@@ -2,7 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with System.Native_Calendar;
 with System.Native_Time;
 package body Ada.Calendar is
-   use Ada.Exception_Identification.From_Here;
+   use Exception_Identification.From_Here;
    use type System.Native_Time.Nanosecond_Number;
 
    function add_overflow (

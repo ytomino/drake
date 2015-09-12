@@ -42,7 +42,7 @@ package body System.C_Encoding is
          Count := 0;
       else
          declare
-            function To_Pointer (Value : System.Address)
+            function To_Pointer (Value : Address)
                return C.winnt.LPSTR
                with Import, Convention => Intrinsic;
             W_Item : C.winnt.WCHAR_array (
@@ -92,7 +92,7 @@ package body System.C_Encoding is
          Count := 0;
       else
          declare
-            function To_Pointer (Value : System.Address)
+            function To_Pointer (Value : Address)
                return C.winnt.LPSTR
                with Import, Convention => Intrinsic;
             W_Item : C.winnt.WCHAR_array (
@@ -235,22 +235,22 @@ package body System.C_Encoding is
    begin
       while Item_Index <= Item'Last loop
          declare
-            Code : System.UTF_Conversions.UCS_4;
+            Code : UTF_Conversions.UCS_4;
             Item_Used : Natural;
-            From_Status : System.UTF_Conversions.From_Status_Type;
+            From_Status : UTF_Conversions.From_Status_Type;
             Ada_Target_Last : Natural;
             Target_Last : C.size_t;
-            To_Status : System.UTF_Conversions.To_Status_Type;
+            To_Status : UTF_Conversions.To_Status_Type;
          begin
-            System.UTF_Conversions.From_UTF_32 (
+            UTF_Conversions.From_UTF_32 (
                Item (Item_Index .. Item'Last),
                Item_Used,
                Code,
                From_Status);
             Item_Index := Item_Used + 1;
             case From_Status is
-               when System.UTF_Conversions.Success =>
-                  System.UTF_Conversions.To_UTF_16 (
+               when UTF_Conversions.Success =>
+                  UTF_Conversions.To_UTF_16 (
                      Code,
                      Ada_Target (
                         Ada_Target'First
@@ -261,15 +261,15 @@ package body System.C_Encoding is
                   Target_Last := Target'First
                      + C.size_t (Ada_Target_Last - Ada_Target'First);
                   case To_Status is
-                     when System.UTF_Conversions.Success =>
+                     when UTF_Conversions.Success =>
                         null;
-                     when System.UTF_Conversions.Overflow
-                        | System.UTF_Conversions.Unmappable =>
+                     when UTF_Conversions.Overflow
+                        | UTF_Conversions.Unmappable =>
                         --  all values of UTF-16 are mappable to UTF-32
                         raise Constraint_Error;
                   end case;
-               when System.UTF_Conversions.Illegal_Sequence
-                  | System.UTF_Conversions.Truncated =>
+               when UTF_Conversions.Illegal_Sequence
+                  | UTF_Conversions.Truncated =>
                   Target_Last := Target_Index + Substitute'Length - 1;
                   if Target_Last > Target'Last then
                      raise Constraint_Error; -- overflow
@@ -296,15 +296,15 @@ package body System.C_Encoding is
    begin
       while Item_Index <= Item'Last loop
          declare
-            Code : System.UTF_Conversions.UCS_4;
+            Code : UTF_Conversions.UCS_4;
             Ada_Item_Used : Natural;
             Item_Used : C.size_t;
-            From_Status : System.UTF_Conversions.From_Status_Type;
+            From_Status : UTF_Conversions.From_Status_Type;
             Target_Last : Natural;
-            To_Status : System.UTF_Conversions.To_Status_Type;
+            To_Status : UTF_Conversions.To_Status_Type;
             Put_Substitute : Boolean;
          begin
-            System.UTF_Conversions.From_UTF_16 (
+            UTF_Conversions.From_UTF_16 (
                Ada_Item (
                   Ada_Item'First + Integer (Item_Index - Item'First) ..
                   Ada_Item'Last),
@@ -315,22 +315,22 @@ package body System.C_Encoding is
                + C.size_t (Ada_Item_Used - Ada_Item'First);
             Item_Index := Item_Used + 1;
             case From_Status is
-               when System.UTF_Conversions.Success =>
-                  System.UTF_Conversions.To_UTF_32 (
+               when UTF_Conversions.Success =>
+                  UTF_Conversions.To_UTF_32 (
                      Code,
                      Target (Target_Index .. Target'Last),
                      Target_Last,
                      To_Status);
                   case To_Status is
-                     when System.UTF_Conversions.Success =>
+                     when UTF_Conversions.Success =>
                         Put_Substitute := False;
-                     when System.UTF_Conversions.Overflow =>
+                     when UTF_Conversions.Overflow =>
                         raise Constraint_Error;
-                     when System.UTF_Conversions.Unmappable =>
+                     when UTF_Conversions.Unmappable =>
                         Put_Substitute := True;
                   end case;
-               when System.UTF_Conversions.Illegal_Sequence
-                  | System.UTF_Conversions.Truncated =>
+               when UTF_Conversions.Illegal_Sequence
+                  | UTF_Conversions.Truncated =>
                   --  Truncated does not returned in UTF-32
                   Put_Substitute := True;
             end case;

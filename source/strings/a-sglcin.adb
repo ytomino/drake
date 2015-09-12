@@ -3,7 +3,7 @@ function Ada.Strings.Generic_Less_Case_Insensitive (Left, Right : String_Type)
    return Boolean
 is
    Mapping : constant not null access Naked_Maps.Character_Mapping :=
-      Strings.Naked_Maps.Case_Folding.Case_Folding_Map;
+      Naked_Maps.Case_Folding.Case_Folding_Map;
    Left_Last : Natural := Left'First - 1;
    Right_Last : Natural := Right'First - 1;
 begin

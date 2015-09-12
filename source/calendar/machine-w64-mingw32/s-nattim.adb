@@ -10,8 +10,7 @@ package body System.Native_Time is
          LowPart => D.dwLowDateTime,
          HighPart => D.dwHighDateTime);
    begin
-      return Duration'Fixed_Value (
-         (System.Native_Time.Nanosecond_Number (U.QuadPart)) * 100);
+      return Duration'Fixed_Value ((Nanosecond_Number (U.QuadPart)) * 100);
    end To_Duration;
 
    procedure Simple_Delay_For (D : Duration) is

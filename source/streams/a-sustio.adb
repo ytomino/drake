@@ -398,7 +398,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
             Stream_Item : Stream_Element_Array (1 .. Item.Stream.Last);
             for Stream_Item'Address use Item.Stream.Data.Storage;
          begin
-            Streams.Write (Stream.all, Stream_Item);
+            Write (Stream.all, Stream_Item);
          end Write;
 
       end Streaming;

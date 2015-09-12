@@ -28,8 +28,8 @@ package body System.Unwind.Backtrace is
       Item : String (
          1 ..
          256
-            + System.Unwind.Exception_Msg_Max_Length
-            + System.Unwind.Max_Tracebacks
+            + Unwind.Exception_Msg_Max_Length
+            + Unwind.Max_Tracebacks
                * (3 + (Standard'Address_Size + 3) / 4));
       Last : Natural;
    end record;

@@ -140,8 +140,9 @@ package body System.Pool_Size is
       if Error then
          raise Storage_Error;
       end if;
-      pragma Check (Trace, Ada.Debug.Put (
-         System.Storage_Elements.Formatting.Image (Storage_Address)));
+      pragma Check (Trace,
+         Check => Ada.Debug.Put (
+            Storage_Elements.Formatting.Image (Storage_Address)));
    end Allocate;
 
    procedure Deallocate (
@@ -156,8 +157,9 @@ package body System.Pool_Size is
             Allocator.Alignment,
             Freed_Chunk'Size / Standard'Storage_Unit);
    begin
-      pragma Check (Trace, Ada.Debug.Put (
-         System.Storage_Elements.Formatting.Image (Storage_Address)));
+      pragma Check (Trace,
+         Check => Ada.Debug.Put (
+            Storage_Elements.Formatting.Image (Storage_Address)));
       if Allocator.Alignment rem Positive_Storage_Count'(Alignment) /= 0 then
          raise Constraint_Error;
       end if;

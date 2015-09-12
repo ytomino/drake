@@ -569,7 +569,7 @@ package body System.Native_IO is
          Mapped_Offset.HighPart,
          Mapped_Offset.LowPart,
          C.basetsd.SIZE_T (Mapped_Size.QuadPart),
-         C.windef.LPVOID (System.Null_Address));
+         C.windef.LPVOID (Null_Address));
       if Address (Mapped_Address) = Null_Address then
          if C.winbase.CloseHandle (File_Mapping) = 0 then
             null; -- raise Use_Error;

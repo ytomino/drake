@@ -16,7 +16,7 @@ package body Ada.Assertions is
    procedure Raise_Assertion_Error (
       Message : String := Debug.Source_Location) is
    begin
-      Ada.Exception_Identification.Raise_Exception (
+      Exception_Identification.Raise_Exception (
          Assertion_Error'Identity,
          Message => Message);
    end Raise_Assertion_Error;
