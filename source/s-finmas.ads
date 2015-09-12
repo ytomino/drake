@@ -61,9 +61,9 @@ private
    pragma Suppress_Initialization (FM_Node);
 
    Header_Size : constant Storage_Elements.Storage_Offset :=
-      FM_Node'Size / Storage_Unit;
+      FM_Node'Size / Standard'Storage_Unit;
    Header_Offset : constant Storage_Elements.Storage_Offset :=
-      FM_Node'Size / Storage_Unit;
+      FM_Node'Size / Standard'Storage_Unit;
 
    type FM_List;
    type FM_List_Access is access all FM_List;

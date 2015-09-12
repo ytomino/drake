@@ -51,7 +51,7 @@ begin
 	end Reallocation;
 	Sized_And_Fixed : declare
 		type T is access System.Address;
-		for T'Storage_Size use (System.Address'Size / Standard'Storage_Unit) * 25;
+		for T'Storage_Size use (Standard'Address_Size / Standard'Storage_Unit) * 25;
 		-- using System.Pool_Size
 		-- Pool_Size => 100
 		-- Elmt_Size => 4

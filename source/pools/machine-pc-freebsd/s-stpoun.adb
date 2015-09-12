@@ -29,10 +29,11 @@ package body System.Storage_Pools.Unbounded is
       X : Address;
    begin
       X := Standard_Allocators.Allocate (
-         Header'Size / Storage_Unit
+         Header'Size / Standard'Storage_Unit
          + Size_In_Storage_Elements);
       Storage_Address := X
-         + Storage_Elements.Storage_Offset'(Header'Size / Storage_Unit);
+         + Storage_Elements.Storage_Offset'(
+            Header'Size / Standard'Storage_Unit);
       if Storage_Address mod Alignment /= 0 then
          Standard_Allocators.Free (X);
          raise Storage_Error;
@@ -53,7 +54,8 @@ package body System.Storage_Pools.Unbounded is
       X : Address;
    begin
       X := Storage_Address
-         - Storage_Elements.Storage_Offset'(Header'Size / Storage_Unit);
+         - Storage_Elements.Storage_Offset'(
+            Header'Size / Standard'Storage_Unit);
       if Conv.To_Pointer (X).Previous = null then
          Pool.List := Conv.To_Pointer (X).Next;
       else
