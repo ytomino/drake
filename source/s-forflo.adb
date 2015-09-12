@@ -185,10 +185,7 @@ package body System.Formatting.Float is
       Exponent_Width : Positive := 2;
       Exponent_Padding : Character := '0';
       NaN : String := "NAN";
-      Infinity : String := "INF")
-   is
-      pragma Suppress (All_Checks);
-      use type Unsigned;
+      Infinity : String := "INF") is
    begin
       Last := Item'First - 1;
       if signbitl (Value) /= 0 then

@@ -15,7 +15,6 @@ with C.winnls;
 with C.winnt;
 package body System.Unwind.Mapping is
    pragma Suppress (All_Checks);
-   use type Exception_Data_Access;
    use type C.size_t;
    use type C.wchar_t_array;
    use type C.windef.DWORD;

@@ -1,5 +1,6 @@
 with System.Long_Long_Integer_Divisions;
 package body System.Formatting.Decimal is
+   pragma Suppress (All_Checks);
 
    procedure Image (
       Value : Long_Long_Integer;
@@ -13,7 +14,6 @@ package body System.Formatting.Decimal is
       Fore_Padding : Character := '0';
       Aft_Width : Natural)
    is
-      pragma Suppress (All_Checks);
       Error : Boolean;
    begin
       Last := Item'First - 1;

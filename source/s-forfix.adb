@@ -1,6 +1,7 @@
 with System.Formatting.Float;
 with System.Long_Long_Float_Divisions;
 package body System.Formatting.Fixed is
+   pragma Suppress (All_Checks);
 
    function signbitl (X : Long_Long_Float) return Integer
       with Import,
@@ -26,7 +27,6 @@ package body System.Formatting.Fixed is
       Fore_Padding : Character := '0';
       Aft_Width : Positive)
    is
-      pragma Suppress (All_Checks);
       Item_Fore : aliased Long_Long_Float;
       Aft : Long_Long_Float;
       Scaled_Aft : Long_Long_Float;
