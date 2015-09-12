@@ -72,6 +72,11 @@ package body System.Native_Directories.Volumes is
       return False;
    end Is_HFS;
 
+   function Identity (FS : Non_Controlled_File_System) return File_System_Id is
+   begin
+      return FS.f_fsid;
+   end Identity;
+
    function Reference (Item : File_System)
       return not null access Non_Controlled_File_System is
    begin

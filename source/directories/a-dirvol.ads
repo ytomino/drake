@@ -21,8 +21,14 @@ package Ada.Directories.Volumes is
 
    function Is_HFS (FS : File_System) return Boolean;
 
+   type File_System_Id is private;
+
+   function Identity (FS : File_System) return File_System_Id;
+
 private
 
    type File_System is new System.Native_Directories.Volumes.File_System;
+
+   type File_System_Id is new System.Native_Directories.Volumes.File_System_Id;
 
 end Ada.Directories.Volumes;

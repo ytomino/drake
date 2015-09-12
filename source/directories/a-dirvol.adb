@@ -58,4 +58,10 @@ package body Ada.Directories.Volumes is
       return System.Native_Directories.Volumes.Is_HFS (Reference (FS).all);
    end Is_HFS;
 
+   function Identity (FS : File_System) return File_System_Id is
+   begin
+      return File_System_Id (
+         System.Native_Directories.Volumes.Identity (Reference (FS).all));
+   end Identity;
+
 end Ada.Directories.Volumes;

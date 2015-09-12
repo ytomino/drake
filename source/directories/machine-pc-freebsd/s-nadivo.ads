@@ -30,6 +30,10 @@ package System.Native_Directories.Volumes is
    function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
    pragma Inline (Is_HFS);
 
+   subtype File_System_Id is C.sys.mount.fsid_t;
+
+   function Identity (FS : Non_Controlled_File_System) return File_System_Id;
+
    type File_System is record
       Data : aliased Non_Controlled_File_System;
    end record;

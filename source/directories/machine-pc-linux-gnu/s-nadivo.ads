@@ -25,6 +25,10 @@ package System.Native_Directories.Volumes is
    function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
    pragma Inline (Is_HFS);
 
+   subtype File_System_Id is C.sys.types.fsid_t;
+
+   function Identity (FS : Non_Controlled_File_System) return File_System_Id;
+
    --  unimplemented
    function Owner (FS : Non_Controlled_File_System) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";

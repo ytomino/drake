@@ -5,6 +5,7 @@ package body System.Native_Directories.Volumes is
    use Ada.Exception_Identification.From_Here;
    use type File_Size;
    use type C.signed_int;
+   use type C.signed_long; -- f_type in 64bit
    use type C.size_t;
 
    --  implementation
@@ -50,6 +51,11 @@ package body System.Native_Directories.Volumes is
    begin
       return False;
    end Is_HFS;
+
+   function Identity (FS : Non_Controlled_File_System) return File_System_Id is
+   begin
+      return FS.f_fsid;
+   end Identity;
 
    function Reference (Item : File_System)
       return not null access Non_Controlled_File_System is
