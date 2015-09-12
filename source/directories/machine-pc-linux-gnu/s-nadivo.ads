@@ -1,16 +1,13 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Linux
-with C.sys.statvfs;
+with C.sys.statfs;
 package System.Native_Directories.Volumes is
    --  File system information.
    pragma Preelaborate;
 
    subtype File_Size is Ada.Streams.Stream_Element_Count;
 
-   type Non_Controlled_File_System is record
-      Info : aliased C.sys.statvfs.struct_statvfs64;
-   end record;
-   pragma Suppress_Initialization (Non_Controlled_File_System);
+   subtype Non_Controlled_File_System is C.sys.statfs.struct_statfs;
 
    procedure Get (
       Name : String;
