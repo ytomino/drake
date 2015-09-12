@@ -12,7 +12,6 @@ package body System.Termination is
          (C.void_ptr (S'Address), S'Length),
          (C.void_ptr (New_Line'Address), 1));
       Dummy : C.sys.types.ssize_t;
-      pragma Unreferenced (Dummy);
    begin
       Dummy := C.sys.uio.writev (
          C.unistd.STDERR_FILENO,
@@ -27,7 +26,6 @@ package body System.Termination is
 
    procedure Register_Exit (Handler : not null Exit_Handler) is
       Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       --  atexit requires handler that has C calling-convention,
       --  but Ada procedure having no argument is same as C.

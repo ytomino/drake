@@ -24,7 +24,6 @@ package body System.Fat_LLF is
       function Exponent (X : Long_Long_Float) return Integer is
          Result : aliased Integer;
          Dummy : Long_Long_Float;
-         pragma Unreferenced (Dummy);
       begin
          Dummy := frexp (X, Result'Access);
          return Result;

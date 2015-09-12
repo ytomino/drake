@@ -48,13 +48,13 @@ package body Ada.Streams.Stream_IO.Sockets is
    procedure Connect (File : in out File_Type; Peer : End_Point) is
       procedure Finally (X : not null access System.Native_IO.Handle_Type);
       procedure Finally (X : not null access System.Native_IO.Handle_Type) is
-         Dummy_Name : aliased System.Native_IO.Name_String :=
+         Empty_Name : aliased System.Native_IO.Name_String :=
             (0 => System.Native_IO.Name_Character'Val (0));
       begin
          if X.all /= System.Native_IO.Invalid_Handle then
             System.Native_IO.Close_Ordinary (
                X.all,
-               Dummy_Name (0)'Unchecked_Access,
+               Empty_Name (0)'Unchecked_Access,
                Raise_On_Error => False);
          end if;
       end Finally;

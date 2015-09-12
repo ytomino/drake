@@ -4,8 +4,8 @@ with System.Unwind.Mapping;
 with System.Unwind.Occurrences;
 package body System.Unwind.Handling is
    pragma Suppress (All_Checks);
-   use type System.Unwind.Representation.Machine_Occurrence_Access;
-   use type System.Unwind.Representation.Unwind_Exception_Class;
+   use type Unwind.Representation.Machine_Occurrence_Access;
+   use type Unwind.Representation.Unwind_Exception_Class;
 
    --  force to link System.Unwind.Mapping
    --    to convert signals or SEH exceptions to standard exceptions.

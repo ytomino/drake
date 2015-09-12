@@ -69,7 +69,6 @@ package body Separated is
          Exclude_Max,
          Skip_Frames);
       Dummy : C.unwind.Unwind_Reason_Code;
-      pragma Unreferenced (Dummy);
    begin
       pragma Check (Trace, Ada.Debug.Put ("start"));
       Dummy := C.unwind.Unwind_Backtrace (

@@ -5,7 +5,7 @@ package body Ada.Calendar is
    --  please use -gnato for overflow checking
    RM_9_6_26_Overflow_Check : constant Boolean := Overflow_Check'Enabled;
    --  it could not use 'Enabled in "+", "-" since Inline_Always.
-   use Ada.Exception_Identification.From_Here;
+   use Exception_Identification.From_Here;
    use type System.Native_Time.Nanosecond_Number;
 
    --  for Year, Month, Day

@@ -79,11 +79,10 @@ package body System.Unwind.Mapping is
             --  get stack range
             declare
                Dummy : Address;
-               pragma Unreferenced (Dummy);
             begin
                Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
-               Stack_Guard := Stack_Guard + 4096;
             end;
+            Stack_Guard := Stack_Guard + 4096;
             --  Storage_Error
             Eexception_Id := Standard.Storage_Error'Access;
          when others =>
@@ -96,8 +95,6 @@ package body System.Unwind.Mapping is
             Message_Last : Natural;
             C_Wide_Buf : aliased C.winnt.LPWSTR;
             R : C.windef.DWORD;
-            Dummy : C.windef.HLOCAL;
-            pragma Unreferenced (Dummy);
          begin
             R := C.winbase.FormatMessage (
                dwFlags => C.winbase.FORMAT_MESSAGE_FROM_HMODULE
@@ -162,8 +159,12 @@ package body System.Unwind.Mapping is
                         null));
                end if;
             end;
-            Dummy := C.winbase.LocalFree (
-               C.windef.HLOCAL (LPWSTR_Conv.To_Address (C_Wide_Buf)));
+            declare
+               Dummy : C.windef.HLOCAL;
+            begin
+               Dummy := C.winbase.LocalFree (
+                  C.windef.HLOCAL (LPWSTR_Conv.To_Address (C_Wide_Buf)));
+            end;
             declare
                Result : constant
                   not null Representation.Machine_Occurrence_Access :=

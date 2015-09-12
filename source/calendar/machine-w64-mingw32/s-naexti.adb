@@ -21,7 +21,7 @@ package body System.Native_Execution_Time is
       then
          raise Program_Error; -- ???
       else
-         return System.Native_Time.To_Duration (UserTime);
+         return Native_Time.To_Duration (UserTime);
       end if;
    end Clock;
 

@@ -210,8 +210,8 @@ package Ada.Naked_Text_IO is
 
 private
 
-   type Dummy_Mark_Type is (None, EOP, EOP_EOF, EOF);
-   pragma Discard_Names (Dummy_Mark_Type);
+   type Virtual_Mark_Type is (None, EOP, EOP_EOF, EOF);
+   pragma Discard_Names (Virtual_Mark_Type);
 
    type Text_Type (
       Name_Length : Natural) is -- "limited" prevents No_Elaboration_Code
@@ -231,7 +231,7 @@ private
       Looked_Ahead_Second : String (1 .. 3); -- second of surrogate pair
       Buffer : System.Native_Text_IO.Buffer_Type;
       End_Of_File : Boolean := False;
-      Dummy_Mark : Dummy_Mark_Type := None;
+      Virtual_Mark : Virtual_Mark_Type := None;
       Mode : IO_Modes.File_Mode;
       External : IO_Modes.File_External;
       New_Line : IO_Modes.File_New_Line;
@@ -255,7 +255,7 @@ private
       Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
-      Dummy_Mark => None,
+      Virtual_Mark => None,
       Mode => IO_Modes.In_File,
       External => System.Native_Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_Text_IO.Default_New_Line,
@@ -277,7 +277,7 @@ private
       Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
-      Dummy_Mark => None,
+      Virtual_Mark => None,
       Mode => IO_Modes.Out_File,
       External => System.Native_Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_Text_IO.Default_New_Line,
@@ -299,7 +299,7 @@ private
       Looked_Ahead_Second => (others => Character'Val (0)),
       Buffer => (others => Character'Val (0)),
       End_Of_File => False,
-      Dummy_Mark => None,
+      Virtual_Mark => None,
       Mode => IO_Modes.Out_File,
       External => System.Native_Text_IO.Default_External, -- be overwritten
       New_Line => System.Native_Text_IO.Default_New_Line,

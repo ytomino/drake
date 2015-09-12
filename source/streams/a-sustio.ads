@@ -111,7 +111,7 @@ private
             with Import,
                Convention => Ada, External_Name => "__drake_program_error";
          function Missing_Input (
-            Stream : not null access Streams.Root_Stream_Type'Class)
+            Stream : not null access Root_Stream_Type'Class)
             return Buffer_Type
             with Import,
                Convention => Ada, External_Name => "__drake_program_error";

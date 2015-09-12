@@ -317,12 +317,14 @@ package body System.Unwind.Searching is
                declare
                   p : C.unsigned_char_const_ptr := table_entry;
                   ar_filter, ar_disp : aliased C.unwind.sleb128_t;
-                  Dummy : C.unsigned_char_const_ptr;
-                  pragma Unreferenced (Dummy);
                begin
                   loop
                      p := C.unwind_pe.read_sleb128 (p, ar_filter'Access);
-                     Dummy := C.unwind_pe.read_sleb128 (p, ar_disp'Access);
+                     declare
+                        Dummy : C.unsigned_char_const_ptr;
+                     begin
+                        Dummy := C.unwind_pe.read_sleb128 (p, ar_disp'Access);
+                     end;
                      if ar_filter = 0 then
                         ttype_filter := 0;
                         if ar_disp = 0 then
@@ -349,6 +351,7 @@ package body System.Unwind.Searching is
                                     ttype_encoding));
                            choice : aliased C.unwind.Unwind_Ptr;
                            is_handled : Boolean;
+                           Dummy : C.unsigned_char_const_ptr;
                         begin
                            Dummy := C.unwind_pe.read_encoded_value_with_base (
                               ttype_encoding,
@@ -514,8 +517,6 @@ package body System.Unwind.Searching is
                         ImageBase : aliased C.basetsd.ULONG64;
                         HandlerData : aliased C.winnt.PVOID;
                         EstablisherFrame : aliased C.basetsd.ULONG64;
-                        Dummy : C.winnt.PEXCEPTION_ROUTINE;
-                        pragma Unreferenced (Dummy);
                      begin
                         --  Get function metadata.
                         RuntimeFunction :=
@@ -535,15 +536,19 @@ package body System.Unwind.Searching is
                            context.Rsp := context.Rsp + 8;
                         else
                            --  Unwind.
-                           Dummy := C.winnt.RtlVirtualUnwind (
-                              0,
-                              ImageBase,
-                              context.Rip,
-                              RuntimeFunction,
-                              context'Access,
-                              HandlerData'Access,
-                              EstablisherFrame'Access,
-                              null);
+                           declare
+                              Dummy : C.winnt.PEXCEPTION_ROUTINE;
+                           begin
+                              Dummy := C.winnt.RtlVirtualUnwind (
+                                 0,
+                                 ImageBase,
+                                 context.Rip,
+                                 RuntimeFunction,
+                                 context'Access,
+                                 HandlerData'Access,
+                                 EstablisherFrame'Access,
+                                 null);
+                           end;
                         end if;
                         --  0 means bottom of the stack.
                         if context.Rip = 0 then

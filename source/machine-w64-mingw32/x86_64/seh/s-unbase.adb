@@ -66,8 +66,6 @@ package body Separated is
             ImageBase : aliased C.basetsd.ULONG64;
             HandlerData : aliased C.winnt.PVOID;
             EstablisherFrame : aliased C.basetsd.ULONG64;
-            Dummy : C.winnt.PEXCEPTION_ROUTINE;
-            pragma Unreferenced (Dummy);
          begin
             --  Get function metadata.
             RuntimeFunction := C.winnt.RtlLookupFunctionEntry (
@@ -87,6 +85,9 @@ package body Separated is
                   0,
                   C.winnt.KNONVOLATILE_CONTEXT_POINTERS'Size
                      / Standard'Storage_Unit);
+               declare
+                  Dummy : C.winnt.PEXCEPTION_ROUTINE;
+               begin
                   Dummy := C.winnt.RtlVirtualUnwind (
                      0,
                      ImageBase,
@@ -96,6 +97,7 @@ package body Separated is
                      HandlerData'Access,
                      EstablisherFrame'Access,
                      NvContext'Access);
+               end;
             end if;
             --  0 means bottom of the stack.
             exit when System'To_Address (context.Rip) = Null_Address;

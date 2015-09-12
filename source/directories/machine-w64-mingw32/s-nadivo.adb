@@ -30,14 +30,12 @@ package body System.Native_Directories.Volumes is
       FileSystemNameBuffer : access C.winnt.WCHAR;
       FileSystemNameSize : C.windef.DWORD) is
    begin
-      if FileSystemNameBuffer /= null
-         or else not FS.FileSystemFlags_Valid
-      then
+      if FileSystemNameBuffer /= null or else not FS.Valid then
          if C.winbase.GetVolumeInformation (
             FS.Root_Path,
             null,
             0,
-            null,
+            FS.VolumeSerialNumber'Access,
             null,
             FS.FileSystemFlags'Access,
             FileSystemNameBuffer,
@@ -45,8 +43,7 @@ package body System.Native_Directories.Volumes is
          then
             Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
          end if;
-         --  save FileSystemFlags
-         FS.FileSystemFlags_Valid := True;
+         FS.Valid := True;
          --  save NTFS or not
          if not FS.Is_NTFS_Valid and then FileSystemNameBuffer /= null then
             declare
@@ -99,7 +96,7 @@ package body System.Native_Directories.Volumes is
          Dest_A (0 .. Root_Path_Length) := Root_Path (0 .. Root_Path_Length);
          FS.Root_Path := Conv.To_Pointer (Dest);
       end;
-      FS.FileSystemFlags_Valid := False;
+      FS.Valid := False;
       FS.Is_NTFS_Valid := False;
    end Get;
 
@@ -215,6 +212,13 @@ package body System.Native_Directories.Volumes is
    begin
       return False;
    end Is_HFS;
+
+   function Identity (FS : aliased in out Non_Controlled_File_System)
+      return File_System_Id is
+   begin
+      GetVolumeInformation (FS, null, 0);
+      return FS.VolumeSerialNumber;
+   end Identity;
 
    package body Controlled is
 

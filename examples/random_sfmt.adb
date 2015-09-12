@@ -141,7 +141,6 @@ procedure random_sfmt is
 		pragma Compile_Time_Error (array32'Size /= array1'Size, "bad array32");
 		clo_Span : Ada.Real_Time.Time_Span;
 		Dummy : Unsigned_32;
-		pragma Unreferenced (Dummy);
 	begin
 		if Min_Array_Length_32 > BLOCK_SIZE then
 			raise Program_Error with "array size too small!";
@@ -263,7 +262,6 @@ procedure random_sfmt is
 		array64 : Unsigned_64_Array renames array1;
 		clo_Span : Ada.Real_Time.Time_Span;
 		Dummy : Unsigned_64;
-		pragma Unreferenced (Dummy);
 	begin
 		if Min_Array_Length_64 > BLOCK_SIZE64 then
 			raise Program_Error with "array size too small!";

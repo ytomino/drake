@@ -63,6 +63,9 @@
 #include <netinet/in.h> /* protocols, after netdb.h in FreeBSD */
 #endif
 #include <sys/mount.h> /* filesystem */
+#if defined(__linux__)
+#include <sys/statfs.h>
+#endif
 #include <dirent.h> /* directory searching */
 #include <fnmatch.h> /* wildcard */
 #include <termios.h> /* terminal control */
@@ -285,6 +288,7 @@
 #pragma for Ada "sys/socket.h" include "bits/socket.h"
 #pragma for Ada "sys/socket.h" include "bits/socket_type.h"
 #pragma for Ada "sys/stat.h" include "bits/stat.h"
+#pragma for Ada "sys/statfs.h" include "bits/statfs.h"
 #pragma for Ada "sys/statvfs.h" include "bits/statvfs.h"
 #pragma for Ada "sys/syscall.h" include "bits/syscall.h"
 #pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */

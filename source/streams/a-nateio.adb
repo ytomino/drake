@@ -368,13 +368,13 @@ package body Ada.Naked_Text_IO is
       File.Ahead_Last := File.Ahead_Last - Length;
       File.Ahead_Col := 0;
       File.Looked_Ahead_Last := 0;
-      File.Dummy_Mark := None;
+      File.Virtual_Mark := None;
    end Take_Buffer;
 
    procedure Take_Page (File : Non_Controlled_File_Type) is
    begin
       Take_Buffer (File);
-      File.Dummy_Mark := EOP;
+      File.Virtual_Mark := EOP;
       File.Page := File.Page + 1;
       File.Line := 1;
       File.Col := 1;
@@ -828,7 +828,7 @@ package body Ada.Naked_Text_IO is
       File.Ahead_Col := 0;
       File.Looked_Ahead_Last := 0;
       File.End_Of_File := False;
-      File.Dummy_Mark := None;
+      File.Virtual_Mark := None;
       File.Mode := Mode;
    end Reset;
 
@@ -997,8 +997,8 @@ package body Ada.Naked_Text_IO is
                   end case;
                end;
             elsif File.End_Of_File then
-               if File.Dummy_Mark <= EOP then
-                  File.Dummy_Mark := EOP_EOF;
+               if File.Virtual_Mark <= EOP then
+                  File.Virtual_Mark := EOP_EOF;
                   File.Page := File.Page + 1;
                   File.Line := 1;
                   File.Col := 1;
@@ -1036,16 +1036,16 @@ package body Ada.Naked_Text_IO is
       while not End_Of_Page (File) loop
          Skip_Line (File);
       end loop;
-      case File.Dummy_Mark is
+      case File.Virtual_Mark is
          when EOF =>
             Raise_Exception (End_Error'Identity);
          when EOP =>
-            File.Dummy_Mark := None;
+            File.Virtual_Mark := None;
          when EOP_EOF =>
-            File.Dummy_Mark := EOF;
+            File.Virtual_Mark := EOF;
          when others =>
             if End_Of_File (File) then
-               File.Dummy_Mark := EOF;
+               File.Virtual_Mark := EOF;
             else
                Take_Buffer (File);
             end if;
@@ -1058,8 +1058,8 @@ package body Ada.Naked_Text_IO is
    function End_Of_Page (File : Non_Controlled_File_Type) return Boolean is
    begin
       if End_Of_File (File) -- End_Of_File calls Read_Buffer
-         or else File.Dummy_Mark = EOP
-         or else File.Dummy_Mark = EOP_EOF
+         or else File.Virtual_Mark = EOP
+         or else File.Virtual_Mark = EOP_EOF
       then
          return True;
       else
@@ -1446,7 +1446,7 @@ package body Ada.Naked_Text_IO is
       if End_Of_Line then
          Item := Wide_Wide_Character'Val (0);
       else
-         if File.External = Ada.IO_Modes.Locale then
+         if File.External = IO_Modes.Locale then
             declare
                Locale_Support : constant Boolean :=
                   System.Native_Text_IO.Default_External = IO_Modes.Locale;

@@ -15,6 +15,6 @@ package System.Program is
 private
 
    function Load_Address return Address
-      renames System.Runtime_Information.Load_Address;
+      renames Runtime_Information.Load_Address;
 
 end System.Program;

@@ -17,8 +17,6 @@ package body System.Termination is
 
    procedure Error_Put_Line (S : String) is
       Written : aliased C.windef.DWORD;
-      Dummy : C.windef.WINBOOL;
-      pragma Unreferenced (Dummy);
       S16 : Wide_String (1 .. S'Length);
       S16_Length : C.signed_int;
       SL : String (1 .. S16'Length * 2 + 2);
@@ -47,12 +45,16 @@ package body System.Termination is
       SL_Length := SL_Length + 1;
       SL (Natural (SL_Length)) := Character'Val (10);
       --  output
-      Dummy := C.winbase.WriteFile (
-         C.winbase.GetStdHandle (C.winbase.STD_ERROR_HANDLE),
-         C.windef.LPCVOID (SL'Address),
-         C.windef.DWORD (SL_Length),
-         Written'Access,
-         null);
+      declare
+         Dummy : C.windef.WINBOOL;
+      begin
+         Dummy := C.winbase.WriteFile (
+            C.winbase.GetStdHandle (C.winbase.STD_ERROR_HANDLE),
+            C.windef.LPCVOID (SL'Address),
+            C.windef.DWORD (SL_Length),
+            Written'Access,
+            null);
+      end;
    end Error_Put_Line;
 
    procedure Force_Abort is
@@ -62,7 +64,6 @@ package body System.Termination is
 
    procedure Register_Exit (Handler : not null Exit_Handler) is
       Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       --  atexit requires handler that has C calling-convention,
       --  but Ada procedure having no argument is same as C.

@@ -1,14 +1,10 @@
 --  for ZCX (or SjLj, or Win64 SEH)
 pragma Check_Policy (Trace => Ignore);
-with Ada;
-with System.Address_To_Named_Access_Conversions;
 with System.Native_Allocators;
-with System.Storage_Elements;
 with C.unwind;
 separate (System.Unwind.Occurrences)
 package body Separated is
    pragma Suppress (All_Checks);
-   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
 
    procedure memset (

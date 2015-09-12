@@ -23,7 +23,6 @@ package body System.Fat_Flt is
       function Exponent (X : Float) return Integer is
          Result : aliased Integer;
          Dummy : Float;
-         pragma Unreferenced (Dummy);
       begin
          Dummy := frexp (X, Result'Access);
          return Result;

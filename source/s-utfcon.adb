@@ -55,7 +55,6 @@ package body System.UTF_Conversions is
       I : constant Natural := Result'First;
       Length : Natural;
       Code_2 : UCS_4;
-      Dummy_Sequence_Status : Sequence_Status_Type;
       --  without checking surrogate pair in To_XXX
    begin
       if I > Result'Last then
@@ -63,7 +62,11 @@ package body System.UTF_Conversions is
          Status := Overflow;
          return;
       end if;
-      UTF_8_Length (Code, Result (I), Length, Dummy_Sequence_Status);
+      declare
+         Dummy_Sequence_Status : Sequence_Status_Type;
+      begin
+         UTF_8_Length (Code, Result (I), Length, Dummy_Sequence_Status);
+      end;
       Last := I + Length - 1;
       if Last > Result'Last then
          Last := Result'Last;

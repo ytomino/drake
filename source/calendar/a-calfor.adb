@@ -5,7 +5,7 @@ with System.Long_Long_Integer_Divisions;
 with System.Native_Calendar;
 with System.Native_Time;
 package body Ada.Calendar.Formatting is
-   use Ada.Exception_Identification.From_Here;
+   use Exception_Identification.From_Here;
    use type Time_Zones.Time_Offset;
    use type System.Formatting.Unsigned;
    use type System.Native_Time.Nanosecond_Number;

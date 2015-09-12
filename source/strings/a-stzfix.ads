@@ -325,7 +325,7 @@ package Ada.Strings.Wide_Wide_Fixed is
       Source : in out Wide_Wide_String;
       Side : Trim_End;
       Blank : Wide_Wide_Character;
-      Justify : Alignment := Strings.Left;
+      Justify : Alignment := Left;
       Pad : Wide_Wide_Character := Wide_Wide_Space)
       renames Wide_Wide_Functions.Trim;
 

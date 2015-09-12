@@ -39,7 +39,6 @@ package body System.Debug is
       return Boolean
    is
       Dummy : Boolean;
-      pragma Unreferenced (Dummy);
    begin
       Dummy := Put (S, Source_Location, Enclosing_Entity);
       Termination.Force_Abort;

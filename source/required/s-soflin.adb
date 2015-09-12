@@ -18,7 +18,7 @@ package body System.Soft_Links is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
    begin
-      return Cast (System.Unwind.Occurrences.Get_Current_Occurrence (TLS));
+      return Cast (Unwind.Occurrences.Get_Current_Occurrence (TLS));
    end Do_Get_Current_Excep;
 
    function Get_GNAT_Exception return Ada.Exceptions.Exception_Id is

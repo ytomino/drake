@@ -31,13 +31,16 @@ package body System.Unwind.Mapping is
       for Message'Address use C_Message.all'Address;
       Eexception_Id : Exception_Data_Access;
       Stack_Guard : Address := Null_Address;
-      Dummy : Address;
    begin
       case Signal_Number is
          when C.signal.SIGFPE =>
             Eexception_Id := Standard.Constraint_Error'Access;
          when C.signal.SIGBUS | C.signal.SIGSEGV =>
-            Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
+            declare
+               Dummy : Address;
+            begin
+               Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
+            end;
             Stack_Guard := Stack_Guard + C.signal.MINSIGSTKSZ;
             declare
                uc : C.sys.ucontext.ucontext_t
@@ -70,7 +73,6 @@ package body System.Unwind.Mapping is
          ss_size => Signal_Stack_Type'Size / Standard'Storage_Unit,
          ss_flags => 0);
       Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       Dummy := C.signal.sigaltstack (stack'Access, null);
    end Set_Signal_Stack;
@@ -85,7 +87,6 @@ package body System.Unwind.Mapping is
          (Unchecked_Tag => 1, sa_sigaction => sigaction_Handler'Access),
          others => <>);
       Dummy : C.signed_int;
-      pragma Unreferenced (Dummy);
    begin
       act.sa_flags := C.signed_int (
          C.unsigned_int'(

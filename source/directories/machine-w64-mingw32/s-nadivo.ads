@@ -11,8 +11,9 @@ package System.Native_Directories.Volumes is
    type Non_Controlled_File_System is record
       Root_Path : C.winnt.LPWSTR;
       Root_Path_Length : C.size_t;
+      VolumeSerialNumber : aliased C.windef.DWORD;
       FileSystemFlags : aliased C.windef.DWORD;
-      FileSystemFlags_Valid : Boolean;
+      Valid : Boolean; -- VolumeSerialNumber and FileSystemFlags
       Is_NTFS : Boolean;
       Is_NTFS_Valid : Boolean;
    end record;
@@ -38,6 +39,11 @@ package System.Native_Directories.Volumes is
    function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
    pragma Inline (Is_HFS);
 
+   subtype File_System_Id is C.windef.DWORD;
+
+   function Identity (FS : aliased in out Non_Controlled_File_System)
+      return File_System_Id;
+
    --  unimplemented
    function Owner (FS : Non_Controlled_File_System) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
@@ -58,8 +64,9 @@ package System.Native_Directories.Volumes is
          Data : aliased Non_Controlled_File_System := (
             Root_Path => null,
             Root_Path_Length => 0,
+            VolumeSerialNumber => <>,
             FileSystemFlags => <>,
-            FileSystemFlags_Valid => False,
+            Valid => False,
             Is_NTFS => <>,
             Is_NTFS_Valid => False);
       end record;

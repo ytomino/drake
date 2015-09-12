@@ -53,7 +53,6 @@ package body Ada.Processes is
       Child : Process)
    is
       Dummy : Command_Line.Exit_Status;
-      pragma Unreferenced (Dummy);
    begin
       Wait (Child, Dummy);
    end Wait;
@@ -62,7 +61,6 @@ package body Ada.Processes is
       Command_Line : String)
    is
       Dummy : Ada.Command_Line.Exit_Status;
-      pragma Unreferenced (Dummy);
    begin
       Shell (Command_Line, Dummy);
    end Shell;

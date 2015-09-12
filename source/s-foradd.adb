@@ -45,14 +45,14 @@ package body System.Formatting.Address is
          Value (
             Item,
             Last,
-            System.Formatting.Longest_Unsigned (Result),
+            Formatting.Longest_Unsigned (Result),
             Base => 16,
             Error => Error);
       else
          Value (
             Item,
             Last,
-            System.Formatting.Unsigned (Result),
+            Formatting.Unsigned (Result),
             Base => 16,
             Error => Error);
       end if;

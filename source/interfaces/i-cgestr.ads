@@ -7,7 +7,7 @@ generic
    type Element is new Character_Type;
    type Element_Array is array (size_t range <>) of aliased Element;
    with package Pointers is
-      new Interfaces.C.Pointers (
+      new C.Pointers (
          Index => size_t,
          Element => Element,
          Element_Array => Element_Array,

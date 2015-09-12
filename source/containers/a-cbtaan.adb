@@ -256,7 +256,6 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
                            Current, "removed c"));
                      declare
                         Dummy : Node_Access;
-                        pragma Unreferenced (Dummy);
                      begin
                         Dummy := Skew (Current.Right);
                      end;
@@ -267,7 +266,6 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
                               Current, "removed d"));
                         declare
                            Dummy : Node_Access;
-                           pragma Unreferenced (Dummy);
                         begin
                            Dummy := Skew (Current.Right.Right);
                         end;
@@ -283,7 +281,6 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
                            Current, "removed f"));
                      declare
                         Dummy : Node_Access;
-                        pragma Unreferenced (Dummy);
                      begin
                         Dummy := Split (Current.Right);
                      end;

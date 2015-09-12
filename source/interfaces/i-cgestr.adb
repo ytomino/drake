@@ -43,10 +43,9 @@ package body Interfaces.C.Generic_Strings is
                declare
                   ca_Item : char_array (Item'Range);
                   for ca_Item'Address use Item.all'Address;
-                  Dummy : constant size_t := Length (ca_Item);
-                  pragma Unreferenced (Dummy);
+                  Dummy : size_t;
                begin
-                  null;
+                  Dummy := Length (ca_Item);
                end;
             elsif Element'Size = wchar_t'Size
                and then Element_Array'Component_Size =
@@ -55,10 +54,9 @@ package body Interfaces.C.Generic_Strings is
                declare
                   wa_Item : wchar_array (Item'Range);
                   for wa_Item'Address use Item.all'Address;
-                  Dummy : constant size_t := Length (wa_Item);
-                  pragma Unreferenced (Dummy);
+                  Dummy : size_t;
                begin
-                  null;
+                  Dummy := Length (wa_Item);
                end;
             else
                declare
