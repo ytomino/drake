@@ -93,6 +93,7 @@ begin
 	declare
 		FS : Ada.Directories.Volumes.File_System := Ada.Directories.Volumes.Where ("directories.adb");
 	begin
+		pragma Assert (Ada.Directories.Volumes.Is_Assigned (FS));
 		Ada.Debug.Put (Ada.Directories.File_Size'Image (Ada.Directories.Volumes.Size (FS)));
 		Ada.Debug.Put (Ada.Directories.File_Size'Image (Ada.Directories.Volumes.Free_Space (FS)));
 		Ada.Debug.Put (Ada.Directories.Volumes.Owner (FS));

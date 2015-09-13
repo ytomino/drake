@@ -6,6 +6,8 @@ package Ada.Directories.Volumes is
 
    type File_System is limited private;
 
+   function Is_Assigned (FS : File_System) return Boolean;
+
    function Where (Name : String) return File_System;
 
    function Size (FS : File_System) return File_Size;

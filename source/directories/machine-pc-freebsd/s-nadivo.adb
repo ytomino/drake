@@ -2,13 +2,20 @@ with Ada.Exception_Identification.From_Here;
 with System.Native_Credentials;
 with System.Zero_Terminated_Strings;
 with C.errno;
+with C.stdint;
 package body System.Native_Directories.Volumes is
    use Ada.Exception_Identification.From_Here;
    use type File_Size;
    use type C.signed_int;
    use type C.size_t;
+   use type C.stdint.uint32_t;
 
    --  implementation
+
+   function Is_Assigned (FS : Non_Controlled_File_System) return Boolean is
+   begin
+      return FS.f_version /= 0;
+   end Is_Assigned;
 
    procedure Get (
       Name : String;
