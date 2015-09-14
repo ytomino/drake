@@ -145,7 +145,7 @@ package body Ada.Directories is
             begin
                case Kind (Directory_Entry) is
                   when Ordinary_File | Special_File =>
-                     Delete_File (Full_Name (Name));
+                     Delete_File (Name);
                   when Directories.Directory =>
                      Delete_Tree (Name); -- recursive
                end case;
