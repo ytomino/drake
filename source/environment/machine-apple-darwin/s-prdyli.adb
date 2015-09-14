@@ -36,6 +36,11 @@ package body System.Program.Dynamic_Linking is
 
    --  implementation
 
+   function Is_Open (Lib : Library) return Boolean is
+   begin
+      return Address (Reference (Lib).all) /= Null_Address;
+   end Is_Open;
+
    procedure Open (Lib : in out Library; Name : String) is
       pragma Check (Pre,
          Check => not Is_Open (Lib) or else raise Status_Error);
@@ -59,11 +64,6 @@ package body System.Program.Dynamic_Linking is
       Close (Handle.all, Raise_On_Error => True);
       Handle.all := C.void_ptr (Null_Address);
    end Close;
-
-   function Is_Open (Lib : Library) return Boolean is
-   begin
-      return Address (Reference (Lib).all) /= Null_Address;
-   end Is_Open;
 
    function Import (
       Lib : Library;

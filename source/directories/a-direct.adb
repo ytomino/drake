@@ -221,6 +221,12 @@ package body Ada.Directories is
       return NC_Directory_Entry.Status /= Empty;
    end Is_Assigned;
 
+   function Is_Open (Search : Search_Type) return Boolean is
+   begin
+      return Search.Search.Handle /=
+         System.Native_Directories.Searching.Null_Handle;
+   end Is_Open;
+
    procedure Start_Search (
       Search : in out Search_Type;
       Directory : String;
@@ -321,21 +327,6 @@ package body Ada.Directories is
       end if;
    end Get_Next_Entry;
 
-   overriding procedure Finalize (Search : in out Search_Type) is
-   begin
-      if Search.Search.Handle /=
-         System.Native_Directories.Searching.Null_Handle
-      then
-         End_Search (Search, Raise_On_Error => False);
-      end if;
-   end Finalize;
-
-   function Is_Open (Search : Search_Type) return Boolean is
-   begin
-      return Search.Search.Handle /=
-         System.Native_Directories.Searching.Null_Handle;
-   end Is_Open;
-
    procedure Search (
       Directory : String;
       Pattern : String := "*";
@@ -353,6 +344,15 @@ package body Ada.Directories is
       end loop;
       End_Search (Srch);
    end Search;
+
+   overriding procedure Finalize (Search : in out Search_Type) is
+   begin
+      if Search.Search.Handle /=
+         System.Native_Directories.Searching.Null_Handle
+      then
+         End_Search (Search, Raise_On_Error => False);
+      end if;
+   end Finalize;
 
    --  iterator
 

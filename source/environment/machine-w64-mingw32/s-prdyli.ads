@@ -14,14 +14,14 @@ package System.Program.Dynamic_Linking is
 --       Dynamic_Predicate => Is_Open (Open_Library),
 --       Predicate_Failure => raise Status_Error;
 
+   function Is_Open (Lib : Library) return Boolean;
+   pragma Inline (Is_Open);
+
    procedure Open (Lib : in out Library; Name : String);
    function Open (Name : String) return Library;
    pragma Inline (Open);
 
    procedure Close (Lib : in out Library);
-
-   function Is_Open (Lib : Library) return Boolean;
-   pragma Inline (Is_Open);
 
    function Import (
       Lib : Library; -- Open_Library
