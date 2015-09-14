@@ -167,10 +167,7 @@ package body System.Native_Directories.Searching is
       return Ada.Streams.Stream_Element_Count is
    begin
       if not Additional.Filled then
-         Get_Information (
-            Directory,
-            Directory_Entry,
-            Additional.Information);
+         Get_Information (Directory, Directory_Entry, Additional.Information);
          Additional.Filled := True;
       end if;
       return Ada.Streams.Stream_Element_Offset (
@@ -184,10 +181,7 @@ package body System.Native_Directories.Searching is
       return Native_Calendar.Native_Time is
    begin
       if not Additional.Filled then
-         Get_Information (
-            Directory,
-            Directory_Entry,
-            Additional.Information);
+         Get_Information (Directory, Directory_Entry, Additional.Information);
          Additional.Filled := True;
       end if;
       return Additional.Information.st_mtim;
@@ -219,10 +213,7 @@ package body System.Native_Directories.Searching is
       Full_Name_Length := Full_Name_Length + S_Length;
       Full_Name (Full_Name_Length) := C.char'Val (0);
       --  stat
-      if C.sys.stat.lstat64 (
-         Full_Name (0)'Access,
-         Information'Access) < 0
-      then
+      if C.sys.stat.lstat64 (Full_Name (0)'Access, Information'Access) < 0 then
          Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
    end Get_Information;

@@ -40,9 +40,10 @@ package System.Initialization is
 
 private
 
-   type Object_Storage is new Storage_Elements.Storage_Array (
-      1 ..
-      Object'Max_Size_In_Storage_Elements);
+   type Object_Storage is
+      new Storage_Elements.Storage_Array (
+         1 ..
+         Object'Max_Size_In_Storage_Elements);
    for Object_Storage'Alignment use Standard'Maximum_Alignment;
    --  Object'Alignment or Object'Size are not static expression...
    pragma Suppress_Initialization (Object_Storage);
