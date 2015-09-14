@@ -47,7 +47,7 @@ package Ada.Strings.Maps.Constants is
    pragma Inline (Private_Use_Set);
    pragma Inline (Surrogate_Set);
 
-   --  relation of constants for Latin-1 in RM A.3.2
+   --  The relation of constants for Latin-1 in RM A.3.2:
    --
    --  + all characters
    --     + Graphic
@@ -61,7 +61,7 @@ package Ada.Strings.Maps.Constants is
    --  * Hexadecimal_Digit = Decimal_Digit + ('A' .. 'F' | 'a' .. 'f')
    --  * Basic = Letter without modifier(s)
    --
-   --  constants are modified for Unicode
+   --  They are extended for Unicode:
    --
    --  + all characters
    --     + Unassigned (Cn + (16#110000# .. Character'Last))
@@ -89,7 +89,7 @@ package Ada.Strings.Maps.Constants is
    --  * Basic = unimplemented
 
 --  Control_Set : constant Character_Set;
-   --  (Control_Set is declared as unicode category in above)
+      --  Control_Set is declared as unicode category in above.
 --  Graphic_Set : constant Character_Set;
    function Graphic_Set return Character_Set;
 --  Letter_Set : constant Character_Set;
@@ -97,15 +97,16 @@ package Ada.Strings.Maps.Constants is
 --  Lower_Set : constant Character_Set;
    function Lower_Set return Character_Set
       renames Lowercase_Letter_Set;
-   --  (Lower_Set is extended for all unicode characters)
+      --  Note: Lower_Set is extended for all unicode characters.
 --  Upper_Set : constant Character_Set;
    function Upper_Set return Character_Set
       renames Uppercase_Letter_Set;
-   --  (Upper_Set is extended for all unicode characters)
+      --  Note: Upper_Set is extended for all unicode characters.
 --  Basic_Set : constant Character_Set;
    function Decimal_Digit_Set return Character_Set;
+      --  Note: Decimal_Digit_Set is NOT extended for parsing.
    function Hexadecimal_Digit_Set return Character_Set;
-   --  (Decimal_Digit_Set, Hexadecimal_Digit_Set are NOT extended, for parsing)
+      --  Note: Hexadecimal_Digit_Set is NOT extended for parsing.
 --  Alphanumeric_Set : constant Character_Set;
    function Alphanumeric_Set return Character_Set;
 --  Special_Set : constant Character_Set;
@@ -123,14 +124,14 @@ package Ada.Strings.Maps.Constants is
 
 --  Lower_Case_Map : constant Character_Mapping;
    function Lower_Case_Map return Character_Mapping;
-   --  Maps to lower case for letters, else identity
-   --  (Lower_Case_Map is extended for all unicode characters)
+      --  Maps to lower case for letters, else identity
+      --  Note: Lower_Case_Map is extended for all unicode characters.
 --  Upper_Case_Map : constant Character_Mapping;
    function Upper_Case_Map return Character_Mapping;
-   --  Maps to upper case for letters, else identity
-   --  (Upper_Case_Map is extended for all unicode characters)
+      --  Maps to upper case for letters, else identity
+      --  Note: Upper_Case_Map is extended for all unicode characters.
 --  Basic_Map : constant Character_Mapping;
-   --  Maps to basic letter for letters, else identity
+      --  Maps to basic letter for letters, else identity
    --  extended
    function Case_Folding_Map return Character_Mapping;
 

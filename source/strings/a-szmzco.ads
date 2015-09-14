@@ -39,7 +39,7 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
       renames Maps.Constants.Surrogate_Set;
 
 --  Control_Set : constant Wide_Wide_Character_Set;
-   --  (Control_Set is declared as unicode category in above)
+      --  Control_Set is declared as unicode category in above.
 --  Graphic_Set : constant Wide_Wide_Character_Set;
    function Graphic_Set return Wide_Wide_Character_Set
       renames Maps.Constants.Graphic_Set;
@@ -49,17 +49,18 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
 --  Lower_Set : constant Wide_Wide_Character_Set;
    function Lower_Set return Wide_Wide_Character_Set
       renames Lowercase_Letter_Set;
-   --  (Lower_Set is extended for all unicode characters)
+      --  Note: Lower_Set is extended for all unicode characters.
 --  Upper_Set : constant Wide_Wide_Character_Set;
    function Upper_Set return Wide_Wide_Character_Set
       renames Uppercase_Letter_Set;
-   --  (Upper_Set is extended for all unicode characters)
+      --  Note: Upper_Set is extended for all unicode characters.
 --  Basic_Set : constant Wide_Wide_Character_Set;
    function Decimal_Digit_Set return Wide_Wide_Character_Set
       renames Maps.Constants.Decimal_Digit_Set;
+      --  Note: Decimal_Digit_Set is NOT extended for parsing.
    function Hexadecimal_Digit_Set return Wide_Wide_Character_Set
       renames Maps.Constants.Hexadecimal_Digit_Set;
-   --  (Decimal_Digit_Set, Hexadecimal_Digit_Set are NOT extended, for parsing)
+      --  Note: Hexadecimal_Digit_Set is NOT extended for parsing.
 --  Alphanumeric_Set : constant Wide_Wide_Character_Set;
    function Alphanumeric_Set return Wide_Wide_Character_Set
       renames Maps.Constants.Alphanumeric_Set;
@@ -73,15 +74,15 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
 --  Lower_Case_Map : constant Wide_Wide_Character_Mapping;
    function Lower_Case_Map return Wide_Wide_Character_Mapping
       renames Maps.Constants.Lower_Case_Map;
-   --  Maps to lower case for letters, else identity
-   --  (Lower_Case_Map is extended for all unicode characters)
+      --  Maps to lower case for letters, else identity
+      --  Note: Lower_Case_Map is extended for all unicode characters.
 --  Upper_Case_Map : constant Wide_Wide_Character_Mapping;
    function Upper_Case_Map return Wide_Wide_Character_Mapping
       renames Maps.Constants.Upper_Case_Map;
-   --  Maps to upper case for letters, else identity
-   --  (Upper_Case_Map is extended for all unicode characters)
+      --  Maps to upper case for letters, else identity
+      --  Note: Upper_Case_Map is extended for all unicode characters.
 --  Basic_Map : constant Wide_Wide_Character_Mapping;
-   --  Maps to basic letter for letters, else identity
+      --  Maps to basic letter for letters, else identity
 
    --  extended
    function Case_Folding_Map return Wide_Wide_Character_Mapping
@@ -92,14 +93,15 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
 --  Character_Set : constant Wide_Wide_Maps.Wide_Wide_Character_Set;
    function Character_Set return Wide_Wide_Character_Set
       renames ISO_646_Set;
-   --  Contains each Wide_Wide_Character value WWC such that
-   --  Characters.Conversions.Is_Character(WWC) is True
-   --  (Character_Set is excluded 16#7F# .. 16#FF#)
+      --  Contains each Wide_Wide_Character value WWC such that
+      --  Characters.Conversions.Is_Character(WWC) is True
+      --  Note: (16#7F# .. 16#FF#) is excluded from Character_Set.
 --  Wide_Character_Set : constant Wide_Wide_Maps.Wide_Wide_Character_Set;
    function Wide_Character_Set return Wide_Wide_Character_Set;
-   --  Contains each Wide_Wide_Character value WWC such that
-   --  Characters.Conversions.Is_Wide_Character(WWC) is True
-   --  (Wide_Character_Set is excluded surrogate pair)
+      --  Contains each Wide_Wide_Character value WWC such that
+      --  Characters.Conversions.Is_Wide_Character(WWC) is True
+      --  Note: The range of surrogate pair is excluded
+      --    from Wide_Character_Set.
 
    pragma Inline (Wide_Character_Set);
 

@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 with System.Packed_Arrays;
 package System.Pack_10 is
    pragma Preelaborate;
-   --  if this is Pure, subprograms would become __attribute__((const)).
+      --  It can not be Pure, subprograms would become __attribute__((const)).
 
    type Bits_10 is mod 2 ** 10;
    for Bits_10'Size use 10;

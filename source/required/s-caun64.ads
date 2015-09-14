@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 with System.Packed_Arrays;
 package System.Compare_Array_Unsigned_64 is
    pragma Preelaborate;
-   --  if this is Pure, subprograms would become __attribute__((const)).
+      --  It can not be Pure, subprograms would become __attribute__((const)).
 
    type Unsigned_64 is mod 2 ** 64;
    for Unsigned_64'Size use 64;

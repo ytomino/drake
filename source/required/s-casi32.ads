@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 with System.Packed_Arrays;
 package System.Compare_Array_Signed_32 is
    pragma Preelaborate;
-   --  if this is Pure, subprograms would become __attribute__((const)).
+      --  It can not be Pure, subprograms would become __attribute__((const)).
 
    type Integer_32 is range -2 ** 31 .. 2 ** 31 - 1;
    for Integer_32'Size use 32;

@@ -22,14 +22,14 @@ package Ada.Directories.Information is
    function Permission_Set (Name : String) return Permission_Set_Type;
 
    function Owner (Name : String) return String;
-   --  Returns the image of the User_Id. If a definition of User_Id
-   --  is available, an implementation-defined version of Owner
-   --  returning User_Id should also be defined.
+      --  Returns the image of the User_Id. If a definition of User_Id
+      --    is available, an implementation-defined version of Owner
+      --    returning User_Id should also be defined.
 
    function Group (Name : String) return String;
-   --  Returns the image of the Group_Id. If a definition of Group_Id
-   --  is available, an implementation-defined version of Group
-   --  returning Group_Id should also be defined.
+      --  Returns the image of the Group_Id. If a definition of Group_Id
+      --    is available, an implementation-defined version of Group
+      --    returning Group_Id should also be defined.
 
    function Is_Block_Special_File (Name : String) return Boolean;
 
@@ -56,12 +56,12 @@ package Ada.Directories.Information is
    function Owner (
       Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return String;
-   --  See Owner above.
+      --  See Owner above.
 
    function Group (
       Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return String;
-   --  See Group above.
+      --  See Group above.
 
    function Is_Block_Special_File (
       Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type

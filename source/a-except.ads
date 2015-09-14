@@ -41,13 +41,13 @@ package Ada.Exceptions is
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id;
    function Exception_Name (X : Exception_Occurrence) return String;
-   --  Same as Exception_Name (Exception_Identity (X)).
+      --  Same as Exception_Name (Exception_Identity (X)).
    function Wide_Exception_Name (X : Exception_Occurrence)
       return Wide_String;
-   --  Same as Wide_Exception_Name (Exception_Identity (X)).
+      --  Same as Wide_Exception_Name (Exception_Identity (X)).
    function Wide_Wide_Exception_Name (X : Exception_Occurrence)
       return Wide_Wide_String;
-   --  Same as Wide_Wide_Exception_Name (Exception_Identity (X)).
+      --  Same as Wide_Wide_Exception_Name (Exception_Identity (X)).
    function Exception_Information (X : Exception_Occurrence) return String;
 
    procedure Save_Occurrence (

@@ -23,7 +23,7 @@ package Ada.Strings.Maps is
       Low : Character;
       High : Character;
    end record;
-   --  Represents Character range Low..High
+      --  Represents Character range Low..High
 
    type Character_Ranges is array (Positive range <>) of Character_Range;
 

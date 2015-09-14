@@ -18,8 +18,8 @@ package Ada.Environment_Encoding.Encoding_Streams is
       Decoder : Converter; -- Open_Converter
       Stream : not null access Streams.Root_Stream_Type'Class)
       return In_Type;
-   --  The parameter Decoder is neither access nor aliased for derived types.
-   --  The same applies hereafter.
+      --  The parameter Decoder is neither access nor aliased
+      --    for derived types. The same applies hereafter.
    function Is_Open (Object : In_Type) return Boolean;
 
    pragma Inline (Is_Open);

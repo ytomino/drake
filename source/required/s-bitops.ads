@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  implementation unit required by compiler
 package System.Bit_Ops is
    pragma Preelaborate;
-   --  if this is Pure, subprograms would become __attribute__((const))
+      --  It can not be Pure, subprograms would become __attribute__((const)).
 
    --  required for "=" packed boolean array by compiler (s-bitop.ads)
    function Bit_Eq (

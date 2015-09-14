@@ -5,11 +5,11 @@ package Ada.Characters.Handling is
    pragma Preelaborate; -- use mapping
 
    --  Note: These functions for single Character raise Constraint_Error for
-   --      16#80# .. 16#FF#.
-   --    If you want to handle full-unicode, use Wide_Wide_Character.
-   --    If you want to handle ISO_646, use ASCII.Handling.
-   --    If you want to handle latin-1, sorry
-   --      this runtime can not handle the code incompatible with unicode.
+   --    16#80# .. 16#FF#.
+   --  If you want to handle full-unicode, use Wide_Wide_Character.
+   --  If you want to handle ISO_646, use ASCII.Handling.
+   --  If you want to handle latin-1, sorry
+   --    this runtime can not handle the code incompatible with unicode.
 
    --  Character classification functions
 

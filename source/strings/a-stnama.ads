@@ -117,6 +117,5 @@ private
 
    procedure Sort (From, To : in out Character_Sequence);
    procedure Sort (From, To : in out Character_Sequence; Last : out Natural);
-   --  From'First = To'First
 
 end Ada.Strings.Naked_Maps;

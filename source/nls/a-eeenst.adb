@@ -42,8 +42,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    procedure Set_Substitute_To_Reading_Converter (
       Object : in out Converter;
       Substitute : Streams.Stream_Element_Array)
-      renames Set_Substitute;
-   --  inherited from System.Native_Environment_Encoding.Set_Substitute
+      renames Set_Substitute; -- inherited
 
    procedure Read (
       Stream : not null access Streams.Root_Stream_Type'Class;

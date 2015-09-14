@@ -6,7 +6,9 @@ package System.Terminal_Colors is
    pragma Preelaborate;
 
    type Color is mod 16;
-   --  BLUE(1), GREEN(2), RED(4), INTENSITY(8)
+
+   --  Note: Color represents
+   --    a combination of BLUE(1), GREEN(2), RED(4) or INTENSITY(8).
 
    function RGB_To_Color (Item : Ada.Colors.RGB) return Color;
 

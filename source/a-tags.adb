@@ -255,7 +255,7 @@ package body Ada.Tags is
          null; -- nested
       else
          System.Shared_Locking.Enter;
-         E_Insert (External_Map, T, Result); -- library level
+         E_Insert (External_Map, T, Result); -- library-level
          System.Shared_Locking.Leave;
       end if;
       return Result;

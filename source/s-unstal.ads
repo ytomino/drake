@@ -5,7 +5,7 @@ package System.Unbounded_Stack_Allocators is
    pragma Preelaborate;
 
    subtype Allocator_Type is Address;
-   --  instead of Block_Access, for Runtime_Context and Secondary_Stack
+      --  instead of Block_Access, for Runtime_Context and Secondary_Stack
 
    procedure Allocate (
       Allocator : aliased in out Allocator_Type;

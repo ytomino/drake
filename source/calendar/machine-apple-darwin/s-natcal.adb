@@ -5,7 +5,8 @@ package body System.Native_Calendar is
    use type C.signed_long;
 
    Diff : constant := 5680281600.0;
-   --  seconds from 1970-01-01 (0 of POSIX time) to 2150-01-01 (0 of Ada time)
+      --  seconds from 1970-01-01 (0 of POSIX time)
+      --    to 2150-01-01 (0 of Ada time)
 
    --  implementation
 

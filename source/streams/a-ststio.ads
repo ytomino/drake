@@ -37,7 +37,7 @@ package Ada.Streams.Stream_IO is
 --  type Count is range 0 .. implementation-defined;
    subtype Count is Stream_Element_Count;
    subtype Positive_Count is Count range 1 .. Count'Last;
-   --  Index into file, in stream elements
+      --  Index into file, in stream elements
 
    --  modified
    procedure Create (
@@ -114,7 +114,7 @@ package Ada.Streams.Stream_IO is
    function Stream (
       File : File_Type) -- Open_File_Type
       return Stream_Access;
-   --  Return stream access for use with T'Input and T'Output
+      --  Return stream access for use with T'Input and T'Output
    pragma Inline (Stream);
 
    --  Read array of stream elements from file

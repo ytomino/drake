@@ -20,7 +20,7 @@ package System.Native_Tasks is
 
    subtype Thread_Body_Type is C.winbase.PTHREAD_START_ROUTINE;
    pragma Convention_Identifier (Thread_Body_CC, WINAPI);
-   --  stdcall convention on 32bit, or C convention on 64bit
+      --  WINAPI is stdcall convention on 32bit, or C convention on 64bit.
 
    procedure Create (
       Handle : aliased out Handle_Type;

@@ -4,8 +4,8 @@ private with Ada.Tags;
 package System.Storage_Pools.Overlaps is
    pragma Preelaborate;
 
-   type Overlay_Pool is limited new Root_Storage_Pool with null record;
-   --  actually, an allocation address is stored in TLS
+   type Overlay_Pool is limited new Root_Storage_Pool with
+      null record; -- Actually, an allocation address is stored in TLS.
    pragma Finalize_Storage_Only (Overlay_Pool);
 
    procedure Set_Address (Storage_Address : Address);
@@ -30,9 +30,11 @@ package System.Storage_Pools.Overlaps is
    pragma Inline (Storage_Size);
 
    Pool : constant not null access Overlay_Pool;
-   --  if a local pool is declared, all objects belongs to the local scope,
-   --  then those be finalized when the local pool is out of scope...
-   --  therefore it should use global pool
+
+   --  Note: If it is declared as a local pool, Any objects allocated from it
+   --    will be finalized when the local pool is out of scope,
+   --    because the objects also belongs to the same scope.
+   --  Therefore it should be declared in library-level.
 
 private
 
