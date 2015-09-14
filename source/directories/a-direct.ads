@@ -211,6 +211,15 @@ package Ada.Directories is
       Search : in out Search_Type; -- Open_Search_Type
       Directory_Entry : out Directory_Entry_Type);
 
+   --  extended
+   --  Get Directory_Entry_Type of one file to get plural information.
+   procedure Get_Entry (
+      Name : String;
+      Directory_Entry : out Directory_Entry_Type);
+   function Get_Entry (
+      Name : String)
+      return Directory_Entry_Type;
+
    --  modified
    procedure Search (
       Directory : String;
@@ -344,7 +353,7 @@ private
 
    type Non_Controlled_Directory_Entry_Type is record
       Path : String_Access;
-      Directory_Entry :
+      Directory_Entry : aliased
          System.Native_Directories.Searching.Directory_Entry_Access;
       Additional : aliased
          System.Native_Directories.Searching.Directory_Entry_Additional_Type;

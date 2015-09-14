@@ -51,6 +51,12 @@ package System.Native_Directories.Searching is
       Directory_Entry : out Directory_Entry_Access;
       Has_Next_Entry : out Boolean);
 
+   procedure Get_Entry (
+      Directory : String;
+      Name : String;
+      Directory_Entry : aliased out Directory_Entry_Access; -- allocated
+      Additional : aliased in out Directory_Entry_Additional_Type);
+
    function Simple_Name (Directory_Entry : not null Directory_Entry_Access)
       return String;
 
