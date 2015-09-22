@@ -327,6 +327,15 @@ package body Ada.Directories is
       end if;
    end Get_Next_Entry;
 
+   function Get_Next_Entry (
+      Search : aliased in out Search_Type)
+      return Directory_Entry_Type is
+   begin
+      return Result : Directory_Entry_Type do
+         Get_Next_Entry (Search, Result);
+      end return;
+   end Get_Next_Entry;
+
    procedure Get_Entry (
       Name : String;
       Directory_Entry : out Directory_Entry_Type)

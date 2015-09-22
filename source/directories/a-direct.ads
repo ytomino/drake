@@ -210,6 +210,11 @@ package Ada.Directories is
    procedure Get_Next_Entry (
       Search : in out Search_Type; -- Open_Search_Type
       Directory_Entry : out Directory_Entry_Type);
+   --  extended
+   --  The function version of Get_Next_Entry.
+   function Get_Next_Entry (
+      Search : aliased in out Search_Type) -- Open_Search_Type
+      return Directory_Entry_Type;
 
    --  extended
    --  Get Directory_Entry_Type of one file to get plural information.
