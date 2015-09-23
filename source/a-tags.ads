@@ -262,13 +262,6 @@ private
 --    Offset_Value : System.Storage_Elements.Storage_Offset;
 --    Offset_Func : Offset_To_Top_Function_Ptr);
 
-   --  inheritance relation check
-   function Is_Descendant (
-      Descendant, Ancestor : Tag;
-      Primary_Only : Boolean;
-      Same_Level : Boolean)
-      return Boolean;
-
    --  interface delegation
 
    type Get_Delegation_Handler is access function (

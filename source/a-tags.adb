@@ -123,6 +123,60 @@ package body Ada.Tags is
       end if;
    end DT_With_Checking;
 
+   --  inheritance relation check
+   function Is_Descendant (
+      Descendant, Ancestor : Tag;
+      Primary_Only : Boolean;
+      Same_Level : Boolean)
+      return Boolean;
+   function Is_Descendant (
+      Descendant, Ancestor : Tag;
+      Primary_Only : Boolean;
+      Same_Level : Boolean)
+      return Boolean
+   is
+      D_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Descendant);
+      A_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Ancestor);
+      D_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (D_DT.TSD);
+      A_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (A_DT.TSD);
+   begin
+      if Same_Level and then D_TSD.Access_Level /= A_TSD.Access_Level then
+         return False;
+      else
+         case A_DT.Signature is
+            when Primary_DT => -- tagged record
+               declare
+                  Offset : constant Integer := D_TSD.Idepth - A_TSD.Idepth;
+               begin
+                  return Offset >= 0
+                     and then D_TSD.Tags_Table (Offset) = Ancestor;
+               end;
+            when Secondary_DT | Unknown => -- interface
+               if Primary_Only then
+                  return False;
+               else
+                  declare
+                     Intf_Table : constant Interface_Data_Ptr :=
+                        D_TSD.Interfaces_Table;
+                  begin
+                     if Intf_Table /= null then
+                        for Id in 1 .. Intf_Table.Nb_Ifaces loop
+                           if Intf_Table.Ifaces_Table (Id).Iface_Tag =
+                              Ancestor
+                           then
+                              return True;
+                           end if;
+                        end loop;
+                     end if;
+                     return False;
+                  end;
+               end if;
+         end case;
+      end if;
+   end Is_Descendant;
+
    --  implementation
 
    function Base_Address (This : System.Address) return System.Address is
@@ -349,54 +403,6 @@ package body Ada.Tags is
    begin
       return TSD.Type_Is_Abstract;
    end Is_Abstract;
-
-   function Is_Descendant (
-      Descendant, Ancestor : Tag;
-      Primary_Only : Boolean;
-      Same_Level : Boolean)
-      return Boolean
-   is
-      D_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Descendant);
-      A_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Ancestor);
-      D_TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (D_DT.TSD);
-      A_TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (A_DT.TSD);
-   begin
-      if Same_Level and then D_TSD.Access_Level /= A_TSD.Access_Level then
-         return False;
-      else
-         case A_DT.Signature is
-            when Primary_DT => -- tagged record
-               declare
-                  Offset : constant Integer := D_TSD.Idepth - A_TSD.Idepth;
-               begin
-                  return Offset >= 0
-                     and then D_TSD.Tags_Table (Offset) = Ancestor;
-               end;
-            when Secondary_DT | Unknown => -- interface
-               if Primary_Only then
-                  return False;
-               else
-                  declare
-                     Intf_Table : constant Interface_Data_Ptr :=
-                        D_TSD.Interfaces_Table;
-                  begin
-                     if Intf_Table /= null then
-                        for Id in 1 .. Intf_Table.Nb_Ifaces loop
-                           if Intf_Table.Ifaces_Table (Id).Iface_Tag =
-                              Ancestor
-                           then
-                              return True;
-                           end if;
-                        end loop;
-                     end if;
-                     return False;
-                  end;
-               end if;
-         end case;
-      end if;
-   end Is_Descendant;
 
    function Is_Descendant_At_Same_Level (Descendant, Ancestor : Tag)
       return Boolean is
