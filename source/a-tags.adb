@@ -135,8 +135,8 @@ package body Ada.Tags is
       Same_Level : Boolean)
       return Boolean
    is
-      D_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Descendant);
-      A_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Ancestor);
+      D_DT : constant Dispatch_Table_Ptr := DT (Descendant);
+      A_DT : constant Dispatch_Table_Ptr := DT (Ancestor);
       D_TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (D_DT.TSD);
       A_TSD : constant Type_Specific_Data_Ptr :=
@@ -209,6 +209,9 @@ package body Ada.Tags is
    function Descendant_Tag (External : String; Ancestor : Tag) return Tag is
       Result : constant Tag := Internal_Tag (External);
    begin
+      if Ancestor = No_Tag then
+         Raise_Exception (Tag_Error'Identity);
+      end if;
       if not Is_Descendant (
          Result,
          Ancestor,
@@ -407,6 +410,9 @@ package body Ada.Tags is
    function Is_Descendant_At_Same_Level (Descendant, Ancestor : Tag)
       return Boolean is
    begin
+      if Descendant = No_Tag or else Ancestor = No_Tag then
+         Raise_Exception (Tag_Error'Identity);
+      end if;
       return Is_Descendant (
          Descendant,
          Ancestor,
@@ -442,7 +448,7 @@ package body Ada.Tags is
    end IW_Membership;
 
    function Needs_Finalization (T : Tag) return Boolean is
-      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      DT : constant Dispatch_Table_Ptr := Tags.DT (T);
       TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT.TSD);
    begin
