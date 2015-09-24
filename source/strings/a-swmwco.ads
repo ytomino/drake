@@ -55,9 +55,11 @@ package Ada.Strings.Wide_Maps.Wide_Constants is
       renames Uppercase_Letter_Set;
       --  Note: Upper_Set is extended for all unicode characters.
 --  Basic_Set : constant Wide_Character_Set;
+--  Decimal_Digit_Set : constant Wide_Character_Set;
    function Decimal_Digit_Set return Wide_Character_Set
       renames Maps.Constants.Decimal_Digit_Set;
       --  Note: Decimal_Digit_Set is NOT extended for parsing.
+--  Hexadecimal_Digit_Set : constant Wide_Character_Set;
    function Hexadecimal_Digit_Set return Wide_Character_Set
       renames Maps.Constants.Hexadecimal_Digit_Set;
       --  Note: Hexadecimal_Digit_Set is NOT extended for parsing.
@@ -81,12 +83,12 @@ package Ada.Strings.Wide_Maps.Wide_Constants is
       renames Maps.Constants.Upper_Case_Map;
       --  Maps to upper case for letters, else identity
       --  Note: Upper_Case_Map is extended for all unicode characters.
---  Basic_Map : constant Wide_Character_Mapping;
-      --  Maps to basic letter for letters, else identity
-
-   --  extended
+   --  extended from here
    function Case_Folding_Map return Wide_Character_Mapping
       renames Maps.Constants.Case_Folding_Map;
+   --  to here
+--  Basic_Map : constant Wide_Character_Mapping;
+      --  Maps to basic letter for letters, else identity
 
    --  RM A.4.7
 

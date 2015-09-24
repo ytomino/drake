@@ -103,8 +103,10 @@ package Ada.Strings.Maps.Constants is
       renames Uppercase_Letter_Set;
       --  Note: Upper_Set is extended for all unicode characters.
 --  Basic_Set : constant Character_Set;
+--  Decimal_Digit_Set : constant Character_Set;
    function Decimal_Digit_Set return Character_Set;
       --  Note: Decimal_Digit_Set is NOT extended for parsing.
+--  Hexadecimal_Digit_Set : constant Character_Set;
    function Hexadecimal_Digit_Set return Character_Set;
       --  Note: Hexadecimal_Digit_Set is NOT extended for parsing.
 --  Alphanumeric_Set : constant Character_Set;
@@ -130,10 +132,11 @@ package Ada.Strings.Maps.Constants is
    function Upper_Case_Map return Character_Mapping;
       --  Maps to upper case for letters, else identity
       --  Note: Upper_Case_Map is extended for all unicode characters.
+   --  extended from here
+   function Case_Folding_Map return Character_Mapping;
+   --  to here
 --  Basic_Map : constant Character_Mapping;
       --  Maps to basic letter for letters, else identity
-   --  extended
-   function Case_Folding_Map return Character_Mapping;
 
    pragma Inline (Lower_Case_Map);
    pragma Inline (Upper_Case_Map);

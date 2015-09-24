@@ -40,10 +40,11 @@ package Ada.Characters.Handling is
 
    function To_Lower (Item : Character) return Character;
    function To_Upper (Item : Character) return Character;
---  function To_Basic (Item : Character) return Character;
-   --  extended
+   --  extended from here
    --  Unicode case folding for comparison.
    function To_Case_Folding (Item : Character) return Character;
+   --  to here
+--  function To_Basic (Item : Character) return Character;
 
    pragma Inline (To_Lower);
    pragma Inline (To_Upper);
@@ -51,9 +52,10 @@ package Ada.Characters.Handling is
 
    function To_Lower (Item : String) return String;
    function To_Upper (Item : String) return String;
---  function To_Basic (Item : String) return String;
-   --  extended
+   --  extended from here
    function To_Case_Folding (Item : String) return String;
+   --  to here
+--  function To_Basic (Item : String) return String;
 
    pragma Inline (To_Lower);
    pragma Inline (To_Upper);
