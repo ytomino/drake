@@ -72,5 +72,11 @@ begin
 			end if;
 		end;
 	end loop;
+	pragma Assert (not Ada.Strings.Maps.Is_In (ASCII.NUL, Ada.Strings.Maps.Constants.Basic_Set));
+	pragma Assert (not Ada.Strings.Maps.Is_In ('/', Ada.Strings.Maps.Constants.Basic_Set));
+	pragma Assert (Ada.Strings.Maps.Is_In ('A', Ada.Strings.Maps.Constants.Basic_Set));
+	pragma Assert (not Ada.Strings.Maps.Overloaded_Is_In (Wide_Wide_Character'Val (16#FF#), Ada.Strings.Maps.Constants.Basic_Set));
+	pragma Assert (Ada.Strings.Maps.Constants.Basic_Set <= Ada.Strings.Maps.Constants.Letter_Set);
+	pragma Assert (Ada.Strings.Maps.Constants.Basic_Set <= Ada.Strings.Maps.Constants.Base_Set);
 	pragma Debug (Ada.Debug.Put ("OK"));
 end charset;

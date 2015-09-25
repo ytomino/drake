@@ -1,5 +1,7 @@
 pragma License (Unrestricted);
 private with Ada.Strings.Maps.Naked;
+private with Ada.Strings.Naked_Maps.Basic;
+private with Ada.Strings.Naked_Maps.Canonical_Composites;
 private with Ada.Strings.Naked_Maps.Case_Folding;
 private with Ada.Strings.Naked_Maps.Case_Mapping;
 private with Ada.Strings.Naked_Maps.General_Category;
@@ -47,6 +49,9 @@ package Ada.Strings.Maps.Constants is
    pragma Inline (Private_Use_Set);
    pragma Inline (Surrogate_Set);
 
+   function Base_Set return Character_Set;
+   pragma Inline (Base_Set);
+
    --  The relation of constants for Latin-1 in RM A.3.2:
    --
    --  + all characters
@@ -86,7 +91,11 @@ package Ada.Strings.Maps.Constants is
    --     + Private_Use (Co)
    --     + Surrogate (Cs)
    --  * Hexadecimal_Digit = Decimal_Digit + ('A' .. 'F' | 'a' .. 'f')
-   --  * Basic = unimplemented
+   --  * Base = not decomposable
+   --  * Basic = Letter * Base
+   --
+   --  Note: Basic_Set and Basic_Map are confused operation in Unicode.
+   --  Use Letter_Set, Base_Set or Base_Map instead of them.
 
 --  Control_Set : constant Character_Set;
       --  Control_Set is declared as unicode category in above.
@@ -103,6 +112,8 @@ package Ada.Strings.Maps.Constants is
       renames Uppercase_Letter_Set;
       --  Note: Upper_Set is extended for all unicode characters.
 --  Basic_Set : constant Character_Set;
+   function Basic_Set return Character_Set;
+      --  Note: Basic_Set is extended for all unicode characters.
 --  Decimal_Digit_Set : constant Character_Set;
    function Decimal_Digit_Set return Character_Set;
       --  Note: Decimal_Digit_Set is NOT extended for parsing.
@@ -118,6 +129,7 @@ package Ada.Strings.Maps.Constants is
 
    pragma Inline (Graphic_Set);
    pragma Inline (Letter_Set);
+   pragma Inline (Basic_Set);
    pragma Inline (Decimal_Digit_Set);
    pragma Inline (Hexadecimal_Digit_Set);
    pragma Inline (Alphanumeric_Set);
@@ -134,13 +146,18 @@ package Ada.Strings.Maps.Constants is
       --  Note: Upper_Case_Map is extended for all unicode characters.
    --  extended from here
    function Case_Folding_Map return Character_Mapping;
+   function Base_Map return Character_Mapping;
    --  to here
 --  Basic_Map : constant Character_Mapping;
+   function Basic_Map return Character_Mapping;
       --  Maps to basic letter for letters, else identity
+      --  Note: Basic_Map is extended for all unicode characters.
 
    pragma Inline (Lower_Case_Map);
    pragma Inline (Upper_Case_Map);
    pragma Inline (Case_Folding_Map);
+   pragma Inline (Base_Map);
+   pragma Inline (Basic_Map);
 
 private
 
@@ -219,6 +236,11 @@ private
    function Surrogate_Set return Character_Set
       renames Surrogate_Set_Body;
 
+   function Base_Set_Body is
+      new Maps.Naked.To_Set (Naked_Maps.Canonical_Composites.Base_Set);
+   function Base_Set return Character_Set
+      renames Base_Set_Body;
+
    function Graphic_Set_Body is
       new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Graphic_Set);
    function Graphic_Set return Character_Set
@@ -228,6 +250,11 @@ private
       new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Letter_Set);
    function Letter_Set return Character_Set
       renames Letter_Set_Body;
+
+   function Basic_Set_Body is
+      new Maps.Naked.To_Set (Naked_Maps.Basic.Basic_Set);
+   function Basic_Set return Character_Set
+      renames Basic_Set_Body;
 
    function Decimal_Digit_Set_Body is
       new Maps.Naked.To_Set (Naked_Maps.Set_Constants.Decimal_Digit_Set);
@@ -268,5 +295,15 @@ private
       new Maps.Naked.To_Mapping (Naked_Maps.Case_Folding.Case_Folding_Map);
    function Case_Folding_Map return Character_Mapping
       renames Case_Folding_Map_Body;
+
+   function Base_Map_Body is
+      new Maps.Naked.To_Mapping (Naked_Maps.Canonical_Composites.Base_Map);
+   function Base_Map return Character_Mapping
+      renames Base_Map_Body;
+
+   function Basic_Map_Body is
+      new Maps.Naked.To_Mapping (Naked_Maps.Basic.Basic_Map);
+   function Basic_Map return Character_Mapping
+      renames Basic_Map_Body;
 
 end Ada.Strings.Maps.Constants;

@@ -1,3 +1,4 @@
+with Ada.Strings.Naked_Maps.Basic;
 with Ada.Strings.Naked_Maps.Case_Folding;
 with Ada.Strings.Naked_Maps.Case_Mapping;
 with Ada.Strings.Naked_Maps.General_Category;
@@ -88,6 +89,13 @@ package body Ada.Characters.Handling is
          Item);
    end To_Case_Folding;
 
+   function To_Basic (Item : Character) return Character is
+   begin
+      return Strings.Naked_Maps.Value (
+         Strings.Naked_Maps.Basic.Basic_Map.all,
+         Item);
+   end To_Basic;
+
    function To_Lower (Item : String) return String is
       Result : String (
          1 ..
@@ -129,6 +137,20 @@ package body Ada.Characters.Handling is
          Last);
       return Result (1 .. Last);
    end To_Case_Folding;
+
+   function To_Basic (Item : String) return String is
+      Result : String (
+         1 ..
+         Item'Length * Conversions.Max_Length_In_String); -- only one character
+      Last : Natural;
+   begin
+      Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Basic.Basic_Map.all,
+         Result,
+         Last);
+      return Result (1 .. Last);
+   end To_Basic;
 
    function Is_ISO_646 (Item : Character) return Boolean is
    begin

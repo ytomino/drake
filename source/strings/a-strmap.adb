@@ -136,40 +136,6 @@ package body Ada.Strings.Maps is
       end loop;
    end Sub;
 
-   --  "*"/and operation
-   procedure Mul (
-      Result : in out Naked_Maps.Character_Ranges;
-      Last : out Natural;
-      Left, Right : Naked_Maps.Character_Ranges);
-   procedure Mul (
-      Result : in out Naked_Maps.Character_Ranges;
-      Last : out Natural;
-      Left, Right : Naked_Maps.Character_Ranges)
-   is
-      I : Positive := Left'First;
-      J : Positive := Right'First;
-   begin
-      Last := Result'First - 1;
-      while I <= Left'Last and then J <= Right'Last loop
-         if Left (I).High < Right (J).Low then
-            I := I + 1;
-         elsif Right (J).High < Left (I).Low then
-            J := J + 1;
-         else
-            Last := Last + 1;
-            Result (Last).Low :=
-               Wide_Wide_Character'Max (Left (I).Low, Right (J).Low);
-            Result (Last).High :=
-               Wide_Wide_Character'Min (Left (I).High, Right (J).High);
-            if Left (I).High < Right (J).High then
-               I := I + 1;
-            else
-               J := J + 1;
-            end if;
-         end if;
-      end loop;
-   end Mul;
-
    Full_Set_Data : aliased constant Set_Data := (
       Length => 1,
       Reference_Count => System.Reference_Counting.Static,
@@ -583,7 +549,7 @@ package body Ada.Strings.Maps is
                Left_Data.Length + Right_Data.Length);
             Last : Natural;
          begin
-            Mul (Items, Last, Left_Data.Items, Right_Data.Items);
+            Naked_Maps.Mul (Items, Last, Left_Data.Items, Right_Data.Items);
             if Last < Items'First then
                Data := Empty_Set_Data'Unrestricted_Access;
             else
@@ -681,7 +647,7 @@ package body Ada.Strings.Maps is
                X_Last,
                Left_Data.Items,
                Right_Data.Items);
-            Mul (Y, Y_Last, Left_Data.Items, Right_Data.Items);
+            Naked_Maps.Mul (Y, Y_Last, Left_Data.Items, Right_Data.Items);
             Sub (Items, Last, X (1 .. X_Last), Y (1 .. Y_Last));
             if Last < Items'First then
                Data := Empty_Set_Data'Unrestricted_Access;

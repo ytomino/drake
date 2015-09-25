@@ -160,6 +160,35 @@ package body Ada.Strings.Naked_Maps is
       end if;
    end Add;
 
+   procedure Mul (
+      Result : out Character_Ranges;
+      Last : out Natural;
+      Left, Right : Character_Ranges)
+   is
+      I : Positive := Left'First;
+      J : Positive := Right'First;
+   begin
+      Last := Result'First - 1;
+      while I <= Left'Last and then J <= Right'Last loop
+         if Left (I).High < Right (J).Low then
+            I := I + 1;
+         elsif Right (J).High < Left (I).Low then
+            J := J + 1;
+         else
+            Last := Last + 1;
+            Result (Last).Low :=
+               Wide_Wide_Character'Max (Left (I).Low, Right (J).Low);
+            Result (Last).High :=
+               Wide_Wide_Character'Min (Left (I).High, Right (J).High);
+            if Left (I).High < Right (J).High then
+               I := I + 1;
+            else
+               J := J + 1;
+            end if;
+         end if;
+      end loop;
+   end Mul;
+
    procedure Merge (
       Target : out Character_Ranges;
       Last : out Natural;

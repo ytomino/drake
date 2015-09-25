@@ -38,6 +38,10 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
    function Surrogate_Set return Wide_Wide_Character_Set
       renames Maps.Constants.Surrogate_Set;
 
+   --  extended
+   function Base_Set return Wide_Wide_Character_Set
+      renames Maps.Constants.Base_Set;
+
 --  Control_Set : constant Wide_Wide_Character_Set;
       --  Control_Set is declared as unicode category in above.
 --  Graphic_Set : constant Wide_Wide_Character_Set;
@@ -55,6 +59,9 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
       renames Uppercase_Letter_Set;
       --  Note: Upper_Set is extended for all unicode characters.
 --  Basic_Set : constant Wide_Wide_Character_Set;
+   function Basic_Set return Wide_Wide_Character_Set
+      renames Maps.Constants.Basic_Set;
+      --  Note: Basic_Set is extended for all unicode characters.
 --  Decimal_Digit_Set : constant Wide_Wide_Character_Set;
    function Decimal_Digit_Set return Wide_Wide_Character_Set
       renames Maps.Constants.Decimal_Digit_Set;
@@ -86,9 +93,14 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
    --  extended from here
    function Case_Folding_Map return Wide_Wide_Character_Mapping
       renames Maps.Constants.Case_Folding_Map;
+   function Base_Map return Wide_Wide_Character_Mapping
+      renames Maps.Constants.Base_Map;
    --  to here
 --  Basic_Map : constant Wide_Wide_Character_Mapping;
+   function Basic_Map return Wide_Wide_Character_Mapping
+      renames Maps.Constants.Basic_Map;
       --  Maps to basic letter for letters, else identity
+      --  Note: Basic_Map is extended for all unicode characters.
 
    --  RM A.4.8
 

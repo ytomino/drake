@@ -18,7 +18,8 @@ package Ada.Characters.Handling is
    function Is_Letter (Item : Character) return Boolean;
    function Is_Lower (Item : Character) return Boolean;
    function Is_Upper (Item : Character) return Boolean;
---  function Is_Basic (Item : Character) return Boolean;
+   function Is_Basic (Item : Character) return Boolean
+      renames Is_Letter; -- all letters are "basic" in ASCII
    function Is_Digit (Item : Character) return Boolean;
    function Is_Decimal_Digit (Item : Character) return Boolean
       renames Is_Digit;
@@ -31,6 +32,7 @@ package Ada.Characters.Handling is
    pragma Inline (Is_Letter);
    pragma Inline (Is_Lower);
    pragma Inline (Is_Upper);
+   pragma Inline (Is_Basic);
    pragma Inline (Is_Digit);
    pragma Inline (Is_Hexadecimal_Digit);
    pragma Inline (Is_Alphanumeric);
@@ -44,22 +46,24 @@ package Ada.Characters.Handling is
    --  Unicode case folding for comparison.
    function To_Case_Folding (Item : Character) return Character;
    --  to here
---  function To_Basic (Item : Character) return Character;
+   function To_Basic (Item : Character) return Character;
 
    pragma Inline (To_Lower);
    pragma Inline (To_Upper);
    pragma Inline (To_Case_Folding);
+   pragma Inline (To_Basic);
 
    function To_Lower (Item : String) return String;
    function To_Upper (Item : String) return String;
    --  extended from here
    function To_Case_Folding (Item : String) return String;
    --  to here
---  function To_Basic (Item : String) return String;
+   function To_Basic (Item : String) return String;
 
    pragma Inline (To_Lower);
    pragma Inline (To_Upper);
    pragma Inline (To_Case_Folding);
+   pragma Inline (To_Basic);
 
    --  Classifications of and conversions between Character and ISO 646
 

@@ -59,6 +59,13 @@ package Ada.Strings.Naked_Maps is
       Last : in out Natural;
       L, H : Character_Type);
 
+   --  "and"
+   procedure Mul (
+      Result : out Character_Ranges;
+      Last : out Natural;
+      Left, Right : Character_Ranges);
+
+   --  "or"
    procedure Merge (
       Target : out Character_Ranges;
       Last : out Natural;
