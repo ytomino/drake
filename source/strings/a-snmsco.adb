@@ -1,3 +1,5 @@
+pragma Check_Policy (Validate => Disable);
+--  with Ada.Strings.Naked_Maps.Debug;
 with Ada.Strings.Naked_Maps.General_Category;
 with System.Once;
 with System.Reference_Counting;
@@ -27,6 +29,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
          Length => 1,
          Reference_Count => System.Reference_Counting.Static,
          Items => (1 => ('0', '9')));
+      pragma Check (Validate, Debug.Valid (Decimal_Digit_Set_Data.all));
    end Decimal_Digit_Init;
 
    function Decimal_Digit_Set
@@ -49,6 +52,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
             Length => 3,
             Reference_Count => System.Reference_Counting.Static,
             Items => (('0', '9'), ('A', 'F'), ('a', 'f')));
+      pragma Check (Validate, Debug.Valid (Hexadecimal_Digit_Set_Data.all));
    end Hexadecimal_Digit_Init;
 
    function Hexadecimal_Digit_Set
@@ -71,6 +75,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
          Reference_Count => System.Reference_Counting.Static,
          Items => (
             1 => (Character_Type'Val (0), Character_Type'Val (16#7F#))));
+      pragma Check (Validate, Debug.Valid (ISO_646_Set_Data.all));
    end ISO_646_Init;
 
    function ISO_646_Set return not null access Naked_Maps.Character_Set is
@@ -97,6 +102,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
             2 => (
                Character_Type'Val (16#E000#),
                Character_Type'Val (16#FFFF#))));
+      pragma Check (Validate, Debug.Valid (Wide_Character_Set_Data.all));
    end Wide_Character_Init;
 
    function Wide_Character_Set
@@ -127,6 +133,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
+      pragma Check (Validate, Debug.Valid (Letter_Set_Data.all));
    end Letter_Init;
 
    function Letter_Set return not null access Naked_Maps.Character_Set is
@@ -155,6 +162,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
+      pragma Check (Validate, Debug.Valid (Alphanumeric_Set_Data.all));
    end Alphanumeric_Init;
 
    function Alphanumeric_Set return not null access Naked_Maps.Character_Set is
@@ -194,6 +202,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
+      pragma Check (Validate, Debug.Valid (Special_Set_Data.all));
    end Special_Init;
 
    function Special_Set return not null access Naked_Maps.Character_Set is
@@ -219,6 +228,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
+      pragma Check (Validate, Debug.Valid (Graphic_Set_Data.all));
    end Graphic_Init;
 
    function Graphic_Set return not null access Naked_Maps.Character_Set is

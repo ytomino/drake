@@ -21,7 +21,7 @@ package body Ada.Containers.Ordered_Sets.Debug is
          Message => Message);
    end Dump;
 
-   function Validate (Source : Set) return Boolean is
+   function Valid (Source : Set) return Boolean is
       Container : Binary_Trees.Node_Access;
       Length : Count_Type;
    begin
@@ -32,9 +32,9 @@ package body Ada.Containers.Ordered_Sets.Debug is
          Container := Downcast (Source.Super.Data).Root;
          Length := Downcast (Source.Super.Data).Length;
       end if;
-      return Base.Debug.Validate (
+      return Base.Debug.Valid (
          Container => Container,
          Length => Length);
-   end Validate;
+   end Valid;
 
 end Ada.Containers.Ordered_Sets.Debug;

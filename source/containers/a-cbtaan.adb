@@ -163,7 +163,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
       Length := Length + 1;
       pragma Check (Dump,
          Debug.Dump (Container, New_Item, Message => "inserted"));
-      pragma Check (Validate, Debug.Validate (Container, Length));
+      pragma Check (Validate, Debug.Valid (Container, Length));
    end Insert;
 
    procedure Remove (
@@ -295,7 +295,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
       --  decrement
       Length := Length - 1;
       pragma Check (Dump, Debug.Dump (Container, null, Message => "removed"));
-      pragma Check (Validate, Debug.Validate (Container, Length));
+      pragma Check (Validate, Debug.Valid (Container, Length));
    end Remove;
 
    procedure Copy (

@@ -1,4 +1,5 @@
-pragma Check_Policy (Validate => Ignore);
+pragma Check_Policy (Validate => Disable);
+--  with Ada.Strings.Naked_Maps.Debug;
 with Ada.UCD.Case_Folding;
 with System.Once;
 with System.Reference_Counting;
@@ -103,6 +104,7 @@ package body Ada.Strings.Naked_Maps.Case_Folding is
          pragma Check (Validate, I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
+      pragma Check (Validate, Debug.Valid (Mapping.all));
    end Mapping_Init;
 
    --  implementation

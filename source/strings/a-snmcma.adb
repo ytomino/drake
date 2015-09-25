@@ -1,4 +1,5 @@
-pragma Check_Policy (Validate => Ignore);
+pragma Check_Policy (Validate => Disable);
+--  with Ada.Strings.Naked_Maps.Debug;
 with Ada.UCD.Simple_Case_Mapping;
 with System.Once;
 with System.Reference_Counting;
@@ -153,6 +154,7 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
          pragma Check (Validate, I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
+      pragma Check (Validate, Debug.Valid (Mapping.all));
    end L_Mapping_Init;
 
    --  implementation of lower case map
@@ -206,6 +208,7 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
          pragma Check (Validate, I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
+      pragma Check (Validate, Debug.Valid (Mapping.all));
    end U_Mapping_Init;
 
    --  implementation of upper case map

@@ -1,4 +1,6 @@
+pragma Check_Policy (Validate => Disable);
 with Ada.Characters.Conversions;
+--  with Ada.Strings.Naked_Maps.Debug;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 package body Ada.Strings.Maps is
@@ -33,24 +35,6 @@ package body Ada.Strings.Maps is
    end To_Wide_Wide_Character;
 
    --  sets
-
-   function Valid (Data : not null Set_Data_Access) return Boolean;
-   function Valid (Data : not null Set_Data_Access) return Boolean is
-   begin
-      for I in Data.Items'First .. Data.Items'Last loop
-         if Data.Items (I).High < Data.Items (I).Low then
-            return False;
-         end if;
-      end loop;
-      for I in Data.Items'First .. Data.Items'Last - 1 loop
-         if Data.Items (I).High >=
-            Wide_Wide_Character'Pred (Data.Items (I + 1).Low)
-         then
-            return False;
-         end if;
-      end loop;
-      return True;
-   end Valid;
 
    subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
 
@@ -154,8 +138,9 @@ package body Ada.Strings.Maps is
       Set : Character_Set)
       return Boolean
    is
-      pragma Assert (Valid (Reference (Elements)));
-      pragma Assert (Valid (Reference (Set)));
+      pragma Check (Validate,
+         Check => Naked_Maps.Debug.Valid (Reference (Elements).all));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
       Elements_Data : constant not null Set_Data_Access :=
          Reference (Elements);
       Set_Data : constant not null Set_Data_Access := Reference (Set);
@@ -218,7 +203,7 @@ package body Ada.Strings.Maps is
       Set : Character_Set)
       return Boolean
    is
-      pragma Assert (Valid (Reference (Set)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
    begin
       return Naked_Maps.Is_In (Element, Reference (Set).all);
    end Overloaded_Is_In;
@@ -226,7 +211,7 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Ranges (Set : Character_Set)
       return Character_Ranges
    is
-      pragma Assert (Valid (Reference (Set)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
       Set_Data : constant not null Set_Data_Access := Reference (Set);
    begin
       return Result : Character_Ranges (Set_Data.Items'Range) do
@@ -242,7 +227,7 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Ranges (Set : Character_Set)
       return Wide_Character_Ranges
    is
-      pragma Assert (Valid (Reference (Set)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
       Set_Data : constant not null Set_Data_Access := Reference (Set);
    begin
       return Result : Wide_Character_Ranges (Set_Data.Items'Range) do
@@ -256,7 +241,7 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Ranges (Set : Character_Set)
       return Wide_Wide_Character_Ranges
    is
-      pragma Assert (Valid (Reference (Set)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
       Set_Data : constant not null Set_Data_Access := Reference (Set);
    begin
       return Result : Wide_Wide_Character_Ranges (
@@ -286,7 +271,7 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Sequence (Set : Character_Set)
       return Wide_Wide_Character_Sequence
    is
-      pragma Assert (Valid (Reference (Set)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
       Set_Data : constant not null Set_Data_Access := Reference (Set);
       Length : Natural := 0;
       Position : Positive;
@@ -331,7 +316,7 @@ package body Ada.Strings.Maps is
             Length => Last,
             Reference_Count => 1,
             Items => Items (1 .. Last));
-         pragma Assert (Valid (Data));
+         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
       end if;
       return Create (Data);
    end Overloaded_To_Set;
@@ -359,7 +344,7 @@ package body Ada.Strings.Maps is
             Length => Last,
             Reference_Count => 1,
             Items => Items (1 .. Last));
-         pragma Assert (Valid (Data));
+         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
       end if;
       return Create (Data);
    end Overloaded_To_Set;
@@ -387,7 +372,7 @@ package body Ada.Strings.Maps is
             Length => Last,
             Reference_Count => 1,
             Items => Items (1 .. Last));
-         pragma Assert (Valid (Data));
+         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
       end if;
       return Create (Data);
    end Overloaded_To_Set;
@@ -466,7 +451,7 @@ package body Ada.Strings.Maps is
             Length => Last - Items'First + 1,
             Reference_Count => 1,
             Items => Items (Items'First .. Last));
-         pragma Assert (Valid (Data));
+         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
       end if;
       return Create (Data);
    end Overloaded_To_Set;
@@ -494,8 +479,8 @@ package body Ada.Strings.Maps is
    end Overloaded_To_Set;
 
    overriding function "=" (Left, Right : Character_Set) return Boolean is
-      pragma Assert (Valid (Reference (Left)));
-      pragma Assert (Valid (Reference (Right)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Left).all));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Right).all));
       Left_Data : constant not null Set_Data_Access := Reference (Left);
       Right_Data : constant not null Set_Data_Access := Reference (Right);
    begin
@@ -503,7 +488,7 @@ package body Ada.Strings.Maps is
    end "=";
 
    function "not" (Right : Character_Set) return Character_Set is
-      pragma Assert (Valid (Reference (Right)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Right).all));
       Right_Data : constant not null Set_Data_Access := Reference (Right);
       Data : Set_Data_Access;
    begin
@@ -524,7 +509,7 @@ package body Ada.Strings.Maps is
                   Length => Last - Items'First + 1,
                   Reference_Count => 1,
                   Items => Items (Items'First .. Last));
-               pragma Assert (Valid (Data));
+               pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
             end if;
          end;
       end if;
@@ -534,8 +519,8 @@ package body Ada.Strings.Maps is
    function "and" (Left, Right : Character_Set)
       return Character_Set
    is
-      pragma Assert (Valid (Reference (Left)));
-      pragma Assert (Valid (Reference (Right)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Left).all));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Right).all));
       Left_Data : constant not null Set_Data_Access := Reference (Left);
       Right_Data : constant not null Set_Data_Access := Reference (Right);
       Data : Set_Data_Access;
@@ -557,7 +542,7 @@ package body Ada.Strings.Maps is
                   Length => Last - Items'First + 1,
                   Reference_Count => 1,
                   Items => Items (Items'First .. Last));
-               pragma Assert (Valid (Data));
+               pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
             end if;
          end;
       end if;
@@ -567,8 +552,8 @@ package body Ada.Strings.Maps is
    function "or" (Left, Right : Character_Set)
       return Character_Set
    is
-      pragma Assert (Valid (Reference (Left)));
-      pragma Assert (Valid (Reference (Right)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Left).all));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Right).all));
       Left_Data : constant not null Set_Data_Access := Reference (Left);
       Right_Data : constant not null Set_Data_Access := Reference (Right);
       Data : Set_Data_Access;
@@ -603,7 +588,7 @@ package body Ada.Strings.Maps is
                Length => Last - Items'First + 1,
                Reference_Count => 1,
                Items => Items (Items'First .. Last));
-            pragma Assert (Valid (Data));
+            pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
          end;
       end if;
       return Create (Data);
@@ -612,8 +597,8 @@ package body Ada.Strings.Maps is
    function "xor" (Left, Right : Character_Set)
       return Character_Set
    is
-      pragma Assert (Valid (Reference (Left)));
-      pragma Assert (Valid (Reference (Right)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Left).all));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Right).all));
       Left_Data : constant not null Set_Data_Access := Reference (Left);
       Right_Data : constant not null Set_Data_Access := Reference (Right);
       Data : Set_Data_Access;
@@ -656,7 +641,7 @@ package body Ada.Strings.Maps is
                   Length => Last - Items'First + 1,
                   Reference_Count => 1,
                   Items => Items (Items'First .. Last));
-               pragma Assert (Valid (Data));
+               pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
             end if;
          end;
       end if;
@@ -666,8 +651,8 @@ package body Ada.Strings.Maps is
    function "-" (Left, Right : Character_Set)
       return Character_Set
    is
-      pragma Assert (Valid (Reference (Left)));
-      pragma Assert (Valid (Reference (Right)));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Left).all));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Right).all));
       Left_Data : constant not null Set_Data_Access := Reference (Left);
       Right_Data : constant not null Set_Data_Access := Reference (Right);
       Data : Set_Data_Access;
@@ -696,7 +681,7 @@ package body Ada.Strings.Maps is
                   Length => Last - Items'First + 1,
                   Reference_Count => 1,
                   Items => Items (Items'First .. Last));
-               pragma Assert (Valid (Data));
+               pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
             end if;
          end;
       end if;
@@ -750,7 +735,7 @@ package body Ada.Strings.Maps is
                   Reference_Count => 1,
                   Items => <>);
                Naked_Maps.Character_Ranges'Read (Stream, Item.Data.Items);
-               pragma Assert (Valid (Item.Data));
+               pragma Check (Validate, Naked_Maps.Debug.Valid (Item.Data.all));
             end if;
          end Read;
 
@@ -758,7 +743,7 @@ package body Ada.Strings.Maps is
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : Character_Set)
          is
-            pragma Assert (Valid (Item.Data));
+            pragma Check (Validate, Naked_Maps.Debug.Valid (Item.Data.all));
          begin
             Integer'Write (Stream, Item.Data.Length);
             Naked_Maps.Character_Ranges'Write (Stream, Item.Data.Items);
@@ -822,7 +807,9 @@ package body Ada.Strings.Maps is
    end Overloaded_To_Domain;
 
    function Overloaded_To_Domain (Map : Character_Mapping)
-      return Wide_Wide_Character_Sequence is
+      return Wide_Wide_Character_Sequence
+   is
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Map).all));
    begin
       return Reference (Map).From;
    end Overloaded_To_Domain;
@@ -855,6 +842,7 @@ package body Ada.Strings.Maps is
       else
          New_Data := new Map_Data'(
             Naked_Maps.To_Mapping (From, To, Initial_Reference_Count => 1));
+         pragma Check (Validate, Naked_Maps.Debug.Valid (New_Data.all));
       end if;
       return Create (New_Data);
    end Overloaded_To_Mapping;
@@ -874,7 +862,9 @@ package body Ada.Strings.Maps is
    end Overloaded_To_Range;
 
    function Overloaded_To_Range (Map : Character_Mapping)
-      return Wide_Wide_Character_Sequence is
+      return Wide_Wide_Character_Sequence
+   is
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Map).all));
    begin
       return Reference (Map).To;
    end Overloaded_To_Range;
@@ -900,12 +890,16 @@ package body Ada.Strings.Maps is
    function Overloaded_Value (
       Map : Character_Mapping;
       Element : Wide_Wide_Character)
-      return Wide_Wide_Character is
+      return Wide_Wide_Character
+   is
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Map).all));
    begin
       return Naked_Maps.Value (Reference (Map).all, Element);
    end Overloaded_Value;
 
    overriding function "=" (Left, Right : Character_Mapping) return Boolean is
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Left).all));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Right).all));
       Left_Data : constant not null Map_Data_Access := Reference (Left);
       Right_Data : constant not null Map_Data_Access := Reference (Right);
    begin
@@ -974,12 +968,15 @@ package body Ada.Strings.Maps is
                         To,
                         Initial_Reference_Count => 1));
                end;
+               pragma Check (Validate, Naked_Maps.Debug.Valid (Item.Data.all));
             end if;
          end Read;
 
          procedure Write (
             Stream : not null access Streams.Root_Stream_Type'Class;
-            Item : Character_Mapping) is
+            Item : Character_Mapping)
+         is
+            pragma Check (Validate, Naked_Maps.Debug.Valid (Item.Data.all));
          begin
             Integer'Write (Stream, Item.Data.Length);
             for I in 1 .. Item.Data.Length loop

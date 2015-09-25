@@ -1,4 +1,6 @@
+pragma Check_Policy (Validate => Disable);
 with Ada.Strings.Naked_Maps.Canonical_Composites;
+--  with Ada.Strings.Naked_Maps.Debug;
 with Ada.Strings.Naked_Maps.Set_Constants;
 with System.Once;
 with System.Reference_Counting;
@@ -25,6 +27,7 @@ package body Ada.Strings.Naked_Maps.Basic is
          Length => Ranges_Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Ranges (1 .. Ranges_Last));
+      pragma Check (Validate, Debug.Valid (Basic_Set_Data.all));
    end Basic_Set_Init;
 
    --  implementation of Basic_Set
@@ -64,6 +67,7 @@ package body Ada.Strings.Naked_Maps.Basic is
          Reference_Count => System.Reference_Counting.Static,
          From => From (1 .. Last),
          To => To (1 .. Last));
+      pragma Check (Validate, Debug.Valid (Basic_Mapping.all));
    end Basic_Mapping_Init;
 
    --  implementation of Basic_Map
