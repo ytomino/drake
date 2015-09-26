@@ -14,6 +14,11 @@ package body System.Native_Processes is
 
    --  implementation
 
+   function Do_Is_Open (Child : Process) return Boolean is
+   begin
+      return Reference (Child).all /= C.winbase.INVALID_HANDLE_VALUE;
+   end Do_Is_Open;
+
    procedure Create (
       Child : in out Process;
       Command_Line : String;
@@ -125,10 +130,11 @@ package body System.Native_Processes is
    end Create;
 
    procedure Do_Wait (
-      Child : Process;
+      Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status)
    is
-      Handle : constant C.winnt.HANDLE := Reference (Child).all;
+      Handle : C.winnt.HANDLE
+         renames Reference (Child).all;
    begin
       if C.winbase.WaitForSingleObject (
          Handle,
@@ -143,6 +149,11 @@ package body System.Native_Processes is
             if C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access) = 0 then
                Raise_Exception (Use_Error'Identity);
             end if;
+            if C.winbase.CloseHandle (Handle) = 0 then
+               Raise_Exception (Use_Error'Identity);
+            end if;
+            Handle := C.winbase.INVALID_HANDLE_VALUE;
+            --  status code
             if Exit_Code < Max then
                Status := Ada.Command_Line.Exit_Status (Exit_Code);
             else

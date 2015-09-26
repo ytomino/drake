@@ -10,6 +10,9 @@ package System.Native_Processes is
 
    type Process is limited private;
 
+   function Do_Is_Open (Child : Process) return Boolean;
+   pragma Inline (Do_Is_Open);
+
    procedure Create (
       Child : in out Process;
       Command_Line : String;
@@ -20,7 +23,7 @@ package System.Native_Processes is
       Error : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type);
 
    procedure Do_Wait (
-      Child : Process;
+      Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status);
 
    procedure Shell (

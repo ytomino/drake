@@ -9,6 +9,14 @@ package Ada.Processes is
 
    type Process is limited private;
 
+--  subtype Open_Process is Process
+--    with
+--       Dynamic_Predicate => Is_Open (Open_Process),
+--       Predicate_Failure => raise Status_Error;
+
+   function Is_Open (Child : Process) return Boolean;
+   pragma Inline (Is_Open); -- renamed
+
    procedure Create (
       Child : in out Process;
       Command_Line : String;
@@ -33,11 +41,11 @@ package Ada.Processes is
       return Process;
 
    procedure Wait (
-      Child : Process;
+      Child : in out Process; -- Open_Process
       Status : out Command_Line.Exit_Status);
    procedure Wait (
-      Child : Process);
-   pragma Inline (Wait); -- renamed, or for shorthand
+      Child : in out Process); -- Open_Process
+   pragma Inline (Wait);
 
    procedure Shell (
       Command_Line : String;
@@ -52,6 +60,8 @@ package Ada.Processes is
       Argument : String);
    pragma Inline (Append_Argument); -- renamed
 
+   Status_Error : exception
+      renames IO_Exceptions.Status_Error;
    Name_Error : exception
       renames IO_Exceptions.Name_Error;
    Use_Error : exception
@@ -63,8 +73,8 @@ private
 
    type Process is new System.Native_Processes.Process;
 
-   procedure Wait (Child : Process; Status : out Command_Line.Exit_Status)
-      renames Do_Wait; -- inherited
+   function Is_Open (Child : Process) return Boolean
+      renames Do_Is_Open; -- inherited
 
    procedure Shell (
       Command_Line : String;
