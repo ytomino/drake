@@ -3,8 +3,14 @@ with Ada.Unchecked_Deallocation;
 package body Ada.Command_Line.Generic_Parsing is
    pragma Check_Policy (Trace => Ignore);
 
-   procedure Finally (Context : not null access Argument_Context_Access);
-   procedure Finally (Context : not null access Argument_Context_Access) is
+   procedure Retain (Context : not null Argument_Context_Access);
+   procedure Retain (Context : not null Argument_Context_Access) is
+   begin
+      Context.Reference_Count := Context.Reference_Count + 1;
+   end Retain;
+
+   procedure Release (Context : in out Argument_Context_Access);
+   procedure Release (Context : in out Argument_Context_Access) is
       procedure Free is
          new Unchecked_Deallocation (String, String_Access);
       procedure Free is
@@ -16,11 +22,14 @@ package body Ada.Command_Line.Generic_Parsing is
             Argument_Context,
             Argument_Context_Access);
    begin
-      pragma Check (Trace, Debug.Put ("free"));
-      Free (Context.all.Argument);
-      Free (Context.all.Argument_Iterator);
-      Free (Context.all);
-   end Finally;
+      Context.Reference_Count := Context.Reference_Count - 1;
+      if Context.Reference_Count <= 0 then
+         pragma Check (Trace, Debug.Put ("deallocate"));
+         Free (Context.Argument);
+         Free (Context.Argument_Iterator);
+         Free (Context);
+      end if;
+   end Release;
 
    function Make_Cursor (
       Index : Input_Cursor;
@@ -37,6 +46,11 @@ package body Ada.Command_Line.Generic_Parsing is
       while Has_Element (Next_Index) loop
          pragma Check (Trace, Debug.Put ("allocate"));
          declare
+            procedure Finally (X : not null access Argument_Context_Access);
+            procedure Finally (X : not null access Argument_Context_Access) is
+            begin
+               Release (X.all);
+            end Finally;
             package Holder is
                new Exceptions.Finally.Scoped_Holder (
                   Argument_Context_Access,
@@ -56,17 +70,13 @@ package body Ada.Command_Line.Generic_Parsing is
                new Argument_Parsing.Argument_Iterator'(
                   Argument_Parsing.Iterate (Context.Argument.all, Next_State));
             Subindex := Argument_Parsing.First (Context.Argument_Iterator.all);
-            if not Argument_Parsing.Has_Element (Subindex) then
-               Next_Index :=
-                  Input_Iterator_Interfaces.Next (Input_Iterator, Next_Index);
-               Next_State :=
-                  Argument_Parsing.State (Context.Argument_Iterator.all);
-               --  continue
-            else
-               return Result : constant Cursor := Create (Context, Subindex) do
-                  Holder.Clear;
-               end return;
+            if Argument_Parsing.Has_Element (Subindex) then
+               return Create (Context, Subindex);
             end if;
+            Next_Index :=
+               Input_Iterator_Interfaces.Next (Input_Iterator, Next_Index);
+            Next_State :=
+               Argument_Parsing.State (Context.Argument_Iterator.all);
          end;
       end loop;
       return Create (null, Argument_Parsing.No_Element);
@@ -75,8 +85,10 @@ package body Ada.Command_Line.Generic_Parsing is
    --  implementation
 
    function Has_Element (Position : Cursor) return Boolean is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
       Context : constant Argument_Context_Access :=
-         Get_Argument_Context (Position);
+         NC_Position.Argument_Context;
    begin
       if Context = null then
          return False;
@@ -93,19 +105,24 @@ package body Ada.Command_Line.Generic_Parsing is
    end Iterate;
 
    function Argument (Position : Cursor) return String is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
    begin
-      return Get_Argument_Context (Position).Argument.all;
+      return NC_Position.Argument_Context.Argument.all;
    end Argument;
 
    function Is_Option (
       Position : Cursor;
       Name : Character;
       Option : Option_Character := ' ')
-      return Boolean is
+      return Boolean
+   is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
    begin
       return Argument_Parsing.Is_Option (
-         Get_Argument_Context (Position).Argument.all,
-         Get_Subindex (Position).all,
+         NC_Position.Argument_Context.Argument.all,
+         NC_Position.Subindex,
          Name,
          Argument_Parsing.Option_Character'Enum_Val (
             Option_Character'Enum_Rep (Option)));
@@ -115,11 +132,14 @@ package body Ada.Command_Line.Generic_Parsing is
       Position : Cursor;
       Long_Name : String;
       Option : Option_Character := ' ')
-      return Boolean is
+      return Boolean
+   is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
    begin
       return Argument_Parsing.Is_Option (
-         Get_Argument_Context (Position).Argument.all,
-         Get_Subindex (Position).all,
+         NC_Position.Argument_Context.Argument.all,
+         NC_Position.Subindex,
          Long_Name,
          Argument_Parsing.Option_Character'Enum_Val (
             Option_Character'Enum_Rep (Option)));
@@ -130,11 +150,14 @@ package body Ada.Command_Line.Generic_Parsing is
       Name : Character;
       Long_Name : String;
       Option : Option_Character := ' ')
-      return Boolean is
+      return Boolean
+   is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
    begin
       return Argument_Parsing.Is_Option (
-         Get_Argument_Context (Position).Argument.all,
-         Get_Subindex (Position).all,
+         NC_Position.Argument_Context.Argument.all,
+         NC_Position.Subindex,
          Name,
          Long_Name,
          Argument_Parsing.Option_Character'Enum_Val (
@@ -142,42 +165,55 @@ package body Ada.Command_Line.Generic_Parsing is
    end Is_Option;
 
    function Is_Unknown_Option (Position : Cursor) return Boolean is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
    begin
       return Argument_Parsing.Is_Unknown_Option (
-         Get_Argument_Context (Position).Argument.all,
-         Get_Subindex (Position).all);
+         NC_Position.Argument_Context.Argument.all,
+         NC_Position.Subindex);
    end Is_Unknown_Option;
 
    function Name (Position : Cursor) return String is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
    begin
       return Argument_Parsing.Name (
-         Get_Argument_Context (Position).Argument.all,
-         Get_Subindex (Position).all);
+         NC_Position.Argument_Context.Argument.all,
+         NC_Position.Subindex);
    end Name;
 
    function Short_Name (Position : Cursor) return Character is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
    begin
       return Argument_Parsing.Short_Name (
-         Get_Argument_Context (Position).Argument.all,
-         Get_Subindex (Position).all);
+         NC_Position.Argument_Context.Argument.all,
+         NC_Position.Subindex);
    end Short_Name;
 
    function Long_Name (Position : Cursor) return String is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
    begin
       return Argument_Parsing.Long_Name (
-         Get_Argument_Context (Position).Argument.all,
-         Get_Subindex (Position).all);
+         NC_Position.Argument_Context.Argument.all,
+         NC_Position.Subindex);
    end Long_Name;
 
    function Value (Position : Cursor) return String is
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
       Context : constant not null Argument_Context_Access :=
-         Get_Argument_Context (Position);
-      Subindex : constant not null access Argument_Parsing.Cursor :=
-         Get_Subindex (Position);
+         NC_Position.Argument_Context;
    begin
-      case Argument_Parsing.Has_Value (Context.Argument.all, Subindex.all) is
+      case Argument_Parsing.Has_Value (
+         Context.Argument.all,
+         NC_Position.Subindex)
+      is
          when Argument_Parsing.None | Argument_Parsing.Same =>
-            return Argument_Parsing.Value (Context.Argument.all, Subindex.all);
+            return Argument_Parsing.Value (
+               Context.Argument.all,
+               NC_Position.Subindex);
          when Argument_Parsing.Next =>
             if Context.Next_Index /= Context.Index then
                return Argument (Context.Next_Index);
@@ -210,15 +246,16 @@ package body Ada.Command_Line.Generic_Parsing is
       return Cursor
    is
       pragma Unreferenced (Object);
+      NC_Position : Non_Controlled_Cursor
+         renames Reference (Position).all;
       Context : constant not null Argument_Context_Access :=
-         Get_Argument_Context (Position);
+         NC_Position.Argument_Context;
       Subindex : constant Argument_Parsing.Cursor :=
          Argument_Parsing.Next (
             Context.Argument_Iterator.all,
-            Get_Subindex (Position).all);
+            NC_Position.Subindex);
    begin
       if Argument_Parsing.Has_Element (Subindex) then
-         Context.Reference_Count := Context.Reference_Count + 1;
          return Create (Context, Subindex);
       else
          declare
@@ -242,37 +279,29 @@ package body Ada.Command_Line.Generic_Parsing is
          Subindex : Argument_Parsing.Cursor)
          return Cursor is
       begin
-         return (Finalization.Controlled with Argument_Context, Subindex);
+         if Argument_Context /= null then
+            Retain (Argument_Context);
+         end if;
+         return (Finalization.Controlled with (Argument_Context, Subindex));
       end Create;
 
-      function Get_Argument_Context (Position : Cursor)
-         return Argument_Context_Access is
+      function Reference (Position : Cursor)
+         return not null access Non_Controlled_Cursor is
       begin
-         return Position.Argument_Context;
-      end Get_Argument_Context;
-
-      function Get_Subindex (Position : Cursor)
-         return not null access Argument_Parsing.Cursor is
-      begin
-         return Position.Subindex'Unrestricted_Access;
-      end Get_Subindex;
+         return Position.Data'Unrestricted_Access;
+      end Reference;
 
       overriding procedure Adjust (Object : in out Cursor) is
       begin
-         if Object.Argument_Context /= null then
-            Object.Argument_Context.Reference_Count :=
-               Object.Argument_Context.Reference_Count + 1;
+         if Object.Data.Argument_Context /= null then
+            Retain (Object.Data.Argument_Context);
          end if;
       end Adjust;
 
       overriding procedure Finalize (Object : in out Cursor) is
       begin
-         if Object.Argument_Context /= null then
-            Object.Argument_Context.Reference_Count :=
-               Object.Argument_Context.Reference_Count - 1;
-            if Object.Argument_Context.Reference_Count = 0 then
-               Finally (Object.Argument_Context'Access);
-            end if;
+         if Object.Data.Argument_Context /= null then
+            Release (Object.Data.Argument_Context);
          end if;
       end Finalize;
 

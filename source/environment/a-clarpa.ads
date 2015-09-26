@@ -30,26 +30,26 @@ private package Ada.Command_Line.Argument_Parsing is
 
    function Is_Option (
       Argument : String;
-      Position : in out Cursor;
+      Position : aliased in out Cursor;
       Short_Name : Character;
       Option : Option_Character := ' ')
       return Boolean;
    function Is_Option (
       Argument : String;
-      Position : in out Cursor;
+      Position : aliased in out Cursor;
       Long_Name : String;
       Option : Option_Character := ' ')
       return Boolean;
    function Is_Option (
       Argument : String;
-      Position : in out Cursor;
+      Position : aliased in out Cursor;
       Short_Name : Character;
       Long_Name : String;
       Option : Option_Character := ' ')
       return Boolean;
    function Is_Unknown_Option (
       Argument : String;
-      Position : in out Cursor)
+      Position : aliased in out Cursor)
       return Boolean;
 
    function Name (Argument : String; Position : Cursor) return String;
