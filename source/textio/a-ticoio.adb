@@ -97,13 +97,48 @@ package body Ada.Text_IO.Complex_IO is
       Put (Current_Output.all, Item, Fore, Aft, Exp);
    end Put;
 
-   procedure Get (
+   procedure Overloaded_Get (
       From : String;
       Item : out Complex_Types.Complex;
       Last : out Positive)
       renames Get_From_Field;
 
-   procedure Put (
+   procedure Overloaded_Get (
+      From : Wide_String;
+      Item : out Complex_Types.Complex;
+      Last : out Positive)
+   is
+      String_From : String (From'Range);
+   begin
+      for I in From'Range loop
+         if Wide_Character'Pos (From (I)) < 16#80# then
+            String_From (I) := Character'Val (Wide_Character'Pos (From (I)));
+         else
+            String_From (I) := Character'Val (16#1A#); -- substitute
+         end if;
+      end loop;
+      Overloaded_Get (String_From, Item, Last);
+   end Overloaded_Get;
+
+   procedure Overloaded_Get (
+      From : Wide_Wide_String;
+      Item : out Complex_Types.Complex;
+      Last : out Positive)
+   is
+      String_From : String (From'Range);
+   begin
+      for I in From'Range loop
+         if Wide_Wide_Character'Pos (From (I)) < 16#80# then
+            String_From (I) :=
+               Character'Val (Wide_Wide_Character'Pos (From (I)));
+         else
+            String_From (I) := Character'Val (16#1A#); -- substitute
+         end if;
+      end loop;
+      Overloaded_Get (String_From, Item, Last);
+   end Overloaded_Get;
+
+   procedure Overloaded_Put (
       To : out String;
       Item : Complex_Types.Complex;
       Aft : Field := Default_Aft;
@@ -123,6 +158,34 @@ package body Ada.Text_IO.Complex_IO is
       To (Index) := ',';
       Real_IO.Put (To (Index + 1 .. To'Last - 1), Item.Im, Aft, Exp);
       To (To'Last) := ')';
-   end Put;
+   end Overloaded_Put;
+
+   procedure Overloaded_Put (
+      To : out Wide_String;
+      Item : Complex_Types.Complex;
+      Aft : Field := Default_Aft;
+      Exp : Field := Default_Exp)
+   is
+      String_To : String (To'Range);
+   begin
+      Overloaded_Put (String_To, Item, Aft, Exp);
+      for I in To'Range loop
+         To (I) := Wide_Character'Val (Character'Pos (String_To (I)));
+      end loop;
+   end Overloaded_Put;
+
+   procedure Overloaded_Put (
+      To : out Wide_Wide_String;
+      Item : Complex_Types.Complex;
+      Aft : Field := Default_Aft;
+      Exp : Field := Default_Exp)
+   is
+      String_To : String (To'Range);
+   begin
+      Overloaded_Put (String_To, Item, Aft, Exp);
+      for I in To'Range loop
+         To (I) := Wide_Wide_Character'Val (Character'Pos (String_To (I)));
+      end loop;
+   end Overloaded_Put;
 
 end Ada.Text_IO.Complex_IO;

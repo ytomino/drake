@@ -29,14 +29,47 @@ package Ada.Text_IO.Complex_IO is
       Aft : Field := Default_Aft;
       Exp : Field := Default_Exp);
 
-   procedure Get (
+   --  extended
+   procedure Overloaded_Get (
       From : String;
       Item : out Complex_Types.Complex;
       Last : out Positive);
-   procedure Put (
+   procedure Overloaded_Get (
+      From : Wide_String;
+      Item : out Complex_Types.Complex;
+      Last : out Positive);
+   procedure Overloaded_Get (
+      From : Wide_Wide_String;
+      Item : out Complex_Types.Complex;
+      Last : out Positive);
+
+   --  extended
+   procedure Overloaded_Put (
       To : out String;
       Item : Complex_Types.Complex;
       Aft : Field := Default_Aft;
       Exp : Field := Default_Exp);
+   procedure Overloaded_Put (
+      To : out Wide_String;
+      Item : Complex_Types.Complex;
+      Aft : Field := Default_Aft;
+      Exp : Field := Default_Exp);
+   procedure Overloaded_Put (
+      To : out Wide_Wide_String;
+      Item : Complex_Types.Complex;
+      Aft : Field := Default_Aft;
+      Exp : Field := Default_Exp);
+
+   procedure Get (
+      From : String;
+      Item : out Complex_Types.Complex;
+      Last : out Positive)
+      renames Overloaded_Get;
+   procedure Put (
+      To : out String;
+      Item : Complex_Types.Complex;
+      Aft : Field := Default_Aft;
+      Exp : Field := Default_Exp)
+      renames Overloaded_Put;
 
 end Ada.Text_IO.Complex_IO;
