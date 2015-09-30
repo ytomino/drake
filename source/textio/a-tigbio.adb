@@ -1,4 +1,4 @@
-package body Ada.Text_IO.Bounded_IO is
+package body Ada.Text_IO.Generic_Bounded_IO is
 
    procedure Put (
       File : File_Type;
@@ -56,4 +56,4 @@ package body Ada.Text_IO.Bounded_IO is
       Get_Line (Current_Input.all, Item);
    end Get_Line;
 
-end Ada.Text_IO.Bounded_IO;
+end Ada.Text_IO.Generic_Bounded_IO;
