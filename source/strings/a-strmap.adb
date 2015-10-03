@@ -534,7 +534,11 @@ package body Ada.Strings.Maps is
                Left_Data.Length + Right_Data.Length);
             Last : Natural;
          begin
-            Naked_Maps.Mul (Items, Last, Left_Data.Items, Right_Data.Items);
+            Naked_Maps.Intersection (
+               Items,
+               Last,
+               Left_Data.Items,
+               Right_Data.Items);
             if Last < Items'First then
                Data := Empty_Set_Data'Unrestricted_Access;
             else
@@ -579,7 +583,7 @@ package body Ada.Strings.Maps is
                Left_Data.Length + Right_Data.Length);
             Last : Natural;
          begin
-            Naked_Maps.Merge (
+            Naked_Maps.Union (
                Items,
                Last,
                Left_Data.Items,
@@ -627,12 +631,16 @@ package body Ada.Strings.Maps is
             Items : Naked_Maps.Character_Ranges (1 .. Max);
             Last : Natural;
          begin
-            Naked_Maps.Merge (
+            Naked_Maps.Union (
                X,
                X_Last,
                Left_Data.Items,
                Right_Data.Items);
-            Naked_Maps.Mul (Y, Y_Last, Left_Data.Items, Right_Data.Items);
+            Naked_Maps.Intersection (
+               Y,
+               Y_Last,
+               Left_Data.Items,
+               Right_Data.Items);
             Sub (Items, Last, X (1 .. X_Last), Y (1 .. Y_Last));
             if Last < Items'First then
                Data := Empty_Set_Data'Unrestricted_Access;

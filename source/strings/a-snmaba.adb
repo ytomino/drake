@@ -22,7 +22,7 @@ package body Ada.Strings.Naked_Maps.Basic is
       Ranges : Character_Ranges (1 .. Letter_Set.Length + Base_Set.Length);
       Ranges_Last : Natural;
    begin
-      Mul (Ranges, Ranges_Last, Letter_Set.Items, Base_Set.Items);
+      Intersection (Ranges, Ranges_Last, Letter_Set.Items, Base_Set.Items);
       Basic_Set_Data := new Character_Set'(
          Length => Ranges_Last,
          Reference_Count => System.Reference_Counting.Static,

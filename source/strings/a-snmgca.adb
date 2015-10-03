@@ -139,15 +139,15 @@ package body Ada.Strings.Naked_Maps.General_Category is
    begin
       Fill (T_16x1, Table_16x1, Offset => 0);
       Fill (T_16x2, Table_16x2, Offset => 0);
-      Merge (To (R_16_First .. R_17_First - 1), Last, T_16x1, T_16x2);
+      Union (To (R_16_First .. R_17_First - 1), Last, T_16x1, T_16x2);
       pragma Check (Validate, Last = R_17_First - 1);
       Fill (T_17x1, Table_17x1, Offset => 16#10000#);
       Fill (T_17x2, Table_17x2, Offset => 16#10000#);
-      Merge (To (R_17_First .. R_32_First - 1), Last, T_17x1, T_17x2);
+      Union (To (R_17_First .. R_32_First - 1), Last, T_17x1, T_17x2);
       pragma Check (Validate, Last = R_32_First - 1);
       Fill (T_32x1, Table_32x1);
       Fill (T_32x2, Table_32x2);
-      Merge (To (R_32_First .. R_32_Last), Last, T_32x1, T_32x2);
+      Union (To (R_32_First .. R_32_Last), Last, T_32x1, T_32x2);
       pragma Check (Validate, Last = R_32_Last);
       pragma Check (Validate, Last = To'Last);
    end Fill;

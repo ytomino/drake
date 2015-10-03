@@ -3,6 +3,21 @@ with Ada.Exception_Identification.From_Here;
 package body Ada.Strings.Naked_Maps is
    use Exception_Identification.From_Here;
 
+   procedure Sort (From, To : in out Character_Sequence; Last : out Natural);
+   procedure Sort (From, To : in out Character_Sequence; Last : out Natural) is
+      pragma Assert (From'First = To'First);
+   begin
+      Last := From'Last;
+      for I in reverse From'Range loop
+         if From (I) = To (I) then
+            From (I) := From (Last);
+            To (I) := To (Last);
+            Last := Last - 1;
+         end if;
+      end loop;
+      Sort (From (From'First .. Last), To (To'First .. Last));
+   end Sort;
+
    --  implementation of alternative conversions functions
 
    function To_Character (Item : Wide_Wide_Character)
@@ -89,14 +104,6 @@ package body Ada.Strings.Naked_Maps is
          and then Element <= Set.Items (Index).High;
    end Is_In;
 
-   function Is_In (
-      Element : Character;
-      Set : Character_Set)
-      return Boolean is
-   begin
-      return Is_In (To_Wide_Wide_Character (Element), Set);
-   end Is_In;
-
    procedure Add (
       A : in out Character_Ranges;
       Last : in out Natural;
@@ -160,7 +167,7 @@ package body Ada.Strings.Naked_Maps is
       end if;
    end Add;
 
-   procedure Mul (
+   procedure Intersection (
       Result : out Character_Ranges;
       Last : out Natural;
       Left, Right : Character_Ranges)
@@ -187,9 +194,9 @@ package body Ada.Strings.Naked_Maps is
             end if;
          end if;
       end loop;
-   end Mul;
+   end Intersection;
 
-   procedure Merge (
+   procedure Union (
       Target : out Character_Ranges;
       Last : out Natural;
       Left, Right : Character_Ranges)
@@ -219,9 +226,9 @@ package body Ada.Strings.Naked_Maps is
             J := J + 1;
          end if;
       end loop;
-   end Merge;
+   end Union;
 
-   procedure Merge (
+   procedure Union (
       Target : out Character_Ranges;
       Last : out Natural;
       Source : in out Character_Set_Array)
@@ -258,7 +265,7 @@ package body Ada.Strings.Naked_Maps is
             end if;
          end;
       end loop;
-   end Merge;
+   end Union;
 
    --  implementation of maps
 
@@ -312,27 +319,21 @@ package body Ada.Strings.Naked_Maps is
       return Element;
    end Value;
 
-   function Value (
-      Map : Character_Mapping;
-      Element : Character)
-      return Character is
-   begin
-      return To_Character (Value (Map, To_Wide_Wide_Character (Element)));
-   end Value;
-
-   procedure Translate (
+   function Translate (
       Source : String;
-      Mapping : Character_Mapping;
-      Item : out String;
-      Last : out Natural)
+      Mapping : Character_Mapping)
+      return String
    is
+      Result : String (
+         1 ..
+         Source'Length * Characters.Conversions.Max_Length_In_String);
       Source_Last : Natural := Source'First - 1;
+      Result_Last : Natural := Result'First - 1;
    begin
-      Last := Item'First - 1;
       while Source_Last < Source'Last loop
          declare
             Source_Index : constant Positive := Source_Last + 1;
-            Index : constant Positive := Last + 1;
+            Index : constant Positive := Result_Last + 1;
             Code : Wide_Wide_Character;
             Is_Illegal_Sequence : Boolean;
          begin
@@ -342,21 +343,23 @@ package body Ada.Strings.Naked_Maps is
                Source_Last,
                Code,
                Is_Illegal_Sequence);
-            if not Is_Illegal_Sequence then
+            if Is_Illegal_Sequence then
+               --  keep illegal sequence
+               Result_Last := Index + (Source_Last - Source_Index);
+               Result (Index .. Result_Last) :=
+                  Source (Source_Index .. Source_Last);
+            else
                --  map it
                Code := Value (Mapping, Code);
                --  put it
                Characters.Conversions.Put (
                   Code,
-                  Item (Index .. Item'Last),
-                  Last);
-            else
-               --  keep illegal sequence
-               Last := Index + (Source_Last - Source_Index);
-               Item (Index .. Last) := Source (Source_Index .. Source_Last);
+                  Result (Index .. Result'Last),
+                  Result_Last);
             end if;
          end;
       end loop;
+      return Result (1 .. Result_Last);
    end Translate;
 
    procedure Sort (From, To : in out Character_Sequence) is
@@ -382,20 +385,6 @@ package body Ada.Strings.Naked_Maps is
             end;
          end loop;
       end loop;
-   end Sort;
-
-   procedure Sort (From, To : in out Character_Sequence; Last : out Natural) is
-      pragma Assert (From'First = To'First);
-   begin
-      Last := From'Last;
-      for I in reverse From'Range loop
-         if From (I) = To (I) then
-            From (I) := From (Last);
-            To (I) := To (Last);
-            Last := Last - 1;
-         end if;
-      end loop;
-      Sort (From (From'First .. Last), To (To'First .. Last));
    end Sort;
 
 end Ada.Strings.Naked_Maps;

@@ -46,12 +46,6 @@ package Ada.Strings.Naked_Maps is
       Set : Character_Set)
       return Boolean;
 
-   --  for Handling
-   function Is_In (
-      Element : Character;
-      Set : Character_Set)
-      return Boolean;
-
    --  making operations
 
    procedure Add (
@@ -60,13 +54,13 @@ package Ada.Strings.Naked_Maps is
       L, H : Character_Type);
 
    --  "and"
-   procedure Mul (
+   procedure Intersection (
       Result : out Character_Ranges;
       Last : out Natural;
       Left, Right : Character_Ranges);
 
    --  "or"
-   procedure Merge (
+   procedure Union (
       Target : out Character_Ranges;
       Last : out Natural;
       Left, Right : Character_Ranges);
@@ -98,17 +92,11 @@ package Ada.Strings.Naked_Maps is
       return Character_Type;
 
    --  for Handling
-   function Value (
-      Map : Character_Mapping;
-      Element : Character)
-      return Character;
 
-   --  for Handling
-   procedure Translate (
+   function Translate (
       Source : String;
-      Mapping : Character_Mapping;
-      Item : out String; -- multiply Max_Length_In_String
-      Last : out Natural);
+      Mapping : Character_Mapping)
+      return String;
 
 private
 
@@ -117,12 +105,14 @@ private
    pragma Suppress_Initialization (Character_Set_Array);
 
    --  for Set_Constants
-   procedure Merge (
+
+   procedure Union (
       Target : out Character_Ranges;
       Last : out Natural;
       Source : in out Character_Set_Array); -- destructive
 
+   --  for Case_Mapping
+
    procedure Sort (From, To : in out Character_Sequence);
-   procedure Sort (From, To : in out Character_Sequence; Last : out Natural);
 
 end Ada.Strings.Naked_Maps;

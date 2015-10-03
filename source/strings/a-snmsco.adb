@@ -128,7 +128,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       Items : Character_Ranges (1 .. Total_Length (Source));
       Last : Natural;
    begin
-      Merge (Items, Last, Source);
+      Union (Items, Last, Source);
       Letter_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
@@ -157,7 +157,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       Items : Character_Ranges (1 .. Total_Length (Source));
       Last : Natural;
    begin
-      Merge (Items, Last, Source);
+      Union (Items, Last, Source);
       Alphanumeric_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
@@ -197,7 +197,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       Items : Character_Ranges (1 .. Total_Length (Source));
       Last : Natural;
    begin
-      Merge (Items, Last, Source);
+      Union (Items, Last, Source);
       Special_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
@@ -223,7 +223,7 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
          Alphanumeric_Set.Length + Special_Set.Length);
       Last : Natural;
    begin
-      Merge (Items, Last, Alphanumeric_Set.Items, Special_Set.Items);
+      Union (Items, Last, Alphanumeric_Set.Items, Special_Set.Items);
       Graphic_Set_Data := new Naked_Maps.Character_Set'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,

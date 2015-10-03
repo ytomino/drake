@@ -32,7 +32,6 @@ package Ada.Characters.Handling is
    pragma Inline (Is_Letter);
    pragma Inline (Is_Lower);
    pragma Inline (Is_Upper);
-   pragma Inline (Is_Basic);
    pragma Inline (Is_Digit);
    pragma Inline (Is_Hexadecimal_Digit);
    pragma Inline (Is_Alphanumeric);
@@ -44,13 +43,13 @@ package Ada.Characters.Handling is
    function To_Upper (Item : Character) return Character;
    --  extended from here
    --  Unicode case folding for comparison.
-   function To_Case_Folding (Item : Character) return Character;
+   function To_Case_Folding (Item : Character) return Character
+      renames To_Lower; -- same as To_Lower in ASCII
    --  to here
    function To_Basic (Item : Character) return Character;
 
    pragma Inline (To_Lower);
    pragma Inline (To_Upper);
-   pragma Inline (To_Case_Folding);
    pragma Inline (To_Basic);
 
    function To_Lower (Item : String) return String;
