@@ -14,7 +14,11 @@ package Ada.Strings.Naked_Maps is
 
    function To_Character (Item : Wide_Wide_Character)
       return Character;
+   function To_Wide_Character (Item : Wide_Wide_Character)
+      return Wide_Character;
    function To_Wide_Wide_Character (Item : Character)
+      return Wide_Wide_Character;
+   function To_Wide_Wide_Character (Item : Wide_Character)
       return Wide_Wide_Character;
 
    --  sets
@@ -97,6 +101,14 @@ package Ada.Strings.Naked_Maps is
       Source : String;
       Mapping : Character_Mapping)
       return String;
+   function Translate (
+      Source : Wide_String;
+      Mapping : Character_Mapping)
+      return Wide_String;
+   function Translate (
+      Source : Wide_Wide_String;
+      Mapping : Character_Mapping)
+      return Wide_Wide_String;
 
 private
 

@@ -6,34 +6,6 @@ with Ada.Unchecked_Deallocation;
 package body Ada.Strings.Maps is
    use type Naked_Maps.Character_Ranges;
 
-   --  alternative conversions functions
-   --    raising exception instead of using substitute.
-
-   function To_Wide_Character (Item : Wide_Wide_Character)
-      return Wide_Character;
-   function To_Wide_Wide_Character (Item : Wide_Character)
-      return Wide_Wide_Character;
-
-   function To_Wide_Character (Item : Wide_Wide_Character)
-      return Wide_Character is
-   begin
-      if Characters.Conversions.Is_Wide_Character (Item) then
-         return Wide_Character'Val (Wide_Wide_Character'Pos (Item));
-      else
-         raise Constraint_Error;
-      end if;
-   end To_Wide_Character;
-
-   function To_Wide_Wide_Character (Item : Wide_Character)
-      return Wide_Wide_Character is
-   begin
-      if Characters.Conversions.Is_Wide_Wide_Character (Item) then
-         return Wide_Wide_Character'Val (Wide_Character'Pos (Item));
-      else
-         raise Constraint_Error;
-      end if;
-   end To_Wide_Wide_Character;
-
    --  sets
 
    subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
@@ -195,7 +167,9 @@ package body Ada.Strings.Maps is
       Set : Character_Set)
       return Boolean is
    begin
-      return Overloaded_Is_In (To_Wide_Wide_Character (Element), Set);
+      return Overloaded_Is_In (
+         Naked_Maps.To_Wide_Wide_Character (Element),
+         Set);
    end Overloaded_Is_In;
 
    function Overloaded_Is_In (
@@ -232,8 +206,10 @@ package body Ada.Strings.Maps is
    begin
       return Result : Wide_Character_Ranges (Set_Data.Items'Range) do
          for I in Result'Range loop
-            Result (I).Low := To_Wide_Character (Set_Data.Items (I).Low);
-            Result (I).High := To_Wide_Character (Set_Data.Items (I).High);
+            Result (I).Low :=
+               Naked_Maps.To_Wide_Character (Set_Data.Items (I).Low);
+            Result (I).High :=
+               Naked_Maps.To_Wide_Character (Set_Data.Items (I).High);
          end loop;
       end return;
    end Overloaded_To_Ranges;
@@ -333,8 +309,8 @@ package body Ada.Strings.Maps is
             Naked_Maps.Add (
                Items,
                Last,
-               To_Wide_Wide_Character (Ranges (I).Low),
-               To_Wide_Wide_Character (Ranges (I).High));
+               Naked_Maps.To_Wide_Wide_Character (Ranges (I).Low),
+               Naked_Maps.To_Wide_Wide_Character (Ranges (I).High));
          end if;
       end loop;
       if Last < Items'First then
@@ -391,8 +367,8 @@ package body Ada.Strings.Maps is
    begin
       return Overloaded_To_Set (
          Wide_Wide_Character_Range'(
-            To_Wide_Wide_Character (Span.Low),
-            To_Wide_Wide_Character (Span.High)));
+            Naked_Maps.To_Wide_Wide_Character (Span.Low),
+            Naked_Maps.To_Wide_Wide_Character (Span.High)));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Span : Wide_Wide_Character_Range)
@@ -465,7 +441,7 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Set (Singleton : Wide_Character)
       return Character_Set is
    begin
-      return Overloaded_To_Set (To_Wide_Wide_Character (Singleton));
+      return Overloaded_To_Set (Naked_Maps.To_Wide_Wide_Character (Singleton));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Singleton : Wide_Wide_Character)
@@ -891,8 +867,8 @@ package body Ada.Strings.Maps is
       Element : Wide_Character)
       return Wide_Character is
    begin
-      return To_Wide_Character (
-         Overloaded_Value (Map, To_Wide_Wide_Character (Element)));
+      return Naked_Maps.To_Wide_Character (
+         Overloaded_Value (Map, Naked_Maps.To_Wide_Wide_Character (Element)));
    end Overloaded_Value;
 
    function Overloaded_Value (

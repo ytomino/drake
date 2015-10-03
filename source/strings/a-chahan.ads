@@ -13,34 +13,97 @@ package Ada.Characters.Handling is
 
    --  Character classification functions
 
-   function Is_Control (Item : Character) return Boolean;
-   function Is_Graphic (Item : Character) return Boolean;
-   function Is_Letter (Item : Character) return Boolean;
-   function Is_Lower (Item : Character) return Boolean;
-   function Is_Upper (Item : Character) return Boolean;
+   --  extended
+   function Overloaded_Is_Control (Item : Character) return Boolean;
+   function Overloaded_Is_Control (Item : Wide_Character) return Boolean;
+   function Overloaded_Is_Control (Item : Wide_Wide_Character)
+      return Boolean;
+   function Overloaded_Is_Graphic (Item : Character) return Boolean;
+   function Overloaded_Is_Graphic (Item : Wide_Character) return Boolean;
+   function Overloaded_Is_Graphic (Item : Wide_Wide_Character)
+      return Boolean;
+   function Overloaded_Is_Letter (Item : Character) return Boolean;
+   function Overloaded_Is_Letter (Item : Wide_Character) return Boolean;
+   function Overloaded_Is_Letter (Item : Wide_Wide_Character) return Boolean;
+   function Overloaded_Is_Lower (Item : Character) return Boolean;
+   function Overloaded_Is_Lower (Item : Wide_Character) return Boolean;
+   function Overloaded_Is_Lower (Item : Wide_Wide_Character) return Boolean;
+   function Overloaded_Is_Upper (Item : Character) return Boolean;
+   function Overloaded_Is_Upper (Item : Wide_Character) return Boolean;
+   function Overloaded_Is_Upper (Item : Wide_Wide_Character) return Boolean;
+   function Overloaded_Is_Digit (Item : Character) return Boolean;
+   function Overloaded_Is_Digit (Item : Wide_Character) return Boolean;
+   function Overloaded_Is_Digit (Item : Wide_Wide_Character) return Boolean;
+   function Overloaded_Is_Hexadecimal_Digit (Item : Character)
+      return Boolean;
+   function Overloaded_Is_Hexadecimal_Digit (Item : Wide_Character)
+      return Boolean;
+   function Overloaded_Is_Hexadecimal_Digit (Item : Wide_Wide_Character)
+      return Boolean;
+   function Overloaded_Is_Alphanumeric (Item : Character) return Boolean;
+   function Overloaded_Is_Alphanumeric (Item : Wide_Character)
+      return Boolean;
+   function Overloaded_Is_Alphanumeric (Item : Wide_Wide_Character)
+      return Boolean;
+   function Overloaded_Is_Special (Item : Character) return Boolean;
+   function Overloaded_Is_Special (Item : Wide_Character) return Boolean;
+   function Overloaded_Is_Special (Item : Wide_Wide_Character)
+      return Boolean;
+
+   pragma Inline (Overloaded_Is_Control);
+   pragma Inline (Overloaded_Is_Graphic);
+   pragma Inline (Overloaded_Is_Letter);
+   pragma Inline (Overloaded_Is_Lower);
+   pragma Inline (Overloaded_Is_Upper);
+   pragma Inline (Overloaded_Is_Digit);
+   pragma Inline (Overloaded_Is_Hexadecimal_Digit);
+   pragma Inline (Overloaded_Is_Alphanumeric);
+   pragma Inline (Overloaded_Is_Special);
+
+   function Is_Control (Item : Character) return Boolean
+      renames Overloaded_Is_Control;
+   function Is_Graphic (Item : Character) return Boolean
+      renames Overloaded_Is_Graphic;
+   function Is_Letter (Item : Character) return Boolean
+      renames Overloaded_Is_Letter;
+   function Is_Lower (Item : Character) return Boolean
+      renames Overloaded_Is_Lower;
+   function Is_Upper (Item : Character) return Boolean
+      renames Overloaded_Is_Upper;
    function Is_Basic (Item : Character) return Boolean
       renames Is_Letter; -- all letters are "basic" in ASCII
-   function Is_Digit (Item : Character) return Boolean;
+   function Is_Digit (Item : Character) return Boolean
+      renames Overloaded_Is_Digit;
    function Is_Decimal_Digit (Item : Character) return Boolean
       renames Is_Digit;
-   function Is_Hexadecimal_Digit (Item : Character) return Boolean;
-   function Is_Alphanumeric (Item : Character) return Boolean;
-   function Is_Special (Item : Character) return Boolean;
-
-   pragma Inline (Is_Control);
-   pragma Inline (Is_Graphic);
-   pragma Inline (Is_Letter);
-   pragma Inline (Is_Lower);
-   pragma Inline (Is_Upper);
-   pragma Inline (Is_Digit);
-   pragma Inline (Is_Hexadecimal_Digit);
-   pragma Inline (Is_Alphanumeric);
-   pragma Inline (Is_Special);
+   function Is_Hexadecimal_Digit (Item : Character) return Boolean
+      renames Overloaded_Is_Hexadecimal_Digit;
+   function Is_Alphanumeric (Item : Character) return Boolean
+      renames Overloaded_Is_Alphanumeric;
+   function Is_Special (Item : Character) return Boolean
+      renames Overloaded_Is_Special;
 
    --  Conversion functions for Character and String
 
-   function To_Lower (Item : Character) return Character;
-   function To_Upper (Item : Character) return Character;
+   --  extended
+   function Overloaded_To_Lower (Item : Character) return Character;
+   function Overloaded_To_Lower (Item : Wide_Character)
+      return Wide_Character;
+   function Overloaded_To_Lower (Item : Wide_Wide_Character)
+      return Wide_Wide_Character;
+   function Overloaded_To_Upper (Item : Character) return Character;
+   function Overloaded_To_Upper (Item : Wide_Character)
+      return Wide_Character;
+   function Overloaded_To_Upper (Item : Wide_Wide_Character)
+      return Wide_Wide_Character;
+
+   pragma Inline (Overloaded_To_Lower);
+   pragma Inline (Overloaded_To_Upper);
+
+   function To_Lower (Item : Character) return Character
+      renames Overloaded_To_Lower;
+   function To_Upper (Item : Character) return Character
+      renames Overloaded_To_Upper;
    --  extended from here
    --  Unicode case folding for comparison.
    function To_Case_Folding (Item : Character) return Character
@@ -48,19 +111,30 @@ package Ada.Characters.Handling is
    --  to here
    function To_Basic (Item : Character) return Character;
 
-   pragma Inline (To_Lower);
-   pragma Inline (To_Upper);
    pragma Inline (To_Basic);
 
-   function To_Lower (Item : String) return String;
-   function To_Upper (Item : String) return String;
+   --  extended
+   function Overloaded_To_Lower (Item : String) return String;
+   function Overloaded_To_Lower (Item : Wide_String) return Wide_String;
+   function Overloaded_To_Lower (Item : Wide_Wide_String)
+      return Wide_Wide_String;
+   function Overloaded_To_Upper (Item : String) return String;
+   function Overloaded_To_Upper (Item : Wide_String) return Wide_String;
+   function Overloaded_To_Upper (Item : Wide_Wide_String)
+      return Wide_Wide_String;
+
+   pragma Inline (Overloaded_To_Lower);
+   pragma Inline (Overloaded_To_Upper);
+
+   function To_Lower (Item : String) return String
+      renames Overloaded_To_Lower;
+   function To_Upper (Item : String) return String
+      renames Overloaded_To_Upper;
    --  extended from here
    function To_Case_Folding (Item : String) return String;
    --  to here
    function To_Basic (Item : String) return String;
 
-   pragma Inline (To_Lower);
-   pragma Inline (To_Upper);
    pragma Inline (To_Case_Folding);
    pragma Inline (To_Basic);
 

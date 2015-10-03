@@ -30,11 +30,31 @@ package body Ada.Strings.Naked_Maps is
       end if;
    end To_Character;
 
+   function To_Wide_Character (Item : Wide_Wide_Character)
+      return Wide_Character is
+   begin
+      if Characters.Conversions.Is_Wide_Character (Item) then
+         return Wide_Character'Val (Wide_Wide_Character'Pos (Item));
+      else
+         raise Constraint_Error;
+      end if;
+   end To_Wide_Character;
+
    function To_Wide_Wide_Character (Item : Character)
       return Wide_Wide_Character is
    begin
       if Characters.Conversions.Is_Wide_Wide_Character (Item) then
          return Wide_Wide_Character'Val (Character'Pos (Item));
+      else
+         raise Constraint_Error;
+      end if;
+   end To_Wide_Wide_Character;
+
+   function To_Wide_Wide_Character (Item : Wide_Character)
+      return Wide_Wide_Character is
+   begin
+      if Characters.Conversions.Is_Wide_Wide_Character (Item) then
+         return Wide_Wide_Character'Val (Wide_Character'Pos (Item));
       else
          raise Constraint_Error;
       end if;
@@ -327,6 +347,90 @@ package body Ada.Strings.Naked_Maps is
       Result : String (
          1 ..
          Source'Length * Characters.Conversions.Max_Length_In_String);
+      Source_Last : Natural := Source'First - 1;
+      Result_Last : Natural := Result'First - 1;
+   begin
+      while Source_Last < Source'Last loop
+         declare
+            Source_Index : constant Positive := Source_Last + 1;
+            Index : constant Positive := Result_Last + 1;
+            Code : Wide_Wide_Character;
+            Is_Illegal_Sequence : Boolean;
+         begin
+            --  get single unicode character
+            Characters.Conversions.Get (
+               Source (Source_Index .. Source'Last),
+               Source_Last,
+               Code,
+               Is_Illegal_Sequence);
+            if Is_Illegal_Sequence then
+               --  keep illegal sequence
+               Result_Last := Index + (Source_Last - Source_Index);
+               Result (Index .. Result_Last) :=
+                  Source (Source_Index .. Source_Last);
+            else
+               --  map it
+               Code := Value (Mapping, Code);
+               --  put it
+               Characters.Conversions.Put (
+                  Code,
+                  Result (Index .. Result'Last),
+                  Result_Last);
+            end if;
+         end;
+      end loop;
+      return Result (1 .. Result_Last);
+   end Translate;
+
+   function Translate (
+      Source : Wide_String;
+      Mapping : Character_Mapping)
+      return Wide_String
+   is
+      Result : Wide_String (
+         1 ..
+         Source'Length * Characters.Conversions.Max_Length_In_Wide_String);
+      Source_Last : Natural := Source'First - 1;
+      Result_Last : Natural := Result'First - 1;
+   begin
+      while Source_Last < Source'Last loop
+         declare
+            Source_Index : constant Positive := Source_Last + 1;
+            Index : constant Positive := Result_Last + 1;
+            Code : Wide_Wide_Character;
+            Is_Illegal_Sequence : Boolean;
+         begin
+            --  get single unicode character
+            Characters.Conversions.Get (
+               Source (Source_Index .. Source'Last),
+               Source_Last,
+               Code,
+               Is_Illegal_Sequence);
+            if Is_Illegal_Sequence then
+               --  keep illegal sequence
+               Result_Last := Index + (Source_Last - Source_Index);
+               Result (Index .. Result_Last) :=
+                  Source (Source_Index .. Source_Last);
+            else
+               --  map it
+               Code := Value (Mapping, Code);
+               --  put it
+               Characters.Conversions.Put (
+                  Code,
+                  Result (Index .. Result'Last),
+                  Result_Last);
+            end if;
+         end;
+      end loop;
+      return Result (1 .. Result_Last);
+   end Translate;
+
+   function Translate (
+      Source : Wide_Wide_String;
+      Mapping : Character_Mapping)
+      return Wide_Wide_String
+   is
+      Result : Wide_Wide_String (1 .. Source'Length);
       Source_Last : Natural := Source'First - 1;
       Result_Last : Natural := Result'First - 1;
    begin
