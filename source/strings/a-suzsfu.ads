@@ -2,18 +2,5 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.Strings.Wide_Wide_Functions;
 package Ada.Strings.Unbounded_Wide_Wide_Strings.Functions is
-   new Generic_Functions (
-      Space => Wide_Wide_Space,
-      Fixed_Index_From => Wide_Wide_Functions.Index,
-      Fixed_Index => Wide_Wide_Functions.Index,
-      Fixed_Index_Non_Blank_From => Wide_Wide_Functions.Index_Non_Blank,
-      Fixed_Index_Non_Blank => Wide_Wide_Functions.Index_Non_Blank,
-      Fixed_Count => Wide_Wide_Functions.Count,
-      Fixed_Replace_Slice => Wide_Wide_Functions.Replace_Slice,
-      Fixed_Insert => Wide_Wide_Functions.Insert,
-      Fixed_Overwrite => Wide_Wide_Functions.Overwrite,
-      Fixed_Delete => Wide_Wide_Functions.Delete,
-      Fixed_Trim => Wide_Wide_Functions.Trim,
-      Fixed_Head => Wide_Wide_Functions.Head,
-      Fixed_Tail => Wide_Wide_Functions.Tail);
+   new Generic_Functions (Wide_Wide_Functions);
 pragma Preelaborate (Ada.Strings.Unbounded_Wide_Wide_Strings.Functions);

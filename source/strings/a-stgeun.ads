@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  generalized unit of Ada.Strings.Unbounded
 with Ada.References;
 with Ada.Streams;
+with Ada.Strings.Generic_Fixed;
 with Ada.Unchecked_Deallocation;
 private with Ada.Finalization;
 private with System.Reference_Counting;
@@ -165,68 +166,11 @@ package Ada.Strings.Generic_Unbounded is
       return Slicing.Reference_Type;
 
    generic
-      Space : Character_Type;
-      with function Fixed_Index_From (
-         Source : String_Type;
-         Pattern : String_Type;
-         From : Positive;
-         Going : Direction)
-         return Natural;
-      with function Fixed_Index (
-         Source : String_Type;
-         Pattern : String_Type;
-         Going : Direction)
-         return Natural;
-      with function Fixed_Index_Non_Blank_From (
-         Source : String_Type;
-         From : Positive;
-         Going : Direction)
-         return Natural;
-      with function Fixed_Index_Non_Blank (
-         Source : String_Type;
-         Going : Direction)
-         return Natural;
-      with function Fixed_Count (
-         Source : String_Type;
-         Pattern : String_Type)
-         return Natural;
-      with function Fixed_Replace_Slice (
-         Source : String_Type;
-         Low : Positive;
-         High : Natural;
-         By : String_Type)
-         return String_Type;
-      with function Fixed_Insert (
-         Source : String_Type;
-         Before : Positive;
-         New_Item : String_Type)
-         return String_Type;
-      with function Fixed_Overwrite (
-         Source : String_Type;
-         Position : Positive;
-         New_Item : String_Type)
-         return String_Type;
-      with procedure Fixed_Delete (
-         Source : in out String_Type;
-         Last : in out Natural;
-         From : Positive;
-         Through : Natural);
-      with procedure Fixed_Trim (
-         Source : String_Type;
-         Side : Trim_End;
-         Blank : Character_Type;
-         First : out Positive;
-         Last : out Natural);
-      with function Fixed_Head (
-         Source : String_Type;
-         Count : Natural;
-         Pad : Character_Type)
-         return String_Type;
-      with function Fixed_Tail (
-         Source : String_Type;
-         Count : Natural;
-         Pad : Character_Type)
-         return String_Type;
+      with package Fixed_Functions is
+         new Generic_Fixed (
+            Character_Type => Character_Type,
+            String_Type => String_Type,
+            Space => <>);
    package Generic_Functions is
 
       --  Search subprograms
@@ -313,35 +257,35 @@ package Ada.Strings.Generic_Unbounded is
       function Trim (
          Source : Unbounded_String;
          Side : Trim_End;
-         Blank : Character_Type := Space) -- additional
+         Blank : Character_Type := Fixed_Functions.Space) -- additional
          return Unbounded_String;
 
       procedure Trim (
          Source : in out Unbounded_String;
          Side : Trim_End;
-         Blank : Character_Type := Space); -- additional
+         Blank : Character_Type := Fixed_Functions.Space); -- additional
 
       function Head (
          Source : Unbounded_String;
          Count : Natural;
-         Pad : Character_Type := Space)
+         Pad : Character_Type := Fixed_Functions.Space)
          return Unbounded_String;
 
       procedure Head (
          Source : in out Unbounded_String;
          Count : Natural;
-         Pad : Character_Type := Space);
+         Pad : Character_Type := Fixed_Functions.Space);
 
       function Tail (
          Source : Unbounded_String;
          Count : Natural;
-         Pad : Character_Type := Space)
+         Pad : Character_Type := Fixed_Functions.Space)
          return Unbounded_String;
 
       procedure Tail (
          Source : in out Unbounded_String;
          Count : Natural;
-         Pad : Character_Type := Space);
+         Pad : Character_Type := Fixed_Functions.Space);
 
       --  String constructor functions
 
@@ -355,118 +299,7 @@ package Ada.Strings.Generic_Unbounded is
          return Unbounded_String;
 
       generic
-         type Character_Set is private;
-         type Character_Mapping is private;
-         with function Fixed_Index_Mapping_From (
-            Source : String_Type;
-            Pattern : String_Type;
-            From : Positive;
-            Going : Direction;
-            Mapping : Character_Mapping)
-            return Natural;
-         with function Fixed_Index_Mapping (
-            Source : String_Type;
-            Pattern : String_Type;
-            Going : Direction;
-            Mapping : Character_Mapping)
-            return Natural;
-         with function Fixed_Index_Mapping_Function_From (
-            Source : String_Type;
-            Pattern : String_Type;
-            From : Positive;
-            Going : Direction;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-            return Natural;
-         with function Fixed_Index_Mapping_Function (
-            Source : String_Type;
-            Pattern : String_Type;
-            Going : Direction;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-            return Natural;
-         with function Fixed_Index_Mapping_Function_Per_Element_From (
-            Source : String_Type;
-            Pattern : String_Type;
-            From : Positive;
-            Going : Direction;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-            return Natural;
-         with function Fixed_Index_Mapping_Function_Per_Element (
-            Source : String_Type;
-            Pattern : String_Type;
-            Going : Direction;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-            return Natural;
-         with function Fixed_Index_Set_From (
-            Source : String_Type;
-            Set : Character_Set;
-            From : Positive;
-            Test : Membership;
-            Going : Direction)
-            return Natural;
-         with function Fixed_Index_Set (
-            Source : String_Type;
-            Set : Character_Set;
-            Test : Membership;
-            Going : Direction)
-            return Natural;
-         with function Fixed_Count_Mapping (
-            Source : String_Type;
-            Pattern : String_Type;
-            Mapping : Character_Mapping)
-            return Natural;
-         with function Fixed_Count_Mapping_Function (
-            Source : String_Type;
-            Pattern : String_Type;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-            return Natural;
-         with function Fixed_Count_Mapping_Function_Per_Element (
-            Source : String_Type;
-            Pattern : String_Type;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-            return Natural;
-         with function Fixed_Count_Set (
-            Source : String_Type;
-            Set : Character_Set)
-            return Natural;
-         with procedure Fixed_Find_Token_From (
-            Source : String_Type;
-            Set : Character_Set;
-            From : Positive;
-            Test : Membership;
-            First : out Positive;
-            Last : out Natural);
-         with procedure Fixed_Find_Token (
-            Source : String_Type;
-            Set : Character_Set;
-            Test : Membership;
-            First : out Positive;
-            Last : out Natural);
-         with function Fixed_Translate_Mapping (
-            Source : String_Type;
-            Mapping : Character_Mapping)
-            return String_Type;
-         with function Fixed_Translate_Mapping_Function (
-            Source : String_Type;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-            return String_Type;
-         with function Fixed_Translate_Mapping_Function_Per_Element (
-            Source : String_Type;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-            return String_Type;
-         with procedure Fixed_Trim_Set (
-            Source : String_Type;
-            Left : Character_Set;
-            Right : Character_Set;
-            First : out Positive;
-            Last : out Natural);
+         with package Fixed_Maps is new Fixed_Functions.Generic_Maps (<>);
       package Generic_Maps is
 
          --  Search subprograms
@@ -476,14 +309,14 @@ package Ada.Strings.Generic_Unbounded is
             Pattern : String_Type;
             From : Positive;
             Going : Direction := Forward;
-            Mapping : Character_Mapping)
+            Mapping : Fixed_Maps.Character_Mapping)
             return Natural;
 
          function Index (
             Source : Unbounded_String;
             Pattern : String_Type;
             Going : Direction := Forward;
-            Mapping : Character_Mapping)
+            Mapping : Fixed_Maps.Character_Mapping)
             return Natural;
 
          function Index (
@@ -522,7 +355,7 @@ package Ada.Strings.Generic_Unbounded is
 
          function Index (
             Source : Unbounded_String;
-            Set : Character_Set;
+            Set : Fixed_Maps.Character_Set;
             From : Positive;
             Test : Membership := Inside;
             Going : Direction := Forward)
@@ -530,7 +363,7 @@ package Ada.Strings.Generic_Unbounded is
 
          function Index (
             Source : Unbounded_String;
-            Set : Character_Set;
+            Set : Fixed_Maps.Character_Set;
             Test : Membership := Inside;
             Going : Direction := Forward)
             return Natural;
@@ -538,7 +371,7 @@ package Ada.Strings.Generic_Unbounded is
          function Count (
             Source : Unbounded_String;
             Pattern : String_Type;
-            Mapping : Character_Mapping)
+            Mapping : Fixed_Maps.Character_Mapping)
             return Natural;
 
          function Count (
@@ -555,12 +388,14 @@ package Ada.Strings.Generic_Unbounded is
                return Character_Type)
             return Natural;
 
-         function Count (Source : Unbounded_String; Set : Character_Set)
+         function Count (
+            Source : Unbounded_String;
+            Set : Fixed_Maps.Character_Set)
             return Natural;
 
          procedure Find_Token (
             Source : Unbounded_String;
-            Set : Character_Set;
+            Set : Fixed_Maps.Character_Set;
             From : Positive;
             Test : Membership;
             First : out Positive;
@@ -568,7 +403,7 @@ package Ada.Strings.Generic_Unbounded is
 
          procedure Find_Token (
             Source : Unbounded_String;
-            Set : Character_Set;
+            Set : Fixed_Maps.Character_Set;
             Test : Membership;
             First : out Positive;
             Last : out Natural);
@@ -577,12 +412,12 @@ package Ada.Strings.Generic_Unbounded is
 
          function Translate (
             Source : Unbounded_String;
-            Mapping : Character_Mapping)
+            Mapping : Fixed_Maps.Character_Mapping)
             return Unbounded_String;
 
          procedure Translate (
             Source : in out Unbounded_String;
-            Mapping : Character_Mapping);
+            Mapping : Fixed_Maps.Character_Mapping);
 
          function Translate (
             Source : Unbounded_String;
@@ -610,14 +445,14 @@ package Ada.Strings.Generic_Unbounded is
 
          function Trim (
             Source : Unbounded_String;
-            Left : Character_Set;
-            Right : Character_Set)
+            Left : Fixed_Maps.Character_Set;
+            Right : Fixed_Maps.Character_Set)
             return Unbounded_String;
 
          procedure Trim (
             Source : in out Unbounded_String;
-            Left : Character_Set;
-            Right : Character_Set);
+            Left : Fixed_Maps.Character_Set;
+            Right : Fixed_Maps.Character_Set);
 
       end Generic_Maps;
 
