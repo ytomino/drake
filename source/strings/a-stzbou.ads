@@ -82,14 +82,14 @@ package Ada.Strings.Wide_Wide_Bounded is
          Right : Wide_Wide_Character;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Bounded_Wide_Wide_Strings.Append;
+         renames Bounded_Wide_Wide_Strings.Append_Element;
 
       function Append (
          Left : Wide_Wide_Character;
          Right : Bounded_Wide_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Bounded_Wide_Wide_Strings.Append;
+         renames Bounded_Wide_Wide_Strings.Append_Element;
 
       procedure Append (
          Source : in out Bounded_Wide_Wide_String;
@@ -107,7 +107,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          Source : in out Bounded_Wide_Wide_String;
          New_Item : Wide_Wide_Character;
          Drop : Truncation := Error)
-         renames Bounded_Wide_Wide_Strings.Append;
+         renames Bounded_Wide_Wide_Strings.Append_Element;
 
       function "&" (Left, Right : Bounded_Wide_Wide_String)
          return Bounded_Wide_Wide_String
@@ -566,7 +566,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          Item : Wide_Wide_Character;
          Drop : Truncation := Error)
          return Bounded_Wide_Wide_String
-         renames Bounded_Wide_Wide_Strings.Replicate;
+         renames Bounded_Wide_Wide_Strings.Replicate_Element;
 
       function Replicate (
          Count : Natural;

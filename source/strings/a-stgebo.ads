@@ -43,7 +43,7 @@ package Ada.Strings.Generic_Bounded is
       New_Item : String_Type;
       Drop : Truncation := Error);
 
-   procedure Append (
+   procedure Append_Element (
       Source : in out Bounded_String;
       New_Item : Character_Type;
       Drop : Truncation := Error);
@@ -171,13 +171,13 @@ package Ada.Strings.Generic_Bounded is
          Drop : Truncation := Error)
          return Bounded_String;
 
-      function Append (
+      function Append_Element (
          Left : Bounded_String;
          Right : Character_Type;
          Drop : Truncation := Error)
          return Bounded_String;
 
-      function Append (
+      function Append_Element (
          Left : Character_Type;
          Right : Bounded_String;
          Drop : Truncation := Error)
@@ -195,11 +195,11 @@ package Ada.Strings.Generic_Bounded is
 --       Drop : Truncation := Error);
       --  procedure Append is inherited
 
---    procedure Append (
+--    procedure Append_Element (
 --       Source : in out Bounded_String;
 --       New_Item : Character_Type;
 --       Drop : Truncation := Error);
-      --  procedure Append is inherited
+      --  procedure Append_Element is inherited
 
       function "&" (Left, Right : Bounded_String)
          return Bounded_String;
@@ -282,7 +282,7 @@ package Ada.Strings.Generic_Bounded is
       function "*" (Left : Natural; Right : Bounded_String)
          return Bounded_String;
 
-      function Replicate (
+      function Replicate_Element (
          Count : Natural;
          Item : Character_Type;
          Drop : Truncation := Error)
@@ -505,7 +505,7 @@ package Ada.Strings.Generic_Bounded is
                   return Wide_Wide_Character)
                return Natural;
 
-            function Index_Per_Element (
+            function Index_Element (
                Source : Bounded.Bounded_String;
                Pattern : String_Type;
                From : Positive;
@@ -514,7 +514,7 @@ package Ada.Strings.Generic_Bounded is
                   return Character_Type)
                return Natural;
 
-            function Index_Per_Element (
+            function Index_Element (
                Source : Bounded.Bounded_String;
                Pattern : String_Type;
                Going : Direction := Forward;
@@ -550,7 +550,7 @@ package Ada.Strings.Generic_Bounded is
                   return Wide_Wide_Character)
                return Natural;
 
-            function Count_Per_Element (
+            function Count_Element (
                Source : Bounded.Bounded_String;
                Pattern : String_Type;
                Mapping : not null access function (From : Character_Type)
@@ -603,13 +603,13 @@ package Ada.Strings.Generic_Bounded is
                   return Wide_Wide_Character;
                Drop : Truncation := Error); -- additional
 
-            function Translate_Per_Element (
+            function Translate_Element (
                Source : Bounded.Bounded_String;
                Mapping : not null access function (From : Character_Type)
                   return Character_Type)
                return Bounded.Bounded_String;
 
-            procedure Translate_Per_Element (
+            procedure Translate_Element (
                Source : in out Bounded.Bounded_String;
                Mapping : not null access function (From : Character_Type)
                   return Character_Type);

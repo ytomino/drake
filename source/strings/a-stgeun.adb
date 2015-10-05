@@ -326,7 +326,7 @@ package body Ada.Strings.Generic_Unbounded is
       Source.Data.Items (Last + 1 .. Total_Length) := New_Item;
    end Append;
 
-   procedure Append (
+   procedure Append_Element (
       Source : in out Unbounded_String;
       New_Item : Character_Type)
    is
@@ -335,7 +335,7 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       Set_Length (Source, Total_Length);
       Source.Data.Items (Total_Length) := New_Item;
-   end Append;
+   end Append_Element;
 
    function "&" (Left, Right : Unbounded_String) return Unbounded_String is
    begin
@@ -366,7 +366,7 @@ package body Ada.Strings.Generic_Unbounded is
       return Unbounded_String is
    begin
       return Result : Unbounded_String := Left do
-         Append (Result, Right);
+         Append_Element (Result, Right);
       end return;
    end "&";
 
@@ -375,7 +375,7 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       return Result : Unbounded_String do
          Reserve_Capacity (Result, 1 + Right.Length);
-         Append (Result, Left);
+         Append_Element (Result, Left);
          Append (Result, Right);
       end return;
    end "&";
@@ -999,7 +999,7 @@ package body Ada.Strings.Generic_Unbounded is
                Mapping);
          end Index;
 
-         function Index_Per_Element (
+         function Index_Element (
             Source : Unbounded_String;
             Pattern : String_Type;
             From : Positive;
@@ -1010,15 +1010,15 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            return Fixed_Maps.Index_Per_Element (
+            return Fixed_Maps.Index_Element (
                Source.Data.Items (1 .. Source.Length),
                Pattern,
                From,
                Going,
                Mapping);
-         end Index_Per_Element;
+         end Index_Element;
 
-         function Index_Per_Element (
+         function Index_Element (
             Source : Unbounded_String;
             Pattern : String_Type;
             Going : Direction := Forward;
@@ -1028,12 +1028,12 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            return Fixed_Maps.Index_Per_Element (
+            return Fixed_Maps.Index_Element (
                Source.Data.Items (1 .. Source.Length),
                Pattern,
                Going,
                Mapping);
-         end Index_Per_Element;
+         end Index_Element;
 
          function Index (
             Source : Unbounded_String;
@@ -1098,7 +1098,7 @@ package body Ada.Strings.Generic_Unbounded is
                Mapping);
          end Count;
 
-         function Count_Per_Element (
+         function Count_Element (
             Source : Unbounded_String;
             Pattern : String_Type;
             Mapping : not null access function (From : Character_Type)
@@ -1107,11 +1107,11 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            return Fixed_Maps.Count_Per_Element (
+            return Fixed_Maps.Count_Element (
                Source.Data.Items (1 .. Source.Length),
                Pattern,
                Mapping);
-         end Count_Per_Element;
+         end Count_Element;
 
          function Count (
             Source : Unbounded_String;
@@ -1215,7 +1215,7 @@ package body Ada.Strings.Generic_Unbounded is
                   Mapping));
          end Translate;
 
-         function Translate_Per_Element (
+         function Translate_Element (
             Source : Unbounded_String;
             Mapping : not null access function (From : Character_Type)
                return Character_Type)
@@ -1224,12 +1224,12 @@ package body Ada.Strings.Generic_Unbounded is
             pragma Suppress (Access_Check);
          begin
             return To_Unbounded_String (
-               Fixed_Maps.Translate_Per_Element (
+               Fixed_Maps.Translate_Element (
                   Source.Data.Items (1 .. Source.Length),
                   Mapping));
-         end Translate_Per_Element;
+         end Translate_Element;
 
-         procedure Translate_Per_Element (
+         procedure Translate_Element (
             Source : in out Unbounded_String;
             Mapping : not null access function (From : Character_Type)
                return Character_Type)
@@ -1238,10 +1238,10 @@ package body Ada.Strings.Generic_Unbounded is
          begin
             Set_Unbounded_String (
                Source,
-               Fixed_Maps.Translate_Per_Element (
+               Fixed_Maps.Translate_Element (
                   Source.Data.Items (1 .. Source.Length),
                   Mapping));
-         end Translate_Per_Element;
+         end Translate_Element;
 
          function Trim (
             Source : Unbounded_String;

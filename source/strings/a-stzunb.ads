@@ -61,7 +61,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
    procedure Append (
       Source : in out Unbounded_Wide_Wide_String;
       New_Item : Wide_Wide_Character)
-      renames Unbounded_Wide_Wide_Strings.Append;
+      renames Unbounded_Wide_Wide_Strings.Append_Element;
 
    function "&" (Left, Right : Unbounded_Wide_Wide_String)
       return Unbounded_Wide_Wide_String

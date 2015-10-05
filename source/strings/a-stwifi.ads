@@ -16,22 +16,6 @@ package Ada.Strings.Wide_Fixed is
 
    --  Search subprograms
 
-   --  extended
-   --  These functions search signle character in string.
-   function Index (
-      Source : Wide_String;
-      Pattern : Wide_Character;
-      From : Positive;
-      Going : Direction := Forward)
-      return Natural
-      renames Wide_Functions.Index;
-   function Index (
-      Source : Wide_String;
-      Pattern : Wide_Character;
-      Going : Direction := Forward)
-      return Natural
-      renames Wide_Functions.Index;
-
    --  modified
 --  function Index (
 --    Source : Wide_String;
@@ -72,7 +56,7 @@ package Ada.Strings.Wide_Fixed is
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
       return Natural
-      renames Wide_Functions.Maps.Index_Per_Element;
+      renames Wide_Functions.Maps.Index_Element;
    function Index (
       Source : Wide_String;
       Pattern : Wide_String;
@@ -118,7 +102,7 @@ package Ada.Strings.Wide_Fixed is
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
       return Natural
-      renames Wide_Functions.Maps.Index_Per_Element;
+      renames Wide_Functions.Maps.Index_Element;
    function Index (
       Source : Wide_String;
       Pattern : Wide_String;
@@ -188,7 +172,7 @@ package Ada.Strings.Wide_Fixed is
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
       return Natural
-      renames Wide_Functions.Maps.Count_Per_Element;
+      renames Wide_Functions.Maps.Count_Element;
    function Count (
       Source : Wide_String;
       Pattern : Wide_String;
@@ -247,7 +231,7 @@ package Ada.Strings.Wide_Fixed is
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
       return Wide_String
-      renames Wide_Functions.Maps.Translate_Per_Element;
+      renames Wide_Functions.Maps.Translate_Element;
    function Translate (
       Source : Wide_String;
       Mapping : not null access function (From : Wide_Wide_Character)
@@ -263,7 +247,7 @@ package Ada.Strings.Wide_Fixed is
       Source : in out Wide_String;
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
-      renames Wide_Functions.Maps.Translate_Per_Element;
+      renames Wide_Functions.Maps.Translate_Element;
    procedure Translate (
       Source : in out Wide_String;
       Mapping : not null access function (From : Wide_Wide_Character)

@@ -20,24 +20,28 @@ package Ada.Strings.Generic_Fixed is
 
    --  extended
    --  Character searching.
-   function Index (
+   function Index_Element (
       Source : String_Type;
       Pattern : Character_Type;
       From : Positive;
       Going : Direction := Forward)
       return Natural;
-   function Index (
+   function Index_Element (
       Source : String_Type;
       Pattern : Character_Type;
       Going : Direction := Forward)
       return Natural;
-   pragma Inline (Index);
+   pragma Inline (Index_Element);
 
    --  extended
    --  Forward or backward only version.
-   function Index_Forward (Source : String_Type; Pattern : Character_Type)
+   function Index_Element_Forward (
+      Source : String_Type;
+      Pattern : Character_Type)
       return Natural;
-   function Index_Backward (Source : String_Type; Pattern : Character_Type)
+   function Index_Element_Backward (
+      Source : String_Type;
+      Pattern : Character_Type)
       return Natural;
 
    function Index (
@@ -312,7 +316,7 @@ package Ada.Strings.Generic_Fixed is
             return Wide_Wide_Character)
          return Natural;
 
-      function Index_Per_Element (
+      function Index_Element (
          Source : String_Type;
          Pattern : String_Type;
          From : Positive;
@@ -320,26 +324,26 @@ package Ada.Strings.Generic_Fixed is
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
          return Natural;
-      pragma Inline (Index_Per_Element);
+      pragma Inline (Index_Element);
 
-      function Index_Per_Element (
+      function Index_Element (
          Source : String_Type;
          Pattern : String_Type;
          Going : Direction := Forward;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
          return Natural;
-      pragma Inline (Index_Per_Element);
+      pragma Inline (Index_Element);
 
       --  extended
       --  Forward or backward only version.
-      function Index_Per_Element_Forward (
+      function Index_Element_Forward (
          Source : String_Type;
          Pattern : String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
          return Natural;
-      function Index_Per_Element_Backward (
+      function Index_Element_Backward (
          Source : String_Type;
          Pattern : String_Type;
          Mapping : not null access function (From : Character_Type)
@@ -389,7 +393,7 @@ package Ada.Strings.Generic_Fixed is
             return Wide_Wide_Character)
          return Natural;
 
-      function Count_Per_Element (
+      function Count_Element (
          Source : String_Type;
          Pattern : String_Type;
          Mapping : not null access function (From : Character_Type)
@@ -457,13 +461,13 @@ package Ada.Strings.Generic_Fixed is
          Justify : Alignment := Left; -- additional
          Pad : Character_Type := Space); -- additional
 
-      function Translate_Per_Element (
+      function Translate_Element (
          Source : String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
          return String_Type;
 
-      procedure Translate_Per_Element (
+      procedure Translate_Element (
          Source : in out String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type);

@@ -58,7 +58,7 @@ package Ada.Strings.Wide_Unbounded is
    procedure Append (
       Source : in out Unbounded_Wide_String;
       New_Item : Wide_Character)
-      renames Unbounded_Wide_Strings.Append;
+      renames Unbounded_Wide_Strings.Append_Element;
 
    function "&" (Left, Right : Unbounded_Wide_String)
       return Unbounded_Wide_String
@@ -208,7 +208,7 @@ package Ada.Strings.Wide_Unbounded is
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
       return Natural
-      renames Unbounded_Wide_Strings.Functions.Maps.Index_Per_Element;
+      renames Unbounded_Wide_Strings.Functions.Maps.Index_Element;
    function Index (
       Source : Unbounded_Wide_String;
       Pattern : Wide_String;
@@ -254,7 +254,7 @@ package Ada.Strings.Wide_Unbounded is
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
       return Natural
-      renames Unbounded_Wide_Strings.Functions.Maps.Index_Per_Element;
+      renames Unbounded_Wide_Strings.Functions.Maps.Index_Element;
    function Index (
       Source : Unbounded_Wide_String;
       Pattern : Wide_String;
@@ -324,7 +324,7 @@ package Ada.Strings.Wide_Unbounded is
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
       return Natural
-      renames Unbounded_Wide_Strings.Functions.Maps.Count_Per_Element;
+      renames Unbounded_Wide_Strings.Functions.Maps.Count_Element;
    function Count (
       Source : Unbounded_Wide_String;
       Pattern : Wide_String;
@@ -379,7 +379,7 @@ package Ada.Strings.Wide_Unbounded is
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
       return Unbounded_Wide_String
-      renames Unbounded_Wide_Strings.Functions.Maps.Translate_Per_Element;
+      renames Unbounded_Wide_Strings.Functions.Maps.Translate_Element;
    function Translate (
       Source : Unbounded_Wide_String;
       Mapping : not null access function (From : Wide_Wide_Character)
@@ -395,7 +395,7 @@ package Ada.Strings.Wide_Unbounded is
       Source : in out Unbounded_Wide_String;
       Mapping : not null access function (From : Wide_Character)
          return Wide_Character)
-      renames Unbounded_Wide_Strings.Functions.Maps.Translate_Per_Element;
+      renames Unbounded_Wide_Strings.Functions.Maps.Translate_Element;
    procedure Translate (
       Source : in out Unbounded_Wide_String;
       Mapping : not null access function (From : Wide_Wide_Character)

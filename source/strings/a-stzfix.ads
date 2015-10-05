@@ -16,22 +16,6 @@ package Ada.Strings.Wide_Wide_Fixed is
 
    --  Search subprograms
 
-   --  extended
-   --  These functions search signle character in string.
-   function Index (
-      Source : Wide_Wide_String;
-      Pattern : Wide_Wide_Character;
-      From : Positive;
-      Going : Direction := Forward)
-      return Natural
-      renames Wide_Wide_Functions.Index;
-   function Index (
-      Source : Wide_Wide_String;
-      Pattern : Wide_Wide_Character;
-      Going : Direction := Forward)
-      return Natural
-      renames Wide_Wide_Functions.Index;
-
    --  modified
 --  function Index (
 --    Source : Wide_Wide_String;

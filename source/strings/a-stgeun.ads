@@ -78,7 +78,7 @@ package Ada.Strings.Generic_Unbounded is
       Source : in out Unbounded_String;
       New_Item : String_Type);
 
-   procedure Append (
+   procedure Append_Element (
       Source : in out Unbounded_String;
       New_Item : Character_Type);
 
@@ -336,7 +336,7 @@ package Ada.Strings.Generic_Unbounded is
                return Wide_Wide_Character)
             return Natural;
 
-         function Index_Per_Element (
+         function Index_Element (
             Source : Unbounded_String;
             Pattern : String_Type;
             From : Positive;
@@ -345,7 +345,7 @@ package Ada.Strings.Generic_Unbounded is
                return Character_Type)
             return Natural;
 
-         function Index_Per_Element (
+         function Index_Element (
             Source : Unbounded_String;
             Pattern : String_Type;
             Going : Direction := Forward;
@@ -381,7 +381,7 @@ package Ada.Strings.Generic_Unbounded is
                return Wide_Wide_Character)
             return Natural;
 
-         function Count_Per_Element (
+         function Count_Element (
             Source : Unbounded_String;
             Pattern : String_Type;
             Mapping : not null access function (From : Character_Type)
@@ -430,13 +430,13 @@ package Ada.Strings.Generic_Unbounded is
             Mapping : not null access function (From : Wide_Wide_Character)
                return Wide_Wide_Character);
 
-         function Translate_Per_Element (
+         function Translate_Element (
             Source : Unbounded_String;
             Mapping : not null access function (From : Character_Type)
                return Character_Type)
             return Unbounded_String;
 
-         procedure Translate_Per_Element (
+         procedure Translate_Element (
             Source : in out Unbounded_String;
             Mapping : not null access function (From : Character_Type)
                return Character_Type);

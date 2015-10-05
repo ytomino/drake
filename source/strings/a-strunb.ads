@@ -56,7 +56,7 @@ package Ada.Strings.Unbounded is
    procedure Append (
       Source : in out Unbounded_String;
       New_Item : Character)
-      renames Unbounded_Strings.Append;
+      renames Unbounded_Strings.Append_Element;
 
    function "&" (Left, Right : Unbounded_String) return Unbounded_String
       renames Unbounded_Strings."&";
@@ -196,7 +196,7 @@ package Ada.Strings.Unbounded is
       Going : Direction := Forward;
       Mapping : not null access function (From : Character) return Character)
       return Natural
-      renames Unbounded_Strings.Functions.Maps.Index_Per_Element;
+      renames Unbounded_Strings.Functions.Maps.Index_Element;
    function Index (
       Source : Unbounded_String;
       Pattern : String;
@@ -241,7 +241,7 @@ package Ada.Strings.Unbounded is
       Going : Direction := Forward;
       Mapping : not null access function (From : Character) return Character)
       return Natural
-      renames Unbounded_Strings.Functions.Maps.Index_Per_Element;
+      renames Unbounded_Strings.Functions.Maps.Index_Element;
    function Index (
       Source : Unbounded_String;
       Pattern : String;
@@ -310,7 +310,7 @@ package Ada.Strings.Unbounded is
       Pattern : String;
       Mapping : not null access function (From : Character) return Character)
       return Natural
-      renames Unbounded_Strings.Functions.Maps.Count_Per_Element;
+      renames Unbounded_Strings.Functions.Maps.Count_Element;
    function Count (
       Source : Unbounded_String;
       Pattern : String;
@@ -364,7 +364,7 @@ package Ada.Strings.Unbounded is
       Source : Unbounded_String;
       Mapping : not null access function (From : Character) return Character)
       return Unbounded_String
-      renames Unbounded_Strings.Functions.Maps.Translate_Per_Element;
+      renames Unbounded_Strings.Functions.Maps.Translate_Element;
    function Translate (
       Source : Unbounded_String;
       Mapping : not null access function (From : Wide_Wide_Character)
@@ -379,7 +379,7 @@ package Ada.Strings.Unbounded is
    procedure Translate (
       Source : in out Unbounded_String;
       Mapping : not null access function (From : Character) return Character)
-      renames Unbounded_Strings.Functions.Maps.Translate_Per_Element;
+      renames Unbounded_Strings.Functions.Maps.Translate_Element;
    procedure Translate (
       Source : in out Unbounded_String;
       Mapping : not null access function (From : Wide_Wide_Character)
