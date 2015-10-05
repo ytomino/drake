@@ -57,7 +57,7 @@ package Ada.Strings.Wide_Wide_Fixed is
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
       return Natural
-      renames Wide_Wide_Functions.Maps.Index;
+      renames Wide_Wide_Functions.Maps.Index_Element;
 
    --  modified
 --  function Index (
@@ -95,7 +95,7 @@ package Ada.Strings.Wide_Wide_Fixed is
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
       return Natural
-      renames Wide_Wide_Functions.Maps.Index;
+      renames Wide_Wide_Functions.Maps.Index_Element;
 
    function Index (
       Source : Wide_Wide_String;
@@ -158,7 +158,7 @@ package Ada.Strings.Wide_Wide_Fixed is
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
       return Natural
-      renames Wide_Wide_Functions.Maps.Count;
+      renames Wide_Wide_Functions.Maps.Count_Element;
 
    function Count (
       Source : Wide_Wide_String;
@@ -210,7 +210,7 @@ package Ada.Strings.Wide_Wide_Fixed is
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
       return Wide_Wide_String
-      renames Wide_Wide_Functions.Maps.Translate;
+      renames Wide_Wide_Functions.Maps.Translate_Element;
 
    --  modified
 --  procedure Translate (
@@ -219,11 +219,8 @@ package Ada.Strings.Wide_Wide_Fixed is
    procedure Translate (
       Source : in out Wide_Wide_String;
       Mapping : not null access function (From : Wide_Wide_Character)
-         return Wide_Wide_Character;
-      Drop : Truncation := Error; -- additional
-      Justify : Alignment := Left; -- additional
-      Pad : Wide_Wide_Character := Wide_Wide_Space) -- additional
-      renames Wide_Wide_Functions.Maps.Translate;
+         return Wide_Wide_Character)
+      renames Wide_Wide_Functions.Maps.Translate_Element;
 
    --  Wide_Wide_String transformation subprograms
 

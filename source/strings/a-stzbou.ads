@@ -262,7 +262,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          Mapping : not null access function (From : Wide_Wide_Character)
             return Wide_Wide_Character)
          return Natural
-         renames Maps.Index;
+         renames Maps.Index_Element;
 
       --  modified
 --    function Index (
@@ -299,7 +299,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          Mapping : not null access function (From : Wide_Wide_Character)
             return Wide_Wide_Character)
          return Natural
-         renames Maps.Index;
+         renames Maps.Index_Element;
 
       function Index (
          Source : Bounded_Wide_Wide_String;
@@ -361,7 +361,7 @@ package Ada.Strings.Wide_Wide_Bounded is
          Mapping : not null access function (From : Wide_Wide_Character)
             return Wide_Wide_Character)
          return Natural
-         renames Maps.Count;
+         renames Maps.Count_Element;
 
       function Count (
          Source : Bounded_Wide_Wide_String;
@@ -411,10 +411,9 @@ package Ada.Strings.Wide_Wide_Bounded is
       function Translate (
          Source : Bounded_Wide_Wide_String;
          Mapping : not null access function (From : Wide_Wide_Character)
-            return Wide_Wide_Character;
-         Drop : Truncation := Error)
+            return Wide_Wide_Character)
          return Bounded_Wide_Wide_String
-         renames Maps.Translate;
+         renames Maps.Translate_Element;
 
       --  modified
 --    procedure Translate (
@@ -423,9 +422,8 @@ package Ada.Strings.Wide_Wide_Bounded is
       procedure Translate (
          Source : in out Bounded_Wide_Wide_String;
          Mapping : not null access function (From : Wide_Wide_Character)
-            return Wide_Wide_Character;
-         Drop : Truncation := Error)
-         renames Maps.Translate;
+            return Wide_Wide_Character)
+         renames Maps.Translate_Element;
 
       --  Wide_Wide_String transformation subprograms
 
