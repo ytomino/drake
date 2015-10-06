@@ -1311,9 +1311,12 @@ package body Ada.Strings.Generic_Fixed is
          Pattern : String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
-         return Natural is
+         return Natural
+      is
+         Mapped_Source : String_Type (Source'Range);
       begin
-         return Count (Translate_Element (Source, Mapping), Pattern);
+         Translate_Element (Source, Mapped_Source, Mapping);
+         return Count (Mapped_Source, Pattern);
       end Count_Element;
 
       function Count (
@@ -1485,15 +1488,10 @@ package body Ada.Strings.Generic_Fixed is
          Source : String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
-         return String_Type
-      is
-         Length : constant Integer := Source'Length;
+         return String_Type is
       begin
-         return Result : String_Type (1 .. Length) do
-            for I in 0 .. Length - 1 loop
-               Result (Result'First + I) :=
-                  Mapping (Source (Source'First + I));
-            end loop;
+         return Result : String_Type (1 .. Source'Length) do
+            Translate_Element (Source, Result, Mapping);
          end return;
       end Translate_Element;
 
@@ -1502,8 +1500,19 @@ package body Ada.Strings.Generic_Fixed is
          Mapping : not null access function (From : Character_Type)
             return Character_Type) is
       begin
-         for I in Source'Range loop
-            Source (I) := Mapping (Source (I));
+         Translate_Element (Source, Source, Mapping);
+      end Translate_Element;
+
+      procedure Translate_Element (
+         Source : String_Type;
+         Target : out String_Type;
+         Mapping : not null access function (From : Character_Type)
+            return Character_Type)
+      is
+         Length : constant Natural := Source'Length;
+      begin
+         for I in 0 .. Length - 1 loop
+            Target (Target'First + I) := Mapping (Source (Source'First + I));
          end loop;
       end Translate_Element;
 

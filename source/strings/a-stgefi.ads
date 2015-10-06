@@ -472,6 +472,14 @@ package Ada.Strings.Generic_Fixed is
          Mapping : not null access function (From : Character_Type)
             return Character_Type);
 
+      --  extended
+      --  For Bounede_String and Unbounede_String.
+      procedure Translate_Element (
+         Source : String_Type;
+         Target : out String_Type;
+         Mapping : not null access function (From : Character_Type)
+            return Character_Type);
+
       --  String selector subprograms
 
       function Trim (

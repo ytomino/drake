@@ -1062,10 +1062,16 @@ package body Ada.Strings.Generic_Bounded is
                   return Character_Type)
                return Bounded.Bounded_String is
             begin
-               return Bounded.To_Bounded_String (
+               return Result : Bounded.Bounded_String := (
+                  Capacity => Bounded.Max,
+                  Length => Source.Length,
+                  Element => <>)
+               do
                   Fixed_Maps.Translate_Element (
                      Source.Element (1 .. Source.Length),
-                     Mapping));
+                     Result.Element (1 .. Source.Length),
+                     Mapping);
+               end return;
             end Translate_Element;
 
             procedure Translate_Element (
@@ -1073,11 +1079,9 @@ package body Ada.Strings.Generic_Bounded is
                Mapping : not null access function (From : Character_Type)
                   return Character_Type) is
             begin
-               Bounded.Set_Bounded_String (
-                  Source,
-                  Fixed_Maps.Translate_Element (
-                     Source.Element (1 .. Source.Length),
-                     Mapping));
+               Fixed_Maps.Translate_Element (
+                  Source.Element (1 .. Source.Length),
+                  Mapping);
             end Translate_Element;
 
             function Trim (

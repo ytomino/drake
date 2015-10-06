@@ -1223,10 +1223,13 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            return To_Unbounded_String (
+            return Result : Unbounded_String do
+               Set_Length (Result, Source.Length);
                Fixed_Maps.Translate_Element (
                   Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+                  Result.Data.Items (1 .. Source.Length),
+                  Mapping);
+            end return;
          end Translate_Element;
 
          procedure Translate_Element (
@@ -1236,11 +1239,10 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            Set_Unbounded_String (
-               Source,
-               Fixed_Maps.Translate_Element (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            Unique (Source);
+            Fixed_Maps.Translate_Element (
+               Source.Data.Items (1 .. Source.Length),
+               Mapping);
          end Translate_Element;
 
          function Trim (
