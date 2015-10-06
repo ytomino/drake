@@ -890,9 +890,8 @@ package body Ada.Strings.Generic_Unbounded is
       function "*" (Left : Natural; Right : Character_Type)
          return Unbounded_String is
       begin
-         return Result : constant Unbounded_String :=
-            To_Unbounded_String (Left)
-         do
+         return Result : Unbounded_String do
+            Set_Length (Result, Left);
             for I in 1 .. Left loop
                Result.Data.Items (I) := Right;
             end loop;
@@ -903,17 +902,17 @@ package body Ada.Strings.Generic_Unbounded is
          return Unbounded_String
       is
          pragma Suppress (Access_Check);
+         Right_Length : constant Natural := Right'Length;
       begin
-         return Result : constant Unbounded_String :=
-            To_Unbounded_String (Left * Right'Length)
-         do
+         return Result : Unbounded_String do
+            Set_Length (Result, Left * Right_Length);
             declare
                First : Positive := 1;
             begin
                for I in 1 .. Left loop
-                  Result.Data.Items (First .. First + Right'Length - 1) :=
+                  Result.Data.Items (First .. First + Right_Length - 1) :=
                      Right;
-                  First := First + Right'Length;
+                  First := First + Right_Length;
                end loop;
             end;
          end return;
