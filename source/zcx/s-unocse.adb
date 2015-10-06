@@ -44,7 +44,7 @@ package body Separated is
          new Address_To_Named_Access_Conversions (
             Representation.Machine_Occurrence,
             Representation.Machine_Occurrence_Access);
-      Result : not null Representation.Machine_Occurrence_Access :=
+      Result : Representation.Machine_Occurrence_Access :=
          Conv.To_Pointer (
             Native_Allocators.Allocate (
                Representation.Machine_Occurrence'Size
