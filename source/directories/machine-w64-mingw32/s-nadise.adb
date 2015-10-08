@@ -45,11 +45,11 @@ package body System.Native_Directories.Searching is
    function New_Directory_Entry (Source : not null Directory_Entry_Access)
       return not null Directory_Entry_Access
    is
-      Result : Directory_Entry_Access;
+      Result : constant Directory_Entry_Access :=
+         WIN32_FIND_DATA_ptr_Conv.To_Pointer (
+            Standard_Allocators.Allocate (
+               C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
    begin
-      Result := WIN32_FIND_DATA_ptr_Conv.To_Pointer (
-         Standard_Allocators.Allocate (
-            C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
       Result.all := Source.all;
       return Result;
    end New_Directory_Entry;
@@ -185,6 +185,43 @@ package body System.Native_Directories.Searching is
          end if;
       end loop;
    end Get_Next_Entry;
+
+   procedure Get_Entry (
+      Directory : String;
+      Name : String;
+      Directory_Entry : aliased out Directory_Entry_Access; -- allocated
+      Additional : aliased in out Directory_Entry_Additional_Type)
+   is
+      pragma Unreferenced (Additional);
+      Search : aliased Search_Type;
+      Has_Entry : Boolean;
+   begin
+      --  raise Name_Error if Name contains wildcard characters
+      for I in Name'Range loop
+         case Name (I) is
+            when '?' | '*' =>
+               Raise_Exception (Name_Error'Identity);
+            when others =>
+               null;
+         end case;
+      end loop;
+      --  allocation
+      Directory_Entry := WIN32_FIND_DATA_ptr_Conv.To_Pointer (
+         Standard_Allocators.Allocate (
+            C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
+      --  filling components
+      Start_Search (
+         Search,
+         Directory,
+         Name,
+         (others => True),
+         Directory_Entry,
+         Has_Entry);
+      End_Search (Search, Raise_On_Error => True);
+      if not Has_Entry then
+         Raise_Exception (Name_Error'Identity);
+      end if;
+   end Get_Entry;
 
    function Simple_Name (Directory_Entry : not null Directory_Entry_Access)
       return String is

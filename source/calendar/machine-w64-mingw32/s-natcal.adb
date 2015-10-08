@@ -6,8 +6,8 @@ package body System.Native_Calendar is
    use type C.windef.WINBOOL;
 
    Diff : constant := 17324755200_000_000_0;
-   --  100-nanoseconds from 1601-01-01 (0 of FILETIME)
-   --    to 2150-01-01 (0 of Ada time)
+      --  100-nanoseconds from 1601-01-01 (0 of FILETIME)
+      --    to 2150-01-01 (0 of Ada time)
 
    --  implementation
 

@@ -4,6 +4,7 @@ with Ada.Containers.Indefinite_Ordered_Maps;
 with Ada.Containers.Indefinite_Ordered_Sets;
 with Ada.Directories;
 with Ada.Strings.Fixed;
+with Ada.Strings.Functions;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO.Iterators;
 procedure cirdep is
@@ -61,7 +62,7 @@ begin
 							Dep_Name : constant String :=
 								Line (
 									Line'First + 2 ..
-									Ada.Strings.Fixed.Index (Line (Line'First + 2 .. Line'Last), '.') - 1);
+									Ada.Strings.Functions.Index_Element (Line (Line'First + 2 .. Line'Last), '.') - 1);
 						begin
 							if Dep_Name /= Name then
 								Unit_Sets.Include (The_Set, Dep_Name);

@@ -5,6 +5,7 @@ with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.fnmatch;
+with C.stdint;
 with C.string;
 package body System.Native_Directories.Searching is
    use Ada.Exception_Identification.From_Here;
@@ -30,6 +31,45 @@ package body System.Native_Directories.Searching is
       n : Storage_Elements.Storage_Count)
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_memcpy";
+
+   procedure Get_Information (
+      Directory : String;
+      Directory_Entry : not null Directory_Entry_Access;
+      Information : aliased out C.sys.stat.struct_stat64;
+      errno : out C.signed_int);
+   procedure Get_Information (
+      Directory : String;
+      Directory_Entry : not null Directory_Entry_Access;
+      Information : aliased out C.sys.stat.struct_stat64;
+      errno : out C.signed_int)
+   is
+      S_Length : constant C.size_t :=
+         C.string.strlen (Directory_Entry.d_name (0)'Access);
+      Full_Name : C.char_array (
+         0 ..
+         Directory'Length * Zero_Terminated_Strings.Expanding
+            + 1 -- '/'
+            + S_Length);
+      Full_Name_Length : C.size_t;
+   begin
+      --  compose
+      Zero_Terminated_Strings.To_C (
+         Directory,
+         Full_Name (0)'Access,
+         Full_Name_Length);
+      Full_Name (Full_Name_Length) := '/';
+      Full_Name_Length := Full_Name_Length + 1;
+      Full_Name (Full_Name_Length .. Full_Name_Length + S_Length - 1) :=
+         Directory_Entry.d_name (0 .. S_Length - 1);
+      Full_Name_Length := Full_Name_Length + S_Length;
+      Full_Name (Full_Name_Length) := C.char'Val (0);
+      --  stat
+      if C.sys.stat.lstat64 (Full_Name (0)'Access, Information'Access) < 0 then
+         errno := C.errno.errno;
+      else
+         errno := 0;
+      end if;
+   end Get_Information;
 
    --  implementation
 
@@ -145,6 +185,41 @@ package body System.Native_Directories.Searching is
       end loop;
    end Get_Next_Entry;
 
+   procedure Get_Entry (
+      Directory : String;
+      Name : String;
+      Directory_Entry : aliased out Directory_Entry_Access;
+      Additional : aliased in out Directory_Entry_Additional_Type)
+   is
+      Dummy_dirent : C.bits.dirent.struct_dirent; -- to use 'Position
+      Name_Length : constant C.size_t := Name'Length;
+      Record_Length : constant System.Storage_Elements.Storage_Count :=
+         System.Storage_Elements.Storage_Offset'Max (
+            C.bits.dirent.struct_dirent'Size / Standard'Storage_Unit,
+            Dummy_dirent.d_name'Position
+               + System.Storage_Elements.Storage_Offset (Name_Length + 1));
+      errno : C.signed_int;
+   begin
+      --  allocation
+      Directory_Entry := dirent_ptr_Conv.To_Pointer (
+         Standard_Allocators.Allocate (Record_Length));
+      --  filling components
+      Directory_Entry.d_off := 0; -- ?
+      Directory_Entry.d_reclen := C.stdint.uint16_t (Record_Length);
+      System.Zero_Terminated_Strings.To_C (
+         Name,
+         Directory_Entry.d_name (0)'Access);
+      Get_Information (Directory, Directory_Entry, Additional.Information,
+         errno => errno);
+      if errno /= 0 then
+         Raise_Exception (Named_IO_Exception_Id (errno));
+      end if;
+      Directory_Entry.d_ino := Additional.Information.st_ino;
+      Directory_Entry.d_type := C.stdint.uint8_t (
+         C.Shift_Right (Additional.Information.st_mode, 12));
+      Additional.Filled := True;
+   end Get_Entry;
+
    function Simple_Name (Directory_Entry : not null Directory_Entry_Access)
       return String is
    begin
@@ -167,10 +242,7 @@ package body System.Native_Directories.Searching is
       return Ada.Streams.Stream_Element_Count is
    begin
       if not Additional.Filled then
-         Get_Information (
-            Directory,
-            Directory_Entry,
-            Additional.Information);
+         Get_Information (Directory, Directory_Entry, Additional.Information);
          Additional.Filled := True;
       end if;
       return Ada.Streams.Stream_Element_Offset (
@@ -184,10 +256,7 @@ package body System.Native_Directories.Searching is
       return Native_Calendar.Native_Time is
    begin
       if not Additional.Filled then
-         Get_Information (
-            Directory,
-            Directory_Entry,
-            Additional.Information);
+         Get_Information (Directory, Directory_Entry, Additional.Information);
          Additional.Filled := True;
       end if;
       return Additional.Information.st_mtim;
@@ -198,32 +267,12 @@ package body System.Native_Directories.Searching is
       Directory_Entry : not null Directory_Entry_Access;
       Information : aliased out C.sys.stat.struct_stat64)
    is
-      S_Length : constant C.size_t :=
-         C.string.strlen (Directory_Entry.d_name (0)'Access);
-      Full_Name : C.char_array (
-         0 ..
-         Directory'Length * Zero_Terminated_Strings.Expanding
-            + 1 -- '/'
-            + S_Length);
-      Full_Name_Length : C.size_t;
+      errno : C.signed_int;
    begin
-      --  compose
-      Zero_Terminated_Strings.To_C (
-         Directory,
-         Full_Name (0)'Access,
-         Full_Name_Length);
-      Full_Name (Full_Name_Length) := '/';
-      Full_Name_Length := Full_Name_Length + 1;
-      Full_Name (Full_Name_Length .. Full_Name_Length + S_Length - 1) :=
-         Directory_Entry.d_name (0 .. S_Length - 1);
-      Full_Name_Length := Full_Name_Length + S_Length;
-      Full_Name (Full_Name_Length) := C.char'Val (0);
-      --  stat
-      if C.sys.stat.lstat64 (
-         Full_Name (0)'Access,
-         Information'Access) < 0
-      then
-         Raise_Exception (IO_Exception_Id (C.errno.errno));
+      Get_Information (Directory, Directory_Entry, Information,
+         errno => errno);
+      if errno /= 0 then
+         Raise_Exception (IO_Exception_Id (errno));
       end if;
    end Get_Information;
 

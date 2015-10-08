@@ -1,134 +1,319 @@
+with Ada.Strings.Naked_Maps.Basic;
 with Ada.Strings.Naked_Maps.Case_Folding;
 with Ada.Strings.Naked_Maps.Case_Mapping;
 with Ada.Strings.Naked_Maps.General_Category;
 with Ada.Strings.Naked_Maps.Set_Constants;
 package body Ada.Characters.Handling is
 
-   function Is_Control (Item : Character) return Boolean is
+   function Overloaded_Is_Control (Item : Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.General_Category.Control.all);
+   end Overloaded_Is_Control;
+
+   function Overloaded_Is_Control (Item : Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.General_Category.Control.all);
+   end Overloaded_Is_Control;
+
+   function Overloaded_Is_Control (Item : Wide_Wide_Character)
+      return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.General_Category.Control.all);
-   end Is_Control;
+   end Overloaded_Is_Control;
 
-   function Is_Graphic (Item : Character) return Boolean is
+   function Overloaded_Is_Graphic (Item : Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Graphic_Set.all);
+   end Overloaded_Is_Graphic;
+
+   function Overloaded_Is_Graphic (Item : Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Graphic_Set.all);
+   end Overloaded_Is_Graphic;
+
+   function Overloaded_Is_Graphic (Item : Wide_Wide_Character)
+      return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.Set_Constants.Graphic_Set.all);
-   end Is_Graphic;
+   end Overloaded_Is_Graphic;
 
-   function Is_Letter (Item : Character) return Boolean is
+   function Overloaded_Is_Letter (Item : Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Letter_Set.all);
+   end Overloaded_Is_Letter;
+
+   function Overloaded_Is_Letter (Item : Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Letter_Set.all);
+   end Overloaded_Is_Letter;
+
+   function Overloaded_Is_Letter (Item : Wide_Wide_Character) return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.Set_Constants.Letter_Set.all);
-   end Is_Letter;
+   end Overloaded_Is_Letter;
 
-   function Is_Lower (Item : Character) return Boolean is
+   function Overloaded_Is_Lower (Item : Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.General_Category.Lowercase_Letter.all);
+   end Overloaded_Is_Lower;
+
+   function Overloaded_Is_Lower (Item : Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.General_Category.Lowercase_Letter.all);
+   end Overloaded_Is_Lower;
+
+   function Overloaded_Is_Lower (Item : Wide_Wide_Character) return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.General_Category.Lowercase_Letter.all);
-   end Is_Lower;
+   end Overloaded_Is_Lower;
 
-   function Is_Upper (Item : Character) return Boolean is
+   function Overloaded_Is_Upper (Item : Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.General_Category.Uppercase_Letter.all);
+   end Overloaded_Is_Upper;
+
+   function Overloaded_Is_Upper (Item : Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.General_Category.Uppercase_Letter.all);
+   end Overloaded_Is_Upper;
+
+   function Overloaded_Is_Upper (Item : Wide_Wide_Character) return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.General_Category.Uppercase_Letter.all);
-   end Is_Upper;
+   end Overloaded_Is_Upper;
 
-   function Is_Digit (Item : Character) return Boolean is
+   function Overloaded_Is_Digit (Item : Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Decimal_Digit_Set.all);
+   end Overloaded_Is_Digit;
+
+   function Overloaded_Is_Digit (Item : Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Decimal_Digit_Set.all);
+   end Overloaded_Is_Digit;
+
+   function Overloaded_Is_Digit (Item : Wide_Wide_Character) return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.Set_Constants.Decimal_Digit_Set.all);
-   end Is_Digit;
+   end Overloaded_Is_Digit;
 
-   function Is_Hexadecimal_Digit (Item : Character) return Boolean is
+   function Overloaded_Is_Hexadecimal_Digit (Item : Character)
+      return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Hexadecimal_Digit_Set.all);
+   end Overloaded_Is_Hexadecimal_Digit;
+
+   function Overloaded_Is_Hexadecimal_Digit (Item : Wide_Character)
+      return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Hexadecimal_Digit_Set.all);
+   end Overloaded_Is_Hexadecimal_Digit;
+
+   function Overloaded_Is_Hexadecimal_Digit (Item : Wide_Wide_Character)
+      return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.Set_Constants.Hexadecimal_Digit_Set.all);
-   end Is_Hexadecimal_Digit;
+   end Overloaded_Is_Hexadecimal_Digit;
 
-   function Is_Alphanumeric (Item : Character) return Boolean is
+   function Overloaded_Is_Alphanumeric (Item : Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Alphanumeric_Set.all);
+   end Overloaded_Is_Alphanumeric;
+
+   function Overloaded_Is_Alphanumeric (Item : Wide_Character)
+      return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Alphanumeric_Set.all);
+   end Overloaded_Is_Alphanumeric;
+
+   function Overloaded_Is_Alphanumeric (Item : Wide_Wide_Character)
+      return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.Set_Constants.Alphanumeric_Set.all);
-   end Is_Alphanumeric;
+   end Overloaded_Is_Alphanumeric;
 
-   function Is_Special (Item : Character) return Boolean is
+   function Overloaded_Is_Special (Item : Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Special_Set.all);
+   end Overloaded_Is_Special;
+
+   function Overloaded_Is_Special (Item : Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Set_Constants.Special_Set.all);
+   end Overloaded_Is_Special;
+
+   function Overloaded_Is_Special (Item : Wide_Wide_Character)
+      return Boolean is
    begin
       return Strings.Naked_Maps.Is_In (
          Item,
          Strings.Naked_Maps.Set_Constants.Special_Set.all);
-   end Is_Special;
+   end Overloaded_Is_Special;
 
-   function To_Lower (Item : Character) return Character is
+   function Overloaded_To_Lower (Item : Character) return Character is
+   begin
+      return Strings.Naked_Maps.To_Character (
+         Strings.Naked_Maps.Value (
+            Strings.Naked_Maps.Case_Mapping.Lower_Case_Map.all,
+            Strings.Naked_Maps.To_Wide_Wide_Character (Item)));
+   end Overloaded_To_Lower;
+
+   function Overloaded_To_Lower (Item : Wide_Character)
+      return Wide_Character is
+   begin
+      return Strings.Naked_Maps.To_Wide_Character (
+         Strings.Naked_Maps.Value (
+            Strings.Naked_Maps.Case_Mapping.Lower_Case_Map.all,
+            Strings.Naked_Maps.To_Wide_Wide_Character (Item)));
+   end Overloaded_To_Lower;
+
+   function Overloaded_To_Lower (Item : Wide_Wide_Character)
+      return Wide_Wide_Character is
    begin
       return Strings.Naked_Maps.Value (
          Strings.Naked_Maps.Case_Mapping.Lower_Case_Map.all,
          Item);
-   end To_Lower;
+   end Overloaded_To_Lower;
 
-   function To_Upper (Item : Character) return Character is
+   function Overloaded_To_Upper (Item : Character) return Character is
+   begin
+      return Strings.Naked_Maps.To_Character (
+         Strings.Naked_Maps.Value (
+            Strings.Naked_Maps.Case_Mapping.Upper_Case_Map.all,
+            Strings.Naked_Maps.To_Wide_Wide_Character (Item)));
+   end Overloaded_To_Upper;
+
+   function Overloaded_To_Upper (Item : Wide_Character)
+      return Wide_Character is
+   begin
+      return Strings.Naked_Maps.To_Wide_Character (
+         Strings.Naked_Maps.Value (
+            Strings.Naked_Maps.Case_Mapping.Upper_Case_Map.all,
+            Strings.Naked_Maps.To_Wide_Wide_Character (Item)));
+   end Overloaded_To_Upper;
+
+   function Overloaded_To_Upper (Item : Wide_Wide_Character)
+      return Wide_Wide_Character is
    begin
       return Strings.Naked_Maps.Value (
          Strings.Naked_Maps.Case_Mapping.Upper_Case_Map.all,
          Item);
-   end To_Upper;
+   end Overloaded_To_Upper;
 
-   function To_Case_Folding (Item : Character) return Character is
+   function To_Basic (Item : Character) return Character is
    begin
-      return Strings.Naked_Maps.Value (
-         Strings.Naked_Maps.Case_Folding.Case_Folding_Map.all,
-         Item);
-   end To_Case_Folding;
+      return Item; -- all letters are "basic" in ASCII
+   end To_Basic;
 
-   function To_Lower (Item : String) return String is
-      Result : String (
-         1 ..
-         Item'Length * Conversions.Max_Length_In_String);
-      Last : Natural;
+   function Overloaded_To_Lower (Item : String) return String is
    begin
-      Strings.Naked_Maps.Translate (
+      return Strings.Naked_Maps.Translate (
          Item,
-         Strings.Naked_Maps.Case_Mapping.Lower_Case_Map.all,
-         Result,
-         Last);
-      return Result (1 .. Last);
-   end To_Lower;
+         Strings.Naked_Maps.Case_Mapping.Lower_Case_Map.all);
+   end Overloaded_To_Lower;
 
-   function To_Upper (Item : String) return String is
-      Result : String (
-         1 ..
-         Item'Length * Conversions.Max_Length_In_String);
-      Last : Natural;
+   function Overloaded_To_Lower (Item : Wide_String) return Wide_String is
    begin
-      Strings.Naked_Maps.Translate (
+      return Strings.Naked_Maps.Translate (
          Item,
-         Strings.Naked_Maps.Case_Mapping.Upper_Case_Map.all,
-         Result,
-         Last);
-      return Result (1 .. Last);
-   end To_Upper;
+         Strings.Naked_Maps.Case_Mapping.Lower_Case_Map.all);
+   end Overloaded_To_Lower;
+
+   function Overloaded_To_Lower (Item : Wide_Wide_String)
+      return Wide_Wide_String is
+   begin
+      return Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Case_Mapping.Lower_Case_Map.all);
+   end Overloaded_To_Lower;
+
+   function Overloaded_To_Upper (Item : String) return String is
+   begin
+      return Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Case_Mapping.Upper_Case_Map.all);
+   end Overloaded_To_Upper;
+
+   function Overloaded_To_Upper (Item : Wide_String) return Wide_String is
+   begin
+      return Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Case_Mapping.Upper_Case_Map.all);
+   end Overloaded_To_Upper;
+
+   function Overloaded_To_Upper (Item : Wide_Wide_String)
+      return Wide_Wide_String is
+   begin
+      return Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Case_Mapping.Upper_Case_Map.all);
+   end Overloaded_To_Upper;
 
    function To_Case_Folding (Item : String) return String is
-      Result : String (
-         1 ..
-         Item'Length * Conversions.Max_Length_In_String);
-      Last : Natural;
    begin
-      Strings.Naked_Maps.Translate (
+      return Strings.Naked_Maps.Translate (
          Item,
-         Strings.Naked_Maps.Case_Folding.Case_Folding_Map.all,
-         Result,
-         Last);
-      return Result (1 .. Last);
+         Strings.Naked_Maps.Case_Folding.Case_Folding_Map.all);
    end To_Case_Folding;
+
+   function To_Basic (Item : String) return String is
+   begin
+      return Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Basic.Basic_Map.all);
+   end To_Basic;
 
    function Is_ISO_646 (Item : Character) return Boolean is
    begin

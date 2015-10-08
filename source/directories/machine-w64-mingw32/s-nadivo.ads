@@ -19,6 +19,8 @@ package System.Native_Directories.Volumes is
    end record;
    pragma Suppress_Initialization (Non_Controlled_File_System);
 
+   function Is_Assigned (FS : Non_Controlled_File_System) return Boolean;
+
    procedure Get (
       Name : String;
       FS : aliased out Non_Controlled_File_System);

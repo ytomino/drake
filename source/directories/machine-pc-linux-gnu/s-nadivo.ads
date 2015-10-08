@@ -9,6 +9,8 @@ package System.Native_Directories.Volumes is
 
    subtype Non_Controlled_File_System is C.sys.statfs.struct_statfs;
 
+   function Is_Assigned (FS : Non_Controlled_File_System) return Boolean;
+
    procedure Get (
       Name : String;
       FS : aliased out Non_Controlled_File_System);
@@ -40,9 +42,10 @@ package System.Native_Directories.Volumes is
       with Import, Convention => Ada, External_Name => "__drake_program_error";
 
    type File_System is record
-      Data : aliased Non_Controlled_File_System;
+      Data : aliased Non_Controlled_File_System := (
+         f_type => 0,
+         others => <>);
    end record;
-   pragma Suppress_Initialization (File_System);
 
    function Reference (Item : File_System)
       return not null access Non_Controlled_File_System;

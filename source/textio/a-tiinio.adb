@@ -47,38 +47,39 @@ package body Ada.Text_IO.Integer_IO is
    begin
       if Num'Size > Integer'Size then
          declare
-            Result : System.Formatting.Literals.Longest_Integer;
+            Base_Item : System.Formatting.Literals.Longest_Integer;
             Error : Boolean;
          begin
             System.Formatting.Literals.Get_Literal (
                From,
                Last,
-               Result,
+               Base_Item,
                Error => Error);
             if Error
-               or else Result not in
+               or else Base_Item not in
                   Long_Long_Integer (Num'First) .. Long_Long_Integer (Num'Last)
             then
                raise Data_Error;
             end if;
-            Item := Num (Result);
+            Item := Num (Base_Item);
          end;
       else
          declare
-            Result : Integer;
+            Base_Item : Integer;
             Error : Boolean;
          begin
             System.Formatting.Literals.Get_Literal (
                From,
                Last,
-               Result,
+               Base_Item,
                Error => Error);
             if Error
-               or else Result not in Integer (Num'First) .. Integer (Num'Last)
+               or else Base_Item not in
+                  Integer (Num'First) .. Integer (Num'Last)
             then
                raise Data_Error;
             end if;
-            Item := Num (Result);
+            Item := Num (Base_Item);
          end;
       end if;
    end Get_From_Field;

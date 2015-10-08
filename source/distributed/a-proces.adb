@@ -13,7 +13,9 @@ package body Ada.Processes is
       Output : Streams.Stream_IO.File_Type :=
          Streams.Stream_IO.Standard_Files.Standard_Output.all;
       Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Error.all) is
+         Streams.Stream_IO.Standard_Files.Standard_Error.all)
+   is
+      pragma Check (Pre, not Is_Open (Child) or else raise Status_Error);
    begin
       Create (
          Child,
@@ -50,11 +52,21 @@ package body Ada.Processes is
    end Create;
 
    procedure Wait (
-      Child : Process)
+      Child : in out Process;
+      Status : out Command_Line.Exit_Status)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Child) or else raise Status_Error);
+   begin
+      Do_Wait (Child, Status);
+   end Wait;
+
+   procedure Wait (
+      Child : in out Process)
    is
       Dummy : Command_Line.Exit_Status;
    begin
-      Wait (Child, Dummy);
+      Wait (Child, Dummy); -- checking the predicate
    end Wait;
 
    procedure Shell (

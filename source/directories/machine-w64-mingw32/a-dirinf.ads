@@ -12,8 +12,8 @@ package Ada.Directories.Information is
    function Is_Read_Only (Name : String) return Boolean;
 
    function Needs_Archiving (Name : String) return Boolean;
-   --  This generally means that the file needs to be backed up.
-   --  The flag is only cleared by backup programs.
+      --  This generally means that the file needs to be backed up.
+      --  The flag is only cleared by backup programs.
 
    function Is_Compressed (Name : String) return Boolean;
 
@@ -46,8 +46,8 @@ package Ada.Directories.Information is
    function Needs_Archiving (
       Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return Boolean;
-   --  This generally means that the file needs to be backed up.
-   --  The flag is only cleared by backup programs.
+      --  This generally means that the file needs to be backed up.
+      --  The flag is only cleared by backup programs.
 
    function Is_Compressed (
       Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
@@ -114,10 +114,10 @@ package Ada.Directories.Information is
 private
 
    type File_Id is record
+      --  These should be extend to 128bit for ReFS.
       FileIndexLow : C.windef.DWORD;
       FileIndexHigh : C.windef.DWORD;
       VolumeSerialNumber : C.windef.DWORD;
    end record;
-   --  it should be extend to 128bit for ReFS
 
 end Ada.Directories.Information;

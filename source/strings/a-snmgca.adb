@@ -1,4 +1,5 @@
-pragma Check_Policy (Validate => Ignore);
+pragma Check_Policy (Validate => Disable);
+--  with Ada.Strings.Naked_Maps.Debug;
 with Ada.UCD.General_Category;
 with System.Once;
 with System.Reference_Counting;
@@ -138,15 +139,15 @@ package body Ada.Strings.Naked_Maps.General_Category is
    begin
       Fill (T_16x1, Table_16x1, Offset => 0);
       Fill (T_16x2, Table_16x2, Offset => 0);
-      Merge (To (R_16_First .. R_17_First - 1), Last, T_16x1, T_16x2);
+      Union (To (R_16_First .. R_17_First - 1), Last, T_16x1, T_16x2);
       pragma Check (Validate, Last = R_17_First - 1);
       Fill (T_17x1, Table_17x1, Offset => 16#10000#);
       Fill (T_17x2, Table_17x2, Offset => 16#10000#);
-      Merge (To (R_17_First .. R_32_First - 1), Last, T_17x1, T_17x2);
+      Union (To (R_17_First .. R_32_First - 1), Last, T_17x1, T_17x2);
       pragma Check (Validate, Last = R_32_First - 1);
       Fill (T_32x1, Table_32x1);
       Fill (T_32x2, Table_32x2);
-      Merge (To (R_32_First .. R_32_Last), Last, T_32x1, T_32x2);
+      Union (To (R_32_First .. R_32_Last), Last, T_32x1, T_32x2);
       pragma Check (Validate, Last = R_32_Last);
       pragma Check (Validate, Last = To'Last);
    end Fill;
@@ -173,6 +174,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Cn_Table_1XXXXx2,
          UCD.General_Category.Cn_Table_XXXXXXXXx1,
          UCD.General_Category.Cn_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Unassigned_Set.all));
    end Unassigned_Init;
 
    function Unassigned return not null access Character_Set is
@@ -202,6 +204,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          Character_Type'Val (16#10FFFF#));
       All_Unassigned_Set.Items (All_Unassigned_Set.Items'Last).High :=
          Character_Type'Last;
+      pragma Check (Validate, Debug.Valid (All_Unassigned_Set.all));
    end All_Unassigned_Init;
 
    function All_Unassigned return not null access Character_Set is
@@ -232,6 +235,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Lu_Table_1XXXXx2,
          UCD.General_Category.Lu_Table_XXXXXXXXx1,
          UCD.General_Category.Lu_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Uppercase_Letter_Set.all));
    end Uppercase_Letter_Init;
 
    function Uppercase_Letter return not null access Character_Set is
@@ -262,6 +266,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Ll_Table_1XXXXx2,
          UCD.General_Category.Ll_Table_XXXXXXXXx1,
          UCD.General_Category.Ll_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Lowercase_Letter_Set.all));
    end Lowercase_Letter_Init;
 
    function Lowercase_Letter return not null access Character_Set is
@@ -292,6 +297,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Lt_Table_1XXXXx2,
          UCD.General_Category.Lt_Table_XXXXXXXXx1,
          UCD.General_Category.Lt_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Titlecase_Letter_Set.all));
    end Titlecase_Letter_Init;
 
    function Titlecase_Letter return not null access Character_Set is
@@ -322,6 +328,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Lm_Table_1XXXXx2,
          UCD.General_Category.Lm_Table_XXXXXXXXx1,
          UCD.General_Category.Lm_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Modifier_Letter_Set.all));
    end Modifier_Letter_Init;
 
    function Modifier_Letter return not null access Character_Set is
@@ -352,6 +359,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Lo_Table_1XXXXx2,
          UCD.General_Category.Lo_Table_XXXXXXXXx1,
          UCD.General_Category.Lo_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Other_Letter_Set.all));
    end Other_Letter_Init;
 
    function Other_Letter return not null access Character_Set is
@@ -382,6 +390,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Mn_Table_1XXXXx2,
          UCD.General_Category.Mn_Table_XXXXXXXXx1,
          UCD.General_Category.Mn_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Nonspacing_Mark_Set.all));
    end Nonspacing_Mark_Init;
 
    function Nonspacing_Mark return not null access Character_Set is
@@ -412,6 +421,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Me_Table_1XXXXx2,
          UCD.General_Category.Me_Table_XXXXXXXXx1,
          UCD.General_Category.Me_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Enclosing_Mark_Set.all));
    end Enclosing_Mark_Init;
 
    function Enclosing_Mark return not null access Character_Set is
@@ -442,6 +452,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Mc_Table_1XXXXx2,
          UCD.General_Category.Mc_Table_XXXXXXXXx1,
          UCD.General_Category.Mc_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Spacing_Mark_Set.all));
    end Spacing_Mark_Init;
 
    function Spacing_Mark return not null access Character_Set is
@@ -472,6 +483,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Nd_Table_1XXXXx2,
          UCD.General_Category.Nd_Table_XXXXXXXXx1,
          UCD.General_Category.Nd_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Decimal_Number_Set.all));
    end Decimal_Number_Init;
 
    function Decimal_Number return not null access Character_Set is
@@ -502,6 +514,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Nl_Table_1XXXXx2,
          UCD.General_Category.Nl_Table_XXXXXXXXx1,
          UCD.General_Category.Nl_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Letter_Number_Set.all));
    end Letter_Number_Init;
 
    function Letter_Number return not null access Character_Set is
@@ -532,6 +545,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.No_Table_1XXXXx2,
          UCD.General_Category.No_Table_XXXXXXXXx1,
          UCD.General_Category.No_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Other_Number_Set.all));
    end Other_Number_Init;
 
    function Other_Number return not null access Character_Set is
@@ -562,6 +576,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Zs_Table_1XXXXx2,
          UCD.General_Category.Zs_Table_XXXXXXXXx1,
          UCD.General_Category.Zs_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Space_Separator_Set.all));
    end Space_Separator_Init;
 
    function Space_Separator return not null access Character_Set is
@@ -592,6 +607,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Zl_Table_1XXXXx2,
          UCD.General_Category.Zl_Table_XXXXXXXXx1,
          UCD.General_Category.Zl_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Line_Separator_Set.all));
    end Line_Separator_Init;
 
    function Line_Separator return not null access Character_Set is
@@ -622,6 +638,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Zp_Table_1XXXXx2,
          UCD.General_Category.Zp_Table_XXXXXXXXx1,
          UCD.General_Category.Zp_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Paragraph_Separator_Set.all));
    end Paragraph_Separator_Init;
 
    function Paragraph_Separator return not null access Character_Set is
@@ -652,6 +669,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Cc_Table_1XXXXx2,
          UCD.General_Category.Cc_Table_XXXXXXXXx1,
          UCD.General_Category.Cc_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Control_Set.all));
    end Control_Init;
 
    function Control return not null access Character_Set is
@@ -682,6 +700,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Cf_Table_1XXXXx2,
          UCD.General_Category.Cf_Table_XXXXXXXXx1,
          UCD.General_Category.Cf_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Format_Set.all));
    end Format_Init;
 
    function Format return not null access Character_Set is
@@ -712,6 +731,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Co_Table_1XXXXx2,
          UCD.General_Category.Co_Table_XXXXXXXXx1,
          UCD.General_Category.Co_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Private_Use_Set.all));
    end Private_Use_Init;
 
    function Private_Use return not null access Character_Set is
@@ -742,6 +762,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Cs_Table_1XXXXx2,
          UCD.General_Category.Cs_Table_XXXXXXXXx1,
          UCD.General_Category.Cs_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Surrogate_Set.all));
    end Surrogate_Init;
 
    function Surrogate return not null access Character_Set is
@@ -772,6 +793,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Pd_Table_1XXXXx2,
          UCD.General_Category.Pd_Table_XXXXXXXXx1,
          UCD.General_Category.Pd_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Dash_Punctuation_Set.all));
    end Dash_Punctuation_Init;
 
    function Dash_Punctuation return not null access Character_Set is
@@ -802,6 +824,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Ps_Table_1XXXXx2,
          UCD.General_Category.Ps_Table_XXXXXXXXx1,
          UCD.General_Category.Ps_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Open_Punctuation_Set.all));
    end Open_Punctuation_Init;
 
    function Open_Punctuation return not null access Character_Set is
@@ -832,6 +855,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Pe_Table_1XXXXx2,
          UCD.General_Category.Pe_Table_XXXXXXXXx1,
          UCD.General_Category.Pe_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Close_Punctuation_Set.all));
    end Close_Punctuation_Init;
 
    function Close_Punctuation return not null access Character_Set is
@@ -862,6 +886,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Pc_Table_1XXXXx2,
          UCD.General_Category.Pc_Table_XXXXXXXXx1,
          UCD.General_Category.Pc_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Connector_Punctuation_Set.all));
    end Connector_Punctuation_Init;
 
    function Connector_Punctuation return not null access Character_Set is
@@ -892,6 +917,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Po_Table_1XXXXx2,
          UCD.General_Category.Po_Table_XXXXXXXXx1,
          UCD.General_Category.Po_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Other_Punctuation_Set.all));
    end Other_Punctuation_Init;
 
    function Other_Punctuation return not null access Character_Set is
@@ -922,6 +948,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Sm_Table_1XXXXx2,
          UCD.General_Category.Sm_Table_XXXXXXXXx1,
          UCD.General_Category.Sm_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Math_Symbol_Set.all));
    end Math_Symbol_Init;
 
    function Math_Symbol return not null access Character_Set is
@@ -952,6 +979,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Sc_Table_1XXXXx2,
          UCD.General_Category.Sc_Table_XXXXXXXXx1,
          UCD.General_Category.Sc_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Currency_Symbol_Set.all));
    end Currency_Symbol_Init;
 
    function Currency_Symbol return not null access Character_Set is
@@ -982,6 +1010,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Sk_Table_1XXXXx2,
          UCD.General_Category.Sk_Table_XXXXXXXXx1,
          UCD.General_Category.Sk_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Modifier_Symbol_Set.all));
    end Modifier_Symbol_Init;
 
    function Modifier_Symbol return not null access Character_Set is
@@ -1012,6 +1041,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.So_Table_1XXXXx2,
          UCD.General_Category.So_Table_XXXXXXXXx1,
          UCD.General_Category.So_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Other_Symbol_Set.all));
    end Other_Symbol_Init;
 
    function Other_Symbol return not null access Character_Set is
@@ -1042,6 +1072,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Pi_Table_1XXXXx2,
          UCD.General_Category.Pi_Table_XXXXXXXXx1,
          UCD.General_Category.Pi_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Initial_Punctuation_Set.all));
    end Initial_Punctuation_Init;
 
    function Initial_Punctuation return not null access Character_Set is
@@ -1072,6 +1103,7 @@ package body Ada.Strings.Naked_Maps.General_Category is
          UCD.General_Category.Pf_Table_1XXXXx2,
          UCD.General_Category.Pf_Table_XXXXXXXXx1,
          UCD.General_Category.Pf_Table_XXXXXXXXx2);
+      pragma Check (Validate, Debug.Valid (Final_Punctuation_Set.all));
    end Final_Punctuation_Init;
 
    function Final_Punctuation return not null access Character_Set is

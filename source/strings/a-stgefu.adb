@@ -1,7 +1,7 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
-package body Ada.Strings.Generic_Fixed is
+package body Ada.Strings.Generic_Functions is
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
@@ -85,7 +85,7 @@ package body Ada.Strings.Generic_Fixed is
       Fill (Target (Target_Last + 1 .. Target'Last), Pad);
    end Move;
 
-   function Index (
+   function Index_Element (
       Source : String_Type;
       Pattern : Character_Type;
       From : Positive;
@@ -94,13 +94,17 @@ package body Ada.Strings.Generic_Fixed is
    begin
       case Going is
          when Forward =>
-            return Index_Forward (Source (From .. Source'Last), Pattern);
+            return Index_Element_Forward (
+               Source (From .. Source'Last),
+               Pattern);
          when Backward =>
-            return Index_Backward (Source (Source'First .. From), Pattern);
+            return Index_Element_Backward (
+               Source (Source'First .. From),
+               Pattern);
       end case;
-   end Index;
+   end Index_Element;
 
-   function Index (
+   function Index_Element (
       Source : String_Type;
       Pattern : Character_Type;
       Going : Direction := Forward)
@@ -108,29 +112,31 @@ package body Ada.Strings.Generic_Fixed is
    begin
       case Going is
          when Forward =>
-            return Index_Forward (Source, Pattern);
+            return Index_Element_Forward (Source, Pattern);
          when Backward =>
-            return Index_Backward (Source, Pattern);
+            return Index_Element_Backward (Source, Pattern);
       end case;
-   end Index;
+   end Index_Element;
 
-   function Index_Forward (Source : String_Type; Pattern : Character_Type)
+   function Index_Element_Forward (
+      Source : String_Type;
+      Pattern : Character_Type)
       return Natural is
    begin
       if Character_Type'Size = Standard'Storage_Unit
          and then String_Type'Component_Size = Standard'Storage_Unit
       then
          declare
-            Result : constant System.Address :=
+            P : constant System.Address :=
                memchr (
                   Source'Address,
                   Character_Type'Pos (Pattern),
                   Source'Length);
          begin
-            if Result = System.Null_Address then
+            if P = System.Null_Address then
                return 0;
             else
-               return Source'First + Integer (Result - Source'Address);
+               return Source'First + Integer (P - Source'Address);
             end if;
          end;
       else
@@ -141,9 +147,11 @@ package body Ada.Strings.Generic_Fixed is
          end loop;
          return 0;
       end if;
-   end Index_Forward;
+   end Index_Element_Forward;
 
-   function Index_Backward (Source : String_Type; Pattern : Character_Type)
+   function Index_Element_Backward (
+      Source : String_Type;
+      Pattern : Character_Type)
       return Natural is
    begin
       --  __builtin_memrchr does not exist...
@@ -153,7 +161,7 @@ package body Ada.Strings.Generic_Fixed is
          end if;
       end loop;
       return 0;
-   end Index_Backward;
+   end Index_Element_Backward;
 
    function Index (
       Source : String_Type;
@@ -199,7 +207,7 @@ package body Ada.Strings.Generic_Fixed is
             Last : constant Integer := Source'Last - Pattern'Length + 1;
          begin
             while Current <= Last loop
-               Current := Index_Forward (
+               Current := Index_Element_Forward (
                   Source (Current .. Last),
                   Pattern (Pattern'First));
                exit when Current = 0;
@@ -225,7 +233,7 @@ package body Ada.Strings.Generic_Fixed is
             Current : Integer := Source'Last - Pattern'Length + 1;
          begin
             while Current >= Source'First loop
-               Current := Index_Backward (
+               Current := Index_Element_Backward (
                   Source (Source'First .. Current),
                   Pattern (Pattern'First));
                exit when Current = 0;
@@ -1068,7 +1076,7 @@ package body Ada.Strings.Generic_Fixed is
             By_Func'Access);
       end Index_Backward;
 
-      function Index_Per_Element (
+      function Index_Element (
          Source : String_Type;
          Pattern : String_Type;
          From : Positive;
@@ -1079,21 +1087,21 @@ package body Ada.Strings.Generic_Fixed is
       begin
          case Going is
             when Forward =>
-               return Index_Per_Element_Forward (
+               return Index_Element_Forward (
                   Source (From .. Source'Last),
                   Pattern,
                   Mapping);
             when Backward =>
-               return Index_Per_Element_Backward (
+               return Index_Element_Backward (
                   Source (
                      Source'First ..
                      Natural'Min (From + (Pattern'Length - 1), Source'Last)),
                   Pattern,
                   Mapping);
          end case;
-      end Index_Per_Element;
+      end Index_Element;
 
-      function Index_Per_Element (
+      function Index_Element (
          Source : String_Type;
          Pattern : String_Type;
          Going : Direction := Forward;
@@ -1103,13 +1111,13 @@ package body Ada.Strings.Generic_Fixed is
       begin
          case Going is
             when Forward =>
-               return Index_Per_Element_Forward (Source, Pattern, Mapping);
+               return Index_Element_Forward (Source, Pattern, Mapping);
             when Backward =>
-               return Index_Per_Element_Backward (Source, Pattern, Mapping);
+               return Index_Element_Backward (Source, Pattern, Mapping);
          end case;
-      end Index_Per_Element;
+      end Index_Element;
 
-      function Index_Per_Element_Forward (
+      function Index_Element_Forward (
          Source : String_Type;
          Pattern : String_Type;
          Mapping : not null access function (From : Character_Type)
@@ -1144,9 +1152,9 @@ package body Ada.Strings.Generic_Fixed is
             end loop;
             return 0;
          end if;
-      end Index_Per_Element_Forward;
+      end Index_Element_Forward;
 
-      function Index_Per_Element_Backward (
+      function Index_Element_Backward (
          Source : String_Type;
          Pattern : String_Type;
          Mapping : not null access function (From : Character_Type)
@@ -1182,7 +1190,7 @@ package body Ada.Strings.Generic_Fixed is
             end loop;
             return 0;
          end if;
-      end Index_Per_Element_Backward;
+      end Index_Element_Backward;
 
       function Index (
          Source : String_Type;
@@ -1298,15 +1306,18 @@ package body Ada.Strings.Generic_Fixed is
          return Count (Translate (Source, Mapping), Pattern);
       end Count;
 
-      function Count_Per_Element (
+      function Count_Element (
          Source : String_Type;
          Pattern : String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
-         return Natural is
+         return Natural
+      is
+         Mapped_Source : String_Type (Source'Range);
       begin
-         return Count (Translate_Per_Element (Source, Mapping), Pattern);
-      end Count_Per_Element;
+         Translate_Element (Source, Mapped_Source, Mapping);
+         return Count (Mapped_Source, Pattern);
+      end Count_Element;
 
       function Count (
          Source : String_Type;
@@ -1473,31 +1484,37 @@ package body Ada.Strings.Generic_Fixed is
             Pad);
       end Translate;
 
-      function Translate_Per_Element (
+      function Translate_Element (
          Source : String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type)
-         return String_Type
-      is
-         Length : constant Integer := Source'Length;
+         return String_Type is
       begin
-         return Result : String_Type (1 .. Length) do
-            for I in 0 .. Length - 1 loop
-               Result (Result'First + I) :=
-                  Mapping (Source (Source'First + I));
-            end loop;
+         return Result : String_Type (1 .. Source'Length) do
+            Translate_Element (Source, Result, Mapping);
          end return;
-      end Translate_Per_Element;
+      end Translate_Element;
 
-      procedure Translate_Per_Element (
+      procedure Translate_Element (
          Source : in out String_Type;
          Mapping : not null access function (From : Character_Type)
             return Character_Type) is
       begin
-         for I in Source'Range loop
-            Source (I) := Mapping (Source (I));
+         Translate_Element (Source, Source, Mapping);
+      end Translate_Element;
+
+      procedure Translate_Element (
+         Source : String_Type;
+         Target : out String_Type;
+         Mapping : not null access function (From : Character_Type)
+            return Character_Type)
+      is
+         Length : constant Natural := Source'Length;
+      begin
+         for I in 0 .. Length - 1 loop
+            Target (Target'First + I) := Mapping (Source (Source'First + I));
          end loop;
-      end Translate_Per_Element;
+      end Translate_Element;
 
       function Trim (
          Source : String_Type;
@@ -1554,4 +1571,4 @@ package body Ada.Strings.Generic_Fixed is
 
    end Generic_Maps;
 
-end Ada.Strings.Generic_Fixed;
+end Ada.Strings.Generic_Functions;

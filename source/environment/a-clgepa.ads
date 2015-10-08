@@ -72,6 +72,12 @@ private
 
    type Argument_Context_Access is access Argument_Context;
 
+   type Non_Controlled_Cursor is record
+      Argument_Context : aliased Argument_Context_Access;
+      Subindex : aliased Argument_Parsing.Cursor;
+   end record;
+   pragma Suppress_Initialization (Non_Controlled_Cursor);
+
    package Cursors is
 
       type Cursor is private;
@@ -81,16 +87,16 @@ private
          Subindex : Argument_Parsing.Cursor)
          return Cursor;
 
-      function Get_Argument_Context (Position : Cursor)
-         return Argument_Context_Access;
-      function Get_Subindex (Position : Cursor)
-         return not null access Argument_Parsing.Cursor;
+      function Reference (Position : Cursor)
+         return not null access Non_Controlled_Cursor;
+      pragma Inline (Reference);
 
    private
 
       type Cursor is new Finalization.Controlled with record
-         Argument_Context : aliased Argument_Context_Access;
-         Subindex : aliased Argument_Parsing.Cursor;
+         Data : aliased Non_Controlled_Cursor := (
+            Argument_Context => null,
+            Subindex => Argument_Parsing.No_Element);
       end record;
 
       overriding procedure Adjust (Object : in out Cursor);

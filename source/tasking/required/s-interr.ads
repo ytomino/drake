@@ -62,9 +62,9 @@ private
       Num_Attach_Handler : Natural) is
       limited new Tasking.Protected_Objects.Entries.Protection_Entries (
          Num_Entries) with
-    record
-       Previous_Handlers : Previous_Handler_Array (1 .. Num_Attach_Handler);
-    end record;
+   record
+      Previous_Handlers : Previous_Handler_Array (1 .. Num_Attach_Handler);
+   end record;
 
    overriding procedure Finalize (
       Object : in out Static_Interrupt_Protection);

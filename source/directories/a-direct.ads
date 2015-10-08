@@ -182,13 +182,16 @@ package Ada.Directories is
 --       Dynamic_Predicate => Is_Open (Open_Search_Type),
 --       Predicate_Failure => raise Status_Error;
 
+   --  extended
+   function Is_Open (Search : Search_Type) return Boolean;
+   pragma Inline (Is_Open);
+
    --  modified
    procedure Start_Search (
       Search : in out Search_Type;
       Directory : String;
       Pattern : String := "*"; -- additional default
       Filter : Filter_Type := (others => True));
-
    --  extended
    --  This function version Start_Search enables to write
    --    "for E of Start_Search (...) loop".
@@ -207,10 +210,20 @@ package Ada.Directories is
    procedure Get_Next_Entry (
       Search : in out Search_Type; -- Open_Search_Type
       Directory_Entry : out Directory_Entry_Type);
+   --  extended
+   --  The function version of Get_Next_Entry.
+   function Get_Next_Entry (
+      Search : aliased in out Search_Type) -- Open_Search_Type
+      return Directory_Entry_Type;
 
    --  extended
-   function Is_Open (Search : Search_Type) return Boolean;
-   pragma Inline (Is_Open);
+   --  Get Directory_Entry_Type of one file to get plural information.
+   procedure Get_Entry (
+      Name : String;
+      Directory_Entry : out Directory_Entry_Type);
+   function Get_Entry (
+      Name : String)
+      return Directory_Entry_Type;
 
    --  modified
    procedure Search (
@@ -345,7 +358,7 @@ private
 
    type Non_Controlled_Directory_Entry_Type is record
       Path : String_Access;
-      Directory_Entry :
+      Directory_Entry : aliased
          System.Native_Directories.Searching.Directory_Entry_Access;
       Additional : aliased
          System.Native_Directories.Searching.Directory_Entry_Additional_Type;

@@ -15,14 +15,11 @@ package body System.Program.Dynamic_Linking is
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
          Name'Length * Zero_Terminated_WStrings.Expanding);
-      Result : C.windef.HMODULE;
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      Result := C.winbase.LoadLibrary (W_Name (0)'Access);
-      if Result = null then
+      Handle := C.winbase.LoadLibrary (W_Name (0)'Access);
+      if Handle = null then
          Raise_Exception (Name_Error'Identity);
-      else
-         Handle := Result;
       end if;
    end Open;
 
@@ -39,6 +36,11 @@ package body System.Program.Dynamic_Linking is
    end Close;
 
    --  implementation
+
+   function Is_Open (Lib : Library) return Boolean is
+   begin
+      return Reference (Lib).all /= null;
+   end Is_Open;
 
    procedure Open (Lib : in out Library; Name : String) is
       pragma Check (Pre,
@@ -63,11 +65,6 @@ package body System.Program.Dynamic_Linking is
       Close (Handle.all, Raise_On_Error => True);
       Handle.all := null;
    end Close;
-
-   function Is_Open (Lib : Library) return Boolean is
-   begin
-      return Reference (Lib).all /= null;
-   end Is_Open;
 
    function Import (
       Lib : Library;

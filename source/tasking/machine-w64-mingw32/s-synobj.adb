@@ -388,8 +388,7 @@ package body System.Synchronous_Objects is
 
    procedure Enter_Writing (Object : in out RW_Lock) is
    begin
-      loop
-         exit when sync_bool_compare_and_swap (Object.State'Access, 0, -999);
+      while not sync_bool_compare_and_swap (Object.State'Access, 0, -999) loop
          Wait (Object.Writer_Barrier);
       end loop;
       Reset (Object.Reader_Barrier);

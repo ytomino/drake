@@ -93,13 +93,13 @@ package body Ada.Exceptions is
 
    function Save_Occurrence (
       Source : Exception_Occurrence)
-      return Exception_Occurrence_Access is
+      return Exception_Occurrence_Access
+   is
+      Result : constant Exception_Occurrence_Access :=
+         new Exception_Occurrence;
    begin
-      return Result : constant Exception_Occurrence_Access :=
-         new Exception_Occurrence
-      do
-         Save_Occurrence (Result.all, Source);
-      end return;
+      Save_Occurrence (Result.all, Source);
+      return Result;
    end Save_Occurrence;
 
    function Wide_Exception_Name (Id : Exception_Id) return Wide_String is

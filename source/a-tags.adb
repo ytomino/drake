@@ -123,6 +123,60 @@ package body Ada.Tags is
       end if;
    end DT_With_Checking;
 
+   --  inheritance relation check
+   function Is_Descendant (
+      Descendant, Ancestor : Tag;
+      Primary_Only : Boolean;
+      Same_Level : Boolean)
+      return Boolean;
+   function Is_Descendant (
+      Descendant, Ancestor : Tag;
+      Primary_Only : Boolean;
+      Same_Level : Boolean)
+      return Boolean
+   is
+      D_DT : constant Dispatch_Table_Ptr := DT (Descendant);
+      A_DT : constant Dispatch_Table_Ptr := DT (Ancestor);
+      D_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (D_DT.TSD);
+      A_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (A_DT.TSD);
+   begin
+      if Same_Level and then D_TSD.Access_Level /= A_TSD.Access_Level then
+         return False;
+      else
+         case A_DT.Signature is
+            when Primary_DT => -- tagged record
+               declare
+                  Offset : constant Integer := D_TSD.Idepth - A_TSD.Idepth;
+               begin
+                  return Offset >= 0
+                     and then D_TSD.Tags_Table (Offset) = Ancestor;
+               end;
+            when Secondary_DT | Unknown => -- interface
+               if Primary_Only then
+                  return False;
+               else
+                  declare
+                     Intf_Table : constant Interface_Data_Ptr :=
+                        D_TSD.Interfaces_Table;
+                  begin
+                     if Intf_Table /= null then
+                        for Id in 1 .. Intf_Table.Nb_Ifaces loop
+                           if Intf_Table.Ifaces_Table (Id).Iface_Tag =
+                              Ancestor
+                           then
+                              return True;
+                           end if;
+                        end loop;
+                     end if;
+                     return False;
+                  end;
+               end if;
+         end case;
+      end if;
+   end Is_Descendant;
+
    --  implementation
 
    function Base_Address (This : System.Address) return System.Address is
@@ -153,18 +207,23 @@ package body Ada.Tags is
    end Base_Address;
 
    function Descendant_Tag (External : String; Ancestor : Tag) return Tag is
-      Result : constant Tag := Internal_Tag (External);
    begin
-      if not Is_Descendant (
-         Result,
-         Ancestor,
-         Primary_Only => False,
-         Same_Level => False)
-      then
+      if Ancestor = No_Tag then
          Raise_Exception (Tag_Error'Identity);
-      else
-         return Result;
       end if;
+      declare
+         Result : constant Tag := Internal_Tag (External);
+      begin
+         if not Is_Descendant (
+            Result,
+            Ancestor,
+            Primary_Only => False,
+            Same_Level => False)
+         then
+            Raise_Exception (Tag_Error'Identity);
+         end if;
+         return Result;
+      end;
    end Descendant_Tag;
 
    function Displace (This : System.Address; T : Tag) return System.Address is
@@ -187,14 +246,12 @@ package body Ada.Tags is
                         renames Iface_Table.Ifaces_Table (Id);
                   begin
                      if E.Iface_Tag = T then
-                        return Result : System.Address do
-                           if E.Static_Offset_To_Top then
-                              Result := Base_Object + E.Offset_To_Top_Value;
-                           else
-                              Result := Base_Object
-                                 + E.Offset_To_Top_Func.all (Base_Object);
-                           end if;
-                        end return;
+                        if E.Static_Offset_To_Top then
+                           return Base_Object + E.Offset_To_Top_Value;
+                        else
+                           return Base_Object
+                              + E.Offset_To_Top_Func.all (Base_Object);
+                        end if;
                      end if;
                   end;
                end loop;
@@ -255,7 +312,7 @@ package body Ada.Tags is
          null; -- nested
       else
          System.Shared_Locking.Enter;
-         E_Insert (External_Map, T, Result); -- library level
+         E_Insert (External_Map, T, Result); -- library-level
          System.Shared_Locking.Leave;
       end if;
       return Result;
@@ -310,22 +367,25 @@ package body Ada.Tags is
                Addr_First
                + System.Formatting.Address.Address_String'Length
                - 1;
-            Result : System.Address;
-            Error : Boolean;
          begin
             if Addr_Last >= External'Last
                or else External (Addr_Last + 1) /= '#'
             then
                Raise_Exception (Tag_Error'Identity);
             end if;
-            System.Formatting.Address.Value (
-               External (Addr_First .. Addr_Last),
-               Result,
-               Error => Error);
-            if Error then
-               Raise_Exception (Tag_Error'Identity);
-            end if;
-            return Tag_Conv.To_Pointer (Result);
+            declare
+               Result : System.Address;
+               Error : Boolean;
+            begin
+               System.Formatting.Address.Value (
+                  External (Addr_First .. Addr_Last),
+                  Result,
+                  Error => Error);
+               if Error then
+                  Raise_Exception (Tag_Error'Identity);
+               end if;
+               return Tag_Conv.To_Pointer (Result);
+            end;
          end;
       else
          declare
@@ -350,57 +410,12 @@ package body Ada.Tags is
       return TSD.Type_Is_Abstract;
    end Is_Abstract;
 
-   function Is_Descendant (
-      Descendant, Ancestor : Tag;
-      Primary_Only : Boolean;
-      Same_Level : Boolean)
-      return Boolean
-   is
-      D_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Descendant);
-      A_DT : constant Dispatch_Table_Ptr := DT_With_Checking (Ancestor);
-      D_TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (D_DT.TSD);
-      A_TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (A_DT.TSD);
-   begin
-      if Same_Level and then D_TSD.Access_Level /= A_TSD.Access_Level then
-         return False;
-      else
-         case A_DT.Signature is
-            when Primary_DT => -- tagged record
-               declare
-                  Offset : constant Integer := D_TSD.Idepth - A_TSD.Idepth;
-               begin
-                  return Offset >= 0
-                     and then D_TSD.Tags_Table (Offset) = Ancestor;
-               end;
-            when Secondary_DT | Unknown => -- interface
-               if Primary_Only then
-                  return False;
-               else
-                  declare
-                     Intf_Table : constant Interface_Data_Ptr :=
-                        D_TSD.Interfaces_Table;
-                  begin
-                     if Intf_Table /= null then
-                        for Id in 1 .. Intf_Table.Nb_Ifaces loop
-                           if Intf_Table.Ifaces_Table (Id).Iface_Tag =
-                              Ancestor
-                           then
-                              return True;
-                           end if;
-                        end loop;
-                     end if;
-                     return False;
-                  end;
-               end if;
-         end case;
-      end if;
-   end Is_Descendant;
-
    function Is_Descendant_At_Same_Level (Descendant, Ancestor : Tag)
       return Boolean is
    begin
+      if Descendant = No_Tag or else Ancestor = No_Tag then
+         Raise_Exception (Tag_Error'Identity);
+      end if;
       return Is_Descendant (
          Descendant,
          Ancestor,
@@ -436,7 +451,7 @@ package body Ada.Tags is
    end IW_Membership;
 
    function Needs_Finalization (T : Tag) return Boolean is
-      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      DT : constant Dispatch_Table_Ptr := Tags.DT (T);
       TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT.TSD);
    begin

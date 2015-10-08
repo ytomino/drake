@@ -758,6 +758,9 @@ package body System.Tasks is
    end Activate;
 
    procedure Activate (T : Task_Id; Error : out Activation_Error);
+     --  This procedure does not free activation chain,
+     --    so it must call above Activate for taking activation chain.
+
    procedure Activate (T : Task_Id; Error : out Activation_Error) is
       Error_On_Execute : Execution_Error;
    begin
@@ -781,8 +784,6 @@ package body System.Tasks is
             Synchronous_Objects.Leave (C.Mutex);
          end;
       end if;
-      --  Note: This procedure does not free activation chain,
-      --    so it must call above Activate for taking activation chain.
    end Activate;
 
    --  completion
@@ -1240,7 +1241,7 @@ package body System.Tasks is
       New_Master : Master_Access) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      --  note: keep master level of tasks because it's meaningless
+      --  keep master level of tasks because it's meaningless
       if From.all /= null then
          --  change completion lists
          declare
@@ -1417,7 +1418,7 @@ package body System.Tasks is
          Result := Result.Previous;
       end loop;
       if Result = null then
-         --  library level
+         --  library-level
          pragma Assert (Parent = Environment_Task_Record'Access);
          if Parent.Master_Top = null then
             Enter_Master;

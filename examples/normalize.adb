@@ -1,4 +1,7 @@
+with Ada.Characters.Latin_1;
 with Ada.Strings.Composites;
+with Ada.Strings.Fixed;
+with Ada.Strings.Maps.Constants;
 with Ada.Strings.Normalization;
 procedure normalize is
 	use type Ada.Strings.Composites.Class;
@@ -73,5 +76,27 @@ begin
 	pragma Assert (not Ada.Strings.Normalization.Less ((1 => WWC'Val (16#00C1#)), 'A' & WWC'Val (16#0301#)));
 	pragma Assert (not Ada.Strings.Normalization.Less ((1 => WWC'Val (16#304c#)), WWC'Val (16#304b#) & WWC'Val (16#3099#)));
 	pragma Assert (not Ada.Strings.Normalization.Less (WWC'Val (16#304b#) & WWC'Val (16#3099#), (1 => WWC'Val (16#304c#))));
+	-- To_Base
+	declare
+		package Latin_1 renames Ada.Characters.Latin_1;
+		package F renames Ada.Strings.Fixed;
+		package M renames Ada.Strings.Maps;
+	begin
+		pragma Assert (M.Value (M.Constants.Base_Map, '6') = '6'); -- 16#36#
+		pragma Assert (M.Value (M.Constants.Base_Map, 'Y') = 'Y'); -- 16#59#
+		pragma Assert (M.Value (M.Constants.Base_Map, Latin_1.LC_R) = 'r'); -- 16#72#
+		pragma Assert (F.Translate (Latin_1.UC_O_Acute, M.Constants.Base_Map) = "O"); -- 16#D4#
+		pragma Assert (F.Translate (Latin_1.UC_O_Tilde, M.Constants.Base_Map) = "O"); -- 16#D6#
+		pragma Assert (F.Translate (Latin_1.UC_U_Grave, M.Constants.Base_Map) = "U"); -- 16#D9#
+		pragma Assert (F.Translate (Latin_1.UC_U_Acute, M.Constants.Base_Map) = "U"); -- 16#DA#
+		pragma Assert (F.Translate (Latin_1.LC_A_Circumflex, M.Constants.Base_Map) = "a"); -- 16#E2#
+		pragma Assert (F.Translate (Latin_1.LC_A_Tilde, M.Constants.Base_Map) = "a"); -- 16#E3#
+		pragma Assert (F.Translate (Latin_1.LC_E_Grave, M.Constants.Base_Map) = "e"); -- 16#E8#
+		pragma Assert (F.Translate (Latin_1.LC_E_Acute, M.Constants.Base_Map) = "e"); -- 16#E9#
+		pragma Assert (F.Translate (Latin_1.LC_I_Circumflex, M.Constants.Base_Map) = "i"); -- 16#EE#
+		pragma Assert (F.Translate (Latin_1.LC_I_Diaeresis, M.Constants.Base_Map) = "i"); -- 16#EF#
+		pragma Assert (F.Translate (Latin_1.LC_Y_Acute, M.Constants.Base_Map) = "y"); -- 16#FD#
+		pragma Assert (F.Translate (Latin_1.LC_Y_Diaeresis, M.Constants.Base_Map) = "y"); -- 16#FF#
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end normalize;

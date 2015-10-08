@@ -658,11 +658,11 @@ package body Ada.Text_IO.Editing is
          return Boolean
       is
          Error : Boolean;
-         Result : String (1 .. Length (Pic, Currency));
+         Dummy : String (1 .. Length (Pic, Currency));
       begin
          Editing.Image (
             Long_Long_Integer'Integer_Value (Item),
-            Result,
+            Dummy,
             Num'Scale,
             Num'Fore,
             Pic,
@@ -743,29 +743,33 @@ package body Ada.Text_IO.Editing is
             Fill => '*', -- Editing.Default_Fill
             Separator => ',', -- Editing.Default_Separator
             Radix_Mark => '.'); -- Editing.Default_Radix_Mark
-         Result : Wide_String (Image'Range);
-         I : Positive := Result'First;
       begin
-         while I <= Result'Last loop
-            case Image (I) is
-               when '$' =>
-                  Result (I .. I + Currency'Length - 1) := Currency;
-                  I := I + Currency'Length;
-               when '*' =>
-                  Result (I) := Fill;
-                  I := I + 1;
-               when ',' =>
-                  Result (I) := Separator;
-                  I := I + 1;
-               when '.' =>
-                  Result (I) := Radix_Mark;
-                  I := I + 1;
-               when others =>
-                  Result (I) := Wide_Character'Val (Character'Pos (Image (I)));
-                  I := I + 1;
-            end case;
-         end loop;
-         return Result;
+         return Result : Wide_String (Image'Range) do
+            declare
+               I : Positive := Result'First;
+            begin
+               while I <= Result'Last loop
+                  case Image (I) is
+                     when '$' =>
+                        Result (I .. I + Currency'Length - 1) := Currency;
+                        I := I + Currency'Length;
+                     when '*' =>
+                        Result (I) := Fill;
+                        I := I + 1;
+                     when ',' =>
+                        Result (I) := Separator;
+                        I := I + 1;
+                     when '.' =>
+                        Result (I) := Radix_Mark;
+                        I := I + 1;
+                     when others =>
+                        Result (I) :=
+                           Wide_Character'Val (Character'Pos (Image (I)));
+                        I := I + 1;
+                  end case;
+               end loop;
+            end;
+         end return;
       end Overloaded_Image;
 
       function Overloaded_Image (
@@ -784,30 +788,33 @@ package body Ada.Text_IO.Editing is
             Fill => '*', -- Editing.Default_Fill
             Separator => ',', -- Editing.Default_Separator
             Radix_Mark => '.'); -- Editing.Default_Radix_Mark
-         Result : Wide_Wide_String (Image'Range);
-         I : Positive := Result'First;
       begin
-         while I <= Result'Last loop
-            case Image (I) is
-               when '$' =>
-                  Result (I .. I + Currency'Length - 1) := Currency;
-                  I := I + Currency'Length;
-               when '*' =>
-                  Result (I) := Fill;
-                  I := I + 1;
-               when ',' =>
-                  Result (I) := Separator;
-                  I := I + 1;
-               when '.' =>
-                  Result (I) := Radix_Mark;
-                  I := I + 1;
-               when others =>
-                  Result (I) :=
-                     Wide_Wide_Character'Val (Character'Pos (Image (I)));
-                  I := I + 1;
-            end case;
-         end loop;
-         return Result;
+         return Result : Wide_Wide_String (Image'Range) do
+            declare
+               I : Positive := Result'First;
+            begin
+               while I <= Result'Last loop
+                  case Image (I) is
+                     when '$' =>
+                        Result (I .. I + Currency'Length - 1) := Currency;
+                        I := I + Currency'Length;
+                     when '*' =>
+                        Result (I) := Fill;
+                        I := I + 1;
+                     when ',' =>
+                        Result (I) := Separator;
+                        I := I + 1;
+                     when '.' =>
+                        Result (I) := Radix_Mark;
+                        I := I + 1;
+                     when others =>
+                        Result (I) :=
+                           Wide_Wide_Character'Val (Character'Pos (Image (I)));
+                        I := I + 1;
+                  end case;
+               end loop;
+            end;
+         end return;
       end Overloaded_Image;
 
       procedure Overloaded_Put (

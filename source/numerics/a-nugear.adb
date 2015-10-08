@@ -385,17 +385,17 @@ package body Ada.Numerics.Generic_Arrays is
    end Unit_Vector;
 
    function Absolute (Right : Vector) return Result_Type is
-      Result : Result_Type := Zero;
+      Squared : Result_Type := Zero;
    begin
       for I in Right'Range loop
          pragma Loop_Optimize (Vector);
          declare
             X : constant Result_Type := abs Right (I);
          begin
-            Result := Result + X * X;
+            Squared := Squared + X * X;
          end;
       end loop;
-      return Sqrt (Result);
+      return Sqrt (Squared);
    end Absolute;
 
    function Inner_Production (Left : Left_Vector; Right : Right_Vector)

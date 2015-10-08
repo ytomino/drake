@@ -6,6 +6,6 @@ package Ada.Containers.Ordered_Sets.Debug is
 
    procedure Dump (Source : Set; Message : String := "");
 
-   function Validate (Source : Set) return Boolean;
+   function Valid (Source : Set) return Boolean;
 
 end Ada.Containers.Ordered_Sets.Debug;

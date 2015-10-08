@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
-with System.Native_Text_IO;
+private with System.Native_Text_IO;
 package Ada.Text_IO.Terminal is
    --  Additional terminal handling subprograms.
 

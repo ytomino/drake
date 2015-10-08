@@ -9,8 +9,8 @@ package System.Reference_Counting is
    pragma Atomic (Counter);
 
    Static : constant := 2 ** 32 - 1;
-   --  This should be untyped.
-   --  A typed atomic constant disables static elaboration.
+      --  This should be untyped.
+      --  A typed atomic constant disables static elaboration.
 
    type Data_Access is access all Counter;
    for Data_Access'Storage_Size use 0;

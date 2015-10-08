@@ -29,16 +29,12 @@ package body Ada.Containers.Forward_Iterators is
       Node := null;
    end Release;
 
-   procedure Append (
-      Object : in out Iterator;
-      Result : out Cursor);
-   procedure Append (
-      Object : in out Iterator;
-      Result : out Cursor) is
+   procedure Update_Last (Object : in out Iterator);
+   procedure Update_Last (Object : in out Iterator) is
    begin
       if not Has_Element (Object.Last_Input_Cursor) then
          Object.State := No_Element;
-         pragma Check (Validate, Reference (Result) = null);
+         Release (Object.Last);
       else
          declare
             New_Node : constant Node_Access := new Node'(
@@ -50,13 +46,12 @@ package body Ada.Containers.Forward_Iterators is
                pragma Check (Validate, Object.Last.Next = null);
                Object.Last.Next := New_Node;
                Retain (New_Node);
+               Release (Object.Last);
             end if;
-            Release (Object.Last);
             Object.Last := New_Node;
-            Assign (Result, New_Node);
          end;
       end if;
-   end Append;
+   end Update_Last;
 
    --  implementation
 
@@ -73,24 +68,29 @@ package body Ada.Containers.Forward_Iterators is
 
    function Iterate return Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Forward_Iterators.Iterator'(Finalization.Limited_Controlled with
-         Last_Input_Cursor => <>,
+      return Result : Iterator := (Finalization.Limited_Controlled with
+         Last_Input_Cursor => Input_Iterator_Interfaces.First (Input_Iterator),
          Last => null,
-         State => First);
+         State => First)
+      do
+         Update_Last (Result);
+      end return;
    end Iterate;
 
    package body Cursors is
+
+      function Create (Node : Node_Access) return Cursor is
+      begin
+         if Node /= null then
+            Retain (Node);
+         end if;
+         return (Finalization.Controlled with Node => Node);
+      end Create;
 
       function Reference (Position : Cursor) return Node_Access is
       begin
          return Position.Node;
       end Reference;
-
-      procedure Assign (Position : in out Cursor; Node : Node_Access) is
-      begin
-         Retain (Node);
-         Position.Node := Node;
-      end Assign;
 
       overriding procedure Adjust (Object : in out Cursor) is
       begin
@@ -114,20 +114,8 @@ package body Ada.Containers.Forward_Iterators is
    overriding function First (Object : Iterator) return Cursor is
       pragma Check (Pre,
          Check => Object.State = First or else raise Status_Error);
-      Mutable_Object : Iterator
-         renames Object'Unrestricted_Access.all;
    begin
-      return Result : Cursor do
-         Mutable_Object.Last_Input_Cursor :=
-            Input_Iterator_Interfaces.First (Input_Iterator);
-         if Mutable_Object.Last /= null then
-            Assign (Result, Mutable_Object.Last);
-         else
-            Append (
-               Mutable_Object,
-               Result);
-         end if;
-      end return;
+      return Create (Object.Last);
    end First;
 
    overriding function Next (Object : Iterator; Position : Cursor)
@@ -136,22 +124,20 @@ package body Ada.Containers.Forward_Iterators is
       Mutable_Object : Iterator
          renames Object'Unrestricted_Access.all;
    begin
-      return Result : Cursor do
-         if Reference (Position).Next /= null then
-            Assign (Result, Reference (Position).Next);
-         elsif Mutable_Object.State /= No_Element then
+      if Reference (Position).Next /= null then
+         return Create (Reference (Position).Next);
+      else
+         --  Position is the current last
+         if Mutable_Object.State /= No_Element then
+            Mutable_Object.State := Next;
             Mutable_Object.Last_Input_Cursor :=
                Input_Iterator_Interfaces.Next (
                   Input_Iterator,
                   Mutable_Object.Last_Input_Cursor);
-            Append (
-               Mutable_Object,
-               Result);
-            if Reference (Result) /= null then
-               Mutable_Object.State := Next;
-            end if;
+            Update_Last (Mutable_Object);
          end if;
-      end return;
+         return Create (Mutable_Object.Last);
+      end if;
    end Next;
 
 end Ada.Containers.Forward_Iterators;

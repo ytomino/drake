@@ -791,20 +791,20 @@ package body Interfaces.COBOL is
          case Item'Length is
             when 1 | 2 | 4 | 8 =>
                declare
-                  Result : Num'Base;
+                  Value : Num'Base;
                begin
                   case Format is
                      when H => -- High_Order_First
-                        Result := Num'Base'Fixed_Value (
+                        Value := Num'Base'Fixed_Value (
                            High_Order_First_To_Decimal (Item));
                      when L => -- Low_Order_First
-                        Result := Num'Base'Fixed_Value (
+                        Value := Num'Base'Fixed_Value (
                            Low_Order_First_To_Decimal (Item));
                      when N => -- Native_Binary
-                        Result := Num'Base'Fixed_Value (
+                        Value := Num'Base'Fixed_Value (
                            Native_Binary_To_Decimal (Item));
                   end case;
-                  return Result in Num;
+                  return Value in Num;
                end;
             when others =>
                return False;

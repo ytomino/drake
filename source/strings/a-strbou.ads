@@ -76,14 +76,14 @@ package Ada.Strings.Bounded is
          Right : Character;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Bounded_Strings.Append;
+         renames Bounded_Strings.Append_Element;
 
       function Append (
          Left : Character;
          Right : Bounded_String;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Bounded_Strings.Append;
+         renames Bounded_Strings.Append_Element;
 
       procedure Append (
          Source : in out Bounded_String;
@@ -101,7 +101,7 @@ package Ada.Strings.Bounded is
          Source : in out Bounded_String;
          New_Item : Character;
          Drop : Truncation := Error)
-         renames Bounded_Strings.Append;
+         renames Bounded_Strings.Append_Element;
 
       function "&" (Left, Right : Bounded_String)
          return Bounded_String
@@ -244,7 +244,7 @@ package Ada.Strings.Bounded is
          Mapping : not null access function (From : Character)
             return Character)
          return Natural
-         renames Maps.Index_Per_Element;
+         renames Maps.Index_Element;
       function Index (
          Source : Bounded_String;
          Pattern : String;
@@ -290,7 +290,7 @@ package Ada.Strings.Bounded is
          Mapping : not null access function (From : Character)
             return Character)
          return Natural
-         renames Maps.Index_Per_Element;
+         renames Maps.Index_Element;
       function Index (
          Source : Bounded_String;
          Pattern : String;
@@ -360,7 +360,7 @@ package Ada.Strings.Bounded is
          Mapping : not null access function (From : Character)
             return Character)
          return Natural
-         renames Maps.Count_Per_Element;
+         renames Maps.Count_Element;
       function Count (
          Source : Bounded_String;
          Pattern : String;
@@ -419,7 +419,7 @@ package Ada.Strings.Bounded is
          Mapping : not null access function (From : Character)
             return Character)
          return Bounded_String
-         renames Maps.Translate_Per_Element;
+         renames Maps.Translate_Element;
       function Translate (
          Source : Bounded_String;
          Mapping : not null access function (From : Wide_Wide_Character)
@@ -436,7 +436,7 @@ package Ada.Strings.Bounded is
          Source : in out Bounded_String;
          Mapping : not null access function (From : Character)
             return Character)
-         renames Maps.Translate_Per_Element;
+         renames Maps.Translate_Element;
       procedure Translate (
          Source : in out Bounded_String;
          Mapping : not null access function (From : Wide_Wide_Character)
@@ -583,7 +583,7 @@ package Ada.Strings.Bounded is
          Item : Character;
          Drop : Truncation := Error)
          return Bounded_String
-         renames Bounded_Strings.Replicate;
+         renames Bounded_Strings.Replicate_Element;
 
       function Replicate (
          Count : Natural;

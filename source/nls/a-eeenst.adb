@@ -42,8 +42,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    procedure Set_Substitute_To_Reading_Converter (
       Object : in out Converter;
       Substitute : Streams.Stream_Element_Array)
-      renames Set_Substitute;
-   --  inherited from System.Native_Environment_Encoding.Set_Substitute
+      renames Set_Substitute; -- inherited
 
    procedure Read (
       Stream : not null access Streams.Root_Stream_Type'Class;
@@ -364,6 +363,11 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    --  implementation of only reading
 
+   function Is_Open (Object : In_Type) return Boolean is
+   begin
+      return Object.Stream /= System.Null_Address;
+   end Is_Open;
+
    function Open (
       Decoder : Converter;
       Stream : not null access Streams.Root_Stream_Type'Class)
@@ -382,11 +386,6 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          Initialize (Result.Reading_Context);
       end return;
    end Open;
-
-   function Is_Open (Object : In_Type) return Boolean is
-   begin
-      return Object.Stream /= System.Null_Address;
-   end Is_Open;
 
    function Stream (
       Object : aliased in out In_Type)
@@ -417,6 +416,11 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    --  implementation of only writing
 
+   function Is_Open (Object : Out_Type) return Boolean is
+   begin
+      return Object.Stream /= System.Null_Address;
+   end Is_Open;
+
    function Open (
       Encoder : Converter;
       Stream : not null access Streams.Root_Stream_Type'Class)
@@ -435,11 +439,6 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          Initialize (Result.Writing_Context);
       end return;
    end Open;
-
-   function Is_Open (Object : Out_Type) return Boolean is
-   begin
-      return Object.Stream /= System.Null_Address;
-   end Is_Open;
 
    function Stream (
       Object : aliased in out Out_Type)
@@ -483,6 +482,11 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    --  implementation of bidirectional
 
+   function Is_Open (Object : Inout_Type) return Boolean is
+   begin
+      return Object.Stream /= System.Null_Address;
+   end Is_Open;
+
    function Open (
       Internal : Encoding_Id;
       External : Encoding_Id;
@@ -503,11 +507,6 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          Initialize (Result.Writing_Context);
       end return;
    end Open;
-
-   function Is_Open (Object : Inout_Type) return Boolean is
-   begin
-      return Object.Stream /= System.Null_Address;
-   end Is_Open;
 
    function Substitute (
       Object : Inout_Type)

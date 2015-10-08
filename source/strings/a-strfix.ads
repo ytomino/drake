@@ -16,22 +16,6 @@ package Ada.Strings.Fixed is
 
    --  Search subprograms
 
-   --  extended
-   --  These functions search signle character in string.
-   function Index (
-      Source : String;
-      Pattern : Character;
-      From : Positive;
-      Going : Direction := Forward)
-      return Natural
-      renames Functions.Index;
-   function Index (
-      Source : String;
-      Pattern : Character;
-      Going : Direction := Forward)
-      return Natural
-      renames Functions.Index;
-
    --  modified
 --  function Index (
 --    Source : String;
@@ -71,7 +55,7 @@ package Ada.Strings.Fixed is
       Going : Direction := Forward;
       Mapping : not null access function (From : Character) return Character)
       return Natural
-      renames Functions.Maps.Index_Per_Element;
+      renames Functions.Maps.Index_Element;
    function Index (
       Source : String;
       Pattern : String;
@@ -116,7 +100,7 @@ package Ada.Strings.Fixed is
       Going : Direction := Forward;
       Mapping : not null access function (From : Character) return Character)
       return Natural
-      renames Functions.Maps.Index_Per_Element;
+      renames Functions.Maps.Index_Element;
    function Index (
       Source : String;
       Pattern : String;
@@ -185,7 +169,7 @@ package Ada.Strings.Fixed is
       Pattern : String;
       Mapping : not null access function (From : Character) return Character)
       return Natural
-      renames Functions.Maps.Count_Per_Element;
+      renames Functions.Maps.Count_Element;
    function Count (
       Source : String;
       Pattern : String;
@@ -243,7 +227,7 @@ package Ada.Strings.Fixed is
       Source : String;
       Mapping : not null access function (From : Character) return Character)
       return String
-      renames Functions.Maps.Translate_Per_Element;
+      renames Functions.Maps.Translate_Element;
    function Translate (
       Source : String;
       Mapping : not null access function (From : Wide_Wide_Character)
@@ -258,7 +242,7 @@ package Ada.Strings.Fixed is
    procedure Translate (
       Source : in out String;
       Mapping : not null access function (From : Character) return Character)
-      renames Functions.Maps.Translate_Per_Element;
+      renames Functions.Maps.Translate_Element;
    procedure Translate (
       Source : in out String;
       Mapping : not null access function (From : Wide_Wide_Character)

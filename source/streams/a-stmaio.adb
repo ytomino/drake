@@ -80,6 +80,17 @@ package body Ada.Storage_Mapped_IO is
          Writable => Streams.Stream_IO.Mode (File) /= In_File);
    end Map;
 
+   function Map (
+      File : Streams.Stream_IO.File_Type;
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0)
+      return Storage_Type is
+   begin
+      return Result : Storage_Type do
+         Map (Result, File, Offset, Size);
+      end return;
+   end Map;
+
    procedure Map (
       Object : in out Storage_Type;
       Mode : File_Mode := In_File;
@@ -107,6 +118,19 @@ package body Ada.Storage_Mapped_IO is
          Offset,
          Size,
          Writable => Mode /= In_File);
+   end Map;
+
+   function Map (
+      Mode : File_Mode := In_File;
+      Name : String;
+      Form : String := "";
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0)
+      return Storage_Type is
+   begin
+      return Result : Storage_Type do
+         Map (Result, Mode, Name, Form, Offset, Size);
+      end return;
    end Map;
 
    procedure Unmap (Object : in out Storage_Type) is

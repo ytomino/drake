@@ -15,7 +15,6 @@ package Ada.Containers.Access_Holders is
    pragma Preelaborable_Initialization (Holder);
 
    function Null_Holder return Holder;
-   --  Empty_Holder?
 
    overriding function "=" (Left, Right : Holder) return Boolean;
 
@@ -25,7 +24,6 @@ package Ada.Containers.Access_Holders is
       renames To_Holder;
 
    function Is_Null (Container : Holder) return Boolean;
-   --  Is_Empty?
 
    procedure Clear (Container : in out Holder);
 

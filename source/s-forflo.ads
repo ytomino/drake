@@ -25,11 +25,11 @@ package System.Formatting.Float is
       Set : Type_Set := Upper_Case;
       Width : Positive := Standard.Float'Digits - 1);
 
+   --  Width of integer part.
    function Fore_Width (Value : Longest_Float; Base : Number_Base := 10)
       return Positive;
    function Fore_Width (First, Last : Longest_Float; Base : Number_Base := 10)
       return Positive;
-   --  return width of integer part
    pragma Inline (Fore_Width);
 
    procedure Image (

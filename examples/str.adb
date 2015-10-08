@@ -1,3 +1,4 @@
+with Ada.Strings.Functions;
 with Ada.Strings.Maps.Constants;
 with Ada.Strings.Unbounded_Strings;
 with System;
@@ -35,9 +36,9 @@ begin
 			end case;
 		end M;
 	begin
-		pragma Assert (Ada.Strings.Fixed.Index ("abc", 'b') = 2);
-		pragma Assert (Ada.Strings.Fixed.Index ("abc", 'd') = 0);
-		pragma Assert (Ada.Strings.Fixed.Index (abcabc (3 .. 6), 'b') = 5);
+		pragma Assert (Ada.Strings.Functions.Index_Element ("abc", 'b') = 2);
+		pragma Assert (Ada.Strings.Functions.Index_Element ("abc", 'd') = 0);
+		pragma Assert (Ada.Strings.Functions.Index_Element (abcabc (3 .. 6), 'b') = 5);
 		pragma Assert (Ada.Strings.Fixed.Index ("aaabbb", "bbb") = 4);
 		pragma Assert (Ada.Strings.Fixed.Index ("aaabbb", "aaa", Going => Ada.Strings.Backward) = 1);
 		pragma Assert (Ada.Strings.Fixed.Index ("aaabbb", "ab", Going => Ada.Strings.Backward, Mapping => M'Access) = 0);

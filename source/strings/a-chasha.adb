@@ -72,6 +72,11 @@ package body Ada.Characters.ASCII.Handling is
       end if;
    end To_Upper;
 
+   function To_Basic (Item : Character) return Character is
+   begin
+      return Item;
+   end To_Basic;
+
    function To_Lower (Item : String) return String is
       Length : constant Natural := Item'Length;
    begin

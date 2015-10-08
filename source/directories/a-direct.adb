@@ -145,7 +145,7 @@ package body Ada.Directories is
             begin
                case Kind (Directory_Entry) is
                   when Ordinary_File | Special_File =>
-                     Delete_File (Full_Name (Name));
+                     Delete_File (Name);
                   when Directories.Directory =>
                      Delete_Tree (Name); -- recursive
                end case;
@@ -220,6 +220,12 @@ package body Ada.Directories is
    begin
       return NC_Directory_Entry.Status /= Empty;
    end Is_Assigned;
+
+   function Is_Open (Search : Search_Type) return Boolean is
+   begin
+      return Search.Search.Handle /=
+         System.Native_Directories.Searching.Null_Handle;
+   end Is_Open;
 
    procedure Start_Search (
       Search : in out Search_Type;
@@ -321,20 +327,53 @@ package body Ada.Directories is
       end if;
    end Get_Next_Entry;
 
-   overriding procedure Finalize (Search : in out Search_Type) is
+   function Get_Next_Entry (
+      Search : aliased in out Search_Type)
+      return Directory_Entry_Type is
    begin
-      if Search.Search.Handle /=
-         System.Native_Directories.Searching.Null_Handle
-      then
-         End_Search (Search, Raise_On_Error => False);
-      end if;
-   end Finalize;
+      return Result : Directory_Entry_Type do
+         Get_Next_Entry (Search, Result);
+      end return;
+   end Get_Next_Entry;
 
-   function Is_Open (Search : Search_Type) return Boolean is
+   procedure Get_Entry (
+      Name : String;
+      Directory_Entry : out Directory_Entry_Type)
+   is
+      pragma Unmodified (Directory_Entry); -- modified via Reference
+      NC_Directory_Entry : constant
+         not null access Non_Controlled_Directory_Entry_Type :=
+         Reference (Directory_Entry);
+      Directory_First : Positive;
+      Directory_Last : Natural;
+      Simple_Name_First : Positive;
+      Simple_Name_Last : Natural;
    begin
-      return Search.Search.Handle /=
-         System.Native_Directories.Searching.Null_Handle;
-   end Is_Open;
+      --  decompose the name
+      Containing_Directory (Name, Directory_First, Directory_Last);
+      Simple_Name (Name, Simple_Name_First, Simple_Name_Last);
+      --  make a detached entry
+      Finalize (NC_Directory_Entry.all);
+      NC_Directory_Entry.Path :=
+         new String'(Full_Name (Name (Directory_First .. Directory_Last)));
+      NC_Directory_Entry.Directory_Entry := null;
+      NC_Directory_Entry.Additional.Filled := False;
+      NC_Directory_Entry.Status := Detached;
+      System.Native_Directories.Searching.Get_Entry (
+         NC_Directory_Entry.Path.all,
+         Name (Simple_Name_First .. Simple_Name_Last),
+         NC_Directory_Entry.Directory_Entry,
+         NC_Directory_Entry.Additional);
+   end Get_Entry;
+
+   function Get_Entry (
+      Name : String)
+      return Directory_Entry_Type is
+   begin
+      return Result : Directory_Entry_Type do
+         Get_Entry (Name, Result);
+      end return;
+   end Get_Entry;
 
    procedure Search (
       Directory : String;
@@ -353,6 +392,15 @@ package body Ada.Directories is
       end loop;
       End_Search (Srch);
    end Search;
+
+   overriding procedure Finalize (Search : in out Search_Type) is
+   begin
+      if Search.Search.Handle /=
+         System.Native_Directories.Searching.Null_Handle
+      then
+         End_Search (Search, Raise_On_Error => False);
+      end if;
+   end Finalize;
 
    --  iterator
 
@@ -381,11 +429,11 @@ package body Ada.Directories is
          begin
             Target_NC_Directory_Entry.Path :=
                new String'(Source_NC_Directory_Entry.Path.all);
+            Target_NC_Directory_Entry.Additional.Filled := False;
+            Target_NC_Directory_Entry.Status := Detached;
             Target_NC_Directory_Entry.Directory_Entry :=
                System.Native_Directories.Searching.New_Directory_Entry (
                   Source_NC_Directory_Entry.Directory_Entry);
-            Target_NC_Directory_Entry.Additional.Filled := False;
-            Target_NC_Directory_Entry.Status := Detached;
          end;
       end return;
    end Element;

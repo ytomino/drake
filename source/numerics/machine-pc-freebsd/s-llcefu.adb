@@ -1,3 +1,4 @@
+with Ada.Numerics;
 with System.Long_Long_Elementary_Functions;
 package body System.Long_Long_Complex_Elementary_Functions is
 
@@ -241,10 +242,7 @@ package body System.Long_Long_Complex_Elementary_Functions is
 
    --  Long_Long_Complex
 
-   Pi : constant :=
-      3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37511;
-   --  same as Ada.Numerics.Pi
-
+   Pi : constant := Ada.Numerics.Pi;
    Pi_Div_2 : constant := Pi / 2.0;
 
    Sqrt_2 : constant := 1.4142135623730950488016887242096980785696;

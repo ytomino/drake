@@ -80,14 +80,14 @@ package Ada.Strings.Wide_Bounded is
          Right : Wide_Character;
          Drop : Truncation := Error)
          return Bounded_Wide_String
-         renames Bounded_Wide_Strings.Append;
+         renames Bounded_Wide_Strings.Append_Element;
 
       function Append (
          Left : Wide_Character;
          Right : Bounded_Wide_String;
          Drop : Truncation := Error)
          return Bounded_Wide_String
-         renames Bounded_Wide_Strings.Append;
+         renames Bounded_Wide_Strings.Append_Element;
 
       procedure Append (
          Source : in out Bounded_Wide_String;
@@ -105,7 +105,7 @@ package Ada.Strings.Wide_Bounded is
          Source : in out Bounded_Wide_String;
          New_Item : Wide_Character;
          Drop : Truncation := Error)
-         renames Bounded_Wide_Strings.Append;
+         renames Bounded_Wide_Strings.Append_Element;
 
       function "&" (Left, Right : Bounded_Wide_String)
          return Bounded_Wide_String
@@ -257,7 +257,7 @@ package Ada.Strings.Wide_Bounded is
          Mapping : not null access function (From : Wide_Character)
             return Wide_Character)
          return Natural
-         renames Maps.Index_Per_Element;
+         renames Maps.Index_Element;
       function Index (
          Source : Bounded_Wide_String;
          Pattern : Wide_String;
@@ -303,7 +303,7 @@ package Ada.Strings.Wide_Bounded is
          Mapping : not null access function (From : Wide_Character)
             return Wide_Character)
          return Natural
-         renames Maps.Index_Per_Element;
+         renames Maps.Index_Element;
       function Index (
          Source : Bounded_Wide_String;
          Pattern : Wide_String;
@@ -373,7 +373,7 @@ package Ada.Strings.Wide_Bounded is
          Mapping : not null access function (From : Wide_Character)
             return Wide_Character)
          return Natural
-         renames Maps.Count_Per_Element;
+         renames Maps.Count_Element;
       function Count (
          Source : Bounded_Wide_String;
          Pattern : Wide_String;
@@ -432,7 +432,7 @@ package Ada.Strings.Wide_Bounded is
          Mapping : not null access function (From : Wide_Character)
             return Wide_Character)
          return Bounded_Wide_String
-         renames Maps.Translate_Per_Element;
+         renames Maps.Translate_Element;
       function Translate (
          Source : Bounded_Wide_String;
          Mapping : not null access function (From : Wide_Wide_Character)
@@ -449,7 +449,7 @@ package Ada.Strings.Wide_Bounded is
          Source : in out Bounded_Wide_String;
          Mapping : not null access function (From : Wide_Character)
             return Wide_Character)
-         renames Maps.Translate_Per_Element;
+         renames Maps.Translate_Element;
       procedure Translate (
          Source : in out Bounded_Wide_String;
          Mapping : not null access function (From : Wide_Wide_Character)
@@ -596,7 +596,7 @@ package Ada.Strings.Wide_Bounded is
          Item : Wide_Character;
          Drop : Truncation := Error)
          return Bounded_Wide_String
-         renames Bounded_Wide_Strings.Replicate;
+         renames Bounded_Wide_Strings.Replicate_Element;
 
       function Replicate (
          Count : Natural;

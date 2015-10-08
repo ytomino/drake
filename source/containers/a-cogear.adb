@@ -349,20 +349,16 @@ package body Ada.Containers.Generic_Arrays is
                      Index_Type'First ..
                      Extended_Index'Val (
                         Index_Type'Pos (Index_Type'First) + Space - 1);
-            begin
-               return Result : constant New_Array_1 := (
+               Result : constant New_Array_1 := (
                   Data => new Array_Type'(
                      Left.Data (Left.Data'First .. Left.Last)
                      & Right
                      & Array_Type'(Space_Range => <>)),
-                  Last => Left.Last + 1)
-               do
-                  declare
-                     Data : Array_Access := Left.Data;
-                  begin
-                     Free (Data);
-                  end;
-               end return;
+                  Last => Left.Last + 1);
+               Data : Array_Access := Left.Data;
+            begin
+               Free (Data);
+               return Result;
             end;
          end if;
       end Step;
@@ -384,11 +380,13 @@ package body Ada.Containers.Generic_Arrays is
             Data (Data'Last) := Right;
             return New_Array (Data);
          else
-            return Result : constant New_Array :=
-               new Array_Type'(Data (Data'First .. Data'Last) & Right)
-            do
+            declare
+               Result : constant New_Array :=
+                  new Array_Type'(Data (Data'First .. Data'Last) & Right);
+            begin
                Free (Data);
-            end return;
+               return Result;
+            end;
          end if;
       end "&";
 

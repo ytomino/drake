@@ -87,14 +87,14 @@ package body Ada.Numerics.MT19937 is
    function Initialize (Initiator : Cardinal) return State is
       V : Cardinal := Initiator;
    begin
-      return S : State do
-         S.Vector (0) := V;
+      return Result : State do
+         Result.Vector (0) := V;
          for I in 1 .. (N - 1) loop
             V := 1812433253 * (V xor Interfaces.Shift_Right (V, 30))
                + Cardinal (I);
-            S.Vector (I) := V;
+            Result.Vector (I) := V;
          end loop;
-         S.Condition := N;
+         Result.Condition := N;
       end return;
    end Initialize;
 
@@ -103,41 +103,41 @@ package body Ada.Numerics.MT19937 is
       i : Integer := 1;
       j : Integer := 0;
    begin
-      return S : State := Initialize (19650218) do
+      return Result : State := Initialize (19650218) do
          if Initiator_Length > 0 then
             for K in reverse 1 .. Integer'Max (N, Initiator_Length) loop
                declare
-                  P : constant Cardinal := S.Vector (i - 1);
+                  P : constant Cardinal := Result.Vector (i - 1);
                begin
-                  S.Vector (i) :=
-                     (S.Vector (i)
+                  Result.Vector (i) :=
+                     (Result.Vector (i)
                         xor ((P xor Interfaces.Shift_Right (P, 30)) * 1664525))
                      + Initiator (Initiator'First + j) + Cardinal (j);
                end;
                i := i + 1;
                if i >= N then
-                  S.Vector (0) := S.Vector (N - 1);
+                  Result.Vector (0) := Result.Vector (N - 1);
                   i := 1;
                end if;
                j := (j + 1) rem Positive'(Initiator_Length);
             end loop;
             for K in reverse 1 .. (N - 1) loop
                declare
-                  P : constant Cardinal := S.Vector (i - 1);
+                  P : constant Cardinal := Result.Vector (i - 1);
                begin
-                  S.Vector (i) :=
-                     (S.Vector (i)
+                  Result.Vector (i) :=
+                     (Result.Vector (i)
                         xor ((P xor Interfaces.Shift_Right (P, 30))
                            * 1566083941))
                      - Cardinal (i);
                end;
                i := i + 1;
                if i >= N then
-                  S.Vector (0) := S.Vector (N - 1);
+                  Result.Vector (0) := Result.Vector (N - 1);
                   i := 1;
                end if;
             end loop;
-            S.Vector (0) := 16#80000000#;
+            Result.Vector (0) := 16#80000000#;
          end if;
       end return;
    end Initialize;
@@ -196,19 +196,17 @@ package body Ada.Numerics.MT19937 is
       procedure Hex (Item : String; Value : out Cardinal);
       procedure Hex (Item : String; Value : out Cardinal) is
          Last : Positive;
-         Result : System.Formatting.Unsigned;
          Error : Boolean;
       begin
          System.Formatting.Value (
             Item,
             Last,
-            Result,
+            System.Formatting.Unsigned (Value),
             Base => 16,
             Error => Error);
          if Error or else Last /= Item'Last then
             raise Constraint_Error;
          end if;
-         Value := Cardinal (Result);
       end Hex;
       Last : Natural := Coded_State'First - 1;
    begin

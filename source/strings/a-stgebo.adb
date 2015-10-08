@@ -86,13 +86,13 @@ package body Ada.Strings.Generic_Bounded is
       end if;
    end Append;
 
-   procedure Append (
+   procedure Append_Element (
       Source : in out Bounded_String;
       New_Item : Character_Type;
       Drop : Truncation := Error) is
    begin
       Append (Source, String_Type'(1 => New_Item), Drop);
-   end Append;
+   end Append_Element;
 
    function Element (
       Source : Bounded_String;
@@ -306,7 +306,7 @@ package body Ada.Strings.Generic_Bounded is
          end return;
       end Append;
 
-      function Append (
+      function Append_Element (
          Left : Bounded_String;
          Right : Character_Type;
          Drop : Truncation := Error)
@@ -314,11 +314,11 @@ package body Ada.Strings.Generic_Bounded is
       begin
          return Result : Bounded_String do
             Set_Bounded_String (Result, Left.Element (1 .. Left.Length), Drop);
-            Append (Result, Right, Drop);
+            Append_Element (Result, Right, Drop);
          end return;
-      end Append;
+      end Append_Element;
 
-      function Append (
+      function Append_Element (
          Left : Character_Type;
          Right : Bounded_String;
          Drop : Truncation := Error)
@@ -328,7 +328,7 @@ package body Ada.Strings.Generic_Bounded is
             Set_Bounded_String (Result, (1 => Left), Drop);
             Append (Result, Right, Drop);
          end return;
-      end Append;
+      end Append_Element;
 
       function "&" (Left, Right : Bounded_String)
          return Bounded_String is
@@ -351,13 +351,13 @@ package body Ada.Strings.Generic_Bounded is
       function "&" (Left : Bounded_String; Right : Character_Type)
          return Bounded_String is
       begin
-         return Append (Left, Right);
+         return Append_Element (Left, Right);
       end "&";
 
       function "&" (Left : Character_Type; Right : Bounded_String)
          return Bounded_String is
       begin
-         return Append (Left, Right);
+         return Append_Element (Left, Right);
       end "&";
 
       function Bounded_Slice (
@@ -374,7 +374,7 @@ package body Ada.Strings.Generic_Bounded is
       function "*" (Left : Natural; Right : Character_Type)
          return Bounded_String is
       begin
-         return Replicate (Left, Right, Error);
+         return Replicate_Element (Left, Right, Error);
       end "*";
 
       function "*" (Left : Natural; Right : String_Type)
@@ -389,7 +389,7 @@ package body Ada.Strings.Generic_Bounded is
          return Replicate (Left, Right, Error);
       end "*";
 
-      function Replicate (
+      function Replicate_Element (
          Count : Natural;
          Item : Character_Type;
          Drop : Truncation := Error)
@@ -403,7 +403,7 @@ package body Ada.Strings.Generic_Bounded is
                Length => Natural'Min (Count, Max),
                Element => (others => Item));
          end if;
-      end Replicate;
+      end Replicate_Element;
 
       function Replicate (
          Count : Natural;
@@ -523,7 +523,7 @@ package body Ada.Strings.Generic_Bounded is
             Going : Direction := Forward)
             return Natural is
          begin
-            return Fixed_Index_From (
+            return Fixed_Functions.Index (
                Source.Element (1 .. Source.Length),
                Pattern,
                From,
@@ -536,7 +536,7 @@ package body Ada.Strings.Generic_Bounded is
             Going : Direction := Forward)
             return Natural is
          begin
-            return Fixed_Index (
+            return Fixed_Functions.Index (
                Source.Element (1 .. Source.Length),
                Pattern,
                Going);
@@ -548,7 +548,7 @@ package body Ada.Strings.Generic_Bounded is
             Going : Direction := Forward)
             return Natural is
          begin
-            return Fixed_Index_Non_Blank_From (
+            return Fixed_Functions.Index_Non_Blank (
                Source.Element (1 .. Source.Length),
                From,
                Going);
@@ -559,7 +559,7 @@ package body Ada.Strings.Generic_Bounded is
             Going : Direction := Forward)
             return Natural is
          begin
-            return Fixed_Index_Non_Blank (
+            return Fixed_Functions.Index_Non_Blank (
                Source.Element (1 .. Source.Length),
                Going);
          end Index_Non_Blank;
@@ -569,7 +569,7 @@ package body Ada.Strings.Generic_Bounded is
             Pattern : String_Type)
             return Natural is
          begin
-            return Fixed_Count (
+            return Fixed_Functions.Count (
                Source.Element (1 .. Source.Length),
                Pattern);
          end Count;
@@ -583,7 +583,7 @@ package body Ada.Strings.Generic_Bounded is
             return Bounded.Bounded_String is
          begin
             return Bounded.To_Bounded_String (
-               Fixed_Replace_Slice (
+               Fixed_Functions.Replace_Slice (
                   Source.Element (1 .. Source.Length),
                   Low,
                   High,
@@ -600,7 +600,7 @@ package body Ada.Strings.Generic_Bounded is
          begin
             Bounded.Set_Bounded_String (
                Source,
-               Fixed_Replace_Slice (
+               Fixed_Functions.Replace_Slice (
                   Source.Element (1 .. Source.Length),
                   Low,
                   High,
@@ -616,7 +616,7 @@ package body Ada.Strings.Generic_Bounded is
             return Bounded.Bounded_String is
          begin
             return Bounded.To_Bounded_String (
-               Fixed_Insert (
+               Fixed_Functions.Insert (
                   Source.Element (1 .. Source.Length),
                   Before,
                   New_Item),
@@ -631,7 +631,7 @@ package body Ada.Strings.Generic_Bounded is
          begin
             Bounded.Set_Bounded_String (
                Source,
-               Fixed_Insert (
+               Fixed_Functions.Insert (
                   Source.Element (1 .. Source.Length),
                   Before,
                   New_Item),
@@ -646,7 +646,7 @@ package body Ada.Strings.Generic_Bounded is
             return Bounded.Bounded_String is
          begin
             return Bounded.To_Bounded_String (
-               Fixed_Overwrite (
+               Fixed_Functions.Overwrite (
                   Source.Element (1 .. Source.Length),
                   Position,
                   New_Item),
@@ -661,7 +661,7 @@ package body Ada.Strings.Generic_Bounded is
          begin
             Bounded.Set_Bounded_String (
                Source,
-               Fixed_Overwrite (
+               Fixed_Functions.Overwrite (
                   Source.Element (1 .. Source.Length),
                   Position,
                   New_Item),
@@ -688,7 +688,11 @@ package body Ada.Strings.Generic_Bounded is
                if Through >= Source.Length then
                   Source.Length := From - 1;
                else
-                  Fixed_Delete (Source.Element, Source.Length, From, Through);
+                  Fixed_Functions.Delete (
+                     Source.Element,
+                     Source.Length,
+                     From,
+                     Through);
                end if;
             end if;
          end Delete;
@@ -696,13 +700,13 @@ package body Ada.Strings.Generic_Bounded is
          function Trim (
             Source : Bounded.Bounded_String;
             Side : Trim_End;
-            Blank : Character_Type := Space)
+            Blank : Character_Type := Fixed_Functions.Space)
             return Bounded.Bounded_String
          is
             First : Positive;
             Last : Natural;
          begin
-            Fixed_Trim (
+            Fixed_Functions.Trim (
                Source.Element (1 .. Source.Length),
                Side,
                Blank,
@@ -714,12 +718,12 @@ package body Ada.Strings.Generic_Bounded is
          procedure Trim (
             Source : in out Bounded.Bounded_String;
             Side : Trim_End;
-            Blank : Character_Type := Space)
+            Blank : Character_Type := Fixed_Functions.Space)
          is
             First : Positive;
             Last : Natural;
          begin
-            Fixed_Trim (
+            Fixed_Functions.Trim (
                Source.Element (1 .. Source.Length),
                Side,
                Blank,
@@ -731,12 +735,12 @@ package body Ada.Strings.Generic_Bounded is
          function Head (
             Source : Bounded.Bounded_String;
             Count : Natural;
-            Pad : Character_Type := Space;
+            Pad : Character_Type := Fixed_Functions.Space;
             Drop : Truncation := Error)
             return Bounded.Bounded_String is
          begin
             return Bounded.To_Bounded_String (
-               Fixed_Head (
+               Fixed_Functions.Head (
                   Source.Element (1 .. Source.Length),
                   Count,
                   Pad),
@@ -746,12 +750,12 @@ package body Ada.Strings.Generic_Bounded is
          procedure Head (
             Source : in out Bounded.Bounded_String;
             Count : Natural;
-            Pad : Character_Type := Space;
+            Pad : Character_Type := Fixed_Functions.Space;
             Drop : Truncation := Error) is
          begin
             Bounded.Set_Bounded_String (
                Source,
-               Fixed_Head (
+               Fixed_Functions.Head (
                   Source.Element (1 .. Source.Length),
                   Count,
                   Pad),
@@ -761,12 +765,12 @@ package body Ada.Strings.Generic_Bounded is
          function Tail (
             Source : Bounded.Bounded_String;
             Count : Natural;
-            Pad : Character_Type := Space;
+            Pad : Character_Type := Fixed_Functions.Space;
             Drop : Truncation := Error)
             return Bounded.Bounded_String is
          begin
             return Bounded.To_Bounded_String (
-               Fixed_Tail (
+               Fixed_Functions.Tail (
                   Source.Element (1 .. Source.Length),
                   Count,
                   Pad),
@@ -776,12 +780,12 @@ package body Ada.Strings.Generic_Bounded is
          procedure Tail (
             Source : in out Bounded.Bounded_String;
             Count : Natural;
-            Pad : Character_Type := Space;
+            Pad : Character_Type := Fixed_Functions.Space;
             Drop : Truncation := Error) is
          begin
             Bounded.Set_Bounded_String (
                Source,
-               Fixed_Tail (
+               Fixed_Functions.Tail (
                   Source.Element (1 .. Source.Length),
                   Count,
                   Pad),
@@ -799,10 +803,10 @@ package body Ada.Strings.Generic_Bounded is
                Pattern : String_Type;
                From : Positive;
                Going : Direction := Forward;
-               Mapping : Character_Mapping)
+               Mapping : Fixed_Maps.Character_Mapping)
                return Natural is
             begin
-               return Fixed_Index_Mapping_From (
+               return Fixed_Maps.Index (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   From,
@@ -814,10 +818,10 @@ package body Ada.Strings.Generic_Bounded is
                Source : Bounded.Bounded_String;
                Pattern : String_Type;
                Going : Direction := Forward;
-               Mapping : Character_Mapping)
+               Mapping : Fixed_Maps.Character_Mapping)
                return Natural is
             begin
-               return Fixed_Index_Mapping (
+               return Fixed_Maps.Index (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   Going,
@@ -833,7 +837,7 @@ package body Ada.Strings.Generic_Bounded is
                   return Wide_Wide_Character)
                return Natural is
             begin
-               return Fixed_Index_Mapping_Function_From (
+               return Fixed_Maps.Index (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   From,
@@ -849,14 +853,14 @@ package body Ada.Strings.Generic_Bounded is
                   return Wide_Wide_Character)
                return Natural is
             begin
-               return Fixed_Index_Mapping_Function (
+               return Fixed_Maps.Index (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   Going,
                   Mapping);
             end Index;
 
-            function Index_Per_Element (
+            function Index_Element (
                Source : Bounded.Bounded_String;
                Pattern : String_Type;
                From : Positive;
@@ -865,15 +869,15 @@ package body Ada.Strings.Generic_Bounded is
                   return Character_Type)
                return Natural is
             begin
-               return Fixed_Index_Mapping_Function_Per_Element_From (
+               return Fixed_Maps.Index_Element (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   From,
                   Going,
                   Mapping);
-            end Index_Per_Element;
+            end Index_Element;
 
-            function Index_Per_Element (
+            function Index_Element (
                Source : Bounded.Bounded_String;
                Pattern : String_Type;
                Going : Direction := Forward;
@@ -881,22 +885,22 @@ package body Ada.Strings.Generic_Bounded is
                   return Character_Type)
                return Natural is
             begin
-               return Fixed_Index_Mapping_Function_Per_Element (
+               return Fixed_Maps.Index_Element (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   Going,
                   Mapping);
-            end Index_Per_Element;
+            end Index_Element;
 
             function Index (
                Source : Bounded.Bounded_String;
-               Set : Character_Set;
+               Set : Fixed_Maps.Character_Set;
                From : Positive;
                Test : Membership := Inside;
                Going : Direction := Forward)
                return Natural is
             begin
-               return Fixed_Index_Set_From (
+               return Fixed_Maps.Index (
                   Source.Element (1 .. Source.Length),
                   Set,
                   From,
@@ -906,12 +910,12 @@ package body Ada.Strings.Generic_Bounded is
 
             function Index (
                Source : Bounded.Bounded_String;
-               Set : Character_Set;
+               Set : Fixed_Maps.Character_Set;
                Test : Membership := Inside;
                Going : Direction := Forward)
                return Natural is
             begin
-               return Fixed_Index_Set (
+               return Fixed_Maps.Index (
                   Source.Element (1 .. Source.Length),
                   Set,
                   Test,
@@ -921,10 +925,10 @@ package body Ada.Strings.Generic_Bounded is
             function Count (
                Source : Bounded.Bounded_String;
                Pattern : String_Type;
-               Mapping : Character_Mapping)
+               Mapping : Fixed_Maps.Character_Mapping)
                return Natural is
             begin
-               return Fixed_Count_Mapping (
+               return Fixed_Maps.Count (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   Mapping);
@@ -937,44 +941,44 @@ package body Ada.Strings.Generic_Bounded is
                   return Wide_Wide_Character)
                return Natural is
             begin
-               return Fixed_Count_Mapping_Function (
+               return Fixed_Maps.Count (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   Mapping);
             end Count;
 
-            function Count_Per_Element (
+            function Count_Element (
                Source : Bounded.Bounded_String;
                Pattern : String_Type;
                Mapping : not null access function (From : Character_Type)
                   return Character_Type)
                return Natural is
             begin
-               return Fixed_Count_Mapping_Function_Per_Element (
+               return Fixed_Maps.Count_Element (
                   Source.Element (1 .. Source.Length),
                   Pattern,
                   Mapping);
-            end Count_Per_Element;
+            end Count_Element;
 
             function Count (
                Source : Bounded.Bounded_String;
-               Set : Character_Set)
+               Set : Fixed_Maps.Character_Set)
                return Natural is
             begin
-               return Fixed_Count_Set (
+               return Fixed_Maps.Count (
                   Source.Element (1 .. Source.Length),
                   Set);
             end Count;
 
             procedure Find_Token (
                Source : Bounded.Bounded_String;
-               Set : Character_Set;
+               Set : Fixed_Maps.Character_Set;
                From : Positive;
                Test : Membership;
                First : out Positive;
                Last : out Natural) is
             begin
-               Fixed_Find_Token_From (
+               Fixed_Maps.Find_Token (
                   Source.Element (1 .. Source.Length),
                   Set,
                   From,
@@ -985,12 +989,12 @@ package body Ada.Strings.Generic_Bounded is
 
             procedure Find_Token (
                Source : Bounded.Bounded_String;
-               Set : Character_Set;
+               Set : Fixed_Maps.Character_Set;
                Test : Membership;
                First : out Positive;
                Last : out Natural) is
             begin
-               Fixed_Find_Token (
+               Fixed_Maps.Find_Token (
                   Source.Element (1 .. Source.Length),
                   Set,
                   Test,
@@ -1000,12 +1004,12 @@ package body Ada.Strings.Generic_Bounded is
 
             function Translate (
                Source : Bounded.Bounded_String;
-               Mapping : Character_Mapping;
+               Mapping : Fixed_Maps.Character_Mapping;
                Drop : Truncation := Error)
                return Bounded.Bounded_String is
             begin
                return Bounded.To_Bounded_String (
-                  Fixed_Translate_Mapping (
+                  Fixed_Maps.Translate (
                      Source.Element (1 .. Source.Length),
                      Mapping),
                   Drop);
@@ -1013,12 +1017,12 @@ package body Ada.Strings.Generic_Bounded is
 
             procedure Translate (
                Source : in out Bounded.Bounded_String;
-               Mapping : Character_Mapping;
+               Mapping : Fixed_Maps.Character_Mapping;
                Drop : Truncation := Error) is
             begin
                Bounded.Set_Bounded_String (
                   Source,
-                  Fixed_Translate_Mapping (
+                  Fixed_Maps.Translate (
                      Source.Element (1 .. Source.Length),
                      Mapping),
                   Drop);
@@ -1032,7 +1036,7 @@ package body Ada.Strings.Generic_Bounded is
                return Bounded.Bounded_String is
             begin
                return Bounded.To_Bounded_String (
-                  Fixed_Translate_Mapping_Function (
+                  Fixed_Maps.Translate (
                      Source.Element (1 .. Source.Length),
                      Mapping),
                   Drop);
@@ -1046,46 +1050,50 @@ package body Ada.Strings.Generic_Bounded is
             begin
                Bounded.Set_Bounded_String (
                   Source,
-                  Fixed_Translate_Mapping_Function (
+                  Fixed_Maps.Translate (
                      Source.Element (1 .. Source.Length),
                      Mapping),
                   Drop);
             end Translate;
 
-            function Translate_Per_Element (
+            function Translate_Element (
                Source : Bounded.Bounded_String;
                Mapping : not null access function (From : Character_Type)
                   return Character_Type)
                return Bounded.Bounded_String is
             begin
-               return Bounded.To_Bounded_String (
-                  Fixed_Translate_Mapping_Function_Per_Element (
+               return Result : Bounded.Bounded_String := (
+                  Capacity => Bounded.Max,
+                  Length => Source.Length,
+                  Element => <>)
+               do
+                  Fixed_Maps.Translate_Element (
                      Source.Element (1 .. Source.Length),
-                     Mapping));
-            end Translate_Per_Element;
+                     Result.Element (1 .. Source.Length),
+                     Mapping);
+               end return;
+            end Translate_Element;
 
-            procedure Translate_Per_Element (
+            procedure Translate_Element (
                Source : in out Bounded.Bounded_String;
                Mapping : not null access function (From : Character_Type)
                   return Character_Type) is
             begin
-               Bounded.Set_Bounded_String (
-                  Source,
-                  Fixed_Translate_Mapping_Function_Per_Element (
-                     Source.Element (1 .. Source.Length),
-                     Mapping));
-            end Translate_Per_Element;
+               Fixed_Maps.Translate_Element (
+                  Source.Element (1 .. Source.Length),
+                  Mapping);
+            end Translate_Element;
 
             function Trim (
                Source : Bounded.Bounded_String;
-               Left : Character_Set;
-               Right : Character_Set)
+               Left : Fixed_Maps.Character_Set;
+               Right : Fixed_Maps.Character_Set)
                return Bounded.Bounded_String
             is
                First : Positive;
                Last : Natural;
             begin
-               Fixed_Trim_Set (
+               Fixed_Maps.Trim (
                   Source.Element (1 .. Source.Length),
                   Left,
                   Right,
@@ -1096,13 +1104,13 @@ package body Ada.Strings.Generic_Bounded is
 
             procedure Trim (
                Source : in out Bounded.Bounded_String;
-               Left : Character_Set;
-               Right : Character_Set)
+               Left : Fixed_Maps.Character_Set;
+               Right : Fixed_Maps.Character_Set)
             is
                First : Positive;
                Last : Natural;
             begin
-               Fixed_Trim_Set (
+               Fixed_Maps.Trim (
                   Source.Element (1 .. Source.Length),
                   Left,
                   Right,

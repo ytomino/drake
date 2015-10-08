@@ -53,11 +53,10 @@ private
 
       type Cursor is private;
 
+      function Create (Node : Node_Access) return Cursor;
+
       function Reference (Position : Cursor) return Node_Access;
       pragma Inline (Reference);
-
-      procedure Assign (Position : in out Cursor; Node : Node_Access);
-      pragma Inline (Assign);
 
    private
 

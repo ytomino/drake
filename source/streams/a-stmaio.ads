@@ -32,6 +32,11 @@ package Ada.Storage_Mapped_IO is
       File : Streams.Stream_IO.File_Type;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0);
+   function Map (
+      File : Streams.Stream_IO.File_Type;
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0)
+      return Storage_Type;
 
    procedure Map (
       Object : in out Storage_Type;
@@ -40,6 +45,13 @@ package Ada.Storage_Mapped_IO is
       Form : String := "";
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0);
+   function Map (
+      Mode : File_Mode := In_File;
+      Name : String;
+      Form : String := "";
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0)
+      return Storage_Type;
 
    procedure Unmap (Object : in out Storage_Type);
 

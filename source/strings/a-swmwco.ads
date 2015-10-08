@@ -38,8 +38,12 @@ package Ada.Strings.Wide_Maps.Wide_Constants is
    function Surrogate_Set return Wide_Character_Set
       renames Maps.Constants.Surrogate_Set;
 
+   --  extended
+   function Base_Set return Wide_Character_Set
+      renames Maps.Constants.Base_Set;
+
 --  Control_Set : constant Wide_Character_Set;
-   --  (Control_Set is declared as unicode category in above)
+      --  Control_Set is declared as unicode category in above.
 --  Graphic_Set : constant Wide_Character_Set;
    function Graphic_Set return Wide_Character_Set
       renames Maps.Constants.Graphic_Set;
@@ -49,17 +53,23 @@ package Ada.Strings.Wide_Maps.Wide_Constants is
 --  Lower_Set : constant Wide_Character_Set;
    function Lower_Set return Wide_Character_Set
       renames Lowercase_Letter_Set;
-   --  (Lower_Set is extended for all unicode characters)
+      --  Note: Lower_Set is extended for all unicode characters.
 --  Upper_Set : constant Wide_Character_Set;
    function Upper_Set return Wide_Character_Set
       renames Uppercase_Letter_Set;
-   --  (Upper_Set is extended for all unicode characters)
+      --  Note: Upper_Set is extended for all unicode characters.
 --  Basic_Set : constant Wide_Character_Set;
+   function Basic_Set return Wide_Character_Set
+      renames Maps.Constants.Basic_Set;
+      --  Note: Basic_Set is extended for all unicode characters.
+--  Decimal_Digit_Set : constant Wide_Character_Set;
    function Decimal_Digit_Set return Wide_Character_Set
       renames Maps.Constants.Decimal_Digit_Set;
+      --  Note: Decimal_Digit_Set is NOT extended for parsing.
+--  Hexadecimal_Digit_Set : constant Wide_Character_Set;
    function Hexadecimal_Digit_Set return Wide_Character_Set
       renames Maps.Constants.Hexadecimal_Digit_Set;
-   --  (Decimal_Digit_Set, Hexadecimal_Digit_Set are NOT extended, for parsing)
+      --  Note: Hexadecimal_Digit_Set is NOT extended for parsing.
 --  Alphanumeric_Set : constant Wide_Character_Set;
    function Alphanumeric_Set return Wide_Character_Set
       renames Maps.Constants.Alphanumeric_Set;
@@ -73,27 +83,32 @@ package Ada.Strings.Wide_Maps.Wide_Constants is
 --  Lower_Case_Map : constant Wide_Character_Mapping;
    function Lower_Case_Map return Wide_Character_Mapping
       renames Maps.Constants.Lower_Case_Map;
-   --  Maps to lower case for letters, else identity
-   --  (Lower_Case_Map is extended for all unicode characters)
+      --  Maps to lower case for letters, else identity
+      --  Note: Lower_Case_Map is extended for all unicode characters.
 --  Upper_Case_Map : constant Wide_Character_Mapping;
    function Upper_Case_Map return Wide_Character_Mapping
       renames Maps.Constants.Upper_Case_Map;
-   --  Maps to upper case for letters, else identity
-   --  (Upper_Case_Map is extended for all unicode characters)
---  Basic_Map : constant Wide_Character_Mapping;
-   --  Maps to basic letter for letters, else identity
-
-   --  extended
+      --  Maps to upper case for letters, else identity
+      --  Note: Upper_Case_Map is extended for all unicode characters.
+   --  extended from here
    function Case_Folding_Map return Wide_Character_Mapping
       renames Maps.Constants.Case_Folding_Map;
+   function Base_Map return Wide_Character_Mapping
+      renames Maps.Constants.Base_Map;
+   --  to here
+--  Basic_Map : constant Wide_Character_Mapping;
+   function Basic_Map return Wide_Character_Mapping
+      renames Maps.Constants.Basic_Map;
+      --  Maps to basic letter for letters, else identity
+      --  Note: Basic_Map is extended for all unicode characters.
 
    --  RM A.4.7
 
 --  Character_Set : constant Wide_Maps.Wide_Character_Set;
    function Character_Set return Wide_Character_Set
       renames ISO_646_Set;
-   --  Contains each Wide_Character value WC such that
-   --  Characters.Conversions.Is_Character(WC) is True
-   --  (Character_Set is excluded 16#7F# .. 16#FF#)
+      --  Contains each Wide_Character value WC such that
+      --  Characters.Conversions.Is_Character(WC) is True
+      --  Note: (16#7F# .. 16#FF#) is excluded from Character_Set.
 
 end Ada.Strings.Wide_Maps.Wide_Constants;

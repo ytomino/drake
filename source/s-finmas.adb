@@ -8,8 +8,7 @@ package body System.Finalization_Masters is
    use type Startup.Finalize_Library_Objects_Handler;
 
    procedure Finalize_Library_Objects;
-   pragma Linker_Destructor (Finalize_Library_Objects);
-   --  __attribute__((destructor)) is invoked after atexit.
+   pragma Linker_Destructor (Finalize_Library_Objects); -- after atexit
 
    procedure Finalize_Library_Objects is
    begin

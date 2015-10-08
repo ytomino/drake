@@ -30,8 +30,9 @@ package Ada.Streams.Naked_Stream_IO is
 
    type Stream_Type (<>) is limited private;
    type Non_Controlled_File_Type is access all Stream_Type;
-   --  Non_Controlled_File_Type is a pass-by-value type whether in out or not,
-   --  and it's possible that Reset/Set_Mode may close the file.
+
+   --  Note: Non_Controlled_File_Type is pass-by-value whether in out or not,
+   --    and it's possible that Reset/Set_Mode may close the file.
    --  So these functions have access mode.
 
    procedure Create (

@@ -77,13 +77,13 @@ package body Ada.Text_IO.Terminal is
       File : File_Type)
       return View_Type is
    begin
-      return R : View_Type do
+      return Result : View_Type do
          View (
             File, -- checking the predicate
-            R.Left,
-            R.Top,
-            R.Right,
-            R.Bottom);
+            Result.Left,
+            Result.Top,
+            Result.Right,
+            Result.Bottom);
       end return;
    end View;
 

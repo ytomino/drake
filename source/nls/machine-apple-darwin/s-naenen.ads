@@ -50,8 +50,7 @@ package System.Native_Environment_Encoding is
       UTF_32_Names (Low_Order_First)(0)'Access;
 
    function Get_Current_Encoding return Encoding_Id;
-   --  In POSIX, other packages (Ada.Command_Line, Ada.Environment_Variables,
-   --    Ada.Text_IO, etc) also assume that system encoding is UTF-8.
+      --  Returns UTF-8. In POSIX, The system encoding is assumed as UTF-8.
    pragma Inline (Get_Current_Encoding);
 
    --  subsidiary types to converter

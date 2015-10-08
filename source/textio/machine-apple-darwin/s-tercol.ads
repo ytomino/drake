@@ -6,6 +6,8 @@ package System.Terminal_Colors is
    pragma Preelaborate;
 
    type Color is mod 256;
+
+   --  Note: Color represents:
    --    0 ..   7 => Normal System Colors (R, G, B => 0 or 16#C0#)
    --  if $TERM = xterm-256color,
    --    8 ..  16 => Bright System Colors (R, G, B => 16#80# or 16#FF#)

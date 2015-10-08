@@ -18,7 +18,7 @@ package Ada.Strings.Wide_Wide_Maps is
 --    High : Wide_Wide_Character;
 --  end record;
    subtype Wide_Wide_Character_Range is Maps.Wide_Wide_Character_Range;
-   --  Represents Wide_Wide_Character range Low..High
+      --  Represents Wide_Wide_Character range Low..High
 
 --  type Wide_Wide_Character_Ranges is
 --    array (Positive range <>) of Wide_Wide_Character_Range;

@@ -15,15 +15,15 @@ package Ada.Strings.Naked_Maps.Set_Constants is
       return not null access Naked_Maps.Character_Set;
 
    function Letter_Set return not null access Naked_Maps.Character_Set;
-   --  Ll, Lu, Lt, Lm, Lo
+      --  Ll, Lu, Lt, Lm, Lo
 
    function Alphanumeric_Set return not null access Naked_Maps.Character_Set;
-   --  Letter + Nd, Nl, No
+      --  Letter + Nd, Nl, No
 
    function Special_Set return not null access Naked_Maps.Character_Set;
-   --  Mn, Me, Mc, Zs, Pd, Ps, Pe, Pc, Po, Sm, Sc, Sk, So, Pi, Pf
+      --  Mn, Me, Mc, Zs, Pd, Ps, Pe, Pc, Po, Sm, Sc, Sk, So, Pi, Pf
 
    function Graphic_Set return not null access Naked_Maps.Character_Set;
-   --  Alphanumeric + Special
+      --  Alphanumeric + Special
 
 end Ada.Strings.Naked_Maps.Set_Constants;

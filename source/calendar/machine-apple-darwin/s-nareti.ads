@@ -17,7 +17,7 @@ package System.Native_Real_Time is
    subtype Time is Duration;
 
    Tick : constant := 1.0 / 1000_000_000;
-   --  mach_absolute_time returns nano-seconds
+      --  mach_absolute_time returns nano-seconds.
 
    --  for delay until
 

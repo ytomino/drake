@@ -17,12 +17,12 @@ package Ada.IO_Modes is
    type File_Shared is new File_Shared_Spec range Allow .. Deny;
 
 --  subtype File_Wait is Boolean;
-   --  False as "wait=false" or default
-   --  True as "wait=true"
+      --  False as "wait=false" or default
+      --  True as "wait=true"
 
 --  subtype File_Overwrite is Boolean;
-   --  False as "overwrite=false"
-   --  True as "overwrite=true" or default
+      --  False as "overwrite=false"
+      --  True as "overwrite=true" or default
 
    --  the types for the parameters Form of Text_IO
 

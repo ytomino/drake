@@ -61,7 +61,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
    procedure Append (
       Source : in out Unbounded_Wide_Wide_String;
       New_Item : Wide_Wide_Character)
-      renames Unbounded_Wide_Wide_Strings.Append;
+      renames Unbounded_Wide_Wide_Strings.Append_Element;
 
    function "&" (Left, Right : Unbounded_Wide_Wide_String)
       return Unbounded_Wide_Wide_String
@@ -216,7 +216,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
       return Natural
-      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Index;
+      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Index_Element;
 
    --  modified
 --  function Index (
@@ -254,7 +254,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
       return Natural
-      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Index;
+      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Index_Element;
 
    function Index (
       Source : Unbounded_Wide_Wide_String;
@@ -317,7 +317,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
       return Natural
-      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Count;
+      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Count_Element;
 
    function Count (
       Source : Unbounded_Wide_Wide_String;
@@ -365,7 +365,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
       return Unbounded_Wide_Wide_String
-      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Translate;
+      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Translate_Element;
 
    --  modified
 --  procedure Translate (
@@ -375,7 +375,7 @@ package Ada.Strings.Wide_Wide_Unbounded is
       Source : in out Unbounded_Wide_Wide_String;
       Mapping : not null access function (From : Wide_Wide_Character)
          return Wide_Wide_Character)
-      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Translate;
+      renames Unbounded_Wide_Wide_Strings.Functions.Maps.Translate_Element;
 
    --  Wide_Wide_String transformation subprograms
 

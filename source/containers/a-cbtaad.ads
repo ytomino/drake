@@ -11,7 +11,7 @@ package Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
       Message : String := "")
       return Boolean;
 
-   function Validate (
+   function Valid (
       Container : Node_Access;
       Length : Count_Type;
       Level_Check : Boolean := True)

@@ -10,6 +10,11 @@ package body System.Native_Directories.Volumes is
 
    --  implementation
 
+   function Is_Assigned (FS : Non_Controlled_File_System) return Boolean is
+   begin
+      return FS.f_type /= 0;
+   end Is_Assigned;
+
    procedure Get (
       Name : String;
       FS : aliased out Non_Controlled_File_System)

@@ -32,18 +32,16 @@ package body System.Program is
       Holder.Assign (Buffer'Access);
       loop
          declare
-            Result : constant C.sys.types.ssize_t := C.unistd.readlink (
-               Name,
-               Buffer,
-               Buffer_Length);
+            Length : constant C.sys.types.ssize_t :=
+               C.unistd.readlink (Name, Buffer, Buffer_Length);
          begin
-            if Result < 0 then
+            if Length < 0 then
                raise Program_Error;
             end if;
-            if C.size_t (Result) < Buffer_Length then
+            if C.size_t (Length) < Buffer_Length then
                return Zero_Terminated_Strings.Value (
                   Buffer,
-                  C.size_t (Result));
+                  C.size_t (Length));
             end if;
             Buffer_Length := Buffer_Length * 2;
             Buffer := Conv.To_Pointer (

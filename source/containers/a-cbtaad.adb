@@ -119,59 +119,80 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
       return True;
    end Dump;
 
-   function Validate (
+   function Valid (
       Container : Node_Access;
       Length : Count_Type;
       Level_Check : Boolean := True)
       return Boolean
    is
       Count : Count_Type := 0;
-      procedure Process (Position : not null Node_Access);
-      procedure Process (Position : not null Node_Access) is
+      function Process (Position : not null Node_Access) return Boolean;
+      function Process (Position : not null Node_Access) return Boolean is
       begin
          Count := Count + 1;
          if Level_Check then
             if Downcast (Position).Level > 0 then
-               pragma Assert (Position.Left /= null);
-               pragma Assert (Position.Right /= null);
-               null;
+               if Position.Left = null
+                  or else Position.Right = null
+               then
+                  return False;
+               end if;
             else
-               pragma Assert (Position.Left = null);
-               null;
+               if Position.Left /= null then
+                  return False;
+               end if;
             end if;
             if Position.Left /= null then
-               pragma Assert (Downcast (Position).Level =
-                  Downcast (Position.Left).Level + 1);
-               null;
+               if Downcast (Position).Level /=
+                  Downcast (Position.Left).Level + 1
+               then
+                  return False;
+               end if;
             end if;
             if Position.Right /= null then
-               pragma Assert (Downcast (Position).Level >=
-                  Downcast (Position.Right).Level);
-               pragma Assert (Downcast (Position).Level
-                  - Downcast (Position.Right).Level <= 1);
+               if Downcast (Position).Level not in
+                  Downcast (Position.Right).Level ..
+                  Downcast (Position.Right).Level + 1
+               then
+                  return False;
+               end if;
                if Position.Right.Right /= null then
-                  pragma Assert (Downcast (Position).Level >
-                                 Downcast (Position.Right.Right).Level);
-                  null;
+                  if Downcast (Position).Level <=
+                     Downcast (Position.Right.Right).Level
+                  then
+                     return False;
+                  end if;
                end if;
             end if;
          end if;
          if Position.Left /= null then
-            pragma Assert (Position.Left.Parent = Position);
-            Process (Position.Left);
+            if Position.Left.Parent /= Position then
+               return False;
+            end if;
+            if not Process (Position.Left) then
+               return False;
+            end if;
          end if;
          if Position.Right /= null then
-            pragma Assert (Position.Right.Parent = Position);
-            Process (Position.Right);
+            if Position.Right.Parent /= Position then
+               return False;
+            end if;
+            if not Process (Position.Right) then
+               return False;
+            end if;
          end if;
+         return True;
       end Process;
    begin
       if Container /= null then
-         pragma Assert (Container.Parent = null);
-         Process (Container);
+         if Container.Parent /= null then
+            return False;
+         end if;
+         if not Process (Container) then
+            return False;
+         end if;
       end if;
-      pragma Assert (Count = Length);
-      return True;
-   end Validate;
+      return Count = Length;
+   end Valid;
 
 end Ada.Containers.Binary_Trees.Arne_Andersson.Debug;

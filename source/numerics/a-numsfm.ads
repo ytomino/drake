@@ -36,22 +36,22 @@ with Ada.IO_Exceptions;
 with Interfaces;
 generic
    --  Mersenne Exponent. The period of the sequence
-   --  is a multiple of 2^MEXP-1.
+   --    is a multiple of 2^MEXP-1.
    MEXP : Natural := 19937;
-   --  the pick up position of the array.
+   --  The pick up position of the array.
    POS1 : Natural := 122;
-   --  the parameter of shift left as four 32-bit registers.
+   --  The parameter of shift left as four 32-bit registers.
    SL1 : Natural := 18;
-   --  the parameter of shift left as one 128-bit register.
+   --  The parameter of shift left as one 128-bit register.
    --  The 128-bit integer is shifted by (SL2 * 8) bits.
    SL2 : Natural := 1;
-   --  the parameter of shift right as four 32-bit registers.
+   --  The parameter of shift right as four 32-bit registers.
    SR1 : Natural := 11;
-   --  the parameter of shift right as one 128-bit register.
+   --  The parameter of shift right as one 128-bit register.
    --  The 128-bit integer is shifted by (SL2 * 8) bits.
    SR2 : Natural := 1;
    --  A bitmask, used in the recursion.  These parameters are introduced
-   --  to break symmetry of SIMD.
+   --    to break symmetry of SIMD.
    MSK1 : Interfaces.Unsigned_32 := 16#dfffffef#;
    MSK2 : Interfaces.Unsigned_32 := 16#ddfecb7f#;
    MSK3 : Interfaces.Unsigned_32 := 16#bffaffff#;
@@ -126,11 +126,11 @@ package Ada.Numerics.SFMT is
    Default_Initiator : constant := 1234; -- test.c
 
    --  This constant means the minimum size of array used for
-   --  Fill_Random_32 procedure.
+   --    Fill_Random_32 procedure.
    Min_Array_Length_32 : constant Natural;
    pragma Warnings (Off, Min_Array_Length_32);
    --  This constant means the minimum size of array used for
-   --  Fill_Random_64 procedure.
+   --    Fill_Random_64 procedure.
    Min_Array_Length_64 : constant Natural;
    pragma Warnings (Off, Min_Array_Length_64);
 
@@ -173,19 +173,20 @@ package Ada.Numerics.SFMT is
 
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
-   --  Note: Use_Error may be raised from Initialize
+
+   --  Note: Use_Error may be raised from Initialize.
 
 private
 
    --  SFMT generator has an internal state array of 128-bit integers,
-   --  and N is its size.
+   --    and N is its size.
    N : constant Natural := MEXP / 128 + 1;
    --  N32 is the size of internal state array when regarded as an array
-   --  of 32-bit integers.
+   --    of 32-bit integers.
    Min_Array_Length_32 : constant Natural := N * 4;
    N32 : Natural renames Min_Array_Length_32;
    --  N64 is the size of internal state array when regarded as an array
-   --  of 64-bit integers.
+   --    of 64-bit integers.
    Min_Array_Length_64 : constant Natural := N * 2;
    N64 : Natural renames Min_Array_Length_64;
 

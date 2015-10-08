@@ -4,7 +4,8 @@ with System.Address_To_Constant_Access_Conversions;
 separate (System.Unwind.Backtrace)
 package body Separated is
    pragma Suppress (All_Checks);
-   --  in SjLj mode, Unwind_Backtrace does not work
+
+   --  Note: In SjLj mode, Unwind_Backtrace does not work.
 
    procedure main
       with Import, Convention => C;
@@ -20,11 +21,9 @@ package body Separated is
    Return_Offset : constant := Standard'Address_Size / Standard'Storage_Unit;
 
    Call_Length : constant := 0; -- follow Unwind_Backtrace
-   --  1 + Standard'Address_Size / Standard'Storage_Unit;
-   --  length of call instruction
+--    1 + Standard'Address_Size / Standard'Storage_Unit; -- call instruction
 
-   Caller_In_main : constant := 160;
-   --  120 in unoptimized 32bit code
+   Caller_In_main : constant := 160; -- >= 120 in unoptimized 32bit code
 
    procedure Backtrace (
       Item : aliased out Tracebacks_Array;

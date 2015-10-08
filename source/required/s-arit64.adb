@@ -42,10 +42,10 @@ package body System.Arith_64 is
    procedure Add (X : U64; R1, R2, R3 : in out U32);
    procedure Add (X : U64; R1, R2, R3 : in out U32) is
       R : constant U64 := U64 (R1) or Interfaces.Shift_Left (U64 (R2), 32);
-      Result : constant U64 := X + R;
+      XR : constant U64 := X + R;
    begin
-      R1 := U32'Mod (Result);
-      R2 := U32'Mod (Interfaces.Shift_Right (Result, 32));
+      R1 := U32'Mod (XR);
+      R2 := U32'Mod (Interfaces.Shift_Right (XR, 32));
       if X > U64'Last - R then
          R3 := R3 + 1;
       end if;

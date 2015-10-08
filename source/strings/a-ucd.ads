@@ -4,6 +4,8 @@ private package Ada.UCD is
    --  This is the parent package of Unicode Character Database.
    pragma Pure;
 
+   Version : constant String (1 .. 11) := "Unicode 6.1";
+
    --  difference between two code points
    type Difference_Base is range -(2 ** 31) .. 2 ** 31 - 1;
    for Difference_Base'Size use 32;

@@ -7,6 +7,9 @@ with Ada.Directories.Volumes;
 with Ada.Text_IO;
 procedure directories is
 	use type Ada.Calendar.Time;
+	use type Ada.Directories.File_Kind;
+	use type Ada.Directories.File_Size;
+	use type Ada.Directories.Information.File_Id;
 begin
 	Ada.Debug.Put ("**** user");
 	Ada.Debug.Put ("current user: " & Ada.Credentials.User_Name);
@@ -70,6 +73,19 @@ begin
 		end if;
 		Ada.Directories.Delete_File (Name);
 	end;
+	-- getting information by Name versus by Directory_Entry
+	Ada.Debug.Put ("**** information");
+	declare
+		Name : constant String := "directories.adb";
+		Directory_Entry : Ada.Directories.Directory_Entry_Type := Ada.Directories.Get_Entry (Name);
+	begin
+		pragma Assert (Ada.Directories.Simple_Name (Name) = Ada.Directories.Simple_Name (Directory_Entry));
+		pragma Assert (Ada.Directories.Kind (Name) = Ada.Directories.Kind (Directory_Entry));
+		pragma Assert (Ada.Directories.Size (Name) = Ada.Directories.Size (Directory_Entry));
+		pragma Assert (Ada.Directories.Modification_Time (Name) = Ada.Directories.Modification_Time (Directory_Entry));
+		pragma Assert (Ada.Directories.Information.Identity (Name) = Ada.Directories.Information.Identity (Directory_Entry));
+		null;
+	end;
 	-- symbolic link
 	Ada.Debug.Put ("**** symbolic link");
 	declare
@@ -93,6 +109,7 @@ begin
 	declare
 		FS : Ada.Directories.Volumes.File_System := Ada.Directories.Volumes.Where ("directories.adb");
 	begin
+		pragma Assert (Ada.Directories.Volumes.Is_Assigned (FS));
 		Ada.Debug.Put (Ada.Directories.File_Size'Image (Ada.Directories.Volumes.Size (FS)));
 		Ada.Debug.Put (Ada.Directories.File_Size'Image (Ada.Directories.Volumes.Free_Space (FS)));
 		Ada.Debug.Put (Ada.Directories.Volumes.Owner (FS));

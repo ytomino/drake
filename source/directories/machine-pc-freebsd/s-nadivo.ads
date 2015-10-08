@@ -9,6 +9,8 @@ package System.Native_Directories.Volumes is
 
    subtype Non_Controlled_File_System is C.sys.mount.struct_statfs;
 
+   function Is_Assigned (FS : Non_Controlled_File_System) return Boolean;
+
    procedure Get (
       Name : String;
       FS : aliased out Non_Controlled_File_System);
@@ -35,9 +37,10 @@ package System.Native_Directories.Volumes is
    function Identity (FS : Non_Controlled_File_System) return File_System_Id;
 
    type File_System is record
-      Data : aliased Non_Controlled_File_System;
+      Data : aliased Non_Controlled_File_System := (
+         f_version => 0,
+         others => <>);
    end record;
-   pragma Suppress_Initialization (File_System);
 
    function Reference (Item : File_System)
       return not null access Non_Controlled_File_System;

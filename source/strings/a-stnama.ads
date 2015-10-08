@@ -14,7 +14,11 @@ package Ada.Strings.Naked_Maps is
 
    function To_Character (Item : Wide_Wide_Character)
       return Character;
+   function To_Wide_Character (Item : Wide_Wide_Character)
+      return Wide_Character;
    function To_Wide_Wide_Character (Item : Character)
+      return Wide_Wide_Character;
+   function To_Wide_Wide_Character (Item : Wide_Character)
       return Wide_Wide_Character;
 
    --  sets
@@ -46,12 +50,6 @@ package Ada.Strings.Naked_Maps is
       Set : Character_Set)
       return Boolean;
 
-   --  for Handling
-   function Is_In (
-      Element : Character;
-      Set : Character_Set)
-      return Boolean;
-
    --  making operations
 
    procedure Add (
@@ -59,7 +57,14 @@ package Ada.Strings.Naked_Maps is
       Last : in out Natural;
       L, H : Character_Type);
 
-   procedure Merge (
+   --  "and"
+   procedure Intersection (
+      Result : out Character_Ranges;
+      Last : out Natural;
+      Left, Right : Character_Ranges);
+
+   --  "or"
+   procedure Union (
       Target : out Character_Ranges;
       Last : out Natural;
       Left, Right : Character_Ranges);
@@ -91,17 +96,19 @@ package Ada.Strings.Naked_Maps is
       return Character_Type;
 
    --  for Handling
-   function Value (
-      Map : Character_Mapping;
-      Element : Character)
-      return Character;
 
-   --  for Handling
-   procedure Translate (
+   function Translate (
       Source : String;
-      Mapping : Character_Mapping;
-      Item : out String; -- multiply Max_Length_In_String
-      Last : out Natural);
+      Mapping : Character_Mapping)
+      return String;
+   function Translate (
+      Source : Wide_String;
+      Mapping : Character_Mapping)
+      return Wide_String;
+   function Translate (
+      Source : Wide_Wide_String;
+      Mapping : Character_Mapping)
+      return Wide_Wide_String;
 
 private
 
@@ -110,13 +117,14 @@ private
    pragma Suppress_Initialization (Character_Set_Array);
 
    --  for Set_Constants
-   procedure Merge (
+
+   procedure Union (
       Target : out Character_Ranges;
       Last : out Natural;
       Source : in out Character_Set_Array); -- destructive
 
+   --  for Case_Mapping
+
    procedure Sort (From, To : in out Character_Sequence);
-   procedure Sort (From, To : in out Character_Sequence; Last : out Natural);
-   --  From'First = To'First
 
 end Ada.Strings.Naked_Maps;

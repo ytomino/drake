@@ -1,16 +1,10 @@
 --  reference:
 --  http://www.unicode.org/reports/tr15/
-pragma Check_Policy (Validate => Ignore);
 with Ada.Characters.Conversions;
-with Ada.UCD.Normalization;
-with System.Once;
+with Ada.Strings.Canonical_Composites;
+with Ada.UCD;
 package body Ada.Strings.Normalization is
    use type UCD.UCS_4;
-
-   procedure unreachable
-      with Import,
-         Convention => Intrinsic, External_Name => "__builtin_unreachable";
-   pragma No_Return (unreachable);
 
    function Standard_Equal (Left, Right : Wide_Wide_String) return Boolean;
    function Standard_Equal (Left, Right : Wide_Wide_String) return Boolean is
@@ -26,59 +20,6 @@ package body Ada.Strings.Normalization is
 
    --  NFD
 
-   subtype Decomposed_Wide_Wide_String is Wide_Wide_String (1 .. Expanding);
-
-   function Decomposed_Length (Item : Decomposed_Wide_Wide_String)
-      return Natural;
-   function Decomposed_Length (Item : Decomposed_Wide_Wide_String)
-      return Natural is
-   begin
-      for I in reverse Item'Range loop
-         if Item (I) /= Wide_Wide_Character'Val (0) then
-            return I;
-         end if;
-      end loop;
-      pragma Check (Validate, False);
-      unreachable;
-   end Decomposed_Length;
-
-   type D_Map_Element is record
-      From : Wide_Wide_Character;
-      To : Decomposed_Wide_Wide_String;
-   end record;
-   pragma Suppress_Initialization (D_Map_Element);
-
-   type D_Map_Array is
-      array (1 .. UCD.Normalization.NFD_Total) of D_Map_Element;
-   pragma Suppress_Initialization (D_Map_Array);
-   type D_Map_Array_Access is access D_Map_Array;
-
-   D_Map : D_Map_Array_Access;
-   D_Flag : aliased System.Once.Flag := 0;
-
-   function D_Find (Item : Wide_Wide_Character) return Natural;
-   function D_Find (Item : Wide_Wide_Character) return Natural is
-      L : Positive := D_Map'First;
-      H : Natural := D_Map'Last;
-   begin
-      loop
-         declare
-            M : constant Positive := (L + H) / 2;
-         begin
-            if Item < D_Map (M).From then
-               H := M - 1;
-            elsif Item > D_Map (M).From then
-               L := M + 1;
-            else
-               return M;
-            end if;
-         end;
-         if L > H then
-            return 0;
-         end if;
-      end loop;
-   end D_Find;
-
    procedure D_Buff (
       Item : in out Wide_Wide_String;
       Last : in out Natural;
@@ -91,13 +32,13 @@ package body Ada.Strings.Normalization is
       Decomposed := False;
       for I in reverse Item'First .. Last loop
          declare
-            D : constant Natural := D_Find (Item (I));
-            To : Decomposed_Wide_Wide_String;
+            D : constant Natural := Canonical_Composites.D_Find (Item (I));
+            To : Canonical_Composites.Decomposed_Wide_Wide_String;
             To_Length : Natural;
          begin
             if D > 0 then
-               To := D_Map (D).To;
-               To_Length := Decomposed_Length (To);
+               To := Canonical_Composites.D_Map (D).To;
+               To_Length := Canonical_Composites.Decomposed_Length (To);
             elsif Wide_Wide_Character'Pos (Item (I)) in
                UCD.Hangul.SBase ..
                UCD.Hangul.SBase + UCD.Hangul.SCount - 1
@@ -137,186 +78,7 @@ package body Ada.Strings.Normalization is
       end loop;
    end D_Buff;
 
-   procedure D_Fill (Map : out D_Map_Array);
-   procedure D_Fill (Map : out D_Map_Array) is
-      procedure Fill (
-         Map : in out D_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_16x1_Type);
-      procedure Fill (
-         Map : in out D_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_16x1_Type) is
-      begin
-         for J in Table'Range loop
-            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
-            Map (I).To (1) := Wide_Wide_Character'Val (Table (J).Mapping);
-            for K in 2 .. Expanding loop
-               Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
-         end loop;
-      end Fill;
-      procedure Fill (
-         Map : in out D_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_16x2_Type);
-      procedure Fill (
-         Map : in out D_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_16x2_Type) is
-      begin
-         for J in Table'Range loop
-            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
-            for K in 1 .. 2 loop
-               Map (I).To (K) :=
-                  Wide_Wide_Character'Val (Table (J).Mapping (K));
-            end loop;
-            for K in 3 .. Expanding loop
-               Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
-         end loop;
-      end Fill;
-      procedure Fill (
-         Map : in out D_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_32x2_Type);
-      procedure Fill (
-         Map : in out D_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_32x2_Type) is
-      begin
-         for J in Table'Range loop
-            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
-            for K in 1 .. 2 loop
-               Map (I).To (K) :=
-                  Wide_Wide_Character'Val (Table (J).Mapping (K));
-            end loop;
-            for K in 3 .. Expanding loop
-               Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
-         end loop;
-      end Fill;
-   begin
-      --  make table
-      declare
-         I : Positive := Map'First;
-      begin
-         --  16#00C0# ..
-         Fill (Map, I, UCD.Normalization.NFD_D_Table_XXXX);
-         --  16#0340#
-         Fill (Map, I, UCD.Normalization.NFD_S_Table_XXXX);
-         --  16#0344# ..
-         Fill (Map, I, UCD.Normalization.NFD_E_Table_XXXX);
-         --  16#1109A# ..
-         Fill (Map, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
-         --  16#1D15E#
-         Fill (Map, I, UCD.Normalization.NFD_E_Table_XXXXXXXX);
-         pragma Check (Validate, I = Map'Last + 1);
-      end;
-      --  sort
-      for I in Map'First + 1 .. Map'Last loop
-         for J in reverse Map'First .. I - 1 loop
-            exit when Map (J).From <= Map (J + 1).From;
-            declare
-               T : constant D_Map_Element := Map (J);
-            begin
-               Map (J) := Map (J + 1);
-               Map (J + 1) := T;
-            end;
-         end loop;
-      end loop;
-   end D_Fill;
-
-   procedure D_Init;
-   procedure D_Init is
-   begin
-      D_Map := new D_Map_Array;
-      D_Fill (D_Map.all);
-      --  expanding re-decomposable
-      loop
-         declare
-            Expanded : Boolean := False;
-         begin
-            for I in D_Map'Range loop
-               declare
-                  To : Decomposed_Wide_Wide_String
-                     renames D_Map (I).To;
-                  To_Last : Natural := Decomposed_Length (To);
-                  J : Natural := To_Last;
-               begin
-                  while J >= To'First loop
-                     declare
-                        D : constant Natural := D_Find (To (J));
-                     begin
-                        if D > 0 then
-                           Expanded := True;
-                           declare
-                              R_Length : constant Natural :=
-                                 Decomposed_Length (D_Map (D).To);
-                           begin
-                              To (J + R_Length .. To_Last + R_Length - 1) :=
-                                 To (J + 1 .. To_Last);
-                              To (J .. J + R_Length - 1) :=
-                                 D_Map (D).To (1 .. R_Length);
-                              To_Last := To_Last + R_Length - 1;
-                              pragma Check (Validate, To_Last <= Expanding);
-                              J := J + R_Length - 1;
-                           end;
-                        else
-                           J := J - 1;
-                        end if;
-                     end;
-                  end loop;
-               end;
-            end loop;
-            exit when not Expanded;
-         end;
-      end loop;
-   end D_Init;
-
    --  NFC
-
-   subtype Composing_Wide_Wide_String is Wide_Wide_String (1 .. 2);
-
-   type C_Map_Element is record
-      From : Composing_Wide_Wide_String;
-      To : Wide_Wide_Character;
-   end record;
-   pragma Suppress_Initialization (C_Map_Element);
-
-   type C_Map_Array is
-      array (1 .. UCD.Normalization.NFC_Total) of C_Map_Element;
-   pragma Suppress_Initialization (C_Map_Array);
-   type C_Map_Array_Access is access C_Map_Array;
-
-   C_Map : C_Map_Array_Access;
-   C_Flag : aliased System.Once.Flag := 0;
-
-   function C_Find (Item : Composing_Wide_Wide_String) return Natural;
-   function C_Find (Item : Composing_Wide_Wide_String) return Natural is
-      L : Positive := C_Map'First;
-      H : Natural := C_Map'Last;
-   begin
-      loop
-         declare
-            M : constant Positive := (L + H) / 2;
-         begin
-            if Item < C_Map (M).From then
-               H := M - 1;
-            elsif Item > C_Map (M).From then
-               L := M + 1;
-            else
-               return M;
-            end if;
-         end;
-         if L > H then
-            return 0;
-         end if;
-      end loop;
-   end C_Find;
 
    procedure C_Buff (
       Item : in out Wide_Wide_String;
@@ -331,13 +93,14 @@ package body Ada.Strings.Normalization is
       for I in reverse Item'First .. Last - 1 loop
          Process_After_Index : loop
             declare
-               From : constant Composing_Wide_Wide_String :=
+               From : constant
+                  Canonical_Composites.Composing_Wide_Wide_String :=
                   (Item (I), Item (I + 1));
-               C : constant Natural := C_Find (From);
+               C : constant Natural := Canonical_Composites.C_Find (From);
                To : Wide_Wide_Character;
             begin
                if C > 0 then
-                  To := C_Map (C).To;
+                  To := Canonical_Composites.C_Map (C).To;
                elsif Wide_Wide_Character'Pos (From (1)) in
                   UCD.Hangul.LBase ..
                   UCD.Hangul.LBase + UCD.Hangul.LCount - 1
@@ -388,72 +151,6 @@ package body Ada.Strings.Normalization is
          end loop Process_After_Index;
       end loop;
    end C_Buff;
-
-   procedure C_Init;
-   procedure C_Init is
-      procedure Fill (
-         Map : in out C_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_16x2_Type);
-      procedure Fill (
-         Map : in out C_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_16x2_Type) is
-      begin
-         for J in Table'Range loop
-            for K in 1 .. 2 loop
-               Map (I).From (K) :=
-                  Wide_Wide_Character'Val (Table (J).Mapping (K));
-            end loop;
-            Map (I).To := Wide_Wide_Character'Val (Table (J).Code);
-            I := I + 1;
-         end loop;
-      end Fill;
-      procedure Fill (
-         Map : in out C_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_32x2_Type);
-      procedure Fill (
-         Map : in out C_Map_Array;
-         I : in out Positive;
-         Table : UCD.Map_32x2_Type) is
-      begin
-         for J in Table'Range loop
-            for K in 1 .. 2 loop
-               Map (I).From (K) :=
-                  Wide_Wide_Character'Val (Table (J).Mapping (K));
-            end loop;
-            Map (I).To := Wide_Wide_Character'Val (Table (J).Code);
-            I := I + 1;
-         end loop;
-      end Fill;
-   begin
-      --  initialize D table, too
-      System.Once.Initialize (D_Flag'Access, D_Init'Access);
-      --  make table
-      C_Map := new C_Map_Array;
-      declare
-         I : Positive := C_Map'First;
-      begin
-         --  (16#0041#, 16#0300#) ..
-         Fill (C_Map.all, I, UCD.Normalization.NFD_D_Table_XXXX);
-         --  (16#11099#, 16#110BA#) ..
-         Fill (C_Map.all, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
-         pragma Check (Validate, I = C_Map'Last + 1);
-      end;
-      --  sort
-      for I in C_Map'First + 1 .. C_Map'Last loop
-         for J in reverse C_Map'First .. I - 1 loop
-            exit when C_Map (J).From <= C_Map (J + 1).From;
-            declare
-               T : constant C_Map_Element := C_Map (J);
-            begin
-               C_Map (J) := C_Map (J + 1);
-               C_Map (J + 1) := T;
-            end;
-         end loop;
-      end loop;
-   end C_Init;
 
    generic
       type Character_Type is (<>);
@@ -648,7 +345,7 @@ package body Ada.Strings.Normalization is
             Last := Item'First - 1;
             Out_Last := Out_Item'First - 1;
          else
-            System.Once.Initialize (D_Flag'Access, D_Init'Access);
+            Canonical_Composites.Initialize_D;
             declare
                St : Composites.State;
             begin
@@ -674,7 +371,7 @@ package body Ada.Strings.Normalization is
             State.Next_Last := Last;
             Out_Last := Out_Item'First - 1;
          else
-            System.Once.Initialize (D_Flag'Access, D_Init'Access);
+            Canonical_Composites.Initialize_D;
             Decompose_No_Length_Check (State, Item, Last, Out_Item, Out_Last);
          end if;
       end Decompose;
@@ -686,7 +383,7 @@ package body Ada.Strings.Normalization is
       begin
          Out_Last := Out_Item'First - 1;
          if Item'Length > 0 then
-            System.Once.Initialize (D_Flag'Access, D_Init'Access);
+            Canonical_Composites.Initialize_D;
             declare
                St : Composites.State;
                Last : Natural := Item'First - 1;
@@ -763,7 +460,7 @@ package body Ada.Strings.Normalization is
             Last := Item'First - 1;
             Out_Last := Out_Item'First - 1;
          else
-            System.Once.Initialize (C_Flag'Access, C_Init'Access);
+            Canonical_Composites.Initialize_C;
             declare
                St : Composites.State;
             begin
@@ -789,7 +486,7 @@ package body Ada.Strings.Normalization is
             State.Next_Last := Last;
             Out_Last := Out_Item'First - 1;
          else
-            System.Once.Initialize (C_Flag'Access, C_Init'Access);
+            Canonical_Composites.Initialize_C;
             Compose_No_Length_Check (State, Item, Last, Out_Item, Out_Last);
          end if;
       end Compose;
@@ -801,7 +498,7 @@ package body Ada.Strings.Normalization is
       begin
          Out_Last := Out_Item'First - 1;
          if Item'Length > 0 then
-            System.Once.Initialize (C_Flag'Access, C_Init'Access);
+            Canonical_Composites.Initialize_C;
             declare
                St : Composites.State;
                Last : Natural := Item'First - 1;
@@ -846,7 +543,7 @@ package body Ada.Strings.Normalization is
          elsif Right'Length = 0 then
             return False;
          end if;
-         System.Once.Initialize (D_Flag'Access, D_Init'Access);
+         Canonical_Composites.Initialize_D;
          declare
             Left_State : Composites.State;
             Left_Last : Natural := Left'First - 1;
@@ -962,7 +659,7 @@ package body Ada.Strings.Normalization is
          elsif Right'Length = 0 then
             return False;
          end if;
-         System.Once.Initialize (D_Flag'Access, D_Init'Access);
+         Canonical_Composites.Initialize_D;
          declare
             Left_State : Composites.State;
             Left_Last : Natural := Left'First - 1;
@@ -1107,36 +804,34 @@ package body Ada.Strings.Normalization is
          Decomposed : Wide_Wide_String))
    is
       procedure Do_Iterate (
-         Map : D_Map_Array;
+         Map : Canonical_Composites.D_Map_Array;
          Process : not null access procedure (
             Precomposed : Wide_Wide_Character;
             Decomposed : Wide_Wide_String));
       procedure Do_Iterate (
-         Map : D_Map_Array;
+         Map : Canonical_Composites.D_Map_Array;
          Process : not null access procedure (
             Precomposed : Wide_Wide_Character;
             Decomposed : Wide_Wide_String)) is
       begin
          for I in Map'Range loop
             declare
-               Item : D_Map_Element
+               Item : Canonical_Composites.D_Map_Element
                   renames Map (I);
+               Decomposed_Length : constant Natural :=
+                  Canonical_Composites.Decomposed_Length (Item.To);
             begin
-               Process (Item.From, Item.To (1 .. Decomposed_Length (Item.To)));
+               Process (Item.From, Item.To (1 .. Decomposed_Length));
             end;
          end loop;
       end Do_Iterate;
    begin
       if Expanded then
-         System.Once.Initialize (D_Flag'Access, D_Init'Access);
-         Do_Iterate (D_Map.all, Process);
+         Canonical_Composites.Initialize_D;
+         Do_Iterate (Canonical_Composites.D_Map.all, Process);
       else
-         declare
-            Map : D_Map_Array;
-         begin
-            D_Fill (Map);
-            Do_Iterate (Map, Process);
-         end;
+         Canonical_Composites.Initialize_Unexpanded_D;
+         Do_Iterate (Canonical_Composites.Unexpanded_D_Map.all, Process);
       end if;
    end Iterate;
 

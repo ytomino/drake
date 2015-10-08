@@ -2,6 +2,7 @@
 with Ada.Containers.Limited_Ordered_Maps;
 with Ada.Directories;
 with Ada.Strings.Fixed;
+with Ada.Strings.Functions;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 procedure ext_doc is
@@ -39,7 +40,7 @@ procedure ext_doc is
 			L : Integer;
 		begin
 			loop
-				L := Ada.Strings.Fixed.Index (Line, ' ', From => F) - 1;
+				L := Ada.Strings.Functions.Index_Element (Line, ' ', From => F) - 1;
 				if L < F and then Line (Line'Last) = ';' then
 					L := Line'Last - 1;
 				end if;
@@ -201,7 +202,7 @@ procedure ext_doc is
 					declare
 						Line : constant String := Ada.Text_IO.Get_Line (File);
 					begin
-						Closed := Closed or else Ada.Strings.Fixed.Index (Line, ')') > 0;
+						Closed := Closed or else Ada.Strings.Functions.Index_Element (Line, ')') > 0;
 						exit when Closed and then Line (Line'Last) = ';';
 					end;
 				end loop;

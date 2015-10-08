@@ -55,14 +55,10 @@ package body System.Native_IO.Sockets is
       return End_Point
    is
       Data : aliased C.ws2tcpip.struct_addrinfoW_ptr;
-      Result : C.signed_int;
+      R : C.signed_int;
    begin
-      Result := C.ws2tcpip.GetAddrInfoW (
-         Host_Name,
-         Service,
-         Hints,
-         Data'Access);
-      if Result /= 0 then
+      R := C.ws2tcpip.GetAddrInfoW (Host_Name, Service, Hints, Data'Access);
+      if R /= 0 then
          return null; -- Use_Error
       else
          return Data;

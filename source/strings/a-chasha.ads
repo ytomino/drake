@@ -10,7 +10,8 @@ package Ada.Characters.ASCII.Handling is
    function Is_Letter (Item : Character) return Boolean;
    function Is_Lower (Item : Character) return Boolean;
    function Is_Upper (Item : Character) return Boolean;
---  function Is_Basic (Item : Character) return Boolean;
+   function Is_Basic (Item : Character) return Boolean
+      renames Is_Letter;
    function Is_Digit (Item : Character) return Boolean;
    function Is_Decimal_Digit (Item : Character) return Boolean
       renames Is_Digit;
@@ -20,7 +21,7 @@ package Ada.Characters.ASCII.Handling is
 
    function To_Lower (Item : Character) return Character;
    function To_Upper (Item : Character) return Character;
---  function To_Basic (Item : Character) return Character;
+   function To_Basic (Item : Character) return Character;
    --  extended
    function To_Case_Folding (Item : Character) return Character
       renames To_Lower;
