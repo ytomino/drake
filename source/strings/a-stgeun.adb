@@ -101,14 +101,12 @@ package body Ada.Strings.Generic_Unbounded is
             M : constant System.Address :=
                System.Standard_Allocators.Allocate (
                   Allocation_Size (Capacity));
+            Result : constant not null Data_Access := Data_Cast.To_Pointer (M);
          begin
-            return Result : constant not null Data_Access :=
-               Data_Cast.To_Pointer (M)
-            do
-               Result.Reference_Count := 1;
-               Result.Max_Length := Max_Length;
-               Adjust_Allocated (Result);
-            end return;
+            Result.Reference_Count := 1;
+            Result.Max_Length := Max_Length;
+            Adjust_Allocated (Result);
+            return Result;
          end;
       end if;
    end Allocate_Data;

@@ -44,12 +44,11 @@ package body Separated is
          new Address_To_Named_Access_Conversions (
             Representation.Machine_Occurrence,
             Representation.Machine_Occurrence_Access);
-      Result : Representation.Machine_Occurrence_Access :=
-         Conv.To_Pointer (
-            Native_Allocators.Allocate (
-               Representation.Machine_Occurrence'Size
-               / Standard'Storage_Unit));
+      Result : Representation.Machine_Occurrence_Access;
    begin
+      Result := Conv.To_Pointer (
+         Native_Allocators.Allocate (
+            Representation.Machine_Occurrence'Size / Standard'Storage_Unit));
       if Result = null then
          declare -- fallback for the heap is exhausted
             TLS : constant

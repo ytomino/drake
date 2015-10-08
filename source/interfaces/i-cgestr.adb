@@ -143,8 +143,6 @@ package body Interfaces.C.Generic_Strings is
    is
       Lengths : array (Items'Range) of size_t;
       Total_Length : size_t;
-      Offset : size_t;
-      Result : chars_ptr;
    begin
       --  get length
       Total_Length := 0;
@@ -152,38 +150,44 @@ package body Interfaces.C.Generic_Strings is
          Lengths (I) := Strlen (Items (I));
          Total_Length := Total_Length + Lengths (I);
       end loop;
-      --  allocate
-      Result := New_Chars_Ptr (Total_Length);
-      --  copy
-      Offset := 0;
-      for I in Items'Range loop
-         Update (Result, Offset, Items (I), Lengths (I));
-         Offset := Offset + Lengths (I);
-      end loop;
-      return Result;
+      declare
+         --  allocate
+         Result : constant chars_ptr := New_Chars_Ptr (Total_Length);
+         Offset : size_t;
+      begin
+         --  copy
+         Offset := 0;
+         for I in Items'Range loop
+            Update (Result, Offset, Items (I), Lengths (I));
+            Offset := Offset + Lengths (I);
+         end loop;
+         return Result;
+      end;
    end New_Strcat;
 
    function New_Strcat (Items : const_chars_ptr_With_Length_array)
       return not null chars_ptr
    is
       Total_Length : size_t;
-      Offset : size_t;
-      Result : chars_ptr;
    begin
       --  get length
       Total_Length := 0;
       for I in Items'Range loop
          Total_Length := Total_Length + Items (I).Length;
       end loop;
-      --  allocate
-      Result := New_Chars_Ptr (Total_Length);
-      --  copy
-      Offset := 0;
-      for I in Items'Range loop
-         Update (Result, Offset, Items (I).ptr, Items (I).Length);
-         Offset := Offset + Items (I).Length;
-      end loop;
-      return Result;
+      declare
+         --  allocate
+         Result : constant chars_ptr := New_Chars_Ptr (Total_Length);
+         Offset : size_t;
+      begin
+         --  copy
+         Offset := 0;
+         for I in Items'Range loop
+            Update (Result, Offset, Items (I).ptr, Items (I).Length);
+            Offset := Offset + Items (I).Length;
+         end loop;
+         return Result;
+      end;
    end New_Strcat;
 
    procedure Free (Item : in out chars_ptr) is

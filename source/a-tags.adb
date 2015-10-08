@@ -207,21 +207,23 @@ package body Ada.Tags is
    end Base_Address;
 
    function Descendant_Tag (External : String; Ancestor : Tag) return Tag is
-      Result : constant Tag := Internal_Tag (External);
    begin
       if Ancestor = No_Tag then
          Raise_Exception (Tag_Error'Identity);
       end if;
-      if not Is_Descendant (
-         Result,
-         Ancestor,
-         Primary_Only => False,
-         Same_Level => False)
-      then
-         Raise_Exception (Tag_Error'Identity);
-      else
+      declare
+         Result : constant Tag := Internal_Tag (External);
+      begin
+         if not Is_Descendant (
+            Result,
+            Ancestor,
+            Primary_Only => False,
+            Same_Level => False)
+         then
+            Raise_Exception (Tag_Error'Identity);
+         end if;
          return Result;
-      end if;
+      end;
    end Descendant_Tag;
 
    function Displace (This : System.Address; T : Tag) return System.Address is
@@ -244,14 +246,12 @@ package body Ada.Tags is
                         renames Iface_Table.Ifaces_Table (Id);
                   begin
                      if E.Iface_Tag = T then
-                        return Result : System.Address do
-                           if E.Static_Offset_To_Top then
-                              Result := Base_Object + E.Offset_To_Top_Value;
-                           else
-                              Result := Base_Object
-                                 + E.Offset_To_Top_Func.all (Base_Object);
-                           end if;
-                        end return;
+                        if E.Static_Offset_To_Top then
+                           return Base_Object + E.Offset_To_Top_Value;
+                        else
+                           return Base_Object
+                              + E.Offset_To_Top_Func.all (Base_Object);
+                        end if;
                      end if;
                   end;
                end loop;
@@ -367,22 +367,25 @@ package body Ada.Tags is
                Addr_First
                + System.Formatting.Address.Address_String'Length
                - 1;
-            Result : System.Address;
-            Error : Boolean;
          begin
             if Addr_Last >= External'Last
                or else External (Addr_Last + 1) /= '#'
             then
                Raise_Exception (Tag_Error'Identity);
             end if;
-            System.Formatting.Address.Value (
-               External (Addr_First .. Addr_Last),
-               Result,
-               Error => Error);
-            if Error then
-               Raise_Exception (Tag_Error'Identity);
-            end if;
-            return Tag_Conv.To_Pointer (Result);
+            declare
+               Result : System.Address;
+               Error : Boolean;
+            begin
+               System.Formatting.Address.Value (
+                  External (Addr_First .. Addr_Last),
+                  Result,
+                  Error => Error);
+               if Error then
+                  Raise_Exception (Tag_Error'Identity);
+               end if;
+               return Tag_Conv.To_Pointer (Result);
+            end;
          end;
       else
          declare

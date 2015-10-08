@@ -10,15 +10,16 @@ package body System.Standard_Allocators is
 
    function Allocate (
       Size : Storage_Elements.Storage_Count)
-      return Address is
+      return Address
+   is
+      Result : constant Address := Native_Allocators.Allocate (Size);
    begin
-      return Result : constant Address := Native_Allocators.Allocate (Size) do
-         if Result = Null_Address then
-            Unwind.Raising.Raise_Exception_From_Here_With (
-               Unwind.Standard.Storage_Error'Access,
-               Message => Heap_Exhausted);
-         end if;
-      end return;
+      if Result = Null_Address then
+         Unwind.Raising.Raise_Exception_From_Here_With (
+            Unwind.Standard.Storage_Error'Access,
+            Message => Heap_Exhausted);
+      end if;
+      return Result;
    end Allocate;
 
    procedure Free (Storage_Address : Address) is
@@ -29,17 +30,17 @@ package body System.Standard_Allocators is
    function Reallocate (
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
-      return Address is
+      return Address
+   is
+      Result : constant Address :=
+         Native_Allocators.Reallocate (Storage_Address, Size);
    begin
-      return Result : constant Address :=
-         Native_Allocators.Reallocate (Storage_Address, Size)
-      do
-         if Result = Null_Address then
-            Unwind.Raising.Raise_Exception_From_Here_With (
-               Unwind.Standard.Storage_Error'Access,
-               Message => Heap_Exhausted);
-         end if;
-      end return;
+      if Result = Null_Address then
+         Unwind.Raising.Raise_Exception_From_Here_With (
+            Unwind.Standard.Storage_Error'Access,
+            Message => Heap_Exhausted);
+      end if;
+      return Result;
    end Reallocate;
 
 end System.Standard_Allocators;

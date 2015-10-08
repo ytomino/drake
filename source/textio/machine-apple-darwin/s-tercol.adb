@@ -72,11 +72,11 @@ package body System.Terminal_Colors is
          and then abs (Item.Blue - Gray) < 5.0 / 255.0
       then
          declare
-            R : Integer;
+            Color_Index : constant Integer :=
+               232 + (Integer (B'Floor (Gray * 255.0)) - 5) / 10;
          begin
-            R := 232 + (Integer (B'Floor (Gray * 255.0)) - 5) / 10;
-            if R in 232 .. 255 then
-               return Color (R);
+            if Color_Index in 232 .. 255 then
+               return Color (Color_Index);
             end if;
          end;
       end if;

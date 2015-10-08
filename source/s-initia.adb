@@ -33,16 +33,17 @@ package body System.Initialization is
             S_Conv.To_Address (Storage_Access (Storage)));
          return Object_Pointer (Object_Access'(new Object));
       else
-         return Result : constant Object_Pointer := Object_Pointer (
-            O_Conv.To_Pointer (S_Conv.To_Address (Storage_Access (Storage))))
-         do
-            declare
-               Item : Object; -- default initialized
-               pragma Unmodified (Item);
-            begin
-               Result.all := Item;
-            end;
-         end return;
+         declare
+            Item : Object; -- default initialized
+            pragma Unmodified (Item);
+            Result : constant Object_Pointer :=
+               Object_Pointer (
+                  O_Conv.To_Pointer (
+                     S_Conv.To_Address (Storage_Access (Storage))));
+         begin
+            Result.all := Item;
+            return Result;
+         end;
       end if;
    end New_Object;
 
@@ -65,11 +66,15 @@ package body System.Initialization is
             S_Conv.To_Address (Storage_Access (Storage)));
          return Object_Pointer (Object_Access'(new Object'(Value)));
       else
-         return Result : constant Object_Pointer := Object_Pointer (
-            O_Conv.To_Pointer (S_Conv.To_Address (Storage_Access (Storage))))
-         do
+         declare
+            Result : constant Object_Pointer :=
+               Object_Pointer (
+                  O_Conv.To_Pointer (
+                     S_Conv.To_Address (Storage_Access (Storage))));
+         begin
             Result.all := Value;
-         end return;
+            return Result;
+         end;
       end if;
    end New_Object;
 

@@ -76,11 +76,11 @@ package body System.Native_Directories.Searching is
    function New_Directory_Entry (Source : not null Directory_Entry_Access)
       return not null Directory_Entry_Access
    is
-      Result : Directory_Entry_Access;
+      Result : constant Directory_Entry_Access :=
+         dirent_ptr_Conv.To_Pointer (
+            Standard_Allocators.Allocate (
+               Storage_Elements.Storage_Count (Source.d_reclen)));
    begin
-      Result := dirent_ptr_Conv.To_Pointer (
-         Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Count (Source.d_reclen)));
       memcpy (
          Result,
          Source,

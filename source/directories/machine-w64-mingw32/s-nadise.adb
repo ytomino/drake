@@ -45,11 +45,11 @@ package body System.Native_Directories.Searching is
    function New_Directory_Entry (Source : not null Directory_Entry_Access)
       return not null Directory_Entry_Access
    is
-      Result : Directory_Entry_Access;
+      Result : constant Directory_Entry_Access :=
+         WIN32_FIND_DATA_ptr_Conv.To_Pointer (
+            Standard_Allocators.Allocate (
+               C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
    begin
-      Result := WIN32_FIND_DATA_ptr_Conv.To_Pointer (
-         Standard_Allocators.Allocate (
-            C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
       Result.all := Source.all;
       return Result;
    end New_Directory_Entry;

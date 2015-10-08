@@ -54,21 +54,22 @@ package body System.Native_Allocators is
    function Reallocate (
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
-      return Address is
+      return Address
+   is
+      Result : Address;
    begin
-      return Result : Address := Address (
+      Result := Address (
          C.winbase.HeapReAlloc (
             C.winbase.GetProcessHeap,
             0,
             C.windef.LPVOID (Storage_Address),
-            C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))))
-      do
-         if Result = Null_Address then
-            if Storage_Address = Null_Address then
-               Result := Allocate (Size); -- Reallocate (null, ...)
-            end if;
+            C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))));
+      if Result = Null_Address then
+         if Storage_Address = Null_Address then
+            Result := Allocate (Size); -- Reallocate (null, ...)
          end if;
-      end return;
+      end if;
+      return Result;
    end Reallocate;
 
    function Page_Size return Storage_Elements.Storage_Count is
