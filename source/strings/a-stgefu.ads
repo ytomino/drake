@@ -4,7 +4,7 @@ generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
    Space : Character_Type;
-package Ada.Strings.Generic_Fixed is
+package Ada.Strings.Generic_Functions is
    pragma Preelaborate;
 
    --  "Copy" procedure for strings of possibly different lengths
@@ -506,4 +506,4 @@ package Ada.Strings.Generic_Fixed is
 
    end Generic_Maps;
 
-end Ada.Strings.Generic_Fixed;
+end Ada.Strings.Generic_Functions;

@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  generalized unit of Ada.Strings.Unbounded
 with Ada.References;
 with Ada.Streams;
-with Ada.Strings.Generic_Fixed;
+with Ada.Strings.Generic_Functions;
 with Ada.Unchecked_Deallocation;
 private with Ada.Finalization;
 private with System.Reference_Counting;
@@ -167,7 +167,7 @@ package Ada.Strings.Generic_Unbounded is
 
    generic
       with package Fixed_Functions is
-         new Generic_Fixed (
+         new Strings.Generic_Functions (
             Character_Type => Character_Type,
             String_Type => String_Type,
             Space => <>);

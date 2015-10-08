@@ -1,7 +1,7 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
-package body Ada.Strings.Generic_Fixed is
+package body Ada.Strings.Generic_Functions is
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
@@ -1571,4 +1571,4 @@ package body Ada.Strings.Generic_Fixed is
 
    end Generic_Maps;
 
-end Ada.Strings.Generic_Fixed;
+end Ada.Strings.Generic_Functions;

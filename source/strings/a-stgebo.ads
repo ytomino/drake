@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  generalized unit of Ada.Strings.Bounded
 with Ada.References;
 with Ada.Streams;
-with Ada.Strings.Generic_Fixed;
+with Ada.Strings.Generic_Functions;
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
@@ -325,7 +325,7 @@ package Ada.Strings.Generic_Bounded is
 
    generic
       with package Fixed_Functions is
-         new Generic_Fixed (
+         new Strings.Generic_Functions (
             Character_Type => Character_Type,
             String_Type => String_Type,
             Space => <>);
