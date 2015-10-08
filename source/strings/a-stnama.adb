@@ -322,8 +322,7 @@ package body Ada.Strings.Naked_Maps is
       L : Positive := Map.From'First;
       H : Natural := Map.From'Last;
    begin
-      loop
-         exit when L > H;
+      while L <= H loop
          declare
             M : constant Positive := (L + H) / 2;
          begin

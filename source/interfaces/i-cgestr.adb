@@ -394,8 +394,9 @@ package body Interfaces.C.Generic_Strings is
             for Source'Address use Conv.To_Address (Item);
          begin
             Result := 0;
-            while Result < Limit loop
-               exit when Source (Result) = Element'Val (0);
+            while Result < Limit
+               and then Source (Result) /= Element'Val (0)
+            loop
                Result := Result + 1;
             end loop;
          end;

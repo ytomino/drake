@@ -88,9 +88,10 @@ package body Interfaces.C.Pointers is
       for Source'Address use To_Address (Ref);
       Result : ptrdiff_t := 0;
    begin
-      while Result < Limit loop
-         exit when Source (Index'Val (Index'Pos (Index'First) + Result)) =
-            Terminator;
+      while Result < Limit
+         and then Source (Index'Val (Index'Pos (Index'First) + Result)) /=
+            Terminator
+      loop
          Result := Result + 1;
       end loop;
       return Result;
