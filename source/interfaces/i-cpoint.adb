@@ -37,8 +37,8 @@ package body Interfaces.C.Pointers is
       end if;
       declare
          pragma Suppress (Alignment_Check);
-         Result : Element_Array (Index);
-         for Result'Address use To_Address (Ref);
+         Source : Element_Array (Index);
+         for Source'Address use To_Address (Ref);
          First : Index;
          Last : Index'Base;
       begin
@@ -49,7 +49,7 @@ package body Interfaces.C.Pointers is
             First := Index'First;
             Last := Index'Base'Val (Index'Pos (Index'First) + Length - 1);
          end if;
-         return Result (First .. Last);
+         return Source (First .. Last);
       end;
    end Value;
 
@@ -63,12 +63,12 @@ package body Interfaces.C.Pointers is
       else
          declare
             pragma Suppress (Alignment_Check);
-            Result : Element_Array (Index);
-            for Result'Address use To_Address (Ref);
+            Source : Element_Array (Index);
+            for Source'Address use To_Address (Ref);
             I : Index'Base := Index'First;
          begin
             loop
-               if Result (I) = Terminator then
+               if Source (I) = Terminator then
                   return Index'Base'Pos (I) - Index'Pos (Index'First);
                end if;
                I := Index'Base'Succ (I);

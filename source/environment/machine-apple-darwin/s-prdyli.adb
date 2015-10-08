@@ -11,14 +11,11 @@ package body System.Program.Dynamic_Linking is
       C_Name : C.char_array (
          0 ..
          Name'Length * Zero_Terminated_Strings.Expanding);
-      Result : C.void_ptr;
    begin
       Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
-      Result := C.dlfcn.dlopen (C_Name (0)'Access, 0);
-      if Address (Result) = Null_Address then
+      Handle := C.dlfcn.dlopen (C_Name (0)'Access, 0);
+      if Address (Handle) = Null_Address then
          Raise_Exception (Name_Error'Identity);
-      else
-         Handle := Result;
       end if;
    end Open;
 

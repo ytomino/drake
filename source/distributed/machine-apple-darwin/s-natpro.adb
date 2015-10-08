@@ -236,17 +236,14 @@ package body System.Native_Processes is
       Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status)
    is
-      Result : C.sys.types.pid_t;
+      R : C.sys.types.pid_t;
       Code : aliased C.signed_int;
    begin
       loop
          Synchronous_Control.Unlock_Abort;
-         Result := C.sys.wait.waitpid (
-            Child.Id,
-            Code'Access,
-            0);
+         R := C.sys.wait.waitpid (Child.Id, Code'Access, 0);
          Synchronous_Control.Lock_Abort; -- raise if aborted
-         if Result < 0 then
+         if R < 0 then
             if C.errno.errno /= C.errno.EINTR then
                Raise_Exception (Use_Error'Identity);
             end if;

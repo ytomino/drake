@@ -15,14 +15,11 @@ package body System.Program.Dynamic_Linking is
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
          Name'Length * Zero_Terminated_WStrings.Expanding);
-      Result : C.windef.HMODULE;
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      Result := C.winbase.LoadLibrary (W_Name (0)'Access);
-      if Result = null then
+      Handle := C.winbase.LoadLibrary (W_Name (0)'Access);
+      if Handle = null then
          Raise_Exception (Name_Error'Identity);
-      else
-         Handle := Result;
       end if;
    end Open;
 

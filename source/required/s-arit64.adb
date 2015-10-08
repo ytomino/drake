@@ -38,12 +38,12 @@ package body System.Arith_64 is
    procedure Add (X : U64; R1, R2, R3 : in out U32);
    procedure Add (X : U64; R1, R2, R3 : in out U32) is
       R : constant U64 := U64 (R1) or Interfaces.Shift_Left (U64 (R2), 32);
-      Result : aliased U64;
+      XR : aliased U64;
       Overflow : Boolean;
    begin
-      Overflow := add_overflow (X, R, Result'Access);
-      R1 := U32'Mod (Result);
-      R2 := U32'Mod (Interfaces.Shift_Right (Result, 32));
+      Overflow := add_overflow (X, R, XR'Access);
+      R1 := U32'Mod (XR);
+      R2 := U32'Mod (Interfaces.Shift_Right (XR, 32));
       if Overflow then
          R3 := R3 + 1;
       end if;

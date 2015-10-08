@@ -30,10 +30,10 @@ package body System.Zero_Terminated_Strings is
          new Address_To_Constant_Access_Conversions (
             C.char,
             C.char_const_ptr);
-      Result : String (1 .. Natural (Length));
-      for Result'Address use Conv.To_Address (First);
+      Source : String (1 .. Natural (Length));
+      for Source'Address use Conv.To_Address (First);
    begin
-      return Result;
+      return Source;
    end Value;
 
    procedure To_C (

@@ -42,7 +42,7 @@ package body System.Native_Processes is
          access constant Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Target_Handles : array (Handle_Index) of C.winnt.HANDLE;
       Duplicated_Handles : array (Handle_Index) of aliased C.winnt.HANDLE;
-      Result : C.windef.WINBOOL;
+      R : C.windef.WINBOOL;
    begin
       C.winbase.GetStartupInfo (Startup_Info'Access);
       Startup_Info.dwFlags := C.winbase.STARTF_USESTDHANDLES
@@ -90,7 +90,7 @@ package body System.Native_Processes is
       else
          Directory_Ref := null;
       end if;
-      Result := C.winbase.CreateProcess (
+      R := C.winbase.CreateProcess (
          lpApplicationName => null,
          lpCommandLine => W_Command_Line (0)'Access,
          lpProcessAttributes => null,
@@ -108,7 +108,7 @@ package body System.Native_Processes is
             end if;
          end if;
       end loop;
-      if Result = 0 then
+      if R = 0 then
          declare
             Error : constant C.windef.DWORD := C.winbase.GetLastError;
          begin

@@ -658,11 +658,11 @@ package body Ada.Text_IO.Editing is
          return Boolean
       is
          Error : Boolean;
-         Result : String (1 .. Length (Pic, Currency));
+         Dummy : String (1 .. Length (Pic, Currency));
       begin
          Editing.Image (
             Long_Long_Integer'Integer_Value (Item),
-            Result,
+            Dummy,
             Num'Scale,
             Num'Fore,
             Pic,

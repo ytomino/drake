@@ -568,19 +568,17 @@ package body Ada.Numerics.SFMT is
       procedure Hex_Get (From : String; Item : out Unsigned_32);
       procedure Hex_Get (From : String; Item : out Unsigned_32) is
          Last : Positive;
-         Result : System.Formatting.Unsigned;
          Error : Boolean;
       begin
          System.Formatting.Value (
             From,
             Last,
-            Result,
+            System.Formatting.Unsigned (Item),
             Base => 16,
             Error => Error);
          if Error or else Last /= From'Last then
             raise Constraint_Error;
          end if;
-         Item := Unsigned_32 (Result);
       end Hex_Get;
       Last : Natural := Coded_State'First - 1;
       idx : Unsigned_32;

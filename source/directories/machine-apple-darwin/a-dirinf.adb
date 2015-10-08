@@ -348,18 +348,19 @@ package body Ada.Directories.Information is
                return C.signed_int (X);
             end To_size;
             pragma Warnings (Off, To_size);
-            Result : constant C.sys.types.ssize_t := C.unistd.readlink (
-               C_Name (0)'Access,
-               Buffer,
-               To_size (Buffer_Length));
+            Length : constant C.sys.types.ssize_t :=
+               C.unistd.readlink (
+                  C_Name (0)'Access,
+                  Buffer,
+                  To_size (Buffer_Length));
          begin
-            if Result < 0 then
+            if Length < 0 then
                Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
             end if;
-            if C.size_t (Result) < Buffer_Length then
+            if C.size_t (Length) < Buffer_Length then
                return System.Zero_Terminated_Strings.Value (
                   Buffer,
-                  C.size_t (Result));
+                  C.size_t (Length));
             end if;
             Buffer_Length := Buffer_Length * 2;
             Buffer := Conv.To_Pointer (

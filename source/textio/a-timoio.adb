@@ -49,37 +49,38 @@ package body Ada.Text_IO.Modular_IO is
    begin
       if Num'Size > System.Formatting.Unsigned'Size then
          declare
-            Result : System.Formatting.Longest_Unsigned;
+            Base_Item : System.Formatting.Longest_Unsigned;
             Error : Boolean;
          begin
             System.Formatting.Literals.Get_Literal (
                From,
                Last,
-               Result,
+               Base_Item,
                Error => Error);
             if Error
-               or else Result > System.Formatting.Longest_Unsigned (Num'Last)
+               or else Base_Item >
+                  System.Formatting.Longest_Unsigned (Num'Last)
             then
                raise Data_Error;
             end if;
-            Item := Num (Result);
+            Item := Num (Base_Item);
          end;
       else
          declare
-            Result : System.Formatting.Unsigned;
+            Base_Item : System.Formatting.Unsigned;
             Error : Boolean;
          begin
             System.Formatting.Literals.Get_Literal (
                From,
                Last,
-               Result,
+               Base_Item,
                Error => Error);
             if Error
-               or else Result > System.Formatting.Unsigned'Mod (Num'Last)
+               or else Base_Item > System.Formatting.Unsigned'Mod (Num'Last)
             then
                raise Data_Error;
             end if;
-            Item := Num (Result);
+            Item := Num (Base_Item);
          end;
       end if;
    end Get_From_Field;

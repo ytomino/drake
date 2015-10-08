@@ -19,10 +19,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       pragma Suppress (Alignment_Check); -- Item'Alignment = 2
       pragma Check (Validate, Length rem 2 = 0);
       pragma Check (Validate, Item mod 2 = 0); -- stack may be aligned
-      Result : UTF_16_Wide_String (1 .. Length / 2);
-      for Result'Address use Item;
+      Item_As : UTF_16_Wide_String (1 .. Length / 2);
+      for Item_As'Address use Item;
    begin
-      return Result;
+      return Item_As;
    end To_UTF_16_Wide_String;
 
    function To_UTF_32_Wide_Wide_String (
@@ -37,10 +37,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       pragma Suppress (Alignment_Check); -- Item'Alignment = 4
       pragma Check (Validate, Length rem 4 = 0);
       pragma Check (Validate, Item mod 4 = 0); -- stack may be aligned
-      Result : UTF_32_Wide_Wide_String (1 .. Length / 4);
-      for Result'Address use Item;
+      Item_As : UTF_32_Wide_Wide_String (1 .. Length / 4);
+      for Item_As'Address use Item;
    begin
-      return Result;
+      return Item_As;
    end To_UTF_32_Wide_Wide_String;
 
    --  binary version subprograms of System.UTF_Conversions

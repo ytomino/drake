@@ -127,16 +127,16 @@ package body Ada.Strings.Generic_Functions is
          and then String_Type'Component_Size = Standard'Storage_Unit
       then
          declare
-            Result : constant System.Address :=
+            P : constant System.Address :=
                memchr (
                   Source'Address,
                   Character_Type'Pos (Pattern),
                   Source'Length);
          begin
-            if Result = System.Null_Address then
+            if P = System.Null_Address then
                return 0;
             else
-               return Source'First + Integer (Result - Source'Address);
+               return Source'First + Integer (P - Source'Address);
             end if;
          end;
       else

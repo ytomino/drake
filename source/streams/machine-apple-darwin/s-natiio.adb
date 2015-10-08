@@ -488,28 +488,28 @@ package body System.Native_IO is
       Whence : C.signed_int;
       New_Index : out Ada.Streams.Stream_Element_Offset)
    is
-      Result : C.sys.types.off_t;
+      Offset : C.sys.types.off_t;
    begin
-      Result := C.unistd.lseek (
+      Offset := C.unistd.lseek (
          Handle,
          C.sys.types.off_t (Relative_To),
          Whence);
-      if Result < 0 then
+      if Offset < 0 then
          Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
-      New_Index := Ada.Streams.Stream_Element_Offset (Result) + 1;
+      New_Index := Ada.Streams.Stream_Element_Offset (Offset) + 1;
    end Set_Relative_Index;
 
    function Index (Handle : Handle_Type)
       return Ada.Streams.Stream_Element_Offset
    is
-      Result : C.sys.types.off_t;
+      Offset : C.sys.types.off_t;
    begin
-      Result := C.unistd.lseek (Handle, 0, C.unistd.SEEK_CUR);
-      if Result < 0 then
+      Offset := C.unistd.lseek (Handle, 0, C.unistd.SEEK_CUR);
+      if Offset < 0 then
          Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
-      return Ada.Streams.Stream_Element_Offset (Result) + 1;
+      return Ada.Streams.Stream_Element_Offset (Offset) + 1;
    end Index;
 
    function Size (Handle : Handle_Type)

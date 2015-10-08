@@ -196,19 +196,17 @@ package body Ada.Numerics.MT19937 is
       procedure Hex (Item : String; Value : out Cardinal);
       procedure Hex (Item : String; Value : out Cardinal) is
          Last : Positive;
-         Result : System.Formatting.Unsigned;
          Error : Boolean;
       begin
          System.Formatting.Value (
             Item,
             Last,
-            Result,
+            System.Formatting.Unsigned (Value),
             Base => 16,
             Error => Error);
          if Error or else Last /= Item'Last then
             raise Constraint_Error;
          end if;
-         Value := Cardinal (Result);
       end Hex;
       Last : Natural := Coded_State'First - 1;
    begin
