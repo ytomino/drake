@@ -165,7 +165,9 @@ package body Ada.Strings.Generic_Unbounded is
    procedure Unique (Item : in out Unbounded_String);
    procedure Unique (Item : in out Unbounded_String) is
    begin
-      Reserve_Capacity (Item, Capacity (Item));
+      if System.Reference_Counting.Shared (Upcast (Item.Data)) then
+         Reserve_Capacity (Item, Item.Length); -- shrinking
+      end if;
    end Unique;
 
    function Create (Data : not null Data_Access; Length : Natural)
