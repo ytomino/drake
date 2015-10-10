@@ -2,7 +2,6 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Access_Holders is
    use type Weak_Access_Holders.Data_Access;
-   use type System.Reference_Counting.Counter;
 
    subtype Not_Null_Data_Access is not null Data_Access;
 

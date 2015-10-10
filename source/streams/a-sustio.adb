@@ -183,7 +183,9 @@ package body Ada.Streams.Unbounded_Storage_IO is
    procedure Unique (Stream : in out Stream_Type);
    procedure Unique (Stream : in out Stream_Type) is
    begin
-      Reallocate (Stream, Stream.Data.Capacity);
+      if System.Reference_Counting.Shared (Upcast (Stream.Data)) then
+         Reallocate (Stream, Stream.Data.Capacity); -- not shrinking for Write
+      end if;
    end Unique;
 
    procedure Set_Size (
