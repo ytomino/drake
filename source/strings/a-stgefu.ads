@@ -151,7 +151,7 @@ package Ada.Strings.Generic_Functions is
       Pad : Character_Type := Space);
 
    --  extended
-   --  For Bounede_String and Unbounede_String.
+   --  For Bounded_String and Unbounded_String.
    procedure Delete (
       Source : in out String_Type;
       Last : in out Natural;
@@ -473,7 +473,7 @@ package Ada.Strings.Generic_Functions is
             return Character_Type);
 
       --  extended
-      --  For Bounede_String and Unbounede_String.
+      --  For Bounded_String and Unbounded_String.
       procedure Translate_Element (
          Source : String_Type;
          Target : out String_Type;
