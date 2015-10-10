@@ -151,7 +151,16 @@ package Ada.Strings.Generic_Functions is
       Pad : Character_Type := Space);
 
    --  extended
-   --  For Bounded_String and Unbounded_String.
+   --  Copying, for Bounded_String and Unbounded_String.
+   procedure Delete (
+      Source : String_Type;
+      From : Positive;
+      Through : Natural;
+      Target : out String_Type;
+      Target_Last : out Natural);
+
+   --  extended
+   --  Destructive, for Bounded_String and Unbounded_String.
    procedure Delete (
       Source : in out String_Type;
       Last : in out Natural;

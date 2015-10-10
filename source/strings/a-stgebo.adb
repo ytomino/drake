@@ -674,8 +674,13 @@ package body Ada.Strings.Generic_Bounded is
             Through : Natural)
             return Bounded.Bounded_String is
          begin
-            return Result : Bounded.Bounded_String := Source do
-               Delete (Result, From, Through);
+            return Result : Bounded.Bounded_String do
+               Fixed_Functions.Delete (
+                  Source.Element (1 .. Source.Length),
+                  From,
+                  Through,
+                  Target => Result.Element,
+                  Target_Last => Result.Length);
             end return;
          end Delete;
 
@@ -684,17 +689,11 @@ package body Ada.Strings.Generic_Bounded is
             From : Positive;
             Through : Natural) is
          begin
-            if From <= Through then
-               if Through >= Source.Length then
-                  Source.Length := From - 1;
-               else
-                  Fixed_Functions.Delete (
-                     Source.Element,
-                     Source.Length,
-                     From,
-                     Through);
-               end if;
-            end if;
+            Fixed_Functions.Delete (
+               Source.Element,
+               Source.Length,
+               From,
+               Through);
          end Delete;
 
          function Trim (

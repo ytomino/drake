@@ -447,19 +447,15 @@ package body Ada.Strings.Generic_Functions is
       Through : Natural)
       return String_Type is
    begin
-      if From > Through then
-         return Source;
-      else
-         return Result : String_Type (
-            1 ..
-            Source'Length - (Through - From + 1))
-         do
-            Result (1 .. From - Source'First) :=
-               Source (Source'First .. From - 1);
-            Result (From - Source'First + 1 .. Result'Last) :=
-               Source (Through + 1 .. Source'Last);
-         end return;
-      end if;
+      return Result : String_Type (
+         1 .. Source'Length - Integer'Max (0, Through - From + 1))
+      do
+         declare
+            Dummy_Last : Natural;
+         begin
+            Delete (Source, From, Through, Result, Dummy_Last);
+         end;
+      end return;
    end Delete;
 
    procedure Delete (
@@ -478,6 +474,33 @@ package body Ada.Strings.Generic_Functions is
          Error, -- no raising because Source'Length be not growing
          Justify,
          Pad);
+   end Delete;
+
+   procedure Delete (
+      Source : String_Type;
+      From : Positive;
+      Through : Natural;
+      Target : out String_Type;
+      Target_Last : out Natural)
+   is
+      Source_Following : Positive;
+      Target_Following : Positive;
+      Following_Length : Natural;
+   begin
+      if From <= Through then
+         Target (Target'First .. From - 1 - Source'First + Target'First) :=
+            Source (Source'First .. From - 1);
+         Source_Following := Through + 1;
+         Target_Following := From - Source'First + Target'First;
+         Following_Length := Source'Last - Through;
+      else
+         Source_Following := Source'First;
+         Target_Following := Target'First;
+         Following_Length := Source'Length;
+      end if;
+      Target_Last := Target_Following + Following_Length - 1;
+      Target (Target_Following .. Target_Last) :=
+         Source (Source_Following .. Source'Last);
    end Delete;
 
    procedure Delete (

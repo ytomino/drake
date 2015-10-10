@@ -761,10 +761,33 @@ package body Ada.Strings.Generic_Unbounded is
          Source : Unbounded_String;
          From : Positive;
          Through : Natural)
-         return Unbounded_String is
+         return Unbounded_String
+      is
+         pragma Suppress (Access_Check);
       begin
-         return Result : Unbounded_String := Source do
-            Delete (Result, From, Through);
+         return Result : Unbounded_String do
+            if From <= Through then
+               if Through >= Source.Length then
+                  Assign (Result, Source); -- shared
+                  Set_Length (Result, From - 1);
+               else
+                  Set_Length (
+                     Result,
+                     Source.Length - (Through - From + 1));
+                  declare
+                     Dummy_Last : Natural;
+                  begin
+                     Fixed_Functions.Delete (
+                        Source.Data.Items (1 .. Source.Length),
+                        From,
+                        Through,
+                        Target => Result.Data.Items (1 .. Result.Length),
+                        Target_Last => Dummy_Last);
+                  end;
+               end if;
+            else
+               Assign (Result, Source); -- shared
+            end if;
          end return;
       end Delete;
 
