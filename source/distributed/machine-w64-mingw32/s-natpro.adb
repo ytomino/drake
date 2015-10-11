@@ -210,11 +210,11 @@ package body System.Native_Processes is
          Last := Last + 1;
          Command_Line (Last) := '"';
       end if;
+      --  argument
       if Last + Argument'Length > Command_Line'Last then
          raise Constraint_Error;
       end if;
-      --  argument
-      Command_Line (Last + 1 .. Argument'Length) := Argument;
+      Command_Line (Last + 1 .. Last + Argument'Length) := Argument;
       Last := Last + Argument'Length;
       --  close
       if Has_Space then
