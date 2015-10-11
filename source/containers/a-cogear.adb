@@ -63,23 +63,16 @@ package body Ada.Containers.Generic_Arrays is
             S : Array_Access := Container;
          begin
             if Index = Container'First then
-               Container := new Array_Type'(
-                  Container (
-                     Index + Index_Type'Base (Count) ..
-                     Container'Last));
+               Container := new Array_Type (
+                  S'First .. S'Last - Index_Type'Base (Count));
+               Container.all := S (Index + Index_Type'Base (Count) .. S'Last);
             elsif Index + Index_Type'Base (Count) - 1 = Container'Last then
                Container := new Array_Type'(
-                  Container (
-                     Container'First ..
-                     Index_Type'Base'Pred (Index)));
+                  S (S'First .. Index_Type'Base'Pred (Index)));
             else
                Container := new Array_Type'(
-                  Container (
-                     Container'First ..
-                     Index_Type'Base'Pred (Index))
-                  & Container (
-                     Index + Index_Type'Base (Count) ..
-                     Container'Last));
+                  S (S'First .. Index_Type'Base'Pred (Index))
+                  & S (Index + Index_Type'Base (Count) .. S'Last));
             end if;
             Free (S);
          end;
@@ -108,15 +101,22 @@ package body Ada.Containers.Generic_Arrays is
       if New_Item'Length = 0 then
          null;
       elsif Container = null then
-         Container := new Array_Type'(New_Item);
+         Container := new Array_Type (
+            Before .. Before + (New_Item'Length - 1));
+         Container.all := New_Item;
       else
          declare
             S : Array_Access := Container;
          begin
             if Before = Container'First then
-               Container := new Array_Type'(
-                  New_Item
-                  & S (Before .. S'Last));
+               Container := new Array_Type (
+                  S'First .. S'Last + New_Item'Length);
+               Container (
+                  S'First ..
+                  S'First + (New_Item'Length - 1)) := New_Item;
+               Container (
+                  S'First + New_Item'Length ..
+                  S'Last + New_Item'Length) := S.all;
             elsif Before > Container'Last then
                Container := new Array_Type'(
                   S (S'First .. Before - 1)
@@ -172,9 +172,9 @@ package body Ada.Containers.Generic_Arrays is
             if Before = Container'First then
                Container := new Array_Type'(
                   Array_Type'(
-                     Index_Type'First ..
-                     Index_Type'First + Index_Type'Base (Count) - 1 => <>)
-                  & S (Before .. S'Last));
+                     S'First ..
+                     S'First + Index_Type'Base (Count) - 1 => <>)
+                  & S.all);
             elsif Before > Container'Last then
                Container := new Array_Type'(
                   S (S'First .. Before - 1)
@@ -260,21 +260,16 @@ package body Ada.Containers.Generic_Arrays is
             S : Array_Access := Container;
          begin
             Container := new Array_Type'(
-               Container (
-                  Container'First ..
-                  Container'First + Index_Type'Base (Length) - 1));
+               S (S'First .. S'First + Index_Type'Base (Length) - 1));
             Free (S);
          end;
       elsif Length > Container'Length then
          declare
             S : Array_Access := Container;
          begin
-            Container := new Array_Type'(
-               Container.all
-               & Array_Type'(
-                  Index_Type'First ..
-                  Index_Type'First
-                     + Index_Type'Base (Length - Container'Length) - 1 => <>));
+            Container := new Array_Type (
+               S'First .. S'First + Index_Type'Base (Length) - 1);
+            Container (S'Range) := S.all;
             Free (S);
          end;
       end if;
@@ -541,25 +536,27 @@ package body Ada.Containers.Generic_Arrays is
 
       procedure Merge (
          Target : in out Array_Access;
-         Source : in out Array_Access)
-      is
-         Context : Context_Type := (Container => Target);
+         Source : in out Array_Access) is
       begin
          if Target = null then
             Move (Target, Source);
          else
             declare
-               Old_Length : constant Count_Type := Target'Length;
+               Old_Last : constant Index_Type'Base := Target'Last;
             begin
                Append (Target, Source);
                Free (Source);
-               Array_Sorting.In_Place_Merge (
-                  Index_Type'Pos (Target'First),
-                  Integer (Target'First + Index_Type'Base (Old_Length) - 1),
-                  Index_Type'Pos (Target'Last),
-                  Context'Address,
-                  LT => LT'Access,
-                  Swap => Swap'Access);
+               declare
+                  Context : Context_Type := (Container => Target);
+               begin
+                  Array_Sorting.In_Place_Merge (
+                     Index_Type'Pos (Target'First),
+                     Index_Type'Pos (Old_Last),
+                     Index_Type'Pos (Target'Last),
+                     Context'Address,
+                     LT => LT'Access,
+                     Swap => Swap'Access);
+               end;
             end;
          end if;
       end Merge;
