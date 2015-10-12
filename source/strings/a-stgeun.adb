@@ -936,12 +936,12 @@ package body Ada.Strings.Generic_Unbounded is
          return Result : Unbounded_String do
             Set_Length (Result, Left * Right_Length);
             declare
-               First : Positive := 1;
+               Last : Natural := 0;
             begin
                for I in 1 .. Left loop
-                  Result.Data.Items (First .. First + Right_Length - 1) :=
+                  Result.Data.Items (Last + 1 .. Last + Right_Length) :=
                      Right;
-                  First := First + Right_Length;
+                  Last := Last + Right_Length;
                end loop;
             end;
          end return;

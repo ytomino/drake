@@ -409,54 +409,59 @@ package body Ada.Strings.Generic_Bounded is
          Count : Natural;
          Item : String_Type;
          Drop : Truncation := Error)
-         return Bounded_String is
+         return Bounded_String
+      is
+         Item_Length : constant Natural := Item'Length;
+         Total_Length : Natural := Count * Item_Length;
+         Actual_Count : Natural := Count;
       begin
-         if Count * Item'Length > Max and then Drop = Error then
-            raise Length_Error;
-         else
-            return Result : Bounded_String := (
-               Capacity => Max,
-               Length => Natural'Min (Count * Item'Length, Max),
-               Element => <>)
-            do
-               case Drop is
-                  when Right | Error =>
-                     declare
-                        First : Positive := Result.Element'First;
-                     begin
-                        for I in 1 .. Count loop
-                           if First + Item'Length > Max then
-                              Result.Element (First .. Max) :=
-                                 Item (Item'First .. Item'First + Max - First);
-                              exit;
-                           else
-                              Result.Element (
-                                 First ..
-                                 First + Item'Length - 1) := Item;
-                              First := First + Item'Length;
-                           end if;
-                        end loop;
-                     end;
-                  when Left =>
-                     declare
-                        Last : Positive := Result.Element'Last;
-                     begin
-                        for I in 1 .. Count loop
-                           if Last <= Item'Length then
-                              Result.Element (1 .. Last) :=
-                                 Item (Item'Last - Last + 1 .. Item'Last);
-                              exit;
-                           else
-                              Result.Element (
-                                 Last - Item'Length + 1 ..
-                                 Last) := Item;
-                              Last := Last - Item'Length;
-                           end if;
-                        end loop;
-                     end;
-               end case;
-            end return;
+         if Total_Length > Max then
+            if Drop = Error then
+               raise Length_Error;
+            end if;
+            Total_Length := Max;
+            Actual_Count := Total_Length / Item_Length;
          end if;
+         return Result : Bounded_String := (
+            Capacity => Max,
+            Length => Total_Length,
+            Element => <>)
+         do
+            case Drop is
+               when Right | Error =>
+                  declare
+                     Last : Natural := 0;
+                  begin
+                     for I in 1 .. Actual_Count loop
+                        Result.Element (Last + 1 .. Last + Item_Length) :=
+                           Item;
+                        Last := Last + Item_Length;
+                     end loop;
+                     if Last < Total_Length then
+                        Result.Element (Last + 1 .. Total_Length) :=
+                           Item (
+                              Item'First ..
+                              Item'First + Total_Length - (Last + 1));
+                     end if;
+                  end;
+               when Left =>
+                  declare
+                     First : Positive := Total_Length + 1;
+                  begin
+                     for I in 1 .. Actual_Count loop
+                        Result.Element (First - Item_Length .. First - 1) :=
+                           Item;
+                        First := First - Item_Length;
+                     end loop;
+                     if First > 1 then
+                        Result.Element (1 .. First - 1) :=
+                           Item (
+                              Item'Last - (First - 1) + 1 ..
+                              Item'Last);
+                     end if;
+                  end;
+            end case;
+         end return;
       end Replicate;
 
       function Replicate (

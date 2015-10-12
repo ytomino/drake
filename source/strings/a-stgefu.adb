@@ -746,15 +746,17 @@ package body Ada.Strings.Generic_Functions is
    end "*";
 
    function "*" (Left : Natural; Right : String_Type)
-      return String_Type is
+      return String_Type
+   is
+      Right_Length : constant Natural := Right'Length;
    begin
-      return Result : String_Type (1 .. Left * Right'Length) do
+      return Result : String_Type (1 .. Left * Right_Length) do
          declare
-            First : Positive := Result'First;
+            Last : Natural := Result'First - 1;
          begin
             for I in 1 .. Left loop
-               Result (First .. First + Right'Length - 1) := Right;
-               First := First + Right'Length;
+               Result (Last + 1 .. Last + Right_Length) := Right;
+               Last := Last + Right_Length;
             end loop;
          end;
       end return;
