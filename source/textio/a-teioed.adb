@@ -80,10 +80,12 @@ package body Ada.Text_IO.Editing is
                      Error := True;
                      return; -- Picture_Error
                   end if;
-                  for J in 2 .. Count loop
-                     Result.Length := Result.Length + 1;
-                     Result.Expanded (Result.Length) := Pic_String (I - 1);
-                  end loop;
+                  System.Formatting.Fill_Padding (
+                     Result.Expanded (
+                        Result.Length + 1 ..
+                        Result.Length + Count - 1),
+                     Pic_String (I - 1));
+                  Result.Length := Result.Length + Count - 1;
                   I := Count_Last + 1;
                end;
             when ')' =>
@@ -303,9 +305,7 @@ package body Ada.Text_IO.Editing is
       Error : out Boolean) is
    begin
       if Pic.Real_Blank_When_Zero and then Item = 0 then
-         for I in Result'Range loop
-            Result (I) := ' ';
-         end loop;
+         System.Formatting.Fill_Padding (Result, ' ');
       else
          declare
             Aft : constant Natural := Pic.Aft;

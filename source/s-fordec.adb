@@ -89,30 +89,24 @@ package body System.Formatting.Decimal is
                Padding => Fore_Padding,
                Error => Error);
             pragma Assert (not Error);
-            for I in Scale .. -1 loop
-               pragma Assert (Last + 1 <= Item'Last);
-               Last := Last + 1;
-               Item (Last) := '0';
-            end loop;
+            pragma Assert (Last - Scale <= Item'Last);
+            Fill_Padding (Item (Last + 1 .. Last - Scale), '0');
+            Last := Last - Scale;
          else
-            for I in 2 .. Fore_Width loop
-               Last := Last + 1;
-               pragma Assert (Last <= Item'Last);
-               Item (Last) := Fore_Padding;
-            end loop;
-            Last := Last + 1;
-            pragma Assert (Last <= Item'Last);
+            pragma Assert (Last + Fore_Width <= Item'Last);
+            Fill_Padding (
+               Item (Last + 1 .. Last + Fore_Width - 1),
+               Fore_Padding);
+            Last := Last + Fore_Width; -- including '0'
             Item (Last) := '0';
          end if;
          if Aft_Width > 0 then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
             Item (Last) := '.';
-            for I in Last + 1 .. Last + Aft_Width loop
-               Last := Last + 1;
-               pragma Assert (Last <= Item'Last);
-               Item (Last) := '0';
-            end loop;
+            pragma Assert (Last + Aft_Width <= Item'Last);
+            Fill_Padding (Item (Last + 1 .. Last + Aft_Width), '0');
+            Last := Last + Aft_Width;
          end if;
       end if;
    end Image;
