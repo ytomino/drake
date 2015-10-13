@@ -44,14 +44,16 @@ package body System.Native_IO is
    procedure New_Full_Name (
       Item : String;
       Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length) is
+      Out_Length : out Name_Length)
+   is
+      Item_Length : constant Natural := Item'Length;
    begin
       if Item (Item'First) = '/' then
          --  absolute path
          Out_Item := Name_Pointer_Conv.To_Pointer (
             Address (
                C.stdlib.malloc (
-                  Item'Length * Zero_Terminated_Strings.Expanding
+                  C.size_t (Item_Length) * Zero_Terminated_Strings.Expanding
                   + 1))); -- NUL
          if Out_Item = null then
             raise Storage_Error;
@@ -69,7 +71,8 @@ package body System.Native_IO is
                      C.stdlib.realloc (
                         C.void_ptr (Name_Pointer_Conv.To_Address (Out_Item)),
                         Out_Length
-                           + Item'Length * Zero_Terminated_Strings.Expanding
+                           + C.size_t (Item_Length)
+                              * Zero_Terminated_Strings.Expanding
                            + 2))); -- '/' & NUL
          begin
             if New_Out_Item = null then

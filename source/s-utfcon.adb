@@ -453,8 +453,12 @@ package body System.UTF_Conversions is
                Code,
                From_Status);
             if From_Status /= Success then
-               Result (Last + 1 .. Last + Substitute'Length) := Substitute;
-               Last := Last + Substitute'Length;
+               declare
+                  Substitute_Length : constant Natural := Substitute'Length;
+               begin
+                  Result (Last + 1 .. Last + Substitute_Length) := Substitute;
+                  Last := Last + Substitute_Length;
+               end;
             else
                To_UTF (
                   Code,

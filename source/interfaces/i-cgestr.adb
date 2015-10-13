@@ -72,14 +72,14 @@ package body Interfaces.C.Generic_Strings is
                end;
             end if;
          end if;
-         return Item.all (Item.all'First)'Access;
+         return Item (Item'First)'Access;
       end if;
    end To_Chars_Ptr;
 
    function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
       return not null const_chars_ptr is
    begin
-      return Item.all (Item.all'First)'Access;
+      return Item (Item'First)'Access;
    end To_Const_Chars_Ptr;
 
    function New_Char_Array (Chars : Element_Array)
@@ -412,19 +412,21 @@ package body Interfaces.C.Generic_Strings is
       Item : access Element;
       Offset : size_t;
       Chars : Element_Array;
-      Check : Boolean := True) is
+      Check : Boolean := True)
+   is
+      Chars_Length : constant C.size_t := Chars'Length;
    begin
       if chars_ptr (Item) = null then
          raise Dereference_Error; -- CXB3011
       end if;
-      if Check and then Offset + Chars'Length > Strlen (Item) then
+      if Check and then Offset + Chars_Length > Strlen (Item) then
          raise Update_Error;
       end if;
       Update (
          Item,
          Offset,
          const_Conv.To_Pointer (Chars'Address),
-         Chars'Length);
+         Chars_Length);
    end Update;
 
    procedure Update (

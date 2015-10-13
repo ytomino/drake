@@ -304,10 +304,10 @@ package body Ada.Tags is
       Result : String
          renames TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
    begin
-      if Result'Length > Nested_Prefix'Length
+      if Result'First + (Nested_Prefix'Length - 1) < Result'Last
          and then Result (
             Result'First ..
-            Result'First - 1 + Nested_Prefix'Length) = Nested_Prefix
+            Result'First + (Nested_Prefix'Length - 1)) = Nested_Prefix
       then
          null; -- nested
       else
@@ -355,18 +355,17 @@ package body Ada.Tags is
 
    function Internal_Tag (External : String) return Tag is
    begin
-      if External'Length >= Nested_Prefix'Length
+      if External'First + (Nested_Prefix'Length - 1) <= External'Last
          and then External (
             External'First ..
-            External'First + Nested_Prefix'Length - 1) = Nested_Prefix
+            External'First + (Nested_Prefix'Length - 1)) = Nested_Prefix
       then
          declare
             Addr_First : constant Positive :=
                External'First + Nested_Prefix'Length;
             Addr_Last : constant Natural :=
                Addr_First
-               + System.Formatting.Address.Address_String'Length
-               - 1;
+               + (System.Formatting.Address.Address_String'Length - 1);
          begin
             if Addr_Last >= External'Last
                or else External (Addr_Last + 1) /= '#'

@@ -325,7 +325,7 @@ package body System.Formatting is
             Padding_Length : constant Natural := Integer'Max (0, Width - W);
             Length : constant Natural := Padding_Length + W;
          begin
-            Error := Length > Item'Length;
+            Error := Item'First + Length - 1 > Item'Last;
             if Error then
                Last := Item'First - 1;
             else
@@ -368,7 +368,7 @@ package body System.Formatting is
       Padding_Length : constant Natural := Integer'Max (0, Width - W);
       Length : constant Natural := Padding_Length + W;
    begin
-      Error := Length > Item'Length;
+      Error := Item'First + Length - 1 > Item'Last;
       if Error then
          Last := Item'First - 1;
       else

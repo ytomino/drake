@@ -270,11 +270,9 @@ package body Interfaces.C is
          Substitute : String_Type)
          return String_Type
       is
-         Item_Length : constant size_t := Item'Length;
          Result : String_Type (
             1 ..
-            Natural (Item_Length)
-               * Integer'Max (Expanding_To_Ada, Substitute'Length));
+            Item'Length * Integer'Max (Expanding_To_Ada, Substitute'Length));
          Count : Natural;
       begin
          From_Non_Nul_Terminated (
@@ -294,7 +292,7 @@ package body Interfaces.C is
          To_Non_Nul_Terminated (Item, Target, Count,
             Substitute => Substitute);
          Count := Count + 1;
-         if Count > Target'Length then
+         if Target'First + Count - 1 > Target'Last then
             raise Constraint_Error;
          end if;
          Target (Target'First + Count - 1) := Element'Val (0);

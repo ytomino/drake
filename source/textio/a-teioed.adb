@@ -308,13 +308,14 @@ package body Ada.Text_IO.Editing is
          System.Formatting.Fill_Padding (Result, ' ');
       else
          declare
+            Currency_Length : constant Natural := Currency'Length;
             Aft : constant Natural := Pic.Aft;
             Item_Image : String (1 .. Fore + Aft + 2); -- sign and '.'
             Item_Last : Natural;
             Radix_Position : Integer := Pic.Radix_Position;
          begin
             if Pic.Has_Dollar = Previous then
-               Radix_Position := Radix_Position + Currency'Length - 1;
+               Radix_Position := Radix_Position + Currency_Length - 1;
             end if;
             System.Formatting.Decimal.Image (
                Item,
@@ -394,9 +395,9 @@ package body Ada.Text_IO.Editing is
                            Result_Index := Result_Index - 1;
                         else
                            Result (
-                              Result_Index - Currency'Length + 1 ..
+                              Result_Index - Currency_Length + 1 ..
                               Result_Index) := Currency;
-                           Result_Index := Result_Index - Currency'Length;
+                           Result_Index := Result_Index - Currency_Length;
                            Currency_Filled := True;
                            Dollar_Used := True;
                         end if;
@@ -408,7 +409,7 @@ package body Ada.Text_IO.Editing is
                            Pic_Index := Pic_Index - 1;
                         else
                            declare
-                              N : Natural := Currency'Length;
+                              N : Natural := Currency_Length;
                            begin
                               while N > 0 loop
                                  if Pic_Index <= Pic_Leading_Index
@@ -427,9 +428,9 @@ package body Ada.Text_IO.Editing is
                               end loop;
                            end;
                            Result (
-                              Result_Index - Currency'Length + 1 ..
+                              Result_Index - Currency_Length + 1 ..
                               Result_Index) := Currency;
-                           Result_Index := Result_Index - Currency'Length;
+                           Result_Index := Result_Index - Currency_Length;
                            Currency_Filled := True;
                            Pic_Leading_Index := Pic_Index;
                         end if;
@@ -537,7 +538,7 @@ package body Ada.Text_IO.Editing is
                            Pic_Index := Pic_Index + 1;
                         else
                            declare
-                              N : Natural := Currency'Length;
+                              N : Natural := Currency_Length;
                            begin
                               while N > 0 loop
                                  if Pic_Index > Pic.Length
@@ -552,8 +553,8 @@ package body Ada.Text_IO.Editing is
                            end;
                            Result (
                               Result_Index ..
-                              Result_Index + Currency'Length - 1) := Currency;
-                           Result_Index := Result_Index + Currency'Length;
+                              Result_Index + Currency_Length - 1) := Currency;
+                           Result_Index := Result_Index + Currency_Length;
                            Currency_Filled := True;
                         end if;
                      when '>' =>
@@ -736,10 +737,11 @@ package body Ada.Text_IO.Editing is
          Radix_Mark : Wide_Character)
          return Wide_String
       is
+         Currency_Length : constant Natural := Currency'Length;
          Image : constant String := Overloaded_Image (
             Item,
             Pic,
-            Currency => String'(1 .. Currency'Length => '$'),
+            Currency => String'(1 .. Currency_Length => '$'),
             Fill => '*', -- Editing.Default_Fill
             Separator => ',', -- Editing.Default_Separator
             Radix_Mark => '.'); -- Editing.Default_Radix_Mark
@@ -751,8 +753,8 @@ package body Ada.Text_IO.Editing is
                while I <= Result'Last loop
                   case Image (I) is
                      when '$' =>
-                        Result (I .. I + Currency'Length - 1) := Currency;
-                        I := I + Currency'Length;
+                        Result (I .. I + Currency_Length - 1) := Currency;
+                        I := I + Currency_Length;
                      when '*' =>
                         Result (I) := Fill;
                         I := I + 1;
@@ -781,10 +783,11 @@ package body Ada.Text_IO.Editing is
          Radix_Mark : Wide_Wide_Character)
          return Wide_Wide_String
       is
+         Currency_Length : constant Natural := Currency'Length;
          Image : constant String := Overloaded_Image (
             Item,
             Pic,
-            Currency => String'(1 .. Currency'Length => '$'),
+            Currency => String'(1 .. Currency_Length => '$'),
             Fill => '*', -- Editing.Default_Fill
             Separator => ',', -- Editing.Default_Separator
             Radix_Mark => '.'); -- Editing.Default_Radix_Mark
@@ -796,8 +799,8 @@ package body Ada.Text_IO.Editing is
                while I <= Result'Last loop
                   case Image (I) is
                      when '$' =>
-                        Result (I .. I + Currency'Length - 1) := Currency;
-                        I := I + Currency'Length;
+                        Result (I .. I + Currency_Length - 1) := Currency;
+                        I := I + Currency_Length;
                      when '*' =>
                         Result (I) := Fill;
                         I := I + 1;

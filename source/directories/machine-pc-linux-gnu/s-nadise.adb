@@ -119,16 +119,12 @@ package body System.Native_Directories.Searching is
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
       Search.Filter := Filter;
-      declare
-         Pattern_Length : constant Natural := Pattern'Length;
-      begin
-         Search.Pattern := char_ptr_Conv.To_Pointer (
-            Standard_Allocators.Allocate (
-               Storage_Elements.Storage_Offset (
-                  Pattern_Length * Zero_Terminated_Strings.Expanding)
-               + 1)); -- NUL
-         Zero_Terminated_Strings.To_C (Pattern, Search.Pattern);
-      end;
+      Search.Pattern := char_ptr_Conv.To_Pointer (
+         Standard_Allocators.Allocate (
+            Storage_Elements.Storage_Offset (
+               Pattern'Length * Zero_Terminated_Strings.Expanding)
+            + 1)); -- NUL
+      Zero_Terminated_Strings.To_C (Pattern, Search.Pattern);
       Get_Next_Entry (Search, Directory_Entry, Has_Next_Entry);
    end Start_Search;
 
@@ -192,12 +188,11 @@ package body System.Native_Directories.Searching is
       Additional : aliased in out Directory_Entry_Additional_Type)
    is
       Dummy_dirent : C.bits.dirent.struct_dirent; -- to use 'Position
-      Name_Length : constant C.size_t := Name'Length;
       Record_Length : constant System.Storage_Elements.Storage_Count :=
          System.Storage_Elements.Storage_Offset'Max (
             C.bits.dirent.struct_dirent'Size / Standard'Storage_Unit,
             Dummy_dirent.d_name'Position
-               + System.Storage_Elements.Storage_Offset (Name_Length + 1));
+               + System.Storage_Elements.Storage_Offset (Name'Length + 1));
       errno : C.signed_int;
    begin
       --  allocation

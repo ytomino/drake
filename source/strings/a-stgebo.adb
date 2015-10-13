@@ -15,9 +15,11 @@ package body Ada.Strings.Generic_Bounded is
    procedure Set_Bounded_String (
       Target : out Bounded_String;
       Source : String_Type;
-      Drop : Truncation := Error) is
+      Drop : Truncation := Error)
+   is
+      Source_Length : constant Natural := Source'Length;
    begin
-      if Source'Length > Target.Capacity then
+      if Source_Length > Target.Capacity then
          case Drop is
             when Right =>
                Target.Length := Target.Capacity;
@@ -33,7 +35,7 @@ package body Ada.Strings.Generic_Bounded is
                raise Length_Error;
          end case;
       else
-         Target.Length := Source'Length;
+         Target.Length := Source_Length;
          Target.Element (1 .. Target.Length) := Source;
       end if;
    end Set_Bounded_String;
@@ -51,10 +53,11 @@ package body Ada.Strings.Generic_Bounded is
       New_Item : String_Type;
       Drop : Truncation := Error)
    is
+      New_Item_Length : constant Natural := New_Item'Length;
       Old_Length : constant Natural := Source.Length;
       Rest : constant Natural := Source.Capacity - Old_Length;
    begin
-      if New_Item'Length > Rest then
+      if New_Item_Length > Rest then
          case Drop is
             when Right =>
                Source.Length := Source.Capacity;
@@ -62,10 +65,10 @@ package body Ada.Strings.Generic_Bounded is
                   New_Item (New_Item'First .. New_Item'First + Rest - 1);
             when Left =>
                Source.Length := Source.Capacity;
-               if New_Item'Length < Source.Capacity then
+               if New_Item_Length < Source.Capacity then
                   declare
                      Moving : constant Natural :=
-                        Source.Capacity - New_Item'Length;
+                        Source.Capacity - New_Item_Length;
                   begin
                      Source.Element (1 .. Moving) :=
                         Source.Element (Old_Length - Moving + 1 .. Old_Length);
@@ -81,7 +84,7 @@ package body Ada.Strings.Generic_Bounded is
                raise Length_Error;
          end case;
       else
-         Source.Length := Old_Length + New_Item'Length;
+         Source.Length := Old_Length + New_Item_Length;
          Source.Element (Old_Length + 1 .. Source.Length) := New_Item;
       end if;
    end Append;

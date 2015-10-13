@@ -53,10 +53,8 @@ package body System.Val_WChar is
             S : String := Str (First .. Last);
          begin
             Val_Enum.To_Upper (S);
-            if S'Length >= Val_Char.HEX_Prefix'Length
-               and then S (
-                  First ..
-                  First - 1 + Val_Char.HEX_Prefix'Length) =
+            if S'First + (Val_Char.HEX_Prefix'Length - 1) <= Last
+               and then S (First .. First + (Val_Char.HEX_Prefix'Length - 1)) =
                   Val_Char.HEX_Prefix
             then
                declare
@@ -133,10 +131,8 @@ package body System.Val_WChar is
             S : String := Str (First .. Last);
          begin
             Val_Enum.To_Upper (S);
-            if S'Length >= Val_Char.HEX_Prefix'Length
-               and then S (
-                  First ..
-                  First - 1 + Val_Char.HEX_Prefix'Length) =
+            if First + (Val_Char.HEX_Prefix'Length - 1) <= Last
+               and then S (First .. First + (Val_Char.HEX_Prefix'Length - 1)) =
                   Val_Char.HEX_Prefix
             then
                declare

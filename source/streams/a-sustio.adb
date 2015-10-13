@@ -307,8 +307,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Stream : in out Stream_Type;
       Item : Stream_Element_Array)
    is
-      Length : constant Stream_Element_Count := Item'Length;
-      New_Index : constant Stream_Element_Count := Stream.Index + Length;
+      New_Index : constant Stream_Element_Count := Stream.Index + Item'Length;
       Copy_Last : constant Stream_Element_Offset := New_Index - 1;
       New_Last : constant Stream_Element_Offset :=
          Stream_Element_Offset'Max (Stream.Last, Copy_Last);

@@ -540,57 +540,65 @@ package body Ada.Text_IO.Formatting is
    procedure Head (
       Target : out String;
       Source : String;
-      Padding : Character := ' ') is
+      Padding : Character := ' ')
+   is
+      Source_Length : constant Natural := Source'Length;
    begin
-      if Target'Length < Source'Length then
+      if Target'Length < Source_Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
-      Target (Target'First .. Target'First + Source'Length - 1) := Source;
+      Target (Target'First .. Target'First + Source_Length - 1) := Source;
       System.Formatting.Fill_Padding (
-         Target (Target'First + Source'Length .. Target'Last),
+         Target (Target'First + Source_Length .. Target'Last),
          Padding);
    end Head;
 
    procedure Tail (
       Target : out String;
       Source : String;
-      Padding : Character := ' ') is
+      Padding : Character := ' ')
+   is
+      Source_Length : constant Natural := Source'Length;
    begin
-      if Target'Length < Source'Length then
+      if Target'Length < Source_Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
-      Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
+      Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
       System.Formatting.Fill_Padding (
-         Target (Target'First .. Target'Last - Source'Length),
+         Target (Target'First .. Target'Last - Source_Length),
          Padding);
    end Tail;
 
    procedure Tail (
       Target : out Wide_String;
       Source : Wide_String;
-      Padding : Wide_Character := ' ') is
+      Padding : Wide_Character := ' ')
+   is
+      Source_Length : constant Natural := Source'Length;
    begin
-      if Target'Length < Source'Length then
+      if Target'Length < Source_Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
-      for I in Target'First .. Target'Last - Source'Length loop
+      for I in Target'First .. Target'Last - Source_Length loop
          Target (I) := Padding;
       end loop;
-      Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
+      Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
    end Tail;
 
    procedure Tail (
       Target : out Wide_Wide_String;
       Source : Wide_Wide_String;
-      Padding : Wide_Wide_Character := ' ') is
+      Padding : Wide_Wide_Character := ' ')
+   is
+      Source_Length : constant Natural := Source'Length;
    begin
-      if Target'Length < Source'Length then
+      if Target'Length < Source_Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
-      for I in Target'First .. Target'Last - Source'Length loop
+      for I in Target'First .. Target'Last - Source_Length loop
          Target (I) := Padding;
       end loop;
-      Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
+      Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
    end Tail;
 
 end Ada.Text_IO.Formatting;

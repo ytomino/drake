@@ -12,31 +12,33 @@ is
    pragma Check_Policy (Trace => Disable);
    pragma Suppress (All_Checks);
    use type Tags.Tag;
-   Old_First_Index : constant Index_Type := X.all'First;
-   Old_Last_Index : constant Index_Type := X.all'Last;
+   Old_First_Index : constant Index_Type := X'First;
+   Old_Last_Index : constant Index_Type := X'Last;
    Min_Last_Index : constant Index_Type'Base :=
       Index_Type'Base'Min (Last_Index, Old_Last_Index);
    New_Length : constant Index_Type'Base :=
       Index_Type'Base'Max (Last_Index - First_Index + 1, 0);
 begin
-   pragma Check (Trace, Debug.Put (
-      "old X.all'First =" &
-      Index_Type'Base'Image (Old_First_Index)));
-   pragma Check (Trace, Debug.Put (
-      "old X.all'Last =" &
-      Index_Type'Base'Image (Old_Last_Index)));
-   pragma Check (Trace, Debug.Put (
-      "old X.all'Address = " &
-      System.Storage_Elements.Formatting.Image (X.all'Address)));
-   pragma Check (Trace, Debug.Put (
-      "old X'Pool_Address = " &
-      System.Storage_Elements.Formatting.Image (X'Pool_Address)));
-   pragma Check (Trace, Debug.Put (
-      "requested X.all'First =" &
-      Index_Type'Base'Image (First_Index)));
-   pragma Check (Trace, Debug.Put (
-      "requested X.all'Last =" &
-      Index_Type'Base'Image (Last_Index)));
+   pragma Check (Trace,
+      Check => Debug.Put (
+         "old X'First =" & Index_Type'Base'Image (Old_First_Index)));
+   pragma Check (Trace,
+      Check => Debug.Put (
+         "old X'Last =" & Index_Type'Base'Image (Old_Last_Index)));
+   pragma Check (Trace,
+      Check => Debug.Put (
+         "old X.all'Address = "
+         & System.Storage_Elements.Formatting.Image (X.all'Address)));
+   pragma Check (Trace,
+      Check => Debug.Put (
+         "old X'Pool_Address = "
+         & System.Storage_Elements.Formatting.Image (X'Pool_Address)));
+   pragma Check (Trace,
+      Check => Debug.Put (
+         "requested X'First =" & Index_Type'Base'Image (First_Index)));
+   pragma Check (Trace,
+      Check => Debug.Put (
+         "requested X'Last =" & Index_Type'Base'Image (Last_Index)));
    --  reallocate
    if Name'Storage_Pool'Tag =
       System.Storage_Pools.Standard_Pools.Standard_Pool'Tag
@@ -71,9 +73,9 @@ begin
          New_Pool_Address : System.Address;
          New_Object_Address : System.Address;
       begin
-         pragma Check (Trace, Debug.Put (
-            "requested size =" &
-            Storage_Offset'Image (New_Pool_Size)));
+         pragma Check (Trace,
+            Check => Debug.Put (
+               "requested size =" & Storage_Offset'Image (New_Pool_Size)));
          New_Pool_Address := System.Standard_Allocators.Reallocate (
             Pool_Address,
             New_Pool_Size);
@@ -132,16 +134,16 @@ begin
          X := New_X;
       end;
    end if;
-   pragma Check (Trace, Debug.Put (
-      "new X.all'First =" &
-      Index_Type'Base'Image (X.all'First)));
-   pragma Check (Trace, Debug.Put (
-      "new X.all'Last =" &
-      Index_Type'Base'Image (X.all'Last)));
-   pragma Check (Trace, Debug.Put (
-      "new X.all'Address = " &
-      System.Storage_Elements.Formatting.Image (X.all'Address)));
-   pragma Check (Trace, Debug.Put (
-      "new X'Pool_Address = " &
-      System.Storage_Elements.Formatting.Image (X'Pool_Address)));
+   pragma Check (Trace,
+      Check => Debug.Put ("new X'First =" & Index_Type'Base'Image (X'First)));
+   pragma Check (Trace,
+      Check => Debug.Put ("new X'Last =" & Index_Type'Base'Image (X'Last)));
+   pragma Check (Trace,
+      Check => Debug.Put (
+         "new X.all'Address = " &
+         System.Storage_Elements.Formatting.Image (X.all'Address)));
+   pragma Check (Trace,
+      Check => Debug.Put (
+         "new X'Pool_Address = " &
+         System.Storage_Elements.Formatting.Image (X'Pool_Address)));
 end Ada.Unchecked_Reallocation;

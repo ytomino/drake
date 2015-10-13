@@ -293,15 +293,16 @@ package body Ada.Strings.Generic_Functions is
          raise Pattern_Error;
       else
          declare
+            Pattern_Length : constant Natural := Pattern'Length;
             Current : Natural := Source'First;
-            Last : constant Integer := Source'Last - Pattern'Length + 1;
+            Last : constant Integer := Source'Last - (Pattern_Length - 1);
          begin
             while Current <= Last loop
                Current := Index_Element_Forward (
                   Source (Current .. Last),
                   Pattern (Pattern'First));
                exit when Current = 0;
-               if Source (Current .. Current + Pattern'Length - 1) =
+               if Source (Current .. Current + (Pattern_Length - 1)) =
                   Pattern
                then
                   return Current;
@@ -320,14 +321,15 @@ package body Ada.Strings.Generic_Functions is
          raise Pattern_Error;
       else
          declare
-            Current : Integer := Source'Last - Pattern'Length + 1;
+            Pattern_Length : constant Natural := Pattern'Length;
+            Current : Integer := Source'Last - (Pattern_Length - 1);
          begin
             while Current >= Source'First loop
                Current := Index_Element_Backward (
                   Source (Source'First .. Current),
                   Pattern (Pattern'First));
                exit when Current = 0;
-               if Source (Current .. Current + Pattern'Length - 1) =
+               if Source (Current .. Current + (Pattern_Length - 1)) =
                   Pattern
                then
                   return Current;
@@ -416,6 +418,7 @@ package body Ada.Strings.Generic_Functions is
       By : String_Type)
       return String_Type
    is
+      By_Length : constant Natural := By'Length;
       Previous_Length : constant Integer := Low - Source'First;
       Actual_High : Natural;
    begin
@@ -433,11 +436,11 @@ package body Ada.Strings.Generic_Functions is
       end if;
       return Result : String_Type (
          1 ..
-         Source'Length - (Actual_High - Low + 1) + By'Length)
+         Source'Length - (Actual_High - Low + 1) + By_Length)
       do
          Result (1 .. Previous_Length) := Source (Source'First .. Low - 1);
-         Result (Previous_Length + 1 .. Previous_Length + By'Length) := By;
-         Result (Previous_Length + By'Length + 1 .. Result'Last) :=
+         Result (Previous_Length + 1 .. Previous_Length + By_Length) := By;
+         Result (Previous_Length + By_Length + 1 .. Result'Last) :=
             Source (Actual_High + 1 .. Source'Last);
       end return;
    end Replace_Slice;
@@ -465,16 +468,17 @@ package body Ada.Strings.Generic_Functions is
       New_Item : String_Type)
       return String_Type
    is
+      New_Item_Length : constant Natural := New_Item'Length;
       Previous_Length : constant Integer := Before - Source'First;
    begin
       if Previous_Length < 0 or else Before > Source'Last + 1 then
          raise Index_Error;
       end if;
-      return Result : String_Type (1 .. Source'Length + New_Item'Length) do
+      return Result : String_Type (1 .. Source'Length + New_Item_Length) do
          Result (1 .. Previous_Length) := Source (Source'First .. Before - 1);
-         Result (Previous_Length + 1 .. Previous_Length + New_Item'Length) :=
+         Result (Previous_Length + 1 .. Previous_Length + New_Item_Length) :=
             New_Item;
-         Result (Previous_Length + New_Item'Length + 1 .. Result'Last) :=
+         Result (Previous_Length + New_Item_Length + 1 .. Result'Last) :=
             Source (Before .. Source'Last);
       end return;
    end Insert;
@@ -499,6 +503,7 @@ package body Ada.Strings.Generic_Functions is
       New_Item : String_Type)
       return String_Type
    is
+      New_Item_Length : constant Natural := New_Item'Length;
       Previous_Length : constant Integer := Position - Source'First;
    begin
       if Previous_Length < 0 or else Position > Source'Last + 1 then
@@ -506,14 +511,14 @@ package body Ada.Strings.Generic_Functions is
       end if;
       return Result : String_Type (
          1 ..
-         Natural'Max (Source'Length, Previous_Length + New_Item'Length))
+         Natural'Max (Source'Length, Previous_Length + New_Item_Length))
       do
          Result (1 .. Previous_Length) :=
             Source (Source'First .. Position - 1);
-         Result (Previous_Length + 1 .. Previous_Length + New_Item'Length) :=
+         Result (Previous_Length + 1 .. Previous_Length + New_Item_Length) :=
             New_Item;
-         Result (Previous_Length + New_Item'Length + 1 .. Result'Length) :=
-            Source (Position + New_Item'Length .. Source'Last);
+         Result (Previous_Length + New_Item_Length + 1 .. Result'Last) :=
+            Source (Position + New_Item_Length .. Source'Last);
       end return;
    end Overwrite;
 

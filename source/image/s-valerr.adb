@@ -3,10 +3,11 @@ pragma Warnings (Off, System.Runtime_Context); -- break "pure" rule
 package body System.Value_Errors is
 
    procedure Raise_Value_Failure (T : String; S : String) is
-      Message : String (1 .. T'Length + S'Length * 2 + 11);
+      T_Length : constant Natural := T'Length;
+      Message : String (1 .. T_Length + S'Length * 2 + 11);
       Last : Natural;
    begin
-      Last := T'Length;
+      Last := T_Length;
       Message (1 .. Last) := T;
       Last := Last + 9;
       Message (Last - 8 .. Last) := "'Value (""";

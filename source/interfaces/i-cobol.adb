@@ -251,7 +251,7 @@ package body Interfaces.COBOL is
       pragma Compile_Time_Error (
          Numeric'Component_Size /= String'Component_Size,
          "size mismatch");
-      Result_As_Ada : String (1 .. Result'Length);
+      Result_As_Ada : String (Result'Range);
       for Result_As_Ada'Address use Result'Address;
       Last : Natural;
       Error : Boolean; -- ignored
@@ -351,10 +351,9 @@ package body Interfaces.COBOL is
    end Valid_Unsigned;
 
    function Valid_Signed (Item : Packed_Decimal) return Boolean is
-      Length : constant Natural := Item'Length;
    begin
-      if Length = 0
-         or else Length rem 2 /= 0
+      if Item'Length = 0
+         or else Item'Length rem 2 /= 0
          or else Item (Item'Last) < 16#A#
       then
          return False;
