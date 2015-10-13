@@ -64,4 +64,7 @@ package System.Formatting is
 
    No_Sign : constant Character := Character'Val (16#ff#);
 
+   --  utility
+   procedure Fill_Padding (Item : out String; Pad : Character);
+
 end System.Formatting;

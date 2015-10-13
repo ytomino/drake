@@ -15,7 +15,9 @@ package System.Reference_Counting is
    type Data_Access is access all Counter;
    for Data_Access'Storage_Size use 0;
 
-   function Shared (Data : not null Data_Access) return Boolean;
+   function Shared (Data : not null Data_Access) return Boolean
+      with Convention => Intrinsic;
+   pragma Inline_Always (Shared);
 
    subtype Container is
       not null Data_Access; -- should be initialized with a sentinel
@@ -78,6 +80,8 @@ package System.Reference_Counting is
          Length : Length_Type; -- copying length
          Max_Length : Length_Type; -- new length
          Capacity : Length_Type);
-      Free : not null access procedure (Object : in out Data_Access));
+      Free : not null access procedure (Object : in out Data_Access))
+      with Convention => Intrinsic;
+   pragma Inline_Always (Set_Length);
 
 end System.Reference_Counting;

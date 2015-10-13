@@ -1,5 +1,13 @@
+with System.Storage_Elements;
 package body System.Formatting is
    pragma Suppress (All_Checks);
+
+   procedure memset (
+      b : Address;
+      c : Integer;
+      n : Storage_Elements.Storage_Count)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memset";
 
    function Width_Digits (Value : Unsigned; Base : Number_Base)
       return Positive;
@@ -47,14 +55,6 @@ package body System.Formatting is
          end;
       end if;
    end Width_Digits;
-
-   procedure Fill_Padding (Item : out String; Padding : Character);
-   procedure Fill_Padding (Item : out String; Padding : Character) is
-   begin
-      for I in Item'Range loop
-         Item (I) := Padding;
-      end loop;
-   end Fill_Padding;
 
    procedure Fill_Digits (
       Value : Unsigned;
@@ -431,5 +431,10 @@ package body System.Formatting is
          Error := Last < Item'First;
       end if;
    end Value;
+
+   procedure Fill_Padding (Item : out String; Pad : Character) is
+   begin
+      memset (Item'Address, Character'Pos (Pad), Item'Length);
+   end Fill_Padding;
 
 end System.Formatting;

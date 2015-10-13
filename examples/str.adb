@@ -52,6 +52,7 @@ begin
 	end;
 	-- fixed
 	declare
+		T : constant String (10 .. 19) := "0123456789";
 		R : String (1 .. 3);
 	begin
 		Ada.Strings.Fixed.Move ("+", R, Justify => Ada.Strings.Center);
@@ -72,15 +73,27 @@ begin
 		R := "123";
 		Ada.Strings.Fixed.Replace_Slice (R, 2, 3, "4", Justify => Ada.Strings.Right);
 		pragma Assert (R = " 14");
+		pragma Assert (Ada.Strings.Fixed.Delete (T, 13, 16) = "012789");
+		pragma Assert (Ada.Strings.Fixed.Delete (T, 30, 0) = T);
+		pragma Assert (Ada.Strings.Fixed.Delete (T, T'First, T'Last) = "");
+		pragma Assert (Ada.Strings.Fixed."*" (2, "ABC") = "ABCABC");
 	end;
 	-- bounded
 	declare
 		package BP is new Ada.Strings.Bounded.Generic_Bounded_Length (10);
 		use type BP.Bounded_String;
+		T : constant BP.Bounded_String := +"123456789A";
 		B : BP.Bounded_String := +"123";
 	begin
 		BP.Delete (B, 2, 2);
 		pragma Assert (B = "13");
+		pragma Assert (BP.Delete (T, 4, 7) = "12389A");
+		B := T;
+		BP.Delete (B, 4, 7);
+		pragma Assert (B = "12389A");
+		pragma Assert (BP.Replicate (2, "ABCDE", Drop => Ada.Strings.Error) = "ABCDEABCDE");
+		pragma Assert (BP.Replicate (4, "ABC", Drop => Ada.Strings.Right) = "ABCABCABCA");
+		pragma Assert (BP.Replicate (4, "ABC", Drop => Ada.Strings.Left) = "CABCABCABC");
 	end;
 	-- unbounded
 	declare
@@ -127,6 +140,11 @@ begin
 		Ada.Strings.Unbounded_Strings.Reserve_Capacity (U, 0);
 		Ada.Strings.Unbounded.Append (U, U);
 		pragma Assert (U = "NSTANSTANSTANSTA");
+		U := CP.Value;
+		Ada.Strings.Unbounded.Replace_Element (U, 1, 'c'); -- unique
+		pragma Assert (U = "cONSTANT");
+		pragma Assert (Ada.Strings.Unbounded.Delete (U, 3, 6) = "cONT");
+		pragma Assert (Ada.Strings.Unbounded."*" (2, U) = "cONSTANTcONSTANT");
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end str;

@@ -558,7 +558,7 @@ package body System.Native_Environment_Encoding is
                      2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
             begin
                Out_Last := Out_Item'First + Buffer_Length_In_SEA - 1;
-               if Out_Last > Out_Item'Length then
+               if Out_Last > Out_Item'Last then
                   Last := Item'First - 1;
                   Out_Last := Out_Item'First - 1;
                   Status := Overflow;

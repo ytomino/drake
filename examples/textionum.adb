@@ -25,16 +25,21 @@ procedure textionum is
 	package D1IO is new Ada.Text_IO.Decimal_IO (D1);
 	type D2 is delta 10.0 digits 3;
 	package D2IO is new Ada.Text_IO.Decimal_IO (D2);
+	S7 : String (1 .. 7);
 	S : String (1 .. 12);
 begin
-	D1IO.Put (10.0, Fore => 5); Ada.Text_IO.New_Line;
-	D1IO.Put (-12.3, Aft => 3); Ada.Text_IO.New_Line;
-	D2IO.Put (10.0); Ada.Text_IO.New_Line;
-	D2IO.Put (-1230.0); Ada.Text_IO.New_Line;
+	D1IO.Put (S7, 10.0);
+	pragma Assert (S7 = "   10.0");
+	D1IO.Put (S7, -12.3, Aft => 3);
+	pragma Assert (S7 = "-12.300");
+	D2IO.Put (S7, 10.0);
+	pragma Assert (S7 = "   10.0");
+	D2IO.Put (S7, -1230.0);
+	pragma Assert (S7 = "-1230.0");
+	D2IO.Put (S7, 0.0);
+	pragma Assert (S7 = "    0.0");
 	pragma Assert (Integer (Float'(5490.0)) = 5490);
-	Ada.Float_Text_IO.Put (5490.0); Ada.Text_IO.New_Line;
 	Ada.Float_Text_IO.Put (S, 5490.0);
-	Ada.Debug.Put (S);
 	pragma Assert (S = " 5.49000E+03");
 	Test_Enumeration_IO : declare
 		package Boolean_IO is new Ada.Text_IO.Enumeration_IO (Boolean);

@@ -47,25 +47,40 @@ package body Ada.Strings.Generic_Functions is
       Justify : Alignment := Left;
       Pad : Character_Type := Space)
    is
-      Side : constant array (Alignment) of Trim_End := (
-         Left => Right,
-         Center => Both,
-         Right => Left);
+      Storage_Unit : constant := Standard'Storage_Unit;
+      function To_Integer (Value : System.Address)
+         return System.Storage_Elements.Integer_Address
+         renames System.Storage_Elements.To_Integer;
       Source_First : Positive;
       Source_Last : Natural;
       Target_First : Positive;
       Target_Last : Natural;
    begin
-      Trim (Source, Side (Justify), Pad, Source_First, Source_Last);
-      if Source_Last - Source_First + 1 > Target'Length then
-         case Drop is
-            when Left =>
-               Source_First := Source_Last - (Target'Length - 1);
-            when Right =>
-               Source_Last := Source_First + (Target'Length - 1);
-            when Error =>
-               raise Length_Error;
-         end case;
+      if Source'Length - 1 > Target'Length - 1 or else Justify = Center then
+         declare
+            --  Left (0) => Right (1)
+            --  Right (1) => Left (0)
+            --  Center (2) => Both (2)
+            type Unsigned_2 is mod 4;
+            Side : constant Trim_End := Trim_End'Val (
+               Unsigned_2'(Alignment'Pos (Justify))
+               xor (Alignment'Pos (Justify) / 2 xor 1));
+         begin
+            Trim (Source, Side, Pad, Source_First, Source_Last);
+         end;
+         if Source_Last - Source_First > Target'Length - 1 then
+            case Drop is
+               when Left =>
+                  Source_First := Source_Last - (Target'Length - 1);
+               when Right =>
+                  Source_Last := Source_First + (Target'Length - 1);
+               when Error =>
+                  raise Length_Error;
+            end case;
+         end if;
+      else
+         Source_First := Source'First;
+         Source_Last := Source'Last;
       end if;
       case Justify is
          when Left =>
@@ -79,10 +94,85 @@ package body Ada.Strings.Generic_Functions is
             Target_Last := Target'Last;
             Target_First := Target_Last - (Source_Last - Source_First);
       end case;
-      Target (Target_First .. Target_Last) :=
-         Source (Source_First .. Source_Last);
-      Fill (Target (Target'First .. Target_First - 1), Pad);
-      Fill (Target (Target_Last + 1 .. Target'Last), Pad);
+      --  contents
+      declare
+         Source_Contents : String_Type
+            renames Source (Source_First .. Source_Last);
+         Target_Contents : String_Type
+            renames Target (Target_First .. Target_Last);
+      begin
+         if Source_Contents'Address /= Target_Contents'Address then
+            Target_Contents := Source_Contents;
+         end if;
+      end;
+      --  left padding
+      if Target_First /= Target'First then
+         declare
+            pragma Suppress (Index_Check); -- for (null string)'Address
+            Pad_First : Positive := Target'First;
+            Pad_Last : Natural := Target_First - 1;
+         begin
+            if String_Type'Component_Size rem Storage_Unit = 0
+               and then Source'Address
+                  mod (String_Type'Component_Size / Storage_Unit) = 0
+               and then Target'Address
+                  mod (String_Type'Component_Size / Storage_Unit) = 0
+            then -- aligned
+               if To_Integer (Target (Pad_First)'Address) in
+                  To_Integer (Source (Source'First)'Address) ..
+                  To_Integer (Source (Source_First - 1)'Address)
+               then
+                  Pad_First := Target'First
+                     + Integer (
+                        (Source (Source_First)'Address - Target'Address)
+                        / (String_Type'Component_Size / Storage_Unit));
+               elsif To_Integer (Target (Pad_Last)'Address) in
+                  To_Integer (Source (Source'First)'Address) ..
+                  To_Integer (Source (Source_First - 1)'Address)
+               then
+                  Pad_Last := Target'First
+                     + Integer (
+                        (Source (Source'First - 1)'Address - Target'Address)
+                        / (String_Type'Component_Size / Storage_Unit));
+               end if;
+            end if;
+            Fill (Target (Pad_First .. Pad_Last), Pad);
+         end;
+      end if;
+      --  right padding
+      if Target_Last /= Target'Last then
+         declare
+            pragma Suppress (Index_Check);
+            Pad_First : Positive := Target_Last + 1;
+            Pad_Last : Natural := Target'Last;
+         begin
+            if String_Type'Component_Size rem Storage_Unit = 0
+               and then Source'Address
+                  mod (String_Type'Component_Size / Storage_Unit) = 0
+               and then Target'Address
+                  mod (String_Type'Component_Size / Storage_Unit) = 0
+            then
+               if To_Integer (Target (Pad_First)'Address) in
+                  To_Integer (Source (Source_Last + 1)'Address) ..
+                  To_Integer (Source (Source'Last)'Address)
+               then
+                  Pad_First := Target'First
+                     + Integer (
+                        (Source (Source'Last + 1)'Address - Target'Address)
+                        / (String_Type'Component_Size / Storage_Unit));
+               elsif To_Integer (Target (Pad_Last)'Address) in
+                  To_Integer (Source (Source_Last + 1)'Address) ..
+                  To_Integer (Source (Source'Last)'Address)
+               then
+                  Pad_Last := Target'First
+                     + Integer (
+                        (Source (Source_Last)'Address - Target'Address)
+                        / (String_Type'Component_Size / Storage_Unit));
+               end if;
+            end if;
+            Fill (Target (Pad_First .. Pad_Last), Pad);
+         end;
+      end if;
    end Move;
 
    function Index_Element (
@@ -447,19 +537,15 @@ package body Ada.Strings.Generic_Functions is
       Through : Natural)
       return String_Type is
    begin
-      if From > Through then
-         return Source;
-      else
-         return Result : String_Type (
-            1 ..
-            Source'Length - (Through - From + 1))
-         do
-            Result (1 .. From - Source'First) :=
-               Source (Source'First .. From - 1);
-            Result (From - Source'First + 1 .. Result'Last) :=
-               Source (Through + 1 .. Source'Last);
-         end return;
-      end if;
+      return Result : String_Type (
+         1 .. Source'Length - Integer'Max (0, Through - From + 1))
+      do
+         declare
+            Dummy_Last : Natural;
+         begin
+            Delete (Source, From, Through, Result, Dummy_Last);
+         end;
+      end return;
    end Delete;
 
    procedure Delete (
@@ -478,6 +564,33 @@ package body Ada.Strings.Generic_Functions is
          Error, -- no raising because Source'Length be not growing
          Justify,
          Pad);
+   end Delete;
+
+   procedure Delete (
+      Source : String_Type;
+      From : Positive;
+      Through : Natural;
+      Target : out String_Type;
+      Target_Last : out Natural)
+   is
+      Source_Following : Positive;
+      Target_Following : Positive;
+      Following_Length : Natural;
+   begin
+      if From <= Through then
+         Target (Target'First .. From - 1 - Source'First + Target'First) :=
+            Source (Source'First .. From - 1);
+         Source_Following := Through + 1;
+         Target_Following := From - Source'First + Target'First;
+         Following_Length := Source'Last - Through;
+      else
+         Source_Following := Source'First;
+         Target_Following := Target'First;
+         Following_Length := Source'Length;
+      end if;
+      Target_Last := Target_Following + Following_Length - 1;
+      Target (Target_Following .. Target_Last) :=
+         Source (Source_Following .. Source'Last);
    end Delete;
 
    procedure Delete (
@@ -633,15 +746,17 @@ package body Ada.Strings.Generic_Functions is
    end "*";
 
    function "*" (Left : Natural; Right : String_Type)
-      return String_Type is
+      return String_Type
+   is
+      Right_Length : constant Natural := Right'Length;
    begin
-      return Result : String_Type (1 .. Left * Right'Length) do
+      return Result : String_Type (1 .. Left * Right_Length) do
          declare
-            First : Positive := Result'First;
+            Last : Natural := Result'First - 1;
          begin
             for I in 1 .. Left loop
-               Result (First .. First + Right'Length - 1) := Right;
-               First := First + Right'Length;
+               Result (Last + 1 .. Last + Right_Length) := Right;
+               Last := Last + Right_Length;
             end loop;
          end;
       end return;

@@ -266,13 +266,11 @@ package body System.Formatting.Float is
                Item (Last) := '#';
             end if;
             --  integer part
-            for I in 2 .. Fore_Width loop
-               Last := Last + 1;
-               pragma Assert (Last <= Item'Last);
-               Item (Last) := Fore_Padding;
-            end loop;
-            Last := Last + 1;
-            pragma Assert (Last <= Item'Last);
+            pragma Assert (Last + Fore_Width <= Item'Last);
+            Fill_Padding (
+               Item (Last + 1 .. Last + Fore_Width - 1),
+               Fore_Padding);
+            Last := Last + Fore_Width; -- including one digit
             Image (
                Fore,
                Item (Last),

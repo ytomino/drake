@@ -81,11 +81,13 @@ package body System.Formatting.Fixed is
       end if;
       --  integer part
       Required_Fore_Width := Float.Fore_Width (Item_Fore, Base => Base);
-      for I in Required_Fore_Width + 1 .. Fore_Width loop
-         Last := Last + 1;
-         pragma Assert (Last <= Item'Last);
-         Item (Last) := Fore_Padding;
-      end loop;
+      if Fore_Width > Required_Fore_Width then
+         pragma Assert (Last + Fore_Width - Required_Fore_Width <= Item'Last);
+         Fill_Padding (
+            Item (Last + 1 .. Last + Fore_Width - Required_Fore_Width),
+            Fore_Padding);
+         Last := Last + Fore_Width - Required_Fore_Width;
+      end if;
       pragma Assert (Last + Required_Fore_Width <= Item'Last);
       for I in reverse Last + 1 .. Last + Required_Fore_Width loop
          declare

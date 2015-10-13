@@ -546,9 +546,9 @@ package body Ada.Text_IO.Formatting is
          Raise_Exception (Layout_Error'Identity);
       end if;
       Target (Target'First .. Target'First + Source'Length - 1) := Source;
-      for I in Target'First + Source'Length .. Target'Last loop
-         Target (I) := Padding;
-      end loop;
+      System.Formatting.Fill_Padding (
+         Target (Target'First + Source'Length .. Target'Last),
+         Padding);
    end Head;
 
    procedure Tail (
@@ -559,10 +559,10 @@ package body Ada.Text_IO.Formatting is
       if Target'Length < Source'Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
-      for I in Target'First .. Target'Last - Source'Length loop
-         Target (I) := Padding;
-      end loop;
       Target (Target'Last - Source'Length + 1 .. Target'Last) := Source;
+      System.Formatting.Fill_Padding (
+         Target (Target'First .. Target'Last - Source'Length),
+         Padding);
    end Tail;
 
    procedure Tail (

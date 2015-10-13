@@ -215,16 +215,21 @@ package body System.Reference_Counting is
             then
                null;
             elsif Target.all.all > 1 then
-               Unique (
-                  Target => Target,
-                  Target_Length => Target_Length,
-                  Target_Capacity => Target_Capacity,
-                  Max_Length => New_Length,
-                  Capacity => Target_Capacity, -- keep Capacity
-                  Sentinel => Sentinel,
-                  Reallocate => Reallocate,
-                  Copy => Copy, -- Copy should set Max_Length
-                  Free => Free);
+               declare
+                  --  Target_Capacity is possibly a large value
+                  New_Capacity : constant Length_Type := New_Length;
+               begin
+                  Unique (
+                     Target => Target,
+                     Target_Length => Target_Length,
+                     Target_Capacity => Target_Capacity,
+                     Max_Length => New_Length,
+                     Capacity => New_Capacity,
+                     Sentinel => Sentinel,
+                     Reallocate => Reallocate,
+                     Copy => Copy, -- Copy should set Max_Length
+                     Free => Free);
+               end;
             else -- reference count = 1
                Target_Max_Length := New_Length;
             end if;

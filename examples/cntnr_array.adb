@@ -8,17 +8,21 @@ procedure cntnr_Array is
 		Positive, Character, String, String_Access);
 	package Arrays_Operators is new Arrays.Operators;
 	use Arrays_Operators;
-	procedure Test_01 is
+begin
+	Test_01 : declare
 		package Sorting is new Arrays.Generic_Sorting;
 		Data : String_Access := new String'("asdfghjkl");
+		Data_2 : String_Access := new String'("zxcvbnm");
 	begin
 		Sorting.Sort (Data);
-		--Ada.Text_IO.Put_Line(Data.all);
 		pragma Assert (Sorting.Is_Sorted (Data));
+		Sorting.Sort (Data_2);
+		Sorting.Merge (Data, Data_2);
+		pragma Assert (Data_2 = null);
+		pragma Assert (Data.all = "abcdfghjklmnsvxz");
 		Free (Data);
 	end Test_01;
-	pragma Debug (Test_01);
-	procedure Test_02 is
+	Test_02 : declare
 		use type Ada.Containers.Count_Type;
 		X : String_Access := new String'("ABC");
 		Y : String_Access;
@@ -34,8 +38,7 @@ procedure cntnr_Array is
 		Free (X);
 		Free (Y);
 	end Test_02;
-	pragma Debug (Test_02);
-	procedure Test_03 is
+	Test_03: declare
 		use type Ada.Containers.Count_Type;
 		X : aliased String_Access := new String'("ABCD");
 	begin
@@ -52,8 +55,36 @@ procedure cntnr_Array is
 		pragma Assert (X.all = "AZD");
 		Free (X);
 	end Test_03;
-	pragma Debug (Test_03);
+	Test_04 : declare
+		X : aliased String_Access;
+	begin
+		X := new String'(10 .. 9 => <>);
+		pragma Assert (X'Length = 0);
+		Arrays.Append (X, 'A');
+		pragma Assert (X.all = "A");
+		pragma Assert (X'First = 10);
+		Arrays.Append (X, 'C');
+		pragma Assert (X.all = "AC");
+		pragma Assert (X'First = 10);
+		Arrays.Insert (X, 11, 'B');
+		pragma Assert (X.all = "ABC");
+		pragma Assert (X'First = 10);
+		Arrays.Prepend (X, 'q');
+		pragma Assert (X.all = "qABC");
+		pragma Assert (X'First = 10);
+		Arrays.Delete (X, 10, 1);
+		pragma Assert (X.all = "ABC");
+		pragma Assert (X'First = 10);
+		Free (X);
+		X := new String'(10 .. 9 => <>);
+		Arrays.Set_Length (X, 1);
+		pragma Assert (X'First = 10 and then X'Last = 10);
+		X (10) := 'I';
+		Arrays.Set_Length (X, 2);
+		pragma Assert (X'First = 10 and then X'Last = 11);
+		X (11) := 'J';
+		pragma Assert (X.all = "IJ");
+		Free (X);
+	end Test_04;
 	pragma Debug (Ada.Debug.Put ("OK"));
-begin
-	null;
 end cntnr_Array;
