@@ -1,6 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Naked_Stream_IO.Standard_Files;
 with System.Native_IO;
+with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.windef;
 with C.winerror;
@@ -11,6 +12,14 @@ package body System.Native_Processes is
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
+
+   function memchr (
+      s : Address;
+      c : Integer;
+      n : Storage_Elements.Storage_Count)
+      return Address
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memchr";
 
    --  implementation
 
@@ -184,6 +193,7 @@ package body System.Native_Processes is
       Last : in out Natural;
       Argument : String)
    is
+      Argument_Length : constant Natural := Argument'Length;
       Has_Space : Boolean;
    begin
       --  add separator
@@ -195,13 +205,10 @@ package body System.Native_Processes is
          Command_Line (Last) := ' ';
       end if;
       --  find space in argument
-      Has_Space := False;
-      for I in Argument'Range loop
-         if Argument (I) = ' ' then
-            Has_Space := True;
-            exit;
-         end if;
-      end loop;
+      Has_Space := memchr (
+         Argument'Address,
+         Character'Pos (' '),
+         Storage_Elements.Storage_Offset (Argument_Length)) /= Null_Address;
       --  open
       if Has_Space then
          if Last >= Command_Line'Last then
@@ -211,11 +218,11 @@ package body System.Native_Processes is
          Command_Line (Last) := '"';
       end if;
       --  argument
-      if Last + Argument'Length > Command_Line'Last then
+      if Last + Argument_Length > Command_Line'Last then
          raise Constraint_Error;
       end if;
-      Command_Line (Last + 1 .. Last + Argument'Length) := Argument;
-      Last := Last + Argument'Length;
+      Command_Line (Last + 1 .. Last + Argument_Length) := Argument;
+      Last := Last + Argument_Length;
       --  close
       if Has_Space then
          if Last >= Command_Line'Last then

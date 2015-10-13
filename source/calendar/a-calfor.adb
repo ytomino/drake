@@ -640,10 +640,9 @@ package body Ada.Calendar.Formatting is
          raise Constraint_Error;
       end if;
       if Last < Elapsed_Time'Last and then Elapsed_Time (Last + 1) = '.' then
-         Last := Last + 1;
-         P := Last + 1;
+         P := Last + 1; -- position of '.'
          System.Formatting.Value (
-            Elapsed_Time (P .. Elapsed_Time'Last),
+            Elapsed_Time (P + 1 .. Elapsed_Time'Last),
             Last,
             Sub_Second_I,
             Error => Error);
@@ -653,15 +652,8 @@ package body Ada.Calendar.Formatting is
          declare
             pragma Suppress (Range_Check); -- [gcc-4.6] suppress a buggy check
          begin
-            Sub_Second := Duration (Sub_Second_I);
+            Sub_Second := Duration (Sub_Second_I) / 10 ** (Last - P);
          end;
-         for I in P .. Last loop
-            declare
-               pragma Suppress (Range_Check); -- [gcc-4.8] a buggy check
-            begin
-               Sub_Second := Sub_Second / 10;
-            end;
-         end loop;
       else
          Sub_Second := 0.0;
       end if;
