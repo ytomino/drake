@@ -220,7 +220,7 @@ ce3413b N Text_IO.Count'Last is too large for test
 ce3606a F strict End_Of_Line
 ce3606b F strict End_Of_Line
 cxa3001 C unicode (latin-1)
-cxa3002 C unicode (To_Basic is unimplemented)
+cxa3002 C unicode (latin-1)
 cxa3003 C unicode (latin-1)
 cxa3004 F unicode (Is_String, To_Character, To_String)
 cxa4025 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
@@ -235,18 +235,8 @@ cxaa019 C it requires Ada95 mode (Ada.Text_IO.Current_Output)
 cxab001 F strict End_Of_Line
 cxac003 F strict End_Of_Line
 cxac004 C unicode (latin-1)
-cxb4001 C some Interfaces.COBOL features are unimplemented
-cxb4002 C some Interfaces.COBOL features are unimplemented
-cxb4003 C some Interfaces.COBOL features are unimplemented
-cxb4004 C some Interfaces.COBOL features are unimplemented
-cxb4005 C some Interfaces.COBOL features are unimplemented
-cxb4006 C some Interfaces.COBOL features are unimplemented
-cxb4007 C some Interfaces.COBOL features are unimplemented
-cxb4008 C some Interfaces.COBOL features are unimplemented
+cxb4005 C Ada_To_COBOL and COBOL_To_Ada are not variables
 cxb4009 C it requites COBOL compiler
-cxb5001 C some Interfaces.Fortran features are unimplemented
-cxb5002 C some Interfaces.Fortran features are unimplemented
-cxb5003 C some Interfaces.Fortran features are unimplemented
 cxc7001 C unimplemented tasking features (select)
 cxc7004 C unimplemented tasking features
 cxc7006 C unimplemented tasking features (Ada.Task_Termination)
