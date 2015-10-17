@@ -179,13 +179,6 @@ package Interfaces.C.Generic_Strings is
    --  Note: Update (.., Str) is danger in drake,
    --    because Str may be encoded and its length could be changed.
 
-   --  extended
-   procedure Update (
-      Item : not null access Element;
-      Offset : size_t;
-      Source : not null access constant Element;
-      Length : size_t);
-
    Update_Error : exception
       renames C.Update_Error;
 

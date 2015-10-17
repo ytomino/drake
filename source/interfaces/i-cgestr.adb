@@ -2,6 +2,7 @@ with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
+   use type Pointers.Pointer;
    use type System.Storage_Elements.Storage_Offset;
 
    package libc is
@@ -121,15 +122,12 @@ package body Interfaces.C.Generic_Strings is
       return not null chars_ptr
    is
       Result : constant chars_ptr := New_Chars_Ptr (Length);
-      Size : constant System.Storage_Elements.Storage_Count :=
-         System.Storage_Elements.Storage_Count (Length)
-         * (Element_Array'Component_Size / Standard'Storage_Unit);
    begin
       Pointers.Copy_Array (
          Source => Item,
          Target => Result,
          Length => ptrdiff_t (Length));
-      Conv.To_Pointer (Conv.To_Address (Result) + Size).all := Element'Val (0);
+      chars_ptr'(Result + ptrdiff_t (Length)).all := Element'Val (0);
       return Result;
    end New_Chars_Ptr;
 
@@ -146,7 +144,7 @@ package body Interfaces.C.Generic_Strings is
       Total_Length : size_t;
    begin
       --  get length
-      Total_Length := 0;
+      Total_Length := 1; -- appending nul
       for I in Items'Range loop
          Lengths (I) := Strlen (Items (I));
          Total_Length := Total_Length + Lengths (I);
@@ -154,14 +152,14 @@ package body Interfaces.C.Generic_Strings is
       declare
          --  allocate
          Result : constant chars_ptr := New_Chars_Ptr (Total_Length);
-         Offset : size_t;
+         P : chars_ptr := Result;
       begin
          --  copy
-         Offset := 0;
          for I in Items'Range loop
-            Update (Result, Offset, Items (I), Lengths (I));
-            Offset := Offset + Lengths (I);
+            Pointers.Copy_Array (Items (I), P, ptrdiff_t (Lengths (I)));
+            P := P + ptrdiff_t (Lengths (I));
          end loop;
+         P.all := Element'Val (0);
          return Result;
       end;
    end New_Strcat;
@@ -172,21 +170,26 @@ package body Interfaces.C.Generic_Strings is
       Total_Length : size_t;
    begin
       --  get length
-      Total_Length := 0;
+      Total_Length := 1; -- appending nul
       for I in Items'Range loop
          Total_Length := Total_Length + Items (I).Length;
       end loop;
       declare
          --  allocate
          Result : constant chars_ptr := New_Chars_Ptr (Total_Length);
-         Offset : size_t;
+         P : chars_ptr := Result;
       begin
          --  copy
-         Offset := 0;
          for I in Items'Range loop
-            Update (Result, Offset, Items (I).ptr, Items (I).Length);
-            Offset := Offset + Items (I).Length;
+            declare
+               Item : const_chars_ptr_With_Length
+                  renames Items (I);
+            begin
+               Pointers.Copy_Array (Item.ptr, P, ptrdiff_t (Item.Length));
+               P := P + ptrdiff_t (Item.Length);
+            end;
          end loop;
+         P.all := Element'Val (0);
          return Result;
       end;
    end New_Strcat;
@@ -425,11 +428,10 @@ package body Interfaces.C.Generic_Strings is
       if Check and then Offset + Chars_Length > Strlen (Item) then
          raise Update_Error;
       end if;
-      Update (
-         Item,
-         Offset,
-         const_Conv.To_Pointer (Chars'Address),
-         Chars_Length);
+      Pointers.Copy_Array (
+         Source => const_Conv.To_Pointer (Chars'Address),
+         Target => chars_ptr (Item) + ptrdiff_t (Offset),
+         Length => ptrdiff_t (Chars_Length));
    end Update;
 
    procedure Update (
@@ -445,24 +447,6 @@ package body Interfaces.C.Generic_Strings is
          Offset,
          To_C (Str, Append_Nul => False, Substitute => Substitute),
          Check);
-   end Update;
-
-   procedure Update (
-      Item : not null access Element;
-      Offset : size_t;
-      Source : not null access constant Element;
-      Length : size_t)
-   is
-      Offset_Size : constant System.Storage_Elements.Storage_Count :=
-         System.Storage_Elements.Storage_Count (Offset)
-         * (Element_Array'Component_Size / Standard'Storage_Unit);
-      Offsetted_Item : constant chars_ptr :=
-         Conv.To_Pointer (Conv.To_Address (chars_ptr (Item)) + Offset_Size);
-   begin
-      Pointers.Copy_Array (
-         Source => Source,
-         Target => Offsetted_Item,
-         Length => ptrdiff_t (Length));
    end Update;
 
 end Interfaces.C.Generic_Strings;
