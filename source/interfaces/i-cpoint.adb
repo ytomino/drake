@@ -107,9 +107,7 @@ package body Interfaces.C.Pointers is
       Ref := Ref - 1;
    end Decrement;
 
-   function "+" (
-      Left : not null Constant_Pointer;
-      Right : ptrdiff_t)
+   function "+" (Left : not null Constant_Pointer; Right : ptrdiff_t)
       return not null Constant_Pointer is
    begin
       return To_Pointer (
@@ -118,17 +116,13 @@ package body Interfaces.C.Pointers is
             * (Element_Array'Component_Size / Standard'Storage_Unit));
    end "+";
 
-   function "+" (
-      Left : ptrdiff_t;
-      Right : not null Constant_Pointer)
+   function "+" (Left : ptrdiff_t; Right : not null Constant_Pointer)
       return not null Constant_Pointer is
    begin
       return Right + Left;
    end "+";
 
-   function "-" (
-      Left : not null Constant_Pointer;
-      Right : ptrdiff_t)
+   function "-" (Left : not null Constant_Pointer; Right : ptrdiff_t)
       return not null Constant_Pointer is
    begin
       return To_Pointer (

@@ -92,7 +92,8 @@ package body Interfaces.C.Generic_Strings is
 
    function New_String (
       Str : String_Type;
-      Substitute : Element_Array := (0 => Element'Val (Character'Pos ('?'))))
+      Substitute : Element_Array :=
+         (0 => Element'Val (Character'Pos ('?'))))
       return not null chars_ptr
    is
       C : constant Element_Array :=
@@ -196,7 +197,8 @@ package body Interfaces.C.Generic_Strings is
       Item := null;
    end Free;
 
-   function Value (Item : access constant Element)
+   function Value (
+      Item : access constant Element)
       return Element_Array
    is
       Length : constant size_t := Strlen (Item); -- checking Dereference_Error
@@ -303,7 +305,8 @@ package body Interfaces.C.Generic_Strings is
       end;
    end Value;
 
-   function Strlen (Item : access constant Element)
+   function Strlen (
+      Item : access constant Element)
       return size_t is
    begin
       if const_chars_ptr (Item) = null then

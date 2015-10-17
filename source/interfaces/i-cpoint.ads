@@ -18,7 +18,6 @@ package Interfaces.C.Pointers is
    for Constant_Pointer'Storage_Size use 0;
    pragma No_Strict_Aliasing (Constant_Pointer);
 
-   --  modified
 --  function Value (Ref : Pointer; Terminator : Element := Default_Terminator)
 --    return Element_Array;
    function Value (
@@ -26,7 +25,6 @@ package Interfaces.C.Pointers is
       Terminator : Element := Default_Terminator)
       return Element_Array;
 
-   --  modified
 --  function Value (Ref : Pointer; Length : ptrdiff_t)
 --    return Element_Array;
    function Value (
@@ -44,32 +42,39 @@ package Interfaces.C.Pointers is
       Right : ptrdiff_t)
       return not null Pointer
       with Convention => Intrinsic;
+   --  modified from here
    function "+" (
       Left : ptrdiff_t;
-      Right : not null Pointer)
+      Right : not null Pointer) -- null exclusion
       return not null Pointer
       with Convention => Intrinsic;
+   --  to here
    function "-" (
       Left : Pointer; -- CXB3015 requires null
       Right : ptrdiff_t)
       return not null Pointer
       with Convention => Intrinsic;
-   --  modified
+   --  modified from here
 --  function "-" (Left : Pointer; Right : Pointer) return ptrdiff_t;
    function "-" (
-      Left : not null Pointer;
+      Left : not null Pointer; -- null exclusion
       Right : not null access constant Element)
       return ptrdiff_t
       with Convention => Intrinsic;
+   --  to here
 
    pragma Pure_Function ("+");
    pragma Pure_Function ("-");
    pragma Inline_Always ("+");
    pragma Inline_Always ("-");
 
-   procedure Increment (Ref : in out not null Pointer)
+   --  modified from here
+   procedure Increment (
+      Ref : in out not null Pointer) -- null exclusion
       with Convention => Intrinsic;
-   procedure Decrement (Ref : in out Pointer) -- CXB3015 requires null
+   --  to here
+   procedure Decrement (
+      Ref : in out Pointer) -- CXB3015 requires null
       with Convention => Intrinsic;
 
    pragma Inline_Always (Increment);
@@ -107,7 +112,6 @@ package Interfaces.C.Pointers is
 
    --  to here
 
-   --  modified
 --  function Virtual_Length (
 --    Ref : Pointer;
 --    Terminator : Element := Default_Terminator)
@@ -133,7 +137,7 @@ package Interfaces.C.Pointers is
 --    Terminator : Element := Default_Terminator);
    procedure Copy_Terminated_Array (
       Source : access constant Element; -- CXB3016 requires null
-      Target : access Element;
+      Target : access Element; -- same as above
       Limit : ptrdiff_t := ptrdiff_t'Last;
       Terminator : Element := Default_Terminator);
 
@@ -142,14 +146,13 @@ package Interfaces.C.Pointers is
    --  This behavior is danger similar to strncpy.
    --  Use Virtual_Length and Copy_Array, or imported strlcpy, instead of it.
 
-   --  modified
 --  procedure Copy_Array (
 --    Source : Pointer;
 --    Target : Pointer;
 --    Length : ptrdiff_t);
    procedure Copy_Array (
       Source : access constant Element; -- CXB3016 requires null
-      Target : access Element;
+      Target : access Element; -- same as above
       Length : ptrdiff_t);
 
 end Interfaces.C.Pointers;
