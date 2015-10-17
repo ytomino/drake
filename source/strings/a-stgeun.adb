@@ -875,11 +875,24 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         return To_Unbounded_String (
-            Fixed_Functions.Head (
-               Source.Data.Items (1 .. Source.Length),
-               Count,
-               Pad));
+         return Result : Unbounded_String do
+            if Count > Source.Length then
+               Set_Length (Result, Count);
+               declare
+                  Dummy_Last : Natural;
+               begin
+                  Fixed_Functions.Head (
+                     Source.Data.Items (1 .. Source.Length),
+                     Count,
+                     Pad,
+                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target_Last => Dummy_Last);
+               end;
+            else
+               Assign (Result, Source); -- shared
+               Set_Length (Result, Count);
+            end if;
+         end return;
       end Head;
 
       procedure Head (
@@ -889,12 +902,20 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         Set_Unbounded_String (
-            Source,
-            Fixed_Functions.Head (
-               Source.Data.Items (1 .. Source.Length),
-               Count,
-               Pad));
+         if Count > Source.Length then
+            declare
+               New_Last : Natural := Source.Length;
+            begin
+               Set_Length (Source, Count);
+               Fixed_Functions.Head (
+                  Source.Data.Items (1 .. Source.Length),
+                  New_Last,
+                  Count,
+                  Pad);
+            end;
+         else
+            Set_Length (Source, Count);
+         end if;
       end Head;
 
       function Tail (
@@ -905,11 +926,23 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         return To_Unbounded_String (
-            Fixed_Functions.Tail (
-               Source.Data.Items (1 .. Source.Length),
-               Count,
-               Pad));
+         return Result : Unbounded_String do
+            if Count /= Source.Length then
+               Set_Length (Result, Count);
+               declare
+                  Dummy_Last : Natural;
+               begin
+                  Fixed_Functions.Tail (
+                     Source.Data.Items (1 .. Source.Length),
+                     Count,
+                     Pad,
+                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target_Last => Dummy_Last);
+               end;
+            else
+               Assign (Result, Source); -- shared
+            end if;
+         end return;
       end Tail;
 
       procedure Tail (
@@ -919,12 +952,21 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         Set_Unbounded_String (
-            Source,
-            Fixed_Functions.Tail (
-               Source.Data.Items (1 .. Source.Length),
-               Count,
-               Pad));
+         if Count /= Source.Length then
+            declare
+               Old_Length : constant Natural := Source.Length;
+               Dummy_Last : Natural;
+            begin
+               Set_Length (Source, Integer'Max (Count, Old_Length));
+               Fixed_Functions.Tail (
+                  Source.Data.Items (1 .. Old_Length),
+                  Count,
+                  Pad,
+                  Target => Source.Data.Items (1 .. Source.Length), -- copying
+                  Target_Last => Dummy_Last);
+               Set_Length (Source, Count);
+            end;
+         end if;
       end Tail;
 
       function "*" (Left : Natural; Right : Character_Type)

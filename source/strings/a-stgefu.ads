@@ -211,6 +211,23 @@ package Ada.Strings.Generic_Functions is
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
 
+   --  extended
+   --  Copying, for Bounded_String and Unbounded_String.
+   procedure Head (
+      Source : String_Type;
+      Count : Natural;
+      Pad : Character_Type := Space;
+      Target : out String_Type;
+      Target_Last : out Natural);
+
+   --  extended
+   --  Destructive, for Bounded_String and Unbounded_String.
+   procedure Head (
+      Source : in out String_Type;
+      Last : in out Natural;
+      Count : Natural;
+      Pad : Character_Type := Space);
+
    function Tail (
       Source : String_Type;
       Count : Natural;
@@ -222,6 +239,15 @@ package Ada.Strings.Generic_Functions is
       Count : Natural;
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
+
+   --  extended
+   --  Copying, for Bounded_String and Unbounded_String.
+   procedure Tail (
+      Source : String_Type;
+      Count : Natural;
+      Pad : Character_Type := Space;
+      Target : out String_Type;
+      Target_Last : out Natural);
 
    --  String constructor functions
 

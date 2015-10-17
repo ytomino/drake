@@ -77,6 +77,10 @@ begin
 		pragma Assert (Ada.Strings.Fixed.Delete (T, 30, 0) = T);
 		pragma Assert (Ada.Strings.Fixed.Delete (T, T'First, T'Last) = "");
 		pragma Assert (Ada.Strings.Fixed."*" (2, "ABC") = "ABCABC");
+		pragma Assert (Ada.Strings.Fixed.Head (T, 5) = "01234");
+		pragma Assert (Ada.Strings.Fixed.Head ("###", 5) = "###  ");
+		pragma Assert (Ada.Strings.Fixed.Tail (T, 5) = "56789");
+		pragma Assert (Ada.Strings.Fixed.Tail ("###", 5) = "  ###");
 	end;
 	-- bounded
 	declare
@@ -94,6 +98,21 @@ begin
 		pragma Assert (BP.Replicate (2, "ABCDE", Drop => Ada.Strings.Error) = "ABCDEABCDE");
 		pragma Assert (BP.Replicate (4, "ABC", Drop => Ada.Strings.Right) = "ABCABCABCA");
 		pragma Assert (BP.Replicate (4, "ABC", Drop => Ada.Strings.Left) = "CABCABCABC");
+		B := +"123";
+		BP.Head (B, 5);
+		pragma Assert (B = "123  ");
+		BP.Tail (B, 7);
+		pragma Assert (B = "  123  ");
+		BP.Head (B, 3);
+		pragma Assert (B = "  1");
+		BP.Tail (B, 1);
+		pragma Assert (B = "1");
+		pragma Assert (BP.Head (T, 5) = "12345");
+		pragma Assert (BP.Head (+"###", 5) = "###  ");
+		pragma Assert (BP.Head (T, 12, Drop => Ada.Strings.Left) = "3456789A  ");
+		pragma Assert (BP.Tail (T, 5) = "6789A");
+		pragma Assert (BP.Tail (+"###", 5) = "  ###");
+		pragma Assert (BP.Tail (T, 12, Drop => Ada.Strings.Right) = "  12345678");
 	end;
 	-- unbounded
 	declare
@@ -145,6 +164,17 @@ begin
 		pragma Assert (U = "cONSTANT");
 		pragma Assert (Ada.Strings.Unbounded.Delete (U, 3, 6) = "cONT");
 		pragma Assert (Ada.Strings.Unbounded."*" (2, U) = "cONSTANTcONSTANT");
+		U := +"123";
+		Ada.Strings.Unbounded.Head (U, 5);
+		pragma Assert (U = "123  ");
+		Ada.Strings.Unbounded.Tail (U, 7);
+		pragma Assert (U = "  123  ");
+		Ada.Strings.Unbounded.Head (U, 3);
+		pragma Assert (U = "  1");
+		Ada.Strings.Unbounded.Tail (U, 1);
+		pragma Assert (U = "1");
+		pragma Assert (Ada.Strings.Unbounded.Head (+"###", 5) = "###  ");
+		pragma Assert (Ada.Strings.Unbounded.Tail (+"###", 5) = "  ###");
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end str;

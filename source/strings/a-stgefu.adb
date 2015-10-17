@@ -686,14 +686,14 @@ package body Ada.Strings.Generic_Functions is
       Source : String_Type;
       Count : Natural;
       Pad : Character_Type := Space)
-      return String_Type
-   is
-      Taking : constant Natural := Natural'Min (Source'Length, Count);
+      return String_Type is
    begin
       return Result : String_Type (1 .. Count) do
-         Result (1 .. Taking) :=
-            Source (Source'First .. Source'First + Taking - 1);
-         Fill (Result (Taking + 1 .. Count), Pad);
+         declare
+            Dummy_Last : Natural;
+         begin
+            Head (Source, Count, Pad, Result, Dummy_Last);
+         end;
       end return;
    end Head;
 
@@ -703,26 +703,63 @@ package body Ada.Strings.Generic_Functions is
       Justify : Alignment := Left;
       Pad : Character_Type := Space) is
    begin
-      Move (
-         Head (Source, Count, Pad),
-         Source,
-         Error, -- no raising because Source'Length be not growing
-         Justify,
-         Pad);
+      if Count > Source'Length then
+         declare
+            S : String_Type (1 .. Count);
+            S_Last : Natural;
+         begin
+            Head (Source, Count, Pad, S, S_Last); -- copying
+            Move (S (1 .. S_Last), Source, Error, Justify, Pad);
+         end;
+      else
+         declare
+            Last : Natural := Source'Last;
+         begin
+            Head (Source, Last, Count, Pad);
+            Move (Source (Source'First .. Last), Source, Error, Justify, Pad);
+         end;
+      end if;
+   end Head;
+
+   procedure Head (
+      Source : String_Type;
+      Count : Natural;
+      Pad : Character_Type := Space;
+      Target : out String_Type;
+      Target_Last : out Natural)
+   is
+      Taking : constant Natural := Integer'Min (Source'Length, Count);
+   begin
+      Target (Target'First .. Target'First + Taking - 1) :=
+         Source (Source'First .. Source'First + Taking - 1);
+      Target_Last := Target'First + Count - 1;
+      Fill (Target (Target'First + Taking .. Target_Last), Pad);
+   end Head;
+
+   procedure Head (
+      Source : in out String_Type;
+      Last : in out Natural;
+      Count : Natural;
+      Pad : Character_Type := Space)
+   is
+      New_Last : constant Natural := Source'First + Count - 1;
+   begin
+      Fill (Source (Last + 1 .. New_Last), Pad);
+      Last := New_Last;
    end Head;
 
    function Tail (
       Source : String_Type;
       Count : Natural;
       Pad : Character_Type := Space)
-      return String_Type
-   is
-      Taking : constant Natural := Natural'Min (Source'Length, Count);
+      return String_Type is
    begin
       return Result : String_Type (1 .. Count) do
-         Result (Count - Taking + 1 .. Count) :=
-            Source (Source'Last - Taking + 1 .. Source'Last);
-         Fill (Result (1 .. Count - Taking), Pad);
+         declare
+            Dummy_Last : Natural;
+         begin
+            Tail (Source, Count, Pad, Result, Dummy_Last);
+         end;
       end return;
    end Tail;
 
@@ -732,12 +769,30 @@ package body Ada.Strings.Generic_Functions is
       Justify : Alignment := Left;
       Pad : Character_Type := Space) is
    begin
-      Move (
-         Tail (Source, Count, Pad),
-         Source,
-         Error, -- no raising because Source'Length be not growing
-         Justify,
-         Pad);
+      if Count /= Source'Length then
+         declare
+            S : String_Type (1 .. Count);
+            S_Last : Natural;
+         begin
+            Tail (Source, Count, Pad, S, S_Last); -- copying
+            Move (S (1 .. S_Last), Source, Error, Justify, Pad);
+         end;
+      end if;
+   end Tail;
+
+   procedure Tail (
+      Source : String_Type;
+      Count : Natural;
+      Pad : Character_Type := Space;
+      Target : out String_Type;
+      Target_Last : out Natural)
+   is
+      Taking : constant Natural := Natural'Min (Source'Length, Count);
+   begin
+      Target_Last := Target'First + Count - 1;
+      Target (Target_Last - Taking + 1 .. Target_Last) :=
+         Source (Source'Last - Taking + 1 .. Source'Last);
+      Fill (Target (Target'First .. Target_Last - Taking), Pad);
    end Tail;
 
    function "*" (Left : Natural; Right : Character_Type)
