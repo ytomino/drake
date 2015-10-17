@@ -117,11 +117,14 @@ package body Ada.Strings.Generic_Bounded is
       Source : Bounded_String;
       Low : Positive;
       High : Natural)
-      return String_Type is
+      return String_Type
+   is
+      pragma Check (Pre,
+         Check =>
+            (Low in 1 .. Source.Length + 1
+               and then High in 0 .. Source.Length)
+            or else raise Index_Error); -- CXA4034
    begin
-      if Low > Source.Length + 1 or else High > Source.Length then
-         raise Index_Error;
-      end if;
       return Source.Element (Low .. High);
    end Slice;
 
@@ -131,9 +134,6 @@ package body Ada.Strings.Generic_Bounded is
       Low : Positive;
       High : Natural) is
    begin
-      if Low > Source.Length + 1 or else High > Source.Length then
-         raise Index_Error;
-      end if;
       Set_Bounded_String (Target, Source.Element (Low .. High));
    end Bounded_Slice;
 
@@ -604,7 +604,13 @@ package body Ada.Strings.Generic_Bounded is
             Low : Positive;
             High : Natural;
             By : String_Type;
-            Drop : Truncation := Error) is
+            Drop : Truncation := Error)
+         is
+            pragma Check (Pre,
+               Check =>
+                  (Low in 1 .. Source.Length + 1
+                     and then High in 0 .. Source.Length)
+                  or else raise Index_Error); -- CXA4019
          begin
             Bounded.Set_Bounded_String (
                Source,

@@ -422,13 +422,6 @@ package body Ada.Strings.Generic_Functions is
       Previous_Length : constant Integer := Low - Source'First;
       Actual_High : Natural;
    begin
-      if Previous_Length < 0
-         or else Low > Source'Last + 1
-         or else High < Source'First - 1
-         or else High > Source'Last
-      then
-         raise Index_Error;
-      end if;
       if High < Low then
          Actual_High := Low - 1;
       else
@@ -452,7 +445,13 @@ package body Ada.Strings.Generic_Functions is
       By : String_Type;
       Drop : Truncation := Error;
       Justify : Alignment := Left;
-      Pad : Character_Type := Space) is
+      Pad : Character_Type := Space)
+   is
+      pragma Check (Pre,
+         Check =>
+            (Low in Source'First .. Source'Last + 1
+               and then High in Source'First - 1 .. Source'Last)
+            or else raise Index_Error); -- CXA4005, CXA4016
    begin
       Move (
          Replace_Slice (Source, Low, High, By),
@@ -468,12 +467,12 @@ package body Ada.Strings.Generic_Functions is
       New_Item : String_Type)
       return String_Type
    is
+      pragma Check (Pre,
+         Check => Before in Source'First .. Source'Last + 1
+            or else raise Index_Error); -- CXA4005, CXA4016
       New_Item_Length : constant Natural := New_Item'Length;
       Previous_Length : constant Integer := Before - Source'First;
    begin
-      if Previous_Length < 0 or else Before > Source'Last + 1 then
-         raise Index_Error;
-      end if;
       return Result : String_Type (1 .. Source'Length + New_Item_Length) do
          Result (1 .. Previous_Length) := Source (Source'First .. Before - 1);
          Result (Previous_Length + 1 .. Previous_Length + New_Item_Length) :=
@@ -506,9 +505,6 @@ package body Ada.Strings.Generic_Functions is
       New_Item_Length : constant Natural := New_Item'Length;
       Previous_Length : constant Integer := Position - Source'First;
    begin
-      if Previous_Length < 0 or else Position > Source'Last + 1 then
-         raise Index_Error;
-      end if;
       return Result : String_Type (
          1 ..
          Natural'Max (Source'Length, Previous_Length + New_Item_Length))

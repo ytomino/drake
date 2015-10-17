@@ -686,6 +686,11 @@ package body Ada.Strings.Generic_Unbounded is
          High : Natural;
          By : String_Type)
       is
+         pragma Check (Pre,
+            Check =>
+               (Low in 1 .. Source.Length + 1
+                  and then High in 0 .. Source.Length)
+               or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
          Set_Unbounded_String (
@@ -717,6 +722,9 @@ package body Ada.Strings.Generic_Unbounded is
          Before : Positive;
          New_Item : String_Type)
       is
+         pragma Check (Pre,
+            Check => Before in 1 .. Source.Length + 1
+               or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
          Set_Unbounded_String (
@@ -747,6 +755,9 @@ package body Ada.Strings.Generic_Unbounded is
          Position : Positive;
          New_Item : String_Type)
       is
+         pragma Check (Pre,
+            Check => Position in 1 .. Source.Length + 1
+               or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
          Set_Unbounded_String (
