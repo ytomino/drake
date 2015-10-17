@@ -214,6 +214,10 @@ package body Interfaces.C.Generic_Strings is
       Append_Nul : Boolean := False)
       return Element_Array
    is
+      pragma Check (Pre,
+         Check => const_chars_ptr (Item) /= null
+            or else Length = 0
+            or else raise Dereference_Error); -- CXB3010
       pragma Suppress (Alignment_Check);
       Actual_Length : size_t;
    begin
@@ -221,9 +225,6 @@ package body Interfaces.C.Generic_Strings is
          raise Constraint_Error; -- CXB3010
       end if;
       if const_chars_ptr (Item) = null then
-         if Length > 0 then
-            raise Dereference_Error; -- CXB3010
-         end if;
          Actual_Length := 0;
       else
          Actual_Length := Strlen (Item, Limit => Length) + 1; -- including nul
@@ -278,40 +279,39 @@ package body Interfaces.C.Generic_Strings is
       Length : size_t;
       Substitute : String_Type :=
          (1 => Character_Type'Val (Character'Pos ('?'))))
-      return String_Type is
+      return String_Type
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => const_chars_ptr (Item) /= null
+            or else raise Dereference_Error); -- CXB3011
+      pragma Suppress (Alignment_Check);
+      Actual_Length : constant size_t := Strlen (Item, Limit => Length);
+      Source : Element_Array (size_t);
+      for Source'Address use Conv.To_Address (Item);
+      First : size_t;
+      Last : size_t;
    begin
-      if const_chars_ptr (Item) = null then
-         raise Dereference_Error; -- CXB3011
+      if Actual_Length = 0 then
+         First := 1;
+         Last := 0;
+      else
+         First := 0;
+         Last := Actual_Length - 1;
       end if;
-      declare
-         pragma Suppress (Alignment_Check);
-         Actual_Length : constant size_t := Strlen (Item, Limit => Length);
-         Source : Element_Array (size_t);
-         for Source'Address use Conv.To_Address (Item);
-         First : size_t;
-         Last : size_t;
-      begin
-         if Actual_Length = 0 then
-            First := 1;
-            Last := 0;
-         else
-            First := 0;
-            Last := Actual_Length - 1;
-         end if;
-         return To_Ada (
-            Source (First .. Last),
-            Trim_Nul => False,
-            Substitute => Substitute);
-      end;
+      return To_Ada (
+         Source (First .. Last),
+         Trim_Nul => False,
+         Substitute => Substitute);
    end Value;
 
    function Strlen (
       Item : access constant Element)
-      return size_t is
+      return size_t
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => const_chars_ptr (Item) /= null
+            or else raise Dereference_Error); -- CXB3011
    begin
-      if const_chars_ptr (Item) = null then
-         raise Dereference_Error; -- CXB3011
-      end if;
       if Element'Size = char'Size
          and then Element_Array'Component_Size = char_array'Component_Size
          --  'Scalar_Storage_Order is unrelated since searching 0
@@ -417,11 +417,11 @@ package body Interfaces.C.Generic_Strings is
       Chars : Element_Array;
       Check : Boolean := True)
    is
+      pragma Check (Dynamic_Predicate,
+         Check => const_chars_ptr (Item) /= null
+            or else raise Dereference_Error); -- CXB3011
       Chars_Length : constant C.size_t := Chars'Length;
    begin
-      if chars_ptr (Item) = null then
-         raise Dereference_Error; -- CXB3011
-      end if;
       if Check and then Offset + Chars_Length > Strlen (Item) then
          raise Update_Error;
       end if;
@@ -441,7 +441,7 @@ package body Interfaces.C.Generic_Strings is
          (0 => Element'Val (Character'Pos ('?')))) is
    begin
       Update (
-         Item,
+         Item, -- checking Dereference_Error
          Offset,
          To_C (Str, Append_Nul => False, Substitute => Substitute),
          Check);
