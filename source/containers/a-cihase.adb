@@ -284,10 +284,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function Difference (Left, Right : Set) return Set is
    begin
-      if Is_Empty (Left) or else Is_Empty (Right) then
-         return Left;
-      else
-         return Result : Set do
+      return Result : Set do
+         if Is_Empty (Left) or else Is_Empty (Right) then
+            Assign (Result, Left);
+         else
             Unique (Result, True);
             Hash_Tables.Merge (
                Downcast (Result.Super.Data).Table,
@@ -301,8 +301,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                In_Both => False,
                Equivalent => Equivalent_Node'Access,
                Copy => Copy_Node'Access);
-         end return;
-      end if;
+         end if;
+      end return;
    end Difference;
 
    function Element (Position : Cursor) return Element_Type is
@@ -462,10 +462,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function Intersection (Left, Right : Set) return Set is
    begin
-      if Is_Empty (Left) or else Is_Empty (Right) then
-         return Empty_Set;
-      else
-         return Result : Set do
+      return Result : Set do
+         if Is_Empty (Left) or else Is_Empty (Right) then
+            null; -- Empty_Set;
+         else
             Unique (Result, True);
             Hash_Tables.Merge (
                Downcast (Result.Super.Data).Table,
@@ -479,8 +479,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                In_Both => True,
                Equivalent => Equivalent_Node'Access,
                Copy => Copy_Node'Access);
-         end return;
-      end if;
+         end if;
+      end return;
    end Intersection;
 
    function Is_Empty (Container : Set) return Boolean is
@@ -629,12 +629,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function Symmetric_Difference (Left, Right : Set) return Set is
    begin
-      if Is_Empty (Left) then
-         return Right;
-      elsif Is_Empty (Right) then
-         return Left;
-      else
-         return Result : Set do
+      return Result : Set do
+         if Is_Empty (Left) then
+            Assign (Result, Right);
+         elsif Is_Empty (Right) then
+            Assign (Result, Left);
+         else
             Unique (Result, True);
             Hash_Tables.Merge (
                Downcast (Result.Super.Data).Table,
@@ -648,8 +648,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                In_Both => False,
                Equivalent => Equivalent_Node'Access,
                Copy => Copy_Node'Access);
-         end return;
-      end if;
+         end if;
+      end return;
    end Symmetric_Difference;
 
    function To_Set (New_Item : Element_Type) return Set is
@@ -679,12 +679,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function Union (Left, Right : Set) return Set is
    begin
-      if Is_Empty (Left) then
-         return Right;
-      elsif Is_Empty (Right) then
-         return Left;
-      else
-         return Result : Set do
+      return Result : Set do
+         if Is_Empty (Left) then
+            Assign (Result, Right);
+         elsif Is_Empty (Right) then
+            Assign (Result, Left);
+         else
             Unique (Result, True);
             Hash_Tables.Merge (
                Downcast (Result.Super.Data).Table,
@@ -698,8 +698,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                In_Both => True,
                Equivalent => Equivalent_Node'Access,
                Copy => Copy_Node'Access);
-         end return;
-      end if;
+         end if;
+      end return;
    end Union;
 
    overriding function "=" (Left, Right : Set) return Boolean is
