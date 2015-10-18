@@ -563,7 +563,9 @@ package body Ada.Containers.Ordered_Sets is
    function Iterate (Container : Set'Class)
       return Set_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return Set_Iterator'(Container => Container'Unrestricted_Access);
+      return Set_Iterator'(
+         First => First (Container),
+         Last => Last (Container));
    end Iterate;
 
    function Last (Container : Set) return Cursor is
@@ -802,28 +804,32 @@ package body Ada.Containers.Ordered_Sets is
 
    overriding function First (Object : Set_Iterator) return Cursor is
    begin
-      return First (Object.Container.all);
+      return Object.First;
    end First;
 
    overriding function Next (Object : Set_Iterator; Position : Cursor)
-      return Cursor
-   is
-      pragma Unreferenced (Object);
+      return Cursor is
    begin
-      return Next (Position);
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
    end Next;
 
    overriding function Last (Object : Set_Iterator) return Cursor is
    begin
-      return Last (Object.Container.all);
+      return Object.Last;
    end Last;
 
    overriding function Previous (Object : Set_Iterator; Position : Cursor)
-      return Cursor
-   is
-      pragma Unreferenced (Object);
+      return Cursor is
    begin
-      return Previous (Position);
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
    end Previous;
 
    package body Generic_Keys is

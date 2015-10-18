@@ -477,7 +477,9 @@ package body Ada.Containers.Limited_Ordered_Maps is
    function Iterate (Container : Map'Class)
       return Map_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return Map_Iterator'(Container => Container'Unrestricted_Access);
+      return Map_Iterator'(
+         First => First (Container),
+         Last => Last (Container));
    end Iterate;
 
    function Key (Position : Cursor) return Key_Reference_Type is
@@ -658,28 +660,32 @@ package body Ada.Containers.Limited_Ordered_Maps is
 
    overriding function First (Object : Map_Iterator) return Cursor is
    begin
-      return First (Object.Container.all);
+      return Object.First;
    end First;
 
    overriding function Next (Object : Map_Iterator; Position : Cursor)
-      return Cursor
-   is
-      pragma Unreferenced (Object);
+      return Cursor is
    begin
-      return Next (Position);
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
    end Next;
 
    overriding function Last (Object : Map_Iterator) return Cursor is
    begin
-      return Last (Object.Container.all);
+      return Object.Last;
    end Last;
 
    overriding function Previous (Object : Map_Iterator; Position : Cursor)
-      return Cursor
-   is
-      pragma Unreferenced (Object);
+      return Cursor is
    begin
-      return Previous (Position);
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
    end Previous;
 
    package body Equivalents is

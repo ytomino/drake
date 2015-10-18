@@ -229,7 +229,7 @@ private
    type Map_Iterator is
       new Map_Iterator_Interfaces.Forward_Iterator with
    record
-      Container : not null Map_Access;
+      First : Cursor;
    end record;
 
    overriding function First (Object : Map_Iterator) return Cursor;

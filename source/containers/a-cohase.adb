@@ -522,7 +522,7 @@ package body Ada.Containers.Hashed_Sets is
    function Iterate (Container : Set'Class)
       return Set_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Set_Iterator'(Container => Container'Unrestricted_Access);
+      return Set_Iterator'(First => First (Container));
    end Iterate;
 
    function Length (Container : Set) return Count_Type is
@@ -734,7 +734,7 @@ package body Ada.Containers.Hashed_Sets is
 
    overriding function First (Object : Set_Iterator) return Cursor is
    begin
-      return First (Object.Container.all);
+      return Object.First;
    end First;
 
    overriding function Next (Object : Set_Iterator; Position : Cursor)

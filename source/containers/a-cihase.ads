@@ -278,7 +278,7 @@ private
    type Set_Iterator is
       new Set_Iterator_Interfaces.Forward_Iterator with
    record
-      Container : not null Set_Access;
+      First : Cursor;
    end record;
 
    overriding function First (Object : Set_Iterator) return Cursor;
