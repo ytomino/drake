@@ -73,6 +73,9 @@ begin
 		R := "123";
 		Ada.Strings.Fixed.Replace_Slice (R, 2, 3, "4", Justify => Ada.Strings.Right);
 		pragma Assert (R = " 14");
+		Ada.Strings.Fixed.Replace_Slice (R, 3, 2, "23", Drop => Ada.Strings.Left);
+		pragma Assert (R = "234");
+		pragma Assert (Ada.Strings.Fixed.Overwrite (T, 13, "DEF") = "012DEF6789");
 		pragma Assert (Ada.Strings.Fixed.Delete (T, 13, 16) = "012789");
 		pragma Assert (Ada.Strings.Fixed.Delete (T, 30, 0) = T);
 		pragma Assert (Ada.Strings.Fixed.Delete (T, T'First, T'Last) = "");
@@ -164,6 +167,7 @@ begin
 		pragma Assert (U = "cONSTANT");
 		pragma Assert (Ada.Strings.Unbounded.Delete (U, 3, 6) = "cONT");
 		pragma Assert (Ada.Strings.Unbounded."*" (2, U) = "cONSTANTcONSTANT");
+		pragma Assert (Ada.Strings.Unbounded.Replace_Slice (U, 4, 5, "st") = "cONstANT");
 		U := +"123";
 		Ada.Strings.Unbounded.Head (U, 5);
 		pragma Assert (U = "123  ");

@@ -416,25 +416,17 @@ package body Ada.Strings.Generic_Functions is
       Low : Positive;
       High : Natural;
       By : String_Type)
-      return String_Type
-   is
-      By_Length : constant Natural := By'Length;
-      Previous_Length : constant Integer := Low - Source'First;
-      Actual_High : Natural;
+      return String_Type is
    begin
-      if High < Low then
-         Actual_High := Low - 1;
-      else
-         Actual_High := High;
-      end if;
       return Result : String_Type (
          1 ..
-         Source'Length - (Actual_High - Low + 1) + By_Length)
+         Source'Length + By'Length - Integer'Max (High - Low + 1, 0))
       do
-         Result (1 .. Previous_Length) := Source (Source'First .. Low - 1);
-         Result (Previous_Length + 1 .. Previous_Length + By_Length) := By;
-         Result (Previous_Length + By_Length + 1 .. Result'Last) :=
-            Source (Actual_High + 1 .. Source'Last);
+         declare
+            Dummy_Last : Natural;
+         begin
+            Replace_Slice (Source, Low, High, By, Result, Dummy_Last);
+         end;
       end return;
    end Replace_Slice;
 
@@ -452,13 +444,64 @@ package body Ada.Strings.Generic_Functions is
             (Low in Source'First .. Source'Last + 1
                and then High in Source'First - 1 .. Source'Last)
             or else raise Index_Error); -- CXA4005, CXA4016
+      Offset : constant Integer := By'Length - Integer'Max (High - Low + 1, 0);
    begin
-      Move (
-         Replace_Slice (Source, Low, High, By),
-         Source,
-         Drop,
-         Justify,
-         Pad);
+      if Offset > 0 then -- growing
+         declare
+            S : String_Type (1 .. Source'Length + Offset);
+            S_Last : Natural;
+         begin
+            Replace_Slice (Source, Low, High, By, S, S_Last); -- copying
+            Move (S (1 .. S_Last), Source, Drop, Justify, Pad);
+         end;
+      else
+         declare
+            Last : Natural := Source'Last;
+         begin
+            Replace_Slice (Source, Last, Low, High, By);
+            Move (Source (Source'First .. Last), Source, Drop, Justify, Pad);
+         end;
+      end if;
+   end Replace_Slice;
+
+   procedure Replace_Slice (
+      Source : String_Type;
+      Low : Positive;
+      High : Natural;
+      By : String_Type;
+      Target : out String_Type;
+      Target_Last : out Natural)
+   is
+      By_Length : constant Natural := By'Length;
+      Following : constant Positive := Integer'Max (High + 1, Low);
+      Target_Low : constant Positive := Low - Source'First + Target'First;
+      Target_Following : constant Positive := Target_Low + By_Length;
+   begin
+      Target_Last :=
+         Target'First + Source'Length - (Following - Low) + By_Length - 1;
+      Target (Target'First .. Target_Low - 1) :=
+         Source (Source'First .. Low - 1);
+      Target (Target_Low .. Target_Following - 1) := By;
+      Target (Target_Following .. Target_Last) :=
+         Source (Following .. Source'Last);
+   end Replace_Slice;
+
+   procedure Replace_Slice (
+      Source : in out String_Type;
+      Last : in out Natural;
+      Low : Positive;
+      High : Natural;
+      By : String_Type)
+   is
+      Following : constant Positive := Integer'Max (High + 1, Low);
+      New_Following : constant Positive := Low + By'Length;
+      New_Last : constant Natural := New_Following + Source'Last - Following;
+   begin
+      if New_Following /= Following then
+         Source (New_Following .. New_Last) := Source (Following .. Last);
+      end if;
+      Source (Low .. New_Following - 1) := By;
+      Last := New_Last;
    end Replace_Slice;
 
    function Insert (
@@ -470,15 +513,13 @@ package body Ada.Strings.Generic_Functions is
       pragma Check (Pre,
          Check => Before in Source'First .. Source'Last + 1
             or else raise Index_Error); -- CXA4005, CXA4016
-      New_Item_Length : constant Natural := New_Item'Length;
-      Previous_Length : constant Integer := Before - Source'First;
    begin
-      return Result : String_Type (1 .. Source'Length + New_Item_Length) do
-         Result (1 .. Previous_Length) := Source (Source'First .. Before - 1);
-         Result (Previous_Length + 1 .. Previous_Length + New_Item_Length) :=
-            New_Item;
-         Result (Previous_Length + New_Item_Length + 1 .. Result'Last) :=
-            Source (Before .. Source'Last);
+      return Result : String_Type (1 .. Source'Length + New_Item'Length) do
+         declare
+            Dummy_Last : Natural;
+         begin
+            Insert (Source, Before, New_Item, Result, Dummy_Last);
+         end;
       end return;
    end Insert;
 
@@ -488,34 +529,64 @@ package body Ada.Strings.Generic_Functions is
       New_Item : String_Type;
       Drop : Truncation := Error) is
    begin
-      Move (
-         Insert (Source, Before, New_Item),
-         Source,
-         Drop,
-         Justify => Left,
-         Pad => Space);
+      if New_Item'Length > 0 then -- growing
+         declare
+            S : String_Type (1 .. Source'Length + New_Item'Length);
+            S_Last : Natural;
+         begin
+            Insert (Source, Before, New_Item, S, S_Last); -- copying
+            Move (S (1 .. S_Last), Source, Drop);
+         end;
+      end if;
+   end Insert;
+
+   procedure Insert (
+      Source : String_Type;
+      Before : Positive;
+      New_Item : String_Type;
+      Target : out String_Type;
+      Target_Last : out Natural)
+   is
+      New_Item_Length : constant Natural := New_Item'Length;
+      Target_Before : constant Positive :=
+         Before - Source'First + Target'First;
+      Target_Following : constant Positive := Target_Before + New_Item_Length;
+   begin
+      Target_Last := Target'First + Source'Length + New_Item_Length - 1;
+      Target (Target'First .. Target_Before - 1) :=
+         Source (Source'First .. Before - 1);
+      Target (Target_Before .. Target_Following - 1) := New_Item;
+      Target (Target_Following .. Target_Last) :=
+         Source (Before .. Source'Last);
+   end Insert;
+
+   procedure Insert (
+      Source : in out String_Type;
+      Last : in out Natural;
+      Before : Positive;
+      New_Item : String_Type)
+   is
+      New_Following : constant Positive := Before + New_Item'Length;
+      New_Last : constant Natural := New_Following + Source'Last - Before;
+   begin
+      if New_Following /= Before then
+         Source (New_Following .. New_Last) := Source (Before .. Last);
+      end if;
+      Source (Before .. New_Following - 1) := New_Item;
+      Last := New_Last;
    end Insert;
 
    function Overwrite (
       Source : String_Type;
       Position : Positive;
       New_Item : String_Type)
-      return String_Type
-   is
-      New_Item_Length : constant Natural := New_Item'Length;
-      Previous_Length : constant Integer := Position - Source'First;
+      return String_Type is
    begin
-      return Result : String_Type (
-         1 ..
-         Natural'Max (Source'Length, Previous_Length + New_Item_Length))
-      do
-         Result (1 .. Previous_Length) :=
-            Source (Source'First .. Position - 1);
-         Result (Previous_Length + 1 .. Previous_Length + New_Item_Length) :=
-            New_Item;
-         Result (Previous_Length + New_Item_Length + 1 .. Result'Last) :=
-            Source (Position + New_Item_Length .. Source'Last);
-      end return;
+      return Replace_Slice (
+         Source,
+         Position,
+         Integer'Min (Position + New_Item'Length - 1, Source'Last),
+         New_Item);
    end Overwrite;
 
    procedure Overwrite (
@@ -524,12 +595,12 @@ package body Ada.Strings.Generic_Functions is
       New_Item : String_Type;
       Drop : Truncation := Right) is
    begin
-      Move (
-         Overwrite (Source, Position, New_Item),
+      Replace_Slice (
          Source,
-         Drop,
-         Justify => Left,
-         Pad => Space);
+         Position,
+         Integer'Min (Position + New_Item'Length - 1, Source'Last),
+         New_Item,
+         Drop);
    end Overwrite;
 
    function Delete (
