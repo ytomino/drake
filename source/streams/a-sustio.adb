@@ -88,23 +88,16 @@ package body Ada.Streams.Unbounded_Storage_IO is
    function Allocate_Data (
       Max_Length : System.Reference_Counting.Length_Type;
       Capacity : System.Reference_Counting.Length_Type)
-      return not null Data_Access is
+      return not null Data_Access
+   is
+      M : constant System.Address :=
+         System.Standard_Allocators.Allocate (Allocation_Size (Capacity));
+      Result : constant not null Data_Access := Data_Cast.To_Pointer (M);
    begin
-      if Capacity = 0 then
-         return Empty_Data'Unrestricted_Access;
-      else
-         declare
-            M : constant System.Address :=
-               System.Standard_Allocators.Allocate (
-                  Allocation_Size (Capacity));
-            Result : constant not null Data_Access := Data_Cast.To_Pointer (M);
-         begin
-            Result.Reference_Count := 1;
-            Result.Max_Length := Max_Length;
-            Adjust_Allocated (Result);
-            return Result;
-         end;
-      end if;
+      Result.Reference_Count := 1;
+      Result.Max_Length := Max_Length;
+      Adjust_Allocated (Result);
+      return Result;
    end Allocate_Data;
 
    procedure Free_Data (Data : in out System.Reference_Counting.Data_Access);
