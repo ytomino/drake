@@ -1023,33 +1023,32 @@ package body Ada.Strings.Generic_Functions is
          end if;
       end Index_Backward;
 
-      function Translate (
+      procedure Translate (
          Source : String_Type;
          Params : System.Address;
          Mapping : not null access function (
             From : Wide_Wide_Character;
             Params : System.Address)
-            return Wide_Wide_Character)
-         return String_Type;
-      function Translate (
+            return Wide_Wide_Character;
+         Target : out String_Type;
+         Target_Last : out Natural);
+      procedure Translate (
          Source : String_Type;
          Params : System.Address;
          Mapping : not null access function (
             From : Wide_Wide_Character;
             Params : System.Address)
-            return Wide_Wide_Character)
-         return String_Type
+            return Wide_Wide_Character;
+         Target : out String_Type;
+         Target_Last : out Natural)
       is
-         Result : String_Type (
-            1 ..
-            Source'Length * Expanding);
-         Result_Last : Natural := Result'First - 1;
          Source_Last : Natural := Source'First - 1;
       begin
+         Target_Last := Target'First - 1;
          while Source_Last < Source'Last loop
             declare
-               Result_Index : constant Positive := Result_Last + 1;
                Source_Index : constant Positive := Source_Last + 1;
+               Target_Index : constant Positive := Target_Last + 1;
                Code : Wide_Wide_Character;
                Error : Boolean;
             begin
@@ -1061,8 +1060,8 @@ package body Ada.Strings.Generic_Functions is
                   Error);
                if Error then
                   --  keep illegal sequence
-                  Result_Last := Result_Index + (Source_Last - Source_Index);
-                  Result (Result_Index .. Result_Last) :=
+                  Target_Last := Target_Index + (Source_Last - Source_Index);
+                  Target (Target_Index .. Target_Last) :=
                      Source (Source_Index .. Source_Last);
                else
                   --  map it
@@ -1070,12 +1069,11 @@ package body Ada.Strings.Generic_Functions is
                   --  put it
                   Put (
                      Code,
-                     Result (Result_Index .. Result'Last),
-                     Result_Last);
+                     Target (Target_Index .. Target'Last),
+                     Target_Last);
                end if;
             end;
          end loop;
-         return Result (1 .. Result_Last);
       end Translate;
 
       function By_Mapping (From : Wide_Wide_Character; Params : System.Address)
@@ -1104,6 +1102,8 @@ package body Ada.Strings.Generic_Functions is
       begin
          return Cast (Params) (From);
       end By_Func;
+
+      --  implementation
 
       function Index (
          Source : String_Type;
@@ -1486,7 +1486,7 @@ package body Ada.Strings.Generic_Functions is
       is
          Mapped_Source : String_Type (Source'Range);
       begin
-         Translate_Element (Source, Mapped_Source, Mapping);
+         Translate_Element (Source, Mapping, Mapped_Source);
          return Count (Mapped_Source, Pattern);
       end Count_Element;
 
@@ -1600,12 +1600,13 @@ package body Ada.Strings.Generic_Functions is
       function Translate (
          Source : String_Type;
          Mapping : Character_Mapping)
-         return String_Type is
+         return String_Type
+      is
+         Result : String_Type (1 .. Source'Length * Expanding);
+         Result_Last : Natural;
       begin
-         return Translate (
-            Source,
-            Mapping'Address,
-            By_Mapping'Access);
+         Translate (Source, Mapping, Result, Result_Last);
+         return Result (1 .. Result_Last);
       end Translate;
 
       procedure Translate (
@@ -1613,14 +1614,27 @@ package body Ada.Strings.Generic_Functions is
          Mapping : Character_Mapping;
          Drop : Truncation := Error;
          Justify : Alignment := Left;
-         Pad : Character_Type := Space) is
+         Pad : Character_Type := Space)
+      is
+         S : String_Type (1 .. Source'Length * Expanding);
+         S_Last : Natural;
       begin
-         Move (
-            Translate (Source, Mapping),
+         Translate (Source, Mapping, S, S_Last);
+         Move (S (1 .. S_Last), Source, Drop, Justify, Pad);
+      end Translate;
+
+      procedure Translate (
+         Source : String_Type;
+         Mapping : Character_Mapping;
+         Target : out String_Type;
+         Target_Last : out Natural) is
+      begin
+         Translate (
             Source,
-            Drop,
-            Justify,
-            Pad);
+            Mapping'Address,
+            By_Mapping'Access,
+            Target,
+            Target_Last);
       end Translate;
 
       function Translate (
@@ -1629,14 +1643,11 @@ package body Ada.Strings.Generic_Functions is
             return Wide_Wide_Character)
          return String_Type
       is
-         type T is access function (From : Wide_Wide_Character)
-            return Wide_Wide_Character;
-         function Cast is new Unchecked_Conversion (T, System.Address);
+         Result : String_Type (1 .. Source'Length * Expanding);
+         Result_Last : Natural;
       begin
-         return Translate (
-            Source,
-            Cast (Mapping),
-            By_Func'Access);
+         Translate (Source, Mapping, Result, Result_Last);
+         return Result (1 .. Result_Last);
       end Translate;
 
       procedure Translate (
@@ -1645,14 +1656,32 @@ package body Ada.Strings.Generic_Functions is
             return Wide_Wide_Character;
          Drop : Truncation := Error;
          Justify : Alignment := Left;
-         Pad : Character_Type := Space) is
+         Pad : Character_Type := Space)
+      is
+         S : String_Type (1 .. Source'Length * Expanding);
+         S_Last : Natural;
       begin
-         Move (
-            Translate (Source, Mapping),
+         Translate (Source, Mapping, S, S_Last);
+         Move (S (1 .. S_Last), Source, Drop, Justify, Pad);
+      end Translate;
+
+      procedure Translate (
+         Source : String_Type;
+         Mapping : not null access function (From : Wide_Wide_Character)
+            return Wide_Wide_Character;
+         Target : out String_Type;
+         Target_Last : out Natural)
+      is
+         type T is access function (From : Wide_Wide_Character)
+            return Wide_Wide_Character;
+         function Cast is new Unchecked_Conversion (T, System.Address);
+      begin
+         Translate (
             Source,
-            Drop,
-            Justify,
-            Pad);
+            Cast (Mapping),
+            By_Func'Access,
+            Target,
+            Target_Last);
       end Translate;
 
       function Translate_Element (
@@ -1662,7 +1691,7 @@ package body Ada.Strings.Generic_Functions is
          return String_Type is
       begin
          return Result : String_Type (1 .. Source'Length) do
-            Translate_Element (Source, Result, Mapping);
+            Translate_Element (Source, Mapping, Result);
          end return;
       end Translate_Element;
 
@@ -1671,14 +1700,14 @@ package body Ada.Strings.Generic_Functions is
          Mapping : not null access function (From : Character_Type)
             return Character_Type) is
       begin
-         Translate_Element (Source, Source, Mapping);
+         Translate_Element (Source, Mapping, Source);
       end Translate_Element;
 
       procedure Translate_Element (
          Source : String_Type;
-         Target : out String_Type;
          Mapping : not null access function (From : Character_Type)
-            return Character_Type)
+            return Character_Type;
+         Target : out String_Type)
       is
          Length : constant Natural := Source'Length;
       begin

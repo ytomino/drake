@@ -1086,24 +1086,52 @@ package body Ada.Strings.Generic_Bounded is
                Drop : Truncation := Error)
                return Bounded.Bounded_String is
             begin
-               return Bounded.To_Bounded_String (
-                  Fixed_Maps.Translate (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
+               return Result : Bounded.Bounded_String do
+                  declare
+                     Expanded_Length : constant Natural :=
+                        Source.Length * Fixed_Maps.Expanding;
+                  begin
+                     if Expanded_Length > Bounded.Max then
+                        declare
+                           S : String_Type (1 .. Expanded_Length);
+                           S_Last : Natural;
+                        begin
+                           Fixed_Maps.Translate (
+                              Source.Element (1 .. Source.Length),
+                              Mapping,
+                              Target => S,
+                              Target_Last => S_Last);
+                           Bounded.Set_Bounded_String (
+                              Result,
+                              S (1 .. S_Last),
+                              Drop);
+                        end;
+                     else
+                        Fixed_Maps.Translate (
+                           Source.Element (1 .. Source.Length),
+                           Mapping,
+                           Target => Result.Element,
+                           Target_Last => Result.Length);
+                     end if;
+                  end;
+               end return;
             end Translate;
 
             procedure Translate (
                Source : in out Bounded.Bounded_String;
                Mapping : Fixed_Maps.Character_Mapping;
-               Drop : Truncation := Error) is
+               Drop : Truncation := Error)
+            is
+               --  Translate can not update destructively.
+               S : String_Type (1 .. Source.Length * Fixed_Maps.Expanding);
+               S_Last : Natural;
             begin
-               Bounded.Set_Bounded_String (
-                  Source,
-                  Fixed_Maps.Translate (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
+               Fixed_Maps.Translate (
+                  Source.Element (1 .. Source.Length),
+                  Mapping,
+                  Target => S,
+                  Target_Last => S_Last);
+               Bounded.Set_Bounded_String (Source, S (1 .. S_Last), Drop);
             end Translate;
 
             function Translate (
@@ -1113,25 +1141,53 @@ package body Ada.Strings.Generic_Bounded is
                Drop : Truncation := Error)
                return Bounded.Bounded_String is
             begin
-               return Bounded.To_Bounded_String (
-                  Fixed_Maps.Translate (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
+               return Result : Bounded.Bounded_String do
+                  declare
+                     Expanded_Length : constant Natural :=
+                        Source.Length * Fixed_Maps.Expanding;
+                  begin
+                     if Expanded_Length > Bounded.Max then
+                        declare
+                           S : String_Type (1 .. Expanded_Length);
+                           S_Last : Natural;
+                        begin
+                           Fixed_Maps.Translate (
+                              Source.Element (1 .. Source.Length),
+                              Mapping,
+                              Target => S,
+                              Target_Last => S_Last);
+                           Bounded.Set_Bounded_String (
+                              Result,
+                              S (1 .. S_Last),
+                              Drop);
+                        end;
+                     else
+                        Fixed_Maps.Translate (
+                           Source.Element (1 .. Source.Length),
+                           Mapping,
+                           Target => Result.Element,
+                           Target_Last => Result.Length);
+                     end if;
+                  end;
+               end return;
             end Translate;
 
             procedure Translate (
                Source : in out Bounded.Bounded_String;
                Mapping : not null access function (From : Wide_Wide_Character)
                   return Wide_Wide_Character;
-               Drop : Truncation := Error) is
+               Drop : Truncation := Error)
+            is
+               --  Translate can not update destructively.
+               S : String_Type (1 .. Source.Length * Fixed_Maps.Expanding);
+               S_Last : Natural;
             begin
-               Bounded.Set_Bounded_String (
-                  Source,
-                  Fixed_Maps.Translate (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
+               Fixed_Maps.Translate (
+                  Source.Element (1 .. Source.Length),
+                  Mapping,
+                  Target => S,
+                  Target_Last => S_Last);
+               Bounded.Set_Bounded_String (Source, S (1 .. S_Last), Drop);
             end Translate;
 
             function Translate_Element (
@@ -1147,8 +1203,8 @@ package body Ada.Strings.Generic_Bounded is
                do
                   Fixed_Maps.Translate_Element (
                      Source.Element (1 .. Source.Length),
-                     Result.Element (1 .. Source.Length),
-                     Mapping);
+                     Mapping,
+                     Target => Result.Element (1 .. Source.Length));
                end return;
             end Translate_Element;
 

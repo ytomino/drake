@@ -482,6 +482,14 @@ package Ada.Strings.Generic_Functions is
          Justify : Alignment := Left; -- additional
          Pad : Character_Type := Space); -- additional
 
+      --  extended
+      --  For Bounded_String and Unbounded_String.
+      procedure Translate (
+         Source : String_Type;
+         Mapping : Character_Mapping;
+         Target : out String_Type;
+         Target_Last : out Natural);
+
       function Translate (
          Source : String_Type;
          Mapping : not null access function (From : Wide_Wide_Character)
@@ -495,6 +503,15 @@ package Ada.Strings.Generic_Functions is
          Drop : Truncation := Error; -- additional
          Justify : Alignment := Left; -- additional
          Pad : Character_Type := Space); -- additional
+
+      --  extended
+      --  For Bounded_String and Unbounded_String.
+      procedure Translate (
+         Source : String_Type;
+         Mapping : not null access function (From : Wide_Wide_Character)
+            return Wide_Wide_Character;
+         Target : out String_Type;
+         Target_Last : out Natural);
 
       function Translate_Element (
          Source : String_Type;
@@ -511,9 +528,9 @@ package Ada.Strings.Generic_Functions is
       --  For Bounded_String and Unbounded_String.
       procedure Translate_Element (
          Source : String_Type;
-         Target : out String_Type;
          Mapping : not null access function (From : Character_Type)
-            return Character_Type);
+            return Character_Type;
+         Target : out String_Type);
 
       --  String selector subprograms
 

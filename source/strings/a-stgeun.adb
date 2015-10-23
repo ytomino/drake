@@ -1249,23 +1249,27 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            return To_Unbounded_String (
-               Fixed_Maps.Translate (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            return Result : Unbounded_String do
+               Set_Length (Result, Source.Length * Fixed_Maps.Expanding);
+               declare
+                  New_Length : Natural;
+               begin
+                  Fixed_Maps.Translate (
+                     Source.Data.Items (1 .. Source.Length),
+                     Mapping,
+                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target_Last => New_Length);
+                  Set_Length (Result, New_Length);
+               end;
+            end return;
          end Translate;
 
          procedure Translate (
             Source : in out Unbounded_String;
-            Mapping : Fixed_Maps.Character_Mapping)
-         is
-            pragma Suppress (Access_Check);
+            Mapping : Fixed_Maps.Character_Mapping) is
          begin
-            Set_Unbounded_String (
-               Source,
-               Fixed_Maps.Translate (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            --  Translate can not update destructively.
+            Assign (Source, Translate (Source, Mapping));
          end Translate;
 
          function Translate (
@@ -1276,24 +1280,28 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            return To_Unbounded_String (
-               Fixed_Maps.Translate (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            return Result : Unbounded_String do
+               Set_Length (Result, Source.Length * Fixed_Maps.Expanding);
+               declare
+                  New_Length : Natural;
+               begin
+                  Fixed_Maps.Translate (
+                     Source.Data.Items (1 .. Source.Length),
+                     Mapping,
+                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target_Last => New_Length);
+                  Set_Length (Result, New_Length);
+               end;
+            end return;
          end Translate;
 
          procedure Translate (
             Source : in out Unbounded_String;
             Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-         is
-            pragma Suppress (Access_Check);
+               return Wide_Wide_Character) is
          begin
-            Set_Unbounded_String (
-               Source,
-               Fixed_Maps.Translate (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            --  Translate can not update destructively.
+            Assign (Source, Translate (Source, Mapping));
          end Translate;
 
          function Translate_Element (
@@ -1308,8 +1316,8 @@ package body Ada.Strings.Generic_Unbounded is
                Set_Length (Result, Source.Length);
                Fixed_Maps.Translate_Element (
                   Source.Data.Items (1 .. Source.Length),
-                  Result.Data.Items (1 .. Source.Length),
-                  Mapping);
+                  Mapping,
+                  Target => Result.Data.Items (1 .. Source.Length));
             end return;
          end Translate_Element;
 
