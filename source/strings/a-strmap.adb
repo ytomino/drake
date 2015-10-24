@@ -1,8 +1,11 @@
 pragma Check_Policy (Validate => Disable);
-with Ada.Characters.Conversions;
 --  with Ada.Strings.Naked_Maps.Debug;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with System.UTF_Conversions.From_8_To_32;
+with System.UTF_Conversions.From_16_To_32;
+with System.UTF_Conversions.From_32_To_8;
+with System.UTF_Conversions.From_32_To_16;
 package body Ada.Strings.Maps is
    use type Naked_Maps.Character_Ranges;
 
@@ -233,15 +236,19 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Sequence (Set : Character_Set)
       return Character_Sequence is
    begin
-      return Characters.Conversions.To_String (
-         Wide_Wide_String'(Overloaded_To_Sequence (Set)));
+      --  Should it raise Constraint_Error for illegal sequence ?
+      return System.UTF_Conversions.From_32_To_8.Convert (
+         Overloaded_To_Sequence (Set),
+         Substitute => "");
    end Overloaded_To_Sequence;
 
    function Overloaded_To_Sequence (Set : Character_Set)
       return Wide_Character_Sequence is
    begin
-      return Characters.Conversions.To_Wide_String (
-         Wide_Wide_String'(Overloaded_To_Sequence (Set)));
+      --  Should it raise Constraint_Error for illegal sequence or unmappable ?
+      return System.UTF_Conversions.From_32_To_16.Convert (
+         Overloaded_To_Sequence (Set),
+         Substitute => "");
    end Overloaded_To_Sequence;
 
    function Overloaded_To_Sequence (Set : Character_Set)
@@ -390,19 +397,35 @@ package body Ada.Strings.Maps is
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Character_Sequence)
-      return Character_Set is
-   begin
+      return Character_Set
+   is
       --  Should it raise Constraint_Error for illegal sequence ?
-      return Overloaded_To_Set (
-         Characters.Conversions.To_Wide_Wide_String (Sequence));
+      U_Sequence : Wide_Wide_Character_Sequence (
+        1 .. System.UTF_Conversions.Expanding_From_8_To_32 * Sequence'Length);
+      U_Sequence_Last : Natural;
+   begin
+      System.UTF_Conversions.From_8_To_32.Convert (
+         Sequence,
+         U_Sequence,
+         U_Sequence_Last,
+         Substitute => "");
+      return Overloaded_To_Set (U_Sequence (1 .. U_Sequence_Last));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Wide_Character_Sequence)
-      return Character_Set is
-   begin
+      return Character_Set
+   is
       --  Should it raise Constraint_Error for illegal sequence ?
-      return Overloaded_To_Set (
-         Characters.Conversions.To_Wide_Wide_String (Sequence));
+      U_Sequence : Wide_Wide_Character_Sequence (
+        1 .. System.UTF_Conversions.Expanding_From_16_To_32 * Sequence'Length);
+      U_Sequence_Last : Natural;
+   begin
+      System.UTF_Conversions.From_16_To_32.Convert (
+         Sequence,
+         U_Sequence,
+         U_Sequence_Last,
+         Substitute => "");
+      return Overloaded_To_Set (U_Sequence (1 .. U_Sequence_Last));
    end Overloaded_To_Set;
 
    function Overloaded_To_Set (Sequence : Wide_Wide_Character_Sequence)
@@ -779,15 +802,19 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Domain (Map : Character_Mapping)
       return Character_Sequence is
    begin
-      return Characters.Conversions.To_String (
-         Wide_Wide_String'(Overloaded_To_Domain (Map)));
+      --  Should it raise Constraint_Error for illegal sequence ?
+      return System.UTF_Conversions.From_32_To_8.Convert (
+         Overloaded_To_Domain (Map),
+         Substitute => "");
    end Overloaded_To_Domain;
 
    function Overloaded_To_Domain (Map : Character_Mapping)
       return Wide_Character_Sequence is
    begin
-      return Characters.Conversions.To_Wide_String (
-         Wide_Wide_String'(Overloaded_To_Domain (Map)));
+      --  Should it raise Constraint_Error for illegal sequence or unmappable ?
+      return System.UTF_Conversions.From_32_To_16.Convert (
+         Overloaded_To_Domain (Map),
+         Substitute => "");
    end Overloaded_To_Domain;
 
    function Overloaded_To_Domain (Map : Character_Mapping)
@@ -799,21 +826,43 @@ package body Ada.Strings.Maps is
    end Overloaded_To_Domain;
 
    function Overloaded_To_Mapping (From, To : Character_Sequence)
-      return Character_Mapping is
-   begin
+      return Character_Mapping
+   is
       --  Should it raise Constraint_Error for illegal sequence ?
+      U_From : Wide_Wide_Character_Sequence (
+        1 .. System.UTF_Conversions.Expanding_From_8_To_32 * From'Length);
+      U_From_Last : Natural;
+      U_To : Wide_Wide_Character_Sequence (
+        1 .. System.UTF_Conversions.Expanding_From_8_To_32 * To'Length);
+      U_To_Last : Natural;
+   begin
+      System.UTF_Conversions.From_8_To_32.Convert (From, U_From, U_From_Last,
+         Substitute => "");
+      System.UTF_Conversions.From_8_To_32.Convert (To, U_To, U_To_Last,
+         Substitute => "");
       return Overloaded_To_Mapping (
-         Characters.Conversions.To_Wide_Wide_String (From),
-         Characters.Conversions.To_Wide_Wide_String (To));
+         From => U_From (1 .. U_From_Last),
+         To => U_To (1 .. U_To_Last));
    end Overloaded_To_Mapping;
 
    function Overloaded_To_Mapping (From, To : Wide_Character_Sequence)
-      return Character_Mapping is
-   begin
+      return Character_Mapping
+   is
       --  Should it raise Constraint_Error for illegal sequence ?
+      U_From : Wide_Wide_Character_Sequence (
+        1 .. System.UTF_Conversions.Expanding_From_16_To_32 * From'Length);
+      U_From_Last : Natural;
+      U_To : Wide_Wide_Character_Sequence (
+        1 .. System.UTF_Conversions.Expanding_From_16_To_32 * To'Length);
+      U_To_Last : Natural;
+   begin
+      System.UTF_Conversions.From_16_To_32.Convert (From, U_From, U_From_Last,
+         Substitute => "");
+      System.UTF_Conversions.From_16_To_32.Convert (To, U_To, U_To_Last,
+         Substitute => "");
       return Overloaded_To_Mapping (
-         Characters.Conversions.To_Wide_Wide_String (From),
-         Characters.Conversions.To_Wide_Wide_String (To));
+         From => U_From (1 .. U_From_Last),
+         To => U_To (1 .. U_To_Last));
    end Overloaded_To_Mapping;
 
    function Overloaded_To_Mapping (From, To : Wide_Wide_Character_Sequence)
@@ -834,15 +883,19 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Range (Map : Character_Mapping)
       return Character_Sequence is
    begin
-      return Characters.Conversions.To_String (
-         Wide_Wide_String'(Overloaded_To_Range (Map)));
+      --  Should it raise Constraint_Error for illegal sequence ?
+      return System.UTF_Conversions.From_32_To_8.Convert (
+         Overloaded_To_Range (Map),
+         Substitute => "");
    end Overloaded_To_Range;
 
    function Overloaded_To_Range (Map : Character_Mapping)
       return Wide_Character_Sequence is
    begin
-      return Characters.Conversions.To_Wide_String (
-         Wide_Wide_String'(Overloaded_To_Range (Map)));
+      --  Should it raise Constraint_Error for illegal sequence or unmappable ?
+      return System.UTF_Conversions.From_32_To_16.Convert (
+         Overloaded_To_Range (Map),
+         Substitute => "");
    end Overloaded_To_Range;
 
    function Overloaded_To_Range (Map : Character_Mapping)
