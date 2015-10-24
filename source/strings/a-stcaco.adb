@@ -2,6 +2,13 @@ pragma Check_Policy (Validate => Ignore);
 with System.Once;
 package body Ada.Strings.Canonical_Composites is
 
+   type Long_Boolean is new Boolean;
+   for Long_Boolean'Size use Long_Integer'Size;
+
+   function expect (exp, c : Long_Boolean) return Long_Boolean
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_expect";
+
    procedure unreachable
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_unreachable";
@@ -170,7 +177,7 @@ package body Ada.Strings.Canonical_Composites is
             return I;
          end if;
       end loop;
-      pragma Check (Validate, False);
+      pragma Check (Validate, Standard.False);
       unreachable;
    end Decomposed_Length;
 
@@ -180,20 +187,22 @@ package body Ada.Strings.Canonical_Composites is
    begin
       loop
          declare
-            M : constant Positive := (L + H) / 2;
+            type Unsigned is mod 2 ** Integer'Size;
+            M : constant Positive := Integer (Unsigned (L + H) / 2);
+            M_Item : D_Map_Element
+               renames D_Map (M);
          begin
-            if Item < D_Map (M).From then
+            if Item < M_Item.From then
                H := M - 1;
-            elsif Item > D_Map (M).From then
+            elsif expect (Long_Boolean (Item > M_Item.From), True) then
                L := M + 1;
             else
                return M;
             end if;
          end;
-         if L > H then
-            return 0;
-         end if;
+         exit when L > H;
       end loop;
+      return 0;
    end D_Find;
 
    procedure Initialize_D is
@@ -286,20 +295,22 @@ package body Ada.Strings.Canonical_Composites is
    begin
       loop
          declare
-            M : constant Positive := (L + H) / 2;
+            type Unsigned is mod 2 ** Integer'Size;
+            M : constant Positive := Integer (Unsigned (L + H) / 2);
+            M_Item : C_Map_Element
+               renames C_Map (M);
          begin
-            if Item < C_Map (M).From then
+            if Item < M_Item.From then
                H := M - 1;
-            elsif Item > C_Map (M).From then
+            elsif expect (Long_Boolean (Item > M_Item.From), True) then
                L := M + 1;
             else
                return M;
             end if;
          end;
-         if L > H then
-            return 0;
-         end if;
+         exit when L > H;
       end loop;
+      return 0;
    end C_Find;
 
    procedure Initialize_C is

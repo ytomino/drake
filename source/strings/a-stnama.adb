@@ -3,6 +3,13 @@ with Ada.Exception_Identification.From_Here;
 package body Ada.Strings.Naked_Maps is
    use Exception_Identification.From_Here;
 
+   type Long_Boolean is new Boolean;
+   for Long_Boolean'Size use Long_Integer'Size;
+
+   function expect (exp, c : Long_Boolean) return Long_Boolean
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_expect";
+
    procedure Sort (From, To : in out Character_Sequence; Last : out Natural);
    procedure Sort (From, To : in out Character_Sequence; Last : out Natural) is
       pragma Assert (From'First = To'First);
@@ -91,23 +98,24 @@ package body Ada.Strings.Naked_Maps is
       First : Positive := A'First;
       Last : Natural := A'Last;
    begin
-      loop
-         if First > Last then
-            return First; -- the insertion position when not found
-         else
-            declare
-               Middle : constant Integer := (First + Last) / 2;
-            begin
-               if H < A (Middle).Low then
-                  Last := Middle - 1;
-               elsif L > A (Middle).High then
-                  First := Middle + 1;
-               else
-                  return Middle;
-               end if;
-            end;
-         end if;
+      while First <= Last loop
+         declare
+            type Unsigned is mod 2 ** Integer'Size;
+            Middle : constant Positive :=
+               Integer (Unsigned (First + Last) / 2);
+            Middle_Item : Character_Range
+               renames A (Middle);
+         begin
+            if H < Middle_Item.Low then
+               Last := Middle - 1;
+            elsif expect (Long_Boolean (L > Middle_Item.High), True) then
+               First := Middle + 1;
+            else
+               return Middle;
+            end if;
+         end;
       end loop;
+      return First; -- the insertion position when not found
    end Search;
 
    --  implementation of sets
@@ -324,11 +332,13 @@ package body Ada.Strings.Naked_Maps is
    begin
       while L <= H loop
          declare
-            M : constant Positive := (L + H) / 2;
+            type Unsigned is mod 2 ** Integer'Size;
+            M : constant Positive := Integer (Unsigned (L + H) / 2);
+            M_Key : constant Wide_Wide_Character := Map.From (M);
          begin
-            if Element < Map.From (M) then
+            if Element < M_Key then
                H := M - 1;
-            elsif Element > Map.From (M) then
+            elsif expect (Long_Boolean (Element > M_Key), True) then
                L := M + 1;
             else
                return Map.To (M);

@@ -3,6 +3,48 @@ with Ada.UCD.Combining_Class;
 package body Ada.Strings.Composites is
    use type UCD.UCS_4;
 
+   type Long_Boolean is new Boolean;
+   for Long_Boolean'Size use Long_Integer'Size;
+
+   function expect (exp, c : Long_Boolean) return Long_Boolean
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_expect";
+
+   function Search (
+      Table : UCD.Combining_Class.Table_16_Type;
+      Code : UCD.UCS_4)
+      return UCD.Combining_Class_Type;
+   function Search (
+      Table : UCD.Combining_Class.Table_16_Type;
+      Code : UCD.UCS_4)
+      return UCD.Combining_Class_Type
+   is
+      L : Positive := Table'First;
+      H : Natural := Table'Last;
+   begin
+      loop
+         declare
+            type Unsigned is mod 2 ** Integer'Size;
+            M : constant Positive := Integer (Unsigned (L + H) / 2);
+            M_Item : UCD.Combining_Class.Table_16_Item_Type
+               renames Table (M);
+         begin
+            if Code < M_Item.Start then
+               H := M - 1;
+            elsif expect (
+               Long_Boolean (Code >= M_Item.Start + UCD.UCS_4 (M_Item.Length)),
+               True)
+            then
+               L := M + 1;
+            else
+               return M_Item.Combining_Class;
+            end if;
+         end;
+         exit when L > H;
+      end loop;
+      return 0;
+   end Search;
+
    generic
       type Character_Type is (<>);
       type String_Type is array (Positive range <>) of Character_Type;
@@ -233,59 +275,13 @@ package body Ada.Strings.Composites is
    --  implementation
 
    function Combining_Class (Item : Wide_Wide_Character) return Class is
-      Code : UCD.UCS_4 := Wide_Wide_Character'Pos (Item);
+      Code : constant UCD.UCS_4 := Wide_Wide_Character'Pos (Item);
    begin
       if Code > 16#ffff# then
-         declare
-            L : Positive := UCD.Combining_Class.Table_1XXXX'First;
-            H : Natural := UCD.Combining_Class.Table_1XXXX'Last;
-         begin
-            Code := Code - 16#10000#;
-            loop
-               declare
-                  M : constant Positive := (L + H) / 2;
-               begin
-                  if Code < UCD.Combining_Class.Table_1XXXX (M).Start then
-                     H := M - 1;
-                  elsif Code >= UCD.Combining_Class.Table_1XXXX (M).Start
-                     + UCD.UCS_4 (UCD.Combining_Class.Table_1XXXX (M).Length)
-                  then
-                     L := M + 1;
-                  else
-                     return Class (
-                        UCD.Combining_Class.Table_1XXXX (M).Combining_Class);
-                  end if;
-               end;
-               if L > H then
-                  return 0;
-               end if;
-            end loop;
-         end;
+         return Class (
+            Search (UCD.Combining_Class.Table_1XXXX, Code - 16#10000#));
       else
-         declare
-            L : Positive := UCD.Combining_Class.Table_XXXX'First;
-            H : Natural := UCD.Combining_Class.Table_XXXX'Last;
-         begin
-            loop
-               declare
-                  M : constant Positive := (L + H) / 2;
-               begin
-                  if Code < UCD.Combining_Class.Table_XXXX (M).Start then
-                     H := M - 1;
-                  elsif Code >= UCD.Combining_Class.Table_XXXX (M).Start
-                     + UCD.UCS_4 (UCD.Combining_Class.Table_XXXX (M).Length)
-                  then
-                     L := M + 1;
-                  else
-                     return Class (
-                        UCD.Combining_Class.Table_XXXX (M).Combining_Class);
-                  end if;
-               end;
-               if L > H then
-                  return 0;
-               end if;
-            end loop;
-         end;
+         return Class (Search (UCD.Combining_Class.Table_XXXX, Code));
       end if;
    end Combining_Class;
 
