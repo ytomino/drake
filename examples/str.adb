@@ -61,6 +61,12 @@ begin
 		pragma Assert (R = "++ ");
 		Ada.Strings.Fixed.Move ("+++", R, Justify => Ada.Strings.Center);
 		pragma Assert (R = "+++");
+		Ada.Strings.Fixed.Move ("+   ", R, Justify => Ada.Strings.Center);
+		pragma Assert (R = " + ");
+		Ada.Strings.Fixed.Move ("1234 ", R, Justify => Ada.Strings.Left, Drop => Ada.Strings.Left);
+		pragma Assert (R = "234");
+		Ada.Strings.Fixed.Move (" 1234", R, Justify => Ada.Strings.Right, Drop => Ada.Strings.Right);
+		pragma Assert (R = "123");
 		R := "_/_";
 		Ada.Strings.Fixed.Trim (R, Side => Ada.Strings.Both, Blank => '_', Justify => Ada.Strings.Center);
 		pragma Assert (R = " / ");

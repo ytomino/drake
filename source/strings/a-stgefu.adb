@@ -47,40 +47,43 @@ package body Ada.Strings.Generic_Functions is
       Justify : Alignment := Left;
       Pad : Character_Type := Space)
    is
-      Storage_Unit : constant := Standard'Storage_Unit;
-      function To_Integer (Value : System.Address)
-         return System.Storage_Elements.Integer_Address
-         renames System.Storage_Elements.To_Integer;
-      Source_First : Positive;
-      Source_Last : Natural;
+      Target_Offset : constant Integer := Target'Length - 1;
+      Triming_Limit : Integer;
+      Source_First : Positive := Source'First;
+      Source_Last : Natural := Source'Last;
       Target_First : Positive;
       Target_Last : Natural;
    begin
-      if Source'Length - 1 > Target'Length - 1 or else Justify = Center then
-         declare
-            --  Left (0) => Right (1)
-            --  Right (1) => Left (0)
-            --  Center (2) => Both (2)
-            type Unsigned_2 is mod 4;
-            Side : constant Trim_End := Trim_End'Val (
-               Unsigned_2'(Alignment'Pos (Justify))
-               xor (Alignment'Pos (Justify) / 2 xor 1));
-         begin
-            Trim (Source, Side, Pad, Source_First, Source_Last);
-         end;
-         if Source_Last - Source_First > Target'Length - 1 then
+      if Justify = Center then
+         Triming_Limit := -1;
+      else
+         Triming_Limit := Target_Offset;
+      end if;
+      if Source_Last - Source_First > Triming_Limit then
+         if Justify /= Right then -- Left or Center
+            while Source_Last - Source_First > Triming_Limit
+               and then Source (Source_Last) = Pad
+            loop
+               Source_Last := Source_Last - 1;
+            end loop;
+         end if;
+         if Justify /= Left then -- Center or Right
+            while Source_Last - Source_First > Triming_Limit
+               and then Source (Source_First) = Pad
+            loop
+               Source_First := Source_First + 1;
+            end loop;
+         end if;
+         if Source_Last - Source_First > Target_Offset then
             case Drop is
                when Left =>
-                  Source_First := Source_Last - (Target'Length - 1);
+                  Source_First := Source_Last - Target_Offset;
                when Right =>
-                  Source_Last := Source_First + (Target'Length - 1);
+                  Source_Last := Source_First + Target_Offset;
                when Error =>
                   raise Length_Error;
             end case;
          end if;
-      else
-         Source_First := Source'First;
-         Source_Last := Source'Last;
       end if;
       case Justify is
          when Left =>
@@ -107,71 +110,11 @@ package body Ada.Strings.Generic_Functions is
       end;
       --  left padding
       if Target_First /= Target'First then
-         declare
-            pragma Suppress (Index_Check); -- for (null string)'Address
-            Pad_First : Positive := Target'First;
-            Pad_Last : Natural := Target_First - 1;
-         begin
-            if String_Type'Component_Size rem Storage_Unit = 0
-               and then Source'Address
-                  mod (String_Type'Component_Size / Storage_Unit) = 0
-               and then Target'Address
-                  mod (String_Type'Component_Size / Storage_Unit) = 0
-            then -- aligned
-               if To_Integer (Target (Pad_First)'Address) in
-                  To_Integer (Source (Source'First)'Address) ..
-                  To_Integer (Source (Source_First - 1)'Address)
-               then
-                  Pad_First := Target'First
-                     + Integer (
-                        (Source (Source_First)'Address - Target'Address)
-                        / (String_Type'Component_Size / Storage_Unit));
-               elsif To_Integer (Target (Pad_Last)'Address) in
-                  To_Integer (Source (Source'First)'Address) ..
-                  To_Integer (Source (Source_First - 1)'Address)
-               then
-                  Pad_Last := Target'First
-                     + Integer (
-                        (Source (Source'First - 1)'Address - Target'Address)
-                        / (String_Type'Component_Size / Storage_Unit));
-               end if;
-            end if;
-            Fill (Target (Pad_First .. Pad_Last), Pad);
-         end;
+         Fill (Target (Target'First .. Target_First - 1), Pad);
       end if;
       --  right padding
       if Target_Last /= Target'Last then
-         declare
-            pragma Suppress (Index_Check);
-            Pad_First : Positive := Target_Last + 1;
-            Pad_Last : Natural := Target'Last;
-         begin
-            if String_Type'Component_Size rem Storage_Unit = 0
-               and then Source'Address
-                  mod (String_Type'Component_Size / Storage_Unit) = 0
-               and then Target'Address
-                  mod (String_Type'Component_Size / Storage_Unit) = 0
-            then
-               if To_Integer (Target (Pad_First)'Address) in
-                  To_Integer (Source (Source_Last + 1)'Address) ..
-                  To_Integer (Source (Source'Last)'Address)
-               then
-                  Pad_First := Target'First
-                     + Integer (
-                        (Source (Source'Last + 1)'Address - Target'Address)
-                        / (String_Type'Component_Size / Storage_Unit));
-               elsif To_Integer (Target (Pad_Last)'Address) in
-                  To_Integer (Source (Source_Last + 1)'Address) ..
-                  To_Integer (Source (Source'Last)'Address)
-               then
-                  Pad_Last := Target'First
-                     + Integer (
-                        (Source (Source_Last)'Address - Target'Address)
-                        / (String_Type'Component_Size / Storage_Unit));
-               end if;
-            end if;
-            Fill (Target (Pad_First .. Pad_Last), Pad);
-         end;
+         Fill (Target (Target_Last + 1 .. Target'Last), Pad);
       end if;
    end Move;
 
