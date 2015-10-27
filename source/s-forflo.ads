@@ -3,7 +3,6 @@ pragma License (Unrestricted);
 package System.Formatting.Float is
    pragma Pure;
 
-   subtype Longest_Float is Long_Long_Float;
    subtype Longest_Unsigned_Float is
       Long_Long_Float range 0.0 .. Long_Long_Float'Last;
 
@@ -26,14 +25,16 @@ package System.Formatting.Float is
       Width : Positive := Standard.Float'Digits - 1);
 
    --  Width of integer part.
-   function Fore_Width (Value : Longest_Float; Base : Number_Base := 10)
+   function Fore_Width (Value : Long_Long_Float; Base : Number_Base := 10)
       return Positive;
-   function Fore_Width (First, Last : Longest_Float; Base : Number_Base := 10)
+   function Fore_Width (
+      First, Last : Long_Long_Float;
+      Base : Number_Base := 10)
       return Positive;
    pragma Inline (Fore_Width);
 
    procedure Image (
-      Value : Longest_Float;
+      Value : Long_Long_Float;
       Item : out String; -- Item'Length >= Long_Long_Float'Width + 4 for "16##"
       Last : out Natural;
       Minus_Sign : Character := '-';
