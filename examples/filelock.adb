@@ -4,6 +4,7 @@ procedure filelock is
 	use Ada.Streams.Stream_IO;
 	Name : String := Ada.Directories.Temporary.Create_Temporary_File;
 begin
+	Ada.Debug.Put (Name);
 	-- raising
 	declare
 		Step : Integer := 0;
