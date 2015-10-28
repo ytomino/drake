@@ -147,7 +147,7 @@ package body Ada.Formatting is
       Last : Natural;
    begin
       System.Formatting.Float.Image (
-         System.Formatting.Float.Longest_Float (Item),
+         Long_Long_Float (Item),
          Result,
          Last,
          Minus_Sign => Signs (-1),
@@ -185,7 +185,7 @@ package body Ada.Formatting is
    begin
       if Exponent then
          System.Formatting.Float.Image (
-            System.Formatting.Float.Longest_Float (Item),
+            Long_Long_Float (Item),
             Result,
             Last,
             Minus_Sign => Signs (-1),
@@ -236,7 +236,7 @@ package body Ada.Formatting is
    begin
       if Exponent then
          System.Formatting.Float.Image (
-            System.Formatting.Float.Longest_Float (Item),
+            Long_Long_Float (Item),
             Result,
             Last,
             Minus_Sign => Signs (-1),

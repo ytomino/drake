@@ -3,6 +3,7 @@ with Ada.Calendar;
 with Ada.Command_Line;
 with Ada.Credentials;
 with Ada.Directories.Information;
+with Ada.Directories.Temporary;
 with Ada.Directories.Volumes;
 with Ada.Text_IO;
 procedure directories is
@@ -58,10 +59,11 @@ begin
 	-- modification time
 	Ada.Debug.Put ("**** modification time");
 	declare
-		Name : String := Ada.Command_Line.Command_Name & "-test";
+		Name : constant String := Ada.Directories.Temporary.Create_Temporary_File;
 		File : Ada.Text_IO.File_Type;
 		The_Time : constant Ada.Calendar.Time := Ada.Calendar.Time_Of (1999, 7, 1);
 	begin
+		Ada.Debug.Put (Name);
 		Ada.Text_IO.Create (File, Ada.Text_IO.Out_File, Name);
 		Ada.Text_IO.Close (File);
 		if abs (Ada.Directories.Modification_Time (Name) - Ada.Calendar.Clock) > 1.0 then
@@ -90,9 +92,10 @@ begin
 	Ada.Debug.Put ("**** symbolic link");
 	declare
 		Source_Name : String := Ada.Directories.Full_Name ("directories.adb");
-		Linked_Name : String := Ada.Command_Line.Command_Name & "-link";
+		Linked_Name : String := Ada.Directories.Temporary.Create_Temporary_File;
 		File : Ada.Text_IO.File_Type;
 	begin
+		Ada.Debug.Put (Linked_Name);
 		Ada.Directories.Symbolic_Link (Source_Name, Linked_Name);
 		Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Linked_Name);
 		if Ada.Text_IO.Get_Line (File) /= "-- *** this line is for test ***" then

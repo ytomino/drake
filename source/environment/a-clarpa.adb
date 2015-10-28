@@ -94,13 +94,13 @@ package body Ada.Command_Line.Argument_Parsing is
       First.State := Initial_State;
       First.Has_Value := False;
       if not Initial_State.Not_Option
-         and then Argument'Length >= 1
+         and then Argument'First <= Argument'Last
          and then Argument (Argument'First) = '-'
       then
-         if Argument'Length >= 2
+         if Argument'First + 1 <= Argument'Last
             and then Argument (Argument'First + 1) = '-'
          then
-            if Argument'Length = 2 then
+            if Argument'First + 1 = Argument'Last then
                First.State.Not_Option := True;
                First.Kind := Double_Hyphen;
                First.Index := 0; -- No_Element

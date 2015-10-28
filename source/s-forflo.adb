@@ -131,7 +131,7 @@ package body System.Formatting.Float is
       pragma Assert (X = 0.0);
    end Aft_Image;
 
-   function Fore_Width (Value : Longest_Float; Base : Number_Base := 10)
+   function Fore_Width (Value : Long_Long_Float; Base : Number_Base := 10)
       return Positive
    is
       V : Long_Long_Float := Value;
@@ -144,7 +144,9 @@ package body System.Formatting.Float is
       return Result;
    end Fore_Width;
 
-   function Fore_Width (First, Last : Longest_Float; Base : Number_Base := 10)
+   function Fore_Width (
+      First, Last : Long_Long_Float;
+      Base : Number_Base := 10)
       return Positive
    is
       Actual_First : Long_Long_Float := First;
@@ -160,13 +162,13 @@ package body System.Formatting.Float is
       elsif Actual_First >= 0.0 then
          Max_Abs := Actual_Last;
       else -- Actual_First < 0 and then Actual_Last > 0
-         Max_Abs := Longest_Float'Max (-Actual_First, Actual_Last);
+         Max_Abs := Long_Long_Float'Max (-Actual_First, Actual_Last);
       end if;
       return Fore_Width (Max_Abs, Base => Base);
    end Fore_Width;
 
    procedure Image (
-      Value : Longest_Float;
+      Value : Long_Long_Float;
       Item : out String;
       Last : out Natural;
       Minus_Sign : Character := '-';

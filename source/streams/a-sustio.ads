@@ -64,8 +64,8 @@ private
       Storage => System.Null_Address);
 
    type Stream_Type is limited new Seekable_Stream_Type with record
-      Data : aliased not null Data_Access;
-      Last : Stream_Element_Offset;
+      Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;
+      Last : Stream_Element_Offset := 0;
       Index : Stream_Element_Offset := 1;
    end record;
 

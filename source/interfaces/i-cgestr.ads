@@ -36,18 +36,23 @@ package Interfaces.C.Generic_Strings is
 
    type chars_ptr_array is array (size_t range <>) of aliased chars_ptr;
 
-   --  extended
+   --  extended from here
+
    subtype const_chars_ptr is Pointers.Constant_Pointer;
    function "=" (Left, Right : const_chars_ptr) return Boolean
       renames Pointers."=";
+
    type const_chars_ptr_array is
       array (size_t range <>) of aliased const_chars_ptr;
+
    type const_chars_ptr_With_Length is record
       ptr : const_chars_ptr;
       Length : size_t;
    end record;
    type const_chars_ptr_With_Length_array is
       array (size_t range <>) of aliased const_chars_ptr_With_Length;
+
+   --  to here
 
    Null_Ptr : constant chars_ptr := null;
 
@@ -71,10 +76,12 @@ package Interfaces.C.Generic_Strings is
 --  function New_Char_Array (Chars : char_array) return chars_ptr;
    function New_Char_Array (Chars : Element_Array) return not null chars_ptr;
 
+   --  modified
 --  function New_String (Str : String) return chars_ptr;
    function New_String (
       Str : String_Type;
-      Substitute : Element_Array := (0 => Element'Val (Character'Pos ('?'))))
+      Substitute : Element_Array :=
+         (0 => Element'Val (Character'Pos ('?')))) -- additional
       return not null chars_ptr;
 
    --  extended
@@ -98,13 +105,15 @@ package Interfaces.C.Generic_Strings is
       renames C.Dereference_Error;
 
 --  function Value (Item : chars_ptr) return char_array;
-   function Value (Item : access constant Element) -- CXB3010 requires null
+   function Value (
+      Item : access constant Element) -- CXB3010 requires null
       return Element_Array;
 
+   --  modified
 --  function Value (Item : chars_ptr; Length : size_t)
 --    return char_array;
    function Value (
-      Item : access constant Element;
+      Item : access constant Element; -- CXB3010 requires null
       Length : size_t;
       Append_Nul : Boolean := False) -- additional
       return Element_Array;
@@ -114,23 +123,26 @@ package Interfaces.C.Generic_Strings is
    --  This behavior is danger similar to strncpy.
    --  Insert the parameter Append_Nul => True.
 
+   --  modified
 --  function Value (Item : chars_ptr) return String;
    function Value (
       Item : access constant Element; -- CXB3011 requires null
       Substitute : String_Type :=
-         (1 => Character_Type'Val (Character'Pos ('?'))))
+         (1 => Character_Type'Val (Character'Pos ('?')))) -- additional
       return String_Type;
 
+   --  modified
 --  function Value (Item : chars_ptr; Length : size_t) return String;
    function Value (
-      Item : access constant Element;
+      Item : access constant Element; -- CXB3011 requires null
       Length : size_t;
       Substitute : String_Type :=
-         (1 => Character_Type'Val (Character'Pos ('?'))))
+         (1 => Character_Type'Val (Character'Pos ('?')))) -- additional
       return String_Type;
 
 --  function Strlen (Item : chars_ptr) return size_t;
-   function Strlen (Item : access constant Element) -- CXB3011 requires null
+   function Strlen (
+      Item : access constant Element) -- CXB3011 requires null
       return size_t;
 
    --  extended
@@ -150,6 +162,7 @@ package Interfaces.C.Generic_Strings is
       Chars : Element_Array;
       Check : Boolean := True);
 
+   --  modified
 --  procedure Update (
 --    Item : chars_ptr;
 --    Offset : size_t;
@@ -161,17 +174,10 @@ package Interfaces.C.Generic_Strings is
       Str : String_Type;
       Check : Boolean := True;
       Substitute : Element_Array :=
-         (0 => Element'Val (Character'Pos ('?'))));
+         (0 => Element'Val (Character'Pos ('?')))); -- additional
 
    --  Note: Update (.., Str) is danger in drake,
    --    because Str may be encoded and its length could be changed.
-
-   --  extended
-   procedure Update (
-      Item : not null access Element;
-      Offset : size_t;
-      Source : not null access constant Element;
-      Length : size_t);
 
    Update_Error : exception
       renames C.Update_Error;

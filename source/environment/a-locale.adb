@@ -5,6 +5,13 @@ with System.Native_Locales;
 with System.Once;
 package body Ada.Locales is
 
+   type Long_Boolean is new Boolean;
+   for Long_Boolean'Size use Long_Integer'Size;
+
+   function expect (exp, c : Long_Boolean) return Long_Boolean
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_expect";
+
    type Alpha_2_NP is new String (1 .. 2); -- no predicate
    type Alpha_3_NP is new String (1 .. 3);
 
@@ -648,7 +655,7 @@ package body Ada.Locales is
             begin
                if Compared > 0 then
                   Last := Middle - 1;
-               elsif Compared < 0 then
+               elsif expect (Long_Boolean (Compared < 0), True) then
                   First := Middle + 1;
                else
                   return (
@@ -738,7 +745,7 @@ package body Ada.Locales is
             begin
                if Compared > 0 then
                   Last := Middle - 1;
-               elsif Compared < 0 then
+               elsif expect (Long_Boolean (Compared < 0), True) then
                   First := Middle + 1;
                else
                   return (

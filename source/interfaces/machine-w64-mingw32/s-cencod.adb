@@ -45,9 +45,8 @@ package body System.C_Encoding is
             function To_Pointer (Value : Address)
                return C.winnt.LPSTR
                with Import, Convention => Intrinsic;
-            W_Item : C.winnt.WCHAR_array (
-               0 ..
-               C.size_t (Natural'(Item'Length) - 1));
+            Item_Length : constant Natural := Item'Length;
+            W_Item : C.winnt.WCHAR_array (0 .. C.size_t (Item_Length - 1));
             W_Length : C.signed_int;
             Sub : aliased constant C.char_array :=
                Substitute & C.char'Val (0);
@@ -57,7 +56,7 @@ package body System.C_Encoding is
                C.winnls.CP_UTF8,
                0,
                To_Pointer (Item'Address),
-               Item'Length,
+               C.signed_int (Item_Length),
                W_Item (0)'Access,
                W_Item'Length);
             if W_Length = 0 then
@@ -95,9 +94,8 @@ package body System.C_Encoding is
             function To_Pointer (Value : Address)
                return C.winnt.LPSTR
                with Import, Convention => Intrinsic;
-            W_Item : C.winnt.WCHAR_array (
-               0 ..
-               C.size_t (Natural'(Item'Length) - 1));
+            Item_Length : constant C.size_t := Item'Length;
+            W_Item : C.winnt.WCHAR_array (0 .. Item_Length - 1);
             W_Length : C.signed_int;
             Target_Length : C.signed_int;
          begin
@@ -105,7 +103,7 @@ package body System.C_Encoding is
                C.winnls.CP_ACP,
                0,
                To_Pointer (Item'Address),
-               Item'Length,
+               C.signed_int (Item_Length),
                W_Item (0)'Access,
                W_Item'Length);
             if W_Length = 0 then

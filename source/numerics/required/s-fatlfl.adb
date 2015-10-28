@@ -28,6 +28,12 @@ package body System.Fat_Lflt is
          return Result;
       end Exponent;
 
+      function Fraction (X : Long_Float) return Long_Float is
+         Dummy : aliased Integer;
+      begin
+         return frexp (X, Dummy'Access);
+      end Fraction;
+
       function Leading_Part (X : Long_Float; Radix_Digits : Integer)
          return Long_Float
       is
@@ -35,12 +41,6 @@ package body System.Fat_Lflt is
       begin
          return Scaling (Truncation (Scaling (X, S)), -S);
       end Leading_Part;
-
-      function Fraction (X : Long_Float) return Long_Float is
-         Dummy : aliased Integer;
-      begin
-         return frexp (X, Dummy'Access);
-      end Fraction;
 
       function Machine (X : Long_Float) return Long_Float is
       begin

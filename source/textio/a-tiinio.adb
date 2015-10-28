@@ -47,7 +47,7 @@ package body Ada.Text_IO.Integer_IO is
    begin
       if Num'Size > Integer'Size then
          declare
-            Base_Item : System.Formatting.Literals.Longest_Integer;
+            Base_Item : Long_Long_Integer;
             Error : Boolean;
          begin
             System.Formatting.Literals.Get_Literal (

@@ -40,6 +40,33 @@ package body Ada.Exceptions is
 
    --  implementation
 
+   function Wide_Exception_Name (Id : Exception_Id) return Wide_String is
+   begin
+      return System.UTF_Conversions.From_8_To_16.Convert (Exception_Name (Id));
+   end Wide_Exception_Name;
+
+   function Wide_Wide_Exception_Name (Id : Exception_Id)
+      return Wide_Wide_String is
+   begin
+      return System.UTF_Conversions.From_8_To_32.Convert (Exception_Name (Id));
+   end Wide_Wide_Exception_Name;
+
+   function Exception_Message (X : Exception_Occurrence) return String is
+   begin
+      if X.Id = null then
+         raise Constraint_Error;
+      else
+         return X.Msg (1 .. X.Msg_Length);
+      end if;
+   end Exception_Message;
+
+   procedure Reraise_Occurrence (X : Exception_Occurrence) is
+   begin
+      if X.Id /= null then
+         Reraise_Occurrence_Always (X);
+      end if;
+   end Reraise_Occurrence;
+
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id
    is
@@ -50,6 +77,23 @@ package body Ada.Exceptions is
    begin
       return Exception_Id (To_Exception_Id (X.Id));
    end Exception_Identity;
+
+   function Exception_Name (X : Exception_Occurrence) return String is
+   begin
+      return Exception_Name (Exception_Identity (X));
+   end Exception_Name;
+
+   function Wide_Exception_Name (X : Exception_Occurrence)
+      return Wide_String is
+   begin
+      return Wide_Exception_Name (Exception_Identity (X));
+   end Wide_Exception_Name;
+
+   function Wide_Wide_Exception_Name (X : Exception_Occurrence)
+      return Wide_Wide_String is
+   begin
+      return Wide_Wide_Exception_Name (Exception_Identity (X));
+   end Wide_Wide_Exception_Name;
 
    function Exception_Information (X : Exception_Occurrence) return String is
    begin
@@ -70,27 +114,6 @@ package body Ada.Exceptions is
       end if;
    end Exception_Information;
 
-   function Exception_Message (X : Exception_Occurrence) return String is
-   begin
-      if X.Id = null then
-         raise Constraint_Error;
-      else
-         return X.Msg (1 .. X.Msg_Length);
-      end if;
-   end Exception_Message;
-
-   function Exception_Name (X : Exception_Occurrence) return String is
-   begin
-      return Exception_Name (Exception_Identity (X));
-   end Exception_Name;
-
-   procedure Reraise_Occurrence (X : Exception_Occurrence) is
-   begin
-      if X.Id /= null then
-         Reraise_Occurrence_Always (X);
-      end if;
-   end Reraise_Occurrence;
-
    function Save_Occurrence (
       Source : Exception_Occurrence)
       return Exception_Occurrence_Access
@@ -101,28 +124,5 @@ package body Ada.Exceptions is
       Save_Occurrence (Result.all, Source);
       return Result;
    end Save_Occurrence;
-
-   function Wide_Exception_Name (Id : Exception_Id) return Wide_String is
-   begin
-      return System.UTF_Conversions.From_8_To_16.Convert (Exception_Name (Id));
-   end Wide_Exception_Name;
-
-   function Wide_Exception_Name (X : Exception_Occurrence)
-      return Wide_String is
-   begin
-      return Wide_Exception_Name (Exception_Identity (X));
-   end Wide_Exception_Name;
-
-   function Wide_Wide_Exception_Name (Id : Exception_Id)
-      return Wide_Wide_String is
-   begin
-      return System.UTF_Conversions.From_8_To_32.Convert (Exception_Name (Id));
-   end Wide_Wide_Exception_Name;
-
-   function Wide_Wide_Exception_Name (X : Exception_Occurrence)
-      return Wide_Wide_String is
-   begin
-      return Wide_Wide_Exception_Name (Exception_Identity (X));
-   end Wide_Wide_Exception_Name;
 
 end Ada.Exceptions;

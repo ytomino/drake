@@ -281,6 +281,17 @@ package body System.Tasking.Protected_Objects.Operations is
       end case;
    end Protected_Entry_Call;
 
+   procedure Timed_Protected_Entry_Call (
+      Object : not null access Entries.Protection_Entries'Class;
+      E : Protected_Entry_Index;
+      Uninterpreted_Data : Address;
+      Timeout : Duration;
+      Mode : Integer;
+      Entry_Call_Successful : out Boolean) is
+   begin
+      raise Program_Error;
+   end Timed_Protected_Entry_Call;
+
    function Enqueued (Block : Communication_Block) return Boolean is
    begin
       raise Program_Error;
@@ -298,17 +309,6 @@ package body System.Tasking.Protected_Objects.Operations is
    begin
       raise Program_Error;
    end Cancel_Protected_Entry_Call;
-
-   procedure Timed_Protected_Entry_Call (
-      Object : not null access Entries.Protection_Entries'Class;
-      E : Protected_Entry_Index;
-      Uninterpreted_Data : Address;
-      Timeout : Duration;
-      Mode : Integer;
-      Entry_Call_Successful : out Boolean) is
-   begin
-      raise Program_Error;
-   end Timed_Protected_Entry_Call;
 
    procedure Requeue_Protected_Entry (
       Object : not null access Entries.Protection_Entries'Class;

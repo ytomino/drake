@@ -92,23 +92,16 @@ package body Ada.Strings.Generic_Unbounded is
    function Allocate_Data (
       Max_Length : System.Reference_Counting.Length_Type;
       Capacity : System.Reference_Counting.Length_Type)
-      return not null Data_Access is
+      return not null Data_Access
+   is
+      M : constant System.Address :=
+         System.Standard_Allocators.Allocate (Allocation_Size (Capacity));
+      Result : constant not null Data_Access := Data_Cast.To_Pointer (M);
    begin
-      if Capacity = 0 then
-         return Empty_Data'Unrestricted_Access;
-      else
-         declare
-            M : constant System.Address :=
-               System.Standard_Allocators.Allocate (
-                  Allocation_Size (Capacity));
-            Result : constant not null Data_Access := Data_Cast.To_Pointer (M);
-         begin
-            Result.Reference_Count := 1;
-            Result.Max_Length := Max_Length;
-            Adjust_Allocated (Result);
-            return Result;
-         end;
-      end if;
+      Result.Reference_Count := 1;
+      Result.Max_Length := Max_Length;
+      Adjust_Allocated (Result);
+      return Result;
    end Allocate_Data;
 
    procedure Free_Data (Data : in out System.Reference_Counting.Data_Access);
@@ -672,12 +665,36 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         return To_Unbounded_String (
-            Fixed_Functions.Replace_Slice (
-               Source.Data.Items (1 .. Source.Length),
-               Low,
-               High,
-               By));
+         return Result : Unbounded_String do
+            if By'Length > 0 or else Low <= High then
+               if By'Length = 0 and then High = Source.Length then
+                  Assign (Result, Source); -- shared
+                  Set_Length (Result, Low - 1);
+               elsif Low > Source.Length then
+                  Assign (Result, Source); -- shared
+                  Append (Result, By);
+               else
+                  Set_Length (
+                     Result,
+                     Source.Length
+                        + By'Length
+                        - Integer'Max (High - Low + 1, 0));
+                  declare
+                     Dummy_Last : Natural;
+                  begin
+                     Fixed_Functions.Replace_Slice (
+                        Source.Data.Items (1 .. Source.Length),
+                        Low,
+                        High,
+                        By,
+                        Target => Result.Data.Items (1 .. Result.Length),
+                        Target_Last => Dummy_Last);
+                  end;
+               end if;
+            else
+               Assign (Result, Source); -- shared
+            end if;
+         end return;
       end Replace_Slice;
 
       procedure Replace_Slice (
@@ -686,15 +703,41 @@ package body Ada.Strings.Generic_Unbounded is
          High : Natural;
          By : String_Type)
       is
+         pragma Check (Pre,
+            Check =>
+               (Low in 1 .. Source.Length + 1
+                  and then High in 0 .. Source.Length)
+               or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
-         Set_Unbounded_String (
-            Source,
-            Fixed_Functions.Replace_Slice (
-               Source.Data.Items (1 .. Source.Length),
-               Low,
-               High,
-               By));
+         if By'Length > 0 or else Low <= High then
+            if By'Length = 0 and then High = Source.Length then
+               Set_Length (Source, Low - 1);
+            elsif Low > Source.Length then
+               Append (Source, By);
+            else
+               declare
+                  Old_Length : constant Natural := Source.Length;
+                  New_Length : Natural;
+               begin
+                  Set_Length (
+                     Source,
+                     Old_Length
+                        + Integer'Max (
+                           By'Length - Integer'Max (High - Low + 1, 0),
+                           0));
+                  Unique (Source); -- for overwriting
+                  New_Length := Old_Length;
+                  Fixed_Functions.Replace_Slice (
+                     Source.Data.Items (1 .. Old_Length),
+                     New_Length,
+                     Low,
+                     High,
+                     By);
+                  Set_Length (Source, New_Length);
+               end;
+            end if;
+         end if;
       end Replace_Slice;
 
       function Insert (
@@ -705,11 +748,28 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         return To_Unbounded_String (
-            Fixed_Functions.Insert (
-               Source.Data.Items (1 .. Source.Length),
-               Before,
-               New_Item));
+         return Result : Unbounded_String do
+            if New_Item'Length > 0 then
+               if Before > Source.Length then
+                  Assign (Result, Source); -- shared
+                  Append (Result, New_Item);
+               else
+                  Set_Length (Result, Source.Length + New_Item'Length);
+                  declare
+                     Dummy_Last : Natural;
+                  begin
+                     Fixed_Functions.Insert (
+                        Source.Data.Items (1 .. Source.Length),
+                        Before,
+                        New_Item,
+                        Target => Result.Data.Items (1 .. Result.Length),
+                        Target_Last => Dummy_Last);
+                  end;
+               end if;
+            else
+               Assign (Result, Source); -- shared
+            end if;
+         end return;
       end Insert;
 
       procedure Insert (
@@ -717,29 +777,44 @@ package body Ada.Strings.Generic_Unbounded is
          Before : Positive;
          New_Item : String_Type)
       is
+         pragma Check (Pre,
+            Check => Before in 1 .. Source.Length + 1
+               or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
-         Set_Unbounded_String (
-            Source,
-            Fixed_Functions.Insert (
-               Source.Data.Items (1 .. Source.Length),
-               Before,
-               New_Item));
+         if New_Item'Length > 0 then
+            if Before > Source.Length then
+               Append (Source, New_Item);
+            else
+               declare
+                  Old_Length : constant Natural := Source.Length;
+                  New_Length : Natural;
+               begin
+                  Set_Length (Source, Old_Length + New_Item'Length);
+                  Unique (Source); -- for overwriting
+                  New_Length := Old_Length;
+                  Fixed_Functions.Replace_Slice (
+                     Source.Data.Items (1 .. Old_Length),
+                     New_Length,
+                     Before,
+                     New_Item);
+                  Set_Length (Source, New_Length);
+               end;
+            end if;
+         end if;
       end Insert;
 
       function Overwrite (
          Source : Unbounded_String;
          Position : Positive;
          New_Item : String_Type)
-         return Unbounded_String
-      is
-         pragma Suppress (Access_Check);
+         return Unbounded_String is
       begin
-         return To_Unbounded_String (
-            Fixed_Functions.Overwrite (
-               Source.Data.Items (1 .. Source.Length),
-               Position,
-               New_Item));
+         return Replace_Slice (
+            Source,
+            Position,
+            Integer'Min (Position + New_Item'Length - 1, Source.Length),
+            New_Item);
       end Overwrite;
 
       procedure Overwrite (
@@ -747,14 +822,15 @@ package body Ada.Strings.Generic_Unbounded is
          Position : Positive;
          New_Item : String_Type)
       is
-         pragma Suppress (Access_Check);
+         pragma Check (Pre,
+            Check => Position in 1 .. Source.Length + 1
+               or else raise Index_Error); -- CXA4032
       begin
-         Set_Unbounded_String (
+         Replace_Slice (
             Source,
-            Fixed_Functions.Overwrite (
-               Source.Data.Items (1 .. Source.Length),
-               Position,
-               New_Item));
+            Position,
+            Integer'Min (Position + New_Item'Length - 1, Source.Length),
+            New_Item);
       end Overwrite;
 
       function Delete (
@@ -864,11 +940,24 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         return To_Unbounded_String (
-            Fixed_Functions.Head (
-               Source.Data.Items (1 .. Source.Length),
-               Count,
-               Pad));
+         return Result : Unbounded_String do
+            if Count > Source.Length then
+               Set_Length (Result, Count);
+               declare
+                  Dummy_Last : Natural;
+               begin
+                  Fixed_Functions.Head (
+                     Source.Data.Items (1 .. Source.Length),
+                     Count,
+                     Pad,
+                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target_Last => Dummy_Last);
+               end;
+            else
+               Assign (Result, Source); -- shared
+               Set_Length (Result, Count);
+            end if;
+         end return;
       end Head;
 
       procedure Head (
@@ -878,12 +967,20 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         Set_Unbounded_String (
-            Source,
-            Fixed_Functions.Head (
-               Source.Data.Items (1 .. Source.Length),
-               Count,
-               Pad));
+         if Count > Source.Length then
+            declare
+               New_Last : Natural := Source.Length;
+            begin
+               Set_Length (Source, Count);
+               Fixed_Functions.Head (
+                  Source.Data.Items (1 .. Source.Length),
+                  New_Last,
+                  Count,
+                  Pad);
+            end;
+         else
+            Set_Length (Source, Count);
+         end if;
       end Head;
 
       function Tail (
@@ -894,11 +991,23 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         return To_Unbounded_String (
-            Fixed_Functions.Tail (
-               Source.Data.Items (1 .. Source.Length),
-               Count,
-               Pad));
+         return Result : Unbounded_String do
+            if Count /= Source.Length then
+               Set_Length (Result, Count);
+               declare
+                  Dummy_Last : Natural;
+               begin
+                  Fixed_Functions.Tail (
+                     Source.Data.Items (1 .. Source.Length),
+                     Count,
+                     Pad,
+                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target_Last => Dummy_Last);
+               end;
+            else
+               Assign (Result, Source); -- shared
+            end if;
+         end return;
       end Tail;
 
       procedure Tail (
@@ -908,12 +1017,21 @@ package body Ada.Strings.Generic_Unbounded is
       is
          pragma Suppress (Access_Check);
       begin
-         Set_Unbounded_String (
-            Source,
-            Fixed_Functions.Tail (
-               Source.Data.Items (1 .. Source.Length),
-               Count,
-               Pad));
+         if Count /= Source.Length then
+            declare
+               Old_Length : constant Natural := Source.Length;
+               Dummy_Last : Natural;
+            begin
+               Set_Length (Source, Integer'Max (Count, Old_Length));
+               Fixed_Functions.Tail (
+                  Source.Data.Items (1 .. Old_Length),
+                  Count,
+                  Pad,
+                  Target => Source.Data.Items (1 .. Source.Length), -- copying
+                  Target_Last => Dummy_Last);
+               Set_Length (Source, Count);
+            end;
+         end if;
       end Tail;
 
       function "*" (Left : Natural; Right : Character_Type)
@@ -1196,23 +1314,27 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            return To_Unbounded_String (
-               Fixed_Maps.Translate (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            return Result : Unbounded_String do
+               Set_Length (Result, Source.Length * Fixed_Maps.Expanding);
+               declare
+                  New_Length : Natural;
+               begin
+                  Fixed_Maps.Translate (
+                     Source.Data.Items (1 .. Source.Length),
+                     Mapping,
+                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target_Last => New_Length);
+                  Set_Length (Result, New_Length);
+               end;
+            end return;
          end Translate;
 
          procedure Translate (
             Source : in out Unbounded_String;
-            Mapping : Fixed_Maps.Character_Mapping)
-         is
-            pragma Suppress (Access_Check);
+            Mapping : Fixed_Maps.Character_Mapping) is
          begin
-            Set_Unbounded_String (
-               Source,
-               Fixed_Maps.Translate (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            --  Translate can not update destructively.
+            Assign (Source, Translate (Source, Mapping));
          end Translate;
 
          function Translate (
@@ -1223,24 +1345,28 @@ package body Ada.Strings.Generic_Unbounded is
          is
             pragma Suppress (Access_Check);
          begin
-            return To_Unbounded_String (
-               Fixed_Maps.Translate (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            return Result : Unbounded_String do
+               Set_Length (Result, Source.Length * Fixed_Maps.Expanding);
+               declare
+                  New_Length : Natural;
+               begin
+                  Fixed_Maps.Translate (
+                     Source.Data.Items (1 .. Source.Length),
+                     Mapping,
+                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target_Last => New_Length);
+                  Set_Length (Result, New_Length);
+               end;
+            end return;
          end Translate;
 
          procedure Translate (
             Source : in out Unbounded_String;
             Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-         is
-            pragma Suppress (Access_Check);
+               return Wide_Wide_Character) is
          begin
-            Set_Unbounded_String (
-               Source,
-               Fixed_Maps.Translate (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping));
+            --  Translate can not update destructively.
+            Assign (Source, Translate (Source, Mapping));
          end Translate;
 
          function Translate_Element (
@@ -1255,8 +1381,8 @@ package body Ada.Strings.Generic_Unbounded is
                Set_Length (Result, Source.Length);
                Fixed_Maps.Translate_Element (
                   Source.Data.Items (1 .. Source.Length),
-                  Result.Data.Items (1 .. Source.Length),
-                  Mapping);
+                  Mapping,
+                  Target => Result.Data.Items (1 .. Source.Length));
             end return;
          end Translate_Element;
 

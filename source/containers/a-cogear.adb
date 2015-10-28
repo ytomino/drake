@@ -4,34 +4,46 @@ package body Ada.Containers.Generic_Arrays is
 
    --  implementation
 
-   procedure Append (
-      Container : in out Array_Access;
-      New_Item : Array_Type) is
+   function Length (Container : Array_Access) return Count_Type is
    begin
-      Insert (Container, Container'Last + 1, New_Item);
-   end Append;
+      if Container = null then
+         return 0;
+      else
+         return Container'Length;
+      end if;
+   end Length;
 
-   procedure Append (
+   procedure Set_Length (
       Container : in out Array_Access;
-      New_Item : Array_Access) is
+      Length : Count_Type) is
    begin
-      Insert (Container, Container'Last + 1, New_Item);
-   end Append;
-
-   procedure Append (
-      Container : in out Array_Access;
-      New_Item : Element_Type;
-      Count : Count_Type := 1) is
-   begin
-      Insert (Container, Container'Last + 1, New_Item, Count);
-   end Append;
-
-   procedure Append (
-      Container : in out Array_Access;
-      Count : Count_Type := 1) is
-   begin
-      Insert (Container, Container'Last + 1, Count);
-   end Append;
+      if Container = null then
+         if Length > 0 then
+            Container := new Array_Type (
+               Index_Type'First ..
+               Index_Type'First + Index_Type'Base (Length) - 1);
+         end if;
+      elsif Length = 0 then
+         Free (Container);
+      elsif Length < Container'Length then
+         declare
+            S : Array_Access := Container;
+         begin
+            Container := new Array_Type'(
+               S (S'First .. S'First + Index_Type'Base (Length) - 1));
+            Free (S);
+         end;
+      elsif Length > Container'Length then
+         declare
+            S : Array_Access := Container;
+         begin
+            Container := new Array_Type (
+               S'First .. S'First + Index_Type'Base (Length) - 1);
+            Container (S'Range) := S.all;
+            Free (S);
+         end;
+      end if;
+   end Set_Length;
 
    procedure Assign (Target : in out Array_Access; Source : Array_Access) is
    begin
@@ -49,49 +61,16 @@ package body Ada.Containers.Generic_Arrays is
       Target := Array_Access (Source);
    end Assign;
 
-   procedure Delete (
-      Container : in out Array_Access;
-      Index : Extended_Index;
-      Count : Count_Type := 1) is
+   procedure Move (
+      Target : in out Array_Access;
+      Source : in out Array_Access) is
    begin
-      if Container = null then
-         null;
-      elsif Index = Container'First and then Count = Container'Length then
-         Free (Container);
-      else
-         declare
-            S : Array_Access := Container;
-         begin
-            if Index = Container'First then
-               Container := new Array_Type (
-                  S'First .. S'Last - Index_Type'Base (Count));
-               Container.all := S (Index + Index_Type'Base (Count) .. S'Last);
-            elsif Index + Index_Type'Base (Count) - 1 = Container'Last then
-               Container := new Array_Type'(
-                  S (S'First .. Index_Type'Base'Pred (Index)));
-            else
-               Container := new Array_Type'(
-                  S (S'First .. Index_Type'Base'Pred (Index))
-                  & S (Index + Index_Type'Base (Count) .. S'Last));
-            end if;
-            Free (S);
-         end;
+      if Target /= Source then
+         Free (Target);
+         Target := Source;
+         Source := null;
       end if;
-   end Delete;
-
-   procedure Delete_First (
-      Container : in out Array_Access;
-      Count : Count_Type := 1) is
-   begin
-      Delete (Container, Container'First, Count);
-   end Delete_First;
-
-   procedure Delete_Last (
-      Container : in out Array_Access;
-      Count : Count_Type := 1) is
-   begin
-      Delete (Container, Container'Last - Index_Type'Base (Count) + 1, Count);
-   end Delete_Last;
+   end Move;
 
    procedure Insert (
       Container : in out Array_Access;
@@ -194,26 +173,6 @@ package body Ada.Containers.Generic_Arrays is
       end if;
    end Insert;
 
-   function Length (Container : Array_Access) return Count_Type is
-   begin
-      if Container = null then
-         return 0;
-      else
-         return Container'Length;
-      end if;
-   end Length;
-
-   procedure Move (
-      Target : in out Array_Access;
-      Source : in out Array_Access) is
-   begin
-      if Target /= Source then
-         Free (Target);
-         Target := Source;
-         Source := null;
-      end if;
-   end Move;
-
    procedure Prepend (
       Container : in out Array_Access;
       New_Item : Array_Type) is
@@ -243,37 +202,78 @@ package body Ada.Containers.Generic_Arrays is
       Insert (Container, Container'First, Count);
    end Prepend;
 
-   procedure Set_Length (
+   procedure Append (
       Container : in out Array_Access;
-      Length : Count_Type) is
+      New_Item : Array_Type) is
+   begin
+      Insert (Container, Container'Last + 1, New_Item);
+   end Append;
+
+   procedure Append (
+      Container : in out Array_Access;
+      New_Item : Array_Access) is
+   begin
+      Insert (Container, Container'Last + 1, New_Item);
+   end Append;
+
+   procedure Append (
+      Container : in out Array_Access;
+      New_Item : Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, Container'Last + 1, New_Item, Count);
+   end Append;
+
+   procedure Append (
+      Container : in out Array_Access;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, Container'Last + 1, Count);
+   end Append;
+
+   procedure Delete (
+      Container : in out Array_Access;
+      Index : Extended_Index;
+      Count : Count_Type := 1) is
    begin
       if Container = null then
-         if Length > 0 then
-            Container := new Array_Type (
-               Index_Type'First ..
-               Index_Type'First + Index_Type'Base (Length) - 1);
-         end if;
-      elsif Length = 0 then
+         null;
+      elsif Index = Container'First and then Count = Container'Length then
          Free (Container);
-      elsif Length < Container'Length then
+      else
          declare
             S : Array_Access := Container;
          begin
-            Container := new Array_Type'(
-               S (S'First .. S'First + Index_Type'Base (Length) - 1));
-            Free (S);
-         end;
-      elsif Length > Container'Length then
-         declare
-            S : Array_Access := Container;
-         begin
-            Container := new Array_Type (
-               S'First .. S'First + Index_Type'Base (Length) - 1);
-            Container (S'Range) := S.all;
+            if Index = Container'First then
+               Container := new Array_Type (
+                  S'First .. S'Last - Index_Type'Base (Count));
+               Container.all := S (Index + Index_Type'Base (Count) .. S'Last);
+            elsif Index + Index_Type'Base (Count) - 1 = Container'Last then
+               Container := new Array_Type'(
+                  S (S'First .. Index_Type'Base'Pred (Index)));
+            else
+               Container := new Array_Type'(
+                  S (S'First .. Index_Type'Base'Pred (Index))
+                  & S (Index + Index_Type'Base (Count) .. S'Last));
+            end if;
             Free (S);
          end;
       end if;
-   end Set_Length;
+   end Delete;
+
+   procedure Delete_First (
+      Container : in out Array_Access;
+      Count : Count_Type := 1) is
+   begin
+      Delete (Container, Container'First, Count);
+   end Delete_First;
+
+   procedure Delete_Last (
+      Container : in out Array_Access;
+      Count : Count_Type := 1) is
+   begin
+      Delete (Container, Container'Last - Index_Type'Base (Count) + 1, Count);
+   end Delete_Last;
 
    procedure Swap (Container : in out Array_Access; I, J : Index_Type) is
       pragma Unmodified (Container);

@@ -5,8 +5,6 @@ package System.Formatting.Literals is
 
    --  parsing Ada-form literals
 
-   subtype Longest_Integer is Long_Long_Integer;
-
    procedure Skip_Spaces (Item : String; Last : in out Natural);
 
    procedure Check_Last (Item : String; Last : Natural; Error : out Boolean);
@@ -29,7 +27,7 @@ package System.Formatting.Literals is
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Longest_Integer;
+      Result : out Long_Long_Integer;
       Error : out Boolean);
 
    --  for modular types

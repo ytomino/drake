@@ -17,6 +17,13 @@ package body Ada.Strings.East_Asian_Width is
          Width_Kind'Pos (Full_Width),
       "bad order");
 
+   type Long_Boolean is new Boolean;
+   for Long_Boolean'Size use Long_Integer'Size;
+
+   function expect (exp, c : Long_Boolean) return Long_Boolean
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_expect";
+
    function Search (
       Table : UCD.East_Asian_Width.Table_16_Type;
       Code : UCD.UCS_4)
@@ -31,22 +38,25 @@ package body Ada.Strings.East_Asian_Width is
    begin
       loop
          declare
-            M : constant Positive := (L + H) / 2;
+            type Unsigned is mod 2 ** Integer'Size;
+            M : constant Positive := Integer (Unsigned (L + H) / 2);
+            M_Item : UCD.East_Asian_Width.Table_16_Item_Type
+               renames Table (M);
          begin
-            if Code < Table (M).Start then
+            if Code < M_Item.Start then
                H := M - 1;
-            elsif Code >=
-               Table (M).Start + UCD.UCS_4 (Table (M).Length)
+            elsif expect (
+               Long_Boolean (Code >= M_Item.Start + UCD.UCS_4 (M_Item.Length)),
+               True)
             then
                L := M + 1;
             else
-               return Table (M).Width;
+               return M_Item.Width;
             end if;
          end;
-         if L > H then
-            return UCD.N;
-         end if;
+         exit when L > H;
       end loop;
+      return UCD.N;
    end Search;
 
    function Search (
@@ -63,22 +73,25 @@ package body Ada.Strings.East_Asian_Width is
    begin
       loop
          declare
-            M : constant Positive := (L + H) / 2;
+            type Unsigned is mod 2 ** Integer'Size;
+            M : constant Positive := Integer (Unsigned (L + H) / 2);
+            M_Item : UCD.East_Asian_Width.Table_32_Item_Type
+               renames Table (M);
          begin
-            if Code < Table (M).Start then
+            if Code < M_Item.Start then
                H := M - 1;
-            elsif Code >=
-               Table (M).Start + UCD.UCS_4 (Table (M).Length)
+            elsif expect (
+               Long_Boolean (Code >= M_Item.Start + UCD.UCS_4 (M_Item.Length)),
+               True)
             then
                L := M + 1;
             else
-               return Table (M).Width;
+               return M_Item.Width;
             end if;
          end;
-         if L > H then
-            return UCD.N;
-         end if;
+         exit when L > H;
       end loop;
+      return UCD.N;
    end Search;
 
    --  implementation

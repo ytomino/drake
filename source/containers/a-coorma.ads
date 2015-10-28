@@ -262,7 +262,8 @@ private
    type Map_Iterator is
       new Map_Iterator_Interfaces.Reversible_Iterator with
    record
-      Container : not null Map_Access;
+      First : Cursor;
+      Last : Cursor;
    end record;
 
    overriding function First (Object : Map_Iterator) return Cursor;

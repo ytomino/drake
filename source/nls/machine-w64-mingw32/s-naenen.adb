@@ -33,7 +33,7 @@ package body System.Native_Environment_Encoding is
       case Encoding is
          when UTF_16 =>
             Last := Item'First - 1;
-            Is_Overflow := Item'Length < 2;
+            Is_Overflow := Item'First + 1 > Item'Last;
             if Is_Overflow then
                return;
             end if;
@@ -51,7 +51,7 @@ package body System.Native_Environment_Encoding is
             end case;
          when UTF_32 =>
             Last := Item'First - 1;
-            Is_Overflow := Item'Length < 4;
+            Is_Overflow := Item'First + 3 > Item'Last;
             if Is_Overflow then
                return;
             end if;
@@ -77,7 +77,7 @@ package body System.Native_Environment_Encoding is
             end case;
          when others =>
             Last := Item'First - 1;
-            Is_Overflow := Item'Length = 0;
+            Is_Overflow := Item'First > Item'Last;
             if Is_Overflow then
                return;
             end if;
@@ -182,6 +182,7 @@ package body System.Native_Environment_Encoding is
       Finish : Boolean;
       Status : out Subsequence_Status_Type)
    is
+      Item_Length : constant Ada.Streams.Stream_Element_Offset := Item'Length;
       Buffer : aliased C.winnt.WCHAR_array (1 .. 2);
       Buffer_As_W : aliased Wide_String (1 .. 2);
       for Buffer_As_W'Address use Buffer'Address;
@@ -191,24 +192,25 @@ package body System.Native_Environment_Encoding is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       pragma Check (Trace, Ada.Debug.Put ("Finish = " & Finish'Img));
-      if Item'Length = 0 then
+      if Item'First > Item'Last then
          Last := Item'First - 1;
          Out_Last := Out_Item'First - 1;
       else
          case Object.From is
             when UTF_8 =>
                declare
-                  Item_As_S : aliased String (1 .. Item'Length);
+                  Item_As_S : aliased String (1 .. Natural (Item_Length));
                   for Item_As_S'Address use Item'Address;
-                  Item_As_C : aliased C.char_array (1 .. Item'Length);
+                  Item_As_C : aliased
+                     C.char_array (1 .. C.size_t (Item_Length));
                   for Item_As_C'Address use Item'Address;
-                  Item_Length : C.signed_int;
+                  Length : C.signed_int;
                   Dummy_Code : UTF_Conversions.UCS_4;
                   From_Status : UTF_Conversions.From_Status_Type;
                begin
                   UTF_Conversions.From_UTF_8 (
                      Item_As_S,
-                     Integer (Item_Length),
+                     Integer (Length),
                      Dummy_Code,
                      From_Status);
                   if From_Status /= UTF_Conversions.Success then
@@ -228,7 +230,7 @@ package body System.Native_Environment_Encoding is
                      C.windef.UINT (Object.From),
                      C.winnls.MB_ERR_INVALID_CHARS,
                      Item_As_C (1)'Access,
-                     Item_Length,
+                     Length,
                      Buffer (1)'Access,
                      Buffer'Length);
                   if Buffer_Length = 0 then
@@ -239,18 +241,18 @@ package body System.Native_Environment_Encoding is
                      return;
                   end if;
                   Last := Item'First
-                     + Ada.Streams.Stream_Element_Offset (Item_Length)
+                     + Ada.Streams.Stream_Element_Offset (Length)
                      - 1;
                end;
             when UTF_16 =>
-               if Item'Length < 2 then
+               if Item'First + 1 > Item'Last then
                   Last := Item'First - 1;
                   Out_Last := Out_Item'First - 1;
                   Status := Truncated;
                   pragma Check (Trace, Ada.Debug.Put ("truncated"));
                   return;
                end if;
-               if Item'Length < 4 then
+               if Item'First + 3 > Item'Last then
                   Last := Item'First + 1;
                else
                   Last := Item'First + 3;
@@ -282,7 +284,7 @@ package body System.Native_Environment_Encoding is
                end;
                Last := 2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
             when UTF_32 =>
-               if Item'Length < 4 then
+               if Item'First + 3 > Item'Last then
                   Last := Item'First - 1;
                   Out_Last := Out_Item'First - 1;
                   Status := Truncated;
@@ -313,33 +315,34 @@ package body System.Native_Environment_Encoding is
                end;
             when others =>
                declare
-                  Item_As_C : aliased C.char_array (1 .. Item'Length);
+                  Item_As_C : aliased
+                     C.char_array (1 .. C.size_t (Item_Length));
                   for Item_As_C'Address use Item'Address;
-                  Item_Length : C.signed_int;
+                  Length : C.signed_int;
                begin
                   if C.winnls.IsDBCSLeadByteEx (
                      C.windef.UINT (Object.From),
                      C.char'Pos (Item_As_C (1))) /= 0
                   then
-                     if Item'Length < 2 then
+                     if Item'First + 1 > Item'Last then
                         Last := Item'First - 1;
                         Out_Last := Out_Item'First - 1;
                         Status := Truncated;
                         pragma Check (Trace, Ada.Debug.Put ("truncated"));
                         return;
                      end if;
-                     Item_Length := 2;
+                     Length := 2;
                   else
-                     Item_Length := 1;
+                     Length := 1;
                   end if;
                   Last := Item'First
-                     + Ada.Streams.Stream_Element_Offset (Item_Length)
+                     + Ada.Streams.Stream_Element_Offset (Length)
                      - 1;
                   Buffer_Length := C.winnls.MultiByteToWideChar (
                      C.windef.UINT (Object.From),
                      C.winnls.MB_ERR_INVALID_CHARS,
                      Item_As_C (1)'Access,
-                     Item_Length,
+                     Length,
                      Buffer (1)'Access,
                      Buffer'Length);
                   if Buffer_Length = 0 then
@@ -359,7 +362,9 @@ package body System.Native_Environment_Encoding is
                      Ada.Streams.Stream_Element_Offset :=
                         2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
                begin
-                  if Out_Item'Length < Buffer_As_SEA_Length then
+                  if Out_Item'First + Buffer_As_SEA_Length - 1 >
+                     Out_Item'Last
+                  then
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
                      Status := Overflow;
@@ -371,7 +376,7 @@ package body System.Native_Environment_Encoding is
                      Buffer_As_SEA (1 .. Buffer_As_SEA_Length);
                end;
             when UTF_32 =>
-               if Out_Item'Length < 4 then
+               if Out_Item'First + 3 > Out_Item'Last then
                   Last := Item'First - 1;
                   Out_Last := Out_Item'First - 1;
                   Status := Overflow;
@@ -404,7 +409,8 @@ package body System.Native_Environment_Encoding is
                end;
             when others => -- including UTF_8
                declare
-                  Out_Item_As_C : aliased C.char_array (1 .. Out_Item'Length);
+                  Out_Item_As_C : aliased
+                     C.char_array (1 .. C.size_t (Out_Item'Length));
                   for Out_Item_As_C'Address use Out_Item'Address;
                   Out_Length : C.signed_int;
                begin
@@ -621,7 +627,7 @@ package body System.Native_Environment_Encoding is
                   Out_Item_As_C'Length,
                   Substitute_P,
                   null);
-               if Out_Length = 0 and then Item_Length /= 0 then
+               if Out_Length = 0 and then Item'First <= Item'Last then
                   Last := Item'First - 1;
                   Out_Last := Out_Item'First - 1;
                   Status := Overflow;

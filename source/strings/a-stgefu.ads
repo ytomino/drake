@@ -113,6 +113,25 @@ package Ada.Strings.Generic_Functions is
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
 
+   --  extended
+   --  Copying, for Bounded_String and Unbounded_String.
+   procedure Replace_Slice (
+      Source : String_Type;
+      Low : Positive;
+      High : Natural;
+      By : String_Type;
+      Target : out String_Type;
+      Target_Last : out Natural);
+
+   --  extended
+   --  Destructive, for Bounded_String and Unbounded_String.
+   procedure Replace_Slice (
+      Source : in out String_Type;
+      Last : in out Natural;
+      Low : Positive;
+      High : Natural;
+      By : String_Type);
+
    function Insert (
       Source : String_Type;
       Before : Positive;
@@ -125,6 +144,23 @@ package Ada.Strings.Generic_Functions is
       New_Item : String_Type;
       Drop : Truncation := Error);
 
+   --  extended
+   --  Copying, for Bounded_String and Unbounded_String.
+   procedure Insert (
+      Source : String_Type;
+      Before : Positive;
+      New_Item : String_Type;
+      Target : out String_Type;
+      Target_Last : out Natural);
+
+   --  extended
+   --  Destructive, for Bounded_String and Unbounded_String.
+   procedure Insert (
+      Source : in out String_Type;
+      Last : in out Natural;
+      Before : Positive;
+      New_Item : String_Type);
+
    function Overwrite (
       Source : String_Type;
       Position : Positive;
@@ -136,6 +172,10 @@ package Ada.Strings.Generic_Functions is
       Position : Positive;
       New_Item : String_Type;
       Drop : Truncation := Right);
+
+   --  Note: Overwrite is danger in drake,
+   --    because the trailing element of any multi-byte character is possible
+   --    to be left at Source (Position + New_Item'Length).
 
    function Delete (
       Source : String_Type;
@@ -211,6 +251,23 @@ package Ada.Strings.Generic_Functions is
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
 
+   --  extended
+   --  Copying, for Bounded_String and Unbounded_String.
+   procedure Head (
+      Source : String_Type;
+      Count : Natural;
+      Pad : Character_Type := Space;
+      Target : out String_Type;
+      Target_Last : out Natural);
+
+   --  extended
+   --  Destructive, for Bounded_String and Unbounded_String.
+   procedure Head (
+      Source : in out String_Type;
+      Last : in out Natural;
+      Count : Natural;
+      Pad : Character_Type := Space);
+
    function Tail (
       Source : String_Type;
       Count : Natural;
@@ -222,6 +279,15 @@ package Ada.Strings.Generic_Functions is
       Count : Natural;
       Justify : Alignment := Left;
       Pad : Character_Type := Space);
+
+   --  extended
+   --  Copying, for Bounded_String and Unbounded_String.
+   procedure Tail (
+      Source : String_Type;
+      Count : Natural;
+      Pad : Character_Type := Space;
+      Target : out String_Type;
+      Target_Last : out Natural);
 
    --  String constructor functions
 
@@ -456,6 +522,14 @@ package Ada.Strings.Generic_Functions is
          Justify : Alignment := Left; -- additional
          Pad : Character_Type := Space); -- additional
 
+      --  extended
+      --  For Bounded_String and Unbounded_String.
+      procedure Translate (
+         Source : String_Type;
+         Mapping : Character_Mapping;
+         Target : out String_Type;
+         Target_Last : out Natural);
+
       function Translate (
          Source : String_Type;
          Mapping : not null access function (From : Wide_Wide_Character)
@@ -469,6 +543,15 @@ package Ada.Strings.Generic_Functions is
          Drop : Truncation := Error; -- additional
          Justify : Alignment := Left; -- additional
          Pad : Character_Type := Space); -- additional
+
+      --  extended
+      --  For Bounded_String and Unbounded_String.
+      procedure Translate (
+         Source : String_Type;
+         Mapping : not null access function (From : Wide_Wide_Character)
+            return Wide_Wide_Character;
+         Target : out String_Type;
+         Target_Last : out Natural);
 
       function Translate_Element (
          Source : String_Type;
@@ -485,9 +568,9 @@ package Ada.Strings.Generic_Functions is
       --  For Bounded_String and Unbounded_String.
       procedure Translate_Element (
          Source : String_Type;
-         Target : out String_Type;
          Mapping : not null access function (From : Character_Type)
-            return Character_Type);
+            return Character_Type;
+         Target : out String_Type);
 
       --  String selector subprograms
 

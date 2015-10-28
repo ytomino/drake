@@ -450,7 +450,7 @@ package body Ada.Containers.Hashed_Maps is
    function Iterate (Container : Map)
       return Map_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Map_Iterator'(Container => Container'Unrestricted_Access);
+      return Map_Iterator'(First => First (Container));
    end Iterate;
 
    function Key (Position : Cursor) return Key_Type is
@@ -604,7 +604,7 @@ package body Ada.Containers.Hashed_Maps is
 
    overriding function First (Object : Map_Iterator) return Cursor is
    begin
-      return First (Object.Container.all);
+      return Object.First;
    end First;
 
    overriding function Next (Object : Map_Iterator; Position : Cursor)

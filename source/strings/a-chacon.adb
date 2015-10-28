@@ -99,6 +99,18 @@ package body Ada.Characters.Conversions is
       end if;
    end To_Wide_Wide_Character;
 
+   function To_Wide_Wide_Character (
+      Item : Wide_Character;
+      Substitute : Wide_Wide_Character := ' ')
+      return Wide_Wide_Character is
+   begin
+      if Is_Wide_Wide_Character (Item) then
+         return Wide_Wide_Character'Val (Wide_Character'Pos (Item));
+      else
+         return Substitute;
+      end if;
+   end To_Wide_Wide_Character;
+
    function To_Character (
       Item : Wide_Character;
       Substitute : Character := ' ')
@@ -118,18 +130,6 @@ package body Ada.Characters.Conversions is
    begin
       return To_String (Item, Substitute => (1 => Substitute));
    end To_String;
-
-   function To_Wide_Wide_Character (
-      Item : Wide_Character;
-      Substitute : Wide_Wide_Character := ' ')
-      return Wide_Wide_Character is
-   begin
-      if Is_Wide_Wide_Character (Item) then
-         return Wide_Wide_Character'Val (Wide_Character'Pos (Item));
-      else
-         return Substitute;
-      end if;
-   end To_Wide_Wide_Character;
 
    function To_Character (
       Item : Wide_Wide_Character;

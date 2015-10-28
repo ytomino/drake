@@ -40,15 +40,15 @@ package body System.Fat_Flt is
          return Scaling (Truncation (Scaling (X, S)), -S);
       end Leading_Part;
 
-      function Pred (X : Float) return Float is
-      begin
-         return Adjacent (X, -inf);
-      end Pred;
-
       function Machine (X : Float) return Float is
       begin
          return Float (Long_Long_Float (X)); -- ???
       end Machine;
+
+      function Pred (X : Float) return Float is
+      begin
+         return Adjacent (X, -inf);
+      end Pred;
 
       function Succ (X : Float) return Float is
       begin

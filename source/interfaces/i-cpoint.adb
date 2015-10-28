@@ -13,68 +13,155 @@ package body Interfaces.C.Pointers is
    function Value (
       Ref : access constant Element;
       Terminator : Element := Default_Terminator)
-      return Element_Array is
+      return Element_Array
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Ref /= null or else raise Dereference_Error); -- CXB3014
+      Length : constant ptrdiff_t :=
+         Virtual_Length (Ref, Terminator) + 1; -- including nul
    begin
-      if Ref = null then
-         raise Dereference_Error; -- CXB3014
-      else
-         declare
-            Length : constant ptrdiff_t :=
-               Virtual_Length (Ref, Terminator) + 1; -- including nul
-         begin
-            return Value (Ref, Length);
-         end;
-      end if;
+      return Value (Ref, Length);
    end Value;
 
    function Value (
       Ref : access constant Element;
       Length : ptrdiff_t)
-      return Element_Array is
+      return Element_Array
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Ref /= null or else raise Dereference_Error); -- CXB3014
+      pragma Suppress (Alignment_Check);
+      Source : Element_Array (Index);
+      for Source'Address use To_Address (Ref);
+      First : Index;
+      Last : Index'Base;
    begin
-      if Ref = null then
-         raise Dereference_Error; -- CXB3014
+      if Index'First = Index'Base'First and then Length = 0 then
+         First := Index'Succ (Index'First);
+         Last := Index'First;
+      else
+         First := Index'First;
+         Last := Index'Base'Val (Index'Pos (Index'First) + Length - 1);
       end if;
-      declare
-         pragma Suppress (Alignment_Check);
-         Source : Element_Array (Index);
-         for Source'Address use To_Address (Ref);
-         First : Index;
-         Last : Index'Base;
-      begin
-         if Index'First = Index'Base'First and then Length = 0 then
-            First := Index'Succ (Index'First);
-            Last := Index'First;
-         else
-            First := Index'First;
-            Last := Index'Base'Val (Index'Pos (Index'First) + Length - 1);
-         end if;
-         return Source (First .. Last);
-      end;
+      return Source (First .. Last);
    end Value;
+
+   function "+" (
+      Left : Pointer;
+      Right : ptrdiff_t)
+      return not null Pointer is
+   begin
+      if not Standard'Fast_Math and then Left = null then
+         raise Pointer_Error; -- CXB3015
+      end if;
+      return To_Pointer (
+         To_Address (Left)
+         + System.Storage_Elements.Storage_Offset (Right)
+            * (Element_Array'Component_Size / Standard'Storage_Unit));
+   end "+";
+
+   function "+" (
+      Left : ptrdiff_t;
+      Right : not null Pointer)
+      return not null Pointer is
+   begin
+      return Right + Left;
+   end "+";
+
+   function "-" (
+      Left : Pointer;
+      Right : ptrdiff_t)
+      return not null Pointer is
+   begin
+      if not Standard'Fast_Math and then Left = null then
+         raise Pointer_Error; -- CXB3015
+      end if;
+      return To_Pointer (
+         To_Address (Left)
+         - System.Storage_Elements.Storage_Offset (Right)
+            * (Element_Array'Component_Size / Standard'Storage_Unit));
+   end "-";
+
+   function "-" (
+      Left : not null Pointer;
+      Right : not null access constant Element)
+      return ptrdiff_t is
+   begin
+      return Constant_Pointer (Left) - Right;
+   end "-";
+
+   procedure Increment (Ref : in out not null Pointer) is
+   begin
+      Ref := Ref + 1;
+   end Increment;
+
+   procedure Decrement (Ref : in out Pointer) is
+   begin
+      Ref := Ref - 1;
+   end Decrement;
+
+   function "+" (Left : not null Constant_Pointer; Right : ptrdiff_t)
+      return not null Constant_Pointer is
+   begin
+      return To_Pointer (
+         To_Address (Left)
+         + System.Storage_Elements.Storage_Offset (Right)
+            * (Element_Array'Component_Size / Standard'Storage_Unit));
+   end "+";
+
+   function "+" (Left : ptrdiff_t; Right : not null Constant_Pointer)
+      return not null Constant_Pointer is
+   begin
+      return Right + Left;
+   end "+";
+
+   function "-" (Left : not null Constant_Pointer; Right : ptrdiff_t)
+      return not null Constant_Pointer is
+   begin
+      return To_Pointer (
+         To_Address (Left)
+         - System.Storage_Elements.Storage_Offset (Right)
+            * (Element_Array'Component_Size / Standard'Storage_Unit));
+   end "-";
+
+   function "-" (
+      Left : not null Constant_Pointer;
+      Right : not null access constant Element)
+      return ptrdiff_t is
+   begin
+      return ptrdiff_t (
+         (To_Address (Left) - To_Address (Right))
+         / (Element_Array'Component_Size / Standard'Storage_Unit));
+   end "-";
+
+   procedure Increment (Ref : in out not null Constant_Pointer) is
+   begin
+      Ref := Ref + 1;
+   end Increment;
+
+   procedure Decrement (Ref : in out not null Constant_Pointer) is
+   begin
+      Ref := Ref - 1;
+   end Decrement;
 
    function Virtual_Length (
       Ref : access constant Element;
       Terminator : Element := Default_Terminator)
-      return ptrdiff_t is
+      return ptrdiff_t
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Ref /= null or else raise Dereference_Error); -- CXB3016
+      pragma Suppress (Alignment_Check);
+      Source : Element_Array (Index);
+      for Source'Address use To_Address (Ref);
+      I : Index'Base := Index'First;
    begin
-      if Ref = null then
-         raise Dereference_Error; -- CXB3016
-      else
-         declare
-            pragma Suppress (Alignment_Check);
-            Source : Element_Array (Index);
-            for Source'Address use To_Address (Ref);
-            I : Index'Base := Index'First;
-         begin
-            loop
-               if Source (I) = Terminator then
-                  return Index'Base'Pos (I) - Index'Pos (Index'First);
-               end if;
-               I := Index'Base'Succ (I);
-            end loop;
-         end;
-      end if;
+      loop
+         if Source (I) = Terminator then
+            return Index'Base'Pos (I) - Index'Pos (Index'First);
+         end if;
+         I := Index'Base'Succ (I);
+      end loop;
    end Virtual_Length;
 
    function Virtual_Length (
@@ -101,34 +188,35 @@ package body Interfaces.C.Pointers is
       Source : access constant Element;
       Target : access Element;
       Limit : ptrdiff_t := ptrdiff_t'Last;
-      Terminator : Element := Default_Terminator) is
+      Terminator : Element := Default_Terminator)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Source /= null or else raise Dereference_Error); -- CXB3016
+      pragma Check (Dynamic_Predicate,
+         Check => Target /= null or else raise Dereference_Error); -- CXB3016
+      Length : ptrdiff_t;
    begin
-      if Source = null or else Target = null then
-         raise Dereference_Error; -- CXB3016
-      end if;
-      declare
-         Length : ptrdiff_t;
-      begin
-         if Limit < ptrdiff_t'Last then
-            Length := Virtual_Length (Source, Limit, Terminator);
-            if Length < Limit then
-               Length := Length + 1; -- including nul
-            end if;
-         else -- unlimited
-            Length := Virtual_Length (Source, Terminator) + 1; -- including nul
+      if Limit < ptrdiff_t'Last then
+         Length := Virtual_Length (Source, Limit, Terminator);
+         if Length < Limit then
+            Length := Length + 1; -- including nul
          end if;
-         Copy_Array (Source, Target, Length);
-      end;
+      else -- unlimited
+         Length := Virtual_Length (Source, Terminator) + 1; -- including nul
+      end if;
+      Copy_Array (Source, Target, Length);
    end Copy_Terminated_Array;
 
    procedure Copy_Array (
       Source : access constant Element;
       Target : access Element;
-      Length : ptrdiff_t) is
+      Length : ptrdiff_t)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Source /= null or else raise Dereference_Error); -- CXB3016
+      pragma Check (Dynamic_Predicate,
+         Check => Target /= null or else raise Dereference_Error); -- CXB3016
    begin
-      if Source = null or else Target = null then
-         raise Dereference_Error; -- CXB3016
-      end if;
       if Length > 0 then
          declare
             pragma Suppress (Alignment_Check);
@@ -145,109 +233,5 @@ package body Interfaces.C.Pointers is
          end;
       end if;
    end Copy_Array;
-
-   procedure Decrement (Ref : in out Pointer) is
-   begin
-      Ref := Ref - 1;
-   end Decrement;
-
-   procedure Decrement (Ref : in out not null Constant_Pointer) is
-   begin
-      Ref := Ref - 1;
-   end Decrement;
-
-   procedure Increment (Ref : in out not null Pointer) is
-   begin
-      Ref := Ref + 1;
-   end Increment;
-
-   procedure Increment (Ref : in out not null Constant_Pointer) is
-   begin
-      Ref := Ref + 1;
-   end Increment;
-
-   function "+" (
-      Left : Pointer;
-      Right : ptrdiff_t)
-      return not null Pointer is
-   begin
-      if not Standard'Fast_Math and then Left = null then
-         raise Pointer_Error; -- CXB3015
-      end if;
-      return To_Pointer (
-         To_Address (Left)
-         + System.Storage_Elements.Storage_Offset (Right)
-            * (Element_Array'Component_Size / Standard'Storage_Unit));
-   end "+";
-
-   function "+" (
-      Left : not null Constant_Pointer;
-      Right : ptrdiff_t)
-      return not null Constant_Pointer is
-   begin
-      return To_Pointer (
-         To_Address (Left)
-         + System.Storage_Elements.Storage_Offset (Right)
-            * (Element_Array'Component_Size / Standard'Storage_Unit));
-   end "+";
-
-   function "+" (
-      Left : ptrdiff_t;
-      Right : not null Pointer)
-      return not null Pointer is
-   begin
-      return Right + Left;
-   end "+";
-
-   function "+" (
-      Left : ptrdiff_t;
-      Right : not null Constant_Pointer)
-      return not null Constant_Pointer is
-   begin
-      return Right + Left;
-   end "+";
-
-   function "-" (
-      Left : Pointer;
-      Right : ptrdiff_t)
-      return not null Pointer is
-   begin
-      if not Standard'Fast_Math and then Left = null then
-         raise Pointer_Error; -- CXB3015
-      end if;
-      return To_Pointer (
-         To_Address (Left)
-         - System.Storage_Elements.Storage_Offset (Right)
-            * (Element_Array'Component_Size / Standard'Storage_Unit));
-   end "-";
-
-   function "-" (
-      Left : not null Constant_Pointer;
-      Right : ptrdiff_t)
-      return not null Constant_Pointer is
-   begin
-      return To_Pointer (
-         To_Address (Left)
-         - System.Storage_Elements.Storage_Offset (Right)
-            * (Element_Array'Component_Size / Standard'Storage_Unit));
-   end "-";
-
-   function "-" (
-      Left : not null Pointer;
-      Right : not null access constant Element)
-      return ptrdiff_t is
-   begin
-      return Constant_Pointer (Left) - Right;
-   end "-";
-
-   function "-" (
-      Left : not null Constant_Pointer;
-      Right : not null access constant Element)
-      return ptrdiff_t is
-   begin
-      return ptrdiff_t (
-         (To_Address (Left) - To_Address (Right))
-         / (Element_Array'Component_Size / Standard'Storage_Unit));
-   end "-";
 
 end Interfaces.C.Pointers;

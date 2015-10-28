@@ -11,11 +11,11 @@ package body Ada.Streams.Block_Transmission is
          and then Array_Type'Component_Size = Element_Type'Stream_Size
       then
          declare
-            Length : constant Natural := Item'Length;
             Item_As : Stream_Element_Array (
                1 ..
                Stream_Element_Offset (
-                  (Element_Type'Stream_Size / Stream_Element'Size) * Length));
+                  (Element_Type'Stream_Size / Stream_Element'Size)
+                  * Item'Length));
             for Item_As'Address use Item'Address;
          begin
             Stream_Element_Arrays.Read (Stream, Item_As);
@@ -33,11 +33,11 @@ package body Ada.Streams.Block_Transmission is
          and then Array_Type'Component_Size = Element_Type'Stream_Size
       then
          declare
-            Length : constant Natural := Item'Length;
             Item_As : Stream_Element_Array (
                1 ..
                Stream_Element_Offset (
-                  (Element_Type'Stream_Size / Stream_Element'Size) * Length));
+                  (Element_Type'Stream_Size / Stream_Element'Size)
+                  * Item'Length));
             for Item_As'Address use Item'Address;
          begin
             Stream_Element_Arrays.Write (Stream, Item_As);

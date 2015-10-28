@@ -20,7 +20,7 @@ package body Ada.Text_IO.Decimal_IO is
       if Exp /= 0 then
          --  decimal version should be implemented...
          System.Formatting.Float.Image (
-            System.Formatting.Float.Longest_Float (Item),
+            Long_Long_Float (Item),
             To,
             Last,
             Zero_Sign => System.Formatting.No_Sign,

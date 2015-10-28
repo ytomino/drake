@@ -20,8 +20,8 @@ package body System.Val_Char is
             S : String := Str (First .. Last);
          begin
             Val_Enum.To_Upper (S);
-            if S'Length >= HEX_Prefix'Length
-               and then S (First .. First - 1 + HEX_Prefix'Length) =
+            if First + (HEX_Prefix'Length - 1) <= Last
+               and then S (First .. First + (HEX_Prefix'Length - 1)) =
                   HEX_Prefix
             then
                declare

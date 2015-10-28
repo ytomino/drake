@@ -240,13 +240,17 @@ package body Ada.Hierarchical_File_Names is
    is
       --  this is Directories.Compose
       --  if you want to fold '.' or '..', use Hierarchical_File_Names.Compose
+      Containing_Directory_Length : constant Natural :=
+         Containing_Directory'Length;
+      Name_Length : constant Natural := Name'Length;
+      Extension_Length : constant Natural := Extension'Length;
       Result : String (
          1 ..
-         Containing_Directory'Length + Name'Length + Extension'Length + 2);
+         Containing_Directory_Length + Name_Length + Extension_Length + 2);
       Last : Natural;
    begin
       --  append directory
-      Last := Containing_Directory'Length;
+      Last := Containing_Directory_Length;
       if Last > 0 then
          Result (1 .. Last) := Containing_Directory;
          Include_Trailing_Path_Delimiter (
@@ -255,14 +259,14 @@ package body Ada.Hierarchical_File_Names is
             Path_Delimiter => Path_Delimiter);
       end if;
       --  append name
-      Result (Last + 1 .. Last + Name'Length) := Name;
-      Last := Last + Name'Length;
+      Result (Last + 1 .. Last + Name_Length) := Name;
+      Last := Last + Name_Length;
       --  append extension
-      if Extension'Length /= 0 then
+      if Extension_Length /= 0 then
          Last := Last + 1;
          Result (Last) := '.';
-         Result (Last + 1 .. Last + Extension'Length) := Extension;
-         Last := Last + Extension'Length;
+         Result (Last + 1 .. Last + Extension_Length) := Extension;
+         Last := Last + Extension_Length;
       end if;
       return Result (1 .. Last);
    end Unfolded_Compose;

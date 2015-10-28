@@ -1,4 +1,5 @@
 with Ada.Command_Line;
+with Ada.Directories.Temporary;
 with Ada.Streams;
 with Ada.Text_IO.Text_Streams;
 with Ada.Wide_Text_IO;
@@ -44,9 +45,10 @@ begin
 		Ada.Wide_Wide_Text_IO.Col (Ada.Wide_Wide_Text_IO.Current_Output.all));
 	-- check sharing mode
 	declare
-		Test_File_Name : constant String := Ada.Command_Line.Command_Name & "-test";
+		Test_File_Name : constant String := Ada.Directories.Temporary.Create_Temporary_File;
 		File_1, File_2 : Ada.Text_IO.File_Type;
 	begin
+		Ada.Debug.Put (Test_File_Name);
 		-- prepare the file beforehand because Create always acquires write-lock
 		Ada.Text_IO.Create (File_1, Ada.Text_IO.Out_File, Test_File_Name);
 		Ada.Text_IO.Close (File_1);
@@ -60,9 +62,10 @@ begin
 	declare
 		Page_Size : constant Ada.Streams.Stream_Element_Positive_Count :=
 			Ada.Streams.Stream_Element_Offset (System.Native_Allocators.Page_Size);
-		Test_File_Name : constant String := Ada.Command_Line.Command_Name & "-test";
+		Test_File_Name : constant String := Ada.Directories.Temporary.Create_Temporary_File;
 		File : Ada.Text_IO.File_Type;
 	begin
+		Ada.Debug.Put (Test_File_Name);
 		Ada.Text_IO.Create (File, Ada.Text_IO.Out_File, Test_File_Name);
 		Ada.Text_IO.Put (File, "ABC");
 		Ada.Text_IO.Close (File);

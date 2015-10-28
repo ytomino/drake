@@ -15,9 +15,11 @@ package body Ada.Strings.Generic_Bounded is
    procedure Set_Bounded_String (
       Target : out Bounded_String;
       Source : String_Type;
-      Drop : Truncation := Error) is
+      Drop : Truncation := Error)
+   is
+      Source_Length : constant Natural := Source'Length;
    begin
-      if Source'Length > Target.Capacity then
+      if Source_Length > Target.Capacity then
          case Drop is
             when Right =>
                Target.Length := Target.Capacity;
@@ -33,7 +35,7 @@ package body Ada.Strings.Generic_Bounded is
                raise Length_Error;
          end case;
       else
-         Target.Length := Source'Length;
+         Target.Length := Source_Length;
          Target.Element (1 .. Target.Length) := Source;
       end if;
    end Set_Bounded_String;
@@ -51,10 +53,11 @@ package body Ada.Strings.Generic_Bounded is
       New_Item : String_Type;
       Drop : Truncation := Error)
    is
+      New_Item_Length : constant Natural := New_Item'Length;
       Old_Length : constant Natural := Source.Length;
       Rest : constant Natural := Source.Capacity - Old_Length;
    begin
-      if New_Item'Length > Rest then
+      if New_Item_Length > Rest then
          case Drop is
             when Right =>
                Source.Length := Source.Capacity;
@@ -62,10 +65,10 @@ package body Ada.Strings.Generic_Bounded is
                   New_Item (New_Item'First .. New_Item'First + Rest - 1);
             when Left =>
                Source.Length := Source.Capacity;
-               if New_Item'Length < Source.Capacity then
+               if New_Item_Length < Source.Capacity then
                   declare
                      Moving : constant Natural :=
-                        Source.Capacity - New_Item'Length;
+                        Source.Capacity - New_Item_Length;
                   begin
                      Source.Element (1 .. Moving) :=
                         Source.Element (Old_Length - Moving + 1 .. Old_Length);
@@ -81,7 +84,7 @@ package body Ada.Strings.Generic_Bounded is
                raise Length_Error;
          end case;
       else
-         Source.Length := Old_Length + New_Item'Length;
+         Source.Length := Old_Length + New_Item_Length;
          Source.Element (Old_Length + 1 .. Source.Length) := New_Item;
       end if;
    end Append;
@@ -114,11 +117,14 @@ package body Ada.Strings.Generic_Bounded is
       Source : Bounded_String;
       Low : Positive;
       High : Natural)
-      return String_Type is
+      return String_Type
+   is
+      pragma Check (Pre,
+         Check =>
+            (Low in 1 .. Source.Length + 1
+               and then High in 0 .. Source.Length)
+            or else raise Index_Error); -- CXA4034
    begin
-      if Low > Source.Length + 1 or else High > Source.Length then
-         raise Index_Error;
-      end if;
       return Source.Element (Low .. High);
    end Slice;
 
@@ -128,9 +134,6 @@ package body Ada.Strings.Generic_Bounded is
       Low : Positive;
       High : Natural) is
    begin
-      if Low > Source.Length + 1 or else High > Source.Length then
-         raise Index_Error;
-      end if;
       Set_Bounded_String (Target, Source.Element (Low .. High));
    end Bounded_Slice;
 
@@ -521,6 +524,45 @@ package body Ada.Strings.Generic_Bounded is
 
       package body Generic_Bounded_Length is
 
+         --  Copying
+         procedure Tail (
+            Source : Bounded.Bounded_String;
+            Count : Natural;
+            Pad : Character_Type := Fixed_Functions.Space;
+            Drop : Truncation := Error;
+            Target : out Bounded.Bounded_String);
+         procedure Tail (
+            Source : Bounded.Bounded_String;
+            Count : Natural;
+            Pad : Character_Type := Fixed_Functions.Space;
+            Drop : Truncation := Error;
+            Target : out Bounded.Bounded_String) is
+         begin
+            if Count > Bounded.Max then
+               declare
+                  S : String_Type (1 .. Count);
+                  S_Last : Natural;
+               begin
+                  Fixed_Functions.Tail (
+                     Source.Element (1 .. Source.Length),
+                     Count,
+                     Pad,
+                     Target => S,
+                     Target_Last => S_Last);
+                  Bounded.Set_Bounded_String (Target, S (1 .. S_Last), Drop);
+               end;
+            else
+               Fixed_Functions.Tail (
+                  Source.Element (1 .. Source.Length),
+                  Count,
+                  Pad,
+                  Target => Target.Element,
+                  Target_Last => Target.Length);
+            end if;
+         end Tail;
+
+         --  implementation
+
          function Index (
             Source : Bounded.Bounded_String;
             Pattern : String_Type;
@@ -587,13 +629,40 @@ package body Ada.Strings.Generic_Bounded is
             Drop : Truncation := Error)
             return Bounded.Bounded_String is
          begin
-            return Bounded.To_Bounded_String (
-               Fixed_Functions.Replace_Slice (
-                  Source.Element (1 .. Source.Length),
-                  Low,
-                  High,
-                  By),
-               Drop);
+            return Result : Bounded.Bounded_String do
+               declare
+                  New_Length : constant Natural := Source.Length
+                     + By'Length
+                     - Integer'Max (High - Low + 1, 0);
+               begin
+                  if New_Length > Bounded.Max then
+                     declare
+                        S : String_Type (1 .. New_Length);
+                        S_Last : Natural;
+                     begin
+                        Fixed_Functions.Replace_Slice (
+                           Source.Element (1 .. Source.Length),
+                           Low,
+                           High,
+                           By,
+                           Target => S,
+                           Target_Last => S_Last);
+                        Bounded.Set_Bounded_String (
+                           Result,
+                           S (1 .. S_Last),
+                           Drop);
+                     end;
+                  else
+                     Fixed_Functions.Replace_Slice (
+                        Source.Element (1 .. Source.Length),
+                        Low,
+                        High,
+                        By,
+                        Target => Result.Element,
+                        Target_Last => Result.Length);
+                  end if;
+               end;
+            end return;
          end Replace_Slice;
 
          procedure Replace_Slice (
@@ -601,16 +670,39 @@ package body Ada.Strings.Generic_Bounded is
             Low : Positive;
             High : Natural;
             By : String_Type;
-            Drop : Truncation := Error) is
+            Drop : Truncation := Error)
+         is
+            pragma Check (Pre,
+               Check =>
+                  (Low in 1 .. Source.Length + 1
+                     and then High in 0 .. Source.Length)
+                  or else raise Index_Error); -- CXA4019
+            New_Length : constant Natural := Source.Length
+               + By'Length
+               - Integer'Max (High - Low + 1, 0);
          begin
-            Bounded.Set_Bounded_String (
-               Source,
+            if New_Length > Bounded.Max then
+               declare
+                  S : String_Type (1 .. New_Length);
+                  S_Last : Natural;
+               begin
+                  Fixed_Functions.Replace_Slice (
+                     Source.Element (1 .. Source.Length),
+                     Low,
+                     High,
+                     By,
+                     Target => S, -- copying
+                     Target_Last => S_Last);
+                  Bounded.Set_Bounded_String (Source, S (1 .. S_Last), Drop);
+               end;
+            else
                Fixed_Functions.Replace_Slice (
-                  Source.Element (1 .. Source.Length),
+                  Source.Element,
+                  Source.Length,
                   Low,
                   High,
-                  By),
-               Drop);
+                  By);
+            end if;
          end Replace_Slice;
 
          function Insert (
@@ -620,27 +712,67 @@ package body Ada.Strings.Generic_Bounded is
             Drop : Truncation := Error)
             return Bounded.Bounded_String is
          begin
-            return Bounded.To_Bounded_String (
-               Fixed_Functions.Insert (
-                  Source.Element (1 .. Source.Length),
-                  Before,
-                  New_Item),
-               Drop);
+            return Result : Bounded.Bounded_String do
+               declare
+                  New_Length : constant Natural :=
+                     Source.Length + New_Item'Length;
+               begin
+                  if New_Length > Bounded.Max then
+                     declare
+                        S : String_Type (1 .. New_Length);
+                        S_Last : Natural;
+                     begin
+                        Fixed_Functions.Insert (
+                           Source.Element (1 .. Source.Length),
+                           Before,
+                           New_Item,
+                           Target => S,
+                           Target_Last => S_Last);
+                        Bounded.Set_Bounded_String (
+                           Result,
+                           S (1 .. S_Last),
+                           Drop);
+                     end;
+                  else
+                     Fixed_Functions.Insert (
+                        Source.Element (1 .. Source.Length),
+                        Before,
+                        New_Item,
+                        Target => Result.Element,
+                        Target_Last => Result.Length);
+                  end if;
+               end;
+            end return;
          end Insert;
 
          procedure Insert (
             Source : in out Bounded.Bounded_String;
             Before : Positive;
             New_Item : String_Type;
-            Drop : Truncation := Error) is
+            Drop : Truncation := Error)
+         is
+            New_Length : constant Natural := Source.Length + New_Item'Length;
          begin
-            Bounded.Set_Bounded_String (
-               Source,
+            if New_Length > Bounded.Max then
+               declare
+                  S : String_Type (1 .. New_Length);
+                  S_Last : Natural;
+               begin
+                  Fixed_Functions.Insert (
+                     Source.Element (1 .. Source.Length),
+                     Before,
+                     New_Item,
+                     Target => S, -- copying
+                     Target_Last => S_Last);
+                  Bounded.Set_Bounded_String (Source, S (1 .. S_Last), Drop);
+               end;
+            else
                Fixed_Functions.Insert (
-                  Source.Element (1 .. Source.Length),
+                  Source.Element,
+                  Source.Length,
                   Before,
-                  New_Item),
-               Drop);
+                  New_Item);
+            end if;
          end Insert;
 
          function Overwrite (
@@ -650,11 +782,11 @@ package body Ada.Strings.Generic_Bounded is
             Drop : Truncation := Error)
             return Bounded.Bounded_String is
          begin
-            return Bounded.To_Bounded_String (
-               Fixed_Functions.Overwrite (
-                  Source.Element (1 .. Source.Length),
-                  Position,
-                  New_Item),
+            return Replace_Slice (
+               Source,
+               Position,
+               Integer'Min (Position + New_Item'Length - 1, Source.Length),
+               New_Item,
                Drop);
          end Overwrite;
 
@@ -664,12 +796,11 @@ package body Ada.Strings.Generic_Bounded is
             New_Item : String_Type;
             Drop : Truncation := Error) is
          begin
-            Bounded.Set_Bounded_String (
+            Replace_Slice (
                Source,
-               Fixed_Functions.Overwrite (
-                  Source.Element (1 .. Source.Length),
-                  Position,
-                  New_Item),
+               Position,
+               Integer'Min (Position + New_Item'Length - 1, Source.Length),
+               New_Item,
                Drop);
          end Overwrite;
 
@@ -743,12 +874,32 @@ package body Ada.Strings.Generic_Bounded is
             Drop : Truncation := Error)
             return Bounded.Bounded_String is
          begin
-            return Bounded.To_Bounded_String (
-               Fixed_Functions.Head (
-                  Source.Element (1 .. Source.Length),
-                  Count,
-                  Pad),
-               Drop);
+            return Result : Bounded.Bounded_String do
+               if Count > Bounded.Max then
+                  declare
+                     S : String_Type (1 .. Count);
+                     S_Last : Natural;
+                  begin
+                     Fixed_Functions.Head (
+                        Source.Element (1 .. Source.Length),
+                        Count,
+                        Pad,
+                        Target => S,
+                        Target_Last => S_Last);
+                     Bounded.Set_Bounded_String (
+                        Result,
+                        S (1 .. S_Last),
+                        Drop);
+                  end;
+               else
+                  Fixed_Functions.Head (
+                     Source.Element (1 .. Source.Length),
+                     Count,
+                     Pad,
+                     Target => Result.Element,
+                     Target_Last => Result.Length);
+               end if;
+            end return;
          end Head;
 
          procedure Head (
@@ -757,13 +908,26 @@ package body Ada.Strings.Generic_Bounded is
             Pad : Character_Type := Fixed_Functions.Space;
             Drop : Truncation := Error) is
          begin
-            Bounded.Set_Bounded_String (
-               Source,
+            if Count > Bounded.Max then
+               declare
+                  S : String_Type (1 .. Count);
+                  S_Last : Natural;
+               begin
+                  Fixed_Functions.Head (
+                     Source.Element (1 .. Source.Length),
+                     Count,
+                     Pad,
+                     Target => S, -- copying
+                     Target_Last => S_Last);
+                  Bounded.Set_Bounded_String (Source, S (1 .. S_Last), Drop);
+               end;
+            else
                Fixed_Functions.Head (
-                  Source.Element (1 .. Source.Length),
+                  Source.Element,
+                  Source.Length,
                   Count,
-                  Pad),
-               Drop);
+                  Pad);
+            end if;
          end Head;
 
          function Tail (
@@ -773,12 +937,9 @@ package body Ada.Strings.Generic_Bounded is
             Drop : Truncation := Error)
             return Bounded.Bounded_String is
          begin
-            return Bounded.To_Bounded_String (
-               Fixed_Functions.Tail (
-                  Source.Element (1 .. Source.Length),
-                  Count,
-                  Pad),
-               Drop);
+            return Result : Bounded.Bounded_String do
+               Tail (Source, Count, Pad, Drop, Target => Result);
+            end return;
          end Tail;
 
          procedure Tail (
@@ -787,13 +948,9 @@ package body Ada.Strings.Generic_Bounded is
             Pad : Character_Type := Fixed_Functions.Space;
             Drop : Truncation := Error) is
          begin
-            Bounded.Set_Bounded_String (
-               Source,
-               Fixed_Functions.Tail (
-                  Source.Element (1 .. Source.Length),
-                  Count,
-                  Pad),
-               Drop);
+            if Count /= Source.Length then
+               Tail (Source, Count, Pad, Drop, Target => Source); -- copying
+            end if;
          end Tail;
 
       end Generic_Bounded_Length;
@@ -1012,24 +1169,52 @@ package body Ada.Strings.Generic_Bounded is
                Drop : Truncation := Error)
                return Bounded.Bounded_String is
             begin
-               return Bounded.To_Bounded_String (
-                  Fixed_Maps.Translate (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
+               return Result : Bounded.Bounded_String do
+                  declare
+                     Expanded_Length : constant Natural :=
+                        Source.Length * Fixed_Maps.Expanding;
+                  begin
+                     if Expanded_Length > Bounded.Max then
+                        declare
+                           S : String_Type (1 .. Expanded_Length);
+                           S_Last : Natural;
+                        begin
+                           Fixed_Maps.Translate (
+                              Source.Element (1 .. Source.Length),
+                              Mapping,
+                              Target => S,
+                              Target_Last => S_Last);
+                           Bounded.Set_Bounded_String (
+                              Result,
+                              S (1 .. S_Last),
+                              Drop);
+                        end;
+                     else
+                        Fixed_Maps.Translate (
+                           Source.Element (1 .. Source.Length),
+                           Mapping,
+                           Target => Result.Element,
+                           Target_Last => Result.Length);
+                     end if;
+                  end;
+               end return;
             end Translate;
 
             procedure Translate (
                Source : in out Bounded.Bounded_String;
                Mapping : Fixed_Maps.Character_Mapping;
-               Drop : Truncation := Error) is
+               Drop : Truncation := Error)
+            is
+               --  Translate can not update destructively.
+               S : String_Type (1 .. Source.Length * Fixed_Maps.Expanding);
+               S_Last : Natural;
             begin
-               Bounded.Set_Bounded_String (
-                  Source,
-                  Fixed_Maps.Translate (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
+               Fixed_Maps.Translate (
+                  Source.Element (1 .. Source.Length),
+                  Mapping,
+                  Target => S,
+                  Target_Last => S_Last);
+               Bounded.Set_Bounded_String (Source, S (1 .. S_Last), Drop);
             end Translate;
 
             function Translate (
@@ -1039,25 +1224,53 @@ package body Ada.Strings.Generic_Bounded is
                Drop : Truncation := Error)
                return Bounded.Bounded_String is
             begin
-               return Bounded.To_Bounded_String (
-                  Fixed_Maps.Translate (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
+               return Result : Bounded.Bounded_String do
+                  declare
+                     Expanded_Length : constant Natural :=
+                        Source.Length * Fixed_Maps.Expanding;
+                  begin
+                     if Expanded_Length > Bounded.Max then
+                        declare
+                           S : String_Type (1 .. Expanded_Length);
+                           S_Last : Natural;
+                        begin
+                           Fixed_Maps.Translate (
+                              Source.Element (1 .. Source.Length),
+                              Mapping,
+                              Target => S,
+                              Target_Last => S_Last);
+                           Bounded.Set_Bounded_String (
+                              Result,
+                              S (1 .. S_Last),
+                              Drop);
+                        end;
+                     else
+                        Fixed_Maps.Translate (
+                           Source.Element (1 .. Source.Length),
+                           Mapping,
+                           Target => Result.Element,
+                           Target_Last => Result.Length);
+                     end if;
+                  end;
+               end return;
             end Translate;
 
             procedure Translate (
                Source : in out Bounded.Bounded_String;
                Mapping : not null access function (From : Wide_Wide_Character)
                   return Wide_Wide_Character;
-               Drop : Truncation := Error) is
+               Drop : Truncation := Error)
+            is
+               --  Translate can not update destructively.
+               S : String_Type (1 .. Source.Length * Fixed_Maps.Expanding);
+               S_Last : Natural;
             begin
-               Bounded.Set_Bounded_String (
-                  Source,
-                  Fixed_Maps.Translate (
-                     Source.Element (1 .. Source.Length),
-                     Mapping),
-                  Drop);
+               Fixed_Maps.Translate (
+                  Source.Element (1 .. Source.Length),
+                  Mapping,
+                  Target => S,
+                  Target_Last => S_Last);
+               Bounded.Set_Bounded_String (Source, S (1 .. S_Last), Drop);
             end Translate;
 
             function Translate_Element (
@@ -1073,8 +1286,8 @@ package body Ada.Strings.Generic_Bounded is
                do
                   Fixed_Maps.Translate_Element (
                      Source.Element (1 .. Source.Length),
-                     Result.Element (1 .. Source.Length),
-                     Mapping);
+                     Mapping,
+                     Target => Result.Element (1 .. Source.Length));
                end return;
             end Translate_Element;
 

@@ -13,13 +13,14 @@ package body Ada.Task_Identification is
                   System.Tasks.Task_Record,
                   Task_Id);
             N : constant not null access constant String := Name (T);
+            N_Length : constant Natural := N'Length;
             Result : String (
                1 ..
-               N'Length + 1 + System.Formatting.Address.Address_String'Length);
+               N_Length + 1 + System.Formatting.Address.Address_String'Length);
             Last : Natural := 0;
          begin
-            if N'Length /= 0 then
-               Last := N'Length;
+            if N_Length /= 0 then
+               Last := N_Length;
                Result (1 .. Last) := N.all;
                Last := Last + 1;
                Result (Last) := ':';

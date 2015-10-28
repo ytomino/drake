@@ -294,10 +294,10 @@ package body Ada.Containers.Ordered_Sets is
 
    function Difference (Left, Right : Set) return Set is
    begin
-      if Is_Empty (Left) or else Is_Empty (Right) then
-         return Left;
-      else
-         return Result : Set do
+      return Result : Set do
+         if Is_Empty (Left) or else Is_Empty (Right) then
+            Assign (Result, Left);
+         else
             Unique (Result, True);
             Binary_Trees.Merge (
                Downcast (Result.Super.Data).Root,
@@ -310,8 +310,8 @@ package body Ada.Containers.Ordered_Sets is
                Compare => Compare_Node'Access,
                Copy => Copy_Node'Access,
                Insert => Base.Insert'Access);
-         end return;
-      end if;
+         end if;
+      end return;
    end Difference;
 
    function Element (Position : Cursor) return Element_Type is
@@ -504,10 +504,10 @@ package body Ada.Containers.Ordered_Sets is
 
    function Intersection (Left, Right : Set) return Set is
    begin
-      if Is_Empty (Left) or else Is_Empty (Right) then
-         return Empty_Set;
-      else
-         return Result : Set do
+      return Result : Set do
+         if Is_Empty (Left) or else Is_Empty (Right) then
+            null; -- Empty_Set;
+         else
             Unique (Result, True);
             Binary_Trees.Merge (
                Downcast (Result.Super.Data).Root,
@@ -520,8 +520,8 @@ package body Ada.Containers.Ordered_Sets is
                Compare => Compare_Node'Access,
                Copy => Copy_Node'Access,
                Insert => Base.Insert'Access);
-         end return;
-      end if;
+         end if;
+      end return;
    end Intersection;
 
    function Is_Empty (Container : Set) return Boolean is
@@ -563,7 +563,9 @@ package body Ada.Containers.Ordered_Sets is
    function Iterate (Container : Set)
       return Set_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
-      return Set_Iterator'(Container => Container'Unrestricted_Access);
+      return Set_Iterator'(
+         First => First (Container),
+         Last => Last (Container));
    end Iterate;
 
    function Last (Container : Set) return Cursor is
@@ -688,12 +690,12 @@ package body Ada.Containers.Ordered_Sets is
 
    function Symmetric_Difference (Left, Right : Set) return Set is
    begin
-      if Is_Empty (Left) then
-         return Right;
-      elsif Is_Empty (Right) then
-         return Left;
-      else
-         return Result : Set do
+      return Result : Set do
+         if Is_Empty (Left) then
+            Assign (Result, Right);
+         elsif Is_Empty (Right) then
+            Assign (Result, Left);
+         else
             Unique (Result, True);
             Binary_Trees.Merge (
                Downcast (Result.Super.Data).Root,
@@ -706,8 +708,8 @@ package body Ada.Containers.Ordered_Sets is
                Compare => Compare_Node'Access,
                Copy => Copy_Node'Access,
                Insert => Base.Insert'Access);
-         end return;
-      end if;
+         end if;
+      end return;
    end Symmetric_Difference;
 
    function To_Set (New_Item : Element_Type) return Set is
@@ -738,12 +740,12 @@ package body Ada.Containers.Ordered_Sets is
 
    function Union (Left, Right : Set) return Set is
    begin
-      if Is_Empty (Left) then
-         return Right;
-      elsif Is_Empty (Right) then
-         return Left;
-      else
-         return Result : Set do
+      return Result : Set do
+         if Is_Empty (Left) then
+            Assign (Result, Right);
+         elsif Is_Empty (Right) then
+            Assign (Result, Left);
+         else
             Unique (Result, True);
             Binary_Trees.Merge (
                Downcast (Result.Super.Data).Root,
@@ -756,8 +758,8 @@ package body Ada.Containers.Ordered_Sets is
                Compare => Compare_Node'Access,
                Copy => Copy_Node'Access,
                Insert => Base.Insert'Access);
-         end return;
-      end if;
+         end if;
+      end return;
    end Union;
 
    overriding function "=" (Left, Right : Set) return Boolean is
@@ -802,28 +804,32 @@ package body Ada.Containers.Ordered_Sets is
 
    overriding function First (Object : Set_Iterator) return Cursor is
    begin
-      return First (Object.Container.all);
+      return Object.First;
    end First;
 
    overriding function Next (Object : Set_Iterator; Position : Cursor)
-      return Cursor
-   is
-      pragma Unreferenced (Object);
+      return Cursor is
    begin
-      return Next (Position);
+      if Position = Object.Last then
+         return No_Element;
+      else
+         return Next (Position);
+      end if;
    end Next;
 
    overriding function Last (Object : Set_Iterator) return Cursor is
    begin
-      return Last (Object.Container.all);
+      return Object.Last;
    end Last;
 
    overriding function Previous (Object : Set_Iterator; Position : Cursor)
-      return Cursor
-   is
-      pragma Unreferenced (Object);
+      return Cursor is
    begin
-      return Previous (Position);
+      if Position = Object.First then
+         return No_Element;
+      else
+         return Previous (Position);
+      end if;
    end Previous;
 
    package body Generic_Keys is

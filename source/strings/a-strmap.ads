@@ -193,9 +193,6 @@ package Ada.Strings.Maps is
       renames Overloaded_To_Mapping;
 
    --  extended
-   overriding function "=" (Left, Right : Character_Mapping) return Boolean;
-
-   --  extended
    function Overloaded_To_Domain (Map : Character_Mapping)
       return Character_Sequence;
    function Overloaded_To_Domain (Map : Character_Mapping)
@@ -215,6 +212,9 @@ package Ada.Strings.Maps is
    function To_Range (Map : Character_Mapping)
       return Character_Sequence
       renames Overloaded_To_Range;
+
+   --  extended
+   overriding function "=" (Left, Right : Character_Mapping) return Boolean;
 
    type Character_Mapping_Function is
       access function (From : Character) return Character;

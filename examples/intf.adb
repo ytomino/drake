@@ -107,6 +107,12 @@ begin
 		pragma Assert (Interfaces.C.Wide_WStrings.Value (p, 1, Append_Nul => True) = (Interfaces.C.wchar_t'Val (Character'Pos ('A')), Interfaces.C.wide_nul));
 		Interfaces.C.Wide_WStrings.Free (p);
 		pragma Assert (Interfaces.C.Wide_WStrings.Value (Interfaces.C.Wide_WStrings.To_Const_Chars_Ptr (C_Sub_Str'Unrestricted_Access), 3) = Wide_String'("345"));
+		p := Interfaces.C.Wide_WStrings.New_Strcat (
+			Interfaces.C.Wide_WStrings.const_chars_ptr_With_Length_array'(
+				(C_Str (1)'Unchecked_Access, 2),
+				(C_Str (4)'Unchecked_Access, 2)));
+		pragma Assert (Interfaces.C.Wide_WStrings.Value (p) = "1245");
+		Interfaces.C.Wide_WStrings.Free (p);
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end intf;

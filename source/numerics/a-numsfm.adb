@@ -353,11 +353,6 @@ package body Ada.Numerics.SFMT is
       Gen.sfmt := Initialize (Unsigned_32'Mod (Initiator));
    end Reset;
 
-   function Reset (From_State : State) return Generator is
-   begin
-      return (sfmt => From_State);
-   end Reset;
-
    function Initialize return State is
       Init : Unsigned_32_Array (0 .. N32 - 1);
    begin
@@ -522,6 +517,11 @@ package body Ada.Numerics.SFMT is
    procedure Reset (Gen : in out Generator; From_State : State) is
    begin
       Gen.sfmt := From_State;
+   end Reset;
+
+   function Reset (From_State : State) return Generator is
+   begin
+      return (sfmt => From_State);
    end Reset;
 
    function Image (Of_State : State) return String is
