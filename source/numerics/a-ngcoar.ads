@@ -26,8 +26,7 @@ package Ada.Numerics.Generic_Complex_Arrays is
    procedure Set_Re (X : in out Complex_Vector; Re : Real_Vector);
    procedure Set_Im (X : in out Complex_Vector; Im : Real_Vector);
 
-   function Compose_From_Cartesian (Re : Real_Vector)
-      return Complex_Vector;
+   function Compose_From_Cartesian (Re : Real_Vector) return Complex_Vector;
    function Compose_From_Cartesian (Re, Im : Real_Vector)
       return Complex_Vector;
 
@@ -106,8 +105,7 @@ package Ada.Numerics.Generic_Complex_Arrays is
    procedure Set_Re (X : in out Complex_Matrix; Re : Real_Matrix);
    procedure Set_Im (X : in out Complex_Matrix; Im : Real_Matrix);
 
-   function Compose_From_Cartesian (Re : Real_Matrix)
-      return Complex_Matrix;
+   function Compose_From_Cartesian (Re : Real_Matrix) return Complex_Matrix;
    function Compose_From_Cartesian (Re, Im : Real_Matrix)
       return Complex_Matrix;
 
