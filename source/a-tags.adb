@@ -179,6 +179,165 @@ package body Ada.Tags is
 
    --  implementation
 
+   function Expanded_Name (T : Tag) return String is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
+   begin
+      return TSD.Expanded_Name (1 .. Natural (strlen (TSD.Expanded_Name)));
+   end Expanded_Name;
+
+   function Wide_Expanded_Name (T : Tag) return Wide_String is
+   begin
+      return System.UTF_Conversions.From_8_To_16.Convert (Expanded_Name (T));
+   end Wide_Expanded_Name;
+
+   function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String is
+   begin
+      return System.UTF_Conversions.From_8_To_32.Convert (Expanded_Name (T));
+   end Wide_Wide_Expanded_Name;
+
+   function External_Tag (T : Tag) return String is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
+      Result : String
+         renames TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
+   begin
+      if Result'First + (Nested_Prefix'Length - 1) < Result'Last
+         and then Result (
+            Result'First ..
+            Result'First + (Nested_Prefix'Length - 1)) = Nested_Prefix
+      then
+         null; -- nested
+      else
+         System.Shared_Locking.Enter;
+         E_Insert (External_Map, T, Result); -- library-level
+         System.Shared_Locking.Leave;
+      end if;
+      return Result;
+   end External_Tag;
+
+   function Internal_Tag (External : String) return Tag is
+   begin
+      if External'First + (Nested_Prefix'Length - 1) <= External'Last
+         and then External (
+            External'First ..
+            External'First + (Nested_Prefix'Length - 1)) = Nested_Prefix
+      then
+         declare
+            Addr_First : constant Positive :=
+               External'First + Nested_Prefix'Length;
+            Addr_Last : constant Natural :=
+               Addr_First
+               + (System.Formatting.Address.Address_String'Length - 1);
+         begin
+            if Addr_Last >= External'Last
+               or else External (Addr_Last + 1) /= '#'
+            then
+               Raise_Exception (Tag_Error'Identity);
+            end if;
+            declare
+               Result : System.Address;
+               Error : Boolean;
+            begin
+               System.Formatting.Address.Value (
+                  External (Addr_First .. Addr_Last),
+                  Result,
+                  Error => Error);
+               if Error then
+                  Raise_Exception (Tag_Error'Identity);
+               end if;
+               return Tag_Conv.To_Pointer (Result);
+            end;
+         end;
+      else
+         declare
+            Node : E_Node_Access;
+         begin
+            System.Shared_Locking.Enter;
+            Node := E_Find (External_Map, External);
+            System.Shared_Locking.Leave;
+            if Node = null then
+               Raise_Exception (Tag_Error'Identity);
+            end if;
+            return Node.Tag;
+         end;
+      end if;
+   end Internal_Tag;
+
+   function Descendant_Tag (External : String; Ancestor : Tag) return Tag is
+   begin
+      if Ancestor = No_Tag then
+         Raise_Exception (Tag_Error'Identity);
+      end if;
+      declare
+         Result : constant Tag := Internal_Tag (External);
+      begin
+         if not Is_Descendant (
+            Result,
+            Ancestor,
+            Primary_Only => False,
+            Same_Level => False)
+         then
+            Raise_Exception (Tag_Error'Identity);
+         end if;
+         return Result;
+      end;
+   end Descendant_Tag;
+
+   function Is_Descendant_At_Same_Level (Descendant, Ancestor : Tag)
+      return Boolean is
+   begin
+      if Descendant = No_Tag or else Ancestor = No_Tag then
+         Raise_Exception (Tag_Error'Identity);
+      end if;
+      return Is_Descendant (
+         Descendant,
+         Ancestor,
+         Primary_Only => False,
+         Same_Level => True);
+   end Is_Descendant_At_Same_Level;
+
+   function Parent_Tag (T : Tag) return Tag is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
+   begin
+      if TSD.Idepth = 0 then
+         return No_Tag;
+      else
+         return TSD.Tags_Table (1);
+      end if;
+   end Parent_Tag;
+
+   function Interface_Ancestor_Tags (T : Tag) return Tag_Array is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
+      Intf_Table : constant Interface_Data_Ptr := TSD.Interfaces_Table;
+      Length : Natural;
+   begin
+      if Intf_Table = null then
+         Length := 0;
+      else
+         Length := Intf_Table.Nb_Ifaces;
+      end if;
+      return Result : Tag_Array (1 .. Length) do
+         for I in Result'Range loop
+            Result (I) := Intf_Table.Ifaces_Table (I).Iface_Tag;
+         end loop;
+      end return;
+   end Interface_Ancestor_Tags;
+
+   function Is_Abstract (T : Tag) return Boolean is
+      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
+      TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (DT.TSD);
+   begin
+      return TSD.Type_Is_Abstract;
+   end Is_Abstract;
+
    function Base_Address (This : System.Address) return System.Address is
       function Offset_To_Top (This : System.Address)
          return System.Storage_Elements.Storage_Offset;
@@ -205,26 +364,6 @@ package body Ada.Tags is
    begin
       return This - Offset_To_Top (This);
    end Base_Address;
-
-   function Descendant_Tag (External : String; Ancestor : Tag) return Tag is
-   begin
-      if Ancestor = No_Tag then
-         Raise_Exception (Tag_Error'Identity);
-      end if;
-      declare
-         Result : constant Tag := Internal_Tag (External);
-      begin
-         if not Is_Descendant (
-            Result,
-            Ancestor,
-            Primary_Only => False,
-            Same_Level => False)
-         then
-            Raise_Exception (Tag_Error'Identity);
-         end if;
-         return Result;
-      end;
-   end Descendant_Tag;
 
    function Displace (This : System.Address; T : Tag) return System.Address is
    begin
@@ -289,35 +428,6 @@ package body Ada.Tags is
          - Dispatch_Table_Wrapper_0'Size / Standard'Storage_Unit);
    end DT;
 
-   function Expanded_Name (T : Tag) return String is
-      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (DT.TSD);
-   begin
-      return TSD.Expanded_Name (1 .. Natural (strlen (TSD.Expanded_Name)));
-   end Expanded_Name;
-
-   function External_Tag (T : Tag) return String is
-      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (DT.TSD);
-      Result : String
-         renames TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
-   begin
-      if Result'First + (Nested_Prefix'Length - 1) < Result'Last
-         and then Result (
-            Result'First ..
-            Result'First + (Nested_Prefix'Length - 1)) = Nested_Prefix
-      then
-         null; -- nested
-      else
-         System.Shared_Locking.Enter;
-         E_Insert (External_Map, T, Result); -- library-level
-         System.Shared_Locking.Leave;
-      end if;
-      return Result;
-   end External_Tag;
-
    function Get_Entry_Index (T : Tag; Position : Positive) return Positive is
       TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
@@ -333,94 +443,6 @@ package body Ada.Tags is
    begin
       return TSD.SSD.SSD_Table (Position).Kind;
    end Get_Prim_Op_Kind;
-
-   function Interface_Ancestor_Tags (T : Tag) return Tag_Array is
-      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (DT.TSD);
-      Intf_Table : constant Interface_Data_Ptr := TSD.Interfaces_Table;
-      Length : Natural;
-   begin
-      if Intf_Table = null then
-         Length := 0;
-      else
-         Length := Intf_Table.Nb_Ifaces;
-      end if;
-      return Result : Tag_Array (1 .. Length) do
-         for I in Result'Range loop
-            Result (I) := Intf_Table.Ifaces_Table (I).Iface_Tag;
-         end loop;
-      end return;
-   end Interface_Ancestor_Tags;
-
-   function Internal_Tag (External : String) return Tag is
-   begin
-      if External'First + (Nested_Prefix'Length - 1) <= External'Last
-         and then External (
-            External'First ..
-            External'First + (Nested_Prefix'Length - 1)) = Nested_Prefix
-      then
-         declare
-            Addr_First : constant Positive :=
-               External'First + Nested_Prefix'Length;
-            Addr_Last : constant Natural :=
-               Addr_First
-               + (System.Formatting.Address.Address_String'Length - 1);
-         begin
-            if Addr_Last >= External'Last
-               or else External (Addr_Last + 1) /= '#'
-            then
-               Raise_Exception (Tag_Error'Identity);
-            end if;
-            declare
-               Result : System.Address;
-               Error : Boolean;
-            begin
-               System.Formatting.Address.Value (
-                  External (Addr_First .. Addr_Last),
-                  Result,
-                  Error => Error);
-               if Error then
-                  Raise_Exception (Tag_Error'Identity);
-               end if;
-               return Tag_Conv.To_Pointer (Result);
-            end;
-         end;
-      else
-         declare
-            Node : E_Node_Access;
-         begin
-            System.Shared_Locking.Enter;
-            Node := E_Find (External_Map, External);
-            System.Shared_Locking.Leave;
-            if Node = null then
-               Raise_Exception (Tag_Error'Identity);
-            end if;
-            return Node.Tag;
-         end;
-      end if;
-   end Internal_Tag;
-
-   function Is_Abstract (T : Tag) return Boolean is
-      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (DT.TSD);
-   begin
-      return TSD.Type_Is_Abstract;
-   end Is_Abstract;
-
-   function Is_Descendant_At_Same_Level (Descendant, Ancestor : Tag)
-      return Boolean is
-   begin
-      if Descendant = No_Tag or else Ancestor = No_Tag then
-         Raise_Exception (Tag_Error'Identity);
-      end if;
-      return Is_Descendant (
-         Descendant,
-         Ancestor,
-         Primary_Only => False,
-         Same_Level => True);
-   end Is_Descendant_At_Same_Level;
 
    function IW_Membership (This : System.Address; T : Tag) return Boolean is
       Base_Object : constant System.Address := Base_Address (This);
@@ -456,18 +478,6 @@ package body Ada.Tags is
    begin
       return TSD.Needs_Finalization;
    end Needs_Finalization;
-
-   function Parent_Tag (T : Tag) return Tag is
-      DT : constant Dispatch_Table_Ptr := DT_With_Checking (T);
-      TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (DT.TSD);
-   begin
-      if TSD.Idepth = 0 then
-         return No_Tag;
-      else
-         return TSD.Tags_Table (1);
-      end if;
-   end Parent_Tag;
 
    procedure Register_Interface_Offset (
       This : System.Address;
@@ -521,15 +531,5 @@ package body Ada.Tags is
    begin
       TSD.SSD.SSD_Table (Position).Kind := Value;
    end Set_Prim_Op_Kind;
-
-   function Wide_Expanded_Name (T : Tag) return Wide_String is
-   begin
-      return System.UTF_Conversions.From_8_To_16.Convert (Expanded_Name (T));
-   end Wide_Expanded_Name;
-
-   function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String is
-   begin
-      return System.UTF_Conversions.From_8_To_32.Convert (Expanded_Name (T));
-   end Wide_Wide_Expanded_Name;
 
 end Ada.Tags;

@@ -95,103 +95,10 @@ package body Ada.Containers.Indefinite_Holders is
 
    --  implementation
 
-   procedure Assign (Target : in out Holder; Source : Holder) is
-   begin
-      Copy_On_Write.Assign (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
-   end Assign;
-
-   procedure Clear (Container : in out Holder) is
-   begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
-   end Clear;
-
-   function Constant_Reference (
-      Container : aliased Holder)
-      return Constant_Reference_Type is
-   begin
-      Unique (Container'Unrestricted_Access.all, False);
-      return (Element =>
-         Downcast (Container.Super.Data).Element.all'Access);
-   end Constant_Reference;
-
-   function Copy (Source : Holder) return Holder is
-   begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
-            Source.Super'Access,
-            0, -- Length is unused
-            0, -- Capacity is unused
-            Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
-   end Copy;
-
-   function Element (Container : Holder'Class) return Element_Type is
-   begin
-      return Container.Constant_Reference.Element.all;
-   end Element;
-
    function Empty_Holder return Holder is
    begin
       return (Finalization.Controlled with Super => (null, null));
    end Empty_Holder;
-
-   procedure Move (Target : in out Holder; Source : in out Holder) is
-   begin
-      Copy_On_Write.Move (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
-   end Move;
-
-   function Is_Empty (Container : Holder) return Boolean is
-   begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Element = null;
-   end Is_Empty;
-
-   procedure Query_Element (
-      Container : Holder'Class;
-      Process : not null access procedure (Element : Element_Type)) is
-   begin
-      Process (Container.Constant_Reference.Element.all);
-   end Query_Element;
-
-   function Reference (
-      Container : aliased in out Holder)
-      return Reference_Type is
-   begin
-      Unique (Container, True);
-      return (Element =>
-         Downcast (Container.Super.Data).Element.all'Access);
-   end Reference;
-
-   procedure Replace_Element (
-      Container : in out Holder;
-      New_Item : Element_Type) is
-   begin
-      Clear (Container);
-      Unique (Container, True);
-      Allocate_Element (Downcast (Container.Super.Data).Element, New_Item);
-   end Replace_Element;
-
-   function To_Holder (New_Item : Element_Type) return Holder is
-   begin
-      return Result : Holder do
-         Replace_Element (Result, New_Item);
-      end return;
-   end To_Holder;
-
-   procedure Update_Element (
-      Container : in out Holder'Class;
-      Process : not null access procedure (Element : in out Element_Type)) is
-   begin
-      Process (Container.Reference.Element.all);
-   end Update_Element;
 
    overriding function "=" (Left, Right : Holder) return Boolean is
    begin
@@ -204,6 +111,99 @@ package body Ada.Containers.Indefinite_Holders is
             Downcast (Right.Super.Data).Element.all;
       end if;
    end "=";
+
+   function To_Holder (New_Item : Element_Type) return Holder is
+   begin
+      return Result : Holder do
+         Replace_Element (Result, New_Item);
+      end return;
+   end To_Holder;
+
+   function Is_Empty (Container : Holder) return Boolean is
+   begin
+      return Container.Super.Data = null
+         or else Downcast (Container.Super.Data).Element = null;
+   end Is_Empty;
+
+   procedure Clear (Container : in out Holder) is
+   begin
+      Copy_On_Write.Clear (
+         Container.Super'Access,
+         Free => Free_Data'Access);
+   end Clear;
+
+   function Element (Container : Holder'Class) return Element_Type is
+   begin
+      return Container.Constant_Reference.Element.all;
+   end Element;
+
+   procedure Replace_Element (
+      Container : in out Holder;
+      New_Item : Element_Type) is
+   begin
+      Clear (Container);
+      Unique (Container, True);
+      Allocate_Element (Downcast (Container.Super.Data).Element, New_Item);
+   end Replace_Element;
+
+   procedure Query_Element (
+      Container : Holder'Class;
+      Process : not null access procedure (Element : Element_Type)) is
+   begin
+      Process (Container.Constant_Reference.Element.all);
+   end Query_Element;
+
+   procedure Update_Element (
+      Container : in out Holder'Class;
+      Process : not null access procedure (Element : in out Element_Type)) is
+   begin
+      Process (Container.Reference.Element.all);
+   end Update_Element;
+
+   function Constant_Reference (
+      Container : aliased Holder)
+      return Constant_Reference_Type is
+   begin
+      Unique (Container'Unrestricted_Access.all, False);
+      return (Element =>
+         Downcast (Container.Super.Data).Element.all'Access);
+   end Constant_Reference;
+
+   function Reference (
+      Container : aliased in out Holder)
+      return Reference_Type is
+   begin
+      Unique (Container, True);
+      return (Element =>
+         Downcast (Container.Super.Data).Element.all'Access);
+   end Reference;
+
+   procedure Assign (Target : in out Holder; Source : Holder) is
+   begin
+      Copy_On_Write.Assign (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+   end Assign;
+
+   function Copy (Source : Holder) return Holder is
+   begin
+      return (Finalization.Controlled with
+         Super => Copy_On_Write.Copy (
+            Source.Super'Access,
+            0, -- Length is unused
+            0, -- Capacity is unused
+            Allocate => Allocate_Data'Access,
+            Copy => Copy_Data'Access));
+   end Copy;
+
+   procedure Move (Target : in out Holder; Source : in out Holder) is
+   begin
+      Copy_On_Write.Move (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+   end Move;
 
    overriding procedure Adjust (Object : in out Holder) is
    begin

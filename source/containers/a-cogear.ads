@@ -24,10 +24,10 @@ package Ada.Containers.Generic_Arrays is
    procedure Clear (Container : in out Array_Access)
       renames Free;
 
-   procedure Move (Target : in out Array_Access; Source : in out Array_Access);
-
    procedure Assign (Target : in out Array_Access; Source : Array_Access);
    procedure Assign (Target : in out Array_Access; Source : New_Array);
+
+   procedure Move (Target : in out Array_Access; Source : in out Array_Access);
 
    procedure Insert (
       Container : in out Array_Access;

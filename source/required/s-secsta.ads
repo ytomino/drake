@@ -8,13 +8,13 @@ package System.Secondary_Stack is
    --  required for secondary stack by compiler (s-secsta.ads)
    SS_Pool : Integer; -- unused, but compiler requires
 
-   subtype Mark_Id is Unbounded_Stack_Allocators.Marker;
-
-   function SS_Mark return Mark_Id;
-
    procedure SS_Allocate (
       Addr : out Address;
       Storage_Size : Storage_Elements.Storage_Count);
+
+   subtype Mark_Id is Unbounded_Stack_Allocators.Marker;
+
+   function SS_Mark return Mark_Id;
 
    procedure SS_Release (M : Mark_Id);
 

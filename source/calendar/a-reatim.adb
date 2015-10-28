@@ -8,26 +8,6 @@ package body Ada.Real_Time is
          System.Native_Real_Time.To_Duration (System.Native_Real_Time.Clock));
    end Clock;
 
-   function Microseconds (US : Integer) return Time_Span is
-   begin
-      return US * 0.000_001;
-   end Microseconds;
-
-   function Milliseconds (MS : Integer) return Time_Span is
-   begin
-      return MS * 0.001;
-   end Milliseconds;
-
-   function Nanoseconds (NS : Integer) return Time_Span is
-   begin
-      return NS * 0.000_000_001;
-   end Nanoseconds;
-
-   function Seconds (S : Integer) return Time_Span is
-   begin
-      return Time_Span (S);
-   end Seconds;
-
    function "*" (Left : Time_Span; Right : Integer) return Time_Span is
    begin
       return Time_Span (Duration (Left) * Right);
@@ -62,5 +42,25 @@ package body Ada.Real_Time is
    begin
       return Time_Span (D);
    end To_Time_Span;
+
+   function Nanoseconds (NS : Integer) return Time_Span is
+   begin
+      return NS * 0.000_000_001;
+   end Nanoseconds;
+
+   function Microseconds (US : Integer) return Time_Span is
+   begin
+      return US * 0.000_001;
+   end Microseconds;
+
+   function Milliseconds (MS : Integer) return Time_Span is
+   begin
+      return MS * 0.001;
+   end Milliseconds;
+
+   function Seconds (S : Integer) return Time_Span is
+   begin
+      return Time_Span (S);
+   end Seconds;
 
 end Ada.Real_Time;

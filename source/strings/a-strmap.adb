@@ -103,178 +103,15 @@ package body Ada.Strings.Maps is
 
    --  implementation of sets
 
-   function Is_Null (Set : Character_Set) return Boolean is
-   begin
-      return Reference (Set).Length = 0;
-   end Is_Null;
-
-   function Is_Subset (
-      Elements : Character_Set;
-      Set : Character_Set)
-      return Boolean
-   is
-      pragma Check (Validate,
-         Check => Naked_Maps.Debug.Valid (Reference (Elements).all));
-      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
-      Elements_Data : constant not null Set_Data_Access :=
-         Reference (Elements);
-      Set_Data : constant not null Set_Data_Access := Reference (Set);
-   begin
-      if Set_Data.Length = 0 then
-         return False;
-      else
-         declare
-            J : Positive := Set_Data.Items'First;
-         begin
-            for I in Elements_Data.Items'Range loop
-               declare
-                  E : Naked_Maps.Character_Range
-                     renames Elements_Data.Items (I);
-               begin
-                  loop
-                     if E.Low < Set_Data.Items (J).Low then
-                        return False;
-                     elsif E.High > Set_Data.Items (J).High then
-                        J := J + 1;
-                        if J > Set_Data.Items'Last then
-                           return False;
-                        end if;
-                     else
-                        exit; -- ok for E
-                     end if;
-                  end loop;
-               end;
-            end loop;
-            return True;
-         end;
-      end if;
-   end Is_Subset;
-
    function Null_Set return Character_Set is
    begin
       return Create (Empty_Set_Data'Unrestricted_Access);
    end Null_Set;
 
-   function Overloaded_Is_In (
-      Element : Character;
-      Set : Character_Set)
-      return Boolean is
+   function Is_Null (Set : Character_Set) return Boolean is
    begin
-      return Overloaded_Is_In (
-         Naked_Maps.To_Wide_Wide_Character (Element),
-         Set);
-   end Overloaded_Is_In;
-
-   function Overloaded_Is_In (
-      Element : Wide_Character;
-      Set : Character_Set)
-      return Boolean is
-   begin
-      return Overloaded_Is_In (
-         Naked_Maps.To_Wide_Wide_Character (Element),
-         Set);
-   end Overloaded_Is_In;
-
-   function Overloaded_Is_In (
-      Element : Wide_Wide_Character;
-      Set : Character_Set)
-      return Boolean
-   is
-      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
-   begin
-      return Naked_Maps.Is_In (Element, Reference (Set).all);
-   end Overloaded_Is_In;
-
-   function Overloaded_To_Ranges (Set : Character_Set)
-      return Character_Ranges
-   is
-      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
-      Set_Data : constant not null Set_Data_Access := Reference (Set);
-   begin
-      return Result : Character_Ranges (Set_Data.Items'Range) do
-         for I in Result'Range loop
-            Result (I).Low :=
-               Naked_Maps.To_Character (Set_Data.Items (I).Low);
-            Result (I).High :=
-               Naked_Maps.To_Character (Set_Data.Items (I).High);
-         end loop;
-      end return;
-   end Overloaded_To_Ranges;
-
-   function Overloaded_To_Ranges (Set : Character_Set)
-      return Wide_Character_Ranges
-   is
-      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
-      Set_Data : constant not null Set_Data_Access := Reference (Set);
-   begin
-      return Result : Wide_Character_Ranges (Set_Data.Items'Range) do
-         for I in Result'Range loop
-            Result (I).Low :=
-               Naked_Maps.To_Wide_Character (Set_Data.Items (I).Low);
-            Result (I).High :=
-               Naked_Maps.To_Wide_Character (Set_Data.Items (I).High);
-         end loop;
-      end return;
-   end Overloaded_To_Ranges;
-
-   function Overloaded_To_Ranges (Set : Character_Set)
-      return Wide_Wide_Character_Ranges
-   is
-      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
-      Set_Data : constant not null Set_Data_Access := Reference (Set);
-   begin
-      return Result : Wide_Wide_Character_Ranges (
-         Set_Data.Items'Range)
-      do
-         for I in Result'Range loop
-            Result (I).Low := Set_Data.Items (I).Low;
-            Result (I).High := Set_Data.Items (I).High;
-         end loop;
-      end return;
-   end Overloaded_To_Ranges;
-
-   function Overloaded_To_Sequence (Set : Character_Set)
-      return Character_Sequence is
-   begin
-      --  Should it raise Constraint_Error for illegal sequence ?
-      return System.UTF_Conversions.From_32_To_8.Convert (
-         Overloaded_To_Sequence (Set),
-         Substitute => "");
-   end Overloaded_To_Sequence;
-
-   function Overloaded_To_Sequence (Set : Character_Set)
-      return Wide_Character_Sequence is
-   begin
-      --  Should it raise Constraint_Error for illegal sequence or unmappable ?
-      return System.UTF_Conversions.From_32_To_16.Convert (
-         Overloaded_To_Sequence (Set),
-         Substitute => "");
-   end Overloaded_To_Sequence;
-
-   function Overloaded_To_Sequence (Set : Character_Set)
-      return Wide_Wide_Character_Sequence
-   is
-      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
-      Set_Data : constant not null Set_Data_Access := Reference (Set);
-      Length : Natural := 0;
-      Position : Positive;
-   begin
-      for I in Set_Data.Items'Range loop
-         Length := Length + (
-            Wide_Wide_Character'Pos (Set_Data.Items (I).High)
-            - Wide_Wide_Character'Pos (Set_Data.Items (I).Low)
-            + 1);
-      end loop;
-      return Result : Wide_Wide_String (1 .. Length) do
-         Position := 1;
-         for I in Set_Data.Items'Range loop
-            for J in Set_Data.Items (I).Low .. Set_Data.Items (I).High loop
-               Result (Position) := J;
-               Position := Position + 1;
-            end loop;
-         end loop;
-      end return;
-   end Overloaded_To_Sequence;
+      return Reference (Set).Length = 0;
+   end Is_Null;
 
    function Overloaded_To_Set (Ranges : Character_Ranges)
       return Character_Set
@@ -396,86 +233,53 @@ package body Ada.Strings.Maps is
       return Create (Data);
    end Overloaded_To_Set;
 
-   function Overloaded_To_Set (Sequence : Character_Sequence)
-      return Character_Set
+   function Overloaded_To_Ranges (Set : Character_Set)
+      return Character_Ranges
    is
-      --  Should it raise Constraint_Error for illegal sequence ?
-      U_Sequence : Wide_Wide_Character_Sequence (
-        1 .. System.UTF_Conversions.Expanding_From_8_To_32 * Sequence'Length);
-      U_Sequence_Last : Natural;
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
+      Set_Data : constant not null Set_Data_Access := Reference (Set);
    begin
-      System.UTF_Conversions.From_8_To_32.Convert (
-         Sequence,
-         U_Sequence,
-         U_Sequence_Last,
-         Substitute => "");
-      return Overloaded_To_Set (U_Sequence (1 .. U_Sequence_Last));
-   end Overloaded_To_Set;
+      return Result : Character_Ranges (Set_Data.Items'Range) do
+         for I in Result'Range loop
+            Result (I).Low :=
+               Naked_Maps.To_Character (Set_Data.Items (I).Low);
+            Result (I).High :=
+               Naked_Maps.To_Character (Set_Data.Items (I).High);
+         end loop;
+      end return;
+   end Overloaded_To_Ranges;
 
-   function Overloaded_To_Set (Sequence : Wide_Character_Sequence)
-      return Character_Set
+   function Overloaded_To_Ranges (Set : Character_Set)
+      return Wide_Character_Ranges
    is
-      --  Should it raise Constraint_Error for illegal sequence ?
-      U_Sequence : Wide_Wide_Character_Sequence (
-        1 .. System.UTF_Conversions.Expanding_From_16_To_32 * Sequence'Length);
-      U_Sequence_Last : Natural;
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
+      Set_Data : constant not null Set_Data_Access := Reference (Set);
    begin
-      System.UTF_Conversions.From_16_To_32.Convert (
-         Sequence,
-         U_Sequence,
-         U_Sequence_Last,
-         Substitute => "");
-      return Overloaded_To_Set (U_Sequence (1 .. U_Sequence_Last));
-   end Overloaded_To_Set;
+      return Result : Wide_Character_Ranges (Set_Data.Items'Range) do
+         for I in Result'Range loop
+            Result (I).Low :=
+               Naked_Maps.To_Wide_Character (Set_Data.Items (I).Low);
+            Result (I).High :=
+               Naked_Maps.To_Wide_Character (Set_Data.Items (I).High);
+         end loop;
+      end return;
+   end Overloaded_To_Ranges;
 
-   function Overloaded_To_Set (Sequence : Wide_Wide_Character_Sequence)
-      return Character_Set
+   function Overloaded_To_Ranges (Set : Character_Set)
+      return Wide_Wide_Character_Ranges
    is
-      Items : Naked_Maps.Character_Ranges (Sequence'Range);
-      Last : Natural := Items'First - 1;
-      Data : Set_Data_Access;
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
+      Set_Data : constant not null Set_Data_Access := Reference (Set);
    begin
-      --  it should be more optimized...
-      for I in Sequence'Range loop
-         Naked_Maps.Add (
-            Items,
-            Last,
-            Sequence (I),
-            Sequence (I));
-      end loop;
-      if Last < Items'First then
-         Data := Empty_Set_Data'Unrestricted_Access;
-      else
-         Data := new Set_Data'(
-            Length => Last - Items'First + 1,
-            Reference_Count => 1,
-            Items => Items (Items'First .. Last));
-         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-      end if;
-      return Create (Data);
-   end Overloaded_To_Set;
-
-   function Overloaded_To_Set (Singleton : Character)
-      return Character_Set is
-   begin
-      return Overloaded_To_Set (Naked_Maps.To_Wide_Wide_Character (Singleton));
-   end Overloaded_To_Set;
-
-   function Overloaded_To_Set (Singleton : Wide_Character)
-      return Character_Set is
-   begin
-      return Overloaded_To_Set (Naked_Maps.To_Wide_Wide_Character (Singleton));
-   end Overloaded_To_Set;
-
-   function Overloaded_To_Set (Singleton : Wide_Wide_Character)
-      return Character_Set is
-   begin
-      return Create (
-         new Set_Data'(
-            Length => 1,
-            Reference_Count => 1,
-            Items => (1 => (Singleton, Singleton))));
-   end Overloaded_To_Set;
+      return Result : Wide_Wide_Character_Ranges (
+         Set_Data.Items'Range)
+      do
+         for I in Result'Range loop
+            Result (I).Low := Set_Data.Items (I).Low;
+            Result (I).High := Set_Data.Items (I).High;
+         end loop;
+      end return;
+   end Overloaded_To_Ranges;
 
    overriding function "=" (Left, Right : Character_Set) return Boolean is
       pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Left).all));
@@ -695,6 +499,202 @@ package body Ada.Strings.Maps is
       return Create (Data);
    end "-";
 
+   function Overloaded_Is_In (
+      Element : Character;
+      Set : Character_Set)
+      return Boolean is
+   begin
+      return Overloaded_Is_In (
+         Naked_Maps.To_Wide_Wide_Character (Element),
+         Set);
+   end Overloaded_Is_In;
+
+   function Overloaded_Is_In (
+      Element : Wide_Character;
+      Set : Character_Set)
+      return Boolean is
+   begin
+      return Overloaded_Is_In (
+         Naked_Maps.To_Wide_Wide_Character (Element),
+         Set);
+   end Overloaded_Is_In;
+
+   function Overloaded_Is_In (
+      Element : Wide_Wide_Character;
+      Set : Character_Set)
+      return Boolean
+   is
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
+   begin
+      return Naked_Maps.Is_In (Element, Reference (Set).all);
+   end Overloaded_Is_In;
+
+   function Is_Subset (
+      Elements : Character_Set;
+      Set : Character_Set)
+      return Boolean
+   is
+      pragma Check (Validate,
+         Check => Naked_Maps.Debug.Valid (Reference (Elements).all));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
+      Elements_Data : constant not null Set_Data_Access :=
+         Reference (Elements);
+      Set_Data : constant not null Set_Data_Access := Reference (Set);
+   begin
+      if Set_Data.Length = 0 then
+         return False;
+      else
+         declare
+            J : Positive := Set_Data.Items'First;
+         begin
+            for I in Elements_Data.Items'Range loop
+               declare
+                  E : Naked_Maps.Character_Range
+                     renames Elements_Data.Items (I);
+               begin
+                  loop
+                     if E.Low < Set_Data.Items (J).Low then
+                        return False;
+                     elsif E.High > Set_Data.Items (J).High then
+                        J := J + 1;
+                        if J > Set_Data.Items'Last then
+                           return False;
+                        end if;
+                     else
+                        exit; -- ok for E
+                     end if;
+                  end loop;
+               end;
+            end loop;
+            return True;
+         end;
+      end if;
+   end Is_Subset;
+
+   function Overloaded_To_Set (Sequence : Character_Sequence)
+      return Character_Set
+   is
+      --  Should it raise Constraint_Error for illegal sequence ?
+      U_Sequence : Wide_Wide_Character_Sequence (
+        1 .. System.UTF_Conversions.Expanding_From_8_To_32 * Sequence'Length);
+      U_Sequence_Last : Natural;
+   begin
+      System.UTF_Conversions.From_8_To_32.Convert (
+         Sequence,
+         U_Sequence,
+         U_Sequence_Last,
+         Substitute => "");
+      return Overloaded_To_Set (U_Sequence (1 .. U_Sequence_Last));
+   end Overloaded_To_Set;
+
+   function Overloaded_To_Set (Sequence : Wide_Character_Sequence)
+      return Character_Set
+   is
+      --  Should it raise Constraint_Error for illegal sequence ?
+      U_Sequence : Wide_Wide_Character_Sequence (
+        1 .. System.UTF_Conversions.Expanding_From_16_To_32 * Sequence'Length);
+      U_Sequence_Last : Natural;
+   begin
+      System.UTF_Conversions.From_16_To_32.Convert (
+         Sequence,
+         U_Sequence,
+         U_Sequence_Last,
+         Substitute => "");
+      return Overloaded_To_Set (U_Sequence (1 .. U_Sequence_Last));
+   end Overloaded_To_Set;
+
+   function Overloaded_To_Set (Sequence : Wide_Wide_Character_Sequence)
+      return Character_Set
+   is
+      Items : Naked_Maps.Character_Ranges (Sequence'Range);
+      Last : Natural := Items'First - 1;
+      Data : Set_Data_Access;
+   begin
+      --  it should be more optimized...
+      for I in Sequence'Range loop
+         Naked_Maps.Add (
+            Items,
+            Last,
+            Sequence (I),
+            Sequence (I));
+      end loop;
+      if Last < Items'First then
+         Data := Empty_Set_Data'Unrestricted_Access;
+      else
+         Data := new Set_Data'(
+            Length => Last - Items'First + 1,
+            Reference_Count => 1,
+            Items => Items (Items'First .. Last));
+         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
+      end if;
+      return Create (Data);
+   end Overloaded_To_Set;
+
+   function Overloaded_To_Set (Singleton : Character)
+      return Character_Set is
+   begin
+      return Overloaded_To_Set (Naked_Maps.To_Wide_Wide_Character (Singleton));
+   end Overloaded_To_Set;
+
+   function Overloaded_To_Set (Singleton : Wide_Character)
+      return Character_Set is
+   begin
+      return Overloaded_To_Set (Naked_Maps.To_Wide_Wide_Character (Singleton));
+   end Overloaded_To_Set;
+
+   function Overloaded_To_Set (Singleton : Wide_Wide_Character)
+      return Character_Set is
+   begin
+      return Create (
+         new Set_Data'(
+            Length => 1,
+            Reference_Count => 1,
+            Items => (1 => (Singleton, Singleton))));
+   end Overloaded_To_Set;
+
+   function Overloaded_To_Sequence (Set : Character_Set)
+      return Character_Sequence is
+   begin
+      --  Should it raise Constraint_Error for illegal sequence ?
+      return System.UTF_Conversions.From_32_To_8.Convert (
+         Overloaded_To_Sequence (Set),
+         Substitute => "");
+   end Overloaded_To_Sequence;
+
+   function Overloaded_To_Sequence (Set : Character_Set)
+      return Wide_Character_Sequence is
+   begin
+      --  Should it raise Constraint_Error for illegal sequence or unmappable ?
+      return System.UTF_Conversions.From_32_To_16.Convert (
+         Overloaded_To_Sequence (Set),
+         Substitute => "");
+   end Overloaded_To_Sequence;
+
+   function Overloaded_To_Sequence (Set : Character_Set)
+      return Wide_Wide_Character_Sequence
+   is
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
+      Set_Data : constant not null Set_Data_Access := Reference (Set);
+      Length : Natural := 0;
+      Position : Positive;
+   begin
+      for I in Set_Data.Items'Range loop
+         Length := Length + (
+            Wide_Wide_Character'Pos (Set_Data.Items (I).High)
+            - Wide_Wide_Character'Pos (Set_Data.Items (I).Low)
+            + 1);
+      end loop;
+      return Result : Wide_Wide_String (1 .. Length) do
+         Position := 1;
+         for I in Set_Data.Items'Range loop
+            for J in Set_Data.Items (I).Low .. Set_Data.Items (I).High loop
+               Result (Position) := J;
+               Position := Position + 1;
+            end loop;
+         end loop;
+      end return;
+   end Overloaded_To_Sequence;
+
    package body Controlled_Sets is
 
       function Create (
@@ -789,6 +789,34 @@ package body Ada.Strings.Maps is
 
    --  implementation of maps
 
+   function Overloaded_Value (
+      Map : Character_Mapping;
+      Element : Character)
+      return Character is
+   begin
+      return Naked_Maps.To_Character (
+         Overloaded_Value (Map, Naked_Maps.To_Wide_Wide_Character (Element)));
+   end Overloaded_Value;
+
+   function Overloaded_Value (
+      Map : Character_Mapping;
+      Element : Wide_Character)
+      return Wide_Character is
+   begin
+      return Naked_Maps.To_Wide_Character (
+         Overloaded_Value (Map, Naked_Maps.To_Wide_Wide_Character (Element)));
+   end Overloaded_Value;
+
+   function Overloaded_Value (
+      Map : Character_Mapping;
+      Element : Wide_Wide_Character)
+      return Wide_Wide_Character
+   is
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Map).all));
+   begin
+      return Naked_Maps.Value (Reference (Map).all, Element);
+   end Overloaded_Value;
+
    function Identity return Character_Mapping is
    begin
       return Create (Empty_Map_Data'Unrestricted_Access);
@@ -798,32 +826,6 @@ package body Ada.Strings.Maps is
    begin
       return Reference (Map).Length = 0;
    end Is_Identity;
-
-   function Overloaded_To_Domain (Map : Character_Mapping)
-      return Character_Sequence is
-   begin
-      --  Should it raise Constraint_Error for illegal sequence ?
-      return System.UTF_Conversions.From_32_To_8.Convert (
-         Overloaded_To_Domain (Map),
-         Substitute => "");
-   end Overloaded_To_Domain;
-
-   function Overloaded_To_Domain (Map : Character_Mapping)
-      return Wide_Character_Sequence is
-   begin
-      --  Should it raise Constraint_Error for illegal sequence or unmappable ?
-      return System.UTF_Conversions.From_32_To_16.Convert (
-         Overloaded_To_Domain (Map),
-         Substitute => "");
-   end Overloaded_To_Domain;
-
-   function Overloaded_To_Domain (Map : Character_Mapping)
-      return Wide_Wide_Character_Sequence
-   is
-      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Map).all));
-   begin
-      return Reference (Map).From;
-   end Overloaded_To_Domain;
 
    function Overloaded_To_Mapping (From, To : Character_Sequence)
       return Character_Mapping
@@ -880,6 +882,32 @@ package body Ada.Strings.Maps is
       return Create (New_Data);
    end Overloaded_To_Mapping;
 
+   function Overloaded_To_Domain (Map : Character_Mapping)
+      return Character_Sequence is
+   begin
+      --  Should it raise Constraint_Error for illegal sequence ?
+      return System.UTF_Conversions.From_32_To_8.Convert (
+         Overloaded_To_Domain (Map),
+         Substitute => "");
+   end Overloaded_To_Domain;
+
+   function Overloaded_To_Domain (Map : Character_Mapping)
+      return Wide_Character_Sequence is
+   begin
+      --  Should it raise Constraint_Error for illegal sequence or unmappable ?
+      return System.UTF_Conversions.From_32_To_16.Convert (
+         Overloaded_To_Domain (Map),
+         Substitute => "");
+   end Overloaded_To_Domain;
+
+   function Overloaded_To_Domain (Map : Character_Mapping)
+      return Wide_Wide_Character_Sequence
+   is
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Map).all));
+   begin
+      return Reference (Map).From;
+   end Overloaded_To_Domain;
+
    function Overloaded_To_Range (Map : Character_Mapping)
       return Character_Sequence is
    begin
@@ -905,34 +933,6 @@ package body Ada.Strings.Maps is
    begin
       return Reference (Map).To;
    end Overloaded_To_Range;
-
-   function Overloaded_Value (
-      Map : Character_Mapping;
-      Element : Character)
-      return Character is
-   begin
-      return Naked_Maps.To_Character (
-         Overloaded_Value (Map, Naked_Maps.To_Wide_Wide_Character (Element)));
-   end Overloaded_Value;
-
-   function Overloaded_Value (
-      Map : Character_Mapping;
-      Element : Wide_Character)
-      return Wide_Character is
-   begin
-      return Naked_Maps.To_Wide_Character (
-         Overloaded_Value (Map, Naked_Maps.To_Wide_Wide_Character (Element)));
-   end Overloaded_Value;
-
-   function Overloaded_Value (
-      Map : Character_Mapping;
-      Element : Wide_Wide_Character)
-      return Wide_Wide_Character
-   is
-      pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Map).all));
-   begin
-      return Naked_Maps.Value (Reference (Map).all, Element);
-   end Overloaded_Value;
 
    overriding function "=" (Left, Right : Character_Mapping) return Boolean is
       pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Left).all));

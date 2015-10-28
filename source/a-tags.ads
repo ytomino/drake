@@ -204,29 +204,21 @@ private
    type Addr_Ptr is access System.Address;
    for Addr_Ptr'Storage_Size use 0;
 
-   --  required for controlled types by compiler (a-tags.ads)
-   function DT (T : Tag) return Dispatch_Table_Ptr;
-
    --  required for interface class-wide types by compiler (a-tags.ads)
    function Base_Address (This : System.Address) return System.Address;
 
    --  required for downcast to interface types by compiler (a-tags.ads)
    function Displace (This : System.Address; T : Tag) return System.Address;
 
+   --  required for controlled types by compiler (a-tags.ads)
+   function DT (T : Tag) return Dispatch_Table_Ptr;
+
+   --  required for synchronized interface by compiler (a-tags.ads)
+   function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
+
    --  required for virtual subprograms by compiler (a-tags.ads)
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind;
-
-   --  required for synchronized interface by compiler (a-tags.ads)
-   procedure Set_Prim_Op_Kind (
-      T : Tag;
-      Position : Positive;
-      Value : Prim_Op_Kind);
-   function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
-   procedure Set_Entry_Index (
-      T : Tag;
-      Position : Positive;
-      Value : Positive);
 
    --  required for Obj in Intf'Class by compiler (a-tags.ads)
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
@@ -247,15 +239,27 @@ private
    --  [gcc-5] generates _finalize_spec/body without _elabs/_elabb
    --    and gnatbind generates wrong code, if Register_Tag is null.
 --  procedure Register_Tag (T : Tag) is null; -- unimplemented
+
+   --  required for synchronized interface by compiler (a-tags.ads)
+   procedure Set_Entry_Index (
+      T : Tag;
+      Position : Positive;
+      Value : Positive);
+   procedure Set_Prim_Op_Kind (
+      T : Tag;
+      Position : Positive;
+      Value : Prim_Op_Kind);
+
+   --  required for library-level tagged types by compiler (s-exctab.ads)
 --  procedure Unregister_Tag (T : Tag) is null; -- unimplemented
 
    --  required by compiler ??? (a-tags.ads)
 --  procedure Check_TSD (TSD : Type_Specific_Data_Ptr);
+--  function Secondary_Tag (T, Iface : Tag) return Tag;
 --  function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
 --  function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
 --  function Offset_To_Top (This : System.Address)
 --    return System.Storage_Elements.Storage_Offset;
---  function Secondary_Tag (T, Iface : Tag) return Tag;
 --  procedure Set_Dynamic_Offset_To_Top (
 --    This : System.Address;
 --    Interface_T : Tag;

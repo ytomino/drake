@@ -89,6 +89,20 @@ package body System.Unwind.Occurrences is
 
    --  implementation
 
+   procedure Save_Occurrence (
+      Target : out Exception_Occurrence;
+      Source : Exception_Occurrence) is
+   begin
+      memcpy (
+         Target'Address,
+         Source'Address,
+         Target.Tracebacks'Position
+            + (Tracebacks_Array'Component_Size / Standard'Storage_Unit)
+               * Storage_Elements.Storage_Offset (Source.Num_Tracebacks));
+      Target.Machine_Occurrence := Null_Address;
+      Target.Exception_Raised := False;
+   end Save_Occurrence;
+
    procedure Backtrace (X : in out Exception_Occurrence) is
    begin
       if Call_Chain'Address /= Null_Address then
@@ -170,20 +184,6 @@ package body System.Unwind.Occurrences is
       X.Pid := Local_Partition_ID;
       X.Num_Tracebacks := 0;
    end Set_Exception_Message;
-
-   procedure Save_Occurrence (
-      Target : out Exception_Occurrence;
-      Source : Exception_Occurrence) is
-   begin
-      memcpy (
-         Target'Address,
-         Source'Address,
-         Target.Tracebacks'Position
-            + (Tracebacks_Array'Component_Size / Standard'Storage_Unit)
-               * Storage_Elements.Storage_Offset (Source.Num_Tracebacks));
-      Target.Machine_Occurrence := Null_Address;
-      Target.Exception_Raised := False;
-   end Save_Occurrence;
 
    function New_Machine_Occurrence (Stack_Guard : Address)
       return not null Representation.Machine_Occurrence_Access

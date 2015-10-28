@@ -85,6 +85,87 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    --  implementation
 
+   function i return Imaginary is
+   begin
+      return 1.0;
+   end i;
+
+   function Re (X : Complex) return Real'Base is
+   begin
+      return X.Re;
+   end Re;
+
+   function Im (X : Complex) return Real'Base is
+   begin
+      return X.Im;
+   end Im;
+
+   function Im (X : Imaginary) return Real'Base is
+   begin
+      return Real'Base (X);
+   end Im;
+
+   procedure Set_Re (X : in out Complex; Re : Real'Base) is
+   begin
+      X.Re := Re;
+   end Set_Re;
+
+   procedure Set_Im (X : in out Complex; Im : Real'Base) is
+   begin
+      X.Im := Im;
+   end Set_Im;
+
+   procedure Set_Im (X : out Imaginary; Im : Real'Base) is
+   begin
+      X := Imaginary (Im);
+   end Set_Im;
+
+   function Compose_From_Cartesian (Re, Im : Real'Base) return Complex is
+   begin
+      return (Re => Re, Im => Im);
+   end Compose_From_Cartesian;
+
+   function Compose_From_Cartesian (Re : Real'Base) return Complex is
+   begin
+      return (Re => Re, Im => 0.0);
+   end Compose_From_Cartesian;
+
+   function Compose_From_Cartesian (Im : Imaginary) return Complex is
+   begin
+      return (Re => 0.0, Im => Real'Base (Im));
+   end Compose_From_Cartesian;
+
+   function Modulus (X : Complex) return Real'Base is
+   begin
+      if Real'Digits <= Float'Digits then
+         declare
+            function cabsf (x : Complex) return Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabsf";
+         begin
+            return Real'Base (cabsf (X));
+         end;
+      elsif Real'Digits <= Long_Float'Digits
+         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
+      then
+         declare
+            function cabs (x : Complex) return Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabs";
+         begin
+            return Real'Base (cabs (X));
+         end;
+      else
+         declare
+            function cabsl (x : Complex) return Long_Long_Float
+               with Import,
+                  Convention => Intrinsic, External_Name => "__builtin_cabsl";
+         begin
+            return Real'Base (cabsl (X));
+         end;
+      end if;
+   end Modulus;
+
    function Argument (X : Complex) return Real'Base is
    begin
       if Real'Digits <= Float'Digits then
@@ -123,21 +204,6 @@ package body Ada.Numerics.Generic_Complex_Types is
       end if;
       return Argument (X) * Cycle / (2.0 * Real'Base'(Pi));
    end Argument;
-
-   function Compose_From_Cartesian (Re, Im : Real'Base) return Complex is
-   begin
-      return (Re => Re, Im => Im);
-   end Compose_From_Cartesian;
-
-   function Compose_From_Cartesian (Re : Real'Base) return Complex is
-   begin
-      return (Re => Re, Im => 0.0);
-   end Compose_From_Cartesian;
-
-   function Compose_From_Cartesian (Im : Imaginary) return Complex is
-   begin
-      return (Re => 0.0, Im => Real'Base (Im));
-   end Compose_From_Cartesian;
 
    function Compose_From_Polar (Modulus, Argument : Real'Base)
       return Complex is
@@ -179,6 +245,16 @@ package body Ada.Numerics.Generic_Complex_Types is
       return Compose_From_Polar (Modulus, 2.0 * Real'Base'(Pi) * R);
    end Compose_From_Polar;
 
+   function "+" (Right : Complex) return Complex is
+   begin
+      return Right;
+   end "+";
+
+   function "-" (Right : Complex) return Complex is
+   begin
+      return (Re => -Right.Re, Im => -Right.Im);
+   end "-";
+
    function Conjugate (X : Complex) return Complex is
    begin
       if Real'Digits <= Float'Digits then
@@ -210,155 +286,14 @@ package body Ada.Numerics.Generic_Complex_Types is
       end if;
    end Conjugate;
 
-   function i return Imaginary is
-   begin
-      return 1.0;
-   end i;
-
-   function Im (X : Complex) return Real'Base is
-   begin
-      return X.Im;
-   end Im;
-
-   function Im (X : Imaginary) return Real'Base is
-   begin
-      return Real'Base (X);
-   end Im;
-
-   function Modulus (X : Complex) return Real'Base is
-   begin
-      if Real'Digits <= Float'Digits then
-         declare
-            function cabsf (x : Complex) return Float
-               with Import,
-                  Convention => Intrinsic, External_Name => "__builtin_cabsf";
-         begin
-            return Real'Base (cabsf (X));
-         end;
-      elsif Real'Digits <= Long_Float'Digits
-         and then Real'Size <= Long_Float'Size -- for 32bit FreeBSD
-      then
-         declare
-            function cabs (x : Complex) return Long_Float
-               with Import,
-                  Convention => Intrinsic, External_Name => "__builtin_cabs";
-         begin
-            return Real'Base (cabs (X));
-         end;
-      else
-         declare
-            function cabsl (x : Complex) return Long_Long_Float
-               with Import,
-                  Convention => Intrinsic, External_Name => "__builtin_cabsl";
-         begin
-            return Real'Base (cabsl (X));
-         end;
-      end if;
-   end Modulus;
-
-   function Re (X : Complex) return Real'Base is
-   begin
-      return X.Re;
-   end Re;
-
-   procedure Set_Im (X : in out Complex; Im : Real'Base) is
-   begin
-      X.Im := Im;
-   end Set_Im;
-
-   procedure Set_Im (X : out Imaginary; Im : Real'Base) is
-   begin
-      X := Imaginary (Im);
-   end Set_Im;
-
-   procedure Set_Re (X : in out Complex; Re : Real'Base) is
-   begin
-      X.Re := Re;
-   end Set_Re;
-
-   function "abs" (Right : Imaginary) return Real'Base is
-   begin
-      return abs Real'Base (Right);
-   end "abs";
-
-   function "+" (Right : Complex) return Complex is
-   begin
-      return Right;
-   end "+";
-
    function "+" (Left, Right : Complex) return Complex is
    begin
       return (Re => Left.Re + Right.Re, Im => Left.Im + Right.Im);
    end "+";
 
-   function "+" (Left : Complex; Right : Real'Base) return Complex is
-   begin
-      return (Re => Left.Re + Right, Im => Left.Im);
-   end "+";
-
-   function "+" (Left : Real'Base; Right : Complex) return Complex is
-   begin
-      return (Re => Left + Right.Re, Im => Right.Im);
-   end "+";
-
-   function "+" (Left : Complex; Right : Imaginary) return Complex is
-   begin
-      return (Re => Left.Re, Im => Left.Im + Real'Base (Right));
-   end "+";
-
-   function "+" (Left : Imaginary; Right : Complex) return Complex is
-   begin
-      return (Re => Right.Re, Im => Real'Base (Left) + Right.Im);
-   end "+";
-
-   function "+" (Left : Imaginary; Right : Real'Base) return Complex is
-   begin
-      return (Re => Right, Im => Real'Base (Left));
-   end "+";
-
-   function "+" (Left : Real'Base; Right : Imaginary) return Complex is
-   begin
-      return (Re => Left, Im => Real'Base (Right));
-   end "+";
-
-   function "-" (Right : Complex) return Complex is
-   begin
-      return (Re => -Right.Re, Im => -Right.Im);
-   end "-";
-
    function "-" (Left, Right : Complex) return Complex is
    begin
       return (Re => Left.Re - Right.Re, Im => Left.Im - Right.Im);
-   end "-";
-
-   function "-" (Left : Complex; Right : Real'Base) return Complex is
-   begin
-      return (Re => Left.Re - Right, Im => Left.Im);
-   end "-";
-
-   function "-" (Left : Real'Base; Right : Complex) return Complex is
-   begin
-      return (Re => Left - Right.Re, Im => -Right.Im);
-   end "-";
-
-   function "-" (Left : Complex; Right : Imaginary) return Complex is
-   begin
-      return (Re => Left.Re, Im => Left.Im - Real'Base (Right));
-   end "-";
-
-   function "-" (Left : Imaginary; Right : Complex) return Complex is
-   begin
-      return (Re => -Right.Re, Im => Real'Base (Left) - Right.Im);
-   end "-";
-
-   function "-" (Left : Imaginary; Right : Real'Base) return Complex is
-   begin
-      return (Re => -Right, Im => Real'Base (Left));
-   end "-";
-
-   function "-" (Left : Real'Base; Right : Imaginary) return Complex is
-   begin
-      return (Re => Left, Im => -Real'Base (Right));
    end "-";
 
    function "*" (Left, Right : Complex) return Complex is
@@ -455,45 +390,6 @@ package body Ada.Numerics.Generic_Complex_Types is
       return Result;
    end "*";
 
-   function "*" (Left, Right : Imaginary) return Real'Base is
-   begin
-      return -(Real'Base (Left) * Real'Base (Right));
-   end "*";
-
-   function "*" (Left : Complex; Right : Real'Base) return Complex is
-   begin
-      return (Re => Left.Re * Right, Im => Left.Im * Right);
-   end "*";
-
-   function "*" (Left : Real'Base; Right : Complex) return Complex is
-   begin
-      return (Re => Left * Right.Re, Im => Left * Right.Im);
-   end "*";
-
-   function "*" (Left : Complex; Right : Imaginary) return Complex is
-   begin
-      return (
-         Re => -(Left.Im * Real'Base (Right)),
-         Im => Left.Re * Real'Base (Right));
-   end "*";
-
-   function "*" (Left : Imaginary; Right : Complex) return Complex is
-   begin
-      return (
-         Re => -(Real'Base (Left) * Right.Im),
-         Im => Real'Base (Left) * Right.Re);
-   end "*";
-
-   function "*" (Left : Imaginary; Right : Real'Base) return Imaginary is
-   begin
-      return Imaginary (Real'Base (Left) * Right);
-   end "*";
-
-   function "*" (Left : Real'Base; Right : Imaginary) return Imaginary is
-   begin
-      return Imaginary (Left * Real'Base (Right));
-   end "*";
-
    function "/" (Left, Right : Complex) return Complex is
       Result : Complex;
    begin
@@ -557,10 +453,64 @@ package body Ada.Numerics.Generic_Complex_Types is
       return Result;
    end "/";
 
+   function "**" (Left : Complex; Right : Integer) return Complex is
+   begin
+      return Compose_From_Polar (
+         Modulus (Left) ** Right,
+         Argument (Left) * Real'Base (Right));
+   end "**";
+
+   function "abs" (Right : Imaginary) return Real'Base is
+   begin
+      return abs Real'Base (Right);
+   end "abs";
+
+   function "*" (Left, Right : Imaginary) return Real'Base is
+   begin
+      return -(Real'Base (Left) * Real'Base (Right));
+   end "*";
+
    function "/" (Left, Right : Imaginary) return Real'Base is
    begin
       return Real'Base (Left) / Real'Base (Right);
    end "/";
+
+   function "**" (Left : Imaginary; Right : Integer) return Complex is
+   begin
+      return Compose_From_Polar (
+         (abs Real'Base (Left)) ** Right,
+         (Real'Base'(Pi) / Real'Base'(2.0)) * Real'Base (Right));
+   end "**";
+
+   function "+" (Left : Complex; Right : Real'Base) return Complex is
+   begin
+      return (Re => Left.Re + Right, Im => Left.Im);
+   end "+";
+
+   function "+" (Left : Real'Base; Right : Complex) return Complex is
+   begin
+      return (Re => Left + Right.Re, Im => Right.Im);
+   end "+";
+
+   function "-" (Left : Complex; Right : Real'Base) return Complex is
+   begin
+      return (Re => Left.Re - Right, Im => Left.Im);
+   end "-";
+
+   function "-" (Left : Real'Base; Right : Complex) return Complex is
+   begin
+      return (Re => Left - Right.Re, Im => -Right.Im);
+   end "-";
+
+   function "*" (Left : Complex; Right : Real'Base) return Complex is
+   begin
+      return (Re => Left.Re * Right, Im => Left.Im * Right);
+   end "*";
+
+   function "*" (Left : Real'Base; Right : Complex) return Complex is
+   begin
+      return (Re => Left * Right.Re, Im => Left * Right.Im);
+   end "*";
 
    function "/" (Left : Complex; Right : Real'Base) return Complex is
    begin
@@ -575,6 +525,40 @@ package body Ada.Numerics.Generic_Complex_Types is
          Im => -(Left * Right.Im)
             / (Right.Re * Right.Re + Right.Im * Right.Im));
    end "/";
+
+   function "+" (Left : Complex; Right : Imaginary) return Complex is
+   begin
+      return (Re => Left.Re, Im => Left.Im + Real'Base (Right));
+   end "+";
+
+   function "+" (Left : Imaginary; Right : Complex) return Complex is
+   begin
+      return (Re => Right.Re, Im => Real'Base (Left) + Right.Im);
+   end "+";
+
+   function "-" (Left : Complex; Right : Imaginary) return Complex is
+   begin
+      return (Re => Left.Re, Im => Left.Im - Real'Base (Right));
+   end "-";
+
+   function "-" (Left : Imaginary; Right : Complex) return Complex is
+   begin
+      return (Re => -Right.Re, Im => Real'Base (Left) - Right.Im);
+   end "-";
+
+   function "*" (Left : Complex; Right : Imaginary) return Complex is
+   begin
+      return (
+         Re => -(Left.Im * Real'Base (Right)),
+         Im => Left.Re * Real'Base (Right));
+   end "*";
+
+   function "*" (Left : Imaginary; Right : Complex) return Complex is
+   begin
+      return (
+         Re => -(Real'Base (Left) * Right.Im),
+         Im => Real'Base (Left) * Right.Re);
+   end "*";
 
    function "/" (Left : Complex; Right : Imaginary) return Complex is
    begin
@@ -592,6 +576,36 @@ package body Ada.Numerics.Generic_Complex_Types is
             / (Right.Re * Right.Re + Right.Im * Right.Im));
    end "/";
 
+   function "+" (Left : Imaginary; Right : Real'Base) return Complex is
+   begin
+      return (Re => Right, Im => Real'Base (Left));
+   end "+";
+
+   function "+" (Left : Real'Base; Right : Imaginary) return Complex is
+   begin
+      return (Re => Left, Im => Real'Base (Right));
+   end "+";
+
+   function "-" (Left : Imaginary; Right : Real'Base) return Complex is
+   begin
+      return (Re => -Right, Im => Real'Base (Left));
+   end "-";
+
+   function "-" (Left : Real'Base; Right : Imaginary) return Complex is
+   begin
+      return (Re => Left, Im => -Real'Base (Right));
+   end "-";
+
+   function "*" (Left : Imaginary; Right : Real'Base) return Imaginary is
+   begin
+      return Imaginary (Real'Base (Left) * Right);
+   end "*";
+
+   function "*" (Left : Real'Base; Right : Imaginary) return Imaginary is
+   begin
+      return Imaginary (Left * Real'Base (Right));
+   end "*";
+
    function "/" (Left : Imaginary; Right : Real'Base) return Imaginary is
    begin
       return Imaginary (Real'Base (Left) / Right);
@@ -601,19 +615,5 @@ package body Ada.Numerics.Generic_Complex_Types is
    begin
       return Imaginary (-(Left / Real'Base (Right)));
    end "/";
-
-   function "**" (Left : Complex; Right : Integer) return Complex is
-   begin
-      return Compose_From_Polar (
-         Modulus (Left) ** Right,
-         Argument (Left) * Real'Base (Right));
-   end "**";
-
-   function "**" (Left : Imaginary; Right : Integer) return Complex is
-   begin
-      return Compose_From_Polar (
-         (abs Real'Base (Left)) ** Right,
-         (Real'Base'(Pi) / Real'Base'(2.0)) * Real'Base (Right));
-   end "**";
 
 end Ada.Numerics.Generic_Complex_Types;
