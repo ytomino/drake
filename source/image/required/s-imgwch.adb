@@ -42,17 +42,17 @@ package body System.Img_WChar is
    procedure Image_Wide_Wide_Character (
       V : Wide_Wide_Character;
       S : in out String;
-      P : out Natural) is
+      P : out Natural)
+   is
+      subtype WWC is Wide_Wide_Character; -- for the case statement
    begin
       case V is
-         when Wide_Wide_Character'Val (0) ..
-            Wide_Wide_Character'Val (16#7f#)
-         =>
+         when WWC'Val (0) .. WWC'Val (16#7f#) =>
             Img_Char.Image_Character_05 (
                Character'Val (Wide_Wide_Character'Pos (V)),
                S,
                P);
-         when Wide_Wide_Character'Val (16#ad#) =>
+         when WWC'Val (16#ad#) =>
             Image_Wide_Character (
                Wide_Character'Val (Wide_Wide_Character'Pos (V)),
                S,
