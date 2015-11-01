@@ -991,8 +991,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
       procedure Update_Element_Preserving_Key (
          Container : in out Set;
          Position : Cursor;
-         Process : not null access procedure (Element : in out Element_Type))
-         is
+         Process : not null access procedure (
+            Element : in out Element_Type)) is
       begin
          Process (
             Reference_Preserving_Key (

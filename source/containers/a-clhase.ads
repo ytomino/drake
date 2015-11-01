@@ -186,7 +186,8 @@ package Ada.Containers.Limited_Hashed_Sets is
       procedure Update_Element_Preserving_Key (
          Container : in out Set;
          Position : Cursor;
-         Process : not null access procedure (Element : in out Element_Type));
+         Process : not null access procedure (
+            Element : in out Element_Type));
 
       type Reference_Type (
          Element : not null access Element_Type) is private

@@ -497,9 +497,7 @@ package body Ada.Numerics.Generic_Arrays is
 
    --  other matrix operations
 
-   function Unit_Matrix (
-      Order : Positive;
-      First_1, First_2 : Integer := 1)
+   function Unit_Matrix (Order : Positive; First_1, First_2 : Integer := 1)
       return Matrix is
    begin
       return Result : Matrix (

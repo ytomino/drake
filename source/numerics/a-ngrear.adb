@@ -388,9 +388,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Eigensystem_Body (A, Values, Vectors);
    end Eigensystem;
 
-   function Unit_Matrix (
-      Order : Positive;
-      First_1, First_2 : Integer := 1)
+   function Unit_Matrix (Order : Positive; First_1, First_2 : Integer := 1)
       return Real_Matrix
    is
       function Unit_Matrix_Body is

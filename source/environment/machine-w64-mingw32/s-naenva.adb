@@ -38,7 +38,6 @@ package body System.Native_Environment_Variables is
       Name : not null access constant C.winnt.WCHAR;
       Length : C.windef.DWORD)
       return String;
-
    function Get_2 (
       Name : not null access constant C.winnt.WCHAR;
       Length : C.windef.DWORD)

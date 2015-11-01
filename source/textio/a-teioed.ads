@@ -15,6 +15,7 @@ package Ada.Text_IO.Editing is
 
    function Pic_String (Pic : Picture) return String;
    function Blank_When_Zero (Pic : Picture) return Boolean;
+
    pragma Inline (Blank_When_Zero);
 
    Max_Picture_Length : constant := 30; -- implementation_defined

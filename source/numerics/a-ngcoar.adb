@@ -1057,9 +1057,8 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       Eigensystem_Body (A, Values, Vectors);
    end Eigensystem;
 
-   function Unit_Matrix (
-      Order : Positive;
-      First_1, First_2 : Integer := 1) return Complex_Matrix
+   function Unit_Matrix (Order : Positive; First_1, First_2 : Integer := 1)
+      return Complex_Matrix
    is
       function Unit_Matrix_Body is
          new Generic_Arrays.Unit_Matrix (
