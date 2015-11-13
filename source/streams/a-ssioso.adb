@@ -25,6 +25,11 @@ package body Ada.Streams.Stream_IO.Sockets is
 
    --  implementation
 
+   function Is_Assigned (Peer : End_Point) return Boolean is
+   begin
+      return Reference (Peer).all /= null;
+   end Is_Assigned;
+
    function Resolve (Host_Name : String; Service : String)
       return End_Point
    is
@@ -45,7 +50,12 @@ package body Ada.Streams.Stream_IO.Sockets is
       return Get (Peer);
    end Resolve;
 
-   procedure Connect (File : in out File_Type; Peer : End_Point) is
+   procedure Connect (
+      File : in out File_Type;
+      Peer : End_Point)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Peer) or else raise Status_Error);
       procedure Finally (X : not null access System.Native_IO.Handle_Type);
       procedure Finally (X : not null access System.Native_IO.Handle_Type) is
          Empty_Name : aliased System.Native_IO.Name_String :=
@@ -82,10 +92,14 @@ package body Ada.Streams.Stream_IO.Sockets is
       end if;
    end Connect;
 
-   function Connect (Peer : End_Point) return File_Type is
+   function Connect (
+      Peer : End_Point)
+      return File_Type is
    begin
       return Result : File_Type do
-         Connect (Result, Peer);
+         Connect (
+            Result,
+            Peer); -- checking the predicate
       end return;
    end Connect;
 
