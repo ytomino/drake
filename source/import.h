@@ -285,6 +285,7 @@
 #pragma for Ada "sys/ioctl.h" include "bits/ioctl-types.h"
 #pragma for Ada "sys/mman.h" include "bits/mman.h"
 #pragma for Ada "sys/resource.h" include "bits/resource.h"
+#pragma for Ada "sys/socket.h" include "asm-generic/socket.h"
 #pragma for Ada "sys/socket.h" include "bits/socket.h"
 #pragma for Ada "sys/socket.h" include "bits/socket_type.h"
 #pragma for Ada "sys/stat.h" include "bits/stat.h"
