@@ -4,12 +4,13 @@ with Ada.IO_Modes;
 private with Ada.Finalization;
 private with Ada.Streams.Naked_Stream_IO;
 package Ada.Streams.Stream_IO is
-   pragma Preelaborate; -- AI12-0010-1
+   pragma Preelaborate;
 
    type Stream_Access is access all Root_Stream_Type'Class;
    for Stream_Access'Storage_Size use 0;
 
    type File_Type is limited private;
+   pragma Preelaborable_Initialization (File_Type); -- AI12-0102-1
 
    --  Similar to Text_IO in AI12-0054-2:
 --  subtype Open_File_Type is File_Type
