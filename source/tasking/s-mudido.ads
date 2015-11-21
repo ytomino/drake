@@ -16,6 +16,7 @@ package System.Multiprocessors.Dispatching_Domains is
 
 --  function Get_Last_CPU (Domain : Dispatching_Domain) return CPU_Range;
 
+   --  Sets of CPUs in AI12-0033-1:
    type CPU_Set is array (CPU range <>) of Boolean;
 
 --  function Create (Set : CPU_Set) return Dispatching_Domain;
