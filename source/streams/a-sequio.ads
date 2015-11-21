@@ -65,6 +65,10 @@ package Ada.Sequential_IO is
    function Is_Open (File : File_Type) return Boolean;
    pragma Inline (Is_Open);
 
+   procedure Flush (
+      File : File_Type); -- Output_File_Type
+      --  AI12-0130-1
+
    --  Input and output operations
 
    procedure Read (
