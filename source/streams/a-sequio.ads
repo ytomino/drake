@@ -1,7 +1,8 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
-with Ada.Streams.Stream_IO;
+private with Ada.Streams; -- [gcc-5] can not find it by below "with Stream_IO"
+private with Ada.Streams.Stream_IO;
 generic
    type Element_Type (<>) is private;
 package Ada.Sequential_IO is
