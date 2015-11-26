@@ -245,7 +245,7 @@ package body System.Unwind.Occurrences is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
       Machine_Occurrence : constant
-         not null Representation.Machine_Occurrence_Access :=
+         Representation.Machine_Occurrence_Access :=
          TLS.Machine_Occurrence;
       Result : Boolean;
    begin
