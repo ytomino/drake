@@ -793,7 +793,7 @@ package body Ada.Strings.Generic_Unbounded is
                   Set_Length (Source, Old_Length + New_Item'Length);
                   Unique (Source); -- for overwriting
                   New_Length := Old_Length;
-                  Fixed_Functions.Replace_Slice (
+                  Fixed_Functions.Insert (
                      Source.Data.Items (1 .. Old_Length),
                      New_Length,
                      Before,

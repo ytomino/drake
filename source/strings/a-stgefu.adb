@@ -438,7 +438,7 @@ package body Ada.Strings.Generic_Functions is
    is
       Following : constant Positive := Integer'Max (High + 1, Low);
       New_Following : constant Positive := Low + By'Length;
-      New_Last : constant Natural := New_Following + Source'Last - Following;
+      New_Last : constant Natural := New_Following + Last - Following;
    begin
       if New_Following /= Following then
          Source (New_Following .. New_Last) := Source (Following .. Last);
@@ -510,7 +510,7 @@ package body Ada.Strings.Generic_Functions is
       New_Item : String_Type)
    is
       New_Following : constant Positive := Before + New_Item'Length;
-      New_Last : constant Natural := New_Following + Source'Last - Before;
+      New_Last : constant Natural := New_Following + Last - Before;
    begin
       if New_Following /= Before then
          Source (New_Following .. New_Last) := Source (Before .. Last);
