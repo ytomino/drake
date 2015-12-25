@@ -181,6 +181,10 @@ package Ada.Containers.Indefinite_Ordered_Sets is
    function Iterate (Container : Set'Class) -- not primitive
       return Set_Iterator_Interfaces.Reversible_Iterator'Class;
 
+   --  extended
+   function Iterate (Container : Set'Class; First, Last : Cursor)
+      return Set_Iterator_Interfaces.Reversible_Iterator'Class;
+
    generic
       type Key_Type (<>) is private;
       with function Key (Element : Element_Type) return Key_Type;
