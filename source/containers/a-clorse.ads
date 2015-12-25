@@ -180,6 +180,10 @@ package Ada.Containers.Limited_Ordered_Sets is
    function Iterate (Container : Set)
       return Set_Iterator_Interfaces.Reversible_Iterator'Class;
 
+   --  extended
+   function Iterate (Container : Set'Class; First, Last : Cursor)
+      return Set_Iterator_Interfaces.Reversible_Iterator'Class;
+
    generic
       type Key_Type (<>) is private;
       with function Key (Element : Element_Type) return Key_Type;
@@ -212,7 +216,8 @@ package Ada.Containers.Limited_Ordered_Sets is
       procedure Update_Element_Preserving_Key (
          Container : in out Set;
          Position : Cursor;
-         Process : not null access procedure (Element : in out Element_Type));
+         Process : not null access procedure (
+            Element : in out Element_Type));
 
       type Reference_Type (
          Element : not null access Element_Type) is private

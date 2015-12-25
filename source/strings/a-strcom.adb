@@ -321,13 +321,17 @@ package body Ada.Strings.Composites is
    end Iterate;
 
    function Is_Variation_Selector (Item : Wide_Wide_Character)
-      return Boolean is
+      return Boolean
+   is
+      subtype WWC is Wide_Wide_Character; -- for the case statement
    begin
-      case Wide_Wide_Character'Pos (Item) is
-         when 16#180B# .. 16#180D# -- MONGOLIAN FREE VARIATION SELECTOR (1..3)
-            | 16#FE00# .. 16#FE0F# -- VARIATION SELECTOR (1..16)
-            | 16#E0100# .. 16#E01EF# -- VARIATION SELECTOR (17..256)
-         =>
+      case Item is
+         when WWC'Val (16#180B#) .. WWC'Val (16#180D#)
+               --  MONGOLIAN FREE VARIATION SELECTOR (1..3)
+            | WWC'Val (16#FE00#) .. WWC'Val (16#FE0F#)
+               --  VARIATION SELECTOR (1..16)
+            | WWC'Val (16#E0100#) .. WWC'Val (16#E01EF#) =>
+               --  VARIATION SELECTOR (17..256)
             return True;
          when others =>
             return False;

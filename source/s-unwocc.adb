@@ -137,13 +137,13 @@ package body System.Unwind.Occurrences is
                   X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
-               if not Error and then Last < X.Msg'Last then
-                  Last := Last + 1;
-                  X.Msg (Last) := ':';
-               end if;
             end;
          end if;
          if Column > 0 then
+            if Last < X.Msg'Last then
+               Last := Last + 1;
+               X.Msg (Last) := ':';
+            end if;
             declare
                Error : Boolean;
             begin
@@ -152,10 +152,6 @@ package body System.Unwind.Occurrences is
                   X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
-               if not Error and then Last < X.Msg'Last then
-                  Last := Last + 1;
-                  X.Msg (Last) := ':';
-               end if;
             end;
          end if;
          if (File_Length > 0 or else Line > 0 or else Column > 0)
@@ -249,7 +245,7 @@ package body System.Unwind.Occurrences is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
       Machine_Occurrence : constant
-         not null Representation.Machine_Occurrence_Access :=
+         Representation.Machine_Occurrence_Access :=
          TLS.Machine_Occurrence;
       Result : Boolean;
    begin

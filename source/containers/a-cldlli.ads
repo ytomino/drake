@@ -213,7 +213,7 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 --    return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
    --  extended
-   function Iterate (Container : List; First, Last : Cursor)
+   function Iterate (Container : List'Class; First, Last : Cursor)
       return List_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic

@@ -271,9 +271,7 @@ package body Ada.Strings.Maps is
       pragma Check (Validate, Naked_Maps.Debug.Valid (Reference (Set).all));
       Set_Data : constant not null Set_Data_Access := Reference (Set);
    begin
-      return Result : Wide_Wide_Character_Ranges (
-         Set_Data.Items'Range)
-      do
+      return Result : Wide_Wide_Character_Ranges (Set_Data.Items'Range) do
          for I in Result'Range loop
             Result (I).Low := Set_Data.Items (I).Low;
             Result (I).High := Set_Data.Items (I).High;
@@ -529,9 +527,7 @@ package body Ada.Strings.Maps is
       return Naked_Maps.Is_In (Element, Reference (Set).all);
    end Overloaded_Is_In;
 
-   function Is_Subset (
-      Elements : Character_Set;
-      Set : Character_Set)
+   function Is_Subset (Elements : Character_Set; Set : Character_Set)
       return Boolean
    is
       pragma Check (Validate,

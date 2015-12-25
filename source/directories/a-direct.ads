@@ -94,29 +94,6 @@ package Ada.Directories is
    function Base_Name (Name : String) return String
       renames Hierarchical_File_Names.Base_Name;
 
-   --  extended
-   --  There are procedure version.
-   procedure Simple_Name (
-      Name : String;
-      First : out Positive;
-      Last : out Natural)
-      renames Hierarchical_File_Names.Simple_Name;
-   procedure Containing_Directory (
-      Name : String;
-      First : out Positive;
-      Last : out Natural)
-      renames Hierarchical_File_Names.Containing_Directory;
-   procedure Extension (
-      Name : String;
-      First : out Positive;
-      Last : out Natural)
-      renames Hierarchical_File_Names.Extension;
-   procedure Base_Name (
-      Name : String;
-      First : out Positive;
-      Last : out Natural)
-      renames Hierarchical_File_Names.Base_Name;
-
    function Compose (
       Containing_Directory : String := "";
       Name : String;

@@ -568,6 +568,20 @@ package body Ada.Containers.Ordered_Sets is
          Last => Last (Container));
    end Iterate;
 
+   function Iterate (Container : Set'Class; First, Last : Cursor)
+      return Set_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+      pragma Unreferenced (Container);
+      Actual_First : Cursor := First;
+      Actual_Last : Cursor := Last;
+   begin
+      if Actual_Last < Actual_First then
+         Actual_First := No_Element;
+         Actual_Last := No_Element;
+      end if;
+      return Set_Iterator'(First => Actual_First, Last => Actual_Last);
+   end Iterate;
+
    function Last (Container : Set) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -991,8 +1005,8 @@ package body Ada.Containers.Ordered_Sets is
       procedure Update_Element_Preserving_Key (
          Container : in out Set;
          Position : Cursor;
-         Process : not null access procedure (Element : in out Element_Type))
-         is
+         Process : not null access procedure (
+            Element : in out Element_Type)) is
       begin
          Process (
             Reference_Preserving_Key (

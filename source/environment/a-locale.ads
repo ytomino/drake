@@ -41,13 +41,13 @@ package Ada.Locales is
    --  modified
 --  type Language_Code is new String (1 .. 3)
 --    with Dynamic_Predicate =>
---       (for all E of Language_Code => E in 'a' .. 'z');
+--       (for all E of Language_Code => E in 'a' .. 'z'); -- AI12-0037-1
    subtype Language_Code is ISO_639_Alpha_3;
 
    --  modified
 --  type Country_Code is new String (1 .. 2)
 --    with Dynamic_Predicate =>
---       (for all E of Country_Code => E in 'A' .. 'Z');
+--       (for all E of Country_Code => E in 'A' .. 'Z'); -- AI12-0037-1
    subtype Country_Code is ISO_3166_1_Alpha_2;
 
 --  Language_Unknown : constant Language_Code := "und";

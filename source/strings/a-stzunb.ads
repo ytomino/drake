@@ -17,12 +17,6 @@ package Ada.Strings.Wide_Wide_Unbounded is
    function Length (Source : Unbounded_Wide_Wide_String) return Natural
       renames Unbounded_Wide_Wide_Strings.Length;
 
-   --  extended
-   procedure Set_Length (
-      Source : in out Unbounded_Wide_Wide_String;
-      Length : Natural)
-      renames Unbounded_Wide_Wide_Strings.Set_Length;
-
 --  type Wide_Wide_String_Access is access all Wide_Wide_String;
    subtype Wide_Wide_String_Access is
       Unbounded_Wide_Wide_Strings.String_Access;

@@ -88,13 +88,9 @@ package body System.Native_Processes is
       Startup_Info.hStdInput := Target_Handles (0);
       Startup_Info.hStdOutput := Target_Handles (1);
       Startup_Info.hStdError := Target_Handles (2);
-      Zero_Terminated_WStrings.To_C (
-         Command_Line,
-         W_Command_Line (0)'Access);
+      Zero_Terminated_WStrings.To_C (Command_Line, W_Command_Line (0)'Access);
       if Directory'Length > 0 then
-         Zero_Terminated_WStrings.To_C (
-            Directory,
-            W_Directory (0)'Access);
+         Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
          Directory_Ref := W_Directory (0)'Access;
       else
          Directory_Ref := null;
@@ -145,9 +141,8 @@ package body System.Native_Processes is
       Handle : C.winnt.HANDLE
          renames Reference (Child).all;
    begin
-      if C.winbase.WaitForSingleObject (
-         Handle,
-         C.winbase.INFINITE) /= C.winbase.WAIT_OBJECT_0
+      if C.winbase.WaitForSingleObject (Handle, C.winbase.INFINITE) /=
+         C.winbase.WAIT_OBJECT_0
       then
          Raise_Exception (Use_Error'Identity);
       else

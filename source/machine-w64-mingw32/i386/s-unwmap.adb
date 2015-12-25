@@ -105,8 +105,7 @@ package body System.Unwind.Mapping is
             | C.winbase.EXCEPTION_FLT_STACK_CHECK -- 0xC0000092
             | C.winbase.EXCEPTION_FLT_UNDERFLOW -- 0xC0000093
             | C.winbase.EXCEPTION_INT_DIVIDE_BY_ZERO -- 0xC0000094
-            | C.winbase.EXCEPTION_INT_OVERFLOW -- 0xC0000095
-         =>
+            | C.winbase.EXCEPTION_INT_OVERFLOW => -- 0xC0000095
             Eexception_Id := Standard.Constraint_Error'Access;
          when C.winbase.EXCEPTION_STACK_OVERFLOW => -- 0xC00000FD
             --  get stack range

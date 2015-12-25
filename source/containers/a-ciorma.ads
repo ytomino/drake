@@ -204,6 +204,10 @@ package Ada.Containers.Indefinite_Ordered_Maps is
    function Iterate (Container : Map)
       return Map_Iterator_Interfaces.Reversible_Iterator'Class;
 
+   --  extended
+   function Iterate (Container : Map'Class; First, Last : Cursor)
+      return Map_Iterator_Interfaces.Reversible_Iterator'Class;
+
 --  diff (Equivalents)
 --
 --

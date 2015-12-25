@@ -1,6 +1,19 @@
 --  reference: Netgen's Eigensystem routine.
 package body Ada.Numerics.Generic_Arrays is
 
+   --  vector selection, conversion and composition operations
+
+   procedure Apply_Vector (X : in out Vector; Param : Parameter_Vector) is
+      Length : constant Integer := X'Length;
+   begin
+      for I in 0 .. Length - 1 loop
+         pragma Loop_Optimize (Vector);
+         Apply (X (X'First + I), Param (Param'First + I));
+      end loop;
+   end Apply_Vector;
+
+   --  vector arithmetic operations
+
    function Operator_Vector (Right : Vector) return Result_Vector is
    begin
       return Result : Result_Vector (Right'Range) do
@@ -10,18 +23,6 @@ package body Ada.Numerics.Generic_Arrays is
          end loop;
       end return;
    end Operator_Vector;
-
-   function Operator_Matrix (Right : Matrix) return Result_Matrix is
-   begin
-      return Result : Result_Matrix (Right'Range (1), Right'Range (2)) do
-         for I in Result'Range (1) loop
-            for J in Result'Range (2) loop
-               pragma Loop_Optimize (Vector);
-               Result (I, J) := Operator (Right (I, J));
-            end loop;
-         end loop;
-      end return;
-   end Operator_Matrix;
 
    function Operator_Vector_Param (X : Vector; Y : Parameter_Type)
       return Result_Vector is
@@ -33,19 +34,6 @@ package body Ada.Numerics.Generic_Arrays is
          end loop;
       end return;
    end Operator_Vector_Param;
-
-   function Operator_Matrix_Param (X : Matrix; Y : Parameter_Type)
-      return Result_Matrix is
-   begin
-      return Result : Result_Matrix (X'Range (1), X'Range (2)) do
-         for I in Result'Range (1) loop
-            for J in Result'Range (2) loop
-               pragma Loop_Optimize (Vector);
-               Result (I, J) := Operator (X (I, J), Y);
-            end loop;
-         end loop;
-      end return;
-   end Operator_Matrix_Param;
 
    function Operator_Vector_Vector (Left : Left_Vector; Right : Right_Vector)
       return Result_Vector is
@@ -62,6 +50,109 @@ package body Ada.Numerics.Generic_Arrays is
          end;
       end return;
    end Operator_Vector_Vector;
+
+   function Operator_Vector_Vector_Param (X, Y : Vector; Z : Parameter_Type)
+      return Result_Vector is
+   begin
+      return Result : Result_Vector (X'Range) do
+         declare
+            Length : constant Integer := Result'Length;
+         begin
+            for I in 0 .. Length - 1 loop
+               pragma Loop_Optimize (Vector);
+               Result (Result'First + I) :=
+                  Operator (X (X'First + I), Y (Y'First + I), Z);
+            end loop;
+         end;
+      end return;
+   end Operator_Vector_Vector_Param;
+
+   function Absolute (Right : Vector) return Result_Type is
+      Squared : Result_Type := Zero;
+   begin
+      for I in Right'Range loop
+         pragma Loop_Optimize (Vector);
+         declare
+            X : constant Result_Type := abs Right (I);
+         begin
+            Squared := Squared + X * X;
+         end;
+      end loop;
+      return Sqrt (Squared);
+   end Absolute;
+
+   function Inner_Production (Left : Left_Vector; Right : Right_Vector)
+      return Result_Type
+   is
+      Result : Result_Type := Zero;
+      Length : constant Integer := Left'Length;
+   begin
+      for I in 0 .. Length - 1 loop
+         pragma Loop_Optimize (Vector);
+         Result := Result + Left (Left'First + I) * Right (Right'First + I);
+      end loop;
+      return Result;
+   end Inner_Production;
+
+   --  other vector operations
+
+   function Unit_Vector (
+      Index : Integer;
+      Order : Positive;
+      First : Integer := 1)
+      return Vector is
+   begin
+      return Result : Vector (First .. First + Order - 1) do
+         for I in Result'Range loop
+            pragma Loop_Optimize (Vector);
+            Result (I) := Zero;
+         end loop;
+         Result (Index) := One;
+      end return;
+   end Unit_Vector;
+
+   --  matrix selection, conversion and composition operations
+
+   procedure Apply_Matrix (X : in out Matrix; Param : Parameter_Matrix) is
+      Length_1 : constant Integer := X'Length (1);
+      Length_2 : constant Integer := X'Length (2);
+   begin
+      for I in 0 .. Length_1 - 1 loop
+         for J in 0 .. Length_2 - 1 loop
+            pragma Loop_Optimize (Vector);
+            Apply (
+               X (X'First (1) + I, X'First (2) + J),
+               Param (Param'First (1) + I, Param'First (2) + J));
+         end loop;
+      end loop;
+   end Apply_Matrix;
+
+   --  matrix arithmetic operations
+
+   function Operator_Matrix (Right : Matrix) return Result_Matrix is
+   begin
+      return Result : Result_Matrix (Right'Range (1), Right'Range (2)) do
+         for I in Result'Range (1) loop
+            for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
+               Result (I, J) := Operator (Right (I, J));
+            end loop;
+         end loop;
+      end return;
+   end Operator_Matrix;
+
+   function Operator_Matrix_Param (X : Matrix; Y : Parameter_Type)
+      return Result_Matrix is
+   begin
+      return Result : Result_Matrix (X'Range (1), X'Range (2)) do
+         for I in Result'Range (1) loop
+            for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
+               Result (I, J) := Operator (X (I, J), Y);
+            end loop;
+         end loop;
+      end return;
+   end Operator_Matrix_Param;
 
    function Operator_Matrix_Matrix (Left : Left_Matrix; Right : Right_Matrix)
       return Result_Matrix is
@@ -83,22 +174,6 @@ package body Ada.Numerics.Generic_Arrays is
          end;
       end return;
    end Operator_Matrix_Matrix;
-
-   function Operator_Vector_Vector_Param (X, Y : Vector; Z : Parameter_Type)
-      return Result_Vector is
-   begin
-      return Result : Result_Vector (X'Range) do
-         declare
-            Length : constant Integer := Result'Length;
-         begin
-            for I in 0 .. Length - 1 loop
-               pragma Loop_Optimize (Vector);
-               Result (Result'First + I) :=
-                  Operator (X (X'First + I), Y (Y'First + I), Z);
-            end loop;
-         end;
-      end return;
-   end Operator_Vector_Vector_Param;
 
    function Operator_Matrix_Matrix_Param (X, Y : Matrix; Z : Parameter_Type)
       return Result_Matrix is
@@ -122,28 +197,111 @@ package body Ada.Numerics.Generic_Arrays is
       end return;
    end Operator_Matrix_Matrix_Param;
 
-   procedure Apply_Vector (X : in out Vector; Param : Parameter_Vector) is
-      Length : constant Integer := X'Length;
+   function Transpose (X : Matrix) return Matrix is
    begin
-      for I in 0 .. Length - 1 loop
-         pragma Loop_Optimize (Vector);
-         Apply (X (X'First + I), Param (Param'First + I));
-      end loop;
-   end Apply_Vector;
-
-   procedure Apply_Matrix (X : in out Matrix; Param : Parameter_Matrix) is
-      Length_1 : constant Integer := X'Length (1);
-      Length_2 : constant Integer := X'Length (2);
-   begin
-      for I in 0 .. Length_1 - 1 loop
-         for J in 0 .. Length_2 - 1 loop
-            pragma Loop_Optimize (Vector);
-            Apply (
-               X (X'First (1) + I, X'First (2) + J),
-               Param (Param'First (1) + I, Param'First (2) + J));
+      return Result : Matrix (X'Range (2), X'Range (1)) do
+         for I in Result'Range (1) loop
+            for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
+               Result (I, J) := X (J, I);
+            end loop;
          end loop;
-      end loop;
-   end Apply_Matrix;
+      end return;
+   end Transpose;
+
+   function Multiply_Matrix_Matrix (Left : Left_Matrix; Right : Right_Matrix)
+      return Result_Matrix is
+   begin
+      return Result : Result_Matrix (Left'Range (1), Right'Range (2)) do
+         declare
+            Length_Folded : constant Integer := Left'Length (2);
+         begin
+            for I in Result'Range (1) loop
+               for K in 0 .. Length_Folded - 1 loop
+                  for J in Result'Range (2) loop
+                     pragma Loop_Optimize (Vector);
+                     declare
+                        Z : Result_Type;
+                     begin
+                        if K = 0 then
+                           Z := Zero;
+                        else
+                           Z := Result (I, J);
+                        end if;
+                        Result (I, J) :=
+                           Z
+                           + Left (I, Left'First (2) + K)
+                              * Right (Right'First (1) + K, J);
+                     end;
+                  end loop;
+               end loop;
+            end loop;
+         end;
+      end return;
+   end Multiply_Matrix_Matrix;
+
+   function Multiply_Vector_Vector (Left : Left_Vector; Right : Right_Vector)
+      return Result_Matrix is
+   begin
+      return Result : Result_Matrix (Left'Range, Right'Range) do
+         for I in Result'Range (1) loop
+            for J in Result'Range (2) loop
+               pragma Loop_Optimize (Vector);
+               Result (I, J) := Left (I) * Right (J);
+            end loop;
+         end loop;
+      end return;
+   end Multiply_Vector_Vector;
+
+   function Multiply_Vector_Matrix (Left : Left_Vector; Right : Right_Matrix)
+      return Result_Vector is
+   begin
+      return Result : Result_Vector (Right'Range (2)) do
+         declare
+            Length_Folded : constant Integer := Left'Length;
+         begin
+            for J in Result'Range loop
+               declare
+                  Z : Result_Type := Zero;
+               begin
+                  for K in 0 .. Length_Folded - 1 loop
+                     pragma Loop_Optimize (Vector);
+                     Z := Z
+                        + Left (Left'First + K)
+                           * Right (Right'First (1) + K, J);
+                  end loop;
+                  Result (J) := Z;
+               end;
+            end loop;
+         end;
+      end return;
+   end Multiply_Vector_Matrix;
+
+   function Multiply_Matrix_Vector (Left : Left_Matrix; Right : Right_Vector)
+      return Result_Vector is
+   begin
+      return Result : Result_Vector (Left'Range (1)) do
+         declare
+            Length_Folded : constant Integer := Right'Length;
+         begin
+            for I in Result'Range loop
+               declare
+                  Z : Result_Type := Zero;
+               begin
+                  for K in 0 .. Length_Folded - 1 loop
+                     pragma Loop_Optimize (Vector);
+                     Z := Z
+                        + Left (I, Left'First (2) + K)
+                           * Right (Right'First + K);
+                  end loop;
+                  Result (I) := Z;
+               end;
+            end loop;
+         end;
+      end return;
+   end Multiply_Matrix_Vector;
+
+   --  matrix inversion and related operations
 
    function Minor (A : Matrix; I, J : Integer) return Matrix is
    begin
@@ -174,6 +332,35 @@ package body Ada.Numerics.Generic_Arrays is
       end return;
    end Minor;
 
+   function Inverse (A : Matrix) return Matrix is
+      detA : constant Number := Determinant (A);
+      Master_Sign : Number := One;
+      Sign : Number;
+   begin
+      return Result : Matrix (A'Range (2), A'Range (1)) do
+         declare
+            Length : constant Integer := Result'Length (1); -- square matrix
+         begin
+            for I in 0 .. Length - 1 loop
+               for J in 0 .. Length - 1 loop
+                  pragma Loop_Optimize (Vector);
+                  if J rem 2 = 0 then
+                     Sign := Master_Sign;
+                  else
+                     Sign := -Master_Sign;
+                  end if;
+                  Result (Result'First (1) + I, Result'First (2) + J) :=
+                     Sign
+                     * Determinant (
+                        Minor (A, Result'First (1) + J, Result'First (2) + I))
+                     / detA;
+               end loop;
+               Master_Sign := -Master_Sign;
+            end loop;
+         end;
+      end return;
+   end Inverse;
+
    function Determinant (A : Matrix) return Number is
    begin
       case A'Length (1) is
@@ -198,6 +385,8 @@ package body Ada.Numerics.Generic_Arrays is
             end;
       end case;
    end Determinant;
+
+   --  eigenvalues and vectors of a hermitian matrix
 
    procedure Eigensystem (
       A : Matrix;
@@ -306,50 +495,9 @@ package body Ada.Numerics.Generic_Arrays is
       end;
    end Eigensystem;
 
-   function Inverse (A : Matrix) return Matrix is
-      detA : constant Number := Determinant (A);
-      Master_Sign : Number := One;
-      Sign : Number;
-   begin
-      return Result : Matrix (A'Range (2), A'Range (1)) do
-         declare
-            Length : constant Integer := Result'Length (1); -- square matrix
-         begin
-            for I in 0 .. Length - 1 loop
-               for J in 0 .. Length - 1 loop
-                  pragma Loop_Optimize (Vector);
-                  if J rem 2 = 0 then
-                     Sign := Master_Sign;
-                  else
-                     Sign := -Master_Sign;
-                  end if;
-                  Result (Result'First (1) + I, Result'First (2) + J) :=
-                     Sign
-                     * Determinant (
-                        Minor (A, Result'First (1) + J, Result'First (2) + I))
-                     / detA;
-               end loop;
-               Master_Sign := -Master_Sign;
-            end loop;
-         end;
-      end return;
-   end Inverse;
+   --  other matrix operations
 
-   function Transpose (X : Matrix) return Matrix is
-   begin
-      return Result : Matrix (X'Range (2), X'Range (1)) do
-         for I in Result'Range (1) loop
-            for J in Result'Range (2) loop
-               pragma Loop_Optimize (Vector);
-               Result (I, J) := X (J, I);
-            end loop;
-         end loop;
-      end return;
-   end Transpose;
-
-   function Unit_Matrix (
-      Order : Positive;
-      First_1, First_2 : Integer := 1)
+   function Unit_Matrix (Order : Positive; First_1, First_2 : Integer := 1)
       return Matrix is
    begin
       return Result : Matrix (
@@ -368,139 +516,5 @@ package body Ada.Numerics.Generic_Arrays is
          end loop;
       end return;
    end Unit_Matrix;
-
-   function Unit_Vector (
-      Index : Integer;
-      Order : Positive;
-      First : Integer := 1)
-      return Vector is
-   begin
-      return Result : Vector (First .. First + Order - 1) do
-         for I in Result'Range loop
-            pragma Loop_Optimize (Vector);
-            Result (I) := Zero;
-         end loop;
-         Result (Index) := One;
-      end return;
-   end Unit_Vector;
-
-   function Absolute (Right : Vector) return Result_Type is
-      Squared : Result_Type := Zero;
-   begin
-      for I in Right'Range loop
-         pragma Loop_Optimize (Vector);
-         declare
-            X : constant Result_Type := abs Right (I);
-         begin
-            Squared := Squared + X * X;
-         end;
-      end loop;
-      return Sqrt (Squared);
-   end Absolute;
-
-   function Inner_Production (Left : Left_Vector; Right : Right_Vector)
-      return Result_Type
-   is
-      Result : Result_Type := Zero;
-      Length : constant Integer := Left'Length;
-   begin
-      for I in 0 .. Length - 1 loop
-         pragma Loop_Optimize (Vector);
-         Result := Result + Left (Left'First + I) * Right (Right'First + I);
-      end loop;
-      return Result;
-   end Inner_Production;
-
-   function Multiply_Matrix_Matrix (Left : Left_Matrix; Right : Right_Matrix)
-      return Result_Matrix is
-   begin
-      return Result : Result_Matrix (Left'Range (1), Right'Range (2)) do
-         declare
-            Length_Folded : constant Integer := Left'Length (2);
-         begin
-            for I in Result'Range (1) loop
-               for K in 0 .. Length_Folded - 1 loop
-                  for J in Result'Range (2) loop
-                     pragma Loop_Optimize (Vector);
-                     declare
-                        Z : Result_Type;
-                     begin
-                        if K = 0 then
-                           Z := Zero;
-                        else
-                           Z := Result (I, J);
-                        end if;
-                        Result (I, J) :=
-                           Z
-                           + Left (I, Left'First (2) + K)
-                              * Right (Right'First (1) + K, J);
-                     end;
-                  end loop;
-               end loop;
-            end loop;
-         end;
-      end return;
-   end Multiply_Matrix_Matrix;
-
-   function Multiply_Vector_Vector (Left : Left_Vector; Right : Right_Vector)
-      return Result_Matrix is
-   begin
-      return Result : Result_Matrix (Left'Range, Right'Range) do
-         for I in Result'Range (1) loop
-            for J in Result'Range (2) loop
-               pragma Loop_Optimize (Vector);
-               Result (I, J) := Left (I) * Right (J);
-            end loop;
-         end loop;
-      end return;
-   end Multiply_Vector_Vector;
-
-   function Multiply_Vector_Matrix (Left : Left_Vector; Right : Right_Matrix)
-      return Result_Vector is
-   begin
-      return Result : Result_Vector (Right'Range (2)) do
-         declare
-            Length_Folded : constant Integer := Left'Length;
-         begin
-            for J in Result'Range loop
-               declare
-                  Z : Result_Type := Zero;
-               begin
-                  for K in 0 .. Length_Folded - 1 loop
-                     pragma Loop_Optimize (Vector);
-                     Z := Z
-                        + Left (Left'First + K)
-                           * Right (Right'First (1) + K, J);
-                  end loop;
-                  Result (J) := Z;
-               end;
-            end loop;
-         end;
-      end return;
-   end Multiply_Vector_Matrix;
-
-   function Multiply_Matrix_Vector (Left : Left_Matrix; Right : Right_Vector)
-      return Result_Vector is
-   begin
-      return Result : Result_Vector (Left'Range (1)) do
-         declare
-            Length_Folded : constant Integer := Right'Length;
-         begin
-            for I in Result'Range loop
-               declare
-                  Z : Result_Type := Zero;
-               begin
-                  for K in 0 .. Length_Folded - 1 loop
-                     pragma Loop_Optimize (Vector);
-                     Z := Z
-                        + Left (I, Left'First (2) + K)
-                           * Right (Right'First + K);
-                  end loop;
-                  Result (I) := Z;
-               end;
-            end loop;
-         end;
-      end return;
-   end Multiply_Matrix_Vector;
 
 end Ada.Numerics.Generic_Arrays;

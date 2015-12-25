@@ -204,6 +204,10 @@ package Ada.Containers.Limited_Ordered_Maps is
    function Iterate (Container : Map)
       return Map_Iterator_Interfaces.Reversible_Iterator'Class;
 
+   --  extended
+   function Iterate (Container : Map'Class; First, Last : Cursor)
+      return Map_Iterator_Interfaces.Reversible_Iterator'Class;
+
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
    package Equivalents is

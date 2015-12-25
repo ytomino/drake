@@ -99,6 +99,13 @@ package body Ada.Direct_IO is
       return Streams.Stream_IO.Is_Open (Streams.Stream_IO.File_Type (File));
    end Is_Open;
 
+   procedure Flush (
+      File : File_Type) is
+   begin
+      Streams.Stream_IO.Flush (
+         Streams.Stream_IO.File_Type (File)); -- checking the predicate
+   end Flush;
+
    procedure Read (
       File : File_Type;
       Item : out Element_Type;

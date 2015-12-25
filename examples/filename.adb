@@ -7,6 +7,7 @@ procedure filename is
 	Windows : constant Boolean := Ada.Hierarchical_File_Names.Is_Path_Delimiter ('\');
 	package AD renames Ada.Directories;
 	package ADH renames Ada.Directories.Hierarchical_File_Names;
+	package AH renames Ada.Hierarchical_File_Names;
 begin
 	pragma Assert (AD.Containing_Directory ("", Raise_On_Error => False) = "");
 	pragma Assert (AD.Containing_Directory ("A", Raise_On_Error => False) = "");
@@ -90,38 +91,38 @@ begin
 		pragma Assert (ADH.Compose ("/", "../A") = "/../A");
 		null;
 	end if;
-	pragma Assert (ADH.Relative_Name ("A", "A") = ".");
-	pragma Assert (ADH.Relative_Name ("A/B", "A") = "B");
-	pragma Assert (ADH.Relative_Name ("/A", "/A") = ".");
-	pragma Assert (ADH.Relative_Name ("/A/B", "/A") = "B");
-	pragma Assert (ADH.Relative_Name ("A", "") = "A");
-	pragma Assert (ADH.Relative_Name ("A", ".") = "A");
-	pragma Assert (ADH.Relative_Name ("", "") = ".");
-	pragma Assert (ADH.Relative_Name ("", ".") = ".");
-	pragma Assert (ADH.Relative_Name ("", "A") = "..");
-	pragma Assert (ADH.Relative_Name (".", "A") = "..");
+	pragma Assert (AH.Relative_Name ("A", "A") = ".");
+	pragma Assert (AH.Relative_Name ("A/B", "A") = "B");
+	pragma Assert (AH.Relative_Name ("/A", "/A") = ".");
+	pragma Assert (AH.Relative_Name ("/A/B", "/A") = "B");
+	pragma Assert (AH.Relative_Name ("A", "") = "A");
+	pragma Assert (AH.Relative_Name ("A", ".") = "A");
+	pragma Assert (AH.Relative_Name ("", "") = ".");
+	pragma Assert (AH.Relative_Name ("", ".") = ".");
+	pragma Assert (AH.Relative_Name ("", "A") = "..");
+	pragma Assert (AH.Relative_Name (".", "A") = "..");
 	if Windows then
-		pragma Assert (ADH.Relative_Name ("A", "B") = "..\A");
-		pragma Assert (ADH.Relative_Name ("A/B", "A/C") = "..\B");
-		pragma Assert (ADH.Relative_Name ("/A", "/B") = "..\A");
-		pragma Assert (ADH.Relative_Name ("/A/B", "/A/C") = "..\B");
-		pragma Assert (ADH.Relative_Name ("../A", "B") = "..\../A");
-		pragma Assert (ADH.Relative_Name ("../A", "../B") = "..\A");
-		pragma Assert (ADH.Relative_Name ("A", "B/C") = "..\..\A");
+		pragma Assert (AH.Relative_Name ("A", "B") = "..\A");
+		pragma Assert (AH.Relative_Name ("A/B", "A/C") = "..\B");
+		pragma Assert (AH.Relative_Name ("/A", "/B") = "..\A");
+		pragma Assert (AH.Relative_Name ("/A/B", "/A/C") = "..\B");
+		pragma Assert (AH.Relative_Name ("../A", "B") = "..\../A");
+		pragma Assert (AH.Relative_Name ("../A", "../B") = "..\A");
+		pragma Assert (AH.Relative_Name ("A", "B/C") = "..\..\A");
 		null;
 	else
-		pragma Assert (ADH.Relative_Name ("A", "B") = "../A");
-		pragma Assert (ADH.Relative_Name ("A/B", "A/C") = "../B");
-		pragma Assert (ADH.Relative_Name ("/A", "/B") = "../A");
-		pragma Assert (ADH.Relative_Name ("/A/B", "/A/C") = "../B");
-		pragma Assert (ADH.Relative_Name ("../A", "B") = "../../A");
-		pragma Assert (ADH.Relative_Name ("../A", "../B") = "../A");
-		pragma Assert (ADH.Relative_Name ("A", "B/C") = "../../A");
+		pragma Assert (AH.Relative_Name ("A", "B") = "../A");
+		pragma Assert (AH.Relative_Name ("A/B", "A/C") = "../B");
+		pragma Assert (AH.Relative_Name ("/A", "/B") = "../A");
+		pragma Assert (AH.Relative_Name ("/A/B", "/A/C") = "../B");
+		pragma Assert (AH.Relative_Name ("../A", "B") = "../../A");
+		pragma Assert (AH.Relative_Name ("../A", "../B") = "../A");
+		pragma Assert (AH.Relative_Name ("A", "B/C") = "../../A");
 		null;
 	end if;
 	begin
 		declare
-			X : constant String := ADH.Relative_Name ("A", "..");
+			X : constant String := AH.Relative_Name ("A", "..");
 		begin
 			raise Program_Error; -- NG
 		end;
@@ -129,8 +130,8 @@ begin
 		when AD.Use_Error => null; -- OK
 	end;
 	if not Windows then
-		pragma Assert (ADH.Relative_Name ("A/B", "C/../D") = "../A/B");
-		Ada.Debug.Put (ADH.Relative_Name ("A/B", "C/../A")); -- "../A/B", it should be normalized to "B" ?
+		pragma Assert (AH.Relative_Name ("A/B", "C/../D") = "../A/B");
+		Ada.Debug.Put (AH.Relative_Name ("A/B", "C/../A")); -- "../A/B", it should be normalized to "B" ?
 	end if;
 	if Windows then
 		-- drive letters
@@ -151,7 +152,7 @@ begin
 		pragma Assert (ADH.Relative_Name ("C:\autoexec.bat") = "autoexec.bat");
 		pragma Assert (ADH.Relative_Name ("\\host\share\") = "");
 		pragma Assert (ADH.Relative_Name ("\\host\share\filename") = "filename");
-		pragma Assert (ADH.Relative_Name ("C:\A", "D:\B") = "C:\A");
+		pragma Assert (AH.Relative_Name ("C:\A", "D:\B") = "C:\A");
 	end if;
 	declare
 		FS : Ada.Directories.Volumes.File_System :=

@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
-with Ada.Streams.Stream_IO;
+with Ada.Streams;
+private with Ada.Streams.Stream_IO;
 generic
    type Element_Type is private;
 package Ada.Direct_IO is
@@ -26,7 +27,8 @@ package Ada.Direct_IO is
 --            "Cannot write file: " & Name (Output_File_Type);
 
    type File_Mode is (In_File, Inout_File, Out_File);
-   type Count is new Streams.Stream_IO.Count; -- implementation-defined
+   type Count is
+      range 0 .. Streams.Stream_Element_Count'Last; -- implementation-defined
    subtype Positive_Count is Count range 1 .. Count'Last;
 
    --  File management
@@ -64,6 +66,10 @@ package Ada.Direct_IO is
 
    function Is_Open (File : File_Type) return Boolean;
    pragma Inline (Is_Open);
+
+   procedure Flush (
+      File : File_Type); -- Output_File_Type
+      --  AI12-0130-1
 
    --  Input and output operations
 

@@ -482,6 +482,20 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          Last => Last (Container));
    end Iterate;
 
+   function Iterate (Container : Map'Class; First, Last : Cursor)
+      return Map_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+      pragma Unreferenced (Container);
+      Actual_First : Cursor := First;
+      Actual_Last : Cursor := Last;
+   begin
+      if Actual_Last < Actual_First then
+         Actual_First := No_Element;
+         Actual_Last := No_Element;
+      end if;
+      return Map_Iterator'(First => Actual_First, Last => Actual_Last);
+   end Iterate;
+
    function Key (Position : Cursor) return Key_Type is
    begin
       return Position.Key.all;

@@ -45,9 +45,7 @@ package Ada.Strings.Naked_Maps is
          System.Reference_Counting.Counter'Size - 1;
    end record;
 
-   function Is_In (
-      Element : Character_Type;
-      Set : Character_Set)
+   function Is_In (Element : Character_Type; Set : Character_Set)
       return Boolean;
 
    --  making operations
@@ -90,24 +88,16 @@ package Ada.Strings.Naked_Maps is
       Initial_Reference_Count : System.Reference_Counting.Counter)
       return Character_Mapping;
 
-   function Value (
-      Map : Character_Mapping;
-      Element : Character_Type)
+   function Value (Map : Character_Mapping; Element : Character_Type)
       return Character_Type;
 
    --  for Handling
 
-   function Translate (
-      Source : String;
-      Mapping : Character_Mapping)
+   function Translate (Source : String; Mapping : Character_Mapping)
       return String;
-   function Translate (
-      Source : Wide_String;
-      Mapping : Character_Mapping)
+   function Translate (Source : Wide_String; Mapping : Character_Mapping)
       return Wide_String;
-   function Translate (
-      Source : Wide_Wide_String;
-      Mapping : Character_Mapping)
+   function Translate (Source : Wide_Wide_String; Mapping : Character_Mapping)
       return Wide_Wide_String;
 
 private

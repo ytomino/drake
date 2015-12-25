@@ -270,9 +270,7 @@ package body System.Native_Processes is
          Command_Line'Length * Zero_Terminated_Strings.Expanding);
       Code : C.signed_int;
    begin
-      Zero_Terminated_Strings.To_C (
-         Command_Line,
-         C_Command_Line (0)'Access);
+      Zero_Terminated_Strings.To_C (Command_Line, C_Command_Line (0)'Access);
       Code := C.stdlib.C_system (C_Command_Line (0)'Access);
       if Code < 0
          or else Code = 127 * 16#100# -- the execution of the shell failed

@@ -82,6 +82,11 @@ package Ada.Characters.Handling is
       renames Overloaded_Is_Alphanumeric;
    function Is_Special (Item : Character) return Boolean
       renames Overloaded_Is_Special;
+--  function Is_Line_Terminator (Item : Character) return Boolean;
+--  function Is_Mark (Item : Character) return Boolean;
+--  function Is_Other_Format (Item : Character) return Boolean;
+--  function Is_Punctuation_Connector (Item : Character) return Boolean;
+--  function Is_Space (Item : Character) return Boolean;
 
    --  Conversion functions for Character and String
 

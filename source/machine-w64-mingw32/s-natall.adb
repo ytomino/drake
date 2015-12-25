@@ -17,27 +17,32 @@ package body System.Native_Allocators is
       with Import, Convention => Ada, External_Name => "__drake_runtime_error";
    pragma Machine_Attribute (Runtime_Error, "noreturn");
 
-   --  implementation
-
-   function Allocate (Size : Storage_Elements.Storage_Count)
-      return Address
-   is
+   function Round_Up (Size : C.basetsd.SIZE_T) return C.basetsd.SIZE_T;
+   function Round_Up (Size : C.basetsd.SIZE_T) return C.basetsd.SIZE_T is
       use type C.basetsd.SIZE_T;
-      Actual_Size : C.basetsd.SIZE_T := C.basetsd.SIZE_T (Size);
+      Result : C.basetsd.SIZE_T;
    begin
       --  do round up here since HeapSize always returns the same size
       --  that is passed to HeapAlloc
       --  heap memory is separated to 16, 24, 32... by Windows heap manager
-      if Actual_Size < 16 then
-         Actual_Size := 16;
+      if Size < 16 then
+         Result := 16;
       else
-         Actual_Size := (Actual_Size + 7) and not 7;
+         Result := (Size + 7) and not 7;
       end if;
+      return Result;
+   end Round_Up;
+
+   --  implementation
+
+   function Allocate (Size : Storage_Elements.Storage_Count)
+      return Address is
+   begin
       return Address (
          C.winbase.HeapAlloc (
             C.winbase.GetProcessHeap,
             0,
-            Actual_Size));
+            Round_Up (C.basetsd.SIZE_T (Size))));
    end Allocate;
 
    procedure Free (Storage_Address : Address) is
@@ -56,17 +61,21 @@ package body System.Native_Allocators is
       Size : Storage_Elements.Storage_Count)
       return Address
    is
+      Actual_Size : constant C.basetsd.SIZE_T :=
+         Round_Up (C.basetsd.SIZE_T (Size));
+      Heap : constant C.winnt.HANDLE := C.winbase.GetProcessHeap;
       Result : Address;
    begin
       Result := Address (
          C.winbase.HeapReAlloc (
-            C.winbase.GetProcessHeap,
+            Heap,
             0,
             C.windef.LPVOID (Storage_Address),
-            C.basetsd.SIZE_T (Storage_Elements.Storage_Count'Max (1, Size))));
+            Actual_Size));
       if Result = Null_Address then
          if Storage_Address = Null_Address then
-            Result := Allocate (Size); -- Reallocate (null, ...)
+            --  Reallocate (null, ...)
+            Result := Address (C.winbase.HeapAlloc (Heap, 0, Actual_Size));
          end if;
       end if;
       return Result;

@@ -333,7 +333,7 @@ package Ada.Containers.Indefinite_Vectors is
 --    return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    --  extended
-   function Iterate (Container : Vector; First, Last : Cursor)
+   function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    generic

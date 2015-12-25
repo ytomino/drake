@@ -1,7 +1,8 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
-with Ada.Streams.Stream_IO;
+private with Ada.Streams; -- [gcc-5] can not find it by below "with Stream_IO"
+private with Ada.Streams.Stream_IO;
 generic
    type Element_Type (<>) is private;
 package Ada.Sequential_IO is
@@ -64,6 +65,10 @@ package Ada.Sequential_IO is
 
    function Is_Open (File : File_Type) return Boolean;
    pragma Inline (Is_Open);
+
+   procedure Flush (
+      File : File_Type); -- Output_File_Type
+      --  AI12-0130-1
 
    --  Input and output operations
 

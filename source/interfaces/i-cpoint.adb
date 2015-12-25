@@ -49,11 +49,11 @@ package body Interfaces.C.Pointers is
    function "+" (
       Left : Pointer;
       Right : ptrdiff_t)
-      return not null Pointer is
+      return not null Pointer
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Left /= null or else raise Pointer_Error); -- CXB3015
    begin
-      if not Standard'Fast_Math and then Left = null then
-         raise Pointer_Error; -- CXB3015
-      end if;
       return To_Pointer (
          To_Address (Left)
          + System.Storage_Elements.Storage_Offset (Right)
@@ -71,11 +71,11 @@ package body Interfaces.C.Pointers is
    function "-" (
       Left : Pointer;
       Right : ptrdiff_t)
-      return not null Pointer is
+      return not null Pointer
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Left /= null or else raise Pointer_Error); -- CXB3015
    begin
-      if not Standard'Fast_Math and then Left = null then
-         raise Pointer_Error; -- CXB3015
-      end if;
       return To_Pointer (
          To_Address (Left)
          - System.Storage_Elements.Storage_Offset (Right)
