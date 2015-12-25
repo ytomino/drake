@@ -44,25 +44,4 @@ package Ada.Directories.Hierarchical_File_Names is
       return String
       renames Ada.Hierarchical_File_Names.Compose;
 
-   --  extended
-   --  There are procedure version.
-   procedure Initial_Directory (
-      Name : String;
-      First : out Positive;
-      Last : out Natural)
-      renames Ada.Hierarchical_File_Names.Initial_Directory;
-   procedure Relative_Name (
-      Name : String;
-      First : out Positive;
-      Last : out Natural)
-      renames Ada.Hierarchical_File_Names.Relative_Name;
-
-   --  extended
-   --  This function returns the relative name from the base directory.
-   --  For example: Relative_Name ("A", "B") = "../A",
-   --    Relative_Name (Name, Initial_Directory (Name)) = Relative_Name (Name)
-   function Relative_Name (Name : String; From : String)
-      return String
-      renames Ada.Hierarchical_File_Names.Relative_Name;
-
 end Ada.Directories.Hierarchical_File_Names;

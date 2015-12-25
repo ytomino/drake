@@ -122,7 +122,8 @@ package body Ada.Directories is
             D_First : Positive;
             D_Last : Natural;
          begin
-            Containing_Directory (New_Directory, D_First, D_Last);
+            Hierarchical_File_Names.Containing_Directory (New_Directory,
+               First => D_First, Last => D_Last);
             if D_First <= D_Last then
                Create_Path (New_Directory (D_First .. D_Last)); -- recursive
             end if;
@@ -350,8 +351,10 @@ package body Ada.Directories is
       Simple_Name_Last : Natural;
    begin
       --  decompose the name
-      Containing_Directory (Name, Directory_First, Directory_Last);
-      Simple_Name (Name, Simple_Name_First, Simple_Name_Last);
+      Hierarchical_File_Names.Containing_Directory (Name,
+         First => Directory_First, Last => Directory_Last);
+      Hierarchical_File_Names.Simple_Name (Name,
+         First => Simple_Name_First, Last => Simple_Name_Last);
       --  make a detached entry
       Finalize (NC_Directory_Entry.all);
       NC_Directory_Entry.Path :=

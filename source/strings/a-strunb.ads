@@ -16,10 +16,6 @@ package Ada.Strings.Unbounded is
    function Length (Source : Unbounded_String) return Natural
       renames Unbounded_Strings.Length;
 
-   --  extended
-   procedure Set_Length (Source : in out Unbounded_String; Length : Natural)
-      renames Unbounded_Strings.Set_Length;
-
 --  type String_Access is access all String;
    subtype String_Access is Unbounded_Strings.String_Access;
    procedure Free (X : in out String_Access)
