@@ -407,12 +407,14 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       return List_Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Unreferenced (Container);
+      Actual_First : Cursor := First;
+      Actual_Last : Cursor := Last;
    begin
-      if Base.Is_Before (Upcast (Last), Upcast (First)) then
-         return List_Iterator'(First => No_Element, Last => No_Element);
-      else
-         return List_Iterator'(First => First, Last => Last);
+      if Actual_Last < Actual_First then
+         Actual_First := No_Element;
+         Actual_Last := No_Element;
       end if;
+      return List_Iterator'(First => Actual_First, Last => Actual_Last);
    end Iterate;
 
    function Last (Container : List) return Cursor is

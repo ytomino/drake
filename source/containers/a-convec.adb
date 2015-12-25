@@ -593,12 +593,14 @@ package body Ada.Containers.Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Unreferenced (Container);
+      Actual_First : Cursor := First;
+      Actual_Last : Cursor := Last;
    begin
-      if First > Last then
-         return Vector_Iterator'(First => No_Element, Last => No_Element);
-      else
-         return Vector_Iterator'(First => First, Last => Last);
+      if Actual_Last < Actual_First then
+         Actual_First := No_Element;
+         Actual_Last := No_Element;
       end if;
+      return Vector_Iterator'(First => Actual_First, Last => Actual_Last);
    end Iterate;
 
    function Last_Index (Container : Vector) return Extended_Index is
