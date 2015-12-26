@@ -275,6 +275,15 @@ procedure ext_doc is
 					raise Parse_Error with Name & " """ & Rest_Line.Constant_Reference.Element.all & """";
 				end if;
 			end loop Detect_Instantiantion_Or_Renamed;
+			if not Instantiation.Is_Null then
+				declare -- delete the parameters
+					Param_Index : constant Natural := Ada.Strings.Unbounded.Index (Instantiation, " (");
+				begin
+					if Param_Index > 0 then
+						Ada.Strings.Unbounded.Delete (Instantiation, Param_Index, Instantiation.Length);
+					end if;
+				end;
+			end if;
 		end;
 		declare
 			function Get_Next_Line return String is
