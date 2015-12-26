@@ -1023,6 +1023,7 @@ package body Ada.Strings.Generic_Unbounded is
                Dummy_Last : Natural;
             begin
                Set_Length (Source, Integer'Max (Count, Old_Length));
+               Unique (Source); -- for overwriting
                Fixed_Functions.Tail (
                   Source.Data.Items (1 .. Old_Length),
                   Count,
