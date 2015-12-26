@@ -76,9 +76,9 @@ package System.Tasking is
    type Entry_Name_Access is access all String;
 
    --  dispatching domain (s-taskin.ads)
-   type Dispatching_Domain is array (
---    System.Multiprocessors.CPU range <>)
-      Positive) of Boolean;
+   type Dispatching_Domain is
+      array (Positive) of Boolean;
+      --  array (Multiprocessors.CPU range <>) of Boolean
    pragma Suppress_Initialization (Dispatching_Domain);
    type Dispatching_Domain_Access is access Dispatching_Domain;
 

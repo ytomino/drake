@@ -272,10 +272,8 @@ package body System.Native_IO is
          if Form.Wait then
             declare
                Lock_Flags : constant array (
-                  Ada.IO_Modes.File_Shared range
-                     Ada.IO_Modes.Read_Only ..
-                     Ada.IO_Modes.Deny) of
-                  C.unsigned_int := (
+                  Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
+                  Ada.IO_Modes.Deny) of C.unsigned_int := (
                      Ada.IO_Modes.Read_Only => C.fcntl.O_SHLOCK,
                      Ada.IO_Modes.Deny => C.fcntl.O_EXLOCK);
             begin
