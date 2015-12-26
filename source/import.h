@@ -222,6 +222,7 @@
 #pragma for Ada "pthread.h" include "sys/_types/_pthread_t.h"
 #pragma for Ada "signal.h" include "sys/_types/_sigaltstack.h" /* stack_t */
 #pragma for Ada "signal.h" include "sys/_types/_sigset_t.h"
+#pragma for Ada "sys/socket.h" include "sys/_types/_socklen_t.h" /* socklen_t */
 #pragma for Ada "sys/stat.h" include "sys/_types/_s_ifmt.h" /* S_IF* */
 #pragma for Ada "sys/time.h" include "sys/_types/_timeval.h"
 #pragma for Ada "sys/types.h" include "sys/_types/_gid_t.h"
