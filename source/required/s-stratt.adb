@@ -355,7 +355,7 @@ package body System.Stream_Attributes is
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item : Character)
    is
-      function Cast is new Ada.Unchecked_Conversion (Character, S_B);
+      function Cast is new Ada.Unchecked_Conversion (Character, S_C);
    begin
       Ada.Streams.Write (Stream.all, Cast (Item));
    end W_C;
