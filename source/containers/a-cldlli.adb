@@ -283,8 +283,14 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+--
+--
+--
 
 --  diff (Find)
+--
+--
+--
 --
 --
 --
@@ -538,8 +544,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+--
+--
 
 --  diff (Reverse_Find)
+--
 --
 --
 --
@@ -818,7 +827,9 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          return Find (Container, Item) /= null;
       end Contains;
 
-      function Find (Container : List; Item : Element_Type) return Cursor is
+      function Find (Container : List; Item : Element_Type)
+         return Cursor
+      is
          Context : Context_Type := (Left => Item'Unrestricted_Access);
       begin
          return Downcast (Base.Find (
@@ -839,7 +850,9 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
             Equivalent => Equivalent_Element'Access));
       end Find;
 
-      function Reverse_Find (Container : List; Item : Element_Type)
+      function Reverse_Find (
+         Container : List;
+         Item : Element_Type)
          return Cursor
       is
          Context : Context_Type := (Left => Item'Unrestricted_Access);

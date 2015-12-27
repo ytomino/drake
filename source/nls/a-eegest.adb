@@ -211,9 +211,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Status : Substituting_Status_Type;
    begin
       Holder.Assign (Out_Item'Access);
-      Out_Item := new String_Type (
-         1 ..
-         2 * Item'Length / Integer (CS_In_SE));
+      Out_Item := new String_Type (1 .. 2 * Item'Length / Integer (CS_In_SE));
       Out_Last := 0;
       loop
          Decode (
@@ -260,9 +258,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Item'Length * CS_In_SE);
+      Item_2 : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
       for Item_2'Address use Item'Address;
       Last_2 : Streams.Stream_Element_Offset;
    begin
@@ -281,9 +277,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Item'Length * CS_In_SE);
+      Item_2 : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
       for Item_2'Address use Item'Address;
       Last_2 : Streams.Stream_Element_Offset;
    begin
@@ -303,9 +297,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Item'Length * CS_In_SE);
+      Item_2 : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
       for Item_2'Address use Item'Address;
       Last_2 : Streams.Stream_Element_Offset;
    begin

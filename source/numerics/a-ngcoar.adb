@@ -94,8 +94,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
 
    end Complex_Elementary_Functions;
 
-   function Minor is
-      new Generic_Arrays.Minor (Complex, Complex_Matrix);
+   function Minor is new Generic_Arrays.Minor (Complex, Complex_Matrix);
       --  for Inverse and Determinant
 
    --  implementation

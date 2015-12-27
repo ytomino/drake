@@ -279,9 +279,8 @@ package body Interfaces.COBOL is
    is
       Abs_Item : constant Long_Long_Integer := abs Item;
    begin
-      return Result : Numeric (
-         1 ..
-         Length_To_Display_Unsigned (Abs_Item) + 1)
+      return Result :
+         Numeric (1 .. Length_To_Display_Unsigned (Abs_Item) + 1)
       do
          if Item < 0 then
             Result (Result'First) := '-';
@@ -299,9 +298,8 @@ package body Interfaces.COBOL is
    is
       Abs_Item : constant Long_Long_Integer := abs Item;
    begin
-      return Result : Numeric (
-         1 ..
-         Length_To_Display_Unsigned (Abs_Item) + 1)
+      return Result :
+         Numeric (1 .. Length_To_Display_Unsigned (Abs_Item) + 1)
       do
          if Item < 0 then
             Result (Result'Last) := '-';

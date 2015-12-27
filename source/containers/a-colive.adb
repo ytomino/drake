@@ -226,6 +226,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
 --  diff (Append)
 --
@@ -383,6 +385,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
    function Empty_Vector return Vector is
    begin
@@ -395,8 +399,12 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
 
 --  diff (Find)
+--
 --
 --
 --
@@ -626,6 +634,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
 --  diff (Prepend)
 --
@@ -738,6 +748,8 @@ package body Ada.Containers.Limited_Vectors is
    end Reverse_Elements;
 
 --  diff (Reverse_Find)
+--
+--
 --
 --
 --
@@ -999,7 +1011,10 @@ package body Ada.Containers.Limited_Vectors is
          return Reverse_Find (Container, Item) >= Index_Type'First;
       end Contains;
 
-      function Find (Container : Vector; Item : Element_Type) return Cursor is
+      function Find (
+         Container : Vector;
+         Item : Element_Type)
+         return Cursor is
       begin
          return Find (Container, Item, Index_Type'First);
       end Find;
@@ -1019,7 +1034,9 @@ package body Ada.Containers.Limited_Vectors is
          return No_Element;
       end Find;
 
-      function Reverse_Find (Container : Vector; Item : Element_Type)
+      function Reverse_Find (
+         Container : Vector;
+         Item : Element_Type)
          return Cursor is
       begin
          return Reverse_Find (Container, Item, Last_Index (Container));

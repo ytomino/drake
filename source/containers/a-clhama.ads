@@ -41,7 +41,9 @@ package Ada.Containers.Limited_Hashed_Maps is
 
    function Capacity (Container : Map) return Count_Type;
 
-   procedure Reserve_Capacity (Container : in out Map; Capacity : Count_Type);
+   procedure Reserve_Capacity (
+      Container : in out Map;
+      Capacity : Count_Type);
 
    function Length (Container : Map) return Count_Type;
 

@@ -63,8 +63,7 @@ private
 
       type End_Point is limited private;
 
-      function Reference (
-         Object : End_Point)
+      function Reference (Object : End_Point)
          return not null access System.Native_IO.Sockets.End_Point;
       pragma Inline (Reference);
 

@@ -59,9 +59,8 @@ package body Ada.Text_IO.Formatting is
       Last := Last + 1;
       if Last > Buffer'Last then
          declare
-            New_Buffer : constant String_Access := new String (
-               1 ..
-               Buffer'Last * 2);
+            New_Buffer : constant String_Access :=
+               new String (1 .. Buffer'Last * 2);
          begin
             New_Buffer (Buffer'Range) := Buffer.all;
             Free (Buffer);

@@ -32,9 +32,8 @@ private
    Signal_Stack_Storage_Count : constant :=
       C.size_t'Max (C.signal.MINSIGSTKSZ, 16#1000#); -- 4096
 
-   type Signal_Stack_Type is array (
-      1 ..
-      Signal_Stack_Storage_Count) of aliased C.char;
+   type Signal_Stack_Type is
+      array (1 .. Signal_Stack_Storage_Count) of aliased C.char;
    pragma Suppress_Initialization (Signal_Stack_Type);
    for Signal_Stack_Type'Size use
       Signal_Stack_Storage_Count * Standard'Storage_Unit;

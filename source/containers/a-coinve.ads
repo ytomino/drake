@@ -340,12 +340,19 @@ package Ada.Containers.Indefinite_Vectors is
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
+
       function Is_Sorted (Container : Vector) return Boolean;
+
       procedure Sort (Container : in out Vector);
+
       procedure Merge (Target : in out Vector; Source : in out Vector);
+
    end Generic_Sorting;
 
 --  diff (Element_Array, Slicing, Constant_Reference, Reference)
+--
+--
+--
 --
 --
 --

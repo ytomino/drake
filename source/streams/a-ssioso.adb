@@ -10,12 +10,8 @@ package body Ada.Streams.Stream_IO.Sockets is
 
    --  client
 
-   function Get (
-      Data : System.Native_IO.Sockets.End_Point)
-      return End_Point;
-   function Get (
-      Data : System.Native_IO.Sockets.End_Point)
-      return End_Point is
+   function Get (Data : System.Native_IO.Sockets.End_Point) return End_Point;
+   function Get (Data : System.Native_IO.Sockets.End_Point) return End_Point is
    begin
       if Data = null then
          Raise_Exception (Use_Error'Identity);
@@ -80,9 +76,7 @@ package body Ada.Streams.Stream_IO.Sockets is
          System.Native_IO.Invalid_Handle;
    begin
       Holder.Assign (Handle'Access);
-      System.Native_IO.Sockets.Connect (
-         Handle,
-         Reference (Peer).all);
+      System.Native_IO.Sockets.Connect (Handle, Reference (Peer).all);
       if Handle = System.Native_IO.Invalid_Handle then
          Raise_Exception (Use_Error'Identity);
       else
@@ -109,8 +103,7 @@ package body Ada.Streams.Stream_IO.Sockets is
 
    package body End_Points is
 
-      function Reference (
-         Object : End_Point)
+      function Reference (Object : End_Point)
          return not null access System.Native_IO.Sockets.End_Point is
       begin
          return Object.Data'Unrestricted_Access;

@@ -11,89 +11,97 @@ package body System.Stream_Attributes is
          / Ada.Streams.Stream_Element'Size)
          * Standard'Storage_Unit;
 
-   subtype S_AD is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Standard'Address_Size * 2 / Ada.Streams.Stream_Element'Size);
+   subtype S_AD is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Standard'Address_Size * 2 / Ada.Streams.Stream_Element'Size);
 
-   subtype S_AS is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Standard'Address_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_AS is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Standard'Address_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_B is Ada.Streams.Stream_Element_Array (
-      1 ..
-      IO_Boolean'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_B is
+      Ada.Streams.Stream_Element_Array (
+         1 .. IO_Boolean'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_C is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Character'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_C is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Character'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_F is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Float'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_F is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Float'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_I is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_I is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_LF is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Long_Float'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_LF is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Long_Float'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_LI is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Long_Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_LI is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Long_Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_LLF is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Long_Long_Float'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_LLF is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Long_Long_Float'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_LLI is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Long_Long_Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_LLI is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Long_Long_Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_LLU is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Unsigned_Types.Long_Long_Unsigned'Stream_Size
-         / Ada.Streams.Stream_Element'Size);
+   subtype S_LLU is
+      Ada.Streams.Stream_Element_Array (
+         1 ..
+         Unsigned_Types.Long_Long_Unsigned'Stream_Size
+            / Ada.Streams.Stream_Element'Size);
 
-   subtype S_LU is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Unsigned_Types.Long_Unsigned'Stream_Size
-         / Ada.Streams.Stream_Element'Size);
+   subtype S_LU is
+      Ada.Streams.Stream_Element_Array (
+         1 ..
+         Unsigned_Types.Long_Unsigned'Stream_Size
+            / Ada.Streams.Stream_Element'Size);
 
-   subtype S_SF is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Short_Float'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_SF is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Short_Float'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_SI is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Short_Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_SI is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Short_Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_SSI is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Short_Short_Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_SSI is
+      Ada.Streams.Stream_Element_Array (
+         1 ..
+         Short_Short_Integer'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_SSU is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Unsigned_Types.Short_Short_Unsigned'Stream_Size
-         / Ada.Streams.Stream_Element'Size);
+   subtype S_SSU is
+      Ada.Streams.Stream_Element_Array (
+         1 ..
+         Unsigned_Types.Short_Short_Unsigned'Stream_Size
+            / Ada.Streams.Stream_Element'Size);
 
-   subtype S_SU is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Unsigned_Types.Short_Unsigned'Stream_Size
-         / Ada.Streams.Stream_Element'Size);
+   subtype S_SU is
+      Ada.Streams.Stream_Element_Array (
+         1 ..
+         Unsigned_Types.Short_Unsigned'Stream_Size
+            / Ada.Streams.Stream_Element'Size);
 
-   subtype S_U is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Unsigned_Types.Unsigned'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_U is
+      Ada.Streams.Stream_Element_Array (
+         1 ..
+         Unsigned_Types.Unsigned'Stream_Size
+            / Ada.Streams.Stream_Element'Size);
 
-   subtype S_WC is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Wide_Character'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_WC is
+      Ada.Streams.Stream_Element_Array (
+         1 .. Wide_Character'Stream_Size / Ada.Streams.Stream_Element'Size);
 
-   subtype S_WWC is Ada.Streams.Stream_Element_Array (
-      1 ..
-      Wide_Wide_Character'Stream_Size / Ada.Streams.Stream_Element'Size);
+   subtype S_WWC is
+      Ada.Streams.Stream_Element_Array (
+         1 ..
+         Wide_Wide_Character'Stream_Size / Ada.Streams.Stream_Element'Size);
 
    procedure Read_Just (
       Stream : not null access Ada.Streams.Root_Stream_Type'Class;

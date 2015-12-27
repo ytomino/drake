@@ -195,7 +195,9 @@ package body Ada.Containers.Vectors is
       Target.Length := Source.Length;
    end Assign;
 
-   procedure Append (Container : in out Vector; New_Item : Vector) is
+   procedure Append (
+      Container : in out Vector;
+      New_Item : Vector) is
    begin
       if New_Item.Length > 0 then
          declare
@@ -378,7 +380,9 @@ package body Ada.Containers.Vectors is
       Set_Length (Container, Container.Length - Count);
    end Delete_Last;
 
-   function Element (Container : Vector'Class; Index : Index_Type)
+   function Element (
+      Container : Vector'Class;
+      Index : Index_Type)
       return Element_Type is
    begin
       return Container.Constant_Reference (Index).Element.all;
@@ -391,7 +395,10 @@ package body Ada.Containers.Vectors is
          Length => 0);
    end Empty_Vector;
 
-   function Find (Container : Vector; Item : Element_Type) return Cursor is
+   function Find (
+      Container : Vector;
+      Item : Element_Type)
+      return Cursor is
    begin
       return Find (Container, Item, Index_Type'First);
    end Find;
@@ -399,7 +406,8 @@ package body Ada.Containers.Vectors is
    function Find (
       Container : Vector;
       Item : Element_Type;
-      Position : Cursor) return Cursor is
+      Position : Cursor)
+      return Cursor is
    begin
       return Find_Index (Container, Item, Position);
    end Find;
@@ -622,7 +630,9 @@ package body Ada.Containers.Vectors is
       Target.Length := Source.Length;
    end Move;
 
-   procedure Prepend (Container : in out Vector; New_Item : Vector) is
+   procedure Prepend (
+      Container : in out Vector;
+      New_Item : Vector) is
    begin
       Insert (Container, Index_Type'First, New_Item);
    end Prepend;
@@ -737,7 +747,9 @@ package body Ada.Containers.Vectors is
          Swap => Swap_Element'Access);
    end Reverse_Elements;
 
-   function Reverse_Find (Container : Vector; Item : Element_Type)
+   function Reverse_Find (
+      Container : Vector;
+      Item : Element_Type)
       return Cursor is
    begin
       return Reverse_Find_Index (Container, Item);

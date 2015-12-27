@@ -267,7 +267,10 @@ package body Ada.Containers.Doubly_Linked_Lists is
       return (Finalization.Controlled with Super => (null, null));
    end Empty_List;
 
-   function Find (Container : List; Item : Element_Type) return Cursor is
+   function Find (
+      Container : List;
+      Item : Element_Type)
+      return Cursor is
    begin
       if Is_Empty (Container) then
          return null;
@@ -284,7 +287,10 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end if;
    end Find;
 
-   function Find (Container : List; Item : Element_Type; Position : Cursor)
+   function Find (
+      Container : List;
+      Item : Element_Type;
+      Position : Cursor)
       return Cursor
    is
       pragma Unreferenced (Container);
@@ -521,7 +527,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end if;
    end Reverse_Elements;
 
-   function Reverse_Find (Container : List; Item : Element_Type)
+   function Reverse_Find (
+      Container : List;
+      Item : Element_Type)
       return Cursor is
    begin
       if Is_Empty (Container) then
@@ -542,7 +550,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
    function Reverse_Find (
       Container : List;
       Item : Element_Type;
-      Position : Cursor) return Cursor
+      Position : Cursor)
+      return Cursor
    is
       pragma Unreferenced (Container);
       Context : Context_Type := (Left => Item'Unrestricted_Access);

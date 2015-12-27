@@ -340,12 +340,17 @@ package Ada.Containers.Vectors is
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
+
       function Is_Sorted (Container : Vector) return Boolean;
+
       procedure Sort (Container : in out Vector);
+
       procedure Merge (Target : in out Vector; Source : in out Vector);
+
    end Generic_Sorting;
 
    --  extended from here
+   --  These functions provides a convenient way to directly access.
 
    type Element_Array is array (Index_Type range <>) of aliased Element_Type;
 
@@ -368,6 +373,8 @@ package Ada.Containers.Vectors is
       First_Index : Index_Type;
       Last_Index : Extended_Index)
       return Slicing.Reference_Type;
+
+   --  to here
 
    --  extended
    generic
