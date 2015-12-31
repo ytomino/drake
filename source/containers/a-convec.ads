@@ -353,18 +353,8 @@ package Ada.Containers.Vectors is
    function Constant_Reference (
       Container : aliased Vector)
       return Slicing.Constant_Reference_Type;
-   function Constant_Reference (
-      Container : aliased Vector;
-      First_Index : Index_Type;
-      Last_Index : Extended_Index)
-      return Slicing.Constant_Reference_Type;
    function Reference (
       Container : aliased in out Vector)
-      return Slicing.Reference_Type;
-   function Reference (
-      Container : aliased in out Vector;
-      First_Index : Index_Type;
-      Last_Index : Extended_Index)
       return Slicing.Reference_Type;
 
    --  to here

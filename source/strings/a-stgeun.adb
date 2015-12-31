@@ -531,36 +531,18 @@ package body Ada.Strings.Generic_Unbounded is
 
    function Constant_Reference (
       Source : aliased Unbounded_String)
-      return Slicing.Constant_Reference_Type is
-   begin
-      return Constant_Reference (Source, 1, Source.Length);
-   end Constant_Reference;
-
-   function Constant_Reference (
-      Source : aliased Unbounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
       return Slicing.Constant_Reference_Type
    is
       pragma Suppress (Access_Check);
    begin
       return Slicing.Constant_Slice (
          String_Access'(Source.Data.Items.all'Unrestricted_Access).all,
-         First_Index,
-         Last_Index);
+         1,
+         Source.Length);
    end Constant_Reference;
 
    function Reference (
       Source : aliased in out Unbounded_String)
-      return Slicing.Reference_Type is
-   begin
-      return Reference (Source, 1, Source.Length);
-   end Reference;
-
-   function Reference (
-      Source : aliased in out Unbounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
       return Slicing.Reference_Type
    is
       pragma Suppress (Access_Check);
@@ -568,8 +550,8 @@ package body Ada.Strings.Generic_Unbounded is
       Unique (Source);
       return Slicing.Slice (
          String_Access'(Source.Data.Items.all'Unrestricted_Access).all,
-         First_Index,
-         Last_Index);
+         1,
+         Source.Length);
    end Reference;
 
    overriding procedure Adjust (Object : in out Unbounded_String) is

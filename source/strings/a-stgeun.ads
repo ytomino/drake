@@ -147,22 +147,12 @@ package Ada.Strings.Generic_Unbounded is
    pragma Inline (">=");
 
    --  extended
-   --  There are reference version of slicing functions.
+   --  These functions provides a convenient way to directly access.
    function Constant_Reference (
       Source : aliased Unbounded_String)
       return Slicing.Constant_Reference_Type;
-   function Constant_Reference (
-      Source : aliased Unbounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Slicing.Constant_Reference_Type;
    function Reference (
       Source : aliased in out Unbounded_String)
-      return Slicing.Reference_Type;
-   function Reference (
-      Source : aliased in out Unbounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
       return Slicing.Reference_Type;
 
    generic

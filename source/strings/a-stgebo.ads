@@ -97,22 +97,12 @@ package Ada.Strings.Generic_Bounded is
    pragma Inline (">=");
 
    --  extended
-   --  There are reference version of slicing functions.
+   --  These functions provides a convenient way to directly access.
    function Constant_Reference (
       Source : aliased Bounded_String)
       return Slicing.Constant_Reference_Type;
-   function Constant_Reference (
-      Source : aliased Bounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Slicing.Constant_Reference_Type;
    function Reference (
       Source : aliased in out Bounded_String)
-      return Slicing.Reference_Type;
-   function Reference (
-      Source : aliased in out Bounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
       return Slicing.Reference_Type;
 
    generic

@@ -358,16 +358,6 @@ package Ada.Containers.Indefinite_Vectors is
 --
 --
 --
---
---
---
---
---
---
---
---
---
---
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;

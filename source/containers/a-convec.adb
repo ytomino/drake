@@ -834,45 +834,19 @@ package body Ada.Containers.Vectors is
       Container : aliased Vector)
       return Slicing.Constant_Reference_Type is
    begin
-      return Constant_Reference (
-         Container,
-         Index_Type'First,
-         Last_Index (Container));
-   end Constant_Reference;
-
-   function Constant_Reference (
-      Container : aliased Vector;
-      First_Index : Index_Type;
-      Last_Index : Extended_Index)
-      return Slicing.Constant_Reference_Type is
-   begin
       Unique (Container'Unrestricted_Access.all, False);
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
          return Slicing.Constant_Slice (
             Element_Array_Access'(Data.Items'Unrestricted_Access).all,
-            First_Index,
-            Last_Index);
+            Index_Type'First,
+            Last_Index (Container));
       end;
    end Constant_Reference;
 
    function Reference (
       Container : aliased in out Vector)
-      return Slicing.Reference_Type
-   is
-      Last : constant Extended_Index := Last_Index (Container);
-   begin
-      return Reference (
-         Container,
-         Index_Type'First,
-         Last);
-   end Reference;
-
-   function Reference (
-      Container : aliased in out Vector;
-      First_Index : Index_Type;
-      Last_Index : Extended_Index)
       return Slicing.Reference_Type is
    begin
       Unique (Container, True);
@@ -881,8 +855,8 @@ package body Ada.Containers.Vectors is
       begin
          return Slicing.Slice (
             Element_Array_Access'(Data.Items'Unrestricted_Access).all,
-            First_Index,
-            Last_Index);
+            Index_Type'First,
+            Last_Index (Container));
       end;
    end Reference;
 

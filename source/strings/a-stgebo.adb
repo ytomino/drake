@@ -216,38 +216,20 @@ package body Ada.Strings.Generic_Bounded is
       Source : aliased Bounded_String)
       return Slicing.Constant_Reference_Type is
    begin
-      return Constant_Reference (Source, 1, Source.Length);
-   end Constant_Reference;
-
-   function Constant_Reference (
-      Source : aliased Bounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Slicing.Constant_Reference_Type is
-   begin
       return Slicing.Constant_Slice (
          String_Access'(Source.Element'Unrestricted_Access).all,
-         First_Index,
-         Last_Index);
+         1,
+         Source.Length);
    end Constant_Reference;
 
    function Reference (
       Source : aliased in out Bounded_String)
       return Slicing.Reference_Type is
    begin
-      return Reference (Source, 1, Source.Length);
-   end Reference;
-
-   function Reference (
-      Source : aliased in out Bounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Slicing.Reference_Type is
-   begin
       return Slicing.Slice (
          String_Access'(Source.Element'Unrestricted_Access).all,
-         First_Index,
-         Last_Index);
+         1,
+         Source.Length);
    end Reference;
 
    package body Generic_Bounded_Length is

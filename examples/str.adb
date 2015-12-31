@@ -132,6 +132,7 @@ begin
 		package CP is new Ada.Strings.Unbounded_Strings.Generic_Constant (new String'("CONSTANT"));
 	begin
 		pragma Assert (U = "");
+		pragma Assert (U.Constant_Reference.Element.all = "");
 		U := +"B";
 		Ada.Debug.Put (Integer'Image (U.Capacity));
 		pragma Assert (U > "A");
