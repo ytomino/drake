@@ -329,7 +329,7 @@ package body Ada.Containers.Hashed_Maps is
    begin
       Process (
          Position.Key,
-         Container.Reference (Position).Element.all);
+         Reference (Container, Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -355,22 +355,17 @@ package body Ada.Containers.Hashed_Maps is
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
-      return Constant_Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Constant_Reference_Type is
    begin
-      return (Element => Position.Element'Access);
+      return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
    function Reference (
       Container : aliased in out Map;
       Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Reference_Type is
    begin
-      Unique (Container, True);
-      return (Element => Position.Element'Access);
+      return Reference (Container, Find (Container, Key));
    end Reference;
 
    procedure Assign (Target : in out Map; Source : Map) is
@@ -557,7 +552,7 @@ package body Ada.Containers.Hashed_Maps is
       Key : Key_Type)
       return Element_Type is
    begin
-      return Find (Container, Key).Element;
+      return Element (Find (Container, Key));
    end Element;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean is

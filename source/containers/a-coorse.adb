@@ -891,7 +891,7 @@ package body Ada.Containers.Ordered_Sets is
 
       function Element (Container : Set; Key : Key_Type) return Element_Type is
       begin
-         return Find (Container, Key).Element;
+         return Element (Find (Container, Key));
       end Element;
 
       procedure Replace (
@@ -1002,7 +1002,7 @@ package body Ada.Containers.Ordered_Sets is
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container, Key).Element'Access);
+         return Constant_Reference (Container, Find (Container, Key));
       end Constant_Reference;
 
       function Reference_Preserving_Key (
@@ -1010,8 +1010,7 @@ package body Ada.Containers.Ordered_Sets is
          Key : Key_Type)
          return Reference_Type is
       begin
-         Unique (Container, True);
-         return (Element => Find (Container, Key).Element'Access);
+         return Reference_Preserving_Key (Container, Find (Container, Key));
       end Reference_Preserving_Key;
 
    end Generic_Keys;

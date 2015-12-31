@@ -252,7 +252,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Container.Reference (Position).Element.all);
+      Process (Reference (Container, Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (

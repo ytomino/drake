@@ -851,7 +851,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Constant_Reference (Container, Find (Container, Key));
       end Constant_Reference;
 
       function Reference_Preserving_Key (
@@ -859,8 +859,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Key : Key_Type)
          return Reference_Type is
       begin
---  diff
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Reference_Preserving_Key (Container, Find (Container, Key));
       end Reference_Preserving_Key;
 
    end Generic_Keys;

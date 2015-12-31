@@ -354,7 +354,7 @@ package body Ada.Containers.Vectors is
       Index : Index_Type)
       return Element_Type is
    begin
-      return Container.Constant_Reference (Index).Element.all;
+      return Constant_Reference (Container, Index).Element.all;
    end Element;
 
    procedure Replace_Element (
@@ -377,7 +377,7 @@ package body Ada.Containers.Vectors is
       Index : Index_Type;
       Process : not null access procedure (Element : Element_Type)) is
    begin
-      Process (Container.Constant_Reference (Index).Element.all);
+      Process (Constant_Reference (Container, Index).Element.all);
    end Query_Element;
 
    procedure Update_Element (
@@ -385,7 +385,7 @@ package body Ada.Containers.Vectors is
       Index : Index_Type;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Container.Reference (Index).Element.all);
+      Process (Reference (Container, Index).Element.all);
    end Update_Element;
 
    function Constant_Reference (

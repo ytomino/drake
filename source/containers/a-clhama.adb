@@ -329,7 +329,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    begin
       Process (
          Position.Key.all,
-         Container.Reference (Position).Element.all);
+         Reference (Container, Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -355,22 +355,17 @@ package body Ada.Containers.Limited_Hashed_Maps is
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
-      return Constant_Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Constant_Reference_Type is
    begin
-      return (Element => Position.Element.all'Access);
+      return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
    function Reference (
       Container : aliased in out Map;
       Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Reference_Type is
    begin
---  diff
-      return (Element => Position.Element.all'Access);
+      return Reference (Container, Find (Container, Key));
    end Reference;
 
 --  diff (Assign)

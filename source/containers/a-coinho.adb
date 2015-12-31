@@ -134,7 +134,7 @@ package body Ada.Containers.Indefinite_Holders is
 
    function Element (Container : Holder'Class) return Element_Type is
    begin
-      return Container.Constant_Reference.Element.all;
+      return Constant_Reference (Container).Element.all;
    end Element;
 
    procedure Replace_Element (
@@ -150,14 +150,14 @@ package body Ada.Containers.Indefinite_Holders is
       Container : Holder'Class;
       Process : not null access procedure (Element : Element_Type)) is
    begin
-      Process (Container.Constant_Reference.Element.all);
+      Process (Constant_Reference (Container).Element.all);
    end Query_Element;
 
    procedure Update_Element (
       Container : in out Holder'Class;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Container.Reference.Element.all);
+      Process (Reference (Container).Element.all);
    end Update_Element;
 
    function Constant_Reference (
